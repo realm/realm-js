@@ -18,19 +18,23 @@
 import Realm from "realm";
 import { cachedCollection } from "./cachedCollection";
 
-type IndexibleRealmObject = Realm.Object & { [key: string]: unknown };
-
-export function cachedObject<T extends Realm.Object>(
-  object: T | null,
-  updateCallback: () => void,
-  listCaches = new Map(),
-  listTeardowns: (() => void)[] = [],
-): { object: (T & Realm.Object) | null; tearDown: () => void } {
-  // If the object doesn't exists, just return it with an noop tearDown
+export function cachedObject<T extends Realm.Object>({
+  object,
+  updateCallback,
+}: {
+  object: T | null;
+  updateCallback: () => void;
+}): { object: T | null; tearDown: () => void } {
+  const listCaches = new Map();
+  const listTearDowns: Array<() => void> = [];
+  // If the object doesn't exist, just return it with an noop tearDown
   if (object === null) {
     return { object, tearDown: () => undefined };
   }
 
+  // This Proxy handler intercepts any accesses into properties of the cached object
+  // of type `Realm.List`, and returns a `cachedCollection` wrapping those properties
+  // to allow changes in the list to trigger re-renders
   const cachedObjectHandler: ProxyHandler<T & Realm.Object> = {
     get: function (target, key) {
       const value = Reflect.get(target, key);
@@ -42,12 +46,14 @@ export function cachedObject<T extends Realm.Object>(
       // If its a Realm.List we need to add a proxy cache around it
       if (value instanceof Realm.List) {
         if (listCaches.has(key)) {
-          // Return in a new proxy so that the reference gets updated (otherwise it will not rerender)
+          // Return a new proxy wrapping the cachedCollection so that its reference gets updated,
+          // otherwise the list component will not re-render. The cachedCollection then ensures that
+          // only the modified children of the list component actually re-render.
           return new Proxy(listCaches.get(key), {});
         }
-        const { collection, tearDown } = cachedCollection(value, updateCallback);
-        // Add to a list of teardowns which will be invoked when the cachedObjects teardown is called
-        listTeardowns.push(tearDown);
+        const { collection, tearDown } = cachedCollection({ collection: value, updateCallback });
+        // Add to a list of teardowns which will be invoked when the cachedObject's teardown is called
+        listTearDowns.push(tearDown);
         // Store the proxied list into a map to persist the cachedCollection
         listCaches.set(key, collection);
         return collection;
@@ -57,15 +63,17 @@ export function cachedObject<T extends Realm.Object>(
   };
 
   const cachedObjectResult = new Proxy(object, cachedObjectHandler);
-  const listenerCallback: Realm.ObjectChangeCallback = (obj, changes) => {
+  const listenerCallback: Realm.ObjectChangeCallback<T> = (obj, changes) => {
     if (changes.deleted) {
       updateCallback();
     } else if (changes.changedProperties.length > 0) {
-      // Skip the rerender callback if any single property is a Realm.List
-      // Otherwise we will rerender twice
-      const shouldRerender = changes.changedProperties.every((property) => {
-        return !(obj[property as keyof T] instanceof Realm.List);
+      // Don't force a second re-render if any of the changed properties is a Realm.List,
+      // as the List's cachedCollection will force a re-render itself
+      const anyListPropertyModified = changes.changedProperties.some((property) => {
+        return obj[property as keyof T] instanceof Realm.List;
       });
+      const shouldRerender = !anyListPropertyModified;
+
       if (shouldRerender) {
         updateCallback();
       }
@@ -76,7 +84,7 @@ export function cachedObject<T extends Realm.Object>(
 
   const tearDown = () => {
     object.removeListener(listenerCallback);
-    listTeardowns.forEach((listTearDown) => listTearDown());
+    listTearDowns.forEach((listTearDown) => listTearDown());
   };
 
   return { object: cachedObjectResult, tearDown };

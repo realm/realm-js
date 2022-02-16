@@ -25,17 +25,19 @@ import { cachedObject } from "./cachedObject";
 type PrimaryKey = Parameters<typeof Realm.prototype.objectForPrimaryKey>[1];
 
 export function createUseObject(useRealm: () => Realm) {
-  return function useObject<T extends Realm.Object>(type: string | { new (): T }, primaryKey: PrimaryKey): T | null {
+  return function useObject<T>(type: string | { new (): T }, primaryKey: PrimaryKey): (T & Realm.Object) | null {
     const realm = useRealm();
 
-    // Create a forceRerender method so that the cachedObject can determine a relevant change has occured
+    // Create a forceRerender function for the cachedObject to use as its updateCallback, so that
+    // the cachedObject can force the component using this hook to re-render when a change occurs.
     const [, forceRerender] = useReducer((x) => x + 1, 0);
 
-    // Wrap this in useMemo to update if the primaryKey or type is somehow dynamic
+    // Wrap the cachedObject in useMemo, so we only replace it with a new instance if `primaryKey` or `type` change
     const { object, tearDown } = useMemo(
       // TODO: There will be an upcoming breaking change that makes objectForPrimaryKey return null
       // When this is implemented, remove `?? null`
-      () => cachedObject(realm.objectForPrimaryKey(type, primaryKey) ?? null, forceRerender),
+      () =>
+        cachedObject({ object: realm.objectForPrimaryKey(type, primaryKey) ?? null, updateCallback: forceRerender }),
       [type, realm, primaryKey],
     );
 

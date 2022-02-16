@@ -19,7 +19,7 @@
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { TextInput, Text, TouchableHighlight, View, FlatList } from "react-native";
-import { act, ReactTestInstance } from "react-test-renderer";
+import { act } from "react-test-renderer";
 import Realm from "realm";
 import { createUseObject } from "../useObject";
 
@@ -67,7 +67,7 @@ const configuration: Realm.Configuration = {
   path: "testArtifacts/use-object-render-list.realm",
 };
 
-//TODO: It would be better not to have to rely on this, but at the moment I see no other alternatives
+// TODO: It would be better not to have to rely on this, but at the moment I see no other alternatives
 function forceSynchronousNotifications(realm: Realm) {
   // Starting a transaction will force all listeners to advance to the latest version
   // and deliver notifications. We don't need to commit the transaction for this to work.
@@ -75,7 +75,7 @@ function forceSynchronousNotifications(realm: Realm) {
   realm.cancelTransaction();
 }
 
-const renderCounter = jest.fn();
+const itemRenderCounter = jest.fn();
 
 let testRealm: Realm = new Realm(configuration);
 
@@ -113,9 +113,7 @@ const SetupComponent = ({ children }: { children: JSX.Element }): JSX.Element | 
   useEffect(() => {
     realm.write(() => {
       realm.deleteAll();
-      const items = testCollection.map((object) => realm.create(ListItem, object));
-      const list = realm.create(List, { id: 1, title: "List", items: items });
-      //testCollection.forEach((object) => list.items.push(realm.create(ListItem, object)));
+      realm.create(List, { id: 1, title: "List", items: testCollection });
     });
     setSetupComplete(true);
   }, [realm]);
@@ -128,8 +126,9 @@ const SetupComponent = ({ children }: { children: JSX.Element }): JSX.Element | 
 };
 
 const Item: React.FC<{ item: ListItem & Realm.Object }> = React.memo(({ item }) => {
-  renderCounter();
+  itemRenderCounter();
   const realm = useRealm();
+
   return (
     <View testID={`result${item.id}`}>
       <View testID={`name${item.id}`}>
@@ -167,7 +166,7 @@ const TestComponent = () => {
 
   return (
     <>
-      <FlatList testID={"list"} data={list?.items ?? []} keyExtractor={keyExtractor} renderItem={renderItem} />;
+      <FlatList testID="list" data={list?.items ?? []} keyExtractor={keyExtractor} renderItem={renderItem} />;
       {list?.favoriteItem && (
         <View testID={`favoriteItem-${list?.favoriteItem.name}`}>
           <Text>{list?.favoriteItem.name}</Text>
@@ -177,48 +176,59 @@ const TestComponent = () => {
   );
 };
 
-describe("useObjectRenderList: list property", () => {
+async function setupTest() {
+  const { getByTestId, getByText, debug } = render(<App />);
+  await waitFor(() => getByTestId("testContainer"));
+
+  const object = testRealm.objectForPrimaryKey(List, 1);
+  if (!object) throw new Error("Object not found in Realm");
+  const collection = object.items;
+
+  expect(itemRenderCounter).toHaveBeenCalledTimes(10);
+
+  return { getByTestId, getByText, debug, object, collection };
+}
+
+describe("useObject: rendering objects with a Realm.List property", () => {
   afterEach(() => {
-    renderCounter.mockClear();
+    itemRenderCounter.mockClear();
     Realm.clearTestState();
   });
   afterAll(() => {
     testRealm.close();
   });
 
-  it("renders data in one render cycle per visible object in collection", async () => {
+  it("renders each visible item in the list once", async () => {
     const { getByTestId } = render(<App />);
 
     await waitFor(() => getByTestId("list"));
 
-    expect(renderCounter).toHaveBeenCalledTimes(10);
+    expect(itemRenderCounter).toHaveBeenCalledTimes(10);
   });
-  it("change to data will rerender", async () => {
-    const { getByTestId, getByText } = render(<App />);
 
-    const collection = testRealm.objectForPrimaryKey(List, 1)?.items ?? [];
-    const firstItem = collection[0];
-    const id = firstItem.id;
+  it("only re-renders the changed item when a list item's data changes", async () => {
+    const { getByTestId, getByText, collection } = await setupTest();
+
+    const id = collection[0].id;
 
     const nameElement = getByTestId(`name${id}`);
     const input = getByTestId(`input${id}`);
 
     expect(nameElement).toHaveTextContent(`${id}`);
-    expect(renderCounter).toHaveBeenCalledTimes(10);
 
-    fireEvent.changeText(input as ReactTestInstance, "apple");
+    fireEvent.changeText(input, "apple");
 
     await waitFor(() => getByText("apple"));
 
     expect(nameElement).toHaveTextContent("apple");
-    expect(renderCounter).toHaveBeenCalledTimes(11);
+    expect(itemRenderCounter).toHaveBeenCalledTimes(11);
   });
 
-  it("handles deletions", async () => {
-    const { getByTestId } = render(<App />);
+  // This is a restriction of the current implementation as we do not know the
+  // id of a deleted item, ideally this would only re-render once
+  it("re-renders every visible item in the list when an item is deleted", async () => {
+    const { getByTestId, collection } = await setupTest();
 
-    const object = testRealm.objectForPrimaryKey(List, 1);
-    const collection = object?.items ?? [];
     const firstItem = collection[0];
     const id = firstItem.id;
 
@@ -228,43 +238,51 @@ describe("useObjectRenderList: list property", () => {
     const nameElement = getByTestId(`name${id}`);
 
     expect(nameElement).toHaveTextContent(`${id}`);
-    expect(renderCounter).toHaveBeenCalledTimes(10);
+    expect(itemRenderCounter).toHaveBeenCalledTimes(10);
 
-    fireEvent.press(deleteButton as ReactTestInstance);
+    fireEvent.press(deleteButton);
 
     await waitFor(() => getByTestId(`name${nextVisible.id}`));
 
-    expect(renderCounter).toHaveBeenCalledTimes(20);
+    expect(itemRenderCounter).toHaveBeenCalledTimes(20);
   });
-  it("an implicit update to an item in the FlatList view area causes a rerender", async () => {
-    const { getByTestId } = render(<App />);
 
-    await waitFor(() => getByTestId("testContainer"));
-
-    expect(renderCounter).toHaveBeenCalledTimes(10);
-
-    const collection = testRealm.objectForPrimaryKey(List, 1)?.items ?? [];
-
+  it("only re-renders the changed item when a visible list item is modified without a UI interaction", async () => {
+    const { collection } = await setupTest();
     testRealm.write(() => {
       collection[0].name = "apple";
     });
 
-    // // One could wait for "apple", but I want to mirror the underlying non-rerender test
+    // Force Realm listeners to fire rather than waiting for the text "apple"
+    // to appear, in order to match how the subsequent "does not re-render"
+    // test works.
     await act(async () => {
       forceSynchronousNotifications(testRealm);
     });
 
-    expect(renderCounter).toHaveBeenCalledTimes(11);
+    expect(itemRenderCounter).toHaveBeenCalledTimes(11);
   });
 
-  it("does not rerender if the update is out of the FlatList view area", async () => {
-    const { getByTestId } = render(<App />);
+  it("only renders the new item when a list item is added", async () => {
+    const { collection, debug } = await setupTest();
+    testRealm.write(() => {
+      collection.unshift(testRealm.create(ListItem, { id: 9999, name: "apple" }));
+    });
 
-    await waitFor(() => getByTestId("testContainer"));
+    // Force Realm listeners to fire rather than waiting for the text "apple"
+    // to appear, in order to match how the subsequent "does not re-render"
+    // test works.
+    await act(async () => {
+      forceSynchronousNotifications(testRealm);
+    });
 
-    expect(renderCounter).toHaveBeenCalledTimes(10);
+    debug();
 
-    const collection = testRealm.objectForPrimaryKey(List, 1)?.items ?? [];
+    expect(itemRenderCounter).toHaveBeenCalledTimes(11);
+  });
+
+  it("does not re-render if an invisible list item is modified without a UI interaction", async () => {
+    const { collection } = await setupTest();
 
     testRealm.write(() => {
       const lastIndex = collection.length - 1;
@@ -275,45 +293,39 @@ describe("useObjectRenderList: list property", () => {
       forceSynchronousNotifications(testRealm);
     });
 
-    expect(renderCounter).toHaveBeenCalledTimes(10);
+    expect(itemRenderCounter).toHaveBeenCalledTimes(10);
   });
+
   it("test favorite object", async () => {
-    const { getByTestId } = render(<App />);
-
-    await waitFor(() => getByTestId("testContainer"));
-
-    expect(renderCounter).toHaveBeenCalledTimes(10);
-
-    const collection = testRealm.objectForPrimaryKey(List, 1)!;
+    const { getByTestId } = await setupTest();
+    const object = testRealm.objectForPrimaryKey(List, 1);
+    if (!object) throw new Error("Object not found in Realm");
 
     await act(async () => {
       testRealm.write(() => {
-        collection.favoriteItem = collection.items[0];
+        object.favoriteItem = object.items[0];
       });
     });
 
-    expect(getByTestId(`favoriteItem-${collection?.items[0].name}`)).toBeTruthy();
+    expect(getByTestId(`favoriteItem-${object.items[0].name}`)).toBeTruthy();
 
     await act(async () => {
       testRealm.write(() => {
-        if (collection) {
-          collection.favoriteItem = collection.items[1];
-        }
+        object.favoriteItem = object.items[1];
       });
     });
 
-    expect(getByTestId(`favoriteItem-${collection?.items[1].name}`)).toBeTruthy();
+    expect(getByTestId(`favoriteItem-${object.items[1].name}`)).toBeTruthy();
 
     await act(async () => {
       testRealm.write(() => {
-        if (collection) {
-          collection.items[1].name = "tom";
-        }
+        object.items[1].name = "apple";
       });
     });
 
-    expect(getByTestId(`favoriteItem-${collection?.items[1].name}`)).toBeTruthy();
+    expect(getByTestId(`favoriteItem-${object.items[1].name}`)).toBeTruthy();
 
-    expect(renderCounter).toHaveBeenCalledTimes(11);
+    // We should only have re-rendered once, as only the last change actually modified an item
+    expect(itemRenderCounter).toHaveBeenCalledTimes(11);
   });
 });
