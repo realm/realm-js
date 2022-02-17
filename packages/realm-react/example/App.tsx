@@ -15,8 +15,9 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+
 import React, { useCallback, useMemo } from "react";
-import { SafeAreaView, View, StyleSheet } from "react-native";
+import { SafeAreaView, View, StyleSheet, Button } from "react-native";
 
 import TaskContext, { Task } from "./app/models/Task";
 import IntroText from "./app/components/IntroText";
@@ -24,9 +25,14 @@ import AddTaskForm from "./app/components/AddTaskForm";
 import TaskList from "./app/components/TaskList";
 import colors from "./app/styles/colors";
 
-const { useRealm, useQuery, RealmProvider } = TaskContext;
+const { useRealm, useQuery } = TaskContext;
 
-function App() {
+interface AppMainProps {
+  onLogout: () => void;
+  currentUserId: string;
+}
+
+export function App(props: AppMainProps) {
   const realm = useRealm();
   const result = useQuery(Task);
 
@@ -46,7 +52,7 @@ function App() {
       // of sync participants to successfully sync everything in the transaction, otherwise
       // no changes propagate and the transaction needs to start over when connectivity allows.
       realm.write(() => {
-        realm.create("Task", Task.generate(description));
+        realm.create("Task", Task.generate(props.currentUserId, description));
       });
     },
     [realm],
@@ -98,6 +104,7 @@ function App() {
           <TaskList tasks={tasks} onToggleTaskStatus={handleToggleTaskStatus} onDeleteTask={handleDeleteTask} />
         )}
       </View>
+      <Button title="Logout" onPress={props.onLogout} />
     </SafeAreaView>
   );
 }
@@ -113,16 +120,3 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
 });
-
-function AppWrapper() {
-  if (!RealmProvider) {
-    return null;
-  }
-  return (
-    <RealmProvider>
-      <App />
-    </RealmProvider>
-  );
-}
-
-export default AppWrapper;
