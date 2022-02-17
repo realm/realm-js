@@ -24,7 +24,10 @@ export function createUseQuery(useRealm: () => Realm) {
   return function useQuery<T>(type: string | ({ new (): T } & Realm.ObjectClass)): Realm.Results<T & Realm.Object> {
     const realm = useRealm();
     const [, forceRerender] = useReducer((x) => x + 1, 0);
-    const { collection, tearDown } = useMemo(() => cachedCollection(realm.objects(type), forceRerender), [type, realm]);
+    const { collection, tearDown } = useMemo(
+      () => cachedCollection({ collection: realm.objects(type), updateCallback: forceRerender }),
+      [type, realm],
+    );
 
     useEffect(() => {
       return () => {
@@ -33,6 +36,7 @@ export function createUseQuery(useRealm: () => Realm) {
     }, [tearDown]);
 
     // This makes sure the collection has a different reference on a rerender
-    return new Proxy(collection, {});
+    // Also we are ensuring the type returned is Realm.Results, as this is known in this context
+    return new Proxy(collection as Realm.Results<T & Realm.Object>, {});
   };
 }
