@@ -118,8 +118,13 @@ function isAnalyticsDisabled() {
 }
 
 function getRealmVersion() {
-  const packageJson = fse.readJsonSync([getProjectRoot(), "node_modules", "realm", "package.json"].join(path.sep));
-  return packageJson["version"];
+  try {
+    const packageJson = fse.readJsonSync([getProjectRoot(), "node_modules", "realm", "package.json"].join(path.sep));
+    return packageJson["version"];
+  } catch (err) {
+    doLog(`cannot read package.json: ${err}`);
+    return "unknown";
+  }
 }
 
 /**
