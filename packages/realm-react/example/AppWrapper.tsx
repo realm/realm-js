@@ -50,6 +50,7 @@ export default function AppWrapper() {
       setUser(await app.logIn(credentials));
       setLoginVisible(false);
     } catch (e) {
+      console.log(e);
       setLoginError(true);
     }
   };
@@ -65,6 +66,7 @@ export default function AppWrapper() {
       setUser(await app.logIn(credentials));
       setLoginVisible(false);
     } catch (e) {
+      console.log(e);
       setLoginError(true);
     }
   };
