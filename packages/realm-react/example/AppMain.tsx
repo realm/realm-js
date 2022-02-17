@@ -19,7 +19,7 @@
 // This is the code that was in App.tsx, modified to remove the RealmProvider wrapper
 
 import React, { useCallback, useMemo } from "react";
-import { SafeAreaView, View, StyleSheet } from "react-native";
+import { SafeAreaView, View, StyleSheet, Button } from "react-native";
 
 import TaskContext, { Task } from "./app/models/Task";
 import IntroText from "./app/components/IntroText";
@@ -29,7 +29,12 @@ import colors from "./app/styles/colors";
 
 const { useRealm, useQuery } = TaskContext;
 
-export function AppMain() {
+interface AppMainProps {
+  onLogout: () => void;
+  currentUserId: string;
+}
+
+export function AppMain(props: AppMainProps) {
   const realm = useRealm();
   const result = useQuery(Task);
 
@@ -49,7 +54,7 @@ export function AppMain() {
       // of sync participants to successfully sync everything in the transaction, otherwise
       // no changes propagate and the transaction needs to start over when connectivity allows.
       realm.write(() => {
-        realm.create("Task", Task.generate(description));
+        realm.create("Task", Task.generate(props.currentUserId, description));
       });
     },
     [realm],
@@ -101,6 +106,7 @@ export function AppMain() {
           <TaskList tasks={tasks} onToggleTaskStatus={handleToggleTaskStatus} onDeleteTask={handleDeleteTask} />
         )}
       </View>
+      <Button title="Logout" onPress={props.onLogout} />
     </SafeAreaView>
   );
 }

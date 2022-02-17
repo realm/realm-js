@@ -20,14 +20,15 @@ export class Task extends Realm.Object {
   _id!: Realm.BSON.ObjectId;
   description!: string;
   isComplete!: boolean;
+  userId!: string;
 
-  static generate(description: string) {
+  static generate(userId: string, description: string) {
     return {
       _id: new Realm.BSON.ObjectId(),
       description,
       isComplete: false,
       createdAt: new Date(),
-      username: "default",
+      userId,
     };
   }
 
@@ -40,7 +41,7 @@ export class Task extends Realm.Object {
       description: "string",
       isComplete: { type: "bool", default: false },
       createdAt: "date",
-      username: "string",
+      userId: "string",
     },
   };
 }

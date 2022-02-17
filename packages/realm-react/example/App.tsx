@@ -19,42 +19,65 @@
 // 1. Move your App code to e.g. AppMain.tsx and create this outer App.tsx which is
 // responsible for logging in the user and setting up sync on the Realm.
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Realm } from "@realm/react";
 
 import TaskContext from "./app/models/Task";
 import { AppMain } from "./AppMain";
+import LoginScreen from "./app/components/LoginScreen";
 
-const APP_ID = "<your app ID>";
-
-// 2. Add your Realm app details here, using whatever login mechanism you wish
+// 2. Add your Realm app ID here and create the Realm app
+const APP_ID = "application-0-bzsvu";
 const app = new Realm.App({ id: APP_ID });
-const credentials = Realm.Credentials.anonymous();
 
 const App = () => {
-  // 3. Store the logged in user in state, this will be null when you first start the app
+  // 3. Store the logged in user in state so that we know when to render the login screen and
+  // when to render the app. This will be null the first time you start the app, but on future
+  // startups, the logged in user will persist.
   const [user, setUser] = useState<Realm.User | null>(app.currentUser);
+
+  const [loginError, setLoginError] = useState(false);
 
   const { RealmProvider } = TaskContext;
 
-  // 4. On application startup, login the user if not already logged in
-  useEffect(() => {
-    (async () => {
-      if (user) return;
+  const handleLogin = async (email: string, password: string) => {
+    setLoginError(false);
+    const credentials = Realm.Credentials.emailPassword(email, password);
 
-      const loggedInUser = await app.logIn(credentials);
-      // 5. Set the logged in user in state
-      setUser(loggedInUser);
-    })();
-  }, []);
+    try {
+      setUser(await app.logIn(credentials));
+    } catch (e) {
+      setLoginError(true);
+    }
+  };
+
+  const handleRegister = async (email: string, password: string) => {
+    setLoginError(false);
+
+    try {
+      // Register the user...
+      await app.emailPasswordAuth.registerUser({ email, password });
+      // ...then login with the newly created user
+      const credentials = Realm.Credentials.emailPassword(email, password);
+      setUser(await app.logIn(credentials));
+    } catch (e) {
+      setLoginError(true);
+    }
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    app.currentUser?.logOut();
+  };
 
   // 6. If we are not logged in yet, return null so the app does not render without sync enabled
-  if (!user) return null;
+  if (!user || !app.currentUser)
+    return <LoginScreen onLogin={handleLogin} onRegister={handleRegister} loginError={loginError} />;
 
   // 7. If we are logged in, add the sync configuration the the Realm and render the ap
   return (
-    <RealmProvider sync={{ user, partitionValue: "default" }}>
-      <AppMain />
+    <RealmProvider sync={{ user, partitionValue: app.currentUser.id }}>
+      <AppMain onLogout={handleLogout} currentUserId={app.currentUser.id} />
     </RealmProvider>
   );
 };
