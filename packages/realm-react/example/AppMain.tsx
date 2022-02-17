@@ -15,6 +15,9 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+
+// This is the code that was in App.tsx, modified to remove the RealmProvider wrapper
+
 import React, { useCallback, useMemo } from "react";
 import { SafeAreaView, View, StyleSheet } from "react-native";
 

@@ -25,19 +25,23 @@ import { Realm } from "@realm/react";
 import TaskContext from "./app/models/Task";
 import { AppMain } from "./AppMain";
 
+const APP_ID = "<your app ID>";
+
 // 2. Add your Realm app details here, using whatever login mechanism you wish
-const app = new Realm.App({ id: "application-0-bzsvu" });
+const app = new Realm.App({ id: APP_ID });
 const credentials = Realm.Credentials.anonymous();
 
 const App = () => {
-  // 3. Store the logged in user in state
-  const [user, setUser] = useState<Realm.User | undefined>();
+  // 3. Store the logged in user in state, this will be null when you first start the app
+  const [user, setUser] = useState<Realm.User | null>(app.currentUser);
 
   const { RealmProvider } = TaskContext;
 
-  // 4. On application startup, login the user
+  // 4. On application startup, login the user if not already logged in
   useEffect(() => {
     (async () => {
+      if (user) return;
+
       const loggedInUser = await app.logIn(credentials);
       // 5. Set the logged in user in state
       setUser(loggedInUser);
