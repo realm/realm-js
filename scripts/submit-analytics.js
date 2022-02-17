@@ -118,8 +118,25 @@ function isAnalyticsDisabled() {
 }
 
 function getRealmVersion() {
-  const packageJson = fse.readJsonSync([getProjectRoot(), "node_modules", "realm", "package.json"].join(path.sep));
-  return packageJson["version"];
+  let version = "unknown";
+  let packageJsonPath = "";
+  try {
+    packageJsonPath = [getProjectRoot(), "package.json"].join(path.sep);
+    const packageJson = fse.readJsonSync(packageJsonPath);
+    if (packageJson["name"] === "realm") {
+      version = packageJson["version"];
+    }
+  } catch (err) {
+    doLog(`cannot open ${packageJsonPath}: ${err}`);
+    try {
+      packageJsonPath = [getProjectRoot(), "node_modules", "realm", "package.json"].join(path.sep);
+      const packageJson = fse.readJsonSync(packageJsonPath);
+      version = packageJson["version"];
+    } catch (err) {
+      doLog(`Cannot open ${packageJsonPath}: ${err}`);
+    }
+  }
+  return version;
 }
 
 /**
