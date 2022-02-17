@@ -1,19 +1,59 @@
-import React, { useCallback, useMemo } from "react";
-import { SafeAreaView, View, StyleSheet } from "react-native";
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2021 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
+
+import React, {useCallback, useMemo} from 'react';
+import {SafeAreaView, View, StyleSheet, Text, Pressable} from 'react-native';
 
 import TaskContext, { Task } from "./models/Task";
 import IntroText from "./components/IntroText";
 import AddTaskForm from "./components/AddTaskForm";
 import TaskList from "./components/TaskList";
 import colors from "./styles/colors";
+import {buttonStyles} from './styles/button';
+import {shadows} from './styles/shadows';
 
-const { useRealm, useQuery, RealmProvider } = TaskContext;
+const {useRealm, useQuery} = TaskContext;
 
-function App() {
+type AppPropsBase = {
+  syncEnabled: boolean;
+};
+
+type AppPropsSyncDisabled = AppPropsBase & {
+  syncEnabled: false;
+};
+
+type AppPropsSyncEnabled = AppPropsBase & {
+  syncEnabled: true;
+  onLogin?: () => void;
+  onLogout?: () => void;
+  currentUserId: string;
+  currentUserName?: string;
+};
+
+type AppProps = AppPropsSyncDisabled | AppPropsSyncEnabled;
+
+export function App(props: AppProps) {
   const realm = useRealm();
   const result = useQuery(Task);
 
-  const tasks = useMemo(() => result.sorted("createdAt"), [result]);
+  const tasks = useMemo(() => result.sorted('createdAt'), [result]);
+
+  const currentUserId = props.syncEnabled ? props.currentUserId : undefined;
 
   const handleAddTask = useCallback(
     (description: string): void => {
@@ -29,10 +69,10 @@ function App() {
       // of sync participants to successfully sync everything in the transaction, otherwise
       // no changes propagate and the transaction needs to start over when connectivity allows.
       realm.write(() => {
-        realm.create("Task", Task.generate(description));
+        realm.create('Task', Task.generate(currentUserId, description));
       });
     },
-    [realm],
+    [realm, currentUserId],
   );
 
   const handleToggleTaskStatus = useCallback(
@@ -78,9 +118,30 @@ function App() {
         {tasks.length === 0 ? (
           <IntroText />
         ) : (
-          <TaskList tasks={tasks} onToggleTaskStatus={handleToggleTaskStatus} onDeleteTask={handleDeleteTask} />
+          <TaskList
+            tasks={tasks}
+            onToggleTaskStatus={handleToggleTaskStatus}
+            onDeleteTask={handleDeleteTask}
+          />
         )}
       </View>
+
+      {props.syncEnabled && (
+        <>
+          {props.onLogin && (
+            <Pressable style={styles.authButton} onPress={props.onLogin}>
+              <Text style={styles.authButtonText}>Login</Text>
+            </Pressable>
+          )}
+          {props.onLogout && (
+            <Pressable style={styles.authButton} onPress={props.onLogout}>
+              <Text style={styles.authButtonText}>
+                Logout {props.currentUserName}
+              </Text>
+            </Pressable>
+          )}
+        </>
+      )}
     </SafeAreaView>
   );
 }
@@ -95,17 +156,17 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingHorizontal: 20,
   },
+  authButton: {
+    ...buttonStyles.button,
+    ...shadows,
+    backgroundColor: colors.purpleDark,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    marginRight: 20,
+    marginTop: 20,
+  },
+  authButtonText: {
+    color: colors.white,
+    padding: 10,
+  },
 });
-
-function AppWrapper() {
-  if (!RealmProvider) {
-    return null;
-  }
-  return (
-    <RealmProvider>
-      <App />
-    </RealmProvider>
-  );
-}
-
-export default AppWrapper;

@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2021 Realm Inc.
+// Copyright 2022 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,13 +15,23 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-const colors = {
-  darkBlue: '#2A3642',
-  purple: '#6E60F9',
-  purpleDark: '#4238a6',
-  gray: '#B5B5B5',
-  white: '#FFFFFF',
-  black: '#000000',
-};
+import {StyleSheet} from 'react-native';
+import colors from './colors';
 
-export default colors;
+export const buttonStyles: StyleSheet.NamedStyles<any> = {
+  button: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 20,
+    borderRadius: 5,
+    backgroundColor: colors.purple,
+  },
+  text: {
+    color: colors.white,
+    textAlign: 'center',
+    fontSize: 17,
+    fontWeight: 'bold',
+  },
+};

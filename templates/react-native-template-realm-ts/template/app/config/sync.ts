@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2021 Realm Inc.
+// Copyright 2022 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,13 +15,12 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-const colors = {
-  darkBlue: '#2A3642',
-  purple: '#6E60F9',
-  purpleDark: '#4238a6',
-  gray: '#B5B5B5',
-  white: '#FFFFFF',
-  black: '#000000',
+export const SYNC_CONFIG = {
+  // Set `enabled` to `true` to enable sync. See `AppWrapper.tsx` for the relevant code.
+  enabled: false,
+  // Add your Realm App ID here if sync is enabled.
+  realmAppId: '<Your App ID>',
+  // Set `anonymousAuthEnabled` to allow anonymous login.
+  // See https://docs.mongodb.com/realm/authentication/anonymous/ for more information.
+  anonymousAuthEnabled: false,
 };
-
-export default colors;
