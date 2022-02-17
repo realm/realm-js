@@ -134,8 +134,24 @@
             "preLaunchTask": "Build Node Tests"
         },
         {
+            "type": "lldb",
+            "name": "LLDB Realm React Tests",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "disableOptimisticBPs": true,
+            "cwd": "${workspaceFolder}/packages/realm-react",
+            "program": "node",
+            "args": [
+                "node_modules/.bin/jest",
+                "--runInBand",
+                "--watchAll=false",
+                "--testNamePattern=${input:testNamePattern}"
+            ]
+        },
+        {
             "type": "node",
-            "name": "vscode-jest-tests",
+            "name": "Realm React Tests",
             "request": "launch",
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
