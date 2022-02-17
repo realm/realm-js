@@ -259,7 +259,7 @@ describe("Realm objects", () => {
     });
   });
   describe("listeners on linked objects", () => {
-    it("collection listener is called on changes to an objects linked object property", async () => {
+    it("collection listener is called on changes to an object's linked object property", async () => {
       const realm = new Realm({ schema: [Dog, Person] });
 
       const person = realm.write(() => {
