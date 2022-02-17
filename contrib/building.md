@@ -51,6 +51,12 @@ The following dependencies are required. All except Xcode can be installed by fo
 - [Android NDK 21.0](https://developer.android.com/ndk/downloads/index.html)
 - [Android CMake](https://developer.android.com/ndk/guides/cmake)
 
+Moreover, in order to avoid introducing false positives in our analytics dataset, it is highly recommended to disable analytics by adding the following to your shell configuration:
+
+```sh
+export REALM_DISABLE_ANALYTICS=1
+```
+
 ### Setup instructions for MacOS
 
 #### All platforms
