@@ -27,8 +27,9 @@ import { App } from "./App";
 import LoginScreen from "./app/components/LoginScreen";
 
 // 2. Add your Realm app ID here and create the Realm app
-const APP_ID = "<Your app ID>";
+const APP_ID = "application-0-bzsvu";
 const app = new Realm.App({ id: APP_ID });
+Realm.App.Sync.setLogLevel(app, "all");
 
 export default function AppWrapper() {
   // 3. Store the logged in user in state so that we know when to render the login screen and
@@ -37,6 +38,7 @@ export default function AppWrapper() {
   const [user, setUser] = useState<Realm.User | null>(app.currentUser);
 
   const [loginError, setLoginError] = useState(false);
+  const [loginVisible, setLoginVisible] = useState(false);
 
   const { RealmProvider } = TaskContext;
 
@@ -46,6 +48,7 @@ export default function AppWrapper() {
 
     try {
       setUser(await app.logIn(credentials));
+      setLoginVisible(false);
     } catch (e) {
       setLoginError(true);
     }
@@ -60,9 +63,14 @@ export default function AppWrapper() {
       // ...then login with the newly created user
       const credentials = Realm.Credentials.emailPassword(email, password);
       setUser(await app.logIn(credentials));
+      setLoginVisible(false);
     } catch (e) {
       setLoginError(true);
     }
+  };
+
+  const handleShowLogin = () => {
+    setLoginVisible(true);
   };
 
   const handleLogout = () => {
@@ -70,9 +78,17 @@ export default function AppWrapper() {
     app.currentUser?.logOut();
   };
 
-  // 6. If we are not logged in yet, return null so the app does not render without sync enabled
-  if (!user || !app.currentUser)
+  if (loginVisible) {
     return <LoginScreen onLogin={handleLogin} onRegister={handleRegister} loginError={loginError} />;
+  }
+
+  if (!user || !app.currentUser) {
+    return (
+      <RealmProvider>
+        <App onLogin={handleShowLogin} currentUserId="" />
+      </RealmProvider>
+    );
+  }
 
   // 7. If we are logged in, add the sync configuration the the Realm and render the ap
   return (

@@ -28,7 +28,8 @@ import colors from "./app/styles/colors";
 const { useRealm, useQuery } = TaskContext;
 
 interface AppMainProps {
-  onLogout: () => void;
+  onLogin?: () => void;
+  onLogout?: () => void;
   currentUserId: string;
 }
 
@@ -52,7 +53,7 @@ export function App(props: AppMainProps) {
       // of sync participants to successfully sync everything in the transaction, otherwise
       // no changes propagate and the transaction needs to start over when connectivity allows.
       realm.write(() => {
-        realm.create("Task", Task.generate(props.currentUserId, description));
+        realm.create("Task", Task.generate("props.currentUserId", description));
       });
     },
     [realm],
@@ -104,7 +105,8 @@ export function App(props: AppMainProps) {
           <TaskList tasks={tasks} onToggleTaskStatus={handleToggleTaskStatus} onDeleteTask={handleDeleteTask} />
         )}
       </View>
-      <Button title="Logout" onPress={props.onLogout} />
+      {props.onLogin && <Button title="Login" onPress={props.onLogin} />}
+      {props.onLogout && <Button title="Logout" onPress={props.onLogout} />}
     </SafeAreaView>
   );
 }
