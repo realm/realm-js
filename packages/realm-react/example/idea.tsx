@@ -103,6 +103,17 @@ function LoginScreen() {
     executeLogin({ email, password });
   };
 
+  // alternatively you can:
+  const handleLoginAwait = async () => {
+    console.log("Logging in...");
+    try {
+      const user = await executeLogin({ email, password });
+      console.log("Logged in, user is", user);
+    } catch (e) {
+      console.error("Error logging in:", e.message);
+    }
+  };
+
   const handleRegister = () => {
     executeRegister({ email, password, loginAfterRegister: true });
   };
@@ -182,5 +193,59 @@ function ResetPasswordScreen({ token, tokenId }) {
         <Button title="Reset Password" onClick={handleResetPassword} />
       )}
     </View>
+  );
+}
+
+// If we can batch subscription updates automatically...
+function SubscribedScreenIdeal() {
+  const { executeAddSubscription, addSubscriptionResult, executeRemoveSubscription } = useSyncSubscriptions();
+
+  const cats = useQuery<Cat>("Cat");
+  const dogs = useQuery<Dog>("Dog");
+
+  useEffect(() => {
+    // Somehow it knows to batch these into one update
+    const catsSub = executeAddSubscription(cats);
+    executeAddSubscription(dogs.filtered("age > 10"));
+
+    return () => {
+      executeRemoveSubscription(catsSub);
+    };
+  }, []);
+
+  return addSubscriptionResult.loading ? (
+    <Text>Please wait...</Text>
+  ) : (
+    <Text>
+      {cats.length} cats and {dogs.length} dogs
+    </Text>
+  );
+}
+
+// If not...
+function SubscribedScreenFallback() {
+  const { executeUpdateSubscriptions, updateSubscriptionsResult } = useSyncSubscriptions();
+
+  useEffect(() => {
+    let catsSub;
+
+    executeUpdateSubscriptions((mutableSubs) => {
+      catsSub = mutableSubs.add(cats);
+      mutableSubs.add(dogs.filtered("age > 10"));
+    });
+
+    return () => {
+      executeUpdateSubscriptions((mutableSubs) => {
+        mutableSubs.removeSubscription(catsSub);
+      });
+    };
+  }, []);
+
+  return updateSubscriptionResult.loading ? (
+    <Text>Please wait...</Text>
+  ) : (
+    <Text>
+      {cats.length} cats and {dogs.length} dogs
+    </Text>
   );
 }
