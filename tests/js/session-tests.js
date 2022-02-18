@@ -654,7 +654,8 @@ module.exports = {
           },
           clientResetAfter: (beforeRealm, afterRealm) => {
             afterCalled = true;
-            TestCase.assertEqual(beforeRealm.objects("Dog").length, 1, "local");
+            TestCase.assertEqual(beforeRealm.objects("Dog").length, 1, "before");
+            TestCase.assertEqual(afterRealm.objects("Dog").length, 1, "after");
           },
         };
         config.sync.error = (sender, error) => {
