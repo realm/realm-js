@@ -81,33 +81,27 @@ type AuthResult = {
 };
 
 function LoginScreen() {
-  const {
-    executeLogin,
-    loginResult,
-    executeRegister,
-    registerResult,
-    executeSendResetPasswordEmail,
-    sendResetPasswordEmailResult,
-  } = useEmailPasswordAuth();
+  const { login, loginResult, register, registerResult, sendResetPasswordEmail, sendResetPasswordEmailResult } =
+    useEmailPasswordAuth();
 
   // Or we could do it like this - allows for easy renaming, but the hook names are long...
   // I guess we could "namespace" them (`import { useLogin, useRegister } from '@realm/react/emailPasswordAuth'`?)
-  const [executeLogin, loginResult] = useEmailPasswordAuthLogin();
-  const [executeRegister, registerResult] = useEmailPasswordAuthRegister();
-  const [executeSendResetPasswordEmail, sendResetPasswordEmailResult] = useEmailPasswordAuthSendResetPasswordEmail();
+  const [login, loginResult] = useEmailPasswordAuthLogin();
+  const [register, registerResult] = useEmailPasswordAuthRegister();
+  const [sendResetPasswordEmail, sendResetPasswordEmailResult] = useEmailPasswordAuthSendResetPasswordEmail();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = () => {
-    executeLogin({ email, password });
+    login({ email, password });
   };
 
   // alternatively you can:
   const handleLoginAwait = async () => {
     console.log("Logging in...");
     try {
-      const user = await executeLogin({ email, password });
+      const user = await login({ email, password });
       console.log("Logged in, user is", user);
     } catch (e) {
       console.error("Error logging in:", e.message);
@@ -115,11 +109,11 @@ function LoginScreen() {
   };
 
   const handleRegister = () => {
-    executeRegister({ email, password, loginAfterRegister: true });
+    register({ email, password, loginAfterRegister: true });
   };
 
   const handleForgotPassword = () => {
-    executeSendResetPasswordEmail({ email });
+    sendResetPasswordEmail({ email });
   };
 
   return (
@@ -157,10 +151,16 @@ function LoginScreen() {
 }
 
 function TokenLogin() {
-  const { executeLogin, loginResult } = useAuth();
+  const { login, loginResult } = useAuth();
+  // or...
+  const { login, loginResult } = useAuth(AuthProvider.Google);
+  // or...
+  const { googleLogin } = useGoogleAuth();
 
   useEffect(() => {
-    executeLogin(Realm.Credentials.google("asdfg"));
+    login(Realm.Credentials.google("asdfg"));
+    // or...
+    googleLogin("asdfg");
   });
 
   if (loginResult.loading) return <Text>Please wait...</Text>;
@@ -169,12 +169,12 @@ function TokenLogin() {
 }
 
 function ResetPasswordScreen({ token, tokenId }) {
-  const { executeResetPassword, resetPasswordResult } = useEmailPasswordAuth();
+  const { resetPassword, resetPasswordResult } = useEmailPasswordAuth();
 
   const [password, setPassword] = useState("");
 
   const handleResetPassword = () => {
-    executeResetPassword({ password, token, tokenId });
+    resetPassword({ password, token, tokenId });
   };
 
   return (
@@ -198,18 +198,18 @@ function ResetPasswordScreen({ token, tokenId }) {
 
 // If we can batch subscription updates automatically...
 function SubscribedScreenIdeal() {
-  const { executeAddSubscription, addSubscriptionResult, executeRemoveSubscription } = useSyncSubscriptions();
+  const { addSubscription, addSubscriptionResult, removeSubscription } = useSyncSubscriptions();
 
   const cats = useQuery<Cat>("Cat");
   const dogs = useQuery<Dog>("Dog");
 
   useEffect(() => {
     // Somehow it knows to batch these into one update
-    const catsSub = executeAddSubscription(cats);
-    executeAddSubscription(dogs.filtered("age > 10"));
+    const catsSub = addSubscription(cats);
+    addSubscription(dogs.filtered("age > 10"));
 
     return () => {
-      executeRemoveSubscription(catsSub);
+      removeSubscription(catsSub);
     };
   }, []);
 
@@ -224,18 +224,18 @@ function SubscribedScreenIdeal() {
 
 // If not...
 function SubscribedScreenFallback() {
-  const { executeUpdateSubscriptions, updateSubscriptionsResult } = useSyncSubscriptions();
+  const { updateSubscriptions, updateSubscriptionsResult } = useSyncSubscriptions();
 
   useEffect(() => {
     let catsSub;
 
-    executeUpdateSubscriptions((mutableSubs) => {
+    updateSubscriptions((mutableSubs) => {
       catsSub = mutableSubs.add(cats);
       mutableSubs.add(dogs.filtered("age > 10"));
     });
 
     return () => {
-      executeUpdateSubscriptions((mutableSubs) => {
+      updateSubscriptions((mutableSubs) => {
         mutableSubs.removeSubscription(catsSub);
       });
     };
@@ -248,4 +248,28 @@ function SubscribedScreenFallback() {
       {cats.length} cats and {dogs.length} dogs
     </Text>
   );
+}
+
+// Hooks example
+
+import { useRef } from "react";
+
+export const useAddSubscription = () => {
+  const updates = useRef([]);
+  const waitingForFlush = useRef(false);
+
+  const addSubscription = (query: Realm.Results) => {
+    updates.current.push(query);
+
+    if (!waitingForFlush) {
+      waitingForFlush.current = true;
+      setImmediate(flush);
+    }
+  };
+};
+
+// Partition example
+
+function SubscribedScreenIdeal() {
+  const { setPartitionValue, setPartitionValueResult } = useSyncSubscriptions();
 }
