@@ -24,17 +24,17 @@ import { cachedCollection } from "./cachedCollection";
  * Generates the `useQuery` hook from a given `useRealm` hook.
  *
  * @param useRealm - Hook that returns an open Realm instance
- * @returns useObject - Hook that is used to gain access to a Realm collection
+ * @returns useObject - Hook that is used to gain access to a {@link Realm.Collection}
  */
 export function createUseQuery(useRealm: () => Realm) {
   /**
-   * Returns a collection of realm objects from a given type.
+   * Returns a {@link Realm.Collection} of {@link Realm.Object}s from a given type.
    * The hook will update on any changes to any object in the collection
    * and return an empty array if the colleciton is empty.
    *
    * The result of this can be consumed directly by the `data` argument of any React Native
-   * VirtualizedList or FlatList.  If the RenderItem component is a React.Memo, then a re-render
-   * will only occur on changes to the single object.
+   * VirtualizedList or FlatList.  If the component used for the list's `renderItem` prop is {@link React.Memo}ized,
+   * then only the modified object will re-render.
    *
    * @example
    * ```
@@ -49,9 +49,11 @@ export function createUseQuery(useRealm: () => Realm) {
    */
   return function useQuery<T>(type: string | ({ new (): T } & Realm.ObjectClass)): Realm.Results<T & Realm.Object> {
     const realm = useRealm();
+
     // Create a forceRerender function for the cachedCollection to use as its updateCallback, so that
     // the cachedCollection can force the component using this hook to re-render when a change occurs.
     const [, forceRerender] = useReducer((x) => x + 1, 0);
+
     // Wrap the cachedObject in useMemo, so we only replace it with a new instance if `primaryKey` or `type` change
     const { collection, tearDown } = useMemo(
       () => cachedCollection({ collection: realm.objects(type), updateCallback: forceRerender }),

@@ -23,9 +23,44 @@ function getCacheKey(id: string) {
   return `${id}`;
 }
 
-// Creates a proxy around a Realm.Collection that will update any objects
-// references on any relevant change (update, insert, deletion)
-// This fixes using a realm.object as a property for a component wrapped in React.memo
+/** 
+  * Arguments object for {@link cachedCollection}.
+  */
+type CachedCollectionArgs<T> = {
+  /**
+   * The {@link Realm.Collection} to proxy
+   */
+  collection: Realm.Collection<T>;
+  /**
+   * Callback which is called whenever an object in the collection changes
+   */
+  updateCallback: () => void;
+  /**
+   * Optional Map to be used as the cache. This is used to allow a `sorted` or `filtered`
+   * (derived) version of the collection to reuse the same cache, preventing excess new object
+   * references being created.
+   */
+  collectionCache?: Map<string, T>;
+  /**
+   * Optional flag specifying that this is a derived (`sorted` or `filtered`) version of 
+   * an existing collection, so we should not create or remove listeners or clear the cache
+   * when this is torn down.
+   */
+  isDerived?: boolean;
+};
+
+/**
+ * Creates a proxy around a {@link Realm.Collection} that will create new {@link Realm.Object}
+ * references on any relevant change (update, insert, deletion) and return the same
+ * object reference if no changes have occurred since the last access.
+ *
+ * This makes the {@link Realm.Collection} behave in an immutable way, as React expects, so
+ * that a {@link Realm.Object} can be wrapped in {@link React.memo} to prevent unnecessary
+ * rendering (see `useCollection` hook).
+ *
+ * @param args {@link CachedCollectionArgs} object arguments
+ * @returns Proxy object wrapping the collection
+ */
 export function cachedCollection<T extends Realm.Object>({
   collection,
   updateCallback,

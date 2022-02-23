@@ -19,15 +19,15 @@ import Realm from "realm";
 import { useContext } from "react";
 
 /**
- * Generates `useRealm` given a RealmContext.  This allows access to the Realm
+ * Generates a `useRealm` hook given a RealmContext.  This allows access to the {@link Realm}
  * instance anywhere within the RealmProvider.
  *
- * @param RealmContext - The context containing the Realm instance
- * @returns useRealm - Hook that is used to gain access to the Realm instance
+ * @param RealmContext - The context containing the {@link Realm} instance
+ * @returns useRealm - Hook that is used to gain access to the {@link Realm} instance
  */
 export const createUseRealm = (RealmContext: React.Context<Realm | null>) => {
   /**
-   * Returns the instance of the realm configured by `createRealmContext`
+   * Returns the instance of the {@link Realm} configured by `createRealmContext`
    *
    * @example
    * ```

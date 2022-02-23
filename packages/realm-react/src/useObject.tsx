@@ -32,18 +32,18 @@ type PrimaryKey = Parameters<typeof Realm.prototype.objectForPrimaryKey>[1];
  */
 export function createUseObject(useRealm: () => Realm) {
   /**
-   * Returns a realm object from a given type and primary key.
+   * Returns a {@link Realm.Object} from a given type and primary key.
    * The hook will update on any changes to the properties on the returned object
    * and return null if it either doesn't exists or has been deleted.
    *
    * @example
    * ```
-   * const object = useObject(Object, objectId);
+   * const object = useObject(ObjectClass, objectId);
    * ```
    *
-   * @param type - The object type, depicted by a string or a class extending Realm.Object
-   * @param primaryKey - The primary key of the desired object which will be retrieved using Realm#objectForPrimaryKey
-   * @returns either the desired realm object or null in the case of it being deleted or not existing.
+   * @param type - The object type, depicted by a string or a class extending {@link Realm.Object}
+   * @param primaryKey - The primary key of the desired object which will be retrieved using {@link Realm.objectForPrimaryKey}
+   * @returns either the desired {@link Realm.Object} or `null` in the case of it being deleted or not existing.
    */
   return function useObject<T>(type: string | { new (): T }, primaryKey: PrimaryKey): (T & Realm.Object) | null {
     const realm = useRealm();
