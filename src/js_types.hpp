@@ -203,8 +203,8 @@ struct Value {
     static String<T> to_string(ContextType, const ValueType&);
     static OwnedBinaryData to_binary(ContextType, const ValueType&);
     static bson::Bson to_bson(ContextType, ValueType);
-    static Mixed to_mixed(ContextType ctx, std::shared_ptr<Realm> realm, const ValueType &value,
-                          std::string &string_buffer, OwnedBinaryData &binary_buffer);
+    static Mixed to_mixed(ContextType ctx, std::shared_ptr<Realm> realm, const ValueType& value,
+                          std::string& string_buffer, OwnedBinaryData& binary_buffer);
 
 #define VALIDATED(return_t, type)                                                                                    \
     static return_t validated_to_##type(ContextType ctx, const ValueType& value, const char* name = nullptr)         \
@@ -875,7 +875,7 @@ inline bson::Bson Value<T>::to_bson(typename T::Context ctx, ValueType value)
 
 template <typename T>
 typename realm::Mixed Value<T>::to_mixed(ContextType ctx, std::shared_ptr<Realm> realm, const ValueType& value,
-                                         std::string &string_buffer, OwnedBinaryData &binary_buffer)
+                                         std::string& string_buffer, OwnedBinaryData& binary_buffer)
 {
     if (is_null(ctx, value) || is_undefined(ctx, value)) {
         return Mixed(realm::null());

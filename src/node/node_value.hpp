@@ -264,7 +264,7 @@ inline OwnedBinaryData node::Value::to_binary(Napi::Env env, const Napi::Value& 
 {
 
     // TODO:  this pointer is no good :(  It is never de-allocated
-    NodeBinary *node_binary = nullptr;
+    NodeBinary* node_binary = nullptr;
 
 
     if (value.IsDataView()) {
