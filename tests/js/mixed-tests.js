@@ -225,7 +225,7 @@ module.exports = {
     realm.close();
   },
 
-  // test Nixed datatype with binary data contents
+  // test Mixed datatype with binary data contents
   testMixedData() {
     const buffer1 = new Uint8Array([1, 2, 4, 8]).buffer;
     const buffer2 = new Uint8Array([255, 128, 64, 32, 16, 8]).buffer;
