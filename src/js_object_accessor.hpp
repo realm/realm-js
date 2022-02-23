@@ -488,7 +488,7 @@ struct Unbox<JSEngine, Mixed> {
                       ObjKey)
     {
         return js::Value<JSEngine>::to_mixed(ctx->m_ctx, ctx->m_realm, value,
-                                             ctx->m_string_buffer); // no need to validate type for a mixed value
+                                             ctx->m_string_buffer, ctx->m_owned_binary_data); // no need to validate type for a mixed value
     }
 };
 

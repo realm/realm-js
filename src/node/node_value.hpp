@@ -263,7 +263,8 @@ template <>
 inline OwnedBinaryData node::Value::to_binary(Napi::Env env, const Napi::Value& value)
 {
 
-    NodeBinary* node_binary = nullptr;
+    // TODO:  this pointer is no good :(  It is never de-allocated
+    NodeBinary *node_binary = nullptr;
 
 
     if (value.IsDataView()) {

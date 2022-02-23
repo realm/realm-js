@@ -224,4 +224,35 @@ module.exports = {
 
     realm.close();
   },
+
+  // test Nixed datatype with binary data contents
+  testMixedData() {
+    const buffer1 = new Uint8Array([1, 2, 4, 8]).buffer;
+    const buffer2 = new Uint8Array([255, 128, 64, 32, 16, 8]).buffer;
+
+    const MixedSchema = {
+      name: "MixedWithData",
+      properties: { value: "mixed" },
+    };
+
+    const realm = new Realm({ schema: [MixedSchema] });
+
+    realm.write(() => {
+      realm.create("MixedWithData", { value: buffer1 });
+    });
+
+    let mixedObjects = realm.objects("MixedWithData");
+    let returnedData = [...new Uint8Array(mixedObjects[0].value)];
+    TestCase.assertArraysEqual(returnedData, [1, 2, 4, 8]);
+
+    realm.write(() => {
+      mixedObjects[0].value = buffer2;
+    });
+
+    mixedObjects = realm.objects("MixedWithData");
+    returnedData = [...new Uint8Array(mixedObjects[0].value)];
+    TestCase.assertArraysEqual(returnedData, [255, 128, 64, 32, 16, 8]);
+
+    realm.close();
+  },
 };
