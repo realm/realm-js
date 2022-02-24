@@ -274,6 +274,7 @@ module.exports = {
       realm.deleteAll();
     });
 
+    // test with 32-bit values
     const uint32Values = [75025, 121393, 121393, 317811, 514229, 832040];
     const uint32Buffer = new Uint32Array(uint32Values).buffer;
     realm.write(() => {
