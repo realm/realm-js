@@ -11,7 +11,8 @@ const { useRealm, useQuery, RealmProvider } = TaskContext;
 
 function App() {
   const realm = useRealm();
-  const result = useQuery("Task");
+  const result = useQuery(Task);
+
   const tasks = useMemo(() => result.sorted("createdAt"), [result]);
 
   const handleAddTask = useCallback(
@@ -28,7 +29,7 @@ function App() {
       // of sync participants to successfully sync everything in the transaction, otherwise
       // no changes propagate and the transaction needs to start over when connectivity allows.
       realm.write(() => {
-        realm.create("Task", new Task({description}));
+        realm.create("Task", Task.generate(description));
       });
     },
     [realm],
