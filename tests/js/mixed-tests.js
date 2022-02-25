@@ -227,7 +227,7 @@ module.exports = {
 
   // test Mixed datatype with binary data contents
   testMixedData() {
-    const uint8Values1 = [1, 2, 4, 8];
+    const uint8Values1 = [0, 1, 2, 4, 8];
     const uint8Values2 = [255, 128, 64, 32, 16, 8];
     const uint8Buffer1 = new Uint8Array(uint8Values1).buffer;
     const uint8Buffer2 = new Uint8Array(uint8Values2).buffer;
@@ -260,7 +260,7 @@ module.exports = {
     });
 
     // test with 16-bit values
-    const uint16Values = [1024, 512, 256, 128];
+    const uint16Values = [0, 512, 256, 65535];
     const uint16Buffer = new Uint16Array(uint16Values).buffer;
     realm.write(() => {
       realm.create("MixedWithData", { value: uint16Buffer });
@@ -275,7 +275,7 @@ module.exports = {
     });
 
     // test with 32-bit values
-    const uint32Values = [75025, 121393, 121393, 317811, 514229, 832040];
+    const uint32Values = [0, 121393, 121393, 317811, 514229, 4294967295];
     const uint32Buffer = new Uint32Array(uint32Values).buffer;
     realm.write(() => {
       realm.create("MixedWithData", { value: uint32Buffer });
