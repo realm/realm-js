@@ -12,12 +12,12 @@ import colors from '../styles/colors';
 
 function AddTaskForm({onSubmit}) {
   const [description, setDescription] = useState('');
-
+  
   const handleSubmit = () => {
     onSubmit(description);
     setDescription('');
   };
-
+  
   return (
     <View style={styles.form}>
       <TextInput

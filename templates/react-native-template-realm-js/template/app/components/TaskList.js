@@ -1,6 +1,5 @@
 import React from 'react';
 import {View, FlatList, StyleSheet} from 'react-native';
-
 import TaskItem from './TaskItem';
 
 function TaskList({tasks, onToggleTaskStatus, onDeleteTask}) {
@@ -15,7 +14,6 @@ function TaskList({tasks, onToggleTaskStatus, onDeleteTask}) {
             isComplete={item.isComplete}
             onToggleStatus={() => onToggleTaskStatus(item)}
             onDelete={() => onDeleteTask(item)}
-            // Don't spread the Realm item as such: {...item}
           />
         )}
       />
