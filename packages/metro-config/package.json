@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "Metro config shared between our sub-packages, to support symbolic links",
   "main": "index.js",
+  "scripts": {
+    "lint": "eslint ."
+  },
   "dependencies": {
     "metro-config": "^0.66.2"
   }

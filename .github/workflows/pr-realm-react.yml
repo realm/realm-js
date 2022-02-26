@@ -32,9 +32,6 @@ jobs:
           node-version: 16
           registry-url: https://registry.npmjs.org/
 
-      - name: Install npm v7
-        run: npm install -g npm@7
-
       # Caches
       - uses: actions/cache@v2
         name: cached node_modules
@@ -52,15 +49,11 @@ jobs:
         run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
 
       - name: Install realm node dependencies
-        run: npm ci --ignore-scripts
+        run: npm ci
 
       - name: Prebuild release binary
         run: npx prebuild
 
-      - name: Bootstrap @realm.io/react
-        run: npx lerna bootstrap --scope @realm/react --include-dependencies
-        env:
-          npm_config_realm_local_prebuilds: ${{ github.workspace }}/prebuilds
       - name: Build realm react
         working-directory: packages/realm-react
         run: npm run build

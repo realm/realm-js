@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "pod-install": "pod-install",
     "start": "react-native start",
     "lint": "eslint .",
     "test": "npm run test:android && npm run test:ios",
@@ -21,8 +22,7 @@
     "common": "mocha-remote --context mode=$MODE,$MOCHA_REMOTE_CONTEXT --watch $WATCH -- concurrently --kill-others-on-fail npm:app-importer npm:metro npm:runner",
     "app-importer": "realm-app-importer serve ../../realm-apps",
     "metro": "react-native start --reset-cache",
-    "runner": "node harness/runner.js",
-    "prepare": "pod-install"
+    "runner": "node harness/runner.js"
   },
   "dependencies": {
     "@react-native-community/art": "^1.2.0",
@@ -45,7 +45,7 @@
     "metro-react-native-babel-preset": "^0.70.3",
     "mocha-github-actions-reporter": "^0.2.3",
     "mocha-remote-cli": "^1.5.0",
-    "pod-install": "^0.1.23",
+    "pod-install": "^0.1.35",
     "puppeteer": "^9.0.0",
     "realm-app-importer": "*"
   }

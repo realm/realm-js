@@ -93,3 +93,6 @@ integration-tests/**/.lock
 /realm*.tgz
 /tests/js/realm-tests*.tgz
 /react-native/ios/realm-js-ios.xcframework/
+
+# Turbo mono repo
+.turbo

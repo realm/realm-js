@@ -41,8 +41,9 @@ module.exports = {
   resolve: {
     extensions: [".ts", ".js"],
     fallback: {
-      crypto: false,
       fs: false,
+      // "bson" does a require("crypto")
+      crypto: false,
     },
   },
   output: {

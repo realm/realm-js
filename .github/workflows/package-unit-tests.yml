@@ -25,13 +25,9 @@ jobs:
           submodules: "recursive"
       - uses: actions/setup-node@v1
         with:
-          node-version: 14
+          node-version: 16
           registry-url: https://registry.npmjs.org/
-      - name: Install npm v7
-        run: npm install -g npm@7
       # Install the root package to get dev-dependencies
-      # (--ignore-scripts to avoid downloading or building the native module)
-      - run: npm ci --ignore-scripts
-      - run: npm run lerna:bootstrap -- --scope '{realm-network-transport,@realm.io/common}' --include-dependencies
-      - run: npm test --prefix packages/realm-network-transport
-      - run: npm test --prefix packages/realm-common
+      - run: npm ci
+      - run: npm test --workspace realm-network-transport
+      - run: npm test --workspace @realm/common

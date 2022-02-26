@@ -267,8 +267,8 @@ set_nvm_default() {
   fi
 }
 
-# use npm v7
-npm install -g npm@7
+# use npm v8
+npm install -g npm@8
 
 # Remove cached packages
 rm -rf ~/.yarn-cache/npm-realm-*

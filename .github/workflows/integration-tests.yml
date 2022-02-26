@@ -50,10 +50,8 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           registry-url: https://registry.npmjs.org/
-      - name: Install npm v7
-        # TODO: Remove the following line once we've found a workaround for https://github.com/dotnet/msbuild/issues/5726
-        if: ${{ runner.os != 'Windows' }}
-        run: npm install -g npm@7
+      - name: Install npm v8
+        run: npm install -g npm@8
       # The following is a noop on non-windows runners
       - name: Install Microsoft Visual C++ cmd tools
         uses: ilammy/msvc-dev-cmd@v1
@@ -78,9 +76,8 @@ jobs:
           key: node-${{ runner.os }}-${{ matrix.type }}
       - name: Prepend ccache executables to the PATH
         run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
-
-      # Install the root package (--ignore-scripts to avoid downloading or building the native module)
-      - run: npm ci --ignore-scripts
+      # Install dependencies of all workspaces
+      - run: npm ci
       # Build the native module
       - name: Prebuild release binary
         run: npx prebuild
@@ -88,12 +85,10 @@ jobs:
       - name: Prebuild debug binary
         run: npx prebuild --debug
         if: ${{ matrix.type == 'debug' }}
-      # Bootstrap lerna sub-packages (builds lerna packages and uses the prebuild native module)
-      - run: npx lerna bootstrap --scope realm-node-tests --include-dependencies
-        env:
-          npm_config_realm_local_prebuilds: ${{ github.workspace }}/prebuilds
+      # Build the tests
+      - run: npm run build --workspace @realm/integration-tests
       # Run tests
-      - run: npm test --prefix integration-tests/environments/node
+      - run: npm test --workspace realm-node-tests
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
@@ -106,7 +101,7 @@ jobs:
           submodules: "recursive"
       - uses: actions/setup-node@v1
         with:
-          node-version: 14
+          node-version: 16
           registry-url: https://registry.npmjs.org/
 
       # Caches
@@ -124,25 +119,21 @@ jobs:
       - name: Prepend ccache executables to the PATH
         run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
 
-      - name: Install npm v7
-        run: npm install -g npm@7
-      # Install the root package (--ignore-scripts to avoid downloading or building the native module)
-      - run: npm ci --ignore-scripts
+      # Install dependencies of all workspaces
+      - run: npm ci
       # Build the native module
       - name: Prebuild release binary
         run: npx prebuild
-      # Bootstrap lerna sub-packages (builds the packages and Realm JS native module)
-      - run: npx lerna bootstrap --scope realm-electron-tests --include-dependencies
-        env:
-          npm_config_realm_local_prebuilds: ${{ github.workspace }}/prebuilds
+      # Build the tests
+      - run: npm run build --workspace @realm/integration-tests
       # Run tests (using xvfb-run to enable opening windows in a virtual framebuffer)
       - name: Run tests (Electron / Main)
-        run: xvfb-run npm run test:main --prefix integration-tests/environments/electron
+        run: xvfb-run npm run test:main --workspace realm-electron-tests
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
       - name: Run tests (Electron / Renderer)
-        run: xvfb-run npm run test:renderer --prefix integration-tests/environments/electron
+        run: xvfb-run npm run test:renderer --workspace realm-electron-tests
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
@@ -170,10 +161,8 @@ jobs:
           submodules: "recursive"
       - uses: actions/setup-node@v1
         with:
-          node-version: 14
+          node-version: 16
           registry-url: https://registry.npmjs.org/
-      - name: Install npm v7
-        run: npm install -g npm@7
       # Setup tools
       - name: Install tools
         run: brew install watchman
@@ -199,16 +188,20 @@ jobs:
       # TODO: Expose a way to skip building the Node.js native module
       - name: Patch package.json to avoid building Node.js native module
         run: cat <<< $(jq '.scripts.install = "echo skipping building Node.js binary"' < package.json) > package.json
+      # Install dependencies of all workspaces
       - run: npm ci
       # Build the iOS xcframework
       - run: ./scripts/build-ios.sh -c ${{ matrix.type }} ${{matrix.platform.build-configuration}}
-      # Bootstrap lerna sub-packages (builds the packages, the Realm JS native module and pod install)
-      - run: npx lerna bootstrap --scope realm-react-native-tests --include-dependencies
+      # Perform a pod-install in the test app
+      - run: npm run pod-install --workspace realm-react-native-tests
+      # Build the tests
+      - run: npm run build --workspace @realm/integration-tests
+      # Open the simulator as a workaround
       - name: Invoke the simulator (making subsequent "open -a Simulator" calls work)
         run: open -a ${{ env.DEVELOPER_DIR }}/Contents/Developer/Applications/Simulator.app/Contents/MacOS/Simulator
       # Run the tests
       - name: Run tests (${{matrix.platform.name}}/ Native)
-        run: npm run test:${{matrix.platform.name}} --prefix integration-tests/environments/react-native
+        run: npm run test:${{matrix.platform.name}} --workspace realm-react-native-tests
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
@@ -217,7 +210,7 @@ jobs:
           RETRY_DELAY: 300000 # 5 min
       - name: Run tests (${{matrix.platform.name}} / Chrome Debugging)
         if: ${{ false }}
-        run: npm run test:${{matrix.platform.name}}:chrome --prefix integration-tests/environments/react-native
+        run: npm run test:${{matrix.platform.name}}:chrome --workspace realm-react-native-tests
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
@@ -241,10 +234,8 @@ jobs:
           submodules: "recursive"
       - uses: actions/setup-node@v1
         with:
-          node-version: 14
+          node-version: 16
           registry-url: https://registry.npmjs.org/
-      - name: Install npm v7
-        run: npm install -g npm@7
       # Setup tools
       - name: Install tools
         run: brew install watchman
@@ -277,13 +268,13 @@ jobs:
       # TODO: Expose a way to skip building the Node.js native module
       - name: Patch package.json to avoid building Node.js native module
         run: cat <<< $(jq '.scripts.install = "echo skipping building Node.js binary"' < package.json) > package.json
-      # Install the root package
+      # Install dependencies of all workspaces
       - run: npm ci
         if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
       # Build the Android shared object file
       - run: ANDROID_NDK=$ANDROID_NDK_HOME node scripts/build-android.js --arch=x86 --build-type=${{ matrix.type }}
-      # Bootstrap lerna sub-packages (builds the packages, the Realm JS native module and pod install)
-      - run: npx lerna bootstrap --scope realm-react-native-tests --include-dependencies
+      # Build the tests
+      - run: npm run build --workspace @realm/integration-tests
       # Run the tests
       - name: Run tests (Android / Native)
         uses: reactivecircus/android-emulator-runner@v2
@@ -292,7 +283,7 @@ jobs:
           # ndk: 21.0.6113669
           # cmake: 3.18.1
           target: google_apis
-          script: npm run test:android --prefix integration-tests/environments/react-native
+          script: npm run test:android --workspace realm-react-native-tests
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
@@ -304,7 +295,7 @@ jobs:
         with:
           api-level: 29
           target: google_apis
-          script: npm run test:android:chrome --prefix integration-tests/environments/react-native
+          script: npm run test:android:chrome --workspace realm-react-native-tests
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
           MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter

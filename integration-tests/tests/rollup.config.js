@@ -19,7 +19,8 @@
 export default [
   {
     // See ./src/bench/README.md for details
-    input: "node_modules/@thi.ng/bench/index.js",
+    // Ideally we'd use require.resolve to locate this file - but that proved difficult
+    input: "../../node_modules/@thi.ng/bench/index.js",
     output: {
       file: "src/bench/rolledup.js",
       format: "cjs",
