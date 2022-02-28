@@ -227,8 +227,10 @@ module.exports = {
 
   // test Mixed datatype with binary data contents
   testMixedData() {
-    const buffer1 = new Uint8Array([1, 2, 4, 8]).buffer;
-    const buffer2 = new Uint8Array([255, 128, 64, 32, 16, 8]).buffer;
+    const uint8Values1 = [0, 1, 2, 4, 8];
+    const uint8Values2 = [255, 128, 64, 32, 16, 8];
+    const uint8Buffer1 = new Uint8Array(uint8Values1).buffer;
+    const uint8Buffer2 = new Uint8Array(uint8Values2).buffer;
 
     const MixedSchema = {
       name: "MixedWithData",
@@ -238,20 +240,50 @@ module.exports = {
     const realm = new Realm({ schema: [MixedSchema] });
 
     realm.write(() => {
-      realm.create("MixedWithData", { value: buffer1 });
+      realm.create("MixedWithData", { value: uint8Buffer1 });
     });
 
     let mixedObjects = realm.objects("MixedWithData");
     let returnedData = [...new Uint8Array(mixedObjects[0].value)];
-    TestCase.assertArraysEqual(returnedData, [1, 2, 4, 8]);
+    TestCase.assertArraysEqual(returnedData, uint8Values1);
 
     realm.write(() => {
-      mixedObjects[0].value = buffer2;
+      mixedObjects[0].value = uint8Buffer2;
     });
 
     mixedObjects = realm.objects("MixedWithData");
     returnedData = [...new Uint8Array(mixedObjects[0].value)];
-    TestCase.assertArraysEqual(returnedData, [255, 128, 64, 32, 16, 8]);
+    TestCase.assertArraysEqual(returnedData, uint8Values2);
+
+    realm.write(() => {
+      realm.deleteAll();
+    });
+
+    // test with 16-bit values
+    const uint16Values = [0, 512, 256, 65535];
+    const uint16Buffer = new Uint16Array(uint16Values).buffer;
+    realm.write(() => {
+      realm.create("MixedWithData", { value: uint16Buffer });
+    });
+
+    const uint16Objects = realm.objects("MixedWithData");
+    returnedData = [...new Uint16Array(uint16Objects[0].value)];
+    TestCase.assertArraysEqual(returnedData, uint16Values);
+
+    realm.write(() => {
+      realm.deleteAll();
+    });
+
+    // test with 32-bit values
+    const uint32Values = [0, 121393, 121393, 317811, 514229, 4294967295];
+    const uint32Buffer = new Uint32Array(uint32Values).buffer;
+    realm.write(() => {
+      realm.create("MixedWithData", { value: uint32Buffer });
+    });
+
+    const uint32Objects = realm.objects("MixedWithData");
+    returnedData = [...new Uint32Array(uint32Objects[0].value)];
+    TestCase.assertArraysEqual(returnedData, uint32Values);
 
     realm.close();
   },
