@@ -11,6 +11,8 @@ convert() {
   pushd $1
   # The Babel config causes detype to output non-ES2015 JS, so temporarily hide it
   mv babel.config.js babel.config.js.ignore
+  # Delete any generated JS files in the target directory in case we have renamed or deleted something
+  find $2/app -name "*.js" -exec rm {} +
   # Strip types from every .ts* file (except those in node_modules) and write the output
   # to the corresponding file in react-native-template-realm-js, with the extension changed
   # to ".js" (regardless of whether the original was ".tsx" or ".ts")
