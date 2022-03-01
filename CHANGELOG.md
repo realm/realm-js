@@ -4,9 +4,12 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * Fixed issue that could cause mangling of binary data on a roundtrip to/from the database ([#4278](https://github.com/realm/realm-js/issues/4278), since v10.1.4).
-
+* Fixed a fatal sync error `Automatic recovery failed` during DiscardLocal client reset if the reset notifier callbacks were not set to something. ([realm/realm-core#5223](https://github.com/realm/realm-core/issues/5223), since v10.10.0)
+* Changed parsed queries using the `between` operator to be inclusive of the limits, a closed interval instead of an open interval. This is to conform to the published documentation and for parity with NSPredicate's definition. ([realm/realm-core#5262](https://github.com/realm/realm-core/issues/5262), since v10.7.0)
+* If a list of objects contains links to objects not included in the synchronized partition, the indices contained in the listener callback may be wrong. ([realm/realm-core#5164](https://github.com/realm/realm-core/issues/5164), since v10.0.0)
+* Converting floats/doubles into Decimal128 would yield imprecise results. ([realm/realm-core#5184](https://github.com/realm/realm-core/pull/5184), since v6.1.3)
+* Using accented characters in class and property names may end the sync session ([realm/realm-core#5196](https://github.com/realm/realm-core/pull/5196), since v10.3.0-rc.1)
 ### Compatibility
 * MongoDB Realm Cloud.
 * Realm Studio v11.0.0.
@@ -14,11 +17,9 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Upgraded Realm Core from v11.9.0 to v11.10.0
 
-10.13.0 Release notes (2022-2-11) 
+10.13.0 Release notes (2022-2-11)
 =============================================================
 ### Enhancements
 * Added `Realm.App#deleteUser(user)` to delete a sync user from a MongoDB Realm app. ([#4006](https://github.com/realm/realm-js/issues/4006))

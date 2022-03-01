@@ -78,7 +78,7 @@ public:
 
     void delegate()
     {
-        m_scheduler->set_notify_callback([this] {
+        m_queue->push([this] {
             std::queue<Entry> popped;
             {
                 std::lock_guard<std::mutex> lock(m_mutex); // Throws
@@ -103,12 +103,12 @@ protected:
         auto entry = std::make_pair(level, message);
 
         m_log_queue.push(entry);
-        m_scheduler->notify();
+        m_queue->invoke_all();
     }
 
 private:
     std::queue<Entry> m_log_queue;
-    std::shared_ptr<realm::util::Scheduler> m_scheduler = realm::util::Scheduler::make_default();
+    std::shared_ptr<realm::util::InvocationQueue> m_queue;
     std::mutex m_mutex;
     Delegated loggerDelegate;
 };
