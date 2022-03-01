@@ -48,8 +48,8 @@ struct RPCNetworkTransport : public app::GenericNetworkTransport {
     using Value = js::Value<T>;
     using Function = js::Function<T>;
 
-    using SendRequestHandler = void(ContextType m_ctx, const app::Request request,
-                                    std::function<void(const app::Response)> completion_callback);
+    using SendRequestHandler = void(ContextType m_ctx, app::Request&& request,
+                                    util::UniqueFunction<void(const app::Response&)>&& completion_callback);
 
     static inline js::Protected<FunctionType> fetch_function;
 
@@ -58,8 +58,8 @@ struct RPCNetworkTransport : public app::GenericNetworkTransport {
     {
     }
 
-    void send_request_to_server(const app::Request request,
-                                std::function<void(const app::Response)> completion_callback) override
+    void send_request_to_server(app::Request&& request,
+                                util::UniqueFunction<void(const app::Response&)>&& completion_callback) override
     {
         // Build up a JS request object
         auto request_object = js::JavaScriptNetworkTransport<T>::makeRequest(m_ctx, request);
