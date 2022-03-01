@@ -11,7 +11,7 @@ Simple Expo template to quickly get started with Realm.
 ## 🚀 How to use
 
 ```
-npx expo-cli MyAwesomeRealmApp -t @realm/expo-template-js
+npx expo-cli init MyAwesomeRealmApp -t @realm/expo-template-js
 ```
 
 - Run `expo start --dev-client`, try it out.
