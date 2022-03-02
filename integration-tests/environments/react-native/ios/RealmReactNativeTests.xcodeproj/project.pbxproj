@@ -145,7 +145,6 @@
 				28EEFD6D8CDFD1BB83EACBFB /* Pods-RealmReactNativeTests-RealmReactNativeTestsTests.debug.xcconfig */,
 				2D0346F1D8D9132E641D8E6F /* Pods-RealmReactNativeTests-RealmReactNativeTestsTests.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -489,6 +488,12 @@
 				CURRENT_PROJECT_VERSION = 1;
 				CXX = "../../../../scripts/ccache-clang++.sh";
 				ENABLE_BITCODE = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"COCOAPODS=1",
+					"FB_SONARKIT_ENABLED=1",
+					"FOLLY_NO_CONFIG=1",
+				);
 				INFOPLIST_FILE = RealmReactNativeTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
