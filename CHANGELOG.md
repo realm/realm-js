@@ -15,6 +15,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Fixed analytics to read the `realm/package.json` when installing from the root of the package.
+* Fixed React Native Android integration test harness to read only one pid when starting logcat.
 * <Either mention core version or upgrade>
 * <Using Realm Core vX.Y.Z>
 * <Upgraded Realm Core from vX.Y.Z to vA.B.C>
