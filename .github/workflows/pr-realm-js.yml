@@ -226,7 +226,6 @@ jobs:
   baas-realm-js:
     runs-on: ubuntu-latest
     name: Deploy MDB Realm for realm js
-    if: ${{ false }}
     outputs:
       clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
@@ -242,15 +241,13 @@ jobs:
 
   integration-tests:
     name: Integration tests for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
-    needs: [build-and-test]
-    #needs: [build-and-test, baas-realm-js]
+    #needs: [build-and-test]
+    needs: [build-and-test, baas-realm-js]
     env:
       REALM_DISABLE_ANALYTICS: 1
-      MOCHA_REMOTE_TIMEOUT: 500000
+      MOCHA_REMOTE_TIMEOUT: 10000
       CLUSTER_NAME: ${{ needs.baas-realm-js.outputs.clusterName }}
-      #Sync tests temporarily disabled because they fail
-      #MOCHA_REMOTE_CONTEXT: realmBaseUrl=${{ secrets.REALM_BASE_URL }},mongodbClusterName=${{ needs.baas-realm-js.outputs.clusterName }},skipFlexibleSync
-      MOCHA_REMOTE_CONTEXT: missingServer
+      MOCHA_REMOTE_CONTEXT: realmBaseUrl=${{ secrets.REALM_BASE_URL }},mongodbClusterName=${{ needs.baas-realm-js.outputs.clusterName }},skipFlexibleSync
       MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
       MOCHA_REMOTE_EXIT_ON_ERROR: true
       REALM_BASE_URL: ${{ secrets.REALM_BASE_URL }}
@@ -259,7 +256,7 @@ jobs:
       SPAWN_LOGCAT: true
       HEADLESS_DEBUGGER: true
       RETRIES: 5
-      RETRY_DELAY: 500000 # 5 min
+      RETRY_DELAY: 500000 # 10 min
       # Pin the Xcode version
       DEVELOPER_DIR: /Applications/Xcode_12.5.1.app
     runs-on: ${{ matrix.variant.runner }}
@@ -384,8 +381,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Cleanup realm js
     needs: [baas-realm-js, integration-tests]
-    if: ${{ false }}
-    #if: always()
+    if: always()
     timeout-minutes: 10
     steps:
       - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56
