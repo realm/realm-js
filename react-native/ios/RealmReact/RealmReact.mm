@@ -161,15 +161,6 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
     }
 }
 
-- (NSArray<NSString *> *)supportedEvents
-{
-  return @[@"RealmDummy"];
-}
-
-- (void)sendDummyEvent {
-    [self sendEventWithName:@"RealmDummy" body:@{}];
-}
-
 #if DEBUG
 - (NSArray *)getIPAddresses {
     static const char * const wifiInterface = "en0";
