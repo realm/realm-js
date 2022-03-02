@@ -27,7 +27,7 @@ describe.skipIf(environment.missingServer, "importApp utility", function () {
     const app = await importApp("simple");
     expect(app).instanceOf(App);
     expect(app.id.startsWith("simple")).to.be.true;
-  }).timeout(10000);
+  }).timeout(2 * 60 * 1000); // This may take a long time when running against a real server
 
   it("throws on unexpected app names", async () => {
     let threw = false;
