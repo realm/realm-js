@@ -347,10 +347,12 @@ module.exports = {
       }
     });
 
-    let range = realm.objects(intSchema.name).filtered("value BETWEEN {5, 8}"); // 6, 7
-    TestCase.assertEqual(range.length, 2);
-    TestCase.assertEqual(range[0].value, 6);
-    TestCase.assertEqual(range[1].value, 7);
+    let range = realm.objects(intSchema.name).filtered("value BETWEEN {5, 8}"); // 5, 6, 7, 8
+    TestCase.assertEqual(range.length, 4);
+    TestCase.assertEqual(range[0].value, 5);
+    TestCase.assertEqual(range[1].value, 6);
+    TestCase.assertEqual(range[2].value, 7);
+    TestCase.assertEqual(range[3].value, 8);
 
     realm.close();
   },

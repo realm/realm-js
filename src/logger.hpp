@@ -76,9 +76,19 @@ public:
     SyncLoggerDelegator(Delegated&& delegate)
         : loggerDelegate(delegate){};
 
-    void delegate()
+    void delegate() {}
+
+protected:
+    void do_log(LoggerLevel level, const std::string& message)
     {
-        m_queue->push([this] {
+        std::lock_guard<std::mutex> lock(m_mutex);
+
+        // TODO we are coupling core with JS here, change to string use hashmap
+        // map_level.
+        auto entry = std::make_pair(level, message);
+
+        m_log_queue.push(entry);
+        m_scheduler->invoke([this] {
             std::queue<Entry> popped;
             {
                 std::lock_guard<std::mutex> lock(m_mutex); // Throws
@@ -93,22 +103,9 @@ public:
         });
     }
 
-protected:
-    void do_log(LoggerLevel level, const std::string& message)
-    {
-        std::lock_guard<std::mutex> lock(m_mutex);
-
-        // TODO we are coupling core with JS here, change to string use hashmap
-        // map_level.
-        auto entry = std::make_pair(level, message);
-
-        m_log_queue.push(entry);
-        m_queue->invoke_all();
-    }
-
 private:
     std::queue<Entry> m_log_queue;
-    std::shared_ptr<realm::util::InvocationQueue> m_queue;
+    std::shared_ptr<util::Scheduler> m_scheduler = util::Scheduler::make_default();
     std::mutex m_mutex;
     Delegated loggerDelegate;
 };
