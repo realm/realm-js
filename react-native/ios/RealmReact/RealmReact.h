@@ -23,7 +23,7 @@
 #import <React/RCTEventEmitter.h>
 
 #import <memory>
-#import <cxxreact/Instance.h>
+//#import <cxxreact/Instance.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,7 +43,7 @@ JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool cre
 
 @interface RCTBridge() {
     @public
-    std::shared_ptr<Instance> _reactInstance;
+//    std::shared_ptr<Instance> _reactInstance;
 }
 @end
 
