@@ -381,8 +381,9 @@ public:
     static void bson_parse_json(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     // helper methods
-    static realm::Realm::Config write_copy_to_helper(ContextType ctx, ObjectType this_object, Arguments &args);
-    static realm::Realm::Config write_copy_to_helper_deprecated(ContextType ctx, ObjectType this_object, Arguments &args);
+    static realm::Realm::Config write_copy_to_helper(ContextType ctx, ObjectType this_object, Arguments& args);
+    static realm::Realm::Config write_copy_to_helper_deprecated(ContextType ctx, ObjectType this_object,
+                                                                Arguments& args);
 
 
     // static properties
@@ -1391,14 +1392,15 @@ void RealmClass<T>::compact(ContextType ctx, ObjectType this_object, Arguments& 
 
 /**
  * @brief Helper function for `writeCopyTo()` -- parses and validated parameters in a config structure passed from JS
- * 
+ *
  * @param ctx JS context
  * @param this_object JS's object holding the `RealmClass`
  * @param args Arguments passed to `writeCopyTo()` from JS
  * @return realm::Realm::Config A new `Realm::Config` holding the properties of the object passed from JS
  */
 template <typename T>
-realm::Realm::Config RealmClass<T>::write_copy_to_helper(ContextType ctx, ObjectType this_object, Arguments &args) {
+realm::Realm::Config RealmClass<T>::write_copy_to_helper(ContextType ctx, ObjectType this_object, Arguments& args)
+{
     /* Validation rules:
      * 1) only one parameter
      * 2) args[0] must be an object
@@ -1456,15 +1458,18 @@ realm::Realm::Config RealmClass<T>::write_copy_to_helper(ContextType ctx, Object
 }
 
 /**
- * @brief Helper function for `writeCopyTo()` -- parses parameters for the deprecated <path, [encryption key]> invocation
- * 
+ * @brief Helper function for `writeCopyTo()` -- parses parameters for the deprecated <path, [encryption key]>
+ * invocation
+ *
  * @param ctx JS context
  * @param this_object JS's object holding the `RealmClass`
  * @param args Arguments passed to `writeCopyTo()` from JS
  * @return realm::Realm::Config A new `Realm::Config` containing the given parameters
  */
 template <typename T>
-realm::Realm::Config RealmClass<T>::write_copy_to_helper_deprecated(ContextType ctx, ObjectType this_object, Arguments &args) {
+realm::Realm::Config RealmClass<T>::write_copy_to_helper_deprecated(ContextType ctx, ObjectType this_object,
+                                                                    Arguments& args)
+{
     /* Validation rules:
      * 1) there must be one or two parameters
      * 2) first parameter must be a string
@@ -1474,8 +1479,7 @@ realm::Realm::Config RealmClass<T>::write_copy_to_helper_deprecated(ContextType 
     realm::Realm::Config config;
     // validate 1)
     if (args.count != 1 && args.count != 2) {
-        throw std::runtime_error(
-            "`writeCopyTo(<path>, [encryption key])` accepts exactly one or two paramaters");
+        throw std::runtime_error("`writeCopyTo(<path>, [encryption key])` accepts exactly one or two paramaters");
     }
 
     // validate 2)
@@ -1517,7 +1521,7 @@ realm::Realm::Config RealmClass<T>::write_copy_to_helper_deprecated(ContextType 
  * @param return_value none
  */
 template <typename T>
-void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue &return_value)
+void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
 {
     /*
         This method supports anything -> anything conversion, but different backend calls are needed
@@ -1541,13 +1545,14 @@ void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Argumen
 
     realm::Realm::Config config;
     if (args.count == 0) {
-        throw std::runtime_error("`writeCopyTo` requires <output configuration> or <path, [encryptionKey]> parameters");
+        throw std::runtime_error(
+            "`writeCopyTo` requires <output configuration> or <path, [encryptionKey]> parameters");
     }
 
     if (args.count == 1 && !Value::is_string(ctx, args[0])) {
         config = write_copy_to_helper(ctx, this_object, args);
-
-    } else {
+    }
+    else {
         config = write_copy_to_helper_deprecated(ctx, this_object, args);
     }
 
@@ -1556,11 +1561,11 @@ void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Argumen
 
     if (realm_is_synced && !copy_is_synced) {
         // case 3)
-        Group &group = realm->read_group();
+        Group& group = realm->read_group();
         group.write(config.path, config.encryption_key.empty() ? nullptr : config.encryption_key.data());
         return;
-
-    } else if (realm_is_synced && copy_is_synced) {
+    }
+    else if (realm_is_synced && copy_is_synced) {
         // case 4)
         BinaryData binary_encryption_key;
         if (!config.encryption_key.empty()) {

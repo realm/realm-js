@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* `Realm.writeCopyTo()` can now be invoked with a `Realm.Configuration` as parameter, which will create a copy of the Realm the conforms to the given configuration -- this allows for a much wider range of conversions between synced/local Realms and encrypted/non-encrypted Realms.
 
 ### Fixed
 * Fixed issue that could cause mangling of binary data on a roundtrip to/from the database ([#4278](https://github.com/realm/realm-js/issues/4278), since v10.1.4).
