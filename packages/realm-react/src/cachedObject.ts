@@ -16,10 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import Realm from "realm";
-import { cachedCollection } from "./cachedCollection";
+import { createCachedCollection } from "./cachedCollection";
 
-<<<<<<< HEAD
-=======
 /**
  * Arguments object for `cachedObject`.
  */
@@ -47,8 +45,7 @@ type CachedObjectArgs<T> = {
  * @param args - {@link CachedObjectArgs} object arguments
  * @returns Proxy object wrapping the {@link Realm.Object}
  */
->>>>>>> andrew/realmreact-docs
-export function cachedObject<T extends Realm.Object>({
+export function createCachedObject<T extends Realm.Object>({
   object,
   updateCallback,
 }: {
@@ -81,7 +78,7 @@ export function cachedObject<T extends Realm.Object>({
           // only the modified children of the list component actually re-render.
           return new Proxy(listCaches.get(key), {});
         }
-        const { collection, tearDown } = cachedCollection({ collection: value, updateCallback });
+        const { collection, tearDown } = createCachedCollection({ collection: value, updateCallback });
         // Add to a list of teardowns which will be invoked when the cachedObject's teardown is called
         listTearDowns.push(tearDown);
         // Store the proxied list into a map to persist the cachedCollection

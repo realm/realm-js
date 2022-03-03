@@ -23,9 +23,7 @@ function getCacheKey(id: string) {
   return `${id}`;
 }
 
-<<<<<<< HEAD
-=======
-/** 
+/**
   * Arguments object for {@link cachedCollection}.
   */
 type CachedCollectionArgs<T> = {
@@ -44,7 +42,7 @@ type CachedCollectionArgs<T> = {
    */
   collectionCache?: Map<string, T>;
   /**
-   * Optional flag specifying that this is a derived (`sorted` or `filtered`) version of 
+   * Optional flag specifying that this is a derived (`sorted` or `filtered`) version of
    * an existing collection, so we should not create or remove listeners or clear the cache
    * when this is torn down.
    */
@@ -58,22 +56,21 @@ type CachedCollectionArgs<T> = {
  *
  * This makes the {@link Realm.Collection} behave in an immutable way, as React expects, so
  * that a {@link Realm.Object} can be wrapped in {@link React.memo} to prevent unnecessary
- * rendering (see `useCollection` hook).
+ * rendering (see {@link useQuery} hook).
  *
  * @param args {@link CachedCollectionArgs} object arguments
  * @returns Proxy object wrapping the collection
  */
->>>>>>> andrew/realmreact-docs
-export function cachedCollection<T extends Realm.Object>({
+export function createCachedCollection<T extends Realm.Object>({
   collection,
   updateCallback,
-  collectionCache = new Map(),
-  isFirst = true,
+  objectCache = new Map(),
+  isDerived = false,
 }: {
   collection: Realm.Collection<T>;
   updateCallback: () => void;
-  collectionCache?: Map<string, T>;
-  isFirst?: boolean;
+  objectCache?: Map<string, T>;
+  isDerived?: boolean;
 }): { collection: Realm.Collection<T>; tearDown: () => void } {
   const cachedCollectionHandler: ProxyHandler<Realm.Collection<T & Realm.Object>> = {
     get: function (target, key) {
@@ -83,11 +80,11 @@ export function cachedCollection<T extends Realm.Object>({
         if (key === "sorted" || key === "filtered") {
           return (...args: unknown[]) => {
             const col: Realm.Results<T & Realm.Object> = Reflect.apply(value, target, args);
-            const { collection: newCol } = cachedCollection({
+            const { collection: newCol } = createCachedCollection({
               collection: col,
               updateCallback,
-              collectionCache,
-              isFirst: false,
+              objectCache,
+              isDerived: true,
             });
             return newCol;
           };
@@ -107,13 +104,13 @@ export function cachedCollection<T extends Realm.Object>({
       const cacheKey = getCacheKey(objectId);
 
       // If we do, return it...
-      if (collectionCache.get(cacheKey)) {
-        return collectionCache.get(cacheKey);
+      if (objectCache.get(cacheKey)) {
+        return objectCache.get(cacheKey);
       }
 
       // If not then this index has either not been accessed before, or has been invalidated due
       // to a modification. Fetch it from the collection and store it in the cache
-      collectionCache.set(cacheKey, object);
+      objectCache.set(cacheKey, object);
 
       return object;
     },
@@ -121,34 +118,31 @@ export function cachedCollection<T extends Realm.Object>({
 
   const cachedCollectionResult = new Proxy(collection, cachedCollectionHandler);
 
-<<<<<<< HEAD
-  const listenerCallback: Realm.CollectionChangeCallback<T> = (listenerCollection, changes) => {
-=======
   const listenerCallback: Realm.CollectionChangeCallback<(T & Realm.Object) | (unknown & Realm.Object)> = (
     listenerCollection,
     changes,
   ) => {
->>>>>>> andrew/realmreact-docs
     if (changes.deletions.length > 0 || changes.insertions.length > 0 || changes.newModifications.length > 0) {
       // TODO: There is currently no way to rebuild the cache key from the changes array for deleted object.
       // Until it is possible, we clear the cache on deletions.
+      // Blocking issue: https://github.com/realm/realm-core/issues/5220
 
       // Possible solutions:
-      // a. the listenerCollection is a frozen snapshot of the collection before the deletion,
+      // a. the listenerCollection is a frozen copy of the collection before the deletion,
       // allowing accessing the _objectId() using listenerCollection[index]._objectId()
       // b. the callback provides an array of changed objectIds
 
       if (changes.deletions.length > 0) {
-        collectionCache.clear();
+        objectCache.clear();
       }
 
       // Item(s) were modified, just clear them from the cache so that we return new instances for them
-      changes.newModifications.reverse().forEach((index) => {
+      changes.newModifications.forEach((index) => {
         const objectId = listenerCollection[index]._objectId();
         if (objectId) {
           const cacheKey = getCacheKey(objectId);
-          if (collectionCache.has(cacheKey)) {
-            collectionCache.delete(cacheKey);
+          if (objectCache.has(cacheKey)) {
+            objectCache.delete(cacheKey);
           }
         }
       });
@@ -157,14 +151,14 @@ export function cachedCollection<T extends Realm.Object>({
     }
   };
 
-  if (isFirst) {
+  if (!isDerived) {
     cachedCollectionResult.addListener(listenerCallback);
   }
 
   const tearDown = () => {
-    if (isFirst) {
+    if (!isDerived) {
       collection.removeListener(listenerCallback);
-      collectionCache.clear();
+      objectCache.clear();
     }
   };
 

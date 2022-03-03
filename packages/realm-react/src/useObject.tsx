@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 import Realm from "realm";
 import { useEffect, useReducer, useMemo } from "react";
-import { cachedObject } from "./cachedObject";
+import { createCachedObject } from "./cachedObject";
 
 // In order to make @realm/react work with older version of realms
 // This pulls the type for PrimaryKey out of the call signature of `objectForPrimaryKey`
@@ -57,13 +57,16 @@ export function createUseObject(useRealm: () => Realm) {
       // TODO: There will be an upcoming breaking change that makes objectForPrimaryKey return null
       // When this is implemented, remove `?? null`
       () =>
-        cachedObject({ object: realm.objectForPrimaryKey(type, primaryKey) ?? null, updateCallback: forceRerender }),
+        createCachedObject({
+          object: realm.objectForPrimaryKey(type, primaryKey) ?? null,
+          updateCallback: forceRerender,
+        }),
       [type, realm, primaryKey],
     );
 
     // Invoke the tearDown of the cachedObject when useObject is unmounted
     useEffect(() => {
-      return () => tearDown();
+      return tearDown;
     }, [tearDown]);
 
     // If the object has been deleted or doesn't exist for the given primary key, just return null

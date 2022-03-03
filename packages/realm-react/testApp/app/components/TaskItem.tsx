@@ -29,7 +29,6 @@ interface TaskItemProps {
 
 function TaskItem({ task, onToggleStatus, onDelete }: TaskItemProps) {
   const { description, isComplete } = task;
-  console.log("*** Render ", description);
 
   return (
     <View style={styles.task}>
