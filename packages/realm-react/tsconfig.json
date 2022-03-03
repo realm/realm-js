@@ -83,6 +83,6 @@
   },
   "exclude": [
     "dist",
-    "example"
+    "testApp"
   ]
 }
