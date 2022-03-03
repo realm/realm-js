@@ -52,7 +52,7 @@ let doLog; // placeholder for logger function
  * Path and credentials required to submit analytics through the webhook.
  */
 const ANALYTICS_BASE_URL =
-  "https://webhooks.mongodb-realm.com/api/client/v2.0/app/realmsdkmetrics-zmhtm/service/metric_webhook/incoming_webhook/metric";
+  "https://webhooks.mongodb-realm.com/api/client/v2.0/app/realmsdkmetrics-zmhtm/service/metric_webhook/incoming_webhook/metric?data=";
 
 /**
  * Constructs the full URL that will submit analytics to the webhook.
@@ -194,7 +194,7 @@ async function collectPlatformData(packageJson) {
   }
 
   return {
-    token: "aab85907a13e1ff44a95be539d9942a9",
+    token: "ce0fac19508f6c8f20066d345d360fd0",
     "JS Analytics Version": 2,
     distinct_id: identifier,
     "Anonymized Machine Identifier": identifier,
