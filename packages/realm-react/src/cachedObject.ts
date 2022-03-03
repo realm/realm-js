@@ -18,6 +18,36 @@
 import Realm from "realm";
 import { cachedCollection } from "./cachedCollection";
 
+<<<<<<< HEAD
+=======
+/**
+ * Arguments object for `cachedObject`.
+ */
+type CachedObjectArgs<T> = {
+  /**
+   * The {@link Realm.Object} to proxy
+   */
+  object: T | null;
+  /**
+   * Callback function called whenver the object changes. Used to force a component
+   * using the {@link useObject} hook to re-render.
+   */
+  updateCallback: () => void;
+};
+
+/**
+ * Creates a proxy around a {@link Realm.Object} that will return a new reference
+ * on any relevant update to the object itself. It also wraps accesses to {@link Realm.List}
+ * attributes into a {@link cachedCollection}, so that any update, insert or deletion to the
+ * list will also return a new object reference.
+ *
+ * See {@link cachedCollection} and the `useObject` hook for description of how this
+ * helps prevent unnecessary rendering.
+ *
+ * @param args - {@link CachedObjectArgs} object arguments
+ * @returns Proxy object wrapping the {@link Realm.Object}
+ */
+>>>>>>> andrew/realmreact-docs
 export function cachedObject<T extends Realm.Object>({
   object,
   updateCallback,

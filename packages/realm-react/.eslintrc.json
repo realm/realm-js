@@ -1,9 +1,25 @@
 {
+<<<<<<< HEAD
   "parser": "@typescript-eslint/parser",
   "extends": ["plugin:@typescript-eslint/recommended", "plugin:react-hooks/recommended"],
   "rules": {
     "@typescript-eslint/explicit-function-return-type": "off",
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn"
+=======
+  "plugins": [
+    "eslint-plugin-tsdoc"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "extends": [
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react-hooks/recommended"
+  ],
+  "rules": {
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn",
+    "tsdoc/syntax": "warn"
+>>>>>>> andrew/realmreact-docs
   }
 }

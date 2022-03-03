@@ -22,17 +22,59 @@ import { isEqual } from "lodash";
 
 type ProviderProps = Realm.Configuration;
 
+/**
+ * Generates a `RealmProvider` given a {@link Realm.Configuration} and {@link React.Context}.
+ *
+ * @param realmConfig - The configuration of the realm to be instantiated
+ * @param RealmContext - The context that will contain the Realm instance
+ * @returns a RealmProvider component that provides context to all context hooks
+ */
 export function createRealmProvider(
   realmConfig: Realm.Configuration,
   RealmContext: React.Context<Realm | null>,
 ): React.FC<ProviderProps> {
+  /**
+   * Returns a Context Provider component that is required to wrap any component using
+   * the Realm hooks.
+   *
+   * @example
+   * ```
+   * const AppRoot = () => {
+   *   const syncConfig = {
+   *     flexible: true,
+   *     user: currentUser
+   *   };
+   *
+   *   return (
+   *     <RealmProvider path={"data.realm"} sync={syncConfig}>
+   *       <App/>
+   *     </RealmProvider>
+   *   )
+   * }
+   * ```
+   * @param props - The {@link Realm.Configuration} for this Realm defaults to
+   * the config passed to `createRealmProvider`, but individual config keys can
+   * be overridden when creating a `<RealmProvider>` by passing them as props.
+   * For example, to override the `path` config value, use a prop named `path`,
+   * e.g. `path="newPath.realm"`
+   * an attribute of the same key.
+   */
   return ({ children, ...restProps }) => {
     const [realm, setRealm] = useState<Realm | null>(null);
+    // We increment `configVersion` when a config override passed as a prop
+    // changes, which triggers a `useEffect` to re-open the Realm with the
+    // new config
     const [configVersion, setConfigVersion] = useState(0);
 
+    // We put realm in a ref to avoid have an endless loop of updates when the realm is updated
     const currentRealm = useRef(realm);
+
+    // This will merge the configuration provided by createRealmContext and any configuration properties
+    // set directly on the RealmProvider component.  Any settings on the component will override the original configuration.
     const configuration = useRef<Realm.Configuration>(mergeRealmConfiguration(realmConfig, restProps));
 
+    // Merge and set the configuration again and increment the version if any
+    // of the RealmProvider properties change.
     useEffect(() => {
       const combinedConfig = mergeRealmConfiguration(realmConfig, restProps);
       if (!areConfigurationsIdentical(configuration.current, combinedConfig)) {
@@ -47,6 +89,9 @@ export function createRealmProvider(
 
     useEffect(() => {
       const realmRef = currentRealm.current;
+      // Check if we currently have an open Realm. If we do not (i.e. it is the first
+      // render, or the realm has been closed due to a config change), then we
+      // need to open a new Realm.
       const shouldInitRealm = realmRef === null;
       const initRealm = async () => {
         const openRealm = await Realm.open(configuration.current);
@@ -72,6 +117,14 @@ export function createRealmProvider(
   };
 }
 
+/**
+ * Merge two configurations, creating a configuration using `configA` as the default,
+ * merged with `configB`, with properties in `configB` overriding `configA`.
+ *
+ * @param configA - The default config object
+ * @param configB - Config overrides object
+ * @returns Merged config object
+ */
 export function mergeRealmConfiguration(
   configA: Realm.Configuration,
   configB: Partial<Realm.Configuration>,
@@ -90,6 +143,13 @@ export function mergeRealmConfiguration(
   } as Realm.Configuration;
 }
 
+/**
+ * Utility function that does a deep comparison (key: value) of object a with object b
+ *
+ * @param a - Object to compare
+ * @param b - Object to compare
+ * @returns True if the objects are identical
+ */
 export function areConfigurationsIdentical(a: Realm.Configuration, b: Realm.Configuration): boolean {
   return isEqual(a, b);
 }
