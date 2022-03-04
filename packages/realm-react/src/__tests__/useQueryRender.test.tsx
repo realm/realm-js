@@ -130,7 +130,7 @@ const Item: React.FC<{ item: TestObject & Realm.Object }> = React.memo(({ item }
   );
 });
 
-const FILTER_ARGS: [string] = ["id > 10"];
+const FILTERED_ARGS: [string] = ["id > 10"];
 const SORTED_ARGS: [string, boolean] = ["id", true];
 
 const TestComponent = ({ queryType }: { queryType: QueryType }) => {
@@ -139,7 +139,7 @@ const TestComponent = ({ queryType }: { queryType: QueryType }) => {
   const result = useMemo(() => {
     switch (queryType) {
       case QueryType.filtered:
-        return collection.filtered(...FILTER_ARGS);
+        return collection.filtered(...FILTERED_ARGS);
       case QueryType.sorted:
         return collection.sorted(...SORTED_ARGS);
       case QueryType.normal:
@@ -157,7 +157,7 @@ const TestComponent = ({ queryType }: { queryType: QueryType }) => {
 function getTestCollection(queryType: QueryType) {
   switch (queryType) {
     case QueryType.filtered:
-      return testRealm.objects(TestObject).filtered(...FILTER_ARGS);
+      return testRealm.objects(TestObject).filtered(...FILTERED_ARGS);
     case QueryType.sorted:
       return testRealm.objects(TestObject).sorted(...SORTED_ARGS);
     case QueryType.normal:

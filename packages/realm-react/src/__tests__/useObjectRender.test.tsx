@@ -80,7 +80,7 @@ const listRenderCounter = jest.fn();
 
 let testRealm: Realm = new Realm(configuration);
 
-const testCollection = new Array(20).fill(undefined).map((_, index) => ({ id: index, name: `${index}` }));
+const testCollection = [...new Array(100)].map((_, index) => ({ id: index, name: `${index}` }));
 
 const useRealm = () => {
   testRealm = new Realm(configuration);
