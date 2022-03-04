@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
-import openURLInBrowser from 'react-native/Libraries/Core/Devtools/openURLInBrowser'; // TODO: Replace library
+// @ts-ignore openURLInBrowser will open the url in your machine browser. (This isn't currently typed in React Native)
+import openURLInBrowser from 'react-native/Libraries/Core/Devtools/openURLInBrowser';
 
 import colors from '../styles/colors';
 
@@ -8,7 +9,7 @@ function IntroText() {
   return (
     <View style={styles.content}>
       <Text style={styles.paragraph}>
-        Welcome to the Realm React Native JavaScript Template
+        Welcome to the Realm React Native TypeScript Template
       </Text>
       <Text style={styles.paragraph}>
         Start adding a task using the form at the top of the screen to see how

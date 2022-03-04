@@ -1,21 +1,14 @@
-import React, {useState} from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  Platform,
-  StyleSheet,
-} from 'react-native';
+import React, { useState } from "react";
+import { View, Text, TextInput, Pressable, Platform, StyleSheet } from "react-native";
 
-import colors from '../styles/colors';
+import colors from "../styles/colors";
 
-function AddTaskForm({onSubmit}) {
-  const [description, setDescription] = useState('');
+function AddTaskForm({ onSubmit }) {
+  const [description, setDescription] = useState("");
 
   const handleSubmit = () => {
     onSubmit(description);
-    setDescription('');
+    setDescription("");
   };
 
   return (
@@ -39,7 +32,7 @@ const styles = StyleSheet.create({
   form: {
     height: 50,
     marginBottom: 20,
-    flexDirection: 'row',
+    flexDirection: "row",
     ...Platform.select({
       ios: {
         shadowColor: colors.black,
@@ -58,25 +51,25 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     paddingHorizontal: 15,
-    paddingVertical: Platform.OS === 'ios' ? 15 : 0,
+    paddingVertical: Platform.OS === "ios" ? 15 : 0,
     borderRadius: 5,
     backgroundColor: colors.white,
     fontSize: 17,
   },
   submit: {
-    height: '100%',
+    height: "100%",
     width: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginLeft: 20,
     borderRadius: 5,
     backgroundColor: colors.purple,
   },
   icon: {
     color: colors.white,
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 17,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
 

@@ -1,11 +1,11 @@
 import React, { useCallback, useMemo } from "react";
 import { SafeAreaView, View, StyleSheet } from "react-native";
 
-import TaskContext, { Task } from "./app/models/Task";
-import IntroText from "./app/components/IntroText";
-import AddTaskForm from "./app/components/AddTaskForm";
-import TaskList from "./app/components/TaskList";
-import colors from "./app/styles/colors";
+import TaskContext, { Task } from "./models/Task";
+import IntroText from "./components/IntroText";
+import AddTaskForm from "./components/AddTaskForm";
+import TaskList from "./components/TaskList";
+import colors from "./styles/colors";
 
 const { useRealm, useQuery, RealmProvider } = TaskContext;
 
@@ -16,7 +16,7 @@ function App() {
   const tasks = useMemo(() => result.sorted("createdAt"), [result]);
 
   const handleAddTask = useCallback(
-    (description) => {
+    (description: string): void => {
       if (!description) {
         return;
       }
@@ -36,7 +36,7 @@ function App() {
   );
 
   const handleToggleTaskStatus = useCallback(
-    (task) => {
+    (task: Task): void => {
       realm.write(() => {
         // Normally when updating a record in a NoSQL or SQL database, we have to type
         // a statement that will later be interpreted and used as instructions for how
@@ -60,7 +60,7 @@ function App() {
   );
 
   const handleDeleteTask = useCallback(
-    (task) => {
+    (task: Task): void => {
       realm.write(() => {
         realm.delete(task);
 

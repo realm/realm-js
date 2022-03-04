@@ -19,8 +19,9 @@ x.x.x Release notes (yyyy-MM-dd)
 * <Either mention core version or upgrade>
 * <Using Realm Core vX.Y.Z>
 * <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Added a script to generate JS template apps from TS, and updated JS templates [4374](https://github.com/realm/realm-js/pull/4374)
 
-10.13.0 Release notes (2022-2-11) 
+10.13.0 Release notes (2022-2-11)
 =============================================================
 ### Enhancements
 * Added `Realm.App#deleteUser(user)` to delete a sync user from a MongoDB Realm app. ([#4006](https://github.com/realm/realm-js/issues/4006))

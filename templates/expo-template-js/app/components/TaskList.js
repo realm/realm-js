@@ -1,15 +1,14 @@
-import React from 'react';
-import {View, FlatList, StyleSheet} from 'react-native';
+import React from "react";
+import { View, FlatList, StyleSheet } from "react-native";
+import TaskItem from "./TaskItem";
 
-import TaskItem from './TaskItem';
-
-function TaskList({tasks, onToggleTaskStatus, onDeleteTask}) {
+function TaskList({ tasks, onToggleTaskStatus, onDeleteTask }) {
   return (
     <View style={styles.listContainer}>
       <FlatList
         data={tasks}
-        keyExtractor={task => task._id.toString()}
-        renderItem={({item}) => (
+        keyExtractor={(task) => task._id.toString()}
+        renderItem={({ item }) => (
           <TaskItem
             description={item.description}
             isComplete={item.isComplete}
@@ -26,7 +25,7 @@ function TaskList({tasks, onToggleTaskStatus, onDeleteTask}) {
 const styles = StyleSheet.create({
   listContainer: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
 });
 
