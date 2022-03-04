@@ -10,6 +10,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * If a list of objects contains links to objects not included in the synchronized partition, the indices contained in the listener callback may be wrong. ([realm/realm-core#5164](https://github.com/realm/realm-core/issues/5164), since v10.0.0)
 * Converting floats/doubles into Decimal128 would yield imprecise results. ([realm/realm-core#5184](https://github.com/realm/realm-core/pull/5184), since v6.1.3)
 * Using accented characters in class and property names may end the sync session ([realm/realm-core#5196](https://github.com/realm/realm-core/pull/5196), since v10.3.0-rc.1)
+* Waiting for upload after opening a bundled Realm file could hang. ([realm/realm-core#5277](https://github.com/realm/realm-core/issues/5277), since v10.10.0)
+
 ### Compatibility
 * MongoDB Realm Cloud.
 * Realm Studio v11.0.0.
@@ -17,7 +19,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v11.9.0 to v11.10.0
+* Upgraded Realm Core from v11.9.0 to v11.11.0
 
 10.13.0 Release notes (2022-2-11)
 =============================================================
