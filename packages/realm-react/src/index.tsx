@@ -46,8 +46,8 @@ type RealmContext = {
    * @param props - The {@link Realm.Configuration} for this Realm defaults to
    * the config passed to `createRealmProvider`, but individual config keys can
    * be overridden when creating a `<RealmProvider>` by passing them as props.
-   * For example, to override the `path` config value, use a prop named `path`,
-   * e.g. `path="newPath.realm"`
+   * For example, to override the `path` config value, use a prop named `path`
+   * e.g., `path="newPath.realm"`
    * an attribute of the same key.
    */
   RealmProvider: ReturnType<typeof createRealmProvider>;
@@ -73,7 +73,7 @@ type RealmContext = {
    */
   useQuery: ReturnType<typeof createUseQuery>;
   /**
-   * Returns a {@link Realm.Object} from a given type and primary key.
+   * Returns a {@link Realm.Object} from a given type and value of primary key.
    * The hook will update on any changes to the properties on the returned object
    * and return null if it either doesn't exists or has been deleted.
    *

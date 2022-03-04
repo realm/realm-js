@@ -38,7 +38,7 @@ class TestObject extends Realm.Object {
   };
 }
 
-const testCollection = new Array(100).fill(undefined).map((_, index) => ({ id: index, name: `${index}` }));
+const testCollection = [...new Array(100)].map((_, index) => ({ id: index, name: `${index}` }));
 
 const configuration: Realm.Configuration = {
   schema: [TestObject],
@@ -151,7 +151,7 @@ const TestComponent = ({ queryType }: { queryType: QueryType }) => {
 
   const keyExtractor = useCallback((item) => item.id, []);
 
-  return <FlatList testID={"list"} data={result} keyExtractor={keyExtractor} renderItem={renderItem} />;
+  return <FlatList testID="list" data={result} keyExtractor={keyExtractor} renderItem={renderItem} />;
 };
 
 function getTestCollection(queryType: QueryType) {

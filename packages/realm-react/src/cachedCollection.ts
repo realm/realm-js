@@ -54,7 +54,7 @@ type CachedCollectionArgs<T> = {
  * references on any relevant change (update, insert, deletion) and return the same
  * object reference if no changes have occurred since the last access.
  *
- * This makes the {@link Realm.Collection} behave in an immutable way, as React expects, so
+ * This makes the {@link Realm.Collection} behaves in an immutable way, as React expects, so
  * that a {@link Realm.Object} can be wrapped in {@link React.memo} to prevent unnecessary
  * rendering (see {@link useQuery} hook).
  *

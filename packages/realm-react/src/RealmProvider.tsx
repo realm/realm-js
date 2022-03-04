@@ -25,7 +25,7 @@ type ProviderProps = Realm.Configuration;
 /**
  * Generates a `RealmProvider` given a {@link Realm.Configuration} and {@link React.Context}.
  *
- * @param realmConfig - The configuration of the realm to be instantiated
+ * @param realmConfig - The configuration of the Realm to be instantiated
  * @param RealmContext - The context that will contain the Realm instance
  * @returns a RealmProvider component that provides context to all context hooks
  */
@@ -46,7 +46,7 @@ export function createRealmProvider(
    *   };
    *
    *   return (
-   *     <RealmProvider path={"data.realm"} sync={syncConfig}>
+   *     <RealmProvider path="data.realm" sync={syncConfig}>
    *       <App/>
    *     </RealmProvider>
    *   )
@@ -57,7 +57,6 @@ export function createRealmProvider(
    * be overridden when creating a `<RealmProvider>` by passing them as props.
    * For example, to override the `path` config value, use a prop named `path`,
    * e.g. `path="newPath.realm"`
-   * an attribute of the same key.
    */
   return ({ children, ...restProps }) => {
     const [realm, setRealm] = useState<Realm | null>(null);
@@ -90,7 +89,7 @@ export function createRealmProvider(
     useEffect(() => {
       const realmRef = currentRealm.current;
       // Check if we currently have an open Realm. If we do not (i.e. it is the first
-      // render, or the realm has been closed due to a config change), then we
+      // render, or the Realm has been closed due to a config change), then we
       // need to open a new Realm.
       const shouldInitRealm = realmRef === null;
       const initRealm = async () => {

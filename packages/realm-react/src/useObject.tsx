@@ -34,7 +34,7 @@ export function createUseObject(useRealm: () => Realm) {
   /**
    * Returns a {@link Realm.Object} from a given type and primary key.
    * The hook will update on any changes to the properties on the returned object
-   * and return null if it either doesn't exists or has been deleted.
+   * and return null if it either doesn't exist or has been deleted.
    *
    * @example
    * ```
