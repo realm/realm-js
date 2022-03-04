@@ -63,7 +63,11 @@ const adb = {
     return adb.exec(["shell", ...args]);
   },
   shellPidOf(packageName) {
-    return adb.exec(["shell", `pidof -s ${packageName}`], true, false).trim();
+    // Apparently the -s flag on pidof doesn't work - so we filter out the first pid manually
+    return adb
+      .exec(["shell", `pidof ${packageName}`], true, false)
+      .trim()
+      .split(" ")[0];
   },
 };
 

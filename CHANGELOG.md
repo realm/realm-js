@@ -20,6 +20,8 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Upgraded Realm Core from v11.9.0 to v11.11.0
+* Fixed analytics to read the `realm/package.json` when installing from the root of the package.
+* Fixed React Native Android integration test harness to read only one pid when starting logcat.
 
 10.13.0 Release notes (2022-2-11)
 =============================================================
