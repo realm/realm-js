@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import React, { useCallback, useMemo } from "react";
-import { SafeAreaView, View, StyleSheet, Text } from "react-native";
+import { SafeAreaView, View, StyleSheet } from "react-native";
 
 import TaskContext, { Task } from "./app/models/Task";
 import IntroText from "./app/components/IntroText";
@@ -53,7 +53,7 @@ function App() {
   );
 
   const handleToggleTaskStatus = useCallback(
-    (task: Task): void => {
+    (task: Task & Realm.Object): void => {
       realm.write(() => {
         // Normally when updating a record in a NoSQL or SQL database, we have to type
         // a statement that will later be interpreted and used as instructions for how
@@ -77,7 +77,7 @@ function App() {
   );
 
   const handleDeleteTask = useCallback(
-    (task: Task): void => {
+    (task: Task & Realm.Object): void => {
       realm.write(() => {
         realm.delete(task);
 
@@ -91,12 +91,11 @@ function App() {
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.content}>
-        <Text style={{ color: "white" }}>{tasks.length}</Text>
         <AddTaskForm onSubmit={handleAddTask} />
         {tasks.length === 0 ? (
           <IntroText />
         ) : (
-          <TaskList tasks={tasks} onToggleTaskStatus={handleToggleTaskStatus} onDeleteTask={handleDeleteTask} />
+          <TaskList tasks={result} onToggleTaskStatus={handleToggleTaskStatus} onDeleteTask={handleDeleteTask} />
         )}
       </View>
     </SafeAreaView>
@@ -116,7 +115,6 @@ const styles = StyleSheet.create({
 });
 
 function AppWrapper() {
-
   if (!RealmProvider) {
     return null;
   }

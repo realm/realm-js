@@ -22,7 +22,7 @@ import { View, Text, Pressable, Platform, StyleSheet } from "react-native";
 import colors from "../styles/colors";
 
 interface TaskItemProps {
-  task: Task;
+  task: Task & Realm.Object;
   onToggleStatus: () => void;
   onDelete: () => void;
 }

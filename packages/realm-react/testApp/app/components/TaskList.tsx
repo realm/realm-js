@@ -22,9 +22,9 @@ import { Task } from "../models/Task";
 import TaskItem from "./TaskItem";
 
 interface TaskListProps {
-  tasks: Realm.Results<Task>;
-  onToggleTaskStatus: (task: Task) => void;
-  onDeleteTask: (task: Task) => void;
+  tasks: Realm.Results<Task & Realm.Object>;
+  onToggleTaskStatus: (task: Task & Realm.Object) => void;
+  onDeleteTask: (task: Task & Realm.Object) => void;
 }
 
 function TaskList({ tasks, onToggleTaskStatus, onDeleteTask }: TaskListProps) {
