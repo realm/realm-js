@@ -53,7 +53,7 @@ function App() {
   );
 
   const handleToggleTaskStatus = useCallback(
-    (task: Task): void => {
+    (task: Task & Realm.Object): void => {
       realm.write(() => {
         // Normally when updating a record in a NoSQL or SQL database, we have to type
         // a statement that will later be interpreted and used as instructions for how
@@ -77,7 +77,7 @@ function App() {
   );
 
   const handleDeleteTask = useCallback(
-    (task: Task): void => {
+    (task: Task & Realm.Object): void => {
       realm.write(() => {
         realm.delete(task);
 
@@ -95,7 +95,7 @@ function App() {
         {tasks.length === 0 ? (
           <IntroText />
         ) : (
-          <TaskList tasks={tasks} onToggleTaskStatus={handleToggleTaskStatus} onDeleteTask={handleDeleteTask} />
+          <TaskList tasks={result} onToggleTaskStatus={handleToggleTaskStatus} onDeleteTask={handleDeleteTask} />
         )}
       </View>
     </SafeAreaView>
