@@ -19,9 +19,10 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v11.9.0 to v11.11.0
+* Upgraded Realm Core from v11.9.0 to v11.11.0.
 * Fixed analytics to read the `realm/package.json` when installing from the root of the package.
 * Fixed React Native Android integration test harness to read only one pid when starting logcat.
+* Added a script to generate JS template apps from TS, and updated JS templates. ([4374](https://github.com/realm/realm-js/pull/4374))
 
 10.13.0 Release notes (2022-2-11)
 =============================================================

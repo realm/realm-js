@@ -16,35 +16,65 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import Realm from "realm";
-import { useState, useEffect } from "react";
+import { useEffect, useReducer, useMemo } from "react";
+import { createCachedObject } from "./cachedObject";
 
+// In order to make @realm/react work with older version of realms
+// This pulls the type for PrimaryKey out of the call signature of `objectForPrimaryKey`
+// TODO: If we depend on a new version of Realm for @realm/react, we can just use Realm.PrimaryKey
 type PrimaryKey = Parameters<typeof Realm.prototype.objectForPrimaryKey>[1];
 
+/**
+ * Generates the `useObject` hook from a given `useRealm` hook.
+ *
+ * @param useRealm - Hook that returns an open Realm instance
+ * @returns useObject - Hook that is used to gain access to a single Realm object from a primary key
+ */
 export function createUseObject(useRealm: () => Realm) {
+  /**
+   * Returns a {@link Realm.Object} from a given type and primary key.
+   * The hook will update on any changes to the properties on the returned object
+   * and return null if it either doesn't exist or has been deleted.
+   *
+   * @example
+   * ```
+   * const object = useObject(ObjectClass, objectId);
+   * ```
+   *
+   * @param type - The object type, depicted by a string or a class extending {@link Realm.Object}
+   * @param primaryKey - The primary key of the desired object which will be retrieved using {@link Realm.objectForPrimaryKey}
+   * @returns either the desired {@link Realm.Object} or `null` in the case of it being deleted or not existing.
+   */
   return function useObject<T>(type: string | { new (): T }, primaryKey: PrimaryKey): (T & Realm.Object) | null {
     const realm = useRealm();
-    const [object, setObject] = useState<(T & Realm.Object) | null>(
-      () => realm.objectForPrimaryKey(type, primaryKey) ?? null,
+
+    // Create a forceRerender function for the cachedObject to use as its updateCallback, so that
+    // the cachedObject can force the component using this hook to re-render when a change occurs.
+    const [, forceRerender] = useReducer((x) => x + 1, 0);
+
+    // Wrap the cachedObject in useMemo, so we only replace it with a new instance if `primaryKey` or `type` change
+    const { object, tearDown } = useMemo(
+      // TODO: There will be an upcoming breaking change that makes objectForPrimaryKey return null
+      // When this is implemented, remove `?? null`
+      () =>
+        createCachedObject({
+          object: realm.objectForPrimaryKey(type, primaryKey) ?? null,
+          updateCallback: forceRerender,
+        }),
+      [type, realm, primaryKey],
     );
 
+    // Invoke the tearDown of the cachedObject when useObject is unmounted
     useEffect(() => {
-      const listenerCallback: Realm.ObjectChangeCallback<T & Realm.Object> = (_, changes) => {
-        if (changes.changedProperties.length > 0) {
-          setObject(() => realm.objectForPrimaryKey(type, primaryKey) ?? null);
-        } else if (changes.deleted) {
-          setObject(null);
-        }
-      };
-      if (object !== null) {
-        object.addListener(listenerCallback);
-      }
-      return () => {
-        if (object !== null) {
-          object.removeListener(listenerCallback);
-        }
-      };
-    }, [realm, object, type, primaryKey]);
+      return tearDown;
+    }, [tearDown]);
 
-    return object;
+    // If the object has been deleted or doesn't exist for the given primary key, just return null
+    if (object === null || object?.isValid() === false) {
+      return null;
+    }
+
+    // Wrap object in a proxy to update the reference on rerender ( should only rerender when something has changed )
+    return new Proxy(object, {});
   };
 }

@@ -1,15 +1,13 @@
-import React, {memo} from 'react';
-import {View, Text, Pressable, Platform, StyleSheet} from 'react-native';
+import React, { memo } from "react";
+import { View, Text, Pressable, Platform, StyleSheet } from "react-native";
 
-import colors from '../styles/colors';
+import colors from "../styles/colors";
 
-function TaskItem({description, isComplete, onToggleStatus, onDelete}) {
+function TaskItem({ description, isComplete, onToggleStatus, onDelete }) {
   return (
     <View style={styles.task}>
-      <Pressable
-        onPress={onToggleStatus}
-        style={[styles.status, isComplete && styles.completed]}>
-        <Text style={styles.icon}>{isComplete ? '✓' : '○'}</Text>
+      <Pressable onPress={onToggleStatus} style={[styles.status, isComplete && styles.completed]}>
+        <Text style={styles.icon}>{isComplete ? "✓" : "○"}</Text>
       </Pressable>
       <View style={styles.descriptionContainer}>
         <Text numberOfLines={1} style={styles.description}>
@@ -26,8 +24,8 @@ function TaskItem({description, isComplete, onToggleStatus, onDelete}) {
 const styles = StyleSheet.create({
   task: {
     height: 50,
-    alignSelf: 'stretch',
-    flexDirection: 'row',
+    alignSelf: "stretch",
+    flexDirection: "row",
     marginVertical: 8,
     backgroundColor: colors.white,
     borderRadius: 5,
@@ -48,7 +46,7 @@ const styles = StyleSheet.create({
   },
   descriptionContainer: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   description: {
     paddingHorizontal: 10,
@@ -57,8 +55,8 @@ const styles = StyleSheet.create({
   },
   status: {
     width: 50,
-    height: '100%',
-    justifyContent: 'center',
+    height: "100%",
+    justifyContent: "center",
     borderTopLeftRadius: 5,
     borderBottomLeftRadius: 5,
     backgroundColor: colors.gray,
@@ -67,7 +65,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.purple,
   },
   deleteButton: {
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   deleteText: {
     marginHorizontal: 10,
@@ -76,15 +74,14 @@ const styles = StyleSheet.create({
   },
   icon: {
     color: colors.white,
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 17,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
 
 // We want to make sure only tasks that change are rerendered
 const shouldNotRerender = (prevProps, nextProps) =>
-  prevProps.description === nextProps.description &&
-  prevProps.isComplete === nextProps.isComplete;
+  prevProps.description === nextProps.description && prevProps.isComplete === nextProps.isComplete;
 
 export default memo(TaskItem, shouldNotRerender);
