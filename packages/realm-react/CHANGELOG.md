@@ -1,4 +1,4 @@
-x.y.z Release notes (2021-11-10)
+0.2.0 Release notes (2022-03-07)
 =============================================================
 ### Enhancements
 * Add ability to import `Realm` directly from `@realm/react`
