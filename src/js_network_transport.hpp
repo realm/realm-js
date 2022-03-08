@@ -25,13 +25,13 @@
 namespace realm {
 namespace js {
 
-using ResponseHandlerCompletionCallback = std::function<void(const app::Response)>;
+using ResponseHandlerCompletionCallback = util::UniqueFunction<void(const app::Response&)>;
 
 class ResponseHandler {
 public:
-    ResponseHandler(ResponseHandlerCompletionCallback callback)
+    ResponseHandler(ResponseHandlerCompletionCallback&& callback)
     {
-        m_completion_callback = callback;
+        m_completion_callback = std::move(callback);
     }
 
     ResponseHandlerCompletionCallback m_completion_callback;
@@ -177,7 +177,7 @@ struct JavaScriptNetworkTransport : public app::GenericNetworkTransport {
     using Object = js::Object<T>;
     using Value = js::Value<T>;
 
-    using Dispatcher = util::EventLoopDispatcher<void(std::function<void()>)>;
+    using Dispatcher = util::EventLoopDispatcher<void(util::UniqueFunction<void()>)>;
 
     // Creates a dispatcher to pass into the constructor. This must be called from the JS thread, even if
     // the NetworkTransport will be constructed elsewhere.
@@ -185,13 +185,13 @@ struct JavaScriptNetworkTransport : public app::GenericNetworkTransport {
     {
         // This is just a thin "run any function" dispatcher to allow the actual logic to be executed
         // to live in a more natural location (send_request_to_server).
-        return util::EventLoopDispatcher([](std::function<void()> func) {
+        return util::EventLoopDispatcher([](util::UniqueFunction<void()> func) {
             func();
         });
     }
 
-    using SendRequestHandler = void(ContextType m_ctx, const app::Request request,
-                                    std::function<void(const app::Response)> completion_callback);
+    using SendRequestHandler = void(ContextType m_ctx, app::Request&& request,
+                                    util::UniqueFunction<void(const app::Response&)>&& completion_callback);
 
     // Work around of
     // https://developercommunity.visualstudio.com/t/const-init-of-function-pointers-from-lambdas/1383098 This needs
@@ -220,8 +220,8 @@ struct JavaScriptNetworkTransport : public app::GenericNetworkTransport {
         return request_object;
     }
 
-    void send_request_to_server(app::Request request,
-                                std::function<void(const app::Response)> completion_callback) override
+    void send_request_to_server(app::Request&& request,
+                                util::UniqueFunction<void(const app::Response&)>&& completion_callback) override
     {
         m_dispatcher([ctx = m_ctx, request = std::move(request),
                       completion_callback = std::move(completion_callback)]() mutable {
