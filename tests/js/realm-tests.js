@@ -583,6 +583,27 @@ module.exports = {
     TestCase.assertEqual(Realm.schemaVersion("another.realm"), 2);
   },
 
+  testRealmDataInitialization: function () {
+    const data = [1, 2, 3];
+    const initializer = (r) => {
+      data.forEach((n) => r.create(schemas.IntOnly.name, { intCol: n }));
+    };
+
+    const config = {
+      schema: [schemas.IntOnly],
+      dataInitialization: initializer,
+    };
+    Realm.deleteFile(config);
+
+    let realm = new Realm(config);
+    let ints = realm.objects(schemas.IntOnly.name);
+    TestCase.assertEqual(ints.length, data.length, "Length");
+    for (let i = 0; i < data.length; i++) {
+      TestCase.assertEqual(data[i], ints[i].intCol, `data[${i}]`);
+    }
+    realm.close();
+  },
+
   testRealmWrite: function () {
     const realm = new Realm({
       schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes],

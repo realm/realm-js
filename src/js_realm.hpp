@@ -689,6 +689,33 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
                 config.should_compact_on_launch_function = std::move(should_compact_on_launch_functor);
             }
 
+            static const String data_initalization_string = "dataInitialization";
+            ValueType data_initialization_value = Object::get_property(ctx, object, data_initalization_string);
+            if (!Value::is_undefined(ctx, data_initialization_value)) {
+                if (config.schema_mode == SchemaMode::Immutable) {
+                    throw std::invalid_argument("Cannot set 'dataInitalization' when 'readOnly' is set.");
+                }
+
+                FunctionType data_initialization_function =
+                    Value::validated_to_function(ctx, data_initialization_value);
+                config.initialization_function = [=](SharedRealm realm) {
+
+                    auto realm_ptr = new SharedRealm(realm);
+                    ValueType arguments[] = {
+                        create_object<T, RealmClass<T>>(ctx, realm_ptr),
+                    };
+                    try {
+                        Function<T>::call(ctx, data_initialization_function, 1, arguments);
+                    }
+                    catch (...) {
+                        realm_ptr->reset();
+                        throw;
+                    }
+
+                    realm_ptr->reset();
+                };
+            }
+
             static const String migration_string = "migration";
             ValueType migration_value = Object::get_property(ctx, object, migration_string);
             if (!Value::is_undefined(ctx, migration_value)) {

@@ -378,6 +378,10 @@ class Realm {
  *     - `usedSize` - The total bytes used by data in the file.
  *   It returns `true` to indicate that an attempt to compact the file should be made. The compaction
  *   will be skipped if another process is accessing it.
+ * @property {callback(realm)} [dataInitialization] - The function called when opening a Realm for
+ *   the first time. The function can populate the Realm prior to open it. When calling the callback,
+ *   the Realm will be in a write transaction. The callback takes one argument:
+ *     - `realm` - The Realm
  * @property {string} [path={@link Realm.defaultPath}] - The path to the file where the
  *   Realm database should be stored.
  * @property {string} [fifoFilesFallbackPath] - Opening a Realm creates a number of FIFO special files in order to
