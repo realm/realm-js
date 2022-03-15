@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 import React, { useCallback, useMemo } from "react";
 import { SafeAreaView, View, StyleSheet } from "react-native";
+import Realm from "realm";
 
 import TaskContext, { Task } from "./app/models/Task";
 import IntroText from "./app/components/IntroText";

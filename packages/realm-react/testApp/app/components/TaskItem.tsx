@@ -15,9 +15,11 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import { Task } from "app/models/Task";
 import React, { memo } from "react";
 import { View, Text, Pressable, Platform, StyleSheet } from "react-native";
+import Realm from "realm";
+
+import { Task } from "app/models/Task";
 
 import colors from "../styles/colors";
 

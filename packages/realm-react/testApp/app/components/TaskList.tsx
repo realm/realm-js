@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 import React from "react";
 import { View, FlatList, StyleSheet } from "react-native";
+import Realm from "realm";
 
 import { Task } from "../models/Task";
 import TaskItem from "./TaskItem";
