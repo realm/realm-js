@@ -24,8 +24,8 @@ function getCacheKey(id: string) {
 }
 
 /**
-  * Arguments object for {@link cachedCollection}.
-  */
+ * Arguments object for {@link cachedCollection}.
+ */
 type CachedCollectionArgs<T> = {
   /**
    * The {@link Realm.Collection} to proxy
@@ -40,7 +40,7 @@ type CachedCollectionArgs<T> = {
    * (derived) version of the collection to reuse the same cache, preventing excess new object
    * references being created.
    */
-  collectionCache?: Map<string, T>;
+  objectCache?: Map<string, T>;
   /**
    * Optional flag specifying that this is a derived (`sorted` or `filtered`) version of
    * an existing collection, so we should not create or remove listeners or clear the cache
@@ -66,12 +66,7 @@ export function createCachedCollection<T extends Realm.Object>({
   updateCallback,
   objectCache = new Map(),
   isDerived = false,
-}: {
-  collection: Realm.Collection<T>;
-  updateCallback: () => void;
-  objectCache?: Map<string, T>;
-  isDerived?: boolean;
-}): { collection: Realm.Collection<T>; tearDown: () => void } {
+}: CachedCollectionArgs<T>): { collection: Realm.Collection<T>; tearDown: () => void } {
   const cachedCollectionHandler: ProxyHandler<Realm.Collection<T & Realm.Object>> = {
     get: function (target, key) {
       // Pass functions through
@@ -100,6 +95,17 @@ export function createCachedCollection<T extends Realm.Object>({
       // If the key is numeric, check if we have a cached object for this key
       const index = Number(key);
       const object = target[index];
+
+      // If the collection is modeled in a way that objects can be null
+      // then we should return null instead of undefined to stay semantically
+      // correct
+      if (object === null) {
+        return null;
+      } else if (typeof object === "undefined") {
+        // If there is no object at this index, return undefined
+        return undefined;
+      }
+
       const objectId = object._objectId();
       const cacheKey = getCacheKey(objectId);
 

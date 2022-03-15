@@ -67,7 +67,7 @@ const testDataSet = [
   { _id: 6, name: "Sadie", color: "gold", gender: "female", age: 5 },
 ];
 
-describe("useQuery", () => {
+describe("useQueryHook", () => {
   beforeEach(() => {
     const realm = new Realm(configuration);
     realm.write(() => {
@@ -100,5 +100,11 @@ describe("useQuery", () => {
     expect(collection).not.toBeNull();
     expect(collection.length).toBe(6);
     expect(collection[0]).toEqual(collection?.[0]);
+  });
+  it("should return undefined indexes that are out of bounds", () => {
+    const { result } = renderHook(() => useQuery<IDog>("dog"));
+    const collection = result.current;
+
+    expect(collection[99]).toBe(undefined);
   });
 });
