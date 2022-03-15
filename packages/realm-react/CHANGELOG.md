@@ -1,3 +1,17 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* Fixed bug when trying to access a collection result with an out of bounds index.
+
+### Compatibility
+* None
+
+### Internal
+* None
+
 0.2.0 Release notes (2022-03-07)
 =============================================================
 ### Enhancements
