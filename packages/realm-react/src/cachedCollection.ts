@@ -97,7 +97,7 @@ export function createCachedCollection<T extends Realm.Object>({
       const object = target[index];
 
       // If the collection is modeled in a way that objects can be null
-      // then we should return null instead of undefined to stay symantically
+      // then we should return null instead of undefined to stay semantically
       // correct
       if (object === null) {
         return null;
