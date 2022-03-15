@@ -29,6 +29,7 @@
 #include "js_schema.hpp"
 #include "js_observable.hpp"
 #include "platform.hpp"
+#include <string>
 
 #if REALM_ENABLE_SYNC
 #include "js_sync.hpp"
@@ -662,7 +663,26 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
             ValueType schema_value = Object::get_property(ctx, object, schema_string);
             if (!Value::is_undefined(ctx, schema_value)) {
                 ObjectType schema_array = Value::validated_to_array(ctx, schema_value, "schema");
-                config.schema.emplace(Schema<T>::parse_schema(ctx, schema_array, defaults, constructors));
+                auto schema = Schema<T>::parse_schema(ctx, schema_array, defaults, constructors);
+                // Check that all constructors provided by the user extend Realm.Object
+                const auto& realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
+                const auto& realm_object_constructor = Object::validated_get_object(ctx, realm_constructor, "Object");
+                for (const auto& [name, constructor] : constructors) {
+                    const auto& prototype = Object::get_prototype(ctx, constructor);
+                    if (prototype != realm_object_constructor) {
+                        const std::string& class_name =
+                            Object::validated_get_string(ctx, constructor, "name", "Failed to read class name");
+                        if (class_name == name) {
+                            throw std::invalid_argument(
+                                util::format("Class '%1' must extend Realm.Object", class_name));
+                        }
+                        else {
+                            throw std::invalid_argument(util::format(
+                                "Class '%1' (declaring '%2' schema) must extend Realm.Object", class_name, name));
+                        }
+                    }
+                }
+                config.schema.emplace(std::move(schema));
                 schema_updated = true;
             }
 
