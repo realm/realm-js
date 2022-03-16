@@ -5,6 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Fixed issue that could cause mangling of binary data on a roundtrip to/from the database ([#4278](https://github.com/realm/realm-js/issues/4278), since v10.1.4).
+* Fixed `globalThis` undefined issue for older devices. ([#4390](https://github.com/realm/realm-js/4390))
 * Fixed a fatal sync error `Automatic recovery failed` during DiscardLocal client reset if the reset notifier callbacks were not set to something. ([realm/realm-core#5223](https://github.com/realm/realm-core/issues/5223), since v10.10.0)
 * Changed parsed queries using the `between` operator to be inclusive of the limits, a closed interval instead of an open interval. This is to conform to the published documentation and for parity with NSPredicate's definition. ([realm/realm-core#5262](https://github.com/realm/realm-core/issues/5262), since v10.7.0)
 * If a list of objects contains links to objects not included in the synchronized partition, the indices contained in the listener callback could be wrong. ([realm/realm-core#5164](https://github.com/realm/realm-core/issues/5164), since v10.0.0)
