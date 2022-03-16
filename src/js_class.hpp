@@ -67,7 +67,7 @@ struct Arguments {
 };
 
 template <typename T>
-using ConstructorType = void(typename T::Context, typename T::Object, Arguments<T>&);
+using ConstructorType = void(typename T::Context, typename T::Object, Arguments<T>&, typename T::Object);
 
 template <typename T>
 using ArgumentsMethodType = void(typename T::Context, typename T::Object, Arguments<T>&, ReturnValue<T>&);

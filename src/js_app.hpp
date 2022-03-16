@@ -71,7 +71,7 @@ public:
     static inline std::string platform_os = "unknown-os";
     static inline std::string platform_version = "?.?.?";
 
-    static void constructor(ContextType, ObjectType, Arguments&);
+    static void constructor(ContextType, ObjectType, Arguments&, ObjectType);
     static FunctionType create_constructor(ContextType);
     static ObjectType create_instance(ContextType, SharedApp);
 
@@ -124,7 +124,7 @@ inline typename T::Object AppClass<T>::create_instance(ContextType ctx, SharedAp
 }
 
 template <typename T>
-void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments& args)
+void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments& args, ObjectType constructor)
 {
     static const String config_id = "id";
     static const String config_base_url = "baseUrl";

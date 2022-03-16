@@ -60,6 +60,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::js::RealmObject<T>> {
     using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
+    using Context = js::Context<T>;
     using String = js::String<T>;
     using Value = js::Value<T>;
     using Object = js::Object<T>;
@@ -69,6 +70,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::js::RealmObject<T>> {
 
     static ObjectType create_instance(ContextType, realm::js::RealmObject<T>);
 
+    static void constructor(ContextType, ObjectType, Arguments&, ObjectType);
     static void get_property(ContextType, ObjectType, const String&, ReturnValue&);
     static bool set_property(ContextType, ObjectType, const String&, ValueType);
     static std::vector<String> get_property_names(ContextType, ObjectType);
@@ -160,6 +162,24 @@ typename T::Object RealmObjectClass<T>::create_instance(ContextType ctx, realm::
         delete internal;
         throw;
     }
+}
+
+template <typename T>
+void RealmObjectClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments& args,
+                                      ObjectType constructor)
+{
+    args.validate_between(1, 2);
+    auto realm = Value::validated_to_object(ctx, args[0], "realm");
+    auto values = Value::is_undefined(ctx, args[1]) ? Object::create_empty(ctx) : args[1];
+    // Create an object
+    std::vector<ValueType> create_args{constructor, values};
+    Arguments create_arguments{ctx, create_args.size(), create_args.data()};
+    ReturnValue result{ctx};
+    RealmClass<T>::create(ctx, realm, create_arguments, result);
+    // Move the internal from the constructed object onto this_object
+    auto realm_object = Value::validated_to_object(ctx, result);
+    auto internal = get_internal<T, RealmObjectClass<T>>(ctx, realm_object);
+    set_internal<T, RealmObjectClass<T>>(ctx, this_object, internal);
 }
 
 template <typename T>
@@ -372,7 +392,7 @@ void RealmObjectClass<T>::add_listener(ContextType ctx, ObjectType this_object, 
     auto callback = Value::validated_to_function(ctx, args[0]);
     Protected<FunctionType> protected_callback(ctx, callback);
     Protected<ObjectType> protected_this(ctx, this_object);
-    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+    Protected<typename T::GlobalContext> protected_ctx(Context::get_global_context(ctx));
 
     auto token = realm_object->add_notification_callback([=](CollectionChangeSet const& change_set,
                                                              std::exception_ptr exception) {

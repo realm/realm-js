@@ -363,7 +363,7 @@ public:
 #endif
 
     // static methods
-    static void constructor(ContextType, ObjectType, Arguments&);
+    static void constructor(ContextType, ObjectType, Arguments&, ObjectType);
     static SharedRealm create_shared_realm(ContextType, realm::Realm::Config, bool, ObjectDefaultsMap&&,
                                            ConstructorMap&&);
     static bool get_realm_config(ContextType ctx, size_t argc, const ValueType arguments[], realm::Realm::Config&,
@@ -775,7 +775,7 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
 }
 
 template <typename T>
-void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments& args)
+void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments& args, ObjectType constructor)
 {
     set_internal<T, RealmClass<T>>(ctx, this_object, nullptr);
     realm::Realm::Config config;
