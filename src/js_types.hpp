@@ -533,6 +533,8 @@ struct ReturnValue {
     void set(uint32_t);
     void set_null();
     void set_undefined();
+
+    operator ValueType() const;
 };
 
 template <typename T, typename ClassType>
