@@ -20,7 +20,9 @@ import React, { useEffect, useState, useRef } from "react";
 import Realm from "realm";
 import { isEqual } from "lodash";
 
-type ProviderProps = Realm.Configuration;
+type ProviderProps = Realm.Configuration & {
+  fallback?: React.ComponentType<unknown> | React.ReactElement | null | undefined;
+};
 
 /**
  * Generates a `RealmProvider` given a {@link Realm.Configuration} and {@link React.Context}.
@@ -58,7 +60,7 @@ export function createRealmProvider(
    * For example, to override the `path` config value, use a prop named `path`,
    * e.g. `path="newPath.realm"`
    */
-  return ({ children, ...restProps }) => {
+  return ({ children, fallback, ...restProps }) => {
     const [realm, setRealm] = useState<Realm | null>(null);
     // We increment `configVersion` when a config override passed as a prop
     // changes, which triggers a `useEffect` to re-open the Realm with the
@@ -109,7 +111,7 @@ export function createRealmProvider(
     }, [configVersion, realm, setRealm]);
 
     if (!realm) {
-      return null;
+      return <>{fallback}</>;
     }
 
     return <RealmContext.Provider value={realm} children={children} />;

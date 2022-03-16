@@ -175,6 +175,24 @@ describe("RealmProvider", () => {
 
     expect(newSchemaNameContainer).toHaveTextContent("cat");
   });
+  it("initially renders a fallback, until realm exists", async () => {
+    const App = () => {
+      return (
+        <RealmProvider fallback={<View testID="fallbackContainer" />}>
+          <View testID="testContainer" />
+        </RealmProvider>
+      );
+    };
+    const { queryByTestId } = render(<App />);
+
+    expect(queryByTestId("fallbackContainer")).not.toBeNull();
+    expect(queryByTestId("testContainer")).toBeNull();
+
+    await waitFor(() => queryByTestId("testContainer"));
+
+    expect(queryByTestId("fallbackContainer")).toBeNull();
+    expect(queryByTestId("testContainer")).not.toBeNull();
+  });
 });
 
 describe("mergeRealmConfiguration", () => {
