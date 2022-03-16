@@ -1,3 +1,9 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+
+### Breaking change
+* Model classes passed as schema to the `Realm` constructor must now extend `Realm.Object`.
+
 10.16.0 Release notes (2022-4-12)
 =============================================================
 ### Enhancements
