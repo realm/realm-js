@@ -6,7 +6,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * Fixed issue that could cause mangling of binary data on a roundtrip to/from the database ([#4278](https://github.com/realm/realm-js/issues/4278), since v10.1.4).
-* Fixed `globalThis` undefined issue for older devices([#4390](https://github.com/realm/realm-js/4390))
+* Fixed `globalThis` undefined issue for older devices. ([#4390](https://github.com/realm/realm-js/4390))
 
 ### Compatibility
 * MongoDB Realm Cloud.
