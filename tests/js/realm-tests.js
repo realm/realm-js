@@ -125,25 +125,7 @@ module.exports = {
     Object.setPrototypeOf(Car2.prototype, Realm.Object.prototype);
     Object.setPrototypeOf(Car2, Realm.Object);
 
-    //test class syntax support without extending Realm.Object
-    let car3ConstructorCalled = false;
-    class Car3 {
-      constructor() {
-        car3ConstructorCalled = true;
-      }
-    }
-
-    Car3.schema = {
-      name: "Car3",
-      properties: {
-        make: "string",
-        model: "string",
-        otherType: { type: "string", mapTo: "type", optional: true },
-        kilometers: { type: "int", default: 0 },
-      },
-    };
-
-    let realm = new Realm({ schema: [Car, Car2, Car3] });
+    let realm = new Realm({ schema: [Car, Car2] });
     realm.write(() => {
       let car = realm.create("Car", { make: "Audi", model: "A4", kilometers: 24 });
       TestCase.assertTrue(constructorCalled);
@@ -181,15 +163,6 @@ module.exports = {
       TestCase.assertEqual(car2_1.model, "Touareg");
       TestCase.assertEqual(car2_1.kilometers, 13);
       TestCase.assertInstanceOf(car2_1, Realm.Object, "car2_1 not an instance of Realm.Object");
-
-      let car3 = realm.create("Car3", { make: "Audi", model: "A4", kilometers: 24 });
-      TestCase.assertTrue(car3ConstructorCalled);
-      TestCase.assertEqual(car3.make, "Audi");
-      TestCase.assertEqual(car3.model, "A4");
-      TestCase.assertEqual(car3.kilometers, 24);
-
-      //methods from Realm.Objects should be present
-      TestCase.assertDefined(car3.addListener);
     });
     realm.close();
   },
@@ -1176,6 +1149,7 @@ module.exports = {
         intCol: "int",
       },
     };
+    Object.setPrototypeOf(CustomObject, Realm.Object);
 
     function InvalidObject() {
       return {};
@@ -1191,6 +1165,7 @@ module.exports = {
         intCol: "int",
       },
     };
+    Object.setPrototypeOf(InvalidObject, Realm.Object);
     let realm = new Realm({ schema: [CustomObject, InvalidObject] });
 
     realm.write(() => {
@@ -1238,6 +1213,7 @@ module.exports = {
         intCol: "int",
       },
     };
+    Object.setPrototypeOf(CustomObject, Realm.Object);
 
     let realm = new Realm({ schema: [CustomObject] });
     realm.write(() => {
@@ -1247,6 +1223,7 @@ module.exports = {
 
     function NewCustomObject() {}
     NewCustomObject.schema = CustomObject.schema;
+    Object.setPrototypeOf(NewCustomObject, Realm.Object);
 
     realm = new Realm({ schema: [NewCustomObject] });
     realm.write(() => {
