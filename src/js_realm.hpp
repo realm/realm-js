@@ -1435,7 +1435,7 @@ realm::Realm::Config RealmClass<T>::write_copy_to_helper(ContextType ctx, Object
     std::string output_path = Value::to_string(ctx, pathValue);
 
     // validate 4)
-    // check whether encryption key property exists, and whether it's a string
+    // check whether encryption key property exists, and whether it's a binary value
     ValueType encKeyValue = Object::get_property(ctx, output_config, "encryptionKey");
     // `encryptionKey` is optional..
     if (!Value::is_undefined(ctx, encKeyValue) && !Value::is_binary(ctx, encKeyValue)) {
