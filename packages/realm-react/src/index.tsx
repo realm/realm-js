@@ -123,11 +123,11 @@ type RealmContext = {
  * @param realmConfig - {@link Realm.Configuration} used to open the Realm
  * @returns An object containing a `RealmProvider` component, and `useRealm`, `useQuery` and `useObject` hooks
  */
-export const createRealmContext: (realmConfig: Realm.Configuration) => RealmContext = (
-  realmConfig: Realm.Configuration,
+export const createRealmContext: (realmConfig?: Realm.Configuration) => RealmContext = (
+  realmConfig?: Realm.Configuration,
 ) => {
   const RealmContext = createContext<Realm | null>(null);
-  const RealmProvider = createRealmProvider(realmConfig, RealmContext);
+  const RealmProvider = createRealmProvider(realmConfig ?? {}, RealmContext);
 
   const useRealm = createUseRealm(RealmContext);
   const useQuery = createUseQuery(useRealm);
