@@ -309,7 +309,7 @@ void SubscriptionSetClass<T>::get_state(ContextType ctx, ObjectType this_object,
         case sync::SubscriptionSet::State::Error:
             return_value.set("error");
             break;
-        case sync::SubscriptionSet::State::Superceded:
+        case sync::SubscriptionSet::State::Superseded:
             return_value.set("superseded");
             break;
         default:

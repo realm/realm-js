@@ -95,7 +95,7 @@ const {useRealm, useQuery, useObject} = RealmContext
 function MyComponent({someId}){
   const realm = useRealm();
   const tasks = useQuery(Task);
-  const someObject = useObject<SomeObject>('Objects', someId);
+  const singleTask = useObject(Task, taskId);
 
   // sort collection with useMemo
   const sortedTasks = useMemo( () => tasks.sorted("createdAt"), [tasks])

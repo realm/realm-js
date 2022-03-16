@@ -17,15 +17,15 @@
 ////////////////////////////////////////////////////////////////////////////
 import React from "react";
 import { View, FlatList, StyleSheet } from "react-native";
-import { Realm } from "@realm/react";
+import Realm from "realm";
 
 import { Task } from "../models/Task";
 import TaskItem from "./TaskItem";
 
 interface TaskListProps {
-  tasks: Realm.Results<Task> | [];
-  onToggleTaskStatus: (task: Task) => void;
-  onDeleteTask: (task: Task) => void;
+  tasks: Realm.Results<Task & Realm.Object>;
+  onToggleTaskStatus: (task: Task & Realm.Object) => void;
+  onDeleteTask: (task: Task & Realm.Object) => void;
 }
 
 function TaskList({ tasks, onToggleTaskStatus, onDeleteTask }: TaskListProps) {
@@ -36,8 +36,9 @@ function TaskList({ tasks, onToggleTaskStatus, onDeleteTask }: TaskListProps) {
         keyExtractor={(task) => task._id.toString()}
         renderItem={({ item }) => (
           <TaskItem
-            description={item.description}
-            isComplete={item.isComplete}
+            // description={item.description}
+            // isComplete={item.isComplete}
+            task={item}
             onToggleStatus={() => onToggleTaskStatus(item)}
             onDelete={() => onDeleteTask(item)}
             // Don't spread the Realm item as such: {...item}

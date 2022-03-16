@@ -2,7 +2,7 @@
   "packages": [
     ".",
     "packages/*",
-    "packages/realm-react/example",
+    "packages/realm-react/testApp",
     "integration-tests",
     "integration-tests/tests",
     "integration-tests/environments/*"
