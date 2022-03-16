@@ -1213,9 +1213,9 @@ module.exports = {
     realm1.writeCopyTo(realm2Path);
 
     /*
-        Test 2:  check that a copied realm can be opened by another user, and that
-          the contents of the original realm and the copy are as expected
-      */
+      Test 2:  check that a copied realm can be opened by another user, and that
+        the contents of the original realm and the copy are as expected
+    */
     // log in a new user, open the realm copy we created just above
     const user2 = await app.logIn(credentials2);
     const config2 = {

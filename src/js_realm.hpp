@@ -1473,7 +1473,7 @@ realm::Realm::Config RealmClass<T>::write_copy_to_helper_deprecated(ContextType 
     /* Validation rules:
      * 1) there must be one or two parameters
      * 2) first parameter must be a string
-     * 3) second parameter, is present, must be a binary
+     * 3) second parameter, if present, must be a binary
      */
 
     realm::Realm::Config config;
@@ -1501,6 +1501,13 @@ realm::Realm::Config RealmClass<T>::write_copy_to_helper_deprecated(ContextType 
 
         OwnedBinaryData encryption_key = Value::to_binary(ctx, encKeyValue);
         config.encryption_key.assign(encryption_key.data(), encryption_key.data() + encryption_key.size());
+    }
+
+    SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
+    if (static_cast<bool>(realm->sync_session())) {
+        // input realm is synced, and we're in deprecated mode.
+        // copy the sync config
+        config.sync_config = realm->config().sync_config;
     }
 
     return config;
