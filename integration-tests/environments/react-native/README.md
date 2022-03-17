@@ -60,9 +60,29 @@ npm run watch:ios
 
 This will keep the harness, metro server and mocha-remote servers running and connected to the device. When hot reloading (from an update to Realm JS, the tests or the app itself) the app will re-connect and rerun the tests.
 
+## Running the tests via Xcode
+
+Open the Xcode workspace
+
+```bash
+xed ios
+```
+
+The following command will run the harness without starting the app on the simulator, for tests with "Class models" in their title and skip tests which require a server.
+
+```
+SKIP_RUNNER=true MOCHA_REMOTE_GREP="Class models" MOCHA_REMOTE_CONTEXT=missingServer npm run watch:ios
+```
+
+See the use of environment variables in the section below.
+
+Now, simply run the app from Xcode.
+
 ## Environment variables
 
-// TODO: Add a section on environment variables supported by the harness.
+See the general documentation for [environment variables passed to Mocha Remote](../../README.md#setting-context).
+
+- `SKIP_RUNNER=true` Instructs the harness to skip starting the app. This is useful when debugging the integration test app started via Xcode.
 
 ## Weird configurations
 
