@@ -1391,7 +1391,7 @@ void RealmClass<T>::compact(ContextType ctx, ObjectType this_object, Arguments& 
 }
 
 /**
- * @brief Helper function for `writeCopyTo()` -- parses and validated parameters in a config structure passed from JS
+ * @brief Helper function for `writeCopyTo()` -- parses and validates parameters in a config structure passed from JS
  *
  * @param ctx JS context
  * @param this_object JS's object holding the `RealmClass`
@@ -1409,44 +1409,37 @@ realm::Realm::Config RealmClass<T>::write_copy_to_helper(ContextType ctx, Object
      * 5) args[0].sync may be present, and must be an object if it is present
      */
 
+
     // validate 1)
-    if (args.count > 1) {
-        throw std::runtime_error("`writeCopyTo(<config>)` accepts only one parameter");
-    }
+    validate_argument_count(args.count, 1, "`writeCopyTo(<config>)` accepts only one parameter");
 
     // validate 2)
-    ValueType firstParamValue = args[0];
-    if (!Value::is_object(ctx, firstParamValue)) {
-        throw std::runtime_error("`config` parameter must be an object");
-    }
-
-    ObjectType output_config = Value::to_object(ctx, firstParamValue);
+//    ValueType firstParamValue = Value::validated_to_object(ctx, args[0], "`config` parameter must be an object");
+    ObjectType output_config = Value::validated_to_object(ctx, args[0], "`config` parameter must be an object");
+//    ObjectType output_config = Value::to_object(ctx, firstParamValue);
 
     // validate 3)
     // make sure that `path` property exists and that it is a string
     ValueType pathValue = Object::get_property(ctx, output_config, "path");
     if (Value::is_undefined(ctx, pathValue)) {
-        throw std::runtime_error("`path` property must exist in output configuration");
-    }
-    if (!Value::is_string(ctx, pathValue)) {
-        throw std::runtime_error("`path` property must be a string");
+        throw std::invalid_argument("`path` property must exist in output configuration");
     }
 
-    std::string output_path = Value::to_string(ctx, pathValue);
+    std::string output_path = Value::validated_to_string(ctx, pathValue, "`path` property must be a string");
 
     // validate 4)
     // check whether encryption key property exists, and whether it's a binary value
     ValueType encKeyValue = Object::get_property(ctx, output_config, "encryptionKey");
     // `encryptionKey` is optional..
     if (!Value::is_undefined(ctx, encKeyValue) && !Value::is_binary(ctx, encKeyValue)) {
-        throw std::runtime_error("'encryptionKey' property must be a Binary value");
+        throw std::invalid_argument("'encryptionKey' property must be a Binary value");
     }
 
     // validate 5)
     // check whether a sync config exists -- it is optional
     ValueType syncConfigValue = Object::get_property(ctx, output_config, "sync");
     if (!Value::is_undefined(ctx, syncConfigValue) && !Value::is_object(ctx, syncConfigValue)) {
-        throw std::runtime_error("'sync' property must be an object");
+        throw std::invalid_argument("'sync' property must be an object");
     }
 
 
@@ -1479,14 +1472,14 @@ realm::Realm::Config RealmClass<T>::write_copy_to_helper_deprecated(ContextType 
     realm::Realm::Config config;
     // validate 1)
     if (args.count != 1 && args.count != 2) {
-        throw std::runtime_error("`writeCopyTo(<path>, [encryption key])` accepts exactly one or two paramaters");
+        throw std::invalid_argument("`writeCopyTo(<path>, [encryption key])` accepts exactly one or two paramaters");
     }
 
     // validate 2)
     // make sure that `path` parameter exists and that it is a string
     ValueType pathValue = args[0];
     if (!Value::is_string(ctx, pathValue)) {
-        throw std::runtime_error("`path` parameter must be a string");
+        throw std::invalid_argument("`path` parameter must be a string");
     }
 
     config.path = Value::to_string(ctx, pathValue);
@@ -1496,7 +1489,7 @@ realm::Realm::Config RealmClass<T>::write_copy_to_helper_deprecated(ContextType 
         // a second parameter is given -- it must be an encryption key for the destination Realm
         ValueType encKeyValue = args[1];
         if (!Value::is_binary(ctx, encKeyValue)) {
-            throw std::runtime_error("Encryption key for 'writeCopyTo' must be a Binary");
+            throw std::invalid_argument("Encryption key for 'writeCopyTo' must be a Binary");
         }
 
         OwnedBinaryData encryption_key = Value::to_binary(ctx, encKeyValue);
@@ -1552,7 +1545,7 @@ void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Argumen
 
     realm::Realm::Config config;
     if (args.count == 0) {
-        throw std::runtime_error(
+        throw std::invalid_argument(
             "`writeCopyTo` requires <output configuration> or <path, [encryptionKey]> parameters");
     }
 

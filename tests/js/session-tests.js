@@ -1267,14 +1267,14 @@ module.exports = {
     await user2.logOut();
     realm2.close();
     Realm.deleteFile(config2);
-    const realm3Path = realm1Path + "copy3.realm";
-    realm1.writeCopyTo(realm3Path);
 
     /*
       Test 3:  open a copy of our realm with a new user and a new
         partition key.  We expect it to fail because of the mismatch
         in partition keys
     */
+    const realm3Path = realm1Path + "copy3.realm";
+    realm1.writeCopyTo(realm3Path);
     const user3 = await app.logIn(credentials3);
     const otherPartition = Utils.genPartition();
     const config3 = {
@@ -1364,7 +1364,7 @@ module.exports = {
     const configSync = {
       sync: {
         // TODO: export_to doesn't fail is there's no user..?
-        user: user,
+        user,
         partitionValue: "foo",
         _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
       },
@@ -1377,7 +1377,7 @@ module.exports = {
       sync: {
         // TODO: export_to doesn't fail is there's no user..?
         // TODO:  Realm.open() fails after export_to() of synced -> local
-        user: user,
+        user,
         partitionValue: "foo",
         _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
       },
