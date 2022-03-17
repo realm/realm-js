@@ -62,6 +62,7 @@
 #include <list>
 #include <map>
 #include <any>
+#include <utility>
 
 namespace realm {
 namespace js {
@@ -185,6 +186,20 @@ public:
         m_before_notify_notifications.clear();
     }
 
+    void add_results_callback(Results<T> results)
+    {
+        m_listener_results.emplace_back(std::move(results));
+    }
+
+    void apply_results_listener_callbacks()
+    {
+        while (!m_listener_results.empty()) {
+            auto results = m_listener_results.front();
+            results.apply_listener_callbacks();
+            m_listener_results.pop_front();
+        }
+    }
+
     ObjectDefaultsMap m_defaults;
     ConstructorMap m_constructors;
 
@@ -193,8 +208,40 @@ private:
     std::list<Protected<FunctionType>> m_notifications;
     std::list<Protected<FunctionType>> m_schema_notifications;
     std::list<Protected<FunctionType>> m_before_notify_notifications;
+    std::list<std::pair<std::string, FunctionType>> m_listener_callbacks;
+    std::list<Results<T>> m_listener_results;
     std::weak_ptr<realm::Realm> m_realm;
     std::string m_realm_path;
+
+    void add_listener_callback(std::string& name, FunctionType callback)
+    {
+        m_listener_callbacks.emplace_back(name, std::move(callback));
+    }
+
+    void apply_listener_callbacks()
+    {
+        while (!m_listener_callbacks.empty()) {
+            auto callback_pair = m_listener_callbacks.front();
+            auto name = callback_pair.first;
+            auto callback = callback_pair.second;
+
+            if (name == "change") {
+                add_notification(callback);
+            }
+            else if (name == "beforenotify") {
+                add_before_notify_notification(callback);
+            }
+            else if (name == "schema") {
+                add_schema_notification(callback);
+            }
+            else {
+                throw std::runtime_error(util::format(
+                    "Unknown event name '%1': only 'change', 'schema' and 'beforenotify' are supported.", name));
+            }
+
+            m_listener_callbacks.pop_front();
+        }
+    }
 
     void add(std::list<Protected<FunctionType>>& notifications, FunctionType fn)
     {
@@ -1250,6 +1297,8 @@ void RealmClass<T>::write(ContextType ctx, ObjectType this_object, Arguments& ar
     }
 
     realm->commit_transaction();
+
+    get_delegate<T>(realm.get())->apply_listener_callbacks();
 }
 
 template <typename T>
@@ -1270,6 +1319,8 @@ void RealmClass<T>::commit_transaction(ContextType ctx, ObjectType this_object, 
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
     realm->commit_transaction();
+    get_delegate<T>(realm.get())->apply_listener_callbacks();
+    get_delegate<T>(realm.get())->apply_results_listener_callbacks();
 }
 
 template <typename T>
@@ -1291,19 +1342,25 @@ void RealmClass<T>::add_listener(ContextType ctx, ObjectType this_object, Argume
     auto callback = Value::validated_to_function(ctx, args[1]);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
+
     realm->verify_open();
-    if (name == "change") {
-        get_delegate<T>(realm.get())->add_notification(callback);
-    }
-    else if (name == "beforenotify") {
-        get_delegate<T>(realm.get())->add_before_notify_notification(callback);
-    }
-    else if (name == "schema") {
-        get_delegate<T>(realm.get())->add_schema_notification(callback);
+    if (realm->is_in_transaction()) {
+        get_delegate<T>(realm.get())->add_listener_callback(name, callback);
     }
     else {
-        throw std::runtime_error(
-            util::format("Unknown event name '%1': only 'change', 'schema' and 'beforenotify' are supported.", name));
+        if (name == "change") {
+            get_delegate<T>(realm.get())->add_notification(callback);
+        }
+        else if (name == "beforenotify") {
+            get_delegate<T>(realm.get())->add_before_notify_notification(callback);
+        }
+        else if (name == "schema") {
+            get_delegate<T>(realm.get())->add_schema_notification(callback);
+        }
+        else {
+            throw std::runtime_error(util::format(
+                "Unknown event name '%1': only 'change', 'schema' and 'beforenotify' are supported.", name));
+        }
     }
 }
 

@@ -33,6 +33,8 @@
 #include "js_sync.hpp"
 #endif
 
+#include <tuple>
+
 namespace realm {
 namespace js {
 
@@ -49,6 +51,14 @@ struct NonRealmObjectException : public std::logic_error {
 template <typename T>
 class Results : public realm::Results {
 public:
+    using Type = T;
+    using ContextType = typename T::Context;
+    using ObjectType = typename T::Object;
+    using ValueType = typename T::Value;
+    using FunctionType = typename T::Function;
+    using Object = js::Object<T>;
+    using Value = js::Value<T>;
+
     Results(Results const& r)
         : realm::Results(r){};
     Results(realm::Results const& r)
@@ -60,6 +70,31 @@ public:
     using realm::Results::Results;
 
     std::vector<std::pair<Protected<typename T::Function>, NotificationToken>> m_notification_tokens;
+    std::list<std::tuple<Protected<typename T::GlobalContext>, Protected<typename T::Object>,
+                         Protected<typename T::Function>>>
+        m_listener_callbacks;
+
+    void apply_listener_callbacks()
+    {
+        this->m_listener_callbacks;
+        while (!m_listener_callbacks.empty()) {
+            auto callback_tuple = m_listener_callbacks.front();
+            auto protected_ctx = std::get<0>(callback_tuple);
+            auto protected_this = std::get<1>(callback_tuple);
+            auto protected_callback = std::get<2>(callback_tuple);
+
+            auto token = this->add_notification_callback([=](CollectionChangeSet const& change_set,
+                                                             std::exception_ptr exception) {
+                HANDLESCOPE(protected_ctx);
+                ValueType arguments[]{static_cast<ObjectType>(protected_this),
+                                      CollectionClass<T>::create_collection_change_set(protected_ctx, change_set)};
+                Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
+            });
+            this->m_notification_tokens.emplace_back(protected_callback, std::move(token));
+
+            this->m_listener_callbacks.pop_front();
+        }
+    }
 };
 
 template <typename T>
@@ -370,19 +405,23 @@ void ResultsClass<T>::add_listener(ContextType ctx, U& collection, ObjectType th
 {
     args.validate_maximum(1);
 
+
     auto callback = Value::validated_to_function(ctx, args[0]);
     Protected<FunctionType> protected_callback(ctx, callback);
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
-    auto token = collection.add_notification_callback(
-        [=](CollectionChangeSet const& change_set, std::exception_ptr exception) {
-            HANDLESCOPE(protected_ctx)
-            ValueType arguments[]{static_cast<ObjectType>(protected_this),
-                                  CollectionClass<T>::create_collection_change_set(protected_ctx, change_set)};
-            Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
-        });
-    collection.m_notification_tokens.emplace_back(protected_callback, std::move(token));
+    // get realm
+    SharedRealm realm = collection.get_realm();
+
+    if (realm->is_in_transaction()) {
+        collection.m_listener_callbacks.emplace_back(
+            std::make_tuple(protected_ctx, protected_this, protected_callback));
+        get_delegate<T>(realm.get())->add_results_callback(collection);
+    }
+    else {
+        // call that method you made
+    }
 }
 
 template <typename T>

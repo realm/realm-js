@@ -2313,4 +2313,42 @@ module.exports = {
 
     realm.close();
   },
+  testRealmThingy: function () {
+    const realm = new Realm({ schema: schemas.EmbeddedObjectSchemas });
+
+    realm.beginTransaction();
+    realm.addListener("change", () => console.log("hello world"));
+
+    realm.close();
+  },
+  testResultThingy: function () {
+    const realm = new Realm({ schema: [schemas.IntOnly] });
+    const testData = [1, 2, 3, 4];
+    realm.write(() => {
+      testData.forEach((num) => realm.create(schemas.IntOnly.name, { intCol: num }));
+    });
+
+    const collection = realm.objects(schemas.IntOnly.name);
+
+    realm.beginTransaction();
+
+    collection.addListener(() => console.log("hello world"));
+
+    realm.close();
+  },
+  testObjectThingy: function () {
+    const realm = new Realm({ schema: [schemas.IntOnly] });
+    const testData = [1, 2, 3, 4];
+    realm.write(() => {
+      testData.forEach((num) => realm.create(schemas.IntOnly.name, { intCol: num }));
+    });
+
+    const object = realm.objects(schemas.IntOnly.name)[0];
+
+    realm.beginTransaction();
+
+    object.addListener(() => console.log("hello world"));
+
+    realm.close();
+  },
 };

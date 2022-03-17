@@ -312,7 +312,7 @@ template <typename T>
 void ListClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
 {
     auto list = get_internal<T, ListClass<T>>(ctx, this_object);
-    ResultsClass<T>::add_listener(ctx, *list, this_object, args);
+    // ResultsClass<T>::add_listener(ctx, *list, this_object, args);
 }
 
 template <typename T>

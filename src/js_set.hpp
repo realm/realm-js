@@ -505,7 +505,7 @@ void SetClass<T>::add_listener(ContextType ctx, ObjectType this_object, Argument
 {
     // args is validated by ResultClass
     auto set = get_internal<T, SetClass<T>>(ctx, this_object);
-    ResultsClass<T>::add_listener(ctx, *set, this_object, args);
+    // ResultsClass<T>::add_listener(ctx, *set, this_object, args);
 }
 
 
