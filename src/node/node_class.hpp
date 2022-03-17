@@ -211,7 +211,7 @@ public:
     static bool is_instance(Napi::Env env, const Napi::Object& object);
 
     static Internal* get_internal(Napi::Env env, const Napi::Object& object);
-    static void set_internal(Napi::Env env, const Napi::Object& object, Internal* data);
+    static void set_internal(Napi::Env env, Napi::Object& object, Internal* data);
 
     static Napi::Value constructor_callback(const Napi::CallbackInfo& info);
     static bool has_native_method(const std::string& name);

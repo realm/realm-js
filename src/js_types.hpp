@@ -461,7 +461,7 @@ public:
     static typename ClassType::Internal* get_internal(ContextType ctx, const ObjectType&);
 
     template <typename ClassType>
-    static void set_internal(ContextType ctx, const ObjectType&, typename ClassType::Internal*);
+    static void set_internal(ContextType ctx, ObjectType&, typename ClassType::Internal*);
 
     static ObjectType create_from_app_error(ContextType, const app::AppError&);
     static ValueType create_from_optional_app_error(ContextType, const util::Optional<app::AppError>&);
@@ -567,7 +567,7 @@ REALM_JS_INLINE typename ClassType::Internal* get_internal(typename T::Context c
 }
 
 template <typename T, typename ClassType>
-REALM_JS_INLINE void set_internal(typename T::Context ctx, const typename T::Object& object,
+REALM_JS_INLINE void set_internal(typename T::Context ctx, typename T::Object& object,
                                   typename ClassType::Internal* ptr)
 {
     Object<T>::template set_internal<ClassType>(ctx, object, ptr);
