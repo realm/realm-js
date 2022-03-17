@@ -584,15 +584,16 @@ module.exports = {
   },
 
   testRealmDataInitialization: function () {
-
+    let nCalls = 0;
     const data = [1, 2, 3];
     const initializer = (r) => {
       data.forEach((n) => r.create(schemas.IntOnly.name, { intCol: n }));
+      nCalls++;
     };
 
     const config = {
       schema: [schemas.IntOnly],
-      dataInitialization: initializer,
+      initialDataTransaction: initializer,
     };
     Realm.deleteFile(config);
 
@@ -612,6 +613,7 @@ module.exports = {
     let realm2 = new Realm(config);
     validateRealm(realm2, 2);
     realm2.close();
+    TestCase.assertEqual(nCalls, 1);
   },
 
   testRealmWrite: function () {
@@ -619,7 +621,7 @@ module.exports = {
       schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes],
     });
 
-    // exceptions should be propogated
+    // exceptions should be propagated
     TestCase.assertThrowsContaining(
       () =>
         realm.write(() => {
