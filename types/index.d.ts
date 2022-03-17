@@ -210,7 +210,12 @@ declare namespace Realm {
      * Object
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Object.html }
      */
-    abstract class Object {
+    abstract class Object<T = unknown> {
+        /**
+         * Creates a new object in the database.
+         */
+        constructor(realm: Realm, values?: RealmInsertionModel<T>);
+
         /**
          * @returns An array of the names of the object's properties.
          */

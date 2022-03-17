@@ -19,7 +19,7 @@
 import { expect } from "chai";
 import Realm from "realm";
 
-import { openRealmBefore } from "../hooks";
+import { openRealmBeforeEach } from "../hooks";
 
 describe("Class models", () => {
   describe("as schema element", () => {
@@ -75,7 +75,7 @@ describe("Class models", () => {
   });
 
   describe("#constructor", () => {
-    class Person extends Realm.Object {
+    class Person extends Realm.Object<Person> {
       name!: string;
       static schema: Realm.ObjectSchema = {
         name: "Person",
@@ -83,7 +83,7 @@ describe("Class models", () => {
       };
     }
 
-    openRealmBefore({ schema: [Person] });
+    openRealmBeforeEach({ schema: [Person] });
 
     it("creates objects", function (this: RealmContext) {
       this.realm.write(() => {
@@ -97,6 +97,20 @@ describe("Class models", () => {
         // Expect the first element to be the object we just added
         expect(persons.length).equals(1);
         expect(persons[0]._objectId()).equals(person._objectId());
+      });
+    });
+
+    it("creates objects with values", function (this: RealmContext) {
+      this.realm.write(() => {
+        // Expect no persons in the database
+        const persons = this.realm.objects<Person>("Person");
+        expect(persons.length).equals(0);
+
+        const alice = new Person(this.realm, { name: "Alice" });
+        expect(alice.name).equals("Alice");
+        // Expect the first element to be the object we just added
+        expect(persons.length).equals(1);
+        expect(persons[0].name).equals("Alice");
       });
     });
   });
