@@ -1414,9 +1414,10 @@ realm::Realm::Config RealmClass<T>::write_copy_to_helper(ContextType ctx, Object
     validate_argument_count(args.count, 1, "`writeCopyTo(<config>)` accepts only one parameter");
 
     // validate 2)
-//    ValueType firstParamValue = Value::validated_to_object(ctx, args[0], "`config` parameter must be an object");
+    //    ValueType firstParamValue = Value::validated_to_object(ctx, args[0], "`config` parameter must be an
+    //    object");
     ObjectType output_config = Value::validated_to_object(ctx, args[0], "`config` parameter must be an object");
-//    ObjectType output_config = Value::to_object(ctx, firstParamValue);
+    //    ObjectType output_config = Value::to_object(ctx, firstParamValue);
 
     // validate 3)
     // make sure that `path` property exists and that it is a string
