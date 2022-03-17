@@ -379,7 +379,7 @@ class Realm {
  *   It returns `true` to indicate that an attempt to compact the file should be made. The compaction
  *   will be skipped if another process is accessing it.
  * @property {callback(realm)} [initialDataTransaction] - The function called when opening a Realm for
- *   the first time. The function can populate the Realm prior to open it. When calling the callback,
+ *   the first time. The function can populate the Realm prior to opening it. When calling the callback,
  *   the Realm will be in a write transaction. The callback takes one argument:
  *     - `realm` - The Realm
  * @property {string} [path={@link Realm.defaultPath}] - The path to the file where the
