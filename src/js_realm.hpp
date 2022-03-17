@@ -655,7 +655,7 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
                                                 "('sync.partitionValue' is set).");
                 }
 
-                config.schema_mode = SchemaMode::ResetFile;
+                config.schema_mode = SchemaMode::SoftResetFile;
             }
 
             static const String schema_string = "schema";
@@ -698,7 +698,7 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
 
                 FunctionType migration_function = Value::validated_to_function(ctx, migration_value, "migration");
 
-                if (config.schema_mode == SchemaMode::ResetFile) {
+                if (config.schema_mode == SchemaMode::SoftResetFile) {
                     throw std::invalid_argument(
                         "Cannot include 'migration' when 'deleteRealmIfMigrationNeeded' is set.");
                 }
