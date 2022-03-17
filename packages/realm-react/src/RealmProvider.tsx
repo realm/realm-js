@@ -60,7 +60,7 @@ export function createRealmProvider(
    * For example, to override the `path` config value, use a prop named `path`,
    * e.g. `path="newPath.realm"`
    */
-  return ({ children, fallback, ...restProps }) => {
+  return ({ children, fallback: Fallback, ...restProps }) => {
     const [realm, setRealm] = useState<Realm | null>(null);
     // We increment `configVersion` when a config override passed as a prop
     // changes, which triggers a `useEffect` to re-open the Realm with the
@@ -111,7 +111,10 @@ export function createRealmProvider(
     }, [configVersion, realm, setRealm]);
 
     if (!realm) {
-      return <>{fallback}</>;
+      if (typeof Fallback === "function") {
+        return <Fallback />;
+      }
+      return <>{Fallback}</>;
     }
 
     return <RealmContext.Provider value={realm} children={children} />;

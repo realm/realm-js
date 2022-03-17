@@ -175,23 +175,44 @@ describe("RealmProvider", () => {
 
     expect(newSchemaNameContainer).toHaveTextContent("cat");
   });
-  it("initially renders a fallback, until realm exists", async () => {
-    const App = () => {
-      return (
-        <RealmProvider fallback={<View testID="fallbackContainer" />}>
-          <View testID="testContainer" />
-        </RealmProvider>
-      );
-    };
-    const { queryByTestId } = render(<App />);
+  describe("initially renders a fallback, until realm exists", () => {
+    it("as a component", async () => {
+      const App = () => {
+        return (
+          <RealmProvider fallback={() => <View testID="fallbackContainer" />}>
+            <View testID="testContainer" />
+          </RealmProvider>
+        );
+      };
+      const { queryByTestId } = render(<App />);
 
-    expect(queryByTestId("fallbackContainer")).not.toBeNull();
-    expect(queryByTestId("testContainer")).toBeNull();
+      expect(queryByTestId("fallbackContainer")).not.toBeNull();
+      expect(queryByTestId("testContainer")).toBeNull();
 
-    await waitFor(() => queryByTestId("testContainer"));
+      await waitFor(() => queryByTestId("testContainer"));
 
-    expect(queryByTestId("fallbackContainer")).toBeNull();
-    expect(queryByTestId("testContainer")).not.toBeNull();
+      expect(queryByTestId("fallbackContainer")).toBeNull();
+      expect(queryByTestId("testContainer")).not.toBeNull();
+    });
+    it("as an element", async () => {
+      const Fallback = <View testID="fallbackContainer" />;
+      const App = () => {
+        return (
+          <RealmProvider fallback={Fallback}>
+            <View testID="testContainer" />
+          </RealmProvider>
+        );
+      };
+      const { queryByTestId } = render(<App />);
+
+      expect(queryByTestId("fallbackContainer")).not.toBeNull();
+      expect(queryByTestId("testContainer")).toBeNull();
+
+      await waitFor(() => queryByTestId("testContainer"));
+
+      expect(queryByTestId("fallbackContainer")).toBeNull();
+      expect(queryByTestId("testContainer")).not.toBeNull();
+    });
   });
 });
 
