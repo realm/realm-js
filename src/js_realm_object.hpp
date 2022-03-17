@@ -70,7 +70,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::js::RealmObject<T>> {
 
     static ObjectType create_instance(ContextType, realm::js::RealmObject<T>);
 
-    static void constructor(ContextType, ObjectType, Arguments&, ObjectType);
+    static void constructor(ContextType, ObjectType, Arguments&);
     static void get_property(ContextType, ObjectType, const String&, ReturnValue&);
     static bool set_property(ContextType, ObjectType, const String&, ValueType);
     static std::vector<String> get_property_names(ContextType, ObjectType);
@@ -165,21 +165,26 @@ typename T::Object RealmObjectClass<T>::create_instance(ContextType ctx, realm::
 }
 
 template <typename T>
-void RealmObjectClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments& args,
-                                      ObjectType constructor)
+void RealmObjectClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments& args)
 {
+    // Parse aguments
     args.validate_between(1, 2);
+    auto constructor = Object::validated_get_object(ctx, this_object, "constructor");
     auto realm = Value::validated_to_object(ctx, args[0], "realm");
     auto values = Value::is_undefined(ctx, args[1]) ? Object::create_empty(ctx) : args[1];
+
     // Create an object
     std::vector<ValueType> create_args{constructor, values};
     Arguments create_arguments{ctx, create_args.size(), create_args.data()};
     ReturnValue result{ctx};
     RealmClass<T>::create(ctx, realm, create_arguments, result);
-    // Move the internal from the constructed object onto this_object
-    auto realm_object = Value::validated_to_object(ctx, result);
-    auto internal = get_internal<T, RealmObjectClass<T>>(ctx, realm_object);
-    set_internal<T, RealmObjectClass<T>>(ctx, this_object, internal);
+    ObjectType realm_object_object = Value::validated_to_object(ctx, result);
+
+    // Copy the internal from the constructed object onto this_object
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, realm_object_object);
+    // The finalizer on the ObjectWrap (applied inside of set_internal) will delete the `new_realm_object`
+    auto new_realm_object = new realm::js::RealmObject<T>(*realm_object);
+    set_internal<T, RealmObjectClass<T>>(ctx, this_object, new_realm_object);
 }
 
 template <typename T>

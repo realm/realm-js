@@ -1285,6 +1285,7 @@ Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Nap
         instance.Set(externalSymbol, externalValue);
     }
     else {
+        Napi::Object constructorPrototype = constructor.Get("prototype").As<Napi::Object>();
         // creating a RealmObject with user defined constructor
 
         bool schemaExists = schemaObjects->count(schemaName);
@@ -1304,7 +1305,6 @@ Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Nap
         if (schemaExists) {
             schemaObjectType = schemaObjects->at(schemaName);
             schemaObjectConstructor = schemaObjectType->constructor.Value();
-            Napi::Object constructorPrototype = constructor.Get("prototype").As<Napi::Object>();
             instance = ObjectCreate.Call({constructorPrototype}).As<Napi::Object>();
 
             Napi::External<Internal> externalValue = Napi::External<Internal>::New(env, internal, internal_finalizer);
@@ -1314,7 +1314,6 @@ Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Nap
         }
 
         schemaObjectConstructor = constructor;
-        Napi::Object constructorPrototype = constructor.Get("prototype").As<Napi::Object>();
 
         // get all properties from the schema
         std::vector<Napi::PropertyDescriptor> properties =
@@ -1385,8 +1384,7 @@ typename ClassType::Internal* ObjectWrap<ClassType>::get_internal(Napi::Env env,
 }
 
 template <typename ClassType>
-void ObjectWrap<ClassType>::set_internal(Napi::Env env, const Napi::Object& object,
-                                         typename ClassType::Internal* internal)
+void ObjectWrap<ClassType>::set_internal(Napi::Env env, Napi::Object& object, typename ClassType::Internal* internal)
 {
     bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::node::Types>>::value;
     if (isRealmObjectClass) {
@@ -1409,7 +1407,7 @@ Napi::Value ObjectWrap<ClassType>::constructor_callback(const Napi::CallbackInfo
     if (reinterpret_cast<void*>(s_class.constructor) != nullptr) {
         auto arguments = get_arguments(info);
         node::Arguments args{env, arguments.size(), arguments.data()};
-        s_class.constructor(env, info.This().As<Napi::Object>(), args, info.NewTarget().As<Napi::Object>());
+        s_class.constructor(env, info.This().As<Napi::Object>(), args);
         return scope.Escape(env.Null()); // return a value to comply with Napi::FunctionCallback
     }
     else {
