@@ -1082,7 +1082,7 @@ declare class Realm {
     objectForPrimaryKey<T extends Realm.Object>(type: {new(...arg: any[]): T; }, key: Realm.PrimaryKey): T | undefined;
 
     // Combined definitions
-    objectForPrimaryKey<T>(type: string | {new(...arg: any[]): T; }, key: Realm.PrimaryKey): (T & Realm.Object) | undefined;
+    objectForPrimaryKey<T>(type: string | {new(...arg: any[]): T; }, key: Realm.PrimaryKey): (T & Realm.Object<T>) | undefined;
 
     /**
      * @param  {string} type
