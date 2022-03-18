@@ -47,7 +47,9 @@ export function createUseQuery(useRealm: () => Realm) {
    * @param type - The object type, depicted by a string or a class extending Realm.Object
    * @returns a collection of realm objects or an empty array
    */
-  return function useQuery<T>(type: string | ({ new (): T } & Realm.ObjectClass)): Realm.Results<T & Realm.Object> {
+  return function useQuery<T>(
+    type: string | ({ new (...args: any): T } & Realm.ObjectClass),
+  ): Realm.Results<T & Realm.Object> {
     const realm = useRealm();
 
     // Create a forceRerender function for the cachedCollection to use as its updateCallback, so that
