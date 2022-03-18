@@ -1411,12 +1411,6 @@ Napi::Value ObjectWrap<ClassType>::constructor_callback(const Napi::CallbackInfo
         return scope.Escape(env.Null()); // return a value to comply with Napi::FunctionCallback
     }
     else {
-        // XXX: Remove this now that we declare a constructor for the RealmObjectClass
-        bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::node::Types>>::value;
-        if (isRealmObjectClass) {
-            return scope.Escape(env.Null()); // return a value to comply with Napi::FunctionCallback
-        }
-
         throw Napi::Error::New(env, "Illegal constructor");
     }
 }
