@@ -12,6 +12,9 @@ x.x.x Release notes (yyyy-MM-dd)
 * Converting floats/doubles into Decimal128 would yield imprecise results. ([realm/realm-core#5184](https://github.com/realm/realm-core/pull/5184), since v6.1.3)
 * Using accented characters in class and property names may end the sync session ([realm/realm-core#5196](https://github.com/realm/realm-core/pull/5196), since v10.3.0-rc.1)
 * Waiting for upload after opening a bundled Realm file could hang. ([realm/realm-core#5277](https://github.com/realm/realm-core/issues/5277), since v10.10.0)
+* Realm Query Language would not accept `in` as a property name. ([realm/realm-core#5312](https://github.com/realm/realm-core/issues/5312))
+* Fixed an issue that could lead to a crash with exceptions like `'KeyNotFound'`. ([realm/realm-core#5283](https://github.com/realm/realm-core/issues/5283), since v6.0.0)
+* Refreshing the user profile after the app has been destroyed leads to a failure. ([realm/realm-dotnet#2800](https://github.com/realm/realm-dotnet/issues/2800)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -20,7 +23,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v11.9.0 to v11.11.0.
+* Upgraded Realm Core from v11.9.0 to v11.12.0.
 * Fixed analytics to read the `realm/package.json` when installing from the root of the package.
 * Fixed React Native Android integration test harness to read only one pid when starting logcat.
 * Added a script to generate JS template apps from TS, and updated JS templates. ([4374](https://github.com/realm/realm-js/pull/4374))
