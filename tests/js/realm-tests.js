@@ -591,7 +591,7 @@ module.exports = {
 
     const config = {
       schema: [schemas.IntOnly],
-      initialDataTransaction: initializer,
+      onFirstOpen: initializer,
     };
     Realm.deleteFile(config);
 

@@ -689,11 +689,11 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
                 config.should_compact_on_launch_function = std::move(should_compact_on_launch_functor);
             }
 
-            static const String data_initialization_string = "initialDataTransaction";
+            static const String data_initialization_string = "onFirstOpen";
             ValueType data_initialization_value = Object::get_property(ctx, object, data_initialization_string);
             if (!Value::is_undefined(ctx, data_initialization_value)) {
                 if (config.schema_mode == SchemaMode::Immutable) {
-                    throw std::invalid_argument("Cannot set 'initialDataTransaction' when 'readOnly' is set.");
+                    throw std::invalid_argument("Cannot set 'onFirstOpen' when 'readOnly' is set.");
                 }
 
                 FunctionType data_initialization_function =
