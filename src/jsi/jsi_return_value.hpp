@@ -118,6 +118,11 @@ public:
             set_undefined();
         }
     }
+
+    operator JsiVal() const
+    {
+        return m_env(m_value);
+    }
 };
 
 } // namespace js
