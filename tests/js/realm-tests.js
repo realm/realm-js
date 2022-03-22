@@ -1443,6 +1443,11 @@ module.exports = {
       () => realm.objectForPrimaryKey("InvalidClass", 0),
       "Object type 'InvalidClass' not found in schema.",
     );
+
+    TestCase.assertThrowsContaining(
+      () => realm.objectForPrimaryKey("IntPrimaryObject", { foo: "bar" }),
+      "Property must be of type 'number', got ([object Object])",
+    );
   },
 
   testNotifications: function () {
