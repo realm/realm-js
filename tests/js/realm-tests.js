@@ -583,12 +583,46 @@ module.exports = {
     TestCase.assertEqual(Realm.schemaVersion("another.realm"), 2);
   },
 
+  testRealmDataInitialization: function () {
+    const data = [1, 2, 3];
+    const initializer = (r) => {
+      data.forEach((n) => r.create(schemas.IntOnly.name, { intCol: n }));
+    };
+
+    const config = {
+      schema: [schemas.IntOnly],
+      onFirstOpen: initializer,
+    };
+    Realm.deleteFile(config);
+
+    const validateRealm = (realm) => {
+      let pass = 1;
+      return function () {
+        pass++;
+        let ints = realm.objects(schemas.IntOnly.name);
+        TestCase.assertEqual(ints.length, data.length, `Length (pass: ${pass})`);
+        for (let i = 0; i < data.length; i++) {
+          TestCase.assertEqual(data[i], ints[i].intCol, `data[${i}] (pass: ${pass})`);
+        }
+      };
+    };
+
+    let realm1 = new Realm(config);
+    validateRealm(realm1);
+    realm1.close();
+
+    // Open a second time and no new data is written
+    let realm2 = new Realm(config);
+    validateRealm(realm2);
+    realm2.close();
+  },
+
   testRealmWrite: function () {
     const realm = new Realm({
       schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes],
     });
 
-    // exceptions should be propogated
+    // exceptions should be propagated
     TestCase.assertThrowsContaining(
       () =>
         realm.write(() => {
@@ -775,8 +809,6 @@ module.exports = {
     TestCase.assertEqual(objects.length, 0);
 
     let template = Realm.createTemplateObject(schemas.AllPrimaryTypes);
-
-    console.log(JSON.stringify(template));
 
     // First notification -> Object created
     realm.write(() => {
