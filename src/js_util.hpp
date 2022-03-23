@@ -34,14 +34,14 @@ enum class AggregateFunc { Min, Max, Sum, Avg };
 
 static std::vector<std::string> const JSLogFunctionName(
     // do not reorder unless reordering JSLogFunction as well
-    {"log",
-    "debug",
-    "info",
-    "error",
-    "warn",
-    "trace",
-    }
-);
+    {
+        "log",
+        "debug",
+        "info",
+        "error",
+        "warn",
+        "trace",
+    });
 
 enum JSLogFunction {
     // do not reorder unless reordering JSLogFunctionName as well
@@ -172,17 +172,17 @@ typename T::Object make_js_error(typename T::Context ctx, std::string message)
 }
 
 /**
- * @brief 
+ * @brief
  *
- * @param ctx 
- * @param message 
- * @param console_log_cmd 
+ * @param ctx
+ * @param message
+ * @param console_log_cmd
  */
 
 
 /**
  * @brief Log a message to JS's `console`
- * 
+ *
  * @tparam T JS Engine
  * @param ctx The current JS context
  * @param message Message to pass along to `console`'s logger
