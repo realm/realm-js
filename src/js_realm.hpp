@@ -663,7 +663,7 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
                                                 "('sync.partitionValue' is set).");
                 }
 
-                config.schema_mode = SchemaMode::ResetFile;
+                config.schema_mode = SchemaMode::SoftResetFile;
             }
 
             static const String schema_string = "schema";
@@ -697,6 +697,29 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
                 config.should_compact_on_launch_function = std::move(should_compact_on_launch_functor);
             }
 
+            static const String data_initialization_string = "onFirstOpen";
+            ValueType data_initialization_value = Object::get_property(ctx, object, data_initialization_string);
+            if (!Value::is_undefined(ctx, data_initialization_value)) {
+                if (config.schema_mode == SchemaMode::Immutable) {
+                    throw std::invalid_argument("Cannot set 'onFirstOpen' when 'readOnly' is set.");
+                }
+
+                FunctionType data_initialization_function =
+                    Value::validated_to_function(ctx, data_initialization_value);
+                config.initialization_function = [=](SharedRealm realm) {
+                    ValueType arguments[] = {
+                        create_object<T, RealmClass<T>>(ctx, new SharedRealm(realm)),
+                    };
+                    try {
+                        Function<T>::call(ctx, data_initialization_function, 1, arguments);
+                    }
+                    catch (...) {
+                        realm->close();
+                        throw;
+                    }
+                };
+            }
+
             static const String migration_string = "migration";
             ValueType migration_value = Object::get_property(ctx, object, migration_string);
             if (!Value::is_undefined(ctx, migration_value)) {
@@ -706,7 +729,7 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
 
                 FunctionType migration_function = Value::validated_to_function(ctx, migration_value, "migration");
 
-                if (config.schema_mode == SchemaMode::ResetFile) {
+                if (config.schema_mode == SchemaMode::SoftResetFile) {
                     throw std::invalid_argument(
                         "Cannot include 'migration' when 'deleteRealmIfMigrationNeeded' is set.");
                 }

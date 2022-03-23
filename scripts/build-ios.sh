@@ -57,7 +57,7 @@ DESTINATIONS=()
 LIBRARIES=()
 BUILD_LIB_CMDS=()
 for platform in "${PLATFORMS[@]}"; do
-    case "$platform" in 
+    case "$platform" in
         ios)
             DESTINATIONS+=(-destination 'generic/platform=iOS')
             LIBRARIES+=(-library ./out/$CONFIGURATION-iphoneos/librealm-js-ios.a -headers ./_include)
@@ -88,7 +88,7 @@ pushd build
 
 # Configure CMake project
 cmake "$PROJECT_ROOT" -GXcode \
-    -DCMAKE_TOOLCHAIN_FILE="$PROJECT_ROOT/cmake/ios.toolchain.cmake" \
+    -DCMAKE_TOOLCHAIN_FILE="$PROJECT_ROOT/vendor/realm-core/tools/cmake/xcode.toolchain.cmake" \
     -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY="$(pwd)/out/$<CONFIG>\$EFFECTIVE_PLATFORM_NAME" \
 
 xcodebuild build \

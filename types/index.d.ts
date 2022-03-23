@@ -162,6 +162,7 @@ declare namespace Realm {
         schema?: (ObjectClass | ObjectSchema)[];
         schemaVersion?: number;
         shouldCompactOnLaunch?: (totalBytes: number, usedBytes: number) => boolean;
+        onFirstOpen?: (realm: Realm) => void;
         path?: string;
         fifoFilesFallbackPath?: string;
         readOnly?: boolean;

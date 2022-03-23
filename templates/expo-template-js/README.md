@@ -10,16 +10,19 @@ Simple Expo template to quickly get started with Realm.
 
 ## 🚀 How to use
 
+If you haven't already, install the `expo-cli`:
 ```
-npx expo-cli init MyAwesomeRealmApp -t @realm/expo-template-js
+npm install --global expo-cli
+```
+```
+yarn global add expo-cli
 ```
 
-- Run `expo start --dev-client`, try it out.
+Then use the following command to generate your template:
 
-## ☁️ Build in the cloud
-
-- [Building with EAS](https://docs.expo.dev/eas/)
-
+```
+expo init MyAwesomeRealmApp --template @realm/expo-template-js
+```
 ## 🏃 How to build and run locally
 
 - [Setup development Environment](https://reactnative.dev/docs/environment-setup)
@@ -37,10 +40,25 @@ yarn android
 ```
 npm run android
 ```
+## 💻 Start the Dev Client
+
+```
+expo start --dev-client
+```
+```
+yarn start
+```
+```
+npm run start
+```
+
+## ☁️ Build in the cloud
+
+- [Building with EAS](https://docs.expo.dev/eas/)
 
 ## 📝 Notes
-
-- [Setting up Sync](https://docs.mongodb.com/realm/sdk/react-native/quick-start/)
+- [React Native docs](https://reactnative.dev/docs/getting-started)
+- [React Hooks](https://reactjs.org/docs/hooks-intro.html)
+- [Setting Up Realm Sync](https://docs.mongodb.com/realm/sdk/react-native/quick-start/)
 - [Realm JS Documentation](https://docs.mongodb.com/realm/sdk/react-native/)
-- [Development Client docs](https://docs.expo.dev/clients/introduction/)
-- [Building with EAS](https://docs.expo.dev/eas/)
+- [@realm/react Readme](https://github.com/realm/realm-js/tree/master/packages/realm-react#readme)
