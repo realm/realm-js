@@ -168,10 +168,10 @@ void log_to_console(typename T::Context ctx, std::string const& message, std::st
 
     ObjectType console = Value::validated_to_object(ctx, Object::get_global(ctx, "console"), "console");
     ValueType warn_obj = Object::get_property(ctx, console, console_log_cmd);
-    FunctionType warn =
+    FunctionType log_function =
         Value::validated_to_function(ctx, warn_obj, std::string("console." + console_log_cmd).c_str());
     ValueType msg[1] = {Value::from_string(ctx, message)};
-    Function<T>::call(ctx, warn, 1, msg);
+    Function<T>::call(ctx, log_function, 1, msg);
 }
 
 
