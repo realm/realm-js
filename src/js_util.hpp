@@ -163,9 +163,11 @@ void log_to_console(typename T::Context ctx, std::string const &console_log_cmd,
     using Object = js::Object<T>;
     using ValueType = typename T::Value;
     using Value = js::Value<T>;
+    using FunctionType = typename T::Function;
+
     ObjectType console = Value::validated_to_object(ctx, Object::get_global(ctx, "console"), "console");
     ValueType warn_obj = Object::get_property(ctx, console, console_log_cmd);
-    auto warn = Value::validated_to_function(ctx, warn_obj, std::string("console." + console_log_cmd).c_str());
+    FunctionType warn = Value::validated_to_function(ctx, warn_obj, std::string("console." + console_log_cmd).c_str());
     ValueType msg[1] = {Value::from_string(ctx, message)};
     Function<T>::call(ctx, warn, 1, msg);
 }
