@@ -22,7 +22,7 @@ The documentation for the Realm React Native SDK can be found at [docs.mongodb.c
 
 The API reference is located at [docs.mongodb.com/realm-sdks/js/latest/](https://docs.mongodb.com/realm-sdks/js/latest/).
 
-If you are using React Native, please also take a look the README for [@realm/react](https://github.com/realm/realm-js/tree/master/packages/realm-react#readme).
+If you are using React Native, please also take a look the README for [@realm/react](https://github.com/realm/realm-js/tree/master/packages/realm-react#readme), which provides React hooks to make working with Realm easier.
 
 
 ## Template apps using Expo for React Native
