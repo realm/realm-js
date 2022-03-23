@@ -2092,11 +2092,11 @@ module.exports = {
 
     TestCase.assertThrowsContaining(() => {
       realm.writeCopyTo();
-    }, "At least path has to be provided for 'writeCopyTo'");
+    }, "`writeCopyTo` requires <output configuration> or <path, [encryptionKey]> parameters");
 
     TestCase.assertThrowsContaining(() => {
       realm.writeCopyTo(34);
-    }, "Argument to 'writeCopyTo' must be a String.");
+    }, "`config` parameter must be an object");
 
     // make sure that copies are in the same directory as the original file
     // that is important for running tests on mobile devices,
@@ -2112,7 +2112,7 @@ module.exports = {
 
     TestCase.assertThrowsContaining(() => {
       realm.writeCopyTo(realm.path + ".copy-invalid-key.realm", "hello");
-    }, "Encryption key for 'writeCopyTo' must be a Binary.");
+    }, "Encryption key for 'writeCopyTo' must be an ArrayBuffer or ArrayBufferView");
 
     const encryptedCopyName = realm.path + ".copy-encrypted.realm";
 
