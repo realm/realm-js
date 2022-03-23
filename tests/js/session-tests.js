@@ -1434,6 +1434,10 @@ module.exports = {
 
     await user.logOut();
 
+    // FIXME:
+    // The test loops below should be refactored when moving to integration tests.
+    // Multiple tests should be generated instead of looping over the test combinations
+    // (see https://mochajs.org/#dynamically-generating-tests)
     let testNo = 1;
     for (const source of sourceLocation) {
       for (const destination of destinationLocation) {
@@ -1547,7 +1551,7 @@ module.exports = {
     TestCase.assertThrowsContaining(() => {
       // wrong `encryptionKey` property type
       realm.writeCopyTo({ path: "outputPath", encryptionKey: "notBinary" });
-    }, "'encryptionKey' property must be a Binary value");
+    }, "'encryptionKey' property must be an ArrayBuffer or ArrayBufferView");
     TestCase.assertThrowsContaining(() => {
       // wrong `sync` property type
       realm.writeCopyTo({ path: "outputPath", sync: "invalidProperty" });

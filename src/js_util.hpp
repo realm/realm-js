@@ -150,5 +150,26 @@ typename T::Object make_js_error(typename T::Context ctx, std::string message)
     return Function<T>::construct(ctx, error_ctor, {Value::from_string(ctx, message)});
 }
 
+/**
+ * @brief Log a message to JS's `console`
+ * 
+ * @param ctx The current JS context
+ * @param console_log_cmd Logging function to invoke on `console`, e.g., `log`, `warn`
+ * @param message Message to pass along to `console`'s logger
+ */
+template <typename T>
+void log_to_console(typename T::Context ctx, std::string const &console_log_cmd, std::string const &message) {
+    using ObjectType = typename T::Object;
+    using Object = js::Object<T>;
+    using ValueType = typename T::Value;
+    using Value = js::Value<T>;
+    ObjectType console = Value::validated_to_object(ctx, Object::get_global(ctx, "console"), "console");
+    ValueType warn_obj = Object::get_property(ctx, console, console_log_cmd);
+    auto warn = Value::validated_to_function(ctx, warn_obj, std::string("console." + console_log_cmd).c_str());
+    ValueType msg[1] = {Value::from_string(ctx, message)};
+    Function<T>::call(ctx, warn, 1, msg);
+}
+
+
 } // namespace js
 } // namespace realm

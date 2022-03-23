@@ -1414,10 +1414,7 @@ realm::Realm::Config RealmClass<T>::write_copy_to_helper(ContextType ctx, Object
     validate_argument_count(args.count, 1, "`writeCopyTo(<config>)` accepts only one parameter");
 
     // validate 2)
-    //    ValueType firstParamValue = Value::validated_to_object(ctx, args[0], "`config` parameter must be an
-    //    object");
     ObjectType output_config = Value::validated_to_object(ctx, args[0], "`config` parameter must be an object");
-    //    ObjectType output_config = Value::to_object(ctx, firstParamValue);
 
     // validate 3)
     // make sure that `path` property exists and that it is a string
@@ -1433,7 +1430,7 @@ realm::Realm::Config RealmClass<T>::write_copy_to_helper(ContextType ctx, Object
     ValueType encKeyValue = Object::get_property(ctx, output_config, "encryptionKey");
     // `encryptionKey` is optional..
     if (!Value::is_undefined(ctx, encKeyValue) && !Value::is_binary(ctx, encKeyValue)) {
-        throw std::invalid_argument("'encryptionKey' property must be a Binary value");
+        throw std::invalid_argument("'encryptionKey' property must be an ArrayBuffer or ArrayBufferView");
     }
 
     // validate 5)
@@ -1470,10 +1467,13 @@ realm::Realm::Config RealmClass<T>::write_copy_to_helper_deprecated(ContextType 
      * 3) second parameter, if present, must be a binary
      */
 
+    // log deprecation warning to console.warn
+    log_to_console<T>(ctx, "warn", "`writeCopyTo(<path>, [encryption key])` has been deprecated.  Please use `writeCopyTo(<config>).");
+
     realm::Realm::Config config;
     // validate 1)
     if (args.count != 1 && args.count != 2) {
-        throw std::invalid_argument("`writeCopyTo(<path>, [encryption key])` accepts exactly one or two paramaters");
+        throw std::invalid_argument("`writeCopyTo(<path>, [encryption key])` accepts exactly one or two parameters");
     }
 
     // validate 2)
@@ -1490,7 +1490,7 @@ realm::Realm::Config RealmClass<T>::write_copy_to_helper_deprecated(ContextType 
         // a second parameter is given -- it must be an encryption key for the destination Realm
         ValueType encKeyValue = args[1];
         if (!Value::is_binary(ctx, encKeyValue)) {
-            throw std::invalid_argument("Encryption key for 'writeCopyTo' must be a Binary");
+            throw std::invalid_argument("Encryption key for 'writeCopyTo' must be an ArrayBuffer or ArrayBufferView");
         }
 
         OwnedBinaryData encryption_key = Value::to_binary(ctx, encKeyValue);

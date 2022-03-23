@@ -2075,7 +2075,7 @@ module.exports = {
 
     TestCase.assertThrowsContaining(() => {
       realm.writeCopyTo(realm.path + ".copy-invalid-key.realm", "hello");
-    }, "Encryption key for 'writeCopyTo' must be a Binary");
+    }, "Encryption key for 'writeCopyTo' must be an ArrayBuffer or ArrayBufferView");
 
     const encryptedCopyName = realm.path + ".copy-encrypted.realm";
 
