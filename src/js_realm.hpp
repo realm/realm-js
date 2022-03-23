@@ -1493,7 +1493,7 @@ realm::Realm::Config RealmClass<T>::write_copy_to_helper_deprecated(ContextType 
     // log deprecation warning to console.warn
     log_to_console<T>(
         ctx, "`writeCopyTo(<path>, [encryption key])` has been deprecated.  Please use `writeCopyTo(<config>).",
-        "warn");
+        JSLogFunction::Warning);
 
     realm::Realm::Config config;
     // validate 1)
