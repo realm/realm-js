@@ -152,13 +152,14 @@ typename T::Object make_js_error(typename T::Context ctx, std::string message)
 
 /**
  * @brief Log a message to JS's `console`
- * 
+ *
  * @param ctx The current JS context
  * @param message Message to pass along to `console`'s logger
  * @param console_log_cmd Optional logging function to invoke on `console`, e.g., `log`, `warn`.  Default is "log"
  */
 template <typename T>
-void log_to_console(typename T::Context ctx, std::string const &message, std::string const &console_log_cmd = "log") {
+void log_to_console(typename T::Context ctx, std::string const& message, std::string const& console_log_cmd = "log")
+{
     using ObjectType = typename T::Object;
     using Object = js::Object<T>;
     using ValueType = typename T::Value;
@@ -167,7 +168,8 @@ void log_to_console(typename T::Context ctx, std::string const &message, std::st
 
     ObjectType console = Value::validated_to_object(ctx, Object::get_global(ctx, "console"), "console");
     ValueType warn_obj = Object::get_property(ctx, console, console_log_cmd);
-    FunctionType warn = Value::validated_to_function(ctx, warn_obj, std::string("console." + console_log_cmd).c_str());
+    FunctionType warn =
+        Value::validated_to_function(ctx, warn_obj, std::string("console." + console_log_cmd).c_str());
     ValueType msg[1] = {Value::from_string(ctx, message)};
     Function<T>::call(ctx, warn, 1, msg);
 }
