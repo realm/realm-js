@@ -14,7 +14,6 @@ This project hosts the JavaScript versions of [Realm](https://realm.io/). Curren
 ## Getting Started
 
 Please see the detailed instructions in our docs to use [Realm JavaScript for Node.js](https://docs.mongodb.com/realm/sdk/node/) and [Realm JavaScript for React Native](https://docs.mongodb.com/realm/sdk/react-native/). Please notice that currently only Node.js version 10 or later (excluding 11) are supported.
-
 ## Documentation
 
 ### Realm React Native and Node.js
@@ -23,28 +22,21 @@ The documentation for the Realm React Native SDK can be found at [docs.mongodb.c
 
 The API reference is located at [docs.mongodb.com/realm-sdks/js/latest/](https://docs.mongodb.com/realm-sdks/js/latest/).
 
-## Template apps for React Native
+If you are using React Native, please also take a look the README for [@realm/react](https://github.com/realm/realm-js/tree/master/packages/realm-react#readme), which provides React hooks to make working with Realm easier.
 
-To get started with Realm JS for React Native, we have provided a simple template app.
 
-To create a new app with Expo:
+## Template apps using Expo for React Native
 
-```
-npx create-react-native-app --template with-realm ExpoExample
-```
+We have TypeScript and JavaScript templates to help you get started using Realm.  Follow the links to your desired template and follow the instructions there to get up and running fast.
+### Using Expo
 
-To create a new app from the TypeScript template:
+- [TypeScript](https://github.com/realm/realm-js/tree/master/templates/expo-template-ts#readme)
+- [JavaScript](https://github.com/realm/realm-js/tree/master/templates/expo-template-js#readme)
 
-```
-npx react-native init TsExample --template @realm/react-native-template-ts
-```
+### React Native
 
-To create a new app from the JavaScript template:
-
-```
-npx react-native init JsExample --template @realm/react-native-template-js
-```
-
+- [TypeScript](https://github.com/realm/realm-js/tree/master/templates/react-native-template-realm-ts#readme)
+- [JavaScript](https://github.com/realm/realm-js/tree/master/templates/react-native-template-realm-js#readme)
 ## Getting Help
 
 * **Need help with your code?**: Look for previous questions on the  [#realm tag](https://stackoverflow.com/questions/tagged/realm?sort=newest) — or [ask a new question](https://stackoverflow.com/questions/ask?tags=realm). You can also check out our [Community Forum](https://developer.mongodb.com/community/forums/tags/c/realm/9/realm-sdk) where general questions about how to do something can be discussed.

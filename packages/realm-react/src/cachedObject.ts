@@ -48,10 +48,7 @@ type CachedObjectArgs<T> = {
 export function createCachedObject<T extends Realm.Object>({
   object,
   updateCallback,
-}: {
-  object: T | null;
-  updateCallback: () => void;
-}): { object: T | null; tearDown: () => void } {
+}: CachedObjectArgs<T>): { object: T | null; tearDown: () => void } {
   const listCaches = new Map();
   const listTearDowns: Array<() => void> = [];
   // If the object doesn't exist, just return it with an noop tearDown

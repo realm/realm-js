@@ -1,7 +1,8 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Allow `createRealmContext` to be called without an initial configuration
+* Add a `fallback` property to `RealmProvider` that is shown while realm is opening
 
 ### Fixed
 * Fixed bug when trying to access a collection result with an out of bounds index.([#4416](https://github.com/realm/realm-js/pull/4416), since v0.2.0)
