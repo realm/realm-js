@@ -51,8 +51,7 @@ let doLog; // placeholder for logger function
 /**
  * Path and credentials required to submit analytics through the webhook.
  */
-const ANALYTICS_BASE_URL =
-  "https://webhooks.mongodb-realm.com/api/client/v2.0/app/realmsdkmetrics-zmhtm/service/metric_webhook/incoming_webhook/metric?data=";
+const ANALYTICS_BASE_URL = "https://data.mongodb-api.com/app/realmsdkmetrics-zmhtm/endpoint/metric_webhook/metric";
 
 /**
  * Constructs the full URL that will submit analytics to the webhook.
@@ -60,7 +59,7 @@ const ANALYTICS_BASE_URL =
  * @returns {string} Complete analytics submission URL
  */
 const getAnalyticsRequestUrl = (payload) =>
-  ANALYTICS_BASE_URL + Buffer.from(JSON.stringify(payload.webHook), "utf8").toString("base64");
+  ANALYTICS_BASE_URL + "?data=" + Buffer.from(JSON.stringify(payload.webHook), "utf8").toString("base64");
 
 /**
  * Generate a hash value of data
