@@ -18,6 +18,11 @@ x.x.x Release notes (yyyy-MM-dd)
 * <Upgraded Realm Core from vX.Y.Z to vA.B.C>
 * Update token in integration test.
 
+10.20.0-beta.3 Release notes (2022-3-24)
+=============================================================
+### Notes
+Based on Realm JS v10.14.0: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.13.0).
+
 10.14.0 Release notes (2022-3-24)
 =============================================================
 ### Enhancements
