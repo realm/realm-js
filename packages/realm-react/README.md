@@ -6,8 +6,7 @@
   Realm React
 </h1>
 
-Local Data Made Simple.
-
+Build better apps, faster
 ## Introduction
 Setting up Realm in a React Native application has historically been complex. Re-rendering of components when objects in the database change requires manually adding and removing listeners, which produce a lot of boilerplate code and is error-prone (if listeners properly removed on unmount). This library alleviates that by providing [React hooks](https://reactjs.org/docs/hooks-intro.html) which return Realm data that is state aware. As a consequence, any change to the Realm data will cause components using the hook to re-render.
 
@@ -116,10 +115,36 @@ function TaskApp() {
 For a full fledged example, check out [our templates](https://github.com/realm/realm-js#template-apps-using-expo-for-react-native).
 
 ## Realm Hooks
+
+### useRealm
+Returns the instance of the [`Realm`](https://www.mongodb.com/docs/realm-sdks/js/latest/Realm.html) configured by `createRealmContext` and the `RealmProvider`.  The following is an example of how to use this Hook to make a write transaction callback for a component.
+
+```tsx
+// assume props contain item a Realm.Object
+const Component = ({item}) => {
+  const realm = useRealm();
+  const toggleComplete = useCallback((item) => {
+    realm.write(() => {
+      item.isComplete = !item.isComplete
+    })
+  },[item, realm])
+
+  return (
+    <Pressable
+      onPress={() =>
+        realm.write(() => {
+          item.isComplete = !item.isComplete
+        })
+      }><Text>{item.isComplete ? "✅" : "☑️"}</Text>
+    </Pressable>
+  )
+}
+```
+
 ### useQuery
 
-Returns a [Realm.Result] from a given type. This Hook will update on any changes to any Object in the Collection and return an empty array if the Collection is empty.
-The result of this can be consumed directly by the `data` argument of any React Native VirtualizedList or FlatList.  If the component used for the list's `renderItem` prop is wrapped with [React.Memo], then only the modified object will re-render.
+Returns [`Realm.Results`](https://www.mongodb.com/docs/realm-sdks/js/latest/Realm.Results.html) from a given type. This Hook will update on any changes to any Object in the Collection and return an empty array if the Collection is empty.
+The result of this can be consumed directly by the `data` argument of any React Native [`VirtualizedList`](https://reactnative.dev/docs/virtualizedlist) or [`FlatList`](https://reactnative.dev/docs/flatlist).  If the component used for the list's `renderItem` prop is wrapped with [`React.Memo`](https://reactjs.org/docs/react-api.html#reactmemo), then only the modified object will re-render.
 
 ```tsx
 const Component = () => {
@@ -137,7 +162,7 @@ const Component = () => {
 ```
 
 ### useObject
- Returns a [Realm.Object] for a given type and primary key.  The Hook will update on any changes to the properties on the returned Object and return null if it either doesn't exist or has been deleted.
+ Returns a [`Realm.Object`](https://www.mongodb.com/docs/realm-sdks/js/latest/Realm.Object.html) for a given type and primary key.  The Hook will update on any changes to the properties on the returned Object and return null if it either doesn't exist or has been deleted.
 ```tsx
 const Component = ({someId}) => {
   // ObjectClass is a class extending Realm.Object, which should have been provided in the Realm Config.
@@ -154,8 +179,17 @@ const Component = ({someId}) => {
 ## Setting Things Up
 ### createRealmContext
 
-To get started with `@realm/react`, one must create a Context object with `createRealmContext`.  The Context object will contain a Realm Context Provider, which will have an open Realm as its context, and a set of hooks that access the Realm Context.
-The configuration for the Realm context can be give to `createRealmContext` or be set directly on the Realm Context Provider props.  A Realm will be opened with this combined configuration when the Realm Context Provider is rendered.  A fallback component can optionally be rendered until the Realm is opened.  This is useful for projects using Realm Sync.  Here is an example of how to setup Realm React with a Task model:
+To get started with `@realm/react`, one must create a Context object with `createRealmContext`.  The Context object will contain a Realm Context Provider, which will have an open Realm as its context, and a set of Hooks that access the Realm Context.
+The structure of the Context object is:
+```
+{
+  RealmProvider, // Wrapper for your application to enable usage of hooks
+  useRealm, // Hook to access the configured Realm
+  useQuery, // Hook to access collections of Realm objects
+  useObject, // Hook to access a single Realm object by primary key
+}
+```
+The configuration for the Realm context can be given as an object argument to `createRealmContext` or be set directly on the `RealmProvider` props. The props set on `RealmProvider` will be merged with those provided to `createRealmContext`, with the props taking priority.  A Realm will be opened with this merged configuration when the Realm Context Provider is rendered.  A fallback component can optionally be rendered until the Realm is opened.  This is useful for projects using Realm Sync.  Here is an example of how to setup Realm React with a Task model:
 
 ```typescript
 import {createRealmContext} from '@realm/react';
@@ -182,10 +216,10 @@ const { RealmProvider: PublicRealmProvider, useRealm: usePublicRealm, useObject:
 const { RealmProvider: PrivateRealmProvider, useRealm: usePrivateRealm, useObject: usePrivateObject, useQuery: usePrivateQuery } = createRealmContext(privateConfig);
 ```
 
-It is also possible to call it without any Config; in the case that you want to do all your configuration through the RealmProvider props.
+It is also possible to call it without any Config; in the case that you want to do all your configuration through the `RealmProvider` props.
 ### RealmProvider
 
-In the example above, we used the RealmProvider without any props.  It is, however, possible to configure the Realm through props on the RealmProvider.
+In the example above, we used the `RealmProvider` without any props.  It is, however, possible to configure the Realm through props on the `RealmProvider`.
 
 ```tsx
 const AppWrapper = () => {
@@ -210,7 +244,7 @@ const AppWrapper = () => {
 ```
 ### Dynamically Updating a Realm Configuration
 
-It is possible to update the realm configuration by setting props on the RealmProvider.  The RealmProvider takes props for all possible realm configuration properties.
+It is possible to update the realm configuration by setting props on the `RealmProvider`.  The `RealmProvider` takes props for all possible realm configuration properties.
 
 For example, one could setup the sync configuration based on a user state:
 
