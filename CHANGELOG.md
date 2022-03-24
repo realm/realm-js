@@ -1,7 +1,7 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.14.0 Release notes (2022-3-24)
 =============================================================
 ### Enhancements
-* `Realm.writeCopyTo()` can now be invoked with a `Realm.Configuration` as parameter, which will create a copy of the Realm that conforms to the given configuration -- this allows for a much wider range of conversions between synced/local Realms and encrypted/non-encrypted Realms([#3146](https://github.com/realm/realm-js/issues/4136)).
+* `Realm.writeCopyTo()` can now be invoked with a `Realm.Configuration` as parameter, which will create a copy of the Realm that conforms to the given configuration -- this allows for a much wider range of conversions between synced/local Realms and encrypted/non-encrypted Realms. ([#3146](https://github.com/realm/realm-js/issues/4136))
 * Added `Realm.Configuration.onFirstOpen` to populate a new Realm with initial data.
 
 ### Fixed
