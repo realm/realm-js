@@ -76,16 +76,34 @@ describe("Class models", () => {
 
   describe("#constructor", () => {
     class Person extends Realm.Object<Person> {
+      id!: Realm.BSON.ObjectId;
       name!: string;
+      age!: number;
+      friends!: Realm.List<Person>;
+
       static schema: Realm.ObjectSchema = {
         name: "Person",
-        properties: { name: "string?" },
+        properties: {
+          id: {
+            type: "objectId",
+            default: new Realm.BSON.ObjectId(), // TODO: Make this a function
+          },
+          name: {
+            type: "string",
+            default: "John Doe",
+          },
+          age: {
+            type: "int",
+            default: 32,
+          },
+          friends: "Person[]",
+        },
       };
     }
 
     openRealmBeforeEach({ schema: [Person] });
 
-    it("creates objects", function (this: RealmContext) {
+    it("creates objects without values", function (this: RealmContext) {
       this.realm.write(() => {
         // Expect no persons in the database
         const persons = this.realm.objects("Person");
@@ -111,6 +129,8 @@ describe("Class models", () => {
         // Expect the first element to be the object we just added
         expect(persons.length).equals(1);
         expect(persons[0].name).equals("Alice");
+        // Property value fallback to the default
+        expect(persons[0].age).equals(32);
       });
     });
   });
