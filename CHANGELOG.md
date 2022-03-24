@@ -55,6 +55,11 @@ x.x.x Release notes (yyyy-MM-dd)
 * Update token in integration test.
 * Upgraded Realm Core from v11.12.0 to v11.13.0.
 
+10.20.0-beta.3 Release notes (2022-3-24)
+=============================================================
+### Notes
+Based on Realm JS v10.14.0: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.13.0).
+
 10.14.0 Release notes (2022-3-24)
 =============================================================
 ### Enhancements
