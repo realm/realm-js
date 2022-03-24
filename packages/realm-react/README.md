@@ -30,7 +30,7 @@ yarn add realm @realm/react
 
 Here is a simple task manager application written with Realm React.  Copy into a React Native application and give it a try!
 
-```TSX
+```tsx
 import React, { useState } from "react";
 import { SafeAreaView, View, Text, TextInput, FlatList, Pressable } from "react-native";
 import { Realm, createRealmContext } from '@realm/react'
@@ -162,7 +162,8 @@ const Component = () => {
 ```
 
 ### useObject
- Returns a [`Realm.Object`](https://www.mongodb.com/docs/realm-sdks/js/latest/Realm.Object.html) for a given type and primary key.  The Hook will update on any changes to the properties on the returned Object and return null if it either doesn't exist or has been deleted.
+ Returns a [`Realm.Object`](https://www.mongodb.com/docs/realm-sdks/js/latest/Realm.Object.html) for a given type and primary key.  The Hook will update on any changes to the properties on the returned Object and return `null` if it either doesn't exist or has been deleted.
+
 ```tsx
 const Component = ({someId}) => {
   // ObjectClass is a class extending Realm.Object, which should have been provided in the Realm Config.
@@ -180,7 +181,9 @@ const Component = ({someId}) => {
 ### createRealmContext
 
 To get started with `@realm/react`, one must create a Context object with `createRealmContext`.  The Context object will contain a Realm Context Provider, which will have an open Realm as its context, and a set of Hooks that access the Realm Context.
+
 The structure of the Context object is:
+
 ```
 {
   RealmProvider, // Wrapper for your application to enable usage of hooks
@@ -189,9 +192,12 @@ The structure of the Context object is:
   useObject, // Hook to access a single Realm object by primary key
 }
 ```
-The configuration for the Realm context can be given as an object argument to `createRealmContext` or be set directly on the `RealmProvider` props. The props set on `RealmProvider` will be merged with those provided to `createRealmContext`, with the props taking priority.  A Realm will be opened with this merged configuration when the Realm Context Provider is rendered.  A fallback component can optionally be rendered until the Realm is opened.  This is useful for projects using Realm Sync.  Here is an example of how to setup Realm React with a Task model:
 
-```typescript
+The configuration for the Realm context can be given as an object argument to `createRealmContext` or be set directly on the `RealmProvider` props. The props set on `RealmProvider` will be merged with those provided to `createRealmContext`, with the props taking priority.  A Realm will be opened with this merged configuration when the Realm Context Provider is rendered.  A fallback component can optionally be rendered until the Realm is opened.  This is useful for projects using Realm Sync.
+
+Here is an example of how to setup Realm React with a Task model:
+
+```tsx
 import {createRealmContext} from '@realm/react';
 
 const myRealmConfig = { schema: [Task, User, /*...*/]};
