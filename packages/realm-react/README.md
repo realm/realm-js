@@ -118,13 +118,13 @@ For a full fledged example, check out [our templates](https://github.com/realm/r
 ## Realm Hooks
 ### useQuery
 
-Returns a [Realm.Result] from a given type. This Hook will update on any changes to any object in the collection and return an empty array if the collection is empty.
+Returns a [Realm.Result] from a given type. This Hook will update on any changes to any Object in the Collection and return an empty array if the Collection is empty.
 The result of this can be consumed directly by the `data` argument of any React Native VirtualizedList or FlatList.  If the component used for the list's `renderItem` prop is wrapped with [React.Memo], then only the modified object will re-render.
 
 ```tsx
 const Component = () => {
-  // ObjectClass is a class extending Realm.Object should have been provided in the Realm Config.
-  // It is also possible to use the models name as a string( ex. "Object" ) if you are not using class based models.
+  // ObjectClass is a class extending Realm.Object, which should have been provided in the Realm Config.
+  // It is also possible to use the model's name as a string ( ex. "Object" ) if you are not using class based models.
   const collection = useQuery(ObjectClass);
 
   // The methods `sorted` and `filtered` should be wrapped in a useMemo.
@@ -137,11 +137,11 @@ const Component = () => {
 ```
 
 ### useObject
- Returns a [Realm.Object] for a given type and primary key.  The Hook will update on any changes to the properties on the returned object and return null if it either doesn't exist or has been deleted.
+ Returns a [Realm.Object] for a given type and primary key.  The Hook will update on any changes to the properties on the returned Object and return null if it either doesn't exist or has been deleted.
 ```tsx
 const Component = ({someId}) => {
-  // ObjectClass is a class extending Realm.Object should have been provided in the Realm Config.
-  // It is also possible to use the models name as a string( ex. "Object" ) if you are not using class based models.
+  // ObjectClass is a class extending Realm.Object, which should have been provided in the Realm Config.
+  // It is also possible to use the model's name as a string ( ex. "Object" ) if you are not using class based models.
   const object = useObject(ObjectClass, someId);
 
   return (
@@ -154,7 +154,7 @@ const Component = ({someId}) => {
 ## Setting Things Up
 ### createRealmContext
 
-To get started with `@realm/react`, one must create a context object with `createRealmContext`.  The context object will contain a Realm Context Provider, which will have an open Realm as its context, and a set of hooks that access the Realm context.
+To get started with `@realm/react`, one must create a Context object with `createRealmContext`.  The Context object will contain a Realm Context Provider, which will have an open Realm as its context, and a set of hooks that access the Realm Context.
 The configuration for the Realm context can be give to `createRealmContext` or be set directly on the Realm Context Provider props.  A Realm will be opened with this combined configuration when the Realm Context Provider is rendered.  A fallback component can optionally be rendered until the Realm is opened.  This is useful for projects using Realm Sync.  Here is an example of how to setup Realm React with a Task model:
 
 ```typescript
@@ -175,17 +175,17 @@ const AppWrapper = () => {
 ```
 
 #### Multiple Realms
-`createRealmContext` can be called multiple times if you app requires more than one realm.  In that case, you would have multiple `RealmProvider`s that wrap your app and must use the hooks from the context you wish to access.
+`createRealmContext` can be called multiple times if your app requires more than one Realm.  In that case, you would have multiple `RealmProvider`s that wrap your app and must use the hooks from the context you wish to access.
 
 ```tsx
 const { RealmProvider: PublicRealmProvider, useRealm: usePublicRealm, useObject: usePublicObject, useQuery: usePublicQuery } = createRealmContext(publicConfig);
 const { RealmProvider: PrivateRealmProvider, useRealm: usePrivateRealm, useObject: usePrivateObject, useQuery: usePrivateQuery } = createRealmContext(privateConfig);
 ```
 
-It is also possible to call it without any config, in the case that you want to do all your configuration through the RealmProvider props.
+It is also possible to call it without any Config; in the case that you want to do all your configuration through the RealmProvider props.
 ### RealmProvider
 
-In the example above, we used the RealmProvider without any props.  It is however, possible to configured Realm through props on the RealmProvider.
+In the example above, we used the RealmProvider without any props.  It is, however, possible to configure the Realm through props on the RealmProvider.
 
 ```tsx
 const AppWrapper = () => {
@@ -197,7 +197,7 @@ const AppWrapper = () => {
 }
 ```
 
-The `RealmProvider` also comes with a fallback prop that can be used for sync conifigurations.  It can take time for larger datasets to sync, especially if its the first time.  In that case, it is recommended to provide a loading component as a fallback.
+The `RealmProvider` also comes with a fallback prop that can be used for sync conifigurations.  It can take time for larger datasets to sync, especially if it's the first time.  In that case, it is recommended to provide a loading component as a fallback.
 
 ```tsx
 const AppWrapper = () => {
