@@ -32,6 +32,27 @@ namespace js {
 
 enum class AggregateFunc { Min, Max, Sum, Avg };
 
+static std::vector<std::string> const JSLogFunctionName(
+    // do not reorder unless reordering JSLogFunction as well
+    {
+        "log",
+        "debug",
+        "info",
+        "error",
+        "warn",
+        "trace",
+    });
+
+enum JSLogFunction {
+    // do not reorder unless reordering JSLogFunctionName as well
+    Log = 0,
+    Debug,
+    Info,
+    Error,
+    Warning,
+    Trace
+};
+
 template <typename T>
 class RealmDelegate;
 
@@ -149,6 +170,43 @@ typename T::Object make_js_error(typename T::Context ctx, std::string message)
     auto error_ctor = Value::to_constructor(ctx, Object::get_global(ctx, "Error"));
     return Function<T>::construct(ctx, error_ctor, {Value::from_string(ctx, message)});
 }
+
+/**
+ * @brief
+ *
+ * @param ctx
+ * @param message
+ * @param console_log_cmd
+ */
+
+
+/**
+ * @brief Log a message to JS's `console`
+ *
+ * @tparam T JS Engine
+ * @param ctx The current JS context
+ * @param message Message to pass along to `console`'s logger
+ * @param log_function_id Optional logging function to invoke on `console`, e.g., Info, Warning.  Default is Log
+ */
+
+template <typename T>
+void log_to_console(typename T::Context ctx, std::string const& message, JSLogFunction log_function_id)
+{
+    using ObjectType = typename T::Object;
+    using Object = js::Object<T>;
+    using ValueType = typename T::Value;
+    using Value = js::Value<T>;
+    using FunctionType = typename T::Function;
+
+    std::string const console_log_cmd = JSLogFunctionName[static_cast<int>(log_function_id)];
+    ObjectType console = Value::validated_to_object(ctx, Object::get_global(ctx, "console"), "console");
+    ValueType function_obj = Object::get_property(ctx, console, console_log_cmd);
+    FunctionType log_function =
+        Value::validated_to_function(ctx, function_obj, std::string("console." + console_log_cmd).c_str());
+    ValueType msg[1] = {Value::from_string(ctx, message)};
+    Function<T>::call(ctx, log_function, 1, msg);
+}
+
 
 } // namespace js
 } // namespace realm

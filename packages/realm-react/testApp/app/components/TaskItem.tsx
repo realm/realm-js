@@ -17,17 +17,21 @@
 ////////////////////////////////////////////////////////////////////////////
 import React, { memo } from "react";
 import { View, Text, Pressable, Platform, StyleSheet } from "react-native";
+import Realm from "realm";
+
+import { Task } from "app/models/Task";
 
 import colors from "../styles/colors";
 
 interface TaskItemProps {
-  description: string;
-  isComplete: boolean;
+  task: Task & Realm.Object;
   onToggleStatus: () => void;
   onDelete: () => void;
 }
 
-function TaskItem({ description, isComplete, onToggleStatus, onDelete }: TaskItemProps) {
+function TaskItem({ task, onToggleStatus, onDelete }: TaskItemProps) {
+  const { description, isComplete } = task;
+
   return (
     <View style={styles.task}>
       <Pressable onPress={onToggleStatus} style={[styles.status, isComplete && styles.completed]}>
@@ -105,7 +109,9 @@ const styles = StyleSheet.create({
 });
 
 // We want to make sure only tasks that change are rerendered
-const shouldNotRerender = (prevProps: TaskItemProps, nextProps: TaskItemProps) =>
-  prevProps.description === nextProps.description && prevProps.isComplete === nextProps.isComplete;
+const shouldNotRerender = (prevProps: TaskItemProps, nextProps: TaskItemProps) => {
+  return prevProps.task === nextProps.task;
+};
+// prevProps.description === nextProps.description && prevProps.isComplete === nextProps.isComplete;
 
 export default memo(TaskItem, shouldNotRerender);

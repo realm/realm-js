@@ -162,6 +162,7 @@ declare namespace Realm {
         schema?: (ObjectClass | ObjectSchema)[];
         schemaVersion?: number;
         shouldCompactOnLaunch?: (totalBytes: number, usedBytes: number) => boolean;
+        onFirstOpen?: (realm: Realm) => void;
         path?: string;
         fifoFilesFallbackPath?: string;
         readOnly?: boolean;
@@ -1152,6 +1153,19 @@ declare class Realm {
      * @returns void
      */
     writeCopyTo(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): void;
+
+    /**
+     * Writes a compacted copy of the Realm with the given configuration.
+     *
+     * The destination file cannot already exist.
+     * All conversions between synced and non-synced Realms are supported, and will be
+     * performed according to the `config` parameter, which describes the desired output.
+     *
+     * Note that if this method is called from within a write transaction, the current data is written,
+     * not the data from the point when the previous write transaction was committed.
+     * @param {Realm~Configuration} config Realm configuration that describes the output realm.
+     */
+    writeCopyTo(config: Realm.Configuration): void;
 
     /**
      * Update the schema of the Realm.

@@ -583,12 +583,46 @@ module.exports = {
     TestCase.assertEqual(Realm.schemaVersion("another.realm"), 2);
   },
 
+  testRealmDataInitialization: function () {
+    const data = [1, 2, 3];
+    const initializer = (r) => {
+      data.forEach((n) => r.create(schemas.IntOnly.name, { intCol: n }));
+    };
+
+    const config = {
+      schema: [schemas.IntOnly],
+      onFirstOpen: initializer,
+    };
+    Realm.deleteFile(config);
+
+    const validateRealm = (realm) => {
+      let pass = 1;
+      return function () {
+        pass++;
+        let ints = realm.objects(schemas.IntOnly.name);
+        TestCase.assertEqual(ints.length, data.length, `Length (pass: ${pass})`);
+        for (let i = 0; i < data.length; i++) {
+          TestCase.assertEqual(data[i], ints[i].intCol, `data[${i}] (pass: ${pass})`);
+        }
+      };
+    };
+
+    let realm1 = new Realm(config);
+    validateRealm(realm1);
+    realm1.close();
+
+    // Open a second time and no new data is written
+    let realm2 = new Realm(config);
+    validateRealm(realm2);
+    realm2.close();
+  },
+
   testRealmWrite: function () {
     const realm = new Realm({
       schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes],
     });
 
-    // exceptions should be propogated
+    // exceptions should be propagated
     TestCase.assertThrowsContaining(
       () =>
         realm.write(() => {
@@ -775,8 +809,6 @@ module.exports = {
     TestCase.assertEqual(objects.length, 0);
 
     let template = Realm.createTemplateObject(schemas.AllPrimaryTypes);
-
-    console.log(JSON.stringify(template));
 
     // First notification -> Object created
     realm.write(() => {
@@ -1410,6 +1442,11 @@ module.exports = {
     TestCase.assertThrowsContaining(
       () => realm.objectForPrimaryKey("InvalidClass", 0),
       "Object type 'InvalidClass' not found in schema.",
+    );
+
+    TestCase.assertThrowsContaining(
+      () => realm.objectForPrimaryKey("IntPrimaryObject", { foo: "bar" }),
+      "Property must be of type 'number', got ([object Object])",
     );
   },
 
@@ -2055,11 +2092,11 @@ module.exports = {
 
     TestCase.assertThrowsContaining(() => {
       realm.writeCopyTo();
-    }, "At least path has to be provided for 'writeCopyTo'");
+    }, "`writeCopyTo` requires <output configuration> or <path, [encryptionKey]> parameters");
 
     TestCase.assertThrowsContaining(() => {
       realm.writeCopyTo(34);
-    }, "Argument to 'writeCopyTo' must be a String.");
+    }, "`config` parameter must be an object");
 
     // make sure that copies are in the same directory as the original file
     // that is important for running tests on mobile devices,
@@ -2075,7 +2112,7 @@ module.exports = {
 
     TestCase.assertThrowsContaining(() => {
       realm.writeCopyTo(realm.path + ".copy-invalid-key.realm", "hello");
-    }, "Encryption key for 'writeCopyTo' must be a Binary.");
+    }, "Encryption key for 'writeCopyTo' must be an ArrayBuffer or ArrayBufferView");
 
     const encryptedCopyName = realm.path + ".copy-encrypted.realm";
 

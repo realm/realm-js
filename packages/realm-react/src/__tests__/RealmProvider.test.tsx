@@ -49,6 +49,8 @@ const { RealmProvider, useRealm } = createRealmContext({
   path: "testArtifacts/realm-provider.realm",
 });
 
+const EmptyRealmContext = createRealmContext();
+
 describe("RealmProvider", () => {
   afterEach(() => {
     Realm.clearTestState();
@@ -68,6 +70,16 @@ describe("RealmProvider", () => {
       <RealmProvider schema={[catSchema]}>{children}</RealmProvider>
     );
     const { result, waitForNextUpdate } = renderHook(() => useRealm(), { wrapper });
+    await waitForNextUpdate();
+    const realm = result.current;
+    expect(realm).not.toBe(null);
+    expect(realm.schema[0].name).toBe("cat");
+  });
+  it("can be used with an initially empty realm context", async () => {
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <EmptyRealmContext.RealmProvider schema={[catSchema]}>{children}</EmptyRealmContext.RealmProvider>
+    );
+    const { result, waitForNextUpdate } = renderHook(() => EmptyRealmContext.useRealm(), { wrapper });
     await waitForNextUpdate();
     const realm = result.current;
     expect(realm).not.toBe(null);
@@ -163,6 +175,45 @@ describe("RealmProvider", () => {
 
     expect(newSchemaNameContainer).toHaveTextContent("cat");
   });
+  describe("initially renders a fallback, until realm exists", () => {
+    it("as a component", async () => {
+      const App = () => {
+        return (
+          <RealmProvider fallback={() => <View testID="fallbackContainer" />}>
+            <View testID="testContainer" />
+          </RealmProvider>
+        );
+      };
+      const { queryByTestId } = render(<App />);
+
+      expect(queryByTestId("fallbackContainer")).not.toBeNull();
+      expect(queryByTestId("testContainer")).toBeNull();
+
+      await waitFor(() => queryByTestId("testContainer"));
+
+      expect(queryByTestId("fallbackContainer")).toBeNull();
+      expect(queryByTestId("testContainer")).not.toBeNull();
+    });
+    it("as an element", async () => {
+      const Fallback = <View testID="fallbackContainer" />;
+      const App = () => {
+        return (
+          <RealmProvider fallback={Fallback}>
+            <View testID="testContainer" />
+          </RealmProvider>
+        );
+      };
+      const { queryByTestId } = render(<App />);
+
+      expect(queryByTestId("fallbackContainer")).not.toBeNull();
+      expect(queryByTestId("testContainer")).toBeNull();
+
+      await waitFor(() => queryByTestId("testContainer"));
+
+      expect(queryByTestId("fallbackContainer")).toBeNull();
+      expect(queryByTestId("testContainer")).not.toBeNull();
+    });
+  });
 });
 
 describe("mergeRealmConfiguration", () => {
@@ -226,8 +277,8 @@ describe("areConfigurationsIdentical", () => {
 
     expect(areConfigurationsIdentical(configA, configB)).toBeFalsy();
 
-    configA = { schema: [catSchema], deleteRealmIfMigrationNeeded: true, migration: () => console.log("migration") };
-    configB = { schema: [catSchema], deleteRealmIfMigrationNeeded: true, migration: () => console.log("migration") };
+    configA = { schema: [catSchema], deleteRealmIfMigrationNeeded: true, migration: () => undefined };
+    configB = { schema: [catSchema], deleteRealmIfMigrationNeeded: true, migration: () => undefined };
 
     expect(areConfigurationsIdentical(configA, configB)).toBeFalsy();
 
@@ -243,7 +294,7 @@ describe("areConfigurationsIdentical", () => {
 
     expect(areConfigurationsIdentical(configA, configB)).toBeTruthy();
 
-    const migration = () => console.log(migration);
+    const migration = () => undefined;
 
     configA = { schema: [catSchema], deleteRealmIfMigrationNeeded: true, migration };
     configB = { schema: [catSchema], deleteRealmIfMigrationNeeded: true, migration };

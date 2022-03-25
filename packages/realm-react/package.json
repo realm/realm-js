@@ -1,6 +1,6 @@
 {
   "name": "@realm/react",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "description": "React specific hooks and implementation helpers for Realm",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "lodash": "^4.17.21",
-    "realm": "*"
+    "realm": ">=10"
   },
   "devDependencies": {
     "@babel/core": "^7.15.5",
@@ -28,9 +28,10 @@
     "@types/react-native": "^0.64.12",
     "babel-jest": "^27.2.1",
     "babel-plugin-module-resolver": "^4.1.0",
-    "eslint": "^7.31.0",
-    "eslint-plugin-prettier": "^3.4.0",
+    "eslint": "*",
+    "eslint-plugin-prettier": "*",
     "eslint-plugin-react-hooks": "^4.2.0",
+    "eslint-plugin-tsdoc": "^0.2.14",
     "fb-watchman": "^2.0.1",
     "jest": "^27.0.6",
     "metro-react-native-babel-preset": "^0.66.2",

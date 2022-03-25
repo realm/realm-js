@@ -1,6 +1,5 @@
 import React from 'react';
 import {View, FlatList, StyleSheet} from 'react-native';
-
 import TaskItem from './TaskItem';
 
 function TaskList({tasks, onToggleTaskStatus, onDeleteTask}) {

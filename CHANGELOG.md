@@ -1,16 +1,21 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.14.0 Release notes (2022-3-24)
 =============================================================
 ### Enhancements
-* None.
+* `Realm.writeCopyTo()` can now be invoked with a `Realm.Configuration` as parameter, which will create a copy of the Realm that conforms to the given configuration -- this allows for a much wider range of conversions between synced/local Realms and encrypted/non-encrypted Realms. ([#3146](https://github.com/realm/realm-js/issues/4136))
+* Added `Realm.Configuration.onFirstOpen` to populate a new Realm with initial data.
 
 ### Fixed
 * Fixed issue that could cause mangling of binary data on a roundtrip to/from the database ([#4278](https://github.com/realm/realm-js/issues/4278), since v10.1.4).
+* Fixed `globalThis` undefined issue for older devices. ([#4390](https://github.com/realm/realm-js/4390))
 * Fixed a fatal sync error `Automatic recovery failed` during DiscardLocal client reset if the reset notifier callbacks were not set to something. ([realm/realm-core#5223](https://github.com/realm/realm-core/issues/5223), since v10.10.0)
 * Changed parsed queries using the `between` operator to be inclusive of the limits, a closed interval instead of an open interval. This is to conform to the published documentation and for parity with NSPredicate's definition. ([realm/realm-core#5262](https://github.com/realm/realm-core/issues/5262), since v10.7.0)
-* If a list of objects contains links to objects not included in the synchronized partition, the indices contained in the listener callback may be wrong. ([realm/realm-core#5164](https://github.com/realm/realm-core/issues/5164), since v10.0.0)
+* If a list of objects contains links to objects not included in the synchronized partition, the indices contained in the listener callback could be wrong. ([realm/realm-core#5164](https://github.com/realm/realm-core/issues/5164), since v10.0.0)
 * Converting floats/doubles into Decimal128 would yield imprecise results. ([realm/realm-core#5184](https://github.com/realm/realm-core/pull/5184), since v6.1.3)
 * Using accented characters in class and property names may end the sync session ([realm/realm-core#5196](https://github.com/realm/realm-core/pull/5196), since v10.3.0-rc.1)
 * Waiting for upload after opening a bundled Realm file could hang. ([realm/realm-core#5277](https://github.com/realm/realm-core/issues/5277), since v10.10.0)
+* Realm Query Language would not accept `in` as a property name. ([realm/realm-core#5312](https://github.com/realm/realm-core/issues/5312))
+* Fixed an issue that could lead to a crash with exceptions like `'KeyNotFound'`. ([realm/realm-core#5283](https://github.com/realm/realm-core/issues/5283), since v6.0.0)
+* Refreshing the user profile after the app has been destroyed leads to a failure. ([realm/realm-dotnet#2800](https://github.com/realm/realm-dotnet/issues/2800)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -19,14 +24,17 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v11.9.0 to v11.11.0
+* Upgraded Realm Core from v11.9.0 to v11.12.0.
 * Fixed analytics to read the `realm/package.json` when installing from the root of the package.
+* Changed token for analytics.
 * Fixed React Native Android integration test harness to read only one pid when starting logcat.
+* Added a script to generate JS template apps from TS, and updated JS templates. ([4374](https://github.com/realm/realm-js/pull/4374))
 
 10.13.0 Release notes (2022-2-11)
 =============================================================
 ### Enhancements
 * Added `Realm.App#deleteUser(user)` to delete a sync user from a MongoDB Realm app. ([#4006](https://github.com/realm/realm-js/issues/4006))
+* Extended `Realm.writeCopyTo()` functionality to allow conversion of non-synced Realms to synced Realms. ([#4136](https://github.com/realm/realm-js/issues/4136))
 
 ### Fixed
 * Fixed a crash when using `Proxy` with a `Realm.Results` object. ([#4257](https://github.com/realm/realm-js/pull/4257))
