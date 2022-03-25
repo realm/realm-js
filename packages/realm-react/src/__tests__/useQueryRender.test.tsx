@@ -75,7 +75,7 @@ const tagRenderCounter = jest.fn();
 
 let testRealm: Realm = new Realm(configuration);
 
-const { useQuery, RealmProvider, useRealm } = createRealmContext(configuration);
+const { useQuery, useObject, RealmProvider, useRealm } = createRealmContext(configuration);
 
 enum QueryType {
   filtered,
@@ -119,10 +119,11 @@ const ItemComponent: React.FC<{ item: Item & Realm.Object }> = React.memo(({ ite
   const renderItem = useCallback(({ item }) => <TagComponent tag={item} />, []);
 
   const keyExtractor = useCallback((item) => `tag-${item.id}`, []);
+  const localItem = useObject(Item, item.id);
 
   return (
     <View testID={`result${item.id}`}>
-      <View testID={`name${item.id}`}>
+      <View testID={`name${item.name}`}>
         <Text>{item.name}</Text>
       </View>
       <TextInput
@@ -213,9 +214,9 @@ async function setupTest(queryType: QueryType) {
 
 describe.each`
   queryTypeName | queryType
-  ${"sorted"}   | ${QueryType.sorted}
-  ${"normal"}   | ${QueryType.normal}
   ${"filtered"} | ${QueryType.filtered}
+  ${"normal"}   | ${QueryType.normal}
+  ${"sorted"}   | ${QueryType.sorted}
 `("useQueryRender: $queryTypeName", ({ queryType }) => {
   beforeEach(() => {
     testRealm = new Realm(configuration);
@@ -353,5 +354,32 @@ describe.each`
     });
 
     expect(queryByText("756c")).toBeNull();
+  });
+  it.only("will handle multiple async transactions", async () => {
+    const { getByTestId } = await setupTest(queryType);
+    const asyncEffect = async () => {
+      testRealm.write(() => {
+        testRealm.deleteAll();
+      });
+      let i = 0;
+      while (i < 10) {
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        const id = i;
+        testRealm.write(() => {
+          testRealm.create(Item, { id, name: `${id}` }, Realm.UpdateMode.Modified);
+        });
+        testRealm.write(() => {
+          const item = testRealm.objectForPrimaryKey(Item, id);
+          if (item) {
+            item.name = `${id + 100}`;
+          }
+        });
+        i++;
+      }
+    };
+    await act(async () => {
+      await asyncEffect();
+    });
+    await waitFor(() => getByTestId(`name${109}`));
   });
 });
