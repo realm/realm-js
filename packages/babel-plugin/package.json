@@ -1,0 +1,28 @@
+{
+  "name": "@realm/babel-plugin",
+  "version": "0.1.0",
+  "description": "Babel plugin making it easier to declare your Realm schema",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [
+    "realm",
+    "babel"
+  ],
+  "author": {
+    "name": "Realm",
+    "email": "help@realm.io",
+    "url": "https://realm.io"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "devDependencies": {
+    "@babel/preset-typescript": "^7.16.7",
+    "@types/jest": "^27.4.1",
+    "babel": "^6.23.0",
+    "jest": "^27.5.1",
+    "ts-jest": "^27.1.4",
+    "typescript": "^4.6.3",
+    "realm": "*"
+  }
+}
