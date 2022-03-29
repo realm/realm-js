@@ -357,8 +357,8 @@ module.exports = {
   },
 
   testNewFile_downloadBeforeOpen_openLocalOnTimeOut_existing: async function () {
-    //This is a regression test.  If one were to logout before the openLocalRealm timeout
-    //then the timeout would try to open a local realm with the timed out user
+    // This is a regression test.  If one were to logout before the openLocalRealm timeout
+    // then the timeout would try to open a local realm with the timed out user
 
     // 1. Add data to server Realm from User
     // 2. Open Realm again with User
@@ -383,8 +383,6 @@ module.exports = {
       };
 
       const realm = await Realm.open(config);
-
-      console.log(realm.path);
 
       realm.write(() => {
         realm.create(schemas.DogForSync.name, { _id: new ObjectId(), name: "Lola" });
