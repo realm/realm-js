@@ -214,7 +214,7 @@ declare namespace Realm {
         /**
          * Creates a new object in the database.
          */
-        constructor(realm: Realm, values?: Partial<RealmInsertionModel<T>>);
+        constructor(realm: Realm, values: RealmInsertionModel<T>);
 
         /**
          * @returns An array of the names of the object's properties.
