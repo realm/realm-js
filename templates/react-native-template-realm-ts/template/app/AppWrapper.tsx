@@ -142,7 +142,7 @@ function AppWrapperSync() {
 
   // If we are logged in, add the sync configuration the the RealmProvider and render the app
   return (
-    <RealmProvider sync={{user, partitionValue: app.currentUser.id}}>
+    <RealmProvider sync={{user, flexible: true}}>
       <App
         syncEnabled={true}
         onLogin={
