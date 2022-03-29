@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import {SafeAreaView, View, StyleSheet, Text, Pressable} from 'react-native';
 
 import TaskContext, {Task} from './models/Task';
@@ -36,6 +36,11 @@ export function App(props) {
   const tasks = useMemo(() => result.sorted('createdAt'), [result]);
 
   const currentUserId = props.syncEnabled ? props.currentUserId : undefined;
+  useEffect(() => {
+    realm.subscriptions.update(mutableSubs => {
+      mutableSubs.add(result);
+    });
+  }, []);
 
   const handleAddTask = useCallback(
     description => {
