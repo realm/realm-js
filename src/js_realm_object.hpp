@@ -191,10 +191,10 @@ void RealmObjectClass<T>::constructor(ContextType ctx, ObjectType this_object, A
     Arguments create_arguments{ctx, create_args.size(), create_args.data()};
     ReturnValue result{ctx};
     RealmClass<T>::create(ctx, realm, create_arguments, result);
-    ObjectType realm_object_object = Value::validated_to_object(ctx, result);
+    ObjectType tmp_realm_object = Value::validated_to_object(ctx, result);
 
     // Copy the internal from the constructed object onto this_object
-    auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, realm_object_object);
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, tmp_realm_object);
     // The finalizer on the ObjectWrap (applied inside of set_internal) will delete the `new_realm_object`
     auto new_realm_object = new realm::js::RealmObject<T>(*realm_object);
     set_internal<T, RealmObjectClass<T>>(ctx, this_object, new_realm_object);
