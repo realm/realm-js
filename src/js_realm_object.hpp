@@ -164,6 +164,19 @@ typename T::Object RealmObjectClass<T>::create_instance(ContextType ctx, realm::
     }
 }
 
+/**
+ * @brief Implements the constructor for a Realm.Object, calling the `Realm#create` instance method to create an
+ * object in the database.
+ *
+ * @note This differes from `RealmObjectClass<T>::create_instance` as it is executed when end-users construct a `new
+ * Realm.Object()` (or another user-defined class extending `Realm.Object`), whereas `create_instance` is called when
+ * reading objects from the database.
+ *
+ * @tparam T Engine specific types.
+ * @param ctx JS context
+ * @param this_object JS object being returned to the user once constructed.
+ * @param args Arguments passed by the user when calling the constructor.
+ */
 template <typename T>
 void RealmObjectClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments& args)
 {

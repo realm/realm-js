@@ -621,6 +621,17 @@ typename ClassType::Internal* ObjectWrap<ClassType>::get_internal(JSContextRef c
     return realmObjectInstance->m_object.get();
 }
 
+/**
+ * @brief Stores data on the `instance` JS object, making it possible to retrieve the internal object insteance at a
+ * later point, using `ObjectWrap<ClassType>::get_internal`.
+ *
+ * @note This hands over ownership of the object pointed to by the `internal` pointer.
+ *
+ * @tparam ClassType The class implementing the JS interface (from C++).
+ * @param ctx JS context
+ * @param instance JS object which is handed ownership of the internal object being pointed to by `internal`.
+ * @param internal A pointer to an instance of a C++ object being wrapped.
+ */
 template <typename ClassType>
 void ObjectWrap<ClassType>::set_internal(JSContextRef ctx, JSObjectRef& instance,
                                          typename ClassType::Internal* internal)
