@@ -28,6 +28,15 @@ realm.write(() => {
 });
 ```
 
+10.20.0-beta.4 Release notes (2022-4-11)
+=============================================================
+### Notes
+Based on Realm JS v10.15.0: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.14.0).
+
+### Fixed
+* Changed "react-native" main field to point to a `lib/index.native.js` file to help bundlers pick the right file when loading our library on React Native. ([#4459](https://github.com/realm/realm-js/issues/4459))
+* Fixed resolving the "react-native" package when building from source, enabling developers to run the `./scripts/build-ios.sh` script themselves to build our iOS artifacts with the same version of Xcode / LLVM as they're building their app.
+
 10.16.0 Release notes (2022-4-12)
 =============================================================
 ### Enhancements
