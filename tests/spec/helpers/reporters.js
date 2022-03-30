@@ -31,5 +31,8 @@ jasmine.getEnv().addReporter(
     spec: {
       displayPending: true,
     },
+    summary: {
+      displayStacktrace: true,
+    },
   }),
 );
