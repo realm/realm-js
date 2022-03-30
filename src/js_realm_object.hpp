@@ -181,10 +181,10 @@ template <typename T>
 void RealmObjectClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments& args)
 {
     // Parse aguments
-    args.validate_between(1, 2);
+    args.validate_count(2);
     auto constructor = Object::validated_get_object(ctx, this_object, "constructor");
     auto realm = Value::validated_to_object(ctx, args[0], "realm");
-    auto values = Value::is_undefined(ctx, args[1]) ? Object::create_empty(ctx) : args[1];
+    auto values = Value::validated_to_object(ctx, args[1], "values");
 
     // Create an object
     std::vector<ValueType> create_args{constructor, values};
@@ -195,7 +195,9 @@ void RealmObjectClass<T>::constructor(ContextType ctx, ObjectType this_object, A
 
     // Copy the internal from the constructed object onto this_object
     auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, tmp_realm_object);
-    // The finalizer on the ObjectWrap (applied inside of set_internal) will delete the `new_realm_object`
+    // The finalizer on the ObjectWrap (applied inside of set_internal) will delete the `new_realm_object` which is
+    // why we create a new instance to avoid a double free (the first of which will happen when the `tmp_realm_object`
+    // destructs).
     auto new_realm_object = new realm::js::RealmObject<T>(*realm_object);
     set_internal<T, RealmObjectClass<T>>(ctx, this_object, new_realm_object);
 }
