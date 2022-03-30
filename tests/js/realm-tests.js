@@ -88,8 +88,8 @@ module.exports = {
     let constructorCalled = false;
     //test class syntax support
     class Car extends Realm.Object {
-      constructor() {
-        super();
+      constructor(realm) {
+        super(realm);
         constructorCalled = true;
       }
     }
@@ -128,7 +128,7 @@ module.exports = {
     let realm = new Realm({ schema: [Car, Car2] });
     realm.write(() => {
       let car = realm.create("Car", { make: "Audi", model: "A4", kilometers: 24 });
-      TestCase.assertTrue(constructorCalled);
+      TestCase.assertFalse(constructorCalled);
       TestCase.assertEqual(car.make, "Audi");
       TestCase.assertEqual(car.model, "A4");
       TestCase.assertEqual(car.kilometers, 24);
@@ -144,21 +144,21 @@ module.exports = {
 
       constructorCalled = false;
       let car1 = realm.create("Car", { make: "VW", model: "Touareg", kilometers: 13 });
-      TestCase.assertTrue(constructorCalled);
+      TestCase.assertFalse(constructorCalled);
       TestCase.assertEqual(car1.make, "VW");
       TestCase.assertEqual(car1.model, "Touareg");
       TestCase.assertEqual(car1.kilometers, 13);
       TestCase.assertInstanceOf(car1, Realm.Object, "car1 not an instance of Realm.Object");
 
       let car2 = realm.create("Car2", { make: "Audi", model: "A4", kilometers: 24 });
-      TestCase.assertTrue(calledAsConstructor);
+      TestCase.assertFalse(calledAsConstructor);
       TestCase.assertEqual(car2.make, "Audi");
       TestCase.assertEqual(car2.model, "A4");
       TestCase.assertEqual(car2.kilometers, 24);
       TestCase.assertInstanceOf(car2, Realm.Object, "car2 not an instance of Realm.Object");
 
       let car2_1 = realm.create("Car2", { make: "VW", model: "Touareg", kilometers: 13 });
-      TestCase.assertTrue(calledAsConstructor);
+      TestCase.assertFalse(calledAsConstructor);
       TestCase.assertEqual(car2_1.make, "VW");
       TestCase.assertEqual(car2_1.model, "Touareg");
       TestCase.assertEqual(car2_1.kilometers, 13);
@@ -1172,20 +1172,18 @@ module.exports = {
       let object = realm.create("CustomObject", { intCol: 1 });
       TestCase.assertTrue(object instanceof CustomObject);
       TestCase.assertTrue(Object.getPrototypeOf(object) == CustomObject.prototype);
-      TestCase.assertEqual(customCreated, 1);
+      TestCase.assertEqual(customCreated, 0);
 
       // Should be able to create object by passing in constructor.
       object = realm.create(CustomObject, { intCol: 2 });
       TestCase.assertTrue(object instanceof CustomObject);
       TestCase.assertTrue(Object.getPrototypeOf(object) == CustomObject.prototype);
-      TestCase.assertEqual(customCreated, 2);
+      TestCase.assertEqual(customCreated, 0);
     });
 
-    TestCase.assertThrowsContaining(() => {
-      realm.write(() => {
-        realm.create("InvalidObject", { intCol: 1 });
-      });
-    }, "Realm object constructor must not return another value");
+    realm.write(() => {
+      realm.create("InvalidObject", { intCol: 1 });
+    });
 
     // Only the original constructor should be valid.
     function InvalidCustomObject() {}
