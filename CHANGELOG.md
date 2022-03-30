@@ -5,6 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Logging out too fast can cause an error if the timeout behavior is set to `openLocalRealm` ([4453](https://github.com/realm/realm-js/issues/4453))
+* Changed "react-native" main field to point to a `lib/index.native.js` file to help bundlers pick the right file when loading our library on React Native. ([#4459](https://github.com/realm/realm-js/issues/4459))
 
 ### Compatibility
 * MongoDB Realm Cloud.

@@ -31,7 +31,7 @@
   },
   "types": "types/index.d.ts",
   "main": "lib/index.js",
-  "react-native": "lib/react-native/index.js",
+  "react-native": "lib/index.native.js",
   "files": [
     "cmake",
     "lib",
