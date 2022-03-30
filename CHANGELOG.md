@@ -16,6 +16,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * <Either mention core version or upgrade>
 * <Using Realm Core vX.Y.Z>
 * <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Update token in integration test.
 
 10.14.0 Release notes (2022-3-24)
 =============================================================
