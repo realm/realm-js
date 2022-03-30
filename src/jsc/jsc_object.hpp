@@ -171,10 +171,9 @@ inline typename ClassType::Internal* jsc::Object::get_internal(JSContextRef ctx,
 
 template <>
 template <typename ClassType>
-inline void jsc::Object::set_internal(JSContextRef ctx, const JSObjectRef& object, typename ClassType::Internal* ptr)
+inline void jsc::Object::set_internal(JSContextRef ctx, JSObjectRef& object, typename ClassType::Internal* ptr)
 {
-    auto wrap = static_cast<jsc::ObjectWrap<ClassType>*>(JSObjectGetPrivate(object));
-    *wrap = ptr;
+    jsc::ObjectWrap<ClassType>::set_internal(ctx, object, ptr);
 }
 
 template <>
