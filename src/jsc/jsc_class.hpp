@@ -155,6 +155,7 @@ public:
     }
 
     static Internal* get_internal(JSContextRef ctx, const JSObjectRef& object);
+    static void set_internal(JSContextRef ctx, JSObjectRef& instance, typename ClassType::Internal* internal);
 
     static void on_context_destroy(JSContextRef ctx, std::string realmPath);
 
@@ -199,9 +200,6 @@ private:
                                                std::string(String(property)) + "'");
         return false;
     }
-
-    static void set_internal_property(JSContextRef ctx, JSObjectRef& instance,
-                                      typename ClassType::Internal* internal);
 
     static void define_schema_properties(JSContextRef ctx, JSObjectRef constructorPrototype,
                                          const realm::ObjectSchema& schema, bool redefine);
@@ -623,17 +621,37 @@ typename ClassType::Internal* ObjectWrap<ClassType>::get_internal(JSContextRef c
     return realmObjectInstance->m_object.get();
 }
 
+/**
+ * @brief Stores data on the `instance` JS object, making it possible to retrieve the internal object instance at a
+ * later point, using `ObjectWrap<ClassType>::get_internal`.
+ *
+ * @note This hands over ownership of the object pointed to by the `internal` pointer.
+ *
+ * @tparam ClassType The class implementing the JS interface (from C++).
+ * @param ctx JS context
+ * @param instance JS object which is handed ownership of the internal object being pointed to by `internal`.
+ * @param internal A pointer to an instance of a C++ object being wrapped.
+ */
 template <typename ClassType>
-void ObjectWrap<ClassType>::set_internal_property(JSContextRef ctx, JSObjectRef& instance,
-                                                  typename ClassType::Internal* internal)
+void ObjectWrap<ClassType>::set_internal(JSContextRef ctx, JSObjectRef& instance,
+                                         typename ClassType::Internal* internal)
 {
-    // create a JS object that has a finializer to delete the internal reference
-    JSObjectRef internalObject = JSObjectMake(ctx, m_internalValueClass, new ObjectWrap<ClassType>(internal));
 
-    const jsc::String* externalName = get_cached_property_name("_external");
-    auto attributes = realm::js::PropertyAttributes::ReadOnly | realm::js::PropertyAttributes::DontDelete |
-                      realm::js::PropertyAttributes::DontEnum;
-    Object::set_property(ctx, instance, *externalName, internalObject, attributes);
+    bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::jsc::Types>>::value;
+    if (isRealmObjectClass) {
+        // create a JS object that has a finializer to delete the internal reference
+        JSObjectRef internalObject = JSObjectMake(ctx, m_internalValueClass, new ObjectWrap<ClassType>(internal));
+        const jsc::String* externalName = get_cached_property_name("_external");
+        auto attributes = realm::js::PropertyAttributes::ReadOnly | realm::js::PropertyAttributes::DontDelete |
+                          realm::js::PropertyAttributes::DontEnum;
+        if (internal) {
+            Object::set_property(ctx, instance, *externalName, internalObject, attributes);
+        }
+    }
+    else {
+        auto wrap = static_cast<jsc::ObjectWrap<ClassType>*>(JSObjectGetPrivate(instance));
+        *wrap = internal;
+    }
 }
 
 static inline JSObjectRef try_get_prototype(JSContextRef ctx, JSObjectRef object)
@@ -681,13 +699,6 @@ bool ObjectWrap<ClassType>::has_instance(JSContextRef ctx, JSValueRef value)
             }
 
             proto = try_get_prototype(ctx, proto);
-        }
-
-        // handle RealmObjects using user defined ctors without extending RealmObject.
-        // In this case we just check for existing internal value to identify RealmObject instances
-        auto internal = ObjectWrap<ClassType>::get_internal(ctx, object);
-        if (internal != nullptr) {
-            return true;
         }
 
         // if there is no RealmObjectClass on the prototype chain and the object does not have existing internal value
@@ -777,8 +788,7 @@ inline JSObjectRef ObjectWrap<ClassType>::create_instance_by_schema(JSContextRef
             definition.className = schema.name.c_str();
             JSClassRef schemaClass = JSClassCreate(&definition);
             schemaObjectConstructor = JSObjectMakeConstructor(ctx, schemaClass, nullptr);
-            value = Object::get_property(ctx, schemaObjectConstructor, "prototype");
-            constructorPrototype = Value::to_object(ctx, value);
+            constructorPrototype = Object::validated_get_object(ctx, schemaObjectConstructor, "prototype");
 
             JSObjectSetPrototype(ctx, constructorPrototype, RealmObjectClassConstructorPrototype);
             JSObjectSetPrototype(ctx, schemaObjectConstructor, RealmObjectClassConstructor);
@@ -794,16 +804,20 @@ inline JSObjectRef ObjectWrap<ClassType>::create_instance_by_schema(JSContextRef
             // hot path. The constructor for this schema object is already cached.
             schemaObjectType = schemaObjects->at(schemaName);
             schemaObjectConstructor = schemaObjectType->constructor;
+            constructorPrototype = Object::validated_get_object(ctx, schemaObjectConstructor, "prototype");
         }
 
-        instance = Function::construct(ctx, schemaObjectConstructor, 0, {});
+        // Construct a plain object, setting the internal and prototype afterwards to avoid calling the constructor
+        instance = JSObjectMake(ctx, nullptr, nullptr);
+        JSObjectSetPrototype(ctx, instance, constructorPrototype);
 
         // save the internal object on the instance
-        set_internal_property(ctx, instance, internal);
+        set_internal(ctx, instance, internal);
 
         return instance;
     }
     else {
+        constructorPrototype = Object::validated_get_object(ctx, constructor, "prototype");
         // creating a RealmObject with user defined constructor
         bool schemaExists = schemaObjects->count(schemaName);
         if (schemaExists) {
@@ -822,14 +836,18 @@ inline JSObjectRef ObjectWrap<ClassType>::create_instance_by_schema(JSContextRef
             schemaObjectType = schemaObjects->at(schemaName);
             schemaObjectConstructor = schemaObjectType->constructor;
 
-            instance = Function::construct(ctx, schemaObjectConstructor, 0, {});
-            set_internal_property(ctx, instance, internal);
+            // Construct a plain object, setting the internal and prototype afterwards to avoid calling the
+            // constructor
+            instance = JSObjectMake(ctx, nullptr, new ObjectWrap<ClassType>(internal));
+            JSObjectSetPrototype(ctx, instance, constructorPrototype);
+
+            // save the internal object on the instance
+            set_internal(ctx, instance, internal);
+
             return instance;
         }
 
         schemaObjectConstructor = constructor;
-        value = Object::get_property(ctx, constructor, "prototype");
-        constructorPrototype = Value::to_object(ctx, value);
 
         define_schema_properties(ctx, constructorPrototype, schema, false);
 
@@ -863,8 +881,13 @@ inline JSObjectRef ObjectWrap<ClassType>::create_instance_by_schema(JSContextRef
             }
         }
 
-        // create the instance
-        instance = Function::construct(ctx, schemaObjectConstructor, 0, {});
+        // Construct a plain object, setting the internal and prototype afterwards to avoid calling the constructor
+        instance = JSObjectMake(ctx, nullptr, new ObjectWrap<ClassType>(internal));
+        JSObjectSetPrototype(ctx, instance, constructorPrototype);
+
+        // save the internal object on the instance
+        set_internal(ctx, instance, internal);
+
         bool instanceOfSchemaConstructor =
             JSValueIsInstanceOfConstructor(ctx, instance, schemaObjectConstructor, &exception);
         if (exception) {
@@ -874,9 +897,6 @@ inline JSObjectRef ObjectWrap<ClassType>::create_instance_by_schema(JSContextRef
         if (!instanceOfSchemaConstructor) {
             throw jsc::Exception(ctx, "Realm object constructor must not return another value");
         }
-
-        // save the internal object on the instance
-        set_internal_property(ctx, instance, internal);
 
         schemaObjectType = new SchemaObjectType();
         schemaObjects->emplace(schemaName, schemaObjectType);

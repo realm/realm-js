@@ -224,8 +224,7 @@ inline typename ClassType::Internal* node::Object::get_internal(Napi::Env env, c
 
 template <>
 template <typename ClassType>
-inline void node::Object::set_internal(Napi::Env env, const Napi::Object& object,
-                                       typename ClassType::Internal* internal)
+inline void node::Object::set_internal(Napi::Env env, Napi::Object& object, typename ClassType::Internal* internal)
 {
     return node::ObjectWrap<ClassType>::set_internal(env, object, internal);
 }
