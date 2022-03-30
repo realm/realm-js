@@ -41,7 +41,7 @@ public:
     {
     }
 
-    Napi::Value ToValue()
+    Napi::Value ToValue() const
     {
         // guard check. env.Empty() values cause node to fail in obscure places, so return undefined instead
         if (m_value.IsEmpty()) {
@@ -116,6 +116,11 @@ public:
         else {
             set_undefined();
         }
+    }
+
+    operator Napi::Value() const
+    {
+        return ToValue();
     }
 };
 
