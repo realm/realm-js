@@ -2,10 +2,31 @@ x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 
 ### Breaking change
-* Model classes passed as schema to the `Realm` constructor must now extend `Realm.Object`.
+* Model classes passed as schema to the `Realm` constructor must now extend `Realm.Object` and will no longer have their constructors called when pulling an object of that type from the database. Existing classes already extending `Realm.Object` now need to call the `super` constructor passing two arguments:
+  - `realm`: The Realm to create the object in.
+  - `values`: Values to pass to the `realm.create` call when creating the object in the database.
+* Renamed the `RealmInsertionModel<T>` type to `Unmanaged<T>` to simplify and highlight its usage.
 
 ### Enhancements
-* None.
+* Class-based models (i.e. user defined classes extending `Realm.Object` and passed through the `schema` when opening a Realm), will now create object when their constructor is called:
+
+```ts
+class Person extends Realm.Object<Person> {
+  name!: string;
+
+  static schema = {
+    name: "Person",
+    properties: { name: "string" },
+  };
+}
+
+const realm = new Realm({ schema: [Person] });
+realm.write(() => {
+  const alice = new Person(realm, { name: "Alice" });
+  // A Person { name: "Alice" } is now persisted in the database
+  console.log("Hello " + alice.name);
+});
+```
 
 ### Fixed
 * Fixed issue where React Native apps would sometimes show stale Realm data until the user interacted with the app UI ([#4389](https://github.com/realm/realm-js/issues/4389), since v10.0.0)
