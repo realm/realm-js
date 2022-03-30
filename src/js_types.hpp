@@ -560,12 +560,33 @@ REALM_JS_INLINE typename T::Object create_instance_by_schema(typename T::Context
     return Object<T>::template create_instance_by_schema<ClassType>(ctx, schema, internal);
 }
 
+/**
+ * @brief Get the internal (C++) object backing a JS object.
+ *
+ * @tparam T Engine specific types.
+ * @tparam ClassType Class implementing the C++ interface backing the JS accessor object (passed as `object`).
+ * @param ctx JS context.
+ * @param object JS object with an internal object.
+ * @return Pointer to the internal object.
+ */
 template <typename T, typename ClassType>
 REALM_JS_INLINE typename ClassType::Internal* get_internal(typename T::Context ctx, const typename T::Object& object)
 {
     return Object<T>::template get_internal<ClassType>(ctx, object);
 }
 
+/**
+ * @brief Set the internal (C++) object backing the JS object.
+ *
+ * @note Calling this transfer ownership of the object pointed to by `ptr` and links it to the lifetime of to the
+ * `object` passed as argument.
+ *
+ * @tparam T Engine specific types.
+ * @tparam ClassType Class implementing the C++ interface backing the JS accessor object (passed as `object`).
+ * @param ctx JS context.
+ * @param object JS object having its internal set.
+ * @param ptr A pointer to an internal object.
+ */
 template <typename T, typename ClassType>
 REALM_JS_INLINE void set_internal(typename T::Context ctx, typename T::Object& object,
                                   typename ClassType::Internal* ptr)
