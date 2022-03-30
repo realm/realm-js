@@ -2,8 +2,8 @@ x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 
 ### Breaking change
-* Model classes passed as schema to the `Realm` constructor must now extend `Realm.Object` and will no longer have their constructors called when pulling an object of that type from the database. Existing classes already extending `Realm.Object` now needs to call the `super` constructor passing two arguments:
-  - `realm`: The realm to create the object in.
+* Model classes passed as schema to the `Realm` constructor must now extend `Realm.Object` and will no longer have their constructors called when pulling an object of that type from the database. Existing classes already extending `Realm.Object` now need to call the `super` constructor passing two arguments:
+  - `realm`: The Realm to create the object in.
   - `values`: Values to pass to the `realm.create` call when creating the object in the database.
 * Renamed the `RealmInsertionModel<T>` type to `Unmanaged<T>` to simplify and highlight its usage.
 

@@ -622,7 +622,7 @@ typename ClassType::Internal* ObjectWrap<ClassType>::get_internal(JSContextRef c
 }
 
 /**
- * @brief Stores data on the `instance` JS object, making it possible to retrieve the internal object insteance at a
+ * @brief Stores data on the `instance` JS object, making it possible to retrieve the internal object instance at a
  * later point, using `ObjectWrap<ClassType>::get_internal`.
  *
  * @note This hands over ownership of the object pointed to by the `internal` pointer.
