@@ -47,6 +47,6 @@ jobs:
       # --no-mime-magic --guess-mime-type flags to work around CSS incorrect MIME type issue
       # (https://stackoverflow.com/questions/53708938/s3cmd-flagging-css-with-wrong-mime-type)
       - name: Upload versioned docs (for archival)
-        run: s3cmd put --recursive --acl-public --no-mime-magic --guess-mime-type docs/output/realm/${{ steps.package-version.outputs.current-version}}/ s3://${{ secrets.DOCS_S3_BUCKET_NAME }}/realm-sdks/docs/js/${{ steps.package-version.outputs.current-version}}/
+        run: s3cmd put --recursive --acl-public --no-mime-magic --guess-mime-type docs/output/realm/${{ steps.package-version.outputs.current-version}}/ s3://${{ secrets.DOCS_S3_BUCKET_NAME }}/docs/realm-sdks/js/${{ steps.package-version.outputs.current-version}}/
       - name: Upload latest docs (to live site)
-        run: s3cmd put --recursive --acl-public --no-mime-magic --guess-mime-type docs/output/realm/${{ steps.package-version.outputs.current-version}}/ s3://${{ secrets.DOCS_S3_BUCKET_NAME }}/realm-sdks/docs/js/latest/
+        run: s3cmd put --recursive --acl-public --no-mime-magic --guess-mime-type docs/output/realm/${{ steps.package-version.outputs.current-version}}/ s3://${{ secrets.DOCS_S3_BUCKET_NAME }}/docs/realm-sdks/js/latest/
