@@ -1,28 +1,19 @@
-////////////////////////////////////////////////////////////////////////////
-//
-// Copyright 2022 Realm Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-////////////////////////////////////////////////////////////////////////////
 import React, {useState} from 'react';
 import {View, Text, StyleSheet, TextInput, Pressable} from 'react-native';
-import {AuthState} from '../AppWrapper';
 import colors from '../styles/colors';
 import {shadows} from '../styles/shadows';
 import {buttonStyles} from '../styles/button';
 
-export default function LoginScreen(props) {
+export let AuthState;
+
+(function (AuthState) {
+  AuthState[(AuthState['None'] = 0)] = 'None';
+  AuthState[(AuthState['Loading'] = 1)] = 'Loading';
+  AuthState[(AuthState['LoginError'] = 2)] = 'LoginError';
+  AuthState[(AuthState['RegisterError'] = 3)] = 'RegisterError';
+})(AuthState || (AuthState = {}));
+
+export const LoginScreen = props => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -95,7 +86,7 @@ export default function LoginScreen(props) {
       </View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   content: {

@@ -1,20 +1,3 @@
-////////////////////////////////////////////////////////////////////////////
-//
-// Copyright 2021 Realm Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-////////////////////////////////////////////////////////////////////////////
 import React from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
 // @ts-ignore openURLInBrowser will open the url in your machine browser. (This isn't currently typed in React Native)
@@ -22,7 +5,7 @@ import openURLInBrowser from 'react-native/Libraries/Core/Devtools/openURLInBrow
 
 import colors from '../styles/colors';
 
-function IntroText() {
+export const IntroText = () => {
   return (
     <View style={styles.content}>
       <Text style={styles.paragraph}>
@@ -46,7 +29,7 @@ function IntroText() {
       </Pressable>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   content: {
@@ -66,5 +49,3 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
-export default IntroText;

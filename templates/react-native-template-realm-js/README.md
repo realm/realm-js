@@ -32,7 +32,7 @@ npm start
 
 ## 🔀 Setting up sync
 
-See https://github.com/realm/realm-js/blob/master/templates/react-native-template-realm-ts/README.md for instructions.
+See https://github.com/realm/realm-js/blob/master/templates/docs/sync-setup.md for instructions.
 
 ## 📝 Notes
 - [React Native docs](https://reactnative.dev/docs/getting-started)
@@ -40,4 +40,3 @@ See https://github.com/realm/realm-js/blob/master/templates/react-native-templat
 - [Setting Up Realm Sync](https://docs.mongodb.com/realm/sdk/react-native/quick-start/)
 - [Realm JS Documentation](https://docs.mongodb.com/realm/sdk/react-native/)
 - [@realm/react Readme](https://github.com/realm/realm-js/tree/master/packages/realm-react#readme)
-

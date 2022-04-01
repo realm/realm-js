@@ -58,3 +58,8 @@ buck-out/
 
 # CocoaPods
 /ios/Pods/
+
+# for local development, these shouldn't be commited into the template
+package-lock.json
+RealmTsTemplate.xcworkspace
+/ios/Podfile.lock

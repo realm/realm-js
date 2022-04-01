@@ -1,8 +1,8 @@
 import React from "react";
 import { View, FlatList, StyleSheet } from "react-native";
-import TaskItem from "./TaskItem";
+import { TaskItem } from "./TaskItem";
 
-function TaskList({ tasks, onToggleTaskStatus, onDeleteTask }) {
+export const TaskList = ({ tasks, onToggleTaskStatus, onDeleteTask }) => {
   return (
     <View style={styles.listContainer}>
       <FlatList
@@ -10,8 +10,7 @@ function TaskList({ tasks, onToggleTaskStatus, onDeleteTask }) {
         keyExtractor={(task) => task._id.toString()}
         renderItem={({ item }) => (
           <TaskItem
-            description={item.description}
-            isComplete={item.isComplete}
+            task={item}
             onToggleStatus={() => onToggleTaskStatus(item)}
             onDelete={() => onDeleteTask(item)}
             // Don't spread the Realm item as such: {...item}
@@ -20,7 +19,7 @@ function TaskList({ tasks, onToggleTaskStatus, onDeleteTask }) {
       />
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   listContainer: {

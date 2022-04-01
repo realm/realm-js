@@ -1,6 +1,7 @@
 {
   "packages": [
     ".",
+    "example",
     "packages/*",
     "packages/realm-react/testApp",
     "integration-tests",
