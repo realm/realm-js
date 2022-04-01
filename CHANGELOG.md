@@ -13,7 +13,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Fixed
-* Fixed flexible sync crash when updating subscriptions after token expiry ([#4421](https://github.com/realm/realm-js/issues/4421), since v10.12.0).
+* Fixed flexible sync crash when updating subscriptions after token expiry. ([#4421](https://github.com/realm/realm-js/issues/4421), since v10.12.0)
 
 ### Internal
 * <Either mention core version or upgrade>
