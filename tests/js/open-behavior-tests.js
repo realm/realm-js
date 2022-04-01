@@ -356,6 +356,70 @@ module.exports = {
     }
   },
 
+  testNewFile_downloadBeforeOpen_openLocalOnTimeOut_existing: async function () {
+    // This is a regression test for the following issue:
+    // https://github.com/realm/realm-js/issues/4453
+    // If one were to logout before the openLocalRealm timeout
+    // then the timeout would try to open a local realm with the timed out user
+
+    // 1. Add data to server Realm from User
+    // 2. Open Realm again with User
+    // 3. Logout User and run timeout
+    // 4. It should not crash
+
+    const app = new Realm.App(APP_CONFIG);
+    const partitionValue = Utils.genPartition();
+
+    const returningUserCredentials = await Utils.getRegisteredEmailPassCredentials(app);
+
+    {
+      // Add data to the realm with a different user
+      const user = await app.logIn(returningUserCredentials);
+      const config = {
+        schema: [schemas.DogForSync],
+        sync: {
+          user,
+          partitionValue,
+          _sessionStopPolicy: "immediately",
+        },
+      };
+
+      const realm = await Realm.open(config);
+
+      realm.write(() => {
+        realm.create(schemas.DogForSync.name, { _id: new ObjectId(), name: "Lola" });
+      });
+
+      await realm.syncSession.uploadAllLocalChanges();
+
+      realm.close();
+      await user.logOut();
+    }
+
+    {
+      const user = await app.logIn(returningUserCredentials);
+      const config = {
+        schema: [schemas.DogForSync],
+        sync: {
+          user,
+          partitionValue,
+          _sessionStopPolicy: "immediately",
+          existingRealmFileBehavior: {
+            type: "downloadBeforeOpen",
+            timeOut: 1000,
+            timeOutBehavior: "openLocalRealm",
+          },
+        },
+      };
+      await Realm.open(config);
+
+      await user.logOut();
+
+      // Wait for the timeout to run.  This used to crash, since it opens a local realm with a logged out user.
+      await new Promise((resolve) => setTimeout(() => resolve(), 2000));
+    }
+  },
+
   testExistingFile_downloadBeforeOpen_openLocalOnTimeOut: async function () {
     // 1. Open empty Realm
     // 2. Close Realm

@@ -47,7 +47,7 @@ describe("Analytics", () => {
     expect(data["Host OS Type"]).equals(os.platform());
     expect(data["Host OS Version"]).equals(os.release());
     expect(data["Node.js version"]).equals(process.version);
-    expect(data.token).equals("aab85907a13e1ff44a95be539d9942a9");
+    expect(data.token).equals("ce0fac19508f6c8f20066d345d360fd0");
 
     // specific to package.json
     expect(data.Version).equals("1.2.3");

@@ -38,6 +38,7 @@ class Task extends Realm.Object {
   _id!: Realm.BSON.ObjectId;
   description!: string;
   isComplete!: boolean;
+  createdAt!: Date;
 
   static generate(description: string) {
     return {
