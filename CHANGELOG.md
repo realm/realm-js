@@ -5,6 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Changed "react-native" main field to point to a `lib/index.native.js` file to help bundlers pick the right file when loading our library on React Native. ([#4459](https://github.com/realm/realm-js/issues/4459))
+* Fixed resolving the "react-native" package when building from source, enabling developers to run the `./scripts/build-ios.sh` script themselves to build our iOS artifacts with the same version of Xcode / LLVM as they're building their app.
 
 ### Compatibility
 * MongoDB Realm Cloud.
