@@ -68,7 +68,7 @@ Open the Xcode workspace
 xed ios
 ```
 
-As example: The following command will run the harness for tests with "Class models" in their title and skip tests which require a server, without starting the app in the simulator.
+As example: The following command will run the harness for tests with "Class models" in their title and skip tests that require a server, without starting the app in the simulator.
 
 ```
 SKIP_RUNNER=true MOCHA_REMOTE_GREP="Class models" MOCHA_REMOTE_CONTEXT=missingServer npm run watch:ios
