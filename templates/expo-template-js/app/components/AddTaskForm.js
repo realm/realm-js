@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Pressable, Platform, StyleSheet } from "react-native";
 
+import { buttonStyles } from "../styles/button";
 import colors from "../styles/colors";
+import { shadows } from "../styles/shadows";
 
-function AddTaskForm({ onSubmit }) {
+export const AddTaskForm = ({ onSubmit }) => {
   const [description, setDescription] = useState("");
 
   const handleSubmit = () => {
@@ -26,27 +28,14 @@ function AddTaskForm({ onSubmit }) {
       </Pressable>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   form: {
     height: 50,
     marginBottom: 20,
     flexDirection: "row",
-    ...Platform.select({
-      ios: {
-        shadowColor: colors.black,
-        shadowOffset: {
-          width: 0,
-          height: 4,
-        },
-        shadowOpacity: 0.7,
-        shadowRadius: 3,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
+    ...shadows,
   },
   textInput: {
     flex: 1,
@@ -57,20 +46,15 @@ const styles = StyleSheet.create({
     fontSize: 17,
   },
   submit: {
-    height: "100%",
+    ...buttonStyles.button,
     width: 50,
-    justifyContent: "center",
-    alignItems: "center",
+    height: "100%",
+    paddingHorizontal: 0,
+    paddingVertical: 0,
     marginLeft: 20,
-    borderRadius: 5,
-    backgroundColor: colors.purple,
+    marginRight: 0,
   },
   icon: {
-    color: colors.white,
-    textAlign: "center",
-    fontSize: 17,
-    fontWeight: "bold",
+    ...buttonStyles.text,
   },
 });
-
-export default AddTaskForm;

@@ -1,39 +1,37 @@
-import React, {memo} from 'react';
-import {View, Text, Pressable, Platform, StyleSheet} from 'react-native';
+import React from 'react';
+import {View, Text, Pressable, StyleSheet} from 'react-native';
 
+import {shadows} from '../styles/shadows';
 import colors from '../styles/colors';
+import {Task} from '../models/Task';
 
-interface TaskItemProps {
-  description: string;
-  isComplete: boolean;
+type TaskItemProps = {
+  task: Task & Realm.Object;
   onToggleStatus: () => void;
   onDelete: () => void;
-}
+};
 
-function TaskItem({
-  description,
-  isComplete,
-  onToggleStatus,
-  onDelete,
-}: TaskItemProps) {
-  return (
-    <View style={styles.task}>
-      <Pressable
-        onPress={onToggleStatus}
-        style={[styles.status, isComplete && styles.completed]}>
-        <Text style={styles.icon}>{isComplete ? '✓' : '○'}</Text>
-      </Pressable>
-      <View style={styles.descriptionContainer}>
-        <Text numberOfLines={1} style={styles.description}>
-          {description}
-        </Text>
+export const TaskItem = React.memo<TaskItemProps>(
+  ({task, onToggleStatus, onDelete}) => {
+    return (
+      <View style={styles.task}>
+        <Pressable
+          onPress={onToggleStatus}
+          style={[styles.status, task.isComplete && styles.completed]}>
+          <Text style={styles.icon}>{task.isComplete ? '✓' : '○'}</Text>
+        </Pressable>
+        <View style={styles.descriptionContainer}>
+          <Text numberOfLines={1} style={styles.description}>
+            {task.description}
+          </Text>
+        </View>
+        <Pressable onPress={onDelete} style={styles.deleteButton}>
+          <Text style={styles.deleteText}>Delete</Text>
+        </Pressable>
       </View>
-      <Pressable onPress={onDelete} style={styles.deleteButton}>
-        <Text style={styles.deleteText}>Delete</Text>
-      </Pressable>
-    </View>
-  );
-}
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   task: {
@@ -43,20 +41,7 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     backgroundColor: colors.white,
     borderRadius: 5,
-    ...Platform.select({
-      ios: {
-        shadowColor: colors.black,
-        shadowOffset: {
-          width: 0,
-          height: 4,
-        },
-        shadowOpacity: 0.7,
-        shadowRadius: 3,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
+    ...shadows,
   },
   descriptionContainer: {
     flex: 1,
@@ -93,13 +78,3 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
-// We want to make sure only tasks that change are rerendered
-const shouldNotRerender = (
-  prevProps: TaskItemProps,
-  nextProps: TaskItemProps,
-) =>
-  prevProps.description === nextProps.description &&
-  prevProps.isComplete === nextProps.isComplete;
-
-export default memo(TaskItem, shouldNotRerender);

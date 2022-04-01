@@ -1,6 +1,6 @@
 {
   "name": "realmtstemplate",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
@@ -10,11 +10,11 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
-    "@realm/react": "^0.1.0",
+    "@realm/react": "^0.2.1",
     "react": "17.0.2",
     "react-native": "0.66.4",
     "react-native-get-random-values": "^1.7.0",
-    "realm": "^10.11.0"
+    "realm": "^10.14.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",

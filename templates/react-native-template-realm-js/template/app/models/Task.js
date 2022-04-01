@@ -1,11 +1,12 @@
-import {Realm, createRealmContext} from '@realm/react';
+import {Realm} from '@realm/react';
 export class Task extends Realm.Object {
-  static generate(description) {
+  static generate(description, userId) {
     return {
       _id: new Realm.BSON.ObjectId(),
       description,
       isComplete: false,
       createdAt: new Date(),
+      userId: userId || '_SYNC_DISABLED_',
     };
   }
 
@@ -18,11 +19,7 @@ export class Task extends Realm.Object {
       description: 'string',
       isComplete: {type: 'bool', default: false},
       createdAt: 'date',
+      userId: 'string',
     },
   };
 }
-
-export default createRealmContext({
-  schema: [Task],
-  deleteRealmIfMigrationNeeded: true,
-});

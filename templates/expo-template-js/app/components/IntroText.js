@@ -5,7 +5,7 @@ import openURLInBrowser from "react-native/Libraries/Core/Devtools/openURLInBrow
 
 import colors from "../styles/colors";
 
-function IntroText() {
+export const IntroText = () => {
   return (
     <View style={styles.content}>
       <Text style={styles.paragraph}>Welcome to the Realm React Native TypeScript Template</Text>
@@ -19,7 +19,7 @@ function IntroText() {
       </Pressable>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   content: {
@@ -39,5 +39,3 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
-
-export default IntroText;

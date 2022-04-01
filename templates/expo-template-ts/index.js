@@ -1,13 +1,20 @@
-import 'expo-dev-client';
+/**
+ * @format
+ */
 
 import 'react-native-get-random-values';
-import "expo-dev-client";
+import React from 'react';
+import {AppRegistry} from 'react-native';
+import {AppWrapperNonSync} from './app/AppWrapperNonSync';
+import {AppWrapperSync} from './app/AppWrapperSync';
+import {name as appName} from './app.json';
+import {SYNC_CONFIG} from './sync.config';
 
-import { registerRootComponent } from "expo";
+const App = () =>
+  SYNC_CONFIG.enabled ? (
+    <AppWrapperSync appId={SYNC_CONFIG.appId} />
+  ) : (
+    <AppWrapperNonSync />
+  );
 
-import App from "./App";
-
-// registerRootComponent calls AppRegistry.registerComponent('main', () => App);
-// It also ensures that whether you load the app in the Expo client or in a native build,
-// the environment is set up appropriately
-registerRootComponent(App);
+AppRegistry.registerComponent(appName, () => App);

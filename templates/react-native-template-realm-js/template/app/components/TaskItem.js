@@ -1,19 +1,20 @@
-import React, {memo} from 'react';
-import {View, Text, Pressable, Platform, StyleSheet} from 'react-native';
+import React from 'react';
+import {View, Text, Pressable, StyleSheet} from 'react-native';
 
+import {shadows} from '../styles/shadows';
 import colors from '../styles/colors';
 
-function TaskItem({description, isComplete, onToggleStatus, onDelete}) {
+export const TaskItem = React.memo(({task, onToggleStatus, onDelete}) => {
   return (
     <View style={styles.task}>
       <Pressable
         onPress={onToggleStatus}
-        style={[styles.status, isComplete && styles.completed]}>
-        <Text style={styles.icon}>{isComplete ? '✓' : '○'}</Text>
+        style={[styles.status, task.isComplete && styles.completed]}>
+        <Text style={styles.icon}>{task.isComplete ? '✓' : '○'}</Text>
       </Pressable>
       <View style={styles.descriptionContainer}>
         <Text numberOfLines={1} style={styles.description}>
-          {description}
+          {task.description}
         </Text>
       </View>
       <Pressable onPress={onDelete} style={styles.deleteButton}>
@@ -21,7 +22,7 @@ function TaskItem({description, isComplete, onToggleStatus, onDelete}) {
       </Pressable>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   task: {
@@ -31,20 +32,7 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     backgroundColor: colors.white,
     borderRadius: 5,
-    ...Platform.select({
-      ios: {
-        shadowColor: colors.black,
-        shadowOffset: {
-          width: 0,
-          height: 4,
-        },
-        shadowOpacity: 0.7,
-        shadowRadius: 3,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
+    ...shadows,
   },
   descriptionContainer: {
     flex: 1,
@@ -81,10 +69,3 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
-// We want to make sure only tasks that change are rerendered
-const shouldNotRerender = (prevProps, nextProps) =>
-  prevProps.description === nextProps.description &&
-  prevProps.isComplete === nextProps.isComplete;
-
-export default memo(TaskItem, shouldNotRerender);
