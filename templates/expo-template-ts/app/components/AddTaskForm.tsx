@@ -12,9 +12,9 @@ import {buttonStyles} from '../styles/button';
 import colors from '../styles/colors';
 import {shadows} from '../styles/shadows';
 
-interface AddTaskFormProps {
+type AddTaskFormProps = {
   onSubmit: (description: string) => void;
-}
+};
 
 export const AddTaskForm: React.FC<AddTaskFormProps> = ({onSubmit}) => {
   const [description, setDescription] = useState('');

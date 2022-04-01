@@ -1,8 +1,8 @@
-import React, {useRef, useState} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {Realm} from '@realm/react';
 import {Pressable, SafeAreaView, StyleSheet, Text} from 'react-native';
 
-import TaskContext from './models/Task';
+import {TaskRealmContext} from './models';
 import {LoginScreen, AuthState} from './components/LoginScreen';
 import colors from './styles/colors';
 import {AppSync} from './AppSync';
@@ -12,7 +12,7 @@ import {shadows} from './styles/shadows';
 export const AppWrapperSync: React.FC<{
   appId: string;
 }> = ({appId}) => {
-  const {RealmProvider} = TaskContext;
+  const {RealmProvider} = TaskRealmContext;
 
   // Set up the Realm app
   const app = useRef(new Realm.App({id: appId})).current;
@@ -27,46 +27,52 @@ export const AppWrapperSync: React.FC<{
 
   // If the user presses "login" from the auth screen, try to log them in
   // with the supplied credentials
-  const handleLogin = async (email: string, password: string) => {
-    setAuthState(AuthState.Loading);
-    const credentials = Realm.Credentials.emailPassword(email, password);
+  const handleLogin = useCallback(
+    async (email: string, password: string) => {
+      setAuthState(AuthState.Loading);
+      const credentials = Realm.Credentials.emailPassword(email, password);
 
-    try {
-      setUser(await app.logIn(credentials));
-      setAuthVisible(false);
-      setAuthState(AuthState.None);
-    } catch (e) {
-      console.log('Error logging in', e);
-      setAuthState(AuthState.LoginError);
-    }
-  };
+      try {
+        setUser(await app.logIn(credentials));
+        setAuthVisible(false);
+        setAuthState(AuthState.None);
+      } catch (e) {
+        console.log('Error logging in', e);
+        setAuthState(AuthState.LoginError);
+      }
+    },
+    [setAuthState, setUser, setAuthVisible, app],
+  );
 
   // If the user presses "register" from the auth screen, try to register a
   // new account with the  supplied credentials and login as the newly created user
-  const handleRegister = async (email: string, password: string) => {
-    setAuthState(AuthState.Loading);
+  const handleRegister = useCallback(
+    async (email: string, password: string) => {
+      setAuthState(AuthState.Loading);
 
-    try {
-      // Register the user...
-      await app.emailPasswordAuth.registerUser({email, password});
-      // ...then login with the newly created user
-      const credentials = Realm.Credentials.emailPassword(email, password);
+      try {
+        // Register the user...
+        await app.emailPasswordAuth.registerUser({email, password});
+        // ...then login with the newly created user
+        const credentials = Realm.Credentials.emailPassword(email, password);
 
-      setUser(await app.logIn(credentials));
-      setAuthVisible(false);
-      setAuthState(AuthState.None);
-    } catch (e) {
-      console.log('Error registering', e);
-      setAuthState(AuthState.RegisterError);
-    }
-  };
+        setUser(await app.logIn(credentials));
+        setAuthVisible(false);
+        setAuthState(AuthState.None);
+      } catch (e) {
+        console.log('Error registering', e);
+        setAuthState(AuthState.RegisterError);
+      }
+    },
+    [setAuthState, app],
+  );
 
   // If the user presses "logout", unset the user in state and log the user out
   // of the Realm app
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     setUser(null);
     app.currentUser?.logOut();
-  };
+  }, [setUser, app]);
 
   // If we are not logged in show the login screen
   if (authVisible || !user || !app.currentUser) {
@@ -83,14 +89,12 @@ export const AppWrapperSync: React.FC<{
   return (
     <SafeAreaView style={styles.screen}>
       <RealmProvider sync={{user, flexible: true}}>
-        <AppSync currentUserId={app.currentUser.id} />
-        <>
-          <Pressable style={styles.authButton} onPress={handleLogout}>
-            <Text style={styles.authButtonText}>
-              Logout {app.currentUser.profile.email}
-            </Text>
-          </Pressable>
-        </>
+        <AppSync userId={app.currentUser.id} />
+        <Pressable style={styles.authButton} onPress={handleLogout}>
+          <Text style={styles.authButtonText}>
+            Logout {app.currentUser.profile.email}
+          </Text>
+        </Pressable>
       </RealmProvider>
     </SafeAreaView>
   );

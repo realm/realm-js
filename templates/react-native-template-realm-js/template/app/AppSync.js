@@ -1,11 +1,12 @@
 import React, {useEffect, useMemo} from 'react';
 
-import TaskContext, {Task} from './models/Task';
+import {Task} from './models/Task';
+import {TaskRealmContext} from './models';
 import {TaskManager} from './components/TaskManager';
 
-const {useRealm, useQuery} = TaskContext;
+const {useRealm, useQuery} = TaskRealmContext;
 
-export const AppSync = ({currentUserId}) => {
+export const AppSync = ({userId}) => {
   const realm = useRealm();
   const result = useQuery(Task);
 
@@ -17,5 +18,5 @@ export const AppSync = ({currentUserId}) => {
     });
   }, [realm, result]);
 
-  return <TaskManager tasks={tasks} userId={currentUserId} />;
+  return <TaskManager tasks={tasks} userId={userId} />;
 };

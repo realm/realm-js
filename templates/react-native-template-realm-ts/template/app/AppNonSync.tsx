@@ -1,9 +1,10 @@
 import React, {useMemo} from 'react';
 
-import TaskContext, {Task} from './models/Task';
+import {Task} from './models/Task';
+import {TaskRealmContext} from './models';
 import {TaskManager} from './components/TaskManager';
 
-const {useQuery} = TaskContext;
+const {useQuery} = TaskRealmContext;
 
 export const AppNonSync = () => {
   const result = useQuery(Task);

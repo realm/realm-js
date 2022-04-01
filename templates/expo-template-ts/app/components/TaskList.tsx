@@ -5,11 +5,11 @@ import {Realm} from '@realm/react';
 import {Task} from '../models/Task';
 import {TaskItem} from './TaskItem';
 
-interface TaskListProps {
+type TaskListProps = {
   tasks: Realm.Results<Task> | [];
   onToggleTaskStatus: (task: Task) => void;
   onDeleteTask: (task: Task) => void;
-}
+};
 
 export const TaskList: React.FC<TaskListProps> = ({
   tasks,

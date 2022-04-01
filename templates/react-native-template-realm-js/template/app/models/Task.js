@@ -1,4 +1,4 @@
-import {Realm, createRealmContext} from '@realm/react';
+import {Realm} from '@realm/react';
 export class Task extends Realm.Object {
   static generate(description, userId) {
     return {
@@ -23,7 +23,3 @@ export class Task extends Realm.Object {
     },
   };
 }
-
-export default createRealmContext({
-  schema: [Task],
-});

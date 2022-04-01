@@ -5,11 +5,11 @@ import {shadows} from '../styles/shadows';
 import colors from '../styles/colors';
 import {Task} from '../models/Task';
 
-interface TaskItemProps {
+type TaskItemProps = {
   task: Task & Realm.Object;
   onToggleStatus: () => void;
   onDelete: () => void;
-}
+};
 
 export const TaskItem = React.memo<TaskItemProps>(
   ({task, onToggleStatus, onDelete}) => {

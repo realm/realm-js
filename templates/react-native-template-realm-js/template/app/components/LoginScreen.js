@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {View, Text, StyleSheet, TextInput, Pressable} from 'react-native';
 import colors from '../styles/colors';
 import {shadows} from '../styles/shadows';
@@ -13,17 +13,17 @@ export let AuthState;
   AuthState[(AuthState['RegisterError'] = 3)] = 'RegisterError';
 })(AuthState || (AuthState = {}));
 
-export const LoginScreen = props => {
+export const LoginScreen = ({onLogin, onRegister, authState}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = () => {
-    props.onLogin(email, password);
-  };
+  const handleLogin = useCallback(() => {
+    onLogin(email, password);
+  }, [onLogin, email, password]);
 
-  const handleRegister = () => {
-    props.onRegister(email, password);
-  };
+  const handleRegister = useCallback(() => {
+    onRegister(email, password);
+  }, [onRegister, email, password]);
 
   return (
     <View style={styles.content}>
@@ -51,12 +51,12 @@ export const LoginScreen = props => {
         />
       </View>
 
-      {props.authState === AuthState.LoginError && (
+      {authState === AuthState.LoginError && (
         <Text style={[styles.error]}>
           There was an error logging in, please try again
         </Text>
       )}
-      {props.authState === AuthState.RegisterError && (
+      {authState === AuthState.RegisterError && (
         <Text style={[styles.error]}>
           There was an error registering, please try again
         </Text>
@@ -67,9 +67,9 @@ export const LoginScreen = props => {
           onPress={handleLogin}
           style={[
             styles.button,
-            props.authState === AuthState.Loading && styles.buttonDisabled,
+            authState === AuthState.Loading && styles.buttonDisabled,
           ]}
-          disabled={props.authState === AuthState.Loading}>
+          disabled={authState === AuthState.Loading}>
           <Text style={buttonStyles.text}>Login</Text>
         </Pressable>
 
@@ -77,10 +77,10 @@ export const LoginScreen = props => {
           onPress={handleRegister}
           style={[
             styles.button,
-            props.authState === AuthState.Loading && styles.buttonDisabled,
+            authState === AuthState.Loading && styles.buttonDisabled,
             styles.registerButton,
           ]}
-          disabled={props.authState === AuthState.Loading}>
+          disabled={authState === AuthState.Loading}>
           <Text style={buttonStyles.text}>Register</Text>
         </Pressable>
       </View>
