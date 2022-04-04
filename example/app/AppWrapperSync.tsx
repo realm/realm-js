@@ -1,5 +1,5 @@
 import React, {useCallback, useRef, useState} from 'react';
-import {Realm} from '@realm/react';
+import {Realm, AppProvider} from '@realm/react';
 import {Pressable, SafeAreaView, StyleSheet, Text} from 'react-native';
 
 import {TaskRealmContext} from './models';
@@ -88,14 +88,16 @@ export const AppWrapperSync: React.FC<{
   // If we are logged in, add the sync configuration the the RealmProvider and render the app
   return (
     <SafeAreaView style={styles.screen}>
-      <RealmProvider sync={{user, flexible: true}}>
-        <AppSync userId={app.currentUser.id} />
-        <Pressable style={styles.authButton} onPress={handleLogout}>
-          <Text style={styles.authButtonText}>
-            Logout {app.currentUser.profile.email}
-          </Text>
-        </Pressable>
-      </RealmProvider>
+      <AppProvider id={appId}>
+        <RealmProvider sync={{user, flexible: true}}>
+          <AppSync userId={app.currentUser.id} />
+          <Pressable style={styles.authButton} onPress={handleLogout}>
+            <Text style={styles.authButtonText}>
+              Logout {app.currentUser.profile.email}
+            </Text>
+          </Pressable>
+        </RealmProvider>
+      </AppProvider>
     </SafeAreaView>
   );
 };
