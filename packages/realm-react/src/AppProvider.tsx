@@ -55,8 +55,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children, ...appProps 
   // Support for a possible change in configuration
   useEffect(() => {
     try {
-      const openApp = new Realm.App(configuration.current);
-      setApp(openApp);
+      const app = new Realm.App(configuration.current);
+      setApp(app);
     } catch (err) {
       console.error(err);
     }
@@ -72,7 +72,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children, ...appProps 
  */
 export const useApp = (): Realm.App => {
   const context = useContext(AppContext);
-  if (context == null) {
+  if (context === null) {
     throw new Error("AppContext not found.  Did you wrap your app in AppProvider?");
   }
   return context;

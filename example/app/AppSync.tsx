@@ -1,10 +1,10 @@
 import React, {useEffect, useMemo} from 'react';
+import {useApp} from '@realm/react';
+import {StyleSheet, Text} from 'react-native';
 
 import {Task} from './models/Task';
 import {TaskRealmContext} from './models';
 import {TaskManager} from './components/TaskManager';
-import {useApp} from '@realm/react';
-import {StyleSheet, Text} from 'react-native';
 
 const {useRealm, useQuery} = TaskRealmContext;
 

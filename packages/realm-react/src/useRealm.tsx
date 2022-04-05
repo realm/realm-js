@@ -39,7 +39,7 @@ export const createUseRealm = (RealmContext: React.Context<Realm | null>) => {
   return function useRealm(): Realm {
     // This is the context setup by `createRealmContext`
     const context = useContext(RealmContext);
-    if (context == null) {
+    if (context === null) {
       throw new Error("Realm context not found.  Did you call useRealm() within a <RealmProvider/>?");
     }
     return context;

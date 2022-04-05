@@ -32,6 +32,12 @@ describe("AppProvider", () => {
     const app = result.current;
     expect(app.id).toBe("someId");
   });
+
+  it("throws useApp is used without having the AppProvider is rendered", () => {
+    const { result } = renderHook(() => useApp());
+    expect(() => result.current).toThrow();
+  });
+
   it("handle state changes to its configuration", async () => {
     const AppComponent = () => {
       const app = useApp();
@@ -61,7 +67,7 @@ describe("AppProvider", () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
-    // Changing the realm provider configuration will cause a comlete new remount
+    // Changing the realm provider configuration will cause a remount
     // of the child component.  Therefore it must be retreived again
     const newSchemaNameContainer = getByTestId("appId");
 
