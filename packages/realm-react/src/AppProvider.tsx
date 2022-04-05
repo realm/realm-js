@@ -20,7 +20,7 @@ import React, { createContext, useContext, useEffect, useRef, useState } from "r
 import Realm from "realm";
 
 /**
- * Create a context to hold Realm.app.  Should be accessed with the useApp hook
+ * Create a context containing the Realm app.  Should be accessed with the useApp hook.
  */
 const AppContext = createContext<Realm.App | null>(null);
 
