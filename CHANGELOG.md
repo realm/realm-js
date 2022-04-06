@@ -5,6 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Logging out too fast can cause an error if the timeout behavior is set to `openLocalRealm` ([4453](https://github.com/realm/realm-js/issues/4453))
+* Released `realm-network-transport` to adopt the changes published to fix `globalThis` undefined issue for older devices. ([#4390](https://github.com/realm/realm-js/4390))
 
 ### Compatibility
 * MongoDB Realm Cloud.
