@@ -382,7 +382,7 @@ void ResultsClass<T>::add_listener(ContextType ctx, U& collection, ObjectType th
                                   CollectionClass<T>::create_collection_change_set(protected_ctx, change_set)};
             Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
         });
-    collection.m_notification_tokens.emplace_back(protected_callback, std::move(token));
+    collection.m_notification_tokens.emplace_back(std::move(protected_callback), std::move(token));
 }
 
 template <typename T>

@@ -24,6 +24,7 @@
 #include "js_api_key_auth.hpp"
 #include "js_network_transport.hpp"
 
+#include <forward_list>
 #include <realm/sync/config.hpp>
 #include <realm/object-store/sync/mongo_collection.hpp>
 #include <realm/object-store/sync/sync_manager.hpp>
@@ -38,6 +39,7 @@ namespace js {
 
 using SharedUser = std::shared_ptr<realm::SyncUser>;
 using SharedApp = std::shared_ptr<realm::app::App>;
+using Token = realm::Subscribable<realm::SyncUser>::Token;
 using WatchStream = realm::app::WatchStream;
 
 template <typename T>
@@ -119,21 +121,27 @@ template <typename T>
 class User : public SharedUser {
 public:
     User(SharedUser user, SharedApp app)
-        : SharedUser(std::move(user))
+        : m_user(std::move(user))
         , m_app(std::move(app))
     {
     }
     User(SharedUser user)
-        : SharedUser(std::move(user))
+        : m_user(std::move(user))
         , m_app(nullptr)
     {
     }
     User(User&&) = default;
+    User(const User&) = delete;
+    User& operator=(const User&) = delete;
 
     User& operator=(User&&) = default;
-    User& operator=(User const&) = default;
+    // User& operator=(User const&) = default;
+
+    using CallbackTokenPair = std::pair<Protected<typename T::Function>, Token>;
+    std::forward_list<CallbackTokenPair> m_notification_tokens;
 
     SharedApp m_app;
+    SharedUser m_user;
 };
 
 template <typename T>
@@ -144,6 +152,7 @@ class UserClass : public ClassDefinition<T, User<T>> {
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
     using StringType = typename T::String;
+    using Context = js::Context<T>;
     using String = js::String<T>;
     using Object = js::Object<T>;
     using Value = js::Value<T>;
@@ -194,6 +203,8 @@ public:
     static void push_deregister(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void make_streaming_request(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void new_watch_stream(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void add_listener(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void remove_listener(ContextType, ObjectType, Arguments&, ReturnValue&);
 
 
     MethodMap<T> const methods = {
@@ -206,6 +217,8 @@ public:
         {"_pushDeregister", wrap<push_deregister>},
         {"_makeStreamingRequest", wrap<make_streaming_request>},
         {"_newWatchStream", wrap<new_watch_stream>},
+        {"addListener", wrap<add_listener>},
+        {"removeListener", wrap<remove_listener>},
     };
 };
 
@@ -228,14 +241,14 @@ typename T::Object UserClass<T>::create_instance(ContextType ctx, SharedUser use
 template <typename T>
 void UserClass<T>::get_id(ContextType ctx, ObjectType object, ReturnValue& return_value)
 {
-    std::string id = get_internal<T, UserClass<T>>(ctx, object)->get()->identity();
+    std::string id = get_internal<T, UserClass<T>>(ctx, object)->m_user->identity();
     return_value.set(id);
 }
 
 template <typename T>
 void UserClass<T>::get_identities(ContextType ctx, ObjectType object, ReturnValue& return_value)
 {
-    std::vector<SyncUserIdentity> identities = get_internal<T, UserClass<T>>(ctx, object)->get()->identities();
+    std::vector<SyncUserIdentity> identities = get_internal<T, UserClass<T>>(ctx, object)->m_user->identities();
 
     std::vector<ValueType> identity_objects;
     for (auto identity : identities) {
@@ -250,7 +263,7 @@ void UserClass<T>::get_identities(ContextType ctx, ObjectType object, ReturnValu
 template <typename T>
 void UserClass<T>::get_device_id(ContextType ctx, ObjectType object, ReturnValue& return_value)
 {
-    auto user = get_internal<T, UserClass<T>>(ctx, object)->get();
+    auto user = get_internal<T, UserClass<T>>(ctx, object)->m_user;
     if (user->has_device_id()) {
         return_value.set(user->device_id());
         return;
@@ -261,21 +274,21 @@ void UserClass<T>::get_device_id(ContextType ctx, ObjectType object, ReturnValue
 template <typename T>
 void UserClass<T>::get_provider_type(ContextType ctx, ObjectType object, ReturnValue& return_value)
 {
-    std::string provider_type = get_internal<T, UserClass<T>>(ctx, object)->get()->provider_type();
+    std::string provider_type = get_internal<T, UserClass<T>>(ctx, object)->m_user->provider_type();
     return_value.set(provider_type);
 }
 
 template <typename T>
 void UserClass<T>::get_access_token(ContextType ctx, ObjectType object, ReturnValue& return_value)
 {
-    std::string token = get_internal<T, UserClass<T>>(ctx, object)->get()->access_token();
+    std::string token = get_internal<T, UserClass<T>>(ctx, object)->m_user->access_token();
     return_value.set(token);
 }
 
 template <typename T>
 void UserClass<T>::get_refresh_token(ContextType ctx, ObjectType object, ReturnValue& return_value)
 {
-    std::string token = get_internal<T, UserClass<T>>(ctx, object)->get()->refresh_token();
+    std::string token = get_internal<T, UserClass<T>>(ctx, object)->m_user->refresh_token();
     return_value.set(token);
 }
 
@@ -283,14 +296,14 @@ void UserClass<T>::get_refresh_token(ContextType ctx, ObjectType object, ReturnV
 template <typename T>
 void UserClass<T>::is_logged_in(ContextType ctx, ObjectType object, ReturnValue& return_value)
 {
-    auto logged_in = get_internal<T, UserClass<T>>(ctx, object)->get()->is_logged_in();
+    auto logged_in = get_internal<T, UserClass<T>>(ctx, object)->m_user->is_logged_in();
     return_value.set(logged_in);
 }
 
 template <typename T>
 void UserClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue& return_value)
 {
-    auto state = get_internal<T, UserClass<T>>(ctx, object)->get()->state();
+    auto state = get_internal<T, UserClass<T>>(ctx, object)->m_user->state();
 
     switch (state) {
         case SyncUser::State::LoggedOut:
@@ -308,7 +321,7 @@ void UserClass<T>::get_state(ContextType ctx, ObjectType object, ReturnValue& re
 template <typename T>
 void UserClass<T>::get_custom_data(ContextType ctx, ObjectType object, ReturnValue& return_value)
 {
-    auto custom_data = get_internal<T, UserClass<T>>(ctx, object)->get()->custom_data();
+    auto custom_data = get_internal<T, UserClass<T>>(ctx, object)->m_user->custom_data();
     if (!custom_data)
         return return_value.set_null();
 
@@ -328,7 +341,7 @@ void UserClass<T>::get_profile(ContextType ctx, ObjectType object, ReturnValue& 
     static const String string_min_age = "minAge";
     static const String string_max_age = "maxAge";
 
-    auto user_profile = get_internal<T, UserClass<T>>(ctx, object)->get()->user_profile();
+    auto user_profile = get_internal<T, UserClass<T>>(ctx, object)->m_user->user_profile();
 
     auto profile_object = Object::create_empty(ctx);
 #define STRING_TO_PROP(propname)                                                                                     \
@@ -366,7 +379,7 @@ void UserClass<T>::logout(ContextType ctx, ObjectType this_object, Arguments& ar
     auto user = get_internal<T, UserClass<T>>(ctx, this_object);
 
     auto callback = Value::validated_to_function(ctx, args[0], "callback");
-    user->m_app->log_out(*user, Function::wrap_void_callback(ctx, this_object, callback));
+    user->m_app->log_out(user->m_user, Function::wrap_void_callback(ctx, this_object, callback));
 }
 
 template <typename T>
@@ -379,7 +392,7 @@ void UserClass<T>::link_credentials(ContextType ctx, ObjectType this_object, Arg
         *get_internal<T, CredentialsClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "credentials"));
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
-    user->m_app->link_user(*user, credentials,
+    user->m_app->link_user(user->m_user, credentials,
                            Function::wrap_callback_result_first(
                                ctx, this_object, callback, [user](ContextType ctx, SharedUser shared_user) {
                                    REALM_ASSERT_RELEASE(shared_user);
@@ -404,7 +417,7 @@ void UserClass<T>::call_function(ContextType ctx, ObjectType this_object, Argume
     auto bson_args = String::to_bson(stringified_ejson_args);
 
     user->m_app->call_function(
-        *user, name, static_cast<const bson::BsonArray&>(bson_args), service,
+        user->m_user, name, static_cast<const bson::BsonArray&>(bson_args), service,
         Function::wrap_callback_result_first(ctx, this_object, callback,
                                              [](ContextType ctx, const util::Optional<bson::Bson>& result) {
                                                  REALM_ASSERT_RELEASE(result);
@@ -416,7 +429,7 @@ template <typename T>
 void UserClass<T>::get_api_keys(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
 {
     auto user = get_internal<T, UserClass<T>>(ctx, this_object);
-    return_value.set(ApiKeyAuthClass<T>::create_instance(ctx, user->m_app, *user));
+    return_value.set(ApiKeyAuthClass<T>::create_instance(ctx, user->m_app, user->m_user));
 }
 
 template <typename T>
@@ -427,7 +440,7 @@ void UserClass<T>::refresh_custom_data(ContextType ctx, ObjectType this_object, 
     auto user = get_internal<T, UserClass<T>>(ctx, this_object);
     auto callback = Value::validated_to_function(ctx, args[0], "callback");
 
-    user->m_app->refresh_custom_data(*user, Function::wrap_void_callback(ctx, this_object, callback));
+    user->m_app->refresh_custom_data(user->m_user, Function::wrap_void_callback(ctx, this_object, callback));
 }
 
 template <typename T>
@@ -440,7 +453,7 @@ void UserClass<T>::push_register(ContextType ctx, ObjectType this_object, Argume
     auto callback = Value::validated_to_function(ctx, args[2], "callback");
 
     user->m_app->push_notification_client(service).register_device(
-        token, *user, Function::wrap_void_callback(ctx, this_object, callback));
+        token, user->m_user, Function::wrap_void_callback(ctx, this_object, callback));
 }
 
 template <typename T>
@@ -453,7 +466,7 @@ void UserClass<T>::push_deregister(ContextType ctx, ObjectType this_object, Argu
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
     user->m_app->push_notification_client(service).deregister_device(
-        *user, Function::wrap_void_callback(ctx, this_object, callback));
+        user->m_user, Function::wrap_void_callback(ctx, this_object, callback));
 }
 
 template <typename T>
@@ -468,7 +481,7 @@ void UserClass<T>::make_streaming_request(ContextType ctx, ObjectType this_objec
     auto stringified_ejson_args = Value::validated_to_string(ctx, args[2], "args");
     auto bson_args = String::to_bson(stringified_ejson_args);
 
-    auto req = user->m_app->make_streaming_request(*user, name, bson_args.operator const bson::BsonArray&(),
+    auto req = user->m_app->make_streaming_request(user->m_user, name, bson_args.operator const bson::BsonArray&(),
                                                    std::string(service));
     return return_value.set(JavaScriptNetworkTransport<T>::makeRequest(ctx, req));
 }
@@ -479,6 +492,47 @@ void UserClass<T>::new_watch_stream(ContextType ctx, ObjectType this_object, Arg
 {
     args.validate_count(0);
     return return_value.set(create_object<T, WatchStreamClass<T>>(ctx, new WatchStream()));
+}
+
+template <typename T>
+void UserClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
+{
+    auto callback = Value::validated_to_function(ctx, args[0]);
+    auto user = get_internal<T, UserClass<T>>(ctx, this_object);
+    Protected<FunctionType> protected_callback(ctx, callback);
+    Protected<ObjectType> protected_this(ctx, this_object);
+    Protected<typename T::GlobalContext> protected_ctx(Context::get_global_context(ctx));
+
+    {
+        auto token = std::move(user->m_user->subscribe([=](const realm::SyncUser&) {
+            Function::callback(protected_ctx, protected_callback, 0, {});
+        }));
+
+        // Save token in a member vector of a function to token pair
+        user->m_notification_tokens.emplace_front(std::move(protected_callback), std::move(token));
+    }
+}
+
+template <typename T>
+void UserClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments& args,
+                                   ReturnValue& return_value)
+{
+    auto callback = Value::validated_to_function(ctx, args[0]);
+    auto user = get_internal<T, UserClass<T>>(ctx, this_object);
+    Protected<FunctionType> protected_callback(ctx, callback);
+
+    auto& tokens = user->m_notification_tokens;
+    auto compare = [&](auto&& callback_token_pair) {
+        return typename Protected<FunctionType>::Comparator()(callback_token_pair.first, protected_callback);
+    };
+
+    // Retrieve the token with the given function and use to call unsubscribe
+    auto callback_token_pair_iter = std::find_if(tokens.begin(), tokens.end(), compare);
+
+    if (callback_token_pair_iter != tokens.end()) {
+        user->m_user->unsubscribe(callback_token_pair_iter->second);
+        tokens.remove_if(compare);
+    }
 }
 } // namespace js
 } // namespace realm
