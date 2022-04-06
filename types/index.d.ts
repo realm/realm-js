@@ -852,7 +852,7 @@ declare namespace Realm {
              * use when adding this subscription (e.g. to give the subscription a name).
              * @returns A `Subscription` instance for the new subscription.
              */
-            add: <T>(query: Realm.Results<T & Realm.Object>, options?: SubscriptionOptions) => Subscription;
+            add: (query: Realm.Results<unknown>, options?: SubscriptionOptions) => Subscription;
 
             /**
              * Removes a subscription with the given query from the SubscriptionSet.
@@ -860,7 +860,7 @@ declare namespace Realm {
              * @param query A {@link Realm.Results} instance representing the query to remove a subscription to.
              * @returns `true` if the subscription was removed, `false` if it was not found.
              */
-            remove: <T>(query: Realm.Results<T & Realm.Object>) => boolean;
+            remove: (query: Realm.Results<unknown>) => boolean;
 
             /**
              * Removes a subscription with the given name from the SubscriptionSet.
