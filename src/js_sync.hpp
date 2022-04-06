@@ -404,8 +404,7 @@ void UserClass<T>::session_for_on_disk_path(ContextType ctx, ObjectType this_obj
         throw std::runtime_error("Invalid User instance. No internal instance is set");
     }
 
-    auto user = internal->get();
-    // user.get();
+    auto user = internal->m_user;
     if (auto session = user->session_for_on_disk_path(Value::validated_to_string(ctx, args[0]))) {
         return_value.set(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
     }
@@ -849,9 +848,9 @@ void SyncClass<T>::get_sync_session(ContextType ctx, ObjectType this_object, Arg
     auto partition_value_value = args[1];
     std::string partition_value = partition_value_bson_to_string<T>(ctx, partition_value_value);
 
-    auto sync_config = SyncConfig(*user, partition_value);
+    auto sync_config = SyncConfig(user->m_user, partition_value);
     auto path = user->m_app->sync_manager()->path_for_realm(sync_config);
-    if (auto session = (*user)->session_for_on_disk_path(path)) {
+    if (auto session = user->m_user->session_for_on_disk_path(path)) {
         return_value.set(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
         return;
     }
@@ -865,8 +864,8 @@ void SyncClass<T>::get_all_sync_sessions(ContextType ctx, ObjectType this_object
     args.validate_count(1);
 
     auto user_object = Value::validated_to_object(ctx, args[0], "user");
-    SharedUser user = *get_internal<T, UserClass<T>>(ctx, user_object);
-    auto all_sessions = user->all_sessions();
+    auto user = get_internal<T, UserClass<T>>(ctx, user_object);
+    auto all_sessions = user->m_user->all_sessions();
     std::vector<ValueType> session_objects;
     for (auto session : all_sessions) {
         session_objects.push_back(create_object<T, SessionClass<T>>(ctx, new WeakSession(session)));
@@ -879,7 +878,7 @@ void SyncClass<T>::initiate_client_reset(ContextType ctx, ObjectType this_object
                                          ReturnValue& return_value)
 {
     args.validate_count(2);
-    auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
+    auto app = get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"))->m_app;
     std::string path = Value::validated_to_string(ctx, args[1]);
     if (!app->sync_manager()->immediately_run_file_actions(std::string(path))) {
         throw std::runtime_error(
@@ -893,7 +892,7 @@ void SyncClass<T>::set_sync_log_level(ContextType ctx, ObjectType this_object, A
 {
     args.validate_count(2);
 
-    auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
+    auto app = get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"))->m_app;
     std::string log_level = Value::validated_to_string(ctx, args[1], "log level");
 
     auto level = common::logger::Logger::get_level(log_level);
@@ -906,7 +905,7 @@ void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, Argu
 {
     args.validate_count(2);
 
-    auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
+    auto app = get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"))->m_app;
     auto callback_fn = Value::validated_to_function(ctx, args[1], "logger_callback");
 
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
@@ -930,7 +929,7 @@ void SyncClass<T>::set_sync_user_agent(ContextType ctx, ObjectType this_object, 
                                        ReturnValue& return_value)
 {
     args.validate_count(2);
-    auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
+    auto app = get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"))->m_app;
     std::string application_user_agent = Value::validated_to_string(ctx, args[1], "user agent");
     app->sync_manager()->set_user_agent(application_user_agent);
 }
@@ -939,7 +938,7 @@ template <typename T>
 void SyncClass<T>::reconnect(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
 {
     args.validate_count(1);
-    auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
+    auto app = get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"))->m_app;
     app->sync_manager()->reconnect();
 }
 
@@ -948,7 +947,7 @@ void SyncClass<T>::has_existing_sessions(ContextType ctx, ObjectType this_object
                                          ReturnValue& return_value)
 {
     args.validate_count(1);
-    auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
+    auto app = get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"))->m_app;
     return_value.set(app->sync_manager()->has_existing_sessions());
 }
 
@@ -977,8 +976,8 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         if (!(Object::template is_instance<UserClass<T>>(ctx, user_object))) {
             throw std::invalid_argument("Option 'user' is not a Realm.User object.");
         }
-        SharedUser user = *get_internal<T, UserClass<T>>(ctx, user_object);
-        if (user->state() != SyncUser::State::LoggedIn) {
+        auto user = get_internal<T, UserClass<T>>(ctx, user_object);
+        if (user->m_user->state() != SyncUser::State::LoggedIn) {
             throw std::runtime_error("User is no longer valid.");
         }
 
@@ -988,13 +987,13 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                 throw std::runtime_error("'partitionValue' cannot be specified when flexible sync is enabled");
             }
 
-            config.sync_config = std::make_shared<SyncConfig>(user, SyncConfig::FLXSyncEnabled{});
+            config.sync_config = std::make_shared<SyncConfig>(user->m_user, SyncConfig::FLXSyncEnabled{});
         }
         else {
             ValueType partition_value_value = Object::get_property(ctx, sync_config_object, "partitionValue");
             std::string partition_value = partition_value_bson_to_string<T>(ctx, partition_value_value);
 
-            config.sync_config = std::make_shared<SyncConfig>(user, std::move(partition_value));
+            config.sync_config = std::make_shared<SyncConfig>(user->m_user, std::move(partition_value));
         }
 
         config.sync_config->error_handler = std::move(error_handler);
@@ -1130,7 +1129,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         }
 
         config.schema_mode = SchemaMode::AdditiveExplicit;
-        config.path = user->sync_manager()->path_for_realm(*(config.sync_config));
+        config.path = user->m_user->sync_manager()->path_for_realm(*(config.sync_config));
     }
 }
 
@@ -1159,7 +1158,7 @@ void SyncClass<T>::enable_multiplexing(ContextType ctx, ObjectType this_object, 
                                        ReturnValue& return_value)
 {
     args.validate_count(1);
-    auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
+    auto app = get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"))->m_app;
     app->sync_manager()->enable_session_multiplexing();
 }
 

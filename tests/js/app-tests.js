@@ -218,4 +218,28 @@ module.exports = {
     realm2.close();
     await user.logOut();
   },
+
+  async testChangeListener() {
+    let app = new Realm.App(config);
+    let eventListenerCalls = 0;
+    TestCase.assertTrue(app instanceof Realm.App);
+
+    const listenerEvent = () => {
+      eventListenerCalls += 1;
+      console.log("calls thus far: ", eventListenerCalls);
+    };
+    app.addListener(listenerEvent);
+
+    let credentials = Realm.Credentials.anonymous();
+    let user = await app.logIn(credentials);
+    TestCase.assertEqual(eventListenerCalls, 1);
+    await user.logOut();
+    TestCase.assertEqual(eventListenerCalls, 2);
+    credentials = Realm.Credentials.anonymous();
+    user = await app.logIn(credentials);
+    TestCase.assertEqual(eventListenerCalls, 3);
+    app.removeListener(listenerEvent);
+    await user.logOut();
+    TestCase.assertEqual(eventListenerCalls, 3);
+  },
 };
