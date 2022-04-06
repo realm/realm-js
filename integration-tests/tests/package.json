@@ -39,7 +39,7 @@
   "dependencies": {
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "realm-network-transport": "^0.7.1"
+    "realm-network-transport": "^0.7.2"
   },
   "files": [
     "/src"
