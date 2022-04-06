@@ -30,11 +30,20 @@
 #include "js_network_transport.hpp"
 #include "js_email_password_auth.hpp"
 
-using SharedApp = std::shared_ptr<realm::app::App>;
 using SharedUser = std::shared_ptr<realm::SyncUser>;
 
 namespace realm {
 namespace js {
+
+
+template <typename T>
+class AppObject : public realm::app::App {
+public:
+    // Reference for a function object to a subscription
+    std::vector<std::pair<Protected<typename T::Function>, Token>> m_notification_tokens;
+};
+
+using SharedApp = std::shared_ptr<AppObject>;
 
 template <typename T>
 class AppClass : public ClassDefinition<T, SharedApp> {
@@ -51,9 +60,12 @@ class AppClass : public ClassDefinition<T, SharedApp> {
     using Arguments = js::Arguments<T>;
     using NetworkTransport = JavaScriptNetworkTransport<T>;
     using NetworkTransportFactory = typename NetworkTransport::NetworkTransportFactory;
+    using Token = Subscribable<SharedApp>::Token;
 
 public:
     const std::string name = "App";
+
+    std::vector<std::pair<Protected<typename T::Function>, Token>> m_notification_tokens;
 
     /**
      * Generates instances of GenericNetworkTransport, eventually allowing Realm Object Store to perform network
@@ -99,12 +111,17 @@ public:
     static void clear_app_cache(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void get_app(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void set_versions(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void add_listener(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void remove_listener(ContextType, ObjectType, Arguments&, ReturnValue&);
+
 
     MethodMap<T> const methods = {
         {"_logIn", wrap<log_in>},
         {"switchUser", wrap<switch_user>},
         {"_removeUser", wrap<remove_user>},
         {"_deleteUser", wrap<delete_user>},
+        {"addListener", wrap<add_listener>},
+        {"removeListener", wrap<remove_listener>},
     };
 
     MethodMap<T> const static_methods = {
@@ -353,6 +370,42 @@ void AppClass<T>::set_versions(ContextType ctx, ObjectType this_object, Argument
     AppClass<T>::platform_context = Object::validated_get_string(ctx, versions, "platformContext");
     AppClass<T>::platform_os = Object::validated_get_string(ctx, versions, "platformOs");
     AppClass<T>::platform_version = Object::validated_get_string(ctx, versions, "platformVersion");
+}
+
+template <typename T>
+void AppClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
+{
+    auto callback = Value::validated_to_function(ctx, args[0]);
+    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    Protected<FunctionType> protected_callback(ctx, callback);
+    Protected<ObjectType> protected_this(ctx, this_object);
+    Protected<typename T::GlobalContext> protected_ctx(Context::get_global_context(ctx));
+
+    auto token = app.subscribe([=]() {
+        Function::callback(protected_ctx, protected_callback, protected_this, 2, {});
+    });
+
+    // Save token in a member vector of a function to token pair
+    app->m_notification_tokens.emplace_back(protected_callback, std::move(token));
+}
+
+template <typename T>
+void AppClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
+{
+    auto callback = Value::validated_to_function(ctx, args[0]);
+    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    Protected<FunctionType> protected_callback(ctx, callback);
+
+    auto& tokens = app->m_notification_tokens;
+    auto compare = [&](auto&& token) {
+        return typename Protected<FunctionType>::Comparator()(token.first, protected_callback);
+    };
+
+    // Retreive the token with the given function and use to call unsubscribe
+    auto token = std::find_if(tokens.begin(), tokens.end(), compare);
+    app->unsubscribe(token);
+
+    tokens.erase(std::remove_if(tokens.begin(), tokens.end(), compare), tokens.end());
 }
 
 } // namespace js

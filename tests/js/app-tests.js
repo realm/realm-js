@@ -217,4 +217,19 @@ module.exports = {
     realm2.close();
     await user.logOut();
   },
+
+  async testChangeListener() {
+    let app = new Realm.App(config);
+    TestCase.assertTrue(app instanceof Realm.App);
+    app.addListener(() => {
+      console.log("something happened");
+    });
+
+    let credentials = Realm.Credentials.anonymous();
+    let user = await app.logIn(credentials);
+    TestCase.assertInstanceOf(user, Realm.User);
+    TestCase.assertNotNull(user.deviceId);
+    TestCase.assertEqual(user.providerType, "anon-user");
+    await user.logOut();
+  },
 };
