@@ -75,6 +75,20 @@ interface Console {
   warn(message?: unknown, ...optionalParams: unknown[]): void;
 }
 
+declare type Timer = number;
+declare function setTimeout<Args extends Array<unknown>>(
+  cb: (...args: Args) => void,
+  ms?: number,
+  ...args: Args
+): Timer;
+declare function setInterval<Args extends Array<unknown>>(
+  cb: (...args: Args) => void,
+  ms?: number,
+  ...args: Args
+): Timer;
+declare function clearTimeout(timer: Timer): void;
+declare function clearInterval(timer: Timer): void;
+
 declare const console: Console;
 // allow import of json files
 declare module "*.json" {
