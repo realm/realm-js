@@ -8,13 +8,15 @@ import {
   StyleSheet,
 } from 'react-native';
 
+import {buttonStyles} from '../styles/button';
 import colors from '../styles/colors';
+import {shadows} from '../styles/shadows';
 
-interface AddTaskFormProps {
+type AddTaskFormProps = {
   onSubmit: (description: string) => void;
-}
+};
 
-function AddTaskForm({onSubmit}: AddTaskFormProps) {
+export const AddTaskForm: React.FC<AddTaskFormProps> = ({onSubmit}) => {
   const [description, setDescription] = useState('');
 
   const handleSubmit = () => {
@@ -37,27 +39,14 @@ function AddTaskForm({onSubmit}: AddTaskFormProps) {
       </Pressable>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   form: {
     height: 50,
     marginBottom: 20,
     flexDirection: 'row',
-    ...Platform.select({
-      ios: {
-        shadowColor: colors.black,
-        shadowOffset: {
-          width: 0,
-          height: 4,
-        },
-        shadowOpacity: 0.7,
-        shadowRadius: 3,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
+    ...shadows,
   },
   textInput: {
     flex: 1,
@@ -68,20 +57,15 @@ const styles = StyleSheet.create({
     fontSize: 17,
   },
   submit: {
-    height: '100%',
+    ...buttonStyles.button,
     width: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
+    height: '100%',
+    paddingHorizontal: 0,
+    paddingVertical: 0,
     marginLeft: 20,
-    borderRadius: 5,
-    backgroundColor: colors.purple,
+    marginRight: 0,
   },
   icon: {
-    color: colors.white,
-    textAlign: 'center',
-    fontSize: 17,
-    fontWeight: 'bold',
+    ...buttonStyles.text,
   },
 });
-
-export default AddTaskForm;
