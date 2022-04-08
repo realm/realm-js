@@ -434,9 +434,9 @@ void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue
                                  Value::from_string(ctx, String::from_bson(partition_value_bson)));
         }
 
+        auto conf = session->config();
         if (auto dispatcher =
-                session->config()
-                    .error_handler.template target<util::EventLoopDispatcher<SyncSessionErrorHandler>>()) {
+                conf.error_handler.template target<util::EventLoopDispatcher<SyncSessionErrorHandler>>()) {
             if (auto handler = dispatcher->func().template target<SyncSessionErrorHandlerFunctor<T>>()) {
                 Object::set_property(ctx, config, "error", handler->func());
             }

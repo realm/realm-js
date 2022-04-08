@@ -45,7 +45,7 @@ Pod::Spec.new do |s|
 
   s.frameworks             = uses_frameworks ? ['JavaScriptCore', 'React'] : ['JavaScriptCore']
 
-  s.library                = 'c++', 'z'
+  s.library                = 'c++', 'z', 'compression'
 
   s.pod_target_xcconfig    = {
                                 # Setting up clang
