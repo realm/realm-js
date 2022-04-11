@@ -25,7 +25,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Logging out too quickly can cause an error if the timeout behavior is set to `openLocalRealm` ([#4453](https://github.com/realm/realm-js/issues/4453), since v10.0.0)
-* Released `realm-network-transport` to adopt the changes published to fix `globalThis` undefined issue for older devices. ([#4350](https://github.com/realm/realm-js/4350), since v10.0.0)
+* Released `realm-network-transport` to adopt the changes published to fix `globalThis` undefined issue for older devices. ([#4350](https://github.com/realm/realm-js/issues/4350), since v10.0.0)
 * Fixed flexible sync crash when updating subscriptions after token expiry. ([#4421](https://github.com/realm/realm-js/issues/4421), since v10.12.0)
 
 ### Compatibility
