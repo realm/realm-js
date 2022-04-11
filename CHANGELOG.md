@@ -1,11 +1,12 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.15.0 Release notes (2022-4-11)
 =============================================================
 ### Enhancements
 * None.
 
 ### Fixed
-* Logging out too fast can cause an error if the timeout behavior is set to `openLocalRealm` ([4453](https://github.com/realm/realm-js/issues/4453))
-* Released `realm-network-transport` to adopt the changes published to fix `globalThis` undefined issue for older devices. ([#4350](https://github.com/realm/realm-js/4350))
+* Logging out too quickly can cause an error if the timeout behavior is set to `openLocalRealm` ([#4453](https://github.com/realm/realm-js/issues/4453), since v10.0.0)
+* Released `realm-network-transport` to adopt the changes published to fix `globalThis` undefined issue for older devices. ([#4350](https://github.com/realm/realm-js/4350), since v10.0.0)
+* Fixed flexible sync crash when updating subscriptions after token expiry. ([#4421](https://github.com/realm/realm-js/issues/4421), since v10.12.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -13,13 +14,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
-### Fixed
-* Fixed flexible sync crash when updating subscriptions after token expiry. ([#4421](https://github.com/realm/realm-js/issues/4421), since v10.12.0)
-
 ### Internal
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
 * Update token in integration test.
 * Upgraded Realm Core from v11.12.0 to v11.13.0.
 
