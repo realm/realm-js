@@ -8,6 +8,7 @@ It is possible to release from any branch and add a specific tag for this releas
 
 The procedure is:
 
+- Ensure you have checked out the latest version of `master` (`git checkout master && git fetch && git reset --hard origin/master`), and that your submodules are up to date (`git submodule update --init --recursive`). You should also check that there are no modified files in your `vendor/realm-core`, as these would be included in the build (`cd vendor/realm-core && git checkout -- .`).
 - Determine the correct version number, following [semantic versioning](https://semver.org/). This will be referred to as `X.Y.Z` in this document.
     - For a normal release from master, this will be of the form `X.Y.Z`, e.g. `10.12.0`
     - For a tagged release from a branch, this will be of the form `X.Y.Z-<tag name>.<tag release version>`, e.g. `10.12.0-beta.0`. You should use the full string including the tag part wherever `X.Y.Z` is used in this document.
@@ -33,11 +34,12 @@ The procedure is:
     - Note that currently, anything in your `vendor` directory will be added to the package – so if you have added any temporary files in there, you should remove them before packaging.
     - If you would like to do a "dry run", you can first run `npm pack`, which will create a `realm-X.Y.Z.tgz` file in your `realm-js` directory. You can then test this in a project with `npm i <REALM_JS_PATH>/realm-X.Y.Z.tgz`.
 - Manually create a new release on Github
-    - Find the tag pushed in the previous step.  Click the `...` and select `Create release`
-    - Copy text from changelog
+    - Find the tag pushed in the previous step in https://github.com/realm/realm-js/tags. Click the `...` and select `Create release`
+    - Set the release title to `Realm JavaScript vX.Y.Z`
+    - Copy the release notes for this version from the changelog (don't include the first two header lines)
     - Click `Publish release`
 - Post to `#realm-releases` Slack channel
-    - Create post in Slack and copy text from changelog (format the text to Slack markdown (bold is `*bold*`))
+    - Create post in Slack and copy text from changelog (if you copy it from the Github release page, the formatting will be preserved when you paste it)
     - Share to `#realm-releases` channel
 - Apply the changelog template: `./scripts/changelog-header.sh`
 - Stage the template: `git add CHANGELOG.md`
