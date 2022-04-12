@@ -8,7 +8,7 @@ It is possible to release from any branch and add a specific tag for this releas
 
 The procedure is:
 
-- Ensure you have checked out the latest version of `master` (`git checkout master && git reset --hard origin/master`), and that your submodules are up to date (`git submodule update --init --recursive`). You should also check that there are no modified files in your `vendor/realm-core`, as these would be included in the build (`cd vendor/realm-core && git checkout -- .`).
+- Ensure you have checked out the latest version of `master` (`git checkout master && git fetch && git reset --hard origin/master`), and that your submodules are up to date (`git submodule update --init --recursive`). You should also check that there are no modified files in your `vendor/realm-core`, as these would be included in the build (`cd vendor/realm-core && git checkout -- .`).
 - Determine the correct version number, following [semantic versioning](https://semver.org/). This will be referred to as `X.Y.Z` in this document.
     - For a normal release from master, this will be of the form `X.Y.Z`, e.g. `10.12.0`
     - For a tagged release from a branch, this will be of the form `X.Y.Z-<tag name>.<tag release version>`, e.g. `10.12.0-beta.0`. You should use the full string including the tag part wherever `X.Y.Z` is used in this document.
