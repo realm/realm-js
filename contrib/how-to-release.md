@@ -39,7 +39,7 @@ The procedure is:
     - Copy the release notes for this version from the changelog (don't include the first two header lines)
     - Click `Publish release`
 - Post to `#realm-releases` Slack channel
-    - Create post in Slack and copy text from changelog (format the text to Slack markdown (bold is `*bold*`))
+    - Create post in Slack and copy text from changelog (if you copy it from the Github release page, the formatting will be preserved when you paste it)
     - Share to `#realm-releases` channel
 - Apply the changelog template: `./scripts/changelog-header.sh`
 - Stage the template: `git add CHANGELOG.md`
