@@ -1,4 +1,9 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.20.0 Release notes (2022-4-13)
+=============================================================
+### Notes
+Based on Realm JS v10.16.0: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.15.0).
+
+10.16.0 Release notes (2022-4-12)
 =============================================================
 
 ### Breaking change
@@ -29,35 +34,6 @@ realm.write(() => {
 ```
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
-
-### Compatibility
-* MongoDB Realm Cloud.
-* Realm Studio v11.0.0.
-* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
-* File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
-
-### Internal
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
-
-10.20.0-beta.4 Release notes (2022-4-11)
-=============================================================
-### Notes
-Based on Realm JS v10.15.0: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.14.0).
-
-### Fixed
-* Changed "react-native" main field to point to a `lib/index.native.js` file to help bundlers pick the right file when loading our library on React Native. ([#4459](https://github.com/realm/realm-js/issues/4459))
-* Fixed resolving the "react-native" package when building from source, enabling developers to run the `./scripts/build-ios.sh` script themselves to build our iOS artifacts with the same version of Xcode / LLVM as they're building their app.
-
-10.16.0 Release notes (2022-4-12)
-=============================================================
-### Enhancements
-* None.
-
-### Fixed
 * Fixed various corruption bugs in Realm Core when encryption is used. ([#5360](https://github.com/realm/realm-core/issues/5360), since v11.8.0)
 
 ### Compatibility
@@ -68,6 +44,15 @@ Based on Realm JS v10.15.0: See changelog below for details on enhancements and 
 
 ### Internal
 * Upgraded Realm Core from v11.13.0 to v11.14.0.
+
+10.20.0-beta.4 Release notes (2022-4-11)
+=============================================================
+### Notes
+Based on Realm JS v10.15.0: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.14.0).
+
+### Fixed
+* Changed "react-native" main field to point to a `lib/index.native.js` file to help bundlers pick the right file when loading our library on React Native. ([#4459](https://github.com/realm/realm-js/issues/4459))
+* Fixed resolving the "react-native" package when building from source, enabling developers to run the `./scripts/build-ios.sh` script themselves to build our iOS artifacts with the same version of Xcode / LLVM as they're building their app.
 
 10.15.0 Release notes (2022-4-11)
 =============================================================
