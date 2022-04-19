@@ -356,8 +356,28 @@ class Realm {
   static exists(config) {}
 
   /**
-   * Copy all bundled Realm files to app's default file folder.
+   * Copy any Realm files  (i.e. `*.realm`) bundled with the application from the application
+   * directory into the application's documents directory, so that they can be opened and used
+   * by Realm. If the file already exists in the documents directory, it will not be
+   * overwritten, so this can safely be called multiple times.
+   *
+   * This should be called before opening the Realm, in order to move the bundled Realm
+   * files into a place where they can be written to, for example:
+   *
+   * ```
+   * // Given a bundled file, example.realm, this will copy example.realm (and any other .realm files)
+   * // from the app bundle into the app's documents directory. If the file already exists, it will
+   * // not be overwritten, so it is safe to call this every time the app starts.
+   * Realm.copyBundledRealmFiles();
+   *
+   * const realm = await Realm.open({
+   *   // This will open example.realm from the documents directory, with the bundled data in.
+   *   path: "example.realm"
+   * });
+   * ```
+   *
    * This is only implemented for React Native.
+   *
    * @throws {Error} If an I/O error occured or method is not implemented.
    */
   static copyBundledRealmFiles() {}
