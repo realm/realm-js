@@ -30,7 +30,7 @@ const changelogPath = path.resolve(__dirname, "../CHANGELOG.md");
 
 // Update the readme file to use the new version in the script-tag.
 const readmeContent = fs.readFileSync(readmePath, "utf8");
-const readmeContentReplaced = readmeContent.replace(/realm-web@[^/]+/, `realm-web@${version}`);
+const readmeContentReplaced = readmeContent.replace(/realm-web@[^"/]+/, `realm-web@${version}`);
 fs.writeFileSync(readmePath, readmeContentReplaced);
 
 // Update the changelog with the current version and date
