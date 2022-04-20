@@ -72,9 +72,10 @@ module.exports = {
           return reject(`Able to log in with config ${JSON.stringify(conf)}`);
         })
         .catch((err) => {
-          TestCase.assertEqual(
-            err.message,
-            "request to http://localhost:9999/api/client/v2.0/app/smurf/location failed, reason: connect ECONNREFUSED 127.0.0.1:9999",
+          TestCase.assertTrue(
+            err.message.startsWith(
+              "request to http://localhost:9999/api/client/v2.0/app/smurf/location failed, reason: connect ECONNREFUSED",
+            ),
           );
           return resolve();
         });
