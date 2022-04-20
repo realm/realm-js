@@ -58,6 +58,8 @@ const useRealm = () => {
 
 const useQuery = createUseQuery(useRealm);
 
+const awaitEventLoop = () => new Promise((resolve) => setTimeout(resolve, 0));
+
 const testDataSet = [
   { _id: 1, name: "Vincent", color: "black and white", gender: "male", age: 4 },
   { _id: 2, name: "River", color: "brown", gender: "female", age: 12 },
@@ -78,11 +80,14 @@ describe("useQueryHook", () => {
     });
     realm.close();
   });
+
   afterEach(() => {
     Realm.clearTestState();
   });
-  it("can retrieve collections using useQuery", () => {
+
+  it("can retrieve collections using useQuery", async () => {
     const { result } = renderHook(() => useQuery<IDog>("dog"));
+    await awaitEventLoop();
     const collection = result.current;
 
     const [dog1, dog2, dog3] = testDataSet;
@@ -93,16 +98,18 @@ describe("useQueryHook", () => {
     expect(collection[1]).toMatchObject(dog2);
     expect(collection[2]).toMatchObject(dog3);
   });
-  it("returns the same collection reference if there are no changes", () => {
+  it("returns the same collection reference if there are no changes", async () => {
     const { result } = renderHook(() => useQuery<IDog>("dog"));
+    await awaitEventLoop();
     const collection = result.current;
 
     expect(collection).not.toBeNull();
     expect(collection.length).toBe(6);
     expect(collection[0]).toEqual(collection?.[0]);
   });
-  it("should return undefined indexes that are out of bounds", () => {
+  it("should return undefined indexes that are out of bounds", async () => {
     const { result } = renderHook(() => useQuery<IDog>("dog"));
+    await awaitEventLoop();
     const collection = result.current;
 
     expect(collection[99]).toBe(undefined);

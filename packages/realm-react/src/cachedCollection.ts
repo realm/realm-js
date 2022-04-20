@@ -158,7 +158,10 @@ export function createCachedCollection<T extends Realm.Object>({
   };
 
   if (!isDerived) {
-    cachedCollectionResult.addListener(listenerCallback);
+    // Add this on the next tick, in case there is a write transaction occuring immediately after creation of this collection
+    setImmediate(() => {
+      cachedCollectionResult.addListener(listenerCallback);
+    });
   }
 
   const tearDown = () => {

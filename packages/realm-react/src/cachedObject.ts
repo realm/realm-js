@@ -104,7 +104,13 @@ export function createCachedObject<T extends Realm.Object>({
     }
   };
 
-  object.addListener(listenerCallback);
+  // Add this on the next tick, in case there is a write transaction occuring immediately after creation of this object
+  // see https://github.com/realm/realm-js/issues/4375
+  setImmediate(() => {
+    if (object.isValid()) {
+      object.addListener(listenerCallback);
+    }
+  });
 
   const tearDown = () => {
     object.removeListener(listenerCallback);

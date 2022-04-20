@@ -83,12 +83,12 @@ enum QueryType {
   normal,
 }
 
-const App = ({ queryType = QueryType.normal }) => {
+const App = ({ queryType = QueryType.normal, useUseObject = false }) => {
   return (
     <RealmProvider>
       <SetupComponent>
         <View testID="testContainer">
-          <TestComponent queryType={queryType} />
+          <TestComponent queryType={queryType} useUseObject={useUseObject} />
         </View>
       </SetupComponent>
     </RealmProvider>
@@ -113,13 +113,20 @@ const SetupComponent = ({ children }: { children: JSX.Element }): JSX.Element | 
   return children;
 };
 
+const UseObjectItemComponent: React.FC<{ item: Item & Realm.Object }> = React.memo(({ item }) => {
+  // Testing that useObject also works and properly handles renders
+  const localItem = useObject(Item, item.id);
+  if (!localItem) {
+    return null;
+  }
+  return <ItemComponent item={localItem}></ItemComponent>;
+});
+
 const ItemComponent: React.FC<{ item: Item & Realm.Object }> = React.memo(({ item }) => {
   itemRenderCounter();
   const realm = useRealm();
   const renderItem = useCallback(({ item }) => <TagComponent tag={item} />, []);
-
   const keyExtractor = useCallback((item) => `tag-${item.id}`, []);
-  const localItem = useObject(Item, item.id);
 
   return (
     <View testID={`result${item.id}`}>
@@ -170,7 +177,7 @@ const TagComponent: React.FC<{ tag: Tag & Realm.Object }> = React.memo(({ tag })
 const FILTER_ARGS: [string] = ["id < 20"];
 const SORTED_ARGS: [string, boolean] = ["id", true];
 
-const TestComponent = ({ queryType }: { queryType: QueryType }) => {
+const TestComponent = ({ queryType, useUseObject }: { queryType: QueryType; useUseObject: boolean }) => {
   const collection = useQuery(Item);
 
   const result = useMemo(() => {
@@ -184,7 +191,10 @@ const TestComponent = ({ queryType }: { queryType: QueryType }) => {
     }
   }, [queryType, collection]);
 
-  const renderItem = useCallback(({ item }) => <ItemComponent item={item} />, []);
+  const renderItem = useCallback(
+    ({ item }) => (useUseObject ? <UseObjectItemComponent item={item} /> : <ItemComponent item={item} />),
+    [useUseObject],
+  );
 
   const keyExtractor = useCallback((item) => item.id, []);
 
@@ -202,20 +212,25 @@ function getTestCollection(queryType: QueryType) {
   }
 }
 
-async function setupTest(queryType: QueryType) {
-  const renderResult = render(<App queryType={queryType} />);
+type setupOptions = {
+  queryType?: QueryType;
+  useUseObject?: boolean;
+};
+
+const setupTest = async ({ queryType = QueryType.normal, useUseObject = false }: setupOptions) => {
+  const renderResult = render(<App queryType={queryType} useUseObject={useUseObject} />);
   await waitFor(() => renderResult.getByTestId("testContainer"));
 
   const collection = getTestCollection(queryType);
   expect(itemRenderCounter).toHaveBeenCalledTimes(10);
 
   return { ...renderResult, collection };
-}
+};
 
 describe.each`
   queryTypeName | queryType
-  ${"filtered"} | ${QueryType.filtered}
   ${"normal"}   | ${QueryType.normal}
+  ${"filtered"} | ${QueryType.filtered}
   ${"sorted"}   | ${QueryType.sorted}
 `("useQueryRender: $queryTypeName", ({ queryType }) => {
   beforeEach(() => {
@@ -235,7 +250,7 @@ describe.each`
     expect(itemRenderCounter).toHaveBeenCalledTimes(10);
   });
   it("change to data will rerender", async () => {
-    const { getByTestId, getByText, collection } = await setupTest(queryType);
+    const { getByTestId, getByText, collection } = await setupTest({ queryType });
 
     const firstItem = collection[0];
     const id = firstItem.id;
@@ -247,9 +262,10 @@ describe.each`
 
     fireEvent.changeText(input as ReactTestInstance, "apple");
 
-    // TODO: This line throws an `act` warning.  Keep an eye on this issue and see if there's a solution
-    // https://github.com/callstack/react-native-testing-library/issues/379
-    await waitFor(() => getByText("apple"));
+    // Wait for change events to finish their callbacks
+    await act(async () => {
+      forceSynchronousNotifications(testRealm);
+    });
 
     expect(nameElement).toHaveTextContent("apple");
     expect(itemRenderCounter).toHaveBeenCalledTimes(11);
@@ -258,7 +274,7 @@ describe.each`
   // TODO:  This is a known issue that we have to live with until it is possible
   // to retrieve the objectId from a deleted object in a listener callback
   it.skip("handles deletions", async () => {
-    const { getByTestId, collection } = await setupTest(queryType);
+    const { getByTestId, collection } = await setupTest({ queryType });
 
     const firstItem = collection[0];
     const id = firstItem.id;
@@ -278,7 +294,7 @@ describe.each`
     expect(itemRenderCounter).toHaveBeenCalledTimes(11);
   });
   it("an implicit update to an item in the FlatList view area causes a rerender", async () => {
-    const { collection } = await setupTest(queryType);
+    const { collection } = await setupTest({ queryType });
 
     testRealm.write(() => {
       collection[0].name = "apple";
@@ -293,7 +309,7 @@ describe.each`
   });
 
   it("does not rerender if the update is out of the FlatList view area", async () => {
-    const { collection } = await setupTest(queryType);
+    const { collection } = await setupTest({ queryType });
 
     testRealm.write(() => {
       const lastIndex = collection.length - 1;
@@ -307,7 +323,7 @@ describe.each`
     expect(itemRenderCounter).toHaveBeenCalledTimes(10);
   });
   it("collection objects rerender on changes to their linked objects", async () => {
-    const { collection, getByText, queryByText, debug } = await setupTest(queryType);
+    const { collection, getByText, queryByText } = await setupTest({ queryType });
 
     // Insert some tags into visible Items
     testRealm.write(() => {
@@ -355,8 +371,9 @@ describe.each`
 
     expect(queryByText("756c")).toBeNull();
   });
-  it.only("will handle multiple async transactions", async () => {
-    const { getByTestId } = await setupTest(queryType);
+  // This replicates the issue https://github.com/realm/realm-js/issues/4375
+  it("will handle multiple async transactions", async () => {
+    const { queryByTestId } = await setupTest({ queryType, useUseObject: true });
     const asyncEffect = async () => {
       testRealm.write(() => {
         testRealm.deleteAll();
@@ -377,9 +394,11 @@ describe.each`
         i++;
       }
     };
+
     await act(async () => {
       await asyncEffect();
     });
-    await waitFor(() => getByTestId(`name${109}`));
+
+    await waitFor(() => queryByTestId(`name${109}`));
   });
 });
