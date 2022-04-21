@@ -385,6 +385,7 @@ describe.each`
         testRealm.write(() => {
           testRealm.create(Item, { id, name: `${id}` }, Realm.UpdateMode.Modified);
         });
+        await new Promise((resolve) => setTimeout(resolve, 0));
         testRealm.write(() => {
           const item = testRealm.objectForPrimaryKey(Item, id);
           if (item) {

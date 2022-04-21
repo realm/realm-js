@@ -56,7 +56,7 @@ export function createUseQuery(useRealm: () => Realm) {
 
     // Wrap the cachedObject in useMemo, so we only replace it with a new instance if `primaryKey` or `type` change
     const { collection, tearDown } = useMemo(
-      () => createCachedCollection({ collection: realm.objects(type), updateCallback: forceRerender }),
+      () => createCachedCollection({ collection: realm.objects(type), realm, updateCallback: forceRerender }),
       [type, realm],
     );
 
