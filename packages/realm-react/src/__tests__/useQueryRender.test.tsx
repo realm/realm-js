@@ -374,7 +374,7 @@ describe.each`
   // This replicates the issue https://github.com/realm/realm-js/issues/4375
   it("will handle multiple async transactions", async () => {
     const { queryByTestId } = await setupTest({ queryType, useUseObject: true });
-    const asyncEffect = async () => {
+    const performTest = async () => {
       testRealm.write(() => {
         testRealm.deleteAll();
       });
@@ -397,7 +397,7 @@ describe.each`
     };
 
     await act(async () => {
-      await asyncEffect();
+      await performTest();
     });
 
     await waitFor(() => queryByTestId(`name${109}`));
