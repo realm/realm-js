@@ -14,7 +14,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Improved documentation for `Realm.copyBundledRealmFiles`
+* Improved documentation for `Realm.copyBundledRealmFiles`.
+* Updated a test to be ready for node 18.
 
 10.16.0 Release notes (2022-4-12)
 =============================================================
