@@ -57,8 +57,11 @@ Napi::FunctionReference GlobalProxy;
 Napi::FunctionReference FunctionBind;
 Napi::FunctionReference RealmClassConstructor;
 
-static void node_class_init(Napi::Env env)
+static bool node_class_init(Napi::Env env)
 {
+    if(ObjectSetPrototypeOf.IsEmpty()){
+        return false;
+    }
     auto setPrototypeOf = env.Global().Get("Object").As<Napi::Object>().Get("setPrototypeOf").As<Napi::Function>();
     ObjectSetPrototypeOf = Napi::Persistent(setPrototypeOf);
     ObjectSetPrototypeOf.SuppressDestruct();
@@ -86,6 +89,8 @@ static void node_class_init(Napi::Env env)
     Napi::Symbol ext = Napi::Symbol::New(env, "_external");
     ExternalSymbol = node::Protected<Napi::Symbol>(env, ext);
     ExternalSymbol.SuppressDestruct();
+
+    return true;
 }
 
 template <typename T>

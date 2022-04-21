@@ -30,14 +30,20 @@
 namespace realm {
 namespace node {
 
+std::string name;
+
 static void napi_init(Napi::Env env, Napi::Object exports)
 {
-    node_class_init(env);
+    if (node_class_init(env)) {
+        Napi::Function realm_constructor = js::RealmClass<Types>::create_constructor(env);
 
-    Napi::Function realm_constructor = js::RealmClass<Types>::create_constructor(env);
-
-    std::string name = realm_constructor.Get("name").As<Napi::String>();
-    exports.Set(Napi::String::New(env, name), realm_constructor);
+        name = realm_constructor.Get("name").As<Napi::String>();
+        exports.Set(Napi::String::New(env, name), realm_constructor);
+    }
+    else {
+        auto realm_constructor = env.Global().Get("Realm").As<Napi::Function>();
+        exports.Set(Napi::String::New(env, name), realm_constructor);
+    }
 }
 
 } // namespace node
