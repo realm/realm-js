@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import Realm from "realm";
-import { useEffect, useReducer, useMemo } from "react";
+import { useEffect, useMemo, useRef, useReducer } from "react";
 import { createCachedCollection } from "./cachedCollection";
 
 /**
@@ -53,10 +53,22 @@ export function createUseQuery(useRealm: () => Realm) {
     // Create a forceRerender function for the cachedCollection to use as its updateCallback, so that
     // the cachedCollection can force the component using this hook to re-render when a change occurs.
     const [, forceRerender] = useReducer((x) => x + 1, 0);
+    const collectionRef = useRef({} as Realm.Results<T & Realm.Object>);
 
     // Wrap the cachedObject in useMemo, so we only replace it with a new instance if `primaryKey` or `type` change
-    const { collection, tearDown } = useMemo(
-      () => createCachedCollection({ collection: realm.objects(type), updateCallback: forceRerender }),
+    const { tearDown } = useMemo(
+      () => {
+        const updateCallback = () => {
+          // This makes sure the collection has a different reference on a rerender
+          // Also we are ensuring the type returned is Realm.Results, as this is known in this context
+          collectionRef.current = new Proxy(cachedCollection.collection as Realm.Results<T & Realm.Object>, {})
+          forceRerender()
+        }
+        const cachedCollection = createCachedCollection({ collection: realm.objects(type), updateCallback });
+        collectionRef.current = cachedCollection.collection as Realm.Results<T & Realm.Object>
+        return cachedCollection
+
+      },
       [type, realm],
     );
 
@@ -65,8 +77,6 @@ export function createUseQuery(useRealm: () => Realm) {
       return tearDown;
     }, [tearDown]);
 
-    // This makes sure the collection has a different reference on a rerender
-    // Also we are ensuring the type returned is Realm.Results, as this is known in this context
-    return new Proxy(collection as Realm.Results<T & Realm.Object>, {});
+    return collectionRef.current;
   };
 }

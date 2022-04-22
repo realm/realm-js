@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import Realm from "realm";
-import { useEffect, useReducer, useMemo } from "react";
+import { useEffect, useReducer, useMemo, useRef } from "react";
 import { createCachedObject } from "./cachedObject";
 
 // In order to make @realm/react work with older version of realms
@@ -52,15 +52,26 @@ export function createUseObject(useRealm: () => Realm) {
     // the cachedObject can force the component using this hook to re-render when a change occurs.
     const [, forceRerender] = useReducer((x) => x + 1, 0);
 
+    const objectRef = useRef<Realm.Object & T | null>(null);
+
     // Wrap the cachedObject in useMemo, so we only replace it with a new instance if `primaryKey` or `type` change
     const { object, tearDown } = useMemo(
       // TODO: There will be an upcoming breaking change that makes objectForPrimaryKey return null
       // When this is implemented, remove `?? null`
       () =>
-        createCachedObject({
-          object: realm.objectForPrimaryKey(type, primaryKey) ?? null,
-          updateCallback: forceRerender,
-        }),
+        {
+          const updateCallback = () => {
+            // Wrap object in a proxy to update the reference on rerender ( should only rerender when something has changed )
+            objectRef.current = cachedObject.object ? new Proxy(cachedObject.object, {}) : null;
+            forceRerender();
+          }
+          const cachedObject = createCachedObject({
+            object: realm.objectForPrimaryKey(type, primaryKey) ?? null,
+            updateCallback: forceRerender,
+          })
+          objectRef.current = cachedObject.object;
+          return cachedObject
+        },
       [type, realm, primaryKey],
     );
 
@@ -74,7 +85,6 @@ export function createUseObject(useRealm: () => Realm) {
       return null;
     }
 
-    // Wrap object in a proxy to update the reference on rerender ( should only rerender when something has changed )
-    return new Proxy(object, {});
+    return objectRef.current
   };
 }
