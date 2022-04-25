@@ -330,14 +330,22 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor, std::functi
                 };
                 return static_cast<RealmJSCRuntime*>(bridge.runtime)->ctx_;
             }, ^{
+                // Calling jsCallInvokver->invokeAsync causes React Native to flush any pending UI
+                // updates. We call this after we have called into JS from C++, in order to ensure 
+                // the UI updates in response to any changes, as we bypass the "normal" RN calling
+                // mechanisms (see #4389, facebook/react-native#33006).
+                //
+                // Calls are debounced using the waitingForFlush flag, so if an async flush is already
+                // pending when another JS to C++ call happens, we don't call invokeAsync again. It 
+                // might be possible to further optimize this, e.g. only call max once per frame.
                 if (!waitingForFlush) {
                     waitingForFlush = true;
-                    // Calling jsCallInvokver->invokeAsync restuls in React Native flushing any pending UI
-                    // updates after we have called into JS from C++
-                    //
-                    // TODO add a bit more info
                     [bridge jsCallInvoker]->invokeAsync([&](){
                         waitingForFlush = false;
+
+                        if (waitingForFlush) {
+                            [bridge jsCallInvoker]->invokeAsync([&](){});
+                        }
                     });
                 }
             });
