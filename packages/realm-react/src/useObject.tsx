@@ -59,6 +59,7 @@ export function createUseObject(useRealm: () => Realm) {
       () =>
         createCachedObject({
           object: realm.objectForPrimaryKey(type, primaryKey) ?? null,
+          realm,
           updateCallback: forceRerender,
         }),
       [type, realm, primaryKey],

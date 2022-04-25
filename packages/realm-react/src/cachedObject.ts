@@ -27,6 +27,10 @@ type CachedObjectArgs<T> = {
    */
   object: T | null;
   /**
+   * The {@link Realm} instance
+   */
+  realm: Realm;
+  /**
    * Callback function called whenver the object changes. Used to force a component
    * using the {@link useObject} hook to re-render.
    */
@@ -47,6 +51,7 @@ type CachedObjectArgs<T> = {
  */
 export function createCachedObject<T extends Realm.Object>({
   object,
+  realm,
   updateCallback,
 }: CachedObjectArgs<T>): { object: T | null; tearDown: () => void } {
   const listCaches = new Map();
@@ -75,7 +80,7 @@ export function createCachedObject<T extends Realm.Object>({
           // only the modified children of the list component actually re-render.
           return new Proxy(listCaches.get(key), {});
         }
-        const { collection, tearDown } = createCachedCollection({ collection: value, updateCallback });
+        const { collection, tearDown } = createCachedCollection({ collection: value, realm, updateCallback });
         // Add to a list of teardowns which will be invoked when the cachedObject's teardown is called
         listTearDowns.push(tearDown);
         // Store the proxied list into a map to persist the cachedCollection
@@ -104,7 +109,18 @@ export function createCachedObject<T extends Realm.Object>({
     }
   };
 
-  object.addListener(listenerCallback);
+  // We cannot add a listener to an invalid object
+  if (object.isValid()) {
+    // If we are in a transaction, then push adding the listener to the event loop.  This will allow the write transaction to finish.
+    // see https://github.com/realm/realm-js/issues/4375
+    if (realm.isInTransaction) {
+      setImmediate(() => {
+        object.addListener(listenerCallback);
+      });
+    } else {
+      object.addListener(listenerCallback);
+    }
+  }
 
   const tearDown = () => {
     object.removeListener(listenerCallback);

@@ -32,6 +32,10 @@ type CachedCollectionArgs<T> = {
    */
   collection: Realm.Collection<T>;
   /**
+   * The {@link Realm} instance
+   */
+  realm: Realm;
+  /**
    * Callback which is called whenever an object in the collection changes
    */
   updateCallback: () => void;
@@ -63,6 +67,7 @@ type CachedCollectionArgs<T> = {
  */
 export function createCachedCollection<T extends Realm.Object>({
   collection,
+  realm,
   updateCallback,
   objectCache = new Map(),
   isDerived = false,
@@ -77,6 +82,7 @@ export function createCachedCollection<T extends Realm.Object>({
             const col: Realm.Results<T & Realm.Object> = Reflect.apply(value, target, args);
             const { collection: newCol } = createCachedCollection({
               collection: col,
+              realm,
               updateCallback,
               objectCache,
               isDerived: true,
@@ -158,7 +164,15 @@ export function createCachedCollection<T extends Realm.Object>({
   };
 
   if (!isDerived) {
-    cachedCollectionResult.addListener(listenerCallback);
+    // If we are in a transaction, then push adding the listener to the event loop.  This will allow the write transaction to finish.
+    // see https://github.com/realm/realm-js/issues/4375
+    if (realm.isInTransaction) {
+      setImmediate(() => {
+        collection.addListener(listenerCallback);
+      });
+    } else {
+      collection.addListener(listenerCallback);
+    }
   }
 
   const tearDown = () => {

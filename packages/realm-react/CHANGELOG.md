@@ -1,3 +1,17 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* Fixed potential "Cannot create asynchronous query while in a write transaction" error with `useObject` due to adding event listeners while in a write transaction ([#4375](https://github.com/realm/realm-js/issues/4375), since v0.1.0)
+
+### Compatibility
+* None.
+
+### Internal
+* None.
+
 0.2.1 Release notes (2022-03-24)
 =============================================================
 ### Enhancements
