@@ -30,23 +30,24 @@
 #include "js_network_transport.hpp"
 #include "js_email_password_auth.hpp"
 
+using SharedApp = std::shared_ptr<realm::app::App>;
 using SharedUser = std::shared_ptr<realm::SyncUser>;
+using Token = realm::Subscribable<realm::app::App>::Token;
 
 namespace realm {
 namespace js {
-
-
 template <typename T>
-class AppObject : public realm::app::App {
+class App : public SharedApp {
 public:
-    // Reference for a function object to a subscription
-    std::vector<std::pair<Protected<typename T::Function>, Token>> m_notification_tokens;
+    App(const SharedApp& l)
+        : SharedApp(l)
+    {
+    }
+    std::vector<std::pair<Protected<typename T::Function>, Token*>> m_notification_tokens;
 };
 
-using SharedApp = std::shared_ptr<AppObject>;
-
 template <typename T>
-class AppClass : public ClassDefinition<T, SharedApp> {
+class AppClass : public ClassDefinition<T, realm::js::App<T>> {
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
@@ -65,7 +66,6 @@ class AppClass : public ClassDefinition<T, SharedApp> {
 public:
     const std::string name = "App";
 
-    std::vector<std::pair<Protected<typename T::Function>, Token>> m_notification_tokens;
 
     /**
      * Generates instances of GenericNetworkTransport, eventually allowing Realm Object Store to perform network
@@ -137,7 +137,7 @@ inline typename T::Function AppClass<T>::create_constructor(ContextType ctx)
 template <typename T>
 inline typename T::Object AppClass<T>::create_instance(ContextType ctx, SharedApp app)
 {
-    return create_object<T, AppClass<T>>(ctx, new SharedApp(app));
+    return create_object<T, AppClass<T>>(ctx, new realm::js::App<T>(app));
 }
 
 template <typename T>
@@ -221,7 +221,7 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
 
     SharedApp app = app::App::get_shared_app(config, client_config);
 
-    set_internal<T, AppClass<T>>(ctx, this_object, new SharedApp(app));
+    set_internal<T, AppClass<T>>(ctx, this_object, new realm::js::App<T>(app));
 }
 
 template <typename T>
@@ -381,7 +381,7 @@ void AppClass<T>::add_listener(ContextType ctx, ObjectType this_object, Argument
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(Context::get_global_context(ctx));
 
-    auto token = app.subscribe([=]() {
+    auto token = app->subscribe([=]() {
         Function::callback(protected_ctx, protected_callback, protected_this, 2, {});
     });
 
@@ -396,16 +396,16 @@ void AppClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Argum
     auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
     Protected<FunctionType> protected_callback(ctx, callback);
 
-    auto& tokens = app->m_notification_tokens;
-    auto compare = [&](auto&& token) {
-        return typename Protected<FunctionType>::Comparator()(token.first, protected_callback);
-    };
+    // auto& tokens = app->m_notification_tokens;
+    // auto compare = [&](auto&& token) {
+    //     return typename Protected<FunctionType>::Comparator()(token.first, protected_callback);
+    // };
 
-    // Retreive the token with the given function and use to call unsubscribe
-    auto token = std::find_if(tokens.begin(), tokens.end(), compare);
-    app->unsubscribe(token);
+    // // Retreive the token with the given function and use to call unsubscribe
+    // auto token = std::find_if(tokens.begin(), tokens.end(), compare);
+    // app->unsubscribe(token);
 
-    tokens.erase(std::remove_if(tokens.begin(), tokens.end(), compare), tokens.end());
+    // tokens.erase(std::remove_if(tokens.begin(), tokens.end(), compare), tokens.end());
 }
 
 } // namespace js
