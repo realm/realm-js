@@ -43,7 +43,7 @@ public:
         : SharedApp(l)
     {
     }
-    std::vector<std::pair<Protected<typename T::Function>, Token*>> m_notification_tokens;
+    std::vector<std::pair<Protected<typename T::Function>, Token&>> m_notification_tokens;
 };
 
 template <typename T>
@@ -381,12 +381,12 @@ void AppClass<T>::add_listener(ContextType ctx, ObjectType this_object, Argument
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(Context::get_global_context(ctx));
 
-    auto token = app->subscribe([=]() {
+    auto token = app->subscribe([=](const realm::app::App&) {
         Function::callback(protected_ctx, protected_callback, protected_this, 2, {});
     });
 
     // Save token in a member vector of a function to token pair
-    app->m_notification_tokens.emplace_back(protected_callback, std::move(token));
+    app.m_notification_tokens.emplace_back(protected_callback, token);
 }
 
 template <typename T>
