@@ -4,7 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* Fixed issue where React Native apps would sometimes show stale Realm data until the user interacted with the app UI ([#4389](https://github.com/realm/realm-js/issues/4389), since v10.0.0)
 * None.
 
 ### Compatibility
