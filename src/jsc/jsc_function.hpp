@@ -23,7 +23,7 @@
 namespace realm {
 namespace js {
 
-// TODO
+// Function passed in from the React Native initialisation code to flush the UI microtask queue
 extern std::function<void()> flush_ui_queue;
 
 template <>

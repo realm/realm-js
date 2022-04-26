@@ -26,7 +26,7 @@ extern "C" {
 #endif
 
 JSObjectRef RJSConstructorCreate(JSContextRef ctx);
-void RJSInitializeInContext(JSContextRef ctx, std::function<void()> send_dummy_event);
+void RJSInitializeInContext(JSContextRef ctx, std::function<void()> flush_ui_queue);
 void RJSInvalidateCaches();
 
 #ifdef __cplusplus
