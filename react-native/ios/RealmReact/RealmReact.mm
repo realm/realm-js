@@ -351,10 +351,6 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor, std::functi
                     waitingForUiFlush = true;
                     [bridge jsCallInvoker]->invokeAsync([&](){
                         waitingForUiFlush = false;
-
-                        if (waitingForUiFlush) {
-                            [bridge jsCallInvoker]->invokeAsync([&](){});
-                        }
                     });
                 }
             });
