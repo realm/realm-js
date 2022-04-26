@@ -160,3 +160,9 @@ Sometimes it can be non-obvious what type an `auto` variable has. The debugger c
 2. Add `TD<decltype(variable_name)> td;` after the variable (`variable_name`) who's type you want to inspect.
 
 3. Now when you compile, you will get an error like `error: implicit instantiation of undefined template 'realm::js::TD<const realm::ObjectSchema &>'` – the type parameter of `TD` is the type of the variable in question, in this case `const realm::ObjectSchema &`.
+
+### Using Instruments to profile Node code
+
+To run a Node script and capture a performance trace to analyse in Instruments, you can run it like: `xcrun xctrace record --template 'Time Profiler' --target-stdout - --launch -- ~/.nvm/versions/node/v16.13.2/bin/node index.js`.
+
+Using a debug version of Realm (e.g. compile Realm in debug mode, then `npm i ~/dev/realm-js` to install your local version into your Node project) may yield more useful information.
