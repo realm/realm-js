@@ -881,7 +881,7 @@ void SyncClass<T>::initiate_client_reset(ContextType ctx, ObjectType this_object
     args.validate_count(2);
     auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
     std::string path = Value::validated_to_string(ctx, args[1]);
-    if (!app->sync_manager()->immediately_run_file_actions(std::string(path))) {
+    if (!app.app->sync_manager()->immediately_run_file_actions(std::string(path))) {
         throw std::runtime_error(
             util::format("Realm was not configured correctly. Client Reset could not be run for Realm at: %1", path));
     }
@@ -897,7 +897,7 @@ void SyncClass<T>::set_sync_log_level(ContextType ctx, ObjectType this_object, A
     std::string log_level = Value::validated_to_string(ctx, args[1], "log level");
 
     auto level = common::logger::Logger::get_level(log_level);
-    app->sync_manager()->set_log_level(level);
+    app.app->sync_manager()->set_log_level(level);
 }
 
 template <typename T>
@@ -922,7 +922,7 @@ void SyncClass<T>::set_sync_logger(ContextType ctx, ObjectType this_object, Argu
     };
 
     auto sync_logger = common::logger::Logger::build_sync_logger(std::move(show_logs));
-    app->sync_manager()->set_logger_factory(sync_logger);
+    app.app->sync_manager()->set_logger_factory(sync_logger);
 }
 
 template <typename T>
@@ -932,7 +932,7 @@ void SyncClass<T>::set_sync_user_agent(ContextType ctx, ObjectType this_object, 
     args.validate_count(2);
     auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
     std::string application_user_agent = Value::validated_to_string(ctx, args[1], "user agent");
-    app->sync_manager()->set_user_agent(application_user_agent);
+    app.app->sync_manager()->set_user_agent(application_user_agent);
 }
 
 template <typename T>
@@ -940,7 +940,7 @@ void SyncClass<T>::reconnect(ContextType ctx, ObjectType this_object, Arguments&
 {
     args.validate_count(1);
     auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
-    app->sync_manager()->reconnect();
+    app.app->sync_manager()->reconnect();
 }
 
 template <typename T>
@@ -949,7 +949,7 @@ void SyncClass<T>::has_existing_sessions(ContextType ctx, ObjectType this_object
 {
     args.validate_count(1);
     auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
-    return_value.set(app->sync_manager()->has_existing_sessions());
+    return_value.set(app.app->sync_manager()->has_existing_sessions());
 }
 
 template <typename T>
@@ -1160,7 +1160,7 @@ void SyncClass<T>::enable_multiplexing(ContextType ctx, ObjectType this_object, 
 {
     args.validate_count(1);
     auto app = *get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"));
-    app->sync_manager()->enable_session_multiplexing();
+    app.app->sync_manager()->enable_session_multiplexing();
 }
 
 } // namespace js

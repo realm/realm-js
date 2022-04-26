@@ -36,14 +36,18 @@ using Token = realm::Subscribable<realm::app::App>::Token;
 
 namespace realm {
 namespace js {
+
 template <typename T>
-class App : public SharedApp {
+class App {
 public:
     App(const SharedApp& l)
-        : SharedApp(l)
+        : app(l)
     {
     }
-    std::vector<std::pair<Protected<typename T::Function>, Token*>> m_notification_tokens;
+
+    std::vector<std::pair<Protected<typename T::Function>, Token&>> m_notification_tokens;
+
+    SharedApp app;
 };
 
 template <typename T>
@@ -234,7 +238,7 @@ std::string AppClass<T>::get_user_agent()
 template <typename T>
 void AppClass<T>::get_app_id(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
 {
-    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    auto app = get_internal<T, AppClass<T>>(ctx, this_object)->app;
     return_value.set(Value::from_string(ctx, app->config().app_id));
 }
 
@@ -243,7 +247,7 @@ void AppClass<T>::log_in(ContextType ctx, ObjectType this_object, Arguments& arg
 {
     args.validate_maximum(2);
 
-    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    auto app = get_internal<T, AppClass<T>>(ctx, this_object)->app;
 
     auto credentials_object = Value::validated_to_object(ctx, args[0]);
     auto callback_function = Value::validated_to_function(ctx, args[1]);
@@ -261,7 +265,7 @@ void AppClass<T>::log_in(ContextType ctx, ObjectType this_object, Arguments& arg
 template <typename T>
 void AppClass<T>::get_all_users(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
 {
-    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    auto app = get_internal<T, AppClass<T>>(ctx, this_object)->app;
 
     auto users = Object::create_empty(ctx);
     for (auto user : app->all_users()) {
@@ -276,7 +280,7 @@ void AppClass<T>::get_all_users(ContextType ctx, ObjectType this_object, ReturnV
 template <typename T>
 void AppClass<T>::get_current_user(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
 {
-    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    auto app = get_internal<T, AppClass<T>>(ctx, this_object)->app;
     auto user = app->current_user();
     if (user) {
         return_value.set(create_object<T, UserClass<T>>(ctx, new User<T>(std::move(user), std::move(app))));
@@ -291,7 +295,7 @@ void AppClass<T>::switch_user(ContextType ctx, ObjectType this_object, Arguments
 {
     args.validate_count(1);
 
-    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    auto app = get_internal<T, AppClass<T>>(ctx, this_object)->app;
     auto user = get_internal<T, UserClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "user"));
 
     app->switch_user(*user);
@@ -303,7 +307,7 @@ void AppClass<T>::remove_user(ContextType ctx, ObjectType this_object, Arguments
 {
     args.validate_count(2);
 
-    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    auto app = get_internal<T, AppClass<T>>(ctx, this_object)->app;
     auto user = get_internal<T, UserClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "user"));
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
@@ -326,7 +330,7 @@ void AppClass<T>::delete_user(ContextType ctx, ObjectType this_object, Arguments
 {
     args.validate_count(2);
 
-    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    auto app = get_internal<T, AppClass<T>>(ctx, this_object)->app;
     auto user = get_internal<T, UserClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "user"));
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
@@ -337,7 +341,7 @@ void AppClass<T>::delete_user(ContextType ctx, ObjectType this_object, Arguments
 template <typename T>
 void AppClass<T>::get_email_password_auth(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
 {
-    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    auto app = get_internal<T, AppClass<T>>(ctx, this_object)->app;
     return_value.set(EmailPasswordAuthClass<T>::create_instance(ctx, app));
 }
 
@@ -373,27 +377,31 @@ void AppClass<T>::set_versions(ContextType ctx, ObjectType this_object, Argument
 }
 
 template <typename T>
+struct TD;
+
+template <typename T>
 void AppClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
 {
     auto callback = Value::validated_to_function(ctx, args[0]);
-    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    auto app = get_internal<T, AppClass<T>>(ctx, this_object);
     Protected<FunctionType> protected_callback(ctx, callback);
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(Context::get_global_context(ctx));
 
-    auto token = app->subscribe([=]() {
+    auto token = app->app->subscribe([=](const realm::app::App&) {
         Function::callback(protected_ctx, protected_callback, protected_this, 2, {});
     });
+    // TD<decltype(app)> td;
 
     // Save token in a member vector of a function to token pair
-    app->m_notification_tokens.emplace_back(protected_callback, std::move(token));
+    app->m_notification_tokens.emplace_back(protected_callback, token);
 }
 
 template <typename T>
 void AppClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
 {
     auto callback = Value::validated_to_function(ctx, args[0]);
-    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    auto app = get_internal<T, AppClass<T>>(ctx, this_object)->app;
     Protected<FunctionType> protected_callback(ctx, callback);
 
     // auto& tokens = app->m_notification_tokens;
