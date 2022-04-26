@@ -144,7 +144,7 @@ static JSGlobalContextRef create_context(JSContextGroupRef group, JSClassRef glo
     // Clear cache from previous instances.
     RJSInvalidateCaches();
 
-    RJSInitializeInContext(ctx);
+    RJSInitializeInContext(ctx, []() {});
     realmContextInjected = true;
     return ctx;
 }
