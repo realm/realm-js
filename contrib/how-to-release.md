@@ -17,6 +17,7 @@ The procedure is:
 - Open `dependencies.list` and change `VERSION` to `X.Y.Z`
 - It is recommended that you proof-read and mildly edit `CHANGELOG.md`.
     - Verify that all fixes are linked to the associated pull request.
+    - If the release upgrades `realm-core`, review the `realm-core` release notes and copy over any relevant notes (edited to be JS-specific if appropriate) into our `CHANGELOG`.
     - If you are releasing from a branch with a tag, note that the version number in the `CHANGELOG` needs updating to match the one used in step 1 – the script will not add the `-beta.0` part automatically.
 - Add changes: `git add CHANGELOG.md package.json package-lock.json dependencies.list react-native/ios/RealmReact.xcodeproj/project.pbxproj`
 - Commit the changes: `git commit -m "[X.Y.Z] Bump version"`
