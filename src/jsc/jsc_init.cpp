@@ -31,6 +31,10 @@ js::Protected<JSObjectRef> FunctionPrototype;
 js::Protected<JSObjectRef> RealmObjectClassConstructor;
 js::Protected<JSObjectRef> RealmObjectClassConstructorPrototype;
 } // namespace jsc
+
+namespace js {
+std::function<void()> flush_ui_queue;
+} // namespace js
 } // namespace realm
 
 extern "C" {
@@ -43,13 +47,13 @@ JSObjectRef RJSConstructorCreate(JSContextRef ctx)
     return js::RealmClass<Types>::create_constructor(ctx);
 }
 
-void RJSInitializeInContext(JSContextRef ctx)
+void RJSInitializeInContext(JSContextRef ctx, std::function<void()> flush_ui_queue)
 {
     static const jsc::String realm_string = "Realm";
 
     JSObjectRef global_object = JSContextGetGlobalObject(ctx);
 
-    jsc_class_init(ctx, global_object);
+    jsc_class_init(ctx, global_object, flush_ui_queue);
 
     JSObjectRef realm_constructor = RJSConstructorCreate(ctx);
 

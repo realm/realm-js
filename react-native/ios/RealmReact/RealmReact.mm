@@ -22,6 +22,7 @@
 
 #import <React/RCTBridge+Private.h>
 #import <React/RCTJavaScriptExecutor.h>
+#include <ReactCommon/CallInvoker.h>
 
 #import <objc/runtime.h>
 #import <arpa/inet.h>
@@ -51,6 +52,8 @@ using namespace realm::rpc;
 @interface RCTBridge (Realm_RCTCxxBridge)
 - (JSGlobalContextRef)jsContextRef;
 - (void *)runtime;
+// Expose the CallInvoker so that we can call `invokeAsync`
+- (std::shared_ptr<facebook::react::CallInvoker>)jsCallInvoker;
 @end
 
 extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool create) {
@@ -83,6 +86,8 @@ extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executo
 
 @implementation RealmReact {
     NSMutableDictionary *_eventHandlers;
+    // Keep track of whether we are already waiting for the React Native UI queue to be flushed asynchronously
+    bool waitingForUiFlush;
 
 #if DEBUG
     GCDWebServer *_webServer;
@@ -108,6 +113,7 @@ RCT_EXPORT_MODULE(Realm)
     self = [super init];
     if (self) {
         _eventHandlers = [[NSMutableDictionary alloc] init];
+        waitingForUiFlush = false;
     }
     return self;
 }
@@ -274,7 +280,7 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
 
 typedef JSGlobalContextRef (^JSContextRefExtractor)();
 
-void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
+void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor, std::function<void()> flushUiQueueFn) {
     // Make sure the previous JS thread is completely finished before continuing.
     static __weak NSThread *s_currentJSThread;
     while (s_currentJSThread && !s_currentJSThread.finished) {
@@ -282,7 +288,7 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
     }
     s_currentJSThread = [NSThread currentThread];
 
-    RJSInitializeInContext(jsContextExtractor());
+    RJSInitializeInContext(jsContextExtractor(), flushUiQueueFn);
 }
 
 - (void)setBridge:(RCTBridge *)bridge {
@@ -310,7 +316,7 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
             if (!self || !bridge) {
                 return;
             }
-
+            
             _initializeOnJSThread(^{
                 // RN < 0.58 has a private method that returns the js context
                 if ([bridge respondsToSelector:@selector(jsContextRef)]) {
@@ -325,6 +331,28 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
                     JSGlobalContextRef ctx_;
                 };
                 return static_cast<RealmJSCRuntime*>(bridge.runtime)->ctx_;
+            }, ^{
+                // Calling jsCallInvokver->invokeAsync tells React Native to execute the lambda passed
+                // in on the JS thread, and then flush the internal "microtask queue", which has the 
+                // effect of flushing any pending UI updates. 
+                //
+                // We call this after we have called into JS from C++, in order to ensure that the RN
+                // UI updates in response to any changes from Realm. We need to do this as we bypass
+                // the usual RN bridge mechanism for communicating between C++ and JS, so without doing
+                // this RN has no way to know that a change has occurred which might require an update
+                // (see #4389, facebook/react-native#33006).
+                //
+                // Calls are debounced using the waitingForUiFlush flag, so if an async flush is already
+                // pending when another JS to C++ call happens, we don't call invokeAsync again. This works
+                // because the work is performed before the microtask queue is flushed - see sequence
+                // diagram at https://bit.ly/3kexhHm. It might be possible to further optimize this, 
+                // e.g. only flush the queue a maximum of once per frame, but this seems reasonable.
+                if (!waitingForUiFlush) {
+                    waitingForUiFlush = true;
+                    [bridge jsCallInvoker]->invokeAsync([&](){
+                        waitingForUiFlush = false;
+                    });
+                }
             });
         } queue:RCTJSThread];
     } else { // React Native 0.44 and older
@@ -341,6 +369,8 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor) {
 
             _initializeOnJSThread(^ {
                 return RealmReactGetJSGlobalContextForExecutor(executor, true);
+            }, [&]() {
+                // jsCallInvoker does not exist on older RN
             });
         }];
     }
