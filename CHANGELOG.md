@@ -5,7 +5,8 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Fixed issue where React Native apps would sometimes show stale Realm data until the user interacted with the app UI ([#4389](https://github.com/realm/realm-js/issues/4389), since v10.0.0)
-* None.
+* Adding an object to a Set, deleting the parent object, and then deleting the previously mentioned object causes crash ([#5387](https://github.com/realm/realm-core/issues/5387), since v10.5.0)
+* Synchronized Realm files which were first created using SDK version released in the second half of August 2020 would be redownloaded instead of using the existing file, possibly resulting in the loss of any unsynchronized data in those files (since v10.10.1).
 
 ### Compatibility
 * MongoDB Realm Cloud.
