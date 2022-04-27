@@ -29,7 +29,7 @@ const SomeComponent = () => {
 * None.
 
 ### Internal
-* None.
+* Tests run with `--forceExit` to prevent them hanging ([#4531](https://github.com/realm/realm-js/pull/4531))
 
 0.2.1 Release notes (2022-03-24)
 =============================================================
