@@ -1,7 +1,26 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Add AppProvider and useApp hook.  Usage example:
+```
+import {AppProvider} from '@realm/react'
+//...
+// Wrap your RealmProvider with the AppProvider and provide an appId
+<AppProvider id={appId}>
+	<RealmProvider sync={{user, flexible: true}}>
+	//...
+	</RealmProvider>
+</AppProvider>
+
+// Access the app instance using the useApp hook
+import {useApp} from '@realm/react'
+
+const SomeComponent = () => {
+	const app = useApp()
+
+	//...
+}
+```
 
 ### Fixed
 * Fixed potential "Cannot create asynchronous query while in a write transaction" error with `useObject` due to adding event listeners while in a write transaction ([#4375](https://github.com/realm/realm-js/issues/4375), since v0.1.0)
