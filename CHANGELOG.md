@@ -19,7 +19,6 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * Improved documentation for `Realm.copyBundledRealmFiles`.
 * Updated a test to be ready for node 18.
-* @realm/react tests run with `--forceExit` to prevent them hanging ([#4531](https://github.com/realm/realm-js/pull/4531))
 * Upgraded Realm Core from v11.14.0 to v11.15.0.
 
 10.16.0 Release notes (2022-4-12)
