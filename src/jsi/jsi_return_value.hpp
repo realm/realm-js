@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2021 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,78 +18,110 @@
 
 #pragma once
 
-#include "jsc_types.hpp"
-#include "jsc_string.hpp"
+#include "jsi_types.hpp"
+#include "jsi_string.hpp"
 
 namespace realm {
 namespace js {
 
+namespace fbjsi = facebook::jsi;
+
 template <>
-class ReturnValue<jsc::Types> {
-    const JSContextRef m_context;
-    JSValueRef m_value = nullptr;
+class ReturnValue<realmjsi::Types> {
+    JsiEnv m_env;
+    fbjsi::Value m_value; // defaults to undefined
 
 public:
-    ReturnValue(JSContextRef ctx)
-        : m_context(ctx)
+    ReturnValue(JsiEnv env)
+        : m_env(env)
+    {
+    }
+    ReturnValue(JsiEnv env, fbjsi::Value&& value)
+        : m_env(env)
+        , m_value(std::move(value))
+    {
+    }
+    ReturnValue(JsiEnv env, const fbjsi::Value& value)
+        : m_env(env)
+        , m_value(env, value)
     {
     }
 
-    void set(const JSValueRef& value)
+    fbjsi::Value ToValue() &&
     {
-        m_value = value;
+        return std::move(m_value);
     }
+
+    void set(JsiVal value)
+    {
+        m_value = std::move(value.get());
+    }
+
     void set(const std::string& string)
     {
-        m_value = JSValueMakeString(m_context, jsc::String(string));
+        m_value = str(m_env, string).get();
     }
-    void set(const char* string)
+
+    void set(const char* c_str)
     {
-        m_value = JSValueMakeString(m_context, jsc::String(string));
+        if (!c_str) {
+            set_null();
+        }
+        else {
+            m_value = str(m_env, c_str).get();
+        }
     }
+
     void set(bool boolean)
     {
-        m_value = JSValueMakeBoolean(m_context, boolean);
+        m_value = fbjsi::Value(boolean);
     }
+
     void set(double number)
     {
-        m_value = JSValueMakeNumber(m_context, number);
+        m_value = fbjsi::Value(number);
     }
+
     void set(int32_t number)
     {
-        m_value = JSValueMakeNumber(m_context, number);
+        set(double(number));
     }
+
     void set(uint32_t number)
     {
-        m_value = JSValueMakeNumber(m_context, number);
+        set(double(number));
     }
+
     void set(realm::Mixed mixed)
     {
-        m_value = Value<jsc::Types>::from_mixed(m_context, nullptr, mixed);
+        m_value = js::Value<realmjsi::Types>::from_mixed(m_env, nullptr, mixed).get();
     }
+
     void set_null()
     {
-        m_value = JSValueMakeNull(m_context);
+        m_value = fbjsi::Value::null();
     }
+
+
     void set_undefined()
     {
-        m_value = JSValueMakeUndefined(m_context);
+        m_value = fbjsi::Value::undefined();
     }
 
     template <typename T>
-    void set(const util::Optional<T>& value)
+    void set(util::Optional<T> value)
     {
         if (value) {
-            set(*value);
+            set(std::move(*value));
         }
         else {
             set_undefined();
         }
     }
 
-    operator JSValueRef() const
+    operator JsiVal() const
     {
-        return m_value;
+        return m_env(m_value);
     }
 };
 

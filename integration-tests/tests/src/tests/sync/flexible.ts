@@ -543,9 +543,9 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           const subs = this.realm.subscriptions;
 
           subs.update((mutableSubs) => {
-            expect(() =>
-              ((mutableSubs as unknown) as Realm.App.Sync.SubscriptionSet).waitForSynchronization(),
-            ).to.throw("mutableSubs.waitForSynchronization is not a function");
+            expect(() => (mutableSubs as unknown as Realm.App.Sync.SubscriptionSet).waitForSynchronization()).to.throw(
+              "mutableSubs.waitForSynchronization is not a function",
+            );
           });
         });
       });
@@ -817,7 +817,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           it("mutating methods do not exist on non-mutable SubscriptionSet instances", function (this: RealmContext) {
             const subscriptionInfo = addSubscriptionForPerson(this.realm);
 
-            const subsAsMutable = (subscriptionInfo.subs as unknown) as Realm.App.Sync.MutableSubscriptionSet;
+            const subsAsMutable = subscriptionInfo.subs as unknown as Realm.App.Sync.MutableSubscriptionSet;
 
             const calls = [
               () => subsAsMutable.add(this.realm.objects(FlexiblePersonSchema.name)),
@@ -864,7 +864,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
             await expect(
               subs.update((mutableSubs) => {
-                ((mutableSubs as unknown) as Realm.App.Sync.SubscriptionSet).update(() => {
+                (mutableSubs as unknown as Realm.App.Sync.SubscriptionSet).update(() => {
                   // This should throw
                 });
               }),

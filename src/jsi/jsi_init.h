@@ -16,14 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Collection, { createCollection } from "./collections";
+#pragma once
 
-export default class Dictionary extends Collection {
-  constructor() {
-    throw new Error("Dictionaries are not yet supported in Chrome debugging mode");
-  }
-}
+#import <functional>
+#import <jsi/jsi.h>
 
-export function createDictionary(realmId, info) {
-  return createCollection(Dictionary.prototype, realmId, info, true);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+namespace jsi = facebook::jsi;
+void realm_jsi_init(jsi::Runtime& rt, jsi::Object& exports, std::function<void()> flush_ui_queue);
+void realm_jsi_invalidate_caches();
+void realm_jsi_close_sync_sessions();
+
+#ifdef __cplusplus
 }
+#endif
