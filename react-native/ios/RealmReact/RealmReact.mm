@@ -30,6 +30,8 @@
 #import <netdb.h>
 #import <net/if.h>
 
+#import <thread>
+
 #if DEBUG
 #include <realm-js-ios/rpc.hpp>
 #import "GCDWebServer.h"
@@ -267,7 +269,14 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
 #endif
 
 - (void)invalidate {
+#if DEBUG
+    // Immediately close any open sync sessions to prevent race condition with new JS thread 
+    // when hot reloading
+    RJSCloseSyncSessions();
+#endif
+
     RJSInvalidateCaches();
+
 #if DEBUG
     // shutdown rpc if in chrome debug mode
     [self shutdownRPC];
