@@ -16,14 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Collection, { createCollection } from "./collections";
+#pragma once
 
-export default class Dictionary extends Collection {
-  constructor() {
-    throw new Error("Dictionaries are not yet supported in Chrome debugging mode");
-  }
-}
+#include "jsi_string.hpp"
+#include "jsi_protected.hpp"
+#include "jsi_function.hpp"
+#include "jsi_value.hpp"
+#include "jsi_object.hpp"
+#include "jsi_return_value.hpp"
+#include "jsi_class.hpp"
 
-export function createDictionary(realmId, info) {
-  return createCollection(Dictionary.prototype, realmId, info, true);
-}
+// FIXME: js_object_accessor.hpp includes js_list.hpp which includes js_object_accessor.hpp.
+#include "js_object_accessor.hpp"

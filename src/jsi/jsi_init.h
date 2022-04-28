@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2021 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,23 +18,16 @@
 
 #pragma once
 
-#include <string>
-#include <memory>
+#import <jsi/jsi.h>
 
-namespace realm {
-namespace rpc {
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-class RPCServerImpl;
-class RPCServer {
-public:
-    RPCServer();
-    ~RPCServer();
-    std::string perform_request(std::string const& name, std::string const& json_args);
-    bool try_run_task();
+namespace jsi = facebook::jsi;
+void realm_jsi_init(jsi::Runtime& rt, jsi::Object& exports);
+void realm_jsi_invalidate_caches();
 
-private:
-    std::unique_ptr<RPCServerImpl> m_impl;
-};
-
-} // namespace rpc
-} // namespace realm
+#ifdef __cplusplus
+}
+#endif
