@@ -103,8 +103,37 @@ template <typename T>
 struct Context {
     using ContextType = typename T::Context;
     using GlobalContextType = typename T::GlobalContext;
+    using Invalidator = std::function<void()>;
+
+    inline static std::vector<Invalidator> invalidators{};
 
     static GlobalContextType get_global_context(ContextType);
+
+    /**
+     * @brief Register a function to be called just before the current context gets destroyed.
+     *
+     * Use this function to ensure caches derived from a context gets invalidated and destructed
+     * while the context is still around.
+     *
+     * @param invalidator The function to call just before the context gets destroyed.
+     */
+    static void register_invalidator(Invalidator invalidator)
+    {
+        invalidators.emplace_back(invalidator);
+    }
+
+    /**
+     * @brief Call all registered invalidator functions.
+     *
+     * This clears the list of invalidators, ensuring that they'll only get called once per context.
+     */
+    static void invalidate()
+    {
+        for (auto& invalidator : invalidators) {
+            invalidator();
+        }
+        invalidators.clear();
+    }
 };
 
 class TypeErrorException : public std::invalid_argument {

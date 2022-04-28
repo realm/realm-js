@@ -346,6 +346,11 @@ public:
     static void get_schema_name_from_object(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void update_schema(ContextType, ObjectType, Arguments&, ReturnValue&);
 
+    // NOTE:  __to_object and __to_boolean are shims that allow type conversion tests
+    // on unit tests / CI.  They probably shouldn't be available in production
+    static void __to_object(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void __to_boolean(ContextType, ObjectType, Arguments&, ReturnValue&);
+
 #if REALM_ENABLE_SYNC
     static void async_open_realm(ContextType, ObjectType, Arguments&, ReturnValue&);
 #endif
@@ -430,6 +435,11 @@ public:
         {"deleteModel", wrap<delete_model>},
         {"_updateSchema", wrap<update_schema>},
         {"_schemaName", wrap<get_schema_name_from_object>},
+
+        // NOTE:  __to_object and __to_boolean are shims that allow type conversion tests
+        // on unit tests / CI.  They probably shouldn't be available in production
+        {"__to_object", wrap<__to_object>},
+        {"__to_boolean", wrap<__to_boolean>},
     };
 
     PropertyMap<T> const properties = {
@@ -533,6 +543,9 @@ private:
 template <typename T>
 inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx)
 {
+    // Only calling to populate static cache. Eventually this should be stored somewhere non-static.
+    (void)ObjectWrap<T, ObservableClass<T>>::create_constructor(ctx);
+
     FunctionType realm_constructor = ObjectWrap<T, RealmClass<T>>::create_constructor(ctx);
     FunctionType collection_constructor = ObjectWrap<T, CollectionClass<T>>::create_constructor(ctx);
     FunctionType list_constructor = ObjectWrap<T, ListClass<T>>::create_constructor(ctx);
@@ -678,7 +691,7 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
                 const auto& realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
                 const auto& realm_object_constructor = Object::validated_get_object(ctx, realm_constructor, "Object");
                 for (const auto& [name, constructor] : constructors) {
-                    const auto& prototype = Object::get_prototype(ctx, constructor);
+                    const auto& prototype = Value::validated_to_object(ctx, Object::get_prototype(ctx, constructor));
                     if (prototype != realm_object_constructor) {
                         const std::string& class_name =
                             Object::validated_get_string(ctx, constructor, "name", "Failed to read class name");
@@ -1712,6 +1725,24 @@ void RealmClass<T>::get_schema_name_from_object(ContextType ctx, ObjectType this
     SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
     auto& object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
     return_value.set(object_schema.name);
+}
+
+template <typename T>
+void RealmClass<T>::__to_object(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
+{
+    args.validate_count(1);
+    ObjectType newobj = Value::to_object(ctx, args[0]);
+
+    return_value.set(newobj);
+}
+
+template <typename T>
+void RealmClass<T>::__to_boolean(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
+{
+    args.validate_count(1);
+    bool is_bool = Value::to_boolean(ctx, args[0]);
+
+    return_value.set(is_bool);
 }
 
 /**
