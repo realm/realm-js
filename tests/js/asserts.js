@@ -177,7 +177,7 @@ module.exports = {
       func();
     } catch (e) {
       caught = true;
-      if (!e.message.includes(expectedMessage)) {
+      if (!e.message.includes(expectedMessage) && !e.name.includes(expectedMessage)) {
         throw new TestFailureError(
           `Expected exception "${expectedMessage}" not thrown - instead caught: "${e}"`,
           depth,
@@ -189,6 +189,7 @@ module.exports = {
       throw new TestFailureError(`Expected exception "${expectedMessage}" not thrown`, depth);
     }
   },
+
   assertThrowsAsyncContaining: async function (func, expectedMessage, depth) {
     let caught = false;
     try {

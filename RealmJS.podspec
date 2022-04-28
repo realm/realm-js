@@ -42,8 +42,9 @@ Pod::Spec.new do |s|
   s.source                 = { :http => 'https://github.com/realm/realm-js/blob/master/CONTRIBUTING.md#how-to-debug-react-native-podspec' }
 
   s.source_files           = 'react-native/ios/RealmReact/*.mm'
+  s.public_header_files    = 'react-native/ios/RealmReact/*.h'
 
-  s.frameworks             = uses_frameworks ? ['JavaScriptCore', 'React'] : ['JavaScriptCore']
+  s.frameworks             = uses_frameworks ? ['React'] : []
 
   s.library                = 'c++', 'z', 'compression'
 
@@ -66,6 +67,4 @@ Pod::Spec.new do |s|
   s.vendored_frameworks = 'react-native/ios/realm-js-ios.xcframework'
 
   s.dependency 'React'
-  # TODO: Ensure the same version of GCDWebServer is used for Android
-  s.dependency 'GCDWebServer'
 end
