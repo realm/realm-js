@@ -2,9 +2,32 @@ x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Breaking change
 * Removed all code related to the legacy Chrome Debugger. Please use [Flipper](https://fbflipper.com/) as debugger.
+* Model classes passed as schema to the `Realm` constructor must now extend `Realm.Object` and will no longer have their constructors called when pulling an object of that type from the database. Existing classes already extending `Realm.Object` now need to call the `super` constructor passing two arguments:
+  - `realm`: The Realm to create the object in.
+  - `values`: Values to pass to the `realm.create` call when creating the object in the database.
+* Renamed the `RealmInsertionModel<T>` type to `Unmanaged<T>` to simplify and highlight its usage.
 
 ### Enhancements
 * Adding support for Hermes on iOS & Android.
+* Class-based models (i.e. user defined classes extending `Realm.Object` and passed through the `schema` when opening a Realm), will now create object when their constructor is called:
+
+```ts
+class Person extends Realm.Object<Person> {
+  name!: string;
+
+  static schema = {
+    name: "Person",
+    properties: { name: "string" },
+  };
+}
+
+const realm = new Realm({ schema: [Person] });
+realm.write(() => {
+  const alice = new Person(realm, { name: "Alice" });
+  // A Person { name: "Alice" } is now persisted in the database
+  console.log("Hello " + alice.name);
+});
+```
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
@@ -29,33 +52,8 @@ Based on Realm JS v10.16.0: See changelog below for details on enhancements and 
 
 10.16.0 Release notes (2022-4-12)
 =============================================================
-
-### Breaking change
-* Model classes passed as schema to the `Realm` constructor must now extend `Realm.Object` and will no longer have their constructors called when pulling an object of that type from the database. Existing classes already extending `Realm.Object` now need to call the `super` constructor passing two arguments:
-  - `realm`: The Realm to create the object in.
-  - `values`: Values to pass to the `realm.create` call when creating the object in the database.
-* Renamed the `RealmInsertionModel<T>` type to `Unmanaged<T>` to simplify and highlight its usage.
-
 ### Enhancements
-* Class-based models (i.e. user defined classes extending `Realm.Object` and passed through the `schema` when opening a Realm), will now create object when their constructor is called:
-
-```ts
-class Person extends Realm.Object<Person> {
-  name!: string;
-
-  static schema = {
-    name: "Person",
-    properties: { name: "string" },
-  };
-}
-
-const realm = new Realm({ schema: [Person] });
-realm.write(() => {
-  const alice = new Person(realm, { name: "Alice" });
-  // A Person { name: "Alice" } is now persisted in the database
-  console.log("Hello " + alice.name);
-});
-```
+* None.
 
 ### Fixed
 * Fixed various corruption bugs in Realm Core when encryption is used. ([#5360](https://github.com/realm/realm-core/issues/5360), since v11.8.0)
