@@ -188,12 +188,14 @@ module.exports = {
     TestCase.assertEqual(obj.arrayCol[1].doubleCol, 4);
     TestCase.assertEqual(obj.arrayCol[2], undefined);
     TestCase.assertEqual(obj.arrayCol[-1], undefined);
+    TestCase.assertEqual(obj.arrayCol[""], undefined);
     TestCase.assertEqual(obj.arrayCol["foo"], undefined);
 
     TestCase.assertEqual(obj.arrayCol1[0].doubleCol, 5);
     TestCase.assertEqual(obj.arrayCol1[1].doubleCol, 6);
     TestCase.assertEqual(obj.arrayCol1[2], undefined);
     TestCase.assertEqual(obj.arrayCol1[-1], undefined);
+    TestCase.assertEqual(obj.arrayCol1[""], undefined);
     TestCase.assertEqual(obj.arrayCol1["foo"], undefined);
 
     for (let field of prim.keys()) {

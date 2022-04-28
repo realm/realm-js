@@ -261,8 +261,9 @@ def buildiOS() {
   return buildMacOS {
     withEnv(['SDK_ROOT_OVERRIDE=/Applications/Xcode-12.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/',
           'DEVELOPER_DIR_OVERRIDE=/Applications/Xcode-12.4.app']) {
+      sh 'npm ci'
       sh './scripts/build-iOS.sh -c Release'
-        dir('react-native/ios') {
+      dir('react-native/ios') {
         // Uncomment this when testing build changes if you want to be able to download pre-built artifacts from Jenkins.
         // archiveArtifacts('realm-js-ios.xcframework/**')
         stash includes: 'realm-js-ios.xcframework/**', name: 'realm-js-ios.xcframework'

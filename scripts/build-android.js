@@ -28,8 +28,6 @@ if (!fs.existsSync(rnDir)) {
   throw new Error("This script needs to be run at the root dir of the project");
 }
 
-const copyOutputPath = path.resolve(process.cwd(), "react-native", "android", "src", "main", "jniLibs");
-
 const buildTypes = ["Debug", "Release", "RelWithDebInfo", "MinSizeRel"];
 let architectures = ["x86", "armeabi-v7a", "arm64-v8a", "x86_64"];
 const optionDefinitions = [
@@ -60,7 +58,7 @@ const sdkPath = getAndroidSdkPath();
 const cmakePath = getCmakePath(sdkPath);
 const cmakeVersion = getCmakeVersion(sdkPath);
 
-const buildPath = path.resolve(process.cwd(), "build-realm-android");
+const buildPath = path.resolve(process.cwd(), "build-android");
 if (options.clean) {
   if (fs.existsSync(buildPath)) {
     fs.removeSync(buildPath);
@@ -70,8 +68,6 @@ if (options.clean) {
 if (!fs.existsSync(buildPath)) {
   fs.mkdirSync(buildPath);
 }
-//shared root dir to download jsc once for all architectures
-const jscDir = path.resolve(buildPath, "jsc-android");
 
 for (const arch of architectures) {
   console.log(`\nBuilding Realm JS Android for ${arch} (${buildType})`);
@@ -92,8 +88,7 @@ for (const arch of architectures) {
     "-DANDROID_TOOLCHAIN=clang",
     "-DANDROID_NATIVE_API_LEVEL=16",
     `-DCMAKE_BUILD_TYPE=${buildType}`,
-    "-DANDROID_STL=c++_static",
-    `-DJSC_ROOT_DIR=${jscDir}`,
+    "-DANDROID_STL=c++_shared",
     process.cwd(),
   ];
   exec(cmakePath, args, { cwd: archBuildDir, stdio: "inherit" });
@@ -101,8 +96,6 @@ for (const arch of architectures) {
   //cwd is the archBuildDir here, hence build the current dir with "--build ."
   args = ["--build", "."];
   exec(cmakePath, args, { cwd: archBuildDir, stdio: "inherit" });
-
-  copyOutput(arch, archBuildDir);
 }
 
 generateVersionFile();
@@ -146,22 +139,6 @@ function getVersion() {
   }
 
   return version;
-}
-
-function copyOutput(arch, buildDir) {
-  const outFile = path.resolve(buildDir, "src", "android", "libs", arch, "librealm.so");
-  if (!fs.existsSync(outFile)) {
-    throw new Error(`Build output file not found: ${outFile}`);
-  }
-
-  const archDir = path.resolve(copyOutputPath, arch);
-  if (!fs.existsSync(archDir)) {
-    fs.mkdirSync(archDir, { recursive: true });
-  }
-
-  const targetFile = path.resolve(archDir, "librealm.so");
-  console.log(`Copying build file \n${outFile} to \n${targetFile}`);
-  fs.copyFileSync(outFile, targetFile);
 }
 
 function getAndroidSdkPath() {
