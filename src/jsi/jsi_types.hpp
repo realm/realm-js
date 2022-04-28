@@ -198,6 +198,16 @@ public:
         : JsiWrap(env, fbjsi::Object(env))
     {
     }
+
+    bool operator==(const JsiObj& other) const
+    {
+        return static_cast<const JsiWrap&>(*this) == static_cast<const JsiWrap&>(other);
+    }
+
+    bool operator!=(const JsiObj& other) const
+    {
+        return !(*this == other);
+    }
 };
 
 class JsiVal : public JsiWrap<fbjsi::Value, JsiVal> {

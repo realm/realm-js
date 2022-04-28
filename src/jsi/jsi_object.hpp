@@ -199,7 +199,7 @@ inline typename ClassType::Internal* realmjsi::Object::get_internal(JsiEnv env, 
 
 template <>
 template <typename ClassType>
-inline void realmjsi::Object::set_internal(JsiEnv env, const JsiObj& object, typename ClassType::Internal* internal)
+inline void realmjsi::Object::set_internal(JsiEnv env, JsiObj& object, typename ClassType::Internal* internal)
 {
     return realmjsi::ObjectWrap<ClassType>::set_internal(env, object, internal);
 }

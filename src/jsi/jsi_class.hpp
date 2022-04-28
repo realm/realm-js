@@ -48,6 +48,14 @@ struct Arguments<realmjsi::Types> {
     const JsiEnv ctx;
     const size_t count;
     const JsiVal* const value;
+
+    Arguments(JsiEnv env, size_t argc, const JsiVal* argv)
+        : ctx(env)
+        , count(argc)
+        , value(argv)
+    {
+    }
+
     Arguments(JsiEnv env, size_t argc, const fbjsi::Value* argv)
         : valStorage([&] {
             std::vector<JsiVal> out;
@@ -115,6 +123,12 @@ inline void ObjectSetPrototypeOf(JsiEnv env, const fbjsi::Value& target, const f
 {
     auto obj = js::globalType(env, "Object");
     obj.getPropertyAsFunction(env, "setPrototypeOf").callWithThis(env, obj, target, proto);
+}
+
+inline JsiObj ObjectCreate(JsiEnv env, const fbjsi::Object& proto)
+{
+    auto obj = js::globalType(env, "Object");
+    return env(obj.getPropertyAsFunction(env, "create").callWithThis(env, obj, proto)).asObject();
 }
 
 inline void defineProperty(JsiEnv env, const fbjsi::Object& target, StringData name, const fbjsi::Object& descriptor)
@@ -442,8 +456,7 @@ public:
     static JsiObj create_instance(JsiEnv env, Internal* ptr = nullptr)
     {
         auto proto = (*s_ctor)->getPropertyAsObject(env, "prototype");
-        auto objClass = js::globalType(env, "Object");
-        auto obj = env(objClass.getPropertyAsFunction(env, "create").callWithThis(env, objClass, proto)).asObject();
+        auto obj = ObjectCreate(env, proto);
         set_internal(env, obj, ptr);
 
         auto wrapper = (*s_ctor)->getProperty(env, "_proxyWrapper");
@@ -622,40 +635,12 @@ private:
 
                 // get all properties from the schema
                 defineSchemaProperties(env, env(constructorPrototype), schema, false);
-
-                // Skip if the user defined constructor inherited the RealmObjectClass. All RealmObjectClass members
-                // are available already.
-                if (!constructorPrototype.instanceOf(env, realmObjectClassConstructor)) {
-                    // setup all RealmObjectClass<T> methods to the prototype of the object
-                    auto realmObjectClassProto = realmObjectClassConstructor->getPropertyAsObject(env, "prototype");
-                    for (auto& [name, method] : s_class.methods) {
-                        // don't redefine if exists
-                        //  TODO should this use hasOwnProperty?
-                        if (!constructorPrototype.hasProperty(env, propName(env, name))) {
-                            copyProperty(env, realmObjectClassProto, constructorPrototype, name);
-                        }
-                    }
-
-                    for (auto& [name, property] : s_class.properties) {
-                        // TODO should this use hasOwnProperty?
-                        if (!constructorPrototype.hasProperty(env, propName(env, name))) {
-                            copyProperty(env, realmObjectClassProto, constructorPrototype, name);
-                        }
-                    }
-                }
             }
         }
 
         const auto& schemaObjectCtor = schemaObjects.at(schemaName);
-        auto instanceVal = schemaObjectCtor.callAsConstructor(env);
-        if (!instanceVal.isObject()) {
-            throw fbjsi::JSError(env, "Realm object constructor must not return another value");
-        }
-        auto instance = env(std::move(instanceVal).getObject(env));
-        if (!instance->instanceOf(env, schemaObjectCtor)) {
-            throw fbjsi::JSError(env, "Realm object constructor must not return another value");
-        }
-
+        auto constructorPrototype = schemaObjectCtor.getPropertyAsObject(env, "prototype");
+        auto instance = ObjectCreate(env, constructorPrototype);
         set_internal(env, instance, internal);
         return instance;
     }

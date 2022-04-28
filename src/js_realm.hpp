@@ -689,7 +689,7 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
                 const auto& realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
                 const auto& realm_object_constructor = Object::validated_get_object(ctx, realm_constructor, "Object");
                 for (const auto& [name, constructor] : constructors) {
-                    const auto& prototype = Object::get_prototype(ctx, constructor);
+                    const auto& prototype = Value::validated_to_object(ctx, Object::get_prototype(ctx, constructor));
                     if (prototype != realm_object_constructor) {
                         const std::string& class_name =
                             Object::validated_get_string(ctx, constructor, "name", "Failed to read class name");
