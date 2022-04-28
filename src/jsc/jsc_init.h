@@ -28,6 +28,7 @@ extern "C" {
 JSObjectRef RJSConstructorCreate(JSContextRef ctx);
 void RJSInitializeInContext(JSContextRef ctx, std::function<void()> flush_ui_queue);
 void RJSInvalidateCaches();
+void RJSCloseSyncSessions();
 
 #ifdef __cplusplus
 }

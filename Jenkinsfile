@@ -259,11 +259,14 @@ def buildWindows(nodeVersion, arch) {
 
 def buildiOS() {
   return buildMacOS {
-    sh './scripts/build-iOS.sh -c Release'
-      dir('react-native/ios') {
-      // Uncomment this when testing build changes if you want to be able to download pre-built artifacts from Jenkins.
-      // archiveArtifacts('realm-js-ios.xcframework/**')
-      stash includes: 'realm-js-ios.xcframework/**', name: 'realm-js-ios.xcframework'
+    withEnv(['SDK_ROOT_OVERRIDE=/Applications/Xcode-12.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/',
+          'DEVELOPER_DIR_OVERRIDE=/Applications/Xcode-12.4.app']) {
+      sh './scripts/build-iOS.sh -c Release'
+        dir('react-native/ios') {
+        // Uncomment this when testing build changes if you want to be able to download pre-built artifacts from Jenkins.
+        // archiveArtifacts('realm-js-ios.xcframework/**')
+        stash includes: 'realm-js-ios.xcframework/**', name: 'realm-js-ios.xcframework'
+      }
     }
   }
 }
@@ -494,7 +497,8 @@ def testLinux(target, postStep = null, Boolean enableSync = false) {
 def testMacOS(target, postStep = null) {
   return {
     node('osx_vegas') {
-      withEnv(['DEVELOPER_DIR=/Applications/Xcode-12.2.app/Contents/Developer',
+      withEnv(['SDK_ROOT_OVERRIDE=/Applications/Xcode-12.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/',
+               'DEVELOPER_DIR_OVERRIDE=/Applications/Xcode-12.4.app',
                'REALM_SET_NVM_ALIAS=1',
                'REALM_DISABLE_SYNC_TESTS=1',
                'npm_config_realm_local_prebuilds=prebuilds']) {
