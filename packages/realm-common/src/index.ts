@@ -17,3 +17,4 @@
 ////////////////////////////////////////////////////////////////////////////
 
 export { deprecationWarning, handleDeprecatedPositionalArgs } from "./deprecation";
+export * as symbols from "./symbols";

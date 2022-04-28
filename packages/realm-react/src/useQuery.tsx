@@ -19,6 +19,7 @@
 import Realm from "realm";
 import { useEffect, useReducer, useMemo } from "react";
 import { createCachedCollection } from "./cachedCollection";
+import { symbols } from "@realm.io/common";
 
 /**
  * Generates the `useQuery` hook from a given `useRealm` hook.
@@ -67,6 +68,19 @@ export function createUseQuery(useRealm: () => Realm) {
 
     // This makes sure the collection has a different reference on a rerender
     // Also we are ensuring the type returned is Realm.Results, as this is known in this context
-    return new Proxy(collection as Realm.Results<T & Realm.Object>, {});
+    const proxy = new Proxy(collection as Realm.Results<T & Realm.Object>, {});
+
+    // Store the original, unproxied result as a non-enumerable field with a symbol
+    // key on the proxy object, so that we can check for this and get the original results
+    // when passing the result of `useQuery` into the subscription mutation methods
+    // (see `lib/mutable-subscription-set.js` for more details)
+    Object.defineProperty(proxy, symbols.REALM_REACT_PROXIED_OBJECT, {
+      value: realm.objects(type),
+      enumerable: false,
+      configurable: false,
+      writable: true,
+    });
+
+    return proxy;
   };
 }
