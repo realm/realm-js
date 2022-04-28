@@ -56,6 +56,7 @@ fi
 DESTINATIONS=()
 LIBRARIES=()
 BUILD_LIB_CMDS=()
+
 for platform in "${PLATFORMS[@]}"; do
     case "$platform" in
         ios)
@@ -105,8 +106,9 @@ for cmd in "${BUILD_LIB_CMDS[@]}"; do
     eval "${cmd}"
 done
 
+rm -rf _include
 mkdir -p _include/realm-js-ios
-cp "$PROJECT_ROOT"/src/jsc/{jsc_init.h,rpc.hpp} _include/realm-js-ios/
+cp "$PROJECT_ROOT"/src/jsi/jsi_init.h _include/realm-js-ios/
 
 rm -rf ../realm-js-ios.xcframework
 xcodebuild -create-xcframework \
