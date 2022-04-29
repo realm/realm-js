@@ -1,0 +1,46 @@
+{
+  "name": "@realm/tools",
+  "version": "0.0.1",
+  "description": "Tools for work with Realm",
+  "bin": {
+    "realm-schema": "./dist/realm-schema.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "eslint --ext .js,.ts .",
+    "prepare": "rm -rf dist && npm run build",
+    "start": "ts-node src/cli.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/realm/realm-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/realm/realm-js/issues"
+  },
+  "keywords": [
+    "realm",
+    "tool"
+  ],
+  "author": {
+    "name": "Realm",
+    "email": "help@realm.io",
+    "url": "https://realm.io"
+  },
+  "contributors": [
+    "Kenneth Geisshirt <kenneth.geisshirt@mongodb.com> (https://github.com/kneth)"
+  ],
+  "license": "See the actual license in the file LICENSE",
+  "dependencies": {
+    "realm": ">=10",
+    "ts-command-line-args": "^2.2.1"
+  },
+  "devDependencies": {
+    "@types/command-line-args": "^5.2.0",
+    "@types/node": "^17.0.29"
+  }
+}
