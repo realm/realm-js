@@ -190,7 +190,7 @@ class App {
   addListener(callback) {}
 
   /**
-   * Removes the event listener
+   * Removes an event listener (see {@link addListener})
    * @param {function} callback
    */
   removeListener(callback) {}

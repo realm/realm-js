@@ -396,14 +396,14 @@ void AppClass<T>::add_listener(ContextType ctx, ObjectType this_object, Argument
             Function::callback(protected_ctx, protected_callback, 0, {});
         }));
 
-        // Save token in a member vector of a function to token pair
+        // Store a (callback, token) pair in a vector
         app->m_notification_tokens.emplace_front(std::move(protected_callback), std::move(token));
 }
 
 template <typename T>
 void AppClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
 {
-    auto callback = Value::validated_to_function(ctx, args[0]);
+    auto callback = Value::validated_to_function(ctx, args[0], "callback");
     auto app = get_internal<T, AppClass<T>>(ctx, this_object);
     Protected<FunctionType> protected_callback(ctx, callback);
 
