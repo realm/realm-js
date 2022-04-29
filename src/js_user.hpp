@@ -130,12 +130,13 @@ public:
         , m_app(nullptr)
     {
     }
-    User(User&&) = default;
+
+    // Remove copy constructors to avoid destroying the listener Token
     User(const User&) = delete;
     User& operator=(const User&) = delete;
 
+    User(User&&) = default;
     User& operator=(User&&) = default;
-    // User& operator=(User const&) = default;
 
     using CallbackTokenPair = std::pair<Protected<typename T::Function>, Token>;
     std::forward_list<CallbackTokenPair> m_notification_tokens;

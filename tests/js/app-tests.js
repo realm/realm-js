@@ -226,18 +226,22 @@ module.exports = {
 
     const listenerEvent = () => {
       eventListenerCalls += 1;
-      console.log("calls thus far: ", eventListenerCalls);
     };
+
     app.addListener(listenerEvent);
 
     let credentials = Realm.Credentials.anonymous();
     let user = await app.logIn(credentials);
     TestCase.assertEqual(eventListenerCalls, 1);
+
     await user.logOut();
     TestCase.assertEqual(eventListenerCalls, 2);
     credentials = Realm.Credentials.anonymous();
+
     user = await app.logIn(credentials);
     TestCase.assertEqual(eventListenerCalls, 3);
+
+    // Remove the listener and verify that the event listener was not fired
     app.removeListener(listenerEvent);
     await user.logOut();
     TestCase.assertEqual(eventListenerCalls, 3);
