@@ -5,8 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
   * Additionally appRef on `AppProvider` was added to provide access to `Realm.App` from outside the provider component
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Results from `useQuery` could not be passed to `MutableSubscriptionSet.add`/`remove` ([#4507](https://github.com/realm/realm-js/issues/4507), since v0.1.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
