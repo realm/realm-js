@@ -182,6 +182,18 @@ class App {
    * @since v10.0.0
    */
   getApp(appId) {}
+
+  /**
+   * Adds a listener that will be fired on various events, including user login and logout
+   * @param {function} callback
+   */
+  addListener(callback) {}
+
+  /**
+   * Removes the event listener
+   * @param {function} callback
+   */
+  removeListener(callback) {}
 }
 
 /**
@@ -876,6 +888,18 @@ class User {
    * @returns {Realm.User~Push}
    */
   push(serviceName) {}
+
+  /**
+   * Adds a listener that will be fired on various events, including token refresh
+   * @param {function} callback
+   */
+  addListener(callback) {}
+
+  /**
+   * Removes the event listener
+   * @param {function} callback
+   */
+  removeListener(callback) {}
 }
 
 /**
