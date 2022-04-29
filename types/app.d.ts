@@ -339,6 +339,16 @@ declare namespace Realm {
      * @returns A promise that resolves once the user has been deleted.
      */
     deleteUser(user: User<FunctionsFactoryType, CustomDataType>): Promise<void>;
+
+    /**
+     * Adds a listener that will be fired on various events, including logIn and logOut
+     */
+    addListener(callback: () => void): void;
+
+    /**
+     * Removes the event listener
+     */
+    removeListener(callback: () => void): void;
   }
 
   /**
@@ -506,6 +516,16 @@ declare namespace Realm {
      *                       .find({color: 'blue'});
      */
     mongoClient(serviceName: string): Realm.Services.MongoDB;
+
+    /**
+     * Adds a listener that will be fired on various events, including token refresh
+     */
+    addListener(callback: () => void): void;
+
+    /**
+     * Removes the event listener
+     */
+    removeListener(callback: () => void): void;
   }
 
   /**
