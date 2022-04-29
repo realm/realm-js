@@ -51,7 +51,7 @@ public:
     App& operator=(const App&) = delete;
 
     using CallbackTokenPair = std::pair<Protected<typename T::Function>, AppToken>;
-    std::forward_list<CallbackTokenPair> m_notification_tokens;
+    std::vector<CallbackTokenPair> m_notification_tokens;
 
     SharedApp m_app;
 };
@@ -397,7 +397,7 @@ void AppClass<T>::add_listener(ContextType ctx, ObjectType this_object, Argument
         }));
 
         // Save token in a member vector of a function to token pair
-        app->m_notification_tokens.emplace_front(std::move(protected_callback), std::move(token));
+        app->m_notification_tokens.emplace_back(std::move(protected_callback), std::move(token));
     }
 }
 
@@ -418,7 +418,7 @@ void AppClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Argum
 
     if (callback_token_pair_iter != tokens.end()) {
         app->m_app->unsubscribe(callback_token_pair_iter->second);
-        tokens.remove_if(compare);
+        tokens.erase(callback_token_pair_iter);
     }
 }
 
