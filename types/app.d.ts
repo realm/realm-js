@@ -268,6 +268,8 @@ declare namespace Realm {
     static apple(idToken: string): Credentials<Credentials.ApplePayload>;
   }
 
+  type AppChangeCallback = () => void;
+
   /**
    * A MongoDB Realm App.
    */
@@ -343,12 +345,12 @@ declare namespace Realm {
     /**
      * Adds a listener that will be fired on various events, including logIn and logOut
      */
-    addListener(callback: () => void): void;
+    addListener(callback: AppChangeCallback): void;
 
     /**
      * Removes the event listener
      */
-    removeListener(callback: () => void): void;
+    removeListener(callback: AppChangeCallback): void;
   }
 
   /**
@@ -387,6 +389,8 @@ declare namespace Realm {
      */
     version?: string;
   }
+
+  type UserChangeCallback = () => void;
 
   /**
    * Representation of an authenticated user of an app.
@@ -520,12 +524,12 @@ declare namespace Realm {
     /**
      * Adds a listener that will be fired on various events, including token refresh
      */
-    addListener(callback: () => void): void;
+    addListener(callback: UserChangeCallback): void;
 
     /**
      * Removes the event listener
      */
-    removeListener(callback: () => void): void;
+    removeListener(callback: UserChangeCallback): void;
   }
 
   /**

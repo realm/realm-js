@@ -312,6 +312,20 @@ export class User<
     return this.customData;
   }
 
+  /**
+   * @inheritdoc
+   */
+  public addListener(): void {
+    throw new Error("Not yet implemented");
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public removeListener(): void {
+    throw new Error("Not yet implemented");
+  }
+
   /** @inheritdoc */
   public callFunction<ReturnType = unknown>(name: string, ...args: unknown[]): Promise<ReturnType> {
     return this.functions.callFunction(name, ...args);
