@@ -63,7 +63,7 @@ describe("Class models", () => {
     });
 
     it("is allowed", () => {
-      class Person extends Realm.Object {
+      class Person extends Realm.Object<Person> {
         name!: string;
         static schema: Realm.ObjectSchema = {
           name: "Person",
@@ -75,8 +75,8 @@ describe("Class models", () => {
   });
 
   describe("#constructor", () => {
-    type UnmanagedPerson = Partial<Person> & Pick<Person, "name">;
-    class Person extends Realm.Object<UnmanagedPerson> {
+    // The Pick and Partial is needed to correctly reflect the defaults
+    class Person extends Realm.Object<Pick<Person, "name"> & Partial<Person>> {
       id!: Realm.BSON.ObjectId;
       name!: string;
       age!: number;

@@ -78,8 +78,9 @@ declare namespace Realm {
      * ObjectClass
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~ObjectClass }
      */
-    interface ObjectClass {
-        schema: ObjectSchema;
+    type ObjectClass<T extends Realm.Object<T> = any> = {
+        new(...args: any): Realm.Object<T>;
+        schema?: ObjectSchema;
     }
 
     type PrimaryKey = number | string | Realm.BSON.ObjectId | Realm.BSON.UUID;
@@ -258,9 +259,9 @@ declare namespace Realm {
         /**
          * @returns void
          */
-        addListener(callback: ObjectChangeCallback<this>): void;
+        addListener(callback: ObjectChangeCallback<T>): void;
 
-        removeListener(callback: ObjectChangeCallback<this>): void;
+        removeListener(callback: ObjectChangeCallback<T>): void;
 
         removeAllListeners(): void;
 
