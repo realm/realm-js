@@ -184,7 +184,8 @@ class App {
   getApp(appId) {}
 
   /**
-   * Adds a listener that will be fired on various events, including user login and logout
+   * Adds a listener that will be fired on various user events.
+   * This includes login, logout, switching users, linking users and refreshing custom data.
    * @param {function} callback
    */
   addListener(callback) {}
@@ -890,7 +891,8 @@ class User {
   push(serviceName) {}
 
   /**
-   * Adds a listener that will be fired on various events, including token refresh
+   * Adds a listener that will be fired on various user related events.
+   * This includes auth token refresh, refresh token refresh, refresh custom user data, and logout.
    * @param {function} callback
    */
   addListener(callback) {}
