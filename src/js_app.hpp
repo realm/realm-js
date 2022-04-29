@@ -47,6 +47,7 @@ public:
     {
     }
 
+    // Remove copy constructors to avoid destroying the listener Token
     App(const App&) = delete;
     App& operator=(const App&) = delete;
 
@@ -385,20 +386,18 @@ void AppClass<T>::set_versions(ContextType ctx, ObjectType this_object, Argument
 template <typename T>
 void AppClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
 {
-    auto callback = Value::validated_to_function(ctx, args[0]);
+    auto callback = Value::validated_to_function(ctx, args[0], "callback");
     auto app = get_internal<T, AppClass<T>>(ctx, this_object);
     Protected<FunctionType> protected_callback(ctx, callback);
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(Context::get_global_context(ctx));
 
-    {
         auto token = std::move(app->m_app->subscribe([=](const realm::app::App&) {
             Function::callback(protected_ctx, protected_callback, 0, {});
         }));
 
         // Save token in a member vector of a function to token pair
         app->m_notification_tokens.emplace_front(std::move(protected_callback), std::move(token));
-    }
 }
 
 template <typename T>
@@ -413,7 +412,7 @@ void AppClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Argum
         return typename Protected<FunctionType>::Comparator()(callback_token_pair.first, protected_callback);
     };
 
-    // Retrieve the token with the given function and use to call unsubscribe
+    // Retrieve the token with the given callback, then unsubscribe it and remove it from the vector
     auto callback_token_pair_iter = std::find_if(tokens.begin(), tokens.end(), compare);
 
     if (callback_token_pair_iter != tokens.end()) {
