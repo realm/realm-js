@@ -31,7 +31,7 @@ RealmLogging.patch(Realm);
 
 const RealmTests = require("../js");
 
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 300000000;
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 30000;
 let isDebuggerAttached = typeof v8debug === "object";
 if (!isDebuggerAttached && isNodeProcess) {
   isDebuggerAttached = /--debug|--inspect/.test(process.execArgv.join(" "));
