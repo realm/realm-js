@@ -134,8 +134,8 @@ public:
     User(const User&) = delete;
     User& operator=(const User&) = delete;
 
-    User(User&&) = default;
-    User& operator=(User&&) = default;
+    // User(User&&) = default;
+    // User& operator=(User&&) = default;
 
     using CallbackTokenPair = std::pair<Protected<typename T::Function>, Token>;
     std::vector<CallbackTokenPair> m_notification_tokens;
@@ -505,14 +505,12 @@ void UserClass<T>::add_listener(ContextType ctx, ObjectType this_object, Argumen
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(Context::get_global_context(ctx));
 
-    {
-        auto token = std::move(user->m_user->subscribe([=](const realm::SyncUser&) {
-            Function::callback(protected_ctx, protected_callback, 0, {});
-        }));
+    auto token = std::move(user->m_user->subscribe([=](const realm::SyncUser&) {
+        Function::callback(protected_ctx, protected_callback, 0, {});
+    }));
 
-        // Save token in a member vector of a function to token pair
-        user->m_notification_tokens.emplace_back(std::move(protected_callback), std::move(token));
-    }
+    // Save token in a member vector of a function to token pair
+    user->m_notification_tokens.emplace_back(std::move(protected_callback), std::move(token));
 }
 
 template <typename T>
