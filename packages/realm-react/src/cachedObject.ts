@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 ////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2022 Realm Inc.
@@ -18,36 +18,36 @@ import { useState } from 'react';
 ////////////////////////////////////////////////////////////////////////////
 import Realm from "realm";
 import { createCachedCollection } from "./cachedCollection";
-import { useEffect, useState } from 'react'
-
+import { useEffect, useState } from "react";
 
 type PrimaryKey = Parameters<typeof Realm.prototype.objectForPrimaryKey>[1];
 
-type ObjectCacheKey = `${string}-${string}`
-type ObjectCache = Map<ObjectCacheKey, CachedObject>
+type ObjectCacheKey = `${string}-${string}`;
+type ObjectCache = Map<ObjectCacheKey, CachedObject>;
 
-const objectCache: ObjectCache = new Map()
+const objectCache: ObjectCache = new Map();
 
-type CachedObject<T = {}> = Realm.Object & T & {
-	subscribe: (val: T) => (() => void),
-  useObject: (type: string, primaryKey: string) => T
-}
+type CachedObject<T = {}> = Realm.Object &
+  T & {
+    subscribe: (val: T) => () => void;
+    useObject: (type: string, primaryKey: string) => T;
+  };
 
 export function getOrCreateCachedObject<T>(realm: Realm, type: string, primaryKey: PrimaryKey) {
-	let object = objectCache.get(`${type}-${primaryKey}`)
+  let object = objectCache.get(`${type}-${primaryKey}`);
   if (!object) {
-    object = createCachedObject({realm, type, primaryKey})
+    object = createCachedObject({ realm, type, primaryKey });
   }
-  return object
+  return object;
 }
 
 /**
  * Arguments object for `cachedObject`.
  */
 type CachedObjectArgs<T> = {
-  realm: Realm,
-  type: string,
-  primaryKey: PrimaryKey
+  realm: Realm;
+  type: string;
+  primaryKey: PrimaryKey;
 };
 
 /**
@@ -68,53 +68,51 @@ export function createCachedObject<T extends Realm.Object>({
   primaryKey,
 }: CachedObjectArgs<T>): { object: T | null; tearDown: () => void } {
   // If the object doesn't exist, just return it with an noop tearDown
-  const object = realm.objectForPrimaryKey(type, primaryKey)
+  const object = realm.objectForPrimaryKey(type, primaryKey);
   if (object === null) {
     // TODO: listen to collection, wait for this object
     return { object, tearDown: () => undefined };
   }
 
-  
   const listCaches = new Map();
   const listTearDowns: Array<() => void> = [];
   const listeners: Set<(x: CachedObject<T>) => void> = new Set();
-  const objectCacheKey: ObjectCacheKey = `${type}-${primaryKey}`
-  let isAlive = true
+  const objectCacheKey: ObjectCacheKey = `${type}-${primaryKey}`;
+  let isAlive = true;
 
   function subscribe(listener: (x: CachedObject<T>) => void) {
-    if (!isAlive) setup()
+    if (!isAlive) setup();
     listeners.add(listener);
     return () => {
-      listeners.delete(listener)
+      listeners.delete(listener);
       if (listeners.size === 0) {
-        objectCache.delete(objectCacheKey)
-        tearDown()
-        isAlive = false
+        objectCache.delete(objectCacheKey);
+        tearDown();
+        isAlive = false;
       }
-    }
+    };
   }
-  
+
   function useObject() {
-    const [obj, setObj] = useState<CachedObject<T>>(() => cachedObjectResult)
-    useEffect(() => subscribe(x => setObj(x)), [])
-    return obj
+    const [obj, setObj] = useState<CachedObject<T>>(() => cachedObjectResult);
+    useEffect(() => subscribe((x) => setObj(x)), []);
+    return obj;
   }
 
   function notifyListeners() {
     for (const listener of listeners) {
-      listener(cachedObjectResult)
+      listener(cachedObjectResult);
     }
   }
-
 
   // This Proxy handler intercepts any accesses into properties of the cached object
   // of type `Realm.List`, and returns a `cachedCollection` wrapping those properties
   // to allow changes in the list to trigger re-renders
   const cachedObjectHandler: ProxyHandler<T & Realm.Object> = {
     get: function (target, key) {
-      if (key === 'subscribe') return subscribe
-      if (key === 'useObject') return useObject
-      if (key === 'tearDown') return tearDown
+      if (key === "subscribe") return subscribe;
+      if (key === "useObject") return useObject;
+      if (key === "tearDown") return tearDown;
 
       const value = Reflect.get(target, key);
       // Pass methods through
@@ -144,7 +142,7 @@ export function createCachedObject<T extends Realm.Object>({
   let cachedObjectResult = new Proxy(object, cachedObjectHandler);
   const listenerCallback: Realm.ObjectChangeCallback<T> = (obj, changes) => {
     if (changes.deleted) {
-      cachedObjectResult = null
+      cachedObjectResult = null;
       notifyListeners();
     } else if (changes.changedProperties.length > 0) {
       // Don't force a second re-render if any of the changed properties is a Realm.List,
@@ -155,18 +153,18 @@ export function createCachedObject<T extends Realm.Object>({
       const shouldRerender = !anyListPropertyModified;
 
       if (shouldRerender) {
-        cachedObjectResult = new Proxy(object, cachedObjectHandler)
+        cachedObjectResult = new Proxy(object, cachedObjectHandler);
         notifyListeners();
       }
     }
   };
 
-  let tearDown = () => {}
+  let tearDown = () => {};
 
   function setup() {
     object.addListener(listenerCallback);
-    isAlive = true
-    objectCache.set(objectCacheKey, cachedObjectResult)
+    isAlive = true;
+    objectCache.set(objectCacheKey, cachedObjectResult);
 
     tearDown = () => {
       object.removeListener(listenerCallback);
@@ -174,8 +172,7 @@ export function createCachedObject<T extends Realm.Object>({
     };
   }
 
-  setup()
+  setup();
 
-
-  return cachedObjectResult
+  return cachedObjectResult;
 }
