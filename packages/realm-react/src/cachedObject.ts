@@ -17,24 +17,38 @@
 ////////////////////////////////////////////////////////////////////////////
 import Realm from "realm";
 import { createCachedCollection } from "./cachedCollection";
+import { useEffect, useState } from "react";
+
+type PrimaryKey = Parameters<typeof Realm.prototype.objectForPrimaryKey>[1];
+
+type ObjectCacheKey = `${string}-${string}`;
+type ObjectCache = Map<ObjectCacheKey, CachedObject<any>>;
+
+const objectCache: ObjectCache = new Map();
+
+type CachedObject<T> = {
+  subscribe: (listener: (val: (T & Realm.Object) | undefined) => void) => () => void;
+  useObject: (type: string, primaryKey: string) => (T & Realm.Object) | undefined;
+  readonly object: (T & Realm.Object) | undefined;
+};
+
+export function getOrCreateCachedObject<T>(realm: Realm, type: string, primaryKey: PrimaryKey) {
+  const objectCacheKey: ObjectCacheKey = `${type}-${primaryKey}`;
+  let cachedObject = objectCache.get(objectCacheKey);
+  if (!cachedObject) {
+    cachedObject = createCachedObject({ realm, type, primaryKey });
+  }
+  objectCache.set(objectCacheKey, cachedObject);
+  return cachedObject;
+}
 
 /**
  * Arguments object for `cachedObject`.
  */
 type CachedObjectArgs<T> = {
-  /**
-   * The {@link Realm.Object} to proxy
-   */
-  object: T | null;
-  /**
-   * The {@link Realm} instance
-   */
   realm: Realm;
-  /**
-   * Callback function called whenver the object changes. Used to force a component
-   * using the {@link useObject} hook to re-render.
-   */
-  updateCallback: () => void;
+  type: string;
+  primaryKey: PrimaryKey;
 };
 
 /**
@@ -50,15 +64,74 @@ type CachedObjectArgs<T> = {
  * @returns Proxy object wrapping the {@link Realm.Object}
  */
 export function createCachedObject<T extends Realm.Object>({
-  object,
   realm,
-  updateCallback,
-}: CachedObjectArgs<T>): { object: T | null; tearDown: () => void } {
+  type,
+  primaryKey,
+}: CachedObjectArgs<T>): CachedObject<T> {
+  let object = realm.objectForPrimaryKey<T>(type, primaryKey);
+
   const listCaches = new Map();
-  const listTearDowns: Array<() => void> = [];
-  // If the object doesn't exist, just return it with an noop tearDown
-  if (object === null) {
-    return { object, tearDown: () => undefined };
+  const listeners: Set<(x: (T & Realm.Object) | undefined) => void> = new Set();
+  const objectCacheKey: ObjectCacheKey = `${type}-${primaryKey}`;
+  let isRealmListenerSetup = false;
+  let realmListenerTearDowns: Array<() => void> = [];
+  let objectProxy: (T & Realm.Object) | undefined;
+
+  function subscribe(listener: (x: (T & Realm.Object) | undefined) => void) {
+    if (!isRealmListenerSetup) setupRealmListener();
+    listeners.add(listener);
+    return function unsubscribe() {
+      listeners.delete(listener);
+      if (listeners.size === 0) {
+        objectCache.delete(objectCacheKey);
+        tearDownRealmListener();
+        isRealmListenerSetup = false;
+      }
+    };
+  }
+
+  function tearDownRealmListener() {
+    realmListenerTearDowns.forEach((x) => x());
+    realmListenerTearDowns = [];
+  }
+
+  function useObject() {
+    const [obj, setObj] = useState(objectProxy);
+    useEffect(() => subscribe((x) => setObj(x)), []);
+    return obj;
+  }
+
+  function setObject(newObject: (T & Realm.Object) | undefined) {
+    console.log("setObject", !!newObject);
+    object = newObject;
+    objectProxy = newObject ? new Proxy(newObject, cachedObjectHandler) : undefined;
+    for (const listener of listeners) {
+      listener(newObject);
+    }
+    if (!object) {
+      // We didn't find the object so listen to the collection, wait for this object to be inserted
+      // Here we extract the propertyName of the primary key from the schema as it's needed for the collection query
+      const pkProperty = realm.schema.find((x) => x?.name === type)?.primaryKey;
+      if (!pkProperty) throw new Error(`Could not find primary key for type ${type}`);
+      const collection = realm.objects<T>(type).filtered(`${pkProperty} = $0`, primaryKey);
+      // TODO: comment explainer setImmediate
+      // TODO: check if the object is still valid
+      setImmediate(() => {
+        const listener: Realm.CollectionChangeCallback<T & Realm.Object> = (collection, changes) => {
+          if (changes.insertions.length > 0) {
+            const insertedObject = collection[0];
+            if (insertedObject) {
+              removeListener();
+              setObject(insertedObject);
+            }
+          }
+        };
+        if (realm.isClosed) return;
+        collection.addListener(listener);
+        const removeListener = () => collection.removeListener(listener);
+        realmListenerTearDowns.push(removeListener);
+      });
+    }
   }
 
   // This Proxy handler intercepts any accesses into properties of the cached object
@@ -80,21 +153,24 @@ export function createCachedObject<T extends Realm.Object>({
           // only the modified children of the list component actually re-render.
           return new Proxy(listCaches.get(key), {});
         }
-        const { collection, tearDown } = createCachedCollection({ collection: value, realm, updateCallback });
+        const cachedCollection = createCachedCollection({
+          collection: value,
+          realm,
+          updateCallback: () => setObject(object),
+        });
         // Add to a list of teardowns which will be invoked when the cachedObject's teardown is called
-        listTearDowns.push(tearDown);
+        realmListenerTearDowns.push(cachedCollection.tearDown);
         // Store the proxied list into a map to persist the cachedCollection
-        listCaches.set(key, collection);
-        return collection;
+        listCaches.set(key, cachedCollection.collection);
+        return cachedCollection.collection;
       }
       return value;
     },
   };
 
-  const cachedObjectResult = new Proxy(object, cachedObjectHandler);
   const listenerCallback: Realm.ObjectChangeCallback<T> = (obj, changes) => {
     if (changes.deleted) {
-      updateCallback();
+      setObject(undefined);
     } else if (changes.changedProperties.length > 0) {
       // Don't force a second re-render if any of the changed properties is a Realm.List,
       // as the List's cachedCollection will force a re-render itself
@@ -102,15 +178,30 @@ export function createCachedObject<T extends Realm.Object>({
         return obj[property as keyof T] instanceof Realm.List;
       });
       const shouldRerender = !anyListPropertyModified;
+      console.log(changes.changedProperties, { anyListPropertyModified });
 
       if (shouldRerender) {
-        updateCallback();
+        setObject(obj);
       }
     }
   };
 
-  // We cannot add a listener to an invalid object
-  if (object.isValid()) {
+  setObject(object);
+
+  const cachedObject: CachedObject<T> = {
+    subscribe,
+    useObject,
+    get object() {
+      return objectProxy;
+    },
+  };
+
+  async function setupRealmListener() {
+    await waitUntilNoActiveTransaction(realm);
+
+    // We cannot add a listener to an invalid object
+    if (!object) return;
+    if (!object?.isValid()) return;
     // If we are in a transaction, then push adding the listener to the event loop.  This will allow the write transaction to finish.
     // see https://github.com/realm/realm-js/issues/4375
     if (realm.isInTransaction) {
@@ -120,12 +211,16 @@ export function createCachedObject<T extends Realm.Object>({
     } else {
       object.addListener(listenerCallback);
     }
+    realmListenerTearDowns.push(() => object?.removeListener(listenerCallback));
+    isRealmListenerSetup = true;
   }
 
-  const tearDown = () => {
-    object.removeListener(listenerCallback);
-    listTearDowns.forEach((listTearDown) => listTearDown());
-  };
+  return cachedObject;
+}
 
-  return { object: cachedObjectResult, tearDown };
+function waitUntilNoActiveTransaction(realm: Realm) {
+  // If we are in a transaction, then push adding the listener to the event loop.  This will allow the write transaction to finish.
+  // see https://github.com/realm/realm-js/issues/4375
+  if (realm.isInTransaction) return Promise.resolve();
+  return new Promise((resolve) => setImmediate(resolve));
 }
