@@ -245,5 +245,26 @@ module.exports = {
     app.removeListener(listenerEvent);
     await user.logOut();
     TestCase.assertEqual(eventListenerCalls, 3);
+
+    // Test remove all
+    let eventListener1Calls = 0;
+    let eventListener2Calls = 0;
+    const listenerEvent1 = () => {
+      eventListener1Calls += 1;
+    };
+    const listenerEvent2 = () => {
+      eventListener2Calls += 1;
+    };
+    app.addListener(listenerEvent1);
+    app.addListener(listenerEvent2);
+
+    user = await app.logIn(credentials);
+    TestCase.assertEqual(eventListener1Calls, 1);
+    TestCase.assertEqual(eventListener2Calls, 1);
+
+    app.removeAllListeners();
+    await user.logOut();
+    TestCase.assertEqual(eventListener1Calls, 1);
+    TestCase.assertEqual(eventListener2Calls, 1);
   },
 };

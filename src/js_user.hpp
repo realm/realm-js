@@ -24,7 +24,6 @@
 #include "js_api_key_auth.hpp"
 #include "js_network_transport.hpp"
 
-#include <forward_list>
 #include <realm/sync/config.hpp>
 #include <realm/object-store/sync/mongo_collection.hpp>
 #include <realm/object-store/sync/sync_manager.hpp>
@@ -139,7 +138,7 @@ public:
     User& operator=(User&&) = default;
 
     using CallbackTokenPair = std::pair<Protected<typename T::Function>, Token>;
-    std::forward_list<CallbackTokenPair> m_notification_tokens;
+    std::vector<CallbackTokenPair> m_notification_tokens;
 
     SharedApp m_app;
     SharedUser m_user;
@@ -206,6 +205,7 @@ public:
     static void new_watch_stream(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void add_listener(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void remove_listener(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void remove_all_listeners(ContextType, ObjectType, Arguments&, ReturnValue&);
 
 
     MethodMap<T> const methods = {
@@ -220,6 +220,7 @@ public:
         {"_newWatchStream", wrap<new_watch_stream>},
         {"addListener", wrap<add_listener>},
         {"removeListener", wrap<remove_listener>},
+        {"removeAllListeners", wrap<remove_all_listeners>},
     };
 };
 
@@ -510,7 +511,7 @@ void UserClass<T>::add_listener(ContextType ctx, ObjectType this_object, Argumen
         }));
 
         // Save token in a member vector of a function to token pair
-        user->m_notification_tokens.emplace_front(std::move(protected_callback), std::move(token));
+        user->m_notification_tokens.emplace_back(std::move(protected_callback), std::move(token));
     }
 }
 
@@ -532,8 +533,22 @@ void UserClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Argu
 
     if (callback_token_pair_iter != tokens.end()) {
         user->m_user->unsubscribe(callback_token_pair_iter->second);
-        tokens.remove_if(compare);
+        tokens.erase(callback_token_pair_iter);
     }
+}
+
+template <typename T>
+void UserClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, Arguments& args,
+                                        ReturnValue& return_value)
+{
+    auto user = get_internal<T, UserClass<T>>(ctx, this_object);
+    auto& tokens = user->m_notification_tokens;
+
+    for (auto& token : user->m_notification_tokens) {
+        user->m_user->unsubscribe(token.second);
+    }
+
+    tokens.clear();
 }
 } // namespace js
 } // namespace realm

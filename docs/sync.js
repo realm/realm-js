@@ -195,6 +195,11 @@ class App {
    * @param {function} callback
    */
   removeListener(callback) {}
+
+  /**
+   * Removes all event listeners
+   */
+  removeListener() {}
 }
 
 /**
@@ -902,6 +907,11 @@ class User {
    * @param {function} callback
    */
   removeListener(callback) {}
+
+  /**
+   * Removes all event listeners
+   */
+  removeAllListeners() {}
 }
 
 /**

@@ -30,8 +30,6 @@
 #include "js_network_transport.hpp"
 #include "js_email_password_auth.hpp"
 
-#include <forward_list>
-
 using SharedApp = std::shared_ptr<realm::app::App>;
 using SharedUser = std::shared_ptr<realm::SyncUser>;
 using AppToken = realm::Subscribable<realm::app::App>::Token;
@@ -52,7 +50,7 @@ public:
     App& operator=(const App&) = delete;
 
     using CallbackTokenPair = std::pair<Protected<typename T::Function>, AppToken>;
-    std::forward_list<CallbackTokenPair> m_notification_tokens;
+    std::vector<CallbackTokenPair> m_notification_tokens;
 
     SharedApp m_app;
 };
@@ -124,6 +122,7 @@ public:
     static void set_versions(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void add_listener(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void remove_listener(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void remove_all_listeners(ContextType, ObjectType, Arguments&, ReturnValue&);
 
 
     MethodMap<T> const methods = {
@@ -133,6 +132,7 @@ public:
         {"_deleteUser", wrap<delete_user>},
         {"addListener", wrap<add_listener>},
         {"removeListener", wrap<remove_listener>},
+        {"removeAllListeners", wrap<remove_all_listeners>},
     };
 
     MethodMap<T> const static_methods = {
@@ -392,12 +392,12 @@ void AppClass<T>::add_listener(ContextType ctx, ObjectType this_object, Argument
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(Context::get_global_context(ctx));
 
-        auto token = std::move(app->m_app->subscribe([=](const realm::app::App&) {
-            Function::callback(protected_ctx, protected_callback, 0, {});
-        }));
+    auto token = std::move(app->m_app->subscribe([=](const realm::app::App&) {
+        Function::callback(protected_ctx, protected_callback, 0, {});
+    }));
 
-        // Store a (callback, token) pair in a vector
-        app->m_notification_tokens.emplace_front(std::move(protected_callback), std::move(token));
+    // Store a (callback, token) pair in a vector
+    app->m_notification_tokens.emplace_back(std::move(protected_callback), std::move(token));
 }
 
 template <typename T>
@@ -417,10 +417,23 @@ void AppClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Argum
 
     if (callback_token_pair_iter != tokens.end()) {
         app->m_app->unsubscribe(callback_token_pair_iter->second);
-        tokens.remove_if(compare);
+        tokens.erase(callback_token_pair_iter);
     }
 }
 
+template <typename T>
+void AppClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, Arguments& args,
+                                       ReturnValue& return_value)
+{
+    auto app = get_internal<T, AppClass<T>>(ctx, this_object);
+    auto& tokens = app->m_notification_tokens;
+
+    for (auto& token : app->m_notification_tokens) {
+        app->m_app->unsubscribe(token.second);
+    }
+
+    tokens.clear();
+}
 
 } // namespace js
 } // namespace realm
