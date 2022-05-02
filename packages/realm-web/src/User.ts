@@ -326,6 +326,13 @@ export class User<
     throw new Error("Not yet implemented");
   }
 
+  /**
+   * @inheritdoc
+   */
+  public removeAllListeners(): void {
+    throw new Error("Not yet implemented");
+  }
+
   /** @inheritdoc */
   public callFunction<ReturnType = unknown>(name: string, ...args: unknown[]): Promise<ReturnType> {
     return this.functions.callFunction(name, ...args);

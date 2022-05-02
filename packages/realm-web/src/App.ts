@@ -273,6 +273,13 @@ export class App<
   }
 
   /**
+   * @inheritdoc
+   */
+  public removeAllListeners(): void {
+    throw new Error("Not yet implemented");
+  }
+
+  /**
    * The currently active user (or null if no active users exists).
    *
    * @returns the currently active user or null.
