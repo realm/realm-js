@@ -29,12 +29,12 @@
 // fraction too long.
 
 import { expect } from "chai";
-import Realm, { BSON, ClientResetMode, SessionStopPolicy } from "realm";
+import Realm, { BSON, ClientResetMode, FlexibleSyncConfiguration, SessionStopPolicy } from "realm";
 
 import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "../../hooks";
 import { DogSchema, IPerson, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { expectClientResetError } from "../../utils/expect-sync-error";
-import { closeAndReopenRealm } from "../../utils/close-realm";
+import { closeAndReopenRealm, closeRealm, closeThisRealm } from "../../utils/close-realm";
 
 const FlexiblePersonSchema = { ...PersonSchema, properties: { ...PersonSchema.properties, nonQueryable: "string?" } };
 
@@ -208,6 +208,168 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           });
         }).to.throw("Only manual client resets are supported with flexible sync");
       });
+
+      describe("initialSubscriptions option", function () {
+        function getConfig(
+          user: Realm.User,
+          initialSubscriptions: Realm.FlexibleSyncConfiguration["initialSubscriptions"],
+        ): Realm.Configuration {
+          return {
+            schema: [FlexiblePersonSchema, DogSchema],
+            sync: {
+              _sessionStopPolicy: SessionStopPolicy.Immediately,
+              flexible: true,
+              user,
+              initialSubscriptions,
+            },
+          };
+        }
+
+        describe("error", function () {
+          afterEach(function () {
+            Realm.deleteFile(this.config);
+          });
+
+          it("throws an error if no `update` function is provided", async function () {
+            this.config = getConfig(this.user, {} as any);
+
+            await expect((Realm as any).open(this.config)).to.be.rejectedWith(
+              "update must be of type 'function', got (undefined)",
+            );
+          });
+
+          it("throws an error if `update` is not a function", async function () {
+            this.config = getConfig(this.user, {
+              update: "Person",
+            } as any);
+
+            await expect((Realm as any).open(this.config)).to.be.rejectedWith(
+              "update must be of type 'function', got (Person)",
+            );
+          });
+
+          it("throws an error if `rerunOnStartup` is not a boolean", async function () {
+            this.config = getConfig(this.user, {
+              update: () => {
+                // no-op
+              },
+              rerunOnStartup: "yes please",
+            } as any);
+
+            await expect((Realm as any).open(this.config)).to.be.rejectedWith(
+              /rerunOnStartup must be of type 'boolean', got.*/,
+            );
+          });
+        });
+
+        describe("success", function () {
+          type ExtraConfig = Partial<FlexibleSyncConfiguration["initialSubscriptions"]>;
+
+          function getSuccessConfig(user: Realm.User, extraConfig: ExtraConfig = {}) {
+            return getConfig(user, {
+              update: (realm) => {
+                realm.subscriptions.update((subs) => {
+                  subs.add(realm.objects(FlexiblePersonSchema.name));
+                });
+              },
+              ...extraConfig,
+            });
+          }
+
+          async function openRealm(user: Realm.User, extraConfig: ExtraConfig = {}) {
+            const config = getSuccessConfig(user, extraConfig);
+            const realm = await Realm.open(config);
+
+            return { realm, config };
+          }
+
+          async function testSuccess(
+            user: Realm.User,
+            extraConfig: Partial<FlexibleSyncConfiguration["initialSubscriptions"]> = {},
+            closeRealmAfter = true,
+          ) {
+            const { realm, config } = await openRealm(user, extraConfig);
+
+            expect(realm.subscriptions).to.have.length(1);
+            expect(realm.subscriptions.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
+
+            if (closeRealmAfter) {
+              closeRealm(realm, config);
+              return undefined;
+            }
+
+            return realm;
+          }
+
+          it("returns a promise", async function () {
+            const result = openRealm(this.user, {});
+            expect(result).to.be.instanceOf(Promise);
+
+            const { realm, config } = await result;
+            closeRealm(realm, config);
+          });
+
+          it("can be used with the `new Realm` constructor", async function () {
+            const config = getSuccessConfig(this.user);
+            const realm = new Realm(config);
+
+            await realm.subscriptions.waitForSynchronization();
+
+            expect(realm.subscriptions).to.have.length(1);
+            expect(realm.subscriptions.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
+
+            closeRealm(realm, config);
+          });
+
+          it("updates the subscriptions on first open if rerunOnStartup is undefined", async function () {
+            await testSuccess(this.user);
+          });
+
+          it("updates the subscriptions on first open if rerunOnStartup is false", async function () {
+            await testSuccess(this.user, { rerunOnStartup: false });
+          });
+
+          it("updates the subscriptions on first open if rerunOnStartup is true", async function () {
+            await testSuccess(this.user, { rerunOnStartup: true });
+          });
+
+          it("does not update the subscriptions on second open if rerunOnStartup is undefined", async function () {
+            const realm = await testSuccess(this.user, {}, false);
+            if (!realm) throw new Error("Valid realm was not returned from testSuccess");
+
+            await realm.subscriptions.update((subs) => subs.removeAll());
+            realm.close();
+
+            const { realm: realm2, config } = await openRealm(this.user, {});
+            expect(realm2.subscriptions).to.have.length(0);
+
+            closeRealm(realm2, config);
+          });
+
+          it("does not update the subscriptions on second open if rerunOnStartup is false", async function () {
+            const realm = await testSuccess(this.user, { rerunOnStartup: false }, false);
+            if (!realm) throw new Error("Valid realm was not returned from testSuccess");
+
+            await realm.subscriptions.update((subs) => subs.removeAll());
+            realm.close();
+
+            const { realm: realm2, config } = await openRealm(this.user, {});
+            expect(realm2.subscriptions).to.have.length(0);
+
+            closeRealm(realm2, config);
+          });
+
+          it("does update the subscriptions on second open if rerunOnStartup is true", async function () {
+            const realm = await testSuccess(this.user, { rerunOnStartup: true }, false);
+            if (!realm) throw new Error("Valid realm was not returned from testSuccess");
+
+            await realm.subscriptions.update((subs) => subs.removeAll());
+            realm.close();
+
+            await testSuccess(this.user, { rerunOnStartup: true });
+          });
+        });
+      });
     });
   });
 
@@ -235,7 +397,10 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       });
 
       it("throws an error if the Realm has a partition based sync config", function (this: RealmContext) {
-        const realm = new Realm({ schema: [FlexiblePersonSchema], sync: { user: this.user, partitionValue: "test" } });
+        const realm = new Realm({
+          schema: [FlexiblePersonSchema],
+          sync: { user: this.user, partitionValue: "test" },
+        });
         expect(() => realm.subscriptions).to.throw(
           "`subscriptions` can only be accessed if flexible sync is enabled, but partition based sync is currently enabled for your Realm. Modify your sync config to remove any `partitionValue` and enable flexible sync, for example: { sync: { user, flexible: true } }",
         );
@@ -1396,7 +1561,11 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       it("triggers a client reset if items are added without a subscription", async function (this: RealmContext) {
         await expectClientResetError(this.config, this.user, (realm) => {
           realm.write(() => {
-            return realm.create<IPerson>(FlexiblePersonSchema.name, { _id: new BSON.ObjectId(), name: "Tom", age: 36 });
+            return realm.create<IPerson>(FlexiblePersonSchema.name, {
+              _id: new BSON.ObjectId(),
+              name: "Tom",
+              age: 36,
+            });
           });
         });
       });
@@ -1409,7 +1578,11 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           this.user,
           (realm) => {
             realm.write(() => {
-              realm.create<IPerson>(FlexiblePersonSchema.name, { _id: new BSON.ObjectId(), name: "Tom Old", age: 99 });
+              realm.create<IPerson>(FlexiblePersonSchema.name, {
+                _id: new BSON.ObjectId(),
+                name: "Tom Old",
+                age: 99,
+              });
             });
           },
           () => {
@@ -1429,7 +1602,11 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           // Deliberately not waiting for synchronisation here
 
           realm.write(function () {
-            return realm.create<IPerson>(FlexiblePersonSchema.name, { _id: new BSON.ObjectId(), name: "Tom", age: 36 });
+            return realm.create<IPerson>(FlexiblePersonSchema.name, {
+              _id: new BSON.ObjectId(),
+              name: "Tom",
+              age: 36,
+            });
           });
         });
       });
@@ -1441,7 +1618,11 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           await addSubscriptionAndSync(realm, realm.objects(FlexiblePersonSchema.name).filtered("age < 40"));
 
           const person = realm.write(() => {
-            return realm.create<IPerson>(FlexiblePersonSchema.name, { _id: new BSON.ObjectId(), name: "Tom", age: 36 });
+            return realm.create<IPerson>(FlexiblePersonSchema.name, {
+              _id: new BSON.ObjectId(),
+              name: "Tom",
+              age: 36,
+            });
           });
 
           realm.write(() => {

@@ -48,7 +48,9 @@
  * @typedef {Object} Realm.App.Sync~SyncConfiguration
  * @property {Realm.User} user - A {@link Realm.User} object obtained by calling `Realm.App.logIn`.
  * @property {Realm.App.Sync~SSLConfiguration} [ssl] - SSL configuration.
- * @property {string|number|BSON.ObjectId|null} partitionValue - The value of the partition key.
+ * @property {boolean} flexible - Whether to use flexible sync (if `true`) or partition based sync (default)
+ * @property {string|number|BSON.ObjectId|null} partitionValue - The value of the partition key. Only valid if using partition based sync.
+ * @property {Realm.App.Sync~InitialSubscriptionsConfiguration} initialSubscriptions - Optional object to configure the setup of an initial set of flexible sync subscriptions to be used when opening the Realm. Only valid if using flexible sync. See {@link Realm.App.Sync~InitialSubscriptionsConfiguration}.
  * @property {callback(session, syncError)} [error] - A callback function which is called in error situations.
  *    The callback is passed two arguments: `session` and `syncError`. If `syncError.name == "ClientReset"`, `syncError.path` and `syncError.config` are set
  *    and `syncError.readOnly` is true (deprecated, see `Realm.App.Sync~ClientResetConfiguration`). Otherwise, `syncError` can have up to five properties:
@@ -59,6 +61,44 @@
  * @property {Realm.App.Sync~OpenRealmBehaviorConfiguration} [existingRealmFileBehavior] - Whether to open existing file and sync in background or wait for the sync of the
  *    file to complete and then open. If not set, the Realm will be downloaded before opened.
  * @property {Realm.App.Sync~ClientResetConfiguration|null} [clientReset] - Configuration of Client Reset
+ */
+
+/**
+ * Optional object to configure the setup of an initial set of flexible sync
+ * subscriptions to be used when opening the Realm. If this is specified,
+ * {@link Realm.open} will not resolve until this set of subscriptions has been
+ * fully synchronized with the server.
+ *
+ * Example:
+ * ```
+ * const config: Realm.Configuration = {
+ *   sync: {
+ *     user,
+ *     flexible: true,
+ *     initialSubscriptions: {
+ *       update: realm => {
+ *         realm.subscriptions.update(subs => {
+ *           subs.add(realm.objects('Task'));
+ *         })
+ *       }
+ *     }
+ *   },
+ *   // ... rest of config ...
+ * };
+ * const realm = await Realm.open(config);
+ *
+ * // At this point, the Realm will be open with the data for the initial set
+ * // subscriptions fully synchronised.
+ * ```
+ * @typedef {Object} Realm.App.Sync~InitialSubscriptionsConfiguration
+ * @property {callback(realm)} update - callback called with the {@link Realm} instance
+ * to allow you to setup the initial set of subscriptions by calling
+ * `realm.subscriptions.update`. See
+ * {@link Realm.App.Sync.SubscriptionSet#update} for more information.
+ * @property {Boolean} returnOnStartup - optional flag. If `true`, the
+ * {@link updateCallback} will be rerun every time the Realm is opened (e.g.
+ * every time a user opens your app), otherwise (by default) it will only be run
+ * if the Realm does not yet exist.
  */
 
 /**

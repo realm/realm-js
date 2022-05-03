@@ -22,6 +22,7 @@ x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * Add ability to listen to changes to `Realm.App` and `Realm.User`. ([#4455](https://github.com/realm/realm-js/issues/4455))
+* Added an `initialSubscriptions` option to the `sync` config, which allows users to specify a subscription update function which bootstraps a set of flexible sync subscriptions when the Realm is first opened (or every time the app runs) (#4561[https://github.com/realm/realm-js/pull/4561]).
 
 ### Fixed
 * Fixed issue where React Native apps would sometimes show stale Realm data until the user interacted with the app UI. ([#4389](https://github.com/realm/realm-js/issues/4389), since v10.0.0)
