@@ -147,6 +147,26 @@ declare namespace Realm {
         flexible: true;
         partitionValue?: never;
         clientReset?: ClientResetConfiguration<ClientResetModeManualOnly>;
+        /**
+         * Optional object to configure the setup of an initial set of flexible 
+         * sync subscriptions to be used when opening the Realm. If this is specified,
+         * {@link Realm.open} will not resolve until this set of subscriptions has been
+         * fully synchronized with the server.
+         */
+        initialSubscriptions?: {
+            /**
+             * Callback called with an instance of {@link Realm.App.Sync.MutableSubscriptionSet}
+             * to allow you to setup the initial set of subscriptions. 
+             * See {@link Realm.App.Sync.SubscriptionSet.update} for more information.
+             */
+            updateCallback: (mutableSubs: App.Sync.MutableSubscriptionSet) => void;
+            /**
+             * If `true`, the {@link updateCallback} will be rerun every time the Realm is 
+             * opened (e.g. every time a user opens your app), otherwise (by default) it 
+             * will only be run if the Realm does not yet exist.
+             */
+            rerunOnStartup?: boolean;
+        };
     }
 
     interface PartitionSyncConfiguration extends BaseSyncConfiguration {
