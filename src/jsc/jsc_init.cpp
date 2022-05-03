@@ -24,6 +24,9 @@
 
 #include "jsc_init.hpp"
 #include "platform.hpp"
+
+#include "js_notifications.hpp"
+
 namespace realm {
 namespace jsc {
 js::Protected<JSObjectRef> ObjectDefineProperty;
@@ -67,6 +70,8 @@ void RJSInvalidateCaches()
     realm::_impl::RealmCoordinator::clear_all_caches();
     // Clear the Object Store App cache, to prevent instances from using a context that was released
     realm::app::App::clear_cached_apps();
+    // Clear Realm Object notifications
+    realm::js::notifications::NotificationBucket<jsc::Types>::clear();
 }
 
 // Note: This must be called before RJSInvalidateCaches, otherwise the app cache

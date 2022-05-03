@@ -22,6 +22,7 @@
 
 #import <React/RCTBridge+Private.h>
 #import <React/RCTJavaScriptExecutor.h>
+#import <React/RCTInvalidating.h>
 #include <ReactCommon/CallInvoker.h>
 
 #import <objc/runtime.h>
@@ -83,7 +84,7 @@ extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executo
     return [rctJSContext context].JSGlobalContextRef;
 }
 
-@interface RealmReact () <RCTBridgeModule>
+@interface RealmReact () <RCTBridgeModule, RCTInvalidating>
 @end
 
 @implementation RealmReact {
@@ -302,10 +303,6 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor, std::functi
 
 - (void)setBridge:(RCTBridge *)bridge {
     _bridge = bridge;
-
-    static __weak RealmReact *s_currentModule = nil;
-    [s_currentModule invalidate];
-    s_currentModule = self;
 
     if (objc_lookUpClass("RCTWebSocketExecutor") && [bridge executorClass] == objc_lookUpClass("RCTWebSocketExecutor")) {
 #if DEBUG
