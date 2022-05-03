@@ -6,10 +6,10 @@
   ],
   "eslint.format.enable": true,
   "[javascript]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[typescript]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[typescriptreact]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
@@ -18,5 +18,6 @@
   "gitlens.advanced.blame.customArguments": [
     "--ignore-revs-file",
     ".gitignore-revs"
-  ]
+  ],
+  "C_Cpp.dimInactiveRegions": false
 }
