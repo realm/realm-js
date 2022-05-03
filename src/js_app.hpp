@@ -25,10 +25,12 @@
 
 #include <realm/object-store/util/event_loop_dispatcher.hpp>
 
+#include "js_notifications.hpp"
 #include "js_user.hpp"
 #include "js_app_credentials.hpp"
 #include "js_network_transport.hpp"
 #include "js_email_password_auth.hpp"
+#include "realm/object-store/sync/subscribable.hpp"
 
 using SharedApp = std::shared_ptr<realm::app::App>;
 using SharedUser = std::shared_ptr<realm::SyncUser>;
@@ -49,8 +51,7 @@ public:
     App(const App&) = delete;
     App& operator=(const App&) = delete;
 
-    using CallbackTokenPair = std::pair<Protected<typename T::Function>, AppToken>;
-    std::vector<CallbackTokenPair> m_notification_tokens;
+    notifications::NotificationHandle<T, AppToken> m_notification_handle;
 
     SharedApp m_app;
 };
@@ -68,6 +69,7 @@ class AppClass : public ClassDefinition<T, realm::js::App<T>> {
     using Function = js::Function<T>;
     using ReturnValue = js::ReturnValue<T>;
     using Arguments = js::Arguments<T>;
+    using NotificationBucket = notifications::NotificationBucket<T, AppToken>;
     using NetworkTransport = JavaScriptNetworkTransport<T>;
     using NetworkTransportFactory = typename NetworkTransport::NetworkTransportFactory;
     using Token = Subscribable<SharedApp>::Token;
@@ -396,8 +398,7 @@ void AppClass<T>::add_listener(ContextType ctx, ObjectType this_object, Argument
         Function::callback(protected_ctx, protected_callback, 0, {});
     }));
 
-    // Store a (callback, token) pair in a vector
-    app->m_notification_tokens.emplace_back(std::move(protected_callback), std::move(token));
+    NotificationBucket::emplace(app->m_notification_handle, std::move(protected_callback), std::move(token));
 }
 
 template <typename T>
@@ -407,18 +408,7 @@ void AppClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Argum
     auto app = get_internal<T, AppClass<T>>(ctx, this_object);
     Protected<FunctionType> protected_callback(ctx, callback);
 
-    auto& tokens = app->m_notification_tokens;
-    auto compare = [&](auto&& callback_token_pair) {
-        return typename Protected<FunctionType>::Comparator()(callback_token_pair.first, protected_callback);
-    };
-
-    // Retrieve the token with the given callback, then unsubscribe it and remove it from the vector
-    auto callback_token_pair_iter = std::find_if(tokens.begin(), tokens.end(), compare);
-
-    if (callback_token_pair_iter != tokens.end()) {
-        app->m_app->unsubscribe(callback_token_pair_iter->second);
-        tokens.erase(callback_token_pair_iter);
-    }
+    NotificationBucket::erase(app->m_notification_handle, std::move(protected_callback));
 }
 
 template <typename T>
@@ -426,13 +416,7 @@ void AppClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, 
                                        ReturnValue& return_value)
 {
     auto app = get_internal<T, AppClass<T>>(ctx, this_object);
-    auto& tokens = app->m_notification_tokens;
-
-    for (auto& token : app->m_notification_tokens) {
-        app->m_app->unsubscribe(token.second);
-    }
-
-    tokens.clear();
+    NotificationBucket::erase(app->m_notification_handle);
 }
 
 } // namespace js

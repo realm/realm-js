@@ -22,6 +22,8 @@
 #include <realm/object-store/impl/realm_coordinator.hpp>
 #include <realm/object-store/collection_notifications.hpp>
 #include <realm/object-store/sync/app.hpp>
+#include <realm/object-store/sync/subscribable.hpp>
+#include <realm/object-store/sync/sync_user.hpp>
 
 #include "jsc_init.hpp"
 #include "platform.hpp"
@@ -73,8 +75,8 @@ void RJSInvalidateCaches()
     realm::app::App::clear_cached_apps();
     // Clear notifications
     realm::js::notifications::NotificationBucket<jsc::Types, NotificationToken>::clear();
-    // Clear Realm Object notifications
-    realm::js::notifications::NotificationBucket<jsc::Types>::clear();
+    realm::js::notifications::NotificationBucket<jsc::Types, Subscribable<realm::SyncUser>::Token>::clear();
+    realm::js::notifications::NotificationBucket<jsc::Types, Subscribable<realm::app::App>::Token>::clear();
 }
 
 // Note: This must be called before RJSInvalidateCaches, otherwise the app cache
