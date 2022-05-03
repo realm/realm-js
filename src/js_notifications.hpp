@@ -29,26 +29,28 @@ namespace realm::js::notifications {
 
 using IdType = unsigned long long;
 
-template <typename T>
+template <typename T, typename Token>
 class NotificationHandle;
 
 /**
- * @brief A class with static members used to manage ownership of `NotificationToken`s returned by the object store
+ * @brief A class with static members used to manage ownership of `Token`s returned by the object store
  * notification APIs.
  * This abstraction is needed to enable graceful JS runtime destruction by preventing circular references from objects
- * owning a `NotificationToken` owning a lambda that captures `Protected` values of the object itself.
+ * owning a `Token` owning a lambda that captures `Protected` values of the object itself.
  *
  * @note This exposes a simple `clear` method, which should be called just before the JS runtime is torn down.
  *
  * @tparam T The JS runtime types.
+ * @tparam Token The type of tokens stored.
  */
-template <typename T>
+template <typename T, typename Token>
 class NotificationBucket {
     using ProtectedFunction = Protected<typename T::Function>;
-    using TokensMap = std::map<IdType, std::vector<std::pair<ProtectedFunction, NotificationToken>>>;
+    using TokensMap = std::map<IdType, std::vector<std::pair<ProtectedFunction, Token>>>;
+    using Handle = NotificationHandle<T, Token>;
 
 public:
-    static void emplace(NotificationHandle<T>& handle, ProtectedFunction&& callback, NotificationToken&& token)
+    static void emplace(Handle& handle, ProtectedFunction&& callback, Token&& token)
     {
         if (handle) {
             auto& s_tokens = get_tokens();
@@ -65,7 +67,7 @@ public:
         s_tokens.clear();
     }
 
-    static void erase(NotificationHandle<T>& handle)
+    static void erase(Handle& handle)
     {
         if (handle) {
             auto& s_tokens = get_tokens();
@@ -73,7 +75,7 @@ public:
         }
     }
 
-    static void erase(NotificationHandle<T>& handle, ProtectedFunction&& callback)
+    static void erase(Handle& handle, ProtectedFunction&& callback)
     {
         if (handle) {
             auto& s_tokens = get_tokens();
@@ -104,12 +106,13 @@ public:
 };
 
 /**
- * @brief An object owned by objects which will delegate ownership of `NotificationToken`s to the
+ * @brief An object owned by objects which will delegate ownership of `Token`s to the
  * `NotificationBucket`.
  *
  * @tparam T The JS runtime types.
+ * @tparam Token The type of tokens stored.
  */
-template <typename T>
+template <typename T, typename Token>
 class NotificationHandle {
     static inline IdType s_next_id = 0;
     std::optional<IdType> m_id;
@@ -117,7 +120,7 @@ class NotificationHandle {
 public:
     /**
      * @brief Construct a new Notification Handle object to be owned by an object and passed to the
-     * `NotificationBucket` when managing `NotificationToken`s returned by the object store notification APIs.
+     * `NotificationBucket` when managing `Token`s returned by the object store notification APIs.
      */
     NotificationHandle()
     {
@@ -134,7 +137,7 @@ public:
      */
     ~NotificationHandle()
     {
-        NotificationBucket<T>::erase(*this);
+        NotificationBucket<T, Token>::erase(*this);
     }
 
     operator IdType() const

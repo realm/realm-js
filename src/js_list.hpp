@@ -28,6 +28,7 @@
 
 #include <realm/object-store/shared_realm.hpp>
 #include <realm/object-store/list.hpp>
+#include <realm/object-store/collection_notifications.hpp>
 
 namespace realm {
 namespace js {
@@ -43,7 +44,7 @@ public:
     {
     }
 
-    notifications::NotificationHandle<T> m_notification_handle;
+    notifications::NotificationHandle<T, NotificationToken> m_notification_handle;
 };
 
 template <typename T>
@@ -57,7 +58,7 @@ struct ListClass : ClassDefinition<T, realm::js::List<T>, CollectionClass<T>> {
     using Value = js::Value<T>;
     using ReturnValue = js::ReturnValue<T>;
     using Arguments = js::Arguments<T>;
-    using NotificationBucket = notifications::NotificationBucket<T>;
+    using NotificationBucket = notifications::NotificationBucket<T, NotificationToken>;
 
     static ObjectType create_instance(ContextType, realm::List);
 

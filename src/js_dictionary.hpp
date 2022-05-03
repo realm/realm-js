@@ -29,6 +29,7 @@
 
 #include <realm/object-store/shared_realm.hpp>
 #include <realm/object-store/dictionary.hpp>
+#include <realm/object-store/collection_notifications.hpp>
 
 namespace realm {
 namespace js {
@@ -123,7 +124,7 @@ public:
     Dictionary& operator=(Dictionary&&) = default;
     Dictionary& operator=(Dictionary const&) = default;
 
-    notifications::NotificationHandle<T> m_notification_handle;
+    notifications::NotificationHandle<T, NotificationToken> m_notification_handle;
 };
 
 template <typename T>
@@ -138,7 +139,7 @@ struct DictionaryClass : ClassDefinition<T, realm::js::Dictionary<T>, Collection
     using String = js::String<T>;
     using ReturnValue = js::ReturnValue<T>;
     using Arguments = js::Arguments<T>;
-    using NotificationBucket = notifications::NotificationBucket<T>;
+    using NotificationBucket = notifications::NotificationBucket<T, NotificationToken>;
 
     static ObjectType create_instance(ContextType, realm::object_store::Dictionary);
 

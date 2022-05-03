@@ -27,6 +27,7 @@
 #include <realm/object-store/list.hpp>
 #include <realm/object-store/object_store.hpp>
 #include <realm/object-store/results.hpp>
+#include <realm/object-store/collection_notifications.hpp>
 
 #include <realm/parser/query_parser.hpp>
 #include <realm/util/optional.hpp>
@@ -60,7 +61,7 @@ public:
 
     using realm::Results::Results;
 
-    notifications::NotificationHandle<T> m_notification_handle;
+    notifications::NotificationHandle<T, NotificationToken> m_notification_handle;
 };
 
 template <typename T>
@@ -74,7 +75,7 @@ struct ResultsClass : ClassDefinition<T, realm::js::Results<T>, CollectionClass<
     using Value = js::Value<T>;
     using ReturnValue = js::ReturnValue<T>;
     using Arguments = js::Arguments<T>;
-    using NotificationBucket = notifications::NotificationBucket<T>;
+    using NotificationBucket = notifications::NotificationBucket<T, NotificationToken>;
 
     static ObjectType create_instance(ContextType, realm::Results);
     static ObjectType create_instance(ContextType, SharedRealm, const std::string& object_type);
