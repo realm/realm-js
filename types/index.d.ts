@@ -136,6 +136,8 @@ declare namespace Realm {
         customHttpHeaders?: { [header: string]: string };
         ssl?: SSLConfiguration;
         _sessionStopPolicy?: SessionStopPolicy;
+        newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
+        existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
         error?: ErrorCallback;
     }
 
@@ -150,8 +152,6 @@ declare namespace Realm {
     interface PartitionSyncConfiguration extends BaseSyncConfiguration {
         flexible?: false | undefined;
         partitionValue: Realm.App.Sync.PartitionValue;
-        newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
-        existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
         clientReset?: ClientResetConfiguration<ClientResetMode>;
     }
 
