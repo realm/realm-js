@@ -33,12 +33,12 @@ template <typename T>
 class NotificationHandle;
 
 /**
- * @brief A class with static members use to manage ownership of `NotificationToken`s returned by the object store
+ * @brief A class with static members used to manage ownership of `NotificationToken`s returned by the object store
  * notification APIs.
  * This abstraction is needed to enable graceful JS runtime destruction by preventing circular references from objects
- * owning a `NotificationToken` owning a lamda that captures `Protected` values of the object itself.
+ * owning a `NotificationToken` owning a lambda that captures `Protected` values of the object itself.
  *
- * @note This expose a simple `clear` method, which should be called just before the JS runtime is torn down.
+ * @note This exposes a simple `clear` method, which should be called just before the JS runtime is torn down.
  *
  * @tparam T The JS runtime types.
  */
@@ -129,7 +129,7 @@ public:
     };
 
     /**
-     * @brief Destroy the Notification Handle object and erases any outstanding listeners from the
+     * @brief Destroys the Notification Handle object and erases any outstanding listeners from the
      * `NotificationBucket`.
      */
     ~NotificationHandle()

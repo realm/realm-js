@@ -18,7 +18,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Improved documentation for `Realm.copyBundledRealmFiles`.
-* Refactored notifications to use a `NotificationBucket` API, enabling JS objects to be garbage collected on taredown of the JS engine. ([#4550](https://github.com/realm/realm-js/pull/4550))
+* Refactored notifications to use a `NotificationBucket` API, enabling JS objects to be garbage collected on teardown of the JS engine. ([#4550](https://github.com/realm/realm-js/pull/4550))
 * Updated a test to be ready for node 18.
 * Upgraded Realm Core from v11.14.0 to v11.15.0.
 
