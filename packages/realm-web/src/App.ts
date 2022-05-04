@@ -259,6 +259,27 @@ export class App<
   }
 
   /**
+   * @inheritdoc
+   */
+  public addListener(): void {
+    throw new Error("Not yet implemented");
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public removeListener(): void {
+    throw new Error("Not yet implemented");
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public removeAllListeners(): void {
+    throw new Error("Not yet implemented");
+  }
+
+  /**
    * The currently active user (or null if no active users exists).
    *
    * @returns the currently active user or null.

@@ -20,7 +20,10 @@
 #include <cassert>
 
 #include <realm/object-store/impl/realm_coordinator.hpp>
+#include <realm/object-store/collection_notifications.hpp>
 #include <realm/object-store/sync/app.hpp>
+#include <realm/object-store/sync/subscribable.hpp>
+#include <realm/object-store/sync/sync_user.hpp>
 
 #include "jsc_init.hpp"
 #include "platform.hpp"
@@ -70,8 +73,10 @@ void RJSInvalidateCaches()
     realm::_impl::RealmCoordinator::clear_all_caches();
     // Clear the Object Store App cache, to prevent instances from using a context that was released
     realm::app::App::clear_cached_apps();
-    // Clear Realm Object notifications
-    realm::js::notifications::NotificationBucket<jsc::Types>::clear();
+    // Clear notifications
+    realm::js::notifications::NotificationBucket<jsc::Types, NotificationToken>::clear();
+    realm::js::notifications::NotificationBucket<jsc::Types, Subscribable<realm::SyncUser>::Token>::clear();
+    realm::js::notifications::NotificationBucket<jsc::Types, Subscribable<realm::app::App>::Token>::clear();
 }
 
 // Note: This must be called before RJSInvalidateCaches, otherwise the app cache

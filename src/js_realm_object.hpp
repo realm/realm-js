@@ -27,6 +27,7 @@ struct RealmObjectClass;
 
 #include <realm/object-store/object_accessor.hpp>
 #include <realm/object-store/object_store.hpp>
+#include <realm/object-store/collection_notifications.hpp>
 
 #include "js_class.hpp"
 #include "js_types.hpp"
@@ -52,7 +53,7 @@ public:
     RealmObject& operator=(RealmObject&&) = default;
     RealmObject& operator=(RealmObject const&) = default;
 
-    notifications::NotificationHandle<T> m_notification_handle;
+    notifications::NotificationHandle<T, NotificationToken> m_notification_handle;
 };
 
 template <typename T>
@@ -67,7 +68,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::js::RealmObject<T>> {
     using Function = js::Function<T>;
     using ReturnValue = js::ReturnValue<T>;
     using Arguments = js::Arguments<T>;
-    using NotificationBucket = notifications::NotificationBucket<T>;
+    using NotificationBucket = notifications::NotificationBucket<T, NotificationToken>;
 
     static ObjectType create_instance(ContextType, realm::js::RealmObject<T>);
 
