@@ -1,4 +1,5 @@
-platform :ios, '9.0'
+# platform :ios, '9.0'
+platforms { :ios => "9.0", :osx => "10.13" }
 
 target 'RealmReact' do
   pod 'React', :path => '../node_modules/react-native', :subspecs => [
