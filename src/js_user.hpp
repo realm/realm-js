@@ -39,7 +39,7 @@ namespace js {
 
 using SharedUser = std::shared_ptr<realm::SyncUser>;
 using SharedApp = std::shared_ptr<realm::app::App>;
-using Token = realm::Subscribable<realm::SyncUser>::Token;
+using UserToken = realm::Subscribable<realm::SyncUser>::Token;
 using WatchStream = realm::app::WatchStream;
 
 template <typename T>
@@ -118,7 +118,7 @@ void WatchStreamClass<T>::next_event(ContextType ctx, ObjectType object, Argumen
 }
 
 template <typename T>
-class User : public SharedUser {
+class User {
 public:
     User(SharedUser user, SharedApp app)
         : m_user(std::move(user))
@@ -135,10 +135,7 @@ public:
     User(const User&) = delete;
     User& operator=(const User&) = delete;
 
-    // User(User&&) = default;
-    // User& operator=(User&&) = default;
-
-    notifications::NotificationHandle<T, Token> m_notification_handle;
+    notifications::NotificationHandle<T, UserToken> m_notification_handle;
 
     SharedApp m_app;
     SharedUser m_user;
@@ -159,7 +156,7 @@ class UserClass : public ClassDefinition<T, User<T>> {
     using Function = js::Function<T>;
     using ReturnValue = js::ReturnValue<T>;
     using Arguments = js::Arguments<T>;
-    using NotificationBucket = notifications::NotificationBucket<T, Token>;
+    using NotificationBucket = notifications::NotificationBucket<T, UserToken>;
 
 public:
     std::string const name = "User";
@@ -202,6 +199,7 @@ public:
     static void refresh_custom_data(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void push_register(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void push_deregister(ContextType, ObjectType, Arguments&, ReturnValue&);
+
     static void make_streaming_request(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void new_watch_stream(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void add_listener(ContextType, ObjectType, Arguments&, ReturnValue&);

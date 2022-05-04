@@ -72,7 +72,6 @@ class AppClass : public ClassDefinition<T, realm::js::App<T>> {
     using NotificationBucket = notifications::NotificationBucket<T, AppToken>;
     using NetworkTransport = JavaScriptNetworkTransport<T>;
     using NetworkTransportFactory = typename NetworkTransport::NetworkTransportFactory;
-    using Token = Subscribable<SharedApp>::Token;
 
 public:
     const std::string name = "App";
