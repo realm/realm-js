@@ -70,7 +70,7 @@ export function createCachedObject<T extends Realm.Object>({
   // If the object doesn't exist, just return it with an noop tearDown
   const object = realm.objectForPrimaryKey(type, primaryKey);
   if (object === null) {
-    // TODO: listen to collection, wait for this object
+    // TODO: listen to collection, wait for this object to be inserted
     return { object, tearDown: () => undefined };
   }
 
@@ -78,17 +78,18 @@ export function createCachedObject<T extends Realm.Object>({
   const listTearDowns: Array<() => void> = [];
   const listeners: Set<(x: CachedObject<T>) => void> = new Set();
   const objectCacheKey: ObjectCacheKey = `${type}-${primaryKey}`;
-  let isAlive = true;
+  let isRealmListenerSetup = true;
+  let tearDownRealmListener = () => {};
 
   function subscribe(listener: (x: CachedObject<T>) => void) {
-    if (!isAlive) setup();
+    if (!isRealmListenerSetup) setupRealmListener();
     listeners.add(listener);
-    return () => {
+    return function unsubscribe () {
       listeners.delete(listener);
       if (listeners.size === 0) {
         objectCache.delete(objectCacheKey);
-        tearDown();
-        isAlive = false;
+        tearDownRealmListener();
+        isRealmListenerSetup = false;
       }
     };
   }
@@ -112,7 +113,7 @@ export function createCachedObject<T extends Realm.Object>({
     get: function (target, key) {
       if (key === "subscribe") return subscribe;
       if (key === "useObject") return useObject;
-      if (key === "tearDown") return tearDown;
+      if (key === "tearDown") return tearDownRealmListener;
 
       const value = Reflect.get(target, key);
       // Pass methods through
@@ -146,9 +147,10 @@ export function createCachedObject<T extends Realm.Object>({
     },
   };
 
-  let cachedObjectResult = new Proxy(object, cachedObjectHandler);
+  let cachedObjectResult: CachedObject<T> | null = new Proxy(object, cachedObjectHandler);
   const listenerCallback: Realm.ObjectChangeCallback<T> = (obj, changes) => {
     if (changes.deleted) {
+      // TODO: listen to collection, wait for this object to be inserted
       cachedObjectResult = null;
       notifyListeners();
     } else if (changes.changedProperties.length > 0) {
@@ -166,9 +168,7 @@ export function createCachedObject<T extends Realm.Object>({
     }
   };
 
-  let tearDown = () => {};
-
-  function setup() {
+  function setupRealmListener() {
     // We cannot add a listener to an invalid object
     if (!object?.isValid()) return;
 
@@ -180,14 +180,12 @@ export function createCachedObject<T extends Realm.Object>({
       object.addListener(listenerCallback);
     }
     objectCache.set(objectCacheKey, cachedObjectResult);
-    tearDown = () => {
+    tearDownRealmListener = () => {
       object.removeListener(listenerCallback);
       listTearDowns.forEach((listTearDown) => listTearDown());
     };
-    isAlive = true;
+    isRealmListenerSetup = true;
   }
-
-  setup();
 
   return cachedObjectResult;
 }
