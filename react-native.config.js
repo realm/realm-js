@@ -18,8 +18,6 @@
 
 /* eslint-env node */
 
-const path = require("path");
-
 module.exports = {
   // config for a library is scoped under "dependency" key
   dependency: {
