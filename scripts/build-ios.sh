@@ -13,12 +13,12 @@ function usage {
     echo ""
     echo "Arguments:"
     echo "   -c : build configuration (Debug or Release)"
-    echo "   <platforms> : platforms to build for (catalyst, ios, or simulator)"
+    echo "   <platforms> : platforms to build for (catalyst, ios, macosx, or simulator)"
     exit 1;
 }
 
 CONFIGURATION=Release
-SUPPORT_PLATFORMS=(catalyst ios simulator)
+SUPPORT_PLATFORMS=(catalyst ios macosx simulator)
 
 function is_supported_platform(){
     for platform in "${SUPPORT_PLATFORMS[@]}"; do
@@ -40,7 +40,7 @@ PLATFORMS=($@)
 
 if [ -z ${PLATFORMS} ]; then
     echo "No platform given. building all platforms...";
-    PLATFORMS=(ios catalyst simulator)
+    PLATFORMS=(ios catalyst macosx simulator)
 else
     echo "Building for...";
     for check_platform in "${PLATFORMS[@]}"; do
@@ -68,6 +68,11 @@ for platform in "${PLATFORMS[@]}"; do
             LIBRARIES+=(-library ./out/$CONFIGURATION-maccatalyst/librealm-js-ios.a -headers ./_include)
             BUILD_LIB_CMDS+=("xcrun libtool -static -o ./out/$CONFIGURATION-maccatalyst/librealm-js-ios.a ./out/$CONFIGURATION-maccatalyst/*.a")
         ;;
+        macosx)
+            DESTINATIONS+=(-destination 'generic/platform=OS X')
+            LIBRARIES+=(-library ./out/$CONFIGURATION-macos/librealm-js-ios.a -headers ./_include)
+            BUILD_LIB_CMDS+=("xcrun libtool -static -o ./out/$CONFIGURATION-macos/librealm-js-ios.a ./out/$CONFIGURATION-macos/*.a")
+        ;;
         simulator)
             DESTINATIONS+=(-destination 'generic/platform=iOS Simulator')
             LIBRARIES+=(-library ./out/$CONFIGURATION-iphonesimulator/librealm-js-ios.a -headers ./_include)
@@ -89,7 +94,7 @@ pushd build
 # Configure CMake project
 SDKROOT="${SDK_ROOT_OVERRIDE:-/Applications/Xcode_12.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/}" cmake "$PROJECT_ROOT" -GXcode \
     -DCMAKE_TOOLCHAIN_FILE="$PROJECT_ROOT/vendor/realm-core/tools/cmake/xcode.toolchain.cmake" \
-    -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY="$(pwd)/out/$<CONFIG>\$EFFECTIVE_PLATFORM_NAME" \
+    -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY="$(pwd)/out/$<CONFIG>-macos" \
 
 DEVELOPER_DIR="${DEVELOPER_DIR_OVERRIDE:-/Applications/Xcode_12.4.app}" xcodebuild build \
     -scheme realm-js-ios \
@@ -99,7 +104,7 @@ DEVELOPER_DIR="${DEVELOPER_DIR_OVERRIDE:-/Applications/Xcode_12.4.app}" xcodebui
     CXX="$PROJECT_ROOT/scripts/ccache-clang++.sh" \
     ONLY_ACTIVE_ARCH=NO \
     BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
-    SUPPORTS_MACCATALYST=YES
+    SUPPORTS_MACCATALYST=NO
 
 for cmd in "${BUILD_LIB_CMDS[@]}"; do
     eval "${cmd}"
