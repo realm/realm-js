@@ -25,6 +25,7 @@
 #include "js_results.hpp"
 #include "js_types.hpp"
 #include "js_util.hpp"
+#include "js_notifications.hpp"
 
 #include <realm/object-store/shared_realm.hpp>
 #include <realm/object-store/dictionary.hpp>
@@ -122,7 +123,7 @@ public:
     Dictionary& operator=(Dictionary&&) = default;
     Dictionary& operator=(Dictionary const&) = default;
 
-    std::vector<std::pair<Protected<typename T::Function>, NotificationToken>> m_listeners;
+    notifications::NotificationHandle<T> m_notification_handle;
 };
 
 template <typename T>
@@ -137,6 +138,7 @@ struct DictionaryClass : ClassDefinition<T, realm::js::Dictionary<T>, Collection
     using String = js::String<T>;
     using ReturnValue = js::ReturnValue<T>;
     using Arguments = js::Arguments<T>;
+    using NotificationBucket = notifications::NotificationBucket<T>;
 
     static ObjectType create_instance(ContextType, realm::object_store::Dictionary);
 
@@ -348,7 +350,7 @@ void DictionaryClass<T>::add_listener(ContextType ctx, ObjectType this_object, A
 
             Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
         });
-    dictionary->m_listeners.emplace_back(protected_callback, std::move(token));
+    NotificationBucket::emplace(dictionary->m_notification_handle, std::move(protected_callback), std::move(token));
 }
 
 template <typename T>
@@ -359,14 +361,10 @@ void DictionaryClass<T>::remove_listener(ContextType ctx, ObjectType this_object
 
     args.validate_maximum(1);
     auto callback = Value::validated_to_function(ctx, args[0]);
-    auto protected_function =
+    auto protected_callback =
         Protected<FunctionType>(ctx, callback); // Protecting for comparison, not to extend lifetime.
 
-    auto& listeners = dictionary->m_listeners;
-    auto compare = [&](auto&& func_and_tok) {
-        return typename Protected<FunctionType>::Comparator()(func_and_tok.first, protected_function);
-    };
-    listeners.erase(std::remove_if(listeners.begin(), listeners.end(), compare), listeners.end());
+    NotificationBucket::erase(dictionary->m_notification_handle, std::move(protected_callback));
 }
 
 
@@ -375,9 +373,8 @@ void DictionaryClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_o
                                               ReturnValue& return_value)
 {
     auto dictionary = get_internal<T, DictionaryClass<T>>(ctx, this_object);
-
     args.validate_maximum(0);
-    dictionary->m_listeners.clear();
+    NotificationBucket::erase(dictionary->m_notification_handle);
 }
 
 } // namespace js

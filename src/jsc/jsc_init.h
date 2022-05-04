@@ -19,14 +19,16 @@
 #pragma once
 
 #include <JavaScriptCore/JSBase.h>
+#include <functional>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 JSObjectRef RJSConstructorCreate(JSContextRef ctx);
-void RJSInitializeInContext(JSContextRef ctx);
+void RJSInitializeInContext(JSContextRef ctx, std::function<void()> flush_ui_queue);
 void RJSInvalidateCaches();
+void RJSCloseSyncSessions();
 
 #ifdef __cplusplus
 }

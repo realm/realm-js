@@ -19,6 +19,7 @@
 #pragma once
 
 #include "jsc_types.hpp"
+#include "jsc_function.hpp"
 
 #include "js_class.hpp"
 #include "js_util.hpp"
@@ -41,7 +42,7 @@ extern js::Protected<JSObjectRef> FunctionPrototype;
 extern js::Protected<JSObjectRef> RealmObjectClassConstructor;
 extern js::Protected<JSObjectRef> RealmObjectClassConstructorPrototype;
 
-static inline void jsc_class_init(JSContextRef ctx, JSObjectRef globalObject)
+static inline void jsc_class_init(JSContextRef ctx, JSObjectRef globalObject, std::function<void()> flushUiQueue)
 {
     // handle ReactNative app refresh by reseting the cached constructor values
     if (RealmObjectClassConstructor) {
@@ -63,6 +64,8 @@ static inline void jsc_class_init(JSContextRef ctx, JSObjectRef globalObject)
     JSObjectRef globalFunction = jsc::Value::to_object(ctx, value);
     value = jsc::Object::get_property(ctx, globalFunction, "prototype");
     FunctionPrototype = js::Protected<JSObjectRef>(ctx, Value::to_object(ctx, value));
+
+    js::flush_ui_queue = flushUiQueue;
 }
 
 template <typename T>

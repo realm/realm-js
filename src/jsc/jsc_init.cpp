@@ -24,6 +24,9 @@
 
 #include "jsc_init.hpp"
 #include "platform.hpp"
+
+#include "js_notifications.hpp"
+
 namespace realm {
 namespace jsc {
 js::Protected<JSObjectRef> ObjectDefineProperty;
@@ -31,6 +34,10 @@ js::Protected<JSObjectRef> FunctionPrototype;
 js::Protected<JSObjectRef> RealmObjectClassConstructor;
 js::Protected<JSObjectRef> RealmObjectClassConstructorPrototype;
 } // namespace jsc
+
+namespace js {
+std::function<void()> flush_ui_queue;
+} // namespace js
 } // namespace realm
 
 extern "C" {
@@ -43,13 +50,13 @@ JSObjectRef RJSConstructorCreate(JSContextRef ctx)
     return js::RealmClass<Types>::create_constructor(ctx);
 }
 
-void RJSInitializeInContext(JSContextRef ctx)
+void RJSInitializeInContext(JSContextRef ctx, std::function<void()> flush_ui_queue)
 {
     static const jsc::String realm_string = "Realm";
 
     JSObjectRef global_object = JSContextGetGlobalObject(ctx);
 
-    jsc_class_init(ctx, global_object);
+    jsc_class_init(ctx, global_object, flush_ui_queue);
 
     JSObjectRef realm_constructor = RJSConstructorCreate(ctx);
 
@@ -63,6 +70,18 @@ void RJSInvalidateCaches()
     realm::_impl::RealmCoordinator::clear_all_caches();
     // Clear the Object Store App cache, to prevent instances from using a context that was released
     realm::app::App::clear_cached_apps();
+    // Clear Realm Object notifications
+    realm::js::notifications::NotificationBucket<jsc::Types>::clear();
+}
+
+// Note: This must be called before RJSInvalidateCaches, otherwise the app cache
+// will have been cleared and so no sync sessions will be closed
+void RJSCloseSyncSessions()
+{
+    // Force all sync sessions to close immediately. This prevents the new JS thread
+    // from opening a new sync session while the old one is still active when reloading
+    // in dev mode.
+    realm::app::App::close_all_sync_sessions();
 }
 
 } // extern "C"

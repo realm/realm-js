@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsc",
     "start": "tsc --watch",
-    "test": "jest",
+    "test": "jest --forceExit",
     "lint": "eslint --ext .tsx ."
   },
   "dependencies": {

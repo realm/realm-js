@@ -163,7 +163,7 @@ jobs:
             build-configuration: catalyst
     env:
       # Pin the Xcode version
-      DEVELOPER_DIR: /Applications/Xcode_12.5.1.app
+      DEVELOPER_DIR: /Applications/Xcode_12.4.app
     steps:
       - uses: actions/checkout@v2
         with:

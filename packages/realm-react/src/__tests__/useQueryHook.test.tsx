@@ -78,9 +78,11 @@ describe("useQueryHook", () => {
     });
     realm.close();
   });
+
   afterEach(() => {
     Realm.clearTestState();
   });
+
   it("can retrieve collections using useQuery", () => {
     const { result } = renderHook(() => useQuery<IDog>("dog"));
     const collection = result.current;

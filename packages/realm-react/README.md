@@ -263,3 +263,32 @@ const [user, setUser] = useState()
 
 <RealmProvider sync={user, partition}>
 ```
+
+### `useApp` and the `AppProvider`
+
+The `useApp` hook can be used to access your Realm App instance as long as the `AppProvider` wraps your application.  This should be done outside of your `RealmProvider`.
+
+`AppProvider` usage:
+
+```tsx
+import { AppProvider } from '@realm/react'
+//...
+// Wrap your RealmProvider with the AppProvider and provide an appId
+<AppProvider id={appId}>
+	<RealmProvider sync={{user, flexible: true}}>
+	//...
+	</RealmProvider>
+</AppProvider>
+```
+
+`useApp` usage:
+```tsx
+// Access the app instance using the useApp hook
+import { useApp } from '@realm/react'
+
+const SomeComponent = () => {
+	const app = useApp();
+
+	//...
+}
+```

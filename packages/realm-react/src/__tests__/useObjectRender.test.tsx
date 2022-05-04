@@ -283,6 +283,7 @@ describe("useObject: rendering objects with a Realm.List property", () => {
         testRealm.write(() => {
           object.favoriteItem = object.items[0];
         });
+        forceSynchronousNotifications(testRealm);
       });
 
       expect(getByTestId(`favoriteItem-${object.items[0].name}`)).toBeTruthy();
@@ -291,6 +292,7 @@ describe("useObject: rendering objects with a Realm.List property", () => {
         testRealm.write(() => {
           object.favoriteItem = object.items[1];
         });
+        forceSynchronousNotifications(testRealm);
       });
 
       expect(getByTestId(`favoriteItem-${object.items[1].name}`)).toBeTruthy();
@@ -299,6 +301,7 @@ describe("useObject: rendering objects with a Realm.List property", () => {
         testRealm.write(() => {
           object.items[1].name = "apple";
         });
+        forceSynchronousNotifications(testRealm);
       });
 
       expect(getByTestId(`favoriteItem-${object.items[1].name}`)).toBeTruthy();

@@ -129,6 +129,7 @@ export function createCachedObject<T extends Realm.Object>({
           return new Proxy(listCaches.get(key), {});
         }
         const cachedCollection = createCachedCollection({
+          realm,
           collection: value,
           updateCallback: () => {
             cachedObjectResult = new Proxy(object, cachedObjectHandler);
@@ -168,14 +169,22 @@ export function createCachedObject<T extends Realm.Object>({
   let tearDown = () => {};
 
   function setup() {
-    object.addListener(listenerCallback);
-    isAlive = true;
-    objectCache.set(objectCacheKey, cachedObjectResult);
+    // We cannot add a listener to an invalid object
+    if (!object?.isValid()) return;
 
+    if (realm.isInTransaction) {
+      // If we are in a transaction, then push adding the listener to the event loop.  This will allow the write transaction to finish.
+      // see https://github.com/realm/realm-js/issues/4375
+      setImmediate(() => object.addListener(listenerCallback));
+    } else {
+      object.addListener(listenerCallback);
+    }
+    objectCache.set(objectCacheKey, cachedObjectResult);
     tearDown = () => {
       object.removeListener(listenerCallback);
       listTearDowns.forEach((listTearDown) => listTearDown());
     };
+    isAlive = true;
   }
 
   setup();
