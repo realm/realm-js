@@ -388,6 +388,7 @@ void AppClass<T>::set_versions(ContextType ctx, ObjectType this_object, Argument
 template <typename T>
 void AppClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
 {
+    args.validate_count(1);
     auto callback = Value::validated_to_function(ctx, args[0], "callback");
     auto app = get_internal<T, AppClass<T>>(ctx, this_object);
     Protected<FunctionType> protected_callback(ctx, callback);
@@ -404,6 +405,7 @@ void AppClass<T>::add_listener(ContextType ctx, ObjectType this_object, Argument
 template <typename T>
 void AppClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
 {
+    args.validate_count(1);
     auto callback = Value::validated_to_function(ctx, args[0], "callback");
     auto app = get_internal<T, AppClass<T>>(ctx, this_object);
     Protected<FunctionType> protected_callback(ctx, callback);
@@ -415,6 +417,7 @@ template <typename T>
 void AppClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, Arguments& args,
                                        ReturnValue& return_value)
 {
+    args.validate_count(0);
     auto app = get_internal<T, AppClass<T>>(ctx, this_object);
     NotificationBucket::erase(app->m_notification_handle);
 }
