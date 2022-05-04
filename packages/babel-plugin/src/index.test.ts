@@ -33,7 +33,7 @@ function evaluateObjectExpression(node: babel.types.ObjectExpression) {
   }
 }
 
-function extractSchemaFromAst(ast: babel.types.File): Realm.ObjectSchema {
+function extractSchemaFromAst(ast: babel.types.File): Realm.ObjectSchema | undefined {
   let schemaNode: babel.types.ObjectExpression | null = null;
   traverse(ast, {
     ClassProperty(path) {
@@ -48,100 +48,199 @@ function extractSchemaFromAst(ast: babel.types.File): Realm.ObjectSchema {
   if (schemaNode) {
     return evaluateObjectExpression(schemaNode);
   } else {
-    throw new Error("Unable to find schema node");
+    return undefined;
   }
 }
 
-function itTransformsSchema(name: string, source: string, test: (schema: ObjectSchema) => void) {
+type TransformOptions = {
+  source: string;
+  extraPresets?: babel.PluginItem[];
+  extraPlugins?: babel.PluginItem[];
+};
+
+function transform({ source, extraPresets = [], extraPlugins = [] }: TransformOptions) {
+  const result = babel.transform(source, {
+    filename: "test.ts",
+    presets: ["@babel/preset-typescript", ...extraPresets],
+    plugins: [plugin, ...extraPlugins],
+    ast: true,
+  });
+  if (!result) {
+    throw new Error("Failed to transform!");
+  }
+  return result;
+}
+
+type TransformTestOptions = { name: string; test: (ast: babel.types.File) => void } & TransformOptions;
+
+function itTransforms({ name, test, ...options }: TransformTestOptions) {
   it(name, () => {
-    const result = babel.transform(source, {
-      filename: "test.ts",
-      presets: ["@babel/preset-typescript"],
-      plugins: [plugin],
-      ast: true,
-    });
+    const result = transform(options);
     // Assert something about the schema
-    if (result?.ast) {
-      const schema = extractSchemaFromAst(result?.ast);
-      test(schema);
+    if (result.ast) {
+      test(result.ast);
     } else {
       throw new Error("Failed to transform AST");
     }
   });
 }
 
+function itTransformsSchema(name: string, source: string, test: (schema: ObjectSchema | undefined) => void) {
+  itTransforms({
+    name,
+    source,
+    test(ast) {
+      const schema = extractSchemaFromAst(ast);
+      test(schema);
+    },
+  });
+}
+
 describe("Babel plugin", () => {
-  itTransformsSchema("handles class name", "class Person extends Realm.Object {}", (schema) => {
-    expect(schema.name).toBe("Person");
+  describe("class transformation", () => {
+    itTransformsSchema(
+      "doesn't transform when Realm.Object is unresolved",
+      "class Person extends Realm.Object {}",
+      (schema) => {
+        expect(schema).toBe(undefined);
+      },
+    );
+
+    itTransformsSchema(
+      "transform class name when Realm is 'namespace imported'",
+      "import * as Realm from 'realm'; class Person extends Realm.Object {}",
+      (schema) => {
+        expect(schema && schema.name).toBe("Person");
+      },
+    );
+
+    itTransformsSchema(
+      "transform class name when Realm is 'default imported'",
+      "import Realm from 'realm'; class Person extends Realm.Object {}",
+      (schema) => {
+        expect(schema && schema.name).toBe("Person");
+      },
+    );
+
+    itTransformsSchema(
+      "transform class name when Object is 'name imported'",
+      "import { Object } from 'realm'; class Person extends Object {}",
+      (schema) => {
+        expect(schema && schema.name).toBe("Person");
+      },
+    );
   });
 
+  /*
+  itTransforms({
+    name: "handles property decorators",
+    source: "class Person extends Realm.Object { @test() testing: boolean = 0 }",
+    extraPlugins: [["@babel/plugin-proposal-decorators", { version: "2021-12" }]],
+    test() {
+      //
+    },
+  });
+  */
+
+  type PropertyTest = [string, string, Realm.PropertiesTypes];
+  function describeProperty(title: string, tests: PropertyTest[]) {
+    describe(title, () => {
+      for (const [title, classBody, expectedPropertiesSchema] of tests) {
+        const source = `
+          import Realm from "realm";
+          class Person extends Realm.Object { ${classBody} }
+        `;
+        itTransformsSchema(`handles '${title}'`, source, (schema) => {
+          if (schema) {
+            expect(schema.properties).toStrictEqual(expectedPropertiesSchema);
+          } else {
+            throw new Error("Failed to extract schema static from class");
+          }
+        });
+      }
+    });
+  }
+
   describe("property types", () => {
-    type PropertyTest = [string, string, Realm.PropertiesTypes];
-    const tests: PropertyTest[] = [
+    describeProperty("boolean", [
       [
-        "string",
-        "name: string;",
+        "explicit",
+        "prop: boolean;",
         {
-          name: {
+          prop: {
+            type: "bool",
+          },
+        },
+      ],
+    ]);
+
+    describeProperty("string", [
+      [
+        "explicit",
+        "prop: string;",
+        {
+          prop: {
             type: "string",
           },
         },
       ],
       [
-        "string from initializer",
-        "name = 'Alice'",
+        "initializer",
+        "prop = 'Alice'",
         {
-          name: {
+          prop: {
             type: "string",
             default: "Alice",
           },
         },
       ],
+    ]);
+
+    describeProperty("number", [
       [
-        "number",
-        "age: number;",
+        "explicit",
+        "prop: number;",
         {
-          age: {
-            type: "float",
+          prop: {
+            type: "double",
           },
         },
       ],
       [
-        "optional string",
-        "name?: string;",
+        "initializer",
+        "prop = 0",
         {
-          name: {
-            type: "string",
-            optional: true,
+          prop: {
+            type: "double",
+            default: 0,
           },
         },
       ],
+    ]);
+
+    describeProperty("link", [
       [
-        "link",
-        "friend: Person;",
+        "explicit",
+        "prop: Person;",
         {
-          friend: {
+          prop: {
             type: "Person",
           },
         },
       ],
+    ]);
+
+    describeProperty("list", [
       [
-        "list",
-        "friends: Realm.List<Person>;",
+        "explicit",
+        "prop: Realm.List<Person>;",
         {
-          friends: {
+          prop: {
             type: "list",
             objectType: "Person",
           },
         },
       ],
-    ];
-    // Iterate all the tests
-    for (const [title, classBody, expectedPropertiesSchema] of tests) {
-      const source = `class Person extends Realm.Object { ${classBody} }`;
-      itTransformsSchema(`handles '${title}'`, source, (schema) => {
-        expect(schema.properties).toStrictEqual(expectedPropertiesSchema);
-      });
-    }
+    ]);
   });
 });
