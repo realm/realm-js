@@ -497,6 +497,15 @@ void UserClass<T>::new_watch_stream(ContextType ctx, ObjectType this_object, Arg
     return return_value.set(create_object<T, WatchStreamClass<T>>(ctx, new WatchStream()));
 }
 
+/**
+ * @brief Registers an event listener on the SharedApp that fires on various user events.
+ * This includes auth token refresh, refresh token refresh, refresh custom user data, and logout.
+ *
+ * @param ctx JS context
+ * @param this_object JS's object holding the `UserClass`
+ * @param args Arguments passed to `addListener()` from JS
+ * @param return_value \ref void
+ */
 template <typename T>
 void UserClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
 {
@@ -514,6 +523,14 @@ void UserClass<T>::add_listener(ContextType ctx, ObjectType this_object, Argumen
     NotificationBucket::emplace(user->m_notification_handle, std::move(protected_callback), std::move(token));
 }
 
+/**
+ * @brief Removes the event listener for the provided callback.
+ *
+ * @param ctx JS context
+ * @param this_object JS's object holding the `UserClass`
+ * @param args Contains a callback function that was given to
+ * @param return_value \ref void
+ */
 template <typename T>
 void UserClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments& args,
                                    ReturnValue& return_value)
@@ -526,6 +543,14 @@ void UserClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Argu
     NotificationBucket::erase(user->m_notification_handle, std::move(protected_callback));
 }
 
+/**
+ * @brief Removes all registered event listeners.
+ *
+ * @param ctx JS context
+ * @param this_object JS's object holding the `UserClass`
+ * @param args No arguments
+ * @param return_value \ref void
+ */
 template <typename T>
 void UserClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, Arguments& args,
                                         ReturnValue& return_value)

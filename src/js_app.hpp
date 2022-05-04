@@ -384,7 +384,15 @@ void AppClass<T>::set_versions(ContextType ctx, ObjectType this_object, Argument
     AppClass<T>::platform_os = Object::validated_get_string(ctx, versions, "platformOs");
     AppClass<T>::platform_version = Object::validated_get_string(ctx, versions, "platformVersion");
 }
-
+/**
+ * @brief Registers an event listener on the SharedApp that fires on various app events.
+ * This includes login, logout, switching users, linking users and refreshing custom data.
+ *
+ * @param ctx JS context
+ * @param this_object JS's object holding the `AppClass`
+ * @param args Contains a callback that will be called on an event
+ * @param return_value \ref void
+ */
 template <typename T>
 void AppClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
 {
@@ -402,6 +410,14 @@ void AppClass<T>::add_listener(ContextType ctx, ObjectType this_object, Argument
     NotificationBucket::emplace(app->m_notification_handle, std::move(protected_callback), std::move(token));
 }
 
+/**
+ * @brief Removes the event listener for the provided callback.
+ *
+ * @param ctx JS context
+ * @param this_object JS's object holding the `AppClass`
+ * @param args Contains a callback function that was given to `addListener`
+ * @param return_value \ref void
+ */
 template <typename T>
 void AppClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
 {
@@ -413,6 +429,14 @@ void AppClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Argum
     NotificationBucket::erase(app->m_notification_handle, std::move(protected_callback));
 }
 
+/**
+ * @brief Removes all registered event listeners.
+ *
+ * @param ctx JS context
+ * @param this_object JS's object holding the `AppClass`
+ * @param args No arguments
+ * @param return_value \ref void
+ */
 template <typename T>
 void AppClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, Arguments& args,
                                        ReturnValue& return_value)
