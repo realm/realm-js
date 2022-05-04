@@ -27,10 +27,7 @@ module.exports = {
       android: {
         sourceDir: "./react-native/android",
       },
-      ios: {
-        podspecPath: path.resolve(__dirname, "RealmJS.podspec"),
-        sharedLibraries: ["libc++", "libz"],
-      },
+      ios: {},
     },
   },
 };
