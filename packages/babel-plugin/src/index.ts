@@ -16,56 +16,60 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import type * as Babel from "@babel/core";
-import { PluginObj } from "@babel/core";
+import { types, NodePath, PluginObj } from "@babel/core";
 
-type RealmType = { type: string; objectType?: string; default?: Babel.types.Expression };
+type RealmType = { type: string; objectType?: string; default?: types.Expression };
 
 // This could be "int" or "double", but we default to "double" because this is how a JS Number is represented internally
 const DEFAULT_NUMERIC_TYPE = "double";
 
-function getRealmType(babel: typeof Babel, classProperty: Babel.types.ClassProperty): RealmType | undefined {
-  const { types } = babel;
-  if (types.isTSTypeAnnotation(classProperty.typeAnnotation)) {
-    const typeAnnotation = classProperty.typeAnnotation.typeAnnotation;
-    if (typeAnnotation.type === "TSBooleanKeyword") {
+function getRealmType(path: NodePath<types.ClassProperty>): RealmType | undefined {
+  const typeAnnotationPath = path.get("typeAnnotation");
+  if (typeAnnotationPath.isTSTypeAnnotation()) {
+    const typeAnnotation = typeAnnotationPath.get("typeAnnotation");
+    if (typeAnnotation.isTSBooleanKeyword()) {
       return { type: "bool" };
-    } else if (typeAnnotation.type === "TSStringKeyword") {
+    } else if (typeAnnotation.isTSStringKeyword()) {
       return { type: "string" };
-    } else if (typeAnnotation.type === "TSNumberKeyword") {
+    } else if (typeAnnotation.isTSNumberKeyword()) {
       return { type: DEFAULT_NUMERIC_TYPE };
-    } else if (typeAnnotation.type === "TSTypeReference") {
-      const { typeName, typeParameters } = typeAnnotation;
-      if (types.isIdentifier(typeName)) {
-        return { type: typeName.name };
+    } else if (typeAnnotation.isTSTypeReference()) {
+      const typeName = typeAnnotation.get("typeName");
+      const typeParameters = typeAnnotation.get("typeParameters");
+      if (typeName.isIdentifier()) {
+        return { type: typeName.node.name };
       } else if (
-        types.isIdentifier(typeName.left, { name: "Realm" }) &&
-        types.isIdentifier(typeName.right, { name: "List" }) &&
-        typeParameters
+        typeName.isTSQualifiedName() &&
+        typeName.get("left").isIdentifier({ name: "Realm" }) &&
+        typeName.get("right").isIdentifier({ name: "List" }) &&
+        typeParameters.isTSTypeParameterInstantiation()
       ) {
-        const objectType = typeParameters.params[0];
+        const objectType = typeParameters.node.params[0];
         if (objectType && types.isTSTypeReference(objectType) && types.isIdentifier(objectType.typeName)) {
           return { type: "list", objectType: objectType.typeName.name };
         }
       }
     }
-  } else if (types.isStringLiteral(classProperty.value)) {
-    return { type: "string", default: classProperty.value };
-  } else if (types.isNumericLiteral(classProperty.value)) {
-    return { type: DEFAULT_NUMERIC_TYPE, default: classProperty.value };
+  } else {
+    const valuePath = path.get("value");
+    if (valuePath.isStringLiteral()) {
+      return { type: "string", default: valuePath.node };
+    } else if (valuePath.isNumericLiteral()) {
+      return { type: DEFAULT_NUMERIC_TYPE, default: valuePath.node };
+    }
   }
 }
 
-function visitRealmClassProperty(babel: typeof Babel, classProperty: Babel.types.ClassProperty) {
-  const { types } = babel;
-  if (types.isIdentifier(classProperty.key)) {
-    const name = classProperty.key.name;
-    const realmType = getRealmType(babel, classProperty);
-    if (realmType) {
-      const properties: Babel.types.ObjectProperty[] = [
+function visitRealmClassProperty(path: NodePath<types.ClassProperty>) {
+  const keyPath = path.get("key");
+  if (keyPath.isIdentifier()) {
+    const name = keyPath.node.name;
+    const realmType = getRealmType(path);
+    if (realmType && typeof name === "string") {
+      const properties: types.ObjectProperty[] = [
         types.objectProperty(types.identifier("type"), types.stringLiteral(realmType.type)),
       ];
-      if (classProperty.optional) {
+      if (path.node.optional) {
         properties.push(types.objectProperty(types.identifier("optional"), types.booleanLiteral(true)));
       }
       if (realmType.objectType) {
@@ -83,19 +87,19 @@ function visitRealmClassProperty(babel: typeof Babel, classProperty: Babel.types
   }
 }
 
-function visitRealmClass(babel: typeof Babel, path: Babel.NodePath<Babel.types.ClassDeclaration>) {
-  const { types } = babel;
+function visitRealmClass(path: NodePath<types.ClassDeclaration>) {
   path.addComment("leading", " Modified by @realm/babel-plugin", true);
-
   const className = path.node.id.name;
   // Transform properties to a static schema object
-  const schemaProperties = path.node.body.body
-    .map((child) => {
-      if (types.isClassProperty(child)) {
-        return visitRealmClassProperty(babel, child);
+  const schemaProperties: types.ObjectProperty[] = [];
+  path.traverse({
+    ClassProperty(propertyPath) {
+      const propertySchema = visitRealmClassProperty(propertyPath);
+      if (propertySchema) {
+        schemaProperties.push(propertySchema);
       }
-    })
-    .filter((obj) => obj) as Babel.types.ObjectProperty[]; // Remove any unmapped properties
+    },
+  });
 
   const schema = types.objectExpression([
     types.objectProperty(types.identifier("name"), types.stringLiteral(className)),
@@ -107,12 +111,9 @@ function visitRealmClass(babel: typeof Babel, path: Babel.NodePath<Babel.types.C
   path.get("body").pushContainer("body", schemaStatic);
 }
 
-type AnyImportSpecifier =
-  | Babel.types.ImportSpecifier
-  | Babel.types.ImportDefaultSpecifier
-  | Babel.types.ImportNamespaceSpecifier;
+type AnyImportSpecifier = types.ImportSpecifier | types.ImportDefaultSpecifier | types.ImportNamespaceSpecifier;
 
-function isImportedFromRealm(path: Babel.NodePath<AnyImportSpecifier>) {
+function isImportedFromRealm(path: NodePath<AnyImportSpecifier>) {
   return path.parentPath.isImportDeclaration() && path.parentPath.get("source").isStringLiteral({ value: "realm" });
 }
 
@@ -120,7 +121,7 @@ function isImportedFromRealm(path: Babel.NodePath<AnyImportSpecifier>) {
  * @param path The path of a class which might extend Realm's `Object`
  * @returns True iff the `path` points to a class which extends the `Object` which binds to an `Object` imported from the `"realm"` package.
  */
-function extendsRealmObject(path: Babel.NodePath<Babel.types.ClassDeclaration>) {
+function extendsRealmObject(path: NodePath<types.ClassDeclaration>) {
   // Determine if the super class is the "Object" class from the "realm" package
   const superClass = path.get("superClass");
   if (
@@ -145,12 +146,12 @@ function extendsRealmObject(path: Babel.NodePath<Babel.types.ClassDeclaration>) 
   return false;
 }
 
-export default function (babel: typeof Babel): PluginObj<unknown> {
+export default function (): PluginObj<unknown> {
   return {
     visitor: {
       ClassDeclaration(path) {
         if (extendsRealmObject(path)) {
-          visitRealmClass(babel, path);
+          visitRealmClass(path);
         }
       },
     },
