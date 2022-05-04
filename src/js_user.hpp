@@ -500,6 +500,7 @@ void UserClass<T>::new_watch_stream(ContextType ctx, ObjectType this_object, Arg
 template <typename T>
 void UserClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
 {
+    args.validate_count(1);
     auto callback = Value::validated_to_function(ctx, args[0]);
     auto user = get_internal<T, UserClass<T>>(ctx, this_object);
     Protected<FunctionType> protected_callback(ctx, callback);
@@ -517,6 +518,7 @@ template <typename T>
 void UserClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments& args,
                                    ReturnValue& return_value)
 {
+    args.validate_count(1);
     auto callback = Value::validated_to_function(ctx, args[0]);
     auto user = get_internal<T, UserClass<T>>(ctx, this_object);
     Protected<FunctionType> protected_callback(ctx, callback);
@@ -528,6 +530,7 @@ template <typename T>
 void UserClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, Arguments& args,
                                         ReturnValue& return_value)
 {
+    args.validate_count(0);
     auto user = get_internal<T, UserClass<T>>(ctx, this_object);
     NotificationBucket::erase(user->m_notification_handle);
 }
