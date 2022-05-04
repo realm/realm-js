@@ -147,6 +147,7 @@ export function createCachedObject<T extends Realm.Object>({
     },
   };
 
+  // TODO: We should gracefully handle not yet inserted objects so that the end user can subscribe to them being inserted by populating the cache with an initially null value
   let cachedObjectResult: CachedObject<T> | null = new Proxy(object, cachedObjectHandler);
   const listenerCallback: Realm.ObjectChangeCallback<T> = (obj, changes) => {
     if (changes.deleted) {
