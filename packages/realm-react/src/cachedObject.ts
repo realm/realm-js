@@ -128,7 +128,13 @@ export function createCachedObject<T extends Realm.Object>({
           // only the modified children of the list component actually re-render.
           return new Proxy(listCaches.get(key), {});
         }
-        const cachedCollection = createCachedCollection({ collection: value, updateCallback });
+        const cachedCollection = createCachedCollection({
+          collection: value,
+          updateCallback: () => {
+            cachedObjectResult = new Proxy(object, cachedObjectHandler);
+            notifyListeners();
+          },
+        });
         // Add to a list of teardowns which will be invoked when the cachedObject's teardown is called
         listTearDowns.push(cachedCollection.tearDown);
         // Store the proxied list into a map to persist the cachedCollection
