@@ -17,6 +17,7 @@
   },
   "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
+    "@babel/plugin-proposal-decorators": "^7.17.9",
     "@babel/preset-typescript": "^7.16.7",
     "@types/jest": "^27.4.1",
     "babel": "^6.23.0",
