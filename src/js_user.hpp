@@ -20,6 +20,7 @@
 
 #include "js_class.hpp"
 #include "js_collection.hpp"
+#include "js_notifications.hpp"
 #include "js_app_credentials.hpp"
 #include "js_api_key_auth.hpp"
 #include "js_network_transport.hpp"
@@ -137,8 +138,7 @@ public:
     // User(User&&) = default;
     // User& operator=(User&&) = default;
 
-    using CallbackTokenPair = std::pair<Protected<typename T::Function>, Token>;
-    std::vector<CallbackTokenPair> m_notification_tokens;
+    notifications::NotificationHandle<T, Token> m_notification_handle;
 
     SharedApp m_app;
     SharedUser m_user;
@@ -159,6 +159,7 @@ class UserClass : public ClassDefinition<T, User<T>> {
     using Function = js::Function<T>;
     using ReturnValue = js::ReturnValue<T>;
     using Arguments = js::Arguments<T>;
+    using NotificationBucket = notifications::NotificationBucket<T, Token>;
 
 public:
     std::string const name = "User";
@@ -509,8 +510,7 @@ void UserClass<T>::add_listener(ContextType ctx, ObjectType this_object, Argumen
         Function::callback(protected_ctx, protected_callback, 0, {});
     }));
 
-    // Save token in a member vector of a function to token pair
-    user->m_notification_tokens.emplace_back(std::move(protected_callback), std::move(token));
+    NotificationBucket::emplace(user->m_notification_handle, std::move(protected_callback), std::move(token));
 }
 
 template <typename T>
@@ -521,18 +521,7 @@ void UserClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Argu
     auto user = get_internal<T, UserClass<T>>(ctx, this_object);
     Protected<FunctionType> protected_callback(ctx, callback);
 
-    auto& tokens = user->m_notification_tokens;
-    auto compare = [&](auto&& callback_token_pair) {
-        return typename Protected<FunctionType>::Comparator()(callback_token_pair.first, protected_callback);
-    };
-
-    // Retrieve the token with the given function and use to call unsubscribe
-    auto callback_token_pair_iter = std::find_if(tokens.begin(), tokens.end(), compare);
-
-    if (callback_token_pair_iter != tokens.end()) {
-        user->m_user->unsubscribe(callback_token_pair_iter->second);
-        tokens.erase(callback_token_pair_iter);
-    }
+    NotificationBucket::erase(user->m_notification_handle, std::move(protected_callback));
 }
 
 template <typename T>
@@ -540,13 +529,7 @@ void UserClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object,
                                         ReturnValue& return_value)
 {
     auto user = get_internal<T, UserClass<T>>(ctx, this_object);
-    auto& tokens = user->m_notification_tokens;
-
-    for (auto& token : user->m_notification_tokens) {
-        user->m_user->unsubscribe(token.second);
-    }
-
-    tokens.clear();
+    NotificationBucket::erase(user->m_notification_handle);
 }
 } // namespace js
 } // namespace realm
