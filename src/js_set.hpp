@@ -28,6 +28,7 @@
 
 #include <realm/object-store/shared_realm.hpp>
 #include <realm/object-store/set.hpp>
+#include <realm/object-store/collection_notifications.hpp>
 
 namespace realm {
 namespace js {
@@ -119,7 +120,7 @@ public:
     }
     void derive_property_type(StringData const& object_name, Property& prop) const;
 
-    notifications::NotificationHandle<T> m_notification_handle;
+    notifications::NotificationHandle<T, NotificationToken> m_notification_handle;
 };
 
 
@@ -140,7 +141,7 @@ struct SetClass : ClassDefinition<T, realm::js::Set<T>, CollectionClass<T>> {
     using Value = js::Value<T>;
     using ReturnValue = js::ReturnValue<T>;
     using Arguments = js::Arguments<T>;
-    using NotificationBucket = notifications::NotificationBucket<T>;
+    using NotificationBucket = notifications::NotificationBucket<T, NotificationToken>;
 
     static ObjectType create_instance(ContextType, realm::object_store::Set);
 

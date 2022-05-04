@@ -182,6 +182,24 @@ class App {
    * @since v10.0.0
    */
   getApp(appId) {}
+
+  /**
+   * Adds a listener that will be fired on various user events.
+   * This includes login, logout, switching users, linking users and refreshing custom data.
+   * @param {function} callback
+   */
+  addListener(callback) {}
+
+  /**
+   * Removes an event listener (see {@link addListener})
+   * @param {function} callback
+   */
+  removeListener(callback) {}
+
+  /**
+   * Removes all event listeners
+   */
+  removeListener() {}
 }
 
 /**
@@ -876,6 +894,24 @@ class User {
    * @returns {Realm.User~Push}
    */
   push(serviceName) {}
+
+  /**
+   * Adds a listener that will be fired on various user related events.
+   * This includes auth token refresh, refresh token refresh, refresh custom user data, and logout.
+   * @param {function} callback
+   */
+  addListener(callback) {}
+
+  /**
+   * Removes an event listener (see {@link addListener})
+   * @param {function} callback
+   */
+  removeListener(callback) {}
+
+  /**
+   * Removes all event listeners
+   */
+  removeAllListeners() {}
 }
 
 /**
