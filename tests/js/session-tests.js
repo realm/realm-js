@@ -1456,10 +1456,10 @@ module.exports = {
             const configDst = Object.assign(
               {},
               destination == "local"
-                ? srcEncryption == "plain"
+                ? dstEncryption == "plain"
                   ? configLocal
                   : configLocalEnc
-                : srcEncryption == "plain"
+                : dstEncryption == "plain"
                 ? configSync
                 : configSyncEnc,
             );
@@ -1678,5 +1678,10 @@ module.exports = {
     TestCase.assertUndefined(encryptedRealmCopy);
 
     realm1.close();
+  },
+  testWTF: async function () {
+    const Realm = require("realm");
+    const app = new Realm.App({ id: "myapp-abcde" });
+    console.log(`app id: ${app.id}`);
   },
 };
