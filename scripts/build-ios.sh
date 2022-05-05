@@ -102,7 +102,7 @@ DEVELOPER_DIR="${DEVELOPER_DIR_OVERRIDE:-/Applications/Xcode_12.4.app}" xcodebui
     -configuration $CONFIGURATION \
     CC="$PROJECT_ROOT/scripts/ccache-clang.sh" \
     CXX="$PROJECT_ROOT/scripts/ccache-clang++.sh" \
-    ONLY_ACTIVE_ARCH=NO \
+    ONLY_ACTIVE_ARCH=YES \
     BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
     SUPPORTS_MACCATALYST=NO
 
