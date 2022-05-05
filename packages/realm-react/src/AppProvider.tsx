@@ -71,9 +71,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children, ...appProps 
  * @throws if an AppProvider does not exist in the component’s ancestors
  */
 export const useApp = (): Realm.App => {
-  const context = useContext(AppContext);
-  if (context === null) {
+  const app = useContext(AppContext);
+
+  if (app === null) {
     throw new Error("AppContext not found.  Did you wrap your app in AppProvider?");
   }
-  return context;
+  return app;
 };
