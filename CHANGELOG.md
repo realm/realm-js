@@ -22,6 +22,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Improved documentation for `Realm.copyBundledRealmFiles`.
 * Refactored notifications to use a `NotificationBucket` API, enabling JS objects to be garbage collected on teardown of the JS engine. ([#4550](https://github.com/realm/realm-js/pull/4550))
 * Updated a test to be ready for node 18.
+* Fixed a typo in the `testRealmConversions` test which prevented some test scenarios from executing.
 * Upgraded Realm Core from v11.14.0 to v11.15.0.
 
 10.16.0 Release notes (2022-4-12)
