@@ -1,4 +1,3 @@
-import { useState } from "react";
 ////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2022 Realm Inc.
@@ -23,22 +22,25 @@ import { useEffect, useState } from "react";
 type PrimaryKey = Parameters<typeof Realm.prototype.objectForPrimaryKey>[1];
 
 type ObjectCacheKey = `${string}-${string}`;
-type ObjectCache = Map<ObjectCacheKey, CachedObject>;
+type ObjectCache = Map<ObjectCacheKey, CachedObject<any>>;
 
 const objectCache: ObjectCache = new Map();
 
-type CachedObject<T = {}> = Realm.Object &
-  T & {
-    subscribe: (val: T) => () => void;
-    useObject: (type: string, primaryKey: string) => T;
-  };
+
+type CachedObject<T> = {
+  subscribe: (listener: (val: (T & Realm.Object) | undefined) => void) => () => void;
+  useObject: (type: string, primaryKey: string) => (T & Realm.Object) | undefined;
+  readonly object: (T & Realm.Object) | undefined;
+};
 
 export function getOrCreateCachedObject<T>(realm: Realm, type: string, primaryKey: PrimaryKey) {
-  let object = objectCache.get(`${type}-${primaryKey}`);
-  if (!object) {
-    object = createCachedObject({ realm, type, primaryKey });
+  const objectCacheKey: ObjectCacheKey = `${type}-${primaryKey}`
+  let cachedObject = objectCache.get(objectCacheKey);
+  if (!cachedObject) {
+    cachedObject = createCachedObject({ realm, type, primaryKey });
   }
-  return object;
+  objectCache.set(objectCacheKey, cachedObject);
+  return cachedObject;
 }
 
 /**
@@ -66,25 +68,23 @@ export function createCachedObject<T extends Realm.Object>({
   realm,
   type,
   primaryKey,
-}: CachedObjectArgs<T>): { object: T | null; tearDown: () => void } {
+}: CachedObjectArgs<T>): CachedObject<T> {
+  type ObjectProxy = ProxyHandler<T & Realm.Object>;
+
   // If the object doesn't exist, just return it with an noop tearDown
-  const object = realm.objectForPrimaryKey(type, primaryKey);
-  if (object === null) {
-    // TODO: listen to collection, wait for this object to be inserted
-    return { object, tearDown: () => undefined };
-  }
+  let object = realm.objectForPrimaryKey<T>(type, primaryKey);
 
   const listCaches = new Map();
-  const listTearDowns: Array<() => void> = [];
-  const listeners: Set<(x: CachedObject<T>) => void> = new Set();
+  const listeners: Set<(x: (T & Realm.Object) | undefined) => void> = new Set();
   const objectCacheKey: ObjectCacheKey = `${type}-${primaryKey}`;
   let isRealmListenerSetup = true;
-  let tearDownRealmListener = () => {};
+  let realmListenerTearDowns: Array<() => void> = [];
+  let objectProxy: (T & Realm.Object) | undefined;
 
-  function subscribe(listener: (x: CachedObject<T>) => void) {
+  function subscribe(listener: (x: (T & Realm.Object) | undefined) => void) {
     if (!isRealmListenerSetup) setupRealmListener();
     listeners.add(listener);
-    return function unsubscribe () {
+    return function unsubscribe() {
       listeners.delete(listener);
       if (listeners.size === 0) {
         objectCache.delete(objectCacheKey);
@@ -94,27 +94,50 @@ export function createCachedObject<T extends Realm.Object>({
     };
   }
 
+  function tearDownRealmListener() {
+    realmListenerTearDowns.forEach(x => x());
+    realmListenerTearDowns = [];
+  }
+  
+
   function useObject() {
-    const [obj, setObj] = useState<CachedObject<T>>(() => cachedObjectResult);
+    const [obj, setObj] = useState(objectProxy);
     useEffect(() => subscribe((x) => setObj(x)), []);
     return obj;
   }
 
-  function notifyListeners() {
+  function setObject(newObject: (T & Realm.Object) | undefined) {
+    object = newObject;
+    objectProxy = newObject ? new Proxy(newObject, cachedObjectHandler) : undefined;
     for (const listener of listeners) {
-      listener(cachedObjectResult);
+      listener(newObject);
+    }
+    if (!object) {
+      // Listen to collection, wait for this object to be inserted
+      // TODO: primary key might not be id need to check it from the schema!
+      const collection = realm.objects<T>(type).filtered('id = $0', primaryKey);
+      const listener: Realm.CollectionChangeCallback<T & Realm.Object> = (collection, changes) => {
+        if (changes.insertions.length > 0) {
+          const insertedObject = collection[0]
+          if (insertedObject) {
+            removeListener()
+            setObject(insertedObject);
+          }
+        }
+      }
+      collection.addListener(listener)
+      const removeListener = () => collection.removeListener(listener);
+      realmListenerTearDowns.push(removeListener);
     }
   }
+
+  setObject(object);
 
   // This Proxy handler intercepts any accesses into properties of the cached object
   // of type `Realm.List`, and returns a `cachedCollection` wrapping those properties
   // to allow changes in the list to trigger re-renders
   const cachedObjectHandler: ProxyHandler<T & Realm.Object> = {
     get: function (target, key) {
-      if (key === "subscribe") return subscribe;
-      if (key === "useObject") return useObject;
-      if (key === "tearDown") return tearDownRealmListener;
-
       const value = Reflect.get(target, key);
       // Pass methods through
       if (typeof value === "function") {
@@ -132,13 +155,10 @@ export function createCachedObject<T extends Realm.Object>({
         const cachedCollection = createCachedCollection({
           realm,
           collection: value,
-          updateCallback: () => {
-            cachedObjectResult = new Proxy(object, cachedObjectHandler);
-            notifyListeners();
-          },
+          updateCallback: () => setObject(object),
         });
         // Add to a list of teardowns which will be invoked when the cachedObject's teardown is called
-        listTearDowns.push(cachedCollection.tearDown);
+        realmListenerTearDowns.push(cachedCollection.tearDown);
         // Store the proxied list into a map to persist the cachedCollection
         listCaches.set(key, cachedCollection.collection);
         return cachedCollection.collection;
@@ -147,13 +167,9 @@ export function createCachedObject<T extends Realm.Object>({
     },
   };
 
-  // TODO: We should gracefully handle not yet inserted objects so that the end user can subscribe to them being inserted by populating the cache with an initially null value
-  let cachedObjectResult: CachedObject<T> | null = new Proxy(object, cachedObjectHandler);
   const listenerCallback: Realm.ObjectChangeCallback<T> = (obj, changes) => {
     if (changes.deleted) {
-      // TODO: listen to collection, wait for this object to be inserted
-      cachedObjectResult = null;
-      notifyListeners();
+      setObject(undefined);
     } else if (changes.changedProperties.length > 0) {
       // Don't force a second re-render if any of the changed properties is a Realm.List,
       // as the List's cachedCollection will force a re-render itself
@@ -163,30 +179,36 @@ export function createCachedObject<T extends Realm.Object>({
       const shouldRerender = !anyListPropertyModified;
 
       if (shouldRerender) {
-        cachedObjectResult = new Proxy(object, cachedObjectHandler);
-        notifyListeners();
+        setObject(object);
       }
     }
   };
 
-  function setupRealmListener() {
-    // We cannot add a listener to an invalid object
-    if (!object?.isValid()) return;
+  const cachedObject: CachedObject<T> = {
+    subscribe,
+    useObject,
+    get object() {
+      return objectProxy;
+    },
+  };
 
-    if (realm.isInTransaction) {
-      // If we are in a transaction, then push adding the listener to the event loop.  This will allow the write transaction to finish.
-      // see https://github.com/realm/realm-js/issues/4375
-      setImmediate(() => object.addListener(listenerCallback));
-    } else {
-      object.addListener(listenerCallback);
-    }
-    objectCache.set(objectCacheKey, cachedObjectResult);
-    tearDownRealmListener = () => {
-      object.removeListener(listenerCallback);
-      listTearDowns.forEach((listTearDown) => listTearDown());
-    };
+  async function setupRealmListener() {
+    await waitUntilNoActiveTransaction(realm)
+  
+    // We cannot add a listener to an invalid object
+    if (!object) return;
+    if (!object?.isValid()) return;
+    object.addListener(listenerCallback);
+    realmListenerTearDowns.push(() => object!.removeListener(listenerCallback));
     isRealmListenerSetup = true;
   }
 
-  return cachedObjectResult;
+  return cachedObject;
+}
+
+function waitUntilNoActiveTransaction(realm: Realm) {
+  // If we are in a transaction, then push adding the listener to the event loop.  This will allow the write transaction to finish.
+  // see https://github.com/realm/realm-js/issues/4375
+  if (realm.isInTransaction) return Promise.resolve()
+  return new Promise((resolve) => setImmediate(resolve));
 }
