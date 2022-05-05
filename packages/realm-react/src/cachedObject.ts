@@ -69,9 +69,6 @@ export function createCachedObject<T extends Realm.Object>({
   type,
   primaryKey,
 }: CachedObjectArgs<T>): CachedObject<T> {
-  type ObjectProxy = ProxyHandler<T & Realm.Object>;
-
-  // If the object doesn't exist, just return it with an noop tearDown
   let object = realm.objectForPrimaryKey<T>(type, primaryKey);
 
   const listCaches = new Map();
