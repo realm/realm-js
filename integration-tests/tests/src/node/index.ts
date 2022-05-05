@@ -19,3 +19,4 @@
 // NOTE: This file is only supposed to be imported from a Node.js environment
 
 import "./analytics";
+import "./clean-exit";

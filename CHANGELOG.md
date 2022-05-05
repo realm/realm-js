@@ -59,6 +59,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * Update token in integration test.
 * Upgraded Realm Core from v11.12.0 to v11.13.0.
+* Added a failing test case for Node.js scripts failing to exit cleanly ([#4556](https://github.com/realm/realm-js/pull/4556))
 
 10.14.0 Release notes (2022-3-24)
 =============================================================
