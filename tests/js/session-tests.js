@@ -1679,9 +1679,4 @@ module.exports = {
 
     realm1.close();
   },
-  testWTF: async function () {
-    const Realm = require("realm");
-    const app = new Realm.App({ id: "myapp-abcde" });
-    console.log(`app id: ${app.id}`);
-  },
 };
