@@ -60,28 +60,7 @@ using namespace realm::rpc;
 @end
 
 extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool create) {
-    Ivar contextIvar = class_getInstanceVariable([executor class], "_context");
-    if (!contextIvar) {
-        return NULL;
-    }
-
-    id rctJSContext = object_getIvar(executor, contextIvar);
-    if (!rctJSContext && create) {
-        Class RCTJavaScriptContext = NSClassFromString(@"RCTJavaScriptContext");
-        if ([RCTJavaScriptContext instancesRespondToSelector:@selector(initWithJSContext:onThread:)]) {
-            // for RN 0.28.0+
-            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:[JSContext new] onThread:[NSThread currentThread]];
-        }
-        else {
-            // for RN < 0.28.0
-            NSCAssert([RCTJavaScriptContext instancesRespondToSelector:@selector(initWithJSContext:)], @"React Native version too old");
-            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:[JSContext new]];
-        }
-
-        object_setIvar(executor, contextIvar, rctJSContext);
-    }
-
-    return [rctJSContext context].JSGlobalContextRef;
+     return NULL;
 }
 
 @interface RealmReact () <RCTBridgeModule, RCTInvalidating>
@@ -271,7 +250,7 @@ RCT_REMAP_METHOD(emit, emitEvent:(NSString *)eventName withObject:(id)object) {
 
 - (void)invalidate {
 #if DEBUG
-    // Immediately close any open sync sessions to prevent race condition with new JS thread 
+    // Immediately close any open sync sessions to prevent race condition with new JS thread
     // when hot reloading
     RJSCloseSyncSessions();
 #endif
@@ -322,7 +301,7 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor, std::functi
             if (!self || !bridge) {
                 return;
             }
-            
+
             _initializeOnJSThread(^{
                 // RN < 0.58 has a private method that returns the js context
                 if ([bridge respondsToSelector:@selector(jsContextRef)]) {
@@ -339,8 +318,8 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor, std::functi
                 return static_cast<RealmJSCRuntime*>(bridge.runtime)->ctx_;
             }, ^{
                 // Calling jsCallInvokver->invokeAsync tells React Native to execute the lambda passed
-                // in on the JS thread, and then flush the internal "microtask queue", which has the 
-                // effect of flushing any pending UI updates. 
+                // in on the JS thread, and then flush the internal "microtask queue", which has the
+                // effect of flushing any pending UI updates.
                 //
                 // We call this after we have called into JS from C++, in order to ensure that the RN
                 // UI updates in response to any changes from Realm. We need to do this as we bypass
@@ -351,7 +330,7 @@ void _initializeOnJSThread(JSContextRefExtractor jsContextExtractor, std::functi
                 // Calls are debounced using the waitingForUiFlush flag, so if an async flush is already
                 // pending when another JS to C++ call happens, we don't call invokeAsync again. This works
                 // because the work is performed before the microtask queue is flushed - see sequence
-                // diagram at https://bit.ly/3kexhHm. It might be possible to further optimize this, 
+                // diagram at https://bit.ly/3kexhHm. It might be possible to further optimize this,
                 // e.g. only flush the queue a maximum of once per frame, but this seems reasonable.
                 if (!waitingForUiFlush) {
                     waitingForUiFlush = true;
