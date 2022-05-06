@@ -242,7 +242,7 @@ describe.each`
     Realm.clearTestState();
   });
 
-  it.only("renders data in one render cycle per visible object in collection", async () => {
+  it("renders data in one render cycle per visible object in collection", async () => {
     const { getByTestId } = render(<App queryType={queryType} />);
 
     await waitFor(() => getByTestId("list"));
