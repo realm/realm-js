@@ -59,8 +59,9 @@ using namespace realm::rpc;
 - (std::shared_ptr<facebook::react::CallInvoker>)jsCallInvoker;
 @end
 
+// no longer needed in React Native > 0.44
 extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool create) {
-     return NULL;
+    return NULL;
 }
 
 @interface RealmReact () <RCTBridgeModule, RCTInvalidating>
