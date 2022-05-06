@@ -10,6 +10,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Added missing type definitions for `newRealmFileBehavior` and `existingRealmFileBehavior` when opening a flexible sync Realm ([#4467](https://github.com/realm/realm-js/issues/4467), since v10.12.0)
 * Adding an object to a Set, deleting the parent object, and then deleting the previously mentioned object causes crash ([#5387](https://github.com/realm/realm-core/issues/5387), since v10.5.0)
 * Synchronized Realm files which were first created using SDK version released in the second half of August 2020 would be redownloaded instead of using the existing file, possibly resulting in the loss of any unsynchronized data in those files (since v10.10.1).
+* Fixed buildtime error where our package would be ignored due to use of the deprecated `podspecPath` and `sharedLibraries` keys in the `react-native.config.js`. ([#4553](https://github.com/realm/realm-js/issues/4553))
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -21,6 +22,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Improved documentation for `Realm.copyBundledRealmFiles`.
 * Refactored notifications to use a `NotificationBucket` API, enabling JS objects to be garbage collected on teardown of the JS engine. ([#4550](https://github.com/realm/realm-js/pull/4550))
 * Updated a test to be ready for node 18.
+* Fixed a typo in the `testRealmConversions` test which prevented some test scenarios from executing.
 * Upgraded Realm Core from v11.14.0 to v11.15.0.
 
 10.16.0 Release notes (2022-4-12)

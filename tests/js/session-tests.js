@@ -1456,10 +1456,10 @@ module.exports = {
             const configDst = Object.assign(
               {},
               destination == "local"
-                ? srcEncryption == "plain"
+                ? dstEncryption == "plain"
                   ? configLocal
                   : configLocalEnc
-                : srcEncryption == "plain"
+                : dstEncryption == "plain"
                 ? configSync
                 : configSyncEnc,
             );
