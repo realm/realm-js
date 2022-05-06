@@ -152,18 +152,19 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         }).to.throw("'partitionValue' cannot be specified when flexible sync is enabled");
       });
 
-      it("accepts { flexible: false } and a partition value", function () {
-        expect(() => {
-          new Realm({
-            sync: {
-              _sessionStopPolicy: SessionStopPolicy.Immediately,
-              flexible: false,
-              user: this.user,
-              partitionValue: "test",
-            },
-          });
-        }).to.not.throw();
-      });
+      // NOTE: This is not a compatible configuration anymore and will cause a typescript error
+      // it("accepts { flexible: false } and a partition value", function () {
+      //   expect(() => {
+      //     new Realm({
+      //       sync: {
+      //         _sessionStopPolicy: SessionStopPolicy.Immediately,
+      //         flexible: false,
+      //         user: this.user,
+      //         partitionValue: "test",
+      //       },
+      //     });
+      //   }).to.not.throw();
+      // });
 
       it("accepts { flexible: undefined } and a partition value", function () {
         expect(() => {

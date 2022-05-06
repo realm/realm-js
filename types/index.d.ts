@@ -130,9 +130,8 @@ declare namespace Realm {
         clientResetAfter?: ClientResetAfterCallback;
     }
 
-    interface BaseSyncConfiguration<ClientResetModeT = ClientResetMode>{
+    interface BaseSyncConfiguration{
         user: User;
-        flexible?: boolean | undefined;
         customHttpHeaders?: { [header: string]: string };
         ssl?: SSLConfiguration;
         _sessionStopPolicy?: SessionStopPolicy;
@@ -141,16 +140,18 @@ declare namespace Realm {
         error?: ErrorCallback;
     }
 
-    // Note: This type does not work correctly without strictNullChecks enabled –
-    // a config of { flexible: true } will incorrectly have a type error
+    // Note: {flexible: boolean} should rather be {flexible: true}, but this was
+    // incompatible with the default tsconfig in Expo (strict: false).
+    // It is possible to set flexible to `false`, but it is not possible to set
+    // flexible and partitionValue in the same config.
     interface FlexibleSyncConfiguration extends BaseSyncConfiguration {
-        flexible: true;
+        flexible: boolean;
         partitionValue?: never;
         clientReset?: ClientResetConfiguration<ClientResetModeManualOnly>;
     }
 
     interface PartitionSyncConfiguration extends BaseSyncConfiguration {
-        flexible?: false | undefined;
+        flexible?: never;
         partitionValue: Realm.App.Sync.PartitionValue;
         clientReset?: ClientResetConfiguration<ClientResetMode>;
     }
