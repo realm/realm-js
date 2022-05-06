@@ -50,7 +50,7 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
- 
+
       - name: Cache prebuild artifacts
         id: cache-prebuild
         uses: actions/cache@v2
@@ -263,7 +263,6 @@ jobs:
       fail-fast: false
       matrix:
         variant:
-          #TODO: Reactivate debug when builds are optimized
           #type: [Release, Debug]
           - { os: linux, target: test, runner: ubuntu-latest, environment: node }
           - { os: windows, target: test, runner: windows-2019, environment: node}
@@ -271,14 +270,13 @@ jobs:
           - { os: linux, target: "test:renderer", runner: ubuntu-latest, environment: electron }
           - { os: windows, target: "test:main", runner: windows-2019, environment: electron }
           - { os: windows, target: "test:renderer", runner: windows-2019, environment: electron }
-          #- { os: android, target: "test:android", runner: macos-latest, environment: react-native }
-          #TODO: reenable MacOSX dependant jobs when more runners are available
-          #- { os: darwin, target: "test:main", runner: macos-latest, environment: electron }
-          #- { os: darwin, target: "test:renderer", runner: macos-latest, environment: electron }
-          #- { os: darwin, target: test, runner: macos-latest, environment: node }
-          #- { os: android, target: "test:android:chrome", runner: macos-latest, environment: react-native }
-          - { os: ios, target: "test:simulator", runner: macos-latest, environment: react-native }
-          - { os: ios, target: "test:simulator:chrome", runner: macos-latest, environment: react-native }
+          - { os: android, target: "test:android", runner: macos-latest, environment: react-native }
+          - { os: darwin, target: "test:main", runner: macos-latest, environment: electron }
+          - { os: darwin, target: "test:renderer", runner: macos-latest, environment: electron }
+          - { os: darwin, target: test, runner: macos-latest, environment: node }
+          - { os: android, target: "test:android:chrome", runner: macos-latest, environment: react-native }
+          - { os: ios, target: "test:ios", runner: macos-latest, environment: react-native }
+          - { os: ios, target: "test:ios:chrome", runner: macos-latest, environment: react-native }
           - { os: ios, target: "test:catalyst", runner: macos-latest, environment: react-native }
           - { os: ios, target: "test:catalyst:chrome", runner: macos-latest, environment: react-native }
     timeout-minutes: 60
