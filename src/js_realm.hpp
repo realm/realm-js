@@ -379,6 +379,7 @@ public:
     static void copy_bundled_realm_files(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void delete_file(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void realm_file_exists(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static bool check_realm_file_exists(ContextType, ValueType);
 
     static void bson_parse_json(ContextType, ObjectType, Arguments&, ReturnValue&);
 
@@ -789,11 +790,32 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
 
 
 /**
- * @brief Handle any `initialSubscriptions` object in the config
+ * @brief Handle the `initialSubscriptions` object in the config, if any, which
+ * allows users to specify an initial set of flexible sync subscriptions to be
+ * bootstrapped when opening a Realm.
+ *
+ * If an `initialSubscriptions` object is provided in the config, it must be an
+ * object with an `update` property, which is a function (called with the Realm
+ * as an argument) which should update the Realm's subscriptions. If called from
+ * `Realm.open`, then the JS (in the `open` method in `lib/extensions.js`) will
+ * return a promise which resolves when the subscription update has been
+ * synchronised.
+ *
+ * If the object contains a `rerunOnStartup` property, this must be a boolean,
+ * which specifies that we should re-run the `update` function every time the
+ * Realm is opened rather than just the first time. This allows users to
+ * workaround the lack of "dynamic" date queries for synced data (e.g. "last 30
+ * days"), by creating the dynamic values in their lanaguge and passing them
+ * into the subscription's, which can then be updated (by using a named query)
+ * every time their app starts.
+ *
+ * This method is separate from `get_realm_config` because this functionality is
+ * not yet implemented in core, and the work needs to performed after the Realm
+ * has been opened.
  *
  * @tparam T
- * @param ctx
- * @param config_value
+ * @param ctx The JavaScript context
+ * @param config_value The Realm config, as a `ValueType`
  */
 template <typename T>
 void RealmClass<T>::handle_initial_subscriptions(ContextType ctx, ValueType config_value, ObjectType realm_object,
@@ -824,6 +846,8 @@ void RealmClass<T>::handle_initial_subscriptions(ContextType ctx, ValueType conf
                                 ? false
                                 : Value::validated_to_boolean(ctx, rerun_on_startup_value, "rerunOnStartup");
 
+    // Only run the update function if the Realm did not already exist, i.e. it's
+    // the first time it has been opened, or if `rerunOnStartup` is true
     if (!realm_exists || rerun_on_startup) {
         ValueType arguments[] = {realm_object};
         Function<T>::call(ctx, update_function, 1, arguments);
@@ -839,8 +863,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, Argumen
     ConstructorMap constructors;
 
     ValueType config_value = args[0];
-    std::string realm_file_path = validate_and_normalize_config(ctx, config_value).path;
-    bool realm_exists = realm::util::File::exists(realm_file_path);
+    bool realm_exists = check_realm_file_exists(ctx, config_value);
 
     bool schema_updated = get_realm_config(ctx, args.count, args.value, config, defaults, constructors);
     auto realm = create_shared_realm(ctx, config, schema_updated, std::move(defaults), std::move(constructors));
@@ -942,9 +965,15 @@ void RealmClass<T>::realm_file_exists(ContextType ctx, ObjectType this_object, A
                                       ReturnValue& return_value)
 {
     args.validate_maximum(1);
-    ValueType value = args[0];
-    std::string realm_file_path = validate_and_normalize_config(ctx, value).path;
-    return_value.set(realm::util::File::exists(realm_file_path));
+    ValueType config_value = args[0];
+    return_value.set(check_realm_file_exists(ctx, config_value));
+}
+
+template <typename T>
+bool RealmClass<T>::check_realm_file_exists(ContextType ctx, ValueType config_value)
+{
+    std::string realm_file_path = validate_and_normalize_config(ctx, config_value).path;
+    return realm::util::File::exists(realm_file_path);
 }
 
 template <typename T>
@@ -1073,8 +1102,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
     ConstructorMap constructors;
 
     ValueType config_value = args[0];
-    std::string realm_file_path = validate_and_normalize_config(ctx, config_value).path;
-    bool realm_exists = realm::util::File::exists(realm_file_path);
+    bool realm_exists = check_realm_file_exists(ctx, config_value);
 
     bool schema_updated = get_realm_config(ctx, args.count - 1, args.value, config, defaults, constructors);
 
