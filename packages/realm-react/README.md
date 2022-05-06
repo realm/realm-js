@@ -292,3 +292,35 @@ const SomeComponent = () => {
 	//...
 }
 ```
+
+### `useUser` and the `UserProvider`
+
+With the introduction of the `UserProvider`, the `user` can be automatically populated into the underlying Realm configuration.  The `fallback` property can be used to provide a login component.
+The child components will be rendered as soon as a user has authenticated.  On logout, the fallback will be displayed again.
+
+`UserProvider` usage:
+
+```tsx
+import { AppProvider, UserProvider } from '@realm/react'
+//...
+<AppProvider id={appId}>
+	<UserProvider fallback={LoginComponent}>
+		{/* After login, user will be automatically populated in realm configuration */}
+		<RealmProvider sync={{flexible: true}}>
+		//...
+		</RealmProvider>
+	</UserProvider>
+</AppProvider>
+```
+
+`useUser` usage:
+```tsx
+// Access the app instance using the useApp hook
+import { useUser } from '@realm/react'
+
+const SomeComponent = () => {
+	const user = useUser();
+
+	//...
+}
+```

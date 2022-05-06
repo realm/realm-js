@@ -1,6 +1,29 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
+* Add UserProvider and useUser hook. Usage example:
+```
+import {AppProvider, UserProvider} from '@realm/react'
+//...
+// Wrap your RealmProvider with the AppProvider and provide an appId
+<AppProvider id={appId}>
+	<UserProvider fallback={LoginComponent}>
+		{/* After login, user will be automatically populated in realm configuration */}
+		<RealmProvider sync={{flexible: true}}>
+		//...
+		</RealmProvider>
+	</UserProvider>
+</AppProvider>
+
+// Access the app instance using the useApp hook
+import {useUser} from '@realm/react'
+
+const SomeComponent = () => {
+	const user = useUser()
+
+	//...
+}
+```
 * Add AppProvider and useApp hook.  Usage example:
 ```
 import {AppProvider} from '@realm/react'
