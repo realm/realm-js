@@ -371,6 +371,8 @@ public:
                                  ObjectDefaultsMap&, ConstructorMap&);
     static void set_binding_context(ContextType ctx, std::shared_ptr<Realm> const& realm, bool schema_updated,
                                     ObjectDefaultsMap&& defaults, ConstructorMap&& constructors);
+    static void handle_initial_subscriptions(ContextType ctx, size_t argc, const ValueType arguments[],
+                                             realm::Realm::Config&, ObjectDefaultsMap&, ConstructorMap&);
 
     static void schema_version(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void clear_test_state(ContextType, ObjectType, Arguments&, ReturnValue&);
