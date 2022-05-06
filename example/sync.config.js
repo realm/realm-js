@@ -1,6 +1,6 @@
 export const SYNC_CONFIG = {
   // Set `enabled` to `true` to enable sync.
-  enabled: true,
+  enabled: false,
   // Add your Realm App ID here if sync is enabled.
-  appId: 'realmtemplate-waxdf',
+  appId: '<Your App ID>',
 };
