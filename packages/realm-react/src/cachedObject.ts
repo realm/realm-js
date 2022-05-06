@@ -109,7 +109,7 @@ export function createCachedObject<T extends Realm.Object>({
     }
     if (!object) {
       // Listen to collection, wait for this object to be inserted
-      const pk = realm.schema.find(x => x?.name === type)?.primaryKey
+      const pk = realm.schema.find((x) => x?.name === type)?.primaryKey;
       if (!pk) throw new Error(`Could not find primary key for type ${type}`);
       const collection = realm.objects<T>(type).filtered(`${pk} = $0`, primaryKey);
       const listener: Realm.CollectionChangeCallback<T & Realm.Object> = (collection, changes) => {
@@ -179,7 +179,7 @@ export function createCachedObject<T extends Realm.Object>({
   };
 
   setObject(object);
-  
+
   const cachedObject: CachedObject<T> = {
     subscribe,
     useObject,
