@@ -213,17 +213,30 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             this.config = getConfig(this.user, {} as any);
 
             await expect((Realm as any).open(this.config)).to.be.rejectedWith(
-              "initialSubscriptions.update must be a function which updates the subscription set, 'undefined' was supplied",
+              "update must be of type 'function', got (undefined)",
             );
           });
 
-          it("throws an error if the `update` function is not a function", async function () {
+          it("throws an error if `update` is not a function", async function () {
             this.config = getConfig(this.user, {
               update: "Person",
             } as any);
 
             await expect((Realm as any).open(this.config)).to.be.rejectedWith(
-              "initialSubscriptions.update must be a function which updates the subscription set, 'string' was supplied",
+              "update must be of type 'function', got (Person)",
+            );
+          });
+
+          it("throws an error if `rerunOnStartup` is not a boolean", async function () {
+            this.config = getConfig(this.user, {
+              update: () => {
+                // no-op
+              },
+              rerunOnStartup: "yes please",
+            } as any);
+
+            await expect((Realm as any).open(this.config)).to.be.rejectedWith(
+              /rerunOnStartup must be of type 'boolean', got.*/,
             );
           });
         });

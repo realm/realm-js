@@ -47,6 +47,7 @@
 
 #include <realm/object-store/util/scheduler.hpp>
 
+
 #include <realm/object-store/binding_context.hpp>
 #include <realm/object-store/object_accessor.hpp>
 #include <realm/object-store/results.hpp>
@@ -371,8 +372,7 @@ public:
                                  ObjectDefaultsMap&, ConstructorMap&);
     static void set_binding_context(ContextType ctx, std::shared_ptr<Realm> const& realm, bool schema_updated,
                                     ObjectDefaultsMap&& defaults, ConstructorMap&& constructors);
-    static void handle_initial_subscriptions(ContextType ctx, size_t argc, const ValueType arguments[],
-                                             realm::Realm::Config&, ObjectDefaultsMap&, ConstructorMap&);
+    static void handle_initial_subscriptions(ContextType, ValueType, ObjectType, bool);
 
     static void schema_version(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void clear_test_state(ContextType, ObjectType, Arguments&, ReturnValue&);
@@ -787,6 +787,49 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
     return schema_updated;
 }
 
+
+/**
+ * @brief Handle any `initialSubscriptions` object in the config
+ *
+ * @tparam T
+ * @param ctx
+ * @param config_value
+ */
+template <typename T>
+void RealmClass<T>::handle_initial_subscriptions(ContextType ctx, ValueType config_value, ObjectType realm_object,
+                                                 bool realm_exists)
+{
+    if (!Value::is_object(ctx, config_value)) {
+        return;
+    }
+    ObjectType config_object = Value::validated_to_object(ctx, config_value);
+
+    ValueType sync_value = Object::get_property(ctx, config_object, "sync");
+    if (Value::is_undefined(ctx, sync_value)) {
+        return;
+    }
+    ObjectType sync_object = Value::validated_to_object(ctx, sync_value);
+
+    ValueType initial_subscriptions_value = Object::get_property(ctx, sync_object, "initialSubscriptions");
+    if (Value::is_undefined(ctx, initial_subscriptions_value)) {
+        return;
+    }
+    ObjectType initial_subscriptions_object = Value::validated_to_object(ctx, initial_subscriptions_value);
+
+    ValueType update_value = Object::get_property(ctx, initial_subscriptions_object, "update");
+    FunctionType update_function = Value::validated_to_function(ctx, update_value, "update");
+
+    ValueType rerun_on_startup_value = Object::get_property(ctx, initial_subscriptions_object, "rerunOnStartup");
+    bool rerun_on_startup = Value::is_undefined(ctx, rerun_on_startup_value)
+                                ? false
+                                : Value::validated_to_boolean(ctx, rerun_on_startup_value, "rerunOnStartup");
+
+    if (!realm_exists || rerun_on_startup) {
+        ValueType arguments[] = {realm_object};
+        Function<T>::call(ctx, update_function, 1, arguments);
+    }
+}
+
 template <typename T>
 void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments& args)
 {
@@ -794,10 +837,17 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, Argumen
     realm::Realm::Config config;
     ObjectDefaultsMap defaults;
     ConstructorMap constructors;
+
+    ValueType config_value = args[0];
+    std::string realm_file_path = validate_and_normalize_config(ctx, config_value).path;
+    bool realm_exists = realm::util::File::exists(realm_file_path);
+
     bool schema_updated = get_realm_config(ctx, args.count, args.value, config, defaults, constructors);
     auto realm = create_shared_realm(ctx, config, schema_updated, std::move(defaults), std::move(constructors));
 
     set_internal<T, RealmClass<T>>(ctx, this_object, new SharedRealm(realm));
+
+    handle_initial_subscriptions(ctx, config_value, this_object, realm_exists);
 }
 
 template <typename T>
@@ -1021,6 +1071,11 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
     Realm::Config config;
     ObjectDefaultsMap defaults;
     ConstructorMap constructors;
+
+    ValueType config_value = args[0];
+    std::string realm_file_path = validate_and_normalize_config(ctx, config_value).path;
+    bool realm_exists = realm::util::File::exists(realm_file_path);
+
     bool schema_updated = get_realm_config(ctx, args.count - 1, args.value, config, defaults, constructors);
 
     if (!config.sync_config) {
@@ -1029,6 +1084,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
 
     Protected<FunctionType> protected_callback(ctx, callback_function);
     Protected<ObjectType> protected_this(ctx, this_object);
+    Protected<ValueType> protected_config_value(ctx, config_value);
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
     auto& user = config.sync_config->user;
@@ -1049,42 +1105,50 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
     std::shared_ptr<AsyncOpenTask> task;
     task = Realm::get_synchronized_realm(config);
 
-    realm::util::EventLoopDispatcher<RealmCallbackHandler> callback_handler(
-        [=, defaults = std::move(defaults), constructors = std::move(constructors)](ThreadSafeReference&& realm_ref,
-                                                                                    std::exception_ptr error) {
-            HANDLESCOPE(protected_ctx)
+    realm::util::EventLoopDispatcher<RealmCallbackHandler> callback_handler([=, defaults = std::move(defaults),
+                                                                             constructors = std::move(constructors)](
+                                                                                ThreadSafeReference&& realm_ref,
+                                                                                std::exception_ptr error) {
+        HANDLESCOPE(protected_ctx)
 
-            if (error) {
-                try {
-                    std::rethrow_exception(error);
-                }
-                catch (const std::exception& e) {
-                    ObjectType object = Object::create_empty(protected_ctx);
-                    Object::set_property(protected_ctx, object, "message",
-                                         Value::from_string(protected_ctx, e.what()));
-                    Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, 1));
-
-                    ValueType callback_arguments[2] = {
-                        Value::from_undefined(protected_ctx),
-                        object,
-                    };
-                    Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, callback_arguments);
-                    return;
-                }
+        if (error) {
+            try {
+                std::rethrow_exception(error);
             }
+            catch (const std::exception& e) {
+                ObjectType object = Object::create_empty(protected_ctx);
+                Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, e.what()));
+                Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, 1));
 
-            auto def = std::move(defaults);
-            auto ctor = std::move(constructors);
-            const SharedRealm realm = Realm::get_shared_realm(std::move(realm_ref), util::Scheduler::make_default());
-            set_binding_context(protected_ctx, realm, schema_updated, std::move(def), std::move(ctor));
-            ObjectType object = create_object<T, RealmClass<T>>(protected_ctx, new SharedRealm(realm));
+                ValueType callback_arguments[2] = {
+                    Value::from_undefined(protected_ctx),
+                    object,
+                };
+                Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, callback_arguments);
+                return;
+            }
+        }
 
-            ValueType callback_arguments[2] = {
-                object,
-                Value::from_null(protected_ctx),
-            };
-            Function<T>::callback(protected_ctx, protected_callback, 2, callback_arguments);
-        });
+        auto def = std::move(defaults);
+        auto ctor = std::move(constructors);
+        const SharedRealm realm = Realm::get_shared_realm(std::move(realm_ref), util::Scheduler::make_default());
+        set_binding_context(protected_ctx, realm, schema_updated, std::move(def), std::move(ctor));
+        ObjectType object = create_object<T, RealmClass<T>>(protected_ctx, new SharedRealm(realm));
+
+        try {
+            handle_initial_subscriptions(protected_ctx, protected_config_value, object, realm_exists);
+        }
+        catch (TypeErrorException e) {
+            auto error = make_js_error<T>(ctx, e.what());
+            Function<T>::callback(protected_ctx, protected_callback, {Value::from_undefined(protected_ctx), error});
+        }
+
+        ValueType callback_arguments[2] = {
+            object,
+            Value::from_null(protected_ctx),
+        };
+        Function<T>::callback(protected_ctx, protected_callback, 2, callback_arguments);
+    });
 
     task->start(callback_handler);
     return_value.set(create_object<T, AsyncOpenTaskClass<T>>(ctx, new std::shared_ptr<AsyncOpenTask>(task)));
