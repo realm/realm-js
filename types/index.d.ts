@@ -140,12 +140,10 @@ declare namespace Realm {
         error?: ErrorCallback;
     }
 
-    // Note: {flexible: boolean} should rather be {flexible: true}, but this was
-    // incompatible with the default tsconfig in Expo (strict: false).
-    // It is possible to set flexible to `false`, but it is not possible to set
-    // flexible and partitionValue in the same config.
+    // Note: Since there really is no use case for {flexible: false}, we are
+    // hard setting this to only allowing "true".
     interface FlexibleSyncConfiguration extends BaseSyncConfiguration {
-        flexible: boolean;
+        flexible: true;
         partitionValue?: never;
         clientReset?: ClientResetConfiguration<ClientResetModeManualOnly>;
     }
