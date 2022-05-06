@@ -109,9 +109,8 @@ export function createCachedObject<T extends Realm.Object>({
     }
     if (!object) {
       // Listen to collection, wait for this object to be inserted
-      // TODO: primary key might not be id need to check it from the schema!
-      const pk = realm.schema.find(x => x.name === type).primaryKey
-      console.log('realm.schema', realm.schema)
+      const pk = realm.schema.find(x => x?.name === type)?.primaryKey
+      if (!pk) throw new Error(`Could not find primary key for type ${type}`);
       const collection = realm.objects<T>(type).filtered(`${pk} = $0`, primaryKey);
       const listener: Realm.CollectionChangeCallback<T & Realm.Object> = (collection, changes) => {
         if (changes.insertions.length > 0) {
