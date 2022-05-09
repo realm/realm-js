@@ -17,24 +17,26 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { types, NodePath } from "@babel/core";
-import { Binding } from "@babel/traverse";
 
-export function isRealmImport(path: NodePath<types.Node>): boolean {
-  return path.isImportDeclaration() && path.get("source").isStringLiteral({ value: "realm" });
+// TODO: Merge the functions below into the functions above
+
+export function isImportedFromRealm(path: NodePath<types.Node>): boolean {
+  if (path.isMemberExpression()) {
+    return isImportedFromRealm(path.get("object"));
+  } else if (path.isTSQualifiedName()) {
+    return isImportedFromRealm(path.get("left"));
+  } else if (path.isIdentifier()) {
+    const binding = path.scope.getBinding(path.node.name);
+    if (binding && binding.path.parentPath && binding.path.parentPath.isImportDeclaration()) {
+      return binding.path.parentPath.get("source").isStringLiteral({ value: "realm" });
+    }
+  }
+  return false;
 }
 
-export function isRealmFromPackage(binding?: Binding): boolean {
-  if (!binding) {
-    return false;
+export function isPropertyImportedFromRealm(path: NodePath<types.Node>, name: string): boolean {
+  if (path.isMemberExpression()) {
+    return isImportedFromRealm(path.get("object")) && path.get("property").isIdentifier({ name });
   }
-  const { path } = binding;
-  return (path.isImportDefaultSpecifier() || path.isImportNamespaceSpecifier()) && isRealmImport(path.parentPath);
-}
-
-export function isNamedImportFromPackage(binding?: Binding): boolean {
-  if (!binding) {
-    return false;
-  }
-  const { path } = binding;
-  return path.isImportSpecifier() && isRealmImport(path.parentPath);
+  return false;
 }

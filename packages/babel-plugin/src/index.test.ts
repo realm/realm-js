@@ -58,24 +58,25 @@ function extractSchemaFromAst(ast: babel.types.File): TestableObjectSchema | und
   traverse(ast, {
     ClassProperty(path) {
       if (path.get("key").isIdentifier({ name: "schema" })) {
-        const value = path.get("value");
-        if (value.isObjectExpression()) {
+        const valuePath = path.get("value");
+        if (valuePath.isObjectExpression()) {
           // Transform default arrow functions into "defaultSource"
-          value.traverse({
+          valuePath.traverse({
             ObjectProperty(prop) {
-              const keyPath = prop.get("key");
-              const valuePath = prop.get("value");
-              if (keyPath.isIdentifier({ name: "default" }) && valuePath.isArrowFunctionExpression()) {
-                const body = valuePath.get("body");
+              const propertyKeyPath = prop.get("key");
+              const propertyValuePath = prop.get("value");
+              if (propertyKeyPath.isIdentifier({ name: "default" }) && propertyValuePath.isArrowFunctionExpression()) {
+                const body = propertyValuePath.get("body");
                 if (body.isExpression()) {
-                  value.replaceWith(babel.types.stringLiteral(body.getSource()));
+                  const bodySource = generate(body.node);
+                  propertyValuePath.replaceWith(babel.types.stringLiteral(bodySource.code));
                   // Rename the property to signal the difference
-                  keyPath.node.name = "defaultSource";
+                  propertyKeyPath.node.name = "defaultSource";
                 }
               }
             },
           });
-          schemaNode = value.node;
+          schemaNode = valuePath.node;
         }
       }
     },
@@ -112,6 +113,7 @@ function transform({ source, extraPresets = [], extraPlugins = [] }: TransformOp
   if (!result) {
     throw new Error("Failed to transform!");
   }
+  // console.log(result.code);
   return result;
 }
 
@@ -203,24 +205,7 @@ describe("Babel plugin", () => {
     decimal128: ["Realm.BSON.Decimal128", "Realm.Types.Decimal128", "BSON.Decimal128", "Types.Decimal128"],
   };
 
-  /*
-
-  const DEFAULT_INFERABLE_TYPES: PropertyType[] = ["bool", "string", "double", "decimal128"];
-
-  const DEFAULT_VARIANTS: Record<PropertyType, string[]> = {
-    bool: ["true", "false"],
-    string: ["'foo'"],
-    int: ["123"],
-    float: ["123"],
-    double: ["123"],
-    decimal128: [
-      "new Realm.BSON.Decimal128()",
-      "new BSON.Decimal128()",
-      "new Realm.Types.Decimal128()",
-      "new Types.Decimal128()",
-    ],
-  };
-  */
+  const DEFAULT_INFERABLE_TYPES = new Set<PropertyType>(["bool", "string", "double", "decimal128"]);
 
   type PropertyTest = [string, Realm.PropertiesTypes];
 
@@ -229,20 +214,30 @@ describe("Babel plugin", () => {
     if (optional !== OptionalVariant.Required) {
       result.optional = true;
     }
-    if (property.default !== undefined) {
-      result.default = property.default;
-    }
-    if (property.defaultSource !== undefined) {
-      result.defaultSource = property.defaultSource;
-    }
     return result;
   }
 
-  function generateTestVariations(options: TestableObjectSchemaProperty): PropertyTest[] {
+  function getTypeNameVariants({ type, objectType }: TestableObjectSchemaProperty): (string | undefined)[] {
+    if (type in TYPE_NAME_VARIANTS) {
+      return [...TYPE_NAME_VARIANTS[type]];
+    } else if (type === "list") {
+      // Most likely an object link
+      return [`Realm.List<${objectType}>`, `List<${objectType}>`];
+    } else {
+      // Most likely an object link
+      return [type];
+    }
+  }
+
+  function generateTestVariants(options: TestableObjectSchemaProperty): PropertyTest[] {
+    const types = getTypeNameVariants(options);
+    if (DEFAULT_INFERABLE_TYPES.has(options.type)) {
+      types.push(undefined);
+    }
     return generateTypeVariants({
       name: "prop",
-      types: TYPE_NAME_VARIANTS[options.type],
-      initializer: options.defaultSource ? options.defaultSource : options.default,
+      types,
+      initializer: options.defaultSource ? options.defaultSource : JSON.stringify(options.default),
       optionals: [
         OptionalVariant.Required,
         OptionalVariant.QuestionMark,
@@ -258,10 +253,10 @@ describe("Babel plugin", () => {
   function describeProperty(title: string, optionsList: Array<TestableObjectSchemaProperty>) {
     describe(title, () => {
       for (const options of optionsList) {
-        const tests = generateTestVariations(options);
+        const tests = generateTestVariants(options);
         for (const [classBody, expectedPropertiesSchema] of tests) {
           const source = `
-            import Realm, { Types, BSON } from "realm";
+            import Realm, { List, Types, BSON } from "realm";
             class Person extends Realm.Object { ${classBody} }
           `;
           itTransformsSchema(`transforms \`${classBody}\``, source, (schema) => {
@@ -291,80 +286,83 @@ describe("Babel plugin", () => {
       },
     ]);
 
-    /*
     describeProperty("int", [
-      ...generateTestVariations({ name: "prop", type: "int" }),
-      ...generateTestVariations({ name: "prop", type: "int", optional: true }),
-      ...generateTestVariations({ name: "prop", type: "int", default: 123 }),
-      ...generateTestVariations({ name: "prop", type: "int", optional: true, default: 123 }),
+      {
+        type: "int",
+      },
+      {
+        type: "int",
+        default: 123,
+      },
     ]);
 
     describeProperty("float", [
-      ...generateTestVariations({ name: "prop", type: "float" }),
-      ...generateTestVariations({ name: "prop", type: "float", optional: true }),
-      ...generateTestVariations({ name: "prop", type: "float", default: 123 }),
-      ...generateTestVariations({ name: "prop", type: "float", optional: true, default: 123 }),
+      {
+        type: "float",
+      },
+      {
+        type: "float",
+        default: 123,
+      },
     ]);
 
     describeProperty("double", [
-      ...generateTestVariations({ name: "prop", type: "double" }),
-      ...generateTestVariations({ name: "prop", type: "double", optional: true }),
-      ...generateTestVariations({ name: "prop", type: "double", defaultInferable: true, default: 123 }),
-      ...generateTestVariations({
-        name: "prop",
+      {
         type: "double",
-        defaultInferable: true,
-        optional: true,
+      },
+      {
+        type: "double",
         default: 123,
-      }),
+      },
     ]);
 
     describeProperty("string", [
-      ...generateTestVariations({ name: "prop", type: "string" }),
-      ...generateTestVariations({ name: "prop", type: "string", optional: true }),
-      ...generateTestVariations({ name: "prop", type: "string", defaultInferable: true, default: "'foo'" }),
-      ...generateTestVariations({
-        name: "prop",
+      {
         type: "string",
-        defaultInferable: true,
-        optional: true,
-        default: "'foo'",
-      }),
+      },
+      {
+        type: "string",
+        default: "foo",
+      },
     ]);
 
     describeProperty("decimal128", [
-      ...generateTestVariations({ name: "prop", type: "decimal128" }),
-      ...generateTestVariations({
-        name: "prop",
+      {
         type: "decimal128",
-        optional: true,
-        default: ["new Realm.Types.Decimal128()", "new Realm.Types.Decimal128()"],
-      }),
+      },
+      {
+        type: "decimal128",
+        defaultSource: "new Realm.Types.Decimal128()",
+      },
+      /*
+      {
+        type: "decimal128",
+        defaultSource: "new Types.Decimal128()",
+      },
+      {
+        type: "decimal128",
+        defaultSource: "new Realm.BSON.Decimal128()",
+      },
+      {
+        type: "decimal128",
+        defaultSource: "new BSON.Decimal128()",
+      },
+      */
     ]);
 
-    /*
     describeProperty("link", [
-      [
-        "prop: Person;",
-        {
-          prop: {
-            type: "Person",
-          },
-        },
-      ],
+      {
+        type: "Person",
+      },
+      // TODO: Consider defaults?
     ]);
 
-    describeProperty("list", [
-      [
-        "prop: Realm.List<Person>;",
-        {
-          prop: {
-            type: "list",
-            objectType: "Person",
-          },
-        },
-      ],
+    describeProperty("list of links", [
+      {
+        type: "list",
+        objectType: "Person",
+      },
+      // TODO: Consider defaults?
     ]);
-    */
   });
 });

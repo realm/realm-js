@@ -65,8 +65,11 @@ export function generateTypeVariants({ name, types, initializer, optionals }: Ty
   const result: TypeVariant[] = [];
   for (const type of types) {
     for (const optional of optionals) {
-      if (type === undefined && optional !== OptionalVariant.Required) {
+      if (typeof type === "undefined" && optional !== OptionalVariant.Required) {
         // Cannot generate an optional property without a type
+        continue;
+      } else if (typeof type === "undefined" && typeof initializer === "undefined") {
+        // Cannot infer type when no initializer is given
         continue;
       }
       result.push({ optional, typeName: type, propertyName: name, initializer });
