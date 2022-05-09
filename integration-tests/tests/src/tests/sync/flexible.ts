@@ -189,8 +189,6 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       });
 
       describe("initialSubscriptions option", function () {
-        // TODO what about non-async calls
-
         const getConfig = (
           user: Realm.User,
           initialSubscriptions: Realm.FlexibleSyncConfiguration["initialSubscriptions"],
