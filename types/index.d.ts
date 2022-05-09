@@ -140,8 +140,10 @@ declare namespace Realm {
         error?: ErrorCallback;
     }
 
-    // Note: Since there really is no use case for {flexible: false}, we are
-    // hard setting this to only allowing "true".
+    // We only allow `flexible` to be `true` or `undefined` - `{ flexible: false }`
+    // is not allowed. This is because TypeScript cannot discriminate that
+    // type correctly with `strictNullChecks` disabled, and there's no real use
+    // case for `{ flexible: false }`.
     interface FlexibleSyncConfiguration extends BaseSyncConfiguration {
         flexible: true;
         partitionValue?: never;
