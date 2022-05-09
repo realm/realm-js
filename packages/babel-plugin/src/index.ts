@@ -18,7 +18,7 @@
 
 import { types, NodePath, PluginObj } from "@babel/core";
 
-import { isNamedImportFromPackage, isRealmFromPackage } from "./import-checking";
+import { isPropertyImportedFromRealm, isImportedFromRealm } from "./import-checking";
 
 type RealmType = { type: string; objectType?: string; default?: types.Expression; optional?: boolean };
 
@@ -37,17 +37,18 @@ function isRealmTypeAlias(
     const left = path.get("left");
     if (left.isIdentifier({ name: namespace })) {
       // {{namespace}}.{{name}}
-      const binding = path.scope.getBinding(namespace);
-      return isNamedImportFromPackage(binding);
+      return isImportedFromRealm(left);
     } else if (path.get("left").isTSQualifiedName()) {
       // Realm.{{namespace}}.{{name}}
       return (
         left.isTSQualifiedName() &&
         left.get("left").isIdentifier({ name: REALM_NAMED_EXPORT }) &&
         left.get("right").isIdentifier({ name: namespace }) &&
-        isRealmFromPackage(path.scope.getBinding(REALM_NAMED_EXPORT))
+        isImportedFromRealm(path.get("left"))
       );
     }
+  } else if (path.isIdentifier()) {
+    return isImportedFromRealm(path);
   }
   return false;
 }
@@ -62,9 +63,7 @@ function getRealmTypeForTSType(path: NodePath<types.TSType>): RealmType | undefi
   } else if (path.isTSTypeReference()) {
     const typeName = path.get("typeName");
     const typeParameters = path.get("typeParameters");
-    if (typeName.isIdentifier()) {
-      return { type: typeName.node.name };
-    } else if (typeName.isTSQualifiedName() && isRealmTypeAlias(typeName, "Bool")) {
+    if (typeName.isTSQualifiedName() && isRealmTypeAlias(typeName, "Bool")) {
       return { type: "bool" };
     } else if (typeName.isTSQualifiedName() && isRealmTypeAlias(typeName, "String")) {
       return { type: "string" };
@@ -79,6 +78,14 @@ function getRealmTypeForTSType(path: NodePath<types.TSType>): RealmType | undefi
       (isRealmTypeAlias(typeName, "Decimal128") || isRealmTypeAlias(typeName, "Decimal128", BSON_NAMED_EXPORT))
     ) {
       return { type: "decimal128" };
+    } else if (isRealmTypeAlias(typeName, "List") && typeParameters.isTSTypeParameterInstantiation()) {
+      const objectType = typeParameters.get("params")[0];
+      if (objectType && objectType.isTSTypeReference()) {
+        const typeName = objectType.get("typeName");
+        if (typeName.isIdentifier()) {
+          return { type: "list", objectType: typeName.node.name };
+        }
+      }
     } else if (
       typeName.isTSQualifiedName() &&
       typeName.get("left").isIdentifier({ name: "Realm" }) &&
@@ -89,6 +96,8 @@ function getRealmTypeForTSType(path: NodePath<types.TSType>): RealmType | undefi
       if (objectType && types.isTSTypeReference(objectType) && types.isIdentifier(objectType.typeName)) {
         return { type: "list", objectType: objectType.typeName.name };
       }
+    } else if (typeName.isIdentifier()) {
+      return { type: typeName.node.name };
     }
   } else if (path.isTSUnionType()) {
     const types = path.get("types");
@@ -105,23 +114,35 @@ function getRealmTypeForTSType(path: NodePath<types.TSType>): RealmType | undefi
   }
 }
 
+function inferTypeFromInitializer(path: NodePath<types.Expression>): RealmType | undefined {
+  if (path.isBooleanLiteral()) {
+    return { type: "bool" };
+  } else if (path.isStringLiteral()) {
+    return { type: "string" };
+  } else if (path.isNumericLiteral()) {
+    return { type: DEFAULT_NUMERIC_TYPE };
+  } else if (path.isNewExpression()) {
+    if (isPropertyImportedFromRealm(path.get("callee"), "Decimal128")) {
+      return { type: "decimal128" };
+    }
+    console.log(path.node.callee);
+  }
+}
+
 function getRealmTypeForClassProperty(path: NodePath<types.ClassProperty>): RealmType | undefined {
   const typeAnnotationPath = path.get("typeAnnotation");
   const valuePath = path.get("value");
   if (typeAnnotationPath.isTSTypeAnnotation()) {
     const typePath = typeAnnotationPath.get("typeAnnotation");
     return getRealmTypeForTSType(typePath);
-  } else if (valuePath.isBooleanLiteral()) {
-    return { type: "bool" };
-  } else if (valuePath.isStringLiteral()) {
-    return { type: "string" };
-  } else if (valuePath.isNumericLiteral()) {
-    return { type: DEFAULT_NUMERIC_TYPE };
+  } else if (valuePath.isExpression()) {
+    return inferTypeFromInitializer(valuePath);
   }
 }
 
 function visitRealmClassProperty(path: NodePath<types.ClassProperty>) {
   const keyPath = path.get("key");
+  const valuePath = path.get("value");
   if (keyPath.isIdentifier()) {
     const name = keyPath.node.name;
     const realmType = getRealmTypeForClassProperty(path);
@@ -137,8 +158,12 @@ function visitRealmClassProperty(path: NodePath<types.ClassProperty>) {
           types.objectProperty(types.identifier("objectType"), types.stringLiteral(realmType.objectType)),
         );
       }
-      if (path.node.value) {
-        properties.push(types.objectProperty(types.identifier("default"), path.node.value));
+      if (valuePath.isLiteral()) {
+        properties.push(types.objectProperty(types.identifier("default"), valuePath.node));
+      } else if (valuePath.isExpression()) {
+        properties.push(
+          types.objectProperty(types.identifier("default"), types.arrowFunctionExpression([], valuePath.node)),
+        );
       }
       return types.objectProperty(types.identifier(name), types.objectExpression(properties));
     } else {
@@ -178,20 +203,12 @@ function visitRealmClass(path: NodePath<types.ClassDeclaration>) {
 function isClassExtendingRealmObject(path: NodePath<types.ClassDeclaration>) {
   // Determine if the super class is the "Object" class from the "realm" package
   const superClass = path.get("superClass");
-  if (
-    path.isClassDeclaration() &&
-    superClass.isMemberExpression() &&
-    superClass.get("object").isIdentifier({ name: "Realm" }) &&
-    superClass.get("property").isIdentifier({ name: "Object" })
-  ) {
+  if (path.isClassDeclaration() && superClass.isExpression() && isPropertyImportedFromRealm(superClass, "Object")) {
     // The class is extending "Realm.Object"
-    // Determine if this is the "Realm" exported by the "realm" package
-    const realmBinding = path.scope.getBinding("Realm");
-    return realmBinding && isRealmFromPackage(realmBinding);
-  } else if (superClass.isIdentifier({ name: "Object" })) {
+    return true;
+  } else if (superClass.isIdentifier({ name: "Object" }) && isImportedFromRealm(superClass)) {
     // Determine if this is the "Object" exported by the "realm" package
-    const objectBinding = path.scope.getBinding("Object");
-    return objectBinding && isNamedImportFromPackage(objectBinding);
+    return true;
   }
   return false;
 }
