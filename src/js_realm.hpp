@@ -47,7 +47,6 @@
 
 #include <realm/object-store/util/scheduler.hpp>
 
-
 #include <realm/object-store/binding_context.hpp>
 #include <realm/object-store/object_accessor.hpp>
 #include <realm/object-store/results.hpp>
