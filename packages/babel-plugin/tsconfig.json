@@ -4,7 +4,8 @@
     "target": "es2021",
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "strict": true
   },
   "include": [
     "src/**/*.ts"
