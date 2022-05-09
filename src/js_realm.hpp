@@ -971,7 +971,8 @@ void RealmClass<T>::realm_file_exists(ContextType ctx, ObjectType this_object, A
 template <typename T>
 bool RealmClass<T>::check_realm_file_exists(ContextType ctx, ValueType config_value)
 {
-    std::string realm_file_path = validate_and_normalize_config(ctx, config_value).path;
+    auto realm_file_path =
+        Value::is_object(ctx, config_value) ? validate_and_normalize_config(ctx, config_value).path : default_path();
     return realm::util::File::exists(realm_file_path);
 }
 
