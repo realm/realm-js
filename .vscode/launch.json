@@ -130,7 +130,7 @@
                 "--timeout",
                 "10000",
                 "--grep",
-                "if no `update` function is provided"
+                "${input:integrationTestFilter}"
             ],
             "cwd": "${workspaceFolder}/integration-tests/tests",
             "preLaunchTask": "Build Node Tests"
