@@ -21,9 +21,7 @@ import Realm from "realm";
 import { isEqual } from "lodash";
 import { useUser } from "./UserProvider";
 
-type PartialRealmConfiguration = {
-  [P in keyof Omit<Realm.Configuration, "sync">]?: Realm.Configuration[P];
-} & {
+type PartialRealmConfiguration = Omit<Partial<Realm.Configuration>, "sync"> & {
   sync?: Partial<Realm.SyncConfiguration>;
 };
 
@@ -92,9 +90,7 @@ export function createRealmProvider(
 
       // If there is a user in the current context and not one set by the props, then use the one from context
       const combinedConfigWithUser =
-        user && !combinedConfig.sync?.user
-          ? mergeRealmConfiguration(combinedConfig, { sync: { user } })
-          : combinedConfig;
+        combinedConfig?.sync && user ? mergeRealmConfiguration({ sync: { user } }, combinedConfig) : combinedConfig;
 
       if (!areConfigurationsIdentical(configuration.current, combinedConfigWithUser)) {
         configuration.current = combinedConfigWithUser;
@@ -151,7 +147,7 @@ export function createRealmProvider(
  * @returns Merged config object
  */
 export function mergeRealmConfiguration(
-  configA: Realm.Configuration,
+  configA: PartialRealmConfiguration,
   configB: PartialRealmConfiguration,
 ): Realm.Configuration {
   // In order to granularly update sync properties on the RealmProvider, sync must be
