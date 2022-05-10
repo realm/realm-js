@@ -130,9 +130,8 @@ declare namespace Realm {
         clientResetAfter?: ClientResetAfterCallback;
     }
 
-    interface BaseSyncConfiguration<ClientResetModeT = ClientResetMode>{
+    interface BaseSyncConfiguration{
         user: User;
-        flexible?: boolean | undefined;
         customHttpHeaders?: { [header: string]: string };
         ssl?: SSLConfiguration;
         _sessionStopPolicy?: SessionStopPolicy;
@@ -141,8 +140,10 @@ declare namespace Realm {
         error?: ErrorCallback;
     }
 
-    // Note: This type does not work correctly without strictNullChecks enabled –
-    // a config of { flexible: true } will incorrectly have a type error
+    // We only allow `flexible` to be `true` or `undefined` - `{ flexible: false }`
+    // is not allowed. This is because TypeScript cannot discriminate that
+    // type correctly with `strictNullChecks` disabled, and there's no real use
+    // case for `{ flexible: false }`.
     interface FlexibleSyncConfiguration extends BaseSyncConfiguration {
         flexible: true;
         partitionValue?: never;
@@ -150,7 +151,7 @@ declare namespace Realm {
     }
 
     interface PartitionSyncConfiguration extends BaseSyncConfiguration {
-        flexible?: false | undefined;
+        flexible?: never;
         partitionValue: Realm.App.Sync.PartitionValue;
         clientReset?: ClientResetConfiguration<ClientResetMode>;
     }

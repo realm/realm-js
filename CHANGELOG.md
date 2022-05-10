@@ -11,6 +11,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Adding an object to a Set, deleting the parent object, and then deleting the previously mentioned object causes crash ([#5387](https://github.com/realm/realm-core/issues/5387), since v10.5.0)
 * Synchronized Realm files which were first created using SDK version released in the second half of August 2020 would be redownloaded instead of using the existing file, possibly resulting in the loss of any unsynchronized data in those files (since v10.10.1).
 * Fixed buildtime error where our package would be ignored due to use of the deprecated `podspecPath` and `sharedLibraries` keys in the `react-native.config.js`. ([#4553](https://github.com/realm/realm-js/issues/4553))
+* Fixed flexible sync configuration types to be compatible with Typescript when `strict` mode is disabled. ([#4552](https://github.com/realm/realm-js/issues/4552))
 
 ### Compatibility
 * MongoDB Realm Cloud.

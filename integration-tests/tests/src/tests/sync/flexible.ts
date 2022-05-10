@@ -154,6 +154,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
       it("accepts { flexible: false } and a partition value", function () {
         expect(() => {
+          // @ts-expect-error This is not a compatible configuration anymore and will cause a typescript error
           new Realm({
             sync: {
               _sessionStopPolicy: SessionStopPolicy.Immediately,
