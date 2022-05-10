@@ -15,11 +15,15 @@ When filing an issue, please provide as much of the following information as pos
 
 If you'd like to send us sensitive sample code to help troubleshoot your issue, you can email <help@realm.io> directly.
 
-## Contributing Enhancements
+## Contributing Bug fixes and Enhancements
 
-We love contributions to Realm! If you'd like to contribute code, documentation, or any other improvements, please [file a Pull Request](https://github.com/realm/realm-js/pulls) on our GitHub repository. Make sure to accept our [CLA](#cla).
+We love contributions to Realm! If you'd like to fix bugs, contribute code, documentation, or any other improvements, we recommend that you create a new issue to pitch what you would like to work on. Once you are ready to contribute, please [file a Pull Request](https://github.com/realm/realm-js/pulls) on our GitHub repository. Make sure to accept our [CLA](#cla).
 
 If you're on the MongoDB payroll, please ensure you're familiar with [the Realm SDK cross-team working agreement](https://docs.google.com/document/d/1AB9Z1F29oLmubnPAjfphYwGz1xqqeotHaMWK5OKkL3A/edit).
+
+When creating a PR as an external contributor, please express your intent with your PR; what do you want to solve? To avoid duplication, please link your PR to an existing issue.
+
+Moreover, indicate how you would like us to support you. We will happily guide you and work with you to move the PR to a point where it can be merged. It might require considerable work at your end to meet our expectations (code quality, API docs, TS defs, tests, etc.). In the case you want to move on and not work with us, please let us know. If the PR meets our expectations, we will merge it - and if it doesn't, we will either take over or close it.
 
 ### Branching
 

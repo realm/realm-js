@@ -1,8 +1,9 @@
 ## What, How & Why?
 <!-- Describe the changes and give some hints to guide your reviewers if possible. -->
 <!-- E.g. reference to other repos: This closes realm/realm-sync#??? -->
+<!-- Please read CONTRIBUTING.md -->
 
-This closes # ???
+This closes # ??? <!-- link to an existing issue -->
 
 ## ☑️ ToDos
 <!-- Add your own todos here -->

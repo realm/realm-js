@@ -43,6 +43,10 @@ We have TypeScript and JavaScript templates to help you get started using Realm.
 * **Have a bug to report?** [Open an issue](https://github.com/realm/realm-js/issues/new). If possible, include the version of Realm, a full log, the Realm file, and a project that shows the issue.
 * **Have a feature request?** [Open an issue](https://github.com/realm/realm-js/issues/new). Tell us what the feature should do, and why you want the feature.
 
+## Contributing
+
+See [CONTRIBUTING.md](https://github.com/realm/realm-js/blob/master/CONTRIBUTING.md) for more details!
+
 ## Known issues
 
 * Realm is not compatible with the Chrome Debugger.  The following debugging methods are supported.
@@ -92,10 +96,6 @@ Currently the following information is reported:
 This project adheres to the [MongoDB Code of Conduct](https://www.mongodb.com/community-code-of-conduct).
 By participating, you are expected to uphold this code. Please report
 unacceptable behavior to [community-conduct@mongodb.com](mailto:community-conduct@mongodb.com).
-
-## Contributing
-
-See [CONTRIBUTING.md](https://github.com/realm/realm-js/blob/master/CONTRIBUTING.md) for more details!
 
 ## License
 
