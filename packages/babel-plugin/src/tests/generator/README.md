@@ -7,46 +7,45 @@ classDef data text-align:left;
 
 subgraph Generate
   nodePropertyTest["
-    <code>type: string;
-      objectType: string[];
-      default: ({ source: string } | undefined | unknown)[];
-      optional: boolean[];
+    <code>type PropertySuiteOptions = {
+      &nbsp;&nbsp;type: string;
+      &nbsp;&nbsp;objectType: string[];
+      &nbsp;&nbsp;default: ({ source: string } | undefined | unknown)[];
+      &nbsp;&nbsp;optional: boolean[];
+      }
     </code>
   "]
   nodePropertySchema["
-    <code>type: string;
-      objectType?: string;
-      default?: { source: string } | unknown;
-      optional?: true;
+    <code>type PropertyTestOptions = {
+      &nbsp;&nbsp;type: string;
+      &nbsp;&nbsp;objectType?: string;
+      &nbsp;&nbsp;default?: { source: string } | unknown;
+      &nbsp;&nbsp;optional?: true;
+      }
     </code>
   "]
   nodePropertyVariant["
-    <code>type?: string;
-      typeArgument?: string;
-      initializer?: string;
-      questionMark: boolean;
+    <code>type PropertyVariant = {
+      &nbsp;&nbsp;type?: string;
+      &nbsp;&nbsp;typeArgument?: string;
+      &nbsp;&nbsp;initializer?: string;
+      &nbsp;&nbsp;questionMark: boolean;
+      }
     </code>
   "]
-  nodePropertyAST["
-    Abstract syntax tree of generated class property
-  "]
-  nodeSourceCode["
-    <code>import Realm, { Object, ... } from #quot;realm#quot;;
-    class Foo {
-    #nbsp;#nbsp;{{ property source code }}
-    }
-    </code>
+  nodePropertyCode["
+    Property source code:
+    <code>prop?: Realm.Types.Decimal128 = new Realm.Types.Decimal128();</code>
   "]
 
-  nodePropertyTest -->|Generate combinations of elements in arrays| nodePropertySchema
-  nodePropertySchema -->|Generate variations of expressing the property schema| nodePropertyVariant
-  nodePropertyVariant -->|Generate property AST| nodePropertyAST
-  nodePropertyAST -->|Babel generate source code| nodeSourceCode
+  nodePropertyTest -->|<code>describeProperty</code>: Generates combinations of array elements| nodePropertySchema
+  nodePropertySchema -->|<code>generatePropertyVariants</code>: Generates different ways of expressing the property| nodePropertyVariant
+  nodePropertyVariant -->|<code>generatePropertyCode</code>: Generates source code to for every variant| nodePropertyCode
 
   class nodePropertyTest,nodePropertySchema,nodePropertyVariant,nodeSourceCode data;
 end
 
-nodeSourceCode -->|Babel transform| nodeTransformedCode
+nodePropertyCode -->|<code>transformProperty</code>: Wraps property source code in a class and calls the babel transform plugin| nodeTransformedCode
 
 subgraph Verify
   nodeTransformedCode["
@@ -57,15 +56,21 @@ subgraph Verify
     </code>
   "]
 
-  nodeSchemaStatic["
+  nodeStaticSchema["
     Parsed static schema property
   "]
 
-  nodeTransformedCode -->|Extract & parse| nodeSchemaStatic
+  nodeExpectedSchema["
+    Inferred generated schema
+  "]
+
+  nodeTransformedCode -->|<code>extractSchema</code>: Extracts & parses transformed schema| nodeStaticSchema
+
+  nodePropertySchema -->|<code>inferSchema</code>: Infers the expected schema| nodeExpectedSchema
 
   nodeAssert{Assert equals?}
-  nodeSchemaStatic --> nodeAssert
-  nodePropertySchema --> nodeAssert
+  nodeStaticSchema --> nodeAssert
+  nodeExpectedSchema --> nodeAssert
 
   class nodeTransformedCode data;
 end
