@@ -142,7 +142,6 @@ describe("Babel plugin", () => {
       ],
     });
 
-    /*
     describeProperty("objectId", {
       type: "objectId",
       defaults: [
@@ -151,12 +150,8 @@ describe("Babel plugin", () => {
         { source: "new Types.ObjectId()" },
         { source: "new Realm.BSON.ObjectId()" },
         { source: "new BSON.ObjectId()" },
-        // TODO: Consider not supporting both `ObjectId` and `ObjectID`
-        { source: "new Realm.BSON.ObjectID()" },
-        { source: "new BSON.ObjectID()" },
       ],
     });
-    */
 
     describeProperty("link", {
       type: "Person",
