@@ -82,6 +82,8 @@ function getRealmTypeForTSTypeReference(path: NodePath<types.TSTypeReference>): 
     return { type: "double" };
   } else if (isRealmTypeAlias(path, "Decimal128") || isRealmTypeAlias(path, "Decimal128", BSON_NAMED_EXPORT)) {
     return { type: "decimal128" };
+  } else if (isRealmTypeAlias(path, "ObjectId") || isRealmTypeAlias(path, "ObjectId", BSON_NAMED_EXPORT)) {
+    return { type: "objectId" };
   } else if (isRealmTypeAlias(path, "List") || isRealmTypeAlias(path, "List", null)) {
     const objectType = getRealmTypeForTypeArgument(typeParameters);
     return { type: "list", objectType: objectType?.type, optional: objectType?.optional };
@@ -125,6 +127,8 @@ function inferTypeFromInitializer(path: NodePath<types.Expression>): RealmType |
   } else if (path.isNewExpression()) {
     if (isPropertyImportedFromRealm(path.get("callee"), "Decimal128")) {
       return { type: "decimal128" };
+    } else if (isPropertyImportedFromRealm(path.get("callee"), "ObjectId")) {
+      return { type: "objectId" };
     }
   }
 }
