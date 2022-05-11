@@ -111,7 +111,9 @@ describe("RealmProvider", () => {
           </View>
           {toggleComponent && (
             <View testID="secondRealmProvider">
-              <RealmProvider></RealmProvider>
+              <RealmProvider>
+                <View />
+              </RealmProvider>
             </View>
           )}
           <Button testID="toggle" title="toggle" onPress={() => setToggleComponent(!toggleComponent)} />
