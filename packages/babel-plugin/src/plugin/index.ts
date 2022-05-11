@@ -29,13 +29,18 @@ const TYPES_NAMED_EXPORT = "Types";
 const BSON_NAMED_EXPORT = "BSON";
 
 function isRealmTypeAlias(
-  path: NodePath<types.TSEntityName>,
+  path: NodePath<types.TSEntityName | types.TSTypeReference>,
   name: string,
-  namespace: string = TYPES_NAMED_EXPORT,
+  namespace: string | null = TYPES_NAMED_EXPORT,
 ): boolean {
-  if (path.isTSQualifiedName() && path.get("right").isIdentifier({ name })) {
+  if (path.isTSTypeReference()) {
+    return isRealmTypeAlias(path.get("typeName"), name, namespace);
+  } else if (path.isTSQualifiedName() && path.get("right").isIdentifier({ name })) {
     const left = path.get("left");
-    if (left.isIdentifier({ name: namespace })) {
+    if (namespace === null && left.isIdentifier({ name: REALM_NAMED_EXPORT })) {
+      // Realm.{{name}}
+      return isImportedFromRealm(left);
+    } else if (left.isIdentifier({ name: namespace })) {
       // {{namespace}}.{{name}}
       return isImportedFromRealm(left);
     } else if (path.get("left").isTSQualifiedName()) {
@@ -47,7 +52,7 @@ function isRealmTypeAlias(
         isImportedFromRealm(path.get("left"))
       );
     }
-  } else if (path.isIdentifier()) {
+  } else if (path.isIdentifier({ name })) {
     return isImportedFromRealm(path);
   }
   return false;
@@ -62,7 +67,30 @@ function getRealmTypeForTypeArgument(
   }
 }
 
-// TODO: Refactor this massive block of conditionals
+function getRealmTypeForTSTypeReference(path: NodePath<types.TSTypeReference>): RealmType | undefined {
+  const typeName = path.get("typeName");
+  const typeParameters = path.get("typeParameters");
+  if (isRealmTypeAlias(path, "Bool")) {
+    return { type: "bool" };
+  } else if (isRealmTypeAlias(path, "String")) {
+    return { type: "string" };
+  } else if (isRealmTypeAlias(path, "Int")) {
+    return { type: "int" };
+  } else if (isRealmTypeAlias(path, "Float")) {
+    return { type: "float" };
+  } else if (isRealmTypeAlias(path, "Double")) {
+    return { type: "double" };
+  } else if (isRealmTypeAlias(path, "Decimal128") || isRealmTypeAlias(path, "Decimal128", BSON_NAMED_EXPORT)) {
+    return { type: "decimal128" };
+  } else if (isRealmTypeAlias(path, "List") || isRealmTypeAlias(path, "List", null)) {
+    const objectType = getRealmTypeForTypeArgument(typeParameters);
+    return { type: "list", objectType: objectType?.type, optional: objectType?.optional };
+  } else if (typeName.isIdentifier()) {
+    // TODO: Consider checking the scope to ensure it is a declared identifier
+    return { type: typeName.node.name };
+  }
+}
+
 function getRealmTypeForTSType(path: NodePath<types.TSType>): RealmType | undefined {
   if (path.isTSBooleanKeyword()) {
     return { type: "bool" };
@@ -71,37 +99,7 @@ function getRealmTypeForTSType(path: NodePath<types.TSType>): RealmType | undefi
   } else if (path.isTSNumberKeyword()) {
     return { type: DEFAULT_NUMERIC_TYPE };
   } else if (path.isTSTypeReference()) {
-    const typeName = path.get("typeName");
-    const typeParameters = path.get("typeParameters");
-    if (typeName.isTSQualifiedName() && isRealmTypeAlias(typeName, "Bool")) {
-      return { type: "bool" };
-    } else if (typeName.isTSQualifiedName() && isRealmTypeAlias(typeName, "String")) {
-      return { type: "string" };
-    } else if (typeName.isTSQualifiedName() && isRealmTypeAlias(typeName, "Int")) {
-      return { type: "int" };
-    } else if (typeName.isTSQualifiedName() && isRealmTypeAlias(typeName, "Float")) {
-      return { type: "float" };
-    } else if (typeName.isTSQualifiedName() && isRealmTypeAlias(typeName, "Double")) {
-      return { type: "double" };
-    } else if (
-      typeName.isTSQualifiedName() &&
-      (isRealmTypeAlias(typeName, "Decimal128") || isRealmTypeAlias(typeName, "Decimal128", BSON_NAMED_EXPORT))
-    ) {
-      return { type: "decimal128" };
-    } else if (isRealmTypeAlias(typeName, "List")) {
-      const objectType = getRealmTypeForTypeArgument(typeParameters);
-      return { type: "list", objectType: objectType?.type, optional: objectType?.optional };
-    } else if (
-      typeName.isTSQualifiedName() &&
-      typeName.get("left").isIdentifier({ name: "Realm" }) &&
-      typeName.get("right").isIdentifier({ name: "List" })
-    ) {
-      const objectType = getRealmTypeForTypeArgument(typeParameters);
-      return { type: "list", objectType: objectType?.type, optional: objectType?.optional };
-    } else if (typeName.isIdentifier()) {
-      // TODO: Consider checking the scope to ensure it is a declared identifier
-      return { type: typeName.node.name };
-    }
+    return getRealmTypeForTSTypeReference(path);
   } else if (path.isTSUnionType()) {
     const types = path.get("types");
     if (types.length === 2) {
