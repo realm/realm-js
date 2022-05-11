@@ -24,27 +24,8 @@ jobs:
       - name: Install npm v7
         run: npm install -g npm@7
 
-      # Caches
-      - uses: actions/cache@v2
-        name: cached node_modules
-        id: cache-node-modules
-        with:
-          path: node_modules
-          key: node-modules-${{ github.job }}-${{ hashFiles('package-lock.json') }}
-
-      - name: ccache
-        uses: hendrikmuhs/ccache-action@v1
-        with:
-          key: realm-react
-
-      - name: Prepend ccache executables to the PATH
-        run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
-
       - name: Install realm node dependencies
         run: npm ci --ignore-scripts
-
-      - name: Prebuild release binary
-        run: npx prebuild
 
       - name: Bootstrap @realm/react
         run: npx lerna bootstrap --scope @realm/react --include-dependencies
