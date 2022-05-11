@@ -40,7 +40,15 @@ const TYPE_NAME_VARIANTS: Record<string, string[]> = {
   int: ["Realm.Types.Int", "Types.Int"],
   float: ["Realm.Types.Float", "Types.Float"],
   double: ["number", "Realm.Types.Double", "Types.Double"],
-  decimal128: ["Realm.BSON.Decimal128", "Realm.Types.Decimal128", "BSON.Decimal128", "Types.Decimal128"],
+  decimal128: ["Realm.Types.Decimal128", "Types.Decimal128", "Realm.BSON.Decimal128", "BSON.Decimal128"],
+  objectId: [
+    "Realm.Types.ObjectId",
+    "Types.ObjectId",
+    "Realm.BSON.ObjectId",
+    "BSON.ObjectId",
+    "Realm.BSON.ObjectID",
+    "BSON.ObjectID",
+  ],
   list: ["Realm.List", "List"],
 };
 
