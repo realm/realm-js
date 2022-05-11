@@ -39,6 +39,8 @@ type Formatters = {
 };
 
 const mermaid: FormatterFunction = (realm: Realm) => {
+  const collectionTypes = ["list", "dictionary", "set"];
+  const primitiveTypes = ["bool", "int", "float", "double", "string", "date", "objectId", "uuid", "data", "mixed"];
   writer("classDiagram");
 
   const relationships: Array<Relationship> = [];
@@ -47,9 +49,16 @@ const mermaid: FormatterFunction = (realm: Realm) => {
     writer(`class ${name} {`);
     Object.keys(objectSchema.properties).forEach((propertyName) => {
       const prop = objectSchema.properties[propertyName] as Realm.ObjectSchemaProperty;
-      if (["object", "list", "dictionary", "set"].includes(prop.type)) {
-        relationships.push({ from: name, to: prop.objectType ?? "__unknown__" });
-        writer(`  +${prop.objectType} ${propertyName}`);
+      if (collectionTypes.includes(prop.type) || prop.type === "object") {
+        const objectType = prop.objectType ?? "__unknown__";
+        if (!primitiveTypes.includes(objectType)) {
+          relationships.push({ from: name, to: objectType });
+        }
+        if (prop.type === "object") {
+          writer(`  +${objectType} ${propertyName}`);
+        } else {
+          writer(`  +${prop.type}~${objectType}~ ${propertyName}`);
+        }
       } else {
         writer(`  +${prop.type} ${propertyName}`);
       }
@@ -57,7 +66,7 @@ const mermaid: FormatterFunction = (realm: Realm) => {
     writer("}");
   });
   relationships.forEach((relationship) => {
-    writer(`${relationship.to} <|-- ${relationship.from}`);
+    writer(`${relationship.to} <-- ${relationship.from}`);
   });
 };
 

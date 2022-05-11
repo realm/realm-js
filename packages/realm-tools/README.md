@@ -60,8 +60,8 @@ class Parent {
   +string name
   +string city
   +Parent marriedTo
-  +Child children
+  +list~Child~ children
 }
-Parent <|-- Parent
-Child <|-- Parent
+Parent <-- Parent
+Child <-- Parent
 ```
