@@ -84,9 +84,21 @@ function getRealmTypeForTSTypeReference(path: NodePath<types.TSTypeReference>): 
     return { type: "decimal128" };
   } else if (isRealmTypeAlias(path, "ObjectId") || isRealmTypeAlias(path, "ObjectId", BSON_NAMED_EXPORT)) {
     return { type: "objectId" };
+  } else if (isRealmTypeAlias(path, "UUID") || isRealmTypeAlias(path, "UUID", BSON_NAMED_EXPORT)) {
+    return { type: "uuid" };
+  } else if (isRealmTypeAlias(path, "Date") || typeName.isIdentifier({ name: "Date" })) {
+    return { type: "date" };
   } else if (isRealmTypeAlias(path, "List") || isRealmTypeAlias(path, "List", null)) {
     const objectType = getRealmTypeForTypeArgument(typeParameters);
     return { type: "list", objectType: objectType?.type, optional: objectType?.optional };
+  } else if (isRealmTypeAlias(path, "Set") || isRealmTypeAlias(path, "Set", null)) {
+    const objectType = getRealmTypeForTypeArgument(typeParameters);
+    return { type: "set", objectType: objectType?.type, optional: objectType?.optional };
+  } else if (isRealmTypeAlias(path, "Dictionary") || isRealmTypeAlias(path, "Dictionary", null)) {
+    const objectType = getRealmTypeForTypeArgument(typeParameters);
+    return { type: "dictionary", objectType: objectType?.type, optional: objectType?.optional };
+  } else if (isRealmTypeAlias(path, "Mixed") || isRealmTypeAlias(path, "Mixed", null)) {
+    return { type: "mixed" };
   } else if (typeName.isIdentifier()) {
     // TODO: Consider checking the scope to ensure it is a declared identifier
     return { type: typeName.node.name };
@@ -129,6 +141,13 @@ function inferTypeFromInitializer(path: NodePath<types.Expression>): RealmType |
       return { type: "decimal128" };
     } else if (isPropertyImportedFromRealm(path.get("callee"), "ObjectId")) {
       return { type: "objectId" };
+    } else if (isPropertyImportedFromRealm(path.get("callee"), "UUID")) {
+      return { type: "uuid" };
+    } else if (
+      isPropertyImportedFromRealm(path.get("callee"), "Date") ||
+      path.get("callee").isIdentifier({ name: "Date" })
+    ) {
+      return { type: "date" };
     }
   }
 }
