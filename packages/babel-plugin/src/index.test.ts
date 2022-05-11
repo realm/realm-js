@@ -84,6 +84,14 @@ describe("Babel plugin", () => {
         expect(schema && schema.name).toBe("Person");
       },
     );
+
+    itTransformsSchema(
+      "transform class using via `import { Object } from 'realm'` and providing type argument",
+      "import { Object } from 'realm'; class Person extends Object<Person> {}",
+      (schema) => {
+        expect(schema && schema.name).toBe("Person");
+      },
+    );
   });
 
   /*
@@ -138,11 +146,9 @@ describe("Babel plugin", () => {
       type: "Person",
     });
 
-    /*
     describeProperty("list", {
       type: "list",
       objectTypes: ["Person", "int"],
     });
-    */
   });
 });

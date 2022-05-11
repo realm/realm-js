@@ -35,6 +35,9 @@ function inferSchema(options: PropertyTestOptions) {
   if (options.optional) {
     property.optional = true;
   }
+  if (options.objectType) {
+    property.objectType = options.objectType;
+  }
   return { [options.name]: property };
 }
 
