@@ -24,10 +24,15 @@ yarn global add @realm/tools
 
 Source code for all tools are found in `src`. The output of the build process is found in `dist`.
 
-
 ```sh
 npm install
 npm run build
+```
+
+You can run the transpiled tools directly e.g.,
+
+```sh
+node dist/realm-schema.js -h
 ```
 
 ## `realm-schema`

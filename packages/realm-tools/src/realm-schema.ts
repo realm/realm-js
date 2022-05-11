@@ -24,14 +24,14 @@ import * as fs from "fs";
 type Relationship = {
   from: string;
   to: string;
-}
+};
 
 type ExtractSchemaArgs = {
   inputFileName?: string;
   outputFileName?: string;
   format?: string;
   help?: boolean;
-}
+};
 
 type FormatterFunction = (r: Realm) => void;
 type Formatters = {
@@ -70,7 +70,7 @@ const formatters: Formatters = {
   json,
 };
 
-const args = parse<IExtractSchemaArgs>(
+const args = parse<ExtractSchemaArgs>(
   {
     inputFileName: {
       alias: "i",
@@ -117,7 +117,7 @@ function writer(line: string) {
   } else {
     process.stdout.write(line + "\n");
   }
-};
+}
 
 if (args.format) {
   if (formatters[args.format]) {
