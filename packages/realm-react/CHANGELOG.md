@@ -2,7 +2,7 @@
 
 ### Enhancements
 
-- Add UserProvider and useUser hook. Usage example:
+- Add UserProvider and useUser hook ([#4557](https://github.com/realm/realm-js/pull/4557)). Usage example:
 
 ```
 import {AppProvider, UserProvider} from '@realm/react'
@@ -27,7 +27,7 @@ const SomeComponent = () => {
 }
 ```
 
-- Add AppProvider and useApp hook. Usage example:
+- Add AppProvider and useApp hook ([#4470](https://github.com/realm/realm-js/pull/4470)). Usage example:
 
 ```
 import {AppProvider} from '@realm/react'
