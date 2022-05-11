@@ -17,7 +17,7 @@ If you'd like to send us sensitive sample code to help troubleshoot your issue, 
 
 ## Contributing Bug Fixes and Enhancements
 
-We love contributions to Realm! If you'd like to fix bugs, contribute code, documentation, or any other improvements, we recommend that you either [find an existing issue](https://github.com/realm/realm-js/issues?q=is%3Aopen+is%3Aissue+label%3AFirst-Good-Issue) or create a new issue to pitch what you would like to work on. Once you are ready to contribute, please [file a Pull Request](https://github.com/realm/realm-js/pulls) on our GitHub repository. Make sure to accept our [CLA](#cla).
+We love contributions to Realm! If you'd like to fix bugs, contribute code, documentation, or add any other improvements, we recommend that you either [find an existing issue](https://github.com/realm/realm-js/issues?q=is%3Aopen+is%3Aissue+label%3AFirst-Good-Issue) or create a new issue to pitch what you would like to work on. Once you are ready to contribute, please [file a Pull Request](https://github.com/realm/realm-js/pulls) on our GitHub repository. Make sure to accept our [CLA](#cla).
 
 If you're on the MongoDB payroll, please ensure you're familiar with [the Realm SDK cross-team working agreement](https://docs.google.com/document/d/1AB9Z1F29oLmubnPAjfphYwGz1xqqeotHaMWK5OKkL3A/edit).
 
