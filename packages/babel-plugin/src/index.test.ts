@@ -153,13 +153,61 @@ describe("Babel plugin", () => {
       ],
     });
 
-    describeProperty("link", {
-      type: "Person",
+    describeProperty("uuid", {
+      type: "uuid",
+      defaults: [
+        undefined,
+        { source: "new Realm.Types.UUID()" },
+        { source: "new Types.UUID()" },
+        { source: "new Realm.BSON.UUID()" },
+        { source: "new BSON.UUID()" },
+      ],
+    });
+
+    describeProperty("date", {
+      type: "date",
+      defaults: [
+        undefined,
+        { source: "new Date()" },
+        { source: "new Types.Date()" },
+        { source: "new Realm.Types.Date()" },
+      ],
     });
 
     describeProperty("list", {
       type: "list",
+      // TODO: Extend the `objectType` being tested
       objectTypes: ["Person", "int"],
+      defaults: [undefined, { source: "[]" }],
+    });
+
+    describeProperty("set", {
+      type: "set",
+      // TODO: Extend the `objectType` being tested
+      objectTypes: ["Person"],
+    });
+
+    describeProperty("dictionary", {
+      type: "dictionary",
+      // TODO: Extend the `objectType` being tested
+      objectTypes: [undefined, "mixed"],
+    });
+
+    describeProperty("mixed", {
+      type: "mixed",
+      defaults: [undefined, "foo", 123],
+    });
+
+    /*
+    describeProperty("linkingObjects", {
+      type: "linkingObjects",
+      objectTypes: ["Person"],
+      linkingProperty: ["friends"],
+    });
+    */
+
+    describeProperty("link", {
+      type: "Person",
     });
   });
 });

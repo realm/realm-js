@@ -22,7 +22,7 @@ import { extractSchema, transformProperty } from "./transform";
 
 type PropertySuiteOptions = {
   type: string;
-  objectTypes?: string[];
+  objectTypes?: (undefined | string)[];
   defaults?: ({ source: string } | unknown)[];
   optionals?: boolean[];
 };

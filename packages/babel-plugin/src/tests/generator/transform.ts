@@ -26,7 +26,7 @@ import { transform } from "../transform";
 
 export function transformProperty(propertyCode: string): babel.BabelFileResult {
   const source = `
-    import Realm, { List, Types, BSON } from "realm";
+    import Realm, { Types, BSON, List, Set, Dictionary, Mixed } from "realm";
     class Person extends Realm.Object { ${propertyCode} }
   `;
   return transform({ source });

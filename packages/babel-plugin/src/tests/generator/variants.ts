@@ -42,10 +42,15 @@ const TYPE_NAME_VARIANTS: Record<string, string[]> = {
   double: ["number", "Realm.Types.Double", "Types.Double"],
   decimal128: ["Realm.Types.Decimal128", "Types.Decimal128", "Realm.BSON.Decimal128", "BSON.Decimal128"],
   objectId: ["Realm.Types.ObjectId", "Types.ObjectId", "Realm.BSON.ObjectId", "BSON.ObjectId"],
-  list: ["Realm.List", "List"],
+  uuid: ["Realm.Types.UUID", "Types.UUID", "Realm.BSON.UUID", "BSON.UUID"],
+  date: ["Date", "Types.Date", "Realm.Types.Date"],
+  list: ["Realm.List", "Realm.Types.List", "Types.List", "List"],
+  set: ["Realm.Set", "Realm.Types.Set", "Types.Set", "Set"],
+  dictionary: ["Realm.Dictionary", "Realm.Types.Dictionary", "Types.Dictionary", "Dictionary"],
+  mixed: ["Realm.Mixed", "Mixed"],
 };
 
-const DEFAULT_INFERABLE_TYPES = new Set<string>(["bool", "string", "double", "decimal128", "objectId"]);
+const DEFAULT_INFERABLE_TYPES = new Set<string>(["bool", "string", "double", "decimal128", "objectId", "uuid", "date"]);
 
 const COLLECTION_TYPES = new Set<string>(["list", "set", "dictionary"]);
 
