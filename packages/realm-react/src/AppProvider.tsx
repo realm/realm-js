@@ -29,7 +29,9 @@ const AppContext = createContext<Realm.App | null>(null);
  * can be used to create a Realm.App instance:
  * https://www.mongodb.com/docs/realm-sdks/js/latest/Realm.App.html#~AppConfiguration
  */
-type AppProviderProps = Realm.AppConfiguration;
+type AppProviderProps = Realm.AppConfiguration & {
+  children: React.ReactNode;
+};
 
 /**
  * React component providing a Realm App instance on the context for the

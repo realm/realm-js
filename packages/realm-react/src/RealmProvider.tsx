@@ -27,6 +27,7 @@ type PartialRealmConfiguration = Omit<Partial<Realm.Configuration>, "sync"> & {
 
 type ProviderProps = PartialRealmConfiguration & {
   fallback?: React.ComponentType<unknown> | React.ReactElement | null | undefined;
+  children: React.ReactNode;
 };
 
 /**

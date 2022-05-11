@@ -28,6 +28,7 @@ const UserContext = createContext<Realm.User | null>(null);
 type UserProviderProps = {
   // Optional fallback component to render when unauthenticated
   fallback?: React.ComponentType<unknown> | React.ReactElement | null | undefined;
+  children: React.ReactNode;
 };
 
 /**
