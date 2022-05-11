@@ -261,7 +261,7 @@ const [user, setUser] = useState()
 
 //... some logic to get user state
 
-<RealmProvider sync={user, partition}>
+<RealmProvider sync={{ user, partition }}>
 ```
 
 ### `useApp` and the `AppProvider`
