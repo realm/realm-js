@@ -1,7 +1,7 @@
 {
   "name": "@realm/tools",
   "version": "0.0.1",
-  "description": "Tools for work with Realm",
+  "description": "Tools useful for working with Realms",
   "bin": {
     "realm-schema": "./dist/realm-schema.js"
   },

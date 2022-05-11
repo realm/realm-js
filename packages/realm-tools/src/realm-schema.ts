@@ -21,12 +21,12 @@ import Realm from "realm";
 import { parse } from "ts-command-line-args";
 import * as fs from "fs";
 
-interface Relationship {
+type Relationship = {
   from: string;
   to: string;
 }
 
-interface IExtractSchemaArgs {
+type ExtractSchemaArgs = {
   inputFileName?: string;
   outputFileName?: string;
   format?: string;
@@ -111,7 +111,7 @@ if (args.outputFileName && args.outputFileName !== "-") {
   fd = fs.openSync(args.outputFileName, "w");
 }
 
-const writer = (line: string) => {
+function writer(line: string) {
   if (fd) {
     fs.writeSync(fd, line + "\n");
   } else {
