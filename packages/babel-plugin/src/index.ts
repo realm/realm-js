@@ -204,10 +204,10 @@ function isClassExtendingRealmObject(path: NodePath<types.ClassDeclaration>) {
   // Determine if the super class is the "Object" class from the "realm" package
   const superClass = path.get("superClass");
   if (path.isClassDeclaration() && superClass.isExpression() && isPropertyImportedFromRealm(superClass, "Object")) {
-    // The class is extending "Realm.Object"
+    // The class is extending "Realm.Object" from "realm"
     return true;
   } else if (superClass.isIdentifier({ name: "Object" }) && isImportedFromRealm(superClass)) {
-    // Determine if this is the "Object" exported by the "realm" package
+    // The class is extending "Object" from "realm"
     return true;
   }
   return false;
