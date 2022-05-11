@@ -45,7 +45,7 @@ The `realm-schema` can read a local Realm file and export the schema. The suppor
 Example:
 
 ```sh
-npx realm-schema -i samples/default.realm -o MyClasses.md -f mermaid
+npx realm-schema -i samples/default.realm -o MyClasses.mmd -f mermaid
 ```
 
 The output will look like
@@ -65,3 +65,4 @@ class Parent {
 Parent <-- Parent
 Child <-- Parent
 ```
+If you plan to use the JSON output, it is recommended to use it with [jq](https://stedolan.github.io/jq/).
