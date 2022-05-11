@@ -16,15 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export enum OptionalVariant {
-  Required = "required",
-  QuestionMark = "question-mark",
-  UndefinedLeft = "undefined-left",
-  UndefinedRight = "undefined-right",
-}
-
 export type TypeVariant = {
-  optional: OptionalVariant;
+  questionMark: boolean;
   propertyName: string;
   typeName?: string;
   initializer?: string;
@@ -34,25 +27,19 @@ export type TypeGeneratorOptions = {
   name: string;
   types: (string | undefined)[];
   initializer?: string;
-  optionals: OptionalVariant[];
+  questionMark: boolean;
 };
 
-export function generateTypeString({ optional, propertyName, typeName, initializer }: TypeVariant): string {
+export function generateTypeString({ questionMark, propertyName, typeName, initializer }: TypeVariant): string {
   let result = propertyName;
-  if (optional === OptionalVariant.QuestionMark) {
+  if (questionMark) {
     result += "?";
   }
   if (typeName !== undefined) {
     result += ": ";
   }
-  if (optional === OptionalVariant.UndefinedLeft) {
-    result += "undefined | ";
-  }
   if (typeName !== undefined) {
     result += typeName;
-  }
-  if (optional === OptionalVariant.UndefinedRight) {
-    result += " | undefined";
   }
   if (initializer !== undefined) {
     result += " = " + initializer;
@@ -61,19 +48,14 @@ export function generateTypeString({ optional, propertyName, typeName, initializ
   return result;
 }
 
-export function generateTypeVariants({ name, types, initializer, optionals }: TypeGeneratorOptions): TypeVariant[] {
+export function generateTypeVariants({ name, types, initializer, questionMark }: TypeGeneratorOptions): TypeVariant[] {
   const result: TypeVariant[] = [];
   for (const type of types) {
-    for (const optional of optionals) {
-      if (typeof type === "undefined" && optional !== OptionalVariant.Required) {
-        // Cannot generate an optional property without a type
-        continue;
-      } else if (typeof type === "undefined" && typeof initializer === "undefined") {
-        // Cannot infer type when no initializer is given
-        continue;
-      }
-      result.push({ optional, typeName: type, propertyName: name, initializer });
+    if (typeof type === "undefined" && typeof initializer === "undefined") {
+      // Cannot infer type when no initializer is given
+      continue;
     }
+    result.push({ questionMark, typeName: type, propertyName: name, initializer });
   }
   return result;
 }
