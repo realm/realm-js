@@ -1197,6 +1197,9 @@ void RealmClass<T>::objects(ContextType ctx, ObjectType this_object, Arguments& 
     if (object_schema.is_embedded) {
         throw std::runtime_error("You cannot query an embedded object.");
     }
+    if (object_schema.is_asymmetric) {
+        throw std::runtime_error("You cannot query an asymmetric class.");
+    }
 
     return_value.set(ResultsClass<T>::create_instance(ctx, realm, object_schema.name));
 }
