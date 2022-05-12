@@ -29,6 +29,7 @@
 #include "logger.hpp"
 
 #include "platform.hpp"
+#include "realm/version_id.hpp"
 #include <realm/object-store/shared_realm.hpp>
 #include <realm/sync/config.hpp>
 #include <realm/sync/protocol.hpp>
@@ -189,7 +190,7 @@ public:
         return m_func;
     }
 
-    void operator()(SharedRealm before_realm, SharedRealm after_realm)
+    void operator()(SharedRealm before_realm, SharedRealm after_realm, bool)
     {
         HANDLESCOPE(m_ctx)
 
@@ -1056,11 +1057,11 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                 }
                 config.sync_config->notify_before_client_reset = std::move(client_reset_before_handler);
 
-                std::function<void(SharedRealm, SharedRealm)> client_reset_after_handler;
+                std::function<void(SharedRealm, SharedRealm, bool)> client_reset_after_handler;
                 ValueType client_reset_after_value =
                     Object::get_property(ctx, client_reset_object, "clientResetAfter");
                 if (!Value::is_undefined(ctx, client_reset_after_value)) {
-                    client_reset_after_handler = util::EventLoopDispatcher<void(SharedRealm, SharedRealm)>(
+                    client_reset_after_handler = util::EventLoopDispatcher<void(SharedRealm, SharedRealm, bool)>(
                         ClientResetAfterFunctor<T>(ctx, Value::validated_to_function(ctx, client_reset_after_value)));
                 }
                 config.sync_config->notify_after_client_reset = std::move(client_reset_after_handler);

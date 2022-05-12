@@ -71,6 +71,7 @@ declare namespace Realm {
         name: string;
         primaryKey?: string;
         embedded?: boolean;
+        asymmetric?: boolean;
         properties: PropertiesTypes;
     }
 
