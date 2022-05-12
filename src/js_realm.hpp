@@ -1100,6 +1100,9 @@ void RealmClass<T>::objects(ContextType ctx, ObjectType this_object, Arguments& 
     if (object_schema.is_embedded) {
         throw std::runtime_error("You cannot query an embedded object.");
     }
+    if (object_schema.is_asymmetric) {
+        throw std::runtime_error("You cannot query an asymmetric class.");
+    }
 
     return_value.set(ResultsClass<T>::create_instance(ctx, realm, object_schema.name));
 }
@@ -1582,27 +1585,27 @@ void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Argumen
         config = write_copy_to_helper_deprecated(ctx, this_object, args);
     }
 
-    bool realm_is_synced = static_cast<bool>(realm->sync_session());
-    bool copy_is_synced = static_cast<bool>(config.sync_config);
+    // bool realm_is_synced = static_cast<bool>(realm->sync_session());
+    // bool copy_is_synced = static_cast<bool>(config.sync_config);
 
-    if (realm_is_synced && !copy_is_synced) {
-        // case 3)
-        Group& group = realm->read_group();
-        group.write(config.path, config.encryption_key.empty() ? nullptr : config.encryption_key.data());
-        return;
-    }
-    else if (realm_is_synced && copy_is_synced) {
-        // case 4)
-        BinaryData binary_encryption_key;
-        if (!config.encryption_key.empty()) {
-            binary_encryption_key = std::move(BinaryData(config.encryption_key.data(), config.encryption_key.size()));
-        }
-        realm->write_copy(config.path, binary_encryption_key);
-        return;
-    }
+    // if (realm_is_synced && !copy_is_synced) {
+    //     // case 3)
+    //     Group& group = realm->read_group();
+    //     group.write(config.path, config.encryption_key.empty() ? nullptr : config.encryption_key.data());
+    //     return;
+    // }
+    // else if (realm_is_synced && copy_is_synced) {
+    //     // case 4)
+    //     BinaryData binary_encryption_key;
+    //     if (!config.encryption_key.empty()) {
+    //         binary_encryption_key = std::move(BinaryData(config.encryption_key.data(), config.encryption_key.size()));
+    //     }
+    //     realm->convert(config.path, binary_encryption_key);
+    //     return;
+    // }
 
-    // case 1), 2)
-    realm->export_to(config);
+    // // case 1), 2)
+    realm->convert(config);
 }
 
 template <typename T>

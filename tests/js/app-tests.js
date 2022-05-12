@@ -267,4 +267,25 @@ module.exports = {
     TestCase.assertEqual(eventListener1Calls, 1);
     TestCase.assertEqual(eventListener2Calls, 1);
   },
+
+  testAsymmetricSchema() {
+    let schema = {
+      name: "AsymmetricPerson",
+      asymmetric: true,
+      properties: {
+        name: "string",
+        age: "int",
+      },
+    };
+
+    let realm = new Realm({ schema: [schema] });
+    TestCase.assertEqual(realm.schema.length, 1);
+    TestCase.assertTrue(realm.schema[0].asymmetric);
+    TestCase.assertFalse(realm.schema[0].embedded);
+
+    schema.embedded = true;
+    TestCase.assertThrowsContaining(() => {
+      new Realm({ schema: [schema]});
+    }, `Schema named '${schema.name}' is asymmetric and embedded which is not supported.`);
+  },
 };
