@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Realm, { User } from "realm";
 import "@testing-library/jest-native/extend-expect";
 import { renderHook, act } from "@testing-library/react-hooks";
@@ -176,6 +176,43 @@ describe("RealmProvider", () => {
     const newSchemaNameContainer = getByTestId("schemaName");
 
     expect(newSchemaNameContainer).toHaveTextContent("cat");
+  });
+  it("can access realm through realmRef as a forwarded ref", async () => {
+    const RealmComponent = () => {
+      const realm = useRealm();
+      return <Text testID="schemaName">{realm.schema[0].name}</Text>;
+    };
+    const App = () => {
+      const realmRef = useRef<Realm | null>(null);
+      const [path, setPath] = useState("");
+      return (
+        <>
+          <View testID="firstRealmProvider">
+            <RealmProvider realmRef={realmRef} schema={[dogSchema]} path="testPath">
+              <RealmComponent />
+            </RealmProvider>
+          </View>
+          <Button
+            testID="toggleRefPath"
+            title="toggle ref path"
+            onPress={() => setPath(realmRef?.current?.path ?? "")}
+          />
+          {realmRef.current && <Text testID="realmRefPath">{path}</Text>}
+        </>
+      );
+    };
+    const { getByTestId } = render(<App />);
+    const toggleRefPath = getByTestId("toggleRefPath");
+
+    // Wait a tick for the RealmProvider to set the reference and then call a function that uses the ref
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      fireEvent.press(toggleRefPath);
+    });
+
+    const realmRefPathText = await waitFor(() => getByTestId("realmRefPath"));
+
+    expect(realmRefPathText).toHaveTextContent("testPath");
   });
   describe("initially renders a fallback, until realm exists", () => {
     it("as a component", async () => {

@@ -27,6 +27,7 @@ type PartialRealmConfiguration = Omit<Partial<Realm.Configuration>, "sync"> & {
 
 type ProviderProps = PartialRealmConfiguration & {
   fallback?: React.ComponentType<unknown> | React.ReactElement | null | undefined;
+  realmRef?: React.MutableRefObject<Realm | null>;
   children: React.ReactNode;
 };
 
@@ -66,7 +67,7 @@ export function createRealmProvider(
    * For example, to override the `path` config value, use a prop named `path`,
    * e.g. `path="newPath.realm"`
    */
-  return ({ children, fallback: Fallback, ...restProps }) => {
+  return ({ children, fallback: Fallback, realmRef, ...restProps }) => {
     const [realm, setRealm] = useState<Realm | null>(null);
 
     // Automatically set the user in the configuration if its been set.
@@ -104,6 +105,9 @@ export function createRealmProvider(
 
     useEffect(() => {
       currentRealm.current = realm;
+      if (realmRef) {
+        realmRef.current = realm;
+      }
     }, [realm]);
 
     useEffect(() => {
