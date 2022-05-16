@@ -12,7 +12,6 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		6172F2D35A4C3AA820D92908 /* libPods-RealmTsTemplate.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6423831EA8574132BED9D8CC /* libPods-RealmTsTemplate.a */; };
-		71F2C80C27F5C4CA0028E763 /* libGCDWebServer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 71F2C80B27F5C4CA0028E763 /* libGCDWebServer.a */; };
 		7EF68E3733C33B6898317E18 /* libPods-RealmTsTemplate-RealmTsTemplateTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ABFE59519B596E51CEFDCCC0 /* libPods-RealmTsTemplate-RealmTsTemplateTests.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 /* End PBXBuildFile section */
@@ -61,7 +60,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				71F2C80C27F5C4CA0028E763 /* libGCDWebServer.a in Frameworks */,
 				6172F2D35A4C3AA820D92908 /* libPods-RealmTsTemplate.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
