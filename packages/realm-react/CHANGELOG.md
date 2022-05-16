@@ -1,7 +1,8 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* Add realmRef property to RealmProvider to access the configured realm outside of the provider component ([#4571](https://github.com/realm/realm-js/issues/4571))
+* Add realmRef property to `RealmProvider` to access the configured realm outside of the provider component ([#4571](https://github.com/realm/realm-js/issues/4571))
+  * Additionally appRef on `AppProvider` was added to provide access to `Realm.App` from outside the provider component
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
