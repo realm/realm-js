@@ -19,12 +19,6 @@
 
 #include "jsi_init.hpp"
 
-namespace realm {
-namespace js {
-std::function<void()> flush_ui_queue;
-} // namespace js
-} // namespace realm
-
 #if !REALM_ENABLE_SYNC
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "crypt32")
@@ -42,12 +36,13 @@ namespace fbjsi = facebook::jsi;
 namespace realm::js::jsi {
 extern "C" void realm_jsi_init(fbjsi::Runtime& rt, fbjsi::Object& exports, std::function<void()> flush_ui_queue)
 {
+    // Store the function used to flush React Native microtask queue
+    js::flush_ui_queue = flush_ui_queue;
+
     auto env = JsiEnv(rt);
     fbjsi::Function realm_constructor = js::RealmClass<realmjsi::Types>::create_constructor(env);
     auto name = realm_constructor.getProperty(env, "name").asString(env);
     exports.setProperty(env, std::move(name), std::move(realm_constructor));
-    // Store the function used to flush React Native microtask queue
-    js::flush_ui_queue = flush_ui_queue;
 }
 
 extern "C" void realm_jsi_invalidate_caches()

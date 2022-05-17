@@ -26,33 +26,43 @@ namespace js {
 template <>
 inline JsiVal realmjsi::Function::call(JsiEnv env, const JsiFunc& function, size_t argc, const JsiVal arguments[])
 {
-    return env(function->call(env, env.args(arguments, argc), argc));
+    auto result = env(function->call(env, env.args(arguments, argc), argc));
+    flush_ui_queue();
+    return result;
 }
 
 template <>
 inline JsiVal realmjsi::Function::call(JsiEnv env, const JsiFunc& function, const JsiObj& this_object, size_t argc,
                                        const JsiVal arguments[])
 {
-    return env(function->callWithThis(env, this_object, env.args(arguments, argc), argc));
+    auto result = env(function->callWithThis(env, this_object, env.args(arguments, argc), argc));
+    flush_ui_queue();
+    return result;
 }
 
 template <>
 inline JsiVal realmjsi::Function::callback(JsiEnv env, const JsiFunc& function, size_t argc, const JsiVal arguments[])
 {
-    return env(function->call(env, env.args(arguments, argc), argc));
+    auto result = env(function->call(env, env.args(arguments, argc), argc));
+    flush_ui_queue();
+    return result;
 }
 template <>
 inline JsiVal realmjsi::Function::callback(JsiEnv env, const JsiFunc& function, const JsiObj& this_object,
                                            size_t argc, const JsiVal arguments[])
 {
-    return env(function->callWithThis(env, this_object, env.args(arguments, argc), argc));
+    auto result = env(function->callWithThis(env, this_object, env.args(arguments, argc), argc));
+    flush_ui_queue();
+    return result;
 }
 
 template <>
 inline JsiObj realmjsi::Function::construct(JsiEnv env, const JsiFunc& function, size_t argc,
                                             const JsiVal arguments[])
 {
-    return env(function->callAsConstructor(env, env.args(arguments, argc), argc).asObject(env));
+    auto result = env(function->callAsConstructor(env, env.args(arguments, argc), argc).asObject(env));
+    flush_ui_queue();
+    return result;
 }
 
 } // namespace js
