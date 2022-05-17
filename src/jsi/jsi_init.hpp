@@ -18,6 +18,14 @@
 
 #pragma once
 
+#include <functional>
+
+namespace realm {
+namespace js {
+std::function<void()> flush_ui_queue;
+} // namespace js
+} // namespace realm
+
 #include "jsi_string.hpp"
 #include "jsi_protected.hpp"
 #include "jsi_function.hpp"

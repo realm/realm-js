@@ -19,12 +19,6 @@
 
 #include "jsi_init.hpp"
 
-namespace realm {
-namespace js {
-std::function<void()> flush_ui_queue;
-} // namespace js
-} // namespace realm
-
 #if !REALM_ENABLE_SYNC
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "crypt32")
