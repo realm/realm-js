@@ -250,6 +250,20 @@ const AppWrapper = () => {
   )
 }
 ```
+
+In some cases, it may be necessary to access the configured Realm from outside of the `RealmProvider`, for instance, implementing a client reset fallback.  This can be done by creating a `ref` with `useRef` and setting the `realmRef` property of `RealmProvider`.
+
+```tsx
+const AppWrapper = () => {
+  const realmRef = useRef<Realm|null>(null)
+
+  return (
+    <RealmProvider realmRef={realmRef}>
+      <App/>
+    <RealmProvider>
+  )
+}
+```
 ### Dynamically Updating a Realm Configuration
 
 It is possible to update the realm configuration by setting props on the `RealmProvider`.  The `RealmProvider` takes props for all possible realm configuration properties.
@@ -290,6 +304,20 @@ const SomeComponent = () => {
 	const app = useApp();
 
 	//...
+}
+```
+
+It is also possible to receive a reference to the app outside of the `AppProvider`, through the `appRef` property.  This must be set to a React reference returned from `useRef`.
+
+```tsx
+const AppWrapper = () => {
+  const appRef = useRef<Realm.App|null>(null)
+
+  return (
+    <AppProvider appRef={appRef}>
+      <App/>
+    <AppProvider>
+  )
 }
 ```
 
