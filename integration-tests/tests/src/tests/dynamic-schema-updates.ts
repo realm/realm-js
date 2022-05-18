@@ -72,7 +72,7 @@ describe("realm._updateSchema", () => {
     // Copy the schema
     const updatedSchema = [...realm.schema];
     // Locate the Dog schema
-    const dogSchema = updatedSchema.find((s) => s.name === "Dog");
+    const dogSchema = updatedSchema.find((s) => s.name === "Dog") as Realm.ObjectSchema;
     if (!dogSchema) throw new Error("Schema not found");
 
     // Add a fields property

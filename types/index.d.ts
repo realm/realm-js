@@ -40,6 +40,7 @@ declare namespace Realm {
 
     /**
      * ObjectSchemaProperty
+     * This is the structure of a schema as input when configuring a Realm
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~ObjectSchemaProperty }
      */
     interface ObjectSchemaProperty {
@@ -52,9 +53,28 @@ declare namespace Realm {
         mapTo?: string;
     }
 
+    /**
+     * CanonicalObjectSchemaProperty
+     * This depicts the structure of a schema retrieved from a Realm
+     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~CanonicalObjectSchemaProperty }
+     */
+    interface CanonicalObjectSchemaProperty {
+        name: string;
+        type: PropertyType;
+        objectType: string;
+        property?: string;
+        optional: boolean;
+        indexed: boolean;
+        mapTo: string;
+    }
+
     // properties types
     interface PropertiesTypes {
-        [keys: string]: PropertyType | ObjectSchemaProperty | ObjectSchema;
+        [keys: string]: ObjectSchemaProperty | ObjectSchema | PropertyType;
+    }
+
+    interface CanonicalPropertiesTypes {
+        [keys: string]: CanonicalObjectSchemaProperty;
     }
 
     enum UpdateMode {
@@ -67,11 +87,19 @@ declare namespace Realm {
      * ObjectSchema
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~ObjectSchema }
      */
-    interface ObjectSchema {
+
+    interface BaseObjectSchema {
         name: string;
         primaryKey?: string;
         embedded?: boolean;
+    }
+
+    interface ObjectSchema extends BaseObjectSchema {
         properties: PropertiesTypes;
+    }
+
+    interface CanonicalObjectSchema extends BaseObjectSchema {
+        properties: CanonicalPropertiesTypes;
     }
 
     /**
@@ -960,7 +988,7 @@ declare class Realm {
     readonly empty: boolean;
     readonly path: string;
     readonly readOnly: boolean;
-    readonly schema: Realm.ObjectSchema[];
+    readonly schema: Realm.CanonicalObjectSchema[];
     readonly schemaVersion: number;
     readonly isInTransaction: boolean;
     readonly isClosed: boolean;

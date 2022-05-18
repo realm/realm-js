@@ -54,7 +54,7 @@ class Realm {
   /**
    * A normalized representation of the schema provided in the
    * {@link Realm~Configuration Configuration} when this Realm was constructed.
-   * @type {Realm~ObjectSchema[]}
+   * @type {Realm~CanonicalObjectSchema[]}
    * @readonly
    * @since 0.12.0
    */
@@ -497,6 +497,33 @@ class Realm {
  *   name is different than the name used in the Realm file. This can e.g. be used to have different naming convention in
  *   Javascript than what is being used in the Realm file. Reading and writing properties must be done using the public
  *   name. Queries can be done using both the public and the underlying property name.
+ */
+
+/**
+ * The retreived schema from an open Realm has a different structure as the input schema.
+ * @typedef Realm~CanonicalObjectSchema
+ * @type {Object}
+ * @property {string} name - Represents the object type.
+ * @property {string} [primaryKey] - The name of a `"string"` or `"int"` property
+ *   that must be unique across all objects of this type within the same Realm.
+ * @property {boolean} [embedded] - True if the object type is embedded. An embedded object
+ *   can be linked to by at most one parent object. Default value: false.
+ * @property {Object<string, (Realm~PropertyType|Realm~ObjectSchemaProperty|Realm~ObjectSchema)>} properties -
+ *   An object where the keys are property names and the values represent the property type.
+ */
+
+/**
+ * @typedef Realm~CanonicalObjectSchemaProperty
+ * @type {Object}
+ * @property {string} name - The name of this property.
+ * @property {Realm~PropertyType} type - The type of this property.
+ * @property {string} [property] - When using `"linkingObjects"` this value will represent the linked property on the linked object
+ * @property {boolean} optional - Signals that this property may be assigned `null` or `undefined`.
+ *   For `"list"`, `"dictionary"` or `"set"` properties of non-object types, this instead signals whether the values inside the list may be assigned `null` or `undefined`.
+ *   This is not supported for `"list"` or `"set"` properties of object types and `"linkingObjects"` properties.
+ * @property {boolean} indexed - Signals that this property is indexed. Only supported for
+ *   `"string"`, `"int"`, and `"bool"` properties.
+ * @property {string} mapTo - The name of the alias this property has been set to.
  */
 
 /**

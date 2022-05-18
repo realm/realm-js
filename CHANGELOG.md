@@ -5,7 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Add canonical schema type for retruned schemas ([#4580](https://github.com/realm/realm-js/pull/4580))
 
 ### Compatibility
 * MongoDB Realm Cloud.
