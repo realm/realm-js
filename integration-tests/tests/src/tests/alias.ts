@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 Realm Inc.
+// Copyright 2022 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,11 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-/* eslint-env es6, node */
+import { expect } from "chai";
+import Realm from "realm";
 
-var Realm = require("realm");
-var TestCase = require("./asserts");
-var schemas = require("./schemas");
+type ObjectA = {
+  otherName: string;
+  age?: number;
+};
 
 function getRealm() {
   const schemas = [
@@ -38,7 +40,7 @@ function getRealm() {
   });
 }
 
-function addTestObjects(realm) {
+function addTestObjects(realm: Realm) {
   realm.beginTransaction();
   realm.create("ObjectA", {
     otherName: "Foo",
@@ -51,9 +53,13 @@ function addTestObjects(realm) {
   realm.commitTransaction();
 }
 
-module.exports = {
-  testAliasInSchema() {
-    const Person = {
+describe("Realm Alias", () => {
+  beforeEach(() => {
+    Realm.clearTestState();
+  });
+
+  it("supports remapping property names using mapTo", () => {
+    const Person: Realm.ObjectSchema = {
       name: "Person",
       properties: {
         _name: { type: "string", mapTo: "name" },
@@ -71,17 +77,14 @@ module.exports = {
 
     // Mapped properties are reported for all variants, no matter if the public_name is set or not.
     const props = realm.schema[0].properties;
-    TestCase.assertEqual(props["_name"].mapTo, "name");
-    TestCase.assertEqual(props["address"].mapTo, "address");
-    TestCase.assertEqual(props["age"].mapTo, "age");
-    TestCase.assertEqual(props["_married"].mapTo, "married");
-    TestCase.assertEqual(props["_children"].mapTo, "children");
-    TestCase.assertEqual(props["_parents"].mapTo, "parents");
-
-    realm.close();
-  },
-
-  testAliasWhenCreatingObjects() {
+    expect(props["_name"].mapTo).equals("name");
+    expect(props["address"].mapTo).equals("address");
+    expect(props["age"].mapTo).equals("age");
+    expect(props["_married"].mapTo).equals("married");
+    expect(props["_children"].mapTo).equals("children");
+    expect(props["_parents"].mapTo).equals("parents");
+  });
+  it("is used when creating objects", () => {
     const realm = getRealm();
     realm.beginTransaction();
 
@@ -95,66 +98,65 @@ module.exports = {
     realm.create("ObjectA", ["Bar", 42]);
 
     // Using the internal name instead of the alias throws an exception.
-    TestCase.assertThrows(() => realm.create("ObjectA", { name: "Boom" }));
+    expect(() => realm.create("ObjectA", { name: "Boom" })).to.throw();
 
     realm.commitTransaction();
 
     realm.close();
-  },
-
-  testAliasWhenUpdatingObjects() {
+  });
+  it("is used when updating objects", () => {
     const realm = getRealm();
     realm.beginTransaction();
 
-    let obj = realm.create("ObjectA", { otherName: "Foo" });
+    const obj = realm.create<ObjectA>("ObjectA", { otherName: "Foo" });
 
     // Setting properties must use alias
     obj.otherName = "Bar";
-    TestCase.assertEqual(obj.otherName, "Bar");
+    expect(obj.otherName).equals("Bar");
 
     // If no alias is defined, the internal name still works
     obj.age = 1;
-    TestCase.assertEqual(obj.age, 1);
+    expect(obj.age).equals(1);
 
     // Even if a mapped name is set, only the public name can be used when updating properties.
+    // @ts-expect-error This isn't a field usable for this schema
     obj.name = "Baz";
-    TestCase.assertEqual(obj.otherName, "Bar");
+    expect(obj.otherName).equals("Bar");
 
     realm.commitTransaction();
 
     realm.close();
-  },
-
-  testAliasWhenReadingProperties() {
+  });
+  it("is used when reading properties", () => {
     const realm = getRealm();
     addTestObjects(realm);
 
     // The mapped property names cannot be used when reading properties
-    let obj = realm.objects("ObjectA")[0];
-    TestCase.assertEqual(obj.name, undefined);
-    TestCase.assertEqual(obj.otherName, "Foo");
-    TestCase.assertEqual(obj.age, 41);
+    const obj = realm.objects<ObjectA>("ObjectA")[0];
+    // @ts-expect-error This should be undefined
+    expect(obj.name).equals(undefined);
+    expect(obj.otherName).equals("Foo");
+    expect(obj.age).equals(41);
 
     // Only the Javascript property names are visible as keys, not the mapped names.
-    for (var key in obj) {
-      TestCase.assertFalse(key === "name");
+    for (const key in obj) {
+      expect(key).not.equals("name");
     }
 
     realm.close();
-  },
-
-  testAliasInQueries() {
+  });
+  it("is used in queries", () => {
     const realm = getRealm();
     addTestObjects(realm);
 
     // Queries also use aliases
-    let results = realm.objects("ObjectA").filtered("otherName = 'Foo'");
-    TestCase.assertEqual(results.length, 1);
+    let results = realm.objects<ObjectA>("ObjectA").filtered("otherName = 'Foo'");
+    expect(results.length).equals(1);
 
     // Querying on internal names are still allowed
-    results = realm.objects("ObjectA").filtered("name = 'Foo'");
-    TestCase.assertEqual(results.length, 1);
+    results = realm.objects<ObjectA>("ObjectA").filtered("name = 'Foo'");
+    expect(results.length).equals(1);
 
     realm.close();
-  },
-};
+  });
+});
