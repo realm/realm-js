@@ -53,12 +53,12 @@ function addTestObjects(realm: Realm) {
   realm.commitTransaction();
 }
 
-describe("Realm Alias", () => {
+describe("Aliasing property names using mapTo", () => {
   beforeEach(() => {
     Realm.clearTestState();
   });
 
-  it("supports remapping property names using mapTo", () => {
+  it("supports defining aliases for properties in a schema", () => {
     const Person: Realm.ObjectSchema = {
       name: "Person",
       properties: {
@@ -84,7 +84,8 @@ describe("Realm Alias", () => {
     expect(props["_children"].mapTo).equals("children");
     expect(props["_parents"].mapTo).equals("parents");
   });
-  it("is used when creating objects", () => {
+
+  it("supports creating objects", () => {
     const realm = getRealm();
     realm.beginTransaction();
 
@@ -104,7 +105,8 @@ describe("Realm Alias", () => {
 
     realm.close();
   });
-  it("is used when updating objects", () => {
+
+  it("supports updating objects", () => {
     const realm = getRealm();
     realm.beginTransaction();
 
@@ -127,12 +129,14 @@ describe("Realm Alias", () => {
 
     realm.close();
   });
-  it("is used when reading properties", () => {
+
+  it("supports reading properties", () => {
     const realm = getRealm();
     addTestObjects(realm);
 
     // The mapped property names cannot be used when reading properties
     const obj = realm.objects<ObjectA>("ObjectA")[0];
+
     // @ts-expect-error This should be undefined
     expect(obj.name).equals(undefined);
     expect(obj.otherName).equals("Foo");
@@ -145,7 +149,8 @@ describe("Realm Alias", () => {
 
     realm.close();
   });
-  it("is used in queries", () => {
+
+  it("supports aliases in queries", () => {
     const realm = getRealm();
     addTestObjects(realm);
 
