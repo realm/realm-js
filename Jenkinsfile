@@ -325,7 +325,7 @@ def publish(dependencies, tag) {
       unstash "prebuild-${platform}"
     }
 
-    withAWS(credentials: 's3-bucket-static.realm.io', region: 'us-east-1') {
+    withAWS(credentials: 'tightdb-s3-ci', region: 'us-east-1') {
       s3Upload bucket: 'static.realm.io', path: "realm-js-prebuilds/${dependencies.VERSION}", includePathPattern: 'realm-*'
     }
   }
