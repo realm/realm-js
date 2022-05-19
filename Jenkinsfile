@@ -325,8 +325,8 @@ def publish(dependencies, tag) {
       unstash "prebuild-${platform}"
     }
 
-    withCredentials([[$class: 'FileBinding', credentialsId: 'c0cc8f9e-c3f1-4e22-b22f-6568392e26ae', variable: 's3cfg_config_file']]) {
-      sh "s3cmd -c \$s3cfg_config_file put --multipart-chunk-size-mb 5 realm-* 's3://static.realm.io/realm-js-prebuilds/${dependencies.VERSION}/'"
+    withAWS(credentials: 'aws-s3-bucket-static.realm.io', region: 'us-east-1') {
+      s3Upload bucket: 'static.realm.io', path: "realm-js-prebuilds/${dependencies.VERSION}", includePathPattern: 'realm-*'
     }
   }
 }
