@@ -1,4 +1,4 @@
-10.18.0 Release notes (2022-5-19)
+x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * None.
