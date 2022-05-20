@@ -1182,7 +1182,12 @@ void RealmClass<T>::create(ContextType ctx, ObjectType this_object, Arguments& a
 
     NativeAccessor accessor(ctx, realm, object_schema);
     auto realm_object = realm::Object::create<ValueType>(accessor, realm, object_schema, object, policy);
-    return_value.set(RealmObjectClass<T>::create_instance(ctx, std::move(realm_object)));
+    if (object_schema.is_asymmetric) {
+        return_value.set_undefined();
+    }
+    else {
+        return_value.set(RealmObjectClass<T>::create_instance(ctx, std::move(realm_object)));
+    }
 }
 
 template <typename T>

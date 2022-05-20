@@ -1,7 +1,20 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
+### Notes
+This release adds beta support for asymmetric sync. In order to use asymmetric sync, you must configure your Realm app using the Cloud UI. Asymmetric sync is only possible in combination with flexible sync. Moreover, schemas must be annotated with `asymmetric`:
+
+```js
+const Person = {
+  name: "Person",
+  asymmetric: true,
+  properties: {
+    name: "string",
+    age: "int",
+  },
+};
+```
 ### Enhancements
-* Added schema parsing for asymmetric sync.
+* Added support for asymmetric sync. ([#4503](https://github.com/realm/realm-js/issues/4503))
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
