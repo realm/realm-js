@@ -27,7 +27,6 @@ describe.skipIf(environment.missingServer, "Asymmetric sync", function () {
       [true, false].forEach((embedded) => {
         const PersonSchema: Realm.ObjectSchema = {
           name: "Person",
-          primaryKey: "_id",
           asymmetric: asymmetric,
           embedded: embedded,
           properties: {
@@ -37,10 +36,11 @@ describe.skipIf(environment.missingServer, "Asymmetric sync", function () {
           },
         };
 
-        it.only(`Schema with asymmetric = ${asymmetric} and embedded = ${embedded}`, () => {
+        it(`Schema with asymmetric = ${asymmetric} and embedded = ${embedded}`, () => {
+          Realm.deleteFile({});
           if (embedded && asymmetric) {
             expect(() => {
-              new Realm({ schema: [PersonSchema ]});
+              new Realm({ schema: [PersonSchema] });
             }).to.throw();
           } else {
             const realm = new Realm({ schema: [PersonSchema] });
@@ -51,6 +51,34 @@ describe.skipIf(environment.missingServer, "Asymmetric sync", function () {
             realm.close();
           }
         });
+      });
+    });
+  });
+
+  describe("Creating objects", function () {
+    const PersonSchema: Realm.ObjectSchema = {
+      name: "Person",
+      primaryKey: "_id",
+      asymmetric: true,
+      properties: {
+        _id: "objectId",
+        age: "int",
+        name: "string",
+      },
+    };
+    importAppBefore("with-db-flx");
+    authenticateUserBefore();
+    openRealmBeforeEach({
+      schema: [PersonSchema],
+      sync: {
+        flexible: true,
+      },
+    });
+
+    it("Realm#create", function () {
+      this.realm.write(() => {
+        const retval = this.realm.create(PersonSchema.name, { _id: new BSON.ObjectId(), name: "Joe", age: 12 });
+        expect(retval).to.equal(undefined);
       });
     });
   });
