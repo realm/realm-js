@@ -1,0 +1,50 @@
+name: Prepare Release
+
+on: workflow_dispatch
+
+jobs:
+  prepare-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      # action is at https://github.com/realm/ci-actions/tree/main/update-changelog
+      - name: Update Changelog
+        id: update-changelog
+        uses: realm/ci-actions/update-changelog@v2
+        with:
+          changelog: ${{ github.workspace }}/CHANGELOG.md
+
+      - name: Update package.json
+        uses: jacobtomlinson/gha-find-replace@0dfd0777cc234ef6947ec1f20873c632114c4167 #! 0.1.4
+        with:
+          find: '"version": "[^"]*"'
+          replace: '"version": "${{ steps.update-changelog.outputs.new-version }}"'
+          include: ${{ github.workspace }}/package.json
+
+      - name: Update package-lock.json
+        run: npm install --ignore-scripts
+
+      - name: Update dependencies.list
+        uses: jacobtomlinson/gha-find-replace@0dfd0777cc234ef6947ec1f20873c632114c4167 #! 0.1.4
+        with:
+          find: 'VERSION=.*'
+          replace: 'VERSION=${{ steps.update-changelog.outputs.new-version }}'
+          include: ${{ github.workspace }}/dependencies.list
+
+      - name: Update xcode project
+        uses: jacobtomlinson/gha-find-replace@0dfd0777cc234ef6947ec1f20873c632114c4167 #! 0.1.4
+        with:
+          find: 'CURRENT_PROJECT_VERSION = [^;]*'
+          replace: 'CURRENT_PROJECT_VERSION = ${{ steps.update-changelog.outputs.new-version }}'
+          include: react-native/ios/RealmReact.xcodeproj/project.pbxproj
+
+      - name: Create Release PR
+        uses: peter-evans/create-pull-request@7380612b49221684fefa025244f2ef4008ae50ad #! 3.10.1
+        with:
+          branch: release/${{ steps.update-changelog.outputs.new-version }}
+          title: Prepare for ${{ steps.update-changelog.outputs.new-version }}
+          draft: true
+          body: An automated PR for next release.
+          commit-message: "[${{ steps.update-changelog.outputs.new-version }}] Bump version"

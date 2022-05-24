@@ -1,0 +1,114 @@
+name: Publish Release
+on: workflow_dispatch
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
+
+    - name: Setup node version
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+        cache: 'npm'
+        cache-dependency-path: '**/package-lock.json'
+
+    - name: Setup NPM version
+      run: npm install -g npm@7
+
+    - name: Get NPM cache directory
+      id: npm-cache-dir
+      run: echo "::set-output name=dir::$(npm config get cache)"
+
+    - name: Restore NPM cache
+      id: npm-cache
+      uses: actions/cache@v2
+      with:
+        path: ${{ steps.npm-cache-dir.outputs.dir }}
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: Install node modules
+      run: npm ci --ignore-scripts
+
+    - name: Download prebuild PR artifacts
+      uses: dawidd6/action-download-artifact@d0f291cf39bd21965ea9c4c6e210fc355c3844ed
+      with:
+        workflow: pr-realm-js.yml
+        commit: ${{ github.sha }}
+        path: ${{ github.workspace }}
+        workflow_conclusion: completed
+
+    - name: Read version
+      id: get-version
+      run: |
+        pkgVersion=$(npm pkg get version)
+        echo "::set-output name=version::$pkgVersion"
+      shell: bash
+
+    - name: Npm Publish realm-js-${{ steps.get-version.outputs.version }}
+      run: npm publish ${{ steps.get-version.outputs.version }}
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+    - name: Find Release PR
+      uses: juliangruber/find-pull-request-action@f9f7484f8237cf8485e5ab826e542ba5dd9e9c6e
+      id: find-pull-request
+      with:
+        branch: ${{ github.ref }}
+
+    - name: Merge Pull Request
+      uses: juliangruber/merge-pull-request-action@8a13f2645ad8b6ada32f829b2fae9c0955a5265d
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        number: ${{ steps.find-pull-request.outputs.number }}
+        method: squash
+
+    - name: Extract Changelog
+      run: scripts/extract-changelog.sh ${{ steps.get-version.outputs.version }} > ExtractedChangelog.md
+
+    - name: Create Github Release
+      uses: ncipollo/release-action@10c84d509b28aae3903113151bfd832314964f2e
+      with:
+        bodyFile: ExtractedChangelog.md
+        name: ${{ steps.get-version.outputs.version }}
+        tag: v${{ steps.get-version.outputs.version }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+        draft: false
+
+    - name: Upload Github Release artifacts
+      run: npm prebuild --upload ${{ secrets.GITHUB_TOKEN }}
+
+    - name: 'Post to #realm-releases'
+      uses: realm/ci-actions/release-to-slack@v3
+      with:
+        changelog: ExtractedChangelog.md
+        sdk: JS
+        webhook-url: ${{ secrets.SLACK_RELEASE_WEBHOOK }}
+        version: ${{ steps.get-version.outputs.version }}
+
+    - name: Update Changelog
+      run: ${{ github.workspace }}/scripts/changelog-header.sh
+
+    - name: Create vNext PR
+      id: vnext-pr
+      uses: peter-evans/create-pull-request@7380612b49221684fefa025244f2ef4008ae50ad
+      with:
+        branch: prepare-vnext
+        title: Prepare for vNext
+        body: Update Changelog for vNext
+        delete-branch: true
+        commit-message: Prepare for vNext
+
+    - name: Merge Pull Request
+      uses: juliangruber/merge-pull-request-action@8a13f2645ad8b6ada32f829b2fae9c0955a5265d
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        number: ${{ steps.vnext-pr.outputs.pull-request-number }}
+        method: squash
