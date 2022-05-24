@@ -326,7 +326,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Pending);
 
           await expect(subs.waitForSynchronization()).to.be.rejectedWith(
-            'Client provided query with bad syntax: invalid match expression for table "Person": key "nonQueryable" is not a queryable field',
+            'Client provided query with bad syntax: unsupported query for table "Person": key "nonQueryable" is not a queryable field',
           );
 
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
@@ -339,11 +339,11 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           );
 
           await expect(subs.waitForSynchronization()).to.be.rejectedWith(
-            'Client provided query with bad syntax: invalid match expression for table "Person": key "nonQueryable" is not a queryable field',
+            'Client provided query with bad syntax: unsupported query for table "Person": key "nonQueryable" is not a queryable field',
           );
 
           await expect(subs.waitForSynchronization()).to.be.rejectedWith(
-            'Client provided query with bad syntax: invalid match expression for table "Person": key "nonQueryable" is not a queryable field',
+            'Client provided query with bad syntax: unsupported query for table "Person": key "nonQueryable" is not a queryable field',
           );
 
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
@@ -510,7 +510,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
               this.realm.objects(FlexiblePersonSchema.name).filtered("nonQueryable == 'test'"),
             ),
           ).to.be.rejectedWith(
-            'Client provided query with bad syntax: invalid match expression for table "Person": key "nonQueryable" is not a queryable field',
+            'Client provided query with bad syntax: unsupported query for table "Person": key "nonQueryable" is not a queryable field',
           );
 
           expect(this.realm.subscriptions.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
@@ -523,7 +523,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
               this.realm.objects(FlexiblePersonSchema.name).filtered("nonQueryable == 'test'"),
             ),
           ).to.be.rejectedWith(
-            'Client provided query with bad syntax: invalid match expression for table "Person": key "nonQueryable" is not a queryable field',
+            'Client provided query with bad syntax: unsupported query for table "Person": key "nonQueryable" is not a queryable field',
           );
 
           expect(this.realm.subscriptions.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
@@ -534,7 +534,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
               this.realm.objects(FlexiblePersonSchema.name).filtered("nonQueryable == 'test'"),
             ),
           ).to.be.rejectedWith(
-            'Client provided query with bad syntax: invalid match expression for table "Person": key "nonQueryable" is not a queryable field',
+            'Client provided query with bad syntax: unsupported query for table "Person": key "nonQueryable" is not a queryable field',
           );
 
           expect(this.realm.subscriptions.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
@@ -584,7 +584,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           ).to.be.rejected;
 
           expect(this.realm.subscriptions.error).to.equal(
-            'Client provided query with bad syntax: invalid match expression for table "Person": key "nonQueryable" is not a queryable field',
+            'Client provided query with bad syntax: unsupported query for table "Person": key "nonQueryable" is not a queryable field',
           );
         });
 
@@ -597,7 +597,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           ).to.be.rejected;
 
           expect(this.realm.subscriptions.error).to.equal(
-            'Client provided query with bad syntax: invalid match expression for table "Person": key "nonQueryable" is not a queryable field',
+            'Client provided query with bad syntax: unsupported query for table "Person": key "nonQueryable" is not a queryable field',
           );
 
           await expect(
@@ -737,7 +737,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
                 mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name).filtered("nonQueryable == 'test'"));
               }),
             ).to.be.rejectedWith(
-              'Client provided query with bad syntax: invalid match expression for table "Person": key "nonQueryable" is not a queryable field',
+              'Client provided query with bad syntax: unsupported query for table "Person": key "nonQueryable" is not a queryable field',
             );
 
             expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
