@@ -1,6 +1,6 @@
 # Realm App Importer
 
-Imports an app directory into MongoDB Realm (formerly known as Stitch).
+Imports an app directory into Atlas App Services.
 
 This CLI works around a few shortcomings of the official Realm CLI - most notably around import of apps referencing secrets and the fact that the CLI updates apps (leaving upstages changes to app directories, degrading developer experience).
 
@@ -47,7 +47,7 @@ Positionals:
 Options:
   --version              Show version number                           [boolean]
   --help                 Show help                                     [boolean]
-  --base-url             Base url of the MongoDB Realm server to import the app
+  --base-url             Base url of the Atlas App Services to import the app
                          into        [string] [default: "http://localhost:9090"]
   --username             Username of an adminstrative user
                                     [string] [default: "unique_user@domain.com"]

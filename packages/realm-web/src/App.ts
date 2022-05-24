@@ -57,7 +57,7 @@ export interface AppConfiguration extends Realm.AppConfiguration {
 }
 
 /**
- * MongoDB Realm App
+ * Atlas App Services Application
  */
 export class App<
   FunctionsFactoryType = Realm.DefaultFunctionsFactory & Realm.BaseFunctionsFactory,
@@ -72,7 +72,7 @@ export class App<
    * Get or create a singleton Realm App from an id.
    * Calling this function multiple times with the same id will return the same instance.
    *
-   * @param id The Realm App id visible from the MongoDB Realm UI or a configuration.
+   * @param id The Realm App id visible from the Atlas App Services UI or a configuration.
    * @returns The Realm App instance.
    */
   static getApp(id: string): App {
@@ -134,7 +134,7 @@ export class App<
   private _locationUrl: Promise<string> | null = null;
 
   /**
-   * Construct a Realm App, either from the Realm App id visible from the MongoDB Realm UI or a configuration.
+   * Construct a Realm App, either from the Realm App id visible from the Atlas App Services UI or a configuration.
    *
    * @param idOrConfiguration The Realm App id or a configuration to use for this app.
    */
@@ -145,7 +145,7 @@ export class App<
     if (typeof configuration === "object" && typeof configuration.id === "string") {
       this.id = configuration.id;
     } else {
-      throw new Error("Missing a MongoDB Realm app-id");
+      throw new Error("Missing an Atlas App Services app-id");
     }
     this.baseUrl = configuration.baseUrl || DEFAULT_BASE_URL;
     if (configuration.skipLocationRequest) {

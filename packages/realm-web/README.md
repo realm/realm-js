@@ -1,6 +1,6 @@
 # Realm Web
 
-Accessing MongoDB Realm from a web-browser.
+Accessing Atlas App Services from a web-browser.
 
 ## Documentation
 

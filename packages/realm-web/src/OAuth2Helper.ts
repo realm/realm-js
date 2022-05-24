@@ -43,7 +43,7 @@ type WindowOpener = (url: string) => Window | null;
 
 type RedirectResult = {
   /**
-   * The id of the MongoDB Realm app.
+   * The id of the Atlas App Services application.
    */
   appId: string;
 

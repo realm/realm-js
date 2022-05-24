@@ -21,8 +21,8 @@
 /**
  * This describes the options used to create a {@link Realm.App} instance.
  * @typedef {Object} Realm.App~AppConfiguration
- * @property {string} id - The id of the MongoDB Realm app.
- * @property {string} [baseUrl] - The base URL of the MongoDB Realm server.
+ * @property {string} id - The id of the Atlas App Services application.
+ * @property {string} [baseUrl] - The base URL of the Atlas App Services server.
  * @property {number} [timeout] - General timeout (in millisecs) for requests.
  * @property {Realm.App~LocalAppConfiguration} [app] - local app configuration
  */
@@ -44,7 +44,7 @@
  */
 
 /**
- * This describes the different options used to create a {@link Realm} instance with MongoDB Realm synchronization.
+ * This describes the different options used to create a {@link Realm} instance with Atlas App Services synchronization.
  * @typedef {Object} Realm.App.Sync~SyncConfiguration
  * @property {Realm.User} user - A {@link Realm.User} object obtained by calling `Realm.App.logIn`.
  * @property {Realm.App.Sync~SSLConfiguration} [ssl] - SSL configuration.
@@ -87,7 +87,7 @@
  * const realm = await Realm.open(config);
  *
  * // At this point, the Realm will be open with the data for the initial set
- * // subscriptions fully synchronised.
+ * // subscriptions fully synchronized.
  * ```
  * @typedef {Object} Realm.App.Sync~InitialSubscriptionsConfiguration
  * @property {callback(realm)} update - callback called with a
@@ -101,7 +101,7 @@
  */
 
 /**
- * This describes the different options used to create a {@link Realm} instance with MongoDB Realm synchronization.
+ * This describes the different options used to create a {@link Realm} instance with Atlas Device Sync.
  * @typedef {Object} Realm.App.Sync~SSLConfiguration
  * @property {boolean} validate - Indicating if SSL certificates must be validated. Default is `true`.
  * @property {string} certificatePath - A path where to find trusted SSL certificates.
@@ -134,7 +134,7 @@
  */
 
 /**
- * The class represents a MongoDB Realm App.
+ * The class represents an Atlas App Services Application.
  *
  * ```js
  * let app = new Realm.App(config);
@@ -144,7 +144,7 @@
  */
 class App {
   /**
-   * Creates a new app and connects to a MongoDB Realm instance.
+   * Creates a new app and connects to an Atlas App Services instance.
    *
    * @param {(Realm.App~AppConfiguration|string)} configOrId - The configuration of the app or a string app id.
    * @throws If no app id is provided.
@@ -243,7 +243,7 @@ class App {
 
 /**
  *
- * Class for interacting with MongoDB Realm Cloud.
+ * Class for interacting with Atlas App Services.
  *
  * @memberof Realm.App
  */
@@ -289,7 +289,7 @@ class Sync {
   static enableSessionMultiplexing(app) {}
 
   /**
-   * A callback passed to `Realm.App.Sync.setLogger` when instrumenting the MongoDB Realm Cloud client with a custom logger.
+   * A callback passed to `Realm.App.Sync.setLogger` when instrumenting the Atlas Device Sync client with a custom logger.
    * @callback Realm.App.Sync~logCallback
    * @param {number} level The level of the log entry between 0 and 8 inclusively.
    * Use this as an index into `['all', 'trace', 'debug', 'detail', 'info', 'warn', 'error', 'fatal', 'off']` to get the name of the level.
@@ -327,14 +327,14 @@ class Sync {
   /**
    * Initiate a client reset. The Realm must be closed prior to the reset.
    *
-   * A synced Realm may need to be reset if the communications with the MongoDB Realm Server
+   * A synced Realm may need to be reset if the communications with the Atlas Device Sync Server
    * indicate an unrecoverable error that prevents continuing with normal synchronization. The
    * most common reason for this is if a client has been disconnected for too long.
    *
    * The local copy of the Realm is moved into a recovery directory
    * for safekeeping.
    *
-   * Local writes that were not successfully synchronized to the MongoDB Realm server
+   * Local writes that were not successfully synchronized to Atlas
    * will be present in the local recovery copy of the Realm file. The re-downloaded Realm will
    * initially contain only the data present at the time the Realm was synchronized up on the server.
    *
@@ -486,7 +486,7 @@ class Credentials {
   static jwt(token) {}
 
   /**
-   * Creates credentials with a MongoDB Realm function and user identifier.
+   * Creates credentials with an Atlas App Services function and user identifier.
    * @param {string} payload A string identifying the user. Usually an identity token or a username.
    * @return {Promise<Credentials>} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
    */
@@ -776,8 +776,8 @@ class UserIdentity {
  */
 class User {
   /**
-   * Gets the id of this user on MongoDB Realm Cloud.
-   * The id is a guaranteed to be unique among all users on MongoDB Realm Cloud .
+   * Gets the id of this user on Atlas App Services.
+   * The id is a guaranteed to be unique among all users on Atlas App Services.
    * @type {string}
    */
   get id() {}
@@ -954,8 +954,8 @@ class User {
 }
 
 /**
- * An object encapsulating a MongoDB Realm Cloud session. Sessions represent the communication between the
- * client (and a local Realm file on disk), and the server (and a remote Realm at a given URL stored on a Realm Object Server).
+ * An object encapsulating an Atlas Device Sync session. Sessions represent the communication between the
+ * client (and a local Realm file on disk), and the server.
  * Sessions are always created by the SDK and vended out through various APIs. The lifespans of sessions
  * associated with Realms are managed automatically.
  * @memberof Realm.App.Sync
@@ -983,8 +983,8 @@ class Session {
   /**
    * Gets the current state of the session.
    * Can be either:
-   *  - "active": The sync session is actively communicating or attempting to communicate with MongoDB Realm. A session may be considered active even if it is not currently connected. To find out if a session is online, check its connection state.
-   *  - "inactive": The sync session is not attempting to communicate with MongoDB Realm due to the user logging out or synchronization being paused.
+   *  - "active": The sync session is actively communicating or attempting to communicate with Atlas App Services. A session may be considered active even if it is not currently connected. To find out if a session is online, check its connection state.
+   *  - "inactive": The sync session is not attempting to communicate with Atlas App Services due to the user logging out or synchronization being paused.
    *  - "invalid": The sync session encountered a non-recoverable error and is permanently invalid. Create a new Session to continue syncing.
    * @type {string}
    */

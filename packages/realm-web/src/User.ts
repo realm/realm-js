@@ -145,7 +145,7 @@ export class User<
   }
 
   /**
-   * @returns The access token used to authenticate the user towards MongoDB Realm.
+   * @returns The access token used to authenticate the user towards Atlas App Services.
    */
   get accessToken(): string | null {
     return this._accessToken;
