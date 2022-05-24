@@ -102,10 +102,14 @@ async function addSubscriptionAndSync<T>(
 ): Promise<AddSubscriptionResult<T>> {
   const subs = realm.subscriptions;
   let sub!: Realm.App.Sync.Subscription;
+  console.log("a");
   subs.update((mutableSubs) => {
     sub = mutableSubs.add(query, options);
   });
+  console.log("b");
+
   await subs.waitForSynchronization();
+  console.log("c");
 
   return { subs, sub, query };
 }
@@ -1172,37 +1176,43 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           // expect(subs).to.have.length(1);
         });
 
-        it("breaks sync 0", /*async*/ async function () {
+        it("breaks sync 0", async function () {
           const subs = this.realm.subscriptions;
           let sub;
 
           subs.update((m) => {
             m.add(this.realm.objects("Person"));
           });
-          // await subs.waitForSynchronization();
 
           subs.update((m) => {
             sub = m.add(this.realm.objects("Person"));
           });
-          // await subs.waitForSynchronization();
 
           expect(subs).to.have.length(1);
 
           subs.update((mutableSubs) => {
             expect(mutableSubs.removeSubscription(sub)).to.be.true;
           });
-          await subs.waitForSynchronization();
 
           expect(subs).to.have.length(0);
+
+          // Uncomment this line and the tests will pass every time
+          // await subs.waitForSynchronization();
         });
 
         it("breaks sync 1", async function () {
+          // console.log("a");
           addSubscriptionForPerson(this.realm);
+          // console.log("b");
           await addSubscriptionAndSync(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"));
+          // console.log("c");
 
           this.realm.subscriptions.update((mutableSubs) => {
+            // console.log("d");
+
             expect(mutableSubs.removeAll()).to.equal(2);
           });
+          // console.log("e");
 
           expect(this.realm.subscriptions.isEmpty).to.be.true;
         });
