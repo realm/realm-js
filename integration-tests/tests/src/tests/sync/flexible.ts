@@ -1153,6 +1153,31 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           });
         });
 
+        it("breaks sync 0", async function () {
+          const { sub } = await addSubscriptionForPersonAndSync(this.realm);
+          const { subs } = await addSubscriptionForPersonAndSync(this.realm);
+
+          // expect(subs).to.have.length(1);
+
+          await subs.update((mutableSubs) => {
+            // expect(mutableSubs.removeSubscription(sub)).to.be.true;
+          });
+
+          // expect(subs).to.have.length(0);
+          // expect(subs).to.have.length(1);
+        });
+
+        it("breaks sync 1", async function () {
+          addSubscriptionForPerson(this.realm);
+          await addSubscriptionAndSync(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"));
+
+          this.realm.subscriptions.update((mutableSubs) => {
+            expect(mutableSubs.removeAll()).to.equal(2);
+          });
+
+          expect(this.realm.subscriptions.isEmpty).to.be.true;
+        });
+
         describe("persistence", function () {
           it("persists subscriptions when the Realm is reopened", async function (this: RealmContext) {
             await addSubscriptionForPersonAndSync(this.realm);
