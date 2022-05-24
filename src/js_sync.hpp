@@ -189,7 +189,7 @@ public:
         return m_func;
     }
 
-    void operator()(SharedRealm before_realm, SharedRealm after_realm)
+    void operator()(SharedRealm before_realm, SharedRealm after_realm, bool)
     {
         HANDLESCOPE(m_ctx)
 
@@ -701,23 +701,6 @@ void SessionClass<T>::pause(ContextType ctx, ObjectType this_object, Arguments& 
     }
 }
 
-/*template<typename T>
-void SessionClass<T>::override_server(ContextType ctx, ObjectType this_object, Arguments &args, ReturnValue&) {
-    args.validate_count(2);
-
-    std::string address = Value::validated_to_string(ctx, args[0], "address");
-    double port = Value::validated_to_number(ctx, args[1], "port");
-    if (port < 1 || port > 65535 || uint16_t(port) != port) {
-        std::ostringstream message;
-        message << "Invalid port number. Expected an integer in the range 1-65,535, got '" << port << "'";
-        throw std::invalid_argument(message.str());
-    }
-
-    if (auto session = get_internal<T, SessionClass<T>>(ctx, this_object)->lock()) {
-        session->override_server(std::move(address), uint16_t(port));
-    }
-}*/
-
 template <typename T>
 void SessionClass<T>::wait_for_completion(Direction direction, ContextType ctx, ObjectType this_object,
                                           Arguments& args)
@@ -1056,11 +1039,11 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                 }
                 config.sync_config->notify_before_client_reset = std::move(client_reset_before_handler);
 
-                std::function<void(SharedRealm, SharedRealm)> client_reset_after_handler;
+                std::function<void(SharedRealm, SharedRealm, bool)> client_reset_after_handler;
                 ValueType client_reset_after_value =
                     Object::get_property(ctx, client_reset_object, "clientResetAfter");
                 if (!Value::is_undefined(ctx, client_reset_after_value)) {
-                    client_reset_after_handler = util::EventLoopDispatcher<void(SharedRealm, SharedRealm)>(
+                    client_reset_after_handler = util::EventLoopDispatcher<void(SharedRealm, SharedRealm, bool)>(
                         ClientResetAfterFunctor<T>(ctx, Value::validated_to_function(ctx, client_reset_after_value)));
                 }
                 config.sync_config->notify_after_client_reset = std::move(client_reset_after_handler);

@@ -4,8 +4,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Flexible sync would not correctly resume syncing if a bootstrap was interrupted. ([realm/realm-core#5466](https://github.com/realm/realm-core/pull/5466), since v10.12.0)
+* The sync client may upload corrupted internal data leading to a fatal error from the sync server. ([realm/realm-core#5460](https://github.com/realm/realm-core/pull/5460), since v10.16.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -14,9 +14,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Upgraded Realm Core from v11.15.0 to v11.17.0.
+* Upgraded BAAS image to 2022-05-23.
 
 10.17.0 Release notes (2022-5-10)
 =============================================================
