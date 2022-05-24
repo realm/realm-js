@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.19.0-alpha.0 Release notes (2022-5-24)
 =============================================================
 ### Enhancements
 * Creating an object for a class that has no subscriptions opened for it will throw an exception. ([realm/realm-core#5488](https://github.com/realm/realm-core/pull/5488))
