@@ -1153,17 +1153,44 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           });
         });
 
-        it("breaks sync 0", async function () {
-          const { sub } = await addSubscriptionForPersonAndSync(this.realm);
-          const { subs } = await addSubscriptionForPersonAndSync(this.realm);
+        xit("breaks sync 0", /*async*/ function () {
+          // const { sub } = addSubscriptionForPersonAndSync(this.realm);
+          // const { subs } = addSubscriptionForPersonAndSync(this.realm);
 
-          // expect(subs).to.have.length(1);
+          const { sub } = addSubscriptionForPerson(this.realm);
+          const { subs } = addSubscriptionForPerson(this.realm);
 
-          await subs.update((mutableSubs) => {
-            // expect(mutableSubs.removeSubscription(sub)).to.be.true;
+          expect(subs).to.have.length(1);
+
+          subs.update((mutableSubs) => {
+            expect(mutableSubs.removeSubscription(sub)).to.be.true;
           });
 
-          // expect(subs).to.have.length(0);
+          expect(subs).to.have.length(0);
+          // expect(subs).to.have.length(1);
+        });
+
+        it("breaks sync 0", /*async*/ function () {
+          // const { sub } = addSubscriptionForPersonAndSync(this.realm);
+          // const { subs } = addSubscriptionForPersonAndSync(this.realm);
+
+          const subs = this.realm.subscriptions;
+          subs.update((m) => {
+            m.add(this.realm.objects("Person"));
+          });
+
+          let sub;
+          subs.update((m) => {
+            sub = m.add(this.realm.objects("Person"));
+          });
+
+          expect(subs).to.have.length(1);
+
+          subs.update((mutableSubs) => {
+            expect(mutableSubs.removeSubscription(sub)).to.be.true;
+          });
+
+          expect(subs).to.have.length(0);
           // expect(subs).to.have.length(1);
         });
 
