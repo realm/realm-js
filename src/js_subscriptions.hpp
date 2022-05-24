@@ -638,8 +638,8 @@ void SubscriptionSetClass<T>::update(ContextType ctx, ObjectType this_object, Ar
                                              new SubscriptionSet<T>(std::move(new_sub_set), subs->sync_session));
 
     // Asynchronously wait for the SubscriptionSet to be synchronised
-    SubscriptionSetClass<T>::wait_for_synchronization_impl(protected_ctx, protected_this,
-                                                           protected_completion_callback);
+    // SubscriptionSetClass<T>::wait_for_synchronization_impl(protected_ctx, protected_this,
+    //                                                        protected_completion_callback);
 }
 
 /**

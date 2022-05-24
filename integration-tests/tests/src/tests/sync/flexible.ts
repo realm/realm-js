@@ -22,7 +22,8 @@ import Realm, { BSON, ClientResetMode, SessionStopPolicy } from "realm";
 import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "../../hooks";
 import { DogSchema, IPerson, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { expectClientResetError } from "../../utils/expect-sync-error";
-import { closeAndReopenRealm } from "../../utils/close-realm";
+import { closeAndReopenRealm, closeRealm } from "../../utils/close-realm";
+import { openRealm } from "../../utils/open-realm";
 
 const FlexiblePersonSchema = { ...PersonSchema, properties: { ...PersonSchema.properties, nonQueryable: "string?" } };
 
@@ -101,9 +102,10 @@ async function addSubscriptionAndSync<T>(
 ): Promise<AddSubscriptionResult<T>> {
   const subs = realm.subscriptions;
   let sub!: Realm.App.Sync.Subscription;
-  await subs.update((mutableSubs) => {
+  subs.update((mutableSubs) => {
     sub = mutableSubs.add(query, options);
   });
+  await subs.waitForSynchronization();
 
   return { subs, sub, query };
 }
@@ -1153,7 +1155,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           });
         });
 
-        xit("breaks sync 0", /*async*/ function () {
+        xit("xbreaks sync 0", /*async*/ function () {
           // const { sub } = addSubscriptionForPersonAndSync(this.realm);
           // const { subs } = addSubscriptionForPersonAndSync(this.realm);
 
@@ -1170,28 +1172,28 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           // expect(subs).to.have.length(1);
         });
 
-        it("breaks sync 0", /*async*/ function () {
-          // const { sub } = addSubscriptionForPersonAndSync(this.realm);
-          // const { subs } = addSubscriptionForPersonAndSync(this.realm);
-
+        it("breaks sync 0", /*async*/ async function () {
           const subs = this.realm.subscriptions;
+          let sub;
+
           subs.update((m) => {
             m.add(this.realm.objects("Person"));
           });
+          // await subs.waitForSynchronization();
 
-          let sub;
           subs.update((m) => {
             sub = m.add(this.realm.objects("Person"));
           });
+          // await subs.waitForSynchronization();
 
           expect(subs).to.have.length(1);
 
           subs.update((mutableSubs) => {
             expect(mutableSubs.removeSubscription(sub)).to.be.true;
           });
+          await subs.waitForSynchronization();
 
           expect(subs).to.have.length(0);
-          // expect(subs).to.have.length(1);
         });
 
         it("breaks sync 1", async function () {
@@ -1203,6 +1205,66 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           });
 
           expect(this.realm.subscriptions.isEmpty).to.be.true;
+        });
+
+        xit("breaks sync repro", async function (this: Partial<RealmContext>) {
+          {
+            const { realm, config } = await openRealm(
+              {
+                schema: [FlexiblePersonSchema, DogSchema],
+                sync: {
+                  flexible: true,
+                },
+              },
+              this.user,
+            );
+
+            const subs = realm.subscriptions;
+            let sub;
+
+            subs.update((m) => {
+              m.add(realm.objects("Person"));
+            });
+
+            subs.update((m) => {
+              sub = m.add(realm.objects("Person"));
+            });
+
+            expect(subs).to.have.length(1);
+
+            subs.update((mutableSubs) => {
+              expect(mutableSubs.removeSubscription(sub)).to.be.true;
+            });
+
+            expect(subs).to.have.length(0);
+
+            closeRealm(realm, config);
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, 350));
+
+          {
+            const { realm, config } = await openRealm(
+              {
+                schema: [FlexiblePersonSchema, DogSchema],
+                sync: {
+                  flexible: true,
+                },
+              },
+              this.user,
+            );
+
+            addSubscriptionForPerson(realm);
+            await addSubscriptionAndSync(realm, realm.objects(FlexiblePersonSchema.name).filtered("age > 10"));
+
+            realm.subscriptions.update((mutableSubs) => {
+              expect(mutableSubs.removeAll()).to.equal(2);
+            });
+
+            expect(realm.subscriptions.isEmpty).to.be.true;
+
+            closeRealm(realm, config);
+          }
         });
 
         describe("persistence", function () {
