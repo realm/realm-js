@@ -25,7 +25,7 @@ describe.skipIf(environment.missingServer, "Asymmetric sync", function () {
   describe("Configuration and schema", function () {
     [true, false].forEach((asymmetric) => {
       [true, false].forEach((embedded) => {
-        const PersonSchema: Realm.ObjectSchema = {
+        let PersonSchema: Realm.ObjectSchema = {
           name: "Person",
           asymmetric: asymmetric,
           embedded: embedded,
@@ -38,6 +38,9 @@ describe.skipIf(environment.missingServer, "Asymmetric sync", function () {
 
         it(`Schema with asymmetric = ${asymmetric} and embedded = ${embedded}`, () => {
           Realm.deleteFile({});
+          if (!embedded) {
+            PersonSchema.primaryKey = "_id";
+          }
           if (embedded && asymmetric) {
             expect(() => {
               new Realm({ schema: [PersonSchema] });

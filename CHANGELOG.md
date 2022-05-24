@@ -7,7 +7,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ```js
 const Person = {
   name: "Person",
-  asymmetric: true, // this mark "Person" as asymmetric
+  asymmetric: true, // this marks "Person" as asymmetric
   primaryKey: "id",
   properties: {
     id: "objectId",
@@ -23,7 +23,7 @@ const Person = {
 * FLX sync subscription state changes will now correctly be reported after sync progress is reported. ([realm/realm-core#5553](https://github.com/realm/realm-core/pull/5553), since v10.18.0)
 
 ### Compatibility
-* MongoDB Realm Cloud.
+* Atlas Device Sync.
 * Realm Studio v11.0.0.
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
