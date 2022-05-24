@@ -1,7 +1,7 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.19.0-alpha.0 Release notes (2022-5-24)
 =============================================================
 ### Notes
-This release adds beta support for asymmetric sync. In order to use asymmetric sync, you must configure your Realm app using the Atlas App Services UI. Asymmetric sync is only possible in combination with flexible sync. Moreover, schemas must be annotated with `asymmetric`:
+This release adds alpha support for asymmetric sync. In order to use asymmetric sync, you must configure your Realm app using the Atlas App Services UI. Asymmetric sync is only possible in combination with flexible sync. Moreover, schemas must be annotated with `asymmetric`:
 
 ```js
 const Person = {
