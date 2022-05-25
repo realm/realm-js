@@ -377,8 +377,8 @@ jobs:
   cleanup-realm-js:
     runs-on: ubuntu-latest
     name: Cleanup realm js
-    needs: [baas-realm-js, integration-tests]
-    if: always()
+    needs: [integration-tests]
+    if: false
     timeout-minutes: 10
     steps:
       - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56
