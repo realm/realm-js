@@ -51,14 +51,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Cache prebuild artifacts
-        id: cache-prebuild
-        uses: actions/cache@v2
-        env:
-          cache-name: prebuild
-        with:
-          path: ${{ matrix.variant.artifact-path }}
-          key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}-${{ env.cache-name }}-${{hashFiles('./src/**', 'vendor/**')}}
+#       - name: Cache prebuild artifacts
+#         id: cache-prebuild
+#         uses: actions/cache@v2
+#         env:
+#           cache-name: prebuild
+#         with:
+#           path: ${{ matrix.variant.artifact-path }}
+#           key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}-${{ env.cache-name }}-${{hashFiles('./src/**', 'vendor/**')}}
 
           # TODO: figure out a way to optimize using partial builds
           #- name: Cache iOS build artifacts
