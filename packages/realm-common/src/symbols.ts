@@ -16,4 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export const REALM_REACT_PROXIED_OBJECT = Symbol("REALM_REACT_PROXIED_OBJECT");
+// Used as a key by Realm React in `useQuery`, to store the original object
+// which is being proxied, for compatibility with JSC pre-v11 (#4541)
+export const PROXY_TARGET = Symbol("PROXY_TARGET");

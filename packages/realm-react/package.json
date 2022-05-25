@@ -14,7 +14,7 @@
   "dependencies": {
     "lodash": "^4.17.21",
     "realm": ">=10.17.0",
-    "@realm.io/common": "*"
+    "@realm.io/common": "^0.1.2"
   },
   "devDependencies": {
     "@babel/core": "^7.15.5",

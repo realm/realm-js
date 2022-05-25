@@ -74,7 +74,7 @@ export function createUseQuery(useRealm: () => Realm) {
     // key on the proxy object, so that we can check for this and get the original results
     // when passing the result of `useQuery` into the subscription mutation methods
     // (see `lib/mutable-subscription-set.js` for more details)
-    Object.defineProperty(proxy, symbols.REALM_REACT_PROXIED_OBJECT, {
+    Object.defineProperty(proxy, symbols.PROXY_TARGET, {
       value: realm.objects(type),
       enumerable: false,
       configurable: false,
