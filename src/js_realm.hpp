@@ -835,7 +835,7 @@ void RealmClass<T>::handle_initial_subscriptions(ContextType ctx, size_t argc, c
     if (!Value::is_object(ctx, config_value)) {
         return;
     }
-    ObjectType config_object = Value::validated_to_object(ctx, config_value);
+    ObjectType config_object = Value::to_object(ctx, config_value);
 
     ValueType sync_value = Object::get_property(ctx, config_object, "sync");
     if (Value::is_undefined(ctx, sync_value)) {

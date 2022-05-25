@@ -230,7 +230,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             Realm.deleteFile(this.config);
           });
 
-          it("throws an error if no `update` function is provided", async function () {
+          it("throws an error if no update function is provided", async function () {
             this.config = getConfig(this.user, {} as any);
 
             await expect((Realm as any).open(this.config)).to.be.rejectedWith(
@@ -238,7 +238,17 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             );
           });
 
-          it("throws an error if `update` is not a function", async function () {
+          it("throws an error if update is undefined", async function () {
+            this.config = getConfig(this.user, {
+              update: undefined,
+            } as any);
+
+            await expect((Realm as any).open(this.config)).to.be.rejectedWith(
+              "update must be of type 'function', got (undefined)",
+            );
+          });
+
+          it("throws an error if update is not a function", async function () {
             this.config = getConfig(this.user, {
               update: "Person",
             } as any);
