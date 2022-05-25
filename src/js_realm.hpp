@@ -1549,16 +1549,6 @@ realm::Realm::Config RealmClass<T>::write_copy_to_helper_deprecated(ContextType 
 template <typename T>
 void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
 {
-    /*
-        This method supports anything -> anything conversion, but different backend calls are needed
-        depending on the type of conversion:
-            1)  local -> local is Realm::write_copy() or Realm::export_to()
-            2)  local -> sync is Realm::export_to()
-            3)  sync -> local is Group::write()
-            4)  sync -> bundlable sync is Realm::write_copy()
-            5)  sync -> sync with new synthesized history is Realm::export_to() (* not supported)
-    */
-
     args.validate_maximum(2);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
@@ -1582,27 +1572,7 @@ void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Argumen
         config = write_copy_to_helper_deprecated(ctx, this_object, args);
     }
 
-    bool realm_is_synced = static_cast<bool>(realm->sync_session());
-    bool copy_is_synced = static_cast<bool>(config.sync_config);
-
-    if (realm_is_synced && !copy_is_synced) {
-        // case 3)
-        Group& group = realm->read_group();
-        group.write(config.path, config.encryption_key.empty() ? nullptr : config.encryption_key.data());
-        return;
-    }
-    else if (realm_is_synced && copy_is_synced) {
-        // case 4)
-        BinaryData binary_encryption_key;
-        if (!config.encryption_key.empty()) {
-            binary_encryption_key = std::move(BinaryData(config.encryption_key.data(), config.encryption_key.size()));
-        }
-        realm->write_copy(config.path, binary_encryption_key);
-        return;
-    }
-
-    // case 1), 2)
-    realm->export_to(config);
+    realm->convert(config);
 }
 
 template <typename T>
