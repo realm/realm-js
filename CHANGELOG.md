@@ -16,6 +16,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * Upgraded Realm Core from v11.15.0 to v11.17.0.
 * Upgraded BAAS image to 2022-05-23.
+* Fixed an intermittent issue with flexible sync test suite ([#4590](https://github.com/realm/realm-js/pull/4590), since v10.12.0)
 
 10.17.0 Release notes (2022-5-10)
 =============================================================
