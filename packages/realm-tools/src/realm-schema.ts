@@ -18,7 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import Realm from "realm";
-import { parse } from "ts-command-line-args";
+import { ArgumentConfig, parse } from "ts-command-line-args";
 import * as fs from "fs";
 
 type Relationship = {
@@ -41,6 +41,7 @@ type Formatters = {
 const mermaid: FormatterFunction = (realm: Realm) => {
   const collectionTypes = ["list", "dictionary", "set"];
   const primitiveTypes = ["bool", "int", "float", "double", "string", "date", "objectId", "uuid", "data", "mixed"];
+  writer("```mermaid");
   writer("classDiagram");
 
   const relationships: Array<Relationship> = [];
@@ -68,6 +69,7 @@ const mermaid: FormatterFunction = (realm: Realm) => {
   relationships.forEach((relationship) => {
     writer(`${relationship.to} <-- ${relationship.from}`);
   });
+  writer("```");
 };
 
 const json: FormatterFunction = (realm: Realm) => {
@@ -79,41 +81,40 @@ const formatters: Formatters = {
   json,
 };
 
-const args = parse<ExtractSchemaArgs>(
-  {
-    inputFileName: {
-      alias: "i",
-      type: String,
-      multiple: false,
-      optional: true,
-      defaultValue: "default.realm",
-      description: "Input file name",
-    },
-    outputFileName: {
-      alias: "o",
-      type: String,
-      multiple: false,
-      optional: true,
-      defaultValue: "-",
-      description: "Output file name",
-    },
-    format: {
-      alias: "f",
-      type: String,
-      multiple: false,
-      optional: true,
-      defaultValue: "mermaid",
-      description: `Output format (${Object.keys(formatters).join(", ")})`,
-    },
-    help: { alias: "h", type: Boolean, optional: true, description: "Prints this usage guide" },
+const argumentConfig: ArgumentConfig<ExtractSchemaArgs> = {
+  inputFileName: {
+    alias: "i",
+    type: String,
+    multiple: false,
+    optional: true,
+    defaultValue: "default.realm",
+    description: "Input file name",
   },
-  {
-    helpArg: "help",
-    headerContentSections: [
-      { header: "Extract the schema from a Realm file", content: "The schema is persisted in the Realm file." },
-    ],
+  outputFileName: {
+    alias: "o",
+    type: String,
+    multiple: false,
+    optional: true,
+    defaultValue: "-",
+    description: "Output file name",
   },
-);
+  format: {
+    alias: "f",
+    type: String,
+    multiple: false,
+    optional: true,
+    defaultValue: "mermaid",
+    description: `Output format (${Object.keys(formatters).join(", ")})`,
+  },
+  help: { alias: "h", type: Boolean, optional: true, description: "Prints this usage guide" },
+};
+
+const args = parse(argumentConfig, { partial: true }, true, true);
+
+if (Object.keys(args).includes("_unknown") || args.help) {
+  args._commandLineResults.printHelp();
+  process.exit();
+}
 
 let fd = 0;
 if (args.outputFileName && args.outputFileName !== "-") {
