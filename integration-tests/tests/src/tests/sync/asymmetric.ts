@@ -83,6 +83,9 @@ describe.skipIf(environment.missingServer, "Asymmetric sync", function () {
         const retval = this.realm.create(PersonSchema.name, { _id: new BSON.ObjectId(), name: "Joe", age: 12 });
         expect(retval).to.equal(undefined);
       });
+      expect(() => {
+        this.realm.objects(PersonSchema.name);
+      }).to.throw("You cannot query an asymmetric class.");
     });
   });
 });
