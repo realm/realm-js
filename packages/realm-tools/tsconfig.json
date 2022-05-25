@@ -1,0 +1,19 @@
+{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"target": "es2018",
+		"moduleResolution": "node",
+		"noEmit": true,
+		"forceConsistentCasingInFileNames": true,
+		"types": [
+			"node",
+		],
+		"lib": [
+			"es2019"
+		]
+	},
+	"include": [
+		"src/**/*.ts"
+	],
+	"exclude": []
+}
