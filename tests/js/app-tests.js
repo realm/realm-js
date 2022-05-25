@@ -218,4 +218,53 @@ module.exports = {
     realm2.close();
     await user.logOut();
   },
+
+  async testChangeListener() {
+    let app = new Realm.App(config);
+    let eventListenerCalls = 0;
+    TestCase.assertTrue(app instanceof Realm.App);
+
+    const listenerEvent = () => {
+      eventListenerCalls += 1;
+    };
+
+    app.addListener(listenerEvent);
+
+    let credentials = Realm.Credentials.anonymous();
+    let user = await app.logIn(credentials);
+    TestCase.assertEqual(eventListenerCalls, 1);
+
+    await user.logOut();
+    TestCase.assertEqual(eventListenerCalls, 2);
+    credentials = Realm.Credentials.anonymous();
+
+    user = await app.logIn(credentials);
+    TestCase.assertEqual(eventListenerCalls, 3);
+
+    // Remove the listener and verify that the event listener was not fired
+    app.removeListener(listenerEvent);
+    await user.logOut();
+    TestCase.assertEqual(eventListenerCalls, 3);
+
+    // Test remove all
+    let eventListener1Calls = 0;
+    let eventListener2Calls = 0;
+    const listenerEvent1 = () => {
+      eventListener1Calls += 1;
+    };
+    const listenerEvent2 = () => {
+      eventListener2Calls += 1;
+    };
+    app.addListener(listenerEvent1);
+    app.addListener(listenerEvent2);
+
+    user = await app.logIn(credentials);
+    TestCase.assertEqual(eventListener1Calls, 1);
+    TestCase.assertEqual(eventListener2Calls, 1);
+
+    app.removeAllListeners();
+    await user.logOut();
+    TestCase.assertEqual(eventListener1Calls, 1);
+    TestCase.assertEqual(eventListener2Calls, 1);
+  },
 };

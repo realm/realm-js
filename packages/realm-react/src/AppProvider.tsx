@@ -29,13 +29,16 @@ const AppContext = createContext<Realm.App | null>(null);
  * can be used to create a Realm.App instance:
  * https://www.mongodb.com/docs/realm-sdks/js/latest/Realm.App.html#~AppConfiguration
  */
-type AppProviderProps = Realm.AppConfiguration;
+type AppProviderProps = Realm.AppConfiguration & {
+  children: React.ReactNode;
+  appRef?: React.MutableRefObject<Realm.App | null>;
+};
 
 /**
  * React component providing a Realm App instance on the context for the
  * sync hooks to use. An `AppProvider` is required for an app to use the hooks.
  */
-export const AppProvider: React.FC<AppProviderProps> = ({ children, ...appProps }) => {
+export const AppProvider: React.FC<AppProviderProps> = ({ children, appRef, ...appProps }) => {
   const configuration = useRef<Realm.AppConfiguration>(appProps);
 
   const [app, setApp] = useState<Realm.App>(new Realm.App(configuration.current));
@@ -57,6 +60,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children, ...appProps 
     try {
       const app = new Realm.App(configuration.current);
       setApp(app);
+      if (appRef) {
+        appRef.current = app;
+      }
     } catch (err) {
       console.error(err);
     }
@@ -71,9 +77,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children, ...appProps 
  * @throws if an AppProvider does not exist in the component’s ancestors
  */
 export const useApp = (): Realm.App => {
-  const context = useContext(AppContext);
-  if (context === null) {
+  const app = useContext(AppContext);
+
+  if (app === null) {
     throw new Error("AppContext not found.  Did you wrap your app in AppProvider?");
   }
-  return context;
+  return app;
 };

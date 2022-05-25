@@ -19,9 +19,16 @@
 import React, { useEffect, useState, useRef } from "react";
 import Realm from "realm";
 import { isEqual } from "lodash";
+import { useUser } from "./UserProvider";
 
-type ProviderProps = Realm.Configuration & {
+type PartialRealmConfiguration = Omit<Partial<Realm.Configuration>, "sync"> & {
+  sync?: Partial<Realm.SyncConfiguration>;
+};
+
+type ProviderProps = PartialRealmConfiguration & {
   fallback?: React.ComponentType<unknown> | React.ReactElement | null | undefined;
+  realmRef?: React.MutableRefObject<Realm | null>;
+  children: React.ReactNode;
 };
 
 /**
@@ -60,8 +67,12 @@ export function createRealmProvider(
    * For example, to override the `path` config value, use a prop named `path`,
    * e.g. `path="newPath.realm"`
    */
-  return ({ children, fallback: Fallback, ...restProps }) => {
+  return ({ children, fallback: Fallback, realmRef, ...restProps }) => {
     const [realm, setRealm] = useState<Realm | null>(null);
+
+    // Automatically set the user in the configuration if its been set.
+    const user = useUser();
+
     // We increment `configVersion` when a config override passed as a prop
     // changes, which triggers a `useEffect` to re-open the Realm with the
     // new config
@@ -78,14 +89,25 @@ export function createRealmProvider(
     // of the RealmProvider properties change.
     useEffect(() => {
       const combinedConfig = mergeRealmConfiguration(realmConfig, restProps);
-      if (!areConfigurationsIdentical(configuration.current, combinedConfig)) {
-        configuration.current = combinedConfig;
-        setConfigVersion((x) => x + 1);
+
+      // If there is a user in the current context and not one set by the props, then use the one from context
+      const combinedConfigWithUser =
+        combinedConfig?.sync && user ? mergeRealmConfiguration({ sync: { user } }, combinedConfig) : combinedConfig;
+
+      if (!areConfigurationsIdentical(configuration.current, combinedConfigWithUser)) {
+        configuration.current = combinedConfigWithUser;
+        // Only rerender if realm has already been configured
+        if (currentRealm.current != null) {
+          setConfigVersion((x) => x + 1);
+        }
       }
-    }, [restProps]);
+    }, [restProps, user]);
 
     useEffect(() => {
       currentRealm.current = realm;
+      if (realmRef) {
+        realmRef.current = realm;
+      }
     }, [realm]);
 
     useEffect(() => {
@@ -130,8 +152,8 @@ export function createRealmProvider(
  * @returns Merged config object
  */
 export function mergeRealmConfiguration(
-  configA: Realm.Configuration,
-  configB: Partial<Realm.Configuration>,
+  configA: PartialRealmConfiguration,
+  configB: PartialRealmConfiguration,
 ): Realm.Configuration {
   // In order to granularly update sync properties on the RealmProvider, sync must be
   // seperately applied to the configuration.  This allows for dynamic updates to the

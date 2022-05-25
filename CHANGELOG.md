@@ -4,12 +4,34 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* Fixed issue where React Native apps would sometimes show stale Realm data until the user interacted with the app UI ([#4389](https://github.com/realm/realm-js/issues/4389), since v10.0.0)
-* Fixed race condition leading to potential crash when hot reloading an app using Realm Sync ([4509](https://github.com/realm/realm-js/pull/4509), since v10.12.0)
-* Updated build script to use Xcode 12.4 to ensure xcframework is Bitcode compatibile with older versions ([#4462](https://github.com/realm/realm-js/issues/4462), since v10.0.0)
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None.
+
+### Compatibility
+* MongoDB Realm Cloud.
+* Realm Studio v11.0.0.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
+* File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Internal
+* <Either mention core version or upgrade>
+* <Using Realm Core vX.Y.Z>
+* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+
+10.17.0 Release notes (2022-5-10)
+=============================================================
+### Enhancements
+* Add ability to listen to changes to `Realm.App` and `Realm.User`. ([#4455](https://github.com/realm/realm-js/issues/4455))
+
+### Fixed
+* Fixed issue where React Native apps would sometimes show stale Realm data until the user interacted with the app UI. ([#4389](https://github.com/realm/realm-js/issues/4389), since v10.0.0)
+* Fixed race condition leading to potential crash when hot reloading an app using Realm Sync. ([4509](https://github.com/realm/realm-js/pull/4509), since v10.12.0)
+* Updated build script to use Xcode 12.4 to ensure xcframework is Bitcode compatibile with older versionsi. ([#4462](https://github.com/realm/realm-js/issues/4462), since v10.0.0)
 * Added missing type definitions for `newRealmFileBehavior` and `existingRealmFileBehavior` when opening a flexible sync Realm ([#4467](https://github.com/realm/realm-js/issues/4467), since v10.12.0)
 * Adding an object to a Set, deleting the parent object, and then deleting the previously mentioned object causes crash ([#5387](https://github.com/realm/realm-core/issues/5387), since v10.5.0)
-* Synchronized Realm files which were first created using SDK version released in the second half of August 2020 would be redownloaded instead of using the existing file, possibly resulting in the loss of any unsynchronized data in those files (since v10.10.1).
+* Synchronized Realm files which were first created using SDK version released in the second half of August 2020 would be redownloaded instead of using the existing file, possibly resulting in the loss of any unsynchronized data in those filesi. (since v10.10.1)
+* Fixed buildtime error where our package would be ignored due to use of the deprecated `podspecPath` and `sharedLibraries` keys in the `react-native.config.js`. ([#4553](https://github.com/realm/realm-js/issues/4553))
+* Fixed flexible sync configuration types to be compatible with Typescript when `strict` mode is disabled. ([#4552](https://github.com/realm/realm-js/issues/4552))
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -21,6 +43,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Improved documentation for `Realm.copyBundledRealmFiles`.
 * Refactored notifications to use a `NotificationBucket` API, enabling JS objects to be garbage collected on teardown of the JS engine. ([#4550](https://github.com/realm/realm-js/pull/4550))
 * Updated a test to be ready for node 18.
+* Fixed a typo in the `testRealmConversions` test which prevented some test scenarios from executing.
 * Upgraded Realm Core from v11.14.0 to v11.15.0.
 
 10.16.0 Release notes (2022-4-12)
@@ -59,6 +82,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Internal
 * Update token in integration test.
 * Upgraded Realm Core from v11.12.0 to v11.13.0.
+* Added a failing test case for Node.js scripts failing to exit cleanly ([#4556](https://github.com/realm/realm-js/pull/4556))
 
 10.14.0 Release notes (2022-3-24)
 =============================================================

@@ -3,6 +3,7 @@ import {View, Text, StyleSheet, TextInput, Pressable} from 'react-native';
 import colors from '../styles/colors';
 import {shadows} from '../styles/shadows';
 import {buttonStyles} from '../styles/button';
+import {Realm, useApp} from '@realm/react';
 
 export enum AuthState {
   None,
@@ -11,27 +12,44 @@ export enum AuthState {
   RegisterError,
 }
 
-type LoginScreenProps = {
-  onLogin: (email: string, password: string) => void;
-  onRegister: (email: string, password: string) => void;
-  authState: AuthState;
-};
-
-export const LoginScreen = ({
-  onLogin,
-  onRegister,
-  authState,
-}: LoginScreenProps) => {
+export const LoginScreen = () => {
+  const app = useApp();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [authState, setAuthState] = useState(AuthState.None);
 
-  const handleLogin = useCallback(() => {
-    onLogin(email, password);
-  }, [onLogin, email, password]);
+  // If the user presses "login" from the auth screen, try to log them in
+  // with the supplied credentials
+  const handleLogin = useCallback(async () => {
+    setAuthState(AuthState.Loading);
+    const credentials = Realm.Credentials.emailPassword(email, password);
+    try {
+      await app.logIn(credentials);
+      setAuthState(AuthState.None);
+    } catch (e) {
+      console.log('Error logging in', e);
+      setAuthState(AuthState.LoginError);
+    }
+  }, [email, password, setAuthState, app]);
 
-  const handleRegister = useCallback(() => {
-    onRegister(email, password);
-  }, [onRegister, email, password]);
+  // If the user presses "register" from the auth screen, try to register a
+  // new account with the  supplied credentials and login as the newly created user
+  const handleRegister = useCallback(async () => {
+    setAuthState(AuthState.Loading);
+
+    try {
+      // Register the user...
+      await app.emailPasswordAuth.registerUser({email, password});
+      // ...then login with the newly created user
+      const credentials = Realm.Credentials.emailPassword(email, password);
+
+      await app.logIn(credentials);
+      setAuthState(AuthState.None);
+    } catch (e) {
+      console.log('Error registering', e);
+      setAuthState(AuthState.RegisterError);
+    }
+  }, [email, password, setAuthState, app]);
 
   return (
     <View style={styles.content}>

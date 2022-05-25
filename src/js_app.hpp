@@ -25,19 +25,39 @@
 
 #include <realm/object-store/util/event_loop_dispatcher.hpp>
 
+#include "js_notifications.hpp"
 #include "js_user.hpp"
 #include "js_app_credentials.hpp"
 #include "js_network_transport.hpp"
 #include "js_email_password_auth.hpp"
+#include "realm/object-store/sync/subscribable.hpp"
 
 using SharedApp = std::shared_ptr<realm::app::App>;
 using SharedUser = std::shared_ptr<realm::SyncUser>;
+using AppToken = realm::Subscribable<realm::app::App>::Token;
 
 namespace realm {
 namespace js {
 
 template <typename T>
-class AppClass : public ClassDefinition<T, SharedApp> {
+class App {
+public:
+    App(const SharedApp& l)
+        : m_app(l)
+    {
+    }
+
+    // Remove copy constructors to avoid destroying the listener Token
+    App(const App&) = delete;
+    App& operator=(const App&) = delete;
+
+    notifications::NotificationHandle<T, AppToken> m_notification_handle;
+
+    SharedApp m_app;
+};
+
+template <typename T>
+class AppClass : public ClassDefinition<T, realm::js::App<T>> {
     using ContextType = typename T::Context;
     using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
@@ -49,11 +69,13 @@ class AppClass : public ClassDefinition<T, SharedApp> {
     using Function = js::Function<T>;
     using ReturnValue = js::ReturnValue<T>;
     using Arguments = js::Arguments<T>;
+    using NotificationBucket = notifications::NotificationBucket<T, AppToken>;
     using NetworkTransport = JavaScriptNetworkTransport<T>;
     using NetworkTransportFactory = typename NetworkTransport::NetworkTransportFactory;
 
 public:
     const std::string name = "App";
+
 
     /**
      * Generates instances of GenericNetworkTransport, eventually allowing Realm Object Store to perform network
@@ -99,12 +121,19 @@ public:
     static void clear_app_cache(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void get_app(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void set_versions(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void add_listener(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void remove_listener(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void remove_all_listeners(ContextType, ObjectType, Arguments&, ReturnValue&);
+
 
     MethodMap<T> const methods = {
         {"_logIn", wrap<log_in>},
         {"switchUser", wrap<switch_user>},
         {"_removeUser", wrap<remove_user>},
         {"_deleteUser", wrap<delete_user>},
+        {"addListener", wrap<add_listener>},
+        {"removeListener", wrap<remove_listener>},
+        {"removeAllListeners", wrap<remove_all_listeners>},
     };
 
     MethodMap<T> const static_methods = {
@@ -120,7 +149,7 @@ inline typename T::Function AppClass<T>::create_constructor(ContextType ctx)
 template <typename T>
 inline typename T::Object AppClass<T>::create_instance(ContextType ctx, SharedApp app)
 {
-    return create_object<T, AppClass<T>>(ctx, new SharedApp(app));
+    return create_object<T, AppClass<T>>(ctx, new realm::js::App<T>(app));
 }
 
 template <typename T>
@@ -204,7 +233,7 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
 
     SharedApp app = app::App::get_shared_app(config, client_config);
 
-    set_internal<T, AppClass<T>>(ctx, this_object, new SharedApp(app));
+    set_internal<T, AppClass<T>>(ctx, this_object, new realm::js::App<T>(app));
 }
 
 template <typename T>
@@ -217,7 +246,7 @@ std::string AppClass<T>::get_user_agent()
 template <typename T>
 void AppClass<T>::get_app_id(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
 {
-    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    auto app = get_internal<T, AppClass<T>>(ctx, this_object)->m_app;
     return_value.set(Value::from_string(ctx, app->config().app_id));
 }
 
@@ -226,7 +255,7 @@ void AppClass<T>::log_in(ContextType ctx, ObjectType this_object, Arguments& arg
 {
     args.validate_maximum(2);
 
-    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    auto app = get_internal<T, AppClass<T>>(ctx, this_object)->m_app;
 
     auto credentials_object = Value::validated_to_object(ctx, args[0]);
     auto callback_function = Value::validated_to_function(ctx, args[1]);
@@ -244,7 +273,7 @@ void AppClass<T>::log_in(ContextType ctx, ObjectType this_object, Arguments& arg
 template <typename T>
 void AppClass<T>::get_all_users(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
 {
-    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    auto app = get_internal<T, AppClass<T>>(ctx, this_object)->m_app;
 
     auto users = Object::create_empty(ctx);
     for (auto user : app->all_users()) {
@@ -259,7 +288,7 @@ void AppClass<T>::get_all_users(ContextType ctx, ObjectType this_object, ReturnV
 template <typename T>
 void AppClass<T>::get_current_user(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
 {
-    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    auto app = get_internal<T, AppClass<T>>(ctx, this_object)->m_app;
     auto user = app->current_user();
     if (user) {
         return_value.set(create_object<T, UserClass<T>>(ctx, new User<T>(std::move(user), std::move(app))));
@@ -274,10 +303,10 @@ void AppClass<T>::switch_user(ContextType ctx, ObjectType this_object, Arguments
 {
     args.validate_count(1);
 
-    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    auto app = get_internal<T, AppClass<T>>(ctx, this_object)->m_app;
     auto user = get_internal<T, UserClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "user"));
 
-    app->switch_user(*user);
+    app->switch_user(user->m_user);
     return_value.set(Value::from_undefined(ctx));
 }
 
@@ -286,11 +315,11 @@ void AppClass<T>::remove_user(ContextType ctx, ObjectType this_object, Arguments
 {
     args.validate_count(2);
 
-    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    auto app = get_internal<T, AppClass<T>>(ctx, this_object)->m_app;
     auto user = get_internal<T, UserClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "user"));
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
-    app->remove_user(*user, Function::wrap_void_callback(ctx, this_object, callback));
+    app->remove_user(user->m_user, Function::wrap_void_callback(ctx, this_object, callback));
 }
 
 /**
@@ -309,18 +338,18 @@ void AppClass<T>::delete_user(ContextType ctx, ObjectType this_object, Arguments
 {
     args.validate_count(2);
 
-    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    auto app = get_internal<T, AppClass<T>>(ctx, this_object)->m_app;
     auto user = get_internal<T, UserClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "user"));
     auto callback = Value::validated_to_function(ctx, args[1], "callback");
 
-    app->delete_user(*user, Function::wrap_void_callback(ctx, this_object, callback));
+    app->delete_user(user->m_user, Function::wrap_void_callback(ctx, this_object, callback));
 }
 
 
 template <typename T>
 void AppClass<T>::get_email_password_auth(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
 {
-    auto app = *get_internal<T, AppClass<T>>(ctx, this_object);
+    auto app = get_internal<T, AppClass<T>>(ctx, this_object)->m_app;
     return_value.set(EmailPasswordAuthClass<T>::create_instance(ctx, app));
 }
 
@@ -353,6 +382,67 @@ void AppClass<T>::set_versions(ContextType ctx, ObjectType this_object, Argument
     AppClass<T>::platform_context = Object::validated_get_string(ctx, versions, "platformContext");
     AppClass<T>::platform_os = Object::validated_get_string(ctx, versions, "platformOs");
     AppClass<T>::platform_version = Object::validated_get_string(ctx, versions, "platformVersion");
+}
+/**
+ * @brief Registers an event listener on the SharedApp that fires on various app events.
+ * This includes login, logout, switching users, linking users and refreshing custom data.
+ *
+ * @param ctx JS context
+ * @param this_object JS's object holding the `AppClass`
+ * @param args Contains a callback that will be called on an event
+ * @param return_value \ref void
+ */
+template <typename T>
+void AppClass<T>::add_listener(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
+{
+    args.validate_count(1);
+    auto callback = Value::validated_to_function(ctx, args[0], "callback");
+    auto app = get_internal<T, AppClass<T>>(ctx, this_object);
+    Protected<FunctionType> protected_callback(ctx, callback);
+    Protected<ObjectType> protected_this(ctx, this_object);
+    Protected<typename T::GlobalContext> protected_ctx(Context::get_global_context(ctx));
+
+    auto token = std::move(app->m_app->subscribe([=](const realm::app::App&) {
+        Function::callback(protected_ctx, protected_callback, 0, {});
+    }));
+
+    NotificationBucket::emplace(app->m_notification_handle, std::move(protected_callback), std::move(token));
+}
+
+/**
+ * @brief Removes the event listener for the provided callback.
+ *
+ * @param ctx JS context
+ * @param this_object JS's object holding the `AppClass`
+ * @param args Contains a callback function that was given to `addListener`
+ * @param return_value \ref void
+ */
+template <typename T>
+void AppClass<T>::remove_listener(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
+{
+    args.validate_count(1);
+    auto callback = Value::validated_to_function(ctx, args[0], "callback");
+    auto app = get_internal<T, AppClass<T>>(ctx, this_object);
+    Protected<FunctionType> protected_callback(ctx, callback);
+
+    NotificationBucket::erase(app->m_notification_handle, std::move(protected_callback));
+}
+
+/**
+ * @brief Removes all registered event listeners.
+ *
+ * @param ctx JS context
+ * @param this_object JS's object holding the `AppClass`
+ * @param args No arguments
+ * @param return_value \ref void
+ */
+template <typename T>
+void AppClass<T>::remove_all_listeners(ContextType ctx, ObjectType this_object, Arguments& args,
+                                       ReturnValue& return_value)
+{
+    args.validate_count(0);
+    auto app = get_internal<T, AppClass<T>>(ctx, this_object);
+    NotificationBucket::erase(app->m_notification_handle);
 }
 
 } // namespace js

@@ -250,6 +250,20 @@ const AppWrapper = () => {
   )
 }
 ```
+
+In some cases, it may be necessary to access the configured Realm from outside of the `RealmProvider`, for instance, implementing a client reset fallback.  This can be done by creating a `ref` with `useRef` and setting the `realmRef` property of `RealmProvider`.
+
+```tsx
+const AppWrapper = () => {
+  const realmRef = useRef<Realm|null>(null)
+
+  return (
+    <RealmProvider realmRef={realmRef}>
+      <App/>
+    <RealmProvider>
+  )
+}
+```
 ### Dynamically Updating a Realm Configuration
 
 It is possible to update the realm configuration by setting props on the `RealmProvider`.  The `RealmProvider` takes props for all possible realm configuration properties.
@@ -261,7 +275,7 @@ const [user, setUser] = useState()
 
 //... some logic to get user state
 
-<RealmProvider sync={user, partition}>
+<RealmProvider sync={{ user, partition }}>
 ```
 
 ### `useApp` and the `AppProvider`
@@ -288,6 +302,52 @@ import { useApp } from '@realm/react'
 
 const SomeComponent = () => {
 	const app = useApp();
+
+	//...
+}
+```
+
+It is also possible to receive a reference to the app outside of the `AppProvider`, through the `appRef` property.  This must be set to a React reference returned from `useRef`.
+
+```tsx
+const AppWrapper = () => {
+  const appRef = useRef<Realm.App|null>(null)
+
+  return (
+    <AppProvider appRef={appRef}>
+      <App/>
+    <AppProvider>
+  )
+}
+```
+
+### `useUser` and the `UserProvider`
+
+With the introduction of the `UserProvider`, the `user` can be automatically populated into the underlying Realm configuration.  The `fallback` property can be used to provide a login component.
+The child components will be rendered as soon as a user has authenticated.  On logout, the fallback will be displayed again.
+
+`UserProvider` usage:
+
+```tsx
+import { AppProvider, UserProvider } from '@realm/react'
+//...
+<AppProvider id={appId}>
+	<UserProvider fallback={LoginComponent}>
+		{/* After login, user will be automatically populated in realm configuration */}
+		<RealmProvider sync={{flexible: true}}>
+		//...
+		</RealmProvider>
+	</UserProvider>
+</AppProvider>
+```
+
+`useUser` usage:
+```tsx
+// Access the app instance using the useApp hook
+import { useUser } from '@realm/react'
+
+const SomeComponent = () => {
+	const user = useUser();
 
 	//...
 }

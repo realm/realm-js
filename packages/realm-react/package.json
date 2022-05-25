@@ -1,6 +1,6 @@
 {
   "name": "@realm/react",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "React specific hooks and implementation helpers for Realm",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "lodash": "^4.17.21",
-    "realm": ">=10"
+    "realm": ">=10.17.0"
   },
   "devDependencies": {
     "@babel/core": "^7.15.5",
@@ -42,7 +42,7 @@
   },
   "peerDependencies": {
     "react": ">=16.8.0",
-    "realm": ">=10"
+    "realm": ">=10.17.0"
   },
   "optionalDependencies": {
     "@babel/runtime": ">=7",

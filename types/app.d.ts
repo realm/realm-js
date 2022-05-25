@@ -268,6 +268,8 @@ declare namespace Realm {
     static apple(idToken: string): Credentials<Credentials.ApplePayload>;
   }
 
+  type AppChangeCallback = () => void;
+
   /**
    * A MongoDB Realm App.
    */
@@ -339,6 +341,22 @@ declare namespace Realm {
      * @returns A promise that resolves once the user has been deleted.
      */
     deleteUser(user: User<FunctionsFactoryType, CustomDataType>): Promise<void>;
+
+    /**
+     * Adds a listener that will be fired on various user events.
+     * This includes login, logout, switching users, linking users and refreshing custom data.
+     */
+    addListener(callback: AppChangeCallback): void;
+
+    /**
+     * Removes the event listener
+     */
+    removeListener(callback: AppChangeCallback): void;
+
+    /**
+     * Removes all event listeners
+     */
+    removeAllListeners(): void;
   }
 
   /**
@@ -377,6 +395,8 @@ declare namespace Realm {
      */
     version?: string;
   }
+
+  type UserChangeCallback = () => void;
 
   /**
    * Representation of an authenticated user of an app.
@@ -506,6 +526,22 @@ declare namespace Realm {
      *                       .find({color: 'blue'});
      */
     mongoClient(serviceName: string): Realm.Services.MongoDB;
+
+    /**
+     * Adds a listener that will be fired on various user related events.
+     * This includes auth token refresh, refresh token refresh, refresh custom user data, and logout.
+     */
+    addListener(callback: UserChangeCallback): void;
+
+    /**
+     * Removes the event listener
+     */
+    removeListener(callback: UserChangeCallback): void;
+
+    /**
+     * Removes all event listeners
+     */
+    removeAllListeners(): void;
   }
 
   /**
