@@ -120,9 +120,9 @@ jobs:
         run: npm ci --ignore-scripts
 
       # Install node dependencies
-      - name: Install prebuilds
-        if: steps.cache-prebuild.outputs.cache-hit == 'true'
-        run: npm ci
+      # - name: Install prebuilds
+      #   if: steps.cache-prebuild.outputs.cache-hit == 'true'
+      #   run: npm ci
 
       # build the c++ library for standard targets
       - name: Build node
