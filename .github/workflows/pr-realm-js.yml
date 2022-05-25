@@ -14,14 +14,14 @@ jobs:
       matrix:
         variant:
           - { os: linux, runner: ubuntu-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
-          # - { os: windows, runner: windows-2019, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
-          # - { os: windows, runner: windows-2019, arch: ia32, artifact-path: prebuilds }
-          # - { os: android, runner: ubuntu-latest, arch: x86_64, artifact-path: react-native/android/src/main/jniLibs }
-          # - { os: android, runner: ubuntu-latest, arch: armeabi-v7a, artifact-path: react-native/android/src/main/jniLibs }
-          # - { os: android, runner: ubuntu-latest, arch: arm64-v8a, artifact-path: react-native/android/src/main/jniLibs }
-          # - { os: android, runner: ubuntu-latest, arch: x86, artifact-path: react-native/android/src/main/jniLibs }
-          # - { os: darwin, runner: macos-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
-          # - { os: ios, runner: macos-latest, arch: apple, artifact-path: react-native/ios/realm-js-ios.xcframework }
+          - { os: windows, runner: windows-2019, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
+          - { os: windows, runner: windows-2019, arch: ia32, artifact-path: prebuilds }
+          - { os: android, runner: ubuntu-latest, arch: x86_64, artifact-path: react-native/android/src/main/jniLibs }
+          - { os: android, runner: ubuntu-latest, arch: armeabi-v7a, artifact-path: react-native/android/src/main/jniLibs }
+          - { os: android, runner: ubuntu-latest, arch: arm64-v8a, artifact-path: react-native/android/src/main/jniLibs }
+          - { os: android, runner: ubuntu-latest, arch: x86, artifact-path: react-native/android/src/main/jniLibs }
+          - { os: darwin, runner: macos-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
+          - { os: ios, runner: macos-latest, arch: apple, artifact-path: react-native/ios/realm-js-ios.xcframework }
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -51,14 +51,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-#       - name: Cache prebuild artifacts
-#         id: cache-prebuild
-#         uses: actions/cache@v2
-#         env:
-#           cache-name: prebuild
-#         with:
-#           path: ${{ matrix.variant.artifact-path }}
-#           key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}-${{ env.cache-name }}-${{hashFiles('./src/**', 'vendor/**')}}
+      - name: Cache prebuild artifacts
+        id: cache-prebuild
+        uses: actions/cache@v2
+        env:
+          cache-name: prebuild
+        with:
+          path: ${{ matrix.variant.artifact-path }}
+          key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}-${{ env.cache-name }}-${{hashFiles('./src/**', 'vendor/**')}}
 
           # TODO: figure out a way to optimize using partial builds
           #- name: Cache iOS build artifacts
@@ -120,9 +120,9 @@ jobs:
         run: npm ci --ignore-scripts
 
       # Install node dependencies
-      # - name: Install prebuilds
-      #   if: steps.cache-prebuild.outputs.cache-hit == 'true'
-      #   run: npm ci
+      - name: Install prebuilds
+        if: steps.cache-prebuild.outputs.cache-hit == 'true'
+        run: npm ci
 
       # build the c++ library for standard targets
       - name: Build node
