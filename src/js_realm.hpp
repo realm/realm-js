@@ -876,7 +876,7 @@ void RealmClass<T>::handle_initial_subscriptions(ContextType ctx, size_t argc, c
     // the first time it has been opened, or if `rerunOnStartup` is true
     if (!realm_exists || rerun_on_startup) {
         auto subs = realm->get_latest_subscription_set();
-        SubscriptionSetClass<T>::update_impl(ctx, update_callback, subs);
+        SubscriptionSetClass<T>::update_impl(ctx, update_callback, subs, realm);
     }
 }
 
@@ -1752,8 +1752,8 @@ void RealmClass<T>::get_subscriptions(ContextType ctx, ObjectType this_object, R
             "and enable flexible sync, for example: { sync: { user, flexible: true } }");
     }
 
-    return_value.set(
-        SubscriptionSetClass<T>::create_instance(ctx, realm->get_latest_subscription_set(), realm->sync_session()));
+    return_value.set(SubscriptionSetClass<T>::create_instance(ctx, realm->get_latest_subscription_set(),
+                                                              realm->sync_session(), realm));
 }
 #endif
 

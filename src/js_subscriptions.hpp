@@ -20,6 +20,7 @@
 
 #include "js_class.hpp"
 #include "js_util.hpp"
+#include "realm/object-store/shared_realm.hpp"
 #include "realm/object-store/sync/sync_session.hpp"
 #include "realm/sync/subscriptions.hpp"
 
@@ -179,15 +180,26 @@ void SubscriptionClass<T>::get_query_string(ContextType ctx, ObjectType this_obj
 template <typename T>
 class SubscriptionSet : public realm::sync::SubscriptionSet {
 public:
-    SubscriptionSet(const realm::sync::SubscriptionSet& s, const std::weak_ptr<SyncSession> ss)
+    SubscriptionSet(const realm::sync::SubscriptionSet& s, const std::weak_ptr<SyncSession> ss, const SharedRealm r)
         : realm::sync::SubscriptionSet(s)
         , sync_session(ss)
+        , realm(r)
+    {
+    }
+
+    SubscriptionSet(const realm::sync::SubscriptionSet& s, const std::weak_ptr<SyncSession> ss,
+                    const std::weak_ptr<Realm> r)
+        : realm::sync::SubscriptionSet(s)
+        , sync_session(ss)
+        , realm(r)
     {
     }
 
     // Hold a weak_ptr to the SyncSession so we can check if it still exists in the
     // wait_for_synchronization callback
     std::weak_ptr<SyncSession> sync_session;
+
+    std::weak_ptr<Realm> realm;
 };
 
 /**
@@ -208,7 +220,8 @@ public:
     const std::string name = "SubscriptionSet";
     using StateChangeHandler = void(StatusWith<realm::sync::SubscriptionSet::State> state);
 
-    static ObjectType create_instance(ContextType, realm::sync::SubscriptionSet, std::shared_ptr<SyncSession>);
+    static ObjectType create_instance(ContextType, realm::sync::SubscriptionSet, std::shared_ptr<SyncSession>,
+                                      SharedRealm);
 
     static void get_empty(ContextType, ObjectType, ReturnValue&);
     static void get_state(ContextType, ObjectType, ReturnValue&);
@@ -227,7 +240,8 @@ public:
     static void find_by_query(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void update(ContextType, ObjectType, Arguments&, ReturnValue&);
     // This is public because it is called from js_realm::handle_initial_subscriptions
-    static realm::sync::SubscriptionSet update_impl(ContextType, FunctionType, realm::sync::SubscriptionSet);
+    static realm::sync::SubscriptionSet update_impl(ContextType, FunctionType, realm::sync::SubscriptionSet,
+                                                    SharedRealm);
     static void wait_for_synchronization(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
@@ -244,12 +258,12 @@ private:
 };
 
 template <typename T>
-typename T::Object SubscriptionSetClass<T>::create_instance(ContextType ctx,
-                                                            realm::sync::SubscriptionSet subscription_set,
-                                                            std::shared_ptr<SyncSession> sync_session)
+typename T::Object
+SubscriptionSetClass<T>::create_instance(ContextType ctx, realm::sync::SubscriptionSet subscription_set,
+                                         std::shared_ptr<SyncSession> sync_session, SharedRealm realm)
 {
     return create_object<T, SubscriptionSetClass<T>>(
-        ctx, new SubscriptionSet<T>(std::move(subscription_set), sync_session));
+        ctx, new SubscriptionSet<T>(std::move(subscription_set), sync_session, realm));
 }
 
 /**
@@ -616,15 +630,21 @@ void SubscriptionSetClass<T>::update(ContextType ctx, ObjectType this_object, Ar
     Protected<typename T::GlobalContext> protected_ctx(js::Context<T>::get_global_context(ctx));
 
     auto subs = get_internal<T, SubscriptionSetClass<T>>(ctx, this_object);
-    auto new_sub_set = update_impl(ctx, update_callback, *subs);
 
-    // Update this SubscriptionSetClass instance to point to the updated version
-    set_internal<T, SubscriptionSetClass<T>>(ctx, this_object,
-                                             new SubscriptionSet<T>(std::move(new_sub_set), subs->sync_session));
+    if (auto realm = subs->realm.lock()) {
+        auto new_sub_set = update_impl(ctx, update_callback, *subs, realm);
 
-    // Asynchronously wait for the SubscriptionSet to be synchronised
-    SubscriptionSetClass<T>::wait_for_synchronization_impl(protected_ctx, protected_this,
-                                                           protected_completion_callback);
+        // Update this SubscriptionSetClass instance to point to the updated version
+        set_internal<T, SubscriptionSetClass<T>>(
+            ctx, this_object, new SubscriptionSet<T>(std::move(new_sub_set), subs->sync_session, subs->realm));
+
+        // Asynchronously wait for the SubscriptionSet to be synchronised
+        SubscriptionSetClass<T>::wait_for_synchronization_impl(protected_ctx, protected_this,
+                                                               protected_completion_callback);
+    }
+    else {
+        // do something
+    }
 }
 
 /**
@@ -637,7 +657,8 @@ void SubscriptionSetClass<T>::update(ContextType ctx, ObjectType this_object, Ar
  */
 template <typename T>
 realm::sync::SubscriptionSet SubscriptionSetClass<T>::update_impl(ContextType ctx, FunctionType update_callback,
-                                                                  realm::sync::SubscriptionSet subs)
+                                                                  realm::sync::SubscriptionSet subs,
+                                                                  SharedRealm realm)
 {
     // Protected<FunctionType> protected_update_callback(ctx, update_callback);
 
@@ -650,12 +671,14 @@ realm::sync::SubscriptionSet SubscriptionSetClass<T>::update_impl(ContextType ct
     auto mutable_subs_js = MutableSubscriptionSetClass<T>::create_instance(ctx, subs.make_mutable_copy());
     auto mutable_subs = get_internal<T, MutableSubscriptionSetClass<T>>(ctx, mutable_subs_js);
 
+    ObjectType realm_object = create_object<T, RealmClass<T>>(ctx, new SharedRealm(realm));
+
     // Call the provided callback, passing in the mutable copy as an argument,
     // and return its return value
-    ValueType arguments[]{mutable_subs_js};
+    ValueType arguments[]{mutable_subs_js, realm_object};
     // auto const& callback_return =
     //     Function<T>::callback(protected_ctx, protected_update_callback, protected_this, 1, arguments);
-    auto const& callback_return = Function<T>::callback(ctx, update_callback, 1, arguments);
+    auto const& callback_return = Function<T>::callback(ctx, update_callback, 2, arguments);
 
     // Commit the mutation, which downgrades its internal transaction to a read transaction
     // so no more changes can be made to it, and returns a new (immutable) SubscriptionSet
