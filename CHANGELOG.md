@@ -6,6 +6,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * Flexible sync would not correctly resume syncing if a bootstrap was interrupted. ([realm/realm-core#5466](https://github.com/realm/realm-core/pull/5466), since v10.12.0)
 * The sync client may upload corrupted internal data leading to a fatal error from the sync server. ([realm/realm-core#5460](https://github.com/realm/realm-core/pull/5460), since v10.16.0)
+* Proxied `Realm.Results` (e.g. as returned from `useQuery` in `@realm/react`) could not be used with `MutableSubscriptionSet.add`/`remove` ([#4507](https://github.com/realm/realm-js/issues/4507), since v10.12.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
