@@ -186,7 +186,7 @@ declare namespace Realm {
              * opened (e.g. every time a user opens your app), otherwise (by default) it
              * will only be run if the Realm does not yet exist.
              */
-            rerunOnStartup?: boolean;
+            rerunOnOpen?: boolean;
         };
     }
 

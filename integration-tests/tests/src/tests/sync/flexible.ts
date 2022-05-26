@@ -258,16 +258,16 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             );
           });
 
-          it("throws an error if `rerunOnStartup` is not a boolean", async function (this: RealmContext) {
+          it("throws an error if `rerunOnOpen` is not a boolean", async function (this: RealmContext) {
             this.config = getConfig(this.user, {
               update: () => {
                 // no-op
               },
-              rerunOnStartup: "yes please",
+              rerunOnOpen: "yes please",
             } as any);
 
             await expect((Realm as any).open(this.config)).to.be.rejectedWith(
-              /rerunOnStartup must be of type 'boolean', got.*/,
+              /rerunOnOpen must be of type 'boolean', got.*/,
             );
           });
         });
@@ -329,19 +329,19 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             closeRealm(realm, config);
           });
 
-          it("updates the subscriptions on first open if rerunOnStartup is undefined", async function (this: RealmContext) {
+          it("updates the subscriptions on first open if rerunOnOpen is undefined", async function (this: RealmContext) {
             await testSuccess(this.user);
           });
 
-          it("updates the subscriptions on first open if rerunOnStartup is false", async function (this: RealmContext) {
-            await testSuccess(this.user, { rerunOnStartup: false });
+          it("updates the subscriptions on first open if rerunOnOpen is false", async function (this: RealmContext) {
+            await testSuccess(this.user, { rerunOnOpen: false });
           });
 
-          it("updates the subscriptions on first open if rerunOnStartup is true", async function (this: RealmContext) {
-            await testSuccess(this.user, { rerunOnStartup: true });
+          it("updates the subscriptions on first open if rerunOnOpen is true", async function (this: RealmContext) {
+            await testSuccess(this.user, { rerunOnOpen: true });
           });
 
-          it("does not update the subscriptions on second open if rerunOnStartup is undefined", async function (this: RealmContext) {
+          it("does not update the subscriptions on second open if rerunOnOpen is undefined", async function (this: RealmContext) {
             const realm = await testSuccess(this.user, {}, false);
             if (!realm) throw new Error("Valid realm was not returned from testSuccess");
 
@@ -354,8 +354,8 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             closeRealm(realm2, config);
           });
 
-          it("does not update the subscriptions on second open if rerunOnStartup is false", async function (this: RealmContext) {
-            const realm = await testSuccess(this.user, { rerunOnStartup: false }, false);
+          it("does not update the subscriptions on second open if rerunOnOpen is false", async function (this: RealmContext) {
+            const realm = await testSuccess(this.user, { rerunOnOpen: false }, false);
             if (!realm) throw new Error("Valid realm was not returned from testSuccess");
 
             await realm.subscriptions.update((subs) => subs.removeAll());
@@ -367,14 +367,14 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             closeRealm(realm2, config);
           });
 
-          it("does update the subscriptions on second open if rerunOnStartup is true", async function (this: RealmContext) {
-            const realm = await testSuccess(this.user, { rerunOnStartup: true }, false);
+          it("does update the subscriptions on second open if rerunOnOpen is true", async function (this: RealmContext) {
+            const realm = await testSuccess(this.user, { rerunOnOpen: true }, false);
             if (!realm) throw new Error("Valid realm was not returned from testSuccess");
 
             await realm.subscriptions.update((subs) => subs.removeAll());
             realm.close();
 
-            await testSuccess(this.user, { rerunOnStartup: true });
+            await testSuccess(this.user, { rerunOnOpen: true });
           });
         });
       });

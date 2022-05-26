@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* Added an `initialSubscriptions` option to the `sync` config, which allows users to specify a subscription update function which bootstraps a set of flexible sync subscriptions when the Realm is first opened (or every time the app runs). (#4561[https://github.com/realm/realm-js/pull/4561])
+* Added an `initialSubscriptions` option to the `sync` config, which allows users to specify a subscription update function to bootstrap a set of flexible sync subscriptions when the Realm is first opened (or every time the app runs, using the `rerunOnOpen` flag). (#4561[https://github.com/realm/realm-js/pull/4561])
 
 ### Fixed
 * Flexible sync would not correctly resume syncing if a bootstrap was interrupted. ([realm/realm-core#5466](https://github.com/realm/realm-core/pull/5466), since v10.12.0)

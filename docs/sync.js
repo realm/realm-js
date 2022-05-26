@@ -93,7 +93,7 @@
  * {@link Realm.App.Sync~MutableSubscriptionSet} instance and the {@link Realm}
  * instance to allow you to setup the initial set of subscriptions. See
  * {@link Realm.App.Sync.SubscriptionSet#update} for more information.
- * @property {Boolean} returnOnStartup - optional flag. If `true`, the
+ * @property {Boolean} rerunOnOpen - optional flag. If `true`, the
  * {@link updateCallback} will be rerun every time the Realm is opened (e.g.
  * every time a user opens your app), otherwise (by default) it will only be run
  * if the Realm does not yet exist.

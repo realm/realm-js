@@ -800,7 +800,7 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
  * return a promise which resolves when the subscription update has been
  * synchronised.
  *
- * If the object contains a `rerunOnStartup` property, this must be a boolean,
+ * If the object contains a `rerunOnOpen` property, this must be a boolean,
  * which specifies that we should re-run the `update` function every time the
  * Realm is opened rather than just the first time. This allows users to
  * workaround the lack of "dynamic" date queries for synced data (e.g. "last 30
@@ -852,13 +852,13 @@ void RealmClass<T>::handle_initial_subscriptions(ContextType ctx, size_t argc, c
     ValueType update_value = Object::get_property(ctx, initial_subscriptions_object, "update");
     FunctionType update_callback = Value::validated_to_function(ctx, update_value, "update");
 
-    ValueType rerun_on_startup_value = Object::get_property(ctx, initial_subscriptions_object, "rerunOnStartup");
+    ValueType rerun_on_startup_value = Object::get_property(ctx, initial_subscriptions_object, "rerunOnOpen");
     bool rerun_on_startup = Value::is_undefined(ctx, rerun_on_startup_value)
                                 ? false
-                                : Value::validated_to_boolean(ctx, rerun_on_startup_value, "rerunOnStartup");
+                                : Value::validated_to_boolean(ctx, rerun_on_startup_value, "rerunOnOpen");
 
     // Only run the update function if the Realm did not already exist, i.e. it's
-    // the first time it has been opened, or if `rerunOnStartup` is true
+    // the first time it has been opened, or if `rerunOnOpen` is true
     if (!realm_exists || rerun_on_startup) {
         auto subs = realm->get_latest_subscription_set();
         SubscriptionSetClass<T>::update_impl(ctx, update_callback, subs, realm);
