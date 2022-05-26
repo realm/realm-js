@@ -199,6 +199,8 @@ public:
     // wait_for_synchronization callback
     std::weak_ptr<SyncSession> sync_session;
 
+    // Hold a weak_ptr to the Realm associated with the subscription set so that we
+    // can pass it to the `update` callback
     std::weak_ptr<Realm> realm;
 };
 
@@ -601,16 +603,16 @@ MutableSubscriptionSetClass<T>::create_instance(ContextType ctx, realm::sync::Mu
 }
 
 /**
- * @brief Perform updates to the SubscriptionSet in a callback, then update this instance
- * to point to the updated SubscriptionSet.
+ * @brief Perform updates to the SubscriptionSet in a callback, then update this
+ * instance to point to the updated SubscriptionSet.
  *
  * @param ctx JS context
  * @param this_object \ref ObjectType wrapping the SubscriptionSet
- * @param args \ref Arguments structure:
- *   Argument 1: A callback which receives a mutable version of the SubscriptionSet as its
- *     argument, and which updates the SubscriptionSet as required
- *   Argument 2: A callback to be called when the state of the SubscriptionSet is "Complete"
- *      or "Error" after the update has been applied (see `wait_for_synchronization_impl`).
+ * @param args \ref Arguments structure: Argument 1: A callback which receives a
+ *   MutableSubscriptionSet and the associated Realm as its arguments, and which
+ *   updates the SubscriptionSet as required Argument 2: A callback to be called
+ *   when the state of the SubscriptionSet is "Complete" or "Error" after the
+ *   update has been applied (see `wait_for_synchronization_impl`).
  * @param return_value \ref Returns the return value of the update callback
  *
  * TODO handle async callbacks
@@ -643,28 +645,29 @@ void SubscriptionSetClass<T>::update(ContextType ctx, ObjectType this_object, Ar
                                                                protected_completion_callback);
     }
     else {
-        // do something
+        auto error = make_js_error<T>(protected_ctx, "`update` called after the Realm went out of scope");
+        Function<T>::callback(protected_ctx, protected_callback, protected_this, {error});
     }
 }
 
 /**
- * @brief TODO
+ * @brief Perform updates to a SubscriptionSet in a callback, and return the
+ * updated SubscriptionSet.
  *
- * @tparam T
- * @param ctx
- * @param this_object
- * @param callback
+ * @param ctx JS context
+ * @param update_callback A callback which receives a MutableSubscriptionSet and
+ * its associated Realm as arguments, and which updates the SubscriptionSet as
+ * required
+ * @param subs The SubscriptionSet to update
+ * @param realm The Realm associated with the SubscriptionSet
+ * @return realm::sync::SubscriptionSet The updated SubscriptionSet after
+ * applying the callback
  */
 template <typename T>
 realm::sync::SubscriptionSet SubscriptionSetClass<T>::update_impl(ContextType ctx, FunctionType update_callback,
                                                                   realm::sync::SubscriptionSet subs,
                                                                   SharedRealm realm)
 {
-    // Protected<FunctionType> protected_update_callback(ctx, update_callback);
-
-    // Protected<ObjectType> protected_this(ctx, this_object);
-    // Protected<typename T::GlobalContext> protected_ctx(js::Context<T>::get_global_context(ctx));
-
     // Create a mutable copy of this instance (which copies the original and upgrades
     // its internal transaction to a write transaction, so we can make updates to it -
     // SubscriptionSets are otherwise immutable)
@@ -676,8 +679,6 @@ realm::sync::SubscriptionSet SubscriptionSetClass<T>::update_impl(ContextType ct
     // Call the provided callback, passing in the mutable copy as an argument,
     // and return its return value
     ValueType arguments[]{mutable_subs_js, realm_object};
-    // auto const& callback_return =
-    //     Function<T>::callback(protected_ctx, protected_update_callback, protected_this, 1, arguments);
     auto const& callback_return = Function<T>::callback(ctx, update_callback, 2, arguments);
 
     // Commit the mutation, which downgrades its internal transaction to a read transaction
