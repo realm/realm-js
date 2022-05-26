@@ -153,7 +153,7 @@ declare namespace Realm {
          * sync subscriptions to be used when opening the Realm. If this is specified,
          * {@link Realm.open} will not resolve until this set of subscriptions has been
          * fully synchronized with the server.
-         * 
+         *
          * Example:
          * ```
          * const config: Realm.Configuration = {
@@ -161,17 +161,15 @@ declare namespace Realm {
          *     user,
          *     flexible: true,
          *     initialSubscriptions: {
-         *       update: realm => {
-         *         realm.subscriptions.update(subs => {
-         *           subs.add(realm.objects('Task'));
-         *         })
+         *       update: (subs, realm) => {
+         *         subs.add(realm.objects('Task'));
          *       }
          *     }
          *   },
          *   // ... rest of config ...
          * };
          * const realm = await Realm.open(config);
-         * 
+         *
          * // At this point, the Realm will be open with the data for the initial set
          * // subscriptions fully synchronised.
          * ```
@@ -182,7 +180,7 @@ declare namespace Realm {
              * initial set of subscriptions by calling `realm.subscriptions.update`.
              * See {@link Realm.App.Sync.SubscriptionSet.update} for more information.
              */
-            update: (realm: Realm) => void;
+            update: (subs: Realm.App.Sync.MutableSubscriptionSet, realm: Realm) => void;
             /**
              * If `true`, the {@link updateCallback} will be rerun every time the Realm is
              * opened (e.g. every time a user opens your app), otherwise (by default) it
