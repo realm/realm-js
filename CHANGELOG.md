@@ -1,7 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Switch to building xcframeworks with Xcode 13.1. Xcode 12 is no longer supported.
 
 ### Fixed
 * Flexible sync would not correctly resume syncing if a bootstrap was interrupted. ([realm/realm-core#5466](https://github.com/realm/realm-core/pull/5466), since v10.12.0)
@@ -27,7 +27,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * Fixed issue where React Native apps would sometimes show stale Realm data until the user interacted with the app UI. ([#4389](https://github.com/realm/realm-js/issues/4389), since v10.0.0)
 * Fixed race condition leading to potential crash when hot reloading an app using Realm Sync. ([4509](https://github.com/realm/realm-js/pull/4509), since v10.12.0)
-* Updated build script to use Xcode 12.4 to ensure xcframework is Bitcode compatibile with older versionsi. ([#4462](https://github.com/realm/realm-js/issues/4462), since v10.0.0)
+* Updated build script to use Xcode 12.4 to ensure xcframework is Bitcode compatibile with older versions. ([#4462](https://github.com/realm/realm-js/issues/4462), since v10.0.0)
 * Added missing type definitions for `newRealmFileBehavior` and `existingRealmFileBehavior` when opening a flexible sync Realm ([#4467](https://github.com/realm/realm-js/issues/4467), since v10.12.0)
 * Adding an object to a Set, deleting the parent object, and then deleting the previously mentioned object causes crash ([#5387](https://github.com/realm/realm-core/issues/5387), since v10.5.0)
 * Synchronized Realm files which were first created using SDK version released in the second half of August 2020 would be redownloaded instead of using the existing file, possibly resulting in the loss of any unsynchronized data in those filesi. (since v10.10.1)

@@ -34,7 +34,6 @@ jobs:
       matrix:
         # See https://github.com/actions/virtual-environments/blob/main/images/macos/macos-11-Readme.md#xcode
         xcode:
-          # - 12.5
           - 13.1
         npm:
           - 7
