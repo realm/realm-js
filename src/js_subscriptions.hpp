@@ -31,6 +31,9 @@
 namespace realm {
 namespace js {
 
+// Forward declaration to avoid circular dependency
+template <typename T>
+class RealmClass;
 
 /**
  * @brief Wrapper class for a single flexible sync subscription
