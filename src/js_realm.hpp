@@ -372,7 +372,7 @@ public:
     static void set_binding_context(ContextType ctx, std::shared_ptr<Realm> const& realm, bool schema_updated,
                                     ObjectDefaultsMap&& defaults, ConstructorMap&& constructors);
     static void handle_initial_subscriptions(ContextType ctx, size_t argc, const ValueType arguments[],
-                                             ObjectType realm_object, bool realm_exists);
+                                             SharedRealm realm_object, bool realm_exists);
 
     static void schema_version(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void clear_test_state(ContextType, ObjectType, Arguments&, ReturnValue&);
@@ -825,7 +825,7 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
  */
 template <typename T>
 void RealmClass<T>::handle_initial_subscriptions(ContextType ctx, size_t argc, const ValueType arguments[],
-                                                 ObjectType realm_object, bool realm_exists)
+                                                 SharedRealm realm, bool realm_exists)
 {
     if (argc == 0) {
         return;
@@ -849,8 +849,23 @@ void RealmClass<T>::handle_initial_subscriptions(ContextType ctx, size_t argc, c
     }
     ObjectType initial_subscriptions_object = Value::validated_to_object(ctx, initial_subscriptions_value);
 
+    auto config = realm->config();
+
+    if (!config.sync_config) {
+        throw std::runtime_error("`initialSubscriptions` can only be used if flexible sync is enabled, but sync is "
+                                 "currently disabled for your app. Add a flexible sync config when opening the "
+                                 "Realm, for example: { sync: { user, flexible: true } }.");
+    }
+
+    if (!config.sync_config->flx_sync_requested) {
+        throw std::runtime_error(
+            "`initialSubscriptions` can only be used if flexible sync is enabled, but partition "
+            "based sync is currently enabled for your Realm. Modify your sync config to remove any `partitionValue` "
+            "and enable flexible sync, for example: { sync: { user, flexible: true } }");
+    }
+
     ValueType update_value = Object::get_property(ctx, initial_subscriptions_object, "update");
-    FunctionType update_function = Value::validated_to_function(ctx, update_value, "update");
+    FunctionType update_callback = Value::validated_to_function(ctx, update_value, "update");
 
     ValueType rerun_on_startup_value = Object::get_property(ctx, initial_subscriptions_object, "rerunOnStartup");
     bool rerun_on_startup = Value::is_undefined(ctx, rerun_on_startup_value)
@@ -860,8 +875,8 @@ void RealmClass<T>::handle_initial_subscriptions(ContextType ctx, size_t argc, c
     // Only run the update function if the Realm did not already exist, i.e. it's
     // the first time it has been opened, or if `rerunOnStartup` is true
     if (!realm_exists || rerun_on_startup) {
-        ValueType arguments[] = {realm_object};
-        Function<T>::call(ctx, update_function, 1, arguments);
+        auto subs = realm->get_latest_subscription_set();
+        SubscriptionSetClass<T>::update_impl(ctx, update_callback, subs);
     }
 }
 
@@ -880,7 +895,7 @@ void RealmClass<T>::constructor(ContextType ctx, ObjectType this_object, Argumen
 
     set_internal<T, RealmClass<T>>(ctx, this_object, new SharedRealm(realm));
 
-    handle_initial_subscriptions(ctx, args.count, args.value, this_object, realm_exists);
+    handle_initial_subscriptions(ctx, args.count, args.value, realm, realm_exists);
 }
 
 template <typename T>
@@ -1167,7 +1182,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
 
         try {
             ValueType unprotected_args = protected_args;
-            handle_initial_subscriptions(protected_ctx, args.count - 1, &unprotected_args, object, realm_exists);
+            handle_initial_subscriptions(protected_ctx, args.count - 1, &unprotected_args, realm, realm_exists);
         }
         catch (TypeErrorException e) {
             auto error = make_js_error<T>(ctx, e.what());

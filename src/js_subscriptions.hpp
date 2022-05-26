@@ -226,6 +226,8 @@ public:
     static void find_by_name(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void find_by_query(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void update(ContextType, ObjectType, Arguments&, ReturnValue&);
+    // This is public because it is called from js_realm::handle_initial_subscriptions
+    static realm::sync::SubscriptionSet update_impl(ContextType, FunctionType, realm::sync::SubscriptionSet);
     static void wait_for_synchronization(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const methods = {
@@ -608,30 +610,13 @@ void SubscriptionSetClass<T>::update(ContextType ctx, ObjectType this_object, Ar
     FunctionType update_callback = Value::validated_to_function(ctx, args[0], "update callback");
     FunctionType completion_callback = Value::validated_to_function(ctx, args[1], "completion callback");
 
-    Protected<FunctionType> protected_update_callback(ctx, update_callback);
     Protected<FunctionType> protected_completion_callback(ctx, completion_callback);
 
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(js::Context<T>::get_global_context(ctx));
 
     auto subs = get_internal<T, SubscriptionSetClass<T>>(ctx, this_object);
-
-    // Create a mutable copy of this instance (which copies the original and upgrades
-    // its internal transaction to a write transaction, so we can make updates to it -
-    // SubscriptionSets are otherwise immutable)
-    auto mutable_subs_js = MutableSubscriptionSetClass<T>::create_instance(ctx, subs->make_mutable_copy());
-    auto mutable_subs = get_internal<T, MutableSubscriptionSetClass<T>>(ctx, mutable_subs_js);
-
-    // Call the provided callback, passing in the mutable copy as an argument,
-    // and return its return value
-    ValueType arguments[]{mutable_subs_js};
-    auto const& callback_return =
-        Function<T>::callback(protected_ctx, protected_update_callback, protected_this, 1, arguments);
-
-    // Commit the mutation, which downgrades its internal transaction to a read transaction
-    // so no more changes can be made to it, and returns a new (immutable) SubscriptionSet
-    // with the changes we made
-    auto new_sub_set = std::move(*mutable_subs).commit();
+    auto new_sub_set = update_impl(ctx, update_callback, *subs);
 
     // Update this SubscriptionSetClass instance to point to the updated version
     set_internal<T, SubscriptionSetClass<T>>(ctx, this_object,
@@ -640,6 +625,42 @@ void SubscriptionSetClass<T>::update(ContextType ctx, ObjectType this_object, Ar
     // Asynchronously wait for the SubscriptionSet to be synchronised
     SubscriptionSetClass<T>::wait_for_synchronization_impl(protected_ctx, protected_this,
                                                            protected_completion_callback);
+}
+
+/**
+ * @brief TODO
+ *
+ * @tparam T
+ * @param ctx
+ * @param this_object
+ * @param callback
+ */
+template <typename T>
+realm::sync::SubscriptionSet SubscriptionSetClass<T>::update_impl(ContextType ctx, FunctionType update_callback,
+                                                                  realm::sync::SubscriptionSet subs)
+{
+    // Protected<FunctionType> protected_update_callback(ctx, update_callback);
+
+    // Protected<ObjectType> protected_this(ctx, this_object);
+    // Protected<typename T::GlobalContext> protected_ctx(js::Context<T>::get_global_context(ctx));
+
+    // Create a mutable copy of this instance (which copies the original and upgrades
+    // its internal transaction to a write transaction, so we can make updates to it -
+    // SubscriptionSets are otherwise immutable)
+    auto mutable_subs_js = MutableSubscriptionSetClass<T>::create_instance(ctx, subs.make_mutable_copy());
+    auto mutable_subs = get_internal<T, MutableSubscriptionSetClass<T>>(ctx, mutable_subs_js);
+
+    // Call the provided callback, passing in the mutable copy as an argument,
+    // and return its return value
+    ValueType arguments[]{mutable_subs_js};
+    // auto const& callback_return =
+    //     Function<T>::callback(protected_ctx, protected_update_callback, protected_this, 1, arguments);
+    auto const& callback_return = Function<T>::callback(ctx, update_callback, 1, arguments);
+
+    // Commit the mutation, which downgrades its internal transaction to a read transaction
+    // so no more changes can be made to it, and returns a new (immutable) SubscriptionSet
+    // with the changes we made
+    return std::move(*mutable_subs).commit();
 }
 
 /**
