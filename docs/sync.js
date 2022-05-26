@@ -78,8 +78,9 @@
  *     initialSubscriptions: {
  *       update: (subs, realm) => {
  *         subs.add(realm.objects('Task'));
- *       }
- *     }
+ *       },
+ *       rerunOnOpen: true,
+ *     },
  *   },
  *   // ... rest of config ...
  * };
