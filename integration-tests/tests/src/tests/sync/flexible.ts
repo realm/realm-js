@@ -230,7 +230,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             Realm.deleteFile(this.config);
           });
 
-          it("throws an error if no update function is provided", async function () {
+          it("throws an error if no update function is provided", async function (this: RealmContext) {
             this.config = getConfig(this.user, {} as any);
 
             await expect((Realm as any).open(this.config)).to.be.rejectedWith(
@@ -238,7 +238,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             );
           });
 
-          it("throws an error if update is undefined", async function () {
+          it("throws an error if update is undefined", async function (this: RealmContext) {
             this.config = getConfig(this.user, {
               update: undefined,
             } as any);
@@ -248,7 +248,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             );
           });
 
-          it("throws an error if update is not a function", async function () {
+          it("throws an error if update is not a function", async function (this: RealmContext) {
             this.config = getConfig(this.user, {
               update: "Person",
             } as any);
@@ -258,7 +258,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             );
           });
 
-          it("throws an error if `rerunOnStartup` is not a boolean", async function () {
+          it("throws an error if `rerunOnStartup` is not a boolean", async function (this: RealmContext) {
             this.config = getConfig(this.user, {
               update: () => {
                 // no-op
@@ -277,10 +277,8 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
           function getSuccessConfig(user: Realm.User, extraConfig: ExtraConfig = {}) {
             return getConfig(user, {
-              update: (realm) => {
-                realm.subscriptions.update((subs) => {
-                  subs.add(realm.objects(FlexiblePersonSchema.name));
-                });
+              update: (subs, realm) => {
+                subs.add(realm.objects(FlexiblePersonSchema.name));
               },
               ...extraConfig,
             });
@@ -311,7 +309,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             return realm;
           }
 
-          it("returns a promise", async function () {
+          it("returns a promise", async function (this: RealmContext) {
             const result = openRealm(this.user, {});
             expect(result).to.be.instanceOf(Promise);
 
@@ -319,7 +317,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             closeRealm(realm, config);
           });
 
-          it("can be used with the `new Realm` constructor", async function () {
+          it("can be used with the `new Realm` constructor", async function (this: RealmContext) {
             const config = getSuccessConfig(this.user);
             const realm = new Realm(config);
 
@@ -331,19 +329,19 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             closeRealm(realm, config);
           });
 
-          it("updates the subscriptions on first open if rerunOnStartup is undefined", async function () {
+          it("updates the subscriptions on first open if rerunOnStartup is undefined", async function (this: RealmContext) {
             await testSuccess(this.user);
           });
 
-          it("updates the subscriptions on first open if rerunOnStartup is false", async function () {
+          it("updates the subscriptions on first open if rerunOnStartup is false", async function (this: RealmContext) {
             await testSuccess(this.user, { rerunOnStartup: false });
           });
 
-          it("updates the subscriptions on first open if rerunOnStartup is true", async function () {
+          it("updates the subscriptions on first open if rerunOnStartup is true", async function (this: RealmContext) {
             await testSuccess(this.user, { rerunOnStartup: true });
           });
 
-          it("does not update the subscriptions on second open if rerunOnStartup is undefined", async function () {
+          it("does not update the subscriptions on second open if rerunOnStartup is undefined", async function (this: RealmContext) {
             const realm = await testSuccess(this.user, {}, false);
             if (!realm) throw new Error("Valid realm was not returned from testSuccess");
 
@@ -356,7 +354,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             closeRealm(realm2, config);
           });
 
-          it("does not update the subscriptions on second open if rerunOnStartup is false", async function () {
+          it("does not update the subscriptions on second open if rerunOnStartup is false", async function (this: RealmContext) {
             const realm = await testSuccess(this.user, { rerunOnStartup: false }, false);
             if (!realm) throw new Error("Valid realm was not returned from testSuccess");
 
@@ -369,7 +367,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             closeRealm(realm2, config);
           });
 
-          it("does update the subscriptions on second open if rerunOnStartup is true", async function () {
+          it("does update the subscriptions on second open if rerunOnStartup is true", async function (this: RealmContext) {
             const realm = await testSuccess(this.user, { rerunOnStartup: true }, false);
             if (!realm) throw new Error("Valid realm was not returned from testSuccess");
 
