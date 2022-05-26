@@ -76,10 +76,8 @@
  *     user,
  *     flexible: true,
  *     initialSubscriptions: {
- *       update: realm => {
- *         realm.subscriptions.update(subs => {
- *           subs.add(realm.objects('Task'));
- *         })
+ *       update: (subs, realm) => {
+ *         subs.add(realm.objects('Task'));
  *       }
  *     }
  *   },
@@ -91,9 +89,9 @@
  * // subscriptions fully synchronised.
  * ```
  * @typedef {Object} Realm.App.Sync~InitialSubscriptionsConfiguration
- * @property {callback(realm)} update - callback called with the {@link Realm} instance
- * to allow you to setup the initial set of subscriptions by calling
- * `realm.subscriptions.update`. See
+ * @property {callback(realm)} update - callback called with a
+ * {@link Realm.App.Sync~MutableSubscriptionSet} instance and the {@link Realm}
+ * instance to allow you to setup the initial set of subscriptions. See
  * {@link Realm.App.Sync.SubscriptionSet#update} for more information.
  * @property {Boolean} returnOnStartup - optional flag. If `true`, the
  * {@link updateCallback} will be rerun every time the Realm is opened (e.g.

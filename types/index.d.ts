@@ -153,7 +153,7 @@ declare namespace Realm {
          * sync subscriptions to be used when opening the Realm. If this is specified,
          * {@link Realm.open} will not resolve until this set of subscriptions has been
          * fully synchronized with the server.
-         * 
+         *
          * Example:
          * ```
          * const config: Realm.Configuration = {
@@ -161,17 +161,15 @@ declare namespace Realm {
          *     user,
          *     flexible: true,
          *     initialSubscriptions: {
-         *       update: realm => {
-         *         realm.subscriptions.update(subs => {
-         *           subs.add(realm.objects('Task'));
-         *         })
+         *       update: (subs, realm) => {
+         *         subs.add(realm.objects('Task'));
          *       }
          *     }
          *   },
          *   // ... rest of config ...
          * };
          * const realm = await Realm.open(config);
-         * 
+         *
          * // At this point, the Realm will be open with the data for the initial set
          * // subscriptions fully synchronised.
          * ```
@@ -182,7 +180,7 @@ declare namespace Realm {
              * initial set of subscriptions by calling `realm.subscriptions.update`.
              * See {@link Realm.App.Sync.SubscriptionSet.update} for more information.
              */
-            update: (realm: Realm) => void;
+            update: (subs: Realm.App.Sync.MutableSubscriptionSet, realm: Realm) => void;
             /**
              * If `true`, the {@link updateCallback} will be rerun every time the Realm is
              * opened (e.g. every time a user opens your app), otherwise (by default) it
@@ -859,15 +857,18 @@ declare namespace Realm {
              * // `realm` will now return the expected results based on the updated subscriptions
              * ```
              *
-             * @param callback A callback function which receives a {@link MutableSubscriptionSet}
-             * instance as its only argument, which can be used to add or remove subscriptions from
-             * the set.
-             * Note: this callback should not be asynchronous.
+             * @param callback A callback function which receives a
+             * {@link Realm.App.Sync.MutableSubscriptionSet} instance as the
+             * first argument, which can be used to add or remove subscriptions
+             * from the set, and the {@link Realm} associated with the SubscriptionSet
+             * as the second argument (mainly useful when working with
+             * `initialSubscriptions` in
+             * {@link Realm.App.Sync.FlexibleSyncConfiguration}).
              *
              * @returns A promise which resolves when the SubscriptionSet is synchronized, or is rejected
              * if there was an error during synchronization (see {@link waitForSynchronisation})
              */
-            update: (callback: (mutableSubs: MutableSubscriptionSet) => void) => Promise<void>;
+            update: (callback: (mutableSubs: MutableSubscriptionSet, realm: Realm) => void) => Promise<void>;
         }
 
         const SubscriptionSet: {
