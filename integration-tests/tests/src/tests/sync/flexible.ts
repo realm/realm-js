@@ -298,23 +298,26 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           ) {
             const { realm, config } = await openRealm(user, extraConfig);
 
-            expect(realm.subscriptions).to.have.length(1);
-            expect(realm.subscriptions.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
-
-            if (closeRealmAfter) {
-              closeRealm(realm, config);
-              return undefined;
+            try {
+              expect(realm.subscriptions).to.have.length(1);
+              expect(realm.subscriptions.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
+            } finally {
+              if (closeRealmAfter) {
+                closeRealm(realm, config);
+              }
             }
 
-            return realm;
+            return closeRealmAfter ? undefined : realm;
           }
 
           it("returns a promise", async function (this: RealmContext) {
             const result = openRealm(this.user, {});
-            expect(result).to.be.instanceOf(Promise);
-
-            const { realm, config } = await result;
-            closeRealm(realm, config);
+            try {
+              expect(result).to.be.instanceOf(Promise);
+            } finally {
+              const { realm, config } = await result;
+              closeRealm(realm, config);
+            }
           });
 
           it("can be used with the `new Realm` constructor", async function (this: RealmContext) {
