@@ -154,8 +154,8 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
       it("does not accept { flexible: true } and a partition value", function () {
         expect(() => {
-          // Cast to any as Typescript will detect this as an error
-          new (Realm as any)({
+          // @ts-expect-error Intentionally testing the wrong type
+          new Realm({
             sync: {
               _sessionStopPolicy: SessionStopPolicy.Immediately,
               flexible: true,
@@ -195,8 +195,8 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
       it("throws an error if flexible sync is enabled and client reset mode is discardLocal", function () {
         expect(() => {
-          // Cast to any as Typescript will detect this as an error
-          new (Realm as any)({
+          // @ts-expect-error Intentionally testing the wrong type
+          new Realm({
             sync: {
               _sessionStopPolicy: SessionStopPolicy.Immediately,
               flexible: true,
@@ -231,31 +231,32 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           });
 
           it("throws an error if no update function is provided", async function (this: RealmContext) {
-            this.config = getConfig(this.user, {} as any);
+            // @ts-expect-error Intentionally testing the wrong type
+            this.config = getConfig(this.user, {});
 
-            await expect((Realm as any).open(this.config)).to.be.rejectedWith(
+            await expect(Realm.open(this.config)).to.be.rejectedWith(
               "update must be of type 'function', got (undefined)",
             );
           });
 
           it("throws an error if update is undefined", async function (this: RealmContext) {
             this.config = getConfig(this.user, {
+              // @ts-expect-error Intentionally testing the wrong type
               update: undefined,
-            } as any);
+            });
 
-            await expect((Realm as any).open(this.config)).to.be.rejectedWith(
+            await expect(Realm.open(this.config)).to.be.rejectedWith(
               "update must be of type 'function', got (undefined)",
             );
           });
 
           it("throws an error if update is not a function", async function (this: RealmContext) {
             this.config = getConfig(this.user, {
+              // @ts-expect-error Intentionally testing the wrong type
               update: "Person",
-            } as any);
+            });
 
-            await expect((Realm as any).open(this.config)).to.be.rejectedWith(
-              "update must be of type 'function', got (Person)",
-            );
+            await expect(Realm.open(this.config)).to.be.rejectedWith("update must be of type 'function', got (Person)");
           });
 
           it("throws an error if `rerunOnOpen` is not a boolean", async function (this: RealmContext) {
@@ -263,12 +264,11 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
               update: () => {
                 // no-op
               },
+              // @ts-expect-error Intentionally testing the wrong type
               rerunOnOpen: "yes please",
-            } as any);
+            });
 
-            await expect((Realm as any).open(this.config)).to.be.rejectedWith(
-              /rerunOnOpen must be of type 'boolean', got.*/,
-            );
+            await expect(Realm.open(this.config)).to.be.rejectedWith(/rerunOnOpen must be of type 'boolean', got.*/);
           });
         });
 
