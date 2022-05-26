@@ -849,21 +849,6 @@ void RealmClass<T>::handle_initial_subscriptions(ContextType ctx, size_t argc, c
     }
     ObjectType initial_subscriptions_object = Value::validated_to_object(ctx, initial_subscriptions_value);
 
-    auto config = realm->config();
-
-    if (!config.sync_config) {
-        throw std::runtime_error("`initialSubscriptions` can only be used if flexible sync is enabled, but sync is "
-                                 "currently disabled for your app. Add a flexible sync config when opening the "
-                                 "Realm, for example: { sync: { user, flexible: true } }.");
-    }
-
-    if (!config.sync_config->flx_sync_requested) {
-        throw std::runtime_error(
-            "`initialSubscriptions` can only be used if flexible sync is enabled, but partition "
-            "based sync is currently enabled for your Realm. Modify your sync config to remove any `partitionValue` "
-            "and enable flexible sync, for example: { sync: { user, flexible: true } }");
-    }
-
     ValueType update_value = Object::get_property(ctx, initial_subscriptions_object, "update");
     FunctionType update_callback = Value::validated_to_function(ctx, update_value, "update");
 
