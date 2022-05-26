@@ -646,7 +646,7 @@ void SubscriptionSetClass<T>::update(ContextType ctx, ObjectType this_object, Ar
     }
     else {
         auto error = make_js_error<T>(protected_ctx, "`update` called after the Realm went out of scope");
-        Function<T>::callback(protected_ctx, protected_callback, protected_this, {error});
+        Function<T>::callback(protected_ctx, protected_completion_callback, protected_this, {error});
     }
 }
 
