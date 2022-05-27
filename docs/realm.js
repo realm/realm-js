@@ -154,7 +154,8 @@ class Realm {
   close() {}
 
   /**
-   * Create a new Realm object of the given type and with the specified properties.
+   * Create a new Realm object of the given type and with the specified properties. For object schemas annotation
+   * as asymmetric, no object is returned. The API for asymmetric object schema is subject to changes in the future.
    * @param {Realm~ObjectType} type - The type of Realm object to create.
    * @param {Object} properties - Property values for all required properties without a
    *   default value.
