@@ -115,7 +115,9 @@ This directory of the repository contains three sub-directories:
 
 Because of limitations (see below), we need to explicitly require in the files defining the tests: To write a new test, simply add it in the relevant file in `test/src/tests/` or create a new file and make sure to require that from `test/src/index.ts`.
 
-Tests will have access to the following globals:
+### Globals available
+
+Because we want our tests to run in many environments, we've a limited runtime available. Tests have access to the following globals:
 
 - [the Mocha hook globals](https://mochajs.org/#hooks) (describe, it, after, before, etc.).
 - `fs` the lowest common denominator of the [`fs-extra`](https://www.npmjs.com/package/fs-extra) and [`react-native-fs`](https://www.npmjs.com/package/react-native-fs) APIs.
@@ -164,6 +166,17 @@ See the existing tests for more detailed examples on how to use the hooks.
 
 Remember to close or clean up Realms accessed during tests.
 The `Realm.clearTestState` can be called after each test, which closes and removes all Realm files in the default directory.
+
+If you simply need the test to open a Realm before and close & delete it after, consider using the `openRealmBefore` or `openRealmBeforeEach` hooks.
+
+### Use `@ts-expect-error` instead of `any`
+
+When you need to test internal methods or the behaviour of calling our APIs in a way that conflicts with our types, use the `// @ts-expect-error` comment to declare an error is expected, instead of casting the object to `any`. This will ensure the test fails if the type unexpectedly changes to allow the statement.
+
+### Co-locate schemas with tests to lower coupling and increase cohesion
+
+To keep tests which simply needs any schema DRY, we've declare two sets of simple schemas in the `./tests/src/schemas` directory.
+If you find a need to change these, copy them to your testfile instead of extending them as other tests are depending on these.
 
 ### Current limitations
 
