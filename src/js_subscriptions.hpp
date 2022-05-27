@@ -611,11 +611,13 @@ MutableSubscriptionSetClass<T>::create_instance(ContextType ctx, realm::sync::Mu
  *
  * @param ctx JS context
  * @param this_object \ref ObjectType wrapping the SubscriptionSet
- * @param args \ref Arguments structure: Argument 1: A callback which receives a
- *   MutableSubscriptionSet and the associated Realm as its arguments, and which
- *   updates the SubscriptionSet as required Argument 2: A callback to be called
- *   when the state of the SubscriptionSet is "Complete" or "Error" after the
- *   update has been applied (see `wait_for_synchronization_impl`).
+ * @param args \ref Arguments structure:
+ *   - Argument 1: A callback which receives a MutableSubscriptionSet and the
+ *     associated Realm as its arguments, and which updates the SubscriptionSet
+ *     as required
+ *   - Argument 2: A callback to be called when the state of the SubscriptionSet
+ *     is "Complete" or "Error" after the update has been applied (see
+ *     `wait_for_synchronization_impl`).
  * @param return_value \ref Returns the return value of the update callback
  *
  * TODO handle async callbacks
