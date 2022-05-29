@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.18.0 Release notes (2022-5-29)
 =============================================================
 ### Enhancements
 * Switch to building xcframeworks with Xcode 13.1. Xcode 12 is no longer supported.
@@ -43,9 +43,9 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v11.15.0 to v12.0.0
+* Upgraded Realm Core from v11.15.0 to v12.0.0.
 * Upgraded BAAS image to 2022-05-23.
-* Fixed an intermittent issue with flexible sync test suite ([#4590](https://github.com/realm/realm-js/pull/4590), since v10.12.0)
+* Fixed an intermittent issue with flexible sync test suite. ([#4590](https://github.com/realm/realm-js/pull/4590), since v10.12.0)
 * Bump the version number for the lockfile used for interprocess synchronization. This has no effect on persistent data, but means that versions of Realm which use pre-12.0.0 Realm Core cannot open Realm files at the same time as they are opened by this version. Notably this includes Realm Studio, and Realm Core v11.1.2/Realm JavaScript v10.17.0 (the latest at the time of this release) cannot open Realm files which are simultaneously open in the iOS simulator.
 
 10.17.0 Release notes (2022-5-10)
