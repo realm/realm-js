@@ -32,6 +32,9 @@ x.x.x Release notes (yyyy-MM-dd)
 * Flexible sync would not correctly resume syncing if a bootstrap was interrupted. ([realm/realm-core#5466](https://github.com/realm/realm-core/pull/5466), since v10.12.0)
 * The sync client may upload corrupted internal data leading to a fatal error from the sync server. ([realm/realm-core#5460](https://github.com/realm/realm-core/pull/5460), since v10.16.0)
 * Proxied `Realm.Results` (e.g. as returned from `useQuery` in `@realm/react`) could not be used with `MutableSubscriptionSet.add`/`remove` ([#4507](https://github.com/realm/realm-js/issues/4507), since v10.12.0)
+* In queries `NONE x BETWEEN ...` and `ANY x BETWEEN ...` had incorrect behavior, so it is now disallowed. ([realm/realm-core#5508](https://github.com/realm/realm-core/issues/5508), since v10.15.0)
+* Partially fix a performance regression in write performance on Apple platforms, but still slower than pre-10.12.0 due to using more crash-safe file synchronization. ([#4383](https://github.com/realm/realm-js/issues/4383) and [realm/realm-swift#7740](https://github.com/realm/realm-swift/issues/7740), since v10.12.0).
+* FLX sync will now ensure that a bootstrap from the server will only be applied if the entire bootstrap is received - ensuring there are no orphaned objects as a result of changing the read snapshot on the server. ([realm/realm-core#5331](https://github.com/realm/realm-core/pull/5331))
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -40,9 +43,10 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v11.15.0 to v11.17.0.
+* Upgraded Realm Core from v11.15.0 to v12.0.0
 * Upgraded BAAS image to 2022-05-23.
 * Fixed an intermittent issue with flexible sync test suite ([#4590](https://github.com/realm/realm-js/pull/4590), since v10.12.0)
+* Bump the version number for the lockfile used for interprocess synchronization. This has no effect on persistent data, but means that versions of Realm which use pre-12.0.0 Realm Core cannot open Realm files at the same time as they are opened by this version. Notably this includes Realm Studio, and Realm Core v11.1.2/Realm JavaScript v10.17.0 (the latest at the time of this release) cannot open Realm files which are simultaneously open in the iOS simulator.
 
 10.17.0 Release notes (2022-5-10)
 =============================================================
