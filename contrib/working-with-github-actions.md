@@ -2,7 +2,7 @@
 
 We are using [Github Actions](https://github.com/features/actions) to automate building, testing and releasing.
 
-You find the workflow in the "Actions" menu.
+You find the workflows in the "Actions" menu.
 
 ![GithubActions](assets/github-actions-menu.png)
 
