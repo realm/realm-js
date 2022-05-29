@@ -154,7 +154,7 @@ class Realm {
   close() {}
 
   /**
-   * Create a new Realm object of the given type and with the specified properties. For object schemas annotation
+   * Create a new Realm object of the given type and with the specified properties. For object schemas annotated
    * as asymmetric, no object is returned. The API for asymmetric object schema is subject to changes in the future.
    * @param {Realm~ObjectType} type - The type of Realm object to create.
    * @param {Object} properties - Property values for all required properties without a
@@ -454,7 +454,7 @@ class Realm {
  *   that must be unique across all objects of this type within the same Realm.
  * @property {boolean} [embedded] - True if the object type is embedded. An embedded object
  *   can be linked to by at most one parent object. Default value: false.
- * @property {boolean} [asymmetric] - True is the object type is for asymmetric sync only. This implies
+ * @property {boolean} [asymmetric] - True if the object type is for asymmetric sync only. This implies
  *   that objects of the types are not stored locally and cannot be accessed locally.
  * @property {Object<string, (Realm~PropertyType|Realm~ObjectSchemaProperty|Realm~ObjectSchema)>} properties -
  *   An object where the keys are property names and the values represent the property type.

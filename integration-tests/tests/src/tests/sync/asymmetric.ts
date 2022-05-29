@@ -78,7 +78,13 @@ describe.skipIf(environment.missingServer, "Asymmetric sync", function () {
       },
     });
 
-    it("Realm#create", function () {
+    it("creating an object for an asymmetric schema returns undefined", function () {
+      // ..
+    });
+    
+    it("an asymmetric schema cannot be queried", function () {
+      // ..
+    });
       this.realm.write(() => {
         const retval = this.realm.create(PersonSchema.name, { _id: new BSON.ObjectId(), name: "Joe", age: 12 });
         expect(retval).to.equal(undefined);

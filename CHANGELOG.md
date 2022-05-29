@@ -1,26 +1,6 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
-
-### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
-
-### Compatibility
-* MongoDB Realm Cloud.
-* Realm Studio v11.0.0.
-* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
-* File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
-
-### Internal
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
-
-10.19.0-alpha.0 Release notes (2022-5-24)
-=============================================================
-### Enhancements
 * Creating an object for a class that has no subscriptions opened for it will throw an exception. ([realm/realm-core#5488](https://github.com/realm/realm-core/pull/5488))
 * Added support asymmetric sync. Object schemas can be marked as `asymmetric` when opening the Realm. Upon creation, asymmetric objects are sync'd unidirectionally and cannot be accessed locally. ([#4503](https://github.com/realm/realm-js/issues/4503))
 
