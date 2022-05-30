@@ -122,6 +122,46 @@ Tests will have access to the following globals:
 - `path` the lowest common denominator of the Node.js path interface and a [node-independent implementation of Node's path](https://www.npmjs.com/package/path-browserify) module.
 - `it.skipIf` and `describe.skipIf` skips tests based on the environment, see `tests/src/utils/skip-if.js` for a detailed explanation.
 
+### Hooks
+
+The test suite implements a couple of reusable hooks (located in `./src/hooks`) in an attempt to keep the tests DRY.
+If a test needs to use a Atlas App Services App, authenticate a user or open a Realm, as part of the setup for the test, consider using these hooks.
+
+The hooks store their output on the Mocha context (available through `this` of tests - declared using `it`). You need to pass a regular function (not an arrow function) as callback when declaring the test access the values on the context. Since test suites (declared using `describe`) doesn't have a Mocha context, the hooks can't be used to store something, which the suite can access.
+
+```typescript
+describe("opening a synced Realm", () => {
+  importAppBefore("with-db");
+  authenticateUserBefore();
+  openRealmBefore({
+    schema: [
+      {
+        name: "Person",
+        primaryKey: "_id",
+        properties: {
+          _id: "objectId",
+          name: "string",
+        },
+      },
+    ],
+  });
+
+  it("imports an app, authenticates and opens a synced Realm", function (this: Mocha.Context &
+    AppContext &
+    UserContext &
+    RealmContext) {
+    // Implement the test, using the `app`, `user` and `realm` off the context, bound to `this`
+    expect(this.app).instanceOf(Realm.App);
+    expect(this.user).instanceOf(Realm.User);
+    expect(this.realm).instanceOf(Realm);
+  });
+});
+```
+
+See the existing tests for more detailed examples on how to use the hooks.
+
+### Opening and closing Realms
+
 Remember to close or clean up Realms accessed during tests.
 The `Realm.clearTestState` can be called after each test, which closes and removes all Realm files in the default directory.
 
