@@ -5,7 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed invalid type for schema properties([#4577](https://github.com/realm/realm-js/pull/4577)).
 
 ### Compatibility
 * MongoDB Realm Cloud.

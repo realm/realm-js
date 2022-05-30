@@ -54,7 +54,7 @@ declare namespace Realm {
 
     // properties types
     interface PropertiesTypes {
-        [keys: string]: PropertyType | ObjectSchemaProperty | ObjectSchema;
+        [keys: string]: PropertyType | ObjectSchemaProperty;
     }
 
     enum UpdateMode {
