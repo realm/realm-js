@@ -31,13 +31,14 @@ const AppContext = createContext<Realm.App | null>(null);
  */
 type AppProviderProps = Realm.AppConfiguration & {
   children: React.ReactNode;
+  appRef?: React.MutableRefObject<Realm.App | null>;
 };
 
 /**
  * React component providing a Realm App instance on the context for the
  * sync hooks to use. An `AppProvider` is required for an app to use the hooks.
  */
-export const AppProvider: React.FC<AppProviderProps> = ({ children, ...appProps }) => {
+export const AppProvider: React.FC<AppProviderProps> = ({ children, appRef, ...appProps }) => {
   const configuration = useRef<Realm.AppConfiguration>(appProps);
 
   const [app, setApp] = useState<Realm.App>(new Realm.App(configuration.current));
@@ -59,6 +60,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children, ...appProps 
     try {
       const app = new Realm.App(configuration.current);
       setApp(app);
+      if (appRef) {
+        appRef.current = app;
+      }
     } catch (err) {
       console.error(err);
     }

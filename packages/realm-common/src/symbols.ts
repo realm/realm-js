@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2021 Realm Inc.
+// Copyright 2022 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,5 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export { deprecationWarning, handleDeprecatedPositionalArgs } from "./deprecation";
-export * as symbols from "./symbols";
+// Used as a key by Realm React in `useQuery`, to store the original object
+// which is being proxied, for compatibility with JSC pre-v11 (#4541)
+export const PROXY_TARGET = Symbol("PROXY_TARGET");

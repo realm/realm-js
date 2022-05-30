@@ -6,6 +6,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * Add canonical schema type for returned schemas ([#4580](https://github.com/realm/realm-js/pull/4580))
+* Fixed invalid type for schema properties([#4577](https://github.com/realm/realm-js/pull/4577)).
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -18,6 +19,56 @@ x.x.x Release notes (yyyy-MM-dd)
 * <Using Realm Core vX.Y.Z>
 * <Upgraded Realm Core from vX.Y.Z to vA.B.C>
 
+10.18.0 Release notes (2022-5-29)
+=============================================================
+### Enhancements
+* Switch to building xcframeworks with Xcode 13.1. Xcode 12 is no longer supported.
+* Added an `initialSubscriptions` option to the `sync` config, which allows users to specify a subscription update function to bootstrap a set of flexible sync subscriptions when the Realm is first opened (or every time the app runs, using the `rerunOnOpen` flag). (#4561[https://github.com/realm/realm-js/pull/4561])
+
+    Example usage:
+    ```ts
+    const thirtyDaysAgo = new Date(new Date().setDate(new Date().getDate() - 30));
+    const config = {
+      // ...
+      sync: {
+        flexible: true,
+        user,
+        initialSubscriptions: {
+          update: (realm) => {
+            realm.subscriptions.update((subs) => {
+              subs.add(
+                realm.objects("Person").filtered("dateOfBirth > $0", thirtyDaysAgo),
+                // This is a named subscription, so will replace any existing subscription with the same name
+                { name: "People30Days" }
+              );
+            });
+          },
+          rerunOnStartup: true,
+        },
+      },
+    };
+    ```
+
+### Fixed
+* Flexible sync would not correctly resume syncing if a bootstrap was interrupted. ([realm/realm-core#5466](https://github.com/realm/realm-core/pull/5466), since v10.12.0)
+* The sync client may upload corrupted internal data leading to a fatal error from the sync server. ([realm/realm-core#5460](https://github.com/realm/realm-core/pull/5460), since v10.16.0)
+* Proxied `Realm.Results` (e.g. as returned from `useQuery` in `@realm/react`) could not be used with `MutableSubscriptionSet.add`/`remove` ([#4507](https://github.com/realm/realm-js/issues/4507), since v10.12.0)
+* In queries `NONE x BETWEEN ...` and `ANY x BETWEEN ...` had incorrect behavior, so it is now disallowed. ([realm/realm-core#5508](https://github.com/realm/realm-core/issues/5508), since v10.15.0)
+* Partially fix a performance regression in write performance on Apple platforms, but still slower than pre-10.12.0 due to using more crash-safe file synchronization. ([#4383](https://github.com/realm/realm-js/issues/4383) and [realm/realm-swift#7740](https://github.com/realm/realm-swift/issues/7740), since v10.12.0).
+* FLX sync will now ensure that a bootstrap from the server will only be applied if the entire bootstrap is received - ensuring there are no orphaned objects as a result of changing the read snapshot on the server. ([realm/realm-core#5331](https://github.com/realm/realm-core/pull/5331))
+
+### Compatibility
+* MongoDB Realm Cloud.
+* Realm Studio v11.0.0.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
+* File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Internal
+* Upgraded Realm Core from v11.15.0 to v12.0.0.
+* Upgraded BAAS image to 2022-05-23.
+* Fixed an intermittent issue with flexible sync test suite. ([#4590](https://github.com/realm/realm-js/pull/4590), since v10.12.0)
+* Bump the version number for the lockfile used for interprocess synchronization. This has no effect on persistent data, but means that versions of Realm which use pre-12.0.0 Realm Core cannot open Realm files at the same time as they are opened by this version. Notably this includes Realm Studio, and Realm Core v11.1.2/Realm JavaScript v10.17.0 (the latest at the time of this release) cannot open Realm files which are simultaneously open in the iOS simulator.
+
 10.17.0 Release notes (2022-5-10)
 =============================================================
 ### Enhancements
@@ -26,7 +77,7 @@ x.x.x Release notes (yyyy-MM-dd)
 ### Fixed
 * Fixed issue where React Native apps would sometimes show stale Realm data until the user interacted with the app UI. ([#4389](https://github.com/realm/realm-js/issues/4389), since v10.0.0)
 * Fixed race condition leading to potential crash when hot reloading an app using Realm Sync. ([4509](https://github.com/realm/realm-js/pull/4509), since v10.12.0)
-* Updated build script to use Xcode 12.4 to ensure xcframework is Bitcode compatibile with older versionsi. ([#4462](https://github.com/realm/realm-js/issues/4462), since v10.0.0)
+* Updated build script to use Xcode 12.4 to ensure xcframework is Bitcode compatibile with older versions. ([#4462](https://github.com/realm/realm-js/issues/4462), since v10.0.0)
 * Added missing type definitions for `newRealmFileBehavior` and `existingRealmFileBehavior` when opening a flexible sync Realm ([#4467](https://github.com/realm/realm-js/issues/4467), since v10.12.0)
 * Adding an object to a Set, deleting the parent object, and then deleting the previously mentioned object causes crash ([#5387](https://github.com/realm/realm-core/issues/5387), since v10.5.0)
 * Synchronized Realm files which were first created using SDK version released in the second half of August 2020 would be redownloaded instead of using the existing file, possibly resulting in the loss of any unsynchronized data in those filesi. (since v10.10.1)

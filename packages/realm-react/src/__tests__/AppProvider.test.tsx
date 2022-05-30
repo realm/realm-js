@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { renderHook } from "@testing-library/react-hooks";
 import { AppProvider, useApp } from "../AppProvider";
 import { View, Text, Button } from "react-native";
@@ -72,5 +72,38 @@ describe("AppProvider", () => {
     const newSchemaNameContainer = getByTestId("appId");
 
     expect(newSchemaNameContainer).toHaveTextContent("newId");
+  });
+  it("can access realm through realmRef as a forwarded ref", async () => {
+    const AppComponent = () => {
+      const app = useApp();
+      return <Text testID="appId">{app.id}</Text>;
+    };
+    const App = () => {
+      const [id, setId] = useState("");
+      const appRef = useRef<Realm.App | null>(null);
+      return (
+        <>
+          <View testID="firstRealmProvider">
+            <AppProvider id={"testId"} appRef={appRef}>
+              <AppComponent />
+            </AppProvider>
+          </View>
+          <Button testID="toggleAppRef" title="toggle app ref" onPress={() => setId(appRef?.current?.id ?? "")} />
+          {appRef.current && <Text testID="appIdText">{id}</Text>}
+        </>
+      );
+    };
+    const { getByTestId } = render(<App />);
+    const toggleAppRef = getByTestId("toggleAppRef");
+
+    // Wait a tick for the app reference to be set by the provider.  Then force a rerender.
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      fireEvent.press(toggleAppRef);
+    });
+
+    const appIdText = await waitFor(() => getByTestId("appIdText"));
+
+    expect(appIdText).toHaveTextContent("testId");
   });
 });
