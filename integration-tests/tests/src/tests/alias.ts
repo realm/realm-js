@@ -18,120 +18,108 @@
 
 import { expect } from "chai";
 import Realm from "realm";
+import { openRealmBeforeEach } from "../hooks";
 
 type ObjectA = {
   otherName: string;
   age?: number;
 };
 
-function getRealm() {
-  const schemas = [
-    {
-      name: "ObjectA",
-      properties: {
-        otherName: { type: "string", mapTo: "name" },
-        age: { type: "int", optional: true },
-      },
-    },
-  ];
-
-  return new Realm({
-    schema: schemas,
-  });
-}
-
 function addTestObjects(realm: Realm) {
-  realm.beginTransaction();
-  realm.create("ObjectA", {
-    otherName: "Foo",
-    age: 41,
+  realm.write(() => {
+    realm.create("ObjectA", {
+      otherName: "Foo",
+      age: 41,
+    });
+    realm.create("ObjectA", {
+      otherName: "Bar",
+      age: 42,
+    });
   });
-  realm.create("ObjectA", {
-    otherName: "Bar",
-    age: 42,
-  });
-  realm.commitTransaction();
 }
+
+const PersonSchema: Realm.ObjectSchema = {
+  name: "Person",
+  properties: {
+    _name: { type: "string", mapTo: "name" },
+    address: { type: "string", indexed: true },
+    age: "double",
+    _married: { type: "bool", default: false, mapTo: "married" },
+    _children: { type: "list", objectType: "Person", mapTo: "children" },
+    _parents: { type: "linkingObjects", objectType: "Person", property: "children", mapTo: "parents" },
+  },
+};
+
+const ObjectASchema: Realm.ObjectSchema = {
+  name: "ObjectA",
+  properties: {
+    otherName: { type: "string", mapTo: "name" },
+    age: { type: "int", optional: true },
+  },
+};
 
 describe("Aliasing property names using mapTo", () => {
-  beforeEach(() => {
+  openRealmBeforeEach({
+    schema: [PersonSchema, ObjectASchema],
+  });
+
+  afterEach(() => {
     Realm.clearTestState();
   });
 
-  it("supports defining aliases for properties in a schema", () => {
-    const Person: Realm.ObjectSchema = {
-      name: "Person",
-      properties: {
-        _name: { type: "string", mapTo: "name" },
-        address: { type: "string", indexed: true },
-        age: "double",
-        _married: { type: "bool", default: false, mapTo: "married" },
-        _children: { type: "list", objectType: "Person", mapTo: "children" },
-        _parents: { type: "linkingObjects", objectType: "Person", property: "children", mapTo: "parents" },
-      },
-    };
-
-    const realm = new Realm({
-      schema: [Person],
-    });
+  it("supports defining aliases for properties in a schema", function (this: Mocha.Context & RealmContext) {
+    const { realm } = this;
 
     // Mapped properties are reported for all variants, no matter if the public_name is set or not.
-    const props = realm.schema[0].properties;
-    expect(props["_name"].mapTo).equals("name");
-    expect(props["address"].mapTo).equals("address");
-    expect(props["age"].mapTo).equals("age");
-    expect(props["_married"].mapTo).equals("married");
-    expect(props["_children"].mapTo).equals("children");
-    expect(props["_parents"].mapTo).equals("parents");
+    const props = realm.schema.find((value) => value.name == "Person")?.properties;
+    if (props != undefined) {
+      expect(props["_name"].mapTo).equals("name");
+      expect(props["address"].mapTo).equals("address");
+      expect(props["age"].mapTo).equals("age");
+      expect(props["_married"].mapTo).equals("married");
+      expect(props["_children"].mapTo).equals("children");
+      expect(props["_parents"].mapTo).equals("parents");
+    }
   });
 
-  it("supports creating objects", () => {
-    const realm = getRealm();
-    realm.beginTransaction();
+  it("supports creating objects", function (this: Mocha.Context & RealmContext) {
+    const { realm } = this;
+    realm.write(() => {
+      // Creating objects most use the alias
+      realm.create("ObjectA", {
+        otherName: "Foo",
+        age: 42,
+      });
 
-    // Creating objects most use the alias
-    realm.create("ObjectA", {
-      otherName: "Foo",
-      age: 42,
+      // Creating uses arrays still work
+      realm.create("ObjectA", ["Bar", 42]);
+
+      // Using the internal name instead of the alias throws an exception.
+      expect(() => realm.create("ObjectA", { name: "Boom" })).to.throw();
     });
-
-    // Creating uses arrays still work
-    realm.create("ObjectA", ["Bar", 42]);
-
-    // Using the internal name instead of the alias throws an exception.
-    expect(() => realm.create("ObjectA", { name: "Boom" })).to.throw();
-
-    realm.commitTransaction();
-
-    realm.close();
   });
 
-  it("supports updating objects", () => {
-    const realm = getRealm();
-    realm.beginTransaction();
+  it("supports updating objects", function (this: Mocha.Context & RealmContext) {
+    const { realm } = this;
+    realm.write(() => {
+      const obj = realm.create<ObjectA>("ObjectA", { otherName: "Foo" });
+      // Setting properties must use alias
+      obj.otherName = "Bar";
+      expect(obj.otherName).equals("Bar");
 
-    const obj = realm.create<ObjectA>("ObjectA", { otherName: "Foo" });
+      // If no alias is defined, the internal name still works
+      obj.age = 1;
+      expect(obj.age).equals(1);
 
-    // Setting properties must use alias
-    obj.otherName = "Bar";
-    expect(obj.otherName).equals("Bar");
-
-    // If no alias is defined, the internal name still works
-    obj.age = 1;
-    expect(obj.age).equals(1);
-
-    // Even if a mapped name is set, only the public name can be used when updating properties.
-    // @ts-expect-error This isn't a field usable for this schema
-    obj.name = "Baz";
-    expect(obj.otherName).equals("Bar");
-
-    realm.commitTransaction();
-
-    realm.close();
+      // Even if a mapped name is set, only the public name can be used when updating properties.
+      // @ts-expect-error This isn't a field usable for this schema
+      obj.name = "Baz";
+      expect(obj.otherName).equals("Bar");
+    });
   });
 
-  it("supports reading properties", () => {
-    const realm = getRealm();
+  it("supports reading properties", function (this: Mocha.Context & RealmContext) {
+    const { realm } = this;
     addTestObjects(realm);
 
     // The mapped property names cannot be used when reading properties
@@ -146,12 +134,10 @@ describe("Aliasing property names using mapTo", () => {
     for (const key in obj) {
       expect(key).not.equals("name");
     }
-
-    realm.close();
   });
 
-  it("supports aliases in queries", () => {
-    const realm = getRealm();
+  it("supports aliases in queries", function (this: Mocha.Context & RealmContext) {
+    const { realm } = this;
     addTestObjects(realm);
 
     // Queries also use aliases
@@ -161,7 +147,5 @@ describe("Aliasing property names using mapTo", () => {
     // Querying on internal names are still allowed
     results = realm.objects<ObjectA>("ObjectA").filtered("name = 'Foo'");
     expect(results.length).equals(1);
-
-    realm.close();
   });
 });
