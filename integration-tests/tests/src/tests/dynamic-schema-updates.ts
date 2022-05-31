@@ -70,9 +70,9 @@ describe("realm._updateSchema", () => {
   it("creates a property on an existing class", () => {
     const realm = new Realm({ schema: [PersonSchema, DogSchema] });
     // Copy the schema
-    const updatedSchema = [...realm.schema];
+    const updatedSchema: Realm.ObjectSchema[] = [...realm.schema];
     // Locate the Dog schema
-    const dogSchema = updatedSchema.find((s) => s.name === "Dog") as Realm.ObjectSchema;
+    const dogSchema = updatedSchema.find((s) => s.name === "Dog");
     if (!dogSchema) throw new Error("Schema not found");
 
     // Add a fields property

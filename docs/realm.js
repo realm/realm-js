@@ -500,7 +500,7 @@ class Realm {
  */
 
 /**
- * The retreived schema from an open Realm has a different structure as the input schema.
+ * The retreived schema from an open Realm might have a different structure as the input schema.
  * @typedef Realm~CanonicalObjectSchema
  * @type {Object}
  * @property {string} name - Represents the object type.
