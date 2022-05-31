@@ -151,7 +151,7 @@ You can also open the Node source directory in VS Code and use the launch config
 
 ## Using a debug version of Hermes (iOS)
 
-It can be useful to use a debug version of the Hermes framework, for example so that you can see Hermes symbols in Insturments profiling. You can either compile it yourself, or use a pre-built version as it's quite a slow compile.
+It can be useful to use a debug version of the Hermes framework, for example so that you can see Hermes symbols in Instruments profiling. You can either compile it yourself, or use a pre-built version as it's quite a slow compile.
 
 ### Compiling a debug version of Hermes
 
