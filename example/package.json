@@ -10,11 +10,11 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
-    "@realm/react": "*",
+    "@realm/react": "0.3.0",
     "react": "17.0.2",
     "react-native": "0.66.4",
     "react-native-get-random-values": "^1.7.0",
-    "realm": "*"
+    "realm": "10.17.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
