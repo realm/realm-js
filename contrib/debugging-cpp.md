@@ -149,6 +149,23 @@ To use a debug version of Node, change the path to `node` for the `lldb` launch 
 
 You can also open the Node source directory in VS Code and use the launch config from https://joyeecheung.github.io/blog/2018/12/31/tips-and-tricks-node-core/ (which has some other useful tips) if you wish to go deeper into the Node source code.
 
+## Using a debug version of Hermes (iOS)
+
+It can be useful to use a debug version of the Hermes framework, for example so that you can see Hermes symbols in Insturments profiling. You can either compile it yourself, or use a pre-built version as it's quite a slow compile.
+
+### Compiling a debug version of Hermes
+
+1. Clone the source from https://github.com/facebook/hermes
+2. Check out the correct commit which matches your React Native version (you can check this by looking at the at the version of `hermes-engine` specified in `node_modules/react-native/package.json` and then checking out that tag, e.g. `v0.9.0`)
+3. Edit the `hermes-engine.podspec` file and change `BUILD_TYPE` at the top to `:debug`
+4. Run `./utils/build-ios-framework.sh` and wait
+5. Move `destroot/Library/Frameworks/universal/hermes.xcframework` into the `ios/Pods/hermes-engine/destroot/Library/Frameworks/universal` directory of your React Native project (rename the existing one if you don't want to overwrite it)
+
+### Using a pre-built debug version of Hermes 
+
+1. Download a pre-built version of Hermes for your React Native version – MongoDB employees can search Google Drive for "Hermes xcframework files"
+2. Unzip and move `hermes.xcframework` into the `ios/Pods/hermes-engine/destroot/Library/Frameworks/universal` directory of your React Native project (rename the existing one if you don't want to overwrite it)
+
 ## Other C++ debugging tricks
 
 ### Inspecting the type of an `auto` variable
