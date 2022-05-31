@@ -163,7 +163,7 @@ It can be useful to use a debug version of the Hermes framework, for example so 
 
 ### Using a pre-built debug version of Hermes 
 
-1. Download a pre-built version of Hermes for your React Native version – MongoDB employees can search Google Drive for "Hermes xcframework files"
+1. Download a pre-built version of Hermes for your React Native version from https://drive.google.com/drive/folders/1eJPNeBXNalVdve39A2WBGz6EYuFzoQZY?usp=sharing
 2. Unzip and move `hermes.xcframework` into the `ios/Pods/hermes-engine/destroot/Library/Frameworks/universal` directory of your React Native project (rename the existing one if you don't want to overwrite it)
 
 ## Other C++ debugging tricks
