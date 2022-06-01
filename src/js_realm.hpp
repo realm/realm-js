@@ -384,6 +384,8 @@ public:
     static void delete_file(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void realm_file_exists(ContextType, ObjectType, Arguments&, ReturnValue&);
 
+    static void do_work(ContextType, ObjectType, Arguments&, ReturnValue&);
+
     static void bson_parse_json(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     // helper methods
@@ -405,6 +407,7 @@ public:
         {"deleteFile", wrap<delete_file>},
         {"exists", wrap<realm_file_exists>},
         {"_bsonParseJsonForTest", wrap<bson_parse_json>},
+        {"doWork", wrap<do_work>},
 #if REALM_ENABLE_SYNC
         {"_asyncOpen", wrap<async_open_realm>},
 #endif
@@ -926,6 +929,18 @@ void RealmClass<T>::realm_file_exists(ContextType ctx, ObjectType this_object, A
     ValueType value = args[0];
     std::string realm_file_path = validate_and_normalize_config(ctx, value).path;
     return_value.set(realm::util::File::exists(realm_file_path));
+}
+
+template <typename T>
+void RealmClass<T>::do_work(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
+{
+    auto milliseconds = 10;
+    timespec ts;
+    size_t secs = milliseconds / 1000;
+    milliseconds = milliseconds % 1000;
+    ts.tv_sec = secs;
+    ts.tv_nsec = milliseconds * 1000 * 1000;
+    nanosleep(&ts, 0);
 }
 
 template <typename T>

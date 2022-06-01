@@ -18,7 +18,7 @@
 
 import Realm from "realm";
 
-import { describePerformance } from "../utils/benchmark";
+import { describePerformance, itPerforms } from "../utils/benchmark";
 
 type Value = ((realm: Realm) => unknown) | unknown;
 
@@ -58,6 +58,10 @@ function describeTypeRead({ type, value, schema = [] }: TestParameters) {
             },
     },
   };
+
+  itPerforms(`do work`, () => {
+    Realm.doWork();
+  });
 
   describePerformance(`reading property of type '${typeName}'`, {
     schema: [defaultSchema, ...schema],

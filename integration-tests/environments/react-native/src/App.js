@@ -42,10 +42,10 @@ const mode = typeof DedicatedWorkerGlobalScope === "undefined" ? "native" : "chr
 const engine = global.HermesInternal ? "hermes" : "jsc";
 
 export class App extends Component {
-  state = { status: "disconnected" };
+  state = { status: "disconnected", ready: false };
 
   componentDidMount() {
-    this.prepareTests();
+    // this.prepareTests();
   }
 
   componentWillUnmount() {
@@ -55,31 +55,42 @@ export class App extends Component {
     }
   }
 
+  makeReady = () => {
+    this.setState({ ready: true });
+    this.prepareTests();
+  };
+
   render() {
-    const { totalTests, currentTestIndex, status } = this.state;
+    const { totalTests, currentTestIndex, status, ready } = this.state;
     const progress = totalTests > 0 ? currentTestIndex / totalTests : 0;
     return (
       <View style={styles.container}>
-        <Text style={styles.mode}>{this.modeMessage}</Text>
-        <Text style={styles.status}>{this.statusMessage}</Text>
-        <Circle
-          showsText
-          size={100}
-          indeterminate={status !== "running" && status !== "ended"}
-          progress={progress}
-          animated={status !== "ended"}
-          disabled={status === "ended"}
-          color={this.statusColor}
-          textColor={this.statusColor}
-        />
-        <Text style={styles.details}>{this.statusDetails}</Text>
-        <Button title="Run tests natively" disabled={status === "running"} onPress={this.handleRerunNative} />
-        <Button
-          title="Run tests in Chrome debugging mode"
-          disabled={status === "running"}
-          onPress={this.handleRerunChromeDebugging}
-        />
-        <Button title="Abort running the tests" disabled={status !== "running"} onPress={this.handleAbort} />
+        {ready ? (
+          <>
+            <Text style={styles.mode}>{this.modeMessage}</Text>
+            <Text style={styles.status}>{this.statusMessage}</Text>
+            <Circle
+              showsText
+              size={100}
+              indeterminate={status !== "running" && status !== "ended"}
+              progress={progress}
+              animated={status !== "ended"}
+              disabled={status === "ended"}
+              color={this.statusColor}
+              textColor={this.statusColor}
+            />
+            <Text style={styles.details}>{this.statusDetails}</Text>
+            <Button title="Run tests natively" disabled={status === "running"} onPress={this.handleRerunNative} />
+            <Button
+              title="Run tests in Chrome debugging mode"
+              disabled={status === "running"}
+              onPress={this.handleRerunChromeDebugging}
+            />
+            <Button title="Abort running the tests" disabled={status !== "running"} onPress={this.handleAbort} />
+          </>
+        ) : (
+          <Button onPress={() => this.makeReady()} title="Ready" />
+        )}
       </View>
     );
   }
