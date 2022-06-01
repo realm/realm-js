@@ -95,57 +95,57 @@ if (skipBuild) {
 
 stage('build') {
     parallelExecutors = [:]
-    parallelExecutors["OS x86_64 NAPI ${nodeTestVersion}"] = buildMacOS { buildCommon(nodeTestVersion, it) }
-    parallelExecutors["macOS arm NAPI ${nodeTestVersion}"] = buildMacOSArm { buildCommon(nodeTestVersion, it, '-- --arch=arm64') }
+    // parallelExecutors["OS x86_64 NAPI ${nodeTestVersion}"] = buildMacOS { buildCommon(nodeTestVersion, it) }
+    // parallelExecutors["macOS arm NAPI ${nodeTestVersion}"] = buildMacOSArm { buildCommon(nodeTestVersion, it, '-- --arch=arm64') }
 
     parallelExecutors["Linux x86_64 NAPI ${nodeTestVersion}"] = buildLinux { buildCommon(nodeTestVersion, it) }
-    parallelExecutors["Linux armhf NAPI ${nodeTestVersion}"] = buildLinuxRpi { buildCommon(nodeTestVersion, it, '-- --arch=arm -- --CDCMAKE_TOOLCHAIN_FILE=./vendor/realm-core/tools/cmake/armhf.toolchain.cmake') }
-    parallelExecutors["Windows ia32 NAPI ${nodeTestVersion}"] = buildWindows(nodeTestVersion, 'ia32')
-    parallelExecutors["Windows x64 NAPI ${nodeTestVersion}"] = buildWindows(nodeTestVersion, 'x64')
+    // parallelExecutors["Linux armhf NAPI ${nodeTestVersion}"] = buildLinuxRpi { buildCommon(nodeTestVersion, it, '-- --arch=arm -- --CDCMAKE_TOOLCHAIN_FILE=./vendor/realm-core/tools/cmake/armhf.toolchain.cmake') }
+    // parallelExecutors["Windows ia32 NAPI ${nodeTestVersion}"] = buildWindows(nodeTestVersion, 'ia32')
+    // parallelExecutors["Windows x64 NAPI ${nodeTestVersion}"] = buildWindows(nodeTestVersion, 'x64')
 
-    parallelExecutors["Android RN"] = buildAndroid()
-    parallelExecutors["iOS RN"] = buildiOS()
+    // parallelExecutors["Android RN"] = buildAndroid()
+    // parallelExecutors["iOS RN"] = buildiOS()
 
     parallel parallelExecutors
 }
 
-stage('pretest') {
-  parallelExecutors = [:]
-    parallelExecutors["jsdoc"] = testLinux("jsdoc Release ${nodeTestVersion}", { // "Release is not used
-    publishHTML([
-      allowMissing: false,
-      alwaysLinkToLastBuild: false,
-      keepAll: false,
-      reportDir: 'docs/output',
-      reportFiles: 'index.html',
-      reportName: 'Docs'
-    ])
-  })
-  parallel parallelExecutors
-}
+// stage('pretest') {
+//   parallelExecutors = [:]
+//     parallelExecutors["jsdoc"] = testLinux("jsdoc Release ${nodeTestVersion}", { // "Release is not used
+//     publishHTML([
+//       allowMissing: false,
+//       alwaysLinkToLastBuild: false,
+//       keepAll: false,
+//       reportDir: 'docs/output',
+//       reportFiles: 'index.html',
+//       reportName: 'Docs'
+//     ])
+//   })
+//   parallel parallelExecutors
+// }
 
-if (gitTag) {
-  stage('publish') {
-    publish(dependencies, gitTag)
-  }
-}
+// if (gitTag) {
+//   stage('publish') {
+//     publish(dependencies, gitTag)
+//   }
+// }
 
 stage('test') {
   parallelExecutors = [:]
 
-  parallelExecutors["macOS node ${nodeTestVersion} Debug"]   = testMacOS("node Debug ${nodeTestVersion}")
-  parallelExecutors["macOS node ${nodeTestVersion} Release"] = testMacOS("node Release ${nodeTestVersion}")
-  parallelExecutors["macOS test runners ${nodeTestVersion}"] = testMacOS("test-runners Release ${nodeTestVersion}")
+  // parallelExecutors["macOS node ${nodeTestVersion} Debug"]   = testMacOS("node Debug ${nodeTestVersion}")
+  // parallelExecutors["macOS node ${nodeTestVersion} Release"] = testMacOS("node Release ${nodeTestVersion}")
+  // parallelExecutors["macOS test runners ${nodeTestVersion}"] = testMacOS("test-runners Release ${nodeTestVersion}")
   parallelExecutors["Linux node ${nodeTestVersion} Release"] = testLinux("node Release ${nodeTestVersion}", null, true)
   parallelExecutors["Linux test runners ${nodeTestVersion}"] = testLinux("test-runners Release ${nodeTestVersion}")
-  parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
+  // parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
 
-  parallelExecutors["React Native Android Release"] = inAndroidContainer { testAndroid('test-android') }
+  // parallelExecutors["React Native Android Release"] = inAndroidContainer { testAndroid('test-android') }
   // parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
   // parallelExecutors["React Native Catalyst Release"] = testMacOS('catalyst-tests Release')
 
-  parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
-  parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
+  // parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
+  // parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
   parallel parallelExecutors
 }
 
@@ -169,7 +169,7 @@ def buildDockerEnv(name, extra_args='') {
 }
 
 def buildCommon(nodeVersion, platform, extraFlags='') {
-  sh "./scripts/nvm-wrapper.sh ${nodeVersion} npm run package ${extraFlags}"
+  sh "./scripts/nvm-wrapper.sh ${nodeVersion} npm run jenkins-build ${extraFlags}"
 
   dir('prebuilds') {
     // Uncomment this when testing build changes if you want to be able to download pre-built artifacts from Jenkins.
@@ -273,7 +273,7 @@ def buildiOS() {
 
 def inAndroidContainer(workerFunction) {
   return {
-    myNode('docker-cph-01') {
+    myNode('docker-cph-03') {
       unstash 'source'
       def image
       withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
