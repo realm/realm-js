@@ -224,10 +224,9 @@ describe.skipIf(environment.missingServer, "mixed", () => {
   describe("parition-based sync roundtrip", function () {
     importAppBefore("with-db");
     describeTypes(false);
-  });
-
-  describe.skipIf(environment.skipFlexibleSync, "flexible sync roundtrip", function () {
-    importAppBefore("with-db-flx");
-    describeTypes(true);
-  });
+  }),
+    describe.skipIf(environment.skipFlexibleSync, "flexible sync roundtrip", function () {
+      importAppBefore("with-db-flx");
+      describeTypes(true);
+    });
 });
