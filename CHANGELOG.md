@@ -423,6 +423,7 @@ const config = {
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
+* Upgrade `ReactTestApp` to RN 0.66.3 and to use the metro bundler to resolve links to relam and test code.
 * Add `.clang-format` file for formatting C++ code, formatted all existing code and added a lint check for C++.
 * Updated Docker URL to new canonical URL of `ghcr.io`
 * Excluding the `react-native/android/build` directory from the NPM package.
