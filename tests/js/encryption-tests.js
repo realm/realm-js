@@ -79,7 +79,7 @@ module.exports = {
   },
 
   testEncryptionWithSync: function () {
-    //TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
+    //TODO: remove when Atlas App Services test server can be hosted on Mac or other options exists
     if (!isNodeProcess) {
       return Promise.resolve();
     }

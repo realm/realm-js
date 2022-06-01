@@ -60,13 +60,13 @@ describe("App", () => {
   it("throws if no id is provided", () => {
     expect(() => {
       new (App as any)();
-    }).to.throw("Missing a MongoDB Realm app-id");
+    }).to.throw("Missing an Atlas App Services app-id");
   });
 
   it("throws if an object is provided instead of an id", () => {
     expect(() => {
       new (App as any)({});
-    }).to.throw("Missing a MongoDB Realm app-id");
+    }).to.throw("Missing an Atlas App Services app-id");
   });
 
   it("expose the id", () => {

@@ -1,7 +1,7 @@
 {
   "name": "realm-web",
   "version": "1.7.0",
-  "description": "Authenticate and communicate with the MongoDB Realm platform, from your web-browser",
+  "description": "Authenticate and communicate with the Atlas App Services, from your web-browser",
   "main": "./dist/bundle.cjs.js",
   "module": "./dist/bundle.es.js",
   "types": "./dist/bundle.d.ts",
