@@ -19,6 +19,8 @@
 import { expect } from "chai";
 import { openRealm } from "./open-realm";
 
+type Error = (Realm.SyncError | Realm.ClientResetError) & { message: string };
+
 /**
  * Open a new Realm and perform an action, expecting a sync error to occur. Will
  * never resolve and therefore timeout if a sync error does not occur.
@@ -34,7 +36,7 @@ export async function expectSyncError(
   config: Realm.Configuration,
   user: Realm.User,
   action: (realm: Realm) => void,
-  expectation: (error: Realm.SyncError | Realm.ClientResetError) => void,
+  expectation: (error: Error) => void,
 ): Promise<void> {
   let handleError: Realm.ErrorCallback | undefined;
 
@@ -60,6 +62,34 @@ export async function expectSyncError(
 }
 
 /**
+ * Expect a sync error to occur with a message about an invalid write.
+ * Optionally specify more expectations about the sync error.  Will
+ * never resolve and therefore timeout if a sync error does not occur.
+ *
+ * @param config The Realm config to use
+ * @param user The Realm user to use
+ * @param action Callback receiving a Realm instance and containing the
+ * action(s) to take which should trigger a client reset error
+ * @param extraExpectation Optional callback receiving the sync error, in order to make more
+ * assertions about it
+ * @returns Promise which resolves if the sync error occurs
+ */
+export async function expectInvalidWriteSyncError(
+  config: Realm.Configuration,
+  user: Realm.User,
+  action: (realm: Realm) => void,
+  extraExpectation?: (error: Error) => void,
+): Promise<void> {
+  return expectSyncError(config, user, action, (error) => {
+    expect(error.name).to.equal("Error");
+    expect(error.message).to.match(
+      /Client attempted a write that is outside of permissions or query filters; it has been reverted.*/,
+    );
+    if (extraExpectation) extraExpectation(error);
+  });
+}
+
+/**
  * Expect a client reset sync error to occur when performing an action. Optionally specify
  * more expectations about the sync error.  Will never resolve and therefore timeout if a
  * sync error does not occur.
@@ -76,7 +106,7 @@ export async function expectClientResetError(
   config: Realm.Configuration,
   user: Realm.User,
   action: (realm: Realm) => void,
-  extraExpectation?: (error: Realm.SyncError | Realm.ClientResetError) => void,
+  extraExpectation?: (error: Error) => void,
 ): Promise<void> {
   return expectSyncError(config, user, action, (error) => {
     expect(error.name).to.equal("ClientReset");
