@@ -1,13 +1,9 @@
-/**
- * @format
- */
-
+import 'expo-dev-client';
 import 'react-native-get-random-values';
 import React from 'react';
-import {AppRegistry} from 'react-native';
+import {registerRootComponent} from 'expo'
 import {AppWrapperNonSync} from './app/AppWrapperNonSync';
 import {AppWrapperSync} from './app/AppWrapperSync';
-import {name as appName} from './app.json';
 import {SYNC_CONFIG} from './sync.config';
 
 const App = () =>
@@ -17,4 +13,4 @@ const App = () =>
     <AppWrapperNonSync />
   );
 
-AppRegistry.registerComponent(appName, () => App);
+registerRootComponent(App);
