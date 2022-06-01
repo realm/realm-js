@@ -122,15 +122,68 @@ This directory of the repository contains three sub-directories:
 
 Because of limitations (see below), we need to explicitly require in the files defining the tests: To write a new test, simply add it in the relevant file in `test/src/tests/` or create a new file and make sure to require that from `test/src/index.ts`.
 
-Tests will have access to the following globals:
+### Globals available
+
+Because we want our tests to run in many environments, we've a limited runtime available. Tests have access to the following globals:
 
 - [the Mocha hook globals](https://mochajs.org/#hooks) (describe, it, after, before, etc.).
 - `fs` the lowest common denominator of the [`fs-extra`](https://www.npmjs.com/package/fs-extra) and [`react-native-fs`](https://www.npmjs.com/package/react-native-fs) APIs.
 - `path` the lowest common denominator of the Node.js path interface and a [node-independent implementation of Node's path](https://www.npmjs.com/package/path-browserify) module.
 - `it.skipIf` and `describe.skipIf` skips tests based on the environment, see `tests/src/utils/skip-if.ts` for a detailed explanation.
 
+### Hooks
+
+The test suite implements a couple of reusable hooks (located in `./src/hooks`) in an attempt to keep the tests DRY.
+If a test needs to use a Atlas App Services App, authenticate a user or open a Realm, as part of the setup for the test, consider using these hooks.
+
+The hooks store their output on the Mocha context (available through `this` of tests - declared using `it`). You need to pass a regular function (not an arrow function) as callback when declaring the test access the values on the context. Since test suites (declared using `describe`) doesn't have a Mocha context, the hooks can't be used to store something, which the suite can access.
+
+```typescript
+describe("opening a synced Realm", () => {
+  importAppBefore("with-db");
+  authenticateUserBefore();
+  openRealmBefore({
+    schema: [
+      {
+        name: "Person",
+        primaryKey: "_id",
+        properties: {
+          _id: "objectId",
+          name: "string",
+        },
+      },
+    ],
+  });
+
+  it("imports an app, authenticates and opens a synced Realm", function (this: Mocha.Context &
+    AppContext &
+    UserContext &
+    RealmContext) {
+    // Implement the test, using the `app`, `user` and `realm` off the context, bound to `this`
+    expect(this.app).instanceOf(Realm.App);
+    expect(this.user).instanceOf(Realm.User);
+    expect(this.realm).instanceOf(Realm);
+  });
+});
+```
+
+See the existing tests for more detailed examples on how to use the hooks.
+
+### Opening and closing Realms
+
 Remember to close or clean up Realms accessed during tests.
 The `Realm.clearTestState` can be called after each test, which closes and removes all Realm files in the default directory.
+
+If you simply need the test to open a Realm before and close & delete it after, consider using the `openRealmBefore` or `openRealmBeforeEach` hooks.
+
+### Use `@ts-expect-error` instead of `any`
+
+When you need to test internal methods or the behaviour of calling our APIs in a way that conflicts with our types, use the `// @ts-expect-error` comment to declare an error is expected, instead of casting the object to `any`. This will ensure the test fails if the type unexpectedly changes to allow the statement.
+
+### Co-locate schemas with tests to lower coupling and increase cohesion
+
+To keep tests which simply needs any schema DRY, we've declare two sets of simple schemas in the `./tests/src/schemas` directory.
+If you find a need to change these, copy them to your testfile instead of extending them as other tests are depending on these.
 
 ### Current limitations
 
