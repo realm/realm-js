@@ -70,7 +70,7 @@ function describeRoundtrip({
 
   async function setupTest(realm: Realm) {
     if (flexibleSync) {
-      realm.subscriptions.update((mutableSubs) => {
+      await realm.subscriptions.update((mutableSubs) => {
         mutableSubs.add(realm.objects("MixedClass"));
       });
       await realm.subscriptions.waitForSynchronization();
@@ -94,6 +94,7 @@ function describeRoundtrip({
     });
 
     it("writes", async function (this: RealmContext) {
+      this.timeout(6000);
       await setupTest(this.realm);
 
       this._id = new Realm.BSON.ObjectId();

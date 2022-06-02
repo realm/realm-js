@@ -1,11 +1,12 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Creating an object for a class that has no subscriptions opened for it will throw an exception. ([realm/realm-core#5488](https://github.com/realm/realm-core/pull/5488))
 
 ### Fixed
 * Add canonical schema type for returned schemas. ([#4580](https://github.com/realm/realm-js/pull/4580))
 * Fixed invalid type for schema properties. ([#4577](https://github.com/realm/realm-js/pull/4577))
+* FLX sync subscription state changes will now correctly be reported after sync progress is reported. ([realm/realm-core#5553](https://github.com/realm/realm-core/pull/5553), since v10.18.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -14,7 +15,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v12.0.0 to commit 91c5ac9180a3db68a27da3f46d36cb437a732f4d.
+* Upgraded Realm Core from v12.0.0 to v12.1.0.
+* Fix for updated FLX sync error message. ([#4611](https://github.com/realm/realm-js/pull/4611))
 
 10.18.0 Release notes (2022-5-29)
 =============================================================
