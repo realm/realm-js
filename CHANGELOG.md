@@ -1,8 +1,8 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.19.0 Release notes (2022-6-2)
 =============================================================
 ### Enhancements
 * Creating an object for a class that has no subscriptions opened for it will throw an exception. ([realm/realm-core#5488](https://github.com/realm/realm-core/pull/5488))
-* Added support asymmetric sync. Object schemas can be marked as `asymmetric` when opening the Realm. Upon creation, asymmetric objects are sync'd unidirectionally and cannot be accessed locally. ([#4503](https://github.com/realm/realm-js/issues/4503))
+* Added support asymmetric sync. Object schemas can be marked as `asymmetric` when opening the Realm. Upon creation, asymmetric objects are sync'd unidirectionally and cannot be accessed locally. Asymmetric sync is compatible with flexible sync. ([#4503](https://github.com/realm/realm-js/issues/4503))
 
 ```js
 const Person = {
