@@ -19,7 +19,7 @@
 import { expect } from "chai";
 import { openRealm } from "./open-realm";
 
-type Error = (Realm.SyncError | Realm.ClientResetError) & { message: string };
+type Error = Realm.SyncError | Realm.ClientResetError | { message: string };
 
 /**
  * Open a new Realm and perform an action, expecting a sync error to occur. Will
@@ -38,26 +38,28 @@ export async function expectSyncError(
   action: (realm: Realm) => void,
   expectation: (error: Error) => void,
 ): Promise<void> {
-  let handleError: Realm.ErrorCallback | undefined;
+  return new Promise((resolve, reject) => {
+    if (!config.sync) {
+      throw new Error("Expected a sync config");
+    }
 
-  const configWithErrorHandler = { ...config };
-  if (!configWithErrorHandler.sync) {
-    throw new Error("Expected a sync config");
-  }
-
-  configWithErrorHandler.sync.error = (session, error) => {
-    if (handleError) handleError(session, error);
-  };
-
-  const { realm } = await openRealm(configWithErrorHandler, user);
-
-  return new Promise((resolve) => {
-    handleError = (session, error) => {
-      expectation(error);
-      resolve();
+    // Shallow copy the sync configuration to modifying the original
+    const modifiedConfig: Realm.Configuration = {
+      ...config,
+      sync: {
+        ...config.sync,
+        error(_, error) {
+          try {
+            expectation(error);
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
+        },
+      },
     };
 
-    action(realm);
+    openRealm(modifiedConfig, user).then(({ realm }) => action(realm), reject);
   });
 }
 
