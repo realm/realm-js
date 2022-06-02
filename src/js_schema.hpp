@@ -400,7 +400,8 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
     }
 
     if (object_schema.is_asymmetric && object_schema.is_embedded) {
-        throw std::runtime_error("Schema named '" + object_schema.name + "' is asymmetric and embedded which is not supported.");
+        throw std::runtime_error("Schema named '" + object_schema.name +
+                                 "' is asymmetric and embedded which is not supported.");
     }
 
     // Store prototype so that objects of this type will have their prototype set to this prototype object.
