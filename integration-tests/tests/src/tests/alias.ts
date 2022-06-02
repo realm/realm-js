@@ -63,10 +63,6 @@ describe("Aliasing property names using mapTo", () => {
     schema: [PersonSchema, ObjectASchema],
   });
 
-  afterEach(() => {
-    Realm.clearTestState();
-  });
-
   it("supports defining aliases for properties in a schema", function (this: Mocha.Context & RealmContext) {
     const { realm } = this;
 
