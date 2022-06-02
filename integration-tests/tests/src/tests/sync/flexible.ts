@@ -33,8 +33,8 @@ import Realm, { BSON, ClientResetMode, FlexibleSyncConfiguration, SessionStopPol
 
 import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "../../hooks";
 import { DogSchema, IPerson, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
-import { expectClientResetError } from "../../utils/expect-sync-error";
-import { closeAndReopenRealm, closeRealm, closeThisRealm } from "../../utils/close-realm";
+import { expectInvalidWriteSyncError } from "../../utils/expect-sync-error";
+import { closeAndReopenRealm, closeRealm } from "../../utils/close-realm";
 
 const FlexiblePersonSchema = { ...PersonSchema, properties: { ...PersonSchema.properties, nonQueryable: "string?" } };
 
@@ -1568,9 +1568,9 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
     // TODO test more complex integration scenarios, e.g. links, embedded objects, collections, complex queries
 
-    describe("client reset scenarios", function () {
-      it("triggers a client reset if items are added without a subscription", async function (this: RealmContext) {
-        await expectClientResetError(this.config, this.user, (realm) => {
+    describe("error scenarios", function () {
+      it("triggers an error if items are added without a subscription", async function (this: RealmContext) {
+        await expectInvalidWriteSyncError(this.config, this.user, (realm) => {
           realm.write(() => {
             return realm.create<IPerson>(FlexiblePersonSchema.name, {
               _id: new BSON.ObjectId(),
@@ -1581,10 +1581,10 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         });
       });
 
-      it("triggers a client reset and deletes the item if an item not matching the filter is created", async function (this: RealmContext) {
+      it("triggers an error and deletes the item if an item not matching the filter is created", async function (this: RealmContext) {
         await addSubscriptionAndSync(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("age < 30"));
 
-        await expectClientResetError(
+        await expectInvalidWriteSyncError(
           this.config,
           this.user,
           (realm) => {
@@ -1602,8 +1602,8 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         );
       });
 
-      it("triggers a client reset if you remove a subscription without waiting for server acknowledgement, then modify objects that were only matched by the now removed subscription", async function (this: RealmContext) {
-        await expectClientResetError(this.config, this.user, async (realm) => {
+      it("triggers an error if you remove a subscription without waiting for server acknowledgement, then modify objects that were only matched by the now removed subscription", async function (this: RealmContext) {
+        await expectInvalidWriteSyncError(this.config, this.user, async (realm) => {
           const { sub } = await addSubscriptionForPersonAndSync(this.realm);
 
           this.realm.subscriptions.update((mutableSubs) => {

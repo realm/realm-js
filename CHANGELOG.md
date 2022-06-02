@@ -1,12 +1,12 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Creating an object for a class that has no subscriptions opened for it will throw an exception. ([realm/realm-core#5488](https://github.com/realm/realm-core/pull/5488))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* Add canonical schema type for returned schemas ([#4580](https://github.com/realm/realm-js/pull/4580))
-* Fixed invalid type for schema properties([#4577](https://github.com/realm/realm-js/pull/4577)).
+* Add canonical schema type for returned schemas. ([#4580](https://github.com/realm/realm-js/pull/4580))
+* Fixed invalid type for schema properties. ([#4577](https://github.com/realm/realm-js/pull/4577))
+* FLX sync subscription state changes will now correctly be reported after sync progress is reported. ([realm/realm-core#5553](https://github.com/realm/realm-core/pull/5553), since v10.18.0)
 
 ### Compatibility
 * MongoDB Realm Cloud.
@@ -15,6 +15,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
+* Upgraded Realm Core from v12.0.0 to v12.1.0.
+* Fix for updated FLX sync error message. ([#4611](https://github.com/realm/realm-js/pull/4611))
 * Updated build script to use Xcode 13.1 to match latest Apple App Store compatibility. ([#4605](https://github.com/realm/realm-js/issues/4605))
 
 10.18.0 Release notes (2022-5-29)

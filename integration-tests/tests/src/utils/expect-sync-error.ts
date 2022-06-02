@@ -19,6 +19,8 @@
 import { expect } from "chai";
 import { openRealm } from "./open-realm";
 
+type Error = Realm.SyncError | (Realm.ClientResetError & { message: string });
+
 /**
  * Open a new Realm and perform an action, expecting a sync error to occur. Will
  * never resolve and therefore timeout if a sync error does not occur.
@@ -34,28 +36,58 @@ export async function expectSyncError(
   config: Realm.Configuration,
   user: Realm.User,
   action: (realm: Realm) => void,
-  expectation: (error: Realm.SyncError | Realm.ClientResetError) => void,
+  expectation: (error: Error) => void,
 ): Promise<void> {
-  let handleError: Realm.ErrorCallback | undefined;
+  return new Promise((resolve, reject) => {
+    if (!config.sync) {
+      throw new Error("Expected a sync config");
+    }
 
-  const configWithErrorHandler = { ...config };
-  if (!configWithErrorHandler.sync) {
-    throw new Error("Expected a sync config");
-  }
-
-  configWithErrorHandler.sync.error = (session, error) => {
-    if (handleError) handleError(session, error);
-  };
-
-  const { realm } = await openRealm(configWithErrorHandler, user);
-
-  return new Promise((resolve) => {
-    handleError = (session, error) => {
-      expectation(error);
-      resolve();
+    // Shallow copy the sync configuration to modifying the original
+    const modifiedConfig: Realm.Configuration = {
+      ...config,
+      sync: {
+        ...config.sync,
+        error(_, error: Error) {
+          try {
+            expectation(error);
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
+        },
+      },
     };
 
-    action(realm);
+    openRealm(modifiedConfig, user).then(({ realm }) => action(realm), reject);
+  });
+}
+
+/**
+ * Expect a sync error to occur with a message about an invalid write.
+ * Optionally specify more expectations about the sync error.  Will
+ * never resolve and therefore timeout if a sync error does not occur.
+ *
+ * @param config The Realm config to use
+ * @param user The Realm user to use
+ * @param action Callback receiving a Realm instance and containing the
+ * action(s) to take which should trigger a client reset error
+ * @param extraExpectation Optional callback receiving the sync error, in order to make more
+ * assertions about it
+ * @returns Promise which resolves if the sync error occurs
+ */
+export async function expectInvalidWriteSyncError(
+  config: Realm.Configuration,
+  user: Realm.User,
+  action: (realm: Realm) => void,
+  extraExpectation?: (error: Error) => void,
+): Promise<void> {
+  return expectSyncError(config, user, action, (error) => {
+    expect(error.name).to.equal("Error");
+    expect(error.message).to.match(
+      /Client attempted a write that is outside of permissions or query filters; it has been reverted.*/,
+    );
+    if (extraExpectation) extraExpectation(error);
   });
 }
 
@@ -76,7 +108,7 @@ export async function expectClientResetError(
   config: Realm.Configuration,
   user: Realm.User,
   action: (realm: Realm) => void,
-  extraExpectation?: (error: Realm.SyncError | Realm.ClientResetError) => void,
+  extraExpectation?: (error: Error) => void,
 ): Promise<void> {
   return expectSyncError(config, user, action, (error) => {
     expect(error.name).to.equal("ClientReset");
