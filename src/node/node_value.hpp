@@ -74,20 +74,10 @@ inline bool node::Value::is_date(Napi::Env env, const Napi::Value& value)
         return false;
     }
 
-// if rebuilding the binary on Node.js with NAPI 4. On CI we should always be building with Node.js NAPI 5
-#if NAPI_VERSION >= 5
-    uint32_t version;
-    napi_status status = napi_get_version(env, &version);
+    bool is_date;
+    napi_status status = napi_is_date(env, value, &is_date);
     NAPI_THROW_IF_FAILED(env, status, false);
-    if (version >= 5) {
-        bool isDate;
-        status = napi_is_date(env, value, &isDate);
-        NAPI_THROW_IF_FAILED(env, status, false);
-        return isDate;
-    }
-#endif
-
-    return value.IsObject() && value.As<Napi::Object>().InstanceOf(env.Global().Get("Date").As<Napi::Function>());
+    return is_date;
 }
 
 template <>
