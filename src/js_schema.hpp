@@ -22,6 +22,7 @@
 #include "js_types.hpp"
 #include "dictionary_schema.hpp"
 #include <realm/object-store/schema.hpp>
+#include <stdexcept>
 
 namespace realm {
 namespace js {
@@ -309,6 +310,7 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
     static const String properties_string = "properties";
     static const String schema_string = "schema";
     static const String embedded_string = "embedded";
+    static const String asymmetric_string = "asymmetric";
 
     std::optional<FunctionType> object_constructor = {};
     if (Value::is_constructor(ctx, object_schema_object)) {
@@ -389,6 +391,19 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
         object_schema.is_embedded = false;
     }
 
+    ValueType asymmetric_value = Object::get_property(ctx, object_schema_object, asymmetric_string);
+    if (!Value::is_undefined(ctx, asymmetric_value)) {
+        object_schema.is_asymmetric = Value::validated_to_boolean(ctx, asymmetric_value);
+    }
+    else {
+        object_schema.is_asymmetric = false;
+    }
+
+    if (object_schema.is_asymmetric && object_schema.is_embedded) {
+        throw std::runtime_error("Schema named '" + object_schema.name +
+                                 "' is asymmetric and embedded which is not supported.");
+    }
+
     // Store prototype so that objects of this type will have their prototype set to this prototype object.
     if (object_constructor) {
         constructors.emplace(object_schema.name, Protected<FunctionType>(ctx, *object_constructor));
@@ -454,6 +469,9 @@ typename T::Object Schema<T>::object_for_object_schema(ContextType ctx, const Ob
 
     static const String embedded_string = "embedded";
     Object::set_property(ctx, object, embedded_string, Value::from_boolean(ctx, object_schema.is_embedded));
+
+    static const String asymmetric_string = "asymmetric";
+    Object::set_property(ctx, object, asymmetric_string, Value::from_boolean(ctx, object_schema.is_asymmetric));
 
     return object;
 }

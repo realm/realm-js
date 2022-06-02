@@ -2,6 +2,20 @@ x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
 * Creating an object for a class that has no subscriptions opened for it will throw an exception. ([realm/realm-core#5488](https://github.com/realm/realm-core/pull/5488))
+* Added support asymmetric sync. Object schemas can be marked as `asymmetric` when opening the Realm. Upon creation, asymmetric objects are sync'd unidirectionally and cannot be accessed locally. ([#4503](https://github.com/realm/realm-js/issues/4503))
+
+```js
+const Person = {
+  name: "Person",
+  asymmetric: true, // this marks "Person" as asymmetric
+  primaryKey: "id",
+  properties: {
+    id: "objectId",
+    name: "string",
+    age: "int",
+  },
+};
+```
 
 ### Fixed
 * Add canonical schema type for returned schemas. ([#4580](https://github.com/realm/realm-js/pull/4580))
@@ -9,7 +23,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * FLX sync subscription state changes will now correctly be reported after sync progress is reported. ([realm/realm-core#5553](https://github.com/realm/realm-core/pull/5553), since v10.18.0)
 
 ### Compatibility
-* MongoDB Realm Cloud.
+* Atlas Device Sync.
 * Realm Studio v11.0.0.
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).

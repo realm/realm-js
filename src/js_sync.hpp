@@ -29,6 +29,7 @@
 #include "logger.hpp"
 
 #include "platform.hpp"
+#include "realm/version_id.hpp"
 #include <realm/object-store/shared_realm.hpp>
 #include <realm/sync/config.hpp>
 #include <realm/sync/protocol.hpp>
