@@ -16,6 +16,10 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Updated build script to use Xcode 13.1 to match latest Apple App Store compatibility. ([#4605](https://github.com/realm/realm-js/issues/4605))
+* Updated the CMake config to read Node arch from `NODE_ARCH` injected by cmake-js instead of injecting our own environment variable.
+* <Either mention core version or upgrade>
+* <Using Realm Core vX.Y.Z>
+* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
 
 10.18.0 Release notes (2022-5-29)
 =============================================================
