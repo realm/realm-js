@@ -46,7 +46,7 @@ var TESTS = {
   QueryTests: require("./query-tests"),
   MigrationTests: require("./migration-tests"),
   EncryptionTests: require("./encryption-tests"),
-  AliasTests: require("./alias-tests"),
+  BsonTests: require("./bson-tests"),
   MixedTests: require("./mixed-tests"),
   DictionaryTests: require("./dictionary-tests"),
   // Garbagecollectiontests: require('./garbage-collection'),
