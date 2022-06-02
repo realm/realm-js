@@ -258,13 +258,13 @@ describe("Realm objects", () => {
       expect(persons.length).equals(1);
     });
   });
-  describe("listeners on linked objects", () => {
-    it("collection listener is called on changes to an object's linked object property", async () => {
+  describe("collection listeners", () => {
+    it("is called on a change to a linked object", async () => {
       const realm = new Realm({ schema: [Dog, Person] });
 
       const person = realm.write(() => {
-        const tmpPerson = realm.create<IPerson>("Person", { name: "bob", age: 12 });
-        realm.create<IDog>("Dog", { age: 4, owner: tmpPerson, name: "rex" });
+        const bob = realm.create<IPerson>("Person", { name: "bob", age: 12 });
+        realm.create<IDog>("Dog", { age: 4, owner: bob, name: "rex" });
         return tmpPerson;
       });
 
@@ -289,7 +289,8 @@ describe("Realm objects", () => {
       );
     });
   });
-  it("collection listener is called on changes to a deeply nested linked object", async () => {
+
+  it("is called on a change to a second level linked object", async () => {
     const realm = new Realm({ schema: [Dog, Person] });
 
     const person = realm.write(() => {
