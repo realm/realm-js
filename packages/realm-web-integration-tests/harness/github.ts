@@ -28,7 +28,7 @@ if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
 }
 
 async function startServer() {
-  console.log("Starting MongoDB Realm server");
+  console.log("Starting Atlas App Services server");
   const serverProcess = cp.spawn(
     "docker",
     [
@@ -48,7 +48,7 @@ async function startServer() {
   );
   // Kill the server when the process ends
   function killServer() {
-    console.log("Killing the MongoDB Realm server");
+    console.log("Killing the Atlas App Services server");
     // Tell docker to kill the container
     cp.execSync("docker kill mongodb-realm-test-server", {
       encoding: "utf8",
@@ -85,7 +85,7 @@ async function startServer() {
      * Handle an unexpected exit by rejecting the promise
      */
     function handleUnexpectedExit() {
-      const err = new Error("MongoDB Realm server closed before it was ready");
+      const err = new Error("Atlas App Services server closed before it was ready");
       reject(err);
     }
     // Start listening for output

@@ -14,7 +14,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Compatibility
-* MongoDB Realm Cloud.
+* Atlas App Services.
 * Realm Studio v11.0.0.
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).

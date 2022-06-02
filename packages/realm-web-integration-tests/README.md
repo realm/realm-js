@@ -4,7 +4,7 @@ For ultimate flexability, the tests are written to be able to run from both Node
 
 ## Running the tests
 
-Ensure you have access to a running instance of MongoDB Realm.
+Ensure you have access to a running instance of Atlas App Services.
 
 To run it locally, ensure you have Docker and your Realm AWS credentials installed and run
 
@@ -47,7 +47,7 @@ Currently, these are only available when running in a browser.
 
 Before running tests which depends on a specific authentication provider:
 1. Run once to import the app,
-2. Go to http://localhost:9090 (or wherever your MongoDB Realm server is listening)
+2. Go to http://localhost:9090 (or wherever your Atlas App Services server is listening)
 3. Setup the appropriate authentication providers.
 
 To enable testing credentials that require interaction, run with DEV_TOOLS and TEST_CREDENTIALS set to a comma-separated list of credentials.
@@ -58,7 +58,7 @@ DEV_TOOLS=1 TEST_CREDENTIALS=anonymous,email-password,google npm test
 
 ## Running the Google Sign-In integration test
 
-Run the tests once to import a test app into the MongoDB Realm server you're testing against.
+Run the tests once to import a test app into the Atlas App Services server you're testing against.
 Take note of the app id that it gets assigned and navigate to the Admin UI of the server to setup the Google Authentication Provider.
 Make sure to toggle on "OpenID Connect".
 

@@ -32,7 +32,7 @@ body:
         - Yes, sometimes
         - Not yet
     validations:
-      required: true 
+      required: true
   - type: textarea
     id: code-snippets
     attributes:
@@ -57,7 +57,8 @@ body:
       label: What SDK flavour are you using?
       options:
         - Local Database only
-        - MongoDB Realm (i.e. Sync, auth, functions)
+        - Atlas Device Sync
+        - Atlas App Services (auth, functions, etc.)
   - type: dropdown
     id: encryption
     attributes:

@@ -3,6 +3,6 @@ contact_links:
   - name: General Questions and Inquiries
     url: https://developer.mongodb.com/community/forums/c/realm-sdks
     about: Please ask general design/architecture questions in the community forums.
-  - name: MongoDB Realm (Sync) Production Issues
+  - name: Atlas Device Sync and Atlas App Services Production Issues
     url: https://support.mongodb.com/
     about: Please report urgent production issues to the support portal directly.

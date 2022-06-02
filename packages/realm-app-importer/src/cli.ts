@@ -126,27 +126,27 @@ yargs
   .option("base-url", {
     type: "string",
     default: DEFAULTS.baseUrl,
-    description: "Base url of the MongoDB Realm server to import the app into",
+    description: "Base url of Altas App Services to import the app into",
   })
   .option("username", {
     type: "string",
     default: DEFAULTS.username,
-    description: "Username of an adminstrative user",
+    description: "Username of an administrative user",
   })
   .option("password", {
     type: "string",
     default: DEFAULTS.password,
-    description: "Password of an adminstrative user",
+    description: "Password of an administrative user",
   })
   .option("public-api-key", {
     type: "string",
     default: DEFAULTS.publicKey,
-    description: "Public part of API key with adminstrative privileges",
+    description: "Public part of API key with administrative privileges",
   })
   .option("private-api-key", {
     type: "string",
     default: DEFAULTS.privateKey,
-    description: "Private part of API key with adminstrative privileges",
+    description: "Private part of API key with administrative privileges",
   })
   .option("apps-directory-path", {
     type: "string",

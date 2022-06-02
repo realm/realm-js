@@ -146,7 +146,7 @@ declare namespace Realm {
   // TODO: Add providerCapabilities?
 
   /**
-   * End-users enter credentials to authenticate toward your MongoDB Realm App.
+   * End-users enter credentials to authenticate toward your Atlas App Services Application.
    */
   class Credentials<PayloadType extends SimpleObject = SimpleObject> {
     /**
@@ -271,11 +271,11 @@ declare namespace Realm {
   type AppChangeCallback = () => void;
 
   /**
-   * A MongoDB Realm App.
+   * An Atlas App Services App.
    */
   class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType = SimpleObject> {
     /**
-     * Construct a MongoDB Realm App.
+     * Construct an Atlas App Services Application.
      *
      * @param idOrConfiguration The id string or configuration for the app.
      */
@@ -310,7 +310,7 @@ declare namespace Realm {
      * Get or create a singleton Realm App from an id.
      * Calling this function multiple times with the same id will return the same instance.
      *
-     * @param id The Realm App id visible from the MongoDB Realm UI or a configuration.
+     * @param id The Realm App id visible from the Atlas App Services UI or a configuration.
      * @returns The Realm App instance.
      */
     static getApp(appId: string): App;
@@ -369,7 +369,7 @@ declare namespace Realm {
     id: string;
 
     /**
-     * An optional URL to use as a prefix when requesting the MongoDB Realm services.
+     * An optional URL to use as a prefix when requesting the Atlas App Services.
      */
     baseUrl?: string;
 
@@ -386,7 +386,7 @@ declare namespace Realm {
   interface LocalAppConfiguration {
     /**
      * The name / id of the local app.
-     * Note: This should be the name or a bundle id of your app, not the MongoDB Realm app.
+     * Note: This should be the name or a bundle id of your app, not the Atlas App Services application.
      */
     name?: string;
 
@@ -447,7 +447,8 @@ declare namespace Realm {
     readonly refreshToken: string | null;
 
     /**
-     * You can store arbitrary data about your application users in a MongoDB collection and configure MongoDB Realm to automatically expose each user’s data in a field of their user object.
+     * You can store arbitrary data about your application users in a MongoDB collection and configure
+     * Atlas App Services to automatically expose each user’s data in a field of their user object.
      * For example, you might store a user’s preferred language, date of birth, or their local timezone.
      *
      * If this value has not been configured, it will be empty.
@@ -460,7 +461,7 @@ declare namespace Realm {
     readonly profile: UserProfileDataType;
 
     /**
-     * Use this to call functions defined by the MongoDB Realm app, as this user.
+     * Use this to call functions defined by the Atlas App Services application, as this user.
      */
     readonly functions: FunctionsFactoryType & BaseFunctionsFactory;
 
@@ -484,7 +485,7 @@ declare namespace Realm {
     linkCredentials(credentials: Credentials): Promise<void>;
 
     /**
-     * Call a remote MongoDB Realm function by its name.
+     * Call a remote Atlas Function by its name.
      * Note: Consider using `functions[name]()` instead of calling this method.
      *
      * @example
@@ -639,7 +640,7 @@ declare namespace Realm {
   };
 
   /**
-   * A function which executes on the MongoDB Realm platform.
+   * A function which executes on Atlas App Services.
    */
   type RealmFunction<R, A extends any[]> = (...args: A) => Promise<R>;
 
@@ -648,7 +649,7 @@ declare namespace Realm {
    */
   interface BaseFunctionsFactory {
     /**
-     * Call a remote MongoDB Realm function by its name.
+     * Call a remote Atlas Function by its name.
      * Consider using `functions[name]()` instead of calling this method.
      *
      * @param name Name of the function.
@@ -657,7 +658,7 @@ declare namespace Realm {
     callFunction(name: string, ...args: any[]): Promise<any>;
 
     /**
-     * Call a remote MongoDB Realm function by its name, in a streaming mode.
+     * Call a remote Atlas Function by its name, in a streaming mode.
      * Consider using `functions[name]()` instead of calling this method.
      *
      * @param name Name of the function.
@@ -671,7 +672,7 @@ declare namespace Realm {
    */
   interface DefaultFunctionsFactory extends BaseFunctionsFactory {
     /**
-     * All the functions are accessable as members on this instance.
+     * All the functions are accessible as members on this instance.
      */
     [name: string]: RealmFunction<any, any[]>;
   }

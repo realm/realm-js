@@ -35,7 +35,7 @@ const app = createApp();
 function onSuccess(googleUser: any) {
   const response = googleUser.getAuthResponse();
   const idToken = response.id_token;
-  // Try authenticating with MongoDB Realm
+  // Try authenticating with Atlas App Services
   const credentials = Credentials.google(idToken);
   app.logIn(credentials).then(
     (user) => {

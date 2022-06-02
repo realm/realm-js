@@ -1,6 +1,6 @@
 {
   "name": "findourdevices",
-  "description": "FindOurDevices is a React Native and MongoDB Realm example application.",
+  "description": "FindOurDevices is a React Native and Atlas App Services example application.",
   "version": "0.0.1",
   "license": "See the actual license in the file LICENSE",
   "repository": {

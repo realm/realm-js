@@ -193,7 +193,7 @@ Consider adding `--no-clean` to prevent the CocoaPods CLI from deleting the temp
 
 ### How To: Login to the GitHub docker container registry
 
-Testing against the MongoDB Realm server locally requires that you have access to the MongoDB Realm docker image (`ghcr.io/realm/ci/mongodb-realm-test-server`). To provide your local docker deamon with the credentials necessary to pull the image, you must first authenticate using you GitHub username and an API token.
+Testing against the Atlas Device Sync server locally requires that you have access to the Atlas App Services docker image (`ghcr.io/realm/ci/mongodb-realm-test-server`). To provide your local docker deamon with the credentials necessary to pull the image, you must first authenticate using you GitHub username and an API token.
 
 First navigate to https://github.com/settings/tokens to generate a token - it just needs the `read:packages` scope.
 

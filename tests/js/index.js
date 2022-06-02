@@ -55,7 +55,7 @@ var TESTS = {
 
 // If sync is enabled, run the sync tests
 if (global.enableSyncTests) {
-  //TODO: remove when MongoDB Realm test server can be hosted on Mac or other options exists
+  //TODO: remove when Atlas App Services test server can be hosted on Mac or other options exists
   if (isNodeProcess) {
     TESTS.AppTests = require("./app-tests");
     TESTS.OpenBehaviorTests = require("./open-behavior-tests");
