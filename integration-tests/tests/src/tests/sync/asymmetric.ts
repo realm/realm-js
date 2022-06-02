@@ -23,52 +23,18 @@ import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "..
 
 describe.skipIf(environment.missingServer, "Asymmetric sync", function () {
   describe("Configuration and schema", function () {
-    [true, false].forEach((asymmetric) => {
-      [true, false].forEach((embedded) => {
-        let PersonSchema: Realm.ObjectSchema = {
-          name: "Person",
-          asymmetric: asymmetric,
-          embedded: embedded,
-          properties: {
-            _id: "objectId",
-            age: "int",
-            name: "string",
-          },
-        };
-
-        it(`Schema with asymmetric = ${asymmetric} and embedded = ${embedded}`, () => {
-          Realm.deleteFile({});
-          if (!embedded) {
-            PersonSchema.primaryKey = "_id";
-          }
-          if (embedded && asymmetric) {
-            expect(() => {
-              new Realm({ schema: [PersonSchema] });
-            }).to.throw();
-          } else {
-            const realm = new Realm({ schema: [PersonSchema] });
-            const schema = realm.schema;
-            expect(schema.length).to.equal(1);
-            expect(schema[0].asymmetric).to.equal(asymmetric);
-            expect(schema[0].embedded).to.equal(embedded);
-            realm.close();
-          }
-        });
-      });
-    });
-  });
-
-  describe("Creating objects", function () {
     const PersonSchema: Realm.ObjectSchema = {
       name: "Person",
-      primaryKey: "_id",
       asymmetric: true,
+      embedded: false,
+      primaryKey: "_id",
       properties: {
         _id: "objectId",
         age: "int",
         name: "string",
       },
     };
+
     importAppBefore("with-db-flx");
     authenticateUserBefore();
     openRealmBeforeEach({
@@ -78,17 +44,21 @@ describe.skipIf(environment.missingServer, "Asymmetric sync", function () {
       },
     });
 
+    it("Schema with asymmetric = true and embedded = false", function () {
+      const schema = this.realm.schema;
+      expect(schema.length).to.equal(1);
+      expect(schema[0].asymmetric).to.equal(true);
+      expect(schema[0].embedded).to.equal(false);
+    });
+
     it("creating an object for an asymmetric schema returns undefined", function () {
-      // ..
-    });
-    
-    it("an asymmetric schema cannot be queried", function () {
-      // ..
-    });
       this.realm.write(() => {
-        const retval = this.realm.create(PersonSchema.name, { _id: new BSON.ObjectId(), name: "Joe", age: 12 });
-        expect(retval).to.equal(undefined);
+        const returnValue = this.realm.create(PersonSchema.name, { _id: new BSON.ObjectId(), name: "Joe", age: 12 });
+        expect(returnValue).to.equal(undefined);
       });
+    });
+
+    it("an asymmetric schema cannot be queried", function () {
       expect(() => {
         this.realm.objects(PersonSchema.name);
       }).to.throw("You cannot query an asymmetric class.");
