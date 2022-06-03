@@ -35,6 +35,7 @@ import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "..
 import { DogSchema, IPerson, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { expectInvalidWriteSyncError } from "../../utils/expect-sync-error";
 import { closeAndReopenRealm, closeRealm } from "../../utils/close-realm";
+import { setTimeout } from "timers/promises";
 
 const FlexiblePersonSchema = { ...PersonSchema, properties: { ...PersonSchema.properties, nonQueryable: "string?" } };
 
@@ -1569,56 +1570,50 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
     // TODO test more complex integration scenarios, e.g. links, embedded objects, collections, complex queries
 
     describe("error scenarios", function () {
-      it("triggers an error if items are added without a subscription", async function (this: RealmContext) {
-        await expectInvalidWriteSyncError(this.config, this.user, (realm) => {
-          realm.write(() => {
-            return realm.create<IPerson>(FlexiblePersonSchema.name, {
+      it("throw an exception if items are added without a subscription", function (this: RealmContext) {
+        this.realm.write(() => {
+          expect(() => {
+            this.realm.create<IPerson>(FlexiblePersonSchema.name, {
               _id: new BSON.ObjectId(),
               name: "Tom",
               age: 36,
             });
-          });
+          }).to.throw("Cannot write to class Person when no flexible sync subscription has been created.");
         });
       });
 
-      it("triggers an error and deletes the item if an item not matching the filter is created", async function (this: RealmContext) {
+      it("deletes the item if an item not matching the filter is created", async function (this: RealmContext) {
         await addSubscriptionAndSync(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("age < 30"));
 
-        await expectInvalidWriteSyncError(
-          this.config,
-          this.user,
-          (realm) => {
-            realm.write(() => {
-              realm.create<IPerson>(FlexiblePersonSchema.name, {
-                _id: new BSON.ObjectId(),
-                name: "Tom Old",
-                age: 99,
-              });
-            });
-          },
-          () => {
-            expect(this.realm.objects(FlexiblePersonSchema.name)).to.have.length(0);
-          },
-        );
+        this.realm.write(() => {
+          this.realm.create<IPerson>(FlexiblePersonSchema.name, {
+            _id: new BSON.ObjectId(),
+            name: "Tom Old",
+            age: 99,
+          });
+        });
+
+        await this.realm.syncSession?.downloadAllServerChanges();
+        expect(this.realm.objects(FlexiblePersonSchema.name)).to.have.length(0);
       });
 
-      it("triggers an error if you remove a subscription without waiting for server acknowledgement, then modify objects that were only matched by the now removed subscription", async function (this: RealmContext) {
-        await expectInvalidWriteSyncError(this.config, this.user, async (realm) => {
-          const { sub } = await addSubscriptionForPersonAndSync(this.realm);
+      it("throw an exception if you remove a subscription without waiting for server acknowledgement, then modify objects that were only matched by the now removed subscription", async function (this: RealmContext) {
+        const { sub } = await addSubscriptionForPersonAndSync(this.realm);
 
-          this.realm.subscriptions.update((mutableSubs) => {
-            mutableSubs.removeSubscription(sub);
-          });
+        this.realm.subscriptions.update((mutableSubs) => {
+          mutableSubs.removeSubscription(sub);
+        });
 
-          // Deliberately not waiting for synchronisation here
+        // Deliberately not waiting for synchronisation here
 
-          realm.write(function () {
-            return realm.create<IPerson>(FlexiblePersonSchema.name, {
+        this.realm.write(() => {
+          expect(() => {
+            this.realm.create<IPerson>(FlexiblePersonSchema.name, {
               _id: new BSON.ObjectId(),
               name: "Tom",
               age: 36,
             });
-          });
+          }).to.throw("Cannot write to class Person when no flexible sync subscription has been created.");
         });
       });
 
