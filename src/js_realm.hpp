@@ -1567,8 +1567,8 @@ realm::Realm::Config RealmClass<T>::write_copy_to_helper(ContextType ctx, Object
     // validate 5)
     // check whether a sync config exists -- it is optional
     ValueType syncConfigValue = Object::get_property(ctx, output_config, "sync");
-    if (!Value::is_undefined(ctx, syncConfigValue) && !Value::is_object(ctx, syncConfigValue)) {
-        throw std::invalid_argument("'sync' property must be an object");
+    if (!Value::is_undefined(ctx, syncConfigValue) && !Value::is_object(ctx, syncConfigValue) && !Value::is_boolean(ctx, syncConfigValue)) {
+        throw std::invalid_argument("if set, 'sync' property must be an object or a boolean");
     }
 
 
