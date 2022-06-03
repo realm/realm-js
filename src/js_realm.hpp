@@ -841,6 +841,9 @@ void RealmClass<T>::handle_initial_subscriptions(ContextType ctx, size_t argc, c
     if (Value::is_undefined(ctx, sync_value)) {
         return;
     }
+    if (Value::is_boolean(ctx, sync_value)) {
+        return;
+    }
     ObjectType sync_object = Value::validated_to_object(ctx, sync_value);
 
     ValueType initial_subscriptions_value = Object::get_property(ctx, sync_object, "initialSubscriptions");
