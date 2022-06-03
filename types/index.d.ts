@@ -92,6 +92,7 @@ declare namespace Realm {
         name: string;
         primaryKey?: string;
         embedded?: boolean;
+        asymmetric?: boolean;
     }
 
     interface ObjectSchema extends BaseObjectSchema {

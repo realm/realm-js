@@ -1197,6 +1197,9 @@ void RealmClass<T>::objects(ContextType ctx, ObjectType this_object, Arguments& 
     if (object_schema.is_embedded) {
         throw std::runtime_error("You cannot query an embedded object.");
     }
+    if (object_schema.is_asymmetric) {
+        throw std::runtime_error("You cannot query an asymmetric class.");
+    }
 
     return_value.set(ResultsClass<T>::create_instance(ctx, realm, object_schema.name));
 }
@@ -1276,7 +1279,12 @@ void RealmClass<T>::create(ContextType ctx, ObjectType this_object, Arguments& a
 
     NativeAccessor accessor(ctx, realm, object_schema);
     auto realm_object = realm::Object::create<ValueType>(accessor, realm, object_schema, object, policy);
-    return_value.set(RealmObjectClass<T>::create_instance(ctx, std::move(realm_object)));
+    if (object_schema.is_asymmetric) {
+        return_value.set_undefined();
+    }
+    else {
+        return_value.set(RealmObjectClass<T>::create_instance(ctx, std::move(realm_object)));
+    }
 }
 
 template <typename T>
