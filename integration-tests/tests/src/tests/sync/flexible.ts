@@ -35,7 +35,6 @@ import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "..
 import { DogSchema, IPerson, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { expectInvalidWriteSyncError } from "../../utils/expect-sync-error";
 import { closeAndReopenRealm, closeRealm } from "../../utils/close-realm";
-import { setTimeout } from "timers/promises";
 
 const FlexiblePersonSchema = { ...PersonSchema, properties: { ...PersonSchema.properties, nonQueryable: "string?" } };
 
