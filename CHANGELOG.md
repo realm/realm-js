@@ -18,7 +18,8 @@ x.x.x Release notes (yyyy-MM-dd)
 * <Using Realm Core vX.Y.Z>
 * <Upgraded Realm Core from vX.Y.Z to vA.B.C>
 * Removed support for node.js v12 and earlier versions and bumped to Node-API v5.
-
+* Fix FLX error scenario tests.
+* Fixed a bug preventing opening a synced Realm as a local Realm. (since v10.18.0)
 
 10.19.0 Release notes (2022-6-2)
 =============================================================
