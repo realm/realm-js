@@ -1,10 +1,9 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.19.1 Release notes (2022-6-7)
 =============================================================
 ### Enhancements
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * None.
 
 ### Compatibility
@@ -14,9 +13,6 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
 * Removed support for node.js v12 and earlier versions and bumped to Node-API v5.
 * Fix FLX error scenario tests.
 * Fixed a bug preventing opening a synced Realm as a local Realm. (since v10.18.0)
