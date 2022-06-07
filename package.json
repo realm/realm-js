@@ -145,20 +145,20 @@
     "typescript": "^4.5.2"
   },
   "engines": {
-    "node": ">=10",
+    "node": ">=13",
     "npm": ">=7"
   },
   "config": {
     "runtime": "napi",
-    "target": 4
+    "target": 5
   },
   "binary": {
     "module_name": "realm",
     "host": "https://static.realm.io",
-    "package_name": "realm-v{version}-napi-v4-{platform}-{arch}.tar.gz",
+    "package_name": "realm-v{version}-napi-v5-{platform}-{arch}.tar.gz",
     "remote_path": "realm-js-prebuilds/{version}",
     "napi_versions": [
-      4
+      5
     ]
   }
 }
