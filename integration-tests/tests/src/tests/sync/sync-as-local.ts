@@ -33,12 +33,14 @@ describe.skipIf(environment.missingServer, "Synced Realm as local", () => {
   });
 
   before(async function (this: RealmContext) {
+    this.timeout(5000);
     // Add a subscription
     await this.realm.subscriptions.update((subs) => {
       subs.add(this.realm.objects("Person"));
     });
-    // Add a few objects
+    // Delete any existing object and add a single object
     this.realm.write(() => {
+      this.realm.deleteAll();
       this.realm.create("Person", {
         _id: new Realm.BSON.ObjectId(),
         age: 23,
@@ -55,6 +57,7 @@ describe.skipIf(environment.missingServer, "Synced Realm as local", () => {
     // @ts-expect-error Using sync: true is an undocumented API
     this.realm = new Realm({ path: realmPath, sync: true });
     expect(this.realm.schema[0].name).equals("Person");
+    console.log(this.realm.objects<IPerson>("Person").length);
     expect(this.realm.objects<IPerson>("Person")[0].name).equals("Alice");
   });
 });
