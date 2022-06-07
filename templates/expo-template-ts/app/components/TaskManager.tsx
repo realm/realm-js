@@ -36,7 +36,7 @@ export const TaskManager: React.FC<{
   );
 
   const handleToggleTaskStatus = useCallback(
-    (task: Task): void => {
+    (task: Task & Realm.Object): void => {
       realm.write(() => {
         // Normally when updating a record in a NoSQL or SQL database, we have to type
         // a statement that will later be interpreted and used as instructions for how
@@ -60,7 +60,7 @@ export const TaskManager: React.FC<{
   );
 
   const handleDeleteTask = useCallback(
-    (task: Task): void => {
+    (task: Task & Realm.Object): void => {
       realm.write(() => {
         realm.delete(task);
 
