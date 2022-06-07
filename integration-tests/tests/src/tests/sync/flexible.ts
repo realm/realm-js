@@ -33,7 +33,6 @@ import Realm, { BSON, ClientResetMode, FlexibleSyncConfiguration, SessionStopPol
 
 import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "../../hooks";
 import { DogSchema, IPerson, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
-import { expectInvalidWriteSyncError } from "../../utils/expect-sync-error";
 import { closeAndReopenRealm, closeRealm } from "../../utils/close-realm";
 
 const FlexiblePersonSchema = { ...PersonSchema, properties: { ...PersonSchema.properties, nonQueryable: "string?" } };
