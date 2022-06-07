@@ -55,6 +55,7 @@ const Person = {
 * Upgraded Realm Core from v12.0.0 to v12.1.0.
 * Fix for updated FLX sync error message. ([#4611](https://github.com/realm/realm-js/pull/4611))
 * Updated build script to use Xcode 13.1 to match latest Apple App Store compatibility. ([#4605](https://github.com/realm/realm-js/issues/4605))
+* Removed unused scripts `scripts/download-realm.js`, `scripts/find-ios-device.rb`, `scripts/find-ios-runtime.rb`, `scripts/test-android.js` and `scripts/xcode-download-realm.sh`. ([#4402](https://github.com/realm/realm-js/issues/4402))
 
 10.18.0 Release notes (2022-5-29)
 =============================================================
