@@ -1165,10 +1165,10 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
         Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
     }
 
-    std::shared_ptr<AsyncOpenTask> task;
-    task = Realm::get_synchronized_realm(config);
+    std::shared_ptr<AsyncOpenTask> task = Realm::get_synchronized_realm(config);
 
-    realm::util::EventLoopDispatcher<RealmCallbackHandler> callback_handler([=, defaults = std::move(defaults),
+    realm::util::EventLoopDispatcher<RealmCallbackHandler> callback_handler([=, args_count = args.count,
+                                                                             defaults = std::move(defaults),
                                                                              constructors = std::move(constructors)](
                                                                                 ThreadSafeReference&& realm_ref,
                                                                                 std::exception_ptr error) {
@@ -1200,7 +1200,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
 
         try {
             ValueType unprotected_args = protected_args;
-            handle_initial_subscriptions(protected_ctx, args.count - 1, &unprotected_args, realm, realm_exists);
+            handle_initial_subscriptions(protected_ctx, args_count - 1, &unprotected_args, realm, realm_exists);
         }
         catch (TypeErrorException e) {
             auto error = make_js_error<T>(ctx, e.what());
