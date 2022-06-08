@@ -14,7 +14,7 @@ add_library(realm-js-android SHARED
     ../../node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/turbomodule/core/jni/ReactCommon/CallInvokerHolder.cpp
 )
 
-set_target_properties(realm-js-android PROPERTIES 
+set_target_properties(realm-js-android PROPERTIES
     OUTPUT_NAME "realm"
     PREFIX "lib"
     SUFFIX ".so"
@@ -55,7 +55,7 @@ if(NOT EXISTS ${FBJNI_LIB_DIR})
     if (NOT "${status_code}" STREQUAL "0")
         message(FATAL_ERROR "Downloading ${url}... Failed. Status: ${download_status}")
     endif()
-    
+
     message(STATUS "Uncompressing ${FBJNI_ROOT_DIR}/fbjni-0.2.2.aar")
     execute_process(
         COMMAND ${CMAKE_COMMAND} -E tar xfz "fbjni-0.2.2.aar"
@@ -70,6 +70,15 @@ else()
     target_compile_definitions(realm-js-android PUBLIC REALM_WRAP_MEMMOVE=0)
 endif()
 
+set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O2")
+
+target_link_options(realm-js-android PUBLIC  -fvisibility=hidden)
+
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(REALM_LINKER_FLAGS "${REALM_LINKER_FLAGS} -Wl,-gc-sections -Wl,--exclude-libs,ALL")
+endif()
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${REALM_LINKER_FLAGS}")
+
 if(REALM_JS_BUILD_CORE_FROM_SOURCE AND TARGET ObjectStore)
     target_compile_definitions(ObjectStore PUBLIC
         REALM_PLATFORM=Android
@@ -79,7 +88,7 @@ endif()
 
 # Setup fbjni library
 find_library(FBJNI_LIBRARY fbjni PATHS ${FBJNI_LIB_DIR} NO_CMAKE_FIND_ROOT_PATH)
-target_include_directories(realm-js-android PUBLIC 
+target_include_directories(realm-js-android PUBLIC
     ${FBJNI_INCLUDE_DIR}
     ../../node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/turbomodule/core/jni/
     ../../node_modules/react-native/ReactCommon/callinvoker/
