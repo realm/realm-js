@@ -141,8 +141,7 @@ public:
  * Here we encapsulate some type deduction capabilities for all supported
  * Javascript environments.
  */
-struct TypeDeduction : GenericTypeDeductionImpl {
-};
+struct TypeDeduction : GenericTypeDeductionImpl {};
 
 } // namespace js
 } // namespace realm
