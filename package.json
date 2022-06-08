@@ -119,7 +119,6 @@
     "babel-eslint": "^8.2.6",
     "clang-format": "^1.8.0",
     "cmake-js": "^6.1.0",
-    "compare-versions": "^3.6.0",
     "eslint": "^7.30.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-flowtype": "^5.8.0",
