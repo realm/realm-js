@@ -24,8 +24,7 @@ namespace realm {
 namespace js {
 
 // Empty class that merely serves as useful type for now.
-class Observable {
-};
+class Observable {};
 
 template <typename T>
 struct ObservableClass : ClassDefinition<T, Observable> {
