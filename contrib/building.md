@@ -122,7 +122,7 @@ Then you can install the SDK, NDK and CMake by running: (you can alternatively d
 
 ```sh
 sdkmanager --install "platforms;android-31"
-sdkmanager --install "ndk;21.0.6113669"
+sdkmanager --install "ndk;23.2.8568313"
 sdkmanager --install "cmake;3.18.1"
 ```
 
