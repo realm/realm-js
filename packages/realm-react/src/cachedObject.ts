@@ -49,7 +49,7 @@ type CachedObjectArgs<T> = {
  * @param args - {@link CachedObjectArgs} object arguments
  * @returns Proxy object wrapping the {@link Realm.Object}
  */
-export function createCachedObject<T extends Realm.Object>({
+export function createCachedObject<T extends Realm.Object<T>>({
   object,
   realm,
   updateCallback,
@@ -99,7 +99,7 @@ export function createCachedObject<T extends Realm.Object>({
       // Don't force a second re-render if any of the changed properties is a Realm.List,
       // as the List's cachedCollection will force a re-render itself
       const anyListPropertyModified = changes.changedProperties.some((property) => {
-        return obj[property as keyof T] instanceof Realm.List;
+        return obj[property as keyof Realm.Object<T>] instanceof Realm.List;
       });
       const shouldRerender = !anyListPropertyModified;
 

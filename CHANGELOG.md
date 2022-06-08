@@ -55,13 +55,14 @@ realm.write(() => {
 
 ### Fixed
 * Fixed build error (call to implicitly-deleted copy constructor of 'realm::js::RealmClass<realm::js::realmjsi::Types>::Arguments') (follow up to [#4568](https://github.com/realm/realm-js/pull/4568))
+* Fixed a few TS errors in the `@realm/react` package, introduced by ([#4537](https://github.com/realm/realm-js/pull/4537)).
 
 ### Compatibility
 * Atlas App Services.
 * Realm Studio v12.0.0.
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
-
+ 
 ### Internal
 * Remove the previous implementation to the JavaScriptCore engine (in `src/jsc`).
 * Upgrade Example to RN v0.68.2
