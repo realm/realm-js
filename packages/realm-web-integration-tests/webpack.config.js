@@ -38,11 +38,12 @@ module.exports = {
       },
     ],
   },
-  node: {
-    fs: "empty",
-  },
   resolve: {
     extensions: [".ts", ".js"],
+    fallback: {
+      crypto: false,
+      fs: false,
+    },
   },
   output: {
     filename: "bundle.js",

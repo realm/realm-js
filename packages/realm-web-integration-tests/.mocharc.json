@@ -1,0 +1,10 @@
+{
+  "extension": [
+    "ts",
+    "js"
+  ],
+  "require": [
+    "ts-node/register/transpile-only"
+  ],
+  "slow": 1000
+}
