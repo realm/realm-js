@@ -94,8 +94,10 @@ export async function run(devtools = false) {
   const devServer = new WebpackDevServer(compiler, {
     proxy: { "/api": baseUrl },
     historyApiFallback: true,
-    contentBase: path.join(__dirname, "../node_modules/realm-web"),
-    contentBasePublicPath: "/realm-web",
+    static: {
+      directory: path.join(__dirname, "../node_modules/realm-web"),
+      publicPath: "/realm-web",
+    },
   });
 
   await new Promise<void>((resolve, reject) => {

@@ -1,3 +1,0 @@
---watch-extensions ts
---require ts-node/register
---slow 1000

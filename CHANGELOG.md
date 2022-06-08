@@ -15,6 +15,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Upgrade Example to RN v0.68.2
+* Upgrade dependencies of the Realm Web integration tests
 * <Either mention core version or upgrade>
 * <Using Realm Core vX.Y.Z>
 * <Upgraded Realm Core from vX.Y.Z to vA.B.C>
