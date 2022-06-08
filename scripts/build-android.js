@@ -78,7 +78,7 @@ for (const arch of architectures) {
     "-GNinja",
     `-DANDROID_NDK=${ndkPath}`,
     `-DANDROID_ABI=${arch}`,
-    `-DCMAKE_MAKE_PROGRAM=/usr/local/bin/ninja`,
+    `-DCMAKE_MAKE_PROGRAM=ninja`,
     `-DCMAKE_TOOLCHAIN_FILE=${ndkPath}/build/cmake/android.toolchain.cmake`,
     "-DANDROID_TOOLCHAIN=clang",
     "-DANDROID_NATIVE_API_LEVEL=16",
@@ -136,23 +136,20 @@ function getVersion() {
   return version;
 }
 
-function getAndroidSdkPath() {
-  if ("ANDROID_SDK_ROOT" in process.env) {
-    console.log("Using ANDROID_SDK_ROOT env variable");
-    return process.env["ANDROID_SDK_ROOT"];
+function copyOutput(arch, buildDir) {
+  const outFile = path.resolve(buildDir, "src", "android", "libs", arch, "librealm.so");
+  if (!fs.existsSync(outFile)) {
+    throw new Error(`Build output file not found: ${outFile}`);
   }
 
-  if ("ANDROID_SDK" in process.env) {
-    console.log("Using ANDROID_SDK env variable");
-    return process.env["ANDROID_SDK"];
+  const archDir = path.resolve(copyOutputPath, arch);
+  if (!fs.existsSync(archDir)) {
+    fs.mkdirSync(archDir, { recursive: true });
   }
 
-  if ("ANDROID_HOME" in process.env) {
-    console.log("Using ANDROID_HOME env variable");
-    return process.env["ANDROID_HOME"];
-  }
-
-  throw new Error("Android SDK not found. ANDROID_SDK or ANDROID_HOME or ANDROID_SDK_ROOT needs to be set");
+  const targetFile = path.resolve(archDir, "librealm.so");
+  console.log(`Copying build file \n${outFile} to \n${targetFile}`);
+  fs.copyFileSync(outFile, targetFile);
 }
 
 function validateBuildType(buildTypeOption) {
