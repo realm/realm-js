@@ -21,6 +21,7 @@ jobs:
   job:
     name: Build & test
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
