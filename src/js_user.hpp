@@ -31,8 +31,10 @@
 #include <realm/object-store/sync/sync_session.hpp>
 #include <realm/object-store/sync/sync_user.hpp>
 #include <realm/object-store/sync/app.hpp>
+#include <realm/object-store/util/bson/bson.hpp>
 #include "js_types.hpp"
 #include "platform.hpp"
+
 
 namespace realm {
 namespace js {
@@ -409,6 +411,7 @@ void UserClass<T>::call_function(ContextType ctx, ObjectType this_object, Argume
     auto user = get_internal<T, UserClass<T>>(ctx, this_object);
 
     auto name = Value::validated_to_string(ctx, args[0], "name");
+
     auto stringified_ejson_args = Value::validated_to_string(ctx, args[1], "args");
     auto service = Value::is_undefined(ctx, args[2])
                        ? util::none
@@ -416,6 +419,10 @@ void UserClass<T>::call_function(ContextType ctx, ObjectType this_object, Argume
     auto callback = Value::validated_to_function(ctx, args[3], "callback");
 
     auto bson_args = String::to_bson(stringified_ejson_args);
+
+    if (bson_args.type() != realm::bson::Bson::Type::Array) {
+        throw TypeErrorException("args", "array", stringified_ejson_args);
+    }
 
     user->m_app->call_function(
         user->m_user, name, static_cast<const bson::BsonArray&>(bson_args), service,

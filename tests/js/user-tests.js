@@ -350,7 +350,7 @@ module.exports = {
     TestCase.assertEqual(err.message, "function not found: 'error'");
 
     // Regression tests for invalid inputs to function (non array)
-    TestCase.assertThrows(() => user.callFunction("sumFunc", 123));
+    TestCase.assertThrowsAsync(async () => await user.callFunction("sumFunc", 123));
   },
 
   async testMongoClient() {
