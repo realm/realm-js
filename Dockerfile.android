@@ -30,6 +30,7 @@ RUN dpkg --add-architecture i386 && \
       libglu1 \
       # Tools ndeed when building Android module
       build-essential \
+      ninja-build \
     && \
     # Install the active LTS version of Node.js
     curl -sL https://deb.nodesource.com/setup_${NODE_VERSION} | bash - && \
@@ -58,7 +59,6 @@ RUN echo 'Installing Android SDK' && \
                      "platform-tools" \
                      "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" \
                      "platforms;android-26" \
-                     "cmake;3.18.1"\
                      "system-images;android-29;default;x86" && \
     \
     echo 'Installing Android NDK' && \
