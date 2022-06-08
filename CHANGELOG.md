@@ -1,7 +1,7 @@
-10.19.5 Release notes (2022-7-6)
+x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Notes
-Based on Realm JS v10.17.0: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.16.0).
+Based on Realm JS v10.19.5: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.17.0).
 
 ### Breaking change
 * Removed all code related to the legacy Chrome Debugger. Please use [Flipper](https://fbflipper.com/) as debugger.
@@ -33,6 +33,30 @@ realm.write(() => {
 ```
 
 ### Fixed
+* Fixed build error (call to implicitly-deleted copy constructor of 'realm::js::RealmClass<realm::js::realmjsi::Types>::Arguments') (follow up to [#4568](https://github.com/realm/realm-js/pull/4568))
+
+### Compatibility
+* Atlas App Services.
+* Realm Studio v12.0.0.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
+* File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Internal
+* Remove the previous implementation to the JavaScriptCore engine (in `src/jsc`).
+* Upgrade Example to RN v0.68.2
+* Upgrade dependencies of the Realm Web integration tests
+* Throw instances of `Error` instead of plain objects on app errors.
+* Make integration tests on React Native Android connect to host machine by default
+<!-- * Either mention core version or upgrade -->
+<!-- * Using Realm Core vX.Y.Z -->
+<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+
+10.19.5 Release notes (2022-7-6)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
 * Fixed inadvertent change to minimum Android Gradle plugin version ([#4706](https://github.com/realm/realm-js/issues/4706), since v10.19.4)
 
 ### Compatibility
@@ -42,9 +66,9 @@ realm.write(() => {
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+<!-- * Either mention core version or upgrade -->
+<!-- * Using Realm Core vX.Y.Z -->
+<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
 
 10.19.4 Release notes (2022-7-5)
 =============================================================
@@ -108,7 +132,6 @@ realm.write(() => {
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Remove the previous implementation to the JavaScriptCore engine (in `src/jsc`).
 * Upgrade Example to RN v0.68.2
 * Upgrade dependencies of the Realm Web integration tests
 * Throw instances of `Error` instead of plain objects on app errors.
