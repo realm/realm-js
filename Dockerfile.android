@@ -4,9 +4,9 @@ FROM debian:stretch-20210927-slim
 # Setting environment variables for versions
 # See https://developer.android.com/studio/#command-tools for the latest SDK version
 ARG ANDROID_SDK_VERSION=4333796
-ARG ANDROID_NDK_VERSION=r21
+ARG ANDROID_NDK_VERSION=r23c
 ARG ANDROID_BUILD_TOOLS_VERSION=28.0.3
-ARG NODE_VERSION=12.x
+ARG NODE_VERSION=16.x
 
 # Locales
 ENV LANG C.UTF-8
@@ -63,15 +63,15 @@ RUN echo 'Installing Android SDK' && \
     \
     echo 'Installing Android NDK' && \
     cd ${ANDROID_NDK}/.. && \
-    curl -sO http://dl.google.com/android/repository/android-ndk-${ANDROID_NDK_VERSION}-linux-x86_64.zip && \
-    unzip -q android-ndk-*-linux-x86_64.zip && \
-    rm android-ndk-*-linux-x86_64.zip && \
+    curl -sO http://dl.google.com/android/repository/android-ndk-${ANDROID_NDK_VERSION}-linux.zip && \
+    unzip -q android-ndk-*-linux.zip && \
+    rm android-ndk-*-linux.zip && \
     mv android-ndk-* android-ndk
 
 RUN mkdir -p $NVM_DIR \
  && curl -s https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash \
  && . $NVM_DIR/nvm.sh \
- && nvm install 12 \
+ && nvm install 14 \
  && chmod a+rwX -R $NVM_DIR
 
 # Ensure a new enough version of CMake is available.
