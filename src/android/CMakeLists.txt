@@ -70,7 +70,8 @@ else()
     target_compile_definitions(realm-js-android PUBLIC REALM_WRAP_MEMMOVE=0)
 endif()
 
-set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O2")
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
+set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -Oz")
 
 target_link_options(realm-js-android PUBLIC  -fvisibility=hidden)
 
