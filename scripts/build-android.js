@@ -20,7 +20,6 @@ const commandLineArgs = require("command-line-args");
 const fs = require("fs-extra");
 const path = require("path");
 const exec = require("child_process").execFileSync;
-const compareVersions = require("compare-versions");
 
 //simple validation of current directory.
 const rnDir = path.resolve(process.cwd(), "react-native");
@@ -54,9 +53,7 @@ if (!ndkPath) {
   throw Error("ANDROID_NDK / ANDROID_NDK_HOME environment variable not set");
 }
 
-const sdkPath = getAndroidSdkPath();
-const cmakePath = getCmakePath(sdkPath);
-const cmakeVersion = getCmakeVersion(sdkPath);
+const cmakePath = process.platform === "win32" ? "cmake.exe" : "cmake";
 
 const buildPath = path.resolve(process.cwd(), "build-android");
 if (options.clean) {
@@ -81,7 +78,7 @@ for (const arch of architectures) {
     "-GNinja",
     `-DANDROID_NDK=${ndkPath}`,
     `-DANDROID_ABI=${arch}`,
-    `-DCMAKE_MAKE_PROGRAM=${sdkPath}/cmake/${cmakeVersion}/bin/ninja`,
+    `-DCMAKE_MAKE_PROGRAM=/usr/local/bin/ninja`,
     `-DCMAKE_TOOLCHAIN_FILE=${ndkPath}/build/cmake/android.toolchain.cmake`,
     "-DANDROID_TOOLCHAIN=clang",
     "-DANDROID_NATIVE_API_LEVEL=16",
@@ -156,27 +153,6 @@ function getAndroidSdkPath() {
   }
 
   throw new Error("Android SDK not found. ANDROID_SDK or ANDROID_HOME or ANDROID_SDK_ROOT needs to be set");
-}
-
-function getCmakePath() {
-  if ("CMAKE_PATH" in process.env) {
-    console.log("Using cmake from CMAKE_PATH environment variable");
-    return process.env["CMAKE_PATH"];
-  }
-
-  return process.platform === "win32" ? "cmake.exe" : "cmake";
-}
-
-function getCmakeVersion(sdkPath) {
-  const cmakePath = `${sdkPath}/cmake`;
-  let dirs = fs.readdirSync(cmakePath);
-  if (dirs.length === 0) {
-    throw new Error(`No CMake installation found in ${cmakePath}`);
-  }
-  const version = dirs.sort(compareVersions)[dirs.length - 1];
-  console.log(`Found CMake ${version} in ${cmakePath}`);
-
-  return version;
 }
 
 function validateBuildType(buildTypeOption) {

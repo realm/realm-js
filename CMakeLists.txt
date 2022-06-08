@@ -35,7 +35,7 @@ if(DEFINED CMAKE_JS_VERSION)
     endif()
 endif()
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.21)
 project(RealmJS)
 
 # Use ccache if available

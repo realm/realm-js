@@ -44,9 +44,9 @@ The following dependencies are required. All except Xcode can be installed by fo
 
 - [Xcode](https://developer.apple.com/xcode/) 13+ with Xcode command line tools installed
   - Newer versions may work, but 13.1 is the current recommended version, which can be downloaded from [Apple](https://developer.apple.com/download/all/?q=xcode%2013.1). To install older Xcode versions, [Xcodes.app](https://github.com/RobotsAndPencils/XcodesApp) is highly recommended
-- [Node.js](https://nodejs.org/en/) version 10.19 or later
+- [Node.js](https://nodejs.org/en/) version 13 or later
   - Consider [using NVM](https://github.com/nvm-sh/nvm#installing-and-updating) to enable fast switching between Node.js & NPM versions
-- [CMake](https://cmake.org/)
+- [CMake](https://cmake.org/) 3.21 or later
 - [OpenJDK 8](https://openjdk.java.net/install/)
 - [Android SDK 23+](https://developer.android.com/studio/index.html#command-tools)
   - Optionally, you can install [Android Studio](https://developer.android.com/studio)
@@ -68,8 +68,8 @@ export REALM_DISABLE_ANALYTICS=1
 # Install brew
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 
-# Install nvm
-brew install nvm
+# Install nvm and cmake
+brew install nvm cmake
 
 # Install the latest LTS version of Node.js and set it as the default
 nvm install --lts
@@ -81,8 +81,8 @@ npm install
 #### iOS
 
 ```sh
-# Install cocoapods and cmake
-brew install cocoapods cmake
+# Install cocoapods
+brew install cmake
 ```
 
 #### Android
@@ -118,12 +118,11 @@ export PATH=$PATH:$ANDROID_SDK_ROOT/platform-tools
 export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin
 ```
 
-Then you can install the SDK, NDK and CMake by running: (you can alternatively do this via **Tools > SDK Manager** in Android Studio)
+Then you can install the SDK and NDK by running: (you can alternatively do this via **Tools > SDK Manager** in Android Studio)
 
 ```sh
 sdkmanager --install "platforms;android-31"
 sdkmanager --install "ndk;23.2.8568313"
-sdkmanager --install "cmake;3.18.1"
 ```
 
 #### Optional extras
@@ -276,7 +275,7 @@ nvm install 16 # you can use any supported node version
 
 You can now build Realm JS from source:
 
-```sh 
+```sh
 export REALM_USE_SYSTEM_OPENSSL=1
 git clone https://github.com/realm/realm-js
 cd realm-js
