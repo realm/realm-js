@@ -506,12 +506,12 @@ void SubscriptionSetClass<T>::wait_for_synchronization_impl(ContextType ctx, Obj
                 current_subs->refresh();
 
                 auto result = state.is_ok() ? Value::from_undefined(protected_ctx)
-                                            : make_js_error<T>(protected_ctx, state.get_status().reason());
+                                            : Object::create_error(protected_ctx, state.get_status().reason());
 
                 Function<T>::callback(protected_ctx, protected_callback, protected_this, {result});
             }
             else {
-                auto error = make_js_error<T>(
+                auto error = Object::create_error(
                     protected_ctx, "`waitForSynchronisation` resolved after the `subscriptions` went out of scope");
                 Function<T>::callback(protected_ctx, protected_callback, protected_this, {error});
             }
@@ -525,7 +525,7 @@ void SubscriptionSetClass<T>::wait_for_synchronization_impl(ContextType ctx, Obj
     }
     catch (KeyNotFound const& ex) {
         // TODO Waiting on https://github.com/realm/realm-core/issues/5165 to remove this
-        auto error = make_js_error<T>(
+        auto error = Object::create_error(
             ctx, "`waitForSynchronisation` cannot be called before creating a SubscriptionSet using `update`");
         Function<T>::callback(protected_ctx, protected_callback, protected_this, {error});
     }
@@ -650,7 +650,7 @@ void SubscriptionSetClass<T>::update(ContextType ctx, ObjectType this_object, Ar
                                                                protected_completion_callback);
     }
     else {
-        auto error = make_js_error<T>(protected_ctx, "`update` called after the Realm went out of scope");
+        auto error = Object::create_error(protected_ctx, "`update` called after the Realm went out of scope");
         Function<T>::callback(protected_ctx, protected_completion_callback, protected_this, {error});
     }
 }
