@@ -171,6 +171,8 @@ export class App extends Component {
         global.fs = require("react-native-fs");
         global.path = require("path-browserify");
         global.environment = {
+          // Default to the host machine when running on Android
+          realmBaseUrl: Platform.OS === "android" ? "http://10.0.2.2:9090" : undefined,
           ...context,
           reactNative: Platform.OS,
           android: Platform.OS === "android",
