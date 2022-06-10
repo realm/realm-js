@@ -1154,7 +1154,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             ).to.not.be.rejected;
           }
 
-          it("does not throw, and updates the existing subscription, if a subscription with the same name but different query is added, and throwOnUpdate is true", async function (this: RealmContext) {
+          it("does not throw, and updates the existing subscription, if a subscription with the same name but different query is added, and throwOnUpdate is false", async function (this: RealmContext) {
             await testThrowOnUpdateFalse(this.realm, { throwOnUpdate: false });
           });
 
