@@ -15,12 +15,3 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-
-import { TemplateContext } from "../context";
-
-export function generateTypeScript({ spec, file }: TemplateContext): void {
-  const out = file("index.d.ts", "eslint");
-  out("// This file is generated: Update the spec instead of editing this file directly", "!");
-  out.spaced("// This", "is", "a", "spaced", "test");
-  out.lines("// This", "// Is", "// A", "// Test");
-}
