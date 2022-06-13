@@ -18,7 +18,8 @@
 
 import chalk from "chalk";
 import { Debugger } from "debug";
-import fs from "fs";
+
+export type Writer = (data: string) => void;
 
 export type Outputter = {
   /** Outputs all parts, seperated by nothing */
@@ -30,10 +31,7 @@ export type Outputter = {
 };
 
 /** Creates a new outputter, able to write to a specific file */
-export function createOutputter(fd: number, debug: Debugger): Outputter {
-  function write(data: string) {
-    fs.writeFileSync(fd, data, { encoding: "utf8" });
-  }
+export function createOutputter(write: Writer, debug: Debugger): Outputter {
   function out(...parts: string[]): void {
     const data = parts.join("");
     debug("%s %s", chalk.dim("←"), data);

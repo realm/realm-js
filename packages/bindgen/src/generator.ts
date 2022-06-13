@@ -19,7 +19,7 @@
 import { Spec } from "./spec";
 import { Template } from "./templates";
 import { TemplateContext } from "./context";
-import { createOutputDirectory } from "./files";
+import { createOutputDirectory } from "./output-directory";
 
 type GenerateOptions = {
   spec: Spec;
@@ -28,17 +28,15 @@ type GenerateOptions = {
 };
 
 export function generate({ spec, template, outputPath }: GenerateOptions): void {
-  const ourputDirectory = createOutputDirectory(outputPath);
+  const outputDirectory = createOutputDirectory(outputPath);
   const context: TemplateContext = {
     spec,
-    file(filePath: string) {
-      return ourputDirectory.file(filePath);
-    },
+    file: outputDirectory.file,
   };
   // Apply the template
   try {
     template(context);
   } finally {
-    ourputDirectory.close();
+    outputDirectory.close();
   }
 }
