@@ -9,14 +9,17 @@
   "type": "module",
   "scripts": {
     "start": "./realm-bindgen.ts",
+    "generate:spec-schema": "typescript-json-schema src/models/spec.ts Spec --out generated/spec.schema.json",
     "generate:typescript": "./realm-bindgen.ts --spec src/tests/simple-spec.yml --template typescript --output generated/ts"
   },
   "dependencies": {
     "@types/node": "^12.20.55",
+    "ajv": "^8.11.0",
     "chalk": "^4.1.2",
     "commander": "^9.3.0",
     "debug": "^4.3.4",
     "tsm": "^2.2.1",
+    "typescript-json-schema": "^0.53.1",
     "yaml": "^2.1.1"
   },
   "devDependencies": {
