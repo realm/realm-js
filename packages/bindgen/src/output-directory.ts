@@ -20,27 +20,22 @@ import chalk from "chalk";
 import { Debugger } from "debug";
 import fs from "fs";
 import path from "path";
-import cp from "child_process";
 
 import { debug } from "./debug";
 import { createOutputter, Outputter } from "./outputter";
+import { FormatterName, format, formatterNames, FormatError } from "./formatter";
 
 type OutputFile = {
   fd: number;
   filePath: string;
   debug: Debugger;
-  formatter?: string | string[];
+  formatter?: FormatterName;
 };
 
 export type Directory = {
-  file(filePath: string, formatter?: string): Outputter;
+  file(filePath: string, formatter?: FormatterName): Outputter;
   close(): void;
-};
-
-type Failure = {
-  filePath: string;
-  status: number;
-  output: string[];
+  format(): void;
 };
 
 export function createOutputDirectory(outputPath: string): Directory {
@@ -50,7 +45,7 @@ export function createOutputDirectory(outputPath: string): Directory {
   }
   const openFiles: OutputFile[] = [];
   return {
-    file(filePath: string, formatter?: string) {
+    file(filePath: string, formatter?: FormatterName) {
       const resolvedPath = path.resolve(outputPath, filePath);
       const parentDirectoryPath = path.dirname(resolvedPath);
       if (!fs.existsSync(parentDirectoryPath)) {
@@ -68,21 +63,23 @@ export function createOutputDirectory(outputPath: string): Directory {
       }, fileDebug);
     },
     close() {
-      const failures: Failure[] = [];
-      for (const { fd, formatter, debug, filePath } of openFiles) {
+      for (const { fd, debug } of openFiles) {
         debug(chalk.dim("Closing file"));
         fs.closeSync(fd);
-        if (formatter) {
-          debug(chalk.dim("Running formatter '%s'"), formatter);
-          const [command, ...args] = typeof formatter === "string" ? formatter.split(" ") : formatter;
-          const { status, output } = cp.spawnSync(command, [...args, filePath], { cwd: outputPath, encoding: "utf8" });
-          if (status > 0) {
-            failures.push({ status, output, filePath });
+      }
+    },
+    format() {
+      for (const formatterName of formatterNames) {
+        const relevantFiles = openFiles.filter((f) => f.formatter === formatterName).map((f) => f.filePath);
+        try {
+          format(formatterName, outputPath, relevantFiles);
+        } catch (err) {
+          if (err instanceof FormatError) {
+            console.error(err.message, err.output);
+          } else {
+            throw err;
           }
         }
-      }
-      for (const { output, filePath } of failures) {
-        console.error(`Failed write file (${filePath}): ${output.join("\n")}`);
       }
     },
   };
