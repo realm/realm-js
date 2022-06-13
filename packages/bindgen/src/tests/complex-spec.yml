@@ -1,0 +1,278 @@
+headers:
+  - "realm/object-store/shared_realm.hpp"
+  - "realm/object-store/object_store.hpp"
+  - "realm/object-store/object_schema.hpp"
+  - "realm/object-store/thread_safe_reference.hpp"
+
+primitives:
+  # TODO need to distinguish 64bit types where all bits are needed vs where double would be fine
+  - int32_t
+  - int64_t
+  - uint64_t
+  - bool
+  - int
+  - void
+  - std::string
+  - StringData
+  - OwnedBinaryData
+  - BinaryData
+
+typeAliases:
+  uint_fast64_t: uint64_t
+  Schema: std::vector<ObjectSchema>
+
+
+templates:
+  - util::Optional
+  - std::vector
+  - std::shared_ptr
+
+enums:
+  SchemaMode:
+    values:
+      - Automatic
+      - Immutable
+      - ReadOnlyAlternative
+      - ResetFile
+      - AdditiveDiscovered
+      - AdditiveExplicit
+      - Manual
+
+  PropertyType:
+    isFlag: true
+    flagMask: 960
+    values:
+      Int: 0
+      Bool: 1
+      String: 2
+      Data: 3
+      Date: 4
+      Float: 5
+      Double: 6
+      Object: 7         # currently must be either Array xor Nullable
+      LinkingObjects: 8 # currently must be Array and not Nullable
+
+      Mixed: 9
+      ObjectId: 10
+      Decimal: 11
+      UUID: 12
+
+      # Flags which can be combined with any of the above types except as noted
+      Required: 0
+      Nullable: 64
+      Array: 128
+      Set: 256
+      Dictionary: 512
+
+      # Collection: 896 # Array | Set | Dictionary
+      # Flags: 960 # Nullable | Collection
+
+constants:
+  null_col_key:
+    type: int64_t
+    value: 0x7FFF_FFFF_FFFF_FFFF
+
+records:
+  Property:
+    fields:
+      name: std::string
+      public_name:
+        type: std::string
+        default: ""
+      type:
+        type: PropertyType
+        default: Int
+      object_type:
+        type: std::string
+        default: ""
+      link_origin_property_name:
+        type: std::string
+        default: ""
+      is_primary: 
+        type: bool
+        default: false
+      is_indexed:
+        type: bool
+        default: false
+      column_key: ColKey
+  VersionID:
+    fields:
+      version:
+        type: int64_t
+        default: 0x7FFF_FFFF_FFFF_FFFF
+      index:
+        type: int32_t
+        default: 0
+  ColKey:
+    fields:
+      value:
+        type: int64_t
+        default: 0x7FFF_FFFF_FFFF_FFFF
+  TableKey:
+    fields:
+      value:
+        type: int32_t
+        default: 0x7FFF_FFFF
+  ObjectSchema:
+    fields:
+      name: std::string
+      persisted_properties:
+        type: std::vector<Property>
+        default: []
+      computed_properties:
+        type: std::vector<Property>
+        default: []
+      primary_key:
+        type: std::string
+        default: ''
+      table_key:
+        type: TableKey
+        default: {}
+      is_embedded:
+        type: bool
+        default: false
+      alias:
+        type: std::string
+        default: ''
+
+  RealmConfig:
+    fields:
+      path: std::string
+      # realm_data: BinaryData
+      #encryption_key:
+        #type: std::vector<char>
+        #default: {}
+      fifo_files_fallback_path: std::string
+      in_memory:
+        type: bool
+        default: false
+      schema:
+        type: util::Optional<Schema>
+        default: {}
+      schema_version:
+        type: uint64_t
+        default: -1
+
+      # migration_function
+      initialization_function:
+        type: '(realm: SharedRealm) -> void'
+        default: {}
+      should_compact_on_launch_function:
+        type: '(total_bytes: uint64_t, used_bytes: uint64_t) -> bool'
+        default: {}
+
+opaqueTypes:
+  - Group
+  - AuditInterface
+
+classes:
+  #ThreadSafeReference: {}
+  #SchemaChange: {}
+
+  Transaction:
+    sharedPtrWrapped: TransactionRef
+
+  ObjectStore:
+    staticMethods:
+      get_schema_version: '(group: Group) -> uint64_t'
+      set_schema_version: '(group: Group, version: uint64_t)'
+      #    verify_no_migration_required: '(changes: std::vector<SchemaChange>)'
+      #needs_migration: '(changes: std::vector<SchemaChange>) -> bool'
+      #verify_valid_additive_changes:
+      #  - '(changes: std::vector<SchemaChange>) -> bool'
+      #  - suffix: and_update_indexes
+      #    sig: '(changes: std::vector<SchemaChange>, update_indexes: bool) -> bool'
+      #verify_valid_external_changes: '(changes: std::vector<SchemaChange>)'
+      #verify_compatible_for_immutable_and_readonly: '(changes: std::vector<SchemaChange>)'
+      #verify_no_changes_required: '(changes: std::vector<SchemaChange>)'
+
+      # apply_schema_changes: '(group: Transaction&, uint64_t: schema_version, target_schema: Schema&, target_schema_version: uint64_t, mode: SchemaMode, changes: std::vector<SchemaChange>, migration_function: () -> void)'
+      # apply_additive_changes: '(group: Group&, changes: std::vector<SchemaChanges>, update_indexes: bool)'
+      # table_for_object_type
+      # table_for_Schema_type
+      
+      schema_from_group: '(group: Group) -> Schema'
+
+      # some more...
+
+
+
+  Realm:
+    sharedPtrWrapped: SharedRealm
+
+    staticMethods:
+      get_shared_realm:
+        - '(config: RealmConfig) -> SharedRealm'
+        #- suffix: for_thread
+          #sig: '(thread: ThreadSafeReference) -> SharedRealm'
+        #- suffix: for_thread_with_sched
+          #sig: '(thread: ThreadSafeReference, scheduler: std::shared_ptr<util::Scheduler>) -> SharedRealm'
+      #make_shared_realm: '(config: Realm::Config, version: util::Optional<VersionID>, coordinator: std::shared_ptr<_impl::RealmCoordinator>) -> SharedRealm'
+
+    properties:
+      config: const RealmConfig&
+      schema: const Schema&
+      schema_version: uint64_t
+      is_in_transaction: bool
+      is_frozen: bool
+      is_in_migration: bool
+
+      get_number_of_versions: uint64_t
+      read_transaction_version: VersionID
+      current_transaction_version: util::Optional<VersionID>
+
+      auto_refresh: bool
+
+      can_deliver_notifications: bool
+      scheduler: std::shared_ptr<Scheduler>
+      
+      is_closed: bool
+
+      audit_context: AuditInterface*
+
+    methods:
+      begin_transaction: ()
+      commit_transaction: ()
+      cancel_transaction: ()
+      freeze: () -> SharedRealm
+      last_seen_transaction_version: () -> uint64_t
+      read_group: () -> Group&
+      duplicate: () -> TransactionRef
+
+      enable_wait_for_change: ()
+      wait_for_change: () -> bool
+      wait_for_change_release: ()
+      refresh: () -> bool
+      set_auto_refresh: '(auto_refresh: bool)'
+      notify: ()
+      invalidate: ()
+      compact: () -> bool
+      write_copy:
+        - () -> OwnedBinaryData
+        - suffix: to
+          sig: '(path: StringData, encryption_key: BinaryData)'
+
+      verify_thread: () const
+      verify_in_write: () const
+      verify_open: () const
+      verify_notifications_available:
+        - () const
+        - suffix: maybe_throw
+          sig: '(throw_on_error: bool) const'
+
+      close: ()
+
+      file_format_upgraded_from_version: () const -> util::Optional<int>
+
+interfaces:
+  Scheduler:
+    methods:
+      notify: ()
+      is_on_thread: () const noexcept -> bool
+      is_same_as: '(other: std::shared_ptr<Scheduler> const&) const noexcept -> bool'
+      can_deliver_notifications: () const noexcept -> bool
+      set_notify_callback: '(callback: () -> void) noexcept'
+    staticMethods:
+      get_frozen: '(version: VersionID) -> std::shared_ptr<Scheduler>'
+      make_default: '() -> std::shared_ptr<Scheduler>'
+      set_default_factory: '(factory: () -> std::shared_ptr<Scheduler>)'
