@@ -42,7 +42,7 @@
   },
   "peerDependencies": {
     "react": ">=16.8.0",
-    "realm": ">=10.17.0 || >=10.20.0-beta"
+    "realm": "^10.17.0 || ^11.0.0-rc"
   },
   "optionalDependencies": {
     "@babel/runtime": ">=7",
