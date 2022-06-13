@@ -39,4 +39,5 @@ export function generate({ spec, template, outputPath }: GenerateOptions): void 
   } finally {
     outputDirectory.close();
   }
+  outputDirectory.format();
 }
