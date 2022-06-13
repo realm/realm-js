@@ -16,19 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import chalk from "chalk";
 import { Command, InvalidArgumentError } from "commander";
 import fs from "fs";
 import path from "path";
 
 import { debug, enableDebugging } from "./debug";
 import { generate } from "./generator";
-import { parseSpec } from "./spec";
+import { InvalidSpecError, parseSpec } from "./spec";
 import { Template, TEMPLATES } from "./templates";
 
-type ProgramOptions = {
+type GenerateOptions = {
   spec: string;
   template: Template;
   output: string;
+  debug: boolean;
+};
+
+type ValidateOptions = {
+  spec: string;
   debug: boolean;
 };
 
@@ -78,14 +84,45 @@ program
   .addOption(templateOption)
   .addOption(outputOption)
   .addOption(debugOption)
-  .action((args) => {
-    const { spec: specPath, template, output: outputPath, debug: isDebugging } = args as ProgramOptions;
+  .action((args: GenerateOptions) => {
+    const { spec: specPath, template, output: outputPath, debug: isDebugging } = args;
     if (isDebugging) {
       enableDebugging();
       debug("Debugging enabled");
     }
-    const spec = parseSpec(specPath);
-    generate({ spec, template, outputPath });
+    try {
+      const spec = parseSpec(specPath);
+      generate({ spec, template, outputPath });
+    } catch (err) {
+      if (err instanceof InvalidSpecError) {
+        err.print();
+      } else {
+        console.error(chalk.red("ERROR"), err.stack);
+      }
+      process.exit(1);
+    }
   });
 
-program.command("validate").addOption(specOption).addOption(debugOption);
+program
+  .command("validate")
+  .addOption(specOption)
+  .addOption(debugOption)
+  .action((args: ValidateOptions) => {
+    const { spec: specPath, debug: isDebugging } = args;
+    if (isDebugging) {
+      enableDebugging();
+      debug("Debugging enabled");
+    }
+    try {
+      parseSpec(specPath);
+      console.log(chalk.green("Validation passed!"));
+      process.exit(0);
+    } catch (err) {
+      if (err instanceof InvalidSpecError) {
+        err.print();
+      } else {
+        console.error(chalk.red("ERROR"), err.stack);
+      }
+      process.exit(1);
+    }
+  });

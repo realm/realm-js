@@ -18,18 +18,46 @@
 
 import yaml from "yaml";
 import fs from "fs";
+import Ajv, { ErrorObject } from "ajv";
 
 import { extend } from "./debug";
+import { Spec } from "./models/spec";
+import chalk from "chalk";
+
+export * from "./models/spec";
+
+export class InvalidSpecError extends Error {
+  filePath: string;
+  errors: ErrorObject[];
+
+  constructor(filePath: string, errors: ErrorObject[]) {
+    super("Failed to validate specification");
+    this.filePath = filePath;
+    this.errors = errors;
+  }
+
+  print(): void {
+    console.error(chalk.red("ERROR"), this.message, chalk.dim(this.filePath));
+    for (const { instancePath, message } of this.errors) {
+      console.error(chalk.dim(instancePath), message);
+    }
+  }
+}
 
 const debug = extend("spec-parser");
-
-export type Spec = {
-  /* ... */
-};
+const ajv = new Ajv({ allowUnionTypes: true });
+const schemaFile = new URL("../generated/spec.schema.json", import.meta.url);
+const schmeaJson = JSON.parse(fs.readFileSync(schemaFile, { encoding: "utf8" }));
+export const validate = ajv.compile<Spec>(schmeaJson);
 
 export function parseSpec(filePath: string): Spec {
   const text = fs.readFileSync(filePath, { encoding: "utf8" });
   const parsed = yaml.parse(text);
   debug("Read spec: %O", parsed);
-  return {};
+  const isValid = validate(parsed);
+  if (isValid) {
+    return parsed;
+  } else {
+    throw new InvalidSpecError(filePath, validate.errors);
+  }
 }
