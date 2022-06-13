@@ -4,7 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* Fix peer dependency for Realm in package.json to support `-beta` branches of Realm ([#4621](https://github.com/realm/realm-js/issues/4621))
+* Fix peer dependency for Realm in package.json to support `-rc` branches of Realm ([#4621](https://github.com/realm/realm-js/issues/4621))
 
 ### Compatibility
 * Atlas App Services.
