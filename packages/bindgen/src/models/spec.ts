@@ -62,7 +62,7 @@ export type MethodSpec = {
 
 export type ClassSpec = {
   sharedPtrWrapped?: string;
-  staticMethods: { [name: string]: string[] };
+  staticMethods: { [name: string]: MethodSpec[] };
   properties: { [name: string]: string };
   methods: { [name: string]: MethodSpec[] };
 };

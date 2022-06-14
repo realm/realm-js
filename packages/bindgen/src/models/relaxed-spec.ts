@@ -42,7 +42,7 @@ export type RelaxedFieldSpec =
     };
 
 export type RelaxedClassSpec = Omit<Partial<ClassSpec>, "methods" | "staticMethods"> & {
-  staticMethods?: { [name: string]: string | string[] };
+  staticMethods?: { [name: string]: RelaxedMethodSpec | RelaxedMethodSpec[] };
   methods?: { [name: string]: RelaxedMethodSpec | RelaxedMethodSpec[] };
 };
 
