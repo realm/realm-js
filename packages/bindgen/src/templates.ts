@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { TemplateContext } from "./context";
-
 import { generateTypeScript } from "./templates/typescript";
 
 export type Template = (context: TemplateContext) => void;
