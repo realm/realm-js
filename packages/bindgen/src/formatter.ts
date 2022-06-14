@@ -24,6 +24,7 @@ const debug = extend("format");
 
 const FORMATTERS = {
   eslint: ["eslint", "--fix"],
+  "clang-format": ["clang-format"],
 };
 
 export type FormatterName = keyof typeof FORMATTERS;

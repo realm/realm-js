@@ -22,29 +22,33 @@ import { Debugger } from "debug";
 export type Writer = (data: string) => void;
 
 export type Outputter = {
-  /** Outputs all parts, seperated by nothing */
+  /** Outputs all parts, seperated by spaces (and a trailing newline) */
   (...parts: string[]): void;
-  /** Outputs all parts, seperated by spaces */
-  spaced(...parts: string[]): void;
   /** Outputs all parts, seperated by newlines */
   lines(...parts: string[]): void;
+  /** Outputs all parts, seperated by nothing */
+  raw(...parts: string[]): void;
 };
 
-/** Creates a new outputter, able to write to a specific file */
+/**
+ * @param write called when actually writing to the file
+ * @param debug called to emit debugging messages when the outputter is used
+ * @returns An outputter, able to write concatinated strings, seperated by spaces or newlines.
+ */
 export function createOutputter(write: Writer, debug: Debugger): Outputter {
   function out(...parts: string[]): void {
-    const data = parts.join("");
-    debug("%s %s", chalk.dim("←"), data);
-    write(data);
-  }
-  out.spaced = function (...parts: string[]) {
     const data = parts.join(" ");
     debug("%s %s", chalk.dim("←"), data);
-    write(data);
-  };
+    write(data + "\n");
+  }
   out.lines = function (...parts: string[]) {
     parts.forEach((part) => debug("%s %s", chalk.dim("←"), part));
     write(parts.join("\n"));
+  };
+  out.raw = function (...parts: string[]) {
+    const data = parts.join("");
+    debug("%s %s", chalk.dim("←"), data);
+    write(data);
   };
   return out;
 }
