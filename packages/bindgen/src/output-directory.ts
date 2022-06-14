@@ -32,13 +32,28 @@ type OutputFile = {
   formatter?: FormatterName;
 };
 
-export type Directory = {
+export type OutputDirectory = {
+  /**
+   * @param filePath Relative path to the file within the output directory.
+   * @param formatter An optional formatter to apply after the file has been closed.
+   * @returns An outputter, able to write into the file.
+   */
   file(filePath: string, formatter?: FormatterName): Outputter;
+  /**
+   * Close all files opened during the lifetime of the output directory.
+   */
   close(): void;
+  /**
+   * Formats all files opened during the lifetime of the output directory.
+   */
   format(): void;
 };
 
-export function createOutputDirectory(outputPath: string): Directory {
+/**
+ * @param outputPath Path on disk, to the output directory.
+ * @returns An object, exposing methods to open files to write into.
+ */
+export function createOutputDirectory(outputPath: string): OutputDirectory {
   // Create the output directory if it doesn't exist
   if (!fs.existsSync(outputPath)) {
     fs.mkdirSync(outputPath, { recursive: true });

@@ -16,13 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import yaml from "yaml";
-import fs from "fs";
 import Ajv, { ErrorObject } from "ajv";
+import chalk from "chalk";
+import fs from "fs";
+import yaml from "yaml";
 
 import { extend } from "./debug";
 import { Spec } from "./models/spec";
-import chalk from "chalk";
 
 export * from "./models/spec";
 
@@ -58,6 +58,6 @@ export function parseSpec(filePath: string): Spec {
   if (isValid) {
     return parsed;
   } else {
-    throw new InvalidSpecError(filePath, validate.errors);
+    throw new InvalidSpecError(filePath, validate.errors || []);
   }
 }
