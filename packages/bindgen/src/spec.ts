@@ -21,7 +21,7 @@ import chalk from "chalk";
 import fs from "fs";
 import yaml from "yaml";
 
-import { ClassSpec, FieldSpec, MethodSpec, RecordSpec, Spec, ValueType } from "./models/spec";
+import { ClassSpec, FieldSpec, MethodSpec, RecordSpec, Spec, ValueType } from "./spec/model";
 import {
   RelaxedClassSpec,
   RelaxedFieldSpec,
@@ -29,9 +29,9 @@ import {
   RelaxedRecordSpec,
   RelaxedSpec,
   RelaxedValueType,
-} from "./models/relaxed-spec";
+} from "./spec/relaxed-model";
 
-export * from "./models/spec";
+export * from "./spec/model";
 
 export class InvalidSpecError extends Error {
   filePath: string;
