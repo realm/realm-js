@@ -16,11 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { camelCase } from "change-case";
+
 import { TemplateContext } from "../context";
 
 export function generateTypeScript({ spec, file }: TemplateContext): void {
   const out = file("index.d.ts", "eslint");
   out("// This file is generated: Update the spec instead of editing this file directly", "!");
-  out.spaced("// This", "is", "a", "spaced", "test");
-  out.lines("// This", "// Is", "// A", "// Test");
+  for (const [name, { methods = {}, properties = {}, staticMethods = {} }] of Object.entries(spec.classes || {})) {
+    out(`declare class ${name} {`);
+    for (const [name, type] of Object.entries(staticMethods)) {
+      out("static", camelCase(name), "(/* arguments */);");
+    }
+    out(`}`);
+  }
 }

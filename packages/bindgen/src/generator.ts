@@ -18,7 +18,6 @@
 
 import { Spec } from "./spec";
 import { Template } from "./templates";
-import { TemplateContext } from "./context";
 import { createOutputDirectory } from "./output-directory";
 
 type GenerateOptions = {
@@ -27,15 +26,19 @@ type GenerateOptions = {
   outputPath: string;
 };
 
+/**
+ * Calls a template with the spec, coordinating the closing and formatting of output files.
+ *
+ * @param options The spec to generate from, the template to apply and the path of the directory to write output
+ */
 export function generate({ spec, template, outputPath }: GenerateOptions): void {
-  const outputDirectory = createOutputDirectory(outputPath);
-  const context: TemplateContext = {
-    spec,
-    file: outputDirectory.file,
-  };
   // Apply the template
+  const outputDirectory = createOutputDirectory(outputPath);
   try {
-    template(context);
+    template({
+      spec,
+      file: outputDirectory.file.bind(outputDirectory),
+    });
   } finally {
     outputDirectory.close();
   }
