@@ -38,10 +38,6 @@ type ValidateOptions = {
   debug: boolean;
 };
 
-export const program = new Command();
-
-program.name("realm-bindgen");
-
 function parsePath(input: string) {
   return path.resolve(input);
 }
@@ -54,6 +50,18 @@ function parseExistingFilePath(input: string) {
   return parsed;
 }
 
+function printError(err: unknown) {
+  if (err instanceof InvalidSpecError) {
+    err.print();
+  } else {
+    console.error(chalk.red("ERROR"), err instanceof Error ? err.stack : err);
+  }
+}
+
+export const program = new Command();
+
+program.name("realm-bindgen");
+
 const specOption = program
   .createOption("-s, --spec <output>", "Path of the API specification")
   .argParser(parseExistingFilePath)
@@ -64,7 +72,7 @@ const templateOption = program
   .choices(Object.keys(TEMPLATES))
   .argParser((name) => {
     if (name in TEMPLATES) {
-      return TEMPLATES[name];
+      return TEMPLATES[name as keyof typeof TEMPLATES];
     } else {
       throw new InvalidArgumentError(`Unsupported template (${name})`);
     }
@@ -93,12 +101,9 @@ program
     try {
       const spec = parseSpec(specPath);
       generate({ spec, template, outputPath });
+      process.exit(0);
     } catch (err) {
-      if (err instanceof InvalidSpecError) {
-        err.print();
-      } else {
-        console.error(chalk.red("ERROR"), err.stack);
-      }
+      printError(err);
       process.exit(1);
     }
   });
@@ -118,11 +123,7 @@ program
       console.log(chalk.green("Validation passed!"));
       process.exit(0);
     } catch (err) {
-      if (err instanceof InvalidSpecError) {
-        err.print();
-      } else {
-        console.error(chalk.red("ERROR"), err.stack);
-      }
+      printError(err);
       process.exit(1);
     }
   });
