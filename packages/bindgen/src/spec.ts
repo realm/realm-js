@@ -99,7 +99,7 @@ function normalizeRecordSpec(spec: RelaxedRecordSpec): RecordSpec {
 function normalizeClassSpec(spec: RelaxedClassSpec): ClassSpec {
   return {
     sharedPtrWrapped: spec.sharedPtrWrapped,
-    staticMethods: normalizeObjectOfArray(spec.staticMethods || {}),
+    staticMethods: mapObjectValues(spec.staticMethods || {}, normalizeMethodSpec),
     properties: spec.properties || {},
     methods: mapObjectValues(spec.methods || {}, normalizeMethodSpec),
   };
