@@ -9,7 +9,7 @@
   "type": "module",
   "scripts": {
     "start": "./realm-bindgen.ts",
-    "generate:spec-schema": "typescript-json-schema src/models/relaxed-spec.ts RelaxedSpec --out generated/spec.schema.json --required",
+    "generate:spec-schema": "typescript-json-schema src/spec/relaxed-model.ts RelaxedSpec --out generated/spec.schema.json --required",
     "generate:typescript": "./realm-bindgen.ts --spec src/tests/complex-spec.yml --template typescript --output generated/ts"
   },
   "dependencies": {
