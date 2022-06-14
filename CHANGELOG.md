@@ -34,6 +34,7 @@ realm.write(() => {
 
 ### Fixed
 * Fixed build error (call to implicitly-deleted copy constructor of 'realm::js::RealmClass<realm::js::realmjsi::Types>::Arguments') (follow up to [#4568](https://github.com/realm/realm-js/pull/4568))
+* Fixed use of `globalThis` affecting iOS 11/12 support ([#4646](https://github.com/realm/realm-js/pull/4646))
 
 ### Compatibility
 * Atlas App Services.
