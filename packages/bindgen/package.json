@@ -17,6 +17,7 @@
     "ajv": "^8.11.0",
     "chalk": "^4.1.2",
     "change-case": "^4.1.2",
+    "chevrotain": "^10.1.2",
     "commander": "^9.3.0",
     "debug": "^4.3.4",
     "tsm": "^2.2.1",

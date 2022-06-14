@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { ClassSpec, MethodSpec, Spec } from "./spec";
+import { ClassSpec, MethodSpec, Spec } from "./model";
 
 /**
  * Needed we want to avoid quoting all the values that are primitive non-strings
