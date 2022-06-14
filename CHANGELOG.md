@@ -4,8 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed use of `globalThis` affecting iOS 11/12 support ([#4647](https://github.com/realm/realm-js/pull/4647))
 
 ### Compatibility
 * Atlas App Services.
