@@ -66,7 +66,6 @@ export class AppImportServer {
     this.importer = importer;
     this.config = { ...AppImportServer.DEFAULT_CONFIG, ...config };
     this.server = createServer(this.handleRequestSync);
-    console.log(this.server, this.config);
   }
 
   public start(): Promise<this> {
