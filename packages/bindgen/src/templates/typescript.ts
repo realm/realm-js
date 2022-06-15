@@ -43,21 +43,28 @@ const TEMPLATE_INSTANCE_MAPPING: Record<string, TemplateInstanceMapper> = {
   "std::shared_ptr": (spec, type) => generateType(spec, type.templateArguments[0]),
 };
 
-function isDeclaredBySpec(spec: Spec, name: string) {
-  return (
-    Object.keys(spec.records).includes(name) ||
-    Object.keys(spec.classes).includes(name) ||
-    Object.keys(spec.interfaces).includes(name) ||
-    Object.keys(spec.typeAliases).includes(name) ||
-    Object.keys(spec.enums).includes(name) ||
-    spec.opaqueTypes.includes(name)
-  );
+function isString(value: unknown): value is string {
+  return typeof value === "string";
+}
+
+function getDeclaredIdentifiers(spec: Spec): string[] {
+  return [
+    ...Object.keys(spec.records),
+    ...Object.keys(spec.classes),
+    ...Object.entries(spec.classes)
+      .map(([, classSpec]) => classSpec.sharedPtrWrapped)
+      .filter(isString),
+    ...Object.keys(spec.interfaces),
+    ...Object.keys(spec.typeAliases),
+    ...Object.keys(spec.enums),
+    ...spec.opaqueTypes,
+  ];
 }
 
 function generateType(spec: Spec, type: TypeSpec): string {
   if (type.kind === "qualifying-name") {
     const fullName = type.names.join("::");
-    if (isDeclaredBySpec(spec, fullName)) {
+    if (getDeclaredIdentifiers(spec).includes(fullName)) {
       return fullName;
     } else if (fullName in PRIMITIVES_MAPPING) {
       return PRIMITIVES_MAPPING[fullName];
@@ -154,14 +161,14 @@ export function generateTypeScript({ spec, file }: TemplateContext): void {
   out("// Records");
   for (const [name, { fields }] of Object.entries(spec.records)) {
     out(`export type ${name} = {`);
-    for (const [name, fieldSpecs] of Object.entries(fields)) {
-      out(camelCase(name), ":", generateType(spec, fieldSpecs.type), ";");
+    for (const [name, field] of Object.entries(fields)) {
+      out(camelCase(name), ":", generateType(spec, field.type), field.default ? `/* = ${field.default} */` : "", ";");
     }
     out(`}`);
   }
 
   out("// Classes");
-  for (const [name, { methods, properties, staticMethods }] of Object.entries(spec.classes)) {
+  for (const [name, { methods, properties, staticMethods, sharedPtrWrapped }] of Object.entries(spec.classes)) {
     out(`export declare class ${name} {`);
     for (const [name, methodSpecs] of Object.entries(staticMethods)) {
       for (const methodSpec of methodSpecs) {
@@ -192,6 +199,9 @@ export function generateTypeScript({ spec, file }: TemplateContext): void {
       }
     }
     out(`}`);
+    if (sharedPtrWrapped) {
+      out("export type", sharedPtrWrapped, " = ", name);
+    }
   }
 
   out("// Interfaces");
