@@ -19,9 +19,9 @@
 import { camelCase } from "change-case";
 
 import { TemplateContext } from "../context";
-import { ArgumentSpec, Spec, TypeSpec } from "../spec";
+import { ArgumentSpec, Spec, TemplateInstanceSpec, TypeSpec } from "../spec";
 
-const DIRECT_TYPE_MAPPING: Record<string, string> = {
+const PRIMITIVES_MAPPING: Record<string, string> = {
   void: "void",
   bool: "boolean",
   int: "number",
@@ -30,6 +30,17 @@ const DIRECT_TYPE_MAPPING: Record<string, string> = {
   uint64_t: "number",
   "std::string": "string",
   StringData: "string",
+  BinaryData: "ArrayBuffer",
+  OwnedBinaryData: "ArrayBuffer",
+};
+
+type TemplateInstanceMapper = (spec: Spec, type: TemplateInstanceSpec) => string;
+
+const TEMPLATE_INSTANCE_MAPPING: Record<string, TemplateInstanceMapper> = {
+  "std::vector": (spec, type) => `(${generateType(spec, type.templateArguments[0])})[]`,
+  "util::Optional": (spec, type) => `(${generateType(spec, type.templateArguments[0])}) | undefined`,
+  // TODO: Evaluate if this is the right type
+  "std::shared_ptr": (spec, type) => generateType(spec, type.templateArguments[0]),
 };
 
 function isDeclaredBySpec(spec: Spec, name: string) {
@@ -38,6 +49,7 @@ function isDeclaredBySpec(spec: Spec, name: string) {
     Object.keys(spec.classes).includes(name) ||
     Object.keys(spec.interfaces).includes(name) ||
     Object.keys(spec.typeAliases).includes(name) ||
+    Object.keys(spec.enums).includes(name) ||
     spec.opaqueTypes.includes(name)
   );
 }
@@ -47,20 +59,15 @@ function generateType(spec: Spec, type: TypeSpec): string {
     const fullName = type.names.join("::");
     if (isDeclaredBySpec(spec, fullName)) {
       return fullName;
-    } else if (fullName in DIRECT_TYPE_MAPPING) {
-      return DIRECT_TYPE_MAPPING[fullName];
+    } else if (fullName in PRIMITIVES_MAPPING) {
+      return PRIMITIVES_MAPPING[fullName];
     } else {
       return `unknown /* ${fullName} */`;
     }
   } else if (type.kind === "template-instance") {
     const fullName = type.names.join("::");
-    if (fullName === "std::vector" && type.templateArguments.length === 1) {
-      return `(${generateType(spec, type.templateArguments[0])})[]`;
-    } else if (fullName === "util::Optional" && type.templateArguments.length === 1) {
-      return `(${generateType(spec, type.templateArguments[0])}) | undefined`;
-    } else if (fullName === "std::shared_ptr") {
-      // TODO: Evaluate if this is the right type
-      return generateType(spec, type.templateArguments[0]);
+    if (fullName in TEMPLATE_INSTANCE_MAPPING) {
+      return TEMPLATE_INSTANCE_MAPPING[fullName](spec, type);
     } else {
       return `unknown /* ${fullName}<${JSON.stringify(type.templateArguments)}> */`;
     }
@@ -106,31 +113,56 @@ function generateTypeModifierComment(spec: TypeSpec) {
 }
 
 export function generateTypeScript({ spec, file }: TemplateContext): void {
+  // Check the support for primitives used
+  for (const primitive of spec.primitives) {
+    if (!Object.keys(PRIMITIVES_MAPPING).includes(primitive)) {
+      console.warn(`Spec declares an unsupported primitive: "${primitive}"`);
+    }
+  }
+
+  // Check the support for template instances used
+  for (const template of spec.templates) {
+    if (!Object.keys(TEMPLATE_INSTANCE_MAPPING).includes(template)) {
+      console.warn(`Spec declares an unsupported template instance: "${template}"`);
+    }
+  }
+
   const out = file("index.d.ts", "eslint");
-  out("// This file is generated: Update the spec instead of editing this file directly", "!");
+  out("// This file is generated: Update the spec instead of editing this file directly");
 
-  // Opaque types
+  out("// Opaque types");
   for (const name of spec.opaqueTypes) {
-    out(`type ${name} = unknown;`);
+    out(`export type ${name} = unknown;`);
   }
 
-  // Type aliases
+  out("// Type aliases");
   for (const [name, type] of Object.entries(spec.typeAliases)) {
-    out(`type ${name} = ${generateType(spec, type)};`);
+    out(`export type ${name} = ${generateType(spec, type)};`);
   }
 
-  // Records
+  out("// Enums");
+  for (const [name, e] of Object.entries(spec.enums)) {
+    out(`export enum ${name} {`);
+    if (e.isFlag) {
+      out(...Object.entries(e.values).map(([k, v]) => `${k} = ${v},`));
+    } else {
+      out(...e.values.map((k) => `${k} = "${k}",`));
+    }
+    out("};");
+  }
+
+  out("// Records");
   for (const [name, { fields }] of Object.entries(spec.records)) {
-    out(`type ${name} = {`);
+    out(`export type ${name} = {`);
     for (const [name, fieldSpecs] of Object.entries(fields)) {
       out(camelCase(name), ":", generateType(spec, fieldSpecs.type), ";");
     }
     out(`}`);
   }
 
-  // Classes
+  out("// Classes");
   for (const [name, { methods, properties, staticMethods }] of Object.entries(spec.classes)) {
-    out(`declare class ${name} {`);
+    out(`export declare class ${name} {`);
     for (const [name, methodSpecs] of Object.entries(staticMethods)) {
       for (const methodSpec of methodSpecs) {
         out(
@@ -162,9 +194,9 @@ export function generateTypeScript({ spec, file }: TemplateContext): void {
     out(`}`);
   }
 
-  // Interfaces
+  out("// Interfaces");
   for (const [name, { methods }] of Object.entries(spec.interfaces)) {
-    out(`declare interface ${name} {`);
+    out(`export declare interface ${name} {`);
     // TODO: Evaluate if the static methods are even needed here / in the spec format
     for (const [name, methodSpecs] of Object.entries(methods)) {
       for (const methodSpec of methodSpecs) {
