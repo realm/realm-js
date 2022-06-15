@@ -289,12 +289,12 @@ export class AppImporter {
 
   private async applyAppConfiguration(appPath: string, appId: string, groupId: string) {
     console.log("applyAppConfiguration: ", appPath);
-    const authProviderDir = `${appPath}/auth_providers`;
+    const authProviderDir = path.join(appPath, "auth_providers");
     if (fs.existsSync(authProviderDir)) {
       console.log("Applying auth providers... ");
       const authFileNames = fs.readdirSync(authProviderDir);
       for (const authFileName of authFileNames) {
-        const authFilePath = `${authProviderDir}/${authFileName}`;
+        const authFilePath = path.join(authProviderDir, authFileName);
         const authConfig = fs.readFileSync(authFilePath, "utf-8");
         const url = `${this.apiUrl}/groups/${groupId}/apps/${appId}/auth_providers`;
         const response = await fetch(url, {
@@ -341,13 +341,13 @@ export class AppImporter {
     //   }
     // }
 
-    const servicesDir = `${appPath}/services`;
+    const servicesDir = path.join(appPath, "services");
     if (fs.existsSync(servicesDir)) {
       console.log("Applying services... ");
       const serviceDirectories = fs.readdirSync(servicesDir);
       for (const serviceDir of serviceDirectories) {
         console.log("applying service: ", serviceDir);
-        const configFilePath = `${servicesDir}/${serviceDir}/config.json`;
+        const configFilePath = path.join(servicesDir, serviceDir, "config.json");
         console.log(configFilePath);
         if (fs.existsSync(configFilePath)) {
           const config = JSON.parse(fs.readFileSync(configFilePath, "utf-8"));
@@ -401,14 +401,15 @@ export class AppImporter {
             //     }
             //   }, 1000);
             // });
-            const rulesDir = `${servicesDir}/${serviceDir}/rules`;
+            const rulesDir = path.join(servicesDir, serviceDir, "rules");
             const responseJson = await response.json();
             const serviceId = responseJson._id;
             if (fs.existsSync(rulesDir)) {
               console.log("applying rules");
               const ruleFiles = fs.readdirSync(rulesDir);
               for (const ruleFile of ruleFiles) {
-                const ruleConfig = JSON.parse(fs.readFileSync(`${rulesDir}/${ruleFile}`, "utf-8"));
+                const ruleFilePath = path.join(rulesDir, ruleFile);
+                const ruleConfig = JSON.parse(fs.readFileSync(ruleFilePath, "utf-8"));
                 const schemaConfig = ruleConfig.schema || null;
                 if (schemaConfig) {
                   // Schema is not valid in a rule request
@@ -445,7 +446,8 @@ export class AppImporter {
       }
     }
 
-    if (fs.existsSync(`${appPath}/functions`)) {
+    const functionsPath = path.join(appPath, "functions");
+    if (fs.existsSync(functionsPath)) {
       console.log("Applying functions... ");
     }
   }
