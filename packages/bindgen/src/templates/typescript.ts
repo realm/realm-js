@@ -62,7 +62,9 @@ function getDeclaredIdentifiers(spec: Spec): string[] {
 }
 
 function generateType(spec: Spec, type: TypeSpec): string {
-  if (type.kind === "qualifying-name") {
+  if (type.kind !== "function" && type.isConst) {
+    return `Readonly<${generateType(spec, { ...type, isConst: false })}>`;
+  } else if (type.kind === "qualifying-name") {
     const fullName = type.names.join("::");
     if (getDeclaredIdentifiers(spec).includes(fullName)) {
       return fullName;
@@ -162,7 +164,7 @@ export function generateTypeScript({ spec, file }: TemplateContext): void {
   for (const [name, { fields }] of Object.entries(spec.records)) {
     out(`export type ${name} = {`);
     for (const [name, field] of Object.entries(fields)) {
-      out(camelCase(name), ":", generateType(spec, field.type), field.default ? `/* = ${field.default} */` : "", ";");
+      out(camelCase(name), typeof field.default !== "undefined" ? "?" : "", ":", generateType(spec, field.type), ";");
     }
     out(`}`);
   }
