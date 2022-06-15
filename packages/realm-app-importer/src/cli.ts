@@ -249,7 +249,6 @@ yargs
         .option("hostname", {
           type: "string",
           description: "Hostname used when listening for connections",
-          default: "0.0.0.0",
         })
         .option("port", {
           type: "number",
