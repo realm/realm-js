@@ -46,7 +46,7 @@ function readJsonBody(req: IncomingMessage): Promise<Record<string, unknown>> {
 export type AppTemplates = Record<string, string>;
 
 export type ServerConfig = {
-  hostname: string;
+  hostname?: string;
   port: number;
   /** Templates available for importing */
   appTemplates: AppTemplates;
@@ -54,7 +54,6 @@ export type ServerConfig = {
 
 export class AppImportServer {
   private static DEFAULT_CONFIG: ServerConfig = {
-    hostname: "0.0.0.0",
     port: 9081,
     appTemplates: {},
   };
@@ -67,6 +66,7 @@ export class AppImportServer {
     this.importer = importer;
     this.config = { ...AppImportServer.DEFAULT_CONFIG, ...config };
     this.server = createServer(this.handleRequestSync);
+    console.log(this.server, this.config);
   }
 
   public start(): Promise<this> {
@@ -79,9 +79,10 @@ export class AppImportServer {
 
   public get url(): string | undefined {
     const address = this.server.address();
-    if (typeof address === "object" && address?.family === "IPv4") {
+    if (typeof address === "object" && address !== null) {
       return `http://${address.address}:${address.port}`;
     }
+    throw new Error("Could not derive url for server");
   }
 
   private handleRequestSync: RequestListener = (req, res) => {
