@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { ClassSpec, MethodSpec, Spec } from "./model";
+import { ClassSpec, Spec } from "./model";
 
 /**
  * Needed we want to avoid quoting all the values that are primitive non-strings
@@ -25,9 +25,12 @@ import { ClassSpec, MethodSpec, Spec } from "./model";
  */
 export type RelaxedValueType = string | boolean | number | [] | Record<string, never>;
 
-export type RelaxedSpec = Omit<Partial<Spec>, "records" | "classes"> & {
+export type RelaxedSpec = Omit<Partial<Spec>, "records" | "classes" | "constants" | "typeAliases" | "interfaces"> & {
   records?: { [name: string]: RelaxedRecordSpec };
   classes?: { [name: string]: RelaxedClassSpec };
+  constants?: { [name: string]: RelaxedConstantSpec };
+  typeAliases?: { [name: string]: string };
+  interfaces?: { [name: string]: RelaxedInterfaceSpec };
 };
 
 export type RelaxedRecordSpec = {
@@ -41,9 +44,25 @@ export type RelaxedFieldSpec =
       default: RelaxedValueType;
     };
 
-export type RelaxedClassSpec = Omit<Partial<ClassSpec>, "methods" | "staticMethods"> & {
+export type RelaxedClassSpec = Pick<Partial<ClassSpec>, "sharedPtrWrapped"> & {
+  staticMethods?: { [name: string]: RelaxedMethodSpec | RelaxedMethodSpec[] };
+  properties?: { [name: string]: string };
+  methods?: { [name: string]: RelaxedMethodSpec | RelaxedMethodSpec[] };
+};
+
+export type RelaxedInterfaceSpec = {
   staticMethods?: { [name: string]: RelaxedMethodSpec | RelaxedMethodSpec[] };
   methods?: { [name: string]: RelaxedMethodSpec | RelaxedMethodSpec[] };
 };
 
-export type RelaxedMethodSpec = string | MethodSpec;
+export type RelaxedMethodSpec =
+  | string
+  | {
+      sig: string;
+      suffix?: string;
+    };
+
+export type RelaxedConstantSpec = {
+  type: string;
+  value: string;
+};

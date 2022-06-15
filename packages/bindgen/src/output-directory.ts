@@ -21,9 +21,11 @@ import { Debugger } from "debug";
 import fs from "fs";
 import path from "path";
 
-import { debug } from "./debug";
+import { extend } from "./debug";
 import { createOutputter, Outputter } from "./outputter";
 import { FormatterName, format, formatterNames, FormatError } from "./formatter";
+
+const debug = extend("out");
 
 type OutputFile = {
   fd: number;

@@ -15,3 +15,120 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+
+import { CstNode, CstParser } from "chevrotain";
+
+import { TOKEN_TYPES, lexer } from "./type-lexer";
+
+class TypeParser extends CstParser {
+  constructor() {
+    super(TOKEN_TYPES);
+    this.performSelfAnalysis();
+  }
+
+  type = this.RULE("type", () => {
+    this.OR([
+      { ALT: () => this.SUBRULE(this.function) },
+      {
+        ALT: () => {
+          this.OPTION({ DEF: () => this.CONSUME(TOKEN_TYPES.Const) });
+          this.SUBRULE(this.qualifyingName);
+          this.OPTION1({
+            DEF: () => this.SUBRULE(this.templateInstance),
+          });
+          this.SUBRULE(this.typeModifiers);
+        },
+      },
+    ]);
+  });
+
+  qualifyingName = this.RULE("qualifyingName", () => {
+    this.AT_LEAST_ONE_SEP({
+      SEP: TOKEN_TYPES.DoubleColon,
+      DEF: () => this.CONSUME(TOKEN_TYPES.Identifier),
+    });
+  });
+
+  typeModifiers = this.RULE("typeModifiers", () => {
+    this.MANY({
+      DEF: () => {
+        this.OR([
+          {
+            ALT: () => this.CONSUME(TOKEN_TYPES.Const),
+          },
+          {
+            ALT: () => this.CONSUME1(TOKEN_TYPES.Ampersand, { LABEL: "Refenrence" }),
+          },
+          {
+            ALT: () => this.CONSUME1(TOKEN_TYPES.DoubleAmpersand, { LABEL: "RvalueReference" }),
+          },
+          {
+            ALT: () => this.CONSUME1(TOKEN_TYPES.Star, { LABEL: "Pointer" }),
+          },
+        ]);
+      },
+    });
+  });
+
+  function = this.RULE("function", () => {
+    this.CONSUME(TOKEN_TYPES.LeftParentheses);
+    this.MANY_SEP({
+      SEP: TOKEN_TYPES.Comma,
+      DEF: () => {
+        this.SUBRULE(this.functionArgument);
+      },
+    });
+    this.CONSUME1(TOKEN_TYPES.RightParentheses);
+    this.SUBRULE(this.functionModifiers);
+    this.OPTION1({
+      DEF: () => {
+        this.CONSUME2(TOKEN_TYPES.RightArrow);
+        this.SUBRULE1(this.type, { LABEL: "ReturnType" });
+      },
+    });
+  });
+
+  functionArgument = this.RULE("functionArgument", () => {
+    this.CONSUME(TOKEN_TYPES.Identifier);
+    this.CONSUME(TOKEN_TYPES.Colon);
+    this.SUBRULE(this.type);
+  });
+
+  functionModifiers = this.RULE("functionModifiers", () => {
+    this.MANY({
+      DEF: () => {
+        this.OR([
+          {
+            ALT: () => this.CONSUME(TOKEN_TYPES.Const),
+          },
+          {
+            ALT: () => this.CONSUME1(TOKEN_TYPES.NoExcept),
+          },
+        ]);
+      },
+    });
+  });
+
+  templateInstance = this.RULE("templateInstance", () => {
+    this.CONSUME(TOKEN_TYPES.LessThan);
+    this.AT_LEAST_ONE_SEP({
+      SEP: TOKEN_TYPES.Comma,
+      DEF: () => {
+        this.SUBRULE(this.type);
+      },
+    });
+    this.CONSUME(TOKEN_TYPES.GreaterThan);
+  });
+}
+
+export const parser = new TypeParser();
+
+export function parse(text: string): CstNode {
+  const { tokens, errors } = lexer.tokenize(text);
+  if (errors.length > 0) {
+    const [err] = errors;
+    throw new Error(err.message);
+  }
+  parser.input = tokens;
+  return parser.type();
+}
