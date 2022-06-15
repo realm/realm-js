@@ -1,0 +1,42 @@
+name: Prepare realm react native templates release
+
+on: workflow_dispatch
+
+jobs:
+  prepare-templates-release:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout Code
+      uses: actions/checkout@v2
+
+    - name: Setup node version
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+        cache: 'npm'
+        cache-dependency-path: '**/package-lock.json'
+
+    - name: Setup NPM version
+      run: npm install -g npm@7
+
+    - name: Update templates from example application
+      run: templates/scripts/sync_rn_ts_to_all_templates.sh
+
+    - name: Update react native templates package.json
+      id: update-version
+      shell: bash
+      run: |
+        templates/scripts/bump-template-versions.sh
+        cd templates/react-native-template-realm-js
+        pkgVersion=$(npm pkg get version)
+        echo "::set-output name=version::$pkgVersion"
+
+    - name: Create react native templates PR
+      uses: peter-evans/create-pull-request@7380612b49221684fefa025244f2ef4008ae50ad #! 3.10.1
+      with:
+        branch: templates/${{ steps.update-version.outputs.version }}
+        title: Prepare for ${{ steps.update-version.outputs.version }}
+        draft: true
+        body: An automated PR for next react native templates release.
+        commit-message: "[${{ steps.update-version.outputs.version }}] Bump version"
