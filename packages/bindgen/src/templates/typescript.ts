@@ -132,7 +132,7 @@ export function generateTypeScript({ spec, file }: TemplateContext): void {
 
   out("// Opaque types");
   for (const name of spec.opaqueTypes) {
-    out(`export type ${name} = unknown;`);
+    out.lines("/** Using an empty enum to express a nominal type */", `export enum ${name} {};`);
   }
 
   out("// Type aliases");
