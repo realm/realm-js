@@ -203,7 +203,6 @@ jobs:
 
   integration-tests:
     name: Integration tests for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
-    #needs: [build-and-test]
     needs: [build-and-test, baas-realm-js]
     env:
       REALM_DISABLE_ANALYTICS: 1
