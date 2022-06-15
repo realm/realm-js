@@ -43,7 +43,7 @@ export function createOutputter(write: Writer, debug: Debugger): Outputter {
   }
   out.lines = function (...parts: string[]) {
     parts.forEach((part) => debug("%s %s", chalk.dim("←"), part));
-    write(parts.join("\n"));
+    write(parts.join("\n") + "\n");
   };
   out.raw = function (...parts: string[]) {
     const data = parts.join("");
