@@ -18,15 +18,34 @@
 
 import { createToken, Lexer } from "chevrotain";
 
-const Number = createToken({ name: "Number", pattern: /[0-9]+\.?[0-9]*/ });
-const String = createToken({ name: "String", pattern: /"[^"]*"/ });
-const Character = createToken({ name: "Character", pattern: /'[^']'/ });
-const Identifier = createToken({ name: "Identifier", pattern: /[_a-zA-Z]+/ }); // TODO: Consider 0-9?
-const Operator = createToken({ name: "Operation", pattern: /[{}[\]()?,~;]/ });
-const WhiteSpace = createToken({
-  name: "WhiteSpace",
-  pattern: /\s+/,
-  group: Lexer.SKIPPED,
-});
+export const TOKEN_TYPES = {
+  WhiteSpace: createToken({
+    name: "WhiteSpace",
+    pattern: /\s+/,
+    group: Lexer.SKIPPED,
+  }),
+  Const: createToken({ name: "Const", pattern: "const" }),
+  NoExcept: createToken({ name: "NoExcept", pattern: "noexcept" }),
+  Identifier: createToken({ name: "Identifier", pattern: /[_a-zA-Z]+[_a-zA-Z0-9]*/ }),
+  /*
+  Operator: createToken({
+    name: "Operator",
+    pattern:
+      /[{}[\]?~;]|!=?|##?|%=?|&=|\*=|\+\+|\+=?|->\*|--|-=|\/=?|<<=|<=>?|<<|>>=?|>=|==?|\^=?|\|=|\|\|?|\.\.\.|\.\*|\./,
+  }),
+  */
+  DoubleColon: createToken({ name: "DoubleColon", pattern: "::" }),
+  Colon: createToken({ name: "Colon", pattern: ":" }),
+  RightArrow: createToken({ name: "RightArrow", pattern: "->" }),
+  Minus: createToken({ name: "Minus", pattern: "-" }),
+  DoubleAmpersand: createToken({ name: "DoubleAmpersand", pattern: "&&" }),
+  Ampersand: createToken({ name: "Ampersand", pattern: "&" }),
+  Star: createToken({ name: "Star", pattern: "*" }),
+  LeftParentheses: createToken({ name: "LeftParentheses", pattern: "(" }),
+  RightParentheses: createToken({ name: "RightParentheses", pattern: ")" }),
+  LessThan: createToken({ name: "LessThan", pattern: "<" }),
+  GreaterThan: createToken({ name: "GreaterThan", pattern: ">" }),
+  Comma: createToken({ name: "Comma", pattern: "," }),
+};
 
-export const lexer = new Lexer([WhiteSpace, Identifier, Number, Operator, Character, String]);
+export const lexer = new Lexer(Object.values(TOKEN_TYPES));

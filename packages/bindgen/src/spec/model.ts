@@ -21,13 +21,14 @@ export type ValueType = string;
 export type Spec = {
   headers: string[];
   primitives: string[];
-  typeAliases: { [name: string]: string };
+  typeAliases: { [name: string]: TypeSpec };
   templates: string[];
   enums: { [name: string]: EnumSpec };
   constants: { [name: string]: ConstantSpec };
   records: { [name: string]: RecordSpec };
   opaqueTypes: string[];
   classes: { [name: string]: ClassSpec };
+  interfaces: { [name: string]: InterfaceSpec };
 };
 
 export type EnumSpec =
@@ -42,7 +43,7 @@ export type EnumSpec =
     };
 
 export type ConstantSpec = {
-  type: string;
+  type: TypeSpec;
   value: string;
 };
 
@@ -51,18 +52,57 @@ export type RecordSpec = {
 };
 
 export type FieldSpec = {
-  type: string;
+  type: TypeSpec;
   default?: ValueType;
 };
 
 export type MethodSpec = {
-  sig: string;
+  sig: FunctionTypeSpec;
   suffix?: string;
 };
 
 export type ClassSpec = {
   sharedPtrWrapped?: string;
   staticMethods: { [name: string]: MethodSpec[] };
-  properties: { [name: string]: string };
+  properties: { [name: string]: TypeSpec };
   methods: { [name: string]: MethodSpec[] };
+};
+
+export type InterfaceSpec = {
+  // TODO: Consider removing the staticMethods
+  staticMethods: { [name: string]: MethodSpec[] };
+  methods: { [name: string]: MethodSpec[] };
+};
+
+export type TypeModifiersSpec = {
+  isConst: boolean;
+  isReference: boolean;
+  isRvalueReference: boolean;
+  isPointer: boolean;
+};
+
+export type TypeSpec = QualifyingNameSpec | TemplateInstanceSpec | FunctionTypeSpec;
+
+export type QualifyingNameSpec = {
+  kind: "qualifying-name";
+  names: string[];
+} & TypeModifiersSpec;
+
+export type TemplateInstanceSpec = {
+  kind: "template-instance";
+  names: string[];
+  templateArguments: TypeSpec[];
+} & TypeModifiersSpec;
+
+export type FunctionTypeSpec = {
+  kind: "function";
+  arguments: ArgumentSpec[];
+  return: TypeSpec;
+  isConst: boolean;
+  isNoExcept: boolean;
+};
+
+export type ArgumentSpec = {
+  name: string;
+  type: TypeSpec;
 };

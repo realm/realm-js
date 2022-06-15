@@ -1,0 +1,5 @@
+{
+  "loader": "tsm",
+  "no-warnings": true,
+  "spec": "src/tests/*.test.ts"
+}
