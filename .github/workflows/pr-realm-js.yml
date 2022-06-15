@@ -236,11 +236,11 @@ jobs:
           - { os: darwin, target: "test:renderer", runner: macos-latest, environment: electron }
           - { os: darwin, target: test, runner: macos-latest, environment: node }
           - { os: android, target: "test:android", runner: macos-latest, environment: react-native }
-          - { os: android, target: "test:android:chrome", runner: macos-latest, environment: react-native }
+          #- { os: android, target: "test:android:chrome", runner: macos-latest, environment: react-native }
           - { os: ios, target: "test:ios", runner: macos-latest, environment: react-native }
-          - { os: ios, target: "test:ios:chrome", runner: macos-latest, environment: react-native }
+          #- { os: ios, target: "test:ios:chrome", runner: macos-latest, environment: react-native }
           - { os: ios, target: "test:catalyst", runner: macos-latest, environment: react-native }
-          - { os: ios, target: "test:catalyst:chrome", runner: macos-latest, environment: react-native }
+          #- { os: ios, target: "test:catalyst:chrome", runner: macos-latest, environment: react-native }
     timeout-minutes: 60
     steps:
       - name: Checkout code
