@@ -57,13 +57,19 @@ class TypeParser extends CstParser {
             ALT: () => this.CONSUME(TOKEN_TYPES.Const),
           },
           {
-            ALT: () => this.CONSUME1(TOKEN_TYPES.Ampersand, { LABEL: "Refenrence" }),
+            ALT: () => this.CONSUME(TOKEN_TYPES.Star, { LABEL: "Pointer" }),
+          },
+        ]);
+      },
+    });
+    this.OPTION({
+      DEF: () => {
+        this.OR1([
+          {
+            ALT: () => this.CONSUME(TOKEN_TYPES.Ampersand, { LABEL: "Reference" }),
           },
           {
-            ALT: () => this.CONSUME1(TOKEN_TYPES.DoubleAmpersand, { LABEL: "RvalueReference" }),
-          },
-          {
-            ALT: () => this.CONSUME1(TOKEN_TYPES.Star, { LABEL: "Pointer" }),
+            ALT: () => this.CONSUME(TOKEN_TYPES.DoubleAmpersand, { LABEL: "RvalueReference" }),
           },
         ]);
       },
