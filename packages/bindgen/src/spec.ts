@@ -21,15 +21,27 @@ import chalk from "chalk";
 import fs from "fs";
 import yaml from "yaml";
 
-import { ClassSpec, FieldSpec, MethodSpec, RecordSpec, Spec, ValueType } from "./spec/model";
+import {
+  ClassSpec,
+  ConstantSpec,
+  FieldSpec,
+  InterfaceSpec,
+  MethodSpec,
+  RecordSpec,
+  Spec,
+  ValueType,
+} from "./spec/model";
 import {
   RelaxedClassSpec,
+  RelaxedConstantSpec,
   RelaxedFieldSpec,
+  RelaxedInterfaceSpec,
   RelaxedMethodSpec,
   RelaxedRecordSpec,
   RelaxedSpec,
   RelaxedValueType,
 } from "./spec/relaxed-model";
+import { parseTypeSpec } from "./spec/type-transformer";
 
 export * from "./spec/model";
 
@@ -80,13 +92,30 @@ export function normalizeSpec(spec: RelaxedSpec): Spec {
   return {
     headers: spec.headers || [],
     primitives: spec.primitives || [],
-    typeAliases: spec.typeAliases || {},
+    typeAliases: mapObjectValues(spec.typeAliases || {}, normalizeTypeSpec),
     templates: spec.templates || [],
     enums: spec.enums || {},
-    constants: spec.constants || {},
+    constants: mapObjectValues(spec.constants || {}, normalizeConstantSpec),
     opaqueTypes: spec.opaqueTypes || [],
     records: mapObjectValues(spec.records || {}, normalizeRecordSpec),
     classes: mapObjectValues(spec.classes || {}, normalizeClassSpec),
+    interfaces: mapObjectValues(spec.interfaces || {}, normalizeInterfaceSpec),
+  };
+}
+
+function normalizeTypeSpec(text: string) {
+  const parsed = parseTypeSpec(text);
+  if (parsed) {
+    return parsed;
+  } else {
+    throw new Error(`Failed to parse "${text}" into a type`);
+  }
+}
+
+function normalizeConstantSpec(spec: RelaxedConstantSpec): ConstantSpec {
+  return {
+    type: normalizeTypeSpec(spec.type),
+    value: spec.value,
   };
 }
 
@@ -100,16 +129,23 @@ function normalizeClassSpec(spec: RelaxedClassSpec): ClassSpec {
   return {
     sharedPtrWrapped: spec.sharedPtrWrapped,
     staticMethods: mapObjectValues(spec.staticMethods || {}, normalizeMethodSpec),
-    properties: spec.properties || {},
+    properties: mapObjectValues(spec.properties || {}, normalizeTypeSpec),
+    methods: mapObjectValues(spec.methods || {}, normalizeMethodSpec),
+  };
+}
+
+function normalizeInterfaceSpec(spec: RelaxedInterfaceSpec): InterfaceSpec {
+  return {
+    staticMethods: mapObjectValues(spec.staticMethods || {}, normalizeMethodSpec),
     methods: mapObjectValues(spec.methods || {}, normalizeMethodSpec),
   };
 }
 
 function normalizeFieldSpec(spec: RelaxedFieldSpec): FieldSpec {
   if (typeof spec === "string") {
-    return { type: spec };
+    return { type: normalizeTypeSpec(spec) };
   } else {
-    return { type: spec.type, default: normalizeValueType(spec.default) };
+    return { type: normalizeTypeSpec(spec.type), default: normalizeValueType(spec.default) };
   }
 }
 
@@ -123,9 +159,16 @@ function normalizeValueType(value: RelaxedValueType): ValueType | undefined {
 
 function normalizeMethodSpec(spec: RelaxedMethodSpec | RelaxedMethodSpec[]): MethodSpec[] {
   const methods = Array.isArray(spec) ? spec : [spec];
-  return methods.map((method) => (typeof method === "string" ? { sig: method } : method));
-}
-
-function normalizeObjectOfArray<T>(obj: Record<string, T | T[]>): Record<string, T[]> {
-  return mapObjectValues(obj, (v) => (Array.isArray(v) ? v : [v]));
+  return methods
+    .map((method) => (typeof method === "string" ? { sig: method } : method))
+    .map(({ suffix, sig }) => {
+      const type = parseTypeSpec(sig);
+      if (typeof type === "undefined") {
+        throw new Error(`Expected a function type, but failed to parse: ${sig}`);
+      } else if (type.kind === "function") {
+        return { suffix, sig: type };
+      } else {
+        throw new Error(`Expected a function type, got "${type.kind}"`);
+      }
+    });
 }
