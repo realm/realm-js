@@ -17,12 +17,52 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { CstNode } from "chevrotain";
-import { TypeSpec, FunctionTypeSpec, ArgumentSpec, TypeModifiersSpec } from "./model";
+import {
+  TypeSpec,
+  FunctionTypeSpec,
+  ArgumentSpec,
+  TypeModifiersSpec,
+  QualifyingNameSpec,
+  TemplateInstanceSpec,
+} from "./model";
 import { parse, parser } from "./type-parser";
 
 import { extend } from "../debug";
 
 const debug = extend("type-visitor");
+
+function makeQualifyingName(partial: Partial<QualifyingNameSpec>): QualifyingNameSpec {
+  return {
+    kind: "qualifying-name",
+    names: partial.names || [],
+    isConst: !!partial.isConst,
+    isPointer: !!partial.isPointer,
+    isReference: !!partial.isReference,
+    isRvalueReference: !!partial.isRvalueReference,
+  };
+}
+
+function makeFunctionType(partial: Partial<FunctionTypeSpec>): FunctionTypeSpec {
+  return {
+    kind: "function",
+    arguments: partial.arguments || [],
+    isConst: !!partial.isConst,
+    isNoExcept: !!partial.isNoExcept,
+    return: partial.return || makeQualifyingName({ names: ["void"] }),
+  };
+}
+
+function makeTemplateInstance(partial: Partial<TemplateInstanceSpec>): TemplateInstanceSpec {
+  return {
+    kind: "template-instance",
+    isConst: !!partial.isConst,
+    isPointer: !!partial.isPointer,
+    isReference: !!partial.isReference,
+    isRvalueReference: !!partial.isRvalueReference,
+    names: partial.names || [],
+    templateArguments: partial.templateArguments || [],
+  };
+}
 
 const BaseCstVisitor = parser.getBaseCstVisitorConstructor();
 
@@ -40,15 +80,12 @@ class CstToTypeSpecTransformer extends BaseCstVisitor {
     } else if (ctx.function) {
       return this.visit(ctx.function);
     } else {
-      return {
-        kind: "qualifying-name",
+      const modifiers = this.visit(ctx.typeModifiers);
+      return makeQualifyingName({
         names,
-        isConst: false,
-        isReference: false,
-        isRvalueReference: false,
-        isPointer: false,
-        ...this.visit(ctx.typeModifiers),
-      };
+        ...modifiers,
+        isConst: ctx.Const ? true : !!modifiers.isConst,
+      });
     }
   }
 
@@ -59,21 +96,11 @@ class CstToTypeSpecTransformer extends BaseCstVisitor {
 
   function(ctx: any): FunctionTypeSpec {
     debug("Visiting function %o", ctx);
-    return {
-      kind: "function",
+    return makeFunctionType({
       arguments: ctx.functionArgument ? ctx.functionArgument.map((arg: CstNode) => this.visit(arg)) : [],
       ...this.visit(ctx.functionModifiers),
-      return: ctx.ReturnType
-        ? this.visit(ctx.ReturnType)
-        : {
-            kind: "qualifying-name",
-            names: ["void"],
-            isConst: false,
-            isReference: false,
-            isRvalueReference: false,
-            isPointer: false,
-          },
-    };
+      return: ctx.ReturnType ? this.visit(ctx.ReturnType) : makeQualifyingName({ names: ["void"] }),
+    });
   }
 
   functionArgument(ctx: any): ArgumentSpec {
@@ -86,31 +113,26 @@ class CstToTypeSpecTransformer extends BaseCstVisitor {
 
   templateInstance(ctx: any, names: string[]): TypeSpec {
     debug("Visiting templateInstance %o", ctx);
-    return {
-      kind: "template-instance",
+    return makeTemplateInstance({
       names,
       templateArguments: ctx.type.map((t: CstNode) => this.visit(t)),
-      isConst: false,
-      isReference: false,
-      isRvalueReference: false,
-      isPointer: false,
       ...this.visit(ctx.typeModifiers),
-    };
+    });
   }
 
-  typeModifiers(ctx: any): TypeModifiersSpec {
+  typeModifiers(ctx: any): Partial<TypeModifiersSpec> {
     debug("Visiting typeModifiers %o", ctx);
     return {
-      isConst: !!ctx.Const,
-      isReference: !!ctx.Reference,
-      isRvalueReference: !!ctx.RvalueReference,
-      isPointer: !!ctx.Pointer,
+      isConst: ctx.Const ? true : undefined,
+      isReference: ctx.Reference ? true : undefined,
+      isRvalueReference: ctx.RvalueReference ? true : undefined,
+      isPointer: ctx.Pointer ? true : undefined,
     };
   }
 
-  functionModifiers(ctx: any): Pick<FunctionTypeSpec, "isConst" | "isNoExcept"> {
+  functionModifiers(ctx: any): Partial<Pick<FunctionTypeSpec, "isConst" | "isNoExcept">> {
     debug("Visiting functionModifiers %o", ctx);
-    return { isConst: !!ctx.Const, isNoExcept: !!ctx.NoExcept };
+    return { isConst: ctx.Const ? true : undefined, isNoExcept: ctx.NoExcept ? true : undefined };
   }
 }
 

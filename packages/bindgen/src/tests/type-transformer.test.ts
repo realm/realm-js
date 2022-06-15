@@ -184,7 +184,7 @@ const TESTS: [string, TypeSpec][] = [
     },
   ],
   [
-    "foo const&&*",
+    "foo const*&&",
     {
       kind: "qualifying-name",
       names: ["foo"],
@@ -192,6 +192,17 @@ const TESTS: [string, TypeSpec][] = [
       isPointer: true,
       isReference: false,
       isRvalueReference: true,
+    },
+  ],
+  [
+    "const int&",
+    {
+      kind: "qualifying-name",
+      names: ["int"],
+      isConst: true,
+      isPointer: false,
+      isReference: true,
+      isRvalueReference: false,
     },
   ],
 ];
