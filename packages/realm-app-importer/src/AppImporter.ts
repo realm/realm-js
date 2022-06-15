@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import cp from "child_process";
 import fetch from "node-fetch";
 import path from "path";
 import fs from "fs-extra";
@@ -111,6 +110,7 @@ export interface AppImporterOptions {
   realmConfigPath: string;
   appsDirectoryPath: string;
   cleanUp?: boolean;
+  atlasCluster?: string;
 }
 
 type App = {
@@ -130,14 +130,23 @@ type App = {
 export class AppImporter {
   private readonly baseUrl: string;
   private readonly credentials: Credentials;
+  private readonly atlasCluster?: string;
   private readonly realmConfigPath: string;
   private readonly appsDirectoryPath: string;
 
   private accessToken: string | undefined;
 
-  constructor({ baseUrl, credentials, realmConfigPath, appsDirectoryPath, cleanUp = true }: AppImporterOptions) {
+  constructor({
+    baseUrl,
+    credentials,
+    realmConfigPath,
+    appsDirectoryPath,
+    cleanUp = true,
+    atlasCluster,
+  }: AppImporterOptions) {
     this.baseUrl = baseUrl;
     this.credentials = credentials;
+    this.atlasCluster = atlasCluster;
     this.realmConfigPath = realmConfigPath;
     this.appsDirectoryPath = appsDirectoryPath;
 
@@ -168,7 +177,13 @@ export class AppImporter {
     const groupId = await this.getGroupId();
 
     // Get or create an application
-    const app = await this.createApp(groupId, appName);
+    //const foundApp = await this.findApp(groupId, appName);
+    // if (foundApp && false) {
+    //   console.log("App already deployed: ", foundApp);
+    //   //await this.applyAppConfiguration(appTemplatePath, foundApp._id, groupId);
+    //   return { appId: foundApp.client_app_id };
+    // } else {
+    const app = /*(await this.findApp(groupId, appName)) || */ await this.createApp(groupId, appName);
     const appId = app.client_app_id;
     // Create all secrets in parallel
     const secrets = this.loadSecretsJson(appTemplatePath);
@@ -183,33 +198,18 @@ export class AppImporter {
 
     // Determine the path of the new app
     const appPath = path.resolve(this.appsDirectoryPath, appId);
+    console.log("copying app path: ", appPath);
     // Copy over the app template
     this.copyAppTemplate(appPath, appTemplatePath);
+    console.log("copying app template path: ", appTemplatePath);
     // Apply any replacements to the files before importing from them
     this.applyReplacements(appPath, replacements);
+    console.log("applying replacements: ", replacements);
 
-    // Import
-    this.realmCli(
-      "import",
-      "--config-path",
-      this.realmConfigPath,
-      "--base-url",
-      this.baseUrl,
-      "--app-name",
-      appName,
-      "--app-id",
-      appId,
-      "--path",
-      appPath,
-      "--project-id",
-      groupId,
-      "--strategy",
-      "replace",
-      "--yes", // Bypass prompts
-    );
+    await this.applyAppConfiguration(appPath, app._id, groupId);
 
-    // Return the app id of the newly created app
     return { appId };
+    //}
   }
 
   public async deleteApp(clientAppId: string): Promise<void> {
@@ -281,14 +281,179 @@ export class AppImporter {
     }
   }
 
-  private realmCli(...args: string[]) {
-    const cliPath = require.resolve("mongodb-realm-cli/wrapper.js");
-    cp.execFileSync(cliPath, args, { stdio: "inherit" });
+  private async enableDevelopmentMode(groupId: string, appId: string) {
+    const configUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/sync/config`;
+    const config = { development_mode_enabled: true };
+    const response = await fetch(configUrl, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(config),
+    });
+    if (!response.ok) {
+      console.error("Could not apply development mode: ", config, configUrl);
+    }
+  }
+
+  private async applyAppConfiguration(appPath: string, appId: string, groupId: string) {
+    console.log("applyAppConfiguration: ", appPath);
+    const authProviderDir = `${appPath}/auth_providers`;
+    if (fs.existsSync(authProviderDir)) {
+      console.log("Applying auth providers... ");
+      const authFileNames = fs.readdirSync(authProviderDir);
+      for (const authFileName of authFileNames) {
+        const authFilePath = `${authProviderDir}/${authFileName}`;
+        const authConfig = fs.readFileSync(authFilePath, "utf-8");
+        const url = `${this.apiUrl}/groups/${groupId}/apps/${appId}/auth_providers`;
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+            "content-type": "application/json",
+          },
+          body: authConfig,
+        });
+        if (!response.ok) {
+          console.warn("Could not apply auth_provider: ", authConfig);
+        }
+      }
+    }
+
+    const secretsConfig = `${appPath}/secrets.json`;
+    if (fs.existsSync(secretsConfig)) {
+      const config = JSON.parse(fs.readFileSync(secretsConfig, "utf-8"));
+      console.log("creating secrets: ", config);
+      const secretsUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/secrets`;
+      console.log("config so far:", config);
+      const response = await fetch(secretsUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(config),
+      });
+      if (!response.ok) {
+        const body = await response.json();
+        console.warn("Could not create secrets: ", config, secretsUrl, response.statusText, body);
+      }
+    }
+
+    const servicesDir = `${appPath}/services`;
+    if (fs.existsSync(servicesDir)) {
+      console.log("Applying services... ");
+      const serviceDirectories = fs.readdirSync(servicesDir);
+      for (const serviceDir of serviceDirectories) {
+        console.log("applying service: ", serviceDir);
+        const configFilePath = `${servicesDir}/${serviceDir}/config.json`;
+        console.log(configFilePath);
+        if (fs.existsSync(configFilePath)) {
+          const config = JSON.parse(fs.readFileSync(configFilePath, "utf-8"));
+          const tmpConfig = { name: config.name, type: config.type, config: config.config };
+          if (config.type === "mongodb-atlas") {
+            tmpConfig.config = { clusterName: config.config.clusterName };
+          }
+          const serviceUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/services`;
+          console.log("config so far:", config);
+          const response = await fetch(serviceUrl, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${this.accessToken}`,
+              "content-type": "application/json",
+            },
+            body: JSON.stringify(config),
+          });
+          if (!response.ok) {
+            console.warn("Could not create service: ", tmpConfig, serviceUrl, response.statusText);
+          } else {
+            await this.enableDevelopmentMode(groupId, appId);
+            // const responseJson = await response.json();
+            // const serviceId = responseJson._id;
+            // await new Promise((resolve, reject) => {
+            //   let attempt = 0;
+            //   const intervalId = setInterval(async () => {
+            //     attempt++;
+            //     const serviceConfigUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/services/${serviceId}/config`;
+            //     const response = await fetch(serviceConfigUrl, {
+            //       method: "PATCH",
+            //       headers: {
+            //         Authorization: `Bearer ${this.accessToken}`,
+            //         "content-type": "application/json",
+            //       },
+            //       body: JSON.stringify({ ...config.config }),
+            //     });
+            //     if (!response.ok) {
+            //       console.warn(
+            //         "Could not patch service: ",
+            //         { ...config.config },
+            //         serviceConfigUrl,
+            //         response.statusText,
+            //       );
+            //     } else {
+            //       clearInterval(intervalId);
+            //       resolve({});
+            //     }
+            //     if (attempt > 25) {
+            //       console.error("Could not patch service after 25 attempts");
+            //       reject();
+            //     }
+            //   }, 1000);
+            // });
+            const rulesDir = `${servicesDir}/${serviceDir}/rules`;
+            const responseJson = await response.json();
+            const serviceId = responseJson._id;
+            if (fs.existsSync(rulesDir)) {
+              console.log("applying rules");
+              const ruleFiles = fs.readdirSync(rulesDir);
+              for (const ruleFile of ruleFiles) {
+                const ruleConfig = JSON.parse(fs.readFileSync(`${rulesDir}/${ruleFile}`, "utf-8"));
+                const schemaConfig = ruleConfig.schema || null;
+                if (schemaConfig) {
+                  // Schema is not valid in a rule request
+                  delete ruleConfig.schema;
+                  // const schemaUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/schemas`;
+                  // const response = await fetch(schemaUrl, {
+                  //   method: "POST",
+                  //   headers: {
+                  //     Authorization: `Bearer ${this.accessToken}`,
+                  //     "content-type": "application/json",
+                  //   },
+                  //   body: JSON.stringify({ schema: schemaConfig }),
+                  // });
+                  // if (!response.ok) {
+                  //   console.warn("Could not create schema: ", schemaConfig, schemaUrl, response.statusText);
+                  // }
+                }
+                const rulesUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/services/${serviceId}/rules`;
+                const response = await fetch(rulesUrl, {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${this.accessToken}`,
+                    "content-type": "application/json",
+                  },
+                  body: JSON.stringify(ruleConfig),
+                });
+                if (!response.ok) {
+                  console.warn("Could not create rule: ", ruleConfig, rulesUrl, response.statusText);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (fs.existsSync(`${appPath}/functions`)) {
+      console.log("Applying functions... ");
+    }
   }
 
   private performLogIn() {
     const { credentials } = this;
     if (credentials.kind === "api-key") {
+      console.log(`${this.apiUrl}/auth/providers/mongodb-cloud/login`);
       return fetch(`${this.apiUrl}/auth/providers/mongodb-cloud/login`, {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -397,12 +562,33 @@ export class AppImporter {
     }
   }
 
+  private async findApp(groupId: string, name: string) {
+    if (!this.accessToken) {
+      throw new Error("Login before calling this method");
+    }
+    const response = await fetch(`${this.apiUrl}/groups/${groupId}/apps`, {
+      method: "GET",
+      headers: { authorization: `Bearer ${this.accessToken}` },
+    });
+    if (response.ok) {
+      const appList = (await response.json()) as Array<App>;
+      return appList.find((app) => app.name === name);
+    } else {
+      throw new Error(`Failed reach app listing in group '${groupId}'`);
+    }
+  }
+
   private async createApp(groupId: string, name: string) {
     if (!this.accessToken) {
       throw new Error("Login before calling this method");
     }
     const url = `${this.baseUrl}/api/admin/v3.0/groups/${groupId}/apps`;
-    const body = JSON.stringify({ name });
+    const body = JSON.stringify({
+      name,
+      sync: {
+        development_mode_enabled: true,
+      },
+    });
     const response = await fetch(url, {
       method: "POST",
       headers: {
