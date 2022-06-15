@@ -185,16 +185,6 @@ export class AppImporter {
     // } else {
     const app = /*(await this.findApp(groupId, appName)) || */ await this.createApp(groupId, appName);
     const appId = app.client_app_id;
-    // Create all secrets in parallel
-    const secrets = this.loadSecretsJson(appTemplatePath);
-    await Promise.all(
-      Object.entries<string>(secrets).map(async ([name, value]) => {
-        if (typeof value !== "string") {
-          throw new Error(`Expected a secret string value for '${name}'`);
-        }
-        return this.createSecret(groupId, app._id, name, value);
-      }),
-    );
 
     // Determine the path of the new app
     const appPath = path.resolve(this.appsDirectoryPath, appId);
@@ -321,25 +311,35 @@ export class AppImporter {
       }
     }
 
-    const secretsConfig = `${appPath}/secrets.json`;
-    if (fs.existsSync(secretsConfig)) {
-      const config = JSON.parse(fs.readFileSync(secretsConfig, "utf-8"));
-      console.log("creating secrets: ", config);
-      const secretsUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/secrets`;
-      console.log("config so far:", config);
-      const response = await fetch(secretsUrl, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${this.accessToken}`,
-          "content-type": "application/json",
-        },
-        body: JSON.stringify(config),
-      });
-      if (!response.ok) {
-        const body = await response.json();
-        console.warn("Could not create secrets: ", config, secretsUrl, response.statusText, body);
-      }
-    }
+    // Create all secrets in parallel
+    const secrets = this.loadSecretsJson(appPath);
+    await Promise.all(
+      Object.entries<string>(secrets).map(async ([name, value]) => {
+        if (typeof value !== "string") {
+          throw new Error(`Expected a secret string value for '${name}'`);
+        }
+        return this.createSecret(groupId, appId, name, value);
+      }),
+    );
+    // const secretsConfig = `${appPath}/secrets.json`;
+    // if (fs.existsSync(secretsConfig)) {
+    //   const config = JSON.parse(fs.readFileSync(secretsConfig, "utf-8"));
+    //   console.log("creating secrets: ", config);
+    //   const secretsUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/secrets`;
+    //   console.log("config so far:", config);
+    //   const response = await fetch(secretsUrl, {
+    //     method: "POST",
+    //     headers: {
+    //       Authorization: `Bearer ${this.accessToken}`,
+    //       "content-type": "application/json",
+    //     },
+    //     body: JSON.stringify(config),
+    //   });
+    //   if (!response.ok) {
+    //     const body = await response.json();
+    //     console.warn("Could not create secrets: ", config, secretsUrl, response.statusText, body);
+    //   }
+    // }
 
     const servicesDir = `${appPath}/services`;
     if (fs.existsSync(servicesDir)) {
@@ -613,7 +613,7 @@ export class AppImporter {
     if (!this.accessToken) {
       throw new Error("Login before calling this method");
     }
-    const url = `${this.baseUrl}/api/admin/v3.0/groups/${groupId}/apps/${internalAppId}/secrets`;
+    const url = `${this.apiUrl}/groups/${groupId}/apps/${internalAppId}/secrets`;
     const body = JSON.stringify({ name, value });
     const response = await fetch(url, {
       method: "POST",
@@ -624,7 +624,7 @@ export class AppImporter {
       body,
     });
     if (!response.ok) {
-      throw new Error(`Failed to create secred '${name}'`);
+      throw new Error(`Failed to create secret '${name}'`);
     }
   }
 }

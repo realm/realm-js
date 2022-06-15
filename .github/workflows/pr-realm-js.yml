@@ -203,12 +203,12 @@ jobs:
 
   integration-tests:
     name: Integration tests for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
-    needs: [build-and-test]
+    needs: [build-and-test, baas-realm-js]
     env:
       REALM_DISABLE_ANALYTICS: 1
       MOCHA_REMOTE_TIMEOUT: 10000
       CLUSTER_NAME: ${{ needs.baas-realm-js.outputs.clusterName }}
-      MOCHA_REMOTE_CONTEXT: realmBaseUrl=${{ secrets.REALM_BASE_URL }},mongodbClusterName=${{ needs.baas-realm-js.outputs.clusterName }},missingServer
+      MOCHA_REMOTE_CONTEXT: realmBaseUrl=${{ secrets.REALM_BASE_URL }},mongodbClusterName=${{ needs.baas-realm-js.outputs.clusterName }}
       MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
       MOCHA_REMOTE_EXIT_ON_ERROR: true
       REALM_BASE_URL: ${{ secrets.REALM_BASE_URL }}
