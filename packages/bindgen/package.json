@@ -7,6 +7,7 @@
     "realm-bindgen": "./realm-bindgen.ts"
   },
   "type": "module",
+  "types": "generated/ts/index.d.ts",
   "scripts": {
     "start": "./realm-bindgen.ts",
     "test": "mocha",
