@@ -67,7 +67,7 @@ export function createCachedObject<T extends Realm.Object>(
   const listCaches = new Map();
   const listeners: Set<(x: (T & Realm.Object) | undefined) => void> = new Set();
   const objectCacheKey: ObjectCacheKey = `${type}-${primaryKey}`;
-  let isRealmListenerSetup = true;
+  let isRealmListenerSetup = false;
   let realmListenerTearDowns: Array<() => void> = [];
   let objectProxy: (T & Realm.Object) | undefined;
 
@@ -102,22 +102,27 @@ export function createCachedObject<T extends Realm.Object>(
       listener(newObject);
     }
     if (!object) {
-      // Listen to collection, wait for this object to be inserted
-      const pk = realm.schema.find((x) => x?.name === type)?.primaryKey;
-      if (!pk) throw new Error(`Could not find primary key for type ${type}`);
-      const collection = realm.objects<T>(type).filtered(`${pk} = $0`, primaryKey);
-      const listener: Realm.CollectionChangeCallback<T & Realm.Object> = (collection, changes) => {
-        if (changes.insertions.length > 0) {
-          const insertedObject = collection[0];
-          if (insertedObject) {
-            removeListener();
-            setObject(insertedObject);
+      // We didn't find the object so listen to the collection, wait for this object to be inserted
+      // Here we extract the propertyName of the primary key from the schema as it's needed for the collection query
+      const pkProperty = realm.schema.find((x) => x?.name === type)?.primaryKey;
+      if (!pkProperty) throw new Error(`Could not find primary key for type ${type}`);
+      const collection = realm.objects<T>(type).filtered(`${pkProperty} = $0`, primaryKey);
+      // TODO: comment explainer setImmediate
+      // TODO: check if the object is still valid
+      setImmediate(() => {
+        const listener: Realm.CollectionChangeCallback<T & Realm.Object> = (collection, changes) => {
+          if (changes.insertions.length > 0) {
+            const insertedObject = collection[0];
+            if (insertedObject) {
+              removeListener();
+              setObject(insertedObject);
+            }
           }
-        }
-      };
-      collection.addListener(listener);
-      const removeListener = () => collection.removeListener(listener);
-      realmListenerTearDowns.push(removeListener);
+        };
+        collection.addListener(listener);
+        const removeListener = () => collection.removeListener(listener);
+        realmListenerTearDowns.push(removeListener);
+      });
     }
   }
 
@@ -189,7 +194,7 @@ export function createCachedObject<T extends Realm.Object>(
     if (!object) return;
     if (!object?.isValid()) return;
     object.addListener(listenerCallback);
-    realmListenerTearDowns.push(() => object!.removeListener(listenerCallback));
+    realmListenerTearDowns.push(() => object?.removeListener(listenerCallback));
     isRealmListenerSetup = true;
   }
 
