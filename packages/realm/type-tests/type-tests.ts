@@ -41,3 +41,7 @@ import * as lib from "../src";
 }
 
 // Realm.Object
+
+{
+  const object: Realm.Object = new lib.Realm.Object();
+}
