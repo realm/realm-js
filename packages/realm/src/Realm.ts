@@ -18,11 +18,12 @@
 
 import * as binding from "@realm/bindgen";
 
-import { Object as RealmObject, CanonicalObjectSchema } from "./Object";
+import { Object as RealmObject } from "./Object";
 import { Results } from "./Results";
 import { transformObjectSchema } from "./schema-utils";
-
-type Constructor<T = unknown> = { new (...args: unknown[]): T };
+import { RealmInsertionModel } from "./InsertionModel";
+import { Configuration } from "./Configuration";
+import { CanonicalObjectSchema, DefaultObject, RealmObjectConstructor } from "./schema-types";
 
 export class Realm {
   public static Object = RealmObject;
@@ -30,7 +31,7 @@ export class Realm {
 
   private internal: binding.Realm;
 
-  constructor() {
+  constructor(config: Configuration = {}) {
     this.internal = binding.Realm.getSharedRealm({
       path: this.getDefaultPath(),
       fifoFilesFallbackPath: this.fifoFilesFallbackPath(),
@@ -79,7 +80,13 @@ export class Realm {
     this.internal.close();
   }
 
-  create(): RealmObject {
+  create<T = DefaultObject>(type: string, values: RealmInsertionModel<T>): RealmObject<T> & T;
+  create<T = DefaultObject>(type: RealmObjectConstructor<T>, values: RealmInsertionModel<T>): RealmObject<T> & T;
+  create<T = DefaultObject>(
+    type: string | RealmObjectConstructor<T>,
+    values: RealmInsertionModel<T>,
+  ): RealmObject<T> & T {
+    // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1260-L1321
     throw new Error("Not yet implemented");
   }
 
@@ -95,16 +102,21 @@ export class Realm {
     throw new Error("Not yet implemented");
   }
 
-  objectForPrimaryKey<T = Record<string, unknown>>(type: string, primaryKey: T[keyof T]): RealmObject<T>;
-  objectForPrimaryKey<T>(type: Constructor<T>, primaryKey: T[keyof T]): RealmObject<T>;
-  objectForPrimaryKey<T>(type: string | Constructor<T>, primaryKey: T[keyof T]): RealmObject<T> {
+  objectForPrimaryKey<T = DefaultObject>(type: string, primaryKey: T[keyof T]): RealmObject<T> & T;
+  objectForPrimaryKey<T = DefaultObject>(type: RealmObjectConstructor<T>, primaryKey: T[keyof T]): RealmObject<T> & T;
+  objectForPrimaryKey<T = DefaultObject>(
+    type: string | RealmObjectConstructor<T>,
+    primaryKey: T[keyof T],
+  ): RealmObject<T> & T {
     // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1240-L1258
     const objectSchema = this.findObjectSchema(type);
     // auto realm_object = realm::Object::get_for_primary_key(accessor, realm, object_schema, args[1]);
     throw new Error("Not yet implemented");
   }
 
-  objects<T>(): Results<T> {
+  objects<T = DefaultObject>(type: string): Results<T>;
+  objects<T = DefaultObject>(type: RealmObjectConstructor<T>): Results<T>;
+  objects<T = DefaultObject>(type: string | RealmObjectConstructor<T>): Results<T> {
     throw new Error("Not yet implemented");
   }
 
@@ -166,7 +178,7 @@ export class Realm {
    * Finds the object schema from a specific name
    * @see https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L465-L508
    */
-  private findObjectSchema(name: string | Constructor): binding.ObjectSchema {
+  private findObjectSchema(name: string | RealmObjectConstructor<unknown>): binding.ObjectSchema {
     if (typeof name === "string") {
       return this.internal.schema.find((schema) => schema.name === name);
     } else {
