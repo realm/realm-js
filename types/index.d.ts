@@ -61,7 +61,7 @@ declare namespace Realm {
     interface CanonicalObjectSchemaProperty {
         name: string;
         type: PropertyType;
-        objectType: string;
+        objectType?: string;
         property?: string;
         optional: boolean;
         indexed: boolean;
