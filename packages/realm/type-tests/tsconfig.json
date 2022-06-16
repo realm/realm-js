@@ -1,0 +1,14 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "noResolve": false,
+    "lib": [
+      "ES2020",
+    ]
+  },
+  "include": [
+    "../../types/index.d.ts",
+    "type-tests.ts"
+  ]
+}

@@ -16,7 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export * from "./Realm";
-export * from "./Configuration";
-export * from "./Results";
-export * from "./Object";
+export class Object {
+  keys(): unknown {
+    throw new Error("Not yet implemented");
+  }
+  entries(): unknown {
+    throw new Error("Not yet implemented");
+  }
+  toJSON(): unknown {
+    throw new Error("Not yet implemented");
+  }
+}
