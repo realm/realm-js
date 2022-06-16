@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "moduleResolution": "node",
+    "noEmit": true,
+    "esModuleInterop": true,
+    "noResolve": true,
+    "lib": [
+      "ES2020"
+    ],
+    "types": [
+      "@realm/bindgen"
+    ]
+  },
+}

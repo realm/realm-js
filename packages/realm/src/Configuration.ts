@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export * from "./Realm";
-export * from "./Configuration";
-export * from "./Results";
-export * from "./Object";
+export type Configuration = {
+  path?: string;
+};
