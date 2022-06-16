@@ -16,5 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export * from "./generated/ts/index.d";
-export * from "./generated/ts/index";
+import { Collection } from "./Collection";
+
+export class Dictionary<T = unknown> extends Collection<T> {}
