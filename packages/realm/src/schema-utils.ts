@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { ObjectSchema as BindingObjectSchema, Property as BindingProperty, PropertyType } from "@realm/bindgen";
-import { CanonicalObjectSchema, CanonicalObjectSchemaProperty } from "./Object";
+import { CanonicalObjectSchema, CanonicalObjectSchemaProperty } from "./schema-types";
 
 export type PropertyTypeNames =
   | "bool"

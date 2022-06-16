@@ -17,16 +17,5 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { Collection } from "./Collection";
-import { DefaultObject } from "./schema-types";
 
-export class Results<T> extends Collection<T> {
-  /**
-   * Bulk update objects in the collection.
-   * @param  {string} property
-   * @param  {any} value
-   * @returns void
-   */
-  update(property: string, value: any): void {
-    throw new Error("Not yet implemented");
-  }
-}
+export class List<T = unknown> extends Collection<T> {}
