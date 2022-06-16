@@ -4,8 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Setting up a `clientResetAfter` callback could lead to a fatal error with the message `Realm accessed from incorrect thread`. ([#4410](https://github.com/realm/realm-js/issues/4410), since v10.11.0)
 
 ### Compatibility
 * Atlas App Services.

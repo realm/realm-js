@@ -655,6 +655,7 @@ module.exports = {
           clientResetAfter: (beforeRealm, afterRealm) => {
             afterCalled = true;
             TestCase.assertEqual(beforeRealm.objects("Dog").length, 1, "local");
+            TestCase.assertEqual(afterRealm.objects("Dog").length, 1, "after");
           },
         };
         config.sync.error = (sender, error) => {
@@ -1297,7 +1298,7 @@ module.exports = {
     realm1.close();
   },
 
-  /* 
+  /*
      Test that we can convert realms between synced and non-synced, encrypted
      and non-encrypted instances.
      Note:  conversion tests from the `testWriteCopyTo.*` tests should be moved
@@ -1514,7 +1515,7 @@ module.exports = {
   },
 
   /*
-    Test that all the exceptions from the C++ codebase are thrown at the 
+    Test that all the exceptions from the C++ codebase are thrown at the
     right times
   */
   testRealmConversionFailures: async function () {
