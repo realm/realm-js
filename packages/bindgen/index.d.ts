@@ -16,21 +16,5 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-// TODO: Delete this once the C++ binding generates these values
-
-import { PropertyType } from "./PropertyType.js";
-
-export class Realm {
-  static getSharedRealm() {
-    return new Realm();
-  }
-
-  get schema() {
-    return [
-      {
-        name: "Person",
-        persistedProperties: [{ name: "name", type: PropertyType.String, columnKey: { value: 0 } }],
-      },
-    ];
-  }
-}
+export * from "./generated/ts/index.d";
+export * from "./generated/ts/index";
