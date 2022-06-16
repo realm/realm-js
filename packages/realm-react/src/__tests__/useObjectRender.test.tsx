@@ -166,7 +166,7 @@ const TestComponent: React.FC<{ testID?: string }> = ({ testID }) => {
 
   const keyExtractor = useCallback((item) => item.id, []);
 
-  if (list === null) {
+  if (!list) {
     return <View testID={testID} />;
   }
 

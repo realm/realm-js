@@ -19,7 +19,10 @@ import Realm from "realm";
 import { createCachedCollection } from "./cachedCollection";
 import { useEffect, useState } from "react";
 
-type PrimaryKey = Parameters<typeof Realm.prototype.objectForPrimaryKey>[1];
+// In order to make @realm/react work with older version of realms
+// This pulls the type for PrimaryKey out of the call signature of `objectForPrimaryKey`
+// TODO: If we depend on a new version of Realm for @realm/react, we can just use Realm.PrimaryKey
+export type PrimaryKey = Parameters<typeof Realm.prototype.objectForPrimaryKey>[1];
 
 type ObjectCacheKey = `${string}-${string}`;
 type ObjectCache = Map<ObjectCacheKey, CachedObject<any>>;
@@ -28,28 +31,19 @@ const objectCache: ObjectCache = new Map();
 
 type CachedObject<T> = {
   subscribe: (listener: (val: (T & Realm.Object) | undefined) => void) => () => void;
-  useObject: (type: string, primaryKey: string) => (T & Realm.Object) | undefined;
+  useObject: () => (T & Realm.Object) | undefined;
   readonly object: (T & Realm.Object) | undefined;
 };
 
-export function getOrCreateCachedObject<T>(realm: Realm, type: string, primaryKey: PrimaryKey) {
+export function getOrCreateCachedObject<T>(realm: Realm, type: string, primaryKey: PrimaryKey): CachedObject<T> {
   const objectCacheKey: ObjectCacheKey = `${type}-${primaryKey}`;
   let cachedObject = objectCache.get(objectCacheKey);
   if (!cachedObject) {
-    cachedObject = createCachedObject({ realm, type, primaryKey });
+    cachedObject = createCachedObject(realm, type, primaryKey);
   }
   objectCache.set(objectCacheKey, cachedObject);
   return cachedObject;
 }
-
-/**
- * Arguments object for `cachedObject`.
- */
-type CachedObjectArgs<T> = {
-  realm: Realm;
-  type: string;
-  primaryKey: PrimaryKey;
-};
 
 /**
  * Creates a proxy around a {@link Realm.Object} that will return a new reference
@@ -63,11 +57,11 @@ type CachedObjectArgs<T> = {
  * @param args - {@link CachedObjectArgs} object arguments
  * @returns Proxy object wrapping the {@link Realm.Object}
  */
-export function createCachedObject<T extends Realm.Object>({
-  realm,
-  type,
-  primaryKey,
-}: CachedObjectArgs<T>): CachedObject<T> {
+export function createCachedObject<T extends Realm.Object>(
+  realm: Realm,
+  type: string,
+  primaryKey: PrimaryKey,
+): CachedObject<T> {
   let object = realm.objectForPrimaryKey<T>(type, primaryKey);
 
   const listCaches = new Map();

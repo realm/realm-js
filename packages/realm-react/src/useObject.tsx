@@ -16,12 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import Realm from "realm";
-import { getOrCreateCachedObject } from "./cachedObject";
-
-// In order to make @realm/react work with older version of realms
-// This pulls the type for PrimaryKey out of the call signature of `objectForPrimaryKey`
-// TODO: If we depend on a new version of Realm for @realm/react, we can just use Realm.PrimaryKey
-type PrimaryKey = Parameters<typeof Realm.prototype.objectForPrimaryKey>[1];
+import { getOrCreateCachedObject, ObjectType, PrimaryKey } from "./cachedObject";
 
 /**
  * Generates the `useObject` hook from a given `useRealm` hook.
@@ -42,11 +37,18 @@ export function createUseObject(useRealm: () => Realm) {
    *
    * @param type - The object type, depicted by a string or a class extending {@link Realm.Object}
    * @param primaryKey - The primary key of the desired object which will be retrieved using {@link Realm.objectForPrimaryKey}
-   * @returns either the desired {@link Realm.Object} or `null` in the case of it being deleted or not existing.
+   * @returns either the desired {@link Realm.Object} or `undefined` in the case of it being deleted or not existing.
    */
-  return function useObject<T>(type: string | { new (): T }, primaryKey: PrimaryKey): (T & Realm.Object) | null {
+  return function useObject<T>(
+    type: string | { new (): T; schema: { name: string } },
+    primaryKey: PrimaryKey,
+  ): (T & Realm.Object) | undefined {
     const realm = useRealm();
-    const cachedObject = getOrCreateCachedObject(realm, type, primaryKey)
-    return cachedObject.useObject()
+    const cachedObject = getOrCreateCachedObject<T>(
+      realm,
+      typeof type === "string" ? type : type.schema.name,
+      primaryKey,
+    );
+    return cachedObject.useObject();
   };
 }
