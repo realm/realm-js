@@ -136,8 +136,25 @@ export function generateTypeScript({ spec, file }: TemplateContext): void {
     }
   }
 
+  const tsOut = file("index.ts", "eslint");
+  tsOut("// This file is generated: Update the spec instead of editing this file directly");
+
+  tsOut("// Enums");
+  for (const [name, e] of Object.entries(spec.enums)) {
+    // Using const enum to avoid having to emit JS backing these
+    tsOut(`export const enum ${name} {`);
+    if (e.isFlag) {
+      tsOut(...Object.entries(e.values).map(([k, v]) => `${k} = ${v},`));
+    } else {
+      tsOut(...e.values.map((k) => `${k} = "${k}",`));
+    }
+    tsOut("};");
+  }
+
   const out = file("index.d.ts", "eslint");
   out("// This file is generated: Update the spec instead of editing this file directly");
+
+  out("import type {", Object.keys(spec.enums).join(", "), '} from "./index";');
 
   out("// Opaque types");
   for (const name of spec.opaqueTypes) {
@@ -147,17 +164,6 @@ export function generateTypeScript({ spec, file }: TemplateContext): void {
   out("// Type aliases");
   for (const [name, type] of Object.entries(spec.typeAliases)) {
     out(`export type ${name} = ${generateType(spec, type)};`);
-  }
-
-  out("// Enums");
-  for (const [name, e] of Object.entries(spec.enums)) {
-    out(`export enum ${name} {`);
-    if (e.isFlag) {
-      out(...Object.entries(e.values).map(([k, v]) => `${k} = ${v},`));
-    } else {
-      out(...e.values.map((k) => `${k} = "${k}",`));
-    }
-    out("};");
   }
 
   out("// Records");
@@ -171,7 +177,7 @@ export function generateTypeScript({ spec, file }: TemplateContext): void {
 
   out("// Classes");
   for (const [name, { methods, properties, staticMethods, sharedPtrWrapped }] of Object.entries(spec.classes)) {
-    out(`export declare class ${name} {`);
+    out(`export class ${name} {`);
     for (const [name, methodSpecs] of Object.entries(staticMethods)) {
       for (const methodSpec of methodSpecs) {
         out(
@@ -208,7 +214,7 @@ export function generateTypeScript({ spec, file }: TemplateContext): void {
 
   out("// Interfaces");
   for (const [name, { methods }] of Object.entries(spec.interfaces)) {
-    out(`export declare interface ${name} {`);
+    out(`export interface ${name} {`);
     // TODO: Evaluate if the static methods are even needed here / in the spec format
     for (const [name, methodSpecs] of Object.entries(methods)) {
       for (const methodSpec of methodSpecs) {
