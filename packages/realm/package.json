@@ -4,9 +4,18 @@
   "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
   "main": "index.js",
   "scripts": {
+    "test": "mocha",
     "test:types": "tsc --project type-tests/tsconfig.json"
   },
   "dependencies": {
     "@realm/bindgen": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.1",
+    "@types/mocha": "^9.1.1",
+    "@types/node": "^16.11.7",
+    "chai": "^4.3.6",
+    "mocha": "^10.0.0",
+    "tsm": "^2.2.1"
   }
 }
