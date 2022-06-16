@@ -16,10 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import binding from "@realm/bindgen";
+import * as binding from "@realm/bindgen";
 
-import { Object as RealmObject } from "./Object";
+import { Object as RealmObject, CanonicalObjectSchema } from "./Object";
 import { Results } from "./Results";
+import { transformObjectSchema } from "./schema-utils";
+
+type Constructor<T = unknown> = { new (...args: unknown[]): T };
 
 export class Realm {
   public static Object = RealmObject;
@@ -35,31 +38,33 @@ export class Realm {
   }
 
   get empty(): boolean {
+    // ObjectStore::is_empty(realm->read_group())
     throw new Error("Not yet implemented");
   }
 
   get path(): string {
-    throw new Error("Not yet implemented");
+    return this.internal.config.path;
   }
 
   get readOnly(): boolean {
+    // schema_mode == SchemaMode::Immutable
     throw new Error("Not yet implemented");
   }
 
-  get schema(): any {
-    throw new Error("Not yet implemented");
+  get schema(): CanonicalObjectSchema[] {
+    return this.internal.schema.map(transformObjectSchema);
   }
 
   get schemaVersion(): number {
-    throw new Error("Not yet implemented");
+    return this.internal.schemaVersion;
   }
 
   get isInTransaction(): boolean {
-    throw new Error("Not yet implemented");
+    return this.internal.isInTransaction;
   }
 
   get isClosed(): boolean {
-    throw new Error("Not yet implemented");
+    return this.internal.isClosed;
   }
 
   get syncSession(): any {
@@ -71,7 +76,7 @@ export class Realm {
   }
 
   close(): void {
-    throw new Error("Not yet implemented");
+    this.internal.close();
   }
 
   create(): RealmObject {
@@ -90,7 +95,12 @@ export class Realm {
     throw new Error("Not yet implemented");
   }
 
-  objectForPrimaryKey(): RealmObject {
+  objectForPrimaryKey<T = Record<string, unknown>>(type: string, primaryKey: T[keyof T]): RealmObject<T>;
+  objectForPrimaryKey<T>(type: Constructor<T>, primaryKey: T[keyof T]): RealmObject<T>;
+  objectForPrimaryKey<T>(type: string | Constructor<T>, primaryKey: T[keyof T]): RealmObject<T> {
+    // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1240-L1258
+    const objectSchema = this.findObjectSchema(type);
+    // auto realm_object = realm::Object::get_for_primary_key(accessor, realm, object_schema, args[1]);
     throw new Error("Not yet implemented");
   }
 
@@ -114,16 +124,16 @@ export class Realm {
     throw new Error("Not yet implemented");
   }
 
-  beginTransaction(): unknown {
-    throw new Error("Not yet implemented");
+  beginTransaction(): void {
+    this.internal.beginTransaction();
   }
 
-  commitTransaction(): unknown {
-    throw new Error("Not yet implemented");
+  commitTransaction(): void {
+    this.internal.commitTransaction();
   }
 
-  cancelTransaction(): unknown {
-    throw new Error("Not yet implemented");
+  cancelTransaction(): void {
+    this.internal.cancelTransaction();
   }
 
   compact(): boolean {
@@ -150,5 +160,17 @@ export class Realm {
    */
   private fifoFilesFallbackPath() {
     return "";
+  }
+
+  /**
+   * Finds the object schema from a specific name
+   * @see https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L465-L508
+   */
+  private findObjectSchema(name: string | Constructor): binding.ObjectSchema {
+    if (typeof name === "string") {
+      return this.internal.schema.find((schema) => schema.name === name);
+    } else {
+      throw new Error("Not yet implemented");
+    }
   }
 }

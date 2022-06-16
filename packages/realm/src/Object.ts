@@ -39,7 +39,7 @@ export type PropertyType =
 /**
  * The canonical representation of the schema of a specific class.
  */
-export type CanonicalObjectSchema<T> = {
+export type CanonicalObjectSchema<T = { [name: string]: unknown }> = {
   name: string;
   properties: Record<keyof T, CanonicalObjectSchemaProperty>;
   primaryKey?: string;
@@ -53,14 +53,14 @@ export type CanonicalObjectSchema<T> = {
 export type CanonicalObjectSchemaProperty = {
   name: string;
   type: PropertyType;
-  objectType: string;
-  property?: string;
   optional: boolean;
   indexed: boolean;
   mapTo: string;
+  objectType?: string;
+  property?: string;
 };
 
-export class Object<T = unknown> {
+export class Object<T = Record<string, unknown>> {
   /**
    * FIXME: Use keyof in this methods return signature type signature
    */

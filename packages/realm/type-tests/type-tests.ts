@@ -37,11 +37,20 @@ import * as lib from "../src";
 }
 {
   const realm = new lib.Realm();
-  const object: lib.Object = realm.objectForPrimaryKey();
+  const object: lib.Object = realm.objectForPrimaryKey("Person", "alice");
 }
 
 // Realm.Object
 
 {
   const object: Realm.Object = new lib.Realm.Object();
+}
+
+// Realm.Result
+
+{
+  class T {
+    name: string;
+  }
+  const results: Realm.Results<T> = new lib.Realm.Results<T>();
 }
