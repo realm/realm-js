@@ -170,6 +170,9 @@ const TestComponent: React.FC<{ testID?: string }> = ({ testID }) => {
     return <View testID={testID} />;
   }
 
+  const favoriteName = list?.favoriteItem?.name;
+  console.log("list?.favoriteItem?.name", favoriteName);
+
   return (
     <View testID={testID}>
       <FlatList testID="list" data={list?.items ?? []} keyExtractor={keyExtractor} renderItem={renderItem} />;
@@ -198,8 +201,8 @@ const TestComponent: React.FC<{ testID?: string }> = ({ testID }) => {
         </TouchableHighlight>
       </View>
       {list?.favoriteItem && (
-        <View testID={`favoriteItem-${list?.favoriteItem.name}`}>
-          <Text>{list?.favoriteItem.name}</Text>
+        <View>
+          <Text testID="favoriteItemText">{favoriteName}</Text>
         </View>
       )}
     </View>
@@ -286,7 +289,7 @@ describe("useObject: rendering objects with a Realm.List property", () => {
         forceSynchronousNotifications(testRealm);
       });
 
-      expect(getByTestId(`favoriteItem-${object.items[0].name}`)).toBeTruthy();
+      expect(getByTestId("favoriteItemText")).toHaveTextContent(object.items[0].name);
 
       await act(async () => {
         testRealm.write(() => {
@@ -295,7 +298,7 @@ describe("useObject: rendering objects with a Realm.List property", () => {
         forceSynchronousNotifications(testRealm);
       });
 
-      expect(getByTestId(`favoriteItem-${object.items[1].name}`)).toBeTruthy();
+      expect(getByTestId("favoriteItemText")).toHaveTextContent(object.items[1].name);
 
       await act(async () => {
         testRealm.write(() => {
@@ -304,7 +307,7 @@ describe("useObject: rendering objects with a Realm.List property", () => {
         forceSynchronousNotifications(testRealm);
       });
 
-      expect(getByTestId(`favoriteItem-${object.items[1].name}`)).toBeTruthy();
+      expect(getByTestId("favoriteItemText")).toHaveTextContent(object.items[1].name);
 
       // We should only have re-rendered once, as only the last change actually modified an item
       expect(itemRenderCounter).toHaveBeenCalledTimes(11);

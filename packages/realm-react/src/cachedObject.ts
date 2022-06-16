@@ -96,6 +96,7 @@ export function createCachedObject<T extends Realm.Object>(
   }
 
   function setObject(newObject: (T & Realm.Object) | undefined) {
+    console.log("setObject", !!newObject);
     object = newObject;
     objectProxy = newObject ? new Proxy(newObject, cachedObjectHandler) : undefined;
     for (const listener of listeners) {
@@ -119,6 +120,7 @@ export function createCachedObject<T extends Realm.Object>(
             }
           }
         };
+        if (realm.isClosed) return;
         collection.addListener(listener);
         const removeListener = () => collection.removeListener(listener);
         realmListenerTearDowns.push(removeListener);
@@ -170,9 +172,10 @@ export function createCachedObject<T extends Realm.Object>(
         return obj[property as keyof T] instanceof Realm.List;
       });
       const shouldRerender = !anyListPropertyModified;
+      console.log(changes.changedProperties, { anyListPropertyModified });
 
       if (shouldRerender) {
-        setObject(object);
+        setObject(obj);
       }
     }
   };
