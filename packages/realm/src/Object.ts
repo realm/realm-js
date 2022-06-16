@@ -17,48 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { Results } from "./Results";
-
-/**
- * PropertyType
- * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~PropertyType }
- */
-export type PropertyType =
-  | string
-  | "bool"
-  | "int"
-  | "float"
-  | "double"
-  | "decimal128"
-  | "objectId"
-  | "string"
-  | "data"
-  | "date"
-  | "list"
-  | "linkingObjects";
-
-/**
- * The canonical representation of the schema of a specific class.
- */
-export type CanonicalObjectSchema<T = { [name: string]: unknown }> = {
-  name: string;
-  properties: Record<keyof T, CanonicalObjectSchemaProperty>;
-  primaryKey?: string;
-  embedded?: boolean;
-  asymmetric?: boolean;
-};
-
-/**
- * The canonical representation of the schema of a specific property.
- */
-export type CanonicalObjectSchemaProperty = {
-  name: string;
-  type: PropertyType;
-  optional: boolean;
-  indexed: boolean;
-  mapTo: string;
-  objectType?: string;
-  property?: string;
-};
+import { CanonicalObjectSchema } from "./schema-types";
 
 export class Object<T = Record<string, unknown>> {
   /**

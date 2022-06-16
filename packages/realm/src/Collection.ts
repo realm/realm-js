@@ -22,7 +22,7 @@ type PropertyType = string;
 type SortDescriptor = unknown;
 type CollectionChangeCallback<T> = unknown;
 
-export class Collection<T> implements ReadonlyArray<T> {
+export class Collection<T = unknown> implements ReadonlyArray<T> {
   readonly [n: number]: T;
   length: number;
 
