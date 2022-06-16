@@ -16,7 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Realm } from "./mock/Realm.js";
-import { PropertyType } from "./mock/PropertyType.js";
+// TODO: Delete this once the C++ binding generates these values
 
-export { Realm, PropertyType };
+import { PropertyType } from "../index";
+
+export class Realm {
+  static getSharedRealm() {
+    return new Realm();
+  }
+
+  get schema() {
+    return [
+      {
+        name: "Person",
+        persistedProperties: [{ name: "name", type: PropertyType.String, columnKey: { value: 0 } }],
+      },
+    ];
+  }
+}
