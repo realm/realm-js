@@ -16,7 +16,28 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export * from "./Realm";
-export * from "./Configuration";
-export * from "./Results";
-export * from "./Object";
+import "../../..";
+import * as lib from "../src";
+
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
+// Realm constructor
+
+{
+  // const realm: lib.Realm = new Realm();
+}
+{
+  const realm: Realm = new lib.Realm();
+}
+{
+  const config: lib.Configuration = {} as Realm.Configuration;
+}
+{
+  const config: Realm.Configuration = {} as lib.Configuration;
+}
+{
+  const realm = new lib.Realm();
+  const object: lib.Object = realm.objectForPrimaryKey();
+}
+
+// Realm.Object
