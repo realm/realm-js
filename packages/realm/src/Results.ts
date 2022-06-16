@@ -16,7 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export * from "./Realm";
-export * from "./Configuration";
-export * from "./Results";
-export * from "./Object";
+import { Collection } from "./Collection";
+
+export class Results<T> extends Collection<T> {
+  /**
+   * Bulk update objects in the collection.
+   * @param  {string} property
+   * @param  {any} value
+   * @returns void
+   */
+  update(property: string, value: any): void {
+    throw new Error("Not yet implemented");
+  }
+}
