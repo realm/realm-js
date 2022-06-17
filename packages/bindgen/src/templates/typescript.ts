@@ -64,7 +64,7 @@ function getDeclaredIdentifiers(spec: Spec): string[] {
 function generateType(spec: Spec, type: TypeSpec): string {
   if (type.kind !== "function" && type.isConst) {
     return `Readonly<${generateType(spec, { ...type, isConst: false })}>`;
-  } else if (type.kind === "qualifying-name") {
+  } else if (type.kind === "qualified-name") {
     const fullName = type.names.join("::");
     if (getDeclaredIdentifiers(spec).includes(fullName)) {
       return fullName;
@@ -103,7 +103,7 @@ function generateTypeModifierComment(spec: TypeSpec) {
   if (spec.isConst) {
     modifiers.push("const");
   }
-  if (spec.kind === "qualifying-name") {
+  if (spec.kind === "qualified-name") {
     if (spec.isPointer) {
       modifiers.push("pointer");
     }
