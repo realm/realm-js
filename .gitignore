@@ -103,3 +103,6 @@ integration-tests/**/.lock
 # Ignore template package-lock.json files
 /templates/*/package-lock.json
 /templats/*/template/package-lock.json
+
+# Turbo repo caches
+.turbo
