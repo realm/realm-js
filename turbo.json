@@ -1,0 +1,41 @@
+{
+  "$schema": "https://turborepo.org/schema.json",
+  "pipeline": {
+    "generate:spec-schema": {
+      "inputs": [
+        "src/spec/model.ts",
+        "src/spec/relaxed-model.ts"
+      ],
+      "outputs": [
+        "generated/spec.schema.json"
+      ]
+    },
+    "generate:typescript": {
+      "inputs": [
+        "src/*",
+        "spec.yml"
+      ],
+      "outputs": [
+        "generated/ts/*"
+      ],
+      "dependsOn": [
+        "generate:spec-schema"
+      ]
+    },
+    "generate": {
+      "dependsOn": [
+        "generate:typescript"
+      ]
+    },
+    "test": {
+      "inputs": [
+        ".mocharc.json",
+        "src/*"
+      ],
+      "outputs": [],
+      "dependsOn": [
+        "^generate"
+      ]
+    }
+  }
+}
