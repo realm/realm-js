@@ -180,7 +180,11 @@ export class Realm {
    */
   private findObjectSchema(name: string | RealmObjectConstructor<unknown>): binding.ObjectSchema {
     if (typeof name === "string") {
-      return this.internal.schema.find((schema) => schema.name === name);
+      const schema = this.internal.schema.find((schema) => schema.name === name);
+      if (!schema) {
+        throw new Error("Unable to find object schema");
+      }
+      return schema;
     } else {
       throw new Error("Not yet implemented");
     }

@@ -7,6 +7,7 @@
       "ES2020",
     ]
   },
+  "exclude": [],
   "include": [
     "../../types/index.d.ts",
     "type-tests.ts"
