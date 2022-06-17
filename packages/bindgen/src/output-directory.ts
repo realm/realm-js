@@ -31,7 +31,7 @@ type OutputFile = {
   fd: number;
   filePath: string;
   debug: Debugger;
-  formatter?: FormatterName;
+  formatters: FormatterName[];
 };
 
 export type OutputDirectory = {
@@ -40,7 +40,7 @@ export type OutputDirectory = {
    * @param formatter An optional formatter to apply after the file has been closed.
    * @returns An outputter, able to write into the file.
    */
-  file(filePath: string, formatter?: FormatterName): Outputter;
+  file(filePath: string, ...formatters: FormatterName[]): Outputter;
   /**
    * Close all files opened during the lifetime of the output directory.
    */
@@ -62,7 +62,7 @@ export function createOutputDirectory(outputPath: string): OutputDirectory {
   }
   const openFiles: OutputFile[] = [];
   return {
-    file(filePath: string, formatter?: FormatterName) {
+    file(filePath: string, ...formatters: FormatterName[]) {
       const resolvedPath = path.resolve(outputPath, filePath);
       const parentDirectoryPath = path.dirname(resolvedPath);
       if (!fs.existsSync(parentDirectoryPath)) {
@@ -73,7 +73,7 @@ export function createOutputDirectory(outputPath: string): OutputDirectory {
 
       fileDebug(chalk.dim("Opening", resolvedPath));
       const fd = fs.openSync(resolvedPath, "w");
-      openFiles.push({ fd, formatter, filePath, debug: fileDebug });
+      openFiles.push({ fd, formatters, filePath, debug: fileDebug });
 
       return createOutputter((data) => {
         fs.writeFileSync(fd, data, { encoding: "utf8" });
@@ -87,16 +87,8 @@ export function createOutputDirectory(outputPath: string): OutputDirectory {
     },
     format() {
       for (const formatterName of formatterNames) {
-        const relevantFiles = openFiles.filter((f) => f.formatter === formatterName).map((f) => f.filePath);
-        try {
-          format(formatterName, outputPath, relevantFiles);
-        } catch (err) {
-          if (err instanceof FormatError) {
-            console.error(err.message, err.output);
-          } else {
-            throw err;
-          }
-        }
+        const relevantFiles = openFiles.filter((f) => f.formatters.includes(formatterName)).map((f) => f.filePath);
+        format(formatterName, outputPath, relevantFiles);
       }
     },
   };
