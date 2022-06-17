@@ -20,38 +20,41 @@ import chalk from "chalk";
 import cp from "child_process";
 
 import { extend } from "./debug";
+import { isString } from "./utils";
 const debug = extend("format");
 
 const FORMATTERS = {
   eslint: ["eslint", "--fix"],
   "clang-format": ["clang-format"],
+  "typescript-checker": ["tsc", "--noEmit"],
 };
 
 export type FormatterName = keyof typeof FORMATTERS;
 export const formatterNames = Object.keys(FORMATTERS) as FormatterName[];
 
 export class FormatError extends Error {
-  status: number;
-  output: string[];
-
-  constructor({ status, output }: { status: number; output: string[] }) {
-    super("Failure to format");
-    this.status = status;
-    this.output = output;
+  constructor(formatterName: string) {
+    super(`Failure when running the '${formatterName}' formatter`);
   }
 }
 
 export function format(formatterName: FormatterName, cwd: string, filePaths: string[]): void {
   if (filePaths.length === 0) {
     debug(chalk.dim("Skipped running formatter '%s' (no files need it)"), formatterName);
+    return;
   } else {
     debug(chalk.dim("Running formatter '%s' on %d files"), formatterName, filePaths.length);
-  }
-  if (formatterName in FORMATTERS) {
-    const [command, ...args] = FORMATTERS[formatterName];
-    const { status, output } = cp.spawnSync(command, [...args, ...filePaths], { cwd, encoding: "utf8" });
-    if (status > 0) {
-      throw new FormatError({ status, output });
+    if (formatterName in FORMATTERS) {
+      const [command, ...args] = FORMATTERS[formatterName];
+      console.log(`Running '${formatterName}' formatter`, chalk.dim(command, ...args, ...filePaths));
+      const { status } = cp.spawnSync(command, [...args, ...filePaths], {
+        cwd,
+        encoding: "utf8",
+        stdio: "inherit",
+      });
+      if (status && status > 0) {
+        throw new FormatError(formatterName);
+      }
     }
   }
 }
