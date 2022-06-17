@@ -20,6 +20,7 @@ import { camelCase } from "change-case";
 
 import { TemplateContext } from "../context";
 import { ArgumentSpec, Spec, TemplateInstanceSpec, TypeSpec } from "../spec";
+import { isString } from "../utils";
 
 const PRIMITIVES_MAPPING: Record<string, string> = {
   void: "void",
@@ -42,10 +43,6 @@ const TEMPLATE_INSTANCE_MAPPING: Record<string, TemplateInstanceMapper> = {
   // TODO: Evaluate if this is the right type
   "std::shared_ptr": (spec, type) => generateType(spec, type.templateArguments[0]),
 };
-
-function isString(value: unknown): value is string {
-  return typeof value === "string";
-}
 
 function getDeclaredIdentifiers(spec: Spec): string[] {
   return [
@@ -136,7 +133,7 @@ export function generateTypeScript({ spec, file }: TemplateContext): void {
     }
   }
 
-  const tsOut = file("index.ts", "eslint");
+  const tsOut = file("index.ts", "eslint", "typescript-checker");
   tsOut("// This file is generated: Update the spec instead of editing this file directly");
 
   tsOut("// Enums");
@@ -151,7 +148,7 @@ export function generateTypeScript({ spec, file }: TemplateContext): void {
     tsOut("};");
   }
 
-  const out = file("index.d.ts", "eslint");
+  const out = file("index.d.ts", "eslint", "typescript-checker");
   out("// This file is generated: Update the spec instead of editing this file directly");
 
   out("import type {", Object.keys(spec.enums).join(", "), '} from "./index";');
