@@ -24,10 +24,16 @@ type CollectionChangeCallback<T> = unknown;
 
 export class Collection<T = unknown> implements ReadonlyArray<T> {
   readonly [n: number]: T;
-  length: number;
+  get length(): number {
+    throw new Error("Method not implemented.");
+  }
 
-  readonly type: PropertyType;
-  readonly optional: boolean;
+  get type(): PropertyType {
+    throw new Error("Method not implemented.");
+  }
+  get optional(): boolean {
+    throw new Error("Method not implemented.");
+  }
 
   toString(): string {
     throw new Error("Method not implemented.");
