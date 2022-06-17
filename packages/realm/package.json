@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha",
-    "test:types": "tsc --project type-tests/tsconfig.json"
+    "test:types": "tsc --project type-tests/tsconfig.json",
+    "build": "tsc --noEmit"
   },
   "dependencies": {
     "@realm/bindgen": "^0.1.0"

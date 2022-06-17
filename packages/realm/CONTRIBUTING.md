@@ -24,4 +24,14 @@ Use Turborepo to run the `test` NPM script in all relevant packages (from any di
 npx turbo run test
 ```
 
-This will incrementally generate / build any dependencies.
+This will incrementally generate & build any dependencies.
+
+## Build everything
+
+Use Turborepo to run the `build` NPM script in all relevant packages (from any directory of the package).
+
+```
+npx turbo run build
+```
+
+This will incrementally generate & build any dependencies.
