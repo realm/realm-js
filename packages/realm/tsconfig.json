@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
+    "strict": true,
     "target": "ES2022",
+    "module": "ES2022",
     "moduleResolution": "node",
     "noEmit": true,
     "esModuleInterop": true,
@@ -12,4 +14,14 @@
       "@realm/bindgen"
     ]
   },
+  "include": [
+    // Including the bindgen renerated types 
+    // ../bindgen/generated/ts/index.d.ts:2:47 - error TS2307:
+    // Cannot find module './index' or its corresponding type declarations.
+    "../bindgen/generated/ts"
+  ],
+  "exclude": [
+    "src/tests/",
+    "type-tests/"
+  ],
 }
