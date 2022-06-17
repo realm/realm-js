@@ -6,5 +6,6 @@
       "mocha",
       "node"
     ]
-  }
+  },
+  "exclude": []
 }

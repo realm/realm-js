@@ -27,6 +27,15 @@
         "generate:typescript"
       ]
     },
+    "build": {
+      "inputs": [
+        "src/*"
+      ],
+      "dependsOn": [
+        "generate",
+        "^build"
+      ]
+    },
     "test": {
       "inputs": [
         ".mocharc.json",
@@ -34,7 +43,7 @@
       ],
       "outputs": [],
       "dependsOn": [
-        "^generate"
+        "build"
       ]
     },
     "test:types": {
@@ -43,7 +52,7 @@
       ],
       "outputs": [],
       "dependsOn": [
-        "^generate"
+        "build"
       ]
     }
   }
