@@ -23,6 +23,6 @@ import { parse } from "../spec/type-parser";
 describe("type parser", () => {
   it.skip("parses", () => {
     const result = parse("foo");
-    expect(result).includes({ name: "type", children: { qualifyingName: [{ children: {} }] } });
+    expect(result).includes({ name: "type", children: { qualifiedName: [{ children: {} }] } });
   });
 });
