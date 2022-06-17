@@ -155,6 +155,7 @@ export function generateTypeScript({ spec, file }: TemplateContext): void {
   out("// This file is generated: Update the spec instead of editing this file directly");
 
   out("import type {", Object.keys(spec.enums).join(", "), '} from "./index";');
+  out("export {", Object.keys(spec.enums).join(", "), '} from "./index";');
 
   out("// Opaque types");
   for (const name of spec.opaqueTypes) {
