@@ -36,6 +36,15 @@
       "dependsOn": [
         "^generate"
       ]
+    },
+    "test:types": {
+      "inputs": [
+        "type-tests/*"
+      ],
+      "outputs": [],
+      "dependsOn": [
+        "^generate"
+      ]
     }
   }
 }
