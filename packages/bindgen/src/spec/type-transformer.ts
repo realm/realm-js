@@ -22,7 +22,7 @@ import {
   FunctionTypeSpec,
   ArgumentSpec,
   TypeModifiersSpec,
-  QualifyingNameSpec,
+  QualifiedNameSpec,
   TemplateInstanceSpec,
 } from "./model";
 import { parse, parser } from "./type-parser";
@@ -31,9 +31,9 @@ import { extend } from "../debug";
 
 const debug = extend("type-visitor");
 
-function makeQualifyingName(partial: Partial<QualifyingNameSpec>): QualifyingNameSpec {
+function makeQualifiedName(partial: Partial<QualifiedNameSpec>): QualifiedNameSpec {
   return {
-    kind: "qualifying-name",
+    kind: "qualified-name",
     names: partial.names || [],
     isConst: !!partial.isConst,
     isPointer: !!partial.isPointer,
@@ -48,7 +48,7 @@ function makeFunctionType(partial: Partial<FunctionTypeSpec>): FunctionTypeSpec 
     arguments: partial.arguments || [],
     isConst: !!partial.isConst,
     isNoExcept: !!partial.isNoExcept,
-    return: partial.return || makeQualifyingName({ names: ["void"] }),
+    return: partial.return || makeQualifiedName({ names: ["void"] }),
   };
 }
 
@@ -74,14 +74,14 @@ class CstToTypeSpecTransformer extends BaseCstVisitor {
 
   type(ctx: any): TypeSpec {
     debug("Visiting type %o", ctx);
-    const names = this.visit(ctx.qualifyingName);
+    const names = this.visit(ctx.qualifiedName);
     if (ctx.templateInstance) {
       return this.visit(ctx.templateInstance, names);
     } else if (ctx.function) {
       return this.visit(ctx.function);
     } else {
       const modifiers = this.visit(ctx.typeModifiers);
-      return makeQualifyingName({
+      return makeQualifiedName({
         names,
         ...modifiers,
         isConst: ctx.Const ? true : !!modifiers.isConst,
@@ -89,8 +89,8 @@ class CstToTypeSpecTransformer extends BaseCstVisitor {
     }
   }
 
-  qualifyingName(ctx: any): string[] {
-    debug("Visiting qualifyingName %o", ctx);
+  qualifiedName(ctx: any): string[] {
+    debug("Visiting qualifiedName %o", ctx);
     return ctx.Identifier.map(({ image }: any) => image);
   }
 
@@ -99,7 +99,7 @@ class CstToTypeSpecTransformer extends BaseCstVisitor {
     return makeFunctionType({
       arguments: ctx.functionArgument ? ctx.functionArgument.map((arg: CstNode) => this.visit(arg)) : [],
       ...this.visit(ctx.functionModifiers),
-      return: ctx.ReturnType ? this.visit(ctx.ReturnType) : makeQualifyingName({ names: ["void"] }),
+      return: ctx.ReturnType ? this.visit(ctx.ReturnType) : makeQualifiedName({ names: ["void"] }),
     });
   }
 
