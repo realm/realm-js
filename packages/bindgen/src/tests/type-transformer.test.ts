@@ -25,7 +25,7 @@ const TESTS: [string, TypeSpec][] = [
   [
     "foo",
     {
-      kind: "qualifying-name",
+      kind: "qualified-name",
       names: ["foo"],
       isConst: false,
       isPointer: false,
@@ -36,7 +36,7 @@ const TESTS: [string, TypeSpec][] = [
   [
     "foo::bar",
     {
-      kind: "qualifying-name",
+      kind: "qualified-name",
       names: ["foo", "bar"],
       isConst: false,
       isPointer: false,
@@ -51,7 +51,7 @@ const TESTS: [string, TypeSpec][] = [
       names: ["foo", "bar"],
       templateArguments: [
         {
-          kind: "qualifying-name",
+          kind: "qualified-name",
           names: ["baz"],
           isConst: false,
           isPointer: false,
@@ -59,7 +59,7 @@ const TESTS: [string, TypeSpec][] = [
           isRvalueReference: false,
         },
         {
-          kind: "qualifying-name",
+          kind: "qualified-name",
           names: ["qux", "fred"],
           isConst: false,
           isPointer: false,
@@ -79,7 +79,7 @@ const TESTS: [string, TypeSpec][] = [
       kind: "function",
       arguments: [],
       return: {
-        kind: "qualifying-name",
+        kind: "qualified-name",
         names: ["void"],
         isConst: false,
         isPointer: false,
@@ -98,7 +98,7 @@ const TESTS: [string, TypeSpec][] = [
         {
           name: "n",
           type: {
-            kind: "qualifying-name",
+            kind: "qualified-name",
             names: ["int"],
             isConst: false,
             isPointer: false,
@@ -108,7 +108,7 @@ const TESTS: [string, TypeSpec][] = [
         },
       ],
       return: {
-        kind: "qualifying-name",
+        kind: "qualified-name",
         names: ["void"],
         isConst: false,
         isPointer: false,
@@ -132,7 +132,7 @@ const TESTS: [string, TypeSpec][] = [
               {
                 name: "b",
                 type: {
-                  kind: "qualifying-name",
+                  kind: "qualified-name",
                   names: ["c"],
                   isConst: false,
                   isPointer: false,
@@ -144,7 +144,7 @@ const TESTS: [string, TypeSpec][] = [
             isConst: false,
             isNoExcept: false,
             return: {
-              kind: "qualifying-name",
+              kind: "qualified-name",
               names: ["d"],
               isConst: false,
               isPointer: false,
@@ -155,7 +155,7 @@ const TESTS: [string, TypeSpec][] = [
         },
       ],
       return: {
-        kind: "qualifying-name",
+        kind: "qualified-name",
         names: ["e"],
         isConst: false,
         isPointer: false,
@@ -172,7 +172,7 @@ const TESTS: [string, TypeSpec][] = [
       kind: "function",
       arguments: [],
       return: {
-        kind: "qualifying-name",
+        kind: "qualified-name",
         names: ["void"],
         isConst: false,
         isPointer: false,
@@ -186,7 +186,7 @@ const TESTS: [string, TypeSpec][] = [
   [
     "foo const*&&",
     {
-      kind: "qualifying-name",
+      kind: "qualified-name",
       names: ["foo"],
       isConst: true,
       isPointer: true,
@@ -197,7 +197,7 @@ const TESTS: [string, TypeSpec][] = [
   [
     "const int&",
     {
-      kind: "qualifying-name",
+      kind: "qualified-name",
       names: ["int"],
       isConst: true,
       isPointer: false,
