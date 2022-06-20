@@ -396,9 +396,9 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 <<<<<<< HEAD
-				CURRENT_PROJECT_VERSION = 10.19.1;
+				CURRENT_PROJECT_VERSION = 10.19.2;
 =======
-				CURRENT_PROJECT_VERSION = 10.19.1;
+				CURRENT_PROJECT_VERSION = 10.19.2;
 >>>>>>> 2060b9c6 ([10.19.0-alpha.0] Bump version)
 				CXX = "$(SRCROOT)/../../scripts/ccache-clang++.sh";
 				DEBUG_INFORMATION_FORMAT = dwarf;
@@ -463,7 +463,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 10.19.1;
+				CURRENT_PROJECT_VERSION = 10.19.2;
 				CXX = "$(SRCROOT)/../../scripts/ccache-clang++.sh";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;

@@ -1,15 +1,14 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.19.2 Release notes (2022-6-20)
 =============================================================
 ### Enhancements
 * None.
 
 ### Fixed
-* Fixed incorrect `@realm.io/common` version in `package.json` causing install issues for some users ([[#4657](https://github.com/realm/realm-js/issues/4657), since v10.18.0])
-* None.
+* Fixed incorrect `@realm.io/common` version in `package.json` causing install issues for users upgrading from older version of the `realm` npm package ([[#4657](https://github.com/realm/realm-js/issues/4657), since v10.18.0])
 
 ### Compatibility
 * Atlas App Services.
-* Realm Studio v11.0.0.
+* Realm Studio v12.0.0.
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
@@ -18,9 +17,6 @@ x.x.x Release notes (yyyy-MM-dd)
 * Upgrade dependencies of the Realm Web integration tests
 * Throw instances of `Error` instead of plain objects on app errors.
 * Make integration tests on React Native Android connect to host machine by default
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
 
 10.19.1 Release notes (2022-6-7)
 =============================================================
