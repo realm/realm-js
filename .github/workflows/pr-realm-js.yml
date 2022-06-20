@@ -206,7 +206,7 @@ jobs:
     needs: [build-and-test, baas-realm-js]
     env:
       REALM_DISABLE_ANALYTICS: 1
-      MOCHA_REMOTE_TIMEOUT: 30000
+      MOCHA_REMOTE_TIMEOUT: 100000
       CLUSTER_NAME: ${{ needs.baas-realm-js.outputs.clusterName }}
       MOCHA_REMOTE_CONTEXT: realmBaseUrl=${{ secrets.REALM_BASE_URL }},mongodbClusterName=${{ needs.baas-realm-js.outputs.clusterName }}
       MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
