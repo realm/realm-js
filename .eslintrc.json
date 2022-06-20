@@ -5,6 +5,9 @@
     "plugin:prettier/recommended",
     "./header.eslintrc"
   ],
+  "rules": {
+    "no-restricted-globals": ["error", "globalThis"]
+  },
   "env": {
     "es2020": true
   },

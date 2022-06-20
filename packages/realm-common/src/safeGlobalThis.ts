@@ -24,7 +24,9 @@ const check = function (it: any) {
   return it && it.Math == Math && it;
 };
 
+// eslint-disable-next-line no-restricted-globals
 export const safeGlobalThis: typeof globalThis =
+  // eslint-disable-next-line no-restricted-globals
   check(typeof globalThis == "object" && globalThis) ||
   check(typeof window == "object" && window) ||
   // eslint-disable-next-line no-restricted-globals -- safe
