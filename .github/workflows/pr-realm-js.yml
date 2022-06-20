@@ -248,7 +248,7 @@ jobs:
 >>>>>>> 579a01c7 (Squashing and rebasing)
     env:
       REALM_DISABLE_ANALYTICS: 1
-      MOCHA_REMOTE_TIMEOUT: 10000
+      MOCHA_REMOTE_TIMEOUT: 100000
       CLUSTER_NAME: ${{ needs.baas-realm-js.outputs.clusterName }}
 <<<<<<< HEAD
       MOCHA_REMOTE_CONTEXT: realmBaseUrl=${{ secrets.REALM_BASE_URL }},mongodbClusterName=${{ needs.baas-realm-js.outputs.clusterName }},missingServer
