@@ -1823,27 +1823,6 @@ module.exports = {
     });
   },
 
-  testNoMigrationOnSync: function () {
-    //TODO: remove when Atlas App Services test server can be hosted on Mac or other options exists
-    if (!isNodeProcess) {
-      return Promise.resolve();
-    }
-
-    const appConfig = require("./support/testConfig").integrationAppConfig;
-    let app = new Realm.App(appConfig);
-    return app.logIn(Realm.Credentials.anonymous()).then((user) => {
-      const config = {
-        schema: [schemas.TestObject],
-        sync: { user, partitionValue: '"Lolo"' },
-        deleteRealmIfMigrationNeeded: true,
-      };
-
-      TestCase.assertThrows(function () {
-        new Realm(config);
-      }, "Cannot set 'deleteRealmIfMigrationNeeded' when sync is enabled ('sync.partitionValue' is set).");
-    });
-  },
-
   testRealmDeleteRealmIfMigrationNeededVersionChanged: function () {
     const schema = [
       {
