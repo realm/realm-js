@@ -46,7 +46,7 @@ The following dependencies are required. All except Xcode can be installed by fo
   - Newer versions may work, but 13.1 is the current recommended version, which can be downloaded from [Apple](https://developer.apple.com/download/all/?q=xcode%2013.1). To install older Xcode versions, [Xcodes.app](https://github.com/RobotsAndPencils/XcodesApp) is highly recommended
 - [Node.js](https://nodejs.org/en/) version 13 or later
   - Consider [using NVM](https://github.com/nvm-sh/nvm#installing-and-updating) to enable fast switching between Node.js & NPM versions
-- [CMake](https://cmake.org/) 3.21 or later
+- [CMake](https://cmake.org/) 3.23.2 or later
 - [OpenJDK 8](https://openjdk.java.net/install/)
 - [Android SDK 23+](https://developer.android.com/studio/index.html#command-tools)
   - Optionally, you can install [Android Studio](https://developer.android.com/studio)
@@ -388,7 +388,6 @@ The relevant snippet is:
       limit-access-to-actor: true
   timeout-minutes: 30
 ```
-
 ## Updating the Android JNI headers
 
 If you add a new JNI method to [`RealmReactModule.java`](https://github.com/realm/realm-js/blob/master/react-native/android/src/main/java/io/realm/react/RealmReactModule.java), you will need to regenerate the auto-generated [header file](https://github.com/realm/realm-js/blob/master/src/android/io_realm_react_RealmReactModule.h).
