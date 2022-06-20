@@ -81,7 +81,7 @@ npm install
 #### iOS
 
 ```sh
-# Install cocoapods
+# Install cmake
 brew install cmake
 ```
 
