@@ -1824,7 +1824,8 @@ module.exports = {
   },
 
   testNoMigrationOnSync: function () {
-    if (!global.enableSyncTests) {
+    //TODO: remove when Atlas App Services test server can be hosted on Mac or other options exists
+    if (!isNodeProcess) {
       return Promise.resolve();
     }
 
