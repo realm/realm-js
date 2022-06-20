@@ -46,11 +46,11 @@ The following dependencies are required. All except Xcode can be installed by fo
   - Newer versions may work, but 13.1 is the current recommended version, which can be downloaded from [Apple](https://developer.apple.com/download/all/?q=xcode%2013.1). To install older Xcode versions, [Xcodes.app](https://github.com/RobotsAndPencils/XcodesApp) is highly recommended
 - [Node.js](https://nodejs.org/en/) version 13 or later
   - Consider [using NVM](https://github.com/nvm-sh/nvm#installing-and-updating) to enable fast switching between Node.js & NPM versions
-- [CMake](https://cmake.org/) 3.23.2 or later
+- [CMake](https://cmake.org/) 3.21.4 or later
 - [OpenJDK 8](https://openjdk.java.net/install/)
 - [Android SDK 23+](https://developer.android.com/studio/index.html#command-tools)
   - Optionally, you can install [Android Studio](https://developer.android.com/studio)
-- [Android NDK 21.0](https://developer.android.com/ndk/downloads/index.html)
+- [Android NDK 23](https://developer.android.com/ndk/downloads/index.html)
 - [Android CMake](https://developer.android.com/ndk/guides/cmake)
 - [Docker](https://www.docker.com/) is used for testing. You can install it through Homebrew: `brew install --cask docker`.
 
