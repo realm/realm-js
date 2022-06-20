@@ -46,7 +46,7 @@
   },
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
-    "@realm.io/common": "^0.1.1",
+    "@realm.io/common": "^0.1.2",
     "bson": "^4.5.4",
     "detect-browser": "^5.2.1",
     "js-base64": "^3.7.2"
