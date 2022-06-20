@@ -53,4 +53,4 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BAAS_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BAAS_AWS_SECRET_ACCESS_KEY }}
-          MONGODB_REALM_TEST_SERVER: "latest"
+          MONGODB_REALM_TEST_SERVER: "2022-06-15"
