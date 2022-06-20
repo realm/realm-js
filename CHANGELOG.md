@@ -4,7 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* Fixed incorrect `@realm.io/common` version in `package.json` causing install issues for some users ([[#4657](https://github.com/realm/realm-js/issues/4657), since v10.18.0])
 * None.
 
 ### Compatibility
