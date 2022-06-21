@@ -27,6 +27,7 @@ export class LocalStorage implements Storage {
   /**
    * Internal state of the storage.
    */
+  // eslint-disable-next-line no-restricted-globals
   private readonly global: typeof globalThis;
 
   /**
