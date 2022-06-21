@@ -130,6 +130,23 @@ module.exports = {
     TestCase.assertEqual(didFail, true);
   },
 
+  async testNoMigrationOnSync() {
+    const appConfig = require("./support/testConfig").integrationAppConfig;
+    let app = new Realm.App(appConfig);
+    let user = await app.logIn(Realm.Credentials.anonymous());
+    const config = {
+      schema: [schemas.TestObject],
+      sync: { user, partitionValue: '"Lolo"' },
+      deleteRealmIfMigrationNeeded: true,
+    };
+
+    TestCase.assertThrows(function () {
+      new Realm(config);
+    }, "Cannot set 'deleteRealmIfMigrationNeeded' when sync is enabled ('sync.partitionValue' is set).");
+
+    await user.logOut();
+  },
+
   async testLogoutAndAllUsers() {
     let app = new Realm.App(config);
     let credentials = Realm.Credentials.anonymous();
