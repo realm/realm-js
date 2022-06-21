@@ -11,7 +11,6 @@
     "@typescript-eslint/explicit-function-return-type": "off",
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
-    "tsdoc/syntax": "warn",
-    "no-restricted-globals": ["error", "globalThis"]
+    "tsdoc/syntax": "warn"
   }
 }

@@ -4,7 +4,6 @@
         "plugin:@typescript-eslint/recommended"
     ],
     "rules": {
-        "@typescript-eslint/explicit-function-return-type": "off",
-        "no-restricted-globals": ["error", "globalThis"]
+        "@typescript-eslint/explicit-function-return-type": "off"
     }
 }
