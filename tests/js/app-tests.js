@@ -143,6 +143,8 @@ module.exports = {
     TestCase.assertThrows(function () {
       new Realm(config);
     }, "Cannot set 'deleteRealmIfMigrationNeeded' when sync is enabled ('sync.partitionValue' is set).");
+
+    await user.logOut();
   },
 
   async testLogoutAndAllUsers() {
