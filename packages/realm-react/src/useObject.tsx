@@ -52,7 +52,7 @@ export function createUseObject(useRealm: () => Realm) {
     // the cachedObject can force the component using this hook to re-render when a change occurs.
     const [, forceRerender] = useReducer((x) => x + 1, 0);
 
-    const objectRef = useRef<Realm.Object & T | null>(null);
+    const objectRef = useRef<(Realm.Object & T) | null>(null);
 
     // Wrap the cachedObject in useMemo, so we only replace it with a new instance if `primaryKey` or `type` change
     const { object, tearDown } = useMemo(
