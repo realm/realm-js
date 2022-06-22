@@ -53,7 +53,7 @@
     "set-version": "scripts/set-version.sh",
     "test": "scripts/test.sh",
     "package": "npm ci --ignore-scripts && prebuild",
-    "install": "prebuild-install -r napi || cmake-js build",
+    "install": "prebuild-install --tag-prefix= -r napi || cmake-js build",
     "rebuild": "npm run rebuild-changes",
     "build": "npm run build-changes",
     "build:arm": "npm run build-changes:arm",
