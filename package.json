@@ -125,7 +125,7 @@
   },
   "devDependencies": {
     "@babel/runtime": "^7.16.3",
-    "@react-native-community/eslint-config": "^3.0.3",
+    "@react-native-community/eslint-config": "3.0.1",
     "@types/node": "^16",
     "@typescript-eslint/eslint-plugin": "^5.29.0",
     "@typescript-eslint/parser": "^5.29.0",
@@ -141,7 +141,7 @@
     "eslint-plugin-jsdoc": "^39.3.3",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react": "^7.30.0",
-    "eslint-plugin-react-native": "^4.0.0",
+    "eslint-plugin-react-native": "^3.11.0",
     "fb-watchman": "^2.0.1",
     "jasmine": "^3.4.0",
     "jasmine-console-reporter": "^3.1.0",
