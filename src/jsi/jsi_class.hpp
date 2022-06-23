@@ -167,6 +167,8 @@ public:
     {
     }
 
+    int random = rand();
+
     T obj;
 };
 
@@ -504,7 +506,8 @@ public:
         // if (!JsiObj(object)->instanceOf(env, *s_ctor)) {
         //     throw fbjsi::JSError(env, "calling method on wrong type of object");
         // }
-        return unwrapUnique<Internal>(env, std::move(internal));
+        auto x = unwrapUnique<Internal>(env, std::move(internal));
+        return x;
     }
     static void set_internal(JsiEnv env, const JsiObj& object, Internal* data)
     {
