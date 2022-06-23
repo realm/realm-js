@@ -20,10 +20,7 @@ export * from "../index";
 
 import { DefaultNetworkTransport } from "../DefaultNetworkTransport";
 import { AbortController, Fetch } from "../types";
+import { safeGlobalThis } from "@realm.io/common";
 
-const globalThisOrWindow = typeof globalThis === "object" ? globalThis : window;
-
-DefaultNetworkTransport.fetch = globalThisOrWindow.fetch.bind(globalThisOrWindow) as Fetch;
-DefaultNetworkTransport.AbortController = globalThisOrWindow.AbortController.bind(
-  globalThisOrWindow,
-) as AbortController;
+DefaultNetworkTransport.fetch = safeGlobalThis.fetch.bind(safeGlobalThis) as Fetch;
+DefaultNetworkTransport.AbortController = safeGlobalThis.AbortController.bind(safeGlobalThis) as AbortController;

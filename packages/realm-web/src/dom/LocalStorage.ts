@@ -18,6 +18,7 @@
 
 import { Storage, StorageChangeListener } from "../storage/Storage";
 import { PrefixedStorage } from "../storage/PrefixedStorage";
+import { safeGlobalThis } from "@realm.io/common";
 
 /**
  * In-memory storage that will not be persisted.
@@ -26,14 +27,15 @@ export class LocalStorage implements Storage {
   /**
    * Internal state of the storage.
    */
+  // eslint-disable-next-line no-restricted-globals
   private readonly global: typeof globalThis;
 
   /**
    * Constructs a LocalStorage using the global window.
    */
   constructor() {
-    if (typeof globalThis.localStorage === "object") {
-      this.global = globalThis;
+    if (typeof safeGlobalThis.localStorage === "object") {
+      this.global = safeGlobalThis;
     } else {
       throw new Error("Cannot use LocalStorage without a global localStorage object");
     }

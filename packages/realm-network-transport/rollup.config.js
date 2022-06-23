@@ -60,7 +60,7 @@ export default [
       typescript({
         tsconfig: "src/dom/tsconfig.json",
       }),
-      nodeResolve(),
+      nodeResolve({ browser: true }),
     ],
   },
   {

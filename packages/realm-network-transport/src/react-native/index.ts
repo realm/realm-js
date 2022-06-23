@@ -18,15 +18,12 @@
 
 export * from "../index";
 
+import { safeGlobalThis } from "@realm.io/common";
 import { DefaultNetworkTransport } from "../DefaultNetworkTransport";
 import { AbortController, Fetch } from "../types";
 
-const globalThisOrWindow = typeof globalThis === "object" ? globalThis : window;
-
-DefaultNetworkTransport.fetch = globalThisOrWindow.fetch.bind(globalThisOrWindow) as Fetch;
-DefaultNetworkTransport.AbortController = globalThisOrWindow.AbortController.bind(
-  globalThisOrWindow,
-) as AbortController;
+DefaultNetworkTransport.fetch = safeGlobalThis.fetch.bind(safeGlobalThis) as Fetch;
+DefaultNetworkTransport.AbortController = safeGlobalThis.AbortController.bind(safeGlobalThis) as AbortController;
 
 // Setting this non-standard option to enable text streaming
 // See https://github.com/react-native-community/fetch#enable-text-streaming

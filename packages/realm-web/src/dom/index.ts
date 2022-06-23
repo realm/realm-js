@@ -29,11 +29,12 @@ import { MemoryStorage } from "../storage/MemoryStorage";
 import { OAuth2Helper } from "../OAuth2Helper";
 
 import { LocalStorage } from "./LocalStorage";
+import { safeGlobalThis } from "@realm.io/common";
 export { LocalStorage };
 
 const browser = detect();
 
-const DefaultStorage = "localStorage" in globalThis ? LocalStorage : MemoryStorage;
+const DefaultStorage = "localStorage" in safeGlobalThis ? LocalStorage : MemoryStorage;
 
 /**
  * Attempt to use the browser to open a window
@@ -42,8 +43,8 @@ const DefaultStorage = "localStorage" in globalThis ? LocalStorage : MemoryStora
  * @returns Then newly create window.
  */
 function openWindow(url: string) {
-  if (typeof globalThis.open === "function") {
-    return globalThis.open(url);
+  if (typeof safeGlobalThis.open === "function") {
+    return safeGlobalThis.open(url);
   } else {
     console.log(`Please open ${url}`);
     return null;
@@ -66,7 +67,7 @@ setEnvironment(environment);
  * @param location An optional location to use (defaults to the windows current location).
  * @param storage Optional storage used to save any results from the location.
  */
-export function handleAuthRedirect(location = globalThis.location, storage = environment.defaultStorage): void {
+export function handleAuthRedirect(location = safeGlobalThis.location, storage = environment.defaultStorage): void {
   try {
     const queryString = location.hash.substr(1); // Strip the initial # from the hash
     OAuth2Helper.handleRedirect(queryString, storage);

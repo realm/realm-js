@@ -19,7 +19,7 @@
 import { setIsDevelopmentMode } from "../environment";
 
 // Exported for unit testing
-export const isDevelopmentModeImpl = () => {
+export const isDevelopmentModeImpl = (): boolean => {
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { app } = require("electron");
