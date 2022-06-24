@@ -85,6 +85,7 @@ export function createUseObject(useRealm: () => Realm) {
       return null;
     }
 
+    // Return the current object reference, which should only cause a rerender when something has changed 
     return objectRef.current
   };
 }
