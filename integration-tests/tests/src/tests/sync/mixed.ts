@@ -94,7 +94,6 @@ function describeRoundtrip({
     });
 
     it("writes", async function (this: RealmContext) {
-      this.timeout(6000);
       await setupTest(this.realm);
 
       this._id = new Realm.BSON.ObjectId();

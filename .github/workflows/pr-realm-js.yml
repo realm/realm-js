@@ -117,6 +117,16 @@ jobs:
         if: ${{ (matrix.variant.os != 'ios') && (matrix.variant.os != 'android') }}
         run: npm run prebuild:node -- --arch=${{matrix.variant.arch}}
 
+      - name: Restore IOS cache
+        if: ${{ (matrix.variant.os == 'ios') }}
+        id: ios-cache
+        uses: actions/cache@v2
+        with:
+          path: react-native/ios/build
+          key: ${{ runner.os }}-ios-${{ hashFiles('src/**') }}
+          restore-keys: |
+            ${{ runner.os }}-ios-
+
       # build the c++ library for IOS
       - name: Build IOS
         if: ${{ (matrix.variant.os == 'ios') }}
@@ -206,7 +216,7 @@ jobs:
     needs: [build-and-test, baas-realm-js]
     env:
       REALM_DISABLE_ANALYTICS: 1
-      MOCHA_REMOTE_TIMEOUT: 100000
+      MOCHA_REMOTE_TIMEOUT: 30000
       CLUSTER_NAME: ${{ needs.baas-realm-js.outputs.clusterName }}
       MOCHA_REMOTE_CONTEXT: realmBaseUrl=${{ secrets.REALM_BASE_URL }},mongodbClusterName=${{ needs.baas-realm-js.outputs.clusterName }}
       MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
