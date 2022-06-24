@@ -5,7 +5,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* Realm JS can now be installed in environments using npm binary mirroring ([#4672](https://github.com/realm/realm-js/pull/4672)).
+* Realm JS can now be installed in environments using npm binary mirroring ([#4672](https://github.com/realm/realm-js/pull/4672), since v10.0.0).
 * None.
 
 ### Compatibility
