@@ -77,6 +77,7 @@ export function createUseQuery(useRealm: () => Realm) {
       return tearDown;
     }, [tearDown]);
 
+    // Return the current collection reference, which should only cause a rerender when something in the visible collection has changed 
     return collectionRef.current;
   };
 }
