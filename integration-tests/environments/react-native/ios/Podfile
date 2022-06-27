@@ -1,7 +1,7 @@
 require_relative '../node_modules/react-native/scripts/react_native_pods'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
-platform :ios, '11.0'
+platform :ios, '12.4'
 
 # Remove all warnings to limit the build logs
 inhibit_all_warnings!
@@ -12,7 +12,9 @@ target 'RealmReactNativeTests' do
   use_react_native!(
     :path => config[:reactNativePath],
     # to enable hermes on iOS, change `false` to `true` and then install pods
-    :hermes_enabled => (ENV['HERMES_ENABLED'] || 'true') == 'true' # default: true
+    :hermes_enabled => (ENV['HERMES_ENABLED'] || 'true') == 'true', # default: true
+    :fabric_enabled => (ENV['FABRIC_ENABLED'] || 'true') == 'true',
+    :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
   target 'RealmReactNativeTestsTests' do
@@ -32,7 +34,7 @@ target 'RealmReactNativeTests' do
   post_install do |installer|
     react_native_post_install(installer)
     __apply_Xcode_12_5_M1_post_install_workaround(installer)
-    # TODO: The following is a workaround for a bug in CocoaPods when using Catalyst  
+    # TODO: The following is a workaround for a bug in CocoaPods when using Catalyst
     # https://github.com/CocoaPods/CocoaPods/issues/8891
     # Fix bundle targets' 'Signing Certificate' to 'Sign to Run Locally'
     installer.pods_project.targets.each do |target|
