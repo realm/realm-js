@@ -16,21 +16,12 @@ jobs:
           - { os: linux, runner: ubuntu-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
           - { os: windows, runner: windows-2019, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
           - { os: windows, runner: windows-2019, arch: ia32, artifact-path: prebuilds }
-<<<<<<< HEAD
           - { os: android, runner: ubuntu-latest, arch: x86_64, artifact-path: react-native/android/src/main/jniLibs }
           - { os: android, runner: ubuntu-latest, arch: armeabi-v7a, artifact-path: react-native/android/src/main/jniLibs }
           - { os: android, runner: ubuntu-latest, arch: arm64-v8a, artifact-path: react-native/android/src/main/jniLibs }
           - { os: android, runner: ubuntu-latest, arch: x86, artifact-path: react-native/android/src/main/jniLibs }
           - { os: darwin, runner: macos-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
           - { os: ios, runner: macos-latest, arch: apple, artifact-path: react-native/ios/realm-js-ios.xcframework }
-=======
-          # - { os: android, runner: ubuntu-latest, arch: x86_64, artifact-path: react-native/android/src/main/jniLibs }
-          # - { os: android, runner: ubuntu-latest, arch: armeabi-v7a, artifact-path: react-native/android/src/main/jniLibs }
-          # - { os: android, runner: ubuntu-latest, arch: arm64-v8a, artifact-path: react-native/android/src/main/jniLibs }
-          # - { os: android, runner: ubuntu-latest, arch: x86, artifact-path: react-native/android/src/main/jniLibs }
-          - { os: darwin, runner: macos-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
-          # - { os: ios, runner: macos-latest, arch: apple, artifact-path: react-native/ios/realm-js-ios.xcframework }
->>>>>>> 579a01c7 (Squashing and rebasing)
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -150,34 +141,6 @@ jobs:
         working-directory: ./tests
         run: npm ci --ignore-scripts
 
-<<<<<<< HEAD
-=======
-      # Run the node test scripts (without sync)
-      - name: Run tests
-        if: ${{ (matrix.variant.test-node) }}
-        working-directory: ./tests
-        run: npm test
-
-      - name: Install electron test dependencies
-        if: ${{ (matrix.variant.test-electron) }}
-        working-directory: ./tests/electron
-        run: npm ci
-
-      - name: Run electron tests on non-Linux
-        if: ${{ (matrix.variant.test-electron) && (matrix.variant.os != 'linux') }}
-        working-directory: ./tests/electron
-        run: |
-          npm test -- --process=main
-          npm test -- --process=render
-
-      - name: Run electron tests on Linux
-        if: ${{ (matrix.variant.test-electron) && (matrix.variant.os == 'linux') }}
-        working-directory: ./tests/electron
-        run: |
-          xvfb-run --auto-servernum npm test -- --process=main
-          xvfb-run --auto-servernum npm test -- --process=render
-
->>>>>>> 579a01c7 (Squashing and rebasing)
       # all tests passed, upload artifacts
       # the dummy file included is to force preserving paths
       - name: Upload prebuild artifact
@@ -251,25 +214,12 @@ jobs:
 
   integration-tests:
     name: Integration tests for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
-<<<<<<< HEAD
     needs: [build-and-test]
-=======
-    #needs: [build-and-test]
-    needs: [build-and-test, baas-realm-js]
->>>>>>> 579a01c7 (Squashing and rebasing)
     env:
       REALM_DISABLE_ANALYTICS: 1
       MOCHA_REMOTE_TIMEOUT: 30000
       CLUSTER_NAME: ${{ needs.baas-realm-js.outputs.clusterName }}
-<<<<<<< HEAD
-<<<<<<< HEAD
-      MOCHA_REMOTE_CONTEXT: realmBaseUrl=${{ secrets.REALM_BASE_URL }},mongodbClusterName=${{ needs.baas-realm-js.outputs.clusterName }},missingServer
-=======
-      MOCHA_REMOTE_CONTEXT: realmBaseUrl=${{ secrets.REALM_BASE_URL }},mongodbClusterName=${{ needs.baas-realm-js.outputs.clusterName }},skipFlexibleSync
->>>>>>> 579a01c7 (Squashing and rebasing)
-=======
       MOCHA_REMOTE_CONTEXT: realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ needs.baas-realm-js.outputs.clusterName }}
->>>>>>> ed7a15f2 (Run tests against QA system)
       MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
       MOCHA_REMOTE_EXIT_ON_ERROR: true
       REALM_BASE_URL: ${{ secrets.REALM_QA_BASE_URL }}
@@ -288,7 +238,6 @@ jobs:
         variant:
           #type: [Release, Debug]
           - { os: linux, target: test, runner: ubuntu-latest, environment: node }
-<<<<<<< HEAD
           - { os: linux, target: "test:main", runner: ubuntu-latest, environment: electron }
           - { os: linux, target: "test:renderer", runner: ubuntu-latest, environment: electron }
           - { os: windows, target: test, runner: windows-2019, environment: node}
@@ -303,22 +252,6 @@ jobs:
           #- { os: ios, target: "test:ios:chrome", runner: macos-latest, environment: react-native }
           - { os: ios, target: "test:catalyst", runner: macos-latest, environment: react-native }
           #- { os: ios, target: "test:catalyst:chrome", runner: macos-latest, environment: react-native }
-=======
-          - { os: windows, target: test, runner: windows-2019, environment: node}
-          - { os: linux, target: "test:main", runner: ubuntu-latest, environment: electron }
-          - { os: linux, target: "test:renderer", runner: ubuntu-latest, environment: electron }
-          - { os: windows, target: "test:main", runner: windows-2019, environment: electron }
-          - { os: windows, target: "test:renderer", runner: windows-2019, environment: electron }
-          # - { os: android, target: "test:android", runner: macos-latest, environment: react-native }
-          - { os: darwin, target: "test:main", runner: macos-latest, environment: electron }
-          - { os: darwin, target: "test:renderer", runner: macos-latest, environment: electron }
-          - { os: darwin, target: test, runner: macos-latest, environment: node }
-          # - { os: android, target: "test:android:chrome", runner: macos-latest, environment: react-native }
-          # - { os: ios, target: "test:ios", runner: macos-latest, environment: react-native }
-          # - { os: ios, target: "test:ios:chrome", runner: macos-latest, environment: react-native }
-          # - { os: ios, target: "test:catalyst", runner: macos-latest, environment: react-native }
-          # - { os: ios, target: "test:catalyst:chrome", runner: macos-latest, environment: react-native }
->>>>>>> 579a01c7 (Squashing and rebasing)
     timeout-minutes: 60
     steps:
       - name: Checkout code
@@ -406,10 +339,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Cleanup realm js
     needs: [integration-tests]
-<<<<<<< HEAD
-=======
-    if: false
->>>>>>> 579a01c7 (Squashing and rebasing)
+    if: ${{ always() }}
     timeout-minutes: 10
     steps:
       - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56
