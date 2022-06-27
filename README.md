@@ -24,6 +24,8 @@ The API reference is located at [docs.mongodb.com/realm-sdks/js/latest/](https:/
 
 If you are using React Native, please also take a look the README for [@realm/react](https://github.com/realm/realm-js/tree/master/packages/realm-react#readme), which provides React hooks to make working with Realm easier.
 
+Currently, Realm is not compatible with React Native 0.69 or later.
+
 
 ## Template apps using Expo for React Native
 
@@ -53,6 +55,7 @@ See [CONTRIBUTING.md](https://github.com/realm/realm-js/blob/master/CONTRIBUTING
    * [Flipper](https://fbflipper.com/) has many similar features in relation to the Chrome Debugger. Please consider trying out our [Hermes release](https://github.com/realm/realm-js/issues/3940) to use the Hermes Debugger in Flipper and set breakpoints in your code.
    * [Safari](https://reactnative.dev/docs/debugging#safari-developer-tools) also has a similar feature set, but requires [some setup](https://blog.nparashuram.com/2019/10/debugging-react-native-ios-apps-with.html) and only supports debugging in iOS.
    * **NOTE:** For the above methods, it is not neccessary to enable `Debug with Chrome` in the Debug Menu.
+* Realm is not compatible with React Native 0.69 or later.
 
 ## Building Realm JS
 
