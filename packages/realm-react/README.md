@@ -155,7 +155,7 @@ const Component = () => {
   const collection = useQuery(ObjectClass);
 
   // The methods `sorted` and `filtered` should be wrapped in a useMemo.
-  const sortedCollection = useMemo(collection.sorted(), [collection]);
+  const sortedCollection = useMemo(() => collection.sorted(), [collection]);
 
   return (
     <FlatList data={sortedCollection} renderItem={({ item }) => <Object item={item}/>
