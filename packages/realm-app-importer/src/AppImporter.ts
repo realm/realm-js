@@ -287,60 +287,24 @@ export class AppImporter {
     }
   }
 
-  private async applyAppConfiguration(appPath: string, appId: string, groupId: string) {
-    console.log("applyAppConfiguration: ", appPath);
-    const authProviderDir = path.join(appPath, "auth_providers");
-    if (fs.existsSync(authProviderDir)) {
-      console.log("Applying auth providers... ");
-      const authFileNames = fs.readdirSync(authProviderDir);
-      for (const authFileName of authFileNames) {
-        const authFilePath = path.join(authProviderDir, authFileName);
-        const authConfig = fs.readFileSync(authFilePath, "utf-8");
-        const url = `${this.apiUrl}/groups/${groupId}/apps/${appId}/auth_providers`;
-        const response = await fetch(url, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${this.accessToken}`,
-            "content-type": "application/json",
-          },
-          body: authConfig,
-        });
-        if (!response.ok) {
-          console.warn("Could not apply auth_provider: ", authConfig);
-        }
-      }
+  private async configureAuthProviders(authConfig: any, appId: string, groupId: string) {
+    console.log("Applying auth providers... ");
+    //TODO: Check if auth provider is already existing and patch it
+    const url = `${this.apiUrl}/groups/${groupId}/apps/${appId}/auth_providers`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+        "content-type": "application/json",
+      },
+      body: authConfig,
+    });
+    if (!response.ok) {
+      console.warn("Could not apply auth_provider: ", authConfig);
     }
+  }
 
-    // Create all secrets in parallel
-    const secrets = this.loadSecretsJson(appPath);
-    await Promise.all(
-      Object.entries<string>(secrets).map(async ([name, value]) => {
-        if (typeof value !== "string") {
-          throw new Error(`Expected a secret string value for '${name}'`);
-        }
-        return this.createSecret(groupId, appId, name, value);
-      }),
-    );
-    // const secretsConfig = `${appPath}/secrets.json`;
-    // if (fs.existsSync(secretsConfig)) {
-    //   const config = JSON.parse(fs.readFileSync(secretsConfig, "utf-8"));
-    //   console.log("creating secrets: ", config);
-    //   const secretsUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/secrets`;
-    //   console.log("config so far:", config);
-    //   const response = await fetch(secretsUrl, {
-    //     method: "POST",
-    //     headers: {
-    //       Authorization: `Bearer ${this.accessToken}`,
-    //       "content-type": "application/json",
-    //     },
-    //     body: JSON.stringify(config),
-    //   });
-    //   if (!response.ok) {
-    //     const body = await response.json();
-    //     console.warn("Could not create secrets: ", config, secretsUrl, response.statusText, body);
-    //   }
-    // }
-
+  private async configureServiceFromAppPath(appPath: string, appId: string, groupId: string) {
     const servicesDir = path.join(appPath, "services");
     if (fs.existsSync(servicesDir)) {
       console.log("Applying services... ");
@@ -369,38 +333,6 @@ export class AppImporter {
             console.warn("Could not create service: ", tmpConfig, serviceUrl, response.statusText);
           } else {
             await this.enableDevelopmentMode(groupId, appId);
-            // const responseJson = await response.json();
-            // const serviceId = responseJson._id;
-            // await new Promise((resolve, reject) => {
-            //   let attempt = 0;
-            //   const intervalId = setInterval(async () => {
-            //     attempt++;
-            //     const serviceConfigUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/services/${serviceId}/config`;
-            //     const response = await fetch(serviceConfigUrl, {
-            //       method: "PATCH",
-            //       headers: {
-            //         Authorization: `Bearer ${this.accessToken}`,
-            //         "content-type": "application/json",
-            //       },
-            //       body: JSON.stringify({ ...config.config }),
-            //     });
-            //     if (!response.ok) {
-            //       console.warn(
-            //         "Could not patch service: ",
-            //         { ...config.config },
-            //         serviceConfigUrl,
-            //         response.statusText,
-            //       );
-            //     } else {
-            //       clearInterval(intervalId);
-            //       resolve({});
-            //     }
-            //     if (attempt > 25) {
-            //       console.error("Could not patch service after 25 attempts");
-            //       reject();
-            //     }
-            //   }, 1000);
-            // });
             const rulesDir = path.join(servicesDir, serviceDir, "rules");
             const responseJson = await response.json();
             const serviceId = responseJson._id;
@@ -414,18 +346,6 @@ export class AppImporter {
                 if (schemaConfig) {
                   // Schema is not valid in a rule request
                   delete ruleConfig.schema;
-                  // const schemaUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/schemas`;
-                  // const response = await fetch(schemaUrl, {
-                  //   method: "POST",
-                  //   headers: {
-                  //     Authorization: `Bearer ${this.accessToken}`,
-                  //     "content-type": "application/json",
-                  //   },
-                  //   body: JSON.stringify({ schema: schemaConfig }),
-                  // });
-                  // if (!response.ok) {
-                  //   console.warn("Could not create schema: ", schemaConfig, schemaUrl, response.statusText);
-                  // }
                 }
                 const rulesUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/services/${serviceId}/rules`;
                 const response = await fetch(rulesUrl, {
@@ -445,6 +365,34 @@ export class AppImporter {
         }
       }
     }
+  }
+
+  private async applyAppConfiguration(appPath: string, appId: string, groupId: string) {
+    console.log("applyAppConfiguration v1: ", appPath);
+
+    const authProviderDir = path.join(appPath, "auth_providers");
+
+    if (fs.existsSync(authProviderDir)) {
+      const authFileNames = fs.readdirSync(authProviderDir);
+      for (const authFileName of authFileNames) {
+        const authFilePath = path.join(authProviderDir, authFileName);
+        const authConfig = fs.readFileSync(authFilePath, "utf-8");
+        await this.configureAuthProviders(authConfig, appId, groupId);
+      }
+    }
+
+    // Create all secrets in parallel
+    const secrets = this.loadSecretsJson(appPath);
+    await Promise.all(
+      Object.entries<string>(secrets).map(async ([name, value]) => {
+        if (typeof value !== "string") {
+          throw new Error(`Expected a secret string value for '${name}'`);
+        }
+        return this.createSecret(groupId, appId, name, value);
+      }),
+    );
+
+    await this.configureServiceFromAppPath(appPath, appId, groupId);
 
     const functionsPath = path.join(appPath, "functions");
     if (fs.existsSync(functionsPath)) {
