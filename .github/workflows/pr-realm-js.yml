@@ -202,14 +202,15 @@ jobs:
       clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
     steps:
-      - uses: realm/ci-actions/mdb-realm/deployApps@800a0234bcbe9073e7a07a66c864d54db3688e56
+      - uses: realm/ci-actions/mdb-realm/deployApps@fac1d6958f03d71de743305ce3ab27594efbe7b7
         id: deploy-mdb-apps
         with:
-          realmUrl: ${{ secrets.REALM_BASE_URL }}
-          projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-          apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-          privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
-          differentiator: realm js
+          realmUrl: ${{ secrets.REALM_QA_BASE_URL }}
+          projectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+          atlasUrl: ${{ secrets.ATLAS_QA_BASE_URL}}
+          apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+          privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
+          differentiator: realm-js
 
   integration-tests:
     name: Integration tests for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
@@ -218,12 +219,12 @@ jobs:
       REALM_DISABLE_ANALYTICS: 1
       MOCHA_REMOTE_TIMEOUT: 30000
       CLUSTER_NAME: ${{ needs.baas-realm-js.outputs.clusterName }}
-      MOCHA_REMOTE_CONTEXT: realmBaseUrl=${{ secrets.REALM_BASE_URL }},mongodbClusterName=${{ needs.baas-realm-js.outputs.clusterName }}
+      MOCHA_REMOTE_CONTEXT: realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ needs.baas-realm-js.outputs.clusterName }}
       MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
       MOCHA_REMOTE_EXIT_ON_ERROR: true
-      REALM_BASE_URL: ${{ secrets.REALM_BASE_URL }}
-      REALM_PUBLIC_KEY: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-      REALM_PRIVATE_KEY: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+      REALM_BASE_URL: ${{ secrets.REALM_QA_BASE_URL }}
+      REALM_PUBLIC_KEY: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      REALM_PRIVATE_KEY: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
       SPAWN_LOGCAT: true
       HEADLESS_DEBUGGER: true
       RETRIES: 5
