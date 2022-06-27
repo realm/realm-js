@@ -11,20 +11,13 @@
   },
   "dependencies": {
     "@realm/integration-tests": "*",
-    "command-line-args": "^4.0.6",
-    "fs-extra": "^7.0.1",
-    "https-proxy-agent": "^2.2.3",
-    "mocha": "^8.3.2",
     "mocha-cli": "^1.0.1",
     "mocha-github-actions-reporter": "^0.2.3",
-    "mocha-junit-reporter": "^1.18.0",
     "mocha-remote-cli": "^1.5.0",
     "mocha-remote-client": "^1.5.0",
-    "node-fetch": "^2.6.1",
     "realm": "*"
   },
   "devDependencies": {
-    "cmake-js": "^6.1.0",
     "concurrently": "^6.0.2",
     "realm-app-importer": "*"
   }
