@@ -11,9 +11,7 @@ export const AppWrapperNonSync = () => {
   // If sync is disabled, setup the app without any sync functionality and return early
   return (
     <SafeAreaView style={styles.screen}>
-      <RealmProvider>
-        <AppNonSync />
-      </RealmProvider>
+      <RealmProvider />
     </SafeAreaView>
   );
 };
