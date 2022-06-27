@@ -4,9 +4,11 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * Realm JS can now be installed in environments using npm binary mirroring ([#4672](https://github.com/realm/realm-js/pull/4672), since v10.0.0).
-* None.
+* Asymmetric sync now works with embedded objects. ([realm/realm-core#5565](https://github.com/realm/realm-core/issues/5565), since 10.19.0)
+* Fixed an issue on Windows that would cause high CPU usage by the sync client when there are no active sync sessions. ([realm/realm-core#5591](https://github.com/realm/realm-core/issues/5591), since v1.1.1)
+* Fixed an issue setting a `Mixed` from an object to `null` or any other non-link value. Users may have seen exception of `key not found` or assertion failures such as `mixed.hpp:165: [realm-core-12.1.0] Assertion failed: m_type` when removing the destination link object. ([realm/realm-core#5574](https://github.com/realm/realm-core/pull/5573), since v10.5.0)
+* Fixed a data race when opening a flexible sync Realm. ([realm/realm-core#5573](https://github.com/realm/realm-core/pull/5573), since v10.19.0)
 
 ### Compatibility
 * Atlas App Services.
@@ -15,9 +17,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Upgraded Realm Core from v12.1.0 to v12.2.0. ([#4679](https://github.com/realm/realm-js/issues/4679))
 * Enabled `testNoMigrationOnSync`. ([#3312](https://github.com/realm/realm-js/issues/3312))
 
 10.19.2 Release notes (2022-6-20)
