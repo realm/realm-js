@@ -206,6 +206,30 @@ describe("Dictionary", () => {
     });
   });
 
+  describe("toJSON", function () {
+    openRealmBefore({
+      schema: [
+        {
+          name: "Item",
+          properties: { dict: "{}" },
+        },
+      ],
+    });
+
+    it("calling toJSON on an object with a Dictionary field removes the Proxy from the Dictionary", function (this: RealmContext) {
+      const object = this.realm.write(() => {
+        return this.realm.create<Item>("Item", { dict: { something: "test" } });
+      });
+      const jsonObject = object.toJSON();
+
+      // Previously this would throw on JSC, because the Dictionary was still a Proxy,
+      // so modifying it tried to write to the Realm outside of a write transaction
+      expect(() => {
+        jsonObject.dict.something = "test2";
+      }).to.not.throw();
+    });
+  });
+
   type ValueGenerator = (realm: Realm) => DictValues;
 
   type TypedDictionarySuite = {
