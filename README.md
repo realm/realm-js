@@ -55,7 +55,7 @@ See [CONTRIBUTING.md](https://github.com/realm/realm-js/blob/master/CONTRIBUTING
    * [Flipper](https://fbflipper.com/) has many similar features in relation to the Chrome Debugger. Please consider trying out our [Hermes release](https://github.com/realm/realm-js/issues/3940) to use the Hermes Debugger in Flipper and set breakpoints in your code.
    * [Safari](https://reactnative.dev/docs/debugging#safari-developer-tools) also has a similar feature set, but requires [some setup](https://blog.nparashuram.com/2019/10/debugging-react-native-ios-apps-with.html) and only supports debugging in iOS.
    * **NOTE:** For the above methods, it is not neccessary to enable `Debug with Chrome` in the Debug Menu.
-* Realm is not compatible with React Native 0.69 or later.
+* Realm is not compatible with React 18 and React Native 0.69 or later.
 
 ## Building Realm JS
 
