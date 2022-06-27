@@ -32,7 +32,11 @@ export const AppWrapperNonSync = () => {
   const {RealmProvider} = TaskRealmContext;
 
   // If sync is disabled, setup the app without any sync functionality and return early
-  return <SafeAreaView style={styles.screen} />;
+  return (
+    <SafeAreaView style={styles.screen}>
+      <RealmProvider />
+    </SafeAreaView>
+  );
 };
 
 const styles = StyleSheet.create({
