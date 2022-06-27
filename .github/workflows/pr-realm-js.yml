@@ -316,6 +316,9 @@ jobs:
       - name: Bootstrap lerna sub-packages
         run: npx lerna bootstrap --scope realm-${{ matrix.variant.environment }}-tests --include-dependencies
 
+      - name: Build tests
+        run: npm run build --prefix integration-tests/tests
+
       - name: Invoke the simulator (making subsequent "open -a Simulator" calls work)
         if: ${{ (matrix.variant.os == 'ios') }}
         run: open -a ${{ env.DEVELOPER_DIR }}/Contents/Developer/Applications/Simulator.app/Contents/MacOS/Simulator

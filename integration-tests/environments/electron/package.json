@@ -20,7 +20,6 @@
     "app-importer": "realm-app-importer serve ../../realm-apps"
   },
   "devDependencies": {
-    "cmake-js": "^6.1.0",
     "command-line-args": "^5.1.1",
     "concurrently": "^6.0.2",
     "electron": "^12.2.1",
@@ -34,9 +33,7 @@
     "@realm/integration-tests": "*",
     "fs-extra": "^9.1.0",
     "mocha": "^8.3.2",
-    "mocha-remote-client": "^1.5.0",
-    "node-fetch": "^2.6.1",
-    "realm": "*"
+    "mocha-remote-client": "^1.5.0"
   },
   "build": {
     "appId": "io.realm.realm-js.electron-tests",
