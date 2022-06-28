@@ -170,6 +170,8 @@ public:
     int random = rand();
 
     T obj;
+
+    int id = rand();
 };
 
 template <typename T>
