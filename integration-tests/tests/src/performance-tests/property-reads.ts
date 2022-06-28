@@ -60,7 +60,7 @@ function describeTypeRead({ type, value, schema = [] }: TestParameters) {
   };
 
   itPerforms(`do work`, () => {
-    Realm.doWork();
+    // Realm.doWork();
   });
 
   describePerformance(`reading property of type '${typeName}'`, {
