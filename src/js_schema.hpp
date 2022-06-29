@@ -383,23 +383,26 @@ ObjectSchema Schema<T>::parse_object_schema(ContextType ctx, ObjectType object_s
         property->is_primary = true;
     }
 
+    bool is_embedded = false;
+    object_schema.table_type = ObjectSchema::ObjectType::TopLevel;
     ValueType embedded_value = Object::get_property(ctx, object_schema_object, embedded_string);
     if (!Value::is_undefined(ctx, embedded_value)) {
-        object_schema.is_embedded = Value::validated_to_boolean(ctx, embedded_value);
-    }
-    else {
-        object_schema.is_embedded = false;
+        if (Value::validated_to_boolean(ctx, embedded_value)) {
+            object_schema.table_type = ObjectSchema::ObjectType::Embedded;
+            is_embedded = true;
+        }
     }
 
+    bool is_asymmetric = false;
     ValueType asymmetric_value = Object::get_property(ctx, object_schema_object, asymmetric_string);
     if (!Value::is_undefined(ctx, asymmetric_value)) {
-        object_schema.is_asymmetric = Value::validated_to_boolean(ctx, asymmetric_value);
-    }
-    else {
-        object_schema.is_asymmetric = false;
+        if (Value::validated_to_boolean(ctx, asymmetric_value)) {
+            object_schema.table_type = ObjectSchema::ObjectType::TopLevelAsymmetric;
+            is_asymmetric = true;
+        }
     }
 
-    if (object_schema.is_asymmetric && object_schema.is_embedded) {
+    if (is_asymmetric && is_embedded) {
         throw std::runtime_error("Schema named '" + object_schema.name +
                                  "' is asymmetric and embedded which is not supported.");
     }
@@ -468,10 +471,18 @@ typename T::Object Schema<T>::object_for_object_schema(ContextType ctx, const Ob
     }
 
     static const String embedded_string = "embedded";
-    Object::set_property(ctx, object, embedded_string, Value::from_boolean(ctx, object_schema.is_embedded));
-
     static const String asymmetric_string = "asymmetric";
-    Object::set_property(ctx, object, asymmetric_string, Value::from_boolean(ctx, object_schema.is_asymmetric));
+    switch (object_schema.table_type) {
+        case ObjectSchema::ObjectType::Embedded:
+            Object::set_property(ctx, object, embedded_string, Value::from_boolean(ctx, true));
+            break;
+        case ObjectSchema::ObjectType::TopLevelAsymmetric:
+            Object::set_property(ctx, object, asymmetric_string, Value::from_boolean(ctx, true));
+            break;
+        default:
+            Object::set_property(ctx, object, embedded_string, Value::from_boolean(ctx, false));
+            Object::set_property(ctx, object, asymmetric_string, Value::from_boolean(ctx, false));
+    }
 
     return object;
 }
