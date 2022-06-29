@@ -7,7 +7,6 @@ jobs:
     runs-on: ${{ matrix.variant.runner }}
     env:
       npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
-      REALM_DISABLE_SYNC_TESTS: true
       REALM_DISABLE_ANALYTICS: 1
     strategy:
       #fail-fast: false
