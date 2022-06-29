@@ -18,13 +18,16 @@
 
 import { TemplateContext } from "./context";
 import { generateTypeScript } from "./templates/typescript";
+import { generateNode } from "./templates/node";
 
 export type Template = (context: TemplateContext) => void;
 
 export enum TemplateName {
   typescript = "typescript",
+  node = "node",
 }
 
 export const TEMPLATES: Record<TemplateName, Template> = {
   [TemplateName.typescript]: generateTypeScript,
+  [TemplateName.node]: generateNode,
 };

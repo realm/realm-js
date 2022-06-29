@@ -22,9 +22,22 @@
         "generate:spec-schema"
       ]
     },
+    "generate:node": {
+      "inputs": [
+        "src/*",
+        "spec.yml"
+      ],
+      "outputs": [
+        "generated/node/*"
+      ],
+      "dependsOn": [
+        "generate:spec-schema"
+      ]
+    },
     "generate": {
       "dependsOn": [
-        "generate:typescript"
+        "generate:typescript",
+        "generate:node"
       ]
     },
     "build": {
