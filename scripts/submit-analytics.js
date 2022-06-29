@@ -92,8 +92,8 @@ function getProjectRoot() {
  *
  * @returns package.json as a JavaScript object
  */
-function getPackageJson() {
-  const packageJson = getProjectRoot() + path.sep + "package.json";
+function getPackageJson(packagePath) {
+  const packageJson = path.resolve(packagePath, "package.json");
   return fse.readJsonSync(packageJson);
 }
 
@@ -127,7 +127,7 @@ function getRealmVersion() {
  * @param {Object} packageJson The app's package.json parsed as an object
  * @returns {Object} Analytics payload
  */
-async function collectPlatformData(packageJson) {
+async function collectPlatformData(packagePath = getProjectRoot()) {
   const os = require("os");
   const { machineId } = require("node-machine-id");
 
@@ -143,6 +143,8 @@ async function collectPlatformData(packageJson) {
   let frameworkVersion = process.version;
   let jsEngine = "v8";
 
+  const packageJson = getPackageJson(packagePath);
+
   if (packageJson.dependencies && packageJson.dependencies["react-native"]) {
     framework = "react-native";
     frameworkVersion = packageJson.dependencies["react-native"];
@@ -154,7 +156,8 @@ async function collectPlatformData(packageJson) {
 
   if (framework === "react-native") {
     try {
-      const podfile = fs.readFileSync(getProjectRoot() + "/ios/Podfile", "utf8"); // no need to use path.sep as we are on MacOS
+      const podfilePath = path.join(packagePath, "ios/Podfile");
+      const podfile = fs.readFileSync(podfilePath, "utf8");
       if (/hermes_enabled.*true/.test(podfile)) {
         jsEngine = "hermes";
       } else {
@@ -166,7 +169,7 @@ async function collectPlatformData(packageJson) {
     }
 
     try {
-      const rnPath = [getProjectRoot(), "node_modules", "react-native", "package.json"].join(path.sep);
+      const rnPath = path.join(packagePath, "node_modules", "react-native", "package.json");
       const rnPackageJson = JSON.parse(fs.readFileSync(rnPath, "utf-8"));
       frameworkVersion = rnPackageJson["version"];
     } catch (err) {
@@ -184,7 +187,7 @@ async function collectPlatformData(packageJson) {
   }
   if (framework === "electron") {
     try {
-      const electronPath = [getProjectRoot(), "node_modules", "electron", "package.json"].join(path.sep);
+      const electronPath = path.join(packagePath, "node_modules", "electron", "package.json");
       const electronPackageJson = JSON.parse(fs.readFileSync(electronPath, "utf-8"));
       frameworkVersion = electronPackageJson["version"];
     } catch (err) {
@@ -237,8 +240,7 @@ async function dispatchAnalytics(payload) {
 }
 
 async function submitAnalytics(dryRun) {
-  const packageJson = getPackageJson();
-  const data = await collectPlatformData(packageJson);
+  const data = await collectPlatformData();
   const payload = {
     webHook: {
       event: "install",
