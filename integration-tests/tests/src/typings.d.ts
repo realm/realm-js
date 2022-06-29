@@ -87,5 +87,5 @@ declare module "*.json" {
 }
 
 declare module "realm/scripts/submit-analytics" {
-  export function collectPlatformData(packageJson: Record<string, unknown>): Promise<Record<string, unknown>>;
+  export function collectPlatformData(packagePath: string): Promise<Record<string, unknown>>;
 }
