@@ -4,7 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* Fixed a bug with handling `null` values in `toJSON` ([[#4682](https://github.com/realm/realm-js/issues/4682), since 10.19.3)
 * None.
 
 ### Compatibility

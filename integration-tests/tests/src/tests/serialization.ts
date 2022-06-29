@@ -538,4 +538,32 @@ describe("JSON serialization", () => {
       });
     });
   }
+
+  describe("toJSON edge case handling", function () {
+    interface EdgeCaseSchema {
+      maybeNull: null;
+    }
+
+    const EdgeCaseSchema = {
+      name: "EdgeCase",
+      properties: {
+        maybeNull: "string?",
+      },
+    };
+
+    openRealmBeforeEach({
+      inMemory: true,
+      schema: [EdgeCaseSchema],
+    });
+
+    it("handles null values", function (this: RealmContext) {
+      const object = this.realm.write(() => {
+        return this.realm.create<EdgeCaseSchema>(EdgeCaseSchema.name, {
+          maybeNull: null,
+        });
+      });
+
+      expect(object.toJSON()).deep.equals({ maybeNull: null });
+    });
+  });
 });
