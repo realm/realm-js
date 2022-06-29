@@ -68,6 +68,7 @@ function describeRoundtrip({
     }
   }
 
+  // TODO: This might be a useful utility
   function log(...args: [string]) {
     const date = new Date();
     console.log(date.toString(), date.getMilliseconds(), ...args);
@@ -75,16 +76,10 @@ function describeRoundtrip({
 
   async function setupTest(realm: Realm) {
     if (flexibleSync) {
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-      log("before sub update");
       await realm.subscriptions.update((mutableSubs) => {
-        log("mutalbe sub add");
-        mutableSubs.add(realm.objects("MixedClass"), { name: "mixed" });
-        log("muteable sub add finish");
+        mutableSubs.add(realm.objects("MixedClass"));
       });
-      log("after sub update");
       await realm.subscriptions.waitForSynchronization();
-      log("after waitForSync");
     }
   }
 
@@ -104,24 +99,14 @@ function describeRoundtrip({
       sync: flexibleSync
         ? {
             flexible: true,
-            initialSubscriptions: {
-              update: (subs, realm) => {
-                log("setting up initial subscription");
-                subs.add(realm.objects("MixedClass"), { name: "mixed" });
-                log("initial subscription complete");
-              },
-            },
           }
         : { partitionValue: "mixed-test" },
     });
 
     it("writes", async function (this: RealmContext) {
-      console.log("before setup");
       await setupTest(this.realm);
-      console.log("after setup");
 
       this._id = new Realm.BSON.ObjectId();
-      console.log("before write");
       this.realm.write(() => {
         this.value = typeof value === "function" ? value(this.realm) : value;
         this.realm.create<MixedClass>("MixedClass", {
@@ -131,7 +116,6 @@ function describeRoundtrip({
           list: [this.value, 123, false, "something-else"],
         });
       });
-      console.log("after write");
     });
 
     itUploadsDeletesAndDownloads();
@@ -161,7 +145,7 @@ function describeTypes(flexibleSync: boolean) {
 
   describeRoundtrip({ typeName: "null", value: null, flexibleSync });
 
-  // TODO: Provide an API to speficy storing this as an int
+  // // TODO: Provide an API to speficy storing this as an int
   // describeRoundtrip({ typeName: "int", value: 123, flexibleSync });
 
   // // TODO: Provide an API to specify which of these to store
