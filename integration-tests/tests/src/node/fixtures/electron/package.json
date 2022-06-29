@@ -1,0 +1,7 @@
+{
+  "name": "fake-electron-package",
+  "version": "1.2.3",
+  "devDependencies": {
+    "electron": "^1.0.0"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "fake-react-native-package",
+  "version": "1.2.3",
+  "dependencies": {
+    "react-native": "^1.0.0"
+  }
+}
