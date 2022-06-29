@@ -29,5 +29,6 @@ jobs:
           registry-url: https://registry.npmjs.org/
       # Install the root package to get dev-dependencies
       - run: npm ci
+      - run: npx turbo run build --filter @realm.io/common --filter realm-network-transport
       - run: npm test --workspace realm-network-transport
-      - run: npm test --workspace @realm/common
+      - run: npm test --workspace @realm.io/common

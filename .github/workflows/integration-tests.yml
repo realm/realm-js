@@ -85,8 +85,8 @@ jobs:
       - name: Prebuild debug binary
         run: npx prebuild --debug
         if: ${{ matrix.type == 'debug' }}
-      # Build the tests
-      - run: npm run build --workspace @realm/integration-tests
+      # Build
+      - run: npx turbo run build --filter realm-node-tests
       # Run tests
       - run: npm test --workspace realm-node-tests
         env:
@@ -124,8 +124,8 @@ jobs:
       # Build the native module
       - name: Prebuild release binary
         run: npx prebuild
-      # Build the tests
-      - run: npm run build --workspace @realm/integration-tests
+      # Build
+      - run: npx turbo run build --filter realm-electron-tests
       # Run tests (using xvfb-run to enable opening windows in a virtual framebuffer)
       - name: Run tests (Electron / Main)
         run: xvfb-run npm run test:main --workspace realm-electron-tests
@@ -194,8 +194,8 @@ jobs:
       - run: ./scripts/build-ios.sh -c ${{ matrix.type }} ${{matrix.platform.build-configuration}}
       # Perform a pod-install in the test app
       - run: npm run pod-install --workspace realm-react-native-tests
-      # Build the tests
-      - run: npm run build --workspace @realm/integration-tests
+      # Build
+      - run: npx turbo run build --filter realm-react-native-tests
       # Open the simulator as a workaround
       - name: Invoke the simulator (making subsequent "open -a Simulator" calls work)
         run: open -a ${{ env.DEVELOPER_DIR }}/Contents/Developer/Applications/Simulator.app/Contents/MacOS/Simulator
@@ -273,8 +273,8 @@ jobs:
         if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
       # Build the Android shared object file
       - run: ANDROID_NDK=$ANDROID_NDK_HOME node scripts/build-android.js --arch=x86 --build-type=${{ matrix.type }}
-      # Build the tests
-      - run: npm run build --workspace @realm/integration-tests
+      # Build
+      - run: npx turbo run build --filter realm-react-native-tests
       # Run the tests
       - name: Run tests (Android / Native)
         uses: reactivecircus/android-emulator-runner@v2

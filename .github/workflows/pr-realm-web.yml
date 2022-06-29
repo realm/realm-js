@@ -30,9 +30,8 @@ jobs:
           registry-url: https://registry.npmjs.org/
       # Install the root package
       - run: npm ci
-      # Build and test the package
-      - run: npm run build
-        working-directory: packages/realm-web
+      # Build package, its dependencies and test it
+      - run: npx turbo run build --filter realm-web
       - name: Run unit tests
         run: npm test
         working-directory: packages/realm-web

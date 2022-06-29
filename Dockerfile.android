@@ -6,7 +6,7 @@ FROM debian:stretch-20210927-slim
 ARG ANDROID_SDK_VERSION=4333796
 ARG ANDROID_NDK_VERSION=r21
 ARG ANDROID_BUILD_TOOLS_VERSION=28.0.3
-ARG NODE_VERSION=12.x
+ARG NODE_VERSION=16
 
 # Locales
 ENV LANG C.UTF-8
@@ -19,21 +19,18 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN dpkg --add-architecture i386 && \
     apt-get update -qq && \
     apt-get install -qq -y \
-      # Installing OpenJDK in its headless variant as we don't need the GUI related parts
-      openjdk-8-jdk-headless \
-      # Tools needed when installing dependencies
-      curl \
-      gnupg \
-      unzip \
-      git \
-      qemu-kvm \
-      libglu1 \
-      # Tools ndeed when building Android module
-      build-essential \
+    # Installing OpenJDK in its headless variant as we don't need the GUI related parts
+    openjdk-8-jdk-headless \
+    # Tools needed when installing dependencies
+    curl \
+    gnupg \
+    unzip \
+    git \
+    qemu-kvm \
+    libglu1 \
+    # Tools ndeed when building Android module
+    build-essential \
     && \
-    # Install the active LTS version of Node.js
-    curl -sL https://deb.nodesource.com/setup_${NODE_VERSION} | bash - && \
-    apt-get install -qq -y nodejs && \
     # Clean-up to lower the image size
     apt-get clean
 
@@ -47,6 +44,13 @@ ENV ANDROID_HOME /home/jenkins/android-sdk
 ENV PATH ${PATH}:${ANDROID_HOME}/emulator:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools
 ENV ANDROID_NDK /home/jenkins/android-ndk
 
+RUN mkdir -p $NVM_DIR \
+    && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash \
+    && . $NVM_DIR/nvm.sh \
+    && nvm install ${NODE_VERSION} \
+    && nvm alias default ${NODE_VERSION} \
+    && chmod a+rwX -R $NVM_DIR
+
 RUN echo 'Installing Android SDK' && \
     mkdir -p ${ANDROID_HOME} && cd ${ANDROID_HOME} && \
     curl -sO https://dl.google.com/android/repository/sdk-tools-linux-${ANDROID_SDK_VERSION}.zip && \
@@ -55,11 +59,11 @@ RUN echo 'Installing Android SDK' && \
     sdkmanager --update && \
     yes | sdkmanager --licenses && \
     yes | sdkmanager "tools" \
-                     "platform-tools" \
-                     "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" \
-                     "platforms;android-26" \
-                     "cmake;3.10.2.4988404"\
-                     "system-images;android-29;default;x86" && \
+    "platform-tools" \
+    "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" \
+    "platforms;android-26" \
+    "cmake;3.10.2.4988404"\
+    "system-images;android-29;default;x86" && \
     \
     echo 'Installing Android NDK' && \
     cd ${ANDROID_NDK}/.. && \
@@ -67,12 +71,6 @@ RUN echo 'Installing Android SDK' && \
     unzip -q android-ndk-*-linux-x86_64.zip && \
     rm android-ndk-*-linux-x86_64.zip && \
     mv android-ndk-* android-ndk
-
-RUN mkdir -p $NVM_DIR \
- && curl -s https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash \
- && . $NVM_DIR/nvm.sh \
- && nvm install 12 \
- && chmod a+rwX -R $NVM_DIR
 
 # Ensure a new enough version of CMake is available.
 RUN mkdir -p /home/jenkins/cmake && \

@@ -8,7 +8,7 @@ export NPM_CONFIG_PROGRESS=false
 
 TARGET=$1
 CONFIGURATION=${2:-Release}
-NODE_VERSION=${3:-v12.22.5}
+NODE_VERSION=${3:-v16.15.1}
 
 if echo "$CONFIGURATION" | grep -i "^Debug$" > /dev/null ; then
   CONFIGURATION="Debug"
@@ -268,7 +268,7 @@ set_nvm_default() {
 }
 
 # use npm v8
-npm install -g npm@8
+npm install -g npm@8.11.0
 
 # Remove cached packages
 rm -rf ~/.yarn-cache/npm-realm-*
@@ -380,12 +380,13 @@ case "$TARGET" in
   ;;
 
 "node")
-  npm run check-environment
   if [ "$CI_RUN" == "true" ]; then
     npm ci
   else
     npm ci --build-from-source=realm --realm_enable_sync=${USE_REALM_SYNC} --use_realm_debug=${USE_REALM_DEBUG}
   fi
+  npm run check-environment
+  npm run build --workspace @realm.io/common
   start_server
 
   # Change to a temp directory.
@@ -429,8 +430,9 @@ case "$TARGET" in
   stop_server
   ;;
 "test-runners")
-  npm run check-environment
   npm ci --build-from-source=realm --use_realm_debug=${USE_REALM_DEBUG}
+  npm run check-environment
+  npm run build --workspace @realm.io/common
   npm run test-runners
   ;;
 "all")
