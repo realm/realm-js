@@ -9,7 +9,7 @@ jobs:
       npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
       REALM_DISABLE_ANALYTICS: 1
     strategy:
-      #fail-fast: false
+      fail-fast: false
       matrix:
         variant:
           - { os: linux, runner: ubuntu-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
