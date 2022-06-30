@@ -15,6 +15,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Fixed analytics tests to reflect the fact that framework versions are read from node_modules, not package.json. ([#4687](https://github.com/realm/realm-js/pull/4687))
+* Adding response type checking to the realm-app-importer. ([#4688](https://github.com/realm/realm-js/pull/4688))
 * <Either mention core version or upgrade>
 * <Using Realm Core vX.Y.Z>
 * <Upgraded Realm Core from vX.Y.Z to vA.B.C>
