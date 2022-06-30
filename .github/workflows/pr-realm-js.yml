@@ -59,18 +59,6 @@ jobs:
           path: ${{ matrix.variant.artifact-path }}
           key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}-${{ env.cache-name }}-${{hashFiles('./src/**', './vendor/**')}}
 
-          # TODO: figure out a way to optimize using partial builds
-          #- name: Cache iOS build artifacts
-          #  id: cache-ios-build
-          #  uses: actions/cache@v2
-          #  env:
-          #    cache-name: cache-ios-build
-          #  with:
-          #    path: react-native/ios/build
-          #    key: build-ios-${{ hashFiles('./src/**') }}
-          #    restore-keys: |
-          #      build-ios-
-
       - name: Cache iOS build artifacts
         if: ${{ (matrix.variant.os == 'ios') }}
         id: ios-cache

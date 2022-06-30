@@ -9,7 +9,8 @@
     "build": "tsc",
     "start": "tsc --watch",
     "test": "jest --forceExit",
-    "lint": "eslint --ext .tsx ."
+    "lint": "eslint --ext .tsx .",
+    "prepare": "rm -rf dist && npm run build"
   },
   "dependencies": {
     "lodash": "^4.17.21",
