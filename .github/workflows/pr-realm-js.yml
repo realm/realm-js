@@ -8,9 +8,6 @@ jobs:
     env:
       npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
       REALM_DISABLE_ANALYTICS: 1
-      REALM_BASE_URL: ${{ secrets.REALM_QA_BASE_URL }}
-      REALM_PUBLIC_KEY: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
-      REALM_PRIVATE_KEY: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
     strategy:
       fail-fast: false
       matrix:
@@ -29,326 +26,330 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: "recursive"
-      - name: Setup app importer
-        run: npx lerna bootstrap --scope realm-app-importer --include-dependencies
 
-      - name: Import some apps
+      - name: Setup node version
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      - name: Setup NPM version
+        run: npm install -g npm@7
+
+      - name: Get NPM cache directory
+        id: npm-cache-dir
+        run: echo "::set-output name=dir::$(npm config get cache)"
+
+      - name: Restore NPM cache
+        id: npm-cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.npm-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Cache prebuild artifacts
+        id: cache-prebuild
+        uses: actions/cache@v2
+        env:
+          cache-name: prebuild
+        with:
+          path: ${{ matrix.variant.artifact-path }}
+          key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}-${{ env.cache-name }}-${{hashFiles('./src/**', './vendor/**')}}
+
+          # TODO: figure out a way to optimize using partial builds
+          #- name: Cache iOS build artifacts
+          #  id: cache-ios-build
+          #  uses: actions/cache@v2
+          #  env:
+          #    cache-name: cache-ios-build
+          #  with:
+          #    path: react-native/ios/build
+          #    key: build-ios-${{ hashFiles('./src/**') }}
+          #    restore-keys: |
+          #      build-ios-
+
+      - name: Cache iOS build artifacts
+        if: ${{ (matrix.variant.os == 'ios') }}
+        id: ios-cache
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-ios-build
+        with:
+          path: react-native/ios/build
+          key: ${{ runner.os }}-ios-${{ hashFiles('./src/**', './vendor/**') }}
+          restore-keys: |
+            ${{ runner.os }}-ios-
+
+      - name: MSVC Setup
+        if: ${{ runner.os == 'Windows' }}
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Setup Vcpkg
+        if: ${{ runner.os == 'Windows' }}
+        uses: friendlyanon/setup-vcpkg@v1
+        with:
+          path: vendor/realm-core/tools/vcpkg/ports
+          cache-key: vcpkg-windows-${{ matrix.variant.arch }}
+          cache-restore-keys: vcpkg-windows-${{ matrix.variant.arch }}
+
+      # ninja-build is used by default if available and results in faster build times
+      # On linux, electron requires a connected display.  We fake this by giving it a headless environment using xvfb
+      # Relevant issue: https://github.com/juliangruber/browser-run/issues/147
+      - name: Linux Environment setup
+        if: ${{ (matrix.variant.runner == 'ubuntu-latest') }}
+        run: sudo apt-get install ccache ninja-build xvfb
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1
+        #TODO: figure out using ccache or equivalent on windows
+        if: ${{ runner.os != 'Windows' }}
+        with:
+          key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}
+
+      - name: Prepend ccache executables to the PATH
+        if: ${{ runner.os != 'Windows' }}
         run: |
-          npm start --prefix packages/realm-app-importer -- ../../integration-tests/realm-apps/simple --import
-          npm start --prefix packages/realm-app-importer -- ../../integration-tests/realm-apps/with-db --import
-          npm start --prefix packages/realm-app-importer -- ../../integration-tests/realm-apps/with-db-flx --import
+          echo "/usr/lib/ccache" >> $GITHUB_PATH
+          echo "/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
 
-  #     - name: Setup node version
-  #       uses: actions/setup-node@v2
-  #       with:
-  #         node-version: '14'
-  #         cache: 'npm'
-  #         cache-dependency-path: '**/package-lock.json'
+      - name: Install deps
+        run: npm ci --ignore-scripts
 
-  #     - name: Setup NPM version
-  #       run: npm install -g npm@7
+      # Install node dependencies
+      - name: Install prebuilds
+        if: steps.cache-prebuild.outputs.cache-hit == 'true'
+        run: npm ci
 
-  #     - name: Get NPM cache directory
-  #       id: npm-cache-dir
-  #       run: echo "::set-output name=dir::$(npm config get cache)"
+      # build the c++ library for standard targets
+      - name: Build node
+        if: ${{ (matrix.variant.os != 'ios') && (matrix.variant.os != 'android') }}
+        run: npm run prebuild:node -- --arch=${{matrix.variant.arch}}
 
-  #     - name: Restore NPM cache
-  #       id: npm-cache
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: ${{ steps.npm-cache-dir.outputs.dir }}
-  #         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-node-
+      # build the c++ library for IOS
+      - name: Build IOS
+        if: ${{ (matrix.variant.os == 'ios') }}
+        run: npm run prebuild:ios
 
-  #     - name: Cache prebuild artifacts
-  #       id: cache-prebuild
-  #       uses: actions/cache@v2
-  #       env:
-  #         cache-name: prebuild
-  #       with:
-  #         path: ${{ matrix.variant.artifact-path }}
-  #         key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}-${{ env.cache-name }}-${{hashFiles('./src/**', './vendor/**')}}
+      # build the c++ library for Android
+      - name: Build Android
+        if: ${{ (matrix.variant.os == 'android') }}
+        run: npm run prebuild:android -- --arch=${{matrix.variant.arch}}
 
-  #     - name: Cache iOS build artifacts
-  #       if: ${{ (matrix.variant.os == 'ios') }}
-  #       id: ios-cache
-  #       uses: actions/cache@v2
-  #       env:
-  #         cache-name: cache-ios-build
-  #       with:
-  #         path: react-native/ios/build
-  #         key: ${{ runner.os }}-ios-${{ hashFiles('./src/**', './vendor/**') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-ios-
+      - name: Install the node dependencies in the test folder
+        working-directory: ./tests
+        run: npm ci --ignore-scripts
 
-  #     - name: MSVC Setup
-  #       if: ${{ runner.os == 'Windows' }}
-  #       uses: ilammy/msvc-dev-cmd@v1
+      # all tests passed, upload artifacts
+      # the dummy file included is to force preserving paths
+      - name: Upload prebuild artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: realm-js-prebuilds
+          path: |
+            dependencies.list
+            ${{ matrix.variant.artifact-path }}
 
-  #     - name: Setup Vcpkg
-  #       if: ${{ runner.os == 'Windows' }}
-  #       uses: friendlyanon/setup-vcpkg@v1
-  #       with:
-  #         path: vendor/realm-core/tools/vcpkg/ports
-  #         cache-key: vcpkg-windows-${{ matrix.variant.arch }}
-  #         cache-restore-keys: vcpkg-windows-${{ matrix.variant.arch }}
+  publish:
+    runs-on: ubuntu-latest
+    needs: [build-and-test]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-  #     # ninja-build is used by default if available and results in faster build times
-  #     # On linux, electron requires a connected display.  We fake this by giving it a headless environment using xvfb
-  #     # Relevant issue: https://github.com/juliangruber/browser-run/issues/147
-  #     - name: Linux Environment setup
-  #       if: ${{ (matrix.variant.runner == 'ubuntu-latest') }}
-  #       run: sudo apt-get install ccache ninja-build xvfb
+      - name: Setup node version
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
-  #     - name: ccache
-  #       uses: hendrikmuhs/ccache-action@v1
-  #       #TODO: figure out using ccache or equivalent on windows
-  #       if: ${{ runner.os != 'Windows' }}
-  #       with:
-  #         key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}
+      - name: Setup NPM version
+        run: npm install -g npm@7
 
-  #     - name: Prepend ccache executables to the PATH
-  #       if: ${{ runner.os != 'Windows' }}
-  #       run: |
-  #         echo "/usr/lib/ccache" >> $GITHUB_PATH
-  #         echo "/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
+      - name: Get NPM cache directory
+        id: npm-cache-dir
+        run: echo "::set-output name=dir::$(npm config get cache)"
 
-  #     - name: Install deps
-  #       run: npm ci --ignore-scripts
+      - name: Restore NPM cache
+        id: npm-cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.npm-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-  #     # Install node dependencies
-  #     - name: Install prebuilds
-  #       if: steps.cache-prebuild.outputs.cache-hit == 'true'
-  #       run: npm ci
+      - name: Install node modules
+        run: npm ci --ignore-scripts
 
-  #     # build the c++ library for standard targets
-  #     - name: Build node
-  #       if: ${{ (matrix.variant.os != 'ios') && (matrix.variant.os != 'android') }}
-  #       run: npm run prebuild:node -- --arch=${{matrix.variant.arch}}
+      - name: Download prebuilds
+        uses: actions/download-artifact@v2
+        with:
+          name: realm-js-prebuilds
 
-  #     # build the c++ library for IOS
-  #     - name: Build IOS
-  #       if: ${{ (matrix.variant.os == 'ios') }}
-  #       run: npm run prebuild:ios
+      - name: Display structure of downloaded files
+        run: ls -R prebuilds react-native/android/src/main/jniLibs
 
-  #     # build the c++ library for Android
-  #     - name: Build Android
-  #       if: ${{ (matrix.variant.os == 'android') }}
-  #       run: npm run prebuild:android -- --arch=${{matrix.variant.arch}}
+      - name: Publish to Github
+        run: npx prebuild --upload-all ${{ secrets.GITHUB_TOKEN }}
 
-  #     - name: Install the node dependencies in the test folder
-  #       working-directory: ./tests
-  #       run: npm ci --ignore-scripts
+  baas-realm-js:
+    runs-on: ubuntu-latest
+    name: Deploy MDB Realm for realm js
+    outputs:
+      clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
+    timeout-minutes: 20
+    steps:
+      - uses: realm/ci-actions/mdb-realm/deployApps@fac1d6958f03d71de743305ce3ab27594efbe7b7
+        id: deploy-mdb-apps
+        with:
+          realmUrl: ${{ secrets.REALM_QA_BASE_URL }}
+          projectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+          atlasUrl: ${{ secrets.ATLAS_QA_BASE_URL}}
+          apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+          privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
+          differentiator: realm-js
 
-  #     # all tests passed, upload artifacts
-  #     # the dummy file included is to force preserving paths
-  #     - name: Upload prebuild artifact
-  #       uses: actions/upload-artifact@v2
-  #       with:
-  #         name: realm-js-prebuilds
-  #         path: |
-  #           dependencies.list
-  #           ${{ matrix.variant.artifact-path }}
+  integration-tests:
+    name: Integration tests for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
+    needs: [build-and-test, baas-realm-js]
+    env:
+      REALM_DISABLE_ANALYTICS: 1
+      MOCHA_REMOTE_TIMEOUT: 30000
+      CLUSTER_NAME: ${{ needs.baas-realm-js.outputs.clusterName }}
+      MOCHA_REMOTE_CONTEXT: realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ needs.baas-realm-js.outputs.clusterName }}
+      MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
+      MOCHA_REMOTE_EXIT_ON_ERROR: true
+      REALM_BASE_URL: ${{ secrets.REALM_QA_BASE_URL }}
+      REALM_PUBLIC_KEY: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      REALM_PRIVATE_KEY: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
+      SPAWN_LOGCAT: true
+      HEADLESS_DEBUGGER: true
+      RETRIES: 5
+      RETRY_DELAY: 500000 # 10 min
+      # Pin the Xcode version
+      DEVELOPER_DIR: /Applications/Xcode_12.5.1.app
+    runs-on: ${{ matrix.variant.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        variant:
+          #type: [Release, Debug]
+          # - { os: linux, target: test, runner: ubuntu-latest, environment: node }
+          # - { os: linux, target: "test:main", runner: ubuntu-latest, environment: electron }
+          # - { os: linux, target: "test:renderer", runner: ubuntu-latest, environment: electron }
+          - { os: windows, target: test, runner: windows-2019, environment: node}
+          # - { os: windows, target: "test:main", runner: windows-2019, environment: electron }
+          # - { os: windows, target: "test:renderer", runner: windows-2019, environment: electron }
+          # - { os: darwin, target: "test:main", runner: macos-latest, environment: electron }
+          # - { os: darwin, target: "test:renderer", runner: macos-latest, environment: electron }
+          # - { os: darwin, target: test, runner: macos-latest, environment: node }
+          # - { os: android, target: "test:android", runner: macos-latest, environment: react-native }
+          #- { os: android, target: "test:android:chrome", runner: macos-latest, environment: react-native }
+          # - { os: ios, target: "test:ios", runner: macos-latest, environment: react-native }
+          #- { os: ios, target: "test:ios:chrome", runner: macos-latest, environment: react-native }
+          # - { os: ios, target: "test:catalyst", runner: macos-latest, environment: react-native }
+          #- { os: ios, target: "test:catalyst:chrome", runner: macos-latest, environment: react-native }
+    timeout-minutes: 60
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: "recursive"
 
-  # publish:
-  #   runs-on: ubuntu-latest
-  #   needs: [build-and-test]
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v2
+      - name: Setup node version
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
-  #     - name: Setup node version
-  #       uses: actions/setup-node@v2
-  #       with:
-  #         node-version: '14'
-  #         cache: 'npm'
-  #         cache-dependency-path: '**/package-lock.json'
+      - name: Setup NPM version
+        run: npm install -g npm@7
 
-  #     - name: Setup NPM version
-  #       run: npm install -g npm@7
+      - name: Get NPM cache directory
+        id: npm-cache-dir
+        run: echo "::set-output name=dir::$(npm config get cache)"
 
-  #     - name: Get NPM cache directory
-  #       id: npm-cache-dir
-  #       run: echo "::set-output name=dir::$(npm config get cache)"
+      - name: Restore NPM cache
+        id: npm-cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.npm-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-  #     - name: Restore NPM cache
-  #       id: npm-cache
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: ${{ steps.npm-cache-dir.outputs.dir }}
-  #         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-node-
+      - name: MSVC Setup
+        if: ${{ runner.os == 'Windows' }}
+        uses: ilammy/msvc-dev-cmd@v1
 
-  #     - name: Install node modules
-  #       run: npm ci --ignore-scripts
+      - name: Setup Vcpkg
+        if: ${{ (runner.os == 'Windows') }}
+        uses: friendlyanon/setup-vcpkg@v1
+        with:
+          path: vendor/realm-core/tools/vcpkg/ports
+          cache-key: vcpkg-windows-${{ matrix.variant.arch }}
+          cache-restore-keys: vcpkg-windows-${{ matrix.variant.arch }}
 
-  #     - name: Download prebuilds
-  #       uses: actions/download-artifact@v2
-  #       with:
-  #         name: realm-js-prebuilds
+      - name: Install IOS tools
+        if: ${{ (matrix.variant.os == 'ios') }}
+        run: |
+          brew install watchman
+          npm install -g ios-deploy
 
-  #     - name: Display structure of downloaded files
-  #       run: ls -R prebuilds react-native/android/src/main/jniLibs
+      - name: Set xvfb wrapper for Linux / electron tests
+        if: ${{ (matrix.variant.os == 'linux') && (matrix.variant.environment == 'electron' )}}
+        run: |
+          sudo apt-get install xvfb
+          echo "wrapper=xvfb-run" >> $GITHUB_ENV
 
-  #     - name: Publish to Github
-  #       run: npx prebuild --upload-all ${{ secrets.GITHUB_TOKEN }}
+      - name: Download prebuilds
+        uses: actions/download-artifact@v2
+        with:
+          name: realm-js-prebuilds
 
-  # baas-realm-js:
-  #   runs-on: ubuntu-latest
-  #   name: Deploy MDB Realm for realm js
-  #   outputs:
-  #     clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
-  #   timeout-minutes: 20
-  #   steps:
-  #     - uses: realm/ci-actions/mdb-realm/deployApps@fac1d6958f03d71de743305ce3ab27594efbe7b7
-  #       id: deploy-mdb-apps
-  #       with:
-  #         realmUrl: ${{ secrets.REALM_QA_BASE_URL }}
-  #         projectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
-  #         atlasUrl: ${{ secrets.ATLAS_QA_BASE_URL}}
-  #         apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
-  #         privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
-  #         differentiator: realm-js
+      - name: Install prebuilds
+        run: npm ci
 
-  # integration-tests:
-  #   name: Integration tests for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
-  #   needs: [build-and-test, baas-realm-js]
-  #   env:
-  #     REALM_DISABLE_ANALYTICS: 1
-  #     MOCHA_REMOTE_TIMEOUT: 60000
-  #     CLUSTER_NAME: ${{ needs.baas-realm-js.outputs.clusterName }}
-  #     MOCHA_REMOTE_CONTEXT: realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ needs.baas-realm-js.outputs.clusterName }}
-  #     MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
-  #     MOCHA_REMOTE_EXIT_ON_ERROR: true
-  #     REALM_BASE_URL: ${{ secrets.REALM_QA_BASE_URL }}
-  #     REALM_PUBLIC_KEY: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
-  #     REALM_PRIVATE_KEY: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
-  #     SPAWN_LOGCAT: true
-  #     HEADLESS_DEBUGGER: true
-  #     # RETRIES: 5
-  #     # RETRY_DELAY: 1800000 # 30 min
-  #     # Pin the Xcode version
-  #     DEVELOPER_DIR: /Applications/Xcode_12.5.1.app
-  #   runs-on: ${{ matrix.variant.runner }}
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       variant:
-  #         #type: [Release, Debug]
-  #         - { os: linux, target: test, runner: ubuntu-latest, environment: node }
-  #         - { os: linux, target: "test:main", runner: ubuntu-latest, environment: electron }
-  #         - { os: linux, target: "test:renderer", runner: ubuntu-latest, environment: electron }
-  #         - { os: windows, target: test, runner: windows-2019, environment: node}
-  #         - { os: windows, target: "test:main", runner: windows-2019, environment: electron }
-  #         - { os: windows, target: "test:renderer", runner: windows-2019, environment: electron }
-  #         - { os: darwin, target: "test:main", runner: macos-latest, environment: electron }
-  #         - { os: darwin, target: "test:renderer", runner: macos-latest, environment: electron }
-  #         - { os: darwin, target: test, runner: macos-latest, environment: node }
-  #         - { os: android, target: "test:android", runner: macos-latest, environment: react-native }
-  #         #- { os: android, target: "test:android:chrome", runner: macos-latest, environment: react-native }
-  #         - { os: ios, target: "test:ios", runner: macos-latest, environment: react-native }
-  #         #- { os: ios, target: "test:ios:chrome", runner: macos-latest, environment: react-native }
-  #         - { os: ios, target: "test:catalyst", runner: macos-latest, environment: react-native }
-  #         #- { os: ios, target: "test:catalyst:chrome", runner: macos-latest, environment: react-native }
-  #   timeout-minutes: 60
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v2
-  #       with:
-  #         submodules: "recursive"
+      - name: Bootstrap lerna sub-packages
+        run: npx lerna bootstrap --scope realm-${{ matrix.variant.environment }}-tests --include-dependencies
 
-  #     - name: Setup node version
-  #       uses: actions/setup-node@v2
-  #       with:
-  #         node-version: '14'
-  #         cache: 'npm'
-  #         cache-dependency-path: '**/package-lock.json'
+      - name: Build tests
+        run: npm run build --prefix integration-tests/tests
 
-  #     - name: Setup NPM version
-  #       run: npm install -g npm@7
+      - name: Invoke the simulator (making subsequent "open -a Simulator" calls work)
+        if: ${{ (matrix.variant.os == 'ios') }}
+        run: open -a ${{ env.DEVELOPER_DIR }}/Contents/Developer/Applications/Simulator.app/Contents/MacOS/Simulator
 
-  #     - name: Get NPM cache directory
-  #       id: npm-cache-dir
-  #       run: echo "::set-output name=dir::$(npm config get cache)"
+      - name: Run tests (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
+        if: ${{ (matrix.variant.os != 'android') }}
+        run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
-  #     - name: Restore NPM cache
-  #       id: npm-cache
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: ${{ steps.npm-cache-dir.outputs.dir }}
-  #         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-node-
+      - name: Run tests (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
+        if: ${{ (matrix.variant.os == 'android') }}
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          # ndk: 21.0.6113669
+          # cmake: 3.18.1
+          target: google_apis
+          script: npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
-  #     - name: MSVC Setup
-  #       if: ${{ runner.os == 'Windows' }}
-  #       uses: ilammy/msvc-dev-cmd@v1
-
-  #     - name: Setup Vcpkg
-  #       if: ${{ (runner.os == 'Windows') }}
-  #       uses: friendlyanon/setup-vcpkg@v1
-  #       with:
-  #         path: vendor/realm-core/tools/vcpkg/ports
-  #         cache-key: vcpkg-windows-${{ matrix.variant.arch }}
-  #         cache-restore-keys: vcpkg-windows-${{ matrix.variant.arch }}
-
-  #     - name: Install IOS tools
-  #       if: ${{ (matrix.variant.os == 'ios') }}
-  #       run: |
-  #         brew install watchman
-  #         npm install -g ios-deploy
-
-  #     - name: Set xvfb wrapper for Linux / electron tests
-  #       if: ${{ (matrix.variant.os == 'linux') && (matrix.variant.environment == 'electron' )}}
-  #       run: |
-  #         sudo apt-get install xvfb
-  #         echo "wrapper=xvfb-run" >> $GITHUB_ENV
-
-  #     - name: Download prebuilds
-  #       uses: actions/download-artifact@v2
-  #       with:
-  #         name: realm-js-prebuilds
-
-  #     - name: Install prebuilds
-  #       run: npm ci
-
-  #     - name: Bootstrap lerna sub-packages
-  #       run: npx lerna bootstrap --scope realm-${{ matrix.variant.environment }}-tests --include-dependencies
-
-  #     - name: Build tests
-  #       run: npm run build --prefix integration-tests/tests
-
-  #     - name: Invoke the simulator (making subsequent "open -a Simulator" calls work)
-  #       if: ${{ (matrix.variant.os == 'ios') }}
-  #       run: open -a ${{ env.DEVELOPER_DIR }}/Contents/Developer/Applications/Simulator.app/Contents/MacOS/Simulator
-
-  #     - name: Run tests (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
-  #       if: ${{ (matrix.variant.os != 'android') }}
-  #       run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
-
-  #     - name: Run tests (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
-  #       if: ${{ (matrix.variant.os == 'android') }}
-  #       uses: reactivecircus/android-emulator-runner@v2
-  #       with:
-  #         api-level: 29
-  #         # ndk: 21.0.6113669
-  #         # cmake: 3.18.1
-  #         target: google_apis
-  #         script: npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
-
-  # cleanup-realm-js:
-  #   runs-on: ubuntu-latest
-  #   name: Cleanup realm js
-  #   needs: [integration-tests]
-  #   if: ${{ always() }}
-  #   timeout-minutes: 10
-  #   steps:
-  #     - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56
-  #       with:
-  #         realmUrl: ${{ secrets.REALM_BASE_URL }}
-  #         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-  #         apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-  #         privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
-  #         differentiator: realm js
+  cleanup-realm-js:
+    runs-on: ubuntu-latest
+    name: Cleanup realm js
+    needs: [integration-tests]
+    if: ${{ always() }}
+    timeout-minutes: 10
+    steps:
+      - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56
+        with:
+          realmUrl: ${{ secrets.REALM_BASE_URL }}
+          projectId: ${{ secrets.ATLAS_PROJECT_ID }}
+          apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
+          privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+          differentiator: realm js
