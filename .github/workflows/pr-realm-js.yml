@@ -57,7 +57,7 @@ jobs:
           cache-name: prebuild
         with:
           path: ${{ matrix.variant.artifact-path }}
-          key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}-${{ env.cache-name }}-${{hashFiles('./src/**', 'vendor/**')}}
+          key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}-${{ env.cache-name }}-${{hashFiles('./src/**', './vendor/**')}}
 
           # TODO: figure out a way to optimize using partial builds
           #- name: Cache iOS build artifacts
@@ -70,6 +70,18 @@ jobs:
           #    key: build-ios-${{ hashFiles('./src/**') }}
           #    restore-keys: |
           #      build-ios-
+
+      - name: Cache iOS build artifacts
+        if: ${{ (matrix.variant.os == 'ios') }}
+        id: ios-cache
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-ios-build
+        with:
+          path: react-native/ios/build
+          key: ${{ runner.os }}-ios-${{ hashFiles('./src/**', './vendor/**') }}
+          restore-keys: |
+            ${{ runner.os }}-ios-
 
       - name: MSVC Setup
         if: ${{ runner.os == 'Windows' }}
@@ -115,16 +127,6 @@ jobs:
       - name: Build node
         if: ${{ (matrix.variant.os != 'ios') && (matrix.variant.os != 'android') }}
         run: npm run prebuild:node -- --arch=${{matrix.variant.arch}}
-
-      - name: Restore IOS cache
-        if: ${{ (matrix.variant.os == 'ios') }}
-        id: ios-cache
-        uses: actions/cache@v2
-        with:
-          path: react-native/ios/build
-          key: ${{ runner.os }}-ios-${{ hashFiles('src/**') }}
-          restore-keys: |
-            ${{ runner.os }}-ios-
 
       # build the c++ library for IOS
       - name: Build IOS
