@@ -43,6 +43,68 @@ export type Credentials =
       password: string;
     };
 
+type LoginResponse = {
+  access_token: string;
+  refresh_token: string;
+};
+
+type ErrorResponse = {
+  error: string;
+};
+
+type ProfileResponse = {
+  roles: Role[];
+};
+
+type Role = { role_name: string; group_id: string };
+
+function isString(value: unknown): value is string {
+  return typeof value === "string";
+}
+
+function isObject(json: unknown): json is Record<string, unknown> {
+  return typeof json === "object" && json !== null;
+}
+
+function isAppResponse(json: unknown): json is App {
+  if (isObject(json)) {
+    return typeof json.client_app_id === "string" && typeof json._id === "string";
+  } else {
+    return false;
+  }
+}
+
+function isAppsResponse(json: unknown): json is App[] {
+  return Array.isArray(json) && json.every(isAppResponse);
+}
+
+function isLoginResponse(json: unknown): json is LoginResponse {
+  if (isObject(json)) {
+    return typeof json.access_token === "string" && typeof json.refresh_token === "string";
+  } else {
+    return false;
+  }
+}
+
+function isErrorResponse(json: unknown): json is ErrorResponse {
+  if (isObject(json)) {
+    return typeof json.error === "string";
+  } else {
+    return false;
+  }
+}
+
+function isProfileResponse(json: unknown): json is ProfileResponse {
+  if (isObject(json)) {
+    return (
+      Array.isArray(json.roles) &&
+      json.roles.every((item) => typeof item.role_name === "string" && typeof item.group_id === "string")
+    );
+  } else {
+    return false;
+  }
+}
+
 export interface AppImporterOptions {
   baseUrl: string;
   credentials: Credentials;
@@ -107,7 +169,7 @@ export class AppImporter {
 
     // Get or create an application
     const app = await this.createApp(groupId, appName);
-    const appId = app.client_app_id as string;
+    const appId = app.client_app_id;
     // Create all secrets in parallel
     const secrets = this.loadSecretsJson(appTemplatePath);
     await Promise.all(
@@ -253,7 +315,7 @@ export class AppImporter {
     // Store the access and refresh tokens
     const response = await this.performLogIn();
     const responseBody = await response.json();
-    if (response.ok) {
+    if (response.ok && isLoginResponse(responseBody)) {
       this.accessToken = responseBody.access_token;
       // Write the stitch config file
       const { credentials } = this;
@@ -262,9 +324,10 @@ export class AppImporter {
         responseBody.refresh_token,
         responseBody.access_token,
       );
+    } else if (isErrorResponse(responseBody)) {
+      throw new Error(`Failed to log in: ${responseBody.error}`);
     } else {
-      const message = responseBody.error || "No reason";
-      throw new Error(`Failed to log in: ${message}`);
+      throw new Error("Failed to log in");
     }
   }
 
@@ -286,7 +349,11 @@ export class AppImporter {
       headers: { Authorization: `Bearer ${this.accessToken}` },
     });
     if (response.ok) {
-      return response.json();
+      const json = await response.json();
+      if (!isProfileResponse(json)) {
+        throw new Error("Expected a profile response");
+      }
+      return json;
     } else {
       throw new Error("Failed to get users profile");
     }
@@ -294,9 +361,7 @@ export class AppImporter {
 
   private async getGroupId(): Promise<string> {
     const profile = await this.getProfile();
-    const groupIds: string[] = profile.roles
-      .filter((r: Record<string, unknown>) => r.group_id)
-      .map((r: Record<string, unknown>) => r.group_id);
+    const groupIds = profile.roles.map((r) => r.group_id).filter(isString);
     const uniqueGroupIds = [...new Set(groupIds)];
     if (uniqueGroupIds.length === 1) {
       return uniqueGroupIds[0];
@@ -318,12 +383,14 @@ export class AppImporter {
       },
     });
     if (response.ok) {
-      const apps: App[] = await response.json();
+      const apps = await response.json();
+      if (!isAppsResponse(apps)) {
+        throw new Error("Expected a response with apps");
+      }
       const app = apps.find((app) => app.client_app_id === clientAppId);
       if (!app) {
         throw new Error(`App with client app ID '${clientAppId}' in group '${groupId}' not found`);
       }
-
       return app;
     } else {
       throw new Error(`Failed to find app with client app ID '${clientAppId}' in group '${groupId}'`);
@@ -345,7 +412,11 @@ export class AppImporter {
       body,
     });
     if (response.ok) {
-      return response.json();
+      const json = await response.json();
+      if (!isAppResponse(json)) {
+        throw new Error("Expected an app response");
+      }
+      return json;
     } else {
       throw new Error(`Failed to create app named '${name}' in group '${groupId}'`);
     }
