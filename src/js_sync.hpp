@@ -1012,13 +1012,13 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
 
         // Client reset
         //
-        // i)  manual: the error handler is called with the proper error code and a client reset is initiated
-        // ii) discardLocal: the sync client handles it but notifications are send before and after
+        // i)    manual: the error handler is called with the proper error code and a client reset is initiated
+        // ii)   discardLocal: the sync client handles it but notifications are send before and after
+        // iii)  recover:
+        // iv)   recoverOrDiscard:
         //
         // The default setting is manual
 
-        const std::string client_reset_manual = "manual";
-        const std::string client_reset_discard_local = "discardLocal";
         config.sync_config->client_resync_mode = realm::ClientResyncMode::Manual;
         ValueType client_reset_value = Object::get_property(ctx, sync_config_object, "clientReset");
         if (!Value::is_undefined(ctx, client_reset_value)) {
@@ -1026,39 +1026,35 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             ValueType client_reset_mode_value = Object::get_property(ctx, client_reset_object, "mode");
             if (!Value::is_undefined(ctx, client_reset_mode_value)) {
                 std::string client_reset_mode = Value::validated_to_string(ctx, client_reset_mode_value, "mode");
-                if (client_reset_mode == client_reset_manual) {
-                    config.sync_config->client_resync_mode = realm::ClientResyncMode::Manual;
+                static std::unordered_map<std::string, realm::ClientResyncMode> const client_reset_mode_map = {
+                    {"manual", realm::ClientResyncMode::Manual},
+                    {"discardLocal", realm::ClientResyncMode::DiscardLocal},
+                    {"recover", realm::ClientResyncMode::Recover},
+                    {"recoverOrDiscard", realm::ClientResyncMode::RecoverOrDiscard}};
+                auto it = client_reset_mode_map.find(client_reset_mode);
+                if (it != client_reset_mode_map.end()) {
+                    throw std::invalid_argument(
+                        util::format("Unknown argument '%1' for clientReset.mode. Expected "
+                                     "'manual', 'discardLocal', 'recover', or 'recoverOrDiscard'",
+                                     client_reset_mode));
                 }
-                else if (client_reset_mode == client_reset_discard_local) {
-                    config.sync_config->client_resync_mode = realm::ClientResyncMode::DiscardLocal;
-                }
-                else {
-                    throw std::invalid_argument(util::format(
-                        "Unknown argument '%1' for clientReset.mode. Expected 'manual' or 'discardLocal'.",
-                        client_reset_mode));
-                }
-
-                std::function<void(SharedRealm)> client_reset_before_handler;
-                ValueType client_reset_before_value =
-                    Object::get_property(ctx, client_reset_object, "clientResetBefore");
-                if (!Value::is_undefined(ctx, client_reset_before_value)) {
-                    client_reset_before_handler =
-                        util::EventLoopDispatcher<void(SharedRealm)>(ClientResetBeforeFunctor<T>(
-                            ctx, Value::validated_to_function(ctx, client_reset_before_value)));
-                }
-                config.sync_config->notify_before_client_reset = std::move(client_reset_before_handler);
-
-                std::function<void(SharedRealm, ThreadSafeReference, bool)> client_reset_after_handler;
-                ValueType client_reset_after_value =
-                    Object::get_property(ctx, client_reset_object, "clientResetAfter");
-                if (!Value::is_undefined(ctx, client_reset_after_value)) {
-                    client_reset_after_handler =
-                        util::EventLoopDispatcher<void(SharedRealm, ThreadSafeReference, bool)>(
-                            ClientResetAfterFunctor<T>(ctx,
-                                                       Value::validated_to_function(ctx, client_reset_after_value)));
-                }
-                config.sync_config->notify_after_client_reset = std::move(client_reset_after_handler);
+                config.sync_config->client_resync_mode = it->second;
             }
+            std::function<void(SharedRealm)> client_reset_before_handler;
+            ValueType client_reset_before_value = Object::get_property(ctx, client_reset_object, "clientResetBefore");
+            if (!Value::is_undefined(ctx, client_reset_before_value)) {
+                client_reset_before_handler = util::EventLoopDispatcher<void(SharedRealm)>(
+                    ClientResetBeforeFunctor<T>(ctx, Value::validated_to_function(ctx, client_reset_before_value)));
+            }
+            config.sync_config->notify_before_client_reset = std::move(client_reset_before_handler);
+
+            std::function<void(SharedRealm, ThreadSafeReference, bool)> client_reset_after_handler;
+            ValueType client_reset_after_value = Object::get_property(ctx, client_reset_object, "clientResetAfter");
+            if (!Value::is_undefined(ctx, client_reset_after_value)) {
+                client_reset_after_handler = util::EventLoopDispatcher<void(SharedRealm, ThreadSafeReference, bool)>(
+                    ClientResetAfterFunctor<T>(ctx, Value::validated_to_function(ctx, client_reset_after_value)));
+            }
+            config.sync_config->notify_after_client_reset = std::move(client_reset_after_handler);
         }
 
         // Custom HTTP headers
@@ -1127,34 +1123,35 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
     }
 }
 
-template <typename T>
-void SyncClass<T>::populate_sync_config_for_ssl(ContextType ctx, ObjectType config_object, SyncConfig& config)
-{
-    ValueType validate_ssl = Object::get_property(ctx, config_object, "validate");
-    if (Value::is_boolean(ctx, validate_ssl)) {
-        config.client_validate_ssl = Value::to_boolean(ctx, validate_ssl);
-    }
+        template <typename T>
+        void SyncClass<T>::populate_sync_config_for_ssl(ContextType ctx, ObjectType config_object,
+                                                        SyncConfig & config)
+        {
+            ValueType validate_ssl = Object::get_property(ctx, config_object, "validate");
+            if (Value::is_boolean(ctx, validate_ssl)) {
+                config.client_validate_ssl = Value::to_boolean(ctx, validate_ssl);
+            }
 
-    ValueType certificate_path = Object::get_property(ctx, config_object, "certificatePath");
-    if (Value::is_string(ctx, certificate_path)) {
-        config.ssl_trust_certificate_path = std::string(Value::to_string(ctx, certificate_path));
-    }
+            ValueType certificate_path = Object::get_property(ctx, config_object, "certificatePath");
+            if (Value::is_string(ctx, certificate_path)) {
+                config.ssl_trust_certificate_path = std::string(Value::to_string(ctx, certificate_path));
+            }
 
-    ValueType validate_callback = Object::get_property(ctx, config_object, "validateCallback");
-    if (Value::is_function(ctx, validate_callback)) {
-        config.ssl_verify_callback =
-            SSLVerifyCallbackSyncThreadFunctor<T>{ctx, Value::to_function(ctx, validate_callback)};
-    }
-}
+            ValueType validate_callback = Object::get_property(ctx, config_object, "validateCallback");
+            if (Value::is_function(ctx, validate_callback)) {
+                config.ssl_verify_callback =
+                    SSLVerifyCallbackSyncThreadFunctor<T>{ctx, Value::to_function(ctx, validate_callback)};
+            }
+        }
 
-template <typename T>
-void SyncClass<T>::enable_multiplexing(ContextType ctx, ObjectType this_object, Arguments& args,
-                                       ReturnValue& return_value)
-{
-    args.validate_count(1);
-    auto app = get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"))->m_app;
-    app->sync_manager()->enable_session_multiplexing();
-}
+        template <typename T>
+        void SyncClass<T>::enable_multiplexing(ContextType ctx, ObjectType this_object, Arguments & args,
+                                               ReturnValue & return_value)
+        {
+            args.validate_count(1);
+            auto app = get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"))->m_app;
+            app->sync_manager()->enable_session_multiplexing();
+        }
 
-} // namespace js
+    } // namespace js
 } // namespace realm
