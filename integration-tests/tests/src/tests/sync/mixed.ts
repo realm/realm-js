@@ -145,79 +145,79 @@ function describeTypes(flexibleSync: boolean) {
 
   describeRoundtrip({ typeName: "null", value: null, flexibleSync });
 
-  // // TODO: Provide an API to speficy storing this as an int
-  // describeRoundtrip({ typeName: "int", value: 123, flexibleSync });
+  // TODO: Provide an API to speficy storing this as an int
+  describeRoundtrip({ typeName: "int", value: 123, flexibleSync });
 
-  // // TODO: Provide an API to specify which of these to store
-  // describeRoundtrip({ typeName: "float / double", value: 123.456, flexibleSync });
+  // TODO: Provide an API to specify which of these to store
+  describeRoundtrip({ typeName: "float / double", value: 123.456, flexibleSync });
 
-  // describeRoundtrip({ typeName: "bool (true)", value: true, flexibleSync });
-  // describeRoundtrip({ typeName: "bool (false)", value: false, flexibleSync });
+  describeRoundtrip({ typeName: "bool (true)", value: true, flexibleSync });
+  describeRoundtrip({ typeName: "bool (false)", value: false, flexibleSync });
 
-  // describeRoundtrip({ typeName: "string", value: "test-string", flexibleSync });
+  describeRoundtrip({ typeName: "string", value: "test-string", flexibleSync });
 
-  // // Unsupported:
-  // // describeSimpleRoundtrip("undefined", undefined);
+  // Unsupported:
+  // describeSimpleRoundtrip("undefined", undefined);
 
-  // const buffer = new Uint8Array([4, 8, 12, 16]).buffer;
-  // describeRoundtrip({
-  //   typeName: "data",
-  //   value: buffer,
-  //   testValue: (value: ArrayBuffer) => {
-  //     expect(value.byteLength).equals(4);
-  //     expect([...new Uint8Array(value)]).deep.equals([4, 8, 12, 16]);
-  //   },
-  //   flexibleSync,
-  // });
+  const buffer = new Uint8Array([4, 8, 12, 16]).buffer;
+  describeRoundtrip({
+    typeName: "data",
+    value: buffer,
+    testValue: (value: ArrayBuffer) => {
+      expect(value.byteLength).equals(4);
+      expect([...new Uint8Array(value)]).deep.equals([4, 8, 12, 16]);
+    },
+    flexibleSync,
+  });
 
-  // const date = new Date(1620768552979);
-  // describeRoundtrip({
-  //   typeName: "date",
-  //   value: date,
-  //   testValue: (value: Date) => value.getTime() === date.getTime(),
-  //   flexibleSync,
-  // });
+  const date = new Date(1620768552979);
+  describeRoundtrip({
+    typeName: "date",
+    value: date,
+    testValue: (value: Date) => value.getTime() === date.getTime(),
+    flexibleSync,
+  });
 
-  // const objectId = new Realm.BSON.ObjectId("609afc1290a3c1818f04635e");
-  // describeRoundtrip({
-  //   typeName: "ObjectId",
-  //   value: objectId,
-  //   testValue: (value: Realm.BSON.ObjectId) => objectId.equals(value),
-  //   flexibleSync,
-  // });
+  const objectId = new Realm.BSON.ObjectId("609afc1290a3c1818f04635e");
+  describeRoundtrip({
+    typeName: "ObjectId",
+    value: objectId,
+    testValue: (value: Realm.BSON.ObjectId) => objectId.equals(value),
+    flexibleSync,
+  });
 
-  // const uuid = new Realm.BSON.UUID("9476a497-60ef-4439-bc8a-52b8ad0d4875");
-  // describeRoundtrip({
-  //   typeName: "UUID",
-  //   value: uuid,
-  //   testValue: (value: Realm.BSON.UUID) => uuid.equals(value),
-  //   flexibleSync,
-  // });
+  const uuid = new Realm.BSON.UUID("9476a497-60ef-4439-bc8a-52b8ad0d4875");
+  describeRoundtrip({
+    typeName: "UUID",
+    value: uuid,
+    testValue: (value: Realm.BSON.UUID) => uuid.equals(value),
+    flexibleSync,
+  });
 
-  // const decimal128 = Realm.BSON.Decimal128.fromString("1234.5678");
-  // describeRoundtrip({
-  //   typeName: "Decimal128",
-  //   value: decimal128,
-  //   testValue: (value: Realm.BSON.Decimal128) => decimal128.bytes.equals(value.bytes),
-  //   flexibleSync,
-  // });
+  const decimal128 = Realm.BSON.Decimal128.fromString("1234.5678");
+  describeRoundtrip({
+    typeName: "Decimal128",
+    value: decimal128,
+    testValue: (value: Realm.BSON.Decimal128) => decimal128.bytes.equals(value.bytes),
+    flexibleSync,
+  });
 
-  // const recursiveObjectId = new Realm.BSON.ObjectId();
-  // describeRoundtrip({
-  //   typeName: "object link",
-  //   value: (realm: Realm) => {
-  //     // Create an object
-  //     const result = realm.create<MixedClass>("MixedClass", {
-  //       _id: recursiveObjectId,
-  //       value: null,
-  //     });
-  //     // Make it recursive
-  //     result.value = result;
-  //     return result;
-  //   },
-  //   testValue: (value: MixedClass) => recursiveObjectId.equals(value._id),
-  //   flexibleSync,
-  // });
+  const recursiveObjectId = new Realm.BSON.ObjectId();
+  describeRoundtrip({
+    typeName: "object link",
+    value: (realm: Realm) => {
+      // Create an object
+      const result = realm.create<MixedClass>("MixedClass", {
+        _id: recursiveObjectId,
+        value: null,
+      });
+      // Make it recursive
+      result.value = result;
+      return result;
+    },
+    testValue: (value: MixedClass) => recursiveObjectId.equals(value._id),
+    flexibleSync,
+  });
 }
 
 describe.skipIf(environment.missingServer, "mixed", () => {
