@@ -95,10 +95,7 @@ function isErrorResponse(json: unknown): json is ErrorResponse {
 
 function isProfileResponse(json: unknown): json is ProfileResponse {
   if (isObject(json)) {
-    return (
-      Array.isArray(json.roles) &&
-      json.roles.every((item) => typeof item.role_name === "string" && typeof item.group_id === "string")
-    );
+    return Array.isArray(json.roles) && json.roles.every((item) => typeof item.role_name === "string");
   } else {
     return false;
   }
