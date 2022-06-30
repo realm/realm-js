@@ -316,6 +316,9 @@ export class AppImporter {
           if (config.type === "mongodb-atlas") {
             tmpConfig.config = { clusterName: config.config.clusterName };
           }
+          const dbName = config.config.sync
+            ? config.config.sync.database_name
+            : config.config.flexible_sync.database_name;
           const serviceUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/services`;
           console.log("config so far:", config);
           const response = await fetch(serviceUrl, {
@@ -339,6 +342,7 @@ export class AppImporter {
               for (const ruleFile of ruleFiles) {
                 const ruleFilePath = path.join(rulesDir, ruleFile);
                 const ruleConfig = JSON.parse(fs.readFileSync(ruleFilePath, "utf-8"));
+                ruleConfig.database = dbName;
                 const schemaConfig = ruleConfig.schema || null;
                 if (schemaConfig) {
                   // Schema is not valid in a rule request
