@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import { App } from "realm";
+import { App, BSON } from "realm";
 
 import { fetch } from "./fetch";
 
@@ -36,20 +36,38 @@ function getUrls() {
 export function getDefaultReplacements(name: string): TemplateReplacements {
   // When running on CI we connect through mongodb-atlas instead of local-mongodb
   const { mongodbClusterName } = environment;
-  if ((name === "with-db" || name === "with-db-flx") && typeof mongodbClusterName === "string") {
-    return {
-      "services/mongodb/config.json": {
-        type: "mongodb-atlas",
-        config: {
-          clusterName: mongodbClusterName,
-          readPreference: "primary",
-          wireProtocolEnabled: false,
+  if (typeof mongodbClusterName === "string") {
+    if (name === "with-db") {
+      return {
+        "services/mongodb/config.json": {
+          type: "mongodb-atlas",
+          config: {
+            clusterName: mongodbClusterName,
+            readPreference: "primary",
+            wireProtocolEnabled: false,
+            sync: {
+              database_name: `test-database-${new BSON.ObjectID().toHexString()}`,
+            },
+          },
         },
-      },
-    };
-  } else {
-    return {};
+      };
+    } else if (name === "with-db-flx") {
+      return {
+        "services/mongodb/config.json": {
+          type: "mongodb-atlas",
+          config: {
+            clusterName: mongodbClusterName,
+            readPreference: "primary",
+            wireProtocolEnabled: false,
+            flexible_sync: {
+              database_name: `test-database-${new BSON.ObjectID().toHexString()}`,
+            },
+          },
+        },
+      };
+    }
   }
+  return {};
 }
 
 export async function importApp(
