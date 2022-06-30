@@ -24,7 +24,7 @@
     },
     "clusterName": "Cluster0",
     "readPreference": "primary",
-    "wireProtocolEnabled": false,
+    "wireProtocolEnabled": false
   },
   "secret_config": {
     "uri": "local-mongodb-uri"
