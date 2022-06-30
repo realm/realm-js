@@ -7,6 +7,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Setting up a `clientResetAfter` callback could lead to a fatal error with the message `Realm accessed from incorrect thread`. ([#4410](https://github.com/realm/realm-js/issues/4410), since v10.11.0)
 * Improved performance of sync clients during integration of changesets with many small strings (totalling > 1024 bytes per changeset) on iOS 14, and devices which have restrictive or fragmented memory. ([realm/realm-core#5614](https://github.com/realm/realm-core/issues/5614))
 * Fixed a bug that prevented the detection of tables being changed to or from asymmetric during migrations. ([realm/realm-core#5603](https://github.com/realm/realm-core/pull/5603), since v10.19.3)
+* Fixed a bug with handling `null` values in `toJSON` ([[#4682](https://github.com/realm/realm-js/issues/4682), since 10.19.3)
 
 ### Compatibility
 * Atlas App Services.
@@ -16,6 +17,8 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Upgraded Realm Core from v12.2.0 to v12.3.0. ([#4689](https://github.com/realm/realm-js/issues/4689))
+* Fixed analytics tests to reflect the fact that framework versions are read from node_modules, not package.json. ([#4687](https://github.com/realm/realm-js/pull/4687))
+* Adding response type checking to the realm-app-importer. ([#4688](https://github.com/realm/realm-js/pull/4688))
 
 10.19.3 Release notes (2022-6-27)
 =============================================================
