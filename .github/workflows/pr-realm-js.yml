@@ -8,6 +8,9 @@ jobs:
     env:
       npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
       REALM_DISABLE_ANALYTICS: 1
+      REALM_BASE_URL: ${{ secrets.REALM_QA_BASE_URL }}
+      REALM_PUBLIC_KEY: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      REALM_PRIVATE_KEY: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
     strategy:
       fail-fast: false
       matrix:
