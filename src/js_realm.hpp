@@ -1194,10 +1194,10 @@ void RealmClass<T>::objects(ContextType ctx, ObjectType this_object, Arguments& 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
     auto& object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
 
-    if (object_schema.is_embedded) {
+    if (object_schema.table_type == ObjectSchema::ObjectType::Embedded) {
         throw std::runtime_error("You cannot query an embedded object.");
     }
-    if (object_schema.is_asymmetric) {
+    if (object_schema.table_type == ObjectSchema::ObjectType::TopLevelAsymmetric) {
         throw std::runtime_error("You cannot query an asymmetric class.");
     }
 
@@ -1279,7 +1279,7 @@ void RealmClass<T>::create(ContextType ctx, ObjectType this_object, Arguments& a
 
     NativeAccessor accessor(ctx, realm, object_schema);
     auto realm_object = realm::Object::create<ValueType>(accessor, realm, object_schema, object, policy);
-    if (object_schema.is_asymmetric) {
+    if (object_schema.table_type == ObjectSchema::ObjectType::TopLevelAsymmetric) {
         return_value.set_undefined();
     }
     else {
