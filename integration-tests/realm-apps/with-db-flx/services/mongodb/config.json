@@ -1,8 +1,9 @@
 {
   "name": "mongodb",
-  "type": "mongodb",
+  "type": "mongodb-atlas",
   "config": {
     "flexible_sync": {
+
       "state": "enabled",
       "database_name": "test-database",
       "queryable_fields_names": [
@@ -20,7 +21,10 @@
           }
         ]
       }
-    }
+    },
+    "clusterName": "Cluster0",
+    "readPreference": "primary",
+    "wireProtocolEnabled": false,
   },
   "secret_config": {
     "uri": "local-mongodb-uri"

@@ -1,7 +1,10 @@
 {
   "name": "mongodb",
-  "type": "mongodb",
+  "type": "mongodb-atlas",
   "config": {
+    "clusterName": "Cluster0",
+    "readPreference": "primary",
+    "wireProtocolEnabled": false,
     "sync": {
       "state": "enabled",
       "database_name": "test-database",
