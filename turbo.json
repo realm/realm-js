@@ -1,8 +1,17 @@
 {
   "$schema": "https://turborepo.org/schema.json",
   "pipeline": {
+    "update-types": {
+      "inputs": [
+        "../../types"
+      ],
+      "outputs": [
+        "types/realm/**"
+      ]
+    },
     "build": {
       "dependsOn": [
+        "update-types",
         "^build"
       ]
     },
