@@ -162,6 +162,7 @@ android {
                 }
             }
 
+            // Do not strip debug symbols from the Realm library
             packagingOptions {
                 jniLibs.keepDebugSymbols += "**/librealm.so"
             }
@@ -189,6 +190,13 @@ android {
             }
 
         }
+    }
+
+    // Add the Realm source files to the Android Studio project so that we can add breakpoints
+    // in debug mode. These will not be compiled, it will still use the .so library.
+    sourceSets {
+        main.java.srcDirs += '../../../../../src'
+        main.java.srcDirs += '../../../../../vendor/realm-core/src'
     }
 }
 

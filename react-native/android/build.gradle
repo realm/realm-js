@@ -53,8 +53,13 @@ android {
         compileTask -> compileTask.dependsOn forwardDebugPort
     }
 
-    packagingOptions {
-        jniLibs.keepDebugSymbols += "**/librealm.so"
+    // Do not strip debug symbols from debug builds of Realm
+    buildTypes {
+        debug {
+            packagingOptions {
+                jniLibs.keepDebugSymbols += "**/librealm.so"
+            }
+        }
     }
 }
 

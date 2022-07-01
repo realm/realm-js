@@ -300,7 +300,7 @@ const go = async () => {
   //   subs.add(realm.objects("Task"));
   // });
 
-  while (true) {
+  setInterval(() => {
     console.log("yo");
     realm.write(() => {
       if (realm.objects("Task").length) {
@@ -309,7 +309,7 @@ const go = async () => {
         realm.create("Task", { _id: BSON.ObjectId(), description: "xxx", createdAt: new Date(), userId: "asd" });
       }
     });
-  }
+  }, 100);
 };
 
 go();
