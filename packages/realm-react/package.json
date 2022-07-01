@@ -36,16 +36,18 @@
     "metro-react-native-babel-preset": "^0.66.2",
     "prettier": "^2.3.2",
     "react": "^17.0.2",
-    "react-native": "^0.66.2",
+    "react-native": "0.66.2",
     "react-test-renderer": "^17.0.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
-    "realm": "^10.17.0 || ^11.0.0-rc"
-  },
-  "optionalDependencies": {
-    "@babel/runtime": ">=7",
+    "realm": "^10.17.0 || ^11.0.0-rc",
     "react-native": ">=0.59"
+  },
+  "peerDependenciesMeta": {
+    "react-native": {
+      "optional": true
+    }
   },
   "files": [
     "dist",
