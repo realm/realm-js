@@ -162,7 +162,7 @@ android {
                 }
             }
 
-            // Do not strip debug symbols from the Realm library
+            // REALM-JS Do not strip debug symbols from the Realm library
             packagingOptions {
                 jniLibs.keepDebugSymbols += "**/librealm.so"
             }
