@@ -55,8 +55,7 @@ jobs:
         run: npx prebuild
 
       - name: Build realm react
-        working-directory: packages/realm-react
-        run: npm run build
+        run: npx turbo run build --filter @realm/react
 
       - name: Run tests
         working-directory: packages/realm-react
