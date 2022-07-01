@@ -149,6 +149,42 @@ To use a debug version of Node, change the path to `node` for the `lldb` launch 
 
 You can also open the Node source directory in VS Code and use the launch config from https://joyeecheung.github.io/blog/2018/12/31/tips-and-tricks-node-core/ (which has some other useful tips) if you wish to go deeper into the Node source code.
 
+## Debugging Realm C++ in an iOS app using Xcode
+
+To debug Realm C++ in an iOS app using Xcode:
+
+1. Ensure you are using a debug version of the Realm `xcframework` (`./scripts/build-ios.sh -c Debug simulator`)
+2. In your Xcode project, go to `File` > `Add files to <project name>` and select your `realm-js/src` directory (it must be the same directory you used to build the `xcframework` as the paths are absolute). Ensure "Copy items" is not ticked, and "Create folder references" is selected, then press `Add`.
+3. Repeat step 2, for your `realm-js/vendor/realm-core/src` directory.
+4. Build and run the app in debug mode.
+
+You should now be able to navigate to Realm C++ source files and add breakpoints by navigating to the source files in the Project navigator.
+
+## Debugging Realm C++ in an Android app using Android Studio
+
+To debug Realm C++ in an Android app using Android Studio (the integration test is already set up to do this so you shouldn't need to do it for that):
+
+1. Ensure you are using a debug version of the Realm `.so` (`node scripts/build-android.js  --arch=x86 --build-type=Debug`)
+2. Prevent Gradle from stripping debug symbols from Realm by adding to your `app/build.gradle` in the `android.buildTypes.debug` section:
+   ```
+   // Do not strip debug symbols from the Realm library
+   packagingOptions {
+         jniLibs.keepDebugSymbols += "**/librealm.so"
+   }
+   ```
+3. Add the source paths for Realm to the project by adding the paths (which can be relative to the `build.gradle` file) to your `app/build.gradle` in the `android` section:
+   ```
+   // Add the Realm source files to the Android Studio project so that we can add breakpoints
+   // in debug mode. These will not be compiled, it will still use the .so library.
+   sourceSets {
+      main.java.srcDirs += '<path to realm-js/src>'
+      main.java.srcDirs += '<path to realm-js/vendor/realm-core/src>'
+   }
+   ```
+4. Build and run the app in debug mode.
+
+You should now be able to navigate to Realm C++ source files and add breakpoints by navigating to the "Project Files" view (using the "Project" dropdown in the top left file browser).
+
 ## Other C++ debugging tricks
 
 ### Inspecting the type of an `auto` variable

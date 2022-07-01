@@ -52,6 +52,15 @@ android {
     tasks.withType(JavaCompile) {
         compileTask -> compileTask.dependsOn forwardDebugPort
     }
+
+    // Do not strip debug symbols from debug builds of Realm
+    buildTypes {
+        debug {
+            packagingOptions {
+                jniLibs.keepDebugSymbols += "**/librealm.so"
+            }
+        }
+    }
 }
 
 def dependencyType = 'implementation'

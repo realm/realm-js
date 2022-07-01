@@ -20,6 +20,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Fixed analytics tests to reflect the fact that framework versions are read from node_modules, not package.json. ([#4687](https://github.com/realm/realm-js/pull/4687))
 * Adding response type checking to the realm-app-importer. ([#4688](https://github.com/realm/realm-js/pull/4688))
 * Updated integration test app to target Android SDK 31 ([#4686](https://github.com/realm/realm-js/pull/4686))
+* Enabled debugging Realm C++ code in integration test app ([#4696](https://github.com/realm/realm-js/pull/4696))
 
 10.19.3 Release notes (2022-6-27)
 =============================================================
