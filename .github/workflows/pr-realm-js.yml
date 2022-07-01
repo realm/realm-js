@@ -232,6 +232,7 @@ jobs:
       RETRY_DELAY: 500000 # 10 min
       # Pin the Xcode version
       DEVELOPER_DIR: /Applications/Xcode_12.5.1.app
+      VCTargetsPath: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise
     runs-on: ${{ matrix.variant.runner }}
     strategy:
       fail-fast: false

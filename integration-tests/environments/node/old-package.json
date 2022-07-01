@@ -1,0 +1,21 @@
+{
+  "name": "realm-node-tests",
+  "version": "0.1.0",
+  "description": "Realm JS tests running in a Node.js environment",
+  "private": true,
+  "scripts": {
+    "start": "node index.js",
+    "test": "mocha-remote -- concurrently --kill-others-on-fail npm:app-importer npm:start",
+    "lint": "eslint .",
+    "app-importer": "realm-app-importer serve ../../realm-apps"
+  },
+  "dependencies": {
+    "@realm/integration-tests": "*",
+    "mocha-remote": "^1.5.0",
+    "mocha-remote-client": "^1.5.0"
+  },
+  "devDependencies": {
+    "concurrently": "^6.0.2",
+    "realm-app-importer": "*"
+  }
+}

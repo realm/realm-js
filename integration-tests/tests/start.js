@@ -19,6 +19,10 @@
 /* eslint-env node */
 /* eslint-disable @typescript-eslint/no-var-requires */
 
+const SegFaultHandler = require("segfault-handler");
+
+SegFaultHandler.registerHandler("crash.log");
+
 const concurrently = require("concurrently");
 
 // See https://github.com/kimmobrunfeldt/concurrently/issues/33#issuecomment-433084589
