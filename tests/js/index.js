@@ -31,10 +31,6 @@ function node_require(module) {
   return require_method(module);
 }
 
-if (isNodeProcess && process.platform === "win32") {
-  global.enableSyncTests = false;
-}
-
 var TESTS = {
   ListTests: require("./list-tests"),
   LinkingObjectsTests: require("./linkingobjects-tests"),
