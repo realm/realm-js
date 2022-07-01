@@ -184,7 +184,9 @@ To debug Realm C++ in an Android app using Android Studio (the integration test 
       main.java.srcDirs += '<path to realm-js/vendor/realm-core/src>'
    }
    ```
-4. Build and run the app in debug mode.
+4. In Android Studio, go to `Run` > `Edit Configurations...` and in the `Debugger` tab, select a `Debug type` of `Native Only`
+5. In the same window, add a `LLDB Startup Command` entry of `process handle SIGURS1 -n true -p true -s false`. This prevents it from breaking on signals used internally in React Native.
+6. Build and run the app in debug mode.
 
 You should now be able to navigate to Realm C++ source files and add breakpoints by navigating to the "Project Files" view (using the "Project" dropdown in the top left file browser).
 
