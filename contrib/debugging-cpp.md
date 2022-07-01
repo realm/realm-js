@@ -202,6 +202,10 @@ You can also start `lldb-server` on the Android emulator and connect to it direc
 5. Run `/data/data/com.yourapp/lldb/bin/lldb-server platform --server --listen "*:9123"`, replacing `com.yourapp` with your app's bundle ID (e.g. `com.realmreactnativetests`) This will start `lldb-server` running over TCP so you can connect to it.
 6. In a separate local shell, run `adb forward tcp:9123 tcp:9123` to forward the `lldb-server` port to your local machine
 
+If you would like to make this happen on every startup, you can modify the script which Android Studio installs on to the device to always start `lldb-server` in TCP mode:
+1. Open `/Applications/Android\ Studio.app/Contents/plugins/android-ndk/resources/lldb/android/start_lldb_server.sh` in a text editor
+2. Modify the last line to e.g. `$BIN_DIR/lldb-server platform --server --listen "*:9123" & $BIN_DIR/lldb-server platform --server --listen $LISTENER_SCHEME://$DOMAINSOCKET_DIR/$PLATFORM_SOCKET --log-file "$PLATFORM_LOG_FILE" --log-channels "$LOG_CHANNELS" </dev/null >$LOG_DIR/platform-stdout.log 2>&1`
+
 #### Connecting with `lldb`
 
 To connect to the running server with `lldb`:
