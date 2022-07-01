@@ -20,8 +20,11 @@
    * [Using a debug version of Node](#using-a-debug-version-of-node)
       * [Compiling a debug version of Node](#compiling-a-debug-version-of-node)
       * [Using a debug version of Node](#using-a-debug-version-of-node-1)
+   * [Debugging Realm C++ in an iOS app using Xcode](#debugging-realm-c-in-an-ios-app-using-xcode)
+   * [Debugging Realm C++ in an Android app using Android Studio](#debugging-realm-c-in-an-android-app-using-android-studio)
    * [Other C++ debugging tricks](#other-c-debugging-tricks)
       * [Inspecting the type of an auto variable](#inspecting-the-type-of-an-auto-variable)
+      * [Using Instruments to profile Node code](#using-instruments-to-profile-node-code)
 <!--te-->
 
 # Quick start
