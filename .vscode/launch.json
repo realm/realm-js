@@ -91,6 +91,17 @@
             "pid": "${command:pickProcess}"
         },
         {
+            "name": "LLDB Attach to Android Emulator",
+            "type": "lldb",
+            "request": "attach",
+            "pid": "${input:pid}",
+            "initCommands": [
+                "platform select remote-android",
+                "platform connect connect://localhost:9123",
+                "settings set target.inherit-env false",
+            ],
+        },
+        {
             "type": "lldb",
             "request": "launch",
             "name": "LLDB Debug Unit Tests",
@@ -219,6 +230,12 @@
             "type": "promptString",
             "default": "",
             "description": "Jest test name pattern for filtering by test description name"
-        }
+        },
+        {
+            "id": "pid",
+            "type": "promptString",
+            "default": "",
+            "description": "PID of the app process"
+        },
     ]
 }

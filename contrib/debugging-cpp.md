@@ -190,6 +190,33 @@ To debug Realm C++ in an Android app using Android Studio (the integration test 
 
 You should now be able to navigate to Realm C++ source files and add breakpoints by navigating to the "Project Files" view (using the "Project" dropdown in the top left file browser).
 
+### Debugging Realm C++ in an Android app using lldb
+
+You can also start `lldb-server` on the Android emulator and connect to it directly from another client (e.g. `lldb` or the VS Code LLDB plugin). You need to be using a rooted emulator (i.e. one of the images without Google Play).
+
+1. Follow steps 1, 2 and 4 of the Android Studio debugging instructions (you do not have to leave it in "Native Only" debugging, but need to do this at least once so `lldb-server` is installed on the device)
+2. Build and run the app in debug mode
+3. Run `adb shell` to open a shell on the emulator
+4. Run `su` to become root
+5. Run `ps -A | grep com.yourapp`, replacing `com.yourapp` with your app's bundle ID, to get the PID (you can also see this in the Android Studio Debug tab)
+5. Run `/data/data/com.yourapp/lldb/bin/lldb-server platform --server --listen "*:9123"`, replacing `com.yourapp` with your app's bundle ID (e.g. `com.realmreactnativetests`) This will start `lldb-server` running over TCP so you can connect to it.
+6. In a separate local shell, run `adb forward tcp:9123 tcp:9123` to forward the `lldb-server` port to your local machine
+
+#### Connecting with `lldb`
+
+To connect to the running server with `lldb`:
+
+1. Run `lldb`
+2. `platform select remote-android`
+3. `platform connect connect://localhost:9123`
+4. `attach PID`, replacing PID with your app's PID
+
+#### Connecting with VS Code
+
+1. Open VS Code with the relevant source files (make sure you use the same directory which Realm JS was compiled in)
+2. Run the [LLDB Attach to Android Emulator] debug launch config
+3. Enter the app's PID at the prompt
+
 ## Other C++ debugging tricks
 
 ### Inspecting the type of an `auto` variable
