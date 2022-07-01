@@ -296,6 +296,9 @@ jobs:
       #     cache-restore-keys: vcpkg-windows-${{ matrix.variant.arch }}
 
       - uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+          version: stable
 
       - name: Install IOS tools
         if: ${{ (matrix.variant.os == 'ios') }}
