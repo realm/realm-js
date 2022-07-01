@@ -241,7 +241,7 @@ jobs:
           # - { os: linux, target: test, runner: ubuntu-latest, environment: node }
           # - { os: linux, target: "test:main", runner: ubuntu-latest, environment: electron }
           # - { os: linux, target: "test:renderer", runner: ubuntu-latest, environment: electron }
-          - { os: windows, target: test, runner: windows-2022, environment: node}
+          - { os: windows, target: test, runner: windows-2019, environment: node}
           # - { os: windows, target: "test:main", runner: windows-2019, environment: electron }
           # - { os: windows, target: "test:renderer", runner: windows-2019, environment: electron }
           # - { os: darwin, target: "test:main", runner: macos-latest, environment: electron }
