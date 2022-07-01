@@ -154,7 +154,7 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
-    needs: [build-and-test]
+    needs: [integration-tests]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -215,7 +215,7 @@ jobs:
 
   integration-tests:
     name: Integration tests for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
-    needs: [build-and-test, baas-realm-js]
+    needs: [baas-realm-js]
     env:
       REALM_DISABLE_ANALYTICS: 1
       MOCHA_REMOTE_TIMEOUT: 30000
