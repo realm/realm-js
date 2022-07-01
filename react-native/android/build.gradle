@@ -52,6 +52,10 @@ android {
     tasks.withType(JavaCompile) {
         compileTask -> compileTask.dependsOn forwardDebugPort
     }
+
+    packagingOptions {
+        jniLibs.keepDebugSymbols += "**/librealm.so"
+    }
 }
 
 def dependencyType = 'implementation'

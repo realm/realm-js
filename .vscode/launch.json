@@ -85,6 +85,21 @@
             "port": 5858
         },
         {
+            "name": "Remote launch",
+            "type": "lldb",
+            "request": "attach",
+            "pid": "6254",
+            // "program": "${workspaceFolder}/build/debuggee", // Local path.
+            "initCommands": [
+                "platform select remote-android", // Execute `platform list` for a list of available remote platform plugins.
+                "platform connect connect://localhost:9123",
+                "settings set target.inherit-env false", // See the note below.
+            ],
+            "env": {
+                // "PATH": "...", // See the note below.
+            }
+        },
+        {
             "type": "lldb",
             "request": "attach",
             "name": "LLDB Attach to Process",
