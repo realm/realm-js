@@ -16,6 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import SegFaultHandler from "segfault-handler";
+
+SegFaultHandler.registerHandler("crash.log");
+
 console.log("Loading Realm Integration Tests");
 
 if (!global.fs) {
