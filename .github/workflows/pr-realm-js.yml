@@ -215,7 +215,7 @@ jobs:
 
   integration-tests:
     name: Integration tests for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
-    needs: [baas-realm-js]
+    needs: [baas-realm-js, build-and-test]
     env:
       REALM_DISABLE_ANALYTICS: 1
       MOCHA_REMOTE_TIMEOUT: 30000
@@ -294,6 +294,8 @@ jobs:
       #     path: vendor/realm-core/tools/vcpkg/ports
       #     cache-key: vcpkg-windows-${{ matrix.variant.arch }}
       #     cache-restore-keys: vcpkg-windows-${{ matrix.variant.arch }}
+
+      - uses: rhysd/action-setup-vim@v1
 
       - name: Install IOS tools
         if: ${{ (matrix.variant.os == 'ios') }}
