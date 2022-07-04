@@ -32,7 +32,7 @@ type StreamReader = {
   read<T>(): Promise<{ value: T | undefined; done: boolean }>;
   releaseLock(): void;
 };
-type ReadableStream = { getReader(): StreamReader };
+type ReadableStream = { getReader(): StreamReader; cancel: () => void };
 
 /**
  * @param body A possible resonse body.
@@ -292,7 +292,7 @@ export class Fetcher implements LocationUrlContext {
       const responseBody = await response.json();
       return deserialize(responseBody as SimpleObject) as ResponseBody;
     } else if (contentType === null) {
-      return (null as unknown) as ResponseBody;
+      return null as unknown as ResponseBody;
     } else {
       throw new Error(`Expected JSON response, got "${contentType}"`);
     }

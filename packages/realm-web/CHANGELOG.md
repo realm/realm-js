@@ -8,7 +8,7 @@
 * None
 
 ### Fixed
-* None
+* Fixed an issue where closing a watch stream, by calling `return` on the `AsyncIterator` wouldn't propagate to closing the underlying network connection. ([#4700](https://github.com/realm/realm-js/pull/4700))
 
 ### Internal
 * None

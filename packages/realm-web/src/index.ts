@@ -20,6 +20,8 @@ export * as BSON from "bson";
 
 import { App } from "./App";
 
+console.log("Hello from realm-web");
+
 /**
  * Get or create a singleton Realm App from an id.
  * Calling this function multiple times with the same id will return the same instance.
