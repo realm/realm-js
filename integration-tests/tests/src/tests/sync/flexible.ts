@@ -34,6 +34,7 @@ import Realm, { BSON, ClientResetMode, FlexibleSyncConfiguration, SessionStopPol
 import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "../../hooks";
 import { DogSchema, IPerson, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { closeAndReopenRealm, closeRealm } from "../../utils/close-realm";
+import { expectClientResetError } from "../../utils/expect-sync-error";
 
 const FlexiblePersonSchema = { ...PersonSchema, properties: { ...PersonSchema.properties, nonQueryable: "string?" } };
 
@@ -1640,8 +1641,8 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
     describe("client reset handling", function () {
       it("handles manual client resets with flexible sync enabled", async function (this: RealmContext) {
-        await new Promise<void>((resolve) => {
-          const realm = new Realm({
+        await expectClientResetError(
+          {
             schema: [FlexiblePersonSchema, DogSchema],
             sync: {
               _sessionStopPolicy: SessionStopPolicy.Immediately,
@@ -1650,25 +1651,21 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
               clientReset: {
                 mode: ClientResetMode.Manual,
               },
-              error: (session, error: SyncError) => {
-                expect(realm).to.be.instanceOf(Realm);
-                expect(error.name).to.equal("ClientReset");
-                expect(error.message).to.equal("Simulate Client Reset");
-                expect(error.code).to.equal(211);
-                resolve();
-              },
             },
-          });
-
-          try {
+          },
+          this.user,
+          (realm) => {
             const session = realm.syncSession;
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore calling undocumented method _simulateError
             session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false); // 211 -> diverging histories
-          } finally {
-            realm.close();
-          }
-        });
+          },
+          (error) => {
+            expect(error.name).to.equal("ClientReset");
+            expect(error.message).to.equal("Simulate Client Reset");
+            expect(error.code).to.equal(211);
+          },
+        );
       });
     });
   });
