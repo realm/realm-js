@@ -42,6 +42,8 @@ jobs:
           login-server: ghcr.io
           username: realm-ci
           password: ${{ secrets.REALM_CI_GITHUB_API_KEY }}
+      # Build integration test package, its dependencies and test it
+      - run: npx turbo run build --filter realm-web-integration-tests
       - name: Run integration tests
         run: npm run test:github
         working-directory: packages/realm-web-integration-tests
