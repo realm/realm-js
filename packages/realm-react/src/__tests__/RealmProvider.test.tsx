@@ -188,7 +188,7 @@ describe("RealmProvider", () => {
       return (
         <>
           <View testID="firstRealmProvider">
-            <RealmProvider realmRef={realmRef} schema={[dogSchema]} path="testPath">
+            <RealmProvider realmRef={realmRef} schema={[dogSchema]} path="testPath.realm">
               <RealmComponent />
             </RealmProvider>
           </View>
@@ -212,7 +212,7 @@ describe("RealmProvider", () => {
 
     const realmRefPathText = await waitFor(() => getByTestId("realmRefPath"));
 
-    expect(realmRefPathText).toHaveTextContent("testPath");
+    expect(realmRefPathText).toHaveTextContent("testPath.realm");
   });
   describe("initially renders a fallback, until realm exists", () => {
     it("as a component", async () => {
