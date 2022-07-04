@@ -20,8 +20,11 @@
    * [Using a debug version of Node](#using-a-debug-version-of-node)
       * [Compiling a debug version of Node](#compiling-a-debug-version-of-node)
       * [Using a debug version of Node](#using-a-debug-version-of-node-1)
+   * [Debugging Realm C++ in an iOS app using Xcode](#debugging-realm-c-in-an-ios-app-using-xcode)
+   * [Debugging Realm C++ in an Android app using Android Studio](#debugging-realm-c-in-an-android-app-using-android-studio)
    * [Other C++ debugging tricks](#other-c-debugging-tricks)
       * [Inspecting the type of an auto variable](#inspecting-the-type-of-an-auto-variable)
+      * [Using Instruments to profile Node code](#using-instruments-to-profile-node-code)
 <!--te-->
 
 # Quick start
@@ -148,6 +151,75 @@ It can sometimes be useful to use a debug version of Node. This allows you to vi
 To use a debug version of Node, change the path to `node` for the `lldb` launch configuration you are using to point to the debug version you compiled above, e.g. change https://github.com/realm/realm-js/blob/master/.vscode/launch.json#L103 to `"program": "/Users/my_name/dev/node-v16.13.2/out/Debug/node"`. You should now get full source code in stack traces.
 
 You can also open the Node source directory in VS Code and use the launch config from https://joyeecheung.github.io/blog/2018/12/31/tips-and-tricks-node-core/ (which has some other useful tips) if you wish to go deeper into the Node source code.
+
+## Debugging Realm C++ in an iOS app using Xcode
+
+To debug Realm C++ in an iOS app using Xcode:
+
+1. Ensure you are using a debug version of the Realm `xcframework` (`./scripts/build-ios.sh -c Debug simulator`)
+2. In your Xcode project, go to `File` > `Add files to <project name>` and select your `realm-js/src` directory (it must be the same directory you used to build the `xcframework` as the paths are absolute). Ensure "Copy items" is not ticked, and "Create folder references" is selected, then press `Add`.
+3. Repeat step 2, for your `realm-js/vendor/realm-core/src` directory.
+4. Build and run the app in debug mode.
+
+You should now be able to navigate to Realm C++ source files and add breakpoints by navigating to the source files in the Project navigator.
+
+## Debugging Realm C++ in an Android app using Android Studio
+
+To debug Realm C++ in an Android app using Android Studio (the integration test is already set up to do this so you shouldn't need to do it for that):
+
+1. Ensure you are using a debug version of the Realm `.so` (`node scripts/build-android.js  --arch=x86 --build-type=Debug`)
+2. Prevent Gradle from stripping debug symbols from Realm by adding to your `app/build.gradle` in the `android.buildTypes.debug` section:
+   ```
+   // Do not strip debug symbols from the Realm library
+   packagingOptions {
+         jniLibs.keepDebugSymbols += "**/librealm.so"
+   }
+   ```
+3. Add the source paths for Realm to the project by adding the paths (which can be relative to the `build.gradle` file) to your `app/build.gradle` in the `android` section:
+   ```
+   // Add the Realm source files to the Android Studio project so that we can add breakpoints
+   // in debug mode. These will not be compiled, it will still use the .so library.
+   sourceSets {
+      main.java.srcDirs += '<path to realm-js/src>'
+      main.java.srcDirs += '<path to realm-js/vendor/realm-core/src>'
+   }
+   ```
+4. In Android Studio, go to `Run` > `Edit Configurations...` and in the `Debugger` tab, select a `Debug type` of `Native Only`
+5. In the same window, add a `LLDB Startup Command` entry of `process handle SIGURS1 -n true -p true -s false`. This prevents it from breaking on signals used internally in React Native.
+6. Build and run the app in debug mode.
+
+You should now be able to navigate to Realm C++ source files and add breakpoints by navigating to the "Project Files" view (using the "Project" dropdown in the top left file browser).
+
+### Debugging Realm C++ in an Android app using lldb
+
+You can also start `lldb-server` on the Android emulator and connect to it directly from another client (e.g. `lldb` or the VS Code LLDB plugin). You need to be using a rooted emulator (i.e. one of the images without Google Play).
+
+1. Follow steps 1, 2 and 4 of the Android Studio debugging instructions (you do not have to leave it in "Native Only" debugging, but need to do this at least once so `lldb-server` is installed on the device)
+2. Build and run the app in debug mode
+3. Run `adb shell` to open a shell on the emulator
+4. Run `su` to become root
+5. Run `ps -A | grep com.yourapp`, replacing `com.yourapp` with your app's bundle ID, to get the PID (you can also see this in the Android Studio Debug tab)
+5. Run `/data/data/com.yourapp/lldb/bin/lldb-server platform --server --listen "*:9123"`, replacing `com.yourapp` with your app's bundle ID (e.g. `com.realmreactnativetests`) This will start `lldb-server` running over TCP so you can connect to it.
+6. In a separate local shell, run `adb forward tcp:9123 tcp:9123` to forward the `lldb-server` port to your local machine
+
+If you would like to make this happen on every startup, you can modify the script which Android Studio installs on to the device to always start `lldb-server` in TCP mode:
+1. Open `/Applications/Android\ Studio.app/Contents/plugins/android-ndk/resources/lldb/android/start_lldb_server.sh` in a text editor
+2. Modify the last line to e.g. `$BIN_DIR/lldb-server platform --server --listen "*:9123" & $BIN_DIR/lldb-server platform --server --listen $LISTENER_SCHEME://$DOMAINSOCKET_DIR/$PLATFORM_SOCKET --log-file "$PLATFORM_LOG_FILE" --log-channels "$LOG_CHANNELS" </dev/null >$LOG_DIR/platform-stdout.log 2>&1`
+
+#### Connecting with `lldb`
+
+To connect to the running server with `lldb`:
+
+1. Run `lldb`
+2. `platform select remote-android`
+3. `platform connect connect://localhost:9123`
+4. `attach PID`, replacing PID with your app's PID
+
+#### Connecting with VS Code
+
+1. Open VS Code with the relevant source files (make sure you use the same directory which Realm JS was compiled in)
+2. Run the [LLDB Attach to Android Emulator] debug launch config
+3. Enter the app's PID at the prompt
 
 ## Other C++ debugging tricks
 
