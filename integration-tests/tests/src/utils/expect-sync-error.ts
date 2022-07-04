@@ -19,7 +19,7 @@
 import { expect } from "chai";
 import { openRealm } from "./open-realm";
 
-type Error = Realm.SyncError | (Realm.ClientResetError & { message: string });
+type Error = Realm.SyncError | (Realm.ClientResetError & { message: string; code: number });
 
 /**
  * Open a new Realm and perform an action, expecting a sync error to occur. Will

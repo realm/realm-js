@@ -34,6 +34,7 @@ import Realm, { BSON, ClientResetMode, FlexibleSyncConfiguration, SessionStopPol
 import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "../../hooks";
 import { DogSchema, IPerson, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { closeAndReopenRealm, closeRealm } from "../../utils/close-realm";
+import { expectClientResetError } from "../../utils/expect-sync-error";
 
 const FlexiblePersonSchema = { ...PersonSchema, properties: { ...PersonSchema.properties, nonQueryable: "string?" } };
 
@@ -1635,6 +1636,36 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         };
 
         await expect(action()).to.not.be.rejected;
+      });
+    });
+
+    describe("client reset handling", function () {
+      it("handles manual client resets with flexible sync enabled", async function (this: RealmContext) {
+        await expectClientResetError(
+          {
+            schema: [FlexiblePersonSchema, DogSchema],
+            sync: {
+              _sessionStopPolicy: SessionStopPolicy.Immediately,
+              flexible: true,
+              user: this.user,
+              clientReset: {
+                mode: ClientResetMode.Manual,
+              },
+            },
+          },
+          this.user,
+          (realm) => {
+            const session = realm.syncSession;
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore calling undocumented method _simulateError
+            session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false); // 211 -> diverging histories
+          },
+          (error) => {
+            expect(error.name).to.equal("ClientReset");
+            expect(error.message).to.equal("Simulate Client Reset");
+            expect(error.code).to.equal(211);
+          },
+        );
       });
     });
   });
