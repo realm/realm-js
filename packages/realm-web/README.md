@@ -19,7 +19,7 @@ npm install realm-web
 As a script-tag in the head of a browser:
 
 ```html
-<script src="https://unpkg.com/realm-web@1.7.0"></script>
+<script src="https://unpkg.com/realm-web@1.7.1"></script>
 ```
 
 ## Caveats / limitations
