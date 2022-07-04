@@ -29,7 +29,7 @@
 // fraction too long.
 
 import { expect } from "chai";
-import Realm, { BSON, ClientResetMode, FlexibleSyncConfiguration, SessionStopPolicy, SyncError } from "realm";
+import Realm, { BSON, ClientResetMode, FlexibleSyncConfiguration, SessionStopPolicy } from "realm";
 
 import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "../../hooks";
 import { DogSchema, IPerson, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
