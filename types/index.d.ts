@@ -142,10 +142,6 @@ declare namespace Realm {
         validateCallback?: SSLVerifyCallback;
     }
 
-    enum ClientResetModeManualOnly {
-        Manual = "manual",
-    }
-
     enum ClientResetMode {
         Manual = "manual",
         DiscardLocal = "discardLocal",
@@ -176,7 +172,7 @@ declare namespace Realm {
     interface FlexibleSyncConfiguration extends BaseSyncConfiguration {
         flexible: true;
         partitionValue?: never;
-        clientReset?: ClientResetConfiguration<ClientResetModeManualOnly>;
+        clientReset?: ClientResetConfiguration<ClientResetMode.Manual>;
         /**
          * Optional object to configure the setup of an initial set of flexible
          * sync subscriptions to be used when opening the Realm. If this is specified,
