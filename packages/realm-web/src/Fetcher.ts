@@ -32,7 +32,7 @@ type StreamReader = {
   read<T>(): Promise<{ value: T | undefined; done: boolean }>;
   releaseLock(): void;
 };
-type ReadableStream = { getReader(): StreamReader };
+type ReadableStream = { getReader(): StreamReader; cancel: () => void };
 
 /**
  * @param body A possible resonse body.

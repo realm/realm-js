@@ -245,21 +245,43 @@ export class MongoDBCollection<T extends Document> implements Realm.Services.Mon
     /** A filter document */
     filter: Realm.Services.MongoDB.Filter;
   }): AsyncGenerator<ChangeEvent<T>>;
-  async *watch({
+  watch({
     ids,
     filter,
   }: {
     ids?: T["_id"][];
     filter?: Realm.Services.MongoDB.Filter;
   } = {}): AsyncGenerator<ChangeEvent<T>> {
-    const iterator = await this.functions.callFunctionStreaming("watch", {
+    const iterable = this.functions.callFunctionStreaming("watch", {
       database: this.databaseName,
       collection: this.collectionName,
       ids,
       filter,
     });
+    // Unpack the async iterable, making it possible for us to propagate the `return` when this generator is returning
+    const iterator = iterable.then((i) => i[Symbol.asyncIterator]());
+    const stream = this.watchImpl(iterator);
+    // Store the original return on the stream, to enable propagating to the original implementation after we've returned on the iterator
+    const originalReturn = stream.return;
+    return Object.assign(stream, {
+      return(value: unknown) {
+        iterator.then((i) => (i.return ? i.return(value) : undefined));
+        return originalReturn.call(stream, value);
+      },
+    });
+  }
+
+  /**
+   * @param iterator An async iterator of the response body of a watch request.
+   * @yields Change events.
+   * Note: We had to split this from the `watch` method above to enable manually calling `return` on the response body iterator.
+   */
+  async *watchImpl(iterator: Promise<AsyncIterator<Uint8Array>>): AsyncGenerator<ChangeEvent<T>> {
     const watchStream = new WatchStream<T>();
-    for await (const chunk of iterator) {
+    // Repack the iterator into an interable for the `watchImpl` to consume
+    const iterable = iterator.then((i) => ({ [Symbol.asyncIterator]: () => i }));
+    // Start consuming change events
+    for await (const chunk of await iterable) {
       if (!chunk) continue;
       watchStream.feedBuffer(chunk);
       while (watchStream.state == WatchStreamState.HAVE_EVENT) {
