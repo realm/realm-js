@@ -29,7 +29,7 @@
 // fraction too long.
 
 import { expect } from "chai";
-import Realm, { BSON, ClientResetMode, FlexibleSyncConfiguration, SessionStopPolicy } from "realm";
+import Realm, { BSON, ClientResetMode, FlexibleSyncConfiguration, SessionStopPolicy, SyncError } from "realm";
 
 import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "../../hooks";
 import { DogSchema, IPerson, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
@@ -1635,6 +1635,40 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         };
 
         await expect(action()).to.not.be.rejected;
+      });
+    });
+
+    describe("client reset handling", function () {
+      it("handles manual client resets with flexible sync enabled", async function (this: RealmContext) {
+        await new Promise<void>((resolve) => {
+          const realm = new Realm({
+            schema: [FlexiblePersonSchema, DogSchema],
+            sync: {
+              _sessionStopPolicy: SessionStopPolicy.Immediately,
+              flexible: true,
+              user: this.user,
+              clientReset: {
+                mode: ClientResetMode.Manual,
+              },
+              error: (session, error: SyncError) => {
+                expect(realm).to.be.instanceOf(Realm);
+                expect(error.name).to.equal("ClientReset");
+                expect(error.message).to.equal("Simulate Client Reset");
+                expect(error.code).to.equal(211);
+                resolve();
+              },
+            },
+          });
+
+          try {
+            const session = realm.syncSession;
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore calling undocumented method _simulateError
+            session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false); // 211 -> diverging histories
+          } finally {
+            realm.close();
+          }
+        });
       });
     });
   });
