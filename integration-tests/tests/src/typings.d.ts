@@ -65,7 +65,6 @@ type UserContext = { user: Realm.User } & Mocha.Context;
 type RealmContext = {
   realm: Realm;
   config: Realm.Configuration;
-  user: Realm.User;
 } & Mocha.Context;
 type RealmObjectContext<T = Record<string, unknown>> = {
   object: Realm.Object & T;
