@@ -39,9 +39,9 @@ The procedure is:
     - Set the release title to `Realm JavaScript vX.Y.Z`
     - Copy the release notes for this version from the changelog (don't include the first two header lines)
     - Click `Publish release`
-- Post to `#realm-releases` Slack channel
+- Post to `#appx-releases` Slack channel
     - Create post in Slack and copy text from changelog (if you copy it from the Github release page, the formatting will be preserved when you paste it)
-    - Share to `#realm-releases` channel
+    - Share to `#appx-releases` channel
 - Apply the changelog template: `./scripts/changelog-header.sh`
 - Stage the template: `git add CHANGELOG.md`
 - Commit the template: `git commit -m "Adding changelog template"`
