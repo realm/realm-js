@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+10.19.4 Release notes (2022-7-5)
 =============================================================
 ### Enhancements
 * Allow flexible sync with discard local client resets. ([realm/realm-core#5404](https://github.com/realm/realm-core/pull/5404))
