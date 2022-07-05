@@ -1,4 +1,4 @@
-name: Package Unit Tests
+name: Package Unit Tests!
 
 env:
   REALM_DISABLE_ANALYTICS: 1
