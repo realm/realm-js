@@ -4,8 +4,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed inadvertent change to minimum Android Gradle plugin version ([#4706](https://github.com/realm/realm-js/issues/4706), since v10.19.4)
 
 ### Compatibility
 * Atlas App Services.
