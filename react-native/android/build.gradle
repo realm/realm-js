@@ -57,7 +57,11 @@ android {
     buildTypes {
         debug {
             packagingOptions {
-                jniLibs.keepDebugSymbols += "**/librealm.so"
+                if (com.android.builder.model.Version.ANDROID_GRADLE_PLUGIN_VERSION.compareTo("4.2") >= 0) {
+                    jniLibs.keepDebugSymbols += "**/librealm.so"
+                } else {
+                    doNotStrip "**/librealm.so"
+                }
             }
         }
     }
