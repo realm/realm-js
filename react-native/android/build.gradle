@@ -53,11 +53,13 @@ android {
         compileTask -> compileTask.dependsOn forwardDebugPort
     }
 
-    // Do not strip debug symbols from debug builds of Realm
-    buildTypes {
-        debug {
-            packagingOptions {
-                jniLibs.keepDebugSymbols += "**/librealm.so"
+    if (com.android.builder.model.Version.ANDROID_GRADLE_PLUGIN_VERSION.compareTo("4.2") >= 0) {
+        // Do not strip debug symbols from debug builds of Realm
+        buildTypes {
+            debug {
+                packagingOptions {
+                    jniLibs.keepDebugSymbols += "**/librealm.so"
+                }
             }
         }
     }
