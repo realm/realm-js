@@ -38,8 +38,6 @@
     "types",
     "react-native",
     "scripts",
-    "src",
-    "vendor",
     "dependencies.list",
     "react-native.config.js",
     "RealmJS.podspec",
