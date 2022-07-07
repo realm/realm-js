@@ -9,6 +9,7 @@ Based on Realm JS v10.19.5: See changelog below for details on enhancements and 
   - `realm`: The Realm to create the object in.
   - `values`: Values to pass to the `realm.create` call when creating the object in the database.
 * Renamed the `RealmInsertionModel<T>` type to `Unmanaged<T>` to simplify and highlight its usage.
+* Installing via NPM from a `git://` URL is no longer supported, since we removed `src` and `vendor` from the NPM bundle, to reduce size blow-up caused by files recently added to the sub-module. This will force end-users to checkout the Git repository from GitHub when building from source. ([#4060](https://github.com/realm/realm-js/issues/4060))
 
 ### Enhancements
 * Adding support for Hermes on iOS & Android.
