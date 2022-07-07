@@ -16,23 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import chaiAsPromised from "chai-as-promised";
-import chai from "chai";
-
-chai.use(chaiAsPromised);
-
-import "./realm-constructor";
-import "./serialization";
-import "./objects";
-import "./iterators";
-import "./queries";
-import "./dynamic-schema-updates";
-import "./bson";
-import "./dictionary";
-import "./credentials/anonymous";
-import "./sync/mixed";
-import "./sync/flexible";
-import "./sync/asymmetric";
-import "./sync/sync-as-local";
-import "./transaction";
-import "./sync/client-reset";
+/**
+ * Pause the execution
+ * @param ms time to pause (in milliseconds)
+ * @returns a promise which is resolved when execution can continue
+ */
+export async function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
