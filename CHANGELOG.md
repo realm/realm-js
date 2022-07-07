@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+11.0.0-rc.0 Release notes (2022-7-7)
 =============================================================
 ### Enhancements
 * None.
