@@ -145,6 +145,8 @@ declare namespace Realm {
     enum ClientResetMode {
         Manual = "manual",
         DiscardLocal = "discardLocal",
+        Recover = "recover",
+        RecoverOrDiscard = "recoverOrDiscard",
     }
 
     type ClientResetBeforeCallback = (localRealm: Realm) => void;

@@ -181,9 +181,10 @@ private:
 template <typename T>
 class ClientResetAfterFunctor {
 public:
-    ClientResetAfterFunctor(typename T::Context ctx, typename T::Function after_func)
+    ClientResetAfterFunctor(typename T::Context ctx, typename T::Function after_func, bool ignore_recover)
         : m_ctx(Context<T>::get_global_context(ctx))
         , m_func(ctx, after_func)
+        , m_ignore_recover(ignore_recover)
     {
     }
 
@@ -192,24 +193,28 @@ public:
         return m_func;
     }
 
-    void operator()(SharedRealm before_realm, ThreadSafeReference after_realm_ref, bool)
+    void operator()(SharedRealm before_realm, ThreadSafeReference after_realm_ref, bool did_recover)
     {
         HANDLESCOPE(m_ctx)
 
         SharedRealm after_realm =
             Realm::get_shared_realm(std::move(after_realm_ref), util::Scheduler::make_default());
 
+        const size_t argument_count = m_ignore_recover ? 2 : 3;
+        typename T::Value arguments[argument_count];
 
-        typename T::Value arguments[] = {
-            create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(before_realm)),
-            create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(after_realm)),
-        };
-        Function<T>::callback(m_ctx, m_func, 2, arguments);
+        arguments[0] = create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(before_realm));
+        arguments[1] = create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(after_realm));
+        if (!m_ignore_recover) {
+            arguments[2] = Value<T>::from_boolean(m_ctx, did_recover);
+        }
+        Function<T>::callback(m_ctx, m_func, argument_count, arguments);
     }
 
 private:
     const Protected<typename T::GlobalContext> m_ctx;
     const Protected<typename T::Function> m_func;
+    const bool m_ignore_recover;
 };
 
 template <typename T>
@@ -1032,7 +1037,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                     {"recover", realm::ClientResyncMode::Recover},
                     {"recoverOrDiscard", realm::ClientResyncMode::RecoverOrDiscard}};
                 auto it = client_reset_mode_map.find(client_reset_mode);
-                if (it != client_reset_mode_map.end()) {
+                if (it == client_reset_mode_map.end()) {
                     throw std::invalid_argument(
                         util::format("Unknown argument '%1' for clientReset.mode. Expected "
                                      "'manual', 'discardLocal', 'recover', or 'recoverOrDiscard'",
@@ -1052,7 +1057,9 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             ValueType client_reset_after_value = Object::get_property(ctx, client_reset_object, "clientResetAfter");
             if (!Value::is_undefined(ctx, client_reset_after_value)) {
                 client_reset_after_handler = util::EventLoopDispatcher<void(SharedRealm, ThreadSafeReference, bool)>(
-                    ClientResetAfterFunctor<T>(ctx, Value::validated_to_function(ctx, client_reset_after_value)));
+                    ClientResetAfterFunctor<T>(ctx, Value::validated_to_function(ctx, client_reset_after_value),
+                                               config.sync_config->client_resync_mode ==
+                                                   realm::ClientResyncMode::DiscardLocal));
             }
             config.sync_config->notify_after_client_reset = std::move(client_reset_after_handler);
         }
@@ -1123,35 +1130,34 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
     }
 }
 
-        template <typename T>
-        void SyncClass<T>::populate_sync_config_for_ssl(ContextType ctx, ObjectType config_object,
-                                                        SyncConfig & config)
-        {
-            ValueType validate_ssl = Object::get_property(ctx, config_object, "validate");
-            if (Value::is_boolean(ctx, validate_ssl)) {
-                config.client_validate_ssl = Value::to_boolean(ctx, validate_ssl);
-            }
+template <typename T>
+void SyncClass<T>::populate_sync_config_for_ssl(ContextType ctx, ObjectType config_object, SyncConfig& config)
+{
+    ValueType validate_ssl = Object::get_property(ctx, config_object, "validate");
+    if (Value::is_boolean(ctx, validate_ssl)) {
+        config.client_validate_ssl = Value::to_boolean(ctx, validate_ssl);
+    }
 
-            ValueType certificate_path = Object::get_property(ctx, config_object, "certificatePath");
-            if (Value::is_string(ctx, certificate_path)) {
-                config.ssl_trust_certificate_path = std::string(Value::to_string(ctx, certificate_path));
-            }
+    ValueType certificate_path = Object::get_property(ctx, config_object, "certificatePath");
+    if (Value::is_string(ctx, certificate_path)) {
+        config.ssl_trust_certificate_path = std::string(Value::to_string(ctx, certificate_path));
+    }
 
-            ValueType validate_callback = Object::get_property(ctx, config_object, "validateCallback");
-            if (Value::is_function(ctx, validate_callback)) {
-                config.ssl_verify_callback =
-                    SSLVerifyCallbackSyncThreadFunctor<T>{ctx, Value::to_function(ctx, validate_callback)};
-            }
-        }
+    ValueType validate_callback = Object::get_property(ctx, config_object, "validateCallback");
+    if (Value::is_function(ctx, validate_callback)) {
+        config.ssl_verify_callback =
+            SSLVerifyCallbackSyncThreadFunctor<T>{ctx, Value::to_function(ctx, validate_callback)};
+    }
+}
 
-        template <typename T>
-        void SyncClass<T>::enable_multiplexing(ContextType ctx, ObjectType this_object, Arguments & args,
-                                               ReturnValue & return_value)
-        {
-            args.validate_count(1);
-            auto app = get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"))->m_app;
-            app->sync_manager()->enable_session_multiplexing();
-        }
+template <typename T>
+void SyncClass<T>::enable_multiplexing(ContextType ctx, ObjectType this_object, Arguments& args,
+                                       ReturnValue& return_value)
+{
+    args.validate_count(1);
+    auto app = get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"))->m_app;
+    app->sync_manager()->enable_session_multiplexing();
+}
 
-    } // namespace js
+} // namespace js
 } // namespace realm
