@@ -1,4 +1,4 @@
-x.x.x Release notes (yyyy-MM-dd)
+11.0.0-rc.0 Release notes (2022-7-7)
 =============================================================
 ### Notes
 Based on Realm JS v10.19.5: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.17.0).
