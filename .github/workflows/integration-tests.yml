@@ -248,6 +248,8 @@ jobs:
       # Setup tools
       - name: Install tools
         run: brew install watchman
+      - name: Setup Java
+        run: echo "JAVA_HOME=$JAVA_HOME_11_X64" >> $GITHUB_ENV
 
       # Caches
       - uses: actions/cache@v2
