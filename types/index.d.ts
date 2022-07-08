@@ -150,7 +150,7 @@ declare namespace Realm {
     }
 
     type ClientResetBeforeCallback = (localRealm: Realm) => void;
-    type ClientResetAfterCallback = (localRealm: Realm, remoteRealm: Realm) => void;
+    type ClientResetAfterCallback = (localRealm: Realm, remoteRealm: Realm, didRecover?: boolean) => void;
     interface ClientResetConfiguration<ClientResetModeT = ClientResetMode> {
         mode: ClientResetModeT;
         clientResetBefore?: ClientResetBeforeCallback;

@@ -16,15 +16,65 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { ObjectId } from "bson";
+import { ObjectId, UUID } from "bson";
 import { expect } from "chai";
-import Realm, { BSON, ClientResetMode, SessionStopPolicy } from "realm";
+import Realm, { ClientResetMode, SessionStopPolicy } from "realm";
 import { authenticateUserBefore, importAppBefore } from "../../hooks";
-import { Dog, DogSchema, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
-import { delay } from "../../utils/delay";
-
+import { DogSchema, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { expectClientResetError } from "../../utils/expect-sync-error";
-import { openRealm } from "../../utils/open-realm";
+
+function getPartitionValue() {
+  return new UUID().toHexString();
+}
+
+async function waitClientResetCallbacks(
+  schema: Realm.ObjectSchema[],
+  user: Realm.User,
+  mode: Realm.ClientResetMode,
+  actionBefore: (realm: Realm) => void,
+  actionAfter: (beforeRealm: Realm, afterRealm: Realm, didRecover: boolean) => void,
+): Promise<void> {
+  return new Promise((resolve) => {
+    let afterCalled = false;
+    let beforeCalled = false;
+
+    // Shallow copy the sync configuration to modifying the original
+    const modifiedConfig: Realm.Configuration = {
+      schema,
+      sync: {
+        user,
+        _sessionStopPolicy: SessionStopPolicy.Immediately,
+        partitionValue: getPartitionValue(),
+        clientReset: {
+          mode,
+          clientResetAfter: (before: Realm, after: Realm, recover: boolean) => {
+            afterCalled = true;
+            actionAfter(before, after, recover);
+            if (beforeCalled) {
+              resolve();
+            }
+          },
+          clientResetBefore: (realm: Realm) => {
+            beforeCalled = true;
+            actionBefore(realm);
+            if (afterCalled) {
+              resolve();
+            }
+          },
+        },
+      },
+    };
+
+    const realm = new Realm(modifiedConfig);
+    realm.write(() => {
+      realm.create(DogSchema.name, { _id: new ObjectId(), name: "Rex", age: 2 });
+    });
+    const session = realm.syncSession;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore calling undocumented method _simulateError
+    session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false); // 211 -> diverging histories
+  });
+}
 
 describe.skipIf(environment.missingServer, "client reset handling", function () {
   importAppBefore("with-db");
@@ -36,7 +86,7 @@ describe.skipIf(environment.missingServer, "client reset handling", function () 
         schema: [PersonSchema, DogSchema],
         sync: {
           _sessionStopPolicy: SessionStopPolicy.Immediately,
-          partitionValue: "client-reset-test",
+          partitionValue: getPartitionValue(),
           user: this.user,
           clientReset: {
             mode: ClientResetMode.Manual,
@@ -63,42 +113,33 @@ describe.skipIf(environment.missingServer, "client reset handling", function () 
     // and the two before/after handlers are not called
     // we simulate the failure by error code 132")
 
-    let beforeCalled = false;
-    let afterCalled = false;
-    let errorCalled = false;
-
-    const { config, realm } = await openRealm(
-      {
+    return new Promise((resolve, reject) => {
+      const config = {
         schema: [PersonSchema, DogSchema],
         sync: {
-          partitionValue: "client-reset-test",
+          user: this.user,
+          partitionValue: getPartitionValue(),
           error: () => {
-            errorCalled = true;
+            resolve();
           },
           clientReset: {
             mode: ClientResetMode.DiscardLocal,
             clientResetBefore: () => {
-              beforeCalled = true;
+              reject();
             },
             clientResetAfter: () => {
-              afterCalled = true;
+              reject();
             },
           },
         },
-      },
-      this.user,
-    );
+      };
 
-    const session = realm.syncSession;
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore calling undocumented method _simulateError
-    session._simulateError(132, "Simulate Client Reset", "realm::sync::ProtocolError", true); // 132 -> automatic client reset failed
-
-    await delay(1000);
-
-    expect(beforeCalled).to.be.false;
-    expect(afterCalled).to.be.false;
-    expect(errorCalled).to.be.true;
+      const realm = new Realm(config);
+      const session = realm.syncSession;
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore calling undocumented method _simulateError
+      session._simulateError(132, "Simulate Client Reset", "realm::sync::ProtocolError", true); // 132 -> automatic client reset failed
+    });
   });
 
   it("handles discard local client reset with partition-based sync enabled", async function (this: RealmContext) {
@@ -107,44 +148,40 @@ describe.skipIf(environment.missingServer, "client reset handling", function () 
     // (ii)  two callback will be called, while the sync error handler is not
     // (iii) after the reset, the Realm can be used as before
 
-    let beforeCalled = false;
-    let afterCalled = false;
+    const clientResetBefore = (realm: Realm) => {
+      expect(realm.objects(DogSchema.name).length).to.equal(1);
+    };
+    const clientResetAfter = (beforeRealm: Realm, afterRealm: Realm) => {
+      expect(beforeRealm.objects(DogSchema.name).length).to.equal(1);
+      expect(afterRealm.objects(DogSchema.name).length).to.equal(1);
+    };
 
-    const { config, realm } = await openRealm(
-      {
-        schema: [PersonSchema, DogSchema],
-        sync: {
-          partitionValue: "client-reset-test",
-          clientReset: {
-            mode: ClientResetMode.DiscardLocal,
-            clientResetBefore: (realm) => {
-              beforeCalled = true;
-              expect(realm.objects(DogSchema.name).length).to.equal(1);
-            },
-            clientResetAfter: (beforeRealm, afterRealm) => {
-              afterCalled = true;
-              expect(beforeRealm.objects(DogSchema.name).length).to.equal(1);
-              expect(afterRealm.objects(DogSchema.name).length).to.equal(1);
-            },
-          },
-        },
-      },
+    await waitClientResetCallbacks(
+      [PersonSchema, DogSchema],
       this.user,
+      Realm.ClientResetMode.DiscardLocal,
+      clientResetBefore,
+      clientResetAfter,
     );
+  });
 
-    realm.write(() => {
-      realm.create(DogSchema.name, { _id: new ObjectId(), name: "Lassy", age: 5 });
-    });
+  it("handles client reset with recovery with partition-based sync enabled", async function (this: RealmContext) {
+    const clientResetBefore = (realm: Realm): void => {
+      expect(realm.objects(DogSchema.name).length).to.equal(1);
+    };
+    const clientResetAfter = (beforeRealm: Realm, afterRealm: Realm, didRecover: boolean) => {
+      expect(didRecover).to.be.true;
+      expect(beforeRealm.objects(DogSchema.name).length).to.equal(1);
+      expect(afterRealm.objects(DogSchema.name).length).to.equal(1);
+    };
 
-    const session = realm.syncSession;
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore calling undocumented method _simulateError
-    session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false); // 211 -> diverging histories
-
-    await delay(1000);
-
-    expect(beforeCalled).to.be.true;
-    expect(afterCalled).to.be.true;
-    expect(realm.objects(DogSchema.name).length).to.equal(1);
+    console.log("ClientResetMode", Realm.ClientResetMode);
+    await waitClientResetCallbacks(
+      [PersonSchema, DogSchema],
+      this.user,
+      Realm.ClientResetMode.Recover,
+      clientResetBefore,
+      clientResetAfter,
+    );
   });
 });
