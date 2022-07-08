@@ -232,12 +232,6 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
-            if (nativeArchitectures) {
-                ndk {
-                    abiFilters nativeArchitectures.split(',')
-                }
-            }
-
             // REALM-JS Do not strip debug symbols from the Realm library
             packagingOptions {
                 jniLibs.keepDebugSymbols += "**/librealm.so"
