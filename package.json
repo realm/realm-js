@@ -33,15 +33,12 @@
   "main": "lib/index.js",
   "react-native": "lib/index.native.js",
   "files": [
-    "cmake",
     "lib",
     "types",
     "react-native",
     "scripts",
-    "dependencies.list",
     "react-native.config.js",
-    "RealmJS.podspec",
-    "CMakeLists.txt"
+    "RealmJS.podspec"
   ],
   "scripts": {
     "lerna:bootstrap": "lerna bootstrap",
@@ -52,7 +49,7 @@
     "set-version": "scripts/set-version.sh",
     "test": "scripts/test.sh",
     "package": "npm ci --ignore-scripts && prebuild",
-    "install": "prebuild-install --tag-prefix= -r napi || cmake-js build",
+    "install": "prebuild-install --tag-prefix= -r napi",
     "rebuild": "npm run rebuild-changes",
     "build": "npm run build-changes",
     "build:arm": "npm run build-changes:arm",
