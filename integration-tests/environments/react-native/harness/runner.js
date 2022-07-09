@@ -53,6 +53,8 @@ function ensureSimulator() {
       }
       // Ensure the Realm App Importer is reachable
       android.adb.reverseServerPort(8091);
+      // Ensure a local BaaS is reachable
+      android.adb.reverseServerPort(9090);
     }
   } else if (PLATFORM === "ios") {
     const version = xcode.xcrun("--version").stdout.trim();
