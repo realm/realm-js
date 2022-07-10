@@ -78,7 +78,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ fallback: Fallback, 
  * logging out, switching user).
  *
  */
-export const useUser = (): Realm.User | null => {
+export function useUser<F = Realm.DefaultFunctionsFactory, C = SimpleObject, U = Realm.DefaultUserProfileData>(): Realm.User<F, C, U> | null {
   const user = useContext(UserContext);
 
   return user;
