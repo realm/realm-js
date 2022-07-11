@@ -225,7 +225,38 @@ const go = async () => {
 
   user = await app.logIn(Realm.Credentials.anonymous());
   // describeTypes(false);
-  describeTypes(true);
+  // describeTypes(true);
+
+  const config = {
+    schema: [
+      {
+        name: "MixedClass",
+        primaryKey: "_id",
+        properties: {
+          _id: "objectId",
+          value: "mixed?",
+          list: "mixed[]",
+        },
+      },
+    ],
+    sync: { user, flexible: true },
+  };
+  log("opening realm...");
+  let realm = await Realm.open(config);
+  log("opened realm...");
+
+  log("waiting for sync");
+  log("setupTest: before update");
+  realm.subscriptions.update((mutableSubs) => {
+    log("doing update");
+
+    mutableSubs.add(realm.objects("MixedClass"));
+  });
+  log("waiting for sync after update");
+
+  await realm.subscriptions.waitForSynchronization();
+  log("setupTest: sync done");
+  log("synced");
 };
 
 export const App = () => {
