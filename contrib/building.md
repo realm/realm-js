@@ -84,13 +84,12 @@ brew install cocoapods cmake
 
 #### Android
 
-First, install OpenJDK 8 (later versions are not compatible with the project and with Android's `sdkmanager` tool):
+First, install OpenJDK:
 
 ```sh
-brew tap AdoptOpenJDK/openjdk
-brew install --cask adoptopenjdk8
+brew install --cask temurin
 
-# Check this returns: openjdk version "1.8.0_292".
+# Check this returns: openjdk version "18.0.1" 2022-04-19
 # If not, check if you have a JAVA_HOME environment variable set pointing elsewhere.
 java -version
 ```
@@ -113,6 +112,7 @@ export ANDROID_AVD_HOME=$HOME/.android/avd
 # Add the Android SDK tools to your PATH
 export PATH=$PATH:$ANDROID_SDK_ROOT/tools/bin
 export PATH=$PATH:$ANDROID_SDK_ROOT/platform-tools
+export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin
 ```
 
 Then you can install the SDK, NDK and CMake by running: (you can alternatively do this via **Tools > SDK Manager** in Android Studio)
