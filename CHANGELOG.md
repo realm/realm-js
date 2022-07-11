@@ -1,13 +1,17 @@
-x.x.x Release notes (yyyy-MM-dd)
+11.0.0-rc.1 Release notes (2022-7-11)
 =============================================================
+### Notes
+This is primarily a re-release of `11.0.0-rc.0`, which is compatible with React Native v0.69.0 or above.
+The release is based on Realm JS v10.19.5.
+
 ### Enhancements
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * None.
 
 ### Compatibility
+* React Native equal to or above `v0.69.0` and above, since we're shipping binaries pre-compiled against the JSI ABI.
 * Atlas App Services.
 * Realm Studio v12.0.0.
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
@@ -57,6 +61,7 @@ realm.write(() => {
 * Fixed build error (call to implicitly-deleted copy constructor of 'realm::js::RealmClass<realm::js::realmjsi::Types>::Arguments') (follow up to [#4568](https://github.com/realm/realm-js/pull/4568))
 
 ### Compatibility
+* React Native equal to or above `v0.66.0` and below `v0.69.0` (not included), since we're shipping binaries pre-compiled against the JSI ABI.
 * Atlas App Services.
 * Realm Studio v12.0.0.
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
