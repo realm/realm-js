@@ -31,6 +31,18 @@ let user;
 function defaultTester(actual, inserted) {
   expect(actual).equals(inserted);
 }
+
+function log(...args) {
+  console.log("");
+  console.log("");
+  console.log("");
+  console.log("----------");
+  console.log(...args);
+  console.log("----------");
+  console.log("");
+  console.log("");
+  console.log("");
+}
 /**
  * Registers a test suite that:
  * - Opens a synced Realm
@@ -51,19 +63,20 @@ async function describeRoundtrip({ typeName, value, testValue = defaultTester, f
   }
   async function setupTest(realm) {
     if (flexibleSync) {
-      console.log("start update");
+      log("setupTest: before update");
       realm.subscriptions.update((mutableSubs) => {
-        console.log("do update");
+        log("doing update");
 
         mutableSubs.add(realm.objects("MixedClass"));
       });
-      console.log("wait for sync");
+      log("waiting for sync after update");
 
       await realm.subscriptions.waitForSynchronization();
-      console.log("sync done");
+      log("setupTest: sync done");
     }
   }
-  console.log(`roundtrip of '${typeName}'`);
+  log(`roundtrip of '${typeName}'`);
+
   const config = {
     schema: [
       {
@@ -78,13 +91,13 @@ async function describeRoundtrip({ typeName, value, testValue = defaultTester, f
     ],
     sync: { user, ...(flexibleSync ? { flexible: true } : { partitionValue: "mixed-test" }) },
   };
-  console.log("opening realm...");
+  log("opening realm...");
   let realm = await Realm.open(config);
-  console.log("opened realm...");
+  log("opened realm...");
 
-  console.log("writes");
+  log("setting up sub");
   await setupTest(realm);
-  console.log("writes2");
+  log("starting write");
   const stuff = {};
   stuff._id = new Realm.BSON.ObjectId();
   realm.write(() => {
@@ -97,22 +110,22 @@ async function describeRoundtrip({ typeName, value, testValue = defaultTester, f
     });
   });
 
-  console.log("upload");
+  log("upload");
   await realm.syncSession.uploadAllLocalChanges();
 
-  console.log("close");
+  log("close");
   realm.close();
   Realm.deleteFile(config);
 
-  console.log("re-open");
+  log("re-open");
   realm = await Realm.open(config);
 
   // itUploadsDeletesAndDownloads();
-  console.log("reads");
+  log("reads");
   await setupTest(realm);
   const obj = realm.objectForPrimaryKey("MixedClass", stuff._id);
   if (!obj) throw new Error("Object not found");
-  console.log({ obj });
+  log({ obj });
   // expect(typeof obj).equals("object");
   // // Test the single value
   // performTest(obj.value, this.value);
@@ -124,7 +137,7 @@ async function describeRoundtrip({ typeName, value, testValue = defaultTester, f
   // delete this._id;
   // delete this.value;
 
-  console.log("close2");
+  log("close2");
   realm.close();
   Realm.deleteFile(config);
 }
@@ -197,17 +210,18 @@ async function describeTypes(flexibleSync) {
 }
 const go = async () => {
   const appId = (await importApp("with-db-flx", {}, "all")).id;
+  log(`using app ${appId}`);
   const app = new Realm.App(appId);
 
-  console.log("waiting 10 secs after app creation");
+  log("waiting 10 secs after app creation");
   await new Promise((resolve) => setTimeout(resolve, 10000));
-  console.log("wait done after app creation");
+  log("wait done after app creation");
 
   Realm.App.Sync.setLogger(app, (level, message) => {
     const date = new Date();
     console.log(date.toString(), date.getMilliseconds(), level, message);
   });
-  // Realm.App.Sync.setLogLevel(app, "all");
+  Realm.App.Sync.setLogLevel(app, "all");
 
   user = await app.logIn(Realm.Credentials.anonymous());
   // describeTypes(false);
