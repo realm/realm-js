@@ -1,9 +1,8 @@
 {
-    "app_id": "pv-string-tests-mjpik",
+    "app_id": "pv-string-tests-zqtfj",
     "config_version": 20200603,
     "name": "pv-string-tests",
     "location": "US-VA",
-    "provider_region": "aws-us-east-1",
     "deployment_model": "GLOBAL",
     "security": {},
     "custom_user_data_config": {
