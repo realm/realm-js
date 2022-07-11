@@ -76,11 +76,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children, appRef, ...a
  *
  * @throws if an AppProvider does not exist in the component’s ancestors
  */
-export const useApp = <F = Realm.DefaultFunctionsFactory, C = SimpleObject>(): Realm.App<F, C> => {
+export const useApp = <FunctionsFactoryType extends Realm.DefaultFunctionsFactory, CustomDataType extends SimpleObject>(): Realm.App<FunctionsFactoryType, CustomDataType> => {
   const app = useContext(AppContext);
 
   if (app === null) {
     throw new Error("AppContext not found.  Did you wrap your app in AppProvider?");
   }
-  return app;
+  return app as Realm.App<FunctionsFactoryType, CustomDataType>;
 };
