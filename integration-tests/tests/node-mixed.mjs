@@ -15,11 +15,8 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import { expect } from "chai";
-import { Text, View } from "react-native";
-import React, { useEffect } from "react";
 import Realm from "realm";
-import { importApp } from "../../../tests/dist/utils/import-app";
+import { importApp } from "./dist/utils/import-app.js";
 // import { authenticateUserBefore } from "../../hooks";
 let user;
 
@@ -179,21 +176,21 @@ async function describeTypes(flexibleSync) {
     flexibleSync,
   });
   const recursiveObjectId = new Realm.BSON.ObjectId();
-  await describeRoundtrip({
-    typeName: "object link",
-    value: (realm) => {
-      // Create an object
-      const result = realm.create("MixedClass", {
-        _id: recursiveObjectId,
-        value: null,
-      });
-      // Make it recursive
-      result.value = result;
-      return result;
-    },
-    testValue: (value) => recursiveObjectId.equals(value._id),
-    flexibleSync,
-  });
+  // await describeRoundtrip({
+  //   typeName: "object link",
+  //   value: (realm) => {
+  //     // Create an object
+  //     const result = realm.create("MixedClass", {
+  //       _id: recursiveObjectId,
+  //       value: null,
+  //     });
+  //     // Make it recursive
+  //     result.value = result;
+  //     return result;
+  //   },
+  //   testValue: (value) => recursiveObjectId.equals(value._id),
+  //   flexibleSync,
+  // });
 }
 const go = async () => {
   const appId = (await importApp("with-db-flx", {}, "all")).id;
@@ -211,20 +208,11 @@ const go = async () => {
 
   user = await app.logIn(Realm.Credentials.anonymous());
   // describeTypes(false);
-  describeTypes(true);
+  await describeTypes(true);
+  console.timeLog("done");
 };
 
-export const App = () => {
-  useEffect(() => {
-    go();
-  }, []);
-
-  return (
-    <View>
-      <Text>Hello</Text>
-    </View>
-  );
-};
+go();
 
 // describe.skipIf(environment.missingServer, "mixed", () => {
 //   describe("parition-based sync", function () {
