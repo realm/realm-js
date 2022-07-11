@@ -27,7 +27,7 @@ target_compile_definitions(realm-js-android PRIVATE
 )
 
 # Extract .so files from the React Native AAR
-file(GLOB_RECURSE REACT_NATIVE_AAR_FILE ${REACT_NATIVE_ROOT_DIR}/android/*/react-native-*.aar)
+file(GLOB_RECURSE REACT_NATIVE_AAR_FILE ${REACT_NATIVE_ROOT_DIR}/android/*/react-native-*-release.aar)
 file(ARCHIVE_EXTRACT INPUT ${REACT_NATIVE_AAR_FILE} DESTINATION ${REACT_NATIVE_AAR_DIR})
 set(REACT_NATIVE_SO_DIR "${REACT_NATIVE_AAR_DIR}/jni/${ANDROID_ABI}")
 
