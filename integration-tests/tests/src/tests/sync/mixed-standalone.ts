@@ -15,6 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+// @ts-nocheck
 import { expect } from "chai";
 import Realm from "realm";
 

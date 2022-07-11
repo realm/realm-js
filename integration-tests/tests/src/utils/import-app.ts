@@ -15,6 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+// @ts-nocheck
 import { App } from "realm";
 
 import { fetch } from "./fetch";
