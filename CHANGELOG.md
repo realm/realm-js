@@ -17,9 +17,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Upgrading `react-native-fs` to avoid a peer dependency failure. ([#4709](https://github.com/realm/realm-js/pull/4709))
 * Upgraded React Native integration tests app to React Native v0.68.2. ([#4583](https://github.com/realm/realm-js/pull/4583))
 * Upgraded React Native integration tests app to React Native v0.69.1. ([#4713](https://github.com/realm/realm-js/pull/4713))
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Fixed a crash on Android when an error was thrown from the flexible sync `initialSubscriptions` call ([#4710](https://github.com/realm/realm-js/pull/4710), since v10.18.0)
 
 10.19.5 Release notes (2022-7-6)
 =============================================================

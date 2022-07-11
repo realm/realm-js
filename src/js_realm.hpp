@@ -1170,7 +1170,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
             handle_initial_subscriptions(protected_ctx, args.count - 1, &unprotected_args, realm, realm_exists);
         }
         catch (TypeErrorException e) {
-            auto error = Object::create_error(ctx, e.what());
+            auto error = Object::create_error(protected_ctx, e.what());
             Function<T>::callback(protected_ctx, protected_callback, {Value::from_undefined(protected_ctx), error});
         }
 
