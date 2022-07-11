@@ -209,7 +209,7 @@ const go = async () => {
   user = await app.logIn(Realm.Credentials.anonymous());
   // describeTypes(false);
   await describeTypes(true);
-  console.timeLog("done");
+  console.log("done");
 };
 
 go();
