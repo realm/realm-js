@@ -1,8 +1,9 @@
 {
-    "app_id": "pv-int-tests-bcfph",
+    "app_id": "pv-int-tests-udndd",
     "config_version": 20200603,
     "name": "pv-int-tests",
     "location": "US-VA",
+    "provider_region": "aws-us-east-1",
     "deployment_model": "GLOBAL",
     "security": {},
     "custom_user_data_config": {

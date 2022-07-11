@@ -1,8 +1,9 @@
 {
-    "app_id": "pv-objectid-tests-ykrmm",
+    "app_id": "pv-objectid-tests-crate",
     "config_version": 20200603,
     "name": "pv-objectid-tests",
     "location": "US-VA",
+    "provider_region": "aws-us-east-1",
     "deployment_model": "GLOBAL",
     "security": {},
     "custom_user_data_config": {

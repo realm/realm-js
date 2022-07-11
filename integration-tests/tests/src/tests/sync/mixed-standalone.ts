@@ -16,21 +16,32 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { expect } from "chai";
-import { Text, View } from "react-native";
-import React, { useEffect } from "react";
 import Realm from "realm";
-import { importApp } from "../../../tests/dist/utils/import-app";
-// import { authenticateUserBefore } from "../../hooks";
+
+import { importAppBefore, authenticateUserBefore, openRealmBefore } from "../../hooks";
+import { importApp } from "../../utils/import-app";
+
+import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
+
 let user;
+
+type MixedClass = {
+  _id: Realm.BSON.ObjectId;
+  value: Realm.Mixed;
+  list: Realm.List<Realm.Mixed>;
+};
+type Value = Realm.Mixed | ((realm: Realm) => Realm.Mixed);
+type ValueTester = (actual: Realm.Mixed, inserted: Realm.Mixed) => void | boolean;
 
 /**
  * The default tester of values.
  * @param actual The value downloaded from the server.
  * @param inserted The value inserted locally before upload.
  */
-function defaultTester(actual, inserted) {
+function defaultTester(actual: Realm.Mixed, inserted: Realm.Mixed) {
   expect(actual).equals(inserted);
 }
+
 /**
  * Registers a test suite that:
  * - Opens a synced Realm
@@ -42,27 +53,33 @@ function defaultTester(actual, inserted) {
  * @param typeName
  * @param options
  */
-async function describeRoundtrip({ typeName, value, testValue = defaultTester, flexibleSync }) {
-  function performTest(actual, inserted) {
+async function describeRoundtrip({
+  typeName,
+  value,
+  testValue = defaultTester,
+  flexibleSync,
+}: {
+  typeName: string;
+  value: Value;
+  testValue?: ValueTester;
+  flexibleSync: boolean;
+}) {
+  function performTest(actual: Realm.Mixed, inserted: Realm.Mixed) {
     const result = testValue(actual, inserted);
     if (typeof result === "boolean") {
       expect(result).equals(true, `${testValue} failed!`);
     }
   }
-  async function setupTest(realm) {
-    if (flexibleSync) {
-      console.log("start update");
-      realm.subscriptions.update((mutableSubs) => {
-        console.log("do update");
 
+  async function setupTest(realm: Realm) {
+    if (flexibleSync) {
+      await realm.subscriptions.update((mutableSubs) => {
         mutableSubs.add(realm.objects("MixedClass"));
       });
-      console.log("wait for sync");
-
       await realm.subscriptions.waitForSynchronization();
-      console.log("sync done");
     }
   }
+
   console.log(`roundtrip of '${typeName}'`);
   const config = {
     schema: [
@@ -76,20 +93,20 @@ async function describeRoundtrip({ typeName, value, testValue = defaultTester, f
         },
       },
     ],
-    sync: { user, ...(flexibleSync ? { flexible: true } : { partitionValue: "mixed-test" }) },
+    sync: { ...user, ...(flexibleSync ? { flexible: true } : { partitionValue: "mixed-test" }) },
   };
-  console.log("opening realm...");
+
   let realm = await Realm.open(config);
-  console.log("opened realm...");
 
   console.log("writes");
   await setupTest(realm);
-  console.log("writes2");
+
   const stuff = {};
+
   stuff._id = new Realm.BSON.ObjectId();
   realm.write(() => {
     stuff.value = typeof value === "function" ? value(this.realm) : value;
-    realm.create("MixedClass", {
+    stuff.realm.create<MixedClass>("MixedClass", {
       _id: stuff._id,
       value: stuff.value,
       // Adding a few other unrelated elements to the list
@@ -97,22 +114,20 @@ async function describeRoundtrip({ typeName, value, testValue = defaultTester, f
     });
   });
 
-  console.log("upload");
   await realm.syncSession.uploadAllLocalChanges();
-
-  console.log("close");
   realm.close();
   Realm.deleteFile(config);
 
-  console.log("re-open");
   realm = await Realm.open(config);
 
   // itUploadsDeletesAndDownloads();
+
   console.log("reads");
   await setupTest(realm);
-  const obj = realm.objectForPrimaryKey("MixedClass", stuff._id);
+
+  const obj = realm.objectForPrimaryKey<MixedClass>("MixedClass", this._id);
   if (!obj) throw new Error("Object not found");
-  console.log({ obj });
+
   // expect(typeof obj).equals("object");
   // // Test the single value
   // performTest(obj.value, this.value);
@@ -123,67 +138,76 @@ async function describeRoundtrip({ typeName, value, testValue = defaultTester, f
   // // No need to keep these around
   // delete this._id;
   // delete this.value;
-
-  console.log("close2");
-  realm.close();
-  Realm.deleteFile(config);
 }
-async function describeTypes(flexibleSync) {
-  // authenticateUserBefore();
-  await describeRoundtrip({ typeName: "null", value: null, flexibleSync });
+
+function describeTypes(flexibleSync: boolean) {
+  authenticateUserBefore();
+
+  describeRoundtrip({ typeName: "null", value: null, flexibleSync });
+
   // TODO: Provide an API to speficy storing this as an int
-  await describeRoundtrip({ typeName: "int", value: 123, flexibleSync });
+  describeRoundtrip({ typeName: "int", value: 123, flexibleSync });
+
   // TODO: Provide an API to specify which of these to store
-  await describeRoundtrip({ typeName: "float / double", value: 123.456, flexibleSync });
-  await describeRoundtrip({ typeName: "bool (true)", value: true, flexibleSync });
-  await describeRoundtrip({ typeName: "bool (false)", value: false, flexibleSync });
-  await describeRoundtrip({ typeName: "string", value: "test-string", flexibleSync });
+  describeRoundtrip({ typeName: "float / double", value: 123.456, flexibleSync });
+
+  describeRoundtrip({ typeName: "bool (true)", value: true, flexibleSync });
+  describeRoundtrip({ typeName: "bool (false)", value: false, flexibleSync });
+
+  describeRoundtrip({ typeName: "string", value: "test-string", flexibleSync });
+
   // Unsupported:
   // describeSimpleRoundtrip("undefined", undefined);
+
   const buffer = new Uint8Array([4, 8, 12, 16]).buffer;
-  await describeRoundtrip({
+  describeRoundtrip({
     typeName: "data",
     value: buffer,
-    testValue: (value) => {
+    testValue: (value: ArrayBuffer) => {
       expect(value.byteLength).equals(4);
       expect([...new Uint8Array(value)]).deep.equals([4, 8, 12, 16]);
     },
     flexibleSync,
   });
+
   const date = new Date(1620768552979);
-  await describeRoundtrip({
+  describeRoundtrip({
     typeName: "date",
     value: date,
-    testValue: (value) => value.getTime() === date.getTime(),
+    testValue: (value: Date) => value.getTime() === date.getTime(),
     flexibleSync,
   });
+
   const objectId = new Realm.BSON.ObjectId("609afc1290a3c1818f04635e");
-  await describeRoundtrip({
+  describeRoundtrip({
     typeName: "ObjectId",
     value: objectId,
-    testValue: (value) => objectId.equals(value),
+    testValue: (value: Realm.BSON.ObjectId) => objectId.equals(value),
     flexibleSync,
   });
+
   const uuid = new Realm.BSON.UUID("9476a497-60ef-4439-bc8a-52b8ad0d4875");
-  await describeRoundtrip({
+  describeRoundtrip({
     typeName: "UUID",
     value: uuid,
-    testValue: (value) => uuid.equals(value),
+    testValue: (value: Realm.BSON.UUID) => uuid.equals(value),
     flexibleSync,
   });
+
   const decimal128 = Realm.BSON.Decimal128.fromString("1234.5678");
-  await describeRoundtrip({
+  describeRoundtrip({
     typeName: "Decimal128",
     value: decimal128,
-    testValue: (value) => decimal128.bytes.equals(value.bytes),
+    testValue: (value: Realm.BSON.Decimal128) => decimal128.bytes.equals(value.bytes),
     flexibleSync,
   });
+
   const recursiveObjectId = new Realm.BSON.ObjectId();
-  await describeRoundtrip({
+  describeRoundtrip({
     typeName: "object link",
-    value: (realm) => {
+    value: (realm: Realm) => {
       // Create an object
-      const result = realm.create("MixedClass", {
+      const result = realm.create<MixedClass>("MixedClass", {
         _id: recursiveObjectId,
         value: null,
       });
@@ -191,35 +215,18 @@ async function describeTypes(flexibleSync) {
       result.value = result;
       return result;
     },
-    testValue: (value) => recursiveObjectId.equals(value._id),
+    testValue: (value: MixedClass) => recursiveObjectId.equals(value._id),
     flexibleSync,
   });
 }
+
 const go = async () => {
   const appId = (await importApp("with-db-flx", {}, "all")).id;
   const app = new Realm.App(appId);
-
-  Realm.App.Sync.setLogger(app, (level, message) => {
-    const date = new Date();
-    console.log(date.toString(), date.getMilliseconds(), level, message);
-  });
-  Realm.App.Sync.setLogLevel(app, "all");
-
   user = await app.logIn(Realm.Credentials.anonymous());
-  // describeTypes(false);
+
+  describeTypes(false);
   describeTypes(true);
-};
-
-export const App = () => {
-  useEffect(() => {
-    go();
-  }, []);
-
-  return (
-    <View>
-      <Text>Hello</Text>
-    </View>
-  );
 };
 
 // describe.skipIf(environment.missingServer, "mixed", () => {
@@ -227,6 +234,7 @@ export const App = () => {
 //     importAppBefore("with-db");
 //     describeTypes(false);
 //   });
+
 //   describe("flexible sync", function () {
 //     importAppBefore("with-db-flx");
 // describeTypes(true);

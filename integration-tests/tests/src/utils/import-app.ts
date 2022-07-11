@@ -26,7 +26,7 @@ export type Response = ImportResponse | ErrorResponse;
 
 function getUrls() {
   // Try reading the app importer URL out of the environment, it might not be accessiable via localhost
-  const { appImporterUrl, realmBaseUrl } = environment;
+  const { appImporterUrl, realmBaseUrl } = {};
   return {
     appImporterUrl: typeof appImporterUrl === "string" ? appImporterUrl : "http://localhost:8091",
     baseUrl: typeof realmBaseUrl === "string" ? realmBaseUrl : "http://localhost:9090",
@@ -35,7 +35,7 @@ function getUrls() {
 
 export function getDefaultReplacements(name: string): TemplateReplacements {
   // When running on CI we connect through mongodb-atlas instead of local-mongodb
-  const { mongodbClusterName } = environment;
+  const { mongodbClusterName } = {};
   if ((name === "with-db" || name === "with-db-flx") && typeof mongodbClusterName === "string") {
     return {
       "services/mongodb/config.json": {
