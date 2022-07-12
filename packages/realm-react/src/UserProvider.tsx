@@ -81,7 +81,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ fallback: Fallback, 
 export const useUser = <
   FunctionsFactoryType extends Realm.DefaultFunctionsFactory,
   CustomDataType extends SimpleObject,
-  UserProfileDataType extends Realm.DefaultUserProfileData,
+  UserProfileDataType extends Realm.DefaultUserProfileData
 >(): Realm.User<FunctionsFactoryType, CustomDataType, UserProfileDataType> | null => {
   const user = useContext(UserContext);
 
