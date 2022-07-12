@@ -487,6 +487,11 @@ void SubscriptionSetClass<T>::wait_for_synchronization_impl(ContextType ctx, Obj
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(js::Context<T>::get_global_context(ctx));
 
+    auto result = Value::from_undefined(protected_ctx);
+
+// this does get called on android
+    // Function<T>::callback(protected_ctx, protected_callback, protected_this, {result});
+
     auto subs = get_internal<T, SubscriptionSetClass<T>>(protected_ctx, protected_this);
 
     // Hold a weak_ptr to the SyncSession, so we can check if it still exists when our callback fires
@@ -508,6 +513,7 @@ void SubscriptionSetClass<T>::wait_for_synchronization_impl(ContextType ctx, Obj
                 auto result = state.is_ok() ? Value::from_undefined(protected_ctx)
                                             : Object::create_error(protected_ctx, state.get_status().reason());
 
+// This is not being called on android
                 Function<T>::callback(protected_ctx, protected_callback, protected_this, {result});
             }
             else {
