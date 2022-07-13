@@ -7,11 +7,11 @@
 #define TIMEOUT_SECONDS 600
 #define TEXT_TO_LOOK_FOR @"Welcome to React"
 
-@interface RealmTsTemplateTests : XCTestCase
+@interface RealmExampleTests : XCTestCase
 
 @end
 
-@implementation RealmTsTemplateTests
+@implementation RealmExampleTests
 
 - (BOOL)findSubviewInView:(UIView *)view matching:(BOOL (^)(UIView *view))test
 {
