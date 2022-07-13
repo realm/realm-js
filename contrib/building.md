@@ -367,3 +367,4 @@ If you add a new JNI method to [`RealmReactModule.java`](https://github.com/real
 3. Change to the `react-native/android/src/main/java` directory in your Realm JS checkout
 4. Run `javac -h ../../../../../src/android/ -classpath <CLASSPATH_STRING> io/realm/react/RealmReactModule.java`, replacing `<CLASSPATH_STRING>` with the string you built up in step 2
 5. Change to the Realm JS root and copy the header to the other location where it is needed with `cp src/android/io_realm_react_RealmReactModule.h react-native/android/src/main/java/`
+6. Delete the `.class` files that the `javac` command created
