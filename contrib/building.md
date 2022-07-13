@@ -34,6 +34,7 @@
    * [Testing against real apps](#testing-against-real-apps)
    * [Debugging](#debugging)
       * [Debugging failing Github Actions CI tests](#debugging-failing-github-actions-ci-tests)
+   * [Updating the Android JNI headers](#updating-the-android-jni-headers)
 <!--te-->
 
 ## Pre-Requisites
@@ -350,3 +351,18 @@ The relevant snippet is:
   timeout-minutes: 30
 ```
 
+## Updating the Android JNI headers
+
+If you add a new JNI method to [`RealmReactModule.java`](https://github.com/realm/realm-js/blob/master/react-native/android/src/main/java/io/realm/react/RealmReactModule.java), you will need to regenerate the auto-generated [header file](https://github.com/realm/realm-js/blob/master/src/android/io_realm_react_RealmReactModule.h).
+
+1. First you need to find some classpaths required to generate the header. In a terminal, `cd ~/.gradle/caches` and then run:
+    1. `find "$(pwd -P)" -name "jetified-react-native-0.69.1-debug" -exec find {} -name "classes.jar" \;`
+    2. `find "$(pwd -P)" -name "jetified-soloader-0.10.3" -exec find {} -name "classes.jar" \;`
+    3. `find "$(pwd -P)" -name "nanohttpd-2.2.0.jar"`
+2. Build up a classpath string (e.g. in the terminal or in a text editor):
+    1. Start with `~/Library/Android/sdk/platforms/android-31/android.jar`
+    2. Add the first result for each of the above find commands to this string, separated by a `:`.
+
+    You should end up with something like: `~/Library/Android/sdk/platforms/android-31/android.jar:~/.gradle/caches/transforms-3/7d342974325594036ab59618107595df/transformed/jetified-react-native-0.69.1-debug/jars/classes.jar:~/.gradle/caches/transforms-3/6c67d7687cdaa9b6d194c80ea9a580e2/transformed/jetified-soloader-0.10.3/jars/classes.jar:~/.gradle/caches/modules-2/files-2.1/org.nanohttpd/nanohttpd/2.2.0/73a02117620b6cc7683a1ed6ae24c2f36e2a715/nanohttpd-2.2.0.jar`
+3. Change to the `react-native/android/src/main/java` directory in your Realm JS checkout
+4. Run `javac -h ../../../../../src/android/ -classpath <CLASSPATH_STRING> io/realm/react/RealmReactModule.java`, replacing `<CLASSPATH_STRING>` with the string you built up in step 2
