@@ -71,6 +71,7 @@ function getLinkedDependencies(packagePath, exclude = new Set()) {
 }
 
 function build(projectRoot, moreExtraNodeModules = {}) {
+  const rootPackageJson = readJson(projectRoot, "package.json");
   const linkedDependencies = getLinkedDependencies(projectRoot);
   console.log(`Linked dependencies: ${linkedDependencies.map(({ name }) => name).join(", ")}`);
 
@@ -82,7 +83,12 @@ function build(projectRoot, moreExtraNodeModules = {}) {
     blockedPaths.push(path.join(projectRoot, "node_modules", pkg.name));
     // Block any peer dependencies of the links
     blockedPaths.push(...pkg.peerDependencies.map((peer) => path.join(pkg.path, "node_modules", peer)));
+    // Block any dependency provided by the root
+    // NOTE: This is a bit too aggressive, since the link dep's dependency might mismatch in version
+    const rootDependencyNames = Object.keys(rootPackageJson.dependencies);
+    blockedPaths.push(...rootDependencyNames.map((dep) => path.join(pkg.path, "node_modules", dep)));
   }
+
   // Turn paths into regular expressions
   const blockList = blockedPaths.map((pkgPath) => new RegExp(`^${escape(pkgPath)}\\/.*$`));
 
