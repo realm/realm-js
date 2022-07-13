@@ -366,5 +366,4 @@ If you add a new JNI method to [`RealmReactModule.java`](https://github.com/real
     You should end up with something like: `~/Library/Android/sdk/platforms/android-31/android.jar:~/.gradle/caches/transforms-3/7d342974325594036ab59618107595df/transformed/jetified-react-native-0.69.1-debug/jars/classes.jar:~/.gradle/caches/transforms-3/6c67d7687cdaa9b6d194c80ea9a580e2/transformed/jetified-soloader-0.10.3/jars/classes.jar:~/.gradle/caches/modules-2/files-2.1/org.nanohttpd/nanohttpd/2.2.0/73a02117620b6cc7683a1ed6ae24c2f36e2a715/nanohttpd-2.2.0.jar`
 3. Change to the `react-native/android/src/main/java` directory in your Realm JS checkout
 4. Run `javac -h ../../../../../src/android/ -classpath <CLASSPATH_STRING> io/realm/react/RealmReactModule.java`, replacing `<CLASSPATH_STRING>` with the string you built up in step 2
-5. Change to the Realm JS root and copy the header to the other location where it is needed with `cp src/android/io_realm_react_RealmReactModule.h react-native/android/src/main/java/`
-6. Delete the `.class` files that the `javac` command created
+5. Delete the `.class` files that the `javac` command created
