@@ -39,7 +39,7 @@ jclass ssl_helper_class;
 namespace realm {
 // set the AssetManager used to access bundled files within the APK
 void set_asset_manager(AAssetManager* assetManager);
-// Keep track of whether we are already waiting for the React Native UI queue 
+// Keep track of whether we are already waiting for the React Native UI queue
 // to be flushed asynchronously
 bool waiting_for_ui_flush = false;
 } // namespace realm
