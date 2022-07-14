@@ -167,7 +167,7 @@ JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setupFlushUiQueue(JN
     // 4. Cast the mNativePointer back to its C++ type
     auto nativePointer = reinterpret_cast<facebook::react::CallInvokerHolder*>(nativePointerValue);
 
-    realm::js::flush_ui_queue = [=]() {
+    realm::js::flush_ui_queue = [&, nativePointer]() {
         if (!realm::waiting_for_ui_flush) {
             realm::waiting_for_ui_flush = true;
             nativePointer->getCallInvoker()->invokeAsync([]() {
