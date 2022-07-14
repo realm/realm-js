@@ -24,6 +24,7 @@ import android.util.Log;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
+import com.facebook.react.turbomodule.core.CallInvokerHolderImpl;
 import com.facebook.soloader.SoLoader;
 
 import java.io.IOException;
@@ -79,6 +80,15 @@ class RealmReactModule extends ReactContextBaseJavaModule {
         }
 
         setDefaultRealmFileDirectory(fileDir, assetManager);
+    }
+
+    @Override
+    public void initialize() {
+        // Pass the React Native jsCallInvokerHolder over to C++, so that we can access the invokeAsync
+        // method which we use to flush the React Native UI queue whenever we call from C++ to JS.
+        // See RealmReact.mm's setBridge method for details, this is the equivalent for Android.
+        CallInvokerHolderImpl jsCallInvokerHolder = (CallInvokerHolderImpl) getReactApplicationContext().getCatalystInstance().getJSCallInvokerHolder();
+        setupFlushUiQueue(jsCallInvokerHolder);
     }
 
     @Override
@@ -243,4 +253,7 @@ class RealmReactModule extends ReactContextBaseJavaModule {
 
     // this receives one command from Chrome debug then return the processing we should post back
     private native boolean tryRunTask();
+
+    // Passes the React Native jsCallInvokerHolder over to C++ so we can setup our UI queue flushing
+    private native void setupFlushUiQueue(CallInvokerHolderImpl callInvoker);
 }

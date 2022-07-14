@@ -20,6 +20,7 @@
 
 #include "jsc_types.hpp"
 #include "jsc_function.hpp"
+#include "jsc_externs.hpp"
 
 #include "js_class.hpp"
 #include "js_util.hpp"
