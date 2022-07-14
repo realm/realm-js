@@ -1,22 +1,8 @@
-x.x.x Release notes (yyyy-MM-dd)
+0.3.2 Release notes (2022-07-14)
 =============================================================
-### Enhancements
-* None.
-
 ### Fixed
 * Fix peer dependency for Realm in package.json to support `-rc` branches of Realm ([#4621](https://github.com/realm/realm-js/issues/4621))
 * Add generic type parameters to `@realm/react` hooks ([#4716](https://github.com/realm/realm-js/pull/4716))
-
-### Compatibility
-* Atlas App Services.
-* Realm Studio v11.0.0.
-* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
-* File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
-
-### Internal
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
 
 # 0.3.1 Release notes (2022-05-31)
 
