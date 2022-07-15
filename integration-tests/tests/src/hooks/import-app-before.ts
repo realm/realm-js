@@ -34,11 +34,12 @@ export function importAppBefore(
       Realm.App.Sync.setLogLevel(this.app, logLevel);
       // Set a default logger as Android does not forward stdout
       Realm.App.Sync.setLogger(this.app, (level, message) => {
-        const magentaDate = `\x1b[35m${new Date().toISOString().replace("T", " ").replace("Z", "")}`;
+        const time = new Date().toISOString().split("T")[1].replace("Z", "");
+        const magentaTime = `\x1b[35m${time}`;
         const greenLogLevel = `\x1b[32m${REALM_LOG_LEVELS[level].toUpperCase()}`;
         const whiteMessage = `\x1b[37m${message}}`;
 
-        console.log(`${magentaDate}: ${greenLogLevel}:\t${whiteMessage}`);
+        console.log(`${magentaTime}: ${greenLogLevel}:\t${whiteMessage}`);
       });
     }
   });
