@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 import { deleteApp, importApp, TemplateReplacements } from "../utils/import-app";
 
+const REALM_LOG_LEVELS = ["all", "trace", "debug", "detail", "info", "warn", "error", "fatal", "off"];
+
 export function importAppBefore(
   name: string,
   replacements?: TemplateReplacements,
@@ -30,6 +32,14 @@ export function importAppBefore(
     } else {
       this.app = await importApp(name, replacements);
       Realm.App.Sync.setLogLevel(this.app, logLevel);
+      // Set a default logger as Android does not forward stdout
+      Realm.App.Sync.setLogger(this.app, (level, message) => {
+        const magentaDate = `\x1b[35m${new Date().toISOString().replace("T", " ").replace("Z", "")}`;
+        const greenLogLevel = `\x1b[32m${REALM_LOG_LEVELS[level].toUpperCase()}`;
+        const whiteMessage = `\x1b[37m${message}}`;
+
+        console.log(`${magentaDate}: ${greenLogLevel}:\t${whiteMessage}`);
+      });
     }
   });
 
