@@ -28,6 +28,20 @@ const IOS_DEVICE_TYPE_ID = "com.apple.CoreSimulator.SimDeviceType.iPhone-11";
 
 const { MOCHA_REMOTE_PORT, PLATFORM, HEADLESS_DEBUGGER, SPAWN_LOGCAT, SKIP_RUNNER, RETRY_DELAY, RETRIES } = process.env;
 
+const reversedAndroidPorts = [
+  // Metro server
+  8081,
+  // Realm App Importer
+  8091,
+  // Local BaaS server
+  9090,
+];
+
+// Ensure the device can access the Mocha Remote Server
+if (MOCHA_REMOTE_PORT) {
+  reversedAndroidPorts.push(MOCHA_REMOTE_PORT);
+}
+
 // If attempting a retry, wait for 1 minute before retrying
 const retryDelay = parseInt(RETRY_DELAY || "60000", 10);
 // Defaulting to zero retries
@@ -37,25 +51,24 @@ if (typeof PLATFORM !== "string") {
   throw new Error("Expected a 'PLATFORM' environment variable");
 }
 
+function ensureAndroidReversePorts() {
+  const devices = android.adb.devices();
+  const activeDevices = devices.filter(({ state }) => state === "device");
+  if (activeDevices.length === 0) {
+    throw new Error("Missing an active device: Attach a device via USB or start an emulator");
+  } else {
+    for (const port of reversedAndroidPorts) {
+      android.adb.reverseServerPort(port);
+    }
+  }
+}
+
 /**
  * Ensure a simulator is created and booted
  */
 function ensureSimulator() {
   if (PLATFORM === "android") {
-    const devices = android.adb.devices();
-    const activeDevices = devices.filter(({ state }) => state === "device");
-    if (activeDevices.length === 0) {
-      throw new Error("Missing an active device: Attach a device via USB or start an emulator");
-    } else {
-      // Ensure the device can access the mocha remote server
-      if (MOCHA_REMOTE_PORT) {
-        android.adb.reverseServerPort(MOCHA_REMOTE_PORT);
-      }
-      // Ensure the Realm App Importer is reachable
-      android.adb.reverseServerPort(8091);
-      // Ensure a local BaaS is reachable
-      android.adb.reverseServerPort(9090);
-    }
+    ensureAndroidReversePorts();
   } else if (PLATFORM === "ios") {
     const version = xcode.xcrun("--version").stdout.trim();
     console.log(`Using ${version}`);
@@ -176,6 +189,7 @@ function optionalStringToBoolean(value) {
 
 if (module.parent === null) {
   if (SKIP_RUNNER === "true") {
+    ensureAndroidReversePorts();
     console.log("Skipping the runner - you're on your own");
     process.exit(0);
   }
