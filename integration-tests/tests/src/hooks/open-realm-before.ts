@@ -40,7 +40,7 @@ export function openRealmHook(config: OpenRealmConfiguration = {}) {
   };
 }
 
-export function openRealmBeforeEach(config: OpenRealmConfiguration = {}): void {
+export async function openRealmBeforeEach(config: OpenRealmConfiguration = {}): void {
   beforeEach(openRealmHook(config));
   afterEach(closeThisRealm);
 }

@@ -23,16 +23,26 @@
  * @param config Realm config
  * @param deleteRealmFile If false, do not delete the Realm file before reopening.
  * @param clearTestState If false, do not clear test state before reopening.
+ * @param deleteAllData If false, do not delete all data in the Realm before closing it
+ * (this is useful if you want to check data has synced correctly)
  */
-export function closeRealm(
+export async function closeRealm(
   realm: Realm,
   config: Realm.Configuration,
   deleteRealmFile = true,
   clearTestState = true,
-): void {
+  deleteAllData = true,
+): Promise<void> {
+  if (config.sync && deleteAllData && !realm.isClosed) {
+    realm.write(() => {
+      realm.deleteAll();
+    });
+    await realm.syncSession?.uploadAllLocalChanges();
+  }
   realm.close();
 
   if (deleteRealmFile) {
+    console.log("deleting realm file");
     Realm.deleteFile(config);
   }
 
@@ -47,7 +57,8 @@ export function closeRealm(
  *
  * @param this Mocha `this` context
  */
-export function closeThisRealm(this: Partial<RealmContext> & Mocha.Context): void {
+export async function closeThisRealm(this: Partial<RealmContext> & Mocha.Context): void {
+  console.log("closing realm");
   if (!this.realm) {
     throw new Error("Expected a 'realm' to close");
   }
@@ -55,7 +66,7 @@ export function closeThisRealm(this: Partial<RealmContext> & Mocha.Context): voi
     throw new Error("Expected a 'config' to close");
   }
 
-  closeRealm(this.realm, this.config);
+  await closeRealm(this.realm, this.config);
 
   delete this.realm;
   delete this.config;
@@ -72,7 +83,7 @@ export function closeThisRealm(this: Partial<RealmContext> & Mocha.Context): voi
  * the config. Useful for testing if something has been persisted between sessions. Defaults to true.
  * @returns New re-opened Realm instance
  */
-export function closeAndReopenRealm(realm: Realm, config: Realm.Configuration, clearRealm = true): Realm {
-  closeRealm(realm, config, clearRealm, clearRealm);
+export async function closeAndReopenRealm(realm: Realm, config: Realm.Configuration, clearRealm = true): Realm {
+  await closeRealm(realm, config, clearRealm, clearRealm, false);
   return new Realm(config);
 }
