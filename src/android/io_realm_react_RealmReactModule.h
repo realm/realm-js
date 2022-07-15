@@ -7,49 +7,61 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/*
-* Class:      io_realm_react_RealmReactModule
-* Method:     setDefaultRealmFileDirectory
-*/
-JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileDirectory
-  (JNIEnv *, jclass, jstring, jobject);
-
-/*
- * Class:     io_realm_react_RealmReactModule
- * Method:    setupChromeDebugModeRealmJsContext
- */
-JNIEXPORT jlong JNICALL Java_io_realm_react_RealmReactModule_setupChromeDebugModeRealmJsContext
-  (JNIEnv *, jclass);
-
-/*
- * Class:     io_realm_react_RealmReactModule
- * Method:    processChromeDebugCommand
- */
-JNIEXPORT jstring JNICALL Java_io_realm_react_RealmReactModule_processChromeDebugCommand
-  (JNIEnv *, jclass, jstring, jstring);
-
-/*
- * Class:     io_realm_react_RealmReactModule
- * Method:    tryRunTask
- */
-JNIEXPORT jboolean JNICALL Java_io_realm_react_RealmReactModule_tryRunTask
-(JNIEnv *, jclass);
-
+#undef io_realm_react_RealmReactModule_DEFAULT_PORT
+#define io_realm_react_RealmReactModule_DEFAULT_PORT 8083L
 /*
  * Class:     io_realm_react_RealmReactModule
  * Method:    isContextInjected
+ * Signature: ()Z
  */
-JNIEXPORT jboolean JNICALL Java_io_realm_react_RealmReactModule_isContextInjected
-    (JNIEnv *, jclass);
+JNIEXPORT jboolean JNICALL Java_io_realm_react_RealmReactModule_isContextInjected(JNIEnv*, jobject);
 
 /*
  * Class:     io_realm_react_RealmReactModule
  * Method:    clearContextInjectedFlag
+ * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_clearContextInjectedFlag
-  (JNIEnv *, jclass);
+JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_clearContextInjectedFlag(JNIEnv*, jobject);
 
+/*
+ * Class:     io_realm_react_RealmReactModule
+ * Method:    setDefaultRealmFileDirectory
+ * Signature: (Ljava/lang/String;Landroid/content/res/AssetManager;)V
+ */
+JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileDirectory(JNIEnv*, jobject, jstring,
+                                                                                         jobject);
+
+/*
+ * Class:     io_realm_react_RealmReactModule
+ * Method:    setupChromeDebugModeRealmJsContext
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_io_realm_react_RealmReactModule_setupChromeDebugModeRealmJsContext(JNIEnv*, jobject);
+
+/*
+ * Class:     io_realm_react_RealmReactModule
+ * Method:    processChromeDebugCommand
+ * Signature: (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_io_realm_react_RealmReactModule_processChromeDebugCommand(JNIEnv*, jobject, jstring,
+                                                                                         jstring);
+
+/*
+ * Class:     io_realm_react_RealmReactModule
+ * Method:    tryRunTask
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_io_realm_react_RealmReactModule_tryRunTask(JNIEnv*, jobject);
+
+/*
+ * Class:     io_realm_react_RealmReactModule
+ * Method:    setupFlushUiQueue
+ * Signature: (Lcom/facebook/react/turbomodule/core/CallInvokerHolderImpl;)V
+ */
+// JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setupFlushUiQueue
+// (JNIEnv *, jobject, jobject);
+
+JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setupFlushUiQueue(JNIEnv*, jobject, jobject);
 
 #ifdef __cplusplus
 }

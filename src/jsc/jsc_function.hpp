@@ -19,12 +19,10 @@
 #pragma once
 
 #include "jsc_types.hpp"
+#include "jsc_externs.hpp"
 
 namespace realm {
 namespace js {
-
-// Function passed in from the React Native initialisation code to flush the UI microtask queue
-extern std::function<void()> flush_ui_queue;
 
 template <>
 inline JSValueRef jsc::Function::call(JSContextRef ctx, const JSObjectRef& function, const JSObjectRef& this_object,

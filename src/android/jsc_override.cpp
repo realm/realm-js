@@ -145,8 +145,8 @@ static JSGlobalContextRef create_context(JSContextGroupRef group, JSClassRef glo
     RJSInvalidateCaches();
 
     // We pass a no-op lambda for the `flushUiQueue` function, as there's no easy way to
-    // access the React Native context from here and the UI flush bug (#4389) has not been
-    // seen on Android. We should be able to do this properly on Hermes.
+    // access the React Native context from here. Instead we set the `flushUiQueue` function
+    // when the RealmReactModule Java module initialises.
     RJSInitializeInContext(ctx, []() {});
     realmContextInjected = true;
     return ctx;
