@@ -18,6 +18,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Upgraded React Native integration tests app to React Native v0.68.2. ([#4583](https://github.com/realm/realm-js/pull/4583))
 * Upgraded React Native integration tests app to React Native v0.69.1. ([#4713](https://github.com/realm/realm-js/pull/4713))
 * Fixed a crash on Android when an error was thrown from the flexible sync `initialSubscriptions` call ([#4710](https://github.com/realm/realm-js/pull/4710), since v10.18.0)
+* Clear all data in the Realm when closing it at the end of a test case, to avoid syncing extra data during test runs ([#4731](https://github.com/realm/realm-js/pull/4731))
 
 10.19.5 Release notes (2022-7-6)
 =============================================================
