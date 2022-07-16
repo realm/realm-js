@@ -1,3 +1,4 @@
 ts/
+node/
 spec.schema.json
 type-parser.html
