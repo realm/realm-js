@@ -170,33 +170,26 @@ export class AppImporter {
    */
   public async importApp(appTemplatePath: string, replacements: TemplateReplacements = {}): Promise<{ appId: string }> {
     const { name: appName } = this.loadAppConfigJson(appTemplatePath);
-    await this.logIn();
-    const groupId = await this.getGroupId();
 
-    // Get or create an application
-    //const foundApp = await this.findApp(groupId, appName);
-    // if (foundApp && false) {
-    //   console.log("App already deployed: ", foundApp);
-    //   //await this.applyAppConfiguration(appTemplatePath, foundApp._id, groupId);
-    //   return { appId: foundApp.client_app_id };
-    // } else {
-    const app = /*(await this.findApp(groupId, appName)) || */ await this.createApp(groupId, appName);
+    await this.logIn();
+
+    const groupId = await this.getGroupId();
+    const app = await this.createApp(groupId, appName);
     const appId = app.client_app_id;
 
     // Determine the path of the new app
     const appPath = path.resolve(this.appsDirectoryPath, appId);
-    console.log("copying app path: ", appPath);
+
     // Copy over the app template
     this.copyAppTemplate(appPath, appTemplatePath);
-    console.log("copying app template path: ", appTemplatePath);
+
     // Apply any replacements to the files before importing from them
     this.applyReplacements(appPath, replacements);
-    console.log("applying replacements: ", replacements);
 
+    // Create the app service
     await this.applyAppConfiguration(appPath, app._id, groupId);
 
     return { appId };
-    //}
   }
 
   public async deleteApp(clientAppId: string): Promise<void> {
@@ -284,34 +277,17 @@ export class AppImporter {
     }
   }
 
-  private async configureAuthProviders(authConfig: any, appId: string, groupId: string) {
-    console.log("Applying auth providers... ");
-    //TODO: Check if auth provider is already existing and patch it
-    const url = `${this.apiUrl}/groups/${groupId}/apps/${appId}/auth_providers`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-        "content-type": "application/json",
-      },
-      body: authConfig,
-    });
-    if (!response.ok) {
-      console.warn("Could not apply auth_provider: ", authConfig);
-    }
-  }
-
   private async configureServiceFromAppPath(appPath: string, appId: string, groupId: string) {
     const servicesDir = path.join(appPath, "services");
     if (fs.existsSync(servicesDir)) {
       console.log("Applying services... ");
       const serviceDirectories = fs.readdirSync(servicesDir);
+
+      // It is possible for there to be multiple service directories
       for (const serviceDir of serviceDirectories) {
-        console.log("applying service: ", serviceDir);
         const configFilePath = path.join(servicesDir, serviceDir, "config.json");
-        console.log(configFilePath);
         if (fs.existsSync(configFilePath)) {
-          const config = JSON.parse(fs.readFileSync(configFilePath, "utf-8"));
+          const config = this.loadJson(configFilePath);
           const tmpConfig = { name: config.name, type: config.type, config: config.config };
           if (config.type === "mongodb-atlas") {
             tmpConfig.config = { clusterName: config.config.clusterName };
@@ -320,7 +296,6 @@ export class AppImporter {
             ? config.config.sync.database_name
             : config.config.flexible_sync.database_name;
           const serviceUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/services`;
-          console.log("config so far:", config);
           const response = await fetch(serviceUrl, {
             method: "POST",
             headers: {
@@ -336,16 +311,17 @@ export class AppImporter {
             const rulesDir = path.join(servicesDir, serviceDir, "rules");
             const responseJson = await response.json();
             const serviceId = responseJson._id;
+            // rules must be applied after the service is created
             if (fs.existsSync(rulesDir)) {
-              console.log("applying rules");
+              console.log("Applying rules...");
               const ruleFiles = fs.readdirSync(rulesDir);
               for (const ruleFile of ruleFiles) {
                 const ruleFilePath = path.join(rulesDir, ruleFile);
-                const ruleConfig = JSON.parse(fs.readFileSync(ruleFilePath, "utf-8"));
+                const ruleConfig = this.loadJson(ruleFilePath);
                 ruleConfig.database = dbName;
                 const schemaConfig = ruleConfig.schema || null;
                 if (schemaConfig) {
-                  // Schema is not valid in a rule request
+                  // Schema is not valid in a rule request, but is included when exporting an app from realm
                   delete ruleConfig.schema;
                 }
                 const rulesUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/services/${serviceId}/rules`;
@@ -368,19 +344,34 @@ export class AppImporter {
     }
   }
 
-  private async applyAppConfiguration(appPath: string, appId: string, groupId: string) {
-    console.log("applyAppConfiguration v1: ", appPath);
-
+  private async configureAuthProvidersFromAppPath(appPath: string, appId: string, groupId: string) {
     const authProviderDir = path.join(appPath, "auth_providers");
 
     if (fs.existsSync(authProviderDir)) {
+      console.log("Applying auth providers... ");
       const authFileNames = fs.readdirSync(authProviderDir);
       for (const authFileName of authFileNames) {
         const authFilePath = path.join(authProviderDir, authFileName);
-        const authConfig = fs.readFileSync(authFilePath, "utf-8");
-        await this.configureAuthProviders(authConfig, appId, groupId);
+        const authConfig = this.loadJson(authFilePath);
+        //TODO: Check if auth provider is already existing and patch it
+        const authUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/auth_providers`;
+        const response = await fetch(authUrl, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify(authConfig),
+        });
+        if (!response.ok) {
+          console.error("Could not apply auth_provider: ", authConfig, authUrl);
+        }
       }
     }
+  }
+
+  private async applyAppConfiguration(appPath: string, appId: string, groupId: string) {
+    await this.configureAuthProvidersFromAppPath(appPath, appId, groupId);
 
     // Create all secrets in parallel
     const secrets = this.loadSecretsJson(appPath);
@@ -397,6 +388,7 @@ export class AppImporter {
 
     const functionsPath = path.join(appPath, "functions");
     if (fs.existsSync(functionsPath)) {
+      //TODO: support functions
       console.log("Applying functions... ");
     }
   }
@@ -404,7 +396,6 @@ export class AppImporter {
   private performLogIn() {
     const { credentials } = this;
     if (credentials.kind === "api-key") {
-      console.log(`${this.apiUrl}/auth/providers/mongodb-cloud/login`);
       return fetch(`${this.apiUrl}/auth/providers/mongodb-cloud/login`, {
         method: "POST",
         headers: { "content-type": "application/json" },
