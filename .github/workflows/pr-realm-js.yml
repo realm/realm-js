@@ -221,6 +221,7 @@ jobs:
       # RETRY_DELAY: 1800000 # 30 min
       # Pin the Xcode version
       DEVELOPER_DIR: /Applications/Xcode_12.5.1.app
+      JAVA_HOME: $JAVA_HOME_11_X64
     runs-on: ${{ matrix.variant.runner }}
     strategy:
       fail-fast: false
