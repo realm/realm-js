@@ -43,7 +43,8 @@ export async function openRealm(
 
   if (!partialConfig.sync) {
     const config = { ...partialConfig, path } as LocalConfiguration;
-    return { config, realm: new Realm(config) };
+    const realm = await Realm.open(config);
+    return { config, realm };
   } else {
     const config = {
       ...partialConfig,
@@ -55,7 +56,7 @@ export async function openRealm(
         ...partialConfig.sync,
       },
     } as Realm.Configuration;
-    const realm = new Realm(config);
+    const realm = await Realm.open(config);
 
     // Upload the schema, ensuring a valid connection. uploadAllLocalChanges
     // will not resolve with flexible sync enabled until we have created an
@@ -67,6 +68,11 @@ export async function openRealm(
       }
 
       await realm.syncSession.uploadAllLocalChanges();
+    }
+
+    // TODO: This should probably be done in Realm.open()
+    if (config.sync?.flexible) {
+      await realm.subscriptions.waitForSynchronization();
     }
 
     return { config, realm };
