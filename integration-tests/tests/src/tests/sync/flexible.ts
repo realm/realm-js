@@ -682,7 +682,8 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       });
 
       describe("#state", function () {
-        it("is Pending by default", function (this: RealmContext) {
+        // Since the tests now await realm.open and realm.sync.waitForSynchronization, this will no longer be pending
+        it.skip("is Pending by default", function (this: RealmContext) {
           const subs = this.realm.subscriptions;
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Pending);
         });
