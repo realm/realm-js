@@ -15,13 +15,9 @@
     "react-native": "0.66.3",
     "react-native-exception-handler": "^2.4.3",
     "react-native-exit-app": "1.1.0",
-<<<<<<< HEAD
     "react-native-fs": "^2.20.0",
-=======
-    "react-native-fs": "^2.16.6",
     "realm": "file:../..",
     "realm-tests": "file:../js",
->>>>>>> 579a01c7 (Squashing and rebasing)
     "xmlbuilder": "^4.2.1"
   },
   "devDependencies": {

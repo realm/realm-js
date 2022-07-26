@@ -68,6 +68,12 @@ function describeRoundtrip({
     }
   }
 
+  // TODO: This might be a useful utility
+  function log(...args: [string]) {
+    const date = new Date();
+    console.log(date.toString(), date.getMilliseconds(), ...args);
+  }
+
   async function setupTest(realm: Realm) {
     if (flexibleSync) {
       await realm.subscriptions.update((mutableSubs) => {
@@ -90,11 +96,14 @@ function describeRoundtrip({
           },
         },
       ],
-      sync: flexibleSync ? { flexible: true } : { partitionValue: "mixed-test" },
+      sync: flexibleSync
+        ? {
+            flexible: true,
+          }
+        : { partitionValue: "mixed-test" },
     });
 
     it("writes", async function (this: RealmContext) {
-      this.timeout(6000);
       await setupTest(this.realm);
 
       this._id = new Realm.BSON.ObjectId();
@@ -212,12 +221,12 @@ function describeTypes(flexibleSync: boolean) {
 }
 
 describe.skipIf(environment.missingServer, "mixed", () => {
-  describe("parition-based sync", function () {
+  describe("parition-based sync roundtrip", function () {
     importAppBefore("with-db");
     describeTypes(false);
   });
 
-  describe.skipIf(environment.skipFlexibleSync, "flexible sync", function () {
+  describe.skipIf(environment.skipFlexibleSync, "flexible sync roundtrip", function () {
     importAppBefore("with-db-flx");
     describeTypes(true);
   });

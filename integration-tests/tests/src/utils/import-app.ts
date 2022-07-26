@@ -74,11 +74,8 @@ export async function importApp(
 export async function deleteApp(clientAppId: string): Promise<void> {
   const { appImporterUrl } = getUrls();
 
-  const response = await fetch(`${appImporterUrl}/app/${clientAppId}`, {
+  // This might take some time, so we just send it and forget it
+  fetch(`${appImporterUrl}/app/${clientAppId}`, {
     method: "DELETE",
   });
-
-  if (!response.ok) {
-    throw new Error(`Failed to delete app with client ID '${clientAppId}'`);
-  }
 }
