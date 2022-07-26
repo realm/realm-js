@@ -229,9 +229,9 @@ jobs:
           - { os: linux, target: test, runner: ubuntu-20.04, environment: node }
           - { os: linux, target: "test:main", runner: ubuntu-20.04, environment: electron }
           - { os: linux, target: "test:renderer", runner: ubuntu-20.04, environment: electron }
-          - { os: windows, target: test, runner: windows-2019, environment: node}
-          - { os: windows, target: "test:main", runner: windows-2019, environment: electron }
-          - { os: windows, target: "test:renderer", runner: windows-2019, environment: electron }
+          #- { os: windows, target: test, runner: windows-2019, environment: node}
+          #- { os: windows, target: "test:main", runner: windows-2019, environment: electron }
+          #- { os: windows, target: "test:renderer", runner: windows-2019, environment: electron }
           - { os: darwin, target: "test:main", runner: macos-11, environment: electron }
           - { os: darwin, target: "test:renderer", runner: macos-11, environment: electron }
           - { os: darwin, target: test, runner: macos-11, environment: node }
