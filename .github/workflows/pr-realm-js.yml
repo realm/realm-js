@@ -7,10 +7,9 @@ jobs:
     runs-on: ${{ matrix.variant.runner }}
     env:
       npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
-      REALM_DISABLE_SYNC_TESTS: true
       REALM_DISABLE_ANALYTICS: 1
     strategy:
-      #fail-fast: false
+      fail-fast: false
       matrix:
         variant:
           - { os: linux, runner: ubuntu-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
@@ -58,19 +57,19 @@ jobs:
           cache-name: prebuild
         with:
           path: ${{ matrix.variant.artifact-path }}
-          key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}-${{ env.cache-name }}-${{hashFiles('./src/**', 'vendor/**')}}
+          key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}-${{ env.cache-name }}-${{hashFiles('./src/**', './vendor/**')}}
 
-          # TODO: figure out a way to optimize using partial builds
-          #- name: Cache iOS build artifacts
-          #  id: cache-ios-build
-          #  uses: actions/cache@v2
-          #  env:
-          #    cache-name: cache-ios-build
-          #  with:
-          #    path: react-native/ios/build
-          #    key: build-ios-${{ hashFiles('./src/**') }}
-          #    restore-keys: |
-          #      build-ios-
+      - name: Cache iOS build artifacts
+        if: ${{ (matrix.variant.os == 'ios') }}
+        id: ios-cache
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-ios-build
+        with:
+          path: react-native/ios/build
+          key: ${{ runner.os }}-ios-${{ hashFiles('./src/**', './vendor/**') }}
+          restore-keys: |
+            ${{ runner.os }}-ios-
 
       - name: MSVC Setup
         if: ${{ runner.os == 'Windows' }}
@@ -192,32 +191,33 @@ jobs:
       clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
     timeout-minutes: 20
     steps:
-      - uses: realm/ci-actions/mdb-realm/deployApps@800a0234bcbe9073e7a07a66c864d54db3688e56
+      - uses: realm/ci-actions/mdb-realm/deployApps@fac1d6958f03d71de743305ce3ab27594efbe7b7
         id: deploy-mdb-apps
         with:
-          realmUrl: ${{ secrets.REALM_BASE_URL }}
-          projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-          apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-          privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
-          differentiator: realm js
+          realmUrl: ${{ secrets.REALM_QA_BASE_URL }}
+          projectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+          atlasUrl: ${{ secrets.ATLAS_QA_BASE_URL}}
+          apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+          privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
+          differentiator: realm-js
 
   integration-tests:
     name: Integration tests for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
     needs: [build-and-test]
     env:
       REALM_DISABLE_ANALYTICS: 1
-      MOCHA_REMOTE_TIMEOUT: 10000
+      MOCHA_REMOTE_TIMEOUT: 60000
       CLUSTER_NAME: ${{ needs.baas-realm-js.outputs.clusterName }}
-      MOCHA_REMOTE_CONTEXT: realmBaseUrl=${{ secrets.REALM_BASE_URL }},mongodbClusterName=${{ needs.baas-realm-js.outputs.clusterName }},missingServer
+      MOCHA_REMOTE_CONTEXT: realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ needs.baas-realm-js.outputs.clusterName }}
       MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
       MOCHA_REMOTE_EXIT_ON_ERROR: true
-      REALM_BASE_URL: ${{ secrets.REALM_BASE_URL }}
-      REALM_PUBLIC_KEY: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-      REALM_PRIVATE_KEY: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+      REALM_BASE_URL: ${{ secrets.REALM_QA_BASE_URL }}
+      REALM_PUBLIC_KEY: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      REALM_PRIVATE_KEY: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
       SPAWN_LOGCAT: true
       HEADLESS_DEBUGGER: true
-      RETRIES: 5
-      RETRY_DELAY: 500000 # 10 min
+      # RETRIES: 5
+      # RETRY_DELAY: 1800000 # 30 min
       # Pin the Xcode version
       DEVELOPER_DIR: /Applications/Xcode_12.5.1.app
     runs-on: ${{ matrix.variant.runner }}
@@ -328,6 +328,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Cleanup realm js
     needs: [integration-tests]
+    if: ${{ always() }}
     timeout-minutes: 10
     steps:
       - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56

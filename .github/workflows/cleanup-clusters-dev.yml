@@ -1,14 +1,15 @@
-name: Wipe all clusters and apps
+name: Wipe all clusters and apps on dev
 
 on:
   workflow_dispatch:
 jobs:
   main:
     runs-on: ubuntu-latest
-    name: Wipe all clusters and apps
+    name: Wipe all clusters and apps on dev
     steps:
     - uses: realm/ci-actions/mdb-realm/deleteAllClusters@3d95b9f473d06ef0f56e1a5d8c5981743dc4fed9
       with:
+        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
         realmUrl: ${{ secrets.REALM_BASE_URL }}
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
         apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
