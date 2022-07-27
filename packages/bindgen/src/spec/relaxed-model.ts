@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { ClassSpec, Spec } from "./model";
+import { InterfaceSpec, ClassSpec, Spec } from "./model";
 
 /**
  * Needed we want to avoid quoting all the values that are primitive non-strings
@@ -50,7 +50,7 @@ export type RelaxedClassSpec = Pick<Partial<ClassSpec>, "sharedPtrWrapped"> & {
   methods?: { [name: string]: RelaxedMethodSpec | RelaxedMethodSpec[] };
 };
 
-export type RelaxedInterfaceSpec = {
+export type RelaxedInterfaceSpec = Pick<Partial<InterfaceSpec>, "sharedPtrWrapped"> & {
   staticMethods?: { [name: string]: RelaxedMethodSpec | RelaxedMethodSpec[] };
   methods?: { [name: string]: RelaxedMethodSpec | RelaxedMethodSpec[] };
 };

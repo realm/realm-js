@@ -3,6 +3,7 @@ headers:
   - "realm/object-store/object_store.hpp"
   - "realm/object-store/object_schema.hpp"
   - "realm/object-store/thread_safe_reference.hpp"
+  - "realm/object-store/util/scheduler.hpp"
 
 primitives:
   # TODO need to distinguish 64bit types where all bits are needed vs where double would be fine
@@ -128,9 +129,7 @@ records:
       table_key:
         type: TableKey
         default: {}
-      is_embedded:
-        type: bool
-        default: false
+      # TODO table_type (uses nested enum class, tricky to support for now)
       alias:
         type: std::string
         default: ''
@@ -247,10 +246,7 @@ classes:
       notify: ()
       invalidate: ()
       compact: () -> bool
-      write_copy:
-        - () -> OwnedBinaryData
-        - suffix: to
-          sig: '(path: StringData, encryption_key: BinaryData)'
+      write_copy: () -> OwnedBinaryData
 
       verify_thread: () const
       verify_in_write: () const
@@ -267,12 +263,11 @@ classes:
 interfaces:
   Scheduler:
     methods:
-      notify: ()
+      invoke: '(callback: () -> void)'
       is_on_thread: () const noexcept -> bool
-      is_same_as: '(other: std::shared_ptr<Scheduler> const&) const noexcept -> bool'
-      can_deliver_notifications: () const noexcept -> bool
-      set_notify_callback: '(callback: () -> void) noexcept'
+      is_same_as: '(other: const Scheduler*) const noexcept -> bool'
+      can_invoke: () const noexcept -> bool
     staticMethods:
-      get_frozen: '(version: VersionID) -> std::shared_ptr<Scheduler>'
+      make_frozen: '(version: VersionID) -> std::shared_ptr<Scheduler>'
       make_default: '() -> std::shared_ptr<Scheduler>'
       set_default_factory: '(factory: () -> std::shared_ptr<Scheduler>)'
