@@ -70,6 +70,7 @@ export type ClassSpec = {
 
 export type InterfaceSpec = {
   // TODO: Consider removing the staticMethods
+  sharedPtrWrapped?: string;
   staticMethods: { [name: string]: MethodSpec[] };
   methods: { [name: string]: MethodSpec[] };
 };
