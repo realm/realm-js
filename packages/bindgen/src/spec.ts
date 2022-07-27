@@ -136,6 +136,7 @@ function normalizeClassSpec(spec: RelaxedClassSpec): ClassSpec {
 
 function normalizeInterfaceSpec(spec: RelaxedInterfaceSpec): InterfaceSpec {
   return {
+    sharedPtrWrapped: spec.sharedPtrWrapped,
     staticMethods: mapObjectValues(spec.staticMethods || {}, normalizeMethodSpec),
     methods: mapObjectValues(spec.methods || {}, normalizeMethodSpec),
   };
