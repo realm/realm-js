@@ -1,8 +1,9 @@
 import {camelCase, pascalCase} from "change-case";
+import {strict as assert} from 'assert'
 
 import {TemplateContext} from "../context";
-import {Spec, TypeSpec} from "../spec";
 import {CppVar, CppFunc, CppFuncProps, CppMemInit, CppCtor, CppMethod, CppClass, CppDecls, CppCtorProps} from "../cpp"
+import {bindModel, BoundSpec, Type} from "../bound_model"
 
 // Code assumes this is a unique name that is always in scope to refer to the Napi::Env.
 // Callbacks need to ensure this is in scope. Functions taking Env arguments must use this name.
@@ -10,6 +11,15 @@ const env = 'napi_env_var_ForBindGen'
 
 const node_callback_info = new CppVar('const Napi::CallbackInfo&', 'info')
 const envFromCbInfo = `auto ${env} = info.Env();\n`
+
+function tryWrap(body: string) {
+    return `try {
+                ${body}
+            } catch (const std::exception& ex) {
+                throwNodeException(${env}, ex);
+            }
+        `
+}
 
 class CppNodeMethod extends CppMethod {
     constructor(name: string, props?: CppFuncProps) {
@@ -19,11 +29,7 @@ class CppNodeMethod extends CppMethod {
     definition() {
         return super.definition(`
             ${envFromCbInfo}
-            try {
-                ${this.body}
-            } catch (const std::exception& ex) {
-                throw convertToNodeExceptionTODO(${env}, ex);
-            }
+            ${tryWrap(this.body)}
         `)
     }
 }
@@ -38,11 +44,7 @@ class CppNodeCtor extends CppCtor {
         // change CppCtor to support function-try blocks.
         return super.definition(`
             ${envFromCbInfo}
-            try {
-                ${this.body}
-            } catch (const std::exception& ex) {
-                throw convertToNodeExceptionTODO(${env}, ex);
-            }
+            ${tryWrap(this.body)}
         `)
     }
 }
@@ -78,7 +80,6 @@ class NodeAddon extends CppClass {
                     `
             }
         ))
-
     }
 
     addClass(cls: NodeObjectWrap) {
@@ -103,7 +104,7 @@ class NodeObjectWrap extends CppClass {
         super(`Node_${jsName}`)
         this.withCrtpBase('Napi::ObjectWrap')
 
-        this.ctor = this.addMethod(new CppCtor(this.name, [node_callback_info], {
+        this.ctor = this.addMethod(new CppNodeCtor(this.name, {
             mem_inits: [new CppMemInit(this.bases[0], 'info')]
         }))
         this.ctor.body = envFromCbInfo
@@ -113,77 +114,374 @@ class NodeObjectWrap extends CppClass {
 
 }
 
-function convertToNode(type: TypeSpec, val: string) {
-    // TODO
-    if (type.kind == 'qualified-name' && type.names[0] == 'void') 
-        return `((void)(${val}), ${env}.Undefined())`
-    return `convertToNodeTODO(${val})`
+/**
+ * Converts a Type object to its spelling in C++, eg to be used to declare an argument or template parameter.
+ *
+ * TODO, consider moving this to live on the Type classes themselves.
+ */
+function toCpp(type: Type): string {
+    switch (type.kind) {
+        case 'Pointer':
+            return `${toCpp(type.type)}*`
+        case 'Opaque': return type.name
+        case 'Const': return `${toCpp(type.type)} const`
+        case 'Ref': return `${toCpp(type.type)}&`
+        case 'Template': return `${type.name}<${type.args.map(toCpp).join(', ')}>`
+
+        case 'Primitive':
+        case 'Enum':
+        case 'Class':
+        case 'Struct':
+            return type.name
+
+        case 'Func':
+            // We currently just produce a lambda which has an unutterable type.
+            // We could make a UniqueFunction for the type, but we may want to
+            // use other types instead, such as std::function in some cases.
+            // This will be more important when implementing interfaces.
+            assert.fail('Cannot convert function types to Cpp type names')
+
+        default:
+            const _exhaustiveCheck: never = type;
+            return _exhaustiveCheck
+    }
 }
 
-function convertFromNode(type: TypeSpec, val: string) {
-    // TODO
-    if (type.kind == 'qualified-name' && type.names[0] == 'void') 
-        return `(void)(${val})`
-    return `convertFromNodeTODO(${val})`
+function convertPrimToNode(type: string, expr: string): string {
+    switch(type) {
+        case 'void': return `((void)(${expr}), ${env}.Undefined())`
+
+        case 'bool': return `Napi::Boolean::New(${env}, ${expr})`
+
+        case 'double':
+        case 'int':
+        case 'int32_t':
+            return `Napi::Number::New(${env}, ${expr})`
+
+
+        case 'int64_t':
+        case 'uint64_t':
+            return `Napi::BigInt::New(${env}, ${expr})`
+
+        case 'std::string_view':
+        case 'std::string':
+            return `([&] (auto&& sd) {
+                return Napi::String::New(${env}, sd.data(), sd.size());
+            }(${expr}))`
+
+        case 'StringData':
+            return `([&] (StringData sd) {
+                return sd.is_null() ? ${env}.Null() : Napi::String::New(${env}, sd.data(), sd.size());
+            }(${expr}))`
+
+        case 'OwnedBinaryData':
+            return convertPrimToNode('BinaryData', `${expr}.get()`)
+
+        case 'BinaryData':
+            return `([&] (BinaryData bd) {
+                auto arr = Napi::ArrayBuffer::New(${env}, bd.size());
+                memcpy(arr.Data(), bd.data(), bd.size());
+                return arr;
+            }(${expr}))`
+    }
+    assert.fail(`unexpected primitive type '${type}'`)
+}
+function convertPrimFromNode(type: string, expr: string) {
+    // TODO consider using coercion using ToString, ToNumber, ToBoolean.
+    switch(type) {
+        case 'void': return `((void)(${expr}))`
+
+        case 'bool': return `(${expr}).As<Napi::Boolean>().Value()`
+
+        case 'double': return `(${expr}).As<Napi::Number>().DoubleValue()`
+
+        case 'int':
+        case 'int32_t':
+            return `(${expr}).As<Napi::Number>().Int32Value()`
+
+        case 'int64_t': return `extractInt64FromNode(${expr})`
+        case 'uint64_t': return `extractUint64FromNode(${expr})`
+
+        case 'std::string_view':
+        case 'std::string':
+            return `(${expr}).As<Napi::String>().Utf8Value();`
+        case 'StringData':
+            return `([&] (const Napi::Value& v) {
+                return v.IsNull() ? StringData() : StringData(v.As<Napi::String>().Utf8Value());
+            })(${expr})`
+
+        case 'OwnedBinaryData':
+        case 'BinaryData':
+            return `([&] (const Napi::Value& v) -> ${type} {
+                if (v.IsNull())
+                    return {};
+                auto buf = v.As<Napi::ArrayBuffer>();
+                return BinaryData(static_cast<const char*>(buf.Data()), buf.ByteLength());
+            })(${expr})`
+
+    }
+    assert.fail(`unexpected primitive type '${type}'`)
+}
+
+function convertToNode(type: Type, expr: string): string {
+    const c = convertToNode; // shortcut for recursion
+    switch (type.kind) {
+        case 'Primitive': return convertPrimToNode(type.name, expr)
+        case 'Pointer': return `[&](auto* ptr){ return ptr ? ${c(type.type, '*ptr')}: ${env}.Null(); } (${expr})`
+
+        case 'Opaque': return `Napi::External<${type.name}>::New(${env}, &${expr})`
+
+        case 'Const':
+        case 'Ref':
+            return c(type.type, expr)
+
+        case 'Template':
+            // For now, all templates we care about only take a single argument, so doing this here is simpler.
+            assert.equal(type.args.length, 1);
+            const inner = type.args[0];
+
+            switch (type.name) {
+                case 'std::shared_ptr':
+                    if (inner.kind == 'Class' && inner.sharedPtrWrapped)
+                        return `NODE_FROM_SHARED_${inner.name}(${env}, ${expr})`
+                    return c(inner, `*${expr}`)
+                case 'util::Optional':
+                    return `[&] (auto&& opt) { return !opt ? ${env}.Null() : ${c(inner, '*opt')}; }(${expr})`
+                case 'std::vector':
+                    return `[&] (auto&& vec) {
+                        auto out = Napi::Array::New(${env}, vec.size());
+                        uint32_t i = 0;
+                        for (auto&& e : vec) {
+                            out[i++] = ${c(inner, 'e')};
+                        }
+                        return out;
+                    }(${expr})`
+            }
+            assert.fail(`unknown template ${type.name}`)
+
+        case 'Class':
+            assert(!type.sharedPtrWrapped, `should not directly convert from ${type.name} without shared_ptr wrapper`)
+            return `NODE_FROM_CLASS_${type.name}(${env}, ${expr})`
+
+        case 'Struct':
+            return `NODE_FROM_STRUCT_${type.name}(${env}, ${expr})`
+
+        case 'Func':
+            // TODO: see if we want to try to propagate a function name in rather than always making them anonymous.
+            return `
+            [&] (auto&& cb) -> Napi::Value {
+                if constexpr(std::is_constructible_v<bool, decltype(cb)>) {
+                    if (!bool(cb)) {
+                        return ${env}.Null();
+                    }
+                }
+                return Napi::Function::New(${env}, [cb] (const Napi::CallbackInfo& info) {
+                    auto ${env} = info.Env();
+                    ${tryWrap(`
+                        return ${convertToNode(type.ret, `cb(
+                            ${type.args.map((arg, i) => convertFromNode(arg.type, `info[${i}]`)).join(", ")}
+                        )`)};
+                    `)}
+                });
+            }(${expr})`
+
+        case 'Enum':
+            return `[&]{
+                static_assert(sizeof(${type.name}) <= sizeof(int32_t), "we only support enums up to 32 bits");
+                return Napi::Number::New(${env}, double(${expr}));
+            }()`
+
+        default:
+            const _exhaustiveCheck: never = type;
+            return _exhaustiveCheck
+    }
+}
+function convertFromNode(type: Type, expr: string): string {
+    const c = convertFromNode; // shortcut for recursion
+    switch (type.kind) {
+        case 'Primitive': return convertPrimFromNode(type.name, expr)
+        case 'Pointer': return `[&] (Napi::Value v) { return (v.IsNull() || v.IsUndefined()) ? nullptr : &${c(type.type, 'v')}; }(${expr})`
+        case 'Opaque': return `*((${expr}).As<Napi::External<${type.name}>>().Data())`
+
+        case 'Const':
+        case 'Ref':
+            return c(type.type, expr)
+
+        case 'Template':
+            // For now, all templates we care about only take a single argument, so doing this here is simpler.
+            assert.equal(type.args.length, 1);
+            const inner = type.args[0];
+
+            switch (type.name) {
+                case 'std::shared_ptr':
+                    if (inner.kind == 'Class' && inner.sharedPtrWrapped)
+                        return `NODE_TO_SHARED_${inner.name}(${expr})`
+                    return c(inner, `*${expr}`)
+                case 'util::Optional':
+                    return `[&] (Napi::Value val) {
+                        using Opt = util::Optional<${toCpp(inner)}>;
+                        return (val.IsNull() || val.IsUndefined()) ? Opt() : Opt(${c(inner, 'val')});
+                    }(${expr})`
+                case 'std::vector':
+                    return `[&] (Napi::Array vec) {
+                        auto out = std::vector<${toCpp(inner)}>();
+
+                        const uint32_t length = vec.Length();
+                        out.reserve(length);
+                        for (uint32_t i = 0; i < length; i++) {
+                            out.push_back(${c(inner, 'vec[i]')});
+                        }
+                        return out;
+                    }((${expr}).As<Napi::Array>())`
+            }
+            assert.fail(`unknown template ${type.name}`)
+
+        case 'Class':
+            if (type.sharedPtrWrapped)
+                return `*NODE_TO_SHARED_${type.name}(${expr})`
+            return `NODE_TO_CLASS_${type.name}(${expr})`
+
+        case 'Struct':
+            return `NODE_TO_STRUCT_${type.name}(${expr})`
+
+        case 'Func':
+            // TODO see if we ever need to do any conversion from Napi::Error exceptions to something else.
+            // TODO need to handle null/undefined here. A bit tricky since we don't know the real type in the YAML.
+            // TODO need to consider different kinds of functions:
+            // - functions called inline (or otherwise called from within a JS context (currently implemented)
+            // - async functions called from JS thread (need to use MakeCallback() rather than call)
+            // - async functions called from other thread that don't need to wait for JS to return
+            // - async functions called from other thread that must wait for JS to return (anything with non-void return)
+            //     - This has a risk of deadlock if not done correctly.
+            // Note: putting the FunctionReference in a shared_ptr because some of these need to be put into a std::function
+            // which requires copyability, but FunctionReferences are move-only.
+            return `
+                [cb = std::make_shared<Napi::FunctionReference>(Napi::Persistent(${expr}.As<Napi::Function>()))]
+                (${type.args.map(({name, type}) => `${toCpp(type)} ${name}`).join(", ")}) -> ${toCpp(type.ret)} {
+                    auto ${env} = cb->Env();
+                    Napi::HandleScope hs(${env});
+                    try {
+                        return ${convertFromNode(type.ret, `cb->Call({
+                            ${type.args.map(({name, type}) => convertToNode(type, name)).join(", ")}
+                        })`)};
+                    } catch (Napi::Error& e) {
+                        // Populate the cache of the message now to ensure it is safe for any C++ code to call what().
+                        (void)e.what();
+                        throw;
+                    }
+                }`
+
+        case 'Enum':
+            return `${type.name}((${expr}).As<Napi::Number>().DoubleValue())`
+
+        default:
+            const _exhaustiveCheck: never = type;
+            return _exhaustiveCheck
+    }
 }
 
 class NodeCppDecls extends CppDecls {
     inits: string[] = []
     addon = pushRet(this.classes, new NodeAddon())
-    constructor(spec: Spec) {
+    constructor(spec: BoundSpec) {
         super()
 
-        for (const [cppClassName, { methods, properties, staticMethods, sharedPtrWrapped }] of Object.entries(spec.classes)) {
-            let jsName = pascalCase(cppClassName)
+        for (const struct of spec.records) {
+            let fieldsFrom = []
+            let fieldsTo = []
+            for (let field of struct.fields) {
+                let jsFieldName = camelCase(field.name)
+                let cppFieldName = field.name
+                fieldsFrom.push(`out.Set("${jsFieldName}", ${convertToNode(field.type, `in.${cppFieldName}`)});`)
+                // TODO: consider doing lazy conversion of some types to JS, only if the field is accessed.
+                fieldsTo.push(`{
+                    auto field = obj.Get("${jsFieldName}");
+                    if (!field.IsUndefined()) {
+                        out.${cppFieldName} = ${convertFromNode(field.type, 'field')};
+                    } else if constexpr (${field.required ? 'true' : 'false'}) {
+                        throw Napi::TypeError::New(${env}, "${struct.name}::${jsFieldName} is required");
+                    }
+                }`)
+            }
+
+            this.free_funcs.push(new CppFunc(
+                `NODE_FROM_STRUCT_${struct.name}`,
+                'Napi::Value',
+                [new CppVar('Napi::Env', env), new CppVar(struct.name, 'in')],
+                {
+                    body: `
+                        auto out = Napi::Object::New(${env});
+                        ${fieldsFrom.join('')}
+                        return out;
+                    `
+                }
+            ))
+            this.free_funcs.push(new CppFunc(
+                `NODE_TO_STRUCT_${struct.name}`,
+                struct.name,
+                [new CppVar('Napi::Value', 'val')],
+                {
+                    body: `
+                        auto ${env} = val.Env();
+                        if (!val.IsObject())
+                            throw Napi::TypeError::New(${env}, "expected an object");
+                        auto obj = val.As<Napi::Object>();
+                        auto out = ${struct.name}();
+                        ${fieldsTo.join('')}
+                        return out;
+                    `
+                }
+            ))
+        }
+        for (const specClass of spec.classes) {
+            // TODO need to do extra work to enable JS implementation of interfaces
+            let jsName = pascalCase(specClass.name)
+            let cppClassName = specClass.name
             let cls = pushRet(this.classes, new NodeObjectWrap(jsName))
 
             let descriptors: string[] = []
 
-            const self = sharedPtrWrapped ? '(*m_ptr)' : '(m_val)';
+            const self = specClass.sharedPtrWrapped ? '(*m_ptr)' : '(m_val)';
 
             descriptors = []
 
-            for (let [cppName, overloads] of Object.entries(methods)) {
-                for (let overload of overloads) {
-                    let jsName = camelCase(cppName + (overload.suffix ? `_${overload.suffix}`: ''))
-                    let cppMeth = cls.addMethod(new CppNodeMethod(jsName))
-                    descriptors.push(`InstanceMethod<&${cppMeth.qualName()}>("${jsName}")`)
-                    let ret = overload.sig.return
-                    let args = overload.sig.arguments
-                    cppMeth.body += `
-                        if (info.Length() != ${args.length})
-                            throw Napi::TypeError::New(${env}, "expected ${args.length} arguments");
+            for (let method of specClass.methods) {
+                let jsName = camelCase(method.unique_name)
+                let cppMeth = cls.addMethod(new CppNodeMethod(jsName))
+                descriptors.push(`InstanceMethod<&${cppMeth.qualName()}>("${jsName}")`)
+                let ret = method.sig.ret
+                let args = method.sig.args
+                cppMeth.body += `
+                    if (info.Length() != ${args.length})
+                        throw Napi::TypeError::New(${env}, "expected ${args.length} arguments");
 
-                        return ${
-                            convertToNode(
-                                ret,
-                                `${self}.${cppName}(${args.map((a, i) => convertFromNode(a.type, `info[${i}]`)).join(', ')})`
-                            )};
-                    `
-                }
+                    return ${
+                        convertToNode(
+                            ret,
+                            `${self}.${method.name}(${args.map((a, i) => convertFromNode(a.type, `info[${i}]`)).join(', ')})`
+                        )};
+                `
             }
-            for (let [cppName, overloads] of Object.entries(staticMethods)) {
-                for (let overload of overloads) {
-                    let jsName = camelCase(cppName + (overload.suffix ? `_${overload.suffix}`: ''))
-                    let cppMeth = cls.addMethod(new CppNodeMethod(jsName, {static: true}))
-                    descriptors.push(`StaticMethod<&${cppMeth.qualName()}>("${jsName}")`)
-                    let ret = overload.sig.return
-                    let args = overload.sig.arguments
-                    //let ret_decl = 'auto&& val = ' if ret != Primitive('void') else ''
-                    cppMeth.body += `
-                        if (info.Length() != ${args.length})
-                            throw Napi::TypeError::New(${env}, "expected ${args.length} arguments");
+            for (let method of specClass.staticMethods) {
+                let jsName = camelCase(method.unique_name)
+                let cppMeth = cls.addMethod(new CppNodeMethod(jsName, {static: true}))
+                descriptors.push(`StaticMethod<&${cppMeth.qualName()}>("${jsName}")`)
+                let ret = method.sig.ret
+                let args = method.sig.args
+                //let ret_decl = 'auto&& val = ' if ret != Primitive('void') else ''
+                cppMeth.body += `
+                    if (info.Length() != ${args.length})
+                        throw Napi::TypeError::New(${env}, "expected ${args.length} arguments");
 
-                        return ${
-                            convertToNode(
-                                ret,
-                                `${cppClassName}::${cppName}(${args.map((a, i) => convertFromNode(a.type, `info[${i}]`)).join(', ')})`
-                            )};
-                    `
-                }
+                    return ${
+                        convertToNode(
+                            ret,
+                            `${cppClassName}::${method.name}(${args.map((a, i) => convertFromNode(a.type, `info[${i}]`)).join(', ')})`
+                        )};
+                `
             }
 
-            for (let [cppPropName, type] of Object.entries(properties)) {
+            for (let [cppPropName, type] of Object.entries(specClass.properties)) {
                 let jsName = camelCase(cppPropName)
                 let cppMeth = cls.addMethod(new CppNodeMethod(jsName))
                 cppMeth.body += `return ${convertToNode(type, `${self}.${cppPropName}()`)};`
@@ -195,7 +493,7 @@ class NodeCppDecls extends CppDecls {
                     throw Napi::TypeError::New(${env}, "need 1 external argument");
             `
 
-            if (sharedPtrWrapped) {
+            if (specClass.sharedPtrWrapped) {
                 let ptr = `std::shared_ptr<${cppClassName}>`
                 cls.members.push(new CppVar(ptr, 'm_ptr'))
                 cls.ctor.body += `m_ptr = std::move(*info[0].As<Napi::External<${ptr}>>().Data());`
@@ -217,18 +515,24 @@ class NodeCppDecls extends CppDecls {
 
                 this.free_funcs.push(new CppFunc(
                     `NODE_TO_CLASS_${cppClassName}`,
-                    `const ${cppClassName}&`, // XXX should this be mutable?
+                    `const ${cppClassName}&`, // TODO should this be mutable?
                     [new CppVar('Napi::Value', 'val')],
-                    {body: `return ${cls.name}::Unwrap(val.ToObject())->m_val;`}
+                    {
+                        attributes: '[[maybe_unused]]',
+                        body: `return ${cls.name}::Unwrap(val.ToObject())->m_val;`
+                    }
                 ))
                 this.free_funcs.push(new CppFunc(
                     `NODE_FROM_CLASS_${cppClassName}`,
                     'Napi::Value',
                     [new CppVar('Napi::Env', env), new CppVar(cppClassName, 'val')],
-                    {body: `return ${this.addon.accessCtor(cls)}.New({Napi::External<${cppClassName}>::New(${env}, &val)});`}
+                    {
+                        attributes: '[[maybe_unused]]',
+                        body: `return ${this.addon.accessCtor(cls)}.New({Napi::External<${cppClassName}>::New(${env}, &val)});`
+                    }
                 ))
             }
-            
+
             cls.addMethod(new CppMethod(
                 'makeCtor',
                 'Napi::Function',
@@ -267,25 +571,43 @@ export function generateNode({ spec, file : makeFile  }: TemplateContext): void 
         namespace realm::js::node {
         namespace {
 
-        // TODO hacks, because we don't yet support defining types with QualName
-        using RealmConfig = Realm::Config;
+        // TODO hacks, because we don't yet support defining types with qualified names
         using Scheduler = util::Scheduler;
 
-        //TODO implement converions
-        template <typename T> Napi::Value convertToNodeTODO(const T&);
-        struct ConvertToAny {
-            template <typename T>
-            operator T&() const;
-        };
-        ConvertToAny convertFromNodeTODO(Napi::Value);
+        ////////////////////////////////////////////////////////////
 
-        Napi::Error convertToNodeExceptionTODO(Napi::Env&, const std::exception&);
+        // These helpers are used by the generated code.
+        // TODO Consider moving them to a header.
+
+        // TODO consider allowing Number (double) with (u)int64_t.
+        int64_t extractInt64FromNode(const Napi::Value& input) {
+            bool lossless;
+            auto output = input.As<Napi::BigInt>().Int64Value(&lossless);
+            if (!lossless)
+                throw Napi::RangeError::New(input.Env(), "Value doesn't fit in int64_t");
+            return output;
+        }
+        uint64_t extractUint64FromNode(const Napi::Value& input) {
+            bool lossless;
+            auto output = input.As<Napi::BigInt>().Uint64Value(&lossless);
+            if (!lossless)
+                throw Napi::RangeError::New(input.Env(), "Value doesn't fit in uint64_t");
+            return output;
+        }
+
+        [[noreturn]] REALM_NOINLINE void throwNodeException(Napi::Env& ${env}, const std::exception& e) {
+            if (dynamic_cast<const Napi::Error*>(&e))
+                throw; // Just allow exception propagation to continue
+            // TODO consider throwing more specific errors in some cases.
+            // TODO consider using ThrowAsJavaScriptException instead here.
+            throw Napi::Error::New(${env}, e.what());
+        }
 
         ////////////////////////////////////////////////////////////
 
     `)
 
-    new NodeCppDecls(spec).outputDefsTo(out)
+    new NodeCppDecls(bindModel(spec)).outputDefsTo(out)
 
     out(`
         } // namespace
