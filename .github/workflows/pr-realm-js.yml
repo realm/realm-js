@@ -316,11 +316,11 @@ jobs:
         if: ${{ (matrix.variant.os == 'ios') }}
         run: open -a ${{ env.DEVELOPER_DIR }}/Contents/Developer/Applications/Simulator.app/Contents/MacOS/Simulator
 
-      - name: Run tests (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
+      - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ (matrix.variant.os != 'android') }}
         run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
-      - name: Run tests (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
+      - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ (matrix.variant.os == 'android') }}
         uses: reactivecircus/android-emulator-runner@v2
         with:
