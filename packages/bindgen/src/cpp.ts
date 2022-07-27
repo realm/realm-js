@@ -33,6 +33,7 @@ export interface CppFuncProps {
     noexcept?: boolean,
     override?: boolean,
     body?: string,
+    attributes?: string
 }
 export class CppFunc {
     constructor(
@@ -52,7 +53,7 @@ export class CppFunc {
     }
 
     declaration() {
-        return `${this.prop("static")} ${this.ret} ${this.name}`
+        return `${this._props.attributes ?? ''} ${this.prop("static")} ${this.ret} ${this.name}`
             + `(${this.args.map(a => a.arg_declaration()).join(", ")}) `
             + `${this.props("const", "noexcept", "override")};`
     }
