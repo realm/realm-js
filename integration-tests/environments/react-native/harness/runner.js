@@ -189,7 +189,9 @@ function optionalStringToBoolean(value) {
 
 if (module.parent === null) {
   if (SKIP_RUNNER === "true") {
-    ensureAndroidReversePorts();
+    if (PLATFORM === "android") {
+      ensureAndroidReversePorts();
+    }
     console.log("Skipping the runner - you're on your own");
     process.exit(0);
   }

@@ -20,6 +20,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Upgraded Realm Example app to React Native v0.69.1([#4722](https://github.com/realm/realm-js/pull/4722))
 * Fixed a crash on Android when an error was thrown from the flexible sync `initialSubscriptions` call ([#4710](https://github.com/realm/realm-js/pull/4710), since v10.18.0)
 * Added a default sync logger for integration tests ([#4730](https://github.com/realm/realm-js/pull/4730))
+* Fixed an issue starting the integration test runner on iOS ([#4742](https://github.com/realm/realm-js/pull/4742]))
 
 10.19.5 Release notes (2022-7-6)
 =============================================================
