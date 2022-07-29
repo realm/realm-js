@@ -97,7 +97,7 @@ export async function importApp(
   const realmConfigPath = "./realm-config";
 
   const credentials = getCredentials();
-  console.log(`Importing into "${baseUrl}" (using ${credentials.kind} credentials)`);
+
   const importer = new AppImporter({
     baseUrl,
     credentials,
@@ -111,25 +111,22 @@ export async function importApp(
   const { appId } = await importer.importApp(appTemplatePath, replacements);
 
   return new App({ baseUrl, id: appId });
-  // const response = await fetch(appImporterUrl, {
-  //   method: "POST",
-  //   body: JSON.stringify({ name, replacements }),
-  // });
-  // const json = await response.json<Response>();
-  // if (response.ok && typeof json.appId === "string") {
-  //   return new App({ baseUrl, id: json.appId });
-  // } else if (typeof json.message === "string") {
-  //   throw new Error(`Failed to import: ${json.message}`);
-  // } else {
-  //   throw new Error("Failed to import app");
-  // }
 }
 
 export async function deleteApp(clientAppId: string): Promise<void> {
-  const { appImporterUrl } = getUrls();
+  const { baseUrl } = getUrls();
+  const appsDirectoryPath = "./realm-apps";
+  const realmConfigPath = "./realm-config";
 
-  // This might take some time, so we just send it and forget it
-  fetch(`${appImporterUrl}/app/${clientAppId}`, {
-    method: "DELETE",
+  const credentials = getCredentials();
+
+  const importer = new AppImporter({
+    baseUrl,
+    credentials,
+    realmConfigPath,
+    appsDirectoryPath,
+    cleanUp: true,
   });
+
+  importer.deleteApp(clientAppId);
 }
