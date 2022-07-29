@@ -5,9 +5,8 @@
   "private": true,
   "scripts": {
     "start": "node index.js",
-    "test": "mocha-remote -- concurrently --kill-others-on-fail npm:app-importer npm:start",
-    "lint": "eslint .",
-    "app-importer": "realm-app-importer serve ../../realm-apps"
+    "test": "mocha-remote npm start",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@realm/integration-tests": "*",

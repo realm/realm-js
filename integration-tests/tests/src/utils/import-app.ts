@@ -19,6 +19,8 @@ import { App, BSON } from "realm";
 
 import { fetch } from "./fetch";
 
+import { AppImporter, Credentials } from "realm-app-importer";
+
 export type TemplateReplacements = Record<string, Record<string, unknown>>;
 export type ErrorResponse = { message: string; appId: never };
 export type ImportResponse = { appId: string; message: never };
@@ -30,6 +32,22 @@ function getUrls() {
   return {
     appImporterUrl: typeof appImporterUrl === "string" ? appImporterUrl : "http://localhost:8091",
     baseUrl: typeof realmBaseUrl === "string" ? realmBaseUrl : "http://localhost:9090",
+  };
+}
+
+function getCredentials(): Credentials {
+  const { publicKey, privateKey, username, password } = environment;
+  if (typeof publicKey === "string" && typeof privateKey === "string") {
+    return {
+      kind: "api-key",
+      publicKey,
+      privateKey,
+    };
+  }
+  return {
+    kind: "username-password",
+    username: typeof username === "string" ? username : "unique_user@domain.com",
+    password: typeof password === "string" ? password : "password",
   };
 }
 
@@ -74,19 +92,37 @@ export async function importApp(
   name: string,
   replacements: TemplateReplacements = getDefaultReplacements(name),
 ): Promise<App> {
-  const { appImporterUrl, baseUrl } = getUrls();
-  const response = await fetch(appImporterUrl, {
-    method: "POST",
-    body: JSON.stringify({ name, replacements }),
+  const { baseUrl } = getUrls();
+  const appsDirectoryPath = "./realm-apps";
+  const realmConfigPath = "./realm-config";
+
+  const credentials = getCredentials();
+  console.log(`Importing into "${baseUrl}" (using ${credentials.kind} credentials)`);
+  const importer = new AppImporter({
+    baseUrl,
+    credentials,
+    realmConfigPath,
+    appsDirectoryPath,
+    cleanUp: true,
   });
-  const json = await response.json<Response>();
-  if (response.ok && typeof json.appId === "string") {
-    return new App({ baseUrl, id: json.appId });
-  } else if (typeof json.message === "string") {
-    throw new Error(`Failed to import: ${json.message}`);
-  } else {
-    throw new Error("Failed to import app");
-  }
+
+  const appTemplatePath = `../../realm-apps/${name}`;
+
+  const { appId } = await importer.importApp(appTemplatePath, replacements);
+
+  return new App({ baseUrl, id: appId });
+  // const response = await fetch(appImporterUrl, {
+  //   method: "POST",
+  //   body: JSON.stringify({ name, replacements }),
+  // });
+  // const json = await response.json<Response>();
+  // if (response.ok && typeof json.appId === "string") {
+  //   return new App({ baseUrl, id: json.appId });
+  // } else if (typeof json.message === "string") {
+  //   throw new Error(`Failed to import: ${json.message}`);
+  // } else {
+  //   throw new Error("Failed to import app");
+  // }
 }
 
 export async function deleteApp(clientAppId: string): Promise<void> {
