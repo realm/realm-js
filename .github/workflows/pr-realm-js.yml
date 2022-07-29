@@ -209,12 +209,12 @@ jobs:
       REALM_DISABLE_ANALYTICS: 1
       MOCHA_REMOTE_TIMEOUT: 60000
       CLUSTER_NAME: ${{ needs.baas-realm-js.outputs.clusterName }}
-      MOCHA_REMOTE_CONTEXT: realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ needs.baas-realm-js.outputs.clusterName }}
-      MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
-      MOCHA_REMOTE_EXIT_ON_ERROR: true
       REALM_BASE_URL: ${{ secrets.REALM_QA_BASE_URL }}
       REALM_PUBLIC_KEY: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
       REALM_PRIVATE_KEY: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
+      MOCHA_REMOTE_CONTEXT: realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ needs.baas-realm-js.outputs.clusterName }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
+      MOCHA_REMOTE_EXIT_ON_ERROR: true
       SPAWN_LOGCAT: true
       HEADLESS_DEBUGGER: true
       # RETRIES: 5
