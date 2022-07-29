@@ -41,6 +41,7 @@
     "fs-extra": "^8.1.0",
     "glob": "^7.1.6",
     "node-fetch": "^2.6.0",
+    "realm-network-transport": "*",
     "yargs": "^16.2.0"
   },
   "devDependencies": {
