@@ -1,5 +1,14 @@
 name: Publish Release
-on: workflow_dispatch
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release version tag
+        required: true
+        type: string
+        default: 'latest'
+
 jobs:
   main:
     runs-on: ubuntu-latest
@@ -50,10 +59,13 @@ jobs:
       run: |
         pkgVersion=$(npm pkg get version)
         echo "::set-output name=version::$pkgVersion"
+        prerelease=false
+        if [ '${{ inputs.tag }}' != latest ]; then prerelease=true; fi
+        echo "::set-output name=prerelease::$prerelease"
       shell: bash
 
     - name: Npm Publish realm-js-${{ steps.get-version.outputs.version }}
-      run: npm publish ${{ steps.get-version.outputs.version }}
+      run: npm publish --tag '${{ inputs.tag}}' realm-js@${{ steps.get-version.outputs.version }}
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -81,6 +93,7 @@ jobs:
         tag: v${{ steps.get-version.outputs.version }}
         token: ${{ secrets.GITHUB_TOKEN }}
         draft: false
+        prerelease: ${{ steps.get-version.outputs.prerelease }}
 
     - name: Upload Github Release artifacts
       run: npm prebuild --upload ${{ secrets.GITHUB_TOKEN }}
