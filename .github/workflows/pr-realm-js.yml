@@ -222,6 +222,7 @@ jobs:
       # Pin the Xcode version
       DEVELOPER_DIR: /Applications/Xcode_12.5.1.app
       JAVA_HOME: $JAVA_HOME_11_X64
+      ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/21.4.7075529
     runs-on: ${{ matrix.variant.runner }}
     strategy:
       fail-fast: false
