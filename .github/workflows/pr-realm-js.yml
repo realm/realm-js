@@ -329,6 +329,7 @@ jobs:
           # ndk: 21.0.6113669
           # cmake: 3.18.1
           target: google_apis
+          emulator-build: 7425822
           script: npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
   cleanup-realm-js:
