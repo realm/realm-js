@@ -31,8 +31,8 @@
     "mocha-junit-reporter": "^2.0.0",
     "mocha-remote-client": "^1.5.0",
     "path-browserify": "^1.0.1",
-    "react": "18.0.0",
-    "react-native": "0.69.0",
+    "react": "18.1.0",
+    "react-native": "0.70.0-rc.1",
     "react-native-fs": "^2.18.0",
     "react-native-progress": "^4.1.2",
     "realm": "*"
