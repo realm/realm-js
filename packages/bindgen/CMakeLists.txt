@@ -154,6 +154,10 @@ file(GLOB_RECURSE TS_FILES
     src/*.ts
 )
 
+# Each template command should include its file as an explicit dependency.
+# This avoids needing to re-run all generators for changes that could only affect one of them.
+list(FILTER TS_FILES EXCLUDE REGEX "templates/[^/]*\.ts$")
+
 set(SPEC_FILE ${CMAKE_CURRENT_SOURCE_DIR}/spec.yml)
 
 # Unfortunately this path is hard coded in the reader.
@@ -162,6 +166,12 @@ set(SCHEMA_FILE ${CMAKE_CURRENT_SOURCE_DIR}/generated/spec.schema.json)
 
 # We could look into changing this, but perhaps it is correct?
 set(TYPESCRIPT_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/generated/ts/)
+
+set(GENERATED_TS_FILES
+    ${TYPESCRIPT_OUTPUT_DIR}/native.d.ts
+    ${TYPESCRIPT_OUTPUT_DIR}/native.js
+    ${TYPESCRIPT_OUTPUT_DIR}/enums.ts
+)
 
 add_custom_command(
     OUTPUT ${SCHEMA_FILE}
@@ -186,7 +196,7 @@ add_custom_command(
 )
 
 add_custom_command(
-    OUTPUT ${TYPESCRIPT_OUTPUT_DIR}/index.d.ts ${TYPESCRIPT_OUTPUT_DIR}/index.ts
+    OUTPUT ${GENERATED_TS_FILES}
     COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts --spec ${SPEC_FILE} --template typescript --output ${TYPESCRIPT_OUTPUT_DIR}
     VERBATIM
     MAIN_DEPENDENCY src/templates/typescript.ts
@@ -196,7 +206,4 @@ add_custom_command(
         ${TS_FILES}
 )
 
-add_custom_target(TypeScript ALL DEPENDS
-    ${TYPESCRIPT_OUTPUT_DIR}/index.d.ts
-    ${TYPESCRIPT_OUTPUT_DIR}/index.ts
-)
+add_custom_target(TypeScript ALL DEPENDS ${GENERATED_TS_FILES})
