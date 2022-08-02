@@ -18,7 +18,7 @@
 
 import { Realm } from "./mock/Realm";
 
-export * from "./generated/ts/index";
-export * from "./generated/ts/index.d";
+export * from "./generated/ts/native";
+export * from "./generated/ts/enums";
 
 export { Realm };

@@ -26,13 +26,13 @@ const PRIMITIVES_MAPPING: Record<string, string> = {
   void: "void",
   bool: "boolean",
   int: "number",
-  int64_t: "number",
+  int64_t: "bigint",
   int32_t: "number",
-  uint64_t: "number",
+  uint64_t: "bigint",
   "std::string": "string",
-  StringData: "string",
-  BinaryData: "ArrayBuffer",
-  OwnedBinaryData: "ArrayBuffer",
+  StringData: "string | null",
+  BinaryData: "ArrayBuffer | null",
+  OwnedBinaryData: "ArrayBuffer | null",
 };
 
 type TemplateInstanceMapper = (spec: Spec, type: TemplateInstanceSpec) => string;
@@ -133,30 +133,33 @@ export function generateTypeScript({ spec, file }: TemplateContext): void {
     }
   }
 
-  const tsOut = file("index.ts", "eslint", "typescript-checker");
-  tsOut("// This file is generated: Update the spec instead of editing this file directly");
+  const enumsOut = file("enums.ts", "eslint", "typescript-checker");
+  enumsOut("// This file is generated: Update the spec instead of editing this file directly");
 
-  tsOut("// Enums");
+  enumsOut("// Enums");
   for (const [name, e] of Object.entries(spec.enums)) {
     // Using const enum to avoid having to emit JS backing these
-    tsOut(`export const enum ${name} {`);
+    enumsOut(`export const enum ${name} {`);
     if (e.isFlag) {
-      tsOut(...Object.entries(e.values).map(([k, v]) => `${k} = ${v},`));
+      enumsOut(...Object.entries(e.values).map(([k, v]) => `${k} = ${v},`));
     } else {
-      tsOut(...e.values.map((k) => `${k} = "${k}",`));
+      enumsOut(...e.values.map((k) => `${k} = "${k}",`));
     }
-    tsOut("};");
+    enumsOut("};");
   }
 
-  const out = file("index.d.ts", "eslint", "typescript-checker");
+  const js = file("native.js", "eslint", "typescript-checker");
+  js("import bindings from 'bindings';")
+
+  const out = file("native.d.ts", "eslint", "typescript-checker");
   out("// This file is generated: Update the spec instead of editing this file directly");
 
-  out("import type {", Object.keys(spec.enums).join(", "), '} from "./index";');
+  out("import {", Object.keys(spec.enums).join(", "), '} from "./enums";');
   out("export {", Object.keys(spec.enums).join(", "), '};');
 
   out("// Opaque types");
   for (const name of spec.opaqueTypes) {
-    out.lines("/** Using an empty enum to express a nominal type */", `export enum ${name} {};`);
+    out.lines("/** Using an empty enum to express a nominal type */", `export declare enum ${name} {}`);
   }
 
   out("// Type aliases");
@@ -175,6 +178,7 @@ export function generateTypeScript({ spec, file }: TemplateContext): void {
 
   out("// Classes");
   for (const [name, { methods, properties, staticMethods, sharedPtrWrapped }] of Object.entries(spec.classes)) {
+    js(`export const {${name}} = bindings("realm.node");`)
     out(`export class ${name} {`);
     for (const [name, methodSpecs] of Object.entries(staticMethods)) {
       for (const methodSpec of methodSpecs) {
