@@ -178,7 +178,9 @@ function convertPrimToNode(type: string, expr: string): string {
             return convertPrimToNode('BinaryData', `${expr}.get()`)
 
         case 'BinaryData':
-            return `([&] (BinaryData bd) {
+            return `([&] (BinaryData bd) -> Napi::Value {
+                if (bd.is_null())
+                    return ${env}.Null();
                 auto arr = Napi::ArrayBuffer::New(${env}, bd.size());
                 memcpy(arr.Data(), bd.data(), bd.size());
                 return arr;
@@ -204,7 +206,7 @@ function convertPrimFromNode(type: string, expr: string) {
 
         case 'std::string_view':
         case 'std::string':
-            return `(${expr}).As<Napi::String>().Utf8Value();`
+            return `(${expr}).As<Napi::String>().Utf8Value()`
         case 'StringData':
             return `([&] (const Napi::Value& v) {
                 return v.IsNull() ? StringData() : StringData(v.As<Napi::String>().Utf8Value());
