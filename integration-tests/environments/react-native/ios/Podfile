@@ -12,7 +12,7 @@ target 'RealmReactNativeTests' do
   use_react_native!(
     :path => config[:reactNativePath],
     # to enable hermes on iOS, change `false` to `true` and then install pods
-    :hermes_enabled => 'true',# (ENV['HERMES_ENABLED'] || 'true') == 'true', # default: true
+    :hermes_enabled => true,# (ENV['HERMES_ENABLED'] || 'true') == 'true', # default: true
     :fabric_enabled => (ENV['FABRIC_ENABLED'] || 'true') == 'true',
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
