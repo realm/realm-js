@@ -71,7 +71,7 @@ class Interface extends Class {
 }
 
 class Field {
-    constructor(public name: string, public type: Type, public required = true) {}
+    constructor(public name: string, public type: Type, public required: boolean) {}
 }
 
 class Struct {
@@ -230,7 +230,7 @@ export function bindModel(spec: Spec): BoundSpec {
     for (const [name, {fields}] of Object.entries(spec.records)) {
         (types[name] as Struct).fields =
             Object.entries(fields)
-            .map(([name, field]) => new Field(name, resolveTypes(field.type), field.default == ''))
+            .map(([name, field]) => new Field(name, resolveTypes(field.type), field.default === undefined))
     }
 
     for (const subtree of ['classes', 'interfaces'] as const) {
