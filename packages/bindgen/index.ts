@@ -16,9 +16,5 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Realm } from "./mock/Realm";
-
-export * from "./generated/ts/native";
+export * from "./generated/ts/native.js";
 export * from "./generated/ts/enums";
-
-export { Realm };
