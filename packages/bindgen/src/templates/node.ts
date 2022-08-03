@@ -154,6 +154,7 @@ function convertPrimToNode(type: string, expr: string): string {
         case 'bool': return `Napi::Boolean::New(${env}, ${expr})`
 
         case 'double':
+        case 'float':
         case 'int':
         case 'int32_t':
             return `Napi::Number::New(${env}, ${expr})`
@@ -196,6 +197,7 @@ function convertPrimFromNode(type: string, expr: string) {
         case 'bool': return `(${expr}).As<Napi::Boolean>().Value()`
 
         case 'double': return `(${expr}).As<Napi::Number>().DoubleValue()`
+        case 'float': return `(${expr}).As<Napi::Number>().FloatValue()`
 
         case 'int':
         case 'int32_t':
@@ -250,6 +252,8 @@ function convertToNode(type: Type, expr: string): string {
                 case 'util::Optional':
                     return `[&] (auto&& opt) { return !opt ? ${env}.Null() : ${c(inner, '*opt')}; }(${expr})`
                 case 'std::vector':
+                    // TODO try different ways to create the array to see what is fastest.
+                    // eg, try calling push() with and without passing size argument to New().
                     return `[&] (auto&& vec) {
                         auto out = Napi::Array::New(${env}, vec.size());
                         uint32_t i = 0;
@@ -290,7 +294,7 @@ function convertToNode(type: Type, expr: string): string {
         case 'Enum':
             return `[&]{
                 static_assert(sizeof(${type.name}) <= sizeof(int32_t), "we only support enums up to 32 bits");
-                return Napi::Number::New(${env}, double(${expr}));
+                return Napi::Number::New(${env}, int(${expr}));
             }()`
 
         default:
@@ -470,6 +474,7 @@ class NodeCppDecls extends CppDecls {
                 descriptors.push(`StaticMethod<&${cppMeth.qualName()}>("${jsName}")`)
                 let ret = method.sig.ret
                 let args = method.sig.args
+                let cppFunc = method.isConstructor ? cppClassName : `${cppClassName}::${method.name}`
                 //let ret_decl = 'auto&& val = ' if ret != Primitive('void') else ''
                 cppMeth.body += `
                     if (info.Length() != ${args.length})
@@ -478,7 +483,7 @@ class NodeCppDecls extends CppDecls {
                     return ${
                         convertToNode(
                             ret,
-                            `${cppClassName}::${method.name}(${args.map((a, i) => convertFromNode(a.type, `info[${i}]`)).join(', ')})`
+                            `${cppFunc}(${args.map((a, i) => convertFromNode(a.type, `info[${i}]`)).join(', ')})`
                         )};
                 `
             }
@@ -517,7 +522,7 @@ class NodeCppDecls extends CppDecls {
 
                 this.free_funcs.push(new CppFunc(
                     `NODE_TO_CLASS_${cppClassName}`,
-                    `const ${cppClassName}&`, // TODO should this be mutable?
+                    `${cppClassName}&`,
                     [new CppVar('Napi::Value', 'val')],
                     {
                         attributes: '[[maybe_unused]]',
@@ -575,6 +580,15 @@ export function generateNode({ spec, file : makeFile  }: TemplateContext): void 
 
         // TODO hacks, because we don't yet support defining types with qualified names
         using Scheduler = util::Scheduler;
+
+        // TODO hack to make owned StringData
+        struct StringDataOwnerHack : std::string {
+            using std::string::string;
+            StringDataOwnerHack(const std::string& s) : std::string(s) {}
+            StringDataOwnerHack(std::string&& s) : std::string(std::move(s)) {}
+
+            StringData toStringData() const { return *this; }
+        };
 
         ////////////////////////////////////////////////////////////
 
