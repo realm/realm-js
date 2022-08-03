@@ -26,6 +26,8 @@ const PRIMITIVES_MAPPING: Record<string, string> = {
   void: "void",
   bool: "boolean",
   int: "number",
+  double: "number",
+  float: "number",
   int64_t: "bigint",
   int32_t: "number",
   uint64_t: "bigint",
@@ -177,9 +179,21 @@ export function generateTypeScript({ spec, file }: TemplateContext): void {
   }
 
   out("// Classes");
-  for (const [name, { methods, properties, staticMethods, sharedPtrWrapped }] of Object.entries(spec.classes)) {
+  for (const [name, { constructors, methods, properties, staticMethods, sharedPtrWrapped }] of Object.entries(spec.classes)) {
     js(`export const {${name}} = bindings("realm.node");`)
     out(`export class ${name} {`);
+    out(`private constructor();`);
+    for (const [ctorName, sig] of Object.entries(constructors)) {
+      out(
+        "static",
+        camelCase(ctorName),
+        "(",
+        generateArguments(spec, sig.arguments),
+        "):",
+        name,
+        ";",
+      );
+    }
     for (const [name, methodSpecs] of Object.entries(staticMethods)) {
       for (const methodSpec of methodSpecs) {
         out(
