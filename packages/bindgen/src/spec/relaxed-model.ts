@@ -45,6 +45,7 @@ export type RelaxedFieldSpec =
     };
 
 export type RelaxedClassSpec = Pick<Partial<ClassSpec>, "sharedPtrWrapped"> & {
+  constructors?: { [name: string]: string };
   staticMethods?: { [name: string]: RelaxedMethodSpec | RelaxedMethodSpec[] };
   properties?: { [name: string]: string };
   methods?: { [name: string]: RelaxedMethodSpec | RelaxedMethodSpec[] };

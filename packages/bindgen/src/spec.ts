@@ -25,6 +25,7 @@ import {
   ClassSpec,
   ConstantSpec,
   FieldSpec,
+  FunctionTypeSpec,
   InterfaceSpec,
   MethodSpec,
   RecordSpec,
@@ -131,6 +132,7 @@ function normalizeClassSpec(spec: RelaxedClassSpec): ClassSpec {
     staticMethods: mapObjectValues(spec.staticMethods || {}, normalizeMethodSpec),
     properties: mapObjectValues(spec.properties || {}, normalizeTypeSpec),
     methods: mapObjectValues(spec.methods || {}, normalizeMethodSpec),
+    constructors: mapObjectValues(spec.constructors || {}, normalizeConstructor),
   };
 }
 
@@ -172,4 +174,17 @@ function normalizeMethodSpec(spec: RelaxedMethodSpec | RelaxedMethodSpec[]): Met
         throw new Error(`Expected a function type, got "${type.kind}"`);
       }
     });
+}
+
+function normalizeConstructor(sig: string): FunctionTypeSpec {
+  const type = parseTypeSpec(sig);
+  if (typeof type === "undefined") {
+    throw new Error(`Expected a function type, but failed to parse: ${sig}`);
+  }
+  if (type.kind !== "function") {
+    throw new Error(`Expected a function type, got "${type.kind}"`);
+  }
+  if (type.return.kind != 'qualified-name' || type.return.names.length != 1 || type.return.names[0] != 'void')
+    throw new Error(`Constructors not allowed to specify return type, got "${type.kind}"`);
+  return type;
 }
