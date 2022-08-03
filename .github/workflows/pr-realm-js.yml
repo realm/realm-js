@@ -315,21 +315,25 @@ jobs:
 
       - name: Invoke the simulator (making subsequent "open -a Simulator" calls work)
         if: ${{ (matrix.variant.os == 'ios') }}
+        timeout-minutes: 25
         run: open -a ${{ env.DEVELOPER_DIR }}/Contents/Developer/Applications/Simulator.app/Contents/MacOS/Simulator
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ (matrix.variant.os != 'android') }}
+        # The non react native environments should not take so long
+        timeout-minutes: 10
         run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ (matrix.variant.os == 'android') }}
+        timeout-minutes: 25
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 29
-          ndk: 21.4.7075529
-          cmake: 3.23.2
-          target: google_apis
-          emulator-build: 7425822
+          # ndk: 21.4.7075529
+          # cmake: 3.23.2
+          # target: google_apis
+          # emulator-build: 7425822
           script: npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
   cleanup-realm-js:
