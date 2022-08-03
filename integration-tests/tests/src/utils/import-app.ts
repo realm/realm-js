@@ -17,11 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 import { App, BSON } from "realm";
 
-import Network from "realm-network-transport";
 import { AppImporter } from "realm-app-importer";
 import { fetch } from "./fetch";
-
-console.log(Network);
 
 export type TemplateReplacements = Record<string, Record<string, unknown>>;
 export type ErrorResponse = { message: string; appId: never };
@@ -39,7 +36,7 @@ function getUrls() {
 
 function getIsAppImporterRemote() {
   const { isAppImporterRemote } = environment;
-  return isAppImporterRemote === true;
+  return isAppImporterRemote === "true";
 }
 
 type Credentials =
