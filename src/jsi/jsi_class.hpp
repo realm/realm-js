@@ -36,6 +36,9 @@
 namespace realm::js {
 
 template <typename T>
+struct TD;
+
+template <typename T>
 struct RealmObjectClass;
 template <typename T>
 class RealmClass;
@@ -169,6 +172,18 @@ class Wrapper : public fbjsi::HostObject {
 public:
     template <typename... Args, typename = std::enable_if_t<std::is_constructible_v<T, Args...>>>
     Wrapper(Args&&... args)
+        : obj(std::forward<Args>(args)...)
+    {
+    }
+
+    T obj;
+};
+
+template <typename T>
+class WrappedState : public fbjsi::NativeState {
+public:
+    template <typename... Args, typename = std::enable_if_t<std::is_constructible_v<T, Args...>>>
+    WrappedState(Args&&... args)
         : obj(std::forward<Args>(args)...)
     {
     }
@@ -494,28 +509,50 @@ public:
         return object->instanceOf(env, *s_ctor);
     }
 
+
+    // template <typename Tom>
+    // class WrappedObject : public fbjsi::NativeState {
+    // public:
+    //     WrappedObject(Tom& obj)
+    //         : obj(obj){};
+
+    // private:
+    //     Tom& obj;
+    // };
+
     static Internal* get_internal(JsiEnv env, const JsiObj& object)
     {
-        auto internal = object->getProperty(env, g_internal_field);
-        if (internal.isUndefined()) {
-            // In the case of a user opening a Realm with a class-based model,
-            // the user defined constructor will get called before the "internal" property has been set.
-            if constexpr (std::is_same_v<T, RealmObjectClass<realmjsi::Types>>)
-                return nullptr;
-            throw fbjsi::JSError(env, "no internal field");
-        }
-        // The following check is disabled to support user defined classes that doesn't extend Realm.Object
-        // if (!JsiObj(object)->instanceOf(env, *s_ctor)) {
-        //     throw fbjsi::JSError(env, "calling method on wrong type of object");
+        // auto x = (Internal*)((object->getNativeState<WrappedObject<Internal*>>(env)).get());
+        // TD<decltype(x)> td;
+        // return nullptr;
+
+        return (Internal*)((object->getNativeState<WrappedState<Internal*>>(env)).get());
+
+        // static const auto js_internal_field = fbjsi::String::createFromAscii(env, g_internal_field);
+
+        // auto internal = object->getProperty(env, js_internal_field);
+        // if (internal.isUndefined()) {
+        //     // In the case of a user opening a Realm with a class-based model,
+        //     // the user defined constructor will get called before the "internal" property has been set.
+        //     if constexpr (std::is_same_v<T, RealmObjectClass<realmjsi::Types>>)
+        //         return nullptr;
+        //     throw fbjsi::JSError(env, "no internal field");
         // }
-        return unwrapUnique<Internal>(env, std::move(internal));
+        // // The following check is disabled to support user defined classes that doesn't extend Realm.Object
+        // // if (!JsiObj(object)->instanceOf(env, *s_ctor)) {
+        // //     throw fbjsi::JSError(env, "calling method on wrong type of object");
+        // // }
+        // return unwrapUnique<Internal>(env, std::move(internal));
     }
+
+
     static void set_internal(JsiEnv env, const JsiObj& object, Internal* data)
     {
-        auto desc = fbjsi::Object(env);
-        desc.setProperty(env, "value", wrapUnique(env, data));
-        desc.setProperty(env, "configurable", true);
-        defineProperty(env, object, g_internal_field, desc);
+        object->setNativeState(env, std::make_shared<WrappedState<Internal*>>(data));
+        // auto desc = fbjsi::Object(env);
+        // desc.setProperty(env, "value", wrapUnique(env, data));
+        // desc.setProperty(env, "configurable", true);
+        // defineProperty(env, object, g_internal_field, desc);
     }
 
 private:
@@ -669,7 +706,8 @@ private:
 } // namespace realmjsi
 
 template <typename ClassType>
-class ObjectWrap<realmjsi::Types, ClassType> : public realm::js::realmjsi::ObjectWrap<ClassType> {};
+class ObjectWrap<realmjsi::Types, ClassType> : public realm::js::realmjsi::ObjectWrap<ClassType> {
+};
 
 template <realmjsi::ArgumentsMethodType F>
 fbjsi::Value wrap(fbjsi::Runtime& rt, const fbjsi::Value& thisVal, const fbjsi::Value* args, size_t count)
