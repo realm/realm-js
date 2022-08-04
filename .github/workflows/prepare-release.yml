@@ -45,7 +45,6 @@ jobs:
         with:
           branch: release/${{ steps.update-changelog.outputs.new-version }}
           title: Prepare for ${{ steps.update-changelog.outputs.new-version }}
-          draft: true
           body: An automated PR for next release.
           commit-message: "[${{ steps.update-changelog.outputs.new-version }}] Bump version"
           token: ${{ secrets.REALM_CI_PAT }}
