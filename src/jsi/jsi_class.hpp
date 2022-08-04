@@ -26,6 +26,7 @@
 #include "js_util.hpp"
 
 #include <ctype.h>
+#include <stdexcept>
 #include <unordered_set>
 #include <vector>
 #include <functional>
@@ -176,6 +177,8 @@ public:
     T obj;
 };
 
+// Class extending JSI's NativeState, used to store the native C++ object associated
+// with a JS object when Hermes is being used. See set_internal for more info.
 template <typename T>
 class WrappedState : public fbjsi::NativeState {
 public:
@@ -258,6 +261,8 @@ public:
     // Also, may need to suppress destruction.
     inline static std::optional<JsiFunc> s_ctor;
 
+    inline static std::optional<bool> s_native_state_supported;
+
     /**
      * @brief callback for invalid access to index setters
      * Throws an error when a users attemps to write to an index on a type that
@@ -331,6 +336,8 @@ public:
             // Ensure the static constructor is destructed when the runtime goes away.
             // This is to avoid the reassignment of s_ctor throwing because the runtime has disappeared.
             s_ctor.reset();
+
+            s_native_state_supported.reset();
         });
 
         for (auto&& [name, prop] : s_type.static_properties) {
@@ -508,27 +515,79 @@ public:
 
     static Internal* get_internal(JsiEnv env, const JsiObj& object)
     {
-        auto internal = (Internal*)(object->getNativeState<WrappedState<Internal*>>(env)).get();
-
-        if (!internal) {
-            // In the case of a user opening a Realm with a class-based model,
-            // the user defined constructor will get called before the "internal" property has been set.
-            if constexpr (std::is_same_v<T, RealmObjectClass<realmjsi::Types>>)
-                return nullptr;
-            throw fbjsi::JSError(env, "no internal field");
+        if (!s_native_state_supported) {
+            throw std::runtime_error("Tried to get_internal before calling set_internal");
         }
+
+        if (*s_native_state_supported) {
+            Internal* internal = (Internal*)(object->getNativeState<WrappedState<Internal*>>(env)).get();
+
+            if (!internal) {
+                // In the case of a user opening a Realm with a class-based model,
+                // the user defined constructor will get called before the "internal" property has been set.
+                if constexpr (std::is_same_v<T, RealmObjectClass<realmjsi::Types>>)
+                    return nullptr;
+                throw fbjsi::JSError(env, "no internal field");
+            }
+
+            return internal;
+        }
+        else {
+            // Fallback to property access (see set_internal)
+            auto internal = object->getProperty(env, g_internal_field);
+            if (internal.isUndefined()) {
+                // In the case of a user opening a Realm with a class-based model,
+                // the user defined constructor will get called before the "internal" property has been set.
+                if constexpr (std::is_same_v<T, RealmObjectClass<realmjsi::Types>>)
+                    return nullptr;
+                throw fbjsi::JSError(env, "no internal field");
+            }
+            // The following check is disabled to support user defined classes that doesn't extend Realm.Object
+            // if (!JsiObj(object)->instanceOf(env, *s_ctor)) {
+            //     throw fbjsi::JSError(env, "calling method on wrong type of object");
+            // }
+            return unwrapUnique<Internal>(env, std::move(internal));
+        }
+
         // The following check is disabled to support user defined classes that doesn't extend Realm.Object
         // if (!JsiObj(object)->instanceOf(env, *s_ctor)) {
         //     throw fbjsi::JSError(env, "calling method on wrong type of object");
         // }
-
-        return internal;
     }
-
 
     static void set_internal(JsiEnv env, const JsiObj& object, Internal* data)
     {
-        object->setNativeState(env, std::make_shared<WrappedState<Internal*>>(data));
+        // The first time we try to set_internal, we want to check whether we can use the
+        // JSC NativeState API or not (which depends on the Hermes runtime being used).
+        // In future, we want to skip this check as try/catch is expensive, so we store
+        // the result in a static variable.
+        if (!s_native_state_supported) {
+            try {
+                object->setNativeState(env, std::make_shared<WrappedState<Internal*>>(data));
+                s_native_state_supported = true;
+            }
+            catch (std::logic_error) {
+                // NativeState API is not implemented for the JSC Runtime and will throw a logic_error,
+                // so fall back to storing the object as a property (which is much slower, but works)
+                auto desc = fbjsi::Object(env);
+                desc.setProperty(env, "value", wrapUnique(env, data));
+                desc.setProperty(env, "configurable", true);
+                defineProperty(env, object, g_internal_field, desc);
+                s_native_state_supported = false;
+            }
+        }
+        else {
+            if (*s_native_state_supported) {
+                object->setNativeState(env, std::make_shared<WrappedState<Internal*>>(data));
+            }
+            else {
+                auto desc = fbjsi::Object(env);
+                desc.setProperty(env, "value", wrapUnique(env, data));
+                desc.setProperty(env, "configurable", true);
+                defineProperty(env, object, g_internal_field, desc);
+                s_native_state_supported = false;
+            }
+        }
     }
 
 private:
