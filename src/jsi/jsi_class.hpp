@@ -26,6 +26,7 @@
 #include "js_util.hpp"
 
 #include <ctype.h>
+#include <stdexcept>
 #include <unordered_set>
 #include <vector>
 #include <functional>
@@ -257,9 +258,7 @@ public:
     // Also, may need to suppress destruction.
     inline static std::optional<JsiFunc> s_ctor;
 
-    // Cache the JSI String instance representing the field name of the internal
-    // C++ object for the lifetime of the current env, as this is a hot path
-    inline static std::optional<fbjsi::String> s_js_internal_field_name;
+    inline static std::optional<bool> s_native_state_supported;
 
     /**
      * @brief callback for invalid access to index setters
@@ -334,7 +333,8 @@ public:
             // Ensure the static constructor and JSI String reference are destructed when the runtime goes away.
             // This is to avoid reassignment and destruction throwing because the runtime has disappeared.
             s_ctor.reset();
-            s_js_internal_field_name.reset();
+
+            s_native_state_supported.reset();
         });
 
         for (auto&& [name, prop] : s_type.static_properties) {
@@ -512,7 +512,11 @@ public:
 
     static Internal* get_internal(JsiEnv env, const JsiObj& object)
     {
-        try {
+        if (!s_native_state_supported) {
+            throw std::runtime_error("Tried to get_internal before calling set_internal");
+        }
+
+        if (*s_native_state_supported) {
             Internal* internal = (Internal*)(object->getNativeState<WrappedState<Internal*>>(env)).get();
 
             if (!internal) {
@@ -525,7 +529,7 @@ public:
 
             return internal;
         }
-        catch (std::logic_error) {
+        else {
             // Fallback to property access (see set_internal)
             auto internal = object->getProperty(env, g_internal_field);
             if (internal.isUndefined()) {
@@ -550,16 +554,36 @@ public:
 
     static void set_internal(JsiEnv env, const JsiObj& object, Internal* data)
     {
-        try {
-            object->setNativeState(env, std::make_shared<WrappedState<Internal*>>(data));
+        // The first time we try to set_internal, we want to check whether we can use the
+        // JSC NativeState API or not (which depends on the Hermes runtime being used).
+        // In future, we want to skip this check as try/catch is expensive, so we store
+        // the result in a static variable.
+        if (!s_native_state_supported) {
+            try {
+                object->setNativeState(env, std::make_shared<WrappedState<Internal*>>(data));
+                s_native_state_supported = true;
+            }
+            catch (std::logic_error) {
+                // NativeState API is not implemented for the JSC Runtime and will throw a logic_error,
+                // so fall back to storing the object as a property (which is much slower, but works)
+                auto desc = fbjsi::Object(env);
+                desc.setProperty(env, "value", wrapUnique(env, data));
+                desc.setProperty(env, "configurable", true);
+                defineProperty(env, object, g_internal_field, desc);
+                s_native_state_supported = false;
+            }
         }
-        catch (std::logic_error) {
-            // NativeState API is not implemented for the JSC Runtime and will throw a logic_error,
-            // so fall back to storing the object as a property (which is much slower, but works)
-            auto desc = fbjsi::Object(env);
-            desc.setProperty(env, "value", wrapUnique(env, data));
-            desc.setProperty(env, "configurable", true);
-            defineProperty(env, object, g_internal_field, desc);
+        else {
+            if (*s_native_state_supported) {
+                object->setNativeState(env, std::make_shared<WrappedState<Internal*>>(data));
+            }
+            else {
+                auto desc = fbjsi::Object(env);
+                desc.setProperty(env, "value", wrapUnique(env, data));
+                desc.setProperty(env, "configurable", true);
+                defineProperty(env, object, g_internal_field, desc);
+                s_native_state_supported = false;
+            }
         }
     }
 
