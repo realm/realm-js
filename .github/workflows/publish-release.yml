@@ -53,6 +53,7 @@ jobs:
         commit: ${{ github.sha }}
         path: ${{ github.workspace }}
         workflow_conclusion: completed
+        github_token: ${{ secrets.REALM_CI_PAT }}
 
     - name: Read version
       id: get-version
