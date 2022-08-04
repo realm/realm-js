@@ -203,7 +203,7 @@ jobs:
           differentiator: realm-js
 
   integration-tests:
-    name: Integration tests for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
+    name: Integration tests (${{matrix.variant.target}}) for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
     needs: [build-and-test, baas-realm-js]
     env:
       REALM_DISABLE_ANALYTICS: 1
@@ -230,20 +230,20 @@ jobs:
       matrix:
         variant:
           #type: [Release, Debug]
-          - { os: linux, target: test, runner: ubuntu-20.04, environment: node }
-          - { os: linux, target: "test:main", runner: ubuntu-20.04, environment: electron }
-          - { os: linux, target: "test:renderer", runner: ubuntu-20.04, environment: electron }
+          - { os: linux, target: test, runner: ubuntu-20.04, environment: node, timeout: 10 }
+          - { os: linux, target: "test:main", runner: ubuntu-20.04, environment: electron, timeout: 10 }
+          - { os: linux, target: "test:renderer", runner: ubuntu-20.04, environment: electron, timeout: 10 }
           #- { os: windows, target: test, runner: windows-2019, environment: node}
           #- { os: windows, target: "test:main", runner: windows-2019, environment: electron }
           #- { os: windows, target: "test:renderer", runner: windows-2019, environment: electron }
-          - { os: darwin, target: "test:main", runner: macos-11, environment: electron }
-          - { os: darwin, target: "test:renderer", runner: macos-11, environment: electron }
-          - { os: darwin, target: test, runner: macos-11, environment: node }
-          - { os: android, target: "test:android", runner: macos-11, environment: react-native }
+          - { os: darwin, target: "test:main", runner: macos-11, environment: electron, timeout: 10 }
+          - { os: darwin, target: "test:renderer", runner: macos-11, environment: electron, timeout: 10 }
+          - { os: darwin, target: test, runner: macos-11, environment: node, timeout: 10 }
+          - { os: android, target: "test:android", runner: macos-11, environment: react-native, timeout: 25 }
           #- { os: android, target: "test:android:chrome", runner: macos-11, environment: react-native }
-          - { os: ios, target: "test:ios", runner: macos-11, environment: react-native }
+          - { os: ios, target: "test:ios", runner: macos-11, environment: react-native, timeout: 25 }
           #- { os: ios, target: "test:ios:chrome", runner: macos-11, environment: react-native }
-          - { os: ios, target: "test:catalyst", runner: macos-11, environment: react-native }
+          - { os: ios, target: "test:catalyst", runner: macos-11, environment: react-native, timeout: 25 }
           #- { os: ios, target: "test:catalyst:chrome", runner: macos-11, environment: react-native }
     timeout-minutes: 60
     steps:
@@ -315,13 +315,17 @@ jobs:
 
       - name: Invoke the simulator (making subsequent "open -a Simulator" calls work)
         if: ${{ (matrix.variant.os == 'ios') }}
-        timeout-minutes: 25
         run: open -a ${{ env.DEVELOPER_DIR }}/Contents/Developer/Applications/Simulator.app/Contents/MacOS/Simulator
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
-        if: ${{ (matrix.variant.os != 'android') }}
+        if: ${{ (matrix.variant.os != 'android') && (matrix.variant.os != 'ios') }}
         # The non react native environments should not take so long
         timeout-minutes: 10
+        run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
+
+      - name: Rn ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
+        if: ${{ (matrix.variant.os == 'ios') }}
+        timeout-minutes: 25
         run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
@@ -330,7 +334,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 29
-          # ndk: 21.4.7075529
+          ndk: 21.4.7075529
           # cmake: 3.23.2
           # target: google_apis
           # emulator-build: 7425822
@@ -340,13 +344,12 @@ jobs:
     runs-on: ubuntu-20.04
     name: Cleanup realm js
     needs: [integration-tests]
-    if: ${{ always() }}
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56
         with:
-          realmUrl: ${{ secrets.REALM_BASE_URL }}
-          projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-          apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-          privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+          realmUrl: ${{ secrets.REALM_QA_BASE_URL }}
+          projectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+          apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+          privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
           differentiator: realm js
