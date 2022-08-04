@@ -173,6 +173,20 @@ public:
     T obj;
 };
 
+// Class extending JSI's NativeState, used to store the native C++ object associated
+// with a JS object when Hermes is being used. See set_internal for more info.
+template <typename T>
+class WrappedState : public fbjsi::NativeState {
+public:
+    template <typename... Args, typename = std::enable_if_t<std::is_constructible_v<T, Args...>>>
+    WrappedState(Args&&... args)
+        : obj(std::forward<Args>(args)...)
+    {
+    }
+
+    T obj;
+};
+
 template <typename T>
 inline T& unwrap(Wrapper<T>& wrapper)
 {
@@ -498,30 +512,55 @@ public:
 
     static Internal* get_internal(JsiEnv env, const JsiObj& object)
     {
-        if (REALM_UNLIKELY(!s_js_internal_field_name)) {
-            s_js_internal_field_name = fbjsi::String::createFromAscii(env, g_internal_field);
+        try {
+            Internal* internal = (Internal*)(object->getNativeState<WrappedState<Internal*>>(env)).get();
+
+            if (!internal) {
+                // In the case of a user opening a Realm with a class-based model,
+                // the user defined constructor will get called before the "internal" property has been set.
+                if constexpr (std::is_same_v<T, RealmObjectClass<realmjsi::Types>>)
+                    return nullptr;
+                throw fbjsi::JSError(env, "no internal field");
+            }
+
+            return internal;
+        }
+        catch (std::logic_error) {
+            // Fallback to property access (see set_internal)
+            auto internal = object->getProperty(env, g_internal_field);
+            if (internal.isUndefined()) {
+                // In the case of a user opening a Realm with a class-based model,
+                // the user defined constructor will get called before the "internal" property has been set.
+                if constexpr (std::is_same_v<T, RealmObjectClass<realmjsi::Types>>)
+                    return nullptr;
+                throw fbjsi::JSError(env, "no internal field");
+            }
+            // The following check is disabled to support user defined classes that doesn't extend Realm.Object
+            // if (!JsiObj(object)->instanceOf(env, *s_ctor)) {
+            //     throw fbjsi::JSError(env, "calling method on wrong type of object");
+            // }
+            return unwrapUnique<Internal>(env, std::move(internal));
         }
 
-        auto internal = object->getProperty(env, *s_js_internal_field_name);
-        if (internal.isUndefined()) {
-            // In the case of a user opening a Realm with a class-based model,
-            // the user defined constructor will get called before the "internal" property has been set.
-            if constexpr (std::is_same_v<T, RealmObjectClass<realmjsi::Types>>)
-                return nullptr;
-            throw fbjsi::JSError(env, "no internal field");
-        }
         // The following check is disabled to support user defined classes that doesn't extend Realm.Object
         // if (!JsiObj(object)->instanceOf(env, *s_ctor)) {
         //     throw fbjsi::JSError(env, "calling method on wrong type of object");
         // }
-        return unwrapUnique<Internal>(env, std::move(internal));
     }
+
     static void set_internal(JsiEnv env, const JsiObj& object, Internal* data)
     {
-        auto desc = fbjsi::Object(env);
-        desc.setProperty(env, "value", wrapUnique(env, data));
-        desc.setProperty(env, "configurable", true);
-        defineProperty(env, object, g_internal_field, desc);
+        try {
+            object->setNativeState(env, std::make_shared<WrappedState<Internal*>>(data));
+        }
+        catch (std::logic_error) {
+            // NativeState API is not implemented for the JSC Runtime and will throw a logic_error,
+            // so fall back to storing the object as a property (which is much slower, but works)
+            auto desc = fbjsi::Object(env);
+            desc.setProperty(env, "value", wrapUnique(env, data));
+            desc.setProperty(env, "configurable", true);
+            defineProperty(env, object, g_internal_field, desc);
+        }
     }
 
 private:
