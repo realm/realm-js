@@ -48,3 +48,4 @@ jobs:
           draft: true
           body: An automated PR for next release.
           commit-message: "[${{ steps.update-changelog.outputs.new-version }}] Bump version"
+          token: ${{ secrets.REALM_CI_PAT }}
