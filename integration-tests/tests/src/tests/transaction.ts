@@ -47,5 +47,26 @@ describe("Realm transactions", () => {
       }
       expect(realm.isClosed).to.be.true;
     });
+
+    it("invalid object", () => {
+      // https://github.com/realm/realm-js/issues/4747
+      const message = "Person.age must be of type 'number', got 'string' ('five')";
+      const realm = new Realm({ schema: [PersonSchema] });
+      realm.beginTransaction();
+      try {
+        realm.create(PersonSchema.name, {
+          name: "John Doe",
+          age: "five", // wrong type
+        });
+      } catch (err) {
+        expect((err as Error).message).equals(message);
+        expect(realm.isInTransaction).to.be.true;
+        realm.cancelTransaction();
+      } finally {
+        expect(realm.objects(PersonSchema.name).length).equals(0);
+        realm.close();
+      }
+      expect(realm.isClosed).to.be.true;
+    });
   });
 });
