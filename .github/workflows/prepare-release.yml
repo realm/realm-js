@@ -17,11 +17,9 @@ jobs:
           changelog: ${{ github.workspace }}/CHANGELOG.md
 
       - name: Update package.json
-        uses: jacobtomlinson/gha-find-replace@0dfd0777cc234ef6947ec1f20873c632114c4167 #! 0.1.4
-        with:
-          find: '"version": "[^"]*"'
-          replace: '"version": "${{ steps.update-changelog.outputs.new-version }}"'
-          include: ${{ github.workspace }}/package.json
+        run: |
+          jq '.version="${{ steps.update-changelog.outputs.new-version }}"' package.json > package.tmp
+          mv package.tmp package.json
 
       - name: Update package-lock.json
         run: npm install --ignore-scripts
