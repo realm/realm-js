@@ -46,7 +46,7 @@
     "glob": "^7.1.6",
     "node-fetch": "^2.6.0",
     "realm-network-transport": "*",
-    "yargs": "^17.5.1"
+    "yargs": "^16.2.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^22.0.1",
