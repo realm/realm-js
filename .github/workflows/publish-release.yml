@@ -106,6 +106,8 @@ jobs:
         sdk: JS
         webhook-url: ${{ secrets.SLACK_RELEASE_WEBHOOK }}
         version: ${{ steps.get-version.outputs.version }}
+      # This job might fail due to failed markdown-to-slack conversion.
+      continue-on-error: true
 
     - name: Update Changelog
       run: ${{ github.workspace }}/scripts/changelog-header.sh
