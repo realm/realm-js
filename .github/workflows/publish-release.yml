@@ -58,7 +58,7 @@ jobs:
     - name: Read version
       id: get-version
       run: |
-        pkgVersion=$(npm pkg get version)
+        pkgVersion=$(jq -r .version package.json)
         echo "::set-output name=version::$pkgVersion"
         prerelease=false
         if [ '${{ inputs.tag }}' != latest ]; then prerelease=true; fi
