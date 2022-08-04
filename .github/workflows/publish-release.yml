@@ -55,6 +55,10 @@ jobs:
         workflow_conclusion: completed
         github_token: ${{ secrets.REALM_CI_PAT }}
 
+    - name: Move prebuild artifacts
+      run: |
+        mv ./realm-js-prebuilds/prebuilds .
+
     - name: Read version
       id: get-version
       run: |
@@ -97,7 +101,9 @@ jobs:
         prerelease: ${{ steps.get-version.outputs.prerelease }}
 
     - name: Upload Github Release artifacts
-      run: npm prebuild --upload ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        npm install -g prebuild
+        prebuild --upload-all ${{ secrets.GITHUB_TOKEN }} --verbose
 
     - name: 'Post to #realm-releases'
       uses: realm/ci-actions/release-to-slack@v3
