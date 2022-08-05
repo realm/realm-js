@@ -25,6 +25,8 @@ struct RealmObjectClass;
 }
 } // namespace realm
 
+#include <optional>
+
 #include <realm/object-store/object_accessor.hpp>
 #include <realm/object-store/object_store.hpp>
 #include <realm/object-store/collection_notifications.hpp>
@@ -242,7 +244,7 @@ void RealmObjectClass<T>::set_link(ContextType ctx, ObjectType object, Arguments
     }
     else if (is_nullable(linked_pk->type)) {
         obj_key = linked_table->find_first(linked_pk->column_key,
-                                           accessor.template unbox<util::Optional<int64_t>>(args[1]));
+                                           accessor.template unbox<std::optional<int64_t>>(args[1]));
     }
     else {
         obj_key = linked_table->find_first(linked_pk->column_key, accessor.template unbox<int64_t>(args[1]));

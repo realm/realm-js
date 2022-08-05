@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <optional>
+
 #include "js_class.hpp"
 #include "js_collection.hpp"
 #include "js_notifications.hpp"
@@ -348,7 +350,7 @@ void UserClass<T>::get_profile(ContextType ctx, ObjectType object, ReturnValue& 
 
     auto profile_object = Object::create_empty(ctx);
 #define STRING_TO_PROP(propname)                                                                                     \
-    util::Optional<std::string> optional_##propname = user_profile.propname();                                       \
+    std::optional<std::string> optional_##propname = user_profile.propname();                                       \
     if (optional_##propname) {                                                                                       \
         Object::set_property(ctx, profile_object, string_##propname, Value::from_string(ctx, *optional_##propname)); \
     }
@@ -414,8 +416,8 @@ void UserClass<T>::call_function(ContextType ctx, ObjectType this_object, Argume
 
     auto stringified_ejson_args = Value::validated_to_string(ctx, args[1], "args");
     auto service = Value::is_undefined(ctx, args[2])
-                       ? util::none
-                       : util::Optional<std::string>(Value::validated_to_string(ctx, args[2], "service"));
+                       ? std::nullopt
+                       : std::optional<std::string>(Value::validated_to_string(ctx, args[2], "service"));
     auto callback = Value::validated_to_function(ctx, args[3], "callback");
 
     auto bson_args = String::to_bson(stringified_ejson_args);
@@ -427,7 +429,7 @@ void UserClass<T>::call_function(ContextType ctx, ObjectType this_object, Argume
     user->m_app->call_function(
         user->m_user, name, static_cast<const bson::BsonArray&>(bson_args), service,
         Function::wrap_callback_result_first(ctx, this_object, callback,
-                                             [](ContextType ctx, const util::Optional<bson::Bson>& result) {
+                                             [](ContextType ctx, const std::optional<bson::Bson>& result) {
                                                  REALM_ASSERT_RELEASE(result);
                                                  return Value::from_string(ctx, String::from_bson(*result));
                                              }));

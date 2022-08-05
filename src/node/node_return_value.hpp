@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <optional>
+
 #include "node_types.hpp"
 #include "napi.h"
 
@@ -108,7 +110,7 @@ public:
     }
 
     template <typename T>
-    void set(util::Optional<T> value)
+    void set(std::optional<T> value)
     {
         if (value) {
             set(*value);

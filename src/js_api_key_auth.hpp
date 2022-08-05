@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <optional>
+
 #include "js_class.hpp"
 
 #include <realm/object-store/sync/app.hpp>
@@ -94,7 +96,7 @@ typename T::Object ApiKeyAuthClass<T>::create_instance(ContextType ctx, SharedAp
 }
 
 template <typename T>
-typename T::Object make_api_key(typename T::Context ctx, util::Optional<app::App::UserAPIKey> api_key)
+typename T::Object make_api_key(typename T::Context ctx, std::optional<app::App::UserAPIKey> api_key)
 {
     using ObjectType = typename T::Object;
 
@@ -174,7 +176,7 @@ app::App::UserAPIKey to_api_key(typename T::Context ctx, typename T::Object api_
     static const String api_key_disabled = "disabled";
 
     ObjectId id;
-    util::Optional<std::string> key;
+    std::optional<std::string> key;
     std::string name;
     bool disabled;
 
@@ -184,7 +186,7 @@ app::App::UserAPIKey to_api_key(typename T::Context ctx, typename T::Object api_
     }
     ValueType api_key_key_value = Object<T>::get_property(ctx, api_key_object, api_key_key);
     if (!Value<T>::is_undefined(ctx, api_key_key_value)) {
-        key = util::Optional<std::string>(Value<T>::validated_to_string(ctx, api_key_key_value));
+        key = std::optional<std::string>(Value<T>::validated_to_string(ctx, api_key_key_value));
     }
     ValueType api_key_name_value = Object<T>::get_property(ctx, api_key_object, api_key_name);
     if (!Value<T>::is_undefined(ctx, api_key_name_value)) {

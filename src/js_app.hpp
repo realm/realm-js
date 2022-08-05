@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <optional>
+
 #include <realm/object-store/sync/generic_network_transport.hpp>
 #include <realm/object-store/sync/sync_user.hpp>
 #include <realm/object-store/sync/app.hpp>
@@ -183,13 +185,13 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
         ValueType config_base_url_value = Object::get_property(ctx, config_object, config_base_url);
         if (!Value::is_undefined(ctx, config_base_url_value)) {
             config.base_url =
-                util::Optional<std::string>(Value::validated_to_string(ctx, config_base_url_value, "baseUrl"));
+                std::optional<std::string>(Value::validated_to_string(ctx, config_base_url_value, "baseUrl"));
         }
 
         ValueType config_timeout_value = Object::get_property(ctx, config_object, config_timeout);
         if (!Value::is_undefined(ctx, config_timeout_value)) {
             config.default_request_timeout_ms =
-                util::Optional<uint64_t>(Value::validated_to_number(ctx, config_timeout_value, "timeout"));
+                std::optional<uint64_t>(Value::validated_to_number(ctx, config_timeout_value, "timeout"));
         }
 
         ValueType config_app_value = Object::get_property(ctx, config_object, config_app);
@@ -199,13 +201,13 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
             ValueType config_app_name_value = Object::get_property(ctx, config_app_object, config_app_name);
             if (!Value::is_undefined(ctx, config_app_name_value)) {
                 config.local_app_name =
-                    util::Optional<std::string>(Value::validated_to_string(ctx, config_app_name_value, "name"));
+                    std::optional<std::string>(Value::validated_to_string(ctx, config_app_name_value, "name"));
             }
 
             ValueType config_app_version_value = Object::get_property(ctx, config_app_object, config_app_version);
             if (!Value::is_undefined(ctx, config_app_version_value)) {
                 config.local_app_version =
-                    util::Optional<std::string>(Value::validated_to_string(ctx, config_app_version_value, "version"));
+                    std::optional<std::string>(Value::validated_to_string(ctx, config_app_version_value, "version"));
             }
         }
     }
