@@ -19,8 +19,7 @@
 import { camelCase } from "change-case";
 
 import { TemplateContext } from "../context";
-import { ArgumentSpec, MethodSpec, Spec, TemplateInstanceSpec, TypeSpec } from "../spec";
-import { isString } from "../utils";
+import { Arg, bindModel, BoundSpec, Type } from "../bound_model";
 
 const PRIMITIVES_MAPPING: Record<string, string> = {
   void: "void",
@@ -37,129 +36,90 @@ const PRIMITIVES_MAPPING: Record<string, string> = {
   OwnedBinaryData: "ArrayBuffer",
 };
 
-type TemplateInstanceMapper = (spec: Spec, type: TemplateInstanceSpec) => string;
-
-const TEMPLATE_INSTANCE_MAPPING: Record<string, TemplateInstanceMapper> = {
-  "std::vector": (spec, type) => `(${generateType(spec, type.templateArguments[0])})[]`,
-  "util::Optional": (spec, type) => `(${generateType(spec, type.templateArguments[0])}) | undefined`,
-  // TODO: Evaluate if this is the right type
-  "std::shared_ptr": (spec, type) => generateType(spec, type.templateArguments[0]),
+const TEMPLATE_MAPPING: Record<string, (...args: string[]) => string> = {
+  "std::vector": (arg) => `${arg}[]`,
+  "util::Optional": (arg) => `(${arg} | null)`,
+  "std::shared_ptr": (arg) => arg,
 };
 
-function getDeclaredIdentifiers(spec: Spec): string[] {
-  return [
-    ...Object.keys(spec.records),
-    ...Object.keys(spec.classes),
-    ...Object.entries(spec.classes)
-      .map(([, classSpec]) => classSpec.sharedPtrWrapped)
-      .filter(isString),
-    ...Object.keys(spec.interfaces),
-    ...Object.keys(spec.typeAliases),
-    ...Object.keys(spec.enums),
-    ...spec.opaqueTypes,
-  ];
+const enum Kind {
+  Arg, // JS -> CPP
+  Ret, // Cpp -> JS
 }
 
-function generateType(spec: Spec, type: TypeSpec): string {
-  if (type.kind !== "function" && type.isConst) {
-    return `Readonly<${generateType(spec, { ...type, isConst: false })}>`;
-  } else if (type.kind === "qualified-name") {
-    const fullName = type.names.join("::");
-    if (getDeclaredIdentifiers(spec).includes(fullName)) {
-      return fullName;
-    } else if (fullName in PRIMITIVES_MAPPING) {
-      return PRIMITIVES_MAPPING[fullName];
-    } else {
-      return `unknown /* ${fullName} */`;
-    }
-  } else if (type.kind === "template-instance") {
-    const fullName = type.names.join("::");
-    if (fullName in TEMPLATE_INSTANCE_MAPPING) {
-      return TEMPLATE_INSTANCE_MAPPING[fullName](spec, type);
-    } else {
-      return `unknown /* ${fullName}<${JSON.stringify(type.templateArguments)}> */`;
-    }
-  } else if (type.kind === "function") {
-    // TODO: Print a comment if "const" or "noexcept"
-    return (
-      "(" +
-      type.arguments.map((arg) => arg.name + ": " + generateType(spec, arg.type)) +
-      ") => " +
-      generateType(spec, type.return) +
-      generateTypeModifierComment(type)
-    );
-  } else {
-    return `unknown /* ${JSON.stringify(type)} */`;
+function generateType(spec: BoundSpec, type: Type, kind: Kind): string {
+  switch(type.kind) {
+    case "Pointer":
+    case "Ref":
+      // No impact on JS semantics.
+      return generateType(spec, type.type, kind)
+
+    case "Const": return `Readonly<${generateType(spec, type.type, kind)}>`
+
+    case "Opaque":
+    case "Enum":
+    case "Class":
+      return type.name;
+
+    case "Struct":
+      return kind == Kind.Arg ? type.name : `DeepRequired<${type.name}>`
+
+    case "Primitive":
+      return PRIMITIVES_MAPPING[type.name];
+
+    case "Template": 
+      return TEMPLATE_MAPPING[type.name](...type.args.map(arg => generateType(spec, arg, kind)));
+
+    case "Func": 
+      // When a js function is passed to cpp, its arguments behave like Ret and its return value behaves like Arg.
+      const Arg = kind == Kind.Arg ? Kind.Ret : Kind.Arg;
+      const Ret = kind == Kind.Arg ? Kind.Arg : Kind.Ret;
+
+      const args =  type.args.map((arg) => arg.name + ": " + generateType(spec, arg.type, Arg))
+      return `((${args.join(', ')}) => ${generateType(spec, type.ret, Ret)})`;
   }
 }
 
-function generateArguments(spec: Spec, args: ArgumentSpec[]) {
-  return args.map((arg) => `${arg.name}: ${generateType(spec, arg.type)}`).join(", ");
+function generateArguments(spec: BoundSpec, args: Arg[]) {
+  return args.map((arg) => `${arg.name}: ${generateType(spec, arg.type, Kind.Arg)}`).join(", ");
 }
 
-function generateTypeModifierComment(spec: TypeSpec) {
-  const modifiers: string[] = [];
-  if (spec.isConst) {
-    modifiers.push("const");
-  }
-  if (spec.kind === "qualified-name") {
-    if (spec.isPointer) {
-      modifiers.push("pointer");
-    }
-    if (spec.isReference) {
-      modifiers.push("reference");
-    }
-    if (spec.isRvalueReference) {
-      modifiers.push("rvalue-reference");
-    }
-  } else if (spec.kind === "function") {
-    if (spec.isNoExcept) {
-      modifiers.push("noexcept");
-    }
-  }
-  return modifiers.length > 0 ? `/* ${modifiers.join(" ")} */` : "";
-}
-
-function jsName(name: string, spec: MethodSpec) {
-  if (spec.suffix)
-    return camelCase(`${name}_${spec.suffix}`)
-  return camelCase(name)
-}
-
-export function generateTypeScript({ spec, file }: TemplateContext): void {
+export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): void {
   // Check the support for primitives used
-  for (const primitive of spec.primitives) {
+  for (const primitive of rawSpec.primitives) {
     if (!Object.keys(PRIMITIVES_MAPPING).includes(primitive)) {
       console.warn(`Spec declares an unsupported primitive: "${primitive}"`);
     }
   }
 
   // Check the support for template instances used
-  for (const template of spec.templates) {
-    if (!Object.keys(TEMPLATE_INSTANCE_MAPPING).includes(template)) {
+  for (const template of rawSpec.templates) {
+    if (!Object.keys(TEMPLATE_MAPPING).includes(template)) {
       console.warn(`Spec declares an unsupported template instance: "${template}"`);
     }
   }
+
+  let spec = bindModel(rawSpec)
 
   const enumsOut = file("enums.ts", "eslint", "typescript-checker");
   enumsOut("// This file is generated: Update the spec instead of editing this file directly");
 
   enumsOut("// Enums");
-  for (const [name, e] of Object.entries(spec.enums)) {
+  for (const e of spec.enums) {
     // Using const enum to avoid having to emit JS backing these
-    enumsOut(`export const enum ${name} {`);
-    enumsOut(...Object.entries(e.values).map(([k, v]) => `${k} = ${v},\n`));
+    enumsOut(`export const enum ${e.name} {`);
+    enumsOut(...e.enumerators.map(({name, value}) => `${name} = ${value},\n`));
     enumsOut("};");
   }
 
-  const js = file("native.js", "eslint", "typescript-checker");
+  const js = file("native.js", "eslint");
   js("// This file is generated: Update the spec instead of editing this file directly");
   js("import bindings from 'bindings';")
 
   const out = file("native.d.ts", "eslint", "typescript-checker");
   out("// This file is generated: Update the spec instead of editing this file directly");
 
-  out("import {", Object.keys(spec.enums).join(", "), '} from "./enums";');
+  out("import {", spec.enums.map(e => e.name).join(", "), '} from "./enums";');
   out('export * from "./enums";');
   js('export * from "./enums";');
 
@@ -170,92 +130,51 @@ export function generateTypeScript({ spec, file }: TemplateContext): void {
           T;`)
 
   out("// Opaque types");
-  for (const name of spec.opaqueTypes) {
+  for (const {name} of spec.opaqueTypes) {
     out.lines("/** Using an empty enum to express a nominal type */", `export declare enum ${name} {}`);
   }
 
-  out("// Type aliases");
-  for (const [name, type] of Object.entries(spec.typeAliases)) {
-    out(`export type ${name} = ${generateType(spec, type)};`);
-  }
-
   out("// Records");
-  for (const [name, { fields }] of Object.entries(spec.records)) {
-    out(`export type ${name} = {`);
-    for (const [name, field] of Object.entries(fields)) {
-      out(camelCase(name), typeof field.default !== "undefined" ? "?" : "", ":", generateType(spec, field.type), ";");
+  for (const rec of spec.records) {
+    out(`export type ${rec.name} = {`);
+    for (const field of rec.fields) {
+      // Using Kind.Arg here because when a Record is used as a Ret, it will be "fixed" to behave like one.
+      out(camelCase(field.name), field.required ? "" : "?", ": ", generateType(spec, field.type, Kind.Arg), ";");
     }
     out(`}`);
   }
 
   out("// Classes");
-  for (const [name, cls] of Object.entries(spec.classes)) {
-    js(`export const {${name}} = bindings("realm.node");`)
-    out(`export class ${name} {`);
+  for (const cls of spec.classes) {
+    js(`export const {${cls.name}} = bindings("realm.node");`)
+    out(`export class ${cls.name} {`);
     out(`private constructor();`);
-    for (const [ctorName, sig] of Object.entries(cls.constructors)) {
+    for (const [name, type] of Object.entries(cls.properties)) {
+      out(camelCase(name), ': ', generateType(spec, type, Kind.Ret));
+    }
+    for (const meth of cls.staticMethods) {
       out(
         "static",
-        camelCase(ctorName),
+        camelCase(meth.unique_name),
         "(",
-        generateArguments(spec, sig.arguments),
+        generateArguments(spec, meth.sig.args),
         "):",
-        name,
+        generateType(spec, meth.sig.ret, Kind.Ret),
         ";",
       );
     }
-    for (const [name, methodSpecs] of Object.entries(cls.staticMethods)) {
-      for (const methodSpec of methodSpecs) {
-        out(
-          "static",
-          jsName(name, methodSpec),
-          "(",
-          generateArguments(spec, methodSpec.sig.arguments),
-          "):",
-          `DeepRequired<${generateType(spec, methodSpec.sig.return)}>`,
-          ";",
-        );
-      }
-    }
-    for (const [name, type] of Object.entries(cls.properties)) {
-      out(camelCase(name), `: DeepRequired<${generateType(spec, type)}>`);
-    }
-    for (const [name, methodSpecs] of Object.entries(cls.methods)) {
-      for (const methodSpec of methodSpecs) {
-        out(
-          jsName(name, methodSpec),
-          "(",
-          generateArguments(spec, methodSpec.sig.arguments),
-          "):",
-          `DeepRequired<${generateType(spec, methodSpec.sig.return)}>`,
-          ";",
-        );
-      }
+    for (const meth of cls.methods) {
+      out(
+        camelCase(meth.unique_name),
+        "(",
+        generateArguments(spec, meth.sig.args),
+        "):",
+        generateType(spec, meth.sig.ret, Kind.Ret),
+        ";",
+      );
     }
     if (cls.iterable) {
-      out(`[Symbol.iterator](): Iterator<${generateType(spec, cls.iterable)}>;`);
-    }
-    out(`}`);
-    if (cls.sharedPtrWrapped) {
-      out("export type", cls.sharedPtrWrapped, " = ", name);
-    }
-  }
-
-  out("// Interfaces");
-  for (const [name, { methods }] of Object.entries(spec.interfaces)) {
-    out(`export interface ${name} {`);
-    // TODO: Evaluate if the static methods are even needed here / in the spec format
-    for (const [name, methodSpecs] of Object.entries(methods)) {
-      for (const methodSpec of methodSpecs) {
-        out(
-          camelCase(name),
-          "(",
-          generateArguments(spec, methodSpec.sig.arguments),
-          "):",
-          `DeepRequired<${generateType(spec, methodSpec.sig.return)}>`,
-          ";",
-        );
-      }
+      out(`[Symbol.iterator](): Iterator<${generateType(spec, cls.iterable, Kind.Ret)}>;`);
     }
     out(`}`);
   }
