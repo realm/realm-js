@@ -24,9 +24,9 @@ import { isString } from "./utils";
 const debug = extend("format");
 
 const FORMATTERS = {
-  eslint: ["eslint", "--fix"],
+  eslint: ["npx", "eslint", "--fix", "--format=stylish"],
   "clang-format": ["clang-format", "-i"],
-  "typescript-checker": ["tsc", "--noEmit"],
+  "typescript-checker": ["npx", "tsc", "--noEmit"],
 };
 
 export type FormatterName = keyof typeof FORMATTERS;
@@ -45,14 +45,16 @@ export function format(formatterName: FormatterName, cwd: string, filePaths: str
   } else {
     debug(chalk.dim("Running formatter '%s' on %d files"), formatterName, filePaths.length);
     if (formatterName in FORMATTERS) {
-      const [command, ...args] = FORMATTERS[formatterName];
-      console.log(`Running '${formatterName}' formatter`, chalk.dim(command, ...args, ...filePaths));
-      const { status } = cp.spawnSync(command, [...args, ...filePaths], {
+      const [command, ...args] = FORMATTERS[formatterName].concat(filePaths)
+      console.log(`Running '${formatterName}' formatter`, chalk.dim(command, ...args));
+      const result = cp.spawnSync(command, args,  {
         cwd,
         encoding: "utf8",
         stdio: "inherit",
       });
-      if (status && status > 0) {
+      if (result.error)
+        throw result.error;
+      if (result.status) {
         throw new FormatError(formatterName);
       }
     }
