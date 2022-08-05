@@ -22,7 +22,7 @@ let realm = Realm.getSharedRealm({
     ]
 });
 
-console.log(util.inspect(realm.schema, false, null, true))
+// console.log(util.inspect(realm.schema, false, null, true))
 
 let schema = realm.schema;
 let table = Helpers.getTable(realm, schema[0].tableKey)
