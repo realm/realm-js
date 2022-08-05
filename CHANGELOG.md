@@ -14,13 +14,16 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Upgrading `react-native-fs` to avoid a peer dependency failure. ([#4709](https://github.com/realm/realm-js/pull/4709))
+* <Either mention core version or upgrade>
+* <Using Realm Core vX.Y.Z>
+* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
 * Upgraded React Native integration tests app to React Native v0.68.2. ([#4583](https://github.com/realm/realm-js/pull/4583))
+* Upgrading `react-native-fs` to avoid a peer dependency failure. ([#4709](https://github.com/realm/realm-js/pull/4709))
 * Upgraded React Native integration tests app to React Native v0.69.1. ([#4713](https://github.com/realm/realm-js/pull/4713))
-* Upgraded Realm Example app to React Native v0.69.1([#4722](https://github.com/realm/realm-js/pull/4722))
-* Fixed a crash on Android when an error was thrown from the flexible sync `initialSubscriptions` call ([#4710](https://github.com/realm/realm-js/pull/4710), since v10.18.0)
-* Added a default sync logger for integration tests ([#4730](https://github.com/realm/realm-js/pull/4730))
-* Fixed an issue starting the integration test runner on iOS ([#4742](https://github.com/realm/realm-js/pull/4742]))
+* Upgraded Realm Example app to React Native v0.69.1. ([#4722](https://github.com/realm/realm-js/pull/4722))
+* Fixed a crash on Android when an error was thrown from the flexible sync `initialSubscriptions` call. ([#4710](https://github.com/realm/realm-js/pull/4710), since v10.18.0)
+* Added a default sync logger for integration tests. ([#4730](https://github.com/realm/realm-js/pull/4730))
+* Fixed an issue starting the integration test runner on iOS. ([#4742](https://github.com/realm/realm-js/pull/4742]))
 
 10.19.5 Release notes (2022-7-6)
 =============================================================
@@ -28,7 +31,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Fixed
-* Fixed inadvertent change to minimum Android Gradle plugin version ([#4706](https://github.com/realm/realm-js/issues/4706), since v10.19.4)
+* Fixed inadvertent change to minimum Android Gradle plugin version. ([#4706](https://github.com/realm/realm-js/issues/4706), since v10.19.4)
 
 ### Compatibility
 * Atlas App Services.
@@ -37,9 +40,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Using Realm Core v12.3.0.
 
 10.19.4 Release notes (2022-7-5)
 =============================================================
@@ -50,7 +51,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Setting up a `clientResetAfter` callback could lead to a fatal error with the message `Realm accessed from incorrect thread`. ([#4410](https://github.com/realm/realm-js/issues/4410), since v10.11.0)
 * Improved performance of sync clients during integration of changesets with many small strings (totalling > 1024 bytes per changeset) on iOS 14, and devices which have restrictive or fragmented memory. ([realm/realm-core#5614](https://github.com/realm/realm-core/issues/5614))
 * Fixed a bug that prevented the detection of tables being changed to or from asymmetric during migrations. ([realm/realm-core#5603](https://github.com/realm/realm-core/pull/5603), since v10.19.3)
-* Fixed a bug with handling `null` values in `toJSON` ([[#4682](https://github.com/realm/realm-js/issues/4682), since 10.19.3)
+* Fixed a bug with handling `null` values in `toJSON`. ([[#4682](https://github.com/realm/realm-js/issues/4682), since 10.19.3)
 
 ### Compatibility
 * Atlas App Services.
@@ -62,9 +63,9 @@ x.x.x Release notes (yyyy-MM-dd)
 * Upgraded Realm Core from v12.2.0 to v12.3.0. ([#4689](https://github.com/realm/realm-js/issues/4689))
 * Fixed analytics tests to reflect the fact that framework versions are read from node_modules, not package.json. ([#4687](https://github.com/realm/realm-js/pull/4687))
 * Adding response type checking to the realm-app-importer. ([#4688](https://github.com/realm/realm-js/pull/4688))
-* Updated integration test app to target Android SDK 31 ([#4686](https://github.com/realm/realm-js/pull/4686))
-* Enabled debugging Realm C++ code in integration test app ([#4696](https://github.com/realm/realm-js/pull/4696))
-* Fixed types for flexible sync client reset and added a test ([#4702](https://github.com/realm/realm-js/pull/4702))
+* Updated integration test app to target Android SDK 31. ([#4686](https://github.com/realm/realm-js/pull/4686))
+* Enabled debugging Realm C++ code in integration test app. ([#4696](https://github.com/realm/realm-js/pull/4696))
+* Fixed types for flexible sync client reset and added a test. ([#4702](https://github.com/realm/realm-js/pull/4702))
 
 10.19.3 Release notes (2022-6-27)
 =============================================================
