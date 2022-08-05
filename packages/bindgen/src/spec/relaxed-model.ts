@@ -25,13 +25,25 @@ import { InterfaceSpec, ClassSpec, Spec } from "./model";
  */
 export type RelaxedValueType = string | boolean | number | [] | Record<string, never>;
 
-export type RelaxedSpec = Omit<Partial<Spec>, "records" | "classes" | "constants" | "typeAliases" | "interfaces"> & {
+export type RelaxedSpec = Omit<Partial<Spec>, "enums" | "records" | "classes" | "constants" | "typeAliases" | "interfaces"> & {
+  enums?: { [name: string]: RelaxedEnumSpec };
   records?: { [name: string]: RelaxedRecordSpec };
   classes?: { [name: string]: RelaxedClassSpec };
   constants?: { [name: string]: RelaxedConstantSpec };
   typeAliases?: { [name: string]: string };
   interfaces?: { [name: string]: RelaxedInterfaceSpec };
 };
+
+export type RelaxedEnumSpec =
+  | {
+      isFlag: true;
+      flagMask: number;
+      values: string[] | { [key: string]: number };
+    }
+  | {
+      isFlag?: false;
+      values: string[] | { [key: string]: number };
+    };
 
 export type RelaxedRecordSpec = {
   fields: { [name: string]: RelaxedFieldSpec };
@@ -45,6 +57,8 @@ export type RelaxedFieldSpec =
     };
 
 export type RelaxedClassSpec = Pick<Partial<ClassSpec>, "sharedPtrWrapped"> & {
+  iterable?: string;
+  needsDeref?: boolean;
   constructors?: { [name: string]: string };
   staticMethods?: { [name: string]: RelaxedMethodSpec | RelaxedMethodSpec[] };
   properties?: { [name: string]: string };
