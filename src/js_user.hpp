@@ -350,7 +350,7 @@ void UserClass<T>::get_profile(ContextType ctx, ObjectType object, ReturnValue& 
 
     auto profile_object = Object::create_empty(ctx);
 #define STRING_TO_PROP(propname)                                                                                     \
-    std::optional<std::string> optional_##propname = user_profile.propname();                                       \
+    std::optional<std::string> optional_##propname = user_profile.propname();                                        \
     if (optional_##propname) {                                                                                       \
         Object::set_property(ctx, profile_object, string_##propname, Value::from_string(ctx, *optional_##propname)); \
     }

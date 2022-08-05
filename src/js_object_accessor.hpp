@@ -400,7 +400,7 @@ struct Unbox<JSEngine, ObjectId> {
 template <typename JSEngine>
 struct Unbox<JSEngine, std::optional<bool>> {
     static std::optional<bool> call(NativeAccessor<JSEngine>* ctx, typename JSEngine::Value const& value,
-                                     realm::CreatePolicy, ObjKey)
+                                    realm::CreatePolicy, ObjKey)
     {
         return ctx->template unbox_optional<bool>(value);
     }
@@ -409,7 +409,7 @@ struct Unbox<JSEngine, std::optional<bool>> {
 template <typename JSEngine>
 struct Unbox<JSEngine, std::optional<int64_t>> {
     static std::optional<int64_t> call(NativeAccessor<JSEngine>* ctx, typename JSEngine::Value const& value,
-                                        realm::CreatePolicy, ObjKey)
+                                       realm::CreatePolicy, ObjKey)
     {
         return ctx->template unbox_optional<int64_t>(value);
     }
@@ -418,7 +418,7 @@ struct Unbox<JSEngine, std::optional<int64_t>> {
 template <typename JSEngine>
 struct Unbox<JSEngine, std::optional<float>> {
     static std::optional<float> call(NativeAccessor<JSEngine>* ctx, typename JSEngine::Value const& value,
-                                      realm::CreatePolicy, ObjKey)
+                                     realm::CreatePolicy, ObjKey)
     {
         return ctx->template unbox_optional<float>(value);
     }
@@ -427,7 +427,7 @@ struct Unbox<JSEngine, std::optional<float>> {
 template <typename JSEngine>
 struct Unbox<JSEngine, std::optional<double>> {
     static std::optional<double> call(NativeAccessor<JSEngine>* ctx, typename JSEngine::Value const& value,
-                                       realm::CreatePolicy, ObjKey)
+                                      realm::CreatePolicy, ObjKey)
     {
         return ctx->template unbox_optional<double>(value);
     }
@@ -436,7 +436,7 @@ struct Unbox<JSEngine, std::optional<double>> {
 template <typename JSEngine>
 struct Unbox<JSEngine, std::optional<ObjectId>> {
     static std::optional<ObjectId> call(NativeAccessor<JSEngine>* ctx, typename JSEngine::Value const& value,
-                                         realm::CreatePolicy, ObjKey)
+                                        realm::CreatePolicy, ObjKey)
     {
         return ctx->template unbox_optional<ObjectId>(value);
     }
@@ -515,7 +515,7 @@ struct Unbox<JSEngine, ObjLink> {
 template <typename JSEngine>
 struct Unbox<JSEngine, std::optional<UUID>> {
     static std::optional<UUID> call(NativeAccessor<JSEngine>* ctx, typename JSEngine::Value const& value,
-                                     realm::CreatePolicy, ObjKey)
+                                    realm::CreatePolicy, ObjKey)
     {
         return ctx->template unbox_optional<UUID>(value);
     }
