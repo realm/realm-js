@@ -107,7 +107,6 @@ class NodeObjectWrap extends CppClass {
         this.ctor = this.addMethod(new CppNodeCtor(this.name, {
             mem_inits: [new CppMemInit(this.bases[0], 'info')]
         }))
-        this.ctor.body = envFromCbInfo
 
         this.members.push(new CppVar('constexpr const char*', 'jsName', {value: `"${jsName}"`, static: true}))
     }
