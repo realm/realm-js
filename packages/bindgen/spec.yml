@@ -286,6 +286,7 @@ classes:
       from_decimal128: '(v: Decimal128)'
       from_objectid: '(v: ObjectId)'
       from_objkey: '(v: ObjKey)'
+      from_obj: '(v: const Obj&)'
       from_link: '(v: ObjLink)'
       from_uuid: '(v: UUID)'
       from_binary: '(v: BinaryData)'
@@ -326,8 +327,16 @@ classes:
   Timestamp: {}
   ObjectId: {}
   Decimal128: {}
-  ObjLink: {}
   UUID: {}
+
+  ObjLink:
+    properties:
+      is_null: bool
+      is_unresolved: bool
+
+    methods:
+      get_table_key: () const -> TableKey
+      get_obj_key: () const -> ObjKey
 
   Realm:
     sharedPtrWrapped: SharedRealm
