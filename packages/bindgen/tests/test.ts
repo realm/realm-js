@@ -1,6 +1,6 @@
 #!/usr/bin/env -S node --loader tsm --no-warnings --
 
-import {Realm, PropertyType, Helpers, DataType, Mixed, StringDataOwnerHack} from "../index"
+import {Realm, PropertyType, Helpers, Mixed, StringDataOwnerHack} from "../index"
 
 import * as util from "util"
 
@@ -20,7 +20,7 @@ let realm = Realm.getSharedRealm({
     ]
 });
 
-console.log(util.inspect(realm.schema, false, null, true))
+// console.log(util.inspect(realm.schema, false, null, true))
 
 let schema = realm.schema;
 let table = Helpers.getTable(realm, schema[0].tableKey)
@@ -63,6 +63,5 @@ for (let obj of table) {
     if (!obj.isNull(fltCol))
         console.log(obj.getAny(fltCol).getFloat())
 }
-
 
 realm.close()
