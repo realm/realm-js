@@ -182,6 +182,9 @@ records:
       schema_version:
         type: uint64_t
         default: -1
+      schema_mode:
+        type: SchemaMode
+        default: SchemaMode::Automatic
 
       # migration_function
       initialization_function:
