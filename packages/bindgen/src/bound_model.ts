@@ -23,7 +23,7 @@ class Ref {
     toString() {return `${this.type}&`}
 }
 
-class Arg {
+export class Arg {
     constructor(public name: string, public type: Type) {}
 
     toString() {return `${this.name}: ${this.type}`}
@@ -105,7 +105,7 @@ class Opaque {
 }
 
 class Enumerator {
-    constructor(public name: string, public type: Type) {}
+    constructor(public name: string, public value: number) {}
 }
 
 class Enum {
@@ -132,9 +132,13 @@ export type Type =
 type TypeKind = Type['kind']
 
 export class BoundSpec {
+    // Note: For now, all aliases are fully resolved and no trace is left here.
+    // Most consumers don't care about them. Will see if we ever want to use aliases
+    // TS definition files for documentation purposes.
     classes: Class[] = []
     records: Struct[] = []
     enums: Enum[] = []
+    opaqueTypes: Opaque[] = []
 }
 
 export function bindModel(spec: Spec): BoundSpec {
@@ -222,14 +226,16 @@ export function bindModel(spec: Spec): BoundSpec {
     for (const [name, {values}] of Object.entries(spec.enums)) {
         const enm = addType(name, Enum)
         out.enums.push(enm)
-        // TODO values
+        for (const [name, value] of Object.entries(values)) {
+            enm.enumerators.push(new Enumerator(name, value));
+        }
     }
 
     for (const name of Object.keys(spec.records)) {
         out.records.push(addType(name, Struct))
     }
     for (const name of spec.opaqueTypes) {
-        addType(name, Opaque)
+        out.opaqueTypes.push(addType(name, Opaque))
     }
 
     for (const [name, type] of Object.entries(spec.typeAliases)) {

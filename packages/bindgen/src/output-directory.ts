@@ -29,7 +29,7 @@ const debug = extend("out");
 
 type OutputFile = {
   fd: number;
-  filePath: string;
+  resolvedPath: string;
   debug: Debugger;
   formatters: FormatterName[];
 };
@@ -73,7 +73,7 @@ export function createOutputDirectory(outputPath: string): OutputDirectory {
 
       fileDebug(chalk.dim("Opening", resolvedPath));
       const fd = fs.openSync(resolvedPath, "w");
-      openFiles.push({ fd, formatters, filePath, debug: fileDebug });
+      openFiles.push({ fd, formatters, resolvedPath, debug: fileDebug });
 
       return createOutputter((data) => {
         fs.writeFileSync(fd, data, { encoding: "utf8" });
@@ -87,7 +87,7 @@ export function createOutputDirectory(outputPath: string): OutputDirectory {
     },
     format() {
       for (const formatterName of formatterNames) {
-        const relevantFiles = openFiles.filter((f) => f.formatters.includes(formatterName)).map((f) => f.filePath);
+        const relevantFiles = openFiles.filter((f) => f.formatters.includes(formatterName)).map((f) => f.resolvedPath);
         format(formatterName, outputPath, relevantFiles);
       }
     },
