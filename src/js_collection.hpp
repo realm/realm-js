@@ -36,7 +36,8 @@ template <typename T>
 struct RealmObjectClass;
 
 // Empty class that merely serves as useful type for now.
-class Collection {};
+class Collection {
+};
 
 template <typename T>
 struct CollectionClass : ClassDefinition<T, Collection, ObservableClass<T>> {

@@ -25,7 +25,8 @@ namespace js {
 // JavaScript used by the auth providers EmailPassword, APIKeys, etc. No objects
 // will ever be created of the type.
 
-class Auth {};
+class Auth {
+};
 
 template <typename T>
 class AuthClass : public ClassDefinition<T, Auth> {

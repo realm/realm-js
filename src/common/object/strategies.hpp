@@ -29,8 +29,10 @@ struct NoBuilder {
         : context{_context} {};
 };
 
-class NoData {};
-class EmptyGetterSetters {};
+class NoData {
+};
+class EmptyGetterSetters {
+};
 
 struct NoNotificationsStrategy {
     int empty{0};
