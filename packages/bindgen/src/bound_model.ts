@@ -49,11 +49,19 @@ class Template {
     }
 }
 
-class Method {
+abstract class Method {
     isConstructor = false;
+    abstract isStatic: boolean;
     constructor(public name: string, public unique_name: string, public sig: Func) {}
 }
-class Constructor extends Method {
+
+class InstanceMethod extends Method {
+    readonly isStatic = false
+}
+class StaticMethod extends Method {
+    readonly isStatic = true
+}
+class Constructor extends StaticMethod {
     readonly isConstructor = true
     constructor(public name: string, public sig: Func) {
         super(name, name, sig)
@@ -65,7 +73,6 @@ class Class {
     isInterface = false
     properties: Record<string, Type> = {}
     methods: Method[] = []
-    staticMethods: Method[] = []
     sharedPtrWrapped = false
     needsDeref = false
     iterable?: Type
@@ -191,12 +198,18 @@ export function bindModel(spec: Spec): BoundSpec {
         }
     }
 
-    function overloadToMethod(name: string, overload: MethodSpec) {
-        return new Method(
-            name,
-            overload.suffix ? `${name}_${overload.suffix}` : name,
-            resolveTypes(overload.sig) as Func)
+    function handleMethods<Out extends Method>(
+        OutType: new (...args: ConstructorParameters<typeof Method>) => Out, 
+        methods: Record<string, MethodSpec[]> 
+    ): Out[] {
+        return Object.entries(methods).flatMap(([name, overloads]) => overloads.map(overload => 
+            new OutType(
+                name,
+                overload.suffix ? `${name}_${overload.suffix}` : name,
+                resolveTypes(overload.sig) as Func)
+        ))
     }
+
 
     function unqualify(names: string[]) {
         assert(names.length)
@@ -252,10 +265,8 @@ export function bindModel(spec: Spec): BoundSpec {
     for (const subtree of ['classes', 'interfaces'] as const) {
         for (const [name, raw] of Object.entries(spec[subtree])) {
             const cls = types[name] as Class
-            cls.methods = Object.entries(raw.methods)
-                .flatMap(([name, overloads]) => overloads.map(o => overloadToMethod(name, o)))
-            cls.staticMethods = Object.entries(raw.staticMethods)
-                .flatMap(([name, overloads]) => overloads.map(o => overloadToMethod(name, o)))
+            cls.methods.push(...handleMethods(InstanceMethod, raw.methods))
+            cls.methods.push(...handleMethods(StaticMethod, raw.staticMethods))
             if (subtree == 'classes') {
                 const rawCls = raw as ClassSpec;
                 cls.needsDeref = rawCls.needsDeref
@@ -265,7 +276,7 @@ export function bindModel(spec: Spec): BoundSpec {
 
                 // Constructors are exported to js as named static methods. The "real" js constructors
                 // are only used internally for attaching the C++ instance to a JS object.
-                cls.staticMethods.push(...Object.entries(rawCls.constructors)
+                cls.methods.push(...Object.entries(rawCls.constructors)
                     .flatMap(([name, rawSig]) => {
                         const sig = resolveTypes(rawSig)
                         // Constructors implicitly return the type of the class.

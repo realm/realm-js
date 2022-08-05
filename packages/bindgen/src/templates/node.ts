@@ -446,38 +446,20 @@ class NodeCppDecls extends CppDecls {
 
             for (let method of specClass.methods) {
                 let jsName = camelCase(method.unique_name)
-                let cppMeth = cls.addMethod(new CppNodeMethod(jsName))
-                descriptors.push(`InstanceMethod<&${cppMeth.qualName()}>("${jsName}")`)
-                let ret = method.sig.ret
-                let args = method.sig.args
+                let cppMeth = cls.addMethod(new CppNodeMethod(jsName, {static: method.isStatic}))
+                descriptors.push(`${method.isStatic ? 'Static' : 'Instance'}Method<&${cppMeth.qualName()}>("${jsName}")`)
+
+                let callPrefix =
+                    method.isConstructor ? cppClassName :
+                    method.isStatic ? `${cppClassName}::${method.name}` :
+                    `${self}.${method.name}`
+                let args = method.sig.args.map((a, i) => convertFromNode(a.type, `info[${i}]`))
+
                 cppMeth.body += `
                     if (info.Length() != ${args.length})
                         throw Napi::TypeError::New(${env}, "expected ${args.length} arguments");
 
-                    return ${
-                        convertToNode(
-                            ret,
-                            `${self}.${method.name}(${args.map((a, i) => convertFromNode(a.type, `info[${i}]`)).join(', ')})`
-                        )};
-                `
-            }
-            for (let method of specClass.staticMethods) {
-                let jsName = camelCase(method.unique_name)
-                let cppMeth = cls.addMethod(new CppNodeMethod(jsName, {static: true}))
-                descriptors.push(`StaticMethod<&${cppMeth.qualName()}>("${jsName}")`)
-                let ret = method.sig.ret
-                let args = method.sig.args
-                let cppFunc = method.isConstructor ? cppClassName : `${cppClassName}::${method.name}`
-                //let ret_decl = 'auto&& val = ' if ret != Primitive('void') else ''
-                cppMeth.body += `
-                    if (info.Length() != ${args.length})
-                        throw Napi::TypeError::New(${env}, "expected ${args.length} arguments");
-
-                    return ${
-                        convertToNode(
-                            ret,
-                            `${cppFunc}(${args.map((a, i) => convertFromNode(a.type, `info[${i}]`)).join(', ')})`
-                        )};
+                    return ${convertToNode(method.sig.ret, `${callPrefix}(${args})`)};
                 `
             }
 

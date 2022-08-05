@@ -152,19 +152,9 @@ export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): vo
     for (const [name, type] of Object.entries(cls.properties)) {
       out(camelCase(name), ': ', generateType(spec, type, Kind.Ret));
     }
-    for (const meth of cls.staticMethods) {
-      out(
-        "static",
-        camelCase(meth.unique_name),
-        "(",
-        generateArguments(spec, meth.sig.args),
-        "):",
-        generateType(spec, meth.sig.ret, Kind.Ret),
-        ";",
-      );
-    }
     for (const meth of cls.methods) {
       out(
+        meth.isStatic ? 'static' : '',
         camelCase(meth.unique_name),
         "(",
         generateArguments(spec, meth.sig.args),
