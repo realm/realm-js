@@ -217,6 +217,7 @@ classes:
       is_embedded: () const -> bool
       #get_column_count: () const -> size_t # TODO size_t
       get_column_type: '(column: ColKey) const -> DataType'
+      get_link_target: '(column: ColKey) const -> TableRef'
       create_object: () -> Obj
       create_object_with_primary_key: '(pk: Mixed) -> Obj'
       get_object: '(key: ObjKey) const -> Obj'
