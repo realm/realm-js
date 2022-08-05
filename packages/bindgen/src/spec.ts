@@ -24,6 +24,7 @@ import yaml from "yaml";
 import {
   ClassSpec,
   ConstantSpec,
+  EnumSpec,
   FieldSpec,
   FunctionTypeSpec,
   InterfaceSpec,
@@ -35,6 +36,7 @@ import {
 import {
   RelaxedClassSpec,
   RelaxedConstantSpec,
+  RelaxedEnumSpec,
   RelaxedFieldSpec,
   RelaxedInterfaceSpec,
   RelaxedMethodSpec,
@@ -95,7 +97,7 @@ export function normalizeSpec(spec: RelaxedSpec): Spec {
     primitives: spec.primitives || [],
     typeAliases: mapObjectValues(spec.typeAliases || {}, normalizeTypeSpec),
     templates: spec.templates || [],
-    enums: spec.enums || {},
+    enums: mapObjectValues(spec.enums || {}, normalizeEnumSpec),
     constants: mapObjectValues(spec.constants || {}, normalizeConstantSpec),
     opaqueTypes: spec.opaqueTypes || [],
     records: mapObjectValues(spec.records || {}, normalizeRecordSpec),
@@ -113,6 +115,12 @@ function normalizeTypeSpec(text: string) {
   }
 }
 
+function normalizeEnumSpec(spec: RelaxedEnumSpec): EnumSpec {
+  if (!Array.isArray(spec.values))
+    return spec as EnumSpec;
+  return {...spec, values: Object.fromEntries(spec.values.map((n, i) => [n, i]))}
+}
+
 function normalizeConstantSpec(spec: RelaxedConstantSpec): ConstantSpec {
   return {
     type: normalizeTypeSpec(spec.type),
@@ -128,6 +136,8 @@ function normalizeRecordSpec(spec: RelaxedRecordSpec): RecordSpec {
 
 function normalizeClassSpec(spec: RelaxedClassSpec): ClassSpec {
   return {
+    iterable: spec.iterable ? parseTypeSpec(spec.iterable) : undefined,
+    needsDeref: !!spec.needsDeref || !!spec.sharedPtrWrapped,
     sharedPtrWrapped: spec.sharedPtrWrapped,
     staticMethods: mapObjectValues(spec.staticMethods || {}, normalizeMethodSpec),
     properties: mapObjectValues(spec.properties || {}, normalizeTypeSpec),
