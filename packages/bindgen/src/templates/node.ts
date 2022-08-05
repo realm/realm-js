@@ -172,7 +172,7 @@ function convertPrimToNode(type: string, expr: string): string {
 
         case 'StringData':
             return `([&] (StringData sd) {
-                return sd.is_null() ? ${env}.Null() : Napi::String::New(${env}, sd.data(), sd.size());
+                return Napi::String::New(${env}, sd.data(), sd.size());
             }(${expr}))`
 
         case 'OwnedBinaryData':
@@ -180,8 +180,6 @@ function convertPrimToNode(type: string, expr: string): string {
 
         case 'BinaryData':
             return `([&] (BinaryData bd) -> Napi::Value {
-                if (bd.is_null())
-                    return ${env}.Null();
                 auto arr = Napi::ArrayBuffer::New(${env}, bd.size());
                 memcpy(arr.Data(), bd.data(), bd.size());
                 return arr;
@@ -206,19 +204,14 @@ function convertPrimFromNode(type: string, expr: string) {
         case 'int64_t': return `extractInt64FromNode(${expr})`
         case 'uint64_t': return `extractUint64FromNode(${expr})`
 
+        case 'StringData':
         case 'std::string_view':
         case 'std::string':
             return `(${expr}).As<Napi::String>().Utf8Value()`
-        case 'StringData':
-            return `([&] (const Napi::Value& v) {
-                return v.IsNull() ? StringData() : StringData(v.As<Napi::String>().Utf8Value());
-            })(${expr})`
 
         case 'OwnedBinaryData':
         case 'BinaryData':
             return `([&] (const Napi::Value& v) -> ${type} {
-                if (v.IsNull())
-                    return {};
                 auto buf = v.As<Napi::ArrayBuffer>();
                 return BinaryData(static_cast<const char*>(buf.Data()), buf.ByteLength());
             })(${expr})`
@@ -447,7 +440,7 @@ class NodeCppDecls extends CppDecls {
 
             let descriptors: string[] = []
 
-            const self = specClass.sharedPtrWrapped ? '(*m_ptr)' : '(m_val)';
+            const self = specClass.needsDeref ? '(*m_val)' : '(m_val)';
 
             descriptors = []
 
@@ -488,6 +481,33 @@ class NodeCppDecls extends CppDecls {
                 `
             }
 
+            if (specClass.iterable) {
+                let cppMeth = cls.addMethod(new CppNodeMethod("Symbol_iterator"))
+                descriptors.push(`InstanceMethod<&${cppMeth.qualName()}>(Napi::Symbol::WellKnown(${env}, "iterator"))`)
+                cppMeth.body += `
+                    if (info.Length() != 0)
+                        throw Napi::TypeError::New(${env}, "expected 0 arguments");
+
+                    auto jsIt = Napi::Object::New(${env});
+                    jsIt.Set("_keepAlive", info.This());
+                    jsIt.Set("next", Napi::Function::New(napi_env_var_ForBindGen,
+                        [it = ${self}.begin(), end = ${self}.end()] (const Napi::CallbackInfo& info) mutable {
+                            const auto ${env} = info.Env();
+
+                            auto ret = Napi::Object::New(${env});
+                            if (it == end) {
+                                ret.Set("done", Napi::Boolean::New(${env}, true));
+                            } else {
+                                ret.Set("value", ${convertToNode(specClass.iterable, '*it')});
+                                ++it;
+                            }
+                            return ret;
+                        }));
+
+                    return jsIt;
+                `
+            }
+
             for (let [cppPropName, type] of Object.entries(specClass.properties)) {
                 let jsName = camelCase(cppPropName)
                 let cppMeth = cls.addMethod(new CppNodeMethod(jsName))
@@ -502,13 +522,13 @@ class NodeCppDecls extends CppDecls {
 
             if (specClass.sharedPtrWrapped) {
                 let ptr = `std::shared_ptr<${cppClassName}>`
-                cls.members.push(new CppVar(ptr, 'm_ptr'))
-                cls.ctor.body += `m_ptr = std::move(*info[0].As<Napi::External<${ptr}>>().Data());`
+                cls.members.push(new CppVar(ptr, 'm_val'))
+                cls.ctor.body += `m_val = std::move(*info[0].As<Napi::External<${ptr}>>().Data());`
                 this.free_funcs.push(new CppFunc(
                     `NODE_TO_SHARED_${cppClassName}`,
                     `const ${ptr}&`,
                     [new CppVar('Napi::Value', 'val')],
-                    {body: `return ${cls.name}::Unwrap(val.ToObject())->m_ptr;`}
+                    {body: `return ${cls.name}::Unwrap(val.ToObject())->m_val;`}
                 ))
                 this.free_funcs.push(new CppFunc(
                     `NODE_FROM_SHARED_${cppClassName}`,
@@ -588,6 +608,15 @@ export function generateNode({ spec, file : makeFile  }: TemplateContext): void 
             StringDataOwnerHack(std::string&& s) : std::string(std::move(s)) {}
 
             StringData toStringData() const { return *this; }
+        };
+
+        struct Helpers {
+            static TableRef get_table(const SharedRealm& realm, StringData name) {
+                return realm->read_group().get_table(name);
+            }
+            static TableRef get_table(const SharedRealm& realm, TableKey key) {
+                return realm->read_group().get_table(key);
+            }
         };
 
         ////////////////////////////////////////////////////////////

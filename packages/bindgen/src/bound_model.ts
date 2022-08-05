@@ -67,6 +67,8 @@ class Class {
     methods: Method[] = []
     staticMethods: Method[] = []
     sharedPtrWrapped = false
+    needsDeref = false
+    iterable?: Type
     constructor(public name: string) {}
 
     toString() { return `class ${this.name}` }
@@ -75,6 +77,7 @@ class Class {
 class Interface extends Class {
     readonly isInterface = true
     readonly sharedPtrWrapped = true
+    readonly needsDeref = true
 }
 
 class Field {
@@ -248,9 +251,15 @@ export function bindModel(spec: Spec): BoundSpec {
             cls.staticMethods = Object.entries(raw.staticMethods)
                 .flatMap(([name, overloads]) => overloads.map(o => overloadToMethod(name, o)))
             if (subtree == 'classes') {
+                const rawCls = raw as ClassSpec;
+                cls.needsDeref = rawCls.needsDeref
+
+                if (rawCls.iterable)
+                    cls.iterable = resolveTypes(rawCls.iterable)
+
                 // Constructors are exported to js as named static methods. The "real" js constructors
                 // are only used internally for attaching the C++ instance to a JS object.
-                cls.staticMethods.push(...Object.entries((raw as ClassSpec).constructors)
+                cls.staticMethods.push(...Object.entries(rawCls.constructors)
                     .flatMap(([name, rawSig]) => {
                         const sig = resolveTypes(rawSig)
                         // Constructors implicitly return the type of the class.
@@ -258,7 +267,8 @@ export function bindModel(spec: Spec): BoundSpec {
                         sig.ret = cls
                         return new Constructor(name, sig)
                     }));
-                for (const [name, type] of Object.entries((raw as ClassSpec).properties ?? {})) {
+
+                for (const [name, type] of Object.entries(rawCls.properties ?? {})) {
                     cls.properties[name] = resolveTypes(type)
                 }
             }
