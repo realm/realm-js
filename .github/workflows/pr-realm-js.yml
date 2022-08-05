@@ -229,7 +229,6 @@ jobs:
       matrix:
         variant:
           #type: [Release, Debug]
-<<<<<<< HEAD
           - { os: linux, target: test, runner: ubuntu-20.04, environment: node }
           - { os: linux, target: "test:main", runner: ubuntu-20.04, environment: electron }
           - { os: linux, target: "test:renderer", runner: ubuntu-20.04, environment: electron }
@@ -244,22 +243,6 @@ jobs:
           - { os: ios, target: "test:ios", runner: macos-11, environment: react-native }
           #- { os: ios, target: "test:ios:chrome", runner: macos-11, environment: react-native }
           - { os: ios, target: "test:catalyst", runner: macos-11, environment: react-native }
-=======
-          # - { os: linux, target: test, runner: ubuntu-20.04, environment: node, timeout: 10 }
-          # - { os: linux, target: "test:main", runner: ubuntu-20.04, environment: electron, timeout: 10 }
-          # - { os: linux, target: "test:renderer", runner: ubuntu-20.04, environment: electron, timeout: 10 }
-          #- { os: windows, target: test, runner: windows-2019, environment: node}
-          #- { os: windows, target: "test:main", runner: windows-2019, environment: electron }
-          #- { os: windows, target: "test:renderer", runner: windows-2019, environment: electron }
-          # - { os: darwin, target: "test:main", runner: macos-11, environment: electron, timeout: 10 }
-          # - { os: darwin, target: "test:renderer", runner: macos-11, environment: electron, timeout: 10 }
-          # - { os: darwin, target: test, runner: macos-11, environment: node, timeout: 10 }
-          - { os: android, target: "test:android", runner: macos-11, environment: react-native, timeout: 25 }
-          #- { os: android, target: "test:android:chrome", runner: macos-11, environment: react-native }
-          # - { os: ios, target: "test:ios", runner: macos-11, environment: react-native, timeout: 25 }
-          #- { os: ios, target: "test:ios:chrome", runner: macos-11, environment: react-native }
-          # - { os: ios, target: "test:catalyst", runner: macos-11, environment: react-native, timeout: 25 }
->>>>>>> f3da2d01 (Attempt to fix android)
           #- { os: ios, target: "test:catalyst:chrome", runner: macos-11, environment: react-native }
     timeout-minutes: 60
     steps:
