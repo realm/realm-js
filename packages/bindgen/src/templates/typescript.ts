@@ -19,7 +19,7 @@
 import { camelCase } from "change-case";
 
 import { TemplateContext } from "../context";
-import { ArgumentSpec, Spec, TemplateInstanceSpec, TypeSpec } from "../spec";
+import { ArgumentSpec, MethodSpec, Spec, TemplateInstanceSpec, TypeSpec } from "../spec";
 import { isString } from "../utils";
 
 const PRIMITIVES_MAPPING: Record<string, string> = {
@@ -32,9 +32,9 @@ const PRIMITIVES_MAPPING: Record<string, string> = {
   int32_t: "number",
   uint64_t: "bigint",
   "std::string": "string",
-  StringData: "string | null",
-  BinaryData: "ArrayBuffer | null",
-  OwnedBinaryData: "ArrayBuffer | null",
+  StringData: "string",
+  BinaryData: "ArrayBuffer",
+  OwnedBinaryData: "ArrayBuffer",
 };
 
 type TemplateInstanceMapper = (spec: Spec, type: TemplateInstanceSpec) => string;
@@ -120,6 +120,12 @@ function generateTypeModifierComment(spec: TypeSpec) {
   return modifiers.length > 0 ? `/* ${modifiers.join(" ")} */` : "";
 }
 
+function jsName(name: string, spec: MethodSpec) {
+  if (spec.suffix)
+    return camelCase(`${name}_${spec.suffix}`)
+  return camelCase(name)
+}
+
 export function generateTypeScript({ spec, file }: TemplateContext): void {
   // Check the support for primitives used
   for (const primitive of spec.primitives) {
@@ -142,22 +148,26 @@ export function generateTypeScript({ spec, file }: TemplateContext): void {
   for (const [name, e] of Object.entries(spec.enums)) {
     // Using const enum to avoid having to emit JS backing these
     enumsOut(`export const enum ${name} {`);
-    if (e.isFlag) {
-      enumsOut(...Object.entries(e.values).map(([k, v]) => `${k} = ${v},`));
-    } else {
-      enumsOut(...e.values.map((k) => `${k} = "${k}",`));
-    }
+    enumsOut(...Object.entries(e.values).map(([k, v]) => `${k} = ${v},\n`));
     enumsOut("};");
   }
 
   const js = file("native.js", "eslint", "typescript-checker");
+  js("// This file is generated: Update the spec instead of editing this file directly");
   js("import bindings from 'bindings';")
 
   const out = file("native.d.ts", "eslint", "typescript-checker");
   out("// This file is generated: Update the spec instead of editing this file directly");
 
   out("import {", Object.keys(spec.enums).join(", "), '} from "./enums";');
-  out("export {", Object.keys(spec.enums).join(", "), '};');
+  out('export * from "./enums";');
+  js('export * from "./enums";');
+
+  out('// Utilities')
+  out(`type DeepRequired<T> = 
+          T extends CallableFunction ? T :
+          T extends object ? {[K in keyof T]-? : DeepRequired<T[K]>} :
+          T;`)
 
   out("// Opaque types");
   for (const name of spec.opaqueTypes) {
@@ -179,11 +189,11 @@ export function generateTypeScript({ spec, file }: TemplateContext): void {
   }
 
   out("// Classes");
-  for (const [name, { constructors, methods, properties, staticMethods, sharedPtrWrapped }] of Object.entries(spec.classes)) {
+  for (const [name, cls] of Object.entries(spec.classes)) {
     js(`export const {${name}} = bindings("realm.node");`)
     out(`export class ${name} {`);
     out(`private constructor();`);
-    for (const [ctorName, sig] of Object.entries(constructors)) {
+    for (const [ctorName, sig] of Object.entries(cls.constructors)) {
       out(
         "static",
         camelCase(ctorName),
@@ -194,37 +204,40 @@ export function generateTypeScript({ spec, file }: TemplateContext): void {
         ";",
       );
     }
-    for (const [name, methodSpecs] of Object.entries(staticMethods)) {
+    for (const [name, methodSpecs] of Object.entries(cls.staticMethods)) {
       for (const methodSpec of methodSpecs) {
         out(
           "static",
-          camelCase(name),
+          jsName(name, methodSpec),
           "(",
           generateArguments(spec, methodSpec.sig.arguments),
           "):",
-          generateType(spec, methodSpec.sig.return),
+          `DeepRequired<${generateType(spec, methodSpec.sig.return)}>`,
           ";",
         );
       }
     }
-    for (const [name, type] of Object.entries(properties)) {
-      out(camelCase(name), `: ${generateType(spec, type)}`);
+    for (const [name, type] of Object.entries(cls.properties)) {
+      out(camelCase(name), `: DeepRequired<${generateType(spec, type)}>`);
     }
-    for (const [name, methodSpecs] of Object.entries(methods)) {
+    for (const [name, methodSpecs] of Object.entries(cls.methods)) {
       for (const methodSpec of methodSpecs) {
         out(
-          camelCase(name),
+          jsName(name, methodSpec),
           "(",
           generateArguments(spec, methodSpec.sig.arguments),
           "):",
-          generateType(spec, methodSpec.sig.return),
+          `DeepRequired<${generateType(spec, methodSpec.sig.return)}>`,
           ";",
         );
       }
     }
+    if (cls.iterable) {
+      out(`[Symbol.iterator](): Iterator<${generateType(spec, cls.iterable)}>;`);
+    }
     out(`}`);
-    if (sharedPtrWrapped) {
-      out("export type", sharedPtrWrapped, " = ", name);
+    if (cls.sharedPtrWrapped) {
+      out("export type", cls.sharedPtrWrapped, " = ", name);
     }
   }
 
@@ -239,7 +252,7 @@ export function generateTypeScript({ spec, file }: TemplateContext): void {
           "(",
           generateArguments(spec, methodSpec.sig.arguments),
           "):",
-          generateType(spec, methodSpec.sig.return),
+          `DeepRequired<${generateType(spec, methodSpec.sig.return)}>`,
           ";",
         );
       }

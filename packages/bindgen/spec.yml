@@ -18,6 +18,7 @@ primitives:
   - int
   - void
   - std::string
+  # TODO: see if we need nullable versions of these. For now null buffers are treated as empty.
   - StringData
   - OwnedBinaryData
   - BinaryData
@@ -69,25 +70,25 @@ enums:
       Set: 256
       Dictionary: 512
 
-      # Collection: 896 # Array | Set | Dictionary
-      # Flags: 960 # Nullable | Collection
+      Collection: 896 # Array | Set | Dictionary
+      Flags: 960 # Nullable | Collection
 
   DataType:
     values:
-      - Int
-      - Bool
-      - String
-      - Binary
-      - Mixed
-      - Timestamp
-      - Float
-      - Double 
-      - Decimal 
-      - Link 
-      - LinkList 
-      - ObjectId 
-      - TypedLink 
-      - UUID 
+      Int: 0
+      Bool: 1
+      String: 2
+      Binary: 4
+      Mixed: 6
+      Timestamp: 8
+      Float: 9
+      Double: 10
+      Decimal: 11
+      Link: 12
+      LinkList: 13
+      ObjectId: 15
+      TypedLink: 16
+      UUID: 17
 
 constants:
   null_col_key:
@@ -198,6 +199,50 @@ classes:
   #ThreadSafeReference: {}
   #SchemaChange: {}
 
+  Helpers:
+    staticMethods:
+      get_table:
+        - '(r: SharedRealm, name: TableKey) -> TableRef'
+        - sig: '(r: SharedRealm, name: StringData) -> TableRef'
+          suffix: by_name
+
+  TableRef:
+    needsDeref: true
+    iterable: Obj
+    methods:
+      get_name: () const -> StringData
+      is_embedded: () const -> bool
+      #get_column_count: () const -> size_t # TODO size_t
+      get_column_type: '(column: ColKey) const -> DataType'
+      create_object: () -> Obj
+      create_object_with_primary_key: '(pk: Mixed) -> Obj'
+      get_object: '(key: ObjKey) const -> Obj'
+      try_get_object: '(key: ObjKey) const -> Obj'
+
+  Obj:
+    properties:
+      is_valid: bool
+      # TODO some of the get_FOO methods should be properties with a cppName
+    methods:
+      get_table: '() const -> TableRef'
+      get_key: '() const -> ObjKey'
+      get_link: '() const -> ObjLink'
+      get_primary_key: '() const -> Mixed'
+      get_any:
+        - '(column: ColKey) const -> Mixed'
+        - sig: '(column: StringData) const -> Mixed'
+          suffix: 'by_name'
+      is_null:
+        - '(column: ColKey) const -> bool'
+        - sig: '(column: StringData) const -> bool'
+          suffix: by_name
+      set_any: # NOTE: ignoring ability to chain calls
+        - '(column: ColKey, value: Mixed)'
+        - sig: '(column: ColKey, value: Mixed, is_default: bool)'
+          suffix: with_default
+      get_linked_object: '(column: ColKey) const -> Obj'
+      to_string: () const -> std::string
+
   Transaction:
     sharedPtrWrapped: TransactionRef
 
@@ -240,10 +285,10 @@ classes:
       from_objkey: '(v: ObjKey)'
       from_link: '(v: ObjLink)'
       from_uuid: '(v: UUID)'
+      from_binary: '(v: BinaryData)'
 
-      # These are broken since they reference unowned data. There is a hacky fix for string, but we should do something better.
+      # This is broken since it references unowned data. There is a hacky fix for string, but we should do something better.
       # from_string: '(v: StringData)'
-      # from_binary: '(v: BinaryData)'
       from_string: '(v: StringDataOwnerHack)'
 
     methods:

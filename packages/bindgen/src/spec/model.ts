@@ -39,7 +39,7 @@ export type EnumSpec =
     }
   | {
       isFlag?: false;
-      values: string[];
+      values: { [key: string]: number };
     };
 
 export type ConstantSpec = {
@@ -62,6 +62,8 @@ export type MethodSpec = {
 };
 
 export type ClassSpec = {
+  iterable?: TypeSpec;
+  needsDeref: boolean;
   sharedPtrWrapped?: string;
   constructors: { [name: string]: FunctionTypeSpec };
   staticMethods: { [name: string]: MethodSpec[] };
