@@ -3,7 +3,7 @@ import {strict as assert} from 'assert'
 
 import {TemplateContext} from "../context";
 import {CppVar, CppFunc, CppFuncProps, CppMemInit, CppCtor, CppMethod, CppClass, CppDecls, CppCtorProps} from "../cpp"
-import {bindModel, BoundSpec, Type} from "../bound_model"
+import {bindModel, BoundSpec, Type} from "../bound-model"
 
 // Code assumes this is a unique name that is always in scope to refer to the Napi::Env.
 // Callbacks need to ensure this is in scope. Functions taking Env arguments must use this name.
