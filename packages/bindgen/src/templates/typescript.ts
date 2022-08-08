@@ -19,7 +19,7 @@
 import { camelCase } from "change-case";
 
 import { TemplateContext } from "../context";
-import { Arg, bindModel, BoundSpec, Type } from "../bound_model";
+import { Arg, bindModel, BoundSpec, Type } from "../bound-model";
 
 const PRIMITIVES_MAPPING: Record<string, string> = {
   void: "void",
