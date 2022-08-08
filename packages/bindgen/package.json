@@ -9,7 +9,7 @@
   "type": "module",
   "main": "./index.ts",
   "exports": "./index.ts",
-  "types": "./generated/ts/index.d.ts",
+  "types": "./generated/ts/native.d.ts",
   "scripts": {
     "start": "./realm-bindgen.ts",
     "test": "mocha",
