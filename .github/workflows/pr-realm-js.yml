@@ -322,7 +322,7 @@ jobs:
         timeout-minutes: 10
         run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
-      - name: Rn ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
+      - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ (matrix.variant.os == 'ios') }}
         timeout-minutes: 35
         run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
