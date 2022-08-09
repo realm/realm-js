@@ -37,6 +37,7 @@ describe("Realm transactions", () => {
           age: 42,
         });
         throw new Error(message);
+        realm.commitTransaction();
       } catch (err) {
         expect((err as Error).message).equals(message);
         expect(realm.isInTransaction).to.be.true;
@@ -58,6 +59,7 @@ describe("Realm transactions", () => {
           name: "John Doe",
           age: "five", // wrong type
         });
+        realm.commitTransaction();
       } catch (err) {
         expect((err as Error).message).equals(message);
         expect(realm.isInTransaction).to.be.true;
