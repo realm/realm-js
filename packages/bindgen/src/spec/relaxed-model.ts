@@ -25,7 +25,10 @@ import { InterfaceSpec, ClassSpec, Spec } from "./model";
  */
 export type RelaxedValueType = string | boolean | number | [] | Record<string, never>;
 
-export type RelaxedSpec = Omit<Partial<Spec>, "enums" | "records" | "classes" | "constants" | "typeAliases" | "interfaces"> & {
+export type RelaxedSpec = Omit<
+  Partial<Spec>,
+  "enums" | "records" | "classes" | "constants" | "typeAliases" | "interfaces"
+> & {
   enums?: { [name: string]: RelaxedEnumSpec };
   records?: { [name: string]: RelaxedRecordSpec };
   classes?: { [name: string]: RelaxedClassSpec };
