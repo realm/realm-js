@@ -116,9 +116,8 @@ function normalizeTypeSpec(text: string) {
 }
 
 function normalizeEnumSpec(spec: RelaxedEnumSpec): EnumSpec {
-  if (!Array.isArray(spec.values))
-    return spec as EnumSpec;
-  return {...spec, values: Object.fromEntries(spec.values.map((n, i) => [n, i]))}
+  if (!Array.isArray(spec.values)) return spec as EnumSpec;
+  return { ...spec, values: Object.fromEntries(spec.values.map((n, i) => [n, i])) };
 }
 
 function normalizeConstantSpec(spec: RelaxedConstantSpec): ConstantSpec {
@@ -194,7 +193,7 @@ function normalizeConstructor(sig: string): FunctionTypeSpec {
   if (type.kind !== "function") {
     throw new Error(`Expected a function type, got "${type.kind}"`);
   }
-  if (type.return.kind != 'qualified-name' || type.return.names.length != 1 || type.return.names[0] != 'void')
+  if (type.return.kind != "qualified-name" || type.return.names.length != 1 || type.return.names[0] != "void")
     throw new Error(`Constructors not allowed to specify return type, got "${type.kind}"`);
   return type;
 }

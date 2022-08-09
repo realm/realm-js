@@ -48,13 +48,14 @@ const enum Kind {
 }
 
 function generateType(spec: BoundSpec, type: Type, kind: Kind): string {
-  switch(type.kind) {
+  switch (type.kind) {
     case "Pointer":
     case "Ref":
       // No impact on JS semantics.
-      return generateType(spec, type.type, kind)
+      return generateType(spec, type.type, kind);
 
-    case "Const": return `Readonly<${generateType(spec, type.type, kind)}>`
+    case "Const":
+      return `Readonly<${generateType(spec, type.type, kind)}>`;
 
     case "Opaque":
     case "Enum":
@@ -62,21 +63,21 @@ function generateType(spec: BoundSpec, type: Type, kind: Kind): string {
       return type.name;
 
     case "Struct":
-      return kind == Kind.Arg ? type.name : `DeepRequired<${type.name}>`
+      return kind == Kind.Arg ? type.name : `DeepRequired<${type.name}>`;
 
     case "Primitive":
       return PRIMITIVES_MAPPING[type.name];
 
-    case "Template": 
-      return TEMPLATE_MAPPING[type.name](...type.args.map(arg => generateType(spec, arg, kind)));
+    case "Template":
+      return TEMPLATE_MAPPING[type.name](...type.args.map((arg) => generateType(spec, arg, kind)));
 
-    case "Func": 
+    case "Func":
       // When a js function is passed to cpp, its arguments behave like Ret and its return value behaves like Arg.
       const Arg = kind == Kind.Arg ? Kind.Ret : Kind.Arg;
       const Ret = kind == Kind.Arg ? Kind.Arg : Kind.Ret;
 
-      const args =  type.args.map((arg) => arg.name + ": " + generateType(spec, arg.type, Arg))
-      return `((${args.join(', ')}) => ${generateType(spec, type.ret, Ret)})`;
+      const args = type.args.map((arg) => arg.name + ": " + generateType(spec, arg.type, Arg));
+      return `((${args.join(", ")}) => ${generateType(spec, type.ret, Ret)})`;
   }
 }
 
@@ -99,7 +100,7 @@ export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): vo
     }
   }
 
-  let spec = bindModel(rawSpec)
+  const spec = bindModel(rawSpec);
 
   const enumsOut = file("enums.ts", "eslint", "typescript-checker");
   enumsOut("// This file is generated: Update the spec instead of editing this file directly");
@@ -108,29 +109,29 @@ export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): vo
   for (const e of spec.enums) {
     // Using const enum to avoid having to emit JS backing these
     enumsOut(`export const enum ${e.name} {`);
-    enumsOut(...e.enumerators.map(({name, value}) => `${name} = ${value},\n`));
+    enumsOut(...e.enumerators.map(({ name, value }) => `${name} = ${value},\n`));
     enumsOut("};");
   }
 
   const js = file("native.js", "eslint");
   js("// This file is generated: Update the spec instead of editing this file directly");
-  js("import bindings from 'bindings';")
+  js("import bindings from 'bindings';");
 
   const out = file("native.d.ts", "eslint", "typescript-checker");
   out("// This file is generated: Update the spec instead of editing this file directly");
 
-  out("import {", spec.enums.map(e => e.name).join(", "), '} from "./enums";');
+  out("import {", spec.enums.map((e) => e.name).join(", "), '} from "./enums";');
   out('export * from "./enums";');
   js('export * from "./enums";');
 
-  out('// Utilities')
+  out("// Utilities");
   out(`type DeepRequired<T> = 
           T extends CallableFunction ? T :
           T extends object ? {[K in keyof T]-? : DeepRequired<T[K]>} :
-          T;`)
+          T;`);
 
   out("// Opaque types");
-  for (const {name} of spec.opaqueTypes) {
+  for (const { name } of spec.opaqueTypes) {
     out.lines("/** Using an empty enum to express a nominal type */", `export declare enum ${name} {}`);
   }
 
@@ -146,15 +147,15 @@ export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): vo
 
   out("// Classes");
   for (const cls of spec.classes) {
-    js(`export const {${cls.name}} = bindings("realm.node");`)
+    js(`export const {${cls.name}} = bindings("realm.node");`);
     out(`export class ${cls.name} {`);
     out(`private constructor();`);
     for (const [name, type] of Object.entries(cls.properties)) {
-      out(camelCase(name), ': ', generateType(spec, type, Kind.Ret));
+      out(camelCase(name), ": ", generateType(spec, type, Kind.Ret));
     }
     for (const meth of cls.methods) {
       out(
-        meth.isStatic ? 'static' : '',
+        meth.isStatic ? "static" : "",
         camelCase(meth.unique_name),
         "(",
         generateArguments(spec, meth.sig.args),
