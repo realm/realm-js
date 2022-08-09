@@ -132,7 +132,7 @@ describe("Realm objects", () => {
         `Attempting to create an object of type '${PersonSchemaWithId.name}' with an existing primary key value '${_id}'.`,
       );
 
-      // Excpect only one instance of 'PersonSchemaWithId' in db after all updates
+      // Expect only one instance of 'PersonSchemaWithId' in db after all updates
       const persons = realm.objects(PersonSchemaWithId.name);
       expect(persons.length).equals(1);
     });
@@ -252,7 +252,7 @@ describe("Realm objects", () => {
         `Attempting to create an object of type '${PersonWithId.schema.name}' with an existing primary key value '${_id}'.`,
       );
 
-      // Excpect only one instance of 'PersonWithId' in db after all updates
+      // Expect only one instance of 'PersonWithId' in db after all updates
       const persons = realm.objects(PersonWithId);
       expect(persons.length).equals(1);
     });
