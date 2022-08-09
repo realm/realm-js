@@ -1022,9 +1022,9 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         // iii)  recover:
         // iv)   recoverOrDiscard:
         //
-        // The default setting is manual
+        // The default setting is recoverOrDiscard
 
-        config.sync_config->client_resync_mode = realm::ClientResyncMode::Manual;
+        config.sync_config->client_resync_mode = realm::ClientResyncMode::RecoverOrDiscard;
         ValueType client_reset_value = Object::get_property(ctx, sync_config_object, "clientReset");
         if (!Value::is_undefined(ctx, client_reset_value)) {
             auto client_reset_object = Value::validated_to_object(ctx, client_reset_value);

@@ -151,8 +151,8 @@ declare namespace Realm {
 
     type ClientResetBeforeCallback = (localRealm: Realm) => void;
     type ClientResetAfterCallback = (localRealm: Realm, remoteRealm: Realm, didRecover?: boolean) => void;
-    interface ClientResetConfiguration<ClientResetModeT = ClientResetMode> {
-        mode: ClientResetModeT;
+    interface ClientResetConfiguration {
+        mode: ClientResetMode;
         clientResetBefore?: ClientResetBeforeCallback;
         clientResetAfter?: ClientResetAfterCallback;
     }
@@ -165,6 +165,7 @@ declare namespace Realm {
         newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
         existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
         error?: ErrorCallback;
+        clientReset?: ClientResetConfiguration;
     }
 
     // We only allow `flexible` to be `true` or `undefined` - `{ flexible: false }`
@@ -174,7 +175,6 @@ declare namespace Realm {
     interface FlexibleSyncConfiguration extends BaseSyncConfiguration {
         flexible: true;
         partitionValue?: never;
-        clientReset?: ClientResetConfiguration<ClientResetMode.Manual>;
         /**
          * Optional object to configure the setup of an initial set of flexible
          * sync subscriptions to be used when opening the Realm. If this is specified,
@@ -221,7 +221,6 @@ declare namespace Realm {
     interface PartitionSyncConfiguration extends BaseSyncConfiguration {
         flexible?: never;
         partitionValue: Realm.App.Sync.PartitionValue;
-        clientReset?: ClientResetConfiguration<ClientResetMode>;
     }
 
     type SyncConfiguration = FlexibleSyncConfiguration | PartitionSyncConfiguration;
