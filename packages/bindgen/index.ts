@@ -16,62 +16,65 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {strict as assert} from 'assert'
-import {DataType, Decimal128, Mixed, ObjectId, ObjLink, Timestamp, UUID} from "./generated/ts/native.js";
+import { strict as assert } from "assert";
+import { DataType, Decimal128, Mixed, ObjectId, ObjLink, Timestamp, UUID } from "./generated/ts/native.js";
 
 export * from "./generated/ts/native.js"; // enums are transitively exported.
 
-
-const customInspectSymbol = Symbol.for('nodejs.util.inspect.custom');
+const customInspectSymbol = Symbol.for("nodejs.util.inspect.custom");
 
 // Make Mixed easier to work with.
 export type MixedValues =
-    null
-    | bigint
-    | boolean
-    | number
-    | string
-    | ArrayBuffer
-    | Timestamp
-    | Decimal128
-    | ObjectId
-    | UUID
-    | ObjLink;
+  | null //
+  | bigint
+  | boolean
+  | number
+  | string
+  | ArrayBuffer
+  | Timestamp
+  | Decimal128
+  | ObjectId
+  | UUID
+  | ObjLink;
 
 declare module "./generated/ts/native.js" {
-    interface Mixed {
-        toJsValue(): MixedValues
-        toString(): string
-        [customInspectSymbol](): string
-    }
+  interface Mixed {
+    toJsValue(): MixedValues;
+    toString(): string;
+    [customInspectSymbol](): string;
+  }
 }
 
-Mixed.prototype.toJsValue = function() {
-    if (this.isNull())
-        return null
+Mixed.prototype.toJsValue = function () {
+  if (this.isNull()) return null;
 
-    const t = this.getType()
-    switch (t) {
-        //case DataType.Int: return this.getInt()
-        case DataType.String: return this.getString()
-        case DataType.Float: return this.getFloat()
-        case DataType.Double: return this.getDouble()
+  const t = this.getType();
+  switch (t) {
+    case DataType.Int:
+      return this.getInt(); // Note: returns bigint, not number
+    case DataType.String:
+      return this.getString();
+    case DataType.Float:
+      return this.getFloat();
+    case DataType.Double:
+      return this.getDouble();
+  }
+  assert.fail(`Unsupported DataType for Mixed.toJsValue(): ${t}`);
+};
+
+Mixed.prototype.toString = function () {
+  if (this.isNull()) return "Mixed(null)";
+
+  try {
+    switch (this.getType()) {
+      case DataType.Float:
+        return `Mixed(float:${this.toJsValue()})`;
+      default:
+        return `Mixed(${this.toJsValue()})`;
     }
-    assert.fail(`Unsupported DataType for Mixed.toJsValue(): ${t}`)
-}
+  } catch {
+    return "Mixed(NOT_SUPPORTED_YET)";
+  }
+};
 
-Mixed.prototype.toString = function() {
-    if (this.isNull())
-        return "Mixed(null)"
-
-    try {
-        switch (this.getType()) {
-            case DataType.Float: return `Mixed(float:${this.toJsValue()})`
-            default: return `Mixed(${this.toJsValue()})`
-        }
-    } catch {
-        return 'Mixed(NOT_SUPPORTED_YET)'
-    }
-}
-
-Mixed.prototype[customInspectSymbol] = Mixed.prototype.toString
+Mixed.prototype[customInspectSymbol] = Mixed.prototype.toString;
