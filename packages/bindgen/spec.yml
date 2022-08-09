@@ -290,11 +290,12 @@ classes:
       from_obj: '(v: const Obj&)'
       from_link: '(v: ObjLink)'
       from_uuid: '(v: UUID)'
+
+      # TODO may need to make Mixed hold a ref to the argument.
       from_binary: '(v: BinaryData)'
 
-      # This is broken since it references unowned data. There is a hacky fix for string, but we should do something better.
-      # from_string: '(v: StringData)'
-      from_string: '(v: StringDataOwnerHack)'
+      # Warning: This requires some special workarounds because it is a view.
+      from_string: '(v: StringData)'
 
     methods:
       get_type: () const -> DataType
@@ -402,12 +403,6 @@ classes:
       close: ()
 
       file_format_upgraded_from_version: () const -> util::Optional<int>
-
-  StringDataOwnerHack:
-    constructors:
-      make: '(s: std::string)'
-    methods:
-      toStringData: '() const -> StringData'
 
 interfaces:
   Scheduler:

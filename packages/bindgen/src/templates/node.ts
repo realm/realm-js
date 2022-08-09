@@ -492,6 +492,10 @@ class NodeCppDecls extends CppDecls {
 
       descriptors = [];
 
+      if (cppClassName == "Mixed") {
+        cls.members.push(new CppVar("std::string", "m_buffer"));
+      }
+
       for (const method of specClass.methods) {
         const jsName = camelCase(method.unique_name);
         const cppMeth = cls.addMethod(new CppNodeMethod(jsName, { static: method.isStatic }));
@@ -507,9 +511,21 @@ class NodeCppDecls extends CppDecls {
         cppMeth.body += `
                     if (info.Length() != ${args.length})
                         throw Napi::TypeError::New(${env}, "expected ${args.length} arguments");
+        `;
 
-                    return ${convertToNode(method.sig.ret, `${callPrefix}(${args})`)};
-                `;
+        if (cppClassName == "Mixed" && method.unique_name == "from_string") {
+          // TODO make this less of a special case.
+          assert.equal(args.length, 1);
+          cppMeth.body += `
+              auto ret = ${convertToNode(method.sig.ret, "Mixed()")};
+              auto self = Unwrap(ret.ToObject());
+              self->m_buffer = ${args};
+              self->m_val = Mixed(self->m_buffer);
+              return ret;
+            `;
+        } else {
+          cppMeth.body += `return ${convertToNode(method.sig.ret, `${callPrefix}(${args})`)};`;
+        }
       }
 
       if (specClass.iterable) {
@@ -629,15 +645,8 @@ export function generateNode({ spec, file: makeFile }: TemplateContext): void {
       // TODO hacks, because we don't yet support defining types with qualified names
       using Scheduler = util::Scheduler;
 
-      // TODO hack to make owned StringData
-      struct StringDataOwnerHack : std::string {
-          using std::string::string;
-          StringDataOwnerHack(const std::string& s) : std::string(s) {}
-          StringDataOwnerHack(std::string&& s) : std::string(std::move(s)) {}
 
-          StringData toStringData() const { return *this; }
-      };
-
+      // TODO move to header or realm-core
       struct Helpers {
           static TableRef get_table(const SharedRealm& realm, StringData name) {
               return realm->read_group().get_table(name);

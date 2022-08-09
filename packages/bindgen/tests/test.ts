@@ -20,7 +20,7 @@
 
 /* eslint-disable header/header */
 
-import { Realm, PropertyType, Helpers, Mixed, StringDataOwnerHack } from "../index";
+import { Realm, PropertyType, Helpers, Mixed } from "../index";
 
 import { strict as assert } from "assert";
 import * as util from "util";
@@ -60,12 +60,12 @@ realm.beginTransaction();
 
 const obj1 = table.createObject();
 obj1.setAny(numCol, Mixed.fromInt(1234));
-obj1.setAny(strCol, Mixed.fromString(StringDataOwnerHack.make("hello")));
+obj1.setAny(strCol, Mixed.fromString("hello"));
 obj1.setAny(fltCol, Mixed.fromFloat(0.1234));
 
 const obj2 = table.createObject();
 obj2.setAny(numCol, Mixed.fromInt(9876));
-obj2.setAny(strCol, Mixed.fromString(StringDataOwnerHack.make("world")));
+obj2.setAny(strCol, Mixed.fromString("world"));
 
 const obj3 = table.createObject();
 obj3.setAny(lnkCol, Mixed.fromObj(obj2));
