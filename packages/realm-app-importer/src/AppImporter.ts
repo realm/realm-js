@@ -107,7 +107,6 @@ export interface AppImporterOptions {
   realmConfigPath: string;
   appsDirectoryPath: string;
   cleanUp?: boolean;
-  atlasCluster?: string;
 }
 
 type App = {
@@ -127,23 +126,14 @@ type App = {
 export class AppImporter {
   private readonly baseUrl: string;
   private readonly credentials: Credentials;
-  private readonly atlasCluster?: string;
   private readonly realmConfigPath: string;
   private readonly appsDirectoryPath: string;
 
   private accessToken: string | undefined;
 
-  constructor({
-    baseUrl,
-    credentials,
-    realmConfigPath,
-    appsDirectoryPath,
-    cleanUp = true,
-    atlasCluster,
-  }: AppImporterOptions) {
+  constructor({ baseUrl, credentials, realmConfigPath, appsDirectoryPath, cleanUp = true }: AppImporterOptions) {
     this.baseUrl = baseUrl;
     this.credentials = credentials;
-    this.atlasCluster = atlasCluster;
     this.realmConfigPath = realmConfigPath;
     this.appsDirectoryPath = appsDirectoryPath;
 
@@ -169,6 +159,7 @@ export class AppImporter {
    * @returns A promise of an object containing the app id.
    */
   public async importApp(appTemplatePath: string, replacements: TemplateReplacements = {}): Promise<{ appId: string }> {
+    console.log("getting started: ", process.cwd(), appTemplatePath);
     const { name: appName } = this.loadAppConfigJson(appTemplatePath);
 
     await this.logIn();

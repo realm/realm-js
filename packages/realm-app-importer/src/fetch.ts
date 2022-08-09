@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 ////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2022 Realm Inc.
@@ -16,4 +15,6 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-require("./dist/cli");
+import { DefaultNetworkTransport } from "realm-network-transport";
+
+export const fetch = DefaultNetworkTransport.fetch;

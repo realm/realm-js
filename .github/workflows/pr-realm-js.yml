@@ -2,25 +2,26 @@ name: pr-realm-js
 on: pull_request
 
 jobs:
-  build-and-test:
-    name: Build and test for ${{ matrix.variant.os }} ${{ matrix.variant.arch }}
+  build:
+    name: Build for ${{ matrix.variant.os }} ${{ matrix.variant.arch }}
     runs-on: ${{ matrix.variant.runner }}
     env:
       npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
       REALM_DISABLE_ANALYTICS: 1
+      ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/21.4.7075529
     strategy:
       fail-fast: false
       matrix:
         variant:
-          - { os: linux, runner: ubuntu-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
+          - { os: linux, runner: ubuntu-20.04, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
           - { os: windows, runner: windows-2019, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
           - { os: windows, runner: windows-2019, arch: ia32, artifact-path: prebuilds }
-          - { os: android, runner: ubuntu-latest, arch: x86_64, artifact-path: react-native/android/src/main/jniLibs }
-          - { os: android, runner: ubuntu-latest, arch: armeabi-v7a, artifact-path: react-native/android/src/main/jniLibs }
-          - { os: android, runner: ubuntu-latest, arch: arm64-v8a, artifact-path: react-native/android/src/main/jniLibs }
-          - { os: android, runner: ubuntu-latest, arch: x86, artifact-path: react-native/android/src/main/jniLibs }
-          - { os: darwin, runner: macos-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
-          - { os: ios, runner: macos-latest, arch: apple, artifact-path: react-native/ios/realm-js-ios.xcframework }
+          - { os: android, runner: ubuntu-20.04, arch: x86_64, artifact-path: react-native/android/src/main/jniLibs }
+          - { os: android, runner: ubuntu-20.04, arch: armeabi-v7a, artifact-path: react-native/android/src/main/jniLibs }
+          - { os: android, runner: ubuntu-20.04, arch: arm64-v8a, artifact-path: react-native/android/src/main/jniLibs }
+          - { os: android, runner: ubuntu-20.04, arch: x86, artifact-path: react-native/android/src/main/jniLibs }
+          - { os: darwin, runner: macos-11, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
+          - { os: ios, runner: macos-11, arch: apple, artifact-path: react-native/ios/realm-js-ios.xcframework }
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -87,7 +88,7 @@ jobs:
       # On linux, electron requires a connected display.  We fake this by giving it a headless environment using xvfb
       # Relevant issue: https://github.com/juliangruber/browser-run/issues/147
       - name: Linux Environment setup
-        if: ${{ (matrix.variant.runner == 'ubuntu-latest') }}
+        if: ${{ (matrix.variant.runner == 'ubuntu-20.04') }}
         run: sudo apt-get install ccache ninja-build xvfb
 
       - name: ccache
@@ -141,8 +142,8 @@ jobs:
             ${{ matrix.variant.artifact-path }}
 
   publish:
-    runs-on: ubuntu-latest
-    needs: [build-and-test]
+    runs-on: ubuntu-20.04
+    needs: [build]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -185,7 +186,7 @@ jobs:
         run: npx prebuild --upload-all ${{ secrets.GITHUB_TOKEN }}
 
   baas-realm-js:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     name: Deploy MDB Realm for realm js
     outputs:
       clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
@@ -202,45 +203,47 @@ jobs:
           differentiator: realm-js
 
   integration-tests:
-    name: Integration tests for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
-    needs: [build-and-test, baas-realm-js]
+    name: Integration tests (${{matrix.variant.target}}) for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
+    needs: [build, baas-realm-js]
     env:
       REALM_DISABLE_ANALYTICS: 1
       MOCHA_REMOTE_TIMEOUT: 60000
       CLUSTER_NAME: ${{ needs.baas-realm-js.outputs.clusterName }}
-      MOCHA_REMOTE_CONTEXT: realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ needs.baas-realm-js.outputs.clusterName }}
-      MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
-      MOCHA_REMOTE_EXIT_ON_ERROR: true
       REALM_BASE_URL: ${{ secrets.REALM_QA_BASE_URL }}
       REALM_PUBLIC_KEY: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
       REALM_PRIVATE_KEY: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
+      MOCHA_REMOTE_CONTEXT: realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ needs.baas-realm-js.outputs.clusterName }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
+      MOCHA_REMOTE_EXIT_ON_ERROR: true
       SPAWN_LOGCAT: true
       HEADLESS_DEBUGGER: true
       # RETRIES: 5
       # RETRY_DELAY: 1800000 # 30 min
       # Pin the Xcode version
       DEVELOPER_DIR: /Applications/Xcode_12.5.1.app
+      ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/21.4.7075529
     runs-on: ${{ matrix.variant.runner }}
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
         variant:
           #type: [Release, Debug]
-          - { os: linux, target: test, runner: ubuntu-latest, environment: node }
-          - { os: linux, target: "test:main", runner: ubuntu-latest, environment: electron }
-          - { os: linux, target: "test:renderer", runner: ubuntu-latest, environment: electron }
-          - { os: windows, target: test, runner: windows-2019, environment: node}
-          - { os: windows, target: "test:main", runner: windows-2019, environment: electron }
-          - { os: windows, target: "test:renderer", runner: windows-2019, environment: electron }
-          - { os: darwin, target: "test:main", runner: macos-latest, environment: electron }
-          - { os: darwin, target: "test:renderer", runner: macos-latest, environment: electron }
-          - { os: darwin, target: test, runner: macos-latest, environment: node }
-          - { os: android, target: "test:android", runner: macos-latest, environment: react-native }
-          #- { os: android, target: "test:android:chrome", runner: macos-latest, environment: react-native }
-          - { os: ios, target: "test:ios", runner: macos-latest, environment: react-native }
-          #- { os: ios, target: "test:ios:chrome", runner: macos-latest, environment: react-native }
-          - { os: ios, target: "test:catalyst", runner: macos-latest, environment: react-native }
-          #- { os: ios, target: "test:catalyst:chrome", runner: macos-latest, environment: react-native }
+          - { os: linux, target: test, runner: ubuntu-20.04, environment: node }
+          - { os: linux, target: "test:main", runner: ubuntu-20.04, environment: electron }
+          - { os: linux, target: "test:renderer", runner: ubuntu-20.04, environment: electron }
+          #- { os: windows, target: test, runner: windows-2019, environment: node}
+          #- { os: windows, target: "test:main", runner: windows-2019, environment: electron }
+          #- { os: windows, target: "test:renderer", runner: windows-2019, environment: electron }
+          - { os: darwin, target: "test:main", runner: macos-11, environment: electron }
+          - { os: darwin, target: "test:renderer", runner: macos-11, environment: electron }
+          - { os: darwin, target: test, runner: macos-11, environment: node }
+          - { os: android, target: "test:android", runner: macos-11, environment: react-native }
+          #- { os: android, target: "test:android:chrome", runner: macos-11, environment: react-native }
+          - { os: ios, target: "test:ios", runner: macos-11, environment: react-native }
+          #- { os: ios, target: "test:ios:chrome", runner: macos-11, environment: react-native }
+          - { os: ios, target: "test:catalyst", runner: macos-11, environment: react-native }
+          #- { os: ios, target: "test:catalyst:chrome", runner: macos-11, environment: react-native }
     timeout-minutes: 60
     steps:
       - name: Checkout code
@@ -313,31 +316,57 @@ jobs:
         if: ${{ (matrix.variant.os == 'ios') }}
         run: open -a ${{ env.DEVELOPER_DIR }}/Contents/Developer/Applications/Simulator.app/Contents/MacOS/Simulator
 
-      - name: Run tests (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
-        if: ${{ (matrix.variant.os != 'android') }}
+      - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
+        if: ${{ (matrix.variant.os != 'android') && (matrix.variant.os != 'ios') }}
+        # The non react native environments should not take so long
+        timeout-minutes: 10
         run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
-      - name: Run tests (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
+      - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
+        if: ${{ (matrix.variant.os == 'ios') }}
+        timeout-minutes: 35
+        run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
+
+      - name: Setup Android Emulator cache
         if: ${{ (matrix.variant.os == 'android') }}
+        uses: actions/cache@v3.0.4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-29
+
+      - uses: actions/setup-java@v3
+        if: ${{ (matrix.variant.os == 'android') }}
+        with:
+          distribution: 'zulu' # See 'Supported distributions' for available options
+          java-version: '11'
+
+      - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
+        if: ${{ (matrix.variant.os == 'android') }}
+        timeout-minutes: 45
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 29
-          # ndk: 21.0.6113669
-          # cmake: 3.18.1
-          target: google_apis
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          arch: x86
+          ndk: 21.0.6113669
+          cmake: 3.10.2.4988404
           script: npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
   cleanup-realm-js:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     name: Cleanup realm js
     needs: [integration-tests]
-    if: ${{ always() }}
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56
         with:
-          realmUrl: ${{ secrets.REALM_BASE_URL }}
-          projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-          apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-          privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+          realmUrl: ${{ secrets.REALM_QA_BASE_URL }}
+          projectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+          apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+          privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
           differentiator: realm js
