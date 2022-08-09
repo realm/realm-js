@@ -16,4 +16,4 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export { AppImporter } from "./AppImporter";
+export { AppImporter, Credentials, AppImporterOptions } from "./AppImporter";
