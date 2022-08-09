@@ -2,11 +2,15 @@
   "name": "realm-app-importer",
   "version": "0.1.0",
   "description": "Wrapping the Stitch CLI to import an app from a template (w. secrets)",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/bundle.cjs.js",
+  "module": "./dist/bundle.es.js",
+  "types": "./dist/bundle.d.ts",
+  "react-native": "./dist/bundle.react-native.es.js",
   "bin": "realm-app-importer",
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "generate-types": "tsc --project tsconfig.types.json --declaration --emitDeclarationOnly --declarationDir types/generated",
+    "build": "npm run generate-types && rollup --config && npm run build-cli",
+    "build-cli": "tsc -p tsconfig.build.json",
     "watch": "tsc -w -p tsconfig.build.json",
     "lint": "eslint --ext .js,.ts .",
     "prepare": "rm -rf dist && npm run build",
@@ -45,11 +49,16 @@
     "yargs": "^16.2.0"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^22.0.1",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-typescript": "^8.3.4",
     "@types/body-parser": "^1.19.0",
     "@types/fs-extra": "^8.1.0",
     "@types/glob": "^7.1.3",
     "@types/node": "^16",
     "@types/node-fetch": "^2.5.5",
-    "@types/yargs": "^15.0.4"
+    "@types/yargs": "^15.0.4",
+    "rollup": "^2.77.2",
+    "rollup-plugin-dts": "^4.2.2"
   }
 }

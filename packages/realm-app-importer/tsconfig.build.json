@@ -6,5 +6,6 @@
 		"noEmit": false,
 		"declaration": true,
 		"outDir": "./dist"
-	}
+	},
+	"exclude": ["src/node/**", "src/react-native/**"]
 }
