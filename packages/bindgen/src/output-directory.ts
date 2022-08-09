@@ -23,7 +23,7 @@ import path from "path";
 
 import { extend } from "./debug";
 import { createOutputter, Outputter } from "./outputter";
-import { FormatterName, format, formatterNames, FormatError } from "./formatter";
+import { FormatterName, format, formatterNames } from "./formatter";
 
 const debug = extend("out");
 
