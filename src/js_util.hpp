@@ -23,6 +23,7 @@
 #include <limits>
 #include <sstream>
 #include <stdexcept>
+#include <optional>
 
 #include <realm/object-store/object_schema.hpp>
 #include <realm/object-store/shared_realm.hpp>
@@ -143,7 +144,7 @@ void compute_aggregate_on_collection(typename T::ContextType ctx, typename T::Ob
         args.validate_maximum(0);
     }
 
-    util::Optional<Mixed> mixed;
+    std::optional<Mixed> mixed;
     switch (func) {
         case AggregateFunc::Min:
             return_value.set(list->min(column));

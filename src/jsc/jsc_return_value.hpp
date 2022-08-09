@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <optional>
+
 #include "jsc_types.hpp"
 #include "jsc_string.hpp"
 
@@ -77,7 +79,7 @@ public:
     }
 
     template <typename T>
-    void set(const util::Optional<T>& value)
+    void set(const std::optional<T>& value)
     {
         if (value) {
             set(*value);

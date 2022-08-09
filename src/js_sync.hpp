@@ -20,6 +20,7 @@
 
 #include <math.h>
 #include <cstdlib>
+#include <optional>
 
 #include "js_class.hpp"
 #include "js_collection.hpp"
@@ -1104,7 +1105,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                 proxy_config.address = std::move(host);
                 proxy_config.port = static_cast<std::uint_fast16_t>(atoi(port.c_str()));
 
-                config.sync_config->proxy_config = util::Optional<SyncConfig::ProxyConfig>(std::move(proxy_config));
+                config.sync_config->proxy_config = std::optional<SyncConfig::ProxyConfig>(std::move(proxy_config));
                 break;
             }
         }

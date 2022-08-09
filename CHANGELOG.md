@@ -5,7 +5,12 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Fixed
 * Fixed issue where React Native apps on Android would sometimes show stale Realm data until the user interacted with the app UI. ([#4389](https://github.com/realm/realm-js/issues/4389), since v10.0.0)
-
+* Reduced use of memory mappings and virtual address space. ([realm/realm-core#5645](https://github.com/realm/realm-core/pull/5645))
+* Fixed a data race when committing a transaction while multiple threads are waiting for the write lock on platforms using emulated interprocess condition variables (most platforms other than non-Android Linux). ([realm/realm-core#5643](https://github.com/realm/realm-core/pull/5643))
+* Fixed a data race when writing audit events which could occur if the sync client thread was busy with other work when the event Realm was opened. ([realm/realm-core#5643](https://github.com/realm/realm-core/pull/5643))
+* Fixed some cases of running out of virtual address space (seen/reported as mmap failures). ([realm/realm-core#5645](https://github.com/realm/realm-core/pull/5645))
+* Fixed the client reset callbacks not populating the Realm instance arguments correctly in some cases. ([#5654](https://github.com/realm/realm-core/pull/5654), since v10.11.0)
+* Decimal128 values with more than 110 significant bits were not synchronized correctly with the server. ([realm/realm-swift#7868](https://github.com/realm/realm-swift/issues/7868), since v10.0.0)
 
 ### Compatibility
 * Atlas App Services.
@@ -14,9 +19,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* <Either mention core version or upgrade>
-* <Using Realm Core vX.Y.Z>
-* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+* Upgraded Realm Core from v12.3.0 to v12.4.0. ([#4753](https://github.com/realm/realm-js/issues/4753)
 * Upgraded React Native integration tests app to React Native v0.68.2. ([#4583](https://github.com/realm/realm-js/pull/4583))
 * Upgrading `react-native-fs` to avoid a peer dependency failure. ([#4709](https://github.com/realm/realm-js/pull/4709))
 * Upgraded React Native integration tests app to React Native v0.69.1. ([#4713](https://github.com/realm/realm-js/pull/4713))
@@ -24,6 +27,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Fixed a crash on Android when an error was thrown from the flexible sync `initialSubscriptions` call. ([#4710](https://github.com/realm/realm-js/pull/4710), since v10.18.0)
 * Added a default sync logger for integration tests. ([#4730](https://github.com/realm/realm-js/pull/4730))
 * Fixed an issue starting the integration test runner on iOS. ([#4742](https://github.com/realm/realm-js/pull/4742]))
+* Migrated to `std::optional` and `std::nullopt`. 
 
 10.19.5 Release notes (2022-7-6)
 =============================================================

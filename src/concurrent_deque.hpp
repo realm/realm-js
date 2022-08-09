@@ -21,8 +21,7 @@
 #include <condition_variable>
 #include <deque>
 #include <mutex>
-
-#include <realm/util/optional.hpp>
+#include <optional>
 
 namespace realm {
 
@@ -56,13 +55,13 @@ public:
         return nullptr;
     }
 
-    util::Optional<T> try_pop_back(size_t timeout)
+    std::optional<T> try_pop_back(size_t timeout)
     {
         std::unique_lock<std::mutex> lock(m_mutex);
         m_condition.wait_for(lock, std::chrono::milliseconds(timeout), [this] {
             return !m_deque.empty();
         });
-        return m_deque.empty() ? util::none : util::make_optional(do_pop_back());
+        return m_deque.empty() ? std::nullopt : make_optional(do_pop_back());
     }
 
     void push_front(T&& item)

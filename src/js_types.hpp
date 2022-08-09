@@ -22,6 +22,7 @@
 #include <realm/object-store/object.hpp>
 #include <realm/object-store/property.hpp>
 
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -282,13 +283,13 @@ struct Function {
     }
 
     /**
-     * These wrap a js callback into a C++ callback that takes an Optional<AppError> and possibly a result.
+     * These wrap a js callback into a C++ callback that takes an optional<AppError> and possibly a result.
      * The versions that accept a result use the converter argument to convert the C++ result into a js result.
      * The returned callbacks have the following signatures:
      *
-     * wrap_void_callback         - void(const util::Optional<app::AppError>& error)
-     * wrap_callback_error_first  - void(const util::Optional<app::AppError>& error, auto&& result)
-     * wrap_callback_result_first - void(auto&& result, const util::Optional<app::AppError>& error)
+     * wrap_void_callback         - void(const std::optional<app::AppError>& error)
+     * wrap_callback_error_first  - void(const std::optional<app::AppError>& error, auto&& result)
+     * wrap_callback_result_first - void(auto&& result, const std::optional<app::AppError>& error)
      *
      * In all cases, the converter should have a signature like JsResultType(ContextType, CppResultType), possibly
      * with const and reference qualifiers on CppResultType. The converter will only be called when there is no error.
@@ -465,7 +466,7 @@ public:
     static void set_internal(ContextType ctx, const ObjectType&, typename ClassType::Internal*);
 
     static ObjectType create_from_app_error(ContextType, const app::AppError&);
-    static ValueType create_from_optional_app_error(ContextType, const util::Optional<app::AppError>&);
+    static ValueType create_from_optional_app_error(ContextType, const std::optional<app::AppError>&);
 };
 
 template <typename ValueType>
@@ -698,7 +699,7 @@ inline typename T::Object Object<T>::create_bson_type(ContextType ctx, StringDat
 
 template <typename T>
 inline typename T::Value Object<T>::create_from_optional_app_error(ContextType ctx,
-                                                                   const util::Optional<app::AppError>& error)
+                                                                   const std::optional<app::AppError>& error)
 {
     if (!error)
         return Value<T>::from_undefined(ctx);
@@ -947,7 +948,7 @@ template <typename T>
 auto Function<T>::wrap_void_callback(ContextType ctx, const ObjectType& this_object, const FunctionType& callback)
 {
     return [ctx = Protected(Context<T>::get_global_context(ctx)), callback = Protected(ctx, callback),
-            this_object = Protected(ctx, this_object)](const util::Optional<app::AppError>& error) {
+            this_object = Protected(ctx, this_object)](const std::optional<app::AppError>& error) {
         HANDLESCOPE(ctx);
         Function::callback(ctx, callback, this_object,
                            {
@@ -963,7 +964,7 @@ auto Function<T>::wrap_callback_error_first(ContextType ctx, const ObjectType& t
 {
     return [ctx = Protected(Context<T>::get_global_context(ctx)), callback = Protected(ctx, callback),
             this_object = Protected(ctx, this_object), converter = std::forward<Converter>(converter)](
-               const util::Optional<app::AppError>& error, auto&& result) {
+               const std::optional<app::AppError>& error, auto&& result) {
         HANDLESCOPE(ctx);
         Function::callback(
             ctx, callback, this_object,
@@ -980,7 +981,7 @@ auto Function<T>::wrap_callback_result_first(ContextType ctx, const ObjectType& 
                                              const FunctionType& callback, Converter&& converter)
 {
     return [callback = wrap_callback_error_first(ctx, this_object, callback, std::forward<Converter>(converter))](
-               auto&& result, const util::Optional<app::AppError>& error) -> decltype(auto) {
+               auto&& result, const std::optional<app::AppError>& error) -> decltype(auto) {
         return callback(error, std::forward<decltype(result)>(result));
     };
 }
