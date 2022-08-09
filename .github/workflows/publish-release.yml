@@ -58,6 +58,7 @@ jobs:
     - name: Move prebuild artifacts
       run: |
         mv ./realm-js-prebuilds/prebuilds .
+        rm -r ./realm-js-prebuilds
 
     - name: Read version
       id: get-version
@@ -127,6 +128,7 @@ jobs:
         body: Update Changelog for vNext
         delete-branch: true
         commit-message: Prepare for vNext
+        base: master
 
     - name: Merge Pull Request
       uses: juliangruber/merge-pull-request-action@8a13f2645ad8b6ada32f829b2fae9c0955a5265d
