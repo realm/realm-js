@@ -193,7 +193,6 @@ yargs
     ({
       "template-path": templatePath,
       "base-url": baseUrl,
-      "atlas-cluster": atlasCluster,
       username,
       password,
       "public-api-key": publicKey,
@@ -212,7 +211,6 @@ yargs
         realmConfigPath,
         appsDirectoryPath,
         cleanUp,
-        atlasCluster,
       });
       // Perform the import
       importer.importApp(templatePath).then(

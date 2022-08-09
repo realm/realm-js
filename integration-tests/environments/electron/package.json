@@ -15,9 +15,8 @@
     "runner:main": "node runner.js main",
     "runner:renderer": "node runner.js renderer",
     "test": "npm run test:main && npm run test:renderer",
-    "test:main": "mocha-remote --id main -- concurrently npm:app-importer npm:runner:main",
-    "test:renderer": "mocha-remote --id renderer -- concurrently npm:app-importer npm:runner:renderer",
-    "app-importer": "realm-app-importer serve ../../realm-apps"
+    "test:main": "mocha-remote --id main npm run runner:main",
+    "test:renderer": "mocha-remote --id renderer npm run runner:renderer"
   },
   "devDependencies": {
     "command-line-args": "^5.1.1",
@@ -26,14 +25,14 @@
     "electron-builder": "^22.10.5",
     "mocha-github-actions-reporter": "^0.2.3",
     "mocha-junit-reporter": "^2.0.0",
-    "mocha-remote-cli": "^1.5.0",
-    "realm-app-importer": "*"
+    "mocha-remote-cli": "^1.5.0"
   },
   "dependencies": {
     "@realm/integration-tests": "*",
     "fs-extra": "^9.1.0",
     "mocha": "^8.3.2",
-    "mocha-remote-client": "^1.5.0"
+    "mocha-remote-client": "^1.5.0",
+    "realm-app-importer": "*"
   },
   "build": {
     "appId": "io.realm.realm-js.electron-tests",

@@ -1,0 +1,14 @@
+{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"types": [
+			"node-fetch"
+		],
+		"lib": [
+			"ES2015"
+		]
+	},
+	"exclude": [
+		"../react-native/*"
+	]
+}

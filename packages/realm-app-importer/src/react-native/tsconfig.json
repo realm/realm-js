@@ -1,5 +1,4 @@
 {
-	"extends": "../../tsconfig.json",
 	"compilerOptions": {
 		"target": "es2018",
 		"moduleResolution": "node",
@@ -13,7 +12,4 @@
 			"es2019"
 		]
 	},
-	"include": [
-		"src/**/*.ts"
-	],
 }

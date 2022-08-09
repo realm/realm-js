@@ -2,8 +2,8 @@ name: pr-realm-js
 on: pull_request
 
 jobs:
-  build-and-test:
-    name: Build and test for ${{ matrix.variant.os }} ${{ matrix.variant.arch }}
+  build:
+    name: Build for ${{ matrix.variant.os }} ${{ matrix.variant.arch }}
     runs-on: ${{ matrix.variant.runner }}
     env:
       npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
@@ -143,7 +143,7 @@ jobs:
 
   publish:
     runs-on: ubuntu-20.04
-    needs: [build-and-test]
+    needs: [build]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -203,25 +203,25 @@ jobs:
           differentiator: realm-js
 
   integration-tests:
-    name: Integration tests for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
-    needs: [build-and-test, baas-realm-js]
+    name: Integration tests (${{matrix.variant.target}}) for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
+    needs: [build, baas-realm-js]
     env:
       REALM_DISABLE_ANALYTICS: 1
       MOCHA_REMOTE_TIMEOUT: 60000
       CLUSTER_NAME: ${{ needs.baas-realm-js.outputs.clusterName }}
-      MOCHA_REMOTE_CONTEXT: realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ needs.baas-realm-js.outputs.clusterName }}
-      MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
-      MOCHA_REMOTE_EXIT_ON_ERROR: true
       REALM_BASE_URL: ${{ secrets.REALM_QA_BASE_URL }}
       REALM_PUBLIC_KEY: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
       REALM_PRIVATE_KEY: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
+      MOCHA_REMOTE_CONTEXT: realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ needs.baas-realm-js.outputs.clusterName }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
+      MOCHA_REMOTE_EXIT_ON_ERROR: true
       SPAWN_LOGCAT: true
       HEADLESS_DEBUGGER: true
       # RETRIES: 5
       # RETRY_DELAY: 1800000 # 30 min
       # Pin the Xcode version
       DEVELOPER_DIR: /Applications/Xcode_12.5.1.app
-      JAVA_HOME: $JAVA_HOME_11_X64
+      ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/21.4.7075529
     runs-on: ${{ matrix.variant.runner }}
     strategy:
       fail-fast: false
@@ -317,30 +317,56 @@ jobs:
         run: open -a ${{ env.DEVELOPER_DIR }}/Contents/Developer/Applications/Simulator.app/Contents/MacOS/Simulator
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
-        if: ${{ (matrix.variant.os != 'android') }}
+        if: ${{ (matrix.variant.os != 'android') && (matrix.variant.os != 'ios') }}
+        # The non react native environments should not take so long
+        timeout-minutes: 10
         run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
+        if: ${{ (matrix.variant.os == 'ios') }}
+        timeout-minutes: 35
+        run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
+
+      - name: Setup Android Emulator cache
         if: ${{ (matrix.variant.os == 'android') }}
+        uses: actions/cache@v3.0.4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-29
+
+      - uses: actions/setup-java@v3
+        if: ${{ (matrix.variant.os == 'android') }}
+        with:
+          distribution: 'zulu' # See 'Supported distributions' for available options
+          java-version: '11'
+
+      - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
+        if: ${{ (matrix.variant.os == 'android') }}
+        timeout-minutes: 45
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 29
-          # ndk: 21.0.6113669
-          # cmake: 3.18.1
-          target: google_apis
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          arch: x86
+          ndk: 21.0.6113669
+          cmake: 3.10.2.4988404
           script: npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
   cleanup-realm-js:
     runs-on: ubuntu-20.04
     name: Cleanup realm js
     needs: [integration-tests]
-    if: ${{ always() }}
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56
         with:
-          realmUrl: ${{ secrets.REALM_BASE_URL }}
-          projectId: ${{ secrets.ATLAS_PROJECT_ID }}
-          apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
-          privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
+          realmUrl: ${{ secrets.REALM_QA_BASE_URL }}
+          projectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+          apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+          privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
           differentiator: realm js
