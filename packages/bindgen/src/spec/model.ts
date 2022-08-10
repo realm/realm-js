@@ -22,7 +22,7 @@ export type Spec = {
   headers: string[];
   primitives: string[];
   typeAliases: { [name: string]: TypeSpec };
-  templates: string[];
+  templates: { [name: string]: number | "*" };
   enums: { [name: string]: EnumSpec };
   constants: { [name: string]: ConstantSpec };
   records: { [name: string]: RecordSpec };
