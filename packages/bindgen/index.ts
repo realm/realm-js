@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { strict as assert } from "assert";
+// import { strict as assert } from "assert";
 import { DataType, Decimal128, Mixed, ObjectId, ObjLink, Timestamp, UUID } from "./generated/ts/native.js";
 
 export * from "./generated/ts/native.js"; // enums are transitively exported.
@@ -59,7 +59,7 @@ Mixed.prototype.toJsValue = function () {
     case DataType.Double:
       return this.getDouble();
   }
-  assert.fail(`Unsupported DataType for Mixed.toJsValue(): ${t}`);
+  throw new Error(`Unsupported DataType for Mixed.toJsValue(): ${t}`);
 };
 
 Mixed.prototype.toString = function () {
