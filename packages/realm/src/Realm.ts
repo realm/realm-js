@@ -120,8 +120,17 @@ export class Realm {
     const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
     const { converters, createObjectWrapper } = this.classes.get(typeof type === "string" ? type : type.name);
     const value = converters.get(objectSchema.primaryKey).toMixed(primaryKey);
-    const obj = table.getObjectWithPrimaryKey(value);
-    return createObjectWrapper(obj) as RealmObject<T> & T;
+    try {
+      const obj = table.getObjectWithPrimaryKey(value);
+      return createObjectWrapper(obj) as RealmObject<T> & T;
+    } catch (err) {
+      // TODO: Match on something else than the error message, when exposed by the binding
+      if (err instanceof Error && err.message.startsWith("No object with key")) {
+        throw new Error(`No '${objectSchema.name}' with key '${primaryKey}'`);
+      } else {
+        throw err;
+      }
+    }
   }
 
   objects<T = DefaultObject>(type: string): Results<T>;
@@ -143,7 +152,15 @@ export class Realm {
   }
 
   write<T>(callback: () => T): T {
-    throw new Error("Not yet implemented");
+    try {
+      this.internal.beginTransaction();
+      const result = callback();
+      this.internal.commitTransaction();
+      return result;
+    } catch (err) {
+      this.internal.cancelTransaction();
+      throw err;
+    }
   }
 
   beginTransaction(): void {
