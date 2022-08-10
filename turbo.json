@@ -34,10 +34,18 @@
         "generate:spec-schema"
       ]
     },
-    "generate": {
+    "compile:node": {
+      "inputs": [
+        "generated/node/*"
+      ],
       "dependsOn": [
-        "generate:typescript",
         "generate:node"
+      ]
+    },
+    "compile": {
+      "inputs": [],
+      "dependsOn": [
+        "compile:node"
       ]
     },
     "build": {
@@ -45,7 +53,8 @@
         "src/*"
       ],
       "dependsOn": [
-        "generate",
+        "generate:typescript",
+        "compile",
         "^build"
       ]
     },
