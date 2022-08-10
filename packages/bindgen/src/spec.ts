@@ -161,7 +161,7 @@ function normalizeFieldSpec(spec: RelaxedFieldSpec): FieldSpec {
   }
 }
 
-function normalizeValueType(value: RelaxedValueType): ValueType | undefined {
+function normalizeValueType(value: RelaxedValueType | undefined): ValueType | undefined {
   if (typeof value === "string" || typeof value === "undefined") {
     return value;
   } else {
