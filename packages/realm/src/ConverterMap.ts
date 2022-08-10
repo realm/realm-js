@@ -49,8 +49,7 @@ function createConverters(
         if (typeof value !== "string") {
           throw new Error("Expected a string");
         }
-        const pk = binding.StringDataOwnerHack.make(value);
-        return binding.Mixed.fromString(pk);
+        return binding.Mixed.fromString(value);
       },
       fromMixed(value) {
         return value.getString();
