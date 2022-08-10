@@ -13,6 +13,7 @@
 *.zip
 *.realm
 *.realm.lock
+*.realm.note
 *.management/
 
 vendor/realm-*

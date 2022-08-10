@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
+import path from "path";
 
 import { Realm } from "../index";
 import { Results } from "../Results";
@@ -32,15 +33,39 @@ function generateRandomInteger() {
   return Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 }
 
+const REALMS_DIR = new URL("realms", import.meta.url).pathname;
+const REALMS_TEMP_DIR = path.resolve(REALMS_DIR, "temp");
+const SIMPLE_REALM_PATH = path.resolve(REALMS_DIR, "simple.realm");
+console.log(SIMPLE_REALM_PATH);
+
+function generateTempRealmPath() {
+  return path.resolve(REALMS_TEMP_DIR, "random-" + generateRandomInteger() + ".realm");
+}
+
 describe("Milestone #2", () => {
   describe("Opening default local Realm", () => {
     it("can read schema from disk", () => {
-      const realm = new Realm();
+      const realm = new Realm({ path: SIMPLE_REALM_PATH });
       const schema = realm.schema;
       const expectedSchema: CanonicalObjectSchema[] = [
         {
           name: "Person",
-          properties: { name: { name: "name", type: "string", optional: false, indexed: false, mapTo: "name" } },
+          properties: {
+            name: {
+              name: "name",
+              type: "string",
+              optional: false,
+              indexed: true,
+              mapTo: "name",
+            },
+            bestFriend: {
+              indexed: false,
+              mapTo: "bestFriend",
+              name: "bestFriend",
+              optional: true,
+              type: "Person",
+            },
+          },
         },
       ];
       expect(schema).deep.equals(expectedSchema);
@@ -49,18 +74,18 @@ describe("Milestone #2", () => {
 
   describe("Reading an object by primary key", () => {
     before(function (this: RealmContext) {
-      this.realm = new Realm();
+      this.realm = new Realm({ path: SIMPLE_REALM_PATH });
     });
 
     it("returns an instance of Realm.Object", function (this: RealmContext) {
       const alice = this.realm.objectForPrimaryKey("Person", "Alice");
-      expect(alice).instanceOf(Realm);
+      expect(alice).instanceOf(Realm.Object);
     });
   });
 
   describe("Reading a “string” property from an object", () => {
     before(function (this: RealmContext) {
-      this.realm = new Realm();
+      this.realm = new Realm({ path: SIMPLE_REALM_PATH });
     });
 
     it("returns the correct string", function (this: RealmContext) {
@@ -71,7 +96,7 @@ describe("Milestone #2", () => {
 
   describe("Follow an object “link” from an object to another", () => {
     before(function (this: RealmContext) {
-      this.realm = new Realm();
+      this.realm = new Realm({ path: SIMPLE_REALM_PATH });
     });
 
     it("returns the correct object", function (this: RealmContext) {
@@ -82,7 +107,7 @@ describe("Milestone #2", () => {
 
   describe("Writing a “string” property to an existing object", () => {
     before(function (this: RealmContext) {
-      this.realm = new Realm();
+      this.realm = new Realm({ path: SIMPLE_REALM_PATH });
     });
 
     it("persists the value", function (this: RealmContext) {
@@ -96,7 +121,7 @@ describe("Milestone #2", () => {
 
   describe("Writing a “link” property to an existing object", () => {
     before(function (this: RealmContext) {
-      this.realm = new Realm();
+      this.realm = new Realm({ path: SIMPLE_REALM_PATH });
     });
 
     it("persists the value", function (this: RealmContext) {
@@ -111,7 +136,7 @@ describe("Milestone #2", () => {
 
   describe("Create a new object, specifying property values", () => {
     before(function (this: RealmContext) {
-      this.realm = new Realm();
+      this.realm = new Realm({ path: SIMPLE_REALM_PATH });
     });
 
     it("persists the object and its value", function (this: RealmContext) {
@@ -125,7 +150,7 @@ describe("Milestone #2", () => {
 
   describe("Declaring a schema #1", () => {
     it("supports properties of type 'string'", function (this: RealmContext) {
-      const path = "random-" + generateRandomInteger() + ".realm";
+      const path = generateTempRealmPath();
       this.realm = new Realm({ path, schema: [{ name: "Person", properties: { name: "string" } }] });
       const person = this.realm.write(() => {
         return this.realm.create("Person", { name: "Alice" });
@@ -134,7 +159,7 @@ describe("Milestone #2", () => {
     });
 
     it("supports properties of type 'link'", function (this: RealmContext) {
-      const path = "random-" + generateRandomInteger() + ".realm";
+      const path = generateTempRealmPath();
       this.realm = new Realm({
         path,
         schema: [{ name: "Person", properties: { name: "string", bestFriend: "Person" } }],
@@ -150,7 +175,7 @@ describe("Milestone #2", () => {
     });
 
     it("supports properties of type 'list<link>'", function (this: RealmContext) {
-      const path = "random-" + generateRandomInteger() + ".realm";
+      const path = generateTempRealmPath();
       this.realm = new Realm({
         path,
         schema: [{ name: "Person", properties: { name: "string", bestFriend: "Person", friends: "Person[]" } }],
@@ -173,7 +198,7 @@ describe("Milestone #2", () => {
 
   describe("Querying database for objects of a specific type", () => {
     before(function (this: RealmContext) {
-      this.realm = new Realm();
+      this.realm = new Realm({ path: SIMPLE_REALM_PATH });
     });
 
     it("return Results", function (this: RealmContext) {
