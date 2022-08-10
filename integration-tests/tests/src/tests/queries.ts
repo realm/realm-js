@@ -27,7 +27,7 @@ import {
 
 describe("Realm Query Language", () => {
   let realm: Realm;
-  let persons: Realm.Results<Person>;
+  let persons: Realm.Results<IPerson>;
 
   beforeEach(() => {
     Realm.clearTestState();
@@ -37,7 +37,7 @@ describe("Realm Query Language", () => {
       const bob = realm.create<IPerson>(PersonSchema.name, { name: "Bob", age: 14, friends: [alice] });
       realm.create<IPerson>(PersonSchema.name, { name: "Charlie", age: 17, friends: [bob, alice] });
     });
-    persons = realm.objects(PersonSchema.name);
+    persons = realm.objects<IPerson>(PersonSchema.name);
   });
 
   afterEach(() => {
