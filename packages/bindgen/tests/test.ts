@@ -96,4 +96,28 @@ for (const obj of table) {
   }
 }
 
+console.log("---");
+const kpMapping = Helpers.getKeypathMapping(realm);
+const query = table.query("num = $0", [Mixed.fromInt(9876)], kpMapping);
+console.log(query.count());
+const results = Helpers.resultsFromQuery(realm, query);
+{
+  const nResults = results.size();
+  console.log(nResults);
+  for (let i = 0; i < nResults; i++) {
+    console.log(results.getObj(i).toString());
+  }
+}
+
+// This matches nothing, unless you change 'hello' to 'world'
+console.log("---");
+const results2 = results.filter(table.query("str = 'hello'", [], kpMapping));
+{
+  const nResults = results2.size();
+  console.log(nResults);
+  for (let i = 0; i < nResults; i++) {
+    console.log(results2.getObj(i).toString());
+  }
+}
+
 realm.close();
