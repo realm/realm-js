@@ -56,7 +56,7 @@ export type RelaxedFieldSpec =
   | string
   | {
       type: string;
-      default: RelaxedValueType;
+      default?: RelaxedValueType;
     };
 
 export type RelaxedClassSpec = Pick<Partial<ClassSpec>, "sharedPtrWrapped"> & {

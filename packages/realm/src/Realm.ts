@@ -24,18 +24,22 @@ import { transformObjectSchema } from "./schema-utils";
 import { RealmInsertionModel } from "./InsertionModel";
 import { Configuration } from "./Configuration";
 import { CanonicalObjectSchema, DefaultObject, RealmObjectConstructor } from "./schema-types";
+import { ClassMap } from "./ClassMap";
 
 export class Realm {
   public static Object = RealmObject;
   public static Results = Results;
 
   private internal: binding.Realm;
+  private classes: ClassMap;
 
   constructor(config: Configuration = {}) {
     this.internal = binding.Realm.getSharedRealm({
-      path: this.getDefaultPath(),
+      path: config.path || this.getDefaultPath(),
       fifoFilesFallbackPath: this.fifoFilesFallbackPath(),
     });
+    // Generate property type converters for every object schema
+    this.classes = new ClassMap(this, this.internal.schema);
   }
 
   get empty(): boolean {
@@ -57,7 +61,7 @@ export class Realm {
   }
 
   get schemaVersion(): number {
-    return this.internal.schemaVersion;
+    return Number(this.internal.schemaVersion);
   }
 
   get isInTransaction(): boolean {
@@ -110,8 +114,14 @@ export class Realm {
   ): RealmObject<T> & T {
     // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1240-L1258
     const objectSchema = this.findObjectSchema(type);
-    // auto realm_object = realm::Object::get_for_primary_key(accessor, realm, object_schema, args[1]);
-    throw new Error("Not yet implemented");
+    if (objectSchema.primaryKey === "") {
+      throw new Error(`Expected a primary key on "${objectSchema.name}"`);
+    }
+    const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
+    const { converters, createObjectWrapper } = this.classes.get(typeof type === "string" ? type : type.name);
+    const value = converters.get(objectSchema.primaryKey).toMixed(primaryKey);
+    const obj = table.getObjectWithPrimaryKey(value);
+    return createObjectWrapper(obj) as RealmObject<T> & T;
   }
 
   objects<T = DefaultObject>(type: string): Results<T>;
@@ -177,8 +187,9 @@ export class Realm {
   /**
    * Finds the object schema from a specific name
    * @see https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L465-L508
+   * TODO: Memoize this
    */
-  private findObjectSchema(name: string | RealmObjectConstructor<unknown>): binding.ObjectSchema {
+  private findObjectSchema(name: string | RealmObjectConstructor<unknown>) {
     if (typeof name === "string") {
       const schema = this.internal.schema.find((schema) => schema.name === name);
       if (!schema) {
