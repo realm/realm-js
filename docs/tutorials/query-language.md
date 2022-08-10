@@ -42,6 +42,13 @@ Example:
 let women = realm.objects('Contact').filtered('isMale == false');
 ```
 
+Moreover, you can use the `IN` operator to query a property.
+
+Example:
+```JS
+let favoriteNames = realm.objects('Contact').filtered("name IN {'John', 'Mary'}");
+```
+
 ### String operators
 For string properties, prefix, suffix, and substring queries are supported by using the `BEGINSWITH`, `ENDSWITH`, `CONTAINS` and `LIKE` operators.
 
