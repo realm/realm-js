@@ -24,7 +24,7 @@ const debug = extend("format");
 
 const FORMATTERS = {
   eslint: ["npx", "eslint", "--fix", "--format=stylish"],
-  "clang-format": ["clang-format", "-i"],
+  "clang-format": ["npx", "clang-format", "-i"],
   "typescript-checker": ["npx", "tsc", "--noEmit"],
 };
 
