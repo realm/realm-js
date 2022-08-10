@@ -44,12 +44,27 @@ function createClass(schema: binding.Realm["schema"][0], converters: ConverterMa
   }
   // Create bound functions for getting and setting properties
   for (const property of schema.persistedProperties) {
-    const { fromObj } = converters.get(property.name);
+    const { get, set } = converters.get(property.name);
     Object.defineProperty(result.prototype, property.name, {
       enumerable: true,
       get() {
         const obj = this[INTERNAL] as binding.Obj;
-        return fromObj(obj);
+        return get(obj);
+      },
+      set(value: unknown) {
+        const obj = this[INTERNAL] as binding.Obj;
+        try {
+          set(obj, value);
+        } catch (err) {
+          // TODO: Match on something else than a message, once exposed by the binding
+          if (err instanceof Error && err.message.startsWith("Wrong transactional state")) {
+            throw new Error(
+              "Expected a write transaction: Wrap the assignment in `realm.write(() => { /* assignment*/ });`",
+            );
+          } else {
+            throw err;
+          }
+        }
       },
     });
   }

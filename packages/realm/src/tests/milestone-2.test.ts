@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { expect } from "chai";
+import { expect, assert } from "chai";
 import path from "path";
 
 import { Realm } from "../index";
@@ -26,8 +26,8 @@ import { CanonicalObjectSchema } from "../schema-types";
 type RealmContext = Mocha.Context & { realm: Realm };
 
 type Person = { name: string };
-type PersonWithFriend = { name: string; bestFriend: Person };
-type PersonWithFriends = { name: string; bestFriend: Person; friends: Person[] };
+type PersonWithFriend = { name: string; bestFriend: Person | null };
+type PersonWithFriends = { name: string; bestFriend: Person | null; friends: Person[] };
 
 function generateRandomInteger() {
   return Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
@@ -36,10 +36,16 @@ function generateRandomInteger() {
 const REALMS_DIR = new URL("realms", import.meta.url).pathname;
 const REALMS_TEMP_DIR = path.resolve(REALMS_DIR, "temp");
 const SIMPLE_REALM_PATH = path.resolve(REALMS_DIR, "simple.realm");
-console.log(SIMPLE_REALM_PATH);
 
 function generateTempRealmPath() {
   return path.resolve(REALMS_TEMP_DIR, "random-" + generateRandomInteger() + ".realm");
+}
+
+function closeRealm(this: Mocha.Context & Partial<RealmContext>) {
+  if (this.realm && !this.realm.isClosed) {
+    this.realm.close();
+    delete this.realm;
+  }
 }
 
 describe("Milestone #2", () => {
@@ -76,6 +82,7 @@ describe("Milestone #2", () => {
     before(function (this: RealmContext) {
       this.realm = new Realm({ path: SIMPLE_REALM_PATH });
     });
+    after(closeRealm);
 
     it("returns an instance of Realm.Object", function (this: RealmContext) {
       const alice = this.realm.objectForPrimaryKey("Person", "Alice");
@@ -87,6 +94,7 @@ describe("Milestone #2", () => {
     before(function (this: RealmContext) {
       this.realm = new Realm({ path: SIMPLE_REALM_PATH });
     });
+    after(closeRealm);
 
     it("returns the correct string", function (this: RealmContext) {
       const alice = this.realm.objectForPrimaryKey<Person>("Person", "Alice");
@@ -98,9 +106,11 @@ describe("Milestone #2", () => {
     before(function (this: RealmContext) {
       this.realm = new Realm({ path: SIMPLE_REALM_PATH });
     });
+    after(closeRealm);
 
     it("returns the correct object", function (this: RealmContext) {
       const alice = this.realm.objectForPrimaryKey<PersonWithFriend>("Person", "Alice");
+      assert(alice.bestFriend instanceof Realm.Object);
       expect(alice.bestFriend.name).equals("Bob");
     });
   });
@@ -109,13 +119,16 @@ describe("Milestone #2", () => {
     before(function (this: RealmContext) {
       this.realm = new Realm({ path: SIMPLE_REALM_PATH });
     });
+    after(closeRealm);
 
     it("persists the value", function (this: RealmContext) {
       const charlie = this.realm.objectForPrimaryKey<Person>("Person", "Charlie");
-      charlie.name = "Charles";
-      expect(charlie.name).equals("Charles");
-      charlie.name = "Charlie";
-      expect(charlie.name).equals("Charlie");
+      this.realm.write(() => {
+        charlie.name = "Charles";
+        expect(charlie.name).equals("Charles");
+        charlie.name = "Charlie";
+        expect(charlie.name).equals("Charlie");
+      });
     });
   });
 
@@ -123,14 +136,17 @@ describe("Milestone #2", () => {
     before(function (this: RealmContext) {
       this.realm = new Realm({ path: SIMPLE_REALM_PATH });
     });
+    after(closeRealm);
 
     it("persists the value", function (this: RealmContext) {
       const alice = this.realm.objectForPrimaryKey<PersonWithFriend>("Person", "Alice");
-      const charlie = this.realm.objectForPrimaryKey<PersonWithFriend>("Person", "Charlie");
-      charlie.bestFriend = null;
-      expect(charlie.bestFriend).equals(null);
-      alice.bestFriend = charlie;
-      expect(alice.bestFriend.name).equals("Charlie");
+      const bob = this.realm.objectForPrimaryKey<PersonWithFriend>("Person", "Bob");
+      this.realm.write(() => {
+        alice.bestFriend = null;
+        expect(alice.bestFriend).equals(null);
+        alice.bestFriend = bob;
+        expect(alice.bestFriend.name).equals("Bob");
+      });
     });
   });
 
@@ -138,6 +154,7 @@ describe("Milestone #2", () => {
     before(function (this: RealmContext) {
       this.realm = new Realm({ path: SIMPLE_REALM_PATH });
     });
+    after(closeRealm);
 
     it("persists the object and its value", function (this: RealmContext) {
       const name = "Darwin #" + generateRandomInteger();
@@ -149,6 +166,8 @@ describe("Milestone #2", () => {
   });
 
   describe("Declaring a schema #1", () => {
+    afterEach(closeRealm);
+
     it("supports properties of type 'string'", function (this: RealmContext) {
       const path = generateTempRealmPath();
       this.realm = new Realm({ path, schema: [{ name: "Person", properties: { name: "string" } }] });
@@ -171,6 +190,7 @@ describe("Milestone #2", () => {
       });
       expect(alice.name).equals("Alice");
       expect(bob.name).equals("Bob");
+      assert(bob.bestFriend instanceof Realm.Object);
       expect(bob.bestFriend.name).equals("Alice");
     });
 
@@ -191,6 +211,7 @@ describe("Milestone #2", () => {
       });
       expect(alice.name).equals("Alice");
       expect(bob.name).equals("Bob");
+      assert(bob.bestFriend instanceof Realm.Object);
       expect(bob.bestFriend.name).equals("Alice");
       expect(bob.friends[0].name).equals("Alice");
     });
@@ -200,6 +221,7 @@ describe("Milestone #2", () => {
     before(function (this: RealmContext) {
       this.realm = new Realm({ path: SIMPLE_REALM_PATH });
     });
+    after(closeRealm);
 
     it("return Results", function (this: RealmContext) {
       const persons = this.realm.objects("Person");
