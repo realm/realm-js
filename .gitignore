@@ -14,6 +14,7 @@
 *.realm
 *.realm.lock
 *.realm.fresh.lock
+*.realm.note
 *.management/
 
 vendor/realm-*
