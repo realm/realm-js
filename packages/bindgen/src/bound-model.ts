@@ -46,6 +46,15 @@ class Ref {
   }
 }
 
+class RRef {
+  readonly kind = "RRef";
+  constructor(public type: Type) {}
+
+  toString() {
+    return `${this.type}&&`;
+  }
+}
+
 export class Arg {
   constructor(public name: string, public type: Type) {}
 
@@ -175,6 +184,7 @@ export type Type =
   | Const //
   | Pointer
   | Ref
+  | RRef
   | Func
   | Template
   | Class
@@ -195,7 +205,7 @@ export class BoundSpec {
 }
 
 export function bindModel(spec: Spec): BoundSpec {
-  const templates: Set<string> = new Set();
+  const templates: Map<string, Spec["templates"][string]> = new Map();
   const types: Record<string, Type> = {};
 
   const out = new BoundSpec();
@@ -224,9 +234,10 @@ export function bindModel(spec: Spec): BoundSpec {
 
     // Note: order of these checks is very important!
     // TODO do this during parse so we don't lose information
-    assert(!typeSpec.isRvalueReference, "rvalue refs are not supported yet");
     if (typeSpec.isReference) {
       return new Ref(resolveTypes({ ...typeSpec, isReference: false }));
+    } else if (typeSpec.isRvalueReference) {
+      return new RRef(resolveTypes({ ...typeSpec, isRvalueReference: false }));
     } else if (typeSpec.isPointer) {
       return new Pointer(resolveTypes({ ...typeSpec, isPointer: false }));
     } else if (typeSpec.isConst) {
@@ -240,6 +251,9 @@ export function bindModel(spec: Spec): BoundSpec {
         return types[name];
       case "template-instance":
         assert(templates.has(name), `no such template: ${name}`);
+        const argCount = templates.get(name);
+        if (argCount != "*")
+          assert.equal(typeSpec.templateArguments.length, argCount, `template ${name} takes ${argCount} args`);
         return new Template(name, typeSpec.templateArguments.map(resolveTypes));
     }
   }
@@ -269,8 +283,8 @@ export function bindModel(spec: Spec): BoundSpec {
   }
 
   // Attach names to instences of Type in types
-  for (const name of spec.templates) {
-    templates.add(name);
+  for (const [name, args] of Object.entries(spec.templates)) {
+    templates.set(name, args);
   }
 
   for (const name of spec.primitives) {

@@ -153,6 +153,8 @@ function toCpp(type: Type): string {
       return `${toCpp(type.type)} const`;
     case "Ref":
       return `${toCpp(type.type)}&`;
+    case "RRef":
+      return `${toCpp(type.type)}&&`;
     case "Template":
       return `${type.name}<${type.args.map(toCpp).join(", ")}>`;
 
@@ -184,6 +186,7 @@ function convertPrimToNode(type: string, expr: string): string {
     case "bool":
       return `Napi::Boolean::New(${env}, ${expr})`;
 
+    case "count_t":
     case "double":
     case "float":
     case "int":
@@ -235,6 +238,10 @@ function convertPrimFromNode(type: string, expr: string) {
     case "int32_t":
       return `(${expr}).As<Napi::Number>().Int32Value()`;
 
+    case "count_t":
+      // TODO consider calling Int32Value on 32-bit platforms. Probably not worth it though.
+      return `(${expr}).As<Napi::Number>().Int64Value()`;
+
     case "int64_t":
       return `extractInt64FromNode(${expr})`;
     case "uint64_t":
@@ -268,13 +275,12 @@ function convertToNode(type: Type, expr: string): string {
 
     case "Const":
     case "Ref":
+    case "RRef": // Note: not explicitly taking advantage of moveability yet. TODO?
       return c(type.type, expr);
 
     case "Template":
-      // For now, all templates we care about only take a single argument, so doing this here is simpler.
-      assert.equal(type.args.length, 1);
+      // Most templates only take a single argument so do this here.
       const inner = type.args[0];
-
       switch (type.name) {
         case "std::shared_ptr":
           if (inner.kind == "Class" && inner.sharedPtrWrapped) return `NODE_FROM_SHARED_${inner.name}(${env}, ${expr})`;
@@ -292,6 +298,14 @@ function convertToNode(type: Type, expr: string): string {
                         }
                         return out;
                     }(${expr})`;
+        case "std::pair":
+        case "std::tuple":
+          return `
+            [&] (auto&& tup) {
+                auto out = Napi::Array::New(${env}, ${type.args.length});
+                ${type.args.map((arg, i) => `out[${i}u] = ${c(arg, `std::get<${i}>(tup)`)};`).join("\n")}
+                return out;
+            }(${expr})`;
       }
       assert.fail(`unknown template ${type.name}`);
       break;
@@ -353,9 +367,12 @@ function convertFromNode(type: Type, expr: string): string {
     case "Ref":
       return c(type.type, expr);
 
+    case "RRef":
+      // For now, copying. TODO Consider moving instead, although we may want a marker in JS code.
+      return `REALM_DECAY_COPY(${c(type.type, expr)})`;
+
     case "Template":
-      // For now, all templates we care about only take a single argument, so doing this here is simpler.
-      assert.equal(type.args.length, 1);
+      // Most templates only take a single argument so do this here.
       const inner = type.args[0];
 
       switch (type.name) {
@@ -368,7 +385,7 @@ function convertFromNode(type: Type, expr: string): string {
                         return (val.IsNull() || val.IsUndefined()) ? Opt() : Opt(${c(inner, "val")});
                     }(${expr})`;
         case "std::vector":
-          return `[&] (Napi::Array vec) {
+          return `[&] (const Napi::Array vec) {
                 auto out = std::vector<${toCpp(inner)}>();
 
                 const uint32_t length = vec.Length();
@@ -378,6 +395,15 @@ function convertFromNode(type: Type, expr: string): string {
                 }
                 return out;
             }((${expr}).As<Napi::Array>())`;
+        case "std::tuple":
+        case "std::pair":
+          const suffix = type.name.split(":")[2];
+          const nArgs = type.args.length;
+          return `[&] (const Napi::Array& arr) {
+              if (arr.Length() != ${nArgs}u)
+                throw Napi::TypeError::New(${env}, "Need an array with exactly ${nArgs} elements");
+              return std::make_${suffix}(${type.args.map((arg, i) => c(arg, `arr[${i}u]`))});
+          }((${expr}).As<Napi::Array>())`;
       }
       assert.fail(`unknown template ${type.name}`);
       break;
@@ -640,11 +666,15 @@ export function generateNode({ spec, file: makeFile }: TemplateContext): void {
   out(`
       #include <napi.h>
 
+      // Used by Helpers::get_keypath_mapping
+      #include <realm/object-store/keypath_helpers.hpp>
+
       namespace realm::js::node {
       namespace {
 
       // TODO hacks, because we don't yet support defining types with qualified names
       using Scheduler = util::Scheduler;
+      using KeyPathMapping = query_parser::KeyPathMapping;
 
 
       // TODO move to header or realm-core
@@ -654,6 +684,15 @@ export function generateNode({ spec, file: makeFile }: TemplateContext): void {
           }
           static TableRef get_table(const SharedRealm& realm, TableKey key) {
               return realm->read_group().get_table(key);
+          }
+          static KeyPathMapping get_keypath_mapping(const SharedRealm& realm) {
+              KeyPathMapping mapping;
+              populate_keypath_mapping(mapping, *realm);
+              return mapping;
+          }
+          static Results results_from_query(const SharedRealm& realm, Query q) {
+              auto ordering = q.get_ordering();
+              return Results(realm, std::move(q), ordering ? *ordering : DescriptorOrdering());
           }
       };
 
@@ -685,6 +724,9 @@ export function generateNode({ spec, file: makeFile }: TemplateContext): void {
           // TODO consider using ThrowAsJavaScriptException instead here.
           throw Napi::Error::New(${env}, e.what());
       }
+
+      // Equivalent to auto(x) in c++23.
+      #define REALM_DECAY_COPY(x) std::decay_t<decltype(x)>(x)
 
       ////////////////////////////////////////////////////////////
     `);

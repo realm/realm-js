@@ -29,6 +29,7 @@ const PRIMITIVES_MAPPING: Record<string, string> = {
   float: "number",
   int64_t: "bigint",
   int32_t: "number",
+  count_t: "number",
   uint64_t: "bigint",
   "std::string": "string",
   StringData: "string",
@@ -40,6 +41,8 @@ const TEMPLATE_MAPPING: Record<string, (...args: string[]) => string> = {
   "std::vector": (arg) => `${arg}[]`,
   "util::Optional": (arg) => `(${arg} | null)`,
   "std::shared_ptr": (arg) => arg,
+  "std::pair": (a, b) => `[${a}, ${b}]`,
+  "std::tuple": (...args) => `[${args}]`,
 };
 
 const enum Kind {
@@ -51,6 +54,7 @@ function generateType(spec: BoundSpec, type: Type, kind: Kind): string {
   switch (type.kind) {
     case "Pointer":
     case "Ref":
+    case "RRef":
       // No impact on JS semantics.
       return generateType(spec, type.type, kind);
 
@@ -94,7 +98,7 @@ export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): vo
   }
 
   // Check the support for template instances used
-  for (const template of rawSpec.templates) {
+  for (const template of Object.keys(rawSpec.templates)) {
     if (!Object.keys(TEMPLATE_MAPPING).includes(template)) {
       console.warn(`Spec declares an unsupported template instance: "${template}"`);
     }

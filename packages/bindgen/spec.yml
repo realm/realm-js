@@ -4,6 +4,7 @@ headers:
   - "realm/object-store/shared_realm.hpp"
   - "realm/object-store/object_store.hpp"
   - "realm/object-store/object_schema.hpp"
+  - "realm/object-store/results.hpp"
   - "realm/object-store/thread_safe_reference.hpp"
   - "realm/object-store/util/scheduler.hpp"
 
@@ -12,6 +13,7 @@ primitives:
   - int32_t
   - int64_t
   - uint64_t
+  - count_t # size_t but only used for counts (so never > 2**52)
   - double
   - float
   - bool
@@ -28,10 +30,12 @@ typeAliases:
   Schema: std::vector<ObjectSchema>
 
 
-templates:
-  - util::Optional
-  - std::vector
-  - std::shared_ptr
+templates: # value tells you how many arguments it takes ('*' means any number)
+  util::Optional: 1
+  std::vector: 1
+  std::shared_ptr: 1
+  std::pair: 2
+  std::tuple: '*'
 
 enums:
   SchemaMode:
@@ -207,6 +211,8 @@ classes:
         - '(r: SharedRealm, key: TableKey) -> TableRef'
         - sig: '(r: SharedRealm, name: StringData) -> TableRef'
           suffix: by_name
+      get_keypath_mapping: '(r: SharedRealm) -> KeyPathMapping'
+      results_from_query: '(r: SharedRealm, q: Query) -> Results'
 
   TableRef:
     needsDeref: true
@@ -214,7 +220,7 @@ classes:
     methods:
       get_name: () const -> StringData
       is_embedded: () const -> bool
-      #get_column_count: () const -> size_t # TODO size_t
+      get_column_count: () const -> count_t
       get_column_type: '(column: ColKey) const -> DataType'
       get_link_target: '(column: ColKey) const -> TableRef'
       create_object: () -> Obj
@@ -222,6 +228,7 @@ classes:
       get_object: '(key: ObjKey) const -> Obj'
       get_object_with_primary_key: '(pk: Mixed) const -> Obj'
       try_get_object: '(key: ObjKey) const -> Obj'
+      query: '(query_string: std::string, args: std::vector<Mixed>, mapping: KeyPathMapping) const -> Query'
 
   Obj:
     properties:
@@ -339,6 +346,51 @@ classes:
     methods:
       get_table_key: () const -> TableKey
       get_obj_key: () const -> ObjKey
+
+  KeyPathMapping: {}
+
+  Query:
+    methods:
+      count: () const -> count_t
+
+  SortDescriptor:
+    constructors:
+      make_empty: ()
+      make: '(column_indices: std::vector<std::vector<ColKey>>, ascending: std::vector<bool>)'
+    properties:
+      is_valid: bool
+
+  Results:
+    constructors:
+      make_empty: ()
+      from_table: '(r: SharedRealm, table: TableRef)'
+      # from_query: '(r: SharedRealm, query: Query, ordering: DescriptorOrdering)'
+    properties:
+      is_frozen: bool
+      is_valid: bool
+    methods:
+      get_query: () const -> Query
+      #get_ordering: () const -> const DescriptorOrdering&
+      get_object_type: () const -> StringData
+      get_type: () const -> PropertyType
+      size: () -> count_t
+      get: # NOTE: this is actually a template with a defaulted template param.
+        - sig: '(index: count_t) -> Obj'
+          suffix: 'obj'
+      get_any: '(index: count_t) -> Mixed'
+      get_dictionary_element: '(index: count_t) -> std::pair<StringData, Mixed>'
+      filter: '(query: Query&&) const -> Results'
+      sort:
+        - '(order: SortDescriptor&&) const -> Results'
+        - sig: '(order: std::vector<std::pair<std::string, bool>>) const -> Results'
+          suffix: by_names
+      limit: '(max_count: count_t) const -> Results'
+      snapshot: '() const -> Results'
+      freeze: '(frozen_realm: SharedRealm) const -> Results'
+      max: '(column: ColKey) -> util::Optional<Mixed>'
+      min: '(column: ColKey) -> util::Optional<Mixed>'
+      average: '(column: ColKey) -> util::Optional<Mixed>'
+      sum: '(column: ColKey) -> util::Optional<Mixed>'
 
   Realm:
     sharedPtrWrapped: SharedRealm
