@@ -513,16 +513,25 @@ class NodeCppDecls extends CppDecls {
                         throw Napi::TypeError::New(${env}, "expected ${args.length} arguments");
         `;
 
-        if (cppClassName == "Mixed" && method.unique_name == "from_string") {
+        if (cppClassName == "Mixed") {
           // TODO make this less of a special case.
-          assert.equal(args.length, 1);
-          cppMeth.body += `
-              auto ret = ${convertToNode(method.sig.ret, "Mixed()")};
-              auto self = Unwrap(ret.ToObject());
-              self->m_buffer = ${args};
-              self->m_val = Mixed(self->m_buffer);
-              return ret;
-            `;
+          if (method.unique_name == "from_string") {
+            assert.equal(args.length, 1);
+            cppMeth.body += `
+                auto ret = ${convertToNode(method.sig.ret, "Mixed()")};
+                auto self = Unwrap(ret.ToObject());
+                self->m_buffer = ${args};
+                self->m_val = Mixed(self->m_buffer);
+                return ret;
+              `;
+          } else if (method.unique_name == "from_binary") {
+            assert.equal(args.length, 1);
+            cppMeth.body += `
+                auto ret = ${convertToNode(method.sig.ret, `Mixed(${args})`)};
+                ret.ToObject().Set("_keepAlive", info[0]);
+                return ret;
+              `;
+          }
         } else {
           cppMeth.body += `return ${convertToNode(method.sig.ret, `${callPrefix}(${args})`)};`;
         }
