@@ -50,7 +50,7 @@ import * as lib from "../src";
 
 {
   class T {
-    name: string;
+    name!: string;
   }
   const results: Realm.Results<T> = new lib.Realm.Results<T>();
 }
