@@ -77,19 +77,34 @@ class Template {
 abstract class Method {
   isConstructor = false;
   abstract isStatic: boolean;
-  constructor(public name: string, public unique_name: string, public sig: Func) {}
+  constructor(public on: Class, public name: string, public unique_name: string, public sig: Func) {}
+
+  get id() {
+    return `${this.on.name}::${this.unique_name}`;
+  }
+
+  abstract call({ self }: { self: string }, ...args: string[]): string;
 }
 
 class InstanceMethod extends Method {
   readonly isStatic = false;
+  call({ self }: { self: string }, ...args: string[]) {
+    return `${self}.${this.name}(${args})`;
+  }
 }
 class StaticMethod extends Method {
   readonly isStatic = true;
+  call(_ignored: { self?: string }, ...args: string[]) {
+    return `${this.on.name}::${this.name}(${args})`;
+  }
 }
 class Constructor extends StaticMethod {
   readonly isConstructor = true;
-  constructor(public name: string, public sig: Func) {
-    super(name, name, sig);
+  constructor(on: Class, name: string, sig: Func) {
+    super(on, name, name, sig);
+  }
+  call(_ignored: { self?: string }, ...args: string[]) {
+    return `${this.on.name}(${args})`;
   }
 }
 
@@ -231,14 +246,21 @@ export function bindModel(spec: Spec): BoundSpec {
 
   function handleMethods<Out extends Method>(
     OutType: new (...args: ConstructorParameters<typeof Method>) => Out,
+    on: Class,
     methods: Record<string, MethodSpec[]>,
-  ): Out[] {
-    return Object.entries(methods).flatMap(([name, overloads]) =>
-      overloads.map(
-        (overload) =>
-          new OutType(name, overload.suffix ? `${name}_${overload.suffix}` : name, resolveTypes(overload.sig) as Func),
-      ),
-    );
+  ) {
+    for (const [name, overloads] of Object.entries(methods)) {
+      for (const overload of overloads) {
+        on.methods.push(
+          new OutType(
+            on,
+            name,
+            overload.suffix ? `${name}_${overload.suffix}` : name,
+            resolveTypes(overload.sig) as Func,
+          ),
+        );
+      }
+    }
   }
 
   function unqualify(names: string[]) {
@@ -298,8 +320,8 @@ export function bindModel(spec: Spec): BoundSpec {
   for (const subtree of ["classes", "interfaces"] as const) {
     for (const [name, raw] of Object.entries(spec[subtree])) {
       const cls = types[name] as Class;
-      cls.methods.push(...handleMethods(InstanceMethod, raw.methods));
-      cls.methods.push(...handleMethods(StaticMethod, raw.staticMethods));
+      handleMethods(InstanceMethod, cls, raw.methods);
+      handleMethods(StaticMethod, cls, raw.staticMethods);
       if (subtree == "classes") {
         const rawCls = raw as ClassSpec;
         cls.needsDeref = rawCls.needsDeref;
@@ -314,7 +336,7 @@ export function bindModel(spec: Spec): BoundSpec {
             // Constructors implicitly return the type of the class.
             assert(sig.kind == "Func" && sig.ret.kind == "Primitive" && sig.ret.name == "void");
             sig.ret = cls;
-            return new Constructor(name, sig);
+            return new Constructor(cls, name, sig);
           }),
         );
 
