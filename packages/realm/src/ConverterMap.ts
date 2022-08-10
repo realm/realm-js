@@ -18,14 +18,15 @@
 
 import * as binding from "@realm/bindgen";
 
-import { Object as RealmObject } from "./Object";
+import { INTERNAL, Object as RealmObject } from "./Object";
 
 type ObjectWrapCreator = (obj: binding.Obj) => RealmObject;
 
 type Converters = {
   toMixed: (value: unknown) => binding.Mixed;
   fromMixed: (value: binding.Mixed) => unknown;
-  fromObj: (obj: binding.Obj) => unknown;
+  get: (obj: binding.Obj) => unknown;
+  set: (obj: binding.Obj, value: unknown) => unknown;
 };
 
 function extractBaseType(type: binding.PropertyType) {
@@ -54,24 +55,37 @@ function createConverters(
       fromMixed(value) {
         return value.getString();
       },
-      fromObj(obj) {
+      get(obj) {
         return this.fromMixed(obj.getAny(columnKey));
+      },
+      set(obj, value) {
+        obj.setAny(columnKey, this.toMixed(value));
       },
     };
   } else if (type === binding.PropertyType.Object) {
     return {
       toMixed() {
-        throw new Error("Not yet implemented!");
+        throw new Error("Cannot use toMixed on an object link property. Use set instead.");
       },
       fromMixed() {
-        throw new Error("Cannot use fromMixed on an object link property. Use fromBinding instead.");
+        throw new Error("Cannot use fromMixed on an object link property. Use get instead.");
       },
-      fromObj(obj) {
+      get(obj) {
         if (obj.isNull(columnKey)) {
           return null;
         } else {
           const linkedObj = obj.getLinkedObject(columnKey);
           return createObjectWrapper(linkedObj);
+        }
+      },
+      set(obj, value) {
+        if (value === null) {
+          obj.setAny(columnKey, binding.Mixed.fromNull());
+        } else if (value instanceof RealmObject) {
+          const valueObj = value[INTERNAL];
+          obj.setAny(columnKey, binding.Mixed.fromObj(valueObj));
+        } else {
+          throw new Error(`Expected a Realm.Object, got '${value}'`);
         }
       },
     };
@@ -97,7 +111,8 @@ export class ConverterMap {
         // Binding the methods, making them spreadable from the converter
         converter.toMixed = converter.toMixed.bind(converter);
         converter.fromMixed = converter.fromMixed.bind(converter);
-        converter.fromObj = converter.fromObj.bind(converter);
+        converter.get = converter.get.bind(converter);
+        converter.set = converter.set.bind(converter);
         return [p.name, converter];
       }),
     );
