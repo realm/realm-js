@@ -25,6 +25,7 @@ import "./realm-constructor";
 import "./serialization";
 import "./objects";
 import "./iterators";
+import "./queries";
 import "./dynamic-schema-updates";
 import "./bson";
 import "./dictionary";

@@ -21,6 +21,7 @@
 #include <optional>
 
 #include <realm/keys.hpp>
+#include <vector>
 
 #include "js_list.hpp"
 #include "js_set.hpp"
@@ -225,6 +226,11 @@ public:
     bool is_null(ValueType const& value)
     {
         return Value::is_null(m_ctx, value) || Value::is_undefined(m_ctx, value);
+    }
+
+    bool is_list(ValueType const& value)
+    {
+        return Value::is_array(m_ctx, value);
     }
 
     DataType get_type_of(ValueType const& value)
@@ -588,6 +594,31 @@ struct Unbox<JSEngine, Obj> {
                                                       *native_accessor->m_object_schema,
                                                       static_cast<ValueType>(js_object), policy, current_row);
         return child.obj();
+    }
+};
+
+template <typename JSEngine>
+struct Unbox<JSEngine, std::vector<realm::Mixed>> {
+    static std::vector<realm::Mixed> call(NativeAccessor<JSEngine>* native_accessor,
+                                          typename JSEngine::Value const& value, realm::CreatePolicy policy,
+                                          ObjKey current_row)
+    {
+        using Value = js::Value<JSEngine>;
+        using ValueType = typename JSEngine::Value;
+        using Object = js::Object<JSEngine>;
+        using ObjectType = typename JSEngine::Object;
+
+        auto realm = native_accessor->m_realm;
+        auto ctx = native_accessor->m_ctx;
+        auto js_array = Value::validated_to_array(ctx, value, "is JS array");
+        std::vector<realm::Mixed> array;
+        uint32_t length = Object::validated_get_length(ctx, js_array);
+        for (uint32_t i = 0; i < length; i++) {
+            ValueType js_obj = Object::get_property(ctx, js_array, i);
+            array.emplace_back(js::Value<JSEngine>::to_mixed(ctx, realm, js_obj, native_accessor->m_string_buffer,
+                                                             native_accessor->m_owned_binary_data));
+        }
+        return array;
     }
 };
 
