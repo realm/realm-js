@@ -16,10 +16,33 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Results } from "./Results";
-import { CanonicalObjectSchema } from "./schema-types";
+import * as binding from "@realm/bindgen";
+import { Realm } from "./Realm";
 
-export class Object<T = Record<string, unknown>> {
+import { Results } from "./Results";
+import { CanonicalObjectSchema, Constructor } from "./schema-types";
+
+export const INTERNAL = Symbol.for("Realm.Object#internal");
+
+export function createObjectWrapper(realm: Realm, constructor: Constructor, internal: binding.Obj) {
+  const result = Object.create(constructor.prototype);
+  result.realm = realm;
+  result[INTERNAL] = internal;
+  // TODO: Wrap in a proxy to trap keys, enabling the spread operator
+  return result;
+}
+
+class RealmObject<T = Record<string, unknown>> {
+  /**
+   * The object's representation in the underlying database.
+   */
+  public realm!: Realm;
+
+  /**
+   * The object's representation in the underlying database.
+   */
+  private [INTERNAL]!: binding.Obj;
+
   /**
    * FIXME: Use keyof in this methods return signature type signature
    */
@@ -36,7 +59,7 @@ export class Object<T = Record<string, unknown>> {
     throw new Error("Not yet implemented");
   }
   isValid(): boolean {
-    throw new Error("Not yet implemented");
+    return this[INTERNAL] && this[INTERNAL].isValid;
   }
   objectSchema(): CanonicalObjectSchema<T> {
     throw new Error("Not yet implemented");
@@ -63,3 +86,5 @@ export class Object<T = Record<string, unknown>> {
     throw new Error("Not yet implemented");
   }
 }
+
+export { RealmObject as Object };

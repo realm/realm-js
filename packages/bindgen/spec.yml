@@ -104,7 +104,6 @@ records:
         default: ""
       type:
         type: PropertyType
-        default: Int
       object_type:
         type: std::string
         default: ""
@@ -205,7 +204,7 @@ classes:
   Helpers:
     staticMethods:
       get_table:
-        - '(r: SharedRealm, name: TableKey) -> TableRef'
+        - '(r: SharedRealm, key: TableKey) -> TableRef'
         - sig: '(r: SharedRealm, name: StringData) -> TableRef'
           suffix: by_name
 
@@ -221,6 +220,7 @@ classes:
       create_object: () -> Obj
       create_object_with_primary_key: '(pk: Mixed) -> Obj'
       get_object: '(key: ObjKey) const -> Obj'
+      get_object_with_primary_key: '(pk: Mixed) const -> Obj'
       try_get_object: '(key: ObjKey) const -> Obj'
 
   Obj:
