@@ -17,7 +17,7 @@
     "generate:type-parser-diagram": "tsm --no-warnings src/spec/type-parser-diagram.ts generated/type-parser.html",
     "generate:typescript": "./realm-bindgen.ts --spec spec.yml --template typescript --output generated/ts",
     "generate:node": "./realm-bindgen.ts --spec spec.yml --template node --output generated/node",
-    "compile:node": "cmake-js rebuild --debug"
+    "compile:node": "cmake-js compile --debug"
   },
   "dependencies": {
     "@types/node": "^12.20.55",
