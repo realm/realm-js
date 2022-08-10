@@ -501,11 +501,6 @@ class NodeCppDecls extends CppDecls {
         const cppMeth = cls.addMethod(new CppNodeMethod(jsName, { static: method.isStatic }));
         descriptors.push(`${method.isStatic ? "Static" : "Instance"}Method<&${cppMeth.qualName()}>("${jsName}")`);
 
-        const callPrefix = method.isConstructor
-          ? cppClassName
-          : method.isStatic
-          ? `${cppClassName}::${method.name}`
-          : `${self}.${method.name}`;
         const args = method.sig.args.map((a, i) => convertFromNode(a.type, `info[${i}]`));
 
         cppMeth.body += `
@@ -513,27 +508,24 @@ class NodeCppDecls extends CppDecls {
                         throw Napi::TypeError::New(${env}, "expected ${args.length} arguments");
         `;
 
-        if (cppClassName == "Mixed") {
-          // TODO make this less of a special case.
-          if (method.unique_name == "from_string") {
-            assert.equal(args.length, 1);
-            cppMeth.body += `
-                auto ret = ${convertToNode(method.sig.ret, "Mixed()")};
-                auto self = Unwrap(ret.ToObject());
-                self->m_buffer = ${args};
-                self->m_val = Mixed(self->m_buffer);
-                return ret;
-              `;
-          } else if (method.unique_name == "from_binary") {
-            assert.equal(args.length, 1);
-            cppMeth.body += `
-                auto ret = ${convertToNode(method.sig.ret, `Mixed(${args})`)};
-                ret.ToObject().Set("_keepAlive", info[0]);
-                return ret;
-              `;
-          }
+        if (method.id == "Mixed::from_string") {
+          assert.equal(args.length, 1);
+          cppMeth.body += `
+              auto ret = ${convertToNode(method.sig.ret, "Mixed()")};
+              auto self = Unwrap(ret.ToObject());
+              self->m_buffer = ${args};
+              self->m_val = Mixed(self->m_buffer);
+              return ret;
+            `;
+        } else if (method.id == "Mixed::from_binary") {
+          assert.equal(args.length, 1);
+          cppMeth.body += `
+              auto ret = ${convertToNode(method.sig.ret, method.call({ self }, ...args))};
+              ret.ToObject().Set("_keepAlive", info[0]);
+              return ret;
+            `;
         } else {
-          cppMeth.body += `return ${convertToNode(method.sig.ret, `${callPrefix}(${args})`)};`;
+          cppMeth.body += `return ${convertToNode(method.sig.ret, method.call({ self }, ...args))};`;
         }
       }
 
