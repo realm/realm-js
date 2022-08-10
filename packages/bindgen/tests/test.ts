@@ -20,7 +20,7 @@
 
 /* eslint-disable header/header */
 
-import { Realm, PropertyType, Helpers, Mixed } from "../index";
+import { Realm, PropertyType, Helpers, Mixed, Results, SortDescriptor } from "../index";
 
 import { strict as assert } from "assert";
 import * as util from "util";
@@ -110,13 +110,28 @@ const results = Helpers.resultsFromQuery(realm, query);
 }
 
 // This matches nothing, unless you change 'hello' to 'world'
-console.log("---");
-const results2 = results.filter(table.query("str = 'hello'", [], kpMapping));
 {
+  console.log("---");
+  const results2 = results.filter(table.query("str = 'hello'", [], kpMapping));
   const nResults = results2.size();
   console.log(nResults);
   for (let i = 0; i < nResults; i++) {
     console.log(results2.getObj(i).toString());
+  }
+}
+
+{
+  const baseResults = Results.fromTable(realm, table);
+  for (const results2 of [
+    baseResults.sortByNames([["num", true]]),
+    baseResults.sort(SortDescriptor.make([[strCol], [numCol]], [true, false])),
+  ]) {
+    console.log("---");
+    const nResults = results2.size();
+    console.log(nResults);
+    for (let i = 0; i < nResults; i++) {
+      console.log(results2.getObj(i).toString());
+    }
   }
 }
 
