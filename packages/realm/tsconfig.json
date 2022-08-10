@@ -10,15 +10,12 @@
     "lib": [
       "ES2020"
     ],
-    "types": [
-      "@realm/bindgen"
-    ]
+    "types": []
   },
   "include": [
-    // Including the bindgen renerated types 
-    // ../bindgen/generated/ts/index.d.ts:2:47 - error TS2307:
-    // Cannot find module './index' or its corresponding type declarations.
-    "../bindgen/generated/ts"
+    "src/",
+    "../bindgen/index.ts",
+    "../bindgen/generated/ts/"
   ],
   "exclude": [
     "src/tests/",
