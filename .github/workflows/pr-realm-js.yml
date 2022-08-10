@@ -274,6 +274,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
+      - name: Restore React Native cache
+        if: ${{ matrix.variant.environment == 'react-native' }}
+        id: lerna-cache
+        uses: actions/cache@v2
+        with:
+          path: '**/Pods'
+          key: ${{ runner.os }}-${{matrix.variant.environment}}-${{ hashFiles('**/Podfile.lock', './src/**', './vendor/**') }}
+          restore-keys: |
+            ${{ runner.os }}-${{matrix.variant.environment}}-
+
       - name: MSVC Setup
         if: ${{ runner.os == 'Windows' }}
         uses: ilammy/msvc-dev-cmd@v1
