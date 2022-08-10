@@ -19,7 +19,7 @@
 import { Results } from "./Results";
 
 type PropertyType = string;
-type SortDescriptor = unknown;
+type SortDescriptor = [string] | [string, boolean];
 type CollectionChangeCallback<T> = unknown;
 
 export class Collection<T = unknown> implements ReadonlyArray<T> {
@@ -186,7 +186,7 @@ export class Collection<T = unknown> implements ReadonlyArray<T> {
   sorted(reverse?: boolean): Results<T>;
   sorted(descriptor: SortDescriptor[]): Results<T>;
   sorted(descriptor: string, reverse?: boolean): Results<T>;
-  sorted(arg0?: boolean | string | SortDescriptor, arg1?: boolean): Results<T> {
+  sorted(arg0?: boolean | SortDescriptor[] | string, arg1?: boolean): Results<T> {
     throw new Error("Method not implemented.");
   }
 

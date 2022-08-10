@@ -55,6 +55,9 @@ const TYPE_MAPPINGS: Record<PropertyType, PropertyTypeNames | null> = {
   // These have no direct
   [PropertyType.Object]: null,
   [PropertyType.Nullable]: null,
+  //
+  [PropertyType.Collection]: null,
+  [PropertyType.Flags]: null,
 };
 
 const COLLECTION_TYPES = [PropertyType.Array, PropertyType.Set, PropertyType.Dictionary];
