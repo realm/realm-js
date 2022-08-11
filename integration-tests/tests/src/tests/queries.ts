@@ -73,7 +73,7 @@ describe("Realm Query Language", () => {
       expect(dennis.length).equal(0);
     });
 
-    it("array of primitive types", () => {
+    it.only("array of primitive types", () => {
       const hasTwoPhones = contacts.filtered("phones.@count = 2");
       expect(hasTwoPhones.length).equal(1);
       expect(hasTwoPhones[0].name).equal("Bob");
@@ -82,9 +82,9 @@ describe("Realm Query Language", () => {
       expect(contacts.filtered("'123-4567-890' IN phones").length).equal(0);
       expect(contacts.filtered("ANY {'555-1234-567', '123-4567-890'} IN phones").length).equal(2);
       expect(contacts.filtered("ALL {'555-1234-567', '123-4567-890'} IN phones").length).equal(0);
-      expect(contacts.filtered("NONE {'555-1234-567', '123-4567-890'} IN phones").length).equal(3);
-      expect(contacts.filtered("NONE {'555-1122-333', '555-1234-567'} IN phones").length).equal(3);
-      expect(contacts.filtered("ALL {'555-1122-333', '555-1234-567'} IN phones").length).equal(2);
+      expect(contacts.filtered("NONE {'555-1234-567', '123-4567-890'} IN phones").length).equal(1);
+      expect(contacts.filtered("NONE {'555-1122-333', '555-1234-567'} IN phones").length).equal(1);
+      expect(contacts.filtered("ALL {'555-1122-333', '555-1234-567'} IN phones").length).equal(1);
     });
   });
 });
