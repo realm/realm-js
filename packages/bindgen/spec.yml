@@ -77,6 +77,13 @@ enums:
       Collection: 896 # Array | Set | Dictionary
       Flags: 960 # Nullable | Collection
 
+  TableType:
+    cppName: ObjectSchema::ObjectType
+    values:
+      TopLevel: 0
+      Embedded: 1
+      TopLevelAsymmetric: 0x2 
+
   DataType:
     values:
       Int: 0
@@ -161,7 +168,9 @@ records:
       table_key:
         type: TableKey
         default: {}
-      # TODO table_type (uses nested enum class, tricky to support for now)
+      table_type:
+        type: TableType
+        default: TopLevel
       alias:
         type: std::string
         default: ''
@@ -234,7 +243,6 @@ classes:
   Obj:
     properties:
       is_valid: bool
-      # TODO some of the get_FOO methods should be properties with a cppName
       get_table: TableRef
       get_key: ObjKey
       get_link: ObjLink
@@ -298,8 +306,6 @@ classes:
       from_obj: '(v: const Obj&)'
       from_link: '(v: ObjLink)'
       from_uuid: '(v: UUID)'
-
-      # TODO may need to make Mixed hold a ref to the argument.
       from_binary: '(v: BinaryData)'
 
       # Warning: This requires some special workarounds because it is a view.
@@ -350,7 +356,8 @@ classes:
       get_table_key: TableKey
       get_obj_key: ObjKey
 
-  KeyPathMapping: {}
+  KeyPathMapping:
+    cppName: query_parser::KeyPathMapping
 
   Query:
     methods:
@@ -461,6 +468,7 @@ classes:
 
 interfaces:
   Scheduler:
+    cppName: util::Scheduler
     methods:
       invoke: '(callback: () -> void)'
       is_on_thread: () const noexcept -> bool
