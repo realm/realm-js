@@ -135,6 +135,7 @@ function normalizeRecordSpec(spec: RelaxedRecordSpec): RecordSpec {
 
 function normalizeClassSpec(spec: RelaxedClassSpec): ClassSpec {
   return {
+    cppName: spec.cppName,
     iterable: spec.iterable ? parseTypeSpec(spec.iterable) : undefined,
     needsDeref: !!spec.needsDeref || !!spec.sharedPtrWrapped,
     sharedPtrWrapped: spec.sharedPtrWrapped,
@@ -147,6 +148,7 @@ function normalizeClassSpec(spec: RelaxedClassSpec): ClassSpec {
 
 function normalizeInterfaceSpec(spec: RelaxedInterfaceSpec): InterfaceSpec {
   return {
+    cppName: spec.cppName,
     sharedPtrWrapped: spec.sharedPtrWrapped,
     staticMethods: mapObjectValues(spec.staticMethods || {}, normalizeMethodSpec),
     methods: mapObjectValues(spec.methods || {}, normalizeMethodSpec),
@@ -173,12 +175,12 @@ function normalizeMethodSpec(spec: RelaxedMethodSpec | RelaxedMethodSpec[]): Met
   const methods = Array.isArray(spec) ? spec : [spec];
   return methods
     .map((method) => (typeof method === "string" ? { sig: method } : method))
-    .map(({ suffix, sig }) => {
+    .map(({ cppName, suffix, sig }) => {
       const type = parseTypeSpec(sig);
       if (typeof type === "undefined") {
         throw new Error(`Expected a function type, but failed to parse: ${sig}`);
       } else if (type.kind === "function") {
-        return { suffix, sig: type };
+        return { cppName, suffix, sig: type };
       } else {
         throw new Error(`Expected a function type, got "${type.kind}"`);
       }

@@ -37,18 +37,19 @@ export type RelaxedSpec = Omit<
   interfaces?: { [name: string]: RelaxedInterfaceSpec };
 };
 
-export type RelaxedEnumSpec =
+export type RelaxedEnumSpec = {
+  cppName?: string;
+  values: string[] | { [key: string]: number };
+} & (
+  | { isFlag?: false }
   | {
       isFlag: true;
       flagMask: number;
-      values: string[] | { [key: string]: number };
     }
-  | {
-      isFlag?: false;
-      values: string[] | { [key: string]: number };
-    };
+);
 
 export type RelaxedRecordSpec = {
+  cppName?: string;
   fields: { [name: string]: RelaxedFieldSpec };
 };
 
@@ -60,6 +61,7 @@ export type RelaxedFieldSpec =
     };
 
 export type RelaxedClassSpec = Pick<Partial<ClassSpec>, "sharedPtrWrapped"> & {
+  cppName?: string;
   iterable?: string;
   needsDeref?: boolean;
   constructors?: { [name: string]: string };
@@ -69,6 +71,7 @@ export type RelaxedClassSpec = Pick<Partial<ClassSpec>, "sharedPtrWrapped"> & {
 };
 
 export type RelaxedInterfaceSpec = Pick<Partial<InterfaceSpec>, "sharedPtrWrapped"> & {
+  cppName?: string;
   staticMethods?: { [name: string]: RelaxedMethodSpec | RelaxedMethodSpec[] };
   methods?: { [name: string]: RelaxedMethodSpec | RelaxedMethodSpec[] };
 };
@@ -78,6 +81,7 @@ export type RelaxedMethodSpec =
   | {
       sig: string;
       suffix?: string;
+      cppName?: string;
     };
 
 export type RelaxedConstantSpec = {
