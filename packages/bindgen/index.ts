@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 // import { strict as assert } from "assert";
-import { DataType, Decimal128, Mixed, ObjectId, ObjLink, Timestamp, UUID } from "./generated/ts/native.js";
+import { DataType, Decimal128, Mixed, ObjectId, ObjLink, Timestamp, Uuid } from "./generated/ts/native.js";
 
 export * from "./generated/ts/native.js"; // enums are transitively exported.
 
@@ -34,7 +34,7 @@ export type MixedValues =
   | Timestamp
   | Decimal128
   | ObjectId
-  | UUID
+  | Uuid
   | ObjLink;
 
 declare module "./generated/ts/native.js" {
@@ -48,7 +48,7 @@ declare module "./generated/ts/native.js" {
 Mixed.prototype.toJsValue = function () {
   if (this.isNull()) return null;
 
-  const t = this.getType();
+  const t = this.type;
   switch (t) {
     case DataType.Int:
       return this.getInt(); // Note: returns bigint, not number
@@ -66,7 +66,7 @@ Mixed.prototype.toString = function () {
   if (this.isNull()) return "Mixed(null)";
 
   try {
-    switch (this.getType()) {
+    switch (this.type) {
       case DataType.Float:
         return `Mixed(float:${this.toJsValue()})`;
       default:
