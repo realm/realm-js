@@ -18,11 +18,11 @@
 
 import * as binding from "@realm/bindgen";
 
-import { ConverterMap } from "./ConverterMap";
+import { ConverterMap, ObjectWrapCreator } from "./ConverterMap";
 import { Realm } from "./Realm";
-import { createObjectWrapper as createObjectWrapperImpl, INTERNAL, Object as RealmObject } from "./Object";
+import { createObjectWrapper as createObjectWrapperImpl, getInternal } from "./Object";
 
-import { Constructor } from "./schema-types";
+import { Constructor, DefaultObject } from "./schema-types";
 
 function createNamedConstructor(name: string): Constructor {
   const obj = {
@@ -36,6 +36,7 @@ function createNamedConstructor(name: string): Constructor {
 function createClass(schema: binding.Realm["schema"][0], converters: ConverterMap): Constructor {
   const result = createNamedConstructor(schema.name);
   // Make the new constructor extend Realm.Object
+  // TODO: Use the end-users constructor, instead of `Realm.Object` if provided
   Object.setPrototypeOf(result, Realm.Object);
   Object.setPrototypeOf(result.prototype, Realm.Object.prototype);
   // TODO: Support computed properties
@@ -48,11 +49,11 @@ function createClass(schema: binding.Realm["schema"][0], converters: ConverterMa
     Object.defineProperty(result.prototype, property.name, {
       enumerable: true,
       get() {
-        const obj = this[INTERNAL] as binding.Obj;
+        const obj = getInternal(this);
         return get(obj);
       },
       set(value: unknown) {
-        const obj = this[INTERNAL] as binding.Obj;
+        const obj = getInternal(this);
         try {
           set(obj, value);
         } catch (err) {
@@ -72,15 +73,12 @@ function createClass(schema: binding.Realm["schema"][0], converters: ConverterMa
 }
 
 type ClassItem = {
+  // TODO: Use a different type, once exposed by the binding
+  objectSchema: binding.Realm["schema"][0];
   constructor: Constructor;
   converters: ConverterMap;
-  createObjectWrapper: (obj: binding.Obj) => RealmObject;
+  createObjectWrapper: ObjectWrapCreator;
 };
-
-type ObjGetter = (
-  tableKey: ReturnType<binding.ObjLink["getTableKey"]>,
-  objKey: ReturnType<binding.ObjLink["getObjKey"]>,
-) => binding.Obj;
 
 export class ClassMap {
   private mapping: Record<string, ClassItem>;
@@ -97,14 +95,7 @@ export class ClassMap {
         }
         const converters = new ConverterMap(objectSchema, createObjectWrapper);
         const constructor = createClass(objectSchema, converters);
-        return [
-          objectSchema.name,
-          {
-            constructor,
-            converters,
-            createObjectWrapper,
-          },
-        ];
+        return [objectSchema.name, { objectSchema, constructor, converters, createObjectWrapper }];
       }),
     );
   }

@@ -18,9 +18,10 @@
 
 import * as binding from "@realm/bindgen";
 
-import { INTERNAL, Object as RealmObject } from "./Object";
+import { Object as RealmObject, getInternal } from "./Object";
+import { DefaultObject } from "./schema-types";
 
-type ObjectWrapCreator = (obj: binding.Obj) => RealmObject;
+export type ObjectWrapCreator<T = DefaultObject> = (obj: binding.Obj) => RealmObject<T>;
 
 type Converters = {
   toMixed: (value: unknown) => binding.Mixed;
@@ -82,7 +83,7 @@ function createConverters(
         if (value === null) {
           obj.setAny(columnKey, binding.Mixed.fromNull());
         } else if (value instanceof RealmObject) {
-          const valueObj = value[INTERNAL];
+          const valueObj = getInternal(value);
           obj.setAny(columnKey, binding.Mixed.fromObj(valueObj));
         } else {
           throw new Error(`Expected a Realm.Object, got '${value}'`);

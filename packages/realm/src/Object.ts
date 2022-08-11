@@ -20,9 +20,17 @@ import * as binding from "@realm/bindgen";
 import { Realm } from "./Realm";
 
 import { Results } from "./Results";
-import { CanonicalObjectSchema, Constructor } from "./schema-types";
+import { CanonicalObjectSchema, Constructor, DefaultObject } from "./schema-types";
 
-export const INTERNAL = Symbol.for("Realm.Object#internal");
+const INTERNAL = Symbol.for("Realm.Object#internal");
+
+export function getInternal(object: InstanceType<Constructor>): binding.Obj {
+  return object[INTERNAL];
+}
+
+export function setInternal(object: InstanceType<Constructor>, internal: binding.Obj) {
+  object[INTERNAL] = internal;
+}
 
 export function createObjectWrapper(realm: Realm, constructor: Constructor, internal: binding.Obj) {
   const result = Object.create(constructor.prototype);
@@ -32,7 +40,7 @@ export function createObjectWrapper(realm: Realm, constructor: Constructor, inte
   return result;
 }
 
-class RealmObject<T = Record<string, unknown>> {
+class RealmObject<T = DefaultObject> {
   /**
    * The object's representation in the underlying database.
    */
