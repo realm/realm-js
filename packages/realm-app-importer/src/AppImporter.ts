@@ -47,6 +47,13 @@ type LoginResponse = {
   refresh_token: string;
 };
 
+type AppConfig = {
+  name: string;
+  security?: {
+    allowed_request_origins?: string[];
+  };
+};
+
 type ErrorResponse = {
   error: string;
 };
@@ -56,6 +63,19 @@ type ProfileResponse = {
 };
 
 type Role = { role_name: string; group_id: string };
+
+type AuthProvider = {
+  _id: string;
+  name: string;
+  type: string;
+  disabled: boolean;
+};
+
+type RemoteFunction = {
+  _id: string;
+  name: string;
+  last_modified: number;
+};
 
 function isString(value: unknown): value is string {
   return typeof value === "string";
@@ -159,8 +179,7 @@ export class AppImporter {
    * @returns A promise of an object containing the app id.
    */
   public async importApp(appTemplatePath: string, replacements: TemplateReplacements = {}): Promise<{ appId: string }> {
-    console.log("getting started: ", process.cwd(), appTemplatePath);
-    const { name: appName } = this.loadAppConfigJson(appTemplatePath);
+    const { name: appName, security } = this.loadAppConfigJson(appTemplatePath);
 
     await this.logIn();
 
@@ -176,6 +195,11 @@ export class AppImporter {
 
     // Apply any replacements to the files before importing from them
     this.applyReplacements(appPath, replacements);
+
+    // Apply allowed request origins if they exist
+    if (security?.allowed_request_origins) {
+      this.applyAllowedRequestOrigins(security.allowed_request_origins, app._id, groupId);
+    }
 
     // Create the app service
     await this.applyAppConfiguration(appPath, app._id, groupId);
@@ -215,7 +239,7 @@ export class AppImporter {
     }
   }
 
-  private loadAppConfigJson(appTemplatePath: string) {
+  private loadAppConfigJson(appTemplatePath: string): AppConfig {
     const configJsonPath = path.resolve(appTemplatePath, "config.json");
     return this.loadJson(configJsonPath);
   }
@@ -252,6 +276,22 @@ export class AppImporter {
     }
   }
 
+  private async applyAllowedRequestOrigins(origins: string[], appId: string, groupId: string) {
+    console.log("Applying allowed request origins: ", origins);
+    const originsUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/security/allowed_request_origins`;
+    const response = await fetch(originsUrl, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(origins),
+    });
+    if (!response.ok) {
+      console.error("Could not apply request origins: ", origins, originsUrl, response.status, response.statusText);
+    }
+  }
+
   private async enableDevelopmentMode(groupId: string, appId: string) {
     const configUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/sync/config`;
     const config = { development_mode_enabled: true };
@@ -264,7 +304,7 @@ export class AppImporter {
       body: JSON.stringify(config),
     });
     if (!response.ok) {
-      console.error("Could not apply development mode: ", config, configUrl);
+      console.error("Could not apply development mode: ", config, configUrl, response.status, response.statusText);
     }
   }
 
@@ -279,13 +319,14 @@ export class AppImporter {
         const configFilePath = path.join(servicesDir, serviceDir, "config.json");
         if (fs.existsSync(configFilePath)) {
           const config = this.loadJson(configFilePath);
+          console.log("Creating service: ", config.name);
           const tmpConfig = { name: config.name, type: config.type, config: config.config };
           if (config.type === "mongodb-atlas") {
             tmpConfig.config = { clusterName: config.config.clusterName };
           }
           const dbName = config.config.sync
-            ? config.config.sync.database_name
-            : config.config.flexible_sync.database_name;
+            ? config.config.sync?.database_name
+            : config.config.flexible_sync?.database_name;
           const serviceUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/services`;
           const response = await fetch(serviceUrl, {
             method: "POST",
@@ -309,7 +350,9 @@ export class AppImporter {
               for (const ruleFile of ruleFiles) {
                 const ruleFilePath = path.join(rulesDir, ruleFile);
                 const ruleConfig = this.loadJson(ruleFilePath);
-                ruleConfig.database = dbName;
+                if (dbName) {
+                  ruleConfig.database = dbName ?? "";
+                }
                 const schemaConfig = ruleConfig.schema || null;
                 if (schemaConfig) {
                   // Schema is not valid in a rule request, but is included when exporting an app from realm
@@ -338,32 +381,129 @@ export class AppImporter {
   private async configureAuthProvidersFromAppPath(appPath: string, appId: string, groupId: string) {
     const authProviderDir = path.join(appPath, "auth_providers");
 
+    // Some auth providers use a remote function.  This makes sure the ids are available to add to the configuration
+    const remoteFunctions = await this.getFunctions(appId, groupId);
+
     if (fs.existsSync(authProviderDir)) {
-      console.log("Applying auth providers... ");
+      console.log("Applying auth providers...");
       const authFileNames = fs.readdirSync(authProviderDir);
+      const providers = await this.getAuthProviders(appId, groupId);
       for (const authFileName of authFileNames) {
         const authFilePath = path.join(authProviderDir, authFileName);
         const authConfig = this.loadJson(authFilePath);
-        //TODO: Check if auth provider is already existing and patch it
-        const authUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/auth_providers`;
-        const response = await fetch(authUrl, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${this.accessToken}`,
-            "content-type": "application/json",
-          },
-          body: JSON.stringify(authConfig),
-        });
-        if (!response.ok) {
-          console.error("Could not apply auth_provider: ", authConfig, authUrl);
+
+        console.log("Applying ", authConfig.name);
+
+        // Add the ID of the resetFunction to the configuration
+        if (authConfig?.config?.resetFunctionName) {
+          const resetFunctionId = remoteFunctions.find((func) => func.name === authConfig.config.resetFunctionName)
+            ?._id;
+          authConfig.config.resetFunctionId = resetFunctionId;
+        }
+
+        // Add the ID of the authFunction to the configuration
+        if (authConfig?.config?.authFunctionName) {
+          const authFunctionId = remoteFunctions.find((func) => func.name === authConfig.config.authFunctionName)?._id;
+          authConfig.config.authFunctionId = authFunctionId;
+        }
+
+        const currentProvider = providers.find((provider) => provider.type === authConfig.type);
+        if (currentProvider) {
+          const authUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/auth_providers/${currentProvider._id}`;
+          const response = await fetch(authUrl, {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${this.accessToken}`,
+              "content-type": "application/json",
+            },
+            body: JSON.stringify({ ...authConfig, _id: currentProvider._id }),
+          });
+          if (!response.ok) {
+            console.error("Could not patch auth_provider: ", authConfig, authUrl);
+          }
+        } else {
+          const authUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/auth_providers`;
+          const response = await fetch(authUrl, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${this.accessToken}`,
+              "content-type": "application/json",
+            },
+            body: JSON.stringify(authConfig),
+          });
+          const result = await response.json();
+          if (!response.ok) {
+            console.error("Could not apply auth_provider: ", authConfig, authUrl, result.error);
+          }
         }
       }
     }
   }
 
-  private async applyAppConfiguration(appPath: string, appId: string, groupId: string) {
-    await this.configureAuthProvidersFromAppPath(appPath, appId, groupId);
+  private async getFunctions(appId: string, groupId: string): Promise<RemoteFunction[]> {
+    const functionsUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/functions`;
+    const response = await fetch(functionsUrl, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+        "content-type": "application/json",
+      },
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      console.error("Could not retrieve functions: ", functionsUrl, result.error);
+    }
+    return result;
+  }
 
+  private async configureFunctionsFromAppPath(appPath: string, appId: string, groupId: string) {
+    const functionsDir = path.join(appPath, "functions");
+
+    if (fs.existsSync(functionsDir)) {
+      console.log("Applying functions...");
+      const functionDirs = fs.readdirSync(functionsDir);
+      for (const functionDir of functionDirs) {
+        const functionConfigPath = path.join(functionsDir, functionDir, "config.json");
+        const functionConfig = this.loadJson(functionConfigPath);
+        const functionSourcePath = path.join(functionsDir, functionDir, "source.js");
+        const functionSource = fs.readFileSync(functionSourcePath, "utf8");
+
+        delete functionConfig.id;
+
+        console.log("creating new function provider: ", functionConfig);
+        const functionsUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/functions`;
+        const response = await fetch(functionsUrl, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({ ...functionConfig, source: functionSource }),
+        });
+        if (!response.ok) {
+          console.error("Could create apply function: ", functionConfig, functionsUrl);
+        }
+      }
+    }
+  }
+
+  private async getAuthProviders(appId: string, groupId: string): Promise<AuthProvider[]> {
+    const authUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/auth_providers`;
+    const response = await fetch(authUrl, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+        "content-type": "application/json",
+      },
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      console.error("Could not retrieve auth_providers: ", authUrl, result.error);
+    }
+    return result;
+  }
+
+  private async applyAppConfiguration(appPath: string, appId: string, groupId: string) {
     // Create all secrets in parallel
     const secrets = this.loadSecretsJson(appPath);
     await Promise.all(
@@ -377,11 +517,9 @@ export class AppImporter {
 
     await this.configureServiceFromAppPath(appPath, appId, groupId);
 
-    const functionsPath = path.join(appPath, "functions");
-    if (fs.existsSync(functionsPath)) {
-      //TODO: support functions
-      console.log("Applying functions... ");
-    }
+    await this.configureFunctionsFromAppPath(appPath, appId, groupId);
+
+    await this.configureAuthProvidersFromAppPath(appPath, appId, groupId);
   }
 
   private performLogIn() {

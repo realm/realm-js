@@ -11,7 +11,7 @@
     "generate-types": "tsc --project tsconfig.types.json --declaration --emitDeclarationOnly --declarationDir types/generated",
     "build": "npm run generate-types && rollup --config && npm run build-cli",
     "build-cli": "tsc -p tsconfig.build.json",
-    "watch": "tsc -w -p tsconfig.build.json",
+    "watch": "rollup -w --config",
     "lint": "eslint --ext .js,.ts .",
     "prepare": "rm -rf dist && npm run build",
     "start": "ts-node src/cli.ts"
