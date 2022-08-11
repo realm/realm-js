@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { camelCase } from "change-case";
-
 import { TemplateContext } from "../context";
 import { Arg, bindModel, BoundSpec, Type } from "../bound-model";
+
+import '../js_passes'
 
 const PRIMITIVES_MAPPING: Record<string, string> = {
   void: "void",
@@ -64,10 +64,10 @@ function generateType(spec: BoundSpec, type: Type, kind: Kind): string {
     case "Opaque":
     case "Enum":
     case "Class":
-      return type.name;
+      return type.jsName;
 
     case "Struct":
-      return kind == Kind.Arg ? type.name : `DeepRequired<${type.name}>`;
+      return kind == Kind.Arg ? type.jsName : `DeepRequired<${type.jsName}>`;
 
     case "Primitive":
       return PRIMITIVES_MAPPING[type.name];
@@ -112,7 +112,7 @@ export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): vo
   enumsOut("// Enums");
   for (const e of spec.enums) {
     // Using const enum to avoid having to emit JS backing these
-    enumsOut(`export const enum ${e.name} {`);
+    enumsOut(`export const enum ${e.jsName} {`);
     enumsOut(...e.enumerators.map(({ name, value }) => `${name} = ${value},\n`));
     enumsOut("};");
   }
@@ -135,32 +135,32 @@ export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): vo
           T;`);
 
   out("// Opaque types");
-  for (const { name } of spec.opaqueTypes) {
-    out.lines("/** Using an empty enum to express a nominal type */", `export declare enum ${name} {}`);
+  for (const { jsName } of spec.opaqueTypes) {
+    out.lines("/** Using an empty enum to express a nominal type */", `export declare enum ${jsName} {}`);
   }
 
   out("// Records");
   for (const rec of spec.records) {
-    out(`export type ${rec.name} = {`);
+    out(`export type ${rec.jsName} = {`);
     for (const field of rec.fields) {
       // Using Kind.Arg here because when a Record is used as a Ret, it will be "fixed" to behave like one.
-      out(camelCase(field.name), field.required ? "" : "?", ": ", generateType(spec, field.type, Kind.Arg), ";");
+      out(field.jsName, field.required ? "" : "?", ": ", generateType(spec, field.type, Kind.Arg), ";");
     }
     out(`}`);
   }
 
   out("// Classes");
   for (const cls of spec.classes) {
-    js(`export const {${cls.name}} = bindings("realm.node");`);
-    out(`export class ${cls.name} {`);
+    js(`export const {${cls.jsName}} = bindings("realm.node");`);
+    out(`export class ${cls.jsName} {`);
     out(`private constructor();`);
-    for (const [name, type] of Object.entries(cls.properties)) {
-      out(camelCase(name), ": ", generateType(spec, type, Kind.Ret));
+    for (const prop of cls.properties) {
+      out(prop.jsName, ": ", generateType(spec, prop.type, Kind.Ret));
     }
     for (const meth of cls.methods) {
       out(
         meth.isStatic ? "static" : "",
-        camelCase(meth.unique_name),
+        meth.jsName,
         "(",
         generateArguments(spec, meth.sig.args),
         "):",

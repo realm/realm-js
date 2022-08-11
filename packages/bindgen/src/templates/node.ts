@@ -15,7 +15,6 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import { camelCase, pascalCase } from "change-case";
 import { strict as assert } from "assert";
 
 import { TemplateContext } from "../context";
@@ -31,6 +30,8 @@ import {
   CppCtorProps,
 } from "../cpp";
 import { bindModel, BoundSpec, Type } from "../bound-model";
+
+import '../js_passes'
 
 // Code assumes this is a unique name that is always in scope to refer to the Napi::Env.
 // Callbacks need to ensure this is in scope. Functions taking Env arguments must use this name.
@@ -464,16 +465,15 @@ class NodeCppDecls extends CppDecls {
       const fieldsFrom = [];
       const fieldsTo = [];
       for (const field of struct.fields) {
-        const jsFieldName = camelCase(field.name);
         const cppFieldName = field.name;
-        fieldsFrom.push(`out.Set("${jsFieldName}", ${convertToNode(field.type, `in.${cppFieldName}`)});`);
+        fieldsFrom.push(`out.Set("${field.jsName}", ${convertToNode(field.type, `in.${cppFieldName}`)});`);
         // TODO: consider doing lazy conversion of some types to JS, only if the field is accessed.
         fieldsTo.push(`{
-                    auto field = obj.Get("${jsFieldName}");
+                    auto field = obj.Get("${field.jsName}");
                     if (!field.IsUndefined()) {
                         out.${cppFieldName} = ${convertFromNode(field.type, "field")};
                     } else if constexpr (${field.required ? "true" : "false"}) {
-                        throw Napi::TypeError::New(${env}, "${struct.name}::${jsFieldName} is required");
+                        throw Napi::TypeError::New(${env}, "${struct.name}::${field.jsName} is required");
                     }
                 }`);
       }
@@ -508,24 +508,20 @@ class NodeCppDecls extends CppDecls {
     }
     for (const specClass of spec.classes) {
       // TODO need to do extra work to enable JS implementation of interfaces
-      const jsName = pascalCase(specClass.name);
       const cppClassName = specClass.name;
-      const cls = pushRet(this.classes, new NodeObjectWrap(jsName));
+      const cls = pushRet(this.classes, new NodeObjectWrap(specClass.jsName));
 
       let descriptors: string[] = [];
 
       const self = specClass.needsDeref ? "(*m_val)" : "(m_val)";
-
-      descriptors = [];
 
       if (cppClassName == "Mixed") {
         cls.members.push(new CppVar("std::string", "m_buffer"));
       }
 
       for (const method of specClass.methods) {
-        const jsName = camelCase(method.unique_name);
-        const cppMeth = cls.addMethod(new CppNodeMethod(jsName, { static: method.isStatic }));
-        descriptors.push(`${method.isStatic ? "Static" : "Instance"}Method<&${cppMeth.qualName()}>("${jsName}")`);
+        const cppMeth = cls.addMethod(new CppNodeMethod(method.jsName, { static: method.isStatic }));
+        descriptors.push(`${method.isStatic ? "Static" : "Instance"}Method<&${cppMeth.qualName()}>("${method.jsName}")`);
 
         const args = method.sig.args.map((a, i) => convertFromNode(a.type, `info[${i}]`));
 
@@ -582,11 +578,10 @@ class NodeCppDecls extends CppDecls {
         `;
       }
 
-      for (const [cppPropName, type] of Object.entries(specClass.properties)) {
-        const jsName = camelCase(cppPropName);
-        const cppMeth = cls.addMethod(new CppNodeMethod(jsName));
-        cppMeth.body += `return ${convertToNode(type, `${self}.${cppPropName}()`)};`;
-        descriptors.push(`InstanceAccessor<&${cppMeth.qualName()}>("${jsName}")`);
+      for (const prop of specClass.properties) {
+        const cppMeth = cls.addMethod(new CppNodeMethod(prop.jsName));
+        cppMeth.body += `return ${convertToNode(prop.type, `${self}.${prop.name}()`)};`;
+        descriptors.push(`InstanceAccessor<&${cppMeth.qualName()}>("${prop.jsName}")`);
       }
 
       cls.ctor.body += `
@@ -637,7 +632,7 @@ class NodeCppDecls extends CppDecls {
       cls.addMethod(
         new CppMethod("makeCtor", "Napi::Function", [new CppVar("Napi::Env", env)], {
           static: true,
-          body: `return DefineClass(${env}, "${jsName}", { ${descriptors.map((d) => d + ",").join("\n")} });`,
+          body: `return DefineClass(${env}, "${specClass.jsName}", { ${descriptors.map((d) => d + ",").join("\n")} });`,
         }),
       );
 

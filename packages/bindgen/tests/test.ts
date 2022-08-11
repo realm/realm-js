@@ -75,7 +75,7 @@ realm.commitTransaction();
 for (const obj of table) {
   console.log("---");
   console.log(obj.toString());
-  console.log(obj.getKey());
+  console.log(obj.key);
 
   console.log(obj.getAny(numCol));
   console.log(obj.getAnyByName("num").getInt());
@@ -90,8 +90,8 @@ for (const obj of table) {
 
   if (!obj.isNull(lnkCol)) {
     const dest = obj.getLinkedObject(lnkCol);
-    assert.deepEqual(dest.getKey(), obj2.getKey());
-    console.log(dest.getKey());
+    assert.deepEqual(dest.key, obj2.key);
+    console.log(dest.key);
     console.log(dest.getAnyByName("str"));
   }
 }

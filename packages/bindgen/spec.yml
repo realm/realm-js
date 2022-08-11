@@ -217,10 +217,11 @@ classes:
   TableRef:
     needsDeref: true
     iterable: Obj
+    properties:
+      get_name: StringData
+      get_column_count: count_t
     methods:
-      get_name: () const -> StringData
       is_embedded: () const -> bool
-      get_column_count: () const -> count_t
       get_column_type: '(column: ColKey) const -> DataType'
       get_link_target: '(column: ColKey) const -> TableRef'
       create_object: () -> Obj
@@ -234,11 +235,11 @@ classes:
     properties:
       is_valid: bool
       # TODO some of the get_FOO methods should be properties with a cppName
+      get_table: TableRef
+      get_key: ObjKey
+      get_link: ObjLink
+      get_primary_key: Mixed
     methods:
-      get_table: '() const -> TableRef'
-      get_key: '() const -> ObjKey'
-      get_link: '() const -> ObjLink'
-      get_primary_key: '() const -> Mixed'
       get_any:
         - '(column: ColKey) const -> Mixed'
         - sig: '(column: StringData) const -> Mixed'
@@ -304,9 +305,13 @@ classes:
       # Warning: This requires some special workarounds because it is a view.
       from_string: '(v: StringData)'
 
+    properties:
+      get_type: DataType
+
     methods:
-      get_type: () const -> DataType
       is_type: '(type: DataType) const -> bool' # Not supporting varargs. Could if needed.
+
+      # Intentionally not making these properties since they are fallable converters.
       get_int: '() const -> int64_t'
       get_bool: '() const -> bool'
       get_float: '() const -> float'
@@ -342,10 +347,8 @@ classes:
     properties:
       is_null: bool
       is_unresolved: bool
-
-    methods:
-      get_table_key: () const -> TableKey
-      get_obj_key: () const -> ObjKey
+      get_table_key: TableKey
+      get_obj_key: ObjKey
 
   KeyPathMapping: {}
 
@@ -368,11 +371,11 @@ classes:
     properties:
       is_frozen: bool
       is_valid: bool
+      get_query: Query
+      #get_ordering: const DescriptorOrdering&
+      get_object_type: StringData
+      get_type: PropertyType
     methods:
-      get_query: () const -> Query
-      #get_ordering: () const -> const DescriptorOrdering&
-      get_object_type: () const -> StringData
-      get_type: () const -> PropertyType
       size: () -> count_t
       get: # NOTE: this is actually a template with a defaulted template param.
         - sig: '(index: count_t) -> Obj'
