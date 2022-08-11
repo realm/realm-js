@@ -31,7 +31,7 @@ import {
 } from "../cpp";
 import { bindModel, BoundSpec, Type } from "../bound-model";
 
-import '../js_passes'
+import "../js_passes";
 
 // Code assumes this is a unique name that is always in scope to refer to the Napi::Env.
 // Callbacks need to ensure this is in scope. Functions taking Env arguments must use this name.
@@ -511,7 +511,7 @@ class NodeCppDecls extends CppDecls {
       const cppClassName = specClass.name;
       const cls = pushRet(this.classes, new NodeObjectWrap(specClass.jsName));
 
-      let descriptors: string[] = [];
+      const descriptors: string[] = [];
 
       const self = specClass.needsDeref ? "(*m_val)" : "(m_val)";
 
@@ -521,7 +521,9 @@ class NodeCppDecls extends CppDecls {
 
       for (const method of specClass.methods) {
         const cppMeth = cls.addMethod(new CppNodeMethod(method.jsName, { static: method.isStatic }));
-        descriptors.push(`${method.isStatic ? "Static" : "Instance"}Method<&${cppMeth.qualName()}>("${method.jsName}")`);
+        descriptors.push(
+          `${method.isStatic ? "Static" : "Instance"}Method<&${cppMeth.qualName()}>("${method.jsName}")`,
+        );
 
         const args = method.sig.args.map((a, i) => convertFromNode(a.type, `info[${i}]`));
 

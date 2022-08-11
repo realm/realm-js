@@ -118,17 +118,17 @@ class Constructor extends StaticMethod {
 }
 
 export class Property {
-  constructor(public name: string, public type: Type){}
+  constructor(public name: string, public type: Type) {}
 }
 
 export class NamedType {
   constructor(public name: string) {}
 }
 
-class Class  extends NamedType {
+class Class extends NamedType {
   readonly kind = "Class";
   isInterface = false;
-  properties: Property[] = []
+  properties: Property[] = [];
   methods: Method[] = [];
   sharedPtrWrapped = false;
   needsDeref = false;

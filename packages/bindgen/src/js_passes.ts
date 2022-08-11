@@ -1,46 +1,62 @@
-import {Field, Method, NamedType, Property} from "./bound-model"
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2022 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
+import { Field, Method, NamedType, Property } from "./bound-model";
 import { camelCase, pascalCase } from "change-case";
 
 // Any js-specific data needed on the bound model will live in this file.
 
 declare module "./bound-model" {
   interface Property {
-    readonly jsName: string
+    readonly jsName: string;
   }
   interface Method {
-    readonly jsName: string
+    readonly jsName: string;
   }
   interface NamedType {
-    readonly jsName: string
+    readonly jsName: string;
   }
   interface Field {
-    readonly jsName: string
+    readonly jsName: string;
   }
 }
 
-Object.defineProperty(Property.prototype, 'jsName', {
-  get: function(this: Property) {
+Object.defineProperty(Property.prototype, "jsName", {
+  get: function (this: Property) {
     let name = this.name;
-    if (name.startsWith('get_'))
-      name = name.substring('get_'.length)
+    if (name.startsWith("get_")) name = name.substring("get_".length);
     return camelCase(name);
-  }
+  },
 });
 
-Object.defineProperty(Method.prototype, 'jsName', {
-  get: function(this: Method) {
+Object.defineProperty(Method.prototype, "jsName", {
+  get: function (this: Method) {
     return camelCase(this.unique_name);
-  }
+  },
 });
 
-Object.defineProperty(Field.prototype, 'jsName', {
-  get: function(this: Field) {
+Object.defineProperty(Field.prototype, "jsName", {
+  get: function (this: Field) {
     return camelCase(this.name);
-  }
+  },
 });
 
-Object.defineProperty(NamedType.prototype, 'jsName', {
-  get: function(this: NamedType) {
+Object.defineProperty(NamedType.prototype, "jsName", {
+  get: function (this: NamedType) {
     return pascalCase(this.name);
-  }
+  },
 });
