@@ -597,8 +597,7 @@ struct Unbox<JSEngine, Obj> {
         }
 
         if (Value::is_array(native_accessor->m_ctx, js_object)) {
-            js_object = Schema<JSEngine>::dict_for_property_array(native_accessor->m_ctx,
-                                                                  *native_accessor->m_object_schema, js_object);
+            throw std::runtime_error("Expected an object with property values, not an array");
         }
 
         auto child = realm::Object::create<ValueType>(*native_accessor, native_accessor->m_realm,
