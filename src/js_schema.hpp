@@ -41,7 +41,6 @@ struct Schema {
     using ObjectDefaultsMap = std::map<std::string, ObjectDefaults>;
     using ConstructorMap = std::map<std::string, Protected<FunctionType>>;
 
-    static ObjectType dict_for_property_array(ContextType, const ObjectSchema&, ObjectType);
     static Property parse_property(ContextType, ValueType, StringData, std::string, ObjectDefaults&);
     static ObjectSchema parse_object_schema(ContextType, ObjectType, ObjectDefaultsMap&, ConstructorMap&);
     static realm::Schema parse_schema(ContextType, ObjectType, ObjectDefaultsMap&, ConstructorMap&);
@@ -50,27 +49,6 @@ struct Schema {
     static ObjectType object_for_object_schema(ContextType, const ObjectSchema&);
     static ObjectType object_for_property(ContextType, const Property&);
 };
-
-template <typename T>
-typename T::Object Schema<T>::dict_for_property_array(ContextType ctx, const ObjectSchema& object_schema,
-                                                      ObjectType array)
-{
-    size_t count = object_schema.persisted_properties.size();
-
-    if (count != Object::validated_get_length(ctx, array)) {
-        throw std::runtime_error("Array must contain values for all object properties");
-    }
-
-    ObjectType dict = Object::create_empty(ctx);
-
-    for (uint32_t i = 0; i < count; i++) {
-        ValueType value = Object::get_property(ctx, array, i);
-        Property prop = object_schema.persisted_properties[i];
-        Object::set_property(ctx, dict, !prop.public_name.empty() ? prop.public_name : prop.name, value);
-    }
-
-    return dict;
-}
 
 static inline void parse_property_type(StringData object_name, Property& prop, StringData type)
 {
