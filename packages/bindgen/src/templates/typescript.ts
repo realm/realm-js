@@ -19,7 +19,7 @@
 import { TemplateContext } from "../context";
 import { Arg, bindModel, BoundSpec, Type } from "../bound-model";
 
-import '../js_passes'
+import "../js_passes";
 
 const PRIMITIVES_MAPPING: Record<string, string> = {
   void: "void",
