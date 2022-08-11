@@ -1346,7 +1346,7 @@ void RealmClass<T>::create(ContextType ctx, ObjectType this_object, Arguments& a
 
     ObjectType object = Value::validated_to_object(ctx, args[1], "properties");
     if (Value::is_array(ctx, args[1])) {
-        object = Schema<T>::dict_for_property_array(ctx, object_schema, object);
+        throw std::runtime_error("Expected an object with property values, not an array");
     }
 
     if (Object::template is_instance<RealmObjectClass<T>>(ctx, object)) {
