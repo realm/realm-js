@@ -31,16 +31,16 @@ export type Spec = {
   interfaces: { [name: string]: InterfaceSpec };
 };
 
-export type EnumSpec =
+export type EnumSpec = {
+  cppName?: string;
+  values: { [key: string]: number };
+} & (
+  | { isFlag?: false }
   | {
       isFlag: true;
       flagMask: number;
-      values: { [key: string]: number };
     }
-  | {
-      isFlag?: false;
-      values: { [key: string]: number };
-    };
+);
 
 export type ConstantSpec = {
   type: TypeSpec;
@@ -48,6 +48,7 @@ export type ConstantSpec = {
 };
 
 export type RecordSpec = {
+  cppName?: string;
   fields: { [name: string]: FieldSpec };
 };
 
@@ -59,9 +60,11 @@ export type FieldSpec = {
 export type MethodSpec = {
   sig: FunctionTypeSpec;
   suffix?: string;
+  cppName?: string;
 };
 
 export type ClassSpec = {
+  cppName?: string;
   iterable?: TypeSpec;
   needsDeref: boolean;
   sharedPtrWrapped?: string;
@@ -72,7 +75,7 @@ export type ClassSpec = {
 };
 
 export type InterfaceSpec = {
-  // TODO: Consider removing the staticMethods
+  cppName?: string;
   sharedPtrWrapped?: string;
   staticMethods: { [name: string]: MethodSpec[] };
   methods: { [name: string]: MethodSpec[] };

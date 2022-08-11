@@ -86,7 +86,13 @@ class Template {
 export abstract class Method {
   isConstructor = false;
   abstract isStatic: boolean;
-  constructor(public on: Class, public name: string, public unique_name: string, public sig: Func) {}
+  constructor(
+    public on: Class,
+    public name: string,
+    public unique_name: string,
+    public cppName: string,
+    public sig: Func,
+  ) {}
 
   get id() {
     return `${this.on.name}::${this.unique_name}`;
@@ -98,22 +104,22 @@ export abstract class Method {
 class InstanceMethod extends Method {
   readonly isStatic = false;
   call({ self }: { self: string }, ...args: string[]) {
-    return `${self}.${this.name}(${args})`;
+    return `${self}.${this.cppName}(${args})`;
   }
 }
 class StaticMethod extends Method {
   readonly isStatic = true;
   call(_ignored: { self?: string }, ...args: string[]) {
-    return `${this.on.name}::${this.name}(${args})`;
+    return `${this.on.cppName}::${this.cppName}(${args})`;
   }
 }
 class Constructor extends StaticMethod {
   readonly isConstructor = true;
   constructor(on: Class, name: string, sig: Func) {
-    super(on, name, name, sig);
+    super(on, "", name, "", sig);
   }
   call(_ignored: { self?: string }, ...args: string[]) {
-    return `${this.on.name}(${args})`;
+    return `${this.on.cppName}(${args})`;
   }
 }
 
@@ -127,6 +133,7 @@ export class NamedType {
 
 class Class extends NamedType {
   readonly kind = "Class";
+  cppName!: string;
   isInterface = false;
   properties: Property[] = [];
   methods: Method[] = [];
@@ -151,6 +158,7 @@ export class Field {
 
 class Struct extends NamedType {
   readonly kind = "Struct";
+  cppName!: string;
   fields: Field[] = [];
 
   toString() {
@@ -177,6 +185,7 @@ class Enumerator {
 
 class Enum extends NamedType {
   readonly kind = "Enum";
+  cppName!: string;
   enumerators: Enumerator[] = [];
 
   toString() {
@@ -274,6 +283,7 @@ export function bindModel(spec: Spec): BoundSpec {
             on,
             name,
             overload.suffix ? `${name}_${overload.suffix}` : name,
+            overload.cppName ?? name,
             resolveTypes(overload.sig) as Func,
           ),
         );
@@ -309,9 +319,10 @@ export function bindModel(spec: Spec): BoundSpec {
     }
   }
 
-  for (const [name, { values }] of Object.entries(spec.enums)) {
+  for (const [name, { cppName, values }] of Object.entries(spec.enums)) {
     const enm = addType(name, Enum);
     out.enums.push(enm);
+    enm.cppName = cppName ?? name;
     for (const [name, value] of Object.entries(values)) {
       enm.enumerators.push(new Enumerator(name, value));
     }
@@ -329,8 +340,10 @@ export function bindModel(spec: Spec): BoundSpec {
   }
 
   // Now clean up the Type instances to refer to other Types, rather than just using strings.
-  for (const [name, { fields }] of Object.entries(spec.records)) {
-    (types[name] as Struct).fields = Object.entries(fields).map(
+  for (const [name, { cppName, fields }] of Object.entries(spec.records)) {
+    const struct = types[name] as Struct;
+    struct.cppName = cppName ?? name;
+    struct.fields = Object.entries(fields).map(
       ([name, field]) => new Field(name, resolveTypes(field.type), field.default === undefined),
     );
   }
@@ -338,6 +351,7 @@ export function bindModel(spec: Spec): BoundSpec {
   for (const subtree of ["classes", "interfaces"] as const) {
     for (const [name, raw] of Object.entries(spec[subtree])) {
       const cls = types[name] as Class;
+      cls.cppName = raw.cppName ?? name;
       handleMethods(InstanceMethod, cls, raw.methods);
       handleMethods(StaticMethod, cls, raw.staticMethods);
       if (subtree == "classes") {
