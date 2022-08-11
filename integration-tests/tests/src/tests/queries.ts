@@ -19,25 +19,27 @@ import { expect } from "chai";
 import Realm from "realm";
 
 import { IPerson, Person, PersonSchema } from "../schemas/person-and-dogs";
-import {
-  IPerson as IPersonWithId,
-  Person as PersonWithId,
-  PersonSchema as PersonSchemaWithId,
-} from "../schemas/person-and-dog-with-object-ids";
+import { IContact, Contact, ContactSchema } from "../schemas/contact";
 
 describe("Realm Query Language", () => {
   let realm: Realm;
   let persons: Realm.Results<IPerson>;
+  let contacts: Realm.Results<IContact>;
 
   beforeEach(() => {
     Realm.clearTestState();
-    realm = new Realm({ schema: [PersonSchema] });
+    realm = new Realm({ schema: [PersonSchema, ContactSchema] });
     realm.write(() => {
       const alice = realm.create<IPerson>(PersonSchema.name, { name: "Alice", age: 15 });
       const bob = realm.create<IPerson>(PersonSchema.name, { name: "Bob", age: 14, friends: [alice] });
       realm.create<IPerson>(PersonSchema.name, { name: "Charlie", age: 17, friends: [bob, alice] });
+
+      realm.create<IContact>(ContactSchema.name, { name: "Alice", phones: ["555-1234-567"] });
+      realm.create<IContact>(ContactSchema.name, { name: "Bob", phones: ["555-1122-333", "555-1234-567"] });
+      realm.create<IContact>(ContactSchema.name, { name: "Charlie" });
     });
     persons = realm.objects<IPerson>(PersonSchema.name);
+    contacts = realm.objects<IContact>(ContactSchema.name);
   });
 
   afterEach(() => {
@@ -49,6 +51,13 @@ describe("Realm Query Language", () => {
       expect(persons.length).equal(3);
       expect(persons[0].name).equal("Alice");
       expect(persons[0].age).equal(15);
+    });
+
+    it("array of primitive types", () => {
+      expect(contacts.length).equal(3);
+      expect(contacts[0].phones.length).equal(1);
+      expect(contacts[1].phones.length).equal(2);
+      expect(contacts[2].phones.length).equal(0);
     });
   });
 
@@ -62,6 +71,20 @@ describe("Realm Query Language", () => {
 
       const dennis = persons.filtered("name in {'Dennis'}");
       expect(dennis.length).equal(0);
+    });
+
+    it("array of primitive types", () => {
+      const hasTwoPhones = contacts.filtered("phones.@count = 2");
+      expect(hasTwoPhones.length).equal(1);
+      expect(hasTwoPhones[0].name).equal("Bob");
+
+      expect(contacts.filtered("'555-1234-567' IN phones").length).equal(2);
+      expect(contacts.filtered("'123-4567-890' IN phones").length).equal(0);
+      expect(contacts.filtered("ANY {'555-1234-567', '123-4567-890'} IN phones").length).equal(2);
+      expect(contacts.filtered("ALL {'555-1234-567', '123-4567-890'} IN phones").length).equal(0);
+      expect(contacts.filtered("NONE {'555-1234-567', '123-4567-890'} IN phones").length).equal(3);
+      expect(contacts.filtered("NONE {'555-1122-333', '555-1234-567'} IN phones").length).equal(3);
+      expect(contacts.filtered("ALL {'555-1122-333', '555-1234-567'} IN phones").length).equal(2);
     });
   });
 });
