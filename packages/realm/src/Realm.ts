@@ -18,7 +18,7 @@
 
 import * as binding from "@realm/bindgen";
 
-import { Object as RealmObject } from "./Object";
+import { getInternal, Object as RealmObject } from "./Object";
 import { Results } from "./Results";
 import { transformObjectSchema } from "./schema-utils";
 import { RealmInsertionModel } from "./InsertionModel";
@@ -84,14 +84,55 @@ export class Realm {
     this.internal.close();
   }
 
+  // TODO: Support the third argument (update mode)
+  // TODO: Support embedded objects and asymmetric sync
   create<T = DefaultObject>(type: string, values: RealmInsertionModel<T>): RealmObject<T> & T;
   create<T = DefaultObject>(type: RealmObjectConstructor<T>, values: RealmInsertionModel<T>): RealmObject<T> & T;
   create<T = DefaultObject>(
     type: string | RealmObjectConstructor<T>,
-    values: RealmInsertionModel<T>,
+    values: Record<string, unknown>,
   ): RealmObject<T> & T {
     // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1260-L1321
-    throw new Error("Not yet implemented");
+    if (arguments.length > 2) {
+      throw new Error("Creating objects with update mode specified is not yet supported");
+    }
+    if (values instanceof RealmObject && !getInternal(values)) {
+      throw new Error("Cannot create an object from a detached Realm.Object instance");
+    }
+    this.internal.verifyOpen();
+    const {
+      objectSchema: { tableKey, primaryKey, persistedProperties },
+      converters,
+      createObjectWrapper,
+    } = this.getClass(type);
+
+    // Create the underlying object
+    const table = binding.Helpers.getTable(this.internal, tableKey);
+    let obj: binding.Obj;
+    if (primaryKey) {
+      const primaryKeyValue = values[primaryKey];
+      // TODO: Consider handling an undefined primary key value
+      const pk = converters.get(primaryKey).toMixed(primaryKeyValue);
+      obj = table.createObjectWithPrimaryKey(pk);
+    } else {
+      obj = table.createObject();
+    }
+
+    const result = createObjectWrapper(obj) as unknown as DefaultObject;
+
+    // Persist any values provided
+    // TODO: Consider using the `converters` directly to improve performance
+    for (const property of persistedProperties) {
+      if (property.isPrimary) {
+        continue; // Skip setting this, as we already provided it on object creation
+      }
+      const propertyValue = values[property.name];
+      if (typeof propertyValue !== "undefined" && propertyValue !== null) {
+        result[property.name] = propertyValue;
+      }
+    }
+
+    return result as unknown as RealmObject<T> & T;
   }
 
   delete(): void {
@@ -113,12 +154,11 @@ export class Realm {
     primaryKey: T[keyof T],
   ): RealmObject<T> & T {
     // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1240-L1258
-    const objectSchema = this.findObjectSchema(type);
+    const { objectSchema, converters, createObjectWrapper } = this.getClass(type);
     if (objectSchema.primaryKey === "") {
       throw new Error(`Expected a primary key on "${objectSchema.name}"`);
     }
     const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
-    const { converters, createObjectWrapper } = this.classes.get(typeof type === "string" ? type : type.name);
     const value = converters.get(objectSchema.primaryKey).toMixed(primaryKey);
     try {
       const obj = table.getObjectWithPrimaryKey(value);
@@ -206,13 +246,9 @@ export class Realm {
    * @see https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L465-L508
    * TODO: Memoize this
    */
-  private findObjectSchema(name: string | RealmObjectConstructor<unknown>) {
+  private getClass(name: string | RealmObjectConstructor<unknown>) {
     if (typeof name === "string") {
-      const schema = this.internal.schema.find((schema) => schema.name === name);
-      if (!schema) {
-        throw new Error("Unable to find object schema");
-      }
-      return schema;
+      return this.classes.get(name);
     } else {
       throw new Error("Not yet implemented");
     }
