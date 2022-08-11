@@ -83,7 +83,7 @@ class Template {
   }
 }
 
-abstract class Method {
+export abstract class Method {
   isConstructor = false;
   abstract isStatic: boolean;
   constructor(public on: Class, public name: string, public unique_name: string, public sig: Func) {}
@@ -117,15 +117,22 @@ class Constructor extends StaticMethod {
   }
 }
 
-class Class {
+export class Property {
+  constructor(public name: string, public type: Type){}
+}
+
+export class NamedType {
+  constructor(public name: string) {}
+}
+
+class Class  extends NamedType {
   readonly kind = "Class";
   isInterface = false;
-  properties: Record<string, Type> = {};
+  properties: Property[] = []
   methods: Method[] = [];
   sharedPtrWrapped = false;
   needsDeref = false;
   iterable?: Type;
-  constructor(public name: string) {}
 
   toString() {
     return `class ${this.name}`;
@@ -138,14 +145,13 @@ class Interface extends Class {
   readonly needsDeref = true;
 }
 
-class Field {
+export class Field {
   constructor(public name: string, public type: Type, public required: boolean) {}
 }
 
-class Struct {
+class Struct extends NamedType {
   readonly kind = "Struct";
   fields: Field[] = [];
-  constructor(public name: string) {}
 
   toString() {
     return `struct ${this.name}`;
@@ -161,19 +167,17 @@ class Primitive {
   }
 }
 
-class Opaque {
+class Opaque extends NamedType {
   readonly kind = "Opaque";
-  constructor(public name: string) {}
 }
 
 class Enumerator {
   constructor(public name: string, public value: number) {}
 }
 
-class Enum {
+class Enum extends NamedType {
   readonly kind = "Enum";
   enumerators: Enumerator[] = [];
-  constructor(public name: string) {}
 
   toString() {
     return `enum ${this.name}`;
@@ -355,7 +359,7 @@ export function bindModel(spec: Spec): BoundSpec {
         );
 
         for (const [name, type] of Object.entries(rawCls.properties ?? {})) {
-          cls.properties[name] = resolveTypes(type);
+          cls.properties.push(new Property(name, resolveTypes(type)));
         }
       }
     }
