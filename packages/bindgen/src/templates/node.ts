@@ -159,11 +159,16 @@ function toCpp(type: Type): string {
     case "Template":
       return `${type.name}<${type.args.map(toCpp).join(", ")}>`;
 
-    case "Primitive":
+    case "Struct":
     case "Enum":
     case "Class":
-    case "Struct":
-      return type.name;
+      return type.cppName;
+
+    case "Primitive":
+      const primitiveMap: Record<string, string> = {
+        count_t: "size_t",
+      };
+      return primitiveMap[type.name] ?? type.name;
 
     case "Func":
       // We currently just produce a lambda which has an unutterable type.
@@ -342,7 +347,7 @@ function convertToNode(type: Type, expr: string): string {
 
     case "Enum":
       return `[&]{
-                static_assert(sizeof(${type.name}) <= sizeof(int32_t), "we only support enums up to 32 bits");
+                static_assert(sizeof(${type.cppName}) <= sizeof(int32_t), "we only support enums up to 32 bits");
                 return Napi::Number::New(${env}, int(${expr}));
             }()`;
 
@@ -447,7 +452,7 @@ function convertFromNode(type: Type, expr: string): string {
                 }`;
 
     case "Enum":
-      return `${type.name}((${expr}).As<Napi::Number>().DoubleValue())`;
+      return `${type.cppName}((${expr}).As<Napi::Number>().DoubleValue())`;
 
     default:
       const _exhaustiveCheck: never = type;
@@ -482,7 +487,7 @@ class NodeCppDecls extends CppDecls {
         new CppFunc(
           `NODE_FROM_STRUCT_${struct.name}`,
           "Napi::Value",
-          [new CppVar("Napi::Env", env), new CppVar(struct.name, "in")],
+          [new CppVar("Napi::Env", env), new CppVar(struct.cppName, "in")],
           {
             body: `
                 auto out = Napi::Object::New(${env});
@@ -493,13 +498,13 @@ class NodeCppDecls extends CppDecls {
         ),
       );
       this.free_funcs.push(
-        new CppFunc(`NODE_TO_STRUCT_${struct.name}`, struct.name, [new CppVar("Napi::Value", "val")], {
+        new CppFunc(`NODE_TO_STRUCT_${struct.name}`, struct.cppName, [new CppVar("Napi::Value", "val")], {
           body: `
               auto ${env} = val.Env();
               if (!val.IsObject())
                   throw Napi::TypeError::New(${env}, "expected an object");
               auto obj = val.As<Napi::Object>();
-              auto out = ${struct.name}();
+              auto out = ${struct.cppName}();
               ${fieldsTo.join("")}
               return out;
           `,
@@ -508,14 +513,11 @@ class NodeCppDecls extends CppDecls {
     }
     for (const specClass of spec.classes) {
       // TODO need to do extra work to enable JS implementation of interfaces
-      const cppClassName = specClass.name;
       const cls = pushRet(this.classes, new NodeObjectWrap(specClass.jsName));
-
       const descriptors: string[] = [];
-
       const self = specClass.needsDeref ? "(*m_val)" : "(m_val)";
 
-      if (cppClassName == "Mixed") {
+      if (specClass.name == "Mixed") {
         cls.members.push(new CppVar("std::string", "m_buffer"));
       }
 
@@ -592,40 +594,42 @@ class NodeCppDecls extends CppDecls {
         `;
 
       if (specClass.sharedPtrWrapped) {
-        const ptr = `std::shared_ptr<${cppClassName}>`;
+        const ptr = `std::shared_ptr<${specClass.cppName}>`;
         cls.members.push(new CppVar(ptr, "m_val"));
         cls.ctor.body += `m_val = std::move(*info[0].As<Napi::External<${ptr}>>().Data());`;
         this.free_funcs.push(
-          new CppFunc(`NODE_TO_SHARED_${cppClassName}`, `const ${ptr}&`, [new CppVar("Napi::Value", "val")], {
+          new CppFunc(`NODE_TO_SHARED_${specClass.name}`, `const ${ptr}&`, [new CppVar("Napi::Value", "val")], {
             body: `return ${cls.name}::Unwrap(val.ToObject())->m_val;`,
           }),
         );
         this.free_funcs.push(
           new CppFunc(
-            `NODE_FROM_SHARED_${cppClassName}`,
+            `NODE_FROM_SHARED_${specClass.name}`,
             "Napi::Value",
             [new CppVar("Napi::Env", env), new CppVar(ptr, "ptr")],
             { body: `return ${this.addon.accessCtor(cls)}.New({Napi::External<${ptr}>::New(${env}, &ptr)});` },
           ),
         );
       } else {
-        cls.members.push(new CppVar(cppClassName, "m_val"));
-        cls.ctor.body += `m_val = std::move(*info[0].As<Napi::External<${cppClassName}>>().Data());`;
+        cls.members.push(new CppVar(specClass.cppName, "m_val"));
+        cls.ctor.body += `m_val = std::move(*info[0].As<Napi::External<${specClass.cppName}>>().Data());`;
 
         this.free_funcs.push(
-          new CppFunc(`NODE_TO_CLASS_${cppClassName}`, `${cppClassName}&`, [new CppVar("Napi::Value", "val")], {
+          new CppFunc(`NODE_TO_CLASS_${specClass.name}`, `${specClass.cppName}&`, [new CppVar("Napi::Value", "val")], {
             attributes: "[[maybe_unused]]",
             body: `return ${cls.name}::Unwrap(val.ToObject())->m_val;`,
           }),
         );
         this.free_funcs.push(
           new CppFunc(
-            `NODE_FROM_CLASS_${cppClassName}`,
+            `NODE_FROM_CLASS_${specClass.name}`,
             "Napi::Value",
-            [new CppVar("Napi::Env", env), new CppVar(cppClassName, "val")],
+            [new CppVar("Napi::Env", env), new CppVar(specClass.cppName, "val")],
             {
               attributes: "[[maybe_unused]]",
-              body: `return ${this.addon.accessCtor(cls)}.New({Napi::External<${cppClassName}>::New(${env}, &val)});`,
+              body: `return ${this.addon.accessCtor(cls)}.New({Napi::External<${
+                specClass.cppName
+              }>::New(${env}, &val)});`,
             },
           ),
         );
@@ -669,11 +673,6 @@ export function generateNode({ spec, file: makeFile }: TemplateContext): void {
       namespace realm::js::node {
       namespace {
 
-      // TODO hacks, because we don't yet support defining types with qualified names
-      using Scheduler = util::Scheduler;
-      using KeyPathMapping = query_parser::KeyPathMapping;
-
-
       // TODO move to header or realm-core
       struct Helpers {
           static TableRef get_table(const SharedRealm& realm, StringData name) {
@@ -682,8 +681,8 @@ export function generateNode({ spec, file: makeFile }: TemplateContext): void {
           static TableRef get_table(const SharedRealm& realm, TableKey key) {
               return realm->read_group().get_table(key);
           }
-          static KeyPathMapping get_keypath_mapping(const SharedRealm& realm) {
-              KeyPathMapping mapping;
+          static query_parser::KeyPathMapping get_keypath_mapping(const SharedRealm& realm) {
+              query_parser::KeyPathMapping mapping;
               populate_keypath_mapping(mapping, *realm);
               return mapping;
           }
