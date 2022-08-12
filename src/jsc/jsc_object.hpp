@@ -18,7 +18,10 @@
 
 #pragma once
 
+#include "include/JavaScriptCore/JSObjectRef.h"
 #include "jsc_types.hpp"
+#include <chrono>
+using namespace std::chrono;
 
 namespace realm {
 namespace js {
@@ -175,6 +178,69 @@ inline void jsc::Object::set_internal(JSContextRef ctx, const JSObjectRef& objec
 {
     auto wrap = static_cast<jsc::ObjectWrap<ClassType>*>(JSObjectGetPrivate(object));
     *wrap = ptr;
+
+    JSObjectRef fn = JSObjectMakeFunction(ctx, JSStringCreateWithUTF8CString("__test"), 0, nullptr,
+                                          JSStringCreateWithUTF8CString("void(0);"), nullptr, 1, nullptr);
+
+    JSObjectSetProperty(ctx, object, JSStringCreateWithUTF8CString("__test"), fn, kJSClassAttributeNone, nullptr);
+
+    {
+        auto start = high_resolution_clock::now();
+
+        for (int i = 0; i < 100000; i++) {
+            JSObjectGetPrivate(object);
+        }
+
+        auto stop = high_resolution_clock::now();
+        auto duration = duration_cast<microseconds>(stop - start);
+
+        std::cout << "!!!! GetPrivate: " << duration.count() << std::endl;
+    }
+
+    {
+        auto str = JSStringCreateWithUTF8CString("test");
+        auto start = high_resolution_clock::now();
+
+        for (int i = 0; i < 100000; i++) {
+            JSObjectGetProperty(ctx, object, str, nullptr);
+        }
+
+        auto stop = high_resolution_clock::now();
+        auto duration = duration_cast<microseconds>(stop - start);
+
+        std::cout << "!!!! GetProperty: " << duration.count() << std::endl;
+    }
+
+    {
+        std::map<std::string, int> map{};
+
+        auto start = high_resolution_clock::now();
+
+        for (int i = 0; i < 100000; i++) {
+            map["asd"];
+        }
+
+        auto stop = high_resolution_clock::now();
+        auto duration = duration_cast<microseconds>(stop - start);
+
+        std::cout << "!!!! map: " << duration.count() << std::endl;
+    }
+
+    {
+        JSObjectRef fn_prop =
+            ((JSObjectRef)JSObjectGetProperty(ctx, object, JSStringCreateWithUTF8CString("__test"), nullptr));
+
+        auto start = high_resolution_clock::now();
+
+        for (int i = 0; i < 100000; i++) {
+            JSObjectCallAsFunction(ctx, fn_prop, nullptr, 0, nullptr, nullptr);
+        }
+
+        auto stop = high_resolution_clock::now();
+        auto duration = duration_cast<microseconds>(stop - start);
+
+        std::cout << "!!!! fn: " << duration.count() << std::endl;
+    }
 }
 
 template <>
