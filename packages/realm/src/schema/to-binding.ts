@@ -21,7 +21,7 @@ import {
   Property as BindingProperty,
   PropertyType as BindingPropertyType,
 } from "@realm/bindgen";
-import { COLLECTION_TYPES, PRIMITIVE_TYPES } from "./normalize";
+
 import { CanonicalObjectSchema, CanonicalObjectSchemaProperty, PropertyTypeName } from "./types";
 
 export const TYPE_MAPPINGS: Record<PropertyTypeName, BindingPropertyType> = {
@@ -79,14 +79,21 @@ export function transformPropertySchema(name: string, schema: CanonicalObjectSch
 
 export function transformPropertyType(schema: CanonicalObjectSchemaProperty): BindingPropertyType {
   let type = TYPE_MAPPINGS[schema.type];
+  let isNullable = schema.optional;
   if (schema.objectType) {
     if (schema.objectType in TYPE_MAPPINGS) {
       type |= TYPE_MAPPINGS[schema.objectType as PropertyTypeName];
     } else {
       type |= BindingPropertyType.Object;
+      // Implicitly nullable - will throw if sat
+      isNullable = false;
     }
   }
-  if (schema.optional && !(type & BindingPropertyType.Collection)) {
+  if (schema.type === "object") {
+    // Implicitly nullable - will throw if not sat
+    isNullable = true;
+  }
+  if (isNullable) {
     type |= BindingPropertyType.Nullable;
   }
   return type;
