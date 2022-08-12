@@ -22,7 +22,6 @@ import { inspect } from "util";
 
 import { CanonicalObjectSchema, CanonicalObjectSchemaProperty } from "../schema";
 import { transformPropertySchema, transformObjectSchema } from "../schema/from-binding";
-import { extractGeneric, normalizePropertySchema } from "../schema/normalize";
 
 // TODO: Update these once the binding expose proper types
 type BindingObjectSchema = Realm["schema"][0];
@@ -134,7 +133,7 @@ describe("schema-utils", () => {
             friends: {
               name: "friends",
               type: "list",
-              optional: false,
+              optional: true,
               mapTo: "friends",
               objectType: "Person",
               indexed: false,
@@ -149,41 +148,5 @@ describe("schema-utils", () => {
         expect(schema).deep.equals(expectedSchema);
       });
     }
-  });
-});
-
-describe("normalizePropertySchema", () => {
-  it("transforms a string declaring a string", () => {
-    const result = normalizePropertySchema("prop", "string");
-    expect(result.name).equals("prop");
-    expect(result.type).equals("string");
-  });
-
-  it("transforms a string declaring a list of strings", () => {
-    const result = normalizePropertySchema("prop", "string[]");
-    expect(result.name).equals("prop");
-    expect(result.type).equals("list");
-    expect(result.objectType).equals("string");
-  });
-
-  it("transforms a string declaring a list of class name", () => {
-    const result = normalizePropertySchema("prop", "Person[]");
-    expect(result.name).equals("prop");
-    expect(result.type).equals("list");
-    expect(result.objectType).equals("Person");
-  });
-});
-
-describe("extractGeneric", () => {
-  it("pass through non-generic types", () => {
-    const { typeBase, typeArgument } = extractGeneric("test");
-    expect(typeBase).equals("test");
-    expect(typeArgument).is.undefined;
-  });
-
-  it("extracts a generic type", () => {
-    const { typeBase, typeArgument } = extractGeneric("test<arg>");
-    expect(typeBase).equals("test");
-    expect(typeArgument).equals("arg");
   });
 });
