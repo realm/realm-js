@@ -22,7 +22,7 @@ import { Realm } from "./Realm";
 import { Results } from "./Results";
 import { CanonicalObjectSchema, Constructor, DefaultObject } from "./schema";
 
-const INTERNAL = Symbol.for("Realm.Object#internal");
+const INTERNAL = Symbol("Realm.Object#internal");
 
 export function getInternal(object: InstanceType<Constructor>): binding.Obj {
   return object[INTERNAL];
