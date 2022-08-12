@@ -42,6 +42,10 @@ export const PRIMITIVE_TYPES: PropertyTypeName[] = [
 
 export const COLLECTION_TYPES: PropertyTypeName[] = ["set", "dictionary", "list"];
 
+function removeUndefinedValues<T extends Record<string, unknown>>(obj: T): T {
+  return Object.fromEntries(Object.entries(obj).filter(([_, v]) => typeof v !== "undefined")) as T;
+}
+
 export function normalizeRealmSchema(
   schema: (RealmObjectConstructor<unknown> | ObjectSchema)[],
 ): CanonicalObjectSchema[] {
@@ -69,44 +73,62 @@ export function normalizePropertySchema(
   schema: string | ObjectSchemaProperty,
 ): CanonicalObjectSchemaProperty {
   if (typeof schema === "string") {
-    return normalizePropertySchema(name, { type: schema });
-  } else if (schema.type.endsWith("[]")) {
-    return normalizePropertySchema(name, {
-      ...schema,
-      type: "list",
-      objectType: schema.type.substring(0, schema.type.length - 2),
-    });
-  } else if (schema.type.endsWith("<>")) {
-    return normalizePropertySchema(name, {
-      ...schema,
-      type: "set",
-      objectType: schema.type.substring(0, schema.type.length - 2),
-    });
-  } else if (schema.type.endsWith("{}")) {
-    return normalizePropertySchema(name, {
-      ...schema,
-      type: "dictionary",
-      objectType: schema.type.substring(0, schema.type.length - 2),
-    });
-  } else if (schema.type.endsWith("?")) {
-    return normalizePropertySchema(name, {
-      ...schema,
-      optional: true,
-      type: schema.type.substring(0, schema.type.length - 1),
-    });
-  } else if (schema.type in TYPE_MAPPINGS) {
-    return {
-      name,
-      type: schema.type as PropertyTypeName,
-      mapTo: schema.mapTo || name,
-      objectType: schema.objectType,
-      property: schema.property,
-      indexed: schema.indexed || false,
-      optional: schema.optional || COLLECTION_TYPES.includes(schema.type as PropertyTypeName), // Collection types are always optional
-    };
+    return normalizePropertySchema(name, normalizePropertyType(schema));
   } else {
-    // Any type that is not a recognized short hand nor directly mapable, we consider an object link
-    return normalizePropertySchema(name, { ...schema, type: "object", objectType: schema.type, optional: true });
+    // Type casting, since it is expected that normalizePropertyType moves an object linked type into `objectType`
+    const normalizedType = normalizePropertyType(schema.type) as ObjectSchemaProperty & { type: PropertyTypeName };
+    return {
+      indexed: false,
+      optional: false,
+      mapTo: name, // TODO: Make this optional?
+      ...removeUndefinedValues(schema),
+      ...removeUndefinedValues(normalizedType),
+      name,
+    };
+  }
+}
+
+export function normalizePropertyType(type: string): ObjectSchemaProperty {
+  if (type.endsWith("[]")) {
+    const item = normalizePropertyType(type.substring(0, type.length - 2));
+    if (item.type !== "object" && item.objectType) {
+      throw new Error(`Unexpected nested object type ${item.objectType}`);
+    }
+    return {
+      type: "list",
+      objectType: item.type === "object" ? item.objectType : item.type,
+      optional: item.optional,
+    };
+  } else if (type.endsWith("<>")) {
+    const item = normalizePropertyType(type.substring(0, type.length - 2));
+    if (item.objectType) {
+      throw new Error(`Unexpected nested object type ${item.objectType}`);
+    }
+    return {
+      type: "set",
+      objectType: item.type,
+      optional: item.optional,
+    };
+  } else if (type.endsWith("{}")) {
+    const item = normalizePropertyType(type.substring(0, type.length - 2));
+    if (item.objectType) {
+      throw new Error(`Unexpected nested object type ${item.objectType}`);
+    }
+    return {
+      type: "dictionary",
+      objectType: item.type,
+      optional: item.optional,
+    };
+  } else if (type.endsWith("?")) {
+    return {
+      optional: true,
+      type: type.substring(0, type.length - 1),
+    };
+  } else if (type in TYPE_MAPPINGS) {
+    // This type is directly mappable, so it can't be the name a user defined object schema.
+    return { type };
+  } else {
+    return { type: "object", objectType: type, optional: true };
   }
 }
 
