@@ -20,10 +20,16 @@ import * as binding from "@realm/bindgen";
 
 import { getInternal, Object as RealmObject } from "./Object";
 import { Results } from "./Results";
-import { transformObjectSchema } from "./schema-utils";
+import {
+  fromBindingSchema,
+  toBindingSchema,
+  CanonicalObjectSchema,
+  DefaultObject,
+  RealmObjectConstructor,
+  normalizeRealmSchema,
+} from "./schema";
 import { RealmInsertionModel } from "./InsertionModel";
 import { Configuration } from "./Configuration";
-import { CanonicalObjectSchema, DefaultObject, RealmObjectConstructor } from "./schema-types";
 import { ClassMap } from "./ClassMap";
 
 export class Realm {
@@ -37,6 +43,12 @@ export class Realm {
     this.internal = binding.Realm.getSharedRealm({
       path: config.path || this.getDefaultPath(),
       fifoFilesFallbackPath: this.fifoFilesFallbackPath(),
+      schema: config.schema ? toBindingSchema(normalizeRealmSchema(config.schema)) : undefined,
+      schemaVersion: config.schema
+        ? typeof config.schemaVersion === "number"
+          ? BigInt(config.schemaVersion)
+          : 0n
+        : undefined,
     });
     // Generate property type converters for every object schema
     this.classes = new ClassMap(this, this.internal.schema);
@@ -57,7 +69,7 @@ export class Realm {
   }
 
   get schema(): CanonicalObjectSchema[] {
-    return this.internal.schema.map(transformObjectSchema);
+    return fromBindingSchema(this.internal.schema);
   }
 
   get schemaVersion(): number {

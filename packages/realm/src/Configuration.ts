@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { ObjectSchema, RealmObjectConstructor } from "./schema-types";
+import { ObjectSchema, RealmObjectConstructor } from "./schema";
 
 // export type Configuration = ConfigurationWithSync | ConfigurationWithoutSync;
 export type Configuration = BaseConfiguration;
@@ -24,6 +24,7 @@ export type Configuration = BaseConfiguration;
 type BaseConfiguration = {
   path?: string;
   schema?: (RealmObjectConstructor<any> | ObjectSchema)[];
+  schemaVersion?: number;
 };
 
 // type ConfigurationWithSync = BaseConfiguration & {
