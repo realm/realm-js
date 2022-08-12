@@ -44,7 +44,20 @@ function createConverters(
   // TODO: Support collections
   const collectionType = property.type & binding.PropertyType.Collection;
   if (collectionType === binding.PropertyType.Array) {
-    throw new Error("Lists are not yet supported!");
+    return {
+      toMixed(value) {
+        throw new Error("Lists are not yet supported!");
+      },
+      fromMixed(value) {
+        throw new Error("Lists are not yet supported!");
+      },
+      get(obj) {
+        throw new Error("Lists are not yet supported!");
+      },
+      set(obj, value) {
+        throw new Error("Lists are not yet supported!");
+      },
+    };
   } else if (collectionType === binding.PropertyType.Set) {
     throw new Error("Sets are not yet supported!");
   } else if (collectionType === binding.PropertyType.Dictionary) {
