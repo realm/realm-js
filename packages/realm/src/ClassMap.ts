@@ -22,7 +22,7 @@ import { ConverterMap, ObjectWrapCreator } from "./ConverterMap";
 import { Realm } from "./Realm";
 import { createObjectWrapper as createObjectWrapperImpl, getInternal } from "./Object";
 
-import { Constructor, DefaultObject } from "./schema-types";
+import { Constructor } from "./schema";
 
 function createNamedConstructor(name: string): Constructor {
   const obj = {

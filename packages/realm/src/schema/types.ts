@@ -16,10 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Object as RealmObject } from "./Object";
+import { Object as RealmObject } from "../Object";
 
-export type PropertyType =
-  | string
+export type PropertyTypeName =
   | "bool"
   | "int"
   | "float"
@@ -30,7 +29,14 @@ export type PropertyType =
   | "data"
   | "date"
   | "list"
-  | "linkingObjects";
+  | "linkingObjects"
+  | "mixed"
+  | "uuid"
+  | "dictionary"
+  | "set"
+  | "object";
+
+export type PropertyType = string | PropertyTypeName;
 
 /**
  * The canonical representation of the schema of a specific type of object.
@@ -48,10 +54,10 @@ export type CanonicalObjectSchema<T = { [name: string]: unknown }> = {
  */
 export type CanonicalObjectSchemaProperty = {
   name: string;
-  type: PropertyType;
+  type: PropertyTypeName;
   optional: boolean;
   indexed: boolean;
-  mapTo: string;
+  mapTo: string; // TODO: Make this optional and leave it out when it equals the name
   objectType?: string;
   property?: string;
 };

@@ -20,7 +20,7 @@ import * as binding from "@realm/bindgen";
 import { Realm } from "./Realm";
 
 import { Results } from "./Results";
-import { CanonicalObjectSchema, Constructor, DefaultObject } from "./schema-types";
+import { CanonicalObjectSchema, Constructor, DefaultObject } from "./schema";
 
 const INTERNAL = Symbol.for("Realm.Object#internal");
 

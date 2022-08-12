@@ -16,27 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { ObjectSchema as BindingObjectSchema, Property as BindingProperty, PropertyType } from "@realm/bindgen";
-import { CanonicalObjectSchema, CanonicalObjectSchemaProperty } from "./schema-types";
+import { Realm, PropertyType } from "@realm/bindgen";
 
-export type PropertyTypeNames =
-  | "bool"
-  | "int"
-  | "float"
-  | "double"
-  | "decimal128"
-  | "objectId"
-  | "string"
-  | "data"
-  | "date"
-  | "list"
-  | "linkingObjects"
-  | "mixed"
-  | "uuid"
-  | "dictionary"
-  | "set";
+// TODO: Update these once the binding expose proper types
+type BindingObjectSchema = Realm["schema"][0];
+type BindingProperty = Realm["schema"][0]["persistedProperties"][0];
 
-const TYPE_MAPPINGS: Record<PropertyType, PropertyTypeNames | null> = {
+import { CanonicalObjectSchema, CanonicalObjectSchemaProperty, PropertyTypeName } from "./types";
+
+const TYPE_MAPPINGS: Record<PropertyType, PropertyTypeName | null> = {
   [PropertyType.Int]: "int",
   [PropertyType.Bool]: "bool",
   [PropertyType.String]: "string",
@@ -69,8 +57,8 @@ const COLLECTION_TYPES = [PropertyType.Array, PropertyType.Set, PropertyType.Dic
  */
 export function transformObjectSchema({
   name,
-  computedProperties = [],
-  persistedProperties = [],
+  computedProperties,
+  persistedProperties,
 }: BindingObjectSchema): CanonicalObjectSchema {
   return {
     name,
@@ -92,7 +80,7 @@ export function transformPropertySchema(propertySchema: BindingProperty): Canoni
   const { name, isIndexed, publicName } = propertySchema;
   const result = {
     name,
-    indexed: isIndexed || false,
+    indexed: isIndexed,
     mapTo: publicName ? publicName : name,
     ...transformPropertyTypeName(propertySchema),
   };
@@ -117,7 +105,11 @@ function transformPropertyTypeName(
   for (const collectionType of COLLECTION_TYPES) {
     if (type & collectionType) {
       const item = transformPropertyTypeName({ ...propertySchema, type: type ^ collectionType });
-      return { optional: item.optional, objectType: item.type, type: "list" };
+      return {
+        type: TYPE_MAPPINGS[collectionType] as PropertyTypeName,
+        objectType: item.type === "object" ? item.objectType : item.type,
+        optional: item.optional,
+      };
     }
   }
 
@@ -125,7 +117,8 @@ function transformPropertyTypeName(
     if (!objectType) {
       throw new Error("Expected property with 'object' type to declare an objectType");
     }
-    return { type: objectType, optional: false };
+    // TODO: Decide if this change is resonable
+    return { type: "object", objectType, optional: false };
   } else if (type === PropertyType.LinkingObjects) {
     if (!objectType) {
       throw new Error("Expected property with 'object' type to declare an objectType");
@@ -139,4 +132,8 @@ function transformPropertyTypeName(
   } else {
     throw new Error(`Unexpected type '${type}'`);
   }
+}
+
+export function transformRealmSchema(schema: Readonly<BindingObjectSchema[]>): CanonicalObjectSchema[] {
+  return schema.map(transformObjectSchema);
 }

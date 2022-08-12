@@ -19,7 +19,7 @@
 import * as binding from "@realm/bindgen";
 
 import { Object as RealmObject, getInternal } from "./Object";
-import { DefaultObject } from "./schema-types";
+import { DefaultObject } from "./schema";
 
 export type ObjectWrapCreator<T = DefaultObject> = (obj: binding.Obj) => RealmObject<T>;
 
@@ -34,16 +34,22 @@ function extractBaseType(type: binding.PropertyType) {
   return type & ~binding.PropertyType.Flags;
 }
 
-/**
- * @param property The property to create converters for
- * @returns
- */
+// TODO: Support converting all types
 function createConverters(
   property: binding.Realm["schema"][0]["persistedProperties"][0],
   createObjectWrapper: ObjectWrapCreator,
 ): Converters {
   const type = extractBaseType(property.type);
   const { columnKey } = property;
+  // TODO: Support collections
+  const collectionType = property.type & binding.PropertyType.Collection;
+  if (collectionType === binding.PropertyType.Array) {
+    throw new Error("Lists are not yet supported!");
+  } else if (collectionType === binding.PropertyType.Set) {
+    throw new Error("Sets are not yet supported!");
+  } else if (collectionType === binding.PropertyType.Dictionary) {
+    throw new Error("Dictionaries are not yet supported!");
+  }
   if (type === binding.PropertyType.String) {
     return {
       toMixed(value) {
