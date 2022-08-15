@@ -32,7 +32,7 @@ export function setInternal(object: InstanceType<Constructor>, internal: binding
   object[INTERNAL] = internal;
 }
 
-export function createObjectWrapper(realm: Realm, constructor: Constructor, internal: binding.Obj) {
+export function createWrapper(realm: Realm, constructor: Constructor, internal: binding.Obj) {
   const result = Object.create(constructor.prototype);
   result.realm = realm;
   result[INTERNAL] = internal;
