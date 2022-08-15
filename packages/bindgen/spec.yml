@@ -464,8 +464,6 @@ classes:
 
       close: ()
 
-      file_format_upgraded_from_version: () const -> util::Optional<int>
-
 interfaces:
   Scheduler:
     cppName: util::Scheduler
