@@ -18,6 +18,7 @@
 
 import { expect, assert } from "chai";
 import path from "path";
+import fs from "fs";
 
 import { Realm } from "../index";
 import { Results } from "../Results";
@@ -52,30 +53,34 @@ describe("Milestone #2", () => {
   describe("Opening default local Realm", () => {
     it("can read schema from disk", () => {
       const realm = new Realm({ path: SIMPLE_REALM_PATH });
-      const schema = realm.schema;
-      const expectedSchema: CanonicalObjectSchema[] = [
-        {
-          name: "Person",
-          properties: {
-            name: {
-              name: "name",
-              type: "string",
-              optional: false,
-              indexed: true,
-              mapTo: "name",
-            },
-            bestFriend: {
-              indexed: false,
-              mapTo: "bestFriend",
-              name: "bestFriend",
-              optional: true,
-              type: "object",
-              objectType: "Person",
+      try {
+        const schema = realm.schema;
+        const expectedSchema: CanonicalObjectSchema[] = [
+          {
+            name: "Person",
+            properties: {
+              name: {
+                name: "name",
+                type: "string",
+                optional: false,
+                indexed: true,
+                mapTo: "name",
+              },
+              bestFriend: {
+                indexed: false,
+                mapTo: "bestFriend",
+                name: "bestFriend",
+                optional: true,
+                type: "object",
+                objectType: "Person",
+              },
             },
           },
-        },
-      ];
-      expect(schema).deep.equals(expectedSchema);
+        ];
+        expect(schema).deep.equals(expectedSchema);
+      } finally {
+        realm.close();
+      }
     });
   });
 
@@ -153,7 +158,10 @@ describe("Milestone #2", () => {
 
   describe("Create a new object, specifying property values", () => {
     before(function (this: RealmContext) {
-      this.realm = new Realm({ path: SIMPLE_REALM_PATH });
+      // Start from the simple file to avoid populating a schema nor updating the file
+      const path = generateTempRealmPath();
+      fs.copyFileSync(SIMPLE_REALM_PATH, path);
+      this.realm = new Realm({ path });
     });
     after(closeRealm);
 
@@ -231,8 +239,13 @@ describe("Milestone #2", () => {
       const persons = this.realm.objects("Person");
       expect(persons).instanceOf(Results);
       expect(persons.length).greaterThan(0);
+      expect(persons.length).equals([...persons.keys()].length);
       const alice = persons.find((p) => p.name === "Alice");
+      if (!alice) {
+        throw new Error("Expected an object");
+      }
       expect(alice).instanceOf(Realm.Object);
+      expect(alice.name).equals("Alice");
     });
   });
 });
