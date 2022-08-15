@@ -20,7 +20,6 @@ x.x.x Release notes (yyyy-MM-dd)
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Updated ccache build scripts to be location agnostic([#4764](https://github.com/realm/realm-js/pull/4764))
 * Upgraded Realm Core from v12.3.0 to v12.4.0. ([#4753](https://github.com/realm/realm-js/issues/4753)
 * Upgraded React Native integration tests app to React Native v0.68.2. ([#4583](https://github.com/realm/realm-js/pull/4583))
 * Upgrading `react-native-fs` to avoid a peer dependency failure. ([#4709](https://github.com/realm/realm-js/pull/4709))
@@ -29,7 +28,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Fixed a crash on Android when an error was thrown from the flexible sync `initialSubscriptions` call. ([#4710](https://github.com/realm/realm-js/pull/4710), since v10.18.0)
 * Added a default sync logger for integration tests. ([#4730](https://github.com/realm/realm-js/pull/4730))
 * Fixed an issue starting the integration test runner on iOS. ([#4742](https://github.com/realm/realm-js/pull/4742]))
-* Migrated to `std::optional` and `std::nullopt`.
+* Migrated to `std::optional` and `std::nullopt`. 
 
 10.19.5 Release notes (2022-7-6)
 =============================================================
