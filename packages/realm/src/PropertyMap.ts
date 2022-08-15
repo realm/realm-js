@@ -21,9 +21,9 @@ import * as binding from "@realm/bindgen";
 import { Object as RealmObject, getInternal } from "./Object";
 import { DefaultObject } from "./schema";
 
-export type ObjectWrapCreator<T = DefaultObject> = (obj: binding.Obj) => RealmObject<T>;
+export type ObjectWrapCreator<T = DefaultObject> = (obj: binding.Obj) => RealmObject<T> & T;
 
-type Converters = {
+type PropertyHelpers = {
   toMixed: (value: unknown) => binding.Mixed;
   fromMixed: (value: binding.Mixed) => unknown;
   get: (obj: binding.Obj) => unknown;
@@ -35,10 +35,10 @@ function extractBaseType(type: binding.PropertyType) {
 }
 
 // TODO: Support converting all types
-function createConverters(
+function createHelpers<T>(
   property: binding.Realm["schema"][0]["persistedProperties"][0],
-  createObjectWrapper: ObjectWrapCreator,
-): Converters {
+  createObjectWrapper: ObjectWrapCreator<T>,
+): PropertyHelpers {
   const type = extractBaseType(property.type);
   const { columnKey } = property;
   // TODO: Support collections
@@ -114,31 +114,43 @@ function createConverters(
   }
 }
 
-export class ConverterMap {
-  private mapping: Record<string, Converters>;
+export class PropertyMap<T = DefaultObject> {
+  private mapping: Record<string, PropertyHelpers>;
+  private nameByColumnKey: Record<number, string>;
 
   /**
    * @param objectSchema
    * TODO: Refactor this to use the binding.ObjectSchema type once the DeepRequired gets removed from types
    */
-  constructor(objectSchema: binding.Realm["schema"][0], createObjectWrapper: ObjectWrapCreator) {
+  constructor(objectSchema: binding.Realm["schema"][0], createObjectWrapper: ObjectWrapCreator<T>) {
     if (objectSchema.computedProperties.length > 0) {
       throw new Error("Computed properties are not yet supported");
     }
     this.mapping = Object.fromEntries(
       objectSchema.persistedProperties.map((p) => {
-        const converter = createConverters(p, createObjectWrapper);
-        // Binding the methods, making them spreadable from the converter
-        converter.toMixed = converter.toMixed.bind(converter);
-        converter.fromMixed = converter.fromMixed.bind(converter);
-        converter.get = converter.get.bind(converter);
-        converter.set = converter.set.bind(converter);
-        return [p.name, converter];
+        const helpers = createHelpers(p, createObjectWrapper);
+        // Binding the methods, making the object spreadable
+        helpers.toMixed = helpers.toMixed.bind(helpers);
+        helpers.fromMixed = helpers.fromMixed.bind(helpers);
+        helpers.get = helpers.get.bind(helpers);
+        helpers.set = helpers.set.bind(helpers);
+        return [p.name, helpers];
       }),
+    );
+    this.nameByColumnKey = Object.fromEntries(
+      objectSchema.persistedProperties.map((p) => [Number(p.columnKey.value), p.publicName || p.name]),
     );
   }
 
-  public get(property: string): Converters {
+  public get(property: string): PropertyHelpers {
     return this.mapping[property];
+  }
+
+  public getName<T>(columnKey: binding.ColKey): keyof T {
+    if (columnKey.value) {
+      return this.nameByColumnKey[Number(columnKey.value)] as keyof T;
+    } else {
+      throw new Error("Expected a value on columnKey");
+    }
   }
 }
