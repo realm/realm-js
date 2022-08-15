@@ -3,38 +3,38 @@
 <!-- TOC generated with https://github.com/ekalinin/github-markdown-toc : gh-md-toc --insert --no-backup --hide-footer contrib/building.md -->
 
 <!--ts-->
-* [Building Realm JS](#building-realm-js)
-   * [Pre-Requisites](#pre-requisites)
-      * [Setup instructions for MacOS](#setup-instructions-for-macos)
-         * [All platforms](#all-platforms)
-         * [iOS](#ios)
-         * [Android](#android)
-         * [Optional extras](#optional-extras)
-            * [ccache](#ccache)
-   * [Cloning the repository](#cloning-the-repository)
-      * [Cloning the repository on Windows](#cloning-the-repository-on-windows)
-      * [Visual Studio Code setup](#visual-studio-code-setup)
-         * [TypeScript](#typescript)
-         * [C++](#c)
-   * [Building Realm JS](#building-realm-js-1)
-      * [Building for iOS](#building-for-ios)
-      * [Building for Android](#building-for-android)
-      * [Building for Node.js](#building-for-nodejs)
-         * [Additional steps for Windows](#additional-steps-for-windows)
-      * [Building the documentation](#building-the-documentation)
-   * [Installing the project's sub-packages](#installing-the-projects-sub-packages)
-   * [Running the tests](#running-the-tests)
-      * [Modern tests](#modern-tests)
-      * [Legacy tests](#legacy-tests)
-      * [Linting the source code](#linting-the-source-code)
-         * [JS](#js)
-         * [C++](#c-1)
-         * [Testing on Windows](#testing-on-windows)
-         * [Node version setup](#node-version-setup)
-   * [Testing against real apps](#testing-against-real-apps)
-   * [Debugging](#debugging)
-      * [Debugging failing Github Actions CI tests](#debugging-failing-github-actions-ci-tests)
-   * [Updating the Android JNI headers](#updating-the-android-jni-headers)
+- [Building Realm JS](#building-realm-js)
+  - [Pre-Requisites](#pre-requisites)
+    - [Setup instructions for MacOS](#setup-instructions-for-macos)
+      - [All platforms](#all-platforms)
+      - [iOS](#ios)
+      - [Android](#android)
+      - [Optional extras](#optional-extras)
+        - [ccache](#ccache)
+  - [Cloning the repository](#cloning-the-repository)
+    - [Cloning the repository on Windows](#cloning-the-repository-on-windows)
+    - [Visual Studio Code setup](#visual-studio-code-setup)
+      - [TypeScript](#typescript)
+      - [C++](#c)
+  - [Building Realm JS](#building-realm-js-1)
+    - [Building for iOS](#building-for-ios)
+    - [Building for Android](#building-for-android)
+    - [Building for Node.js](#building-for-nodejs)
+      - [Additional steps for Windows](#additional-steps-for-windows)
+    - [Building the documentation](#building-the-documentation)
+  - [Installing the project's sub-packages](#installing-the-projects-sub-packages)
+  - [Running the tests](#running-the-tests)
+    - [Modern tests](#modern-tests)
+    - [Legacy tests](#legacy-tests)
+    - [Linting the source code](#linting-the-source-code)
+      - [JS](#js)
+      - [C++](#c-1)
+      - [Testing on Windows](#testing-on-windows)
+      - [Node version setup](#node-version-setup)
+  - [Testing against real apps](#testing-against-real-apps)
+  - [Debugging](#debugging)
+    - [Debugging failing Github Actions CI tests](#debugging-failing-github-actions-ci-tests)
+  - [Updating the Android JNI headers](#updating-the-android-jni-headers)
 <!--te-->
 
 ## Pre-Requisites
@@ -134,8 +134,11 @@ To improve compilation speed. you can use [ccache](https://ccache.dev/):
 # Install ccache
 brew install ccache
 
+# check path of ccache
+which ccache
+
 # Export the ccache variants of compilation tools
-export PATH=/usr/local/opt/ccache/libexec:$PATH
+export PATH=<ccache location>/libexec:$PATH
 ```
 
 ## Cloning the repository
