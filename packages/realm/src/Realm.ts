@@ -31,16 +31,23 @@ import {
 import { RealmInsertionModel } from "./InsertionModel";
 import { Configuration } from "./Configuration";
 import { ClassMap } from "./ClassMap";
+import { List } from "./List";
+
+const INTERNAL = Symbol("Realm.Realm#internal");
+
+export function getInternal(object: Realm): binding.Realm {
+  return object[INTERNAL];
+}
 
 export class Realm {
   public static Object = RealmObject;
   public static Results = Results;
 
-  private internal: binding.Realm;
+  private [INTERNAL]!: binding.Realm;
   private classes: ClassMap;
 
   constructor(config: Configuration = {}) {
-    this.internal = binding.Realm.getSharedRealm({
+    const internal = binding.Realm.getSharedRealm({
       path: config.path || this.getDefaultPath(),
       fifoFilesFallbackPath: this.fifoFilesFallbackPath(),
       schema: config.schema ? toBindingSchema(normalizeRealmSchema(config.schema)) : undefined,
@@ -50,8 +57,21 @@ export class Realm {
           : 0n
         : undefined,
     });
-    // Generate property type converters for every object schema
-    this.classes = new ClassMap(this, this.internal.schema);
+    this.classes = new ClassMap(this, internal.schema);
+
+    Object.defineProperties(this, {
+      [INTERNAL]: {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: internal,
+      },
+      classes: {
+        enumerable: false,
+        configurable: false,
+        writable: true,
+      },
+    });
   }
 
   get empty(): boolean {
@@ -60,7 +80,7 @@ export class Realm {
   }
 
   get path(): string {
-    return this.internal.config.path;
+    return this[INTERNAL].config.path;
   }
 
   get readOnly(): boolean {
@@ -69,19 +89,19 @@ export class Realm {
   }
 
   get schema(): CanonicalObjectSchema[] {
-    return fromBindingSchema(this.internal.schema);
+    return fromBindingSchema(this[INTERNAL].schema);
   }
 
   get schemaVersion(): number {
-    return Number(this.internal.schemaVersion);
+    return Number(this[INTERNAL].schemaVersion);
   }
 
   get isInTransaction(): boolean {
-    return this.internal.isInTransaction;
+    return this[INTERNAL].isInTransaction;
   }
 
   get isClosed(): boolean {
-    return this.internal.isClosed;
+    return this[INTERNAL].isClosed;
   }
 
   get syncSession(): any {
@@ -93,7 +113,7 @@ export class Realm {
   }
 
   close(): void {
-    this.internal.close();
+    this[INTERNAL].close();
   }
 
   // TODO: Support the third argument (update mode)
@@ -111,20 +131,20 @@ export class Realm {
     if (values instanceof RealmObject && !getObjectInternal(values)) {
       throw new Error("Cannot create an object from a detached Realm.Object instance");
     }
-    this.internal.verifyOpen();
+    this[INTERNAL].verifyOpen();
     const {
       objectSchema: { tableKey, primaryKey, persistedProperties },
-      converters,
+      properties,
       createObjectWrapper,
-    } = this.classes.get(type);
+    } = this.classes.getHelpers(type);
 
     // Create the underlying object
-    const table = binding.Helpers.getTable(this.internal, tableKey);
+    const table = binding.Helpers.getTable(this[INTERNAL], tableKey);
     let obj: binding.Obj;
     if (primaryKey) {
       const primaryKeyValue = values[primaryKey];
       // TODO: Consider handling an undefined primary key value
-      const pk = converters.get(primaryKey).toMixed(primaryKeyValue);
+      const pk = properties.get(primaryKey).toMixed(primaryKeyValue);
       obj = table.createObjectWithPrimaryKey(pk);
     } else {
       obj = table.createObject();
@@ -147,8 +167,15 @@ export class Realm {
     return result as unknown as RealmObject<T> & T;
   }
 
-  delete(): void {
-    throw new Error("Not yet implemented");
+  delete<T>(subject: (RealmObject<T> & T) | RealmObject[] | List<T> | Results<T>): void {
+    if (subject instanceof RealmObject) {
+      const { objectSchema } = this.classes.getHelpers(subject);
+      const obj = getObjectInternal(subject);
+      const table = binding.Helpers.getTable(this[INTERNAL], objectSchema.tableKey);
+      table.removeObject(obj.key);
+    } else {
+      throw new Error("Not yet implemented");
+    }
   }
 
   deleteModel(): void {
@@ -161,20 +188,17 @@ export class Realm {
 
   objectForPrimaryKey<T = DefaultObject>(type: string, primaryKey: T[keyof T]): RealmObject<T> & T;
   objectForPrimaryKey<T = DefaultObject>(type: RealmObjectConstructor<T>, primaryKey: T[keyof T]): RealmObject<T> & T;
-  objectForPrimaryKey<T = DefaultObject>(
-    type: string | RealmObjectConstructor<T>,
-    primaryKey: T[keyof T],
-  ): RealmObject<T> & T {
+  objectForPrimaryKey<T>(type: string | RealmObjectConstructor<T>, primaryKey: T[keyof T]): RealmObject<T> & T {
     // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1240-L1258
-    const { objectSchema, converters, createObjectWrapper } = this.classes.get(type);
+    const { objectSchema, properties, createObjectWrapper } = this.classes.getHelpers<T>(type);
     if (objectSchema.primaryKey === "") {
       throw new Error(`Expected a primary key on "${objectSchema.name}"`);
     }
-    const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
-    const value = converters.get(objectSchema.primaryKey).toMixed(primaryKey);
+    const table = binding.Helpers.getTable(this[INTERNAL], objectSchema.tableKey);
+    const value = properties.get(objectSchema.primaryKey).toMixed(primaryKey);
     try {
       const obj = table.getObjectWithPrimaryKey(value);
-      return createObjectWrapper(obj) as RealmObject<T> & T;
+      return createObjectWrapper(obj);
     } catch (err) {
       // TODO: Match on something else than the error message, when exposed by the binding
       if (err instanceof Error && err.message.startsWith("No object with key")) {
@@ -188,15 +212,15 @@ export class Realm {
   objects<T = DefaultObject>(type: string): Results<T>;
   objects<T = DefaultObject>(type: RealmObjectConstructor<T>): Results<T>;
   objects<T = DefaultObject>(type: string | RealmObjectConstructor<T>): Results<T> {
-    const { objectSchema, createObjectWrapper } = this.classes.get(type);
+    const { objectSchema, createObjectWrapper } = this.classes.getHelpers(type);
     if (objectSchema.tableType === binding.TableType.Embedded) {
       throw new Error("You cannot query an embedded object.");
     } else if (objectSchema.tableType === binding.TableType.TopLevelAsymmetric) {
       throw new Error("You cannot query an asymmetric class.");
     }
 
-    const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
-    const results = binding.Results.fromTable(this.internal, table);
+    const table = binding.Helpers.getTable(this[INTERNAL], objectSchema.tableKey);
+    const results = binding.Results.fromTable(this[INTERNAL], table);
     return createResultsWrapper(results, (results, index) => {
       const obj = results.getObj(index);
       return createObjectWrapper(obj);
@@ -217,26 +241,26 @@ export class Realm {
 
   write<T>(callback: () => T): T {
     try {
-      this.internal.beginTransaction();
+      this[INTERNAL].beginTransaction();
       const result = callback();
-      this.internal.commitTransaction();
+      this[INTERNAL].commitTransaction();
       return result;
     } catch (err) {
-      this.internal.cancelTransaction();
+      this[INTERNAL].cancelTransaction();
       throw err;
     }
   }
 
   beginTransaction(): void {
-    this.internal.beginTransaction();
+    this[INTERNAL].beginTransaction();
   }
 
   commitTransaction(): void {
-    this.internal.commitTransaction();
+    this[INTERNAL].commitTransaction();
   }
 
   cancelTransaction(): void {
-    this.internal.cancelTransaction();
+    this[INTERNAL].cancelTransaction();
   }
 
   compact(): boolean {
