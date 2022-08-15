@@ -20,9 +20,9 @@ import * as binding from "@realm/bindgen";
 
 import { ConverterMap, ObjectWrapCreator } from "./ConverterMap";
 import { Realm } from "./Realm";
-import { createObjectWrapper as createObjectWrapperImpl, getInternal } from "./Object";
+import { createWrapper as createObjectWrapperImpl, getInternal } from "./Object";
 
-import { Constructor } from "./schema";
+import { Constructor, RealmObjectConstructor } from "./schema";
 
 function createNamedConstructor(name: string): Constructor {
   const obj = {
@@ -100,7 +100,11 @@ export class ClassMap {
     );
   }
 
-  public get(name: string): ClassItem {
-    return this.mapping[name];
+  public get(name: string | RealmObjectConstructor<unknown>): ClassItem {
+    if (typeof name === "string") {
+      return this.mapping[name];
+    } else {
+      throw new Error("Not yet implemented");
+    }
   }
 }

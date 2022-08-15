@@ -18,5 +18,5 @@
 
 export * from "./Realm";
 export * from "./Configuration";
-export * from "./Results";
-export * from "./Object";
+export { Results } from "./Results";
+export { Object } from "./Object";
