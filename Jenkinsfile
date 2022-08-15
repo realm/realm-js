@@ -499,6 +499,7 @@ def testMacOS(target, postStep = null) {
     node('osx_vegas') {
       withEnv(['SDK_ROOT_OVERRIDE=/Applications/Xcode-13.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/',
                'DEVELOPER_DIR_OVERRIDE=/Applications/Xcode-13.app',
+               'DEVELOPER_DIR=/Applications/Xcode-13.app/Contents/Developer',
                'REALM_SET_NVM_ALIAS=1',
                'REALM_DISABLE_SYNC_TESTS=1',
                'npm_config_realm_local_prebuilds=prebuilds']) {
