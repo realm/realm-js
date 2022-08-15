@@ -12,7 +12,6 @@
   },
   "scripts": {
     "prepack": "npm run build",
-    "prepare": "npm run update-types",
     "update-types": "ts-node --project scripts/tsconfig.json scripts/update-types.ts",
     "generate-types": "tsc --project src/dom/tsconfig.json --declaration --emitDeclarationOnly --declarationDir types/generated",
     "build": "npm run generate-types && rollup --config",
@@ -47,7 +46,7 @@
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
     "@realm.io/common": "^0.1.4",
-    "bson": "^4.5.4",
+    "bson": "^4.6.3",
     "detect-browser": "^5.2.1",
     "js-base64": "^3.7.2"
   },
@@ -64,7 +63,7 @@
     "@types/fs-extra": "^8.1.0",
     "@types/js-base64": "^3.3.1",
     "@types/mocha": "^7.0.1",
-    "@types/node": "^13.7.6",
+    "@types/node": "^16",
     "abort-controller": "^3.0.0",
     "chai": "^4.2.0",
     "fs-extra": "^10.0.0",

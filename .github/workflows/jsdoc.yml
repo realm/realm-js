@@ -25,10 +25,8 @@ jobs:
           submodules: "recursive"
       - uses: actions/setup-node@v1
         with:
-          node-version: 14
+          node-version: 16
           registry-url: https://registry.npmjs.org/
-      - name: Install npm v7
-        run: npm install -g npm@7
       # Install the root package (--ignore-scripts to avoid downloading or building the native module)
       - name: Install root package dependencies
         run: npm ci --ignore-scripts

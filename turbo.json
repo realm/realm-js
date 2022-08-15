@@ -53,9 +53,18 @@
         "src/*"
       ],
       "dependsOn": [
+        "update-types",
         "generate:typescript",
         "compile",
         "^build"
+      ]
+    },
+    "update-types": {
+      "inputs": [
+        "../../types"
+      ],
+      "outputs": [
+        "types/realm/**"
       ]
     },
     "test": {
@@ -76,6 +85,12 @@
       "dependsOn": [
         "build"
       ]
+    },
+    "lint": {
+      "outputs": []
+    },
+    "dev": {
+      "cache": false
     }
   }
 }

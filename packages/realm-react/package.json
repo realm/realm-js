@@ -28,7 +28,6 @@
     "@types/react-native": "^0.64.12",
     "babel-jest": "^27.2.1",
     "babel-plugin-module-resolver": "^4.1.0",
-    "eslint": "*",
     "eslint-plugin-prettier": "*",
     "eslint-plugin-react-hooks": "^4.2.0",
     "eslint-plugin-tsdoc": "^0.2.14",
@@ -36,17 +35,20 @@
     "jest": "^27.0.6",
     "metro-react-native-babel-preset": "^0.66.2",
     "prettier": "^2.3.2",
+    "realm": "*",
     "react": "^17.0.2",
-    "react-native": "^0.65.1",
+    "react-native": "0.66.2",
     "react-test-renderer": "^17.0.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
-    "realm": "^10.17.0 || ^11.0.0-rc"
-  },
-  "optionalDependencies": {
-    "@babel/runtime": ">=7",
+    "realm": "^10.17.0 || ^11.0.0-rc",
     "react-native": ">=0.59"
+  },
+  "peerDependenciesMeta": {
+    "react-native": {
+      "optional": true
+    }
   },
   "files": [
     "dist",

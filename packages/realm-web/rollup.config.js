@@ -49,7 +49,7 @@ export default [
       nodeResolve(),
       replacer,
     ],
-    external: ["bson", "node-fetch", "abort-controller"],
+    external: ["bson", "node-fetch", "util", "abort-controller"],
   },
   {
     input: "src/dom/index.ts",

@@ -31,14 +31,14 @@ Every package of this mono-repository should have a `lint` script - to lint, sim
 npm run lint
 ```
 
-To run linting on every package of the project, use the `lerna:lint` script in the root package:
+To run linting on every package of the project, use the `workspaces:lint` script in the root package:
 
 ```
-npm run lerna:lint
+npm run workspaces:lint
 ```
 
-The linter can automatically fix some issues. To run a fix across every sub-package, you can use the `lerna:lint:fix` script in the root package:
+The linter can automatically fix some issues. To run a fix across every sub-package, you can use the `workspaces:lint` script in the root package with a `--fix` argument:
 
 ```
-npm run lerna:lint:fix
+npm run workspaces:lint -- --fix
 ```

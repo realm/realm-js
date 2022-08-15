@@ -26,17 +26,12 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 14
+          node-version: 16
           registry-url: https://registry.npmjs.org/
-      - name: Install npm v7
-        run: npm install -g npm@7
-      # Install the root package (--ignore-scripts to avoid downloading or building the native module)
-      - run: npm ci --ignore-scripts
-      # Bootstrap lerna sub-packages
-      - run: npx lerna bootstrap --scope realm-web-integration-tests --include-dependencies
-      # Build and test the package
-      - run: npm run build
-        working-directory: packages/realm-web
+      # Install the root package
+      - run: npm ci
+      # Build package, its dependencies and test it
+      - run: npx turbo run build --filter realm-web
       - name: Run unit tests
         run: npm test
         working-directory: packages/realm-web
@@ -47,6 +42,8 @@ jobs:
           login-server: ghcr.io
           username: realm-ci
           password: ${{ secrets.REALM_CI_GITHUB_API_KEY }}
+      # Build integration test package, its dependencies and test it
+      - run: npx turbo run build --filter realm-web-integration-tests
       - name: Run integration tests
         run: npm run test:github
         working-directory: packages/realm-web-integration-tests

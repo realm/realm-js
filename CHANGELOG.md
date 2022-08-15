@@ -405,6 +405,7 @@ Based on Realm JS v10.14.0: See changelog below for details on enhancements and 
 * Changed token for analytics.
 * Fixed React Native Android integration test harness to read only one pid when starting logcat.
 * Added a script to generate JS template apps from TS, and updated JS templates. ([4374](https://github.com/realm/realm-js/pull/4374))
+* Migrated mono-repo from Lerna to NPM workspaces
 
 10.20.0-beta.2 Release notes (2022-2-14)
 =============================================================
