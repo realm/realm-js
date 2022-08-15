@@ -119,7 +119,11 @@ class Constructor extends StaticMethod {
     super(on, "", name, "", sig);
   }
   call(_ignored: { self?: string }, ...args: string[]) {
-    return `${this.on.cppName}(${args})`;
+    if (this.on.sharedPtrWrapped) {
+      return `std::make_shared<${this.on.cppName}>(${args})`;
+    } else {
+      return `${this.on.cppName}(${args})`;
+    }
   }
 }
 
@@ -367,7 +371,7 @@ export function bindModel(spec: Spec): BoundSpec {
             const sig = resolveTypes(rawSig);
             // Constructors implicitly return the type of the class.
             assert(sig.kind == "Func" && sig.ret.kind == "Primitive" && sig.ret.name == "void");
-            sig.ret = cls;
+            sig.ret = cls.sharedPtrWrapped ? new Template("std::shared_ptr", [cls]) : cls;
             return new Constructor(cls, name, sig);
           }),
         );

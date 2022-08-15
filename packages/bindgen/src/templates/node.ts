@@ -425,8 +425,8 @@ function convertFromNode(type: Type, expr: string): string {
       // TODO see if we ever need to do any conversion from Napi::Error exceptions to something else.
       // TODO need to handle null/undefined here. A bit tricky since we don't know the real type in the YAML.
       // TODO need to consider different kinds of functions:
-      // - functions called inline (or otherwise called from within a JS context (currently implemented)
-      // - async functions called from JS thread (need to use MakeCallback() rather than call)
+      // - functions called inline (or otherwise called from within a JS context)
+      // - async functions called from JS thread (need to use MakeCallback() rather than call) (current impl)
       // - async functions called from other thread that don't need to wait for JS to return
       // - async functions called from other thread that must wait for JS to return (anything with non-void return)
       //     - This has a risk of deadlock if not done correctly.
@@ -440,8 +440,9 @@ function convertFromNode(type: Type, expr: string): string {
                     try {
                         return ${convertFromNode(
                           type.ret,
-                          `cb->Call({
-                            ${type.args.map(({ name, type }) => convertToNode(type, name)).join(", ")}
+                          `cb->MakeCallback(
+                              ${env}.Global(),
+                              {${type.args.map(({ name, type }) => convertToNode(type, name)).join(", ")}
                         })`,
                         )};
                     } catch (Napi::Error& e) {
@@ -690,6 +691,26 @@ export function generateNode({ spec, file: makeFile }: TemplateContext): void {
               auto ordering = q.get_ordering();
               return Results(realm, std::move(q), ordering ? *ordering : DescriptorOrdering());
           }
+          static std::shared_ptr<_impl::ObjectNotifier> make_object_notifier(const SharedRealm& realm, const Obj& obj) {
+              realm->verify_thread();
+              realm->verify_notifications_available();
+              auto notifier = std::make_shared<_impl::ObjectNotifier>(realm, obj.get_table()->get_key(), obj.get_key());
+              _impl::RealmCoordinator::register_notifier(notifier);
+              return notifier;
+          }
+      };
+
+      struct ObjectChangeSet {
+          ObjectChangeSet() = default;
+          /*implicit*/ ObjectChangeSet(const CollectionChangeSet& changes) {
+              is_deleted = !changes.deletions.empty();
+              for (const auto& [col_key_val, index_set] : changes.columns) {
+                  changed_columns.push_back(ColKey(col_key_val));
+              }
+          }
+
+          bool is_deleted;
+          std::vector<ColKey> changed_columns;
       };
 
       ////////////////////////////////////////////////////////////
