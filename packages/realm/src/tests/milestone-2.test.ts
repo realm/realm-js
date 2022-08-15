@@ -23,7 +23,7 @@ import fs from "fs";
 import { Realm } from "../index";
 import { Results } from "../Results";
 import { CanonicalObjectSchema } from "../schema";
-import { closeRealm, generateRandomInteger, generateTempRealmPath, REALMS_DIR } from "./utils";
+import { closeRealm, generateRandomInteger, generateTempRealmPath, RealmContext, REALMS_DIR } from "./utils";
 
 type Person = { name: string };
 type PersonWithFriend = { name: string; bestFriend: Person | null };
@@ -105,7 +105,10 @@ describe("Milestone #2", () => {
 
   describe("Writing a “string” property to an existing object", () => {
     before(function (this: RealmContext) {
-      this.realm = new Realm({ path: SIMPLE_REALM_PATH });
+      // Start from the simple file to avoid populating a schema nor updating the file
+      const path = generateTempRealmPath();
+      fs.copyFileSync(SIMPLE_REALM_PATH, path);
+      this.realm = new Realm({ path });
     });
     after(closeRealm);
 
@@ -122,7 +125,10 @@ describe("Milestone #2", () => {
 
   describe("Writing a “link” property to an existing object", () => {
     before(function (this: RealmContext) {
-      this.realm = new Realm({ path: SIMPLE_REALM_PATH });
+      // Start from the simple file to avoid populating a schema nor updating the file
+      const path = generateTempRealmPath();
+      fs.copyFileSync(SIMPLE_REALM_PATH, path);
+      this.realm = new Realm({ path });
     });
     after(closeRealm);
 
