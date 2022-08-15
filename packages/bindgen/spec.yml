@@ -250,6 +250,7 @@ classes:
       get_object_with_primary_key: '(pk: Mixed) const -> Obj'
       try_get_object: '(key: ObjKey) const -> Obj'
       query: '(query_string: std::string, args: std::vector<Mixed>, mapping: KeyPathMapping) const -> Query'
+      remove_object: '(key: ObjKey)'
 
   Obj:
     properties:
