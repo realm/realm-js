@@ -99,8 +99,8 @@ class NodeAddon extends CppClass {
 
             DefineAddon(exports, {
                 ${Object.entries(this.exports)
-            .map(([name, val]) => `InstanceValue(${name}, ${val}.Value(), napi_enumerable),`)
-            .join("\n")}
+                  .map(([name, val]) => `InstanceValue(${name}, ${val}.Value(), napi_enumerable),`)
+                  .join("\n")}
             });
             `,
       }),
@@ -336,11 +336,11 @@ function convertToNode(type: Type, expr: string): string {
                     auto ${env} = info.Env();
                     ${tryWrap(`
                         return ${convertToNode(
-        type.ret,
-        `cb(
+                          type.ret,
+                          `cb(
                             ${type.args.map((arg, i) => convertFromNode(arg.type, `info[${i}]`)).join(", ")}
                         )`,
-      )};
+                        )};
                     `)}
                 });
             }(${expr})`;
@@ -439,12 +439,12 @@ function convertFromNode(type: Type, expr: string): string {
                     Napi::HandleScope hs(${env});
                     try {
                         return ${convertFromNode(
-        type.ret,
-        `cb->MakeCallback(
+                          type.ret,
+                          `cb->MakeCallback(
                               ${env}.Global(),
                               {${type.args.map(({ name, type }) => convertToNode(type, name)).join(", ")}
                         })`,
-      )};
+                        )};
                     } catch (Napi::Error& e) {
                         // Populate the cache of the message now to ensure it is safe for any C++ code to call what().
                         (void)e.what();
@@ -594,46 +594,37 @@ class NodeCppDecls extends CppDecls {
                 throw Napi::TypeError::New(${env}, "need 1 external argument");
         `;
 
-      if (specClass.sharedPtrWrapped) {
-        const ptr = `std::shared_ptr<${specClass.cppName}>`;
-        cls.members.push(new CppVar(ptr, "m_val"));
-        cls.ctor.body += `m_val = std::move(*info[0].As<Napi::External<${ptr}>>().Data());`;
-        this.free_funcs.push(
-          new CppFunc(`NODE_TO_SHARED_${specClass.name}`, `const ${ptr}&`, [new CppVar("Napi::Value", "val")], {
-            body: `return ${cls.name}::Unwrap(val.ToObject())->m_val;`,
-          }),
-        );
-        this.free_funcs.push(
-          new CppFunc(
-            `NODE_FROM_SHARED_${specClass.name}`,
-            "Napi::Value",
-            [new CppVar("Napi::Env", env), new CppVar(ptr, "ptr")],
-            { body: `return ${this.addon.accessCtor(cls)}.New({Napi::External<${ptr}>::New(${env}, &ptr)});` },
-          ),
-        );
-      } else {
-        cls.members.push(new CppVar(specClass.cppName, "m_val"));
-        cls.ctor.body += `m_val = std::move(*info[0].As<Napi::External<${specClass.cppName}>>().Data());`;
+      const valueType = specClass.sharedPtrWrapped ? `std::shared_ptr<${specClass.cppName}>` : specClass.cppName;
+      const refType = specClass.sharedPtrWrapped ? `const ${valueType}&` : `${valueType}&`;
+      const kind = specClass.sharedPtrWrapped ? "SHARED" : "CLASS";
 
-        this.free_funcs.push(
-          new CppFunc(`NODE_TO_CLASS_${specClass.name}`, `${specClass.cppName}&`, [new CppVar("Napi::Value", "val")], {
+      cls.members.push(new CppVar(valueType, "m_val"));
+      cls.ctor.body += `m_val = std::move(*info[0].As<Napi::External<${valueType}>>().Data());`;
+      // TODO in napi 8 we can use type_tags to validate that the object REALLY is from us.
+      this.free_funcs.push(
+        new CppFunc(`NODE_TO_${kind}_${specClass.name}`, refType, [new CppVar("Napi::Value", "val")], {
+          attributes: "[[maybe_unused]]",
+          body: `
+            auto ${env} = val.Env();
+            auto obj = val.ToObject();
+            if (!obj.InstanceOf(${this.addon.accessCtor(cls)}.Value()))
+                throw Napi::TypeError::New(${env}, "Expected a ${cls.jsName}");
+            return ${cls.name}::Unwrap(obj)->m_val;
+          `,
+        }),
+      );
+
+      this.free_funcs.push(
+        new CppFunc(
+          `NODE_FROM_${kind}_${specClass.name}`,
+          "Napi::Value",
+          [new CppVar("Napi::Env", env), new CppVar(valueType, "val")],
+          {
             attributes: "[[maybe_unused]]",
-            body: `return ${cls.name}::Unwrap(val.ToObject())->m_val;`,
-          }),
-        );
-        this.free_funcs.push(
-          new CppFunc(
-            `NODE_FROM_CLASS_${specClass.name}`,
-            "Napi::Value",
-            [new CppVar("Napi::Env", env), new CppVar(specClass.cppName, "val")],
-            {
-              attributes: "[[maybe_unused]]",
-              body: `return ${this.addon.accessCtor(cls)}.New({Napi::External<${specClass.cppName
-                }>::New(${env}, &val)});`,
-            },
-          ),
-        );
-      }
+            body: `return ${this.addon.accessCtor(cls)}.New({Napi::External<${valueType}>::New(${env}, &val)});`,
+          },
+        ),
+      );
 
       cls.addMethod(
         new CppMethod("makeCtor", "Napi::Function", [new CppVar("Napi::Env", env)], {
