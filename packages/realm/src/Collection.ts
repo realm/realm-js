@@ -24,6 +24,7 @@ type CollectionChangeCallback<T> = unknown;
 
 export class Collection<T = unknown> implements ReadonlyArray<T> {
   readonly [n: number]: T;
+
   get length(): number {
     throw new Error("Method not implemented.");
   }
@@ -32,6 +33,13 @@ export class Collection<T = unknown> implements ReadonlyArray<T> {
     throw new Error("Method not implemented.");
   }
   get optional(): boolean {
+    throw new Error("Method not implemented.");
+  }
+
+  keys(): IterableIterator<number> {
+    throw new Error("Method not implemented.");
+  }
+  values(): IterableIterator<T> {
     throw new Error("Method not implemented.");
   }
 
@@ -44,19 +52,19 @@ export class Collection<T = unknown> implements ReadonlyArray<T> {
   concat(...items: ConcatArray<T>[]): T[];
   concat(...items: (T | ConcatArray<T>)[]): T[];
   concat(...items: any[]): T[] {
-    throw new Error("Method not implemented.");
+    return [...this].concat(...items);
   }
   join(separator?: string): string {
-    throw new Error("Method not implemented.");
+    return [...this].join(separator);
   }
   slice(start?: number, end?: number): T[] {
-    throw new Error("Method not implemented.");
+    return [...this].slice(start, end);
   }
   indexOf(searchElement: T, fromIndex?: number): number {
-    throw new Error("Method not implemented.");
+    return [...this].indexOf(searchElement, fromIndex);
   }
   lastIndexOf(searchElement: T, fromIndex?: number): number {
-    throw new Error("Method not implemented.");
+    return [...this].lastIndexOf(searchElement, fromIndex);
   }
   every<S extends T>(
     predicate: (value: T, index: number, array: readonly T[]) => value is S,
@@ -64,21 +72,21 @@ export class Collection<T = unknown> implements ReadonlyArray<T> {
   ): this is readonly S[];
   every(predicate: (value: T, index: number, array: readonly T[]) => unknown, thisArg?: any): boolean;
   every(predicate: any, thisArg?: any): boolean {
-    throw new Error("Method not implemented.");
+    return [...this].every(predicate, thisArg);
   }
   some(predicate: (value: T, index: number, array: readonly T[]) => unknown, thisArg?: any): boolean {
-    throw new Error("Method not implemented.");
+    return [...this].some(predicate, thisArg);
   }
   forEach(callbackfn: (value: T, index: number, array: readonly T[]) => void, thisArg?: any): void {
-    throw new Error("Method not implemented.");
+    return [...this].forEach(callbackfn, thisArg);
   }
   map<U>(callbackfn: (value: T, index: number, array: readonly T[]) => U, thisArg?: any): U[] {
-    throw new Error("Method not implemented.");
+    return [...this].map(callbackfn, thisArg);
   }
   filter<S extends T>(predicate: (value: T, index: number, array: readonly T[]) => value is S, thisArg?: any): S[];
   filter(predicate: (value: T, index: number, array: readonly T[]) => unknown, thisArg?: any): T[];
   filter<S extends T>(predicate: any, thisArg?: any): T[] | S[] {
-    throw new Error("Method not implemented.");
+    return [...this].filter(predicate, thisArg);
   }
   reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: readonly T[]) => T): T;
   reduce(
@@ -90,7 +98,7 @@ export class Collection<T = unknown> implements ReadonlyArray<T> {
     initialValue: U,
   ): U;
   reduce<U>(callbackfn: any, initialValue?: any): T | U {
-    throw new Error("Method not implemented.");
+    return [...this].reduce(callbackfn, initialValue);
   }
   reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: readonly T[]) => T): T;
   reduceRight(
@@ -102,42 +110,38 @@ export class Collection<T = unknown> implements ReadonlyArray<T> {
     initialValue: U,
   ): U;
   reduceRight<U>(callbackfn: any, initialValue?: any): T | U {
-    throw new Error("Method not implemented.");
+    return [...this].reduceRight(callbackfn, initialValue);
   }
+
   find<S extends T>(
-    predicate: (this: void, value: T, index: number, obj: readonly T[]) => value is S,
+    predicate: (this: void, value: T, index: number, obj: T[]) => value is S,
     thisArg?: any,
-  ): S;
-  find(predicate: (value: T, index: number, obj: readonly T[]) => unknown, thisArg?: any): T;
-  find<S extends T>(predicate: any, thisArg?: any): T | S {
-    throw new Error("Method not implemented.");
+  ): S | undefined;
+  find<T>(predicate: (value: T, index: number, obj: T[]) => unknown, thisArg?: any): T | undefined;
+  find(predicate: (value: T, index: number, obj: T[]) => boolean, thisArg?: any): T | undefined {
+    return [...this].find(predicate, thisArg);
   }
   findIndex(predicate: (value: T, index: number, obj: readonly T[]) => unknown, thisArg?: any): number {
-    throw new Error("Method not implemented.");
+    return [...this].findIndex(predicate, thisArg);
   }
   entries(): IterableIterator<[number, T]> {
-    throw new Error("Method not implemented.");
-  }
-  keys(): IterableIterator<number> {
-    throw new Error("Method not implemented.");
-  }
-  values(): IterableIterator<T> {
-    throw new Error("Method not implemented.");
+    return [...this].entries();
   }
   includes(searchElement: T, fromIndex?: number): boolean {
-    throw new Error("Method not implemented.");
+    return [...this].includes(searchElement, fromIndex);
   }
   flatMap<U, This = undefined>(
     callback: (this: This, value: T, index: number, array: T[]) => U | readonly U[],
     thisArg?: This,
   ): U[] {
-    throw new Error("Method not implemented.");
+    return [...this].flatMap(callback, thisArg);
   }
-  flat<A, D extends number = 1>(this: A, depth?: D): FlatArray<A, D>[] {
+  flat<A, D extends number = 1>(this: A, depth?: D): FlatArray<A, D>[];
+  flat<D extends number = 1>(depth?: D): FlatArray<this, D>[] {
     throw new Error("Method not implemented.");
   }
   [Symbol.iterator](): IterableIterator<T> {
-    throw new Error("Method not implemented.");
+    return this.values();
   }
 
   // Other methods

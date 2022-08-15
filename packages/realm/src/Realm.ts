@@ -18,8 +18,8 @@
 
 import * as binding from "@realm/bindgen";
 
-import { getInternal, Object as RealmObject } from "./Object";
-import { Results } from "./Results";
+import { getInternal as getObjectInternal, Object as RealmObject } from "./Object";
+import { createWrapper as createResultsWrapper, Results } from "./Results";
 import {
   fromBindingSchema,
   toBindingSchema,
@@ -108,7 +108,7 @@ export class Realm {
     if (arguments.length > 2) {
       throw new Error("Creating objects with update mode specified is not yet supported");
     }
-    if (values instanceof RealmObject && !getInternal(values)) {
+    if (values instanceof RealmObject && !getObjectInternal(values)) {
       throw new Error("Cannot create an object from a detached Realm.Object instance");
     }
     this.internal.verifyOpen();
@@ -116,7 +116,7 @@ export class Realm {
       objectSchema: { tableKey, primaryKey, persistedProperties },
       converters,
       createObjectWrapper,
-    } = this.getClass(type);
+    } = this.classes.get(type);
 
     // Create the underlying object
     const table = binding.Helpers.getTable(this.internal, tableKey);
@@ -166,7 +166,7 @@ export class Realm {
     primaryKey: T[keyof T],
   ): RealmObject<T> & T {
     // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1240-L1258
-    const { objectSchema, converters, createObjectWrapper } = this.getClass(type);
+    const { objectSchema, converters, createObjectWrapper } = this.classes.get(type);
     if (objectSchema.primaryKey === "") {
       throw new Error(`Expected a primary key on "${objectSchema.name}"`);
     }
@@ -188,7 +188,19 @@ export class Realm {
   objects<T = DefaultObject>(type: string): Results<T>;
   objects<T = DefaultObject>(type: RealmObjectConstructor<T>): Results<T>;
   objects<T = DefaultObject>(type: string | RealmObjectConstructor<T>): Results<T> {
-    throw new Error("Not yet implemented");
+    const { objectSchema, createObjectWrapper } = this.classes.get(type);
+    if (objectSchema.tableType === binding.TableType.Embedded) {
+      throw new Error("You cannot query an embedded object.");
+    } else if (objectSchema.tableType === binding.TableType.TopLevelAsymmetric) {
+      throw new Error("You cannot query an asymmetric class.");
+    }
+
+    const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
+    const results = binding.Results.fromTable(this.internal, table);
+    return createResultsWrapper(results, (results, index) => {
+      const obj = results.getObj(index);
+      return createObjectWrapper(obj);
+    });
   }
 
   addListener(): unknown {
@@ -251,18 +263,5 @@ export class Realm {
    */
   private fifoFilesFallbackPath() {
     return "";
-  }
-
-  /**
-   * Finds the object schema from a specific name
-   * @see https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L465-L508
-   * TODO: Memoize this
-   */
-  private getClass(name: string | RealmObjectConstructor<unknown>) {
-    if (typeof name === "string") {
-      return this.classes.get(name);
-    } else {
-      throw new Error("Not yet implemented");
-    }
   }
 }
