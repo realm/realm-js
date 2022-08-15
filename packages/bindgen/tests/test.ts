@@ -20,7 +20,7 @@
 
 /* eslint-disable header/header */
 
-import { Realm, PropertyType, Helpers, Mixed, Results, SortDescriptor } from "../index";
+import { Realm, PropertyType, Helpers, Mixed, Results, SortDescriptor, NotificationToken } from "../index";
 
 import { strict as assert } from "assert";
 import * as util from "util";
@@ -47,7 +47,8 @@ const realm = Realm.getSharedRealm({
 // console.log(util.inspect(realm.schema, false, null, true))
 
 const schema = realm.schema;
-const table = Helpers.getTable(realm, schema[0].tableKey);
+const tableKey = schema[0].tableKey;
+const table = Helpers.getTable(realm, tableKey);
 const numCol = schema[0].persistedProperties[0].columnKey;
 const strCol = schema[0].persistedProperties[1].columnKey;
 const fltCol = schema[0].persistedProperties[2].columnKey;
@@ -70,6 +71,25 @@ obj2.setAny(strCol, Mixed.fromString("world"));
 const obj3 = table.createObject();
 obj3.setAny(lnkCol, Mixed.fromObj(obj2));
 
+realm.commitTransaction();
+
+const notifier = Helpers.makeObjectNotifier(realm, obj1);
+NotificationToken.forObject(
+  notifier,
+  notifier.addCallback(
+    (changes) => {
+      console.log(changes);
+    },
+    [[[tableKey, numCol]]], // Or [] to monitor all fields
+  ),
+);
+
+realm.beginTransaction();
+obj1.setAny(numCol, Mixed.fromInt(12345));
+realm.commitTransaction();
+
+realm.beginTransaction();
+obj1.setAny(numCol, Mixed.fromInt(123456));
 realm.commitTransaction();
 
 for (const obj of table) {

@@ -7,6 +7,9 @@ headers:
   - "realm/object-store/results.hpp"
   - "realm/object-store/thread_safe_reference.hpp"
   - "realm/object-store/util/scheduler.hpp"
+  - "realm/object-store/collection_notifications.hpp"
+  - "realm/object-store/impl/object_notifier.hpp"
+  - "realm/object-store/impl/realm_coordinator.hpp"
 
 primitives:
   # TODO need to distinguish 64bit types where all bits are needed vs where double would be fine
@@ -28,6 +31,8 @@ primitives:
 typeAliases:
   uint_fast64_t: uint64_t
   Schema: std::vector<ObjectSchema>
+  KeyPath: std::vector<std::pair<TableKey, ColKey>>
+  KeyPathArray: std::vector<KeyPath>
 
 
 templates: # value tells you how many arguments it takes ('*' means any number)
@@ -206,6 +211,11 @@ records:
         type: '(total_bytes: uint64_t, used_bytes: uint64_t) -> bool'
         default: {}
 
+  ObjectChangeSet:
+    fields:
+      is_deleted: bool
+      changed_columns: std::vector<ColKey>
+
 opaqueTypes:
   - Group
   - AuditInterface
@@ -222,6 +232,7 @@ classes:
           suffix: by_name
       get_keypath_mapping: '(r: SharedRealm) -> KeyPathMapping'
       results_from_query: '(r: SharedRealm, q: Query) -> Results'
+      make_object_notifier: '(r: SharedRealm, o: Obj) -> SharedObjectNotifier'
 
   TableRef:
     needsDeref: true
@@ -463,6 +474,22 @@ classes:
           sig: '(throw_on_error: bool) const'
 
       close: ()
+
+  NotificationToken:
+    #TODO need a way to destroy this or at least assign over it with a default constructed token
+    constructors:
+      for_object: '(notifier: SharedObjectNotifier, token: uint64_t)'
+    methods:
+      suppress_next: ()
+
+  ObjectNotifier:
+    cppName: _impl::ObjectNotifier
+    sharedPtrWrapped: SharedObjectNotifier
+    constructors:
+      make: '(realm: SharedRealm, table: TableKey, obj: ObjKey)'
+    methods:
+      # Pass return to NotificationToken constructor
+      add_callback: '(cb: (changes: ObjectChangeSet), keyPaths: KeyPathArray) -> uint64_t'
 
 interfaces:
   Scheduler:
