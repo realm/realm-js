@@ -22,32 +22,14 @@ import fs from "fs";
 
 import { Realm } from "../index";
 import { Results } from "../Results";
-import { CanonicalObjectSchema } from "../schema-types";
-
-type RealmContext = Mocha.Context & { realm: Realm };
+import { CanonicalObjectSchema } from "../schema";
+import { closeRealm, generateRandomInteger, generateTempRealmPath, REALMS_DIR } from "./utils";
 
 type Person = { name: string };
 type PersonWithFriend = { name: string; bestFriend: Person | null };
 type PersonWithFriends = { name: string; bestFriend: Person | null; friends: Person[] };
 
-function generateRandomInteger() {
-  return Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
-}
-
-const REALMS_DIR = new URL("realms", import.meta.url).pathname;
-const REALMS_TEMP_DIR = path.resolve(REALMS_DIR, "temp");
 const SIMPLE_REALM_PATH = path.resolve(REALMS_DIR, "simple.realm");
-
-function generateTempRealmPath() {
-  return path.resolve(REALMS_TEMP_DIR, "random-" + generateRandomInteger() + ".realm");
-}
-
-function closeRealm(this: Mocha.Context & Partial<RealmContext>) {
-  if (this.realm && !this.realm.isClosed) {
-    this.realm.close();
-    delete this.realm;
-  }
-}
 
 describe("Milestone #2", () => {
   describe("Opening default local Realm", () => {
