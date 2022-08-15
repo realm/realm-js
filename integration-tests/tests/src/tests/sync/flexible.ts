@@ -1391,7 +1391,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         return realm.create<IPerson>(FlexiblePersonSchema.name, { _id: new BSON.ObjectId(), name: "Tom", age: 36 });
       });
 
-      await realm.subscriptions.waitForSynchronization();
+      await realm?.syncSession?.uploadAllLocalChanges();
 
       return { person, id: person._id };
     }
@@ -1425,6 +1425,9 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       expect(newRealm.objectForPrimaryKey(FlexiblePersonSchema.name, id)).to.be.undefined;
 
       await newRealm.subscriptions.update((mutableSubs) => subsUpdateFn(mutableSubs, newRealm));
+
+      // This was added to ensure all server changes are downloaded before any tests assertions
+      await newRealm?.syncSession?.downloadAllServerChanges();
 
       return { id, newRealm };
     }
@@ -1480,6 +1483,8 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         mutableSubs.add(newRealm.objects(FlexiblePersonSchema.name).filtered("age > 30"));
       });
 
+      await newRealm?.syncSession?.uploadAllLocalChanges();
+
       newRealm.addListener("change", () => {
         expect(newRealm.objectForPrimaryKey(FlexiblePersonSchema.name, id)).to.not.be.undefined;
       });
@@ -1500,6 +1505,8 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         mutableSubs.removeAll();
         mutableSubs.add(newRealm.objects(FlexiblePersonSchema.name).filtered("age > 30"));
       });
+
+      await newRealm?.syncSession?.uploadAllLocalChanges();
 
       newRealm.addListener("change", () => {
         expect(newRealm.objectForPrimaryKey(FlexiblePersonSchema.name, id)).to.not.be.undefined;
