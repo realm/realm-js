@@ -18,23 +18,31 @@
 
 import * as binding from "@realm/bindgen";
 
-import { ConverterMap, ObjectWrapCreator } from "./ConverterMap";
+import { PropertyMap, ObjectWrapCreator } from "./PropertyMap";
 import { Realm } from "./Realm";
-import { createWrapper as createObjectWrapperImpl, getInternal } from "./Object";
+import {
+  createWrapper as createObjectWrapperImpl,
+  getInternal,
+  INTERNAL_HELPERS,
+  Object as RealmObject,
+} from "./Object";
 
 import { Constructor, RealmObjectConstructor } from "./schema";
 
-function createNamedConstructor(name: string): Constructor {
+function createNamedConstructor<T extends Constructor>(name: string): T {
   const obj = {
     [name]: function () {
       /* no-op */
     },
   };
-  return obj[name] as unknown as Constructor;
+  return obj[name] as unknown as T;
 }
 
-function createClass(schema: binding.Realm["schema"][0], converters: ConverterMap): Constructor {
-  const result = createNamedConstructor(schema.name);
+function createClass<T extends RealmObjectConstructor = RealmObjectConstructor>(
+  schema: binding.Realm["schema"][0],
+  properties: PropertyMap,
+): T {
+  const result = createNamedConstructor<T>(schema.name);
   // Make the new constructor extend Realm.Object
   // TODO: Use the end-users constructor, instead of `Realm.Object` if provided
   Object.setPrototypeOf(result, Realm.Object);
@@ -45,7 +53,7 @@ function createClass(schema: binding.Realm["schema"][0], converters: ConverterMa
   }
   // Create bound functions for getting and setting properties
   for (const property of schema.persistedProperties) {
-    const { get, set } = converters.get(property.name);
+    const { get, set } = properties.get(property.name);
     Object.defineProperty(result.prototype, property.name, {
       enumerable: true,
       get() {
@@ -72,16 +80,15 @@ function createClass(schema: binding.Realm["schema"][0], converters: ConverterMa
   return result;
 }
 
-type ClassItem = {
+export type ClassHelpers<T> = {
   // TODO: Use a different type, once exposed by the binding
   objectSchema: binding.Realm["schema"][0];
-  constructor: Constructor;
-  converters: ConverterMap;
-  createObjectWrapper: ObjectWrapCreator;
+  properties: PropertyMap;
+  createObjectWrapper: ObjectWrapCreator<T>;
 };
 
 export class ClassMap {
-  private mapping: Record<string, ClassItem>;
+  private mapping: Record<string, RealmObjectConstructor>;
 
   /**
    * @param objectSchema
@@ -90,21 +97,35 @@ export class ClassMap {
   constructor(realm: Realm, realmSchema: binding.Realm["schema"]) {
     this.mapping = Object.fromEntries(
       realmSchema.map((objectSchema) => {
-        function createObjectWrapper(obj: binding.Obj) {
-          return createObjectWrapperImpl(realm, constructor, obj);
+        function createObjectWrapper(obj: binding.Obj): RealmObject<unknown> {
+          return createObjectWrapperImpl(realm, constructor, obj) as RealmObject<unknown>;
         }
-        const converters = new ConverterMap(objectSchema, createObjectWrapper);
-        const constructor = createClass(objectSchema, converters);
-        return [objectSchema.name, { objectSchema, constructor, converters, createObjectWrapper }];
+        const properties = new PropertyMap(objectSchema, createObjectWrapper);
+        const constructor = createClass(objectSchema, properties) as RealmObjectConstructor;
+        // Store the properties map on the object class
+        Object.defineProperty(constructor, INTERNAL_HELPERS, {
+          enumerable: false,
+          writable: false,
+          configurable: false,
+          value: { objectSchema, properties, createObjectWrapper },
+        });
+        return [objectSchema.name, constructor];
       }),
     );
   }
 
-  public get(name: string | RealmObjectConstructor<unknown>): ClassItem {
-    if (typeof name === "string") {
-      return this.mapping[name];
+  public get<T = unknown>(type: string | RealmObject<T> | RealmObjectConstructor<T>): RealmObjectConstructor<T> {
+    if (typeof type === "string") {
+      return this.mapping[type] as RealmObjectConstructor<T>;
+    } else if (typeof type === "object") {
+      return this.get(type.constructor.name);
     } else {
       throw new Error("Not yet implemented");
     }
+  }
+
+  public getHelpers<T = unknown>(name: string | RealmObject<T> | RealmObjectConstructor<T>) {
+    const constructor = this.get(name) as unknown as typeof RealmObject;
+    return constructor[INTERNAL_HELPERS] as ClassHelpers<T>;
   }
 }
