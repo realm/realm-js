@@ -43,7 +43,9 @@ export async function openRealm(
 
   if (!partialConfig.sync) {
     const config = { ...partialConfig, path } as LocalConfiguration;
-    return { config, realm: new Realm(config) };
+    const realm = new Realm(config);
+    // console.log("!!!!!!", typeof realm.__Realm_internal);
+    return { config, realm };
   } else {
     const config = {
       ...partialConfig,

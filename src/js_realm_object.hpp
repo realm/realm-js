@@ -89,6 +89,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::js::RealmObject<T>> {
     static void remove_listener(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void remove_all_listeners(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void get_property_type(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void get_property_fn(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     static void get_realm(ContextType, ObjectType, ReturnValue&);
 
@@ -112,6 +113,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::js::RealmObject<T>> {
         {"removeListener", wrap<remove_listener>},
         {"removeAllListeners", wrap<remove_all_listeners>},
         {"getPropertyType", wrap<get_property_type>},
+        {"getProperty", wrap<get_property_fn>},
     };
 
     PropertyMap<T> const properties = {
@@ -221,6 +223,18 @@ void RealmObjectClass<T>::get_property(ContextType ctx, ObjectType object, const
         return_value.set(result);
     }
 }
+
+template <typename T>
+void RealmObjectClass<T>::get_property_fn(ContextType ctx, ObjectType object, Arguments& args,
+                                          ReturnValue& return_value)
+{
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, object);
+
+    std::string property_name = Value::validated_to_string(ctx, args[0], "propertyName");
+    auto obj = Value::validated_to_number(ctx, args[1], "realm");
+    printf("yea");
+}
+
 
 template <typename T>
 bool RealmObjectClass<T>::set_property(ContextType ctx, ObjectType object, const String& property_name,

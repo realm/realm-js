@@ -74,6 +74,7 @@ function describeTypeRead({ type, value, schema = [] }: TestParameters) {
       Object.defineProperty(this.realm, "toJSON", { value: () => ({}) });
     },
     test(this: RealmObjectContext) {
+      this.object.getProperty(propertyName, this.object.__Realm_internal);
       const value = this.object[propertyName];
       if (typeof value === "undefined") {
         // Performing a check to avoid the get of the property to be optimized away
