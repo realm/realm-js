@@ -31,7 +31,7 @@ import {
 } from "../cpp";
 import { bindModel, BoundSpec, Type } from "../bound-model";
 
-import "../js_passes";
+import "../js-passes";
 
 // Code assumes this is a unique name that is always in scope to refer to the Napi::Env.
 // Callbacks need to ensure this is in scope. Functions taking Env arguments must use this name.
@@ -99,8 +99,8 @@ class NodeAddon extends CppClass {
 
             DefineAddon(exports, {
                 ${Object.entries(this.exports)
-                  .map(([name, val]) => `InstanceValue(${name}, ${val}.Value(), napi_enumerable),`)
-                  .join("\n")}
+            .map(([name, val]) => `InstanceValue(${name}, ${val}.Value(), napi_enumerable),`)
+            .join("\n")}
             });
             `,
       }),
@@ -336,11 +336,11 @@ function convertToNode(type: Type, expr: string): string {
                     auto ${env} = info.Env();
                     ${tryWrap(`
                         return ${convertToNode(
-                          type.ret,
-                          `cb(
+        type.ret,
+        `cb(
                             ${type.args.map((arg, i) => convertFromNode(arg.type, `info[${i}]`)).join(", ")}
                         )`,
-                        )};
+      )};
                     `)}
                 });
             }(${expr})`;
@@ -439,12 +439,12 @@ function convertFromNode(type: Type, expr: string): string {
                     Napi::HandleScope hs(${env});
                     try {
                         return ${convertFromNode(
-                          type.ret,
-                          `cb->MakeCallback(
+        type.ret,
+        `cb->MakeCallback(
                               ${env}.Global(),
                               {${type.args.map(({ name, type }) => convertToNode(type, name)).join(", ")}
                         })`,
-                        )};
+      )};
                     } catch (Napi::Error& e) {
                         // Populate the cache of the message now to ensure it is safe for any C++ code to call what().
                         (void)e.what();
@@ -628,9 +628,8 @@ class NodeCppDecls extends CppDecls {
             [new CppVar("Napi::Env", env), new CppVar(specClass.cppName, "val")],
             {
               attributes: "[[maybe_unused]]",
-              body: `return ${this.addon.accessCtor(cls)}.New({Napi::External<${
-                specClass.cppName
-              }>::New(${env}, &val)});`,
+              body: `return ${this.addon.accessCtor(cls)}.New({Napi::External<${specClass.cppName
+                }>::New(${env}, &val)});`,
             },
           ),
         );
