@@ -30,6 +30,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Added a default sync logger for integration tests. ([#4730](https://github.com/realm/realm-js/pull/4730))
 * Fixed an issue starting the integration test runner on iOS. ([#4742](https://github.com/realm/realm-js/pull/4742]))
 * Migrated to `std::optional` and `std::nullopt`.
+* Building and testing using Xcode 13.4.1 on internal CI system.
 
 10.19.5 Release notes (2022-7-6)
 =============================================================
