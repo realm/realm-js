@@ -1,5 +1,7 @@
-[![realm by MongoDB](./logo.svg#gh-light-mode-only)](https://realm.io#gh-light-mode-only)
-[![realm by MongoDB](./logo-dark.svg#gh-dark-mode-only)](https://realm.io#gh-dark-mode-only)
+<picture>
+    <source srcset="./logo-dark.svg" media="(prefers-color-scheme: dark)" alt="realm by MongoDB">
+    <img src="./logo.svg" alt="realm by MongoDB">
+</picture>
 
 Realm is a mobile database that runs directly inside phones, tablets or wearables.
 This project hosts the JavaScript versions of [Realm](https://realm.io/). Currently we support React Native (both iOS & Android), Node.js and Electron (on Windows, MacOS and Linux).
