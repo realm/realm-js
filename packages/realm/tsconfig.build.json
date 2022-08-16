@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "dist",
+    "module": "CommonJS",
+    "baseUrl": ".",
+    "paths": {
+      "@realm/bindgen": [
+        "../bindgen"
+      ],
+    }
+  }
+}

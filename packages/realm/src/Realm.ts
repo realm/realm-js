@@ -32,6 +32,7 @@ import { RealmInsertionModel } from "./InsertionModel";
 import { Configuration } from "./Configuration";
 import { ClassMap } from "./ClassMap";
 import { List } from "./List";
+import { BSON } from "./BSON";
 
 const INTERNAL = Symbol("Realm.Realm#internal");
 
@@ -42,6 +43,15 @@ export function getInternal(object: Realm): binding.Realm {
 export class Realm {
   public static Object = RealmObject;
   public static Results = Results;
+  public static BSON = BSON;
+
+  public static clearTestState() {
+    // TODO: Expose this differently
+  }
+
+  public static deleteFile() {
+    // TODO: Implement
+  }
 
   private [INTERNAL]!: binding.Realm;
   private classes: ClassMap;

@@ -25,7 +25,7 @@ const debug = extend("format");
 const FORMATTERS = {
   eslint: ["npx", "eslint", "--fix", "--format=stylish"],
   "clang-format": ["npx", "clang-format", "-i"],
-  "typescript-checker": ["npx", "tsc", "--noEmit"],
+  "typescript-checker": ["npx", "tsc", "--noEmit", "--typeRoots", "./node_modules/@types"],
 };
 
 export type FormatterName = keyof typeof FORMATTERS;

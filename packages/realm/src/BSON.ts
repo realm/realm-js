@@ -16,13 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Realm } from "./Realm";
+export class ObjectId {
+  toHexString() {
+    return (Math.random() * Number.MAX_SAFE_INTEGER).toString();
+  }
+}
 
-/*
-export { Realm } from "./Realm";
-export { Configuration } from "./Configuration";
-export { Results } from "./Results";
-export { Object } from "./Object";
-*/
+export class UUID {
+  /* */
+}
 
-export = Realm;
+export class Decimal128 {
+  static fromString() {
+    new Decimal128();
+  }
+}
+
+export const BSON = {
+  ObjectId,
+  ObjectID: ObjectId,
+  UUID,
+  Decimal128,
+};

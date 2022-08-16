@@ -96,5 +96,7 @@ integration-tests/**/.lock
 /tests/js/realm-tests*.tgz
 /react-native/ios/realm-js-ios.xcframework/
 
+packages/*/dist
+
 # Turbo repo caches
 .turbo

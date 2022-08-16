@@ -179,7 +179,7 @@ set(GENERATED_TS_FILES
 
 add_custom_command(
     OUTPUT ${SCHEMA_FILE}
-    COMMAND ${NODE_FORCE_COLOR} npx typescript-json-schema ${CMAKE_CURRENT_SOURCE_DIR}/src/spec/relaxed-model.ts RelaxedSpec --out ${SCHEMA_FILE} --required --noExtraProps
+    COMMAND ${NODE_FORCE_COLOR} npx typescript-json-schema ${CMAKE_CURRENT_SOURCE_DIR}/tsconfig.spec-schema.json RelaxedSpec --out ${SCHEMA_FILE} --required --noExtraProps
     VERBATIM
     MAIN_DEPENDENCY src/spec/relaxed-model.ts
     DEPENDS

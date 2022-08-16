@@ -6,5 +6,5 @@
     "moduleResolution": "node",
     "noEmit": true,
     "esModuleInterop": true
-  }
+  },
 }

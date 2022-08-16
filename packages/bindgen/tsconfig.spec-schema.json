@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.json",
+  "files": [
+    "src/spec/relaxed-model.ts"
+  ]
+}

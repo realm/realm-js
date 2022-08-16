@@ -77,6 +77,10 @@ function createHelpers<T>(
       },
       get(obj) {
         return this.fromMixed(obj.getAny(columnKey));
+        // return "foo" + obj.isNull(columnKey);
+        // return "noop" + obj.isValid;
+        // obj.getAny(columnKey);
+        // return "";
       },
       set(obj, value) {
         obj.setAny(columnKey, this.toMixed(value));
