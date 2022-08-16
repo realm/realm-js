@@ -502,7 +502,6 @@ def testMacOS(target, postStep = null) {
                'DEVELOPER_DIR=/Applications/Xcode-13.4.1.app/Contents/Developer',
                'REALM_SET_NVM_ALIAS=1',
                'REALM_DISABLE_SYNC_TESTS=1',
-               'HAVE_LIB_GFLAGS=0',
                'npm_config_realm_local_prebuilds=prebuilds']) {
         doInside('./scripts/test.sh', target, postStep)
       }

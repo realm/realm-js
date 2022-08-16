@@ -483,6 +483,7 @@
 				CODE_SIGN_ENTITLEMENTS = ReactTestApp/ReactTestApp.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_BITCODE = NO;
+				HAVE_LIB_GFLAGS = 0;
 				INFOPLIST_FILE = ReactTestApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -512,6 +513,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = ReactTestApp/ReactTestApp.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				HAVE_LIB_GFLAGS = 0;
 				INFOPLIST_FILE = ReactTestApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
