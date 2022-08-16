@@ -140,7 +140,7 @@ stage('test') {
   parallelExecutors["Linux test runners ${nodeTestVersion}"] = testLinux("test-runners Release ${nodeTestVersion}")
   parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
 
-  parallelExecutors["React Native Android Release"] = inAndroidContainer { testAndroid('test-android') }
+  parallelExecutors["React Native Android Release"] = inAndroidContainer { testAndroid("test-android Release ${nodeTestVersion}") }
   parallelExecutors["React Native iOS Release"] = testMacOS("react-tests Release ${nodeTestVersion}")
   parallelExecutors["React Native Catalyst Release"] = testMacOS("catalyst-tests Release ${nodeTestVersion}")
 
