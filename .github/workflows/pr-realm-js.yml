@@ -109,9 +109,7 @@ jobs:
         run: sdkmanager --install "ndk;${{ env.NDK_VERSION }}"
 
       - name: ccache
-        uses: hendrikmuhs/ccache-action@v1
-        #TODO: figure out using ccache or equivalent on windows
-        if: ${{ runner.os != 'Windows' }}
+        uses: hendrikmuhs/ccache-action@bd43b7f5fb36d5f97ef5c6cc818a2055b04f610a
         with:
           key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}
           max-size: '2.0G'
