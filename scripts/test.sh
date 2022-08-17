@@ -286,6 +286,7 @@ case "$TARGET" in
   npm run jsdoc
   ;;
 "react-tests")
+  unset SDKROOT
   npm ci --ignore-scripts
   npm run check-environment
 
@@ -307,6 +308,7 @@ case "$TARGET" in
   stop_server
   ;;
 "catalyst-tests")
+  unset SDKROOT
   npm ci --ignore-scripts
   npm run check-environment
 
