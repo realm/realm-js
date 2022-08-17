@@ -1021,7 +1021,8 @@ void RealmClass<T>::object_for_object_key(ContextType ctx, ObjectType object, Ar
     int64_t object_key;
     try {
         object_key = std::stoll(object_key_string);
-    } catch (...) {
+    }
+    catch (...) {
         return_value.set_undefined();
         return;
     }
