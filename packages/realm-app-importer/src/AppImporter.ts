@@ -206,6 +206,7 @@ export class AppImporter {
 
     if (appId) {
       console.log(`The application ${appId} was successfully deployed...`);
+      console.log(`${this.baseUrl}/groups/${groupId}/apps/${app._id}/dashboard`);
     }
 
     return { appId };
