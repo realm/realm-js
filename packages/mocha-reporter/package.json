@@ -1,0 +1,36 @@
+{
+  "name": "@realm/mocha-reporter",
+  "version": "0.0.1",
+  "description": "A custom reporter for mocha",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc ",
+    "prepare": "rm -rf dist && npm run build",
+    "start": "tsc -w"
+  },
+  "files": [
+    "dist"
+  ],
+  "author": {
+    "name": "Realm",
+    "email": "help@realm.io",
+    "url": "https://realm.io"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/realm/realm-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/realm/realm-js/issues"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "dependencies": {
+    "mocha": "^8",
+    "mocha-github-actions-reporter": "^0.2.4"
+  },
+  "devDependencies": {
+    "@types/mocha": "^8",
+    "@types/node": "^18.7.6",
+    "typescript": "^4.7.4"
+  }
+}

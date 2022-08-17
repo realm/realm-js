@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "start": "node index.js",
-    "test": "mocha-remote -- concurrently --kill-others-on-fail npm:app-importer npm:start",
+    "test": "mocha-remote --reporter @realm/mocha-reporter -- concurrently --kill-others-on-fail npm:app-importer npm:start",
     "lint": "eslint .",
     "app-importer": "realm-app-importer serve ../../realm-apps"
   },
@@ -24,6 +24,7 @@
     "realm": "*"
   },
   "devDependencies": {
+    "@realm/mocha-reporter": "*",
     "cmake-js": "^6.1.0",
     "concurrently": "^6.0.2",
     "realm-app-importer": "*"
