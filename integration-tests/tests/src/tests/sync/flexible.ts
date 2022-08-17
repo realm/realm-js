@@ -1381,17 +1381,17 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
   describe("end-to-end synchronisation", function () {
     /**
-     * Add a Person object and wait for the subscription set to be synchronised
+     * Add a Person object and wait for the change to be uploaded
      *
      * @param realm Realm instance
      * @returns Promise, resolving to an object containing the object and its id
      */
-    async function addPersonAndWaitForSync(realm: Realm): Promise<{ person: IPerson; id: BSON.ObjectId }> {
+    async function addPersonAndWaitForUpload(realm: Realm): Promise<{ person: IPerson; id: BSON.ObjectId }> {
       const person = realm.write(function () {
         return realm.create<IPerson>(FlexiblePersonSchema.name, { _id: new BSON.ObjectId(), name: "Tom", age: 36 });
       });
 
-      await realm.subscriptions.waitForSynchronization();
+      await realm?.syncSession?.uploadAllLocalChanges();
 
       return { person, id: person._id };
     }
@@ -1419,7 +1419,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
     ): Promise<{ id: BSON.ObjectId; newRealm: Realm }> {
       await realm.subscriptions.update((mutableSubs) => subsUpdateFn(mutableSubs, realm));
 
-      const { id } = await addPersonAndWaitForSync(realm);
+      const { id } = await addPersonAndWaitForUpload(realm);
 
       const newRealm = closeAndReopenRealm(realm, config);
       expect(newRealm.objectForPrimaryKey(FlexiblePersonSchema.name, id)).to.be.undefined;
