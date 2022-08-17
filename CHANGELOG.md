@@ -12,7 +12,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Fixed the client reset callbacks not populating the Realm instance arguments correctly in some cases. ([#5654](https://github.com/realm/realm-core/pull/5654), since v10.11.0)
 * Decimal128 values with more than 110 significant bits were not synchronized correctly with the server. ([realm/realm-swift#7868](https://github.com/realm/realm-swift/issues/7868), since v10.0.0)
 * Fixed an incorrect git merge in the Xcode project from RN iOS. ([#4756](https://github.com/realm/realm-js/issues/4756), since v10.19.5)
-* Fixed detection of emulator environments to be more robust.  Thanks to [Ferry Kranenburg](https://github.com/fkranenburg) for identifying the issue and supplying a PR
+* Fixed detection of emulator environments to be more robust ([#4784](https://github.com/realm/realm-js/issues/4784)).  Thanks to [Ferry Kranenburg](https://github.com/fkranenburg) for identifying the issue and supplying a PR
 
 ### Compatibility
 * Atlas App Services.
