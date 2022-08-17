@@ -2,13 +2,13 @@
   "name": "@realm/binding",
   "version": "0.1.0",
   "private": true,
-  "main": "dist/bundle.cjs.js",
-  "module": "dist/bundle.esm.js",
+  "type": "module",
+  "main": "dist/bundle.esm.js",
   "types": "dist/bundle.d.ts",
   "description": "Binding exposing Realm Core to the SDK running on Node.js",
   "scripts": {
     "test": "tsm --no-warnings tests/test.ts",
-    "compile": "cmake-js compile --debug",
+    "compile": "cmake-js build --debug",
     "build": "rollup --config rollup.config.js"
   },
   "dependencies": {

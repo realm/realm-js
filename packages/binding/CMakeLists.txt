@@ -186,16 +186,6 @@ add_custom_command(
 )
 
 add_custom_command(
-    OUTPUT ${GENERATED_NODE_LOADER}
-    COMMAND ${NODE_FORCE_COLOR} ${BINDGEN_DIR}/realm-bindgen.ts --spec ${SPEC_FILE} --template node-loader --output ${TYPESCRIPT_OUTPUT_DIR}
-    VERBATIM
-    MAIN_DEPENDENCY ${BINDGEN_DIR}/src/templates/node-loader.ts
-    DEPENDS
-        ${SPEC_FILE}
-        ${TS_FILES}
-)
-
-add_custom_command(
     OUTPUT ${GENERATED_TS_FILES}
     COMMAND ${NODE_FORCE_COLOR} ${BINDGEN_DIR}/realm-bindgen.ts --spec ${SPEC_FILE} --template typescript --output ${TYPESCRIPT_OUTPUT_DIR}
     VERBATIM
@@ -205,4 +195,15 @@ add_custom_command(
         ${TS_FILES}
 )
 
-add_custom_target(TypeScript ALL DEPENDS ${GENERATED_TS_FILES} ${GENERATED_NODE_LOADER})
+add_custom_command(
+    OUTPUT ${GENERATED_NODE_LOADER}
+    COMMAND ${NODE_FORCE_COLOR} ${BINDGEN_DIR}/realm-bindgen.ts --spec ${SPEC_FILE} --template node-loader --output ${TYPESCRIPT_OUTPUT_DIR}
+    VERBATIM
+    MAIN_DEPENDENCY ${BINDGEN_DIR}/src/templates/node-loader.ts
+    DEPENDS
+        ${SPEC_FILE}
+        ${TS_FILES}
+)
+
+add_custom_target(TypeScript ALL DEPENDS ${GENERATED_TS_FILES})
+add_custom_target(NodeLoader ALL DEPENDS ${GENERATED_NODE_LOADER})

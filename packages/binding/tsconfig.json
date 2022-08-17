@@ -2,9 +2,12 @@
   "compilerOptions": {
     "moduleResolution": "node",
     "target": "es2020",
-    "noEmit": true
+    "noResolve": true,
+    "noEmit": true,
+    "allowJs": true
   },
-  "exclude": [
-    "tests/"
+  "include": [
+    "src/",
+    "generated/"
   ]
 }

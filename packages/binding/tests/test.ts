@@ -16,9 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Realm, PropertyType, Helpers, Mixed, Results, SortDescriptor, NotificationToken } from "../dist/bundle.cjs.js";
+import { Realm, PropertyType, Helpers, Mixed, Results, SortDescriptor, NotificationToken } from "../src/index";
 
-import assert from "assert";
+import { strict as assert } from "node:assert";
 import * as util from "util";
 
 util; // mark as used since it is useful for debugging.

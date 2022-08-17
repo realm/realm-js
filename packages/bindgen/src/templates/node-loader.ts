@@ -21,9 +21,9 @@ import { bindModel } from "../bound-model";
 
 export function generateNodeLoader({ spec: rawSpec, file }: TemplateContext): void {
   const spec = bindModel(rawSpec);
-  const js = file("native.mjs", "eslint");
+  const js = file("native.js", "eslint");
   js("// This file is generated: Update the spec instead of editing this file directly");
   js("import bindings from 'bindings';");
   js('export * from "./enums";');
-  js(`export const {${spec.classes.map((cls) => cls.jsName).join(", ")}} = bindings("realm.node");`);
+  js("export const {", spec.classes.map((cls) => cls.jsName).join(", "), '} = bindings("realm.node");');
 }

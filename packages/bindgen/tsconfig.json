@@ -8,6 +8,7 @@
     "esModuleInterop": true
   },
   "include": [
+    "realm-bindgen.ts",
     "src/"
   ]
 }

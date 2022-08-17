@@ -111,7 +111,6 @@ export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): vo
 
   enumsOut("// Enums");
   for (const e of spec.enums) {
-    // Using const enum to avoid having to emit JS backing these
     enumsOut(`export enum ${e.jsName} {`);
     enumsOut(...e.enumerators.map(({ name, value }) => `${name} = ${value},\n`));
     enumsOut("};");
