@@ -95,15 +95,15 @@ if (skipBuild) {
 
 stage('build') {
     parallelExecutors = [:]
-    parallelExecutors["OS x86_64 NAPI ${nodeTestVersion}"] = buildMacOS { buildCommon(nodeTestVersion, it) }
-    parallelExecutors["macOS arm NAPI ${nodeTestVersion}"] = buildMacOSArm { buildCommon(nodeTestVersion, it, '-- --arch=arm64') }
+    // parallelExecutors["OS x86_64 NAPI ${nodeTestVersion}"] = buildMacOS { buildCommon(nodeTestVersion, it) }
+    // parallelExecutors["macOS arm NAPI ${nodeTestVersion}"] = buildMacOSArm { buildCommon(nodeTestVersion, it, '-- --arch=arm64') }
 
-    parallelExecutors["Linux x86_64 NAPI ${nodeTestVersion}"] = buildLinux { buildCommon(nodeTestVersion, it) }
-    parallelExecutors["Linux armhf NAPI ${nodeTestVersion}"] = buildLinuxRpi { buildCommon(nodeTestVersion, it, '-- --arch=arm -- --CDCMAKE_TOOLCHAIN_FILE=./vendor/realm-core/tools/cmake/armhf.toolchain.cmake') }
-    parallelExecutors["Windows ia32 NAPI ${nodeTestVersion}"] = buildWindows(nodeTestVersion, 'ia32')
-    parallelExecutors["Windows x64 NAPI ${nodeTestVersion}"] = buildWindows(nodeTestVersion, 'x64')
+    // parallelExecutors["Linux x86_64 NAPI ${nodeTestVersion}"] = buildLinux { buildCommon(nodeTestVersion, it) }
+    // parallelExecutors["Linux armhf NAPI ${nodeTestVersion}"] = buildLinuxRpi { buildCommon(nodeTestVersion, it, '-- --arch=arm -- --CDCMAKE_TOOLCHAIN_FILE=./vendor/realm-core/tools/cmake/armhf.toolchain.cmake') }
+    // parallelExecutors["Windows ia32 NAPI ${nodeTestVersion}"] = buildWindows(nodeTestVersion, 'ia32')
+    // parallelExecutors["Windows x64 NAPI ${nodeTestVersion}"] = buildWindows(nodeTestVersion, 'x64')
 
-    parallelExecutors["Android RN"] = buildAndroid()
+    // parallelExecutors["Android RN"] = buildAndroid()
     parallelExecutors["iOS RN"] = buildiOS()
 
     parallel parallelExecutors
@@ -133,19 +133,19 @@ if (gitTag) {
 stage('test') {
   parallelExecutors = [:]
 
-  parallelExecutors["macOS node ${nodeTestVersion} Debug"]   = testMacOS("node Debug ${nodeTestVersion}")
-  parallelExecutors["macOS node ${nodeTestVersion} Release"] = testMacOS("node Release ${nodeTestVersion}")
-  parallelExecutors["macOS test runners ${nodeTestVersion}"] = testMacOS("test-runners Release ${nodeTestVersion}")
-  parallelExecutors["Linux node ${nodeTestVersion} Release"] = testLinux("node Release ${nodeTestVersion}", null, true)
-  parallelExecutors["Linux test runners ${nodeTestVersion}"] = testLinux("test-runners Release ${nodeTestVersion}")
-  parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
+  // parallelExecutors["macOS node ${nodeTestVersion} Debug"]   = testMacOS("node Debug ${nodeTestVersion}")
+  // parallelExecutors["macOS node ${nodeTestVersion} Release"] = testMacOS("node Release ${nodeTestVersion}")
+  // parallelExecutors["macOS test runners ${nodeTestVersion}"] = testMacOS("test-runners Release ${nodeTestVersion}")
+  // parallelExecutors["Linux node ${nodeTestVersion} Release"] = testLinux("node Release ${nodeTestVersion}", null, true)
+  // parallelExecutors["Linux test runners ${nodeTestVersion}"] = testLinux("test-runners Release ${nodeTestVersion}")
+  // parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
 
-  parallelExecutors["React Native Android Release"] = inAndroidContainer { testAndroid("test-android Release ${nodeTestVersion}") }
+  // parallelExecutors["React Native Android Release"] = inAndroidContainer { testAndroid("test-android Release ${nodeTestVersion}") }
   parallelExecutors["React Native iOS Release"] = testMacOS("react-tests Release ${nodeTestVersion}")
   parallelExecutors["React Native Catalyst Release"] = testMacOS("catalyst-tests Release ${nodeTestVersion}")
 
-  parallelExecutors["macOS Electron Debug"] = testMacOS("electron Debug ${nodeTestVersion}")
-  parallelExecutors["macOS Electron Release"] = testMacOS("electron Release ${nodeTestVersion}")
+  // parallelExecutors["macOS Electron Debug"] = testMacOS("electron Debug ${nodeTestVersion}")
+  // parallelExecutors["macOS Electron Release"] = testMacOS("electron Release ${nodeTestVersion}")
   parallel parallelExecutors
 }
 
