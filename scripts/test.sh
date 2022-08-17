@@ -3,6 +3,7 @@
 set -o pipefail
 set -e
 
+printenv
 # Make sure SDKROOT variable is not set before building
 unset SDKROOT
 unset USER_HEADER_SEARCH_PATHS
