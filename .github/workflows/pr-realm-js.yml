@@ -67,7 +67,7 @@ jobs:
         env:
           cache-name: cache-ios-build
         with:
-          path: react-native/ios/build
+          path: react-native/ios/realm-js-ios.xcframework
           key: ${{ runner.os }}-ios-${{ hashFiles('./src/**', './vendor/**') }}
           restore-keys: |
             ${{ runner.os }}-ios-
@@ -119,7 +119,7 @@ jobs:
 
       # build the c++ library for IOS
       - name: Build IOS
-        if: ${{ (matrix.variant.os == 'ios') }}
+        if: ${{ (matrix.variant.os == 'ios') && (steps.cache-prebuild.outputs.cache-hit == 'false') }}
         run: npm run prebuild:ios
 
       # build the c++ library for Android
