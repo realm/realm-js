@@ -25,10 +25,12 @@
   },
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
-    "mocha": "9.1.1"
+    "mocha": "^8",
+    "mocha-github-actions-reporter": "^0.2.4"
   },
   "devDependencies": {
-    "@types/mocha": "9.1.1",
+    "@types/mocha": "^8",
+    "@types/node": "^18.7.6",
     "typescript": "^4.7.4"
   }
 }

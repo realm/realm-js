@@ -15,24 +15,4 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-
-import mocha from "mocha";
-import GithubActionsReporter from "mocha-github-actions-reporter";
-
-const base = mocha.reporters.Base;
-const color = base.color;
-
-const baseReporter = process.env.CI ? GithubActionsReporter : mocha.reporters.Spec;
-class RealmMochaReporter extends baseReporter {
-  constructor(runner: Mocha.Runner, options) {
-    super(runner, options);
-
-    runner.prependListener(mocha.Runner.constants.EVENT_TEST_FAIL, function (test: mocha.Test, err: any) {
-      const now = new Date().toISOString();
-      test.title += ` ${color("bright yellow", `(${now})`)}
-      ${color("error message", err)}`;
-    });
-  }
-}
-
-module.exports = RealmMochaReporter;
+declare module "mocha-github-actions-reporter";
