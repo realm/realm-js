@@ -105,5 +105,8 @@ integration-tests/**/.lock
 /templates/*/package-lock.json
 /templats/*/template/package-lock.json
 
+# Generated artifacts
+/packages/bindgen/generated/
+
 # Turbo repo caches
 .turbo
