@@ -3,6 +3,15 @@
 set -o pipefail
 set -e
 
+# Make sure SDKROOT variable is not set before building
+unset SDKROOT
+
+# If set, make sure the DEVELOPER_DIR variable is set to a valid directory
+if [[ -n "${DEVELOPER_DIR}" && ! -d "${DEVELOPER_DIR}" ]]; then
+    echo "error: DEVELOPER_DIR is not a valid directory: ${DEVELOPER_DIR}"
+    exit 1
+fi
+
 export TEST_SCRIPT=1
 export NPM_CONFIG_PROGRESS=false
 
