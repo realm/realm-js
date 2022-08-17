@@ -341,6 +341,7 @@ public:
     static void compact(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void writeCopyTo(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void delete_model(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void object_for_object_key(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void object_for_object_id(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void get_schema_name_from_object(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void update_schema(ContextType, ObjectType, Arguments&, ReturnValue&);
@@ -427,6 +428,7 @@ public:
         {"compact", wrap<compact>},
         {"writeCopyTo", wrap<writeCopyTo>},
         {"deleteModel", wrap<delete_model>},
+        {"_objectForObjectKey", wrap<object_for_object_key>},
         {"_updateSchema", wrap<update_schema>},
         {"_schemaName", wrap<get_schema_name_from_object>},
     };
@@ -1006,6 +1008,37 @@ void RealmClass<T>::delete_model(ContextType ctx, ObjectType this_object, Argume
     if (!realm->is_in_migration()) {
         realm::Schema new_schema = ObjectStore::schema_from_group(group);
         realm->update_schema(new_schema, realm->schema_version() + 1, nullptr, nullptr, true);
+    }
+}
+
+template <typename T>
+void RealmClass<T>::object_for_object_key(ContextType ctx, ObjectType object, Arguments& args,
+                                          ReturnValue& return_value)
+{
+    args.validate_count(2);
+
+    auto object_key_string = Value::validated_to_string(ctx, args[1], "objectKey");
+    int64_t object_key;
+    try {
+        object_key = std::stoll(object_key_string);
+    }
+    catch (...) {
+        return_value.set_undefined();
+        return;
+    }
+
+    const SharedRealm& realm = *get_internal<T, RealmClass<T>>(ctx, object);
+    auto& schema = validated_object_schema_for_value(ctx, realm, args[0]);
+    auto table = realm->read_group().get_table(schema.table_key);
+
+    auto obj = table->try_get_object(ObjKey(object_key));
+    auto realm_object = realm::Object(realm, obj);
+
+    if (realm_object.is_valid()) {
+        return_value.set(RealmObjectClass<T>::create_instance(ctx, std::move(realm_object)));
+    }
+    else {
+        return_value.set_undefined();
     }
 }
 

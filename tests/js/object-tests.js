@@ -725,6 +725,78 @@ module.exports = {
     });
   },
 
+  testObjectKeyFound: function () {
+    const AgeSchema = {
+      name: "AgeSchema",
+      properties: {
+        age: "int",
+      },
+    };
+    const realm = new Realm({
+      schema: [AgeSchema],
+    });
+
+    let obj;
+    realm.write(() => {
+      obj = realm.create(AgeSchema.name, { age: 5 });
+    });
+
+    const objKey = obj._objectKey();
+    const objFromKey = realm._objectForObjectKey(AgeSchema.name, objKey);
+
+    TestCase.assertDefined(objFromKey);
+  },
+
+  testObjectKeyNotFound: function () {
+    const AgeSchema = {
+      name: "AgeSchema",
+      properties: {
+        age: "int",
+      },
+    };
+    const realm = new Realm({
+      schema: [AgeSchema],
+    });
+    let obj;
+
+    realm.write(() => {
+      obj = realm.create(AgeSchema.name, { age: 1 });
+    });
+
+    const freeKey = obj._objectKey();
+    const obj1 = realm._objectForObjectKey(AgeSchema.name, "1" + freeKey);
+    const obj2 = realm._objectForObjectKey(AgeSchema.name, "invalid int64_t");
+    TestCase.assertUndefined(obj1);
+    TestCase.assertUndefined(obj2);
+  },
+
+  testObjectKeyLiveliness: function () {
+    const AgeSchema = {
+      name: "AgeSchema",
+      properties: {
+        age: "int",
+      },
+    };
+    const realm = new Realm({
+      schema: [AgeSchema],
+    });
+    let obj;
+
+    realm.write(() => {
+      obj = realm.create(AgeSchema.name, { age: 5 });
+    });
+
+    const objKey = obj._objectKey();
+    const objFromKey = realm._objectForObjectKey(AgeSchema.name, objKey);
+
+    realm.write(() => {
+      objFromKey.age = 7;
+    });
+
+    TestCase.assertEqual(obj.age, 7);
+    TestCase.assertEqual(objFromKey.age, 7);
+  },
+
   testGetPropertyType: function () {
     const MixedSchema = {
       name: "MixedSchema",
