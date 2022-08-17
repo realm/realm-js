@@ -29,8 +29,15 @@ class RealmMochaReporter extends baseReporter {
 
     runner.prependListener(mocha.Runner.constants.EVENT_TEST_FAIL, function (test: mocha.Test, err: any) {
       const now = new Date().toISOString();
+      const errorOutput =
+        typeof err == "object"
+          ? `
+      ${color("error message", err.message)},
+      ${color("error stack", err.stack)}
+      `
+          : err;
       test.title += ` ${color("bright yellow", `(${now})`)}
-      ${color("error message", err)}`;
+      ${errorOutput}`;
     });
   }
 }
