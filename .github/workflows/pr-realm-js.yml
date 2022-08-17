@@ -225,7 +225,7 @@ jobs:
     runs-on: ${{ matrix.variant.runner }}
     strategy:
       fail-fast: false
-      max-parallel: 1
+      #max-parallel: 1
       matrix:
         variant:
           #type: [Release, Debug]
@@ -329,12 +329,12 @@ jobs:
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ (matrix.variant.os != 'android') && (matrix.variant.os != 'ios') }}
         # The non react native environments should not take so long
-        timeout-minutes: 10
+        timeout-minutes: 20
         run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ (matrix.variant.os == 'ios') }}
-        timeout-minutes: 35
+        timeout-minutes: 45
         run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
       - name: Setup Android Emulator cache
