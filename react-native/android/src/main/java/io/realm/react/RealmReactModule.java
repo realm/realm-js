@@ -125,6 +125,7 @@ class RealmReactModule extends ReactContextBaseJavaModule {
     }
 
     private static boolean isRunningOnEmulator() {
+         // This list matched the list in package 'react-native-device-info' (see RNDeviceInfo/RNDeviceModule.java@isEmulatorSync) 
          return Build.FINGERPRINT.startsWith("generic")
             || Build.FINGERPRINT.startsWith("unknown")
             || Build.MODEL.contains("google_sdk")
