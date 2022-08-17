@@ -204,6 +204,10 @@ export class AppImporter {
     // Create the app service
     await this.applyAppConfiguration(appPath, app._id, groupId);
 
+    if (appId) {
+      console.log(`The application ${appId} was successfully deployed...`);
+    }
+
     return { appId };
   }
 
