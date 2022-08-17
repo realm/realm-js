@@ -22,7 +22,6 @@ const Realm = require("realm");
 const TestCase = require("./asserts");
 const schemas = require("./schemas");
 const buffer = require("buffer");
-const { assertNotEqual, assertEqual } = require("./asserts");
 
 const RANDOM_DATA = new Uint8Array([
   0xd8,
