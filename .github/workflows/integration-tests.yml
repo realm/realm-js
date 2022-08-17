@@ -96,7 +96,6 @@ jobs:
       - run: npm test --prefix integration-tests/environments/node
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
-          MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
   electron-linux:
     name: Electron on Linux
     runs-on: ubuntu-latest
@@ -140,12 +139,10 @@ jobs:
         run: xvfb-run npm run test:main --prefix integration-tests/environments/electron
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
-          MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
       - name: Run tests (Electron / Renderer)
         run: xvfb-run npm run test:renderer --prefix integration-tests/environments/electron
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
-          MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
   react-native-ios:
     name: React Native on ${{matrix.platform.name}} (${{ matrix.type }})
     runs-on: macos-latest
@@ -211,7 +208,6 @@ jobs:
         run: npm run test:${{matrix.platform.name}} --prefix integration-tests/environments/react-native
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
-          MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
           MOCHA_REMOTE_EXIT_ON_ERROR: true
           RETRIES: 5
           RETRY_DELAY: 300000 # 5 min
@@ -220,7 +216,6 @@ jobs:
         run: npm run test:${{matrix.platform.name}}:chrome --prefix integration-tests/environments/react-native
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
-          MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
           MOCHA_REMOTE_EXIT_ON_ERROR: true
           HEADLESS_DEBUGGER: true
           RETRIES: 5
@@ -295,7 +290,6 @@ jobs:
           script: npm run test:android --prefix integration-tests/environments/react-native
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
-          MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
           MOCHA_REMOTE_EXIT_ON_ERROR: true
           SPAWN_LOGCAT: true
       - name: Run tests (Android / Chrome Debugging)
@@ -307,7 +301,6 @@ jobs:
           script: npm run test:android:chrome --prefix integration-tests/environments/react-native
         env:
           MOCHA_REMOTE_CONTEXT: missingServer
-          MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
           MOCHA_REMOTE_EXIT_ON_ERROR: true
           HEADLESS_DEBUGGER: true
           SPAWN_LOGCAT: true
