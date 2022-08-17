@@ -43,7 +43,13 @@
     "RealmJS.podspec",
     "CMakeLists.txt"
   ],
+  "workspaces": [
+    "packages/bindgen",
+    "packages/binding",
+    "packages/realm"
+  ],
   "scripts": {
+    "turbo:build": "turbo run build --output-logs=new-only",
     "lerna:bootstrap": "lerna bootstrap",
     "lerna:lint": "lerna run lint",
     "lerna:lint:fix": "lerna run lint --no-bail -- -- --fix",
@@ -107,10 +113,6 @@
       "optional": true
     }
   },
-  "workspaces": [
-    "packages/bindgen",
-    "packages/realm"
-  ],
   "devDependencies": {
     "@babel/runtime": "^7.16.3",
     "@react-native-community/eslint-config": "^3.0.0",
@@ -145,7 +147,7 @@
     "shelljs": "^0.8.5",
     "shx": "^0.2.2",
     "ts-node": "^10.8.1",
-    "turbo": "^1.2.16",
+    "turbo": "^1.4.3",
     "typescript": "^4.5.2"
   },
   "engines": {

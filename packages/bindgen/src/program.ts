@@ -64,6 +64,7 @@ program.name("realm-bindgen");
 
 const specOption = program
   .createOption("-s, --spec <output>", "Path of the API specification")
+  .default(new URL("../spec.yml", import.meta.url).pathname)
   .argParser(parseExistingFilePath)
   .makeOptionMandatory();
 

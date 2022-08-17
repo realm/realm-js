@@ -1,0 +1,27 @@
+{
+  "name": "@realm/binding",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/bundle.cjs.js",
+  "module": "dist/bundle.esm.js",
+  "types": "dist/bundle.d.ts",
+  "description": "Binding exposing Realm Core to the SDK running on Node.js",
+  "scripts": {
+    "test": "tsm --no-warnings tests/test.ts",
+    "compile": "cmake-js compile --debug",
+    "build": "rollup --config rollup.config.js"
+  },
+  "dependencies": {
+    "bindings": "^1.5.0"
+  },
+  "devDependencies": {
+    "@realm/bindgen": "*",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-typescript": "^8.3.4",
+    "@types/node": "^18.7.5",
+    "cmake-js": "^6.3.2",
+    "rollup": "^2.78.0",
+    "rollup-plugin-dts": "^4.2.2",
+    "tsm": "^2.2.2"
+  }
+}

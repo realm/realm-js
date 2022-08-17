@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as binding from "@realm/bindgen";
-import { Helpers } from "@realm/bindgen";
+import * as binding from "@realm/binding";
+import { Helpers } from "@realm/binding";
 
 import { ClassHelpers } from "./ClassMap";
 import { Realm, getInternal as getRealmInternal } from "./Realm";

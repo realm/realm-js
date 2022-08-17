@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as binding from "@realm/bindgen";
+import * as binding from "@realm/binding";
 
 import { Collection } from "./Collection";
 

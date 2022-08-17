@@ -6,5 +6,8 @@
     "moduleResolution": "node",
     "noEmit": true,
     "esModuleInterop": true
-  }
+  },
+  "include": [
+    "src/"
+  ]
 }

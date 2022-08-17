@@ -10,12 +10,12 @@
     "lib": [
       "ES2020"
     ],
-    "types": []
+    "types": [
+      "@realm/binding"
+    ]
   },
   "include": [
-    "src/",
-    "../bindgen/index.ts",
-    "../bindgen/generated/ts/"
+    "src/"
   ],
   "exclude": [
     "src/tests/",

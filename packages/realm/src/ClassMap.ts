@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as binding from "@realm/bindgen";
+import * as binding from "@realm/binding";
 
 import { PropertyMap, ObjectWrapCreator } from "./PropertyMap";
 import { Realm } from "./Realm";

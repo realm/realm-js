@@ -16,41 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import "../../..";
-import * as lib from "../dist/bundle";
+import { TemplateContext } from "../context";
+import { bindModel } from "../bound-model";
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
-// Realm constructor
-
-{
-  // const realm: lib.Realm = new Realm();
-}
-{
-  const realm: Realm = new lib.Realm();
-}
-{
-  const config: lib.Configuration = {} as Realm.Configuration;
-}
-{
-  const config: Realm.Configuration = {} as lib.Configuration;
-}
-{
-  const realm = new lib.Realm();
-  const object: lib.Object = realm.objectForPrimaryKey("Person", "alice");
-}
-
-// Realm.Object
-
-{
-  const object: Realm.Object = new lib.Realm.Object();
-}
-
-// Realm.Result
-
-{
-  class T {
-    name!: string;
-  }
-  const results: Realm.Results<T> = new lib.Realm.Results<T>();
+export function generateNodeLoader({ spec: rawSpec, file }: TemplateContext): void {
+  const spec = bindModel(rawSpec);
+  const js = file("native.mjs", "eslint");
+  js("// This file is generated: Update the spec instead of editing this file directly");
+  js("import bindings from 'bindings';");
+  js('export * from "./enums";');
+  js(`export const {${spec.classes.map((cls) => cls.jsName).join(", ")}} = bindings("realm.node");`);
 }

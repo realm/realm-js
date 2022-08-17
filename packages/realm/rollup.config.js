@@ -16,41 +16,34 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import "../../..";
-import * as lib from "../dist/bundle";
+import pkg from "./package.json";
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
+import typescript from "@rollup/plugin-typescript";
+import nodeResolve from "@rollup/plugin-node-resolve";
+import dts from "rollup-plugin-dts";
 
-// Realm constructor
-
-{
-  // const realm: lib.Realm = new Realm();
-}
-{
-  const realm: Realm = new lib.Realm();
-}
-{
-  const config: lib.Configuration = {} as Realm.Configuration;
-}
-{
-  const config: Realm.Configuration = {} as lib.Configuration;
-}
-{
-  const realm = new lib.Realm();
-  const object: lib.Object = realm.objectForPrimaryKey("Person", "alice");
-}
-
-// Realm.Object
-
-{
-  const object: Realm.Object = new lib.Realm.Object();
-}
-
-// Realm.Result
-
-{
-  class T {
-    name!: string;
-  }
-  const results: Realm.Results<T> = new lib.Realm.Results<T>();
-}
+export default [
+  {
+    input: "src/index.ts",
+    output: [
+      {
+        file: pkg.main,
+        format: "cjs",
+      },
+      {
+        file: pkg.module,
+        format: "esm",
+      },
+    ],
+    plugins: [typescript(), nodeResolve()],
+    external: ["@realm/binding"],
+  },
+  {
+    input: "src/index.ts",
+    output: {
+      file: pkg.types,
+      format: "esm",
+    },
+    plugins: [dts({ compilerOptions: { noResolve: false } })],
+  },
+];

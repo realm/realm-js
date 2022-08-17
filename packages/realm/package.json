@@ -2,21 +2,27 @@
   "name": "realm",
   "version": "12.0.0-rc.0",
   "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
-  "main": "index.js",
+  "main": "dist/bundle.cjs.js",
+  "module": "dist/bundle.esm.js",
+  "types": "dist/bundle.d.ts",
   "scripts": {
     "test": "mocha",
     "test:types": "tsc --project type-tests/tsconfig.json",
-    "build": "tsc --noEmit"
+    "build": "rollup --config rollup.config.js"
   },
   "dependencies": {
-    "@realm/bindgen": "^0.1.0"
+    "@realm/binding": "^0.1.0"
   },
   "devDependencies": {
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-typescript": "^8.3.4",
     "@types/chai": "^4.3.1",
     "@types/mocha": "^9.1.1",
     "@types/node": "^16.11.7",
     "chai": "^4.3.6",
     "mocha": "^10.0.0",
+    "rollup": "^2.78.0",
+    "rollup-plugin-dts": "^4.2.2",
     "tsm": "^2.2.1"
   }
 }

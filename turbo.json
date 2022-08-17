@@ -1,7 +1,7 @@
 {
   "$schema": "https://turborepo.org/schema.json",
   "pipeline": {
-    "generate:spec-schema": {
+    "@realm/bindgen#generate:spec-schema": {
       "inputs": [
         "src/spec/model.ts",
         "src/spec/relaxed-model.ts"
@@ -10,51 +10,57 @@
         "generated/spec.schema.json"
       ]
     },
-    "generate:typescript": {
-      "inputs": [
-        "src/*",
-        "spec.yml"
-      ],
-      "outputs": [
-        "generated/ts/*"
-      ],
-      "dependsOn": [
-        "generate:spec-schema"
-      ]
-    },
-    "generate:node": {
-      "inputs": [
-        "src/*",
-        "spec.yml"
-      ],
-      "outputs": [
-        "generated/node/*"
-      ],
-      "dependsOn": [
-        "generate:spec-schema"
-      ]
-    },
-    "compile:node": {
-      "inputs": [
-        "generated/node/*"
-      ],
-      "dependsOn": [
-        "generate:node"
-      ]
-    },
-    "compile": {
-      "inputs": [],
-      "dependsOn": [
-        "compile:node"
-      ]
-    },
-    "build": {
+    "@realm/bindgen#build": {
       "inputs": [
         "src/*"
       ],
       "dependsOn": [
-        "generate:typescript",
-        "compile",
+        "generate:spec-schema"
+      ]
+    },
+    "@realm/binding#compile": {
+      "inputs": [
+        "generated/node/*"
+      ],
+      "outputs": [
+        "build/Release/*",
+        "build/Debug/*"
+      ],
+      "dependsOn": [
+        "^build"
+      ]
+    },
+    "@realm/binding#build": {
+      "inputs": [
+        "src/*"
+      ],
+      "outputs": [
+        "dist/*"
+      ],
+      "dependsOn": [
+        "compile"
+      ]
+    },
+    "realm#test:types": {
+      "inputs": [
+        "type-tests/*"
+      ],
+      "outputs": [],
+      "dependsOn": [
+        "build"
+      ]
+    },
+    "realm#test": {
+      "dependsOn": [
+        "test:types"
+      ]
+    },
+    "build": {
+      "inputs": [
+        "src/*",
+        "!src/tests/*"
+      ],
+      "dependsOn": [
         "^build"
       ]
     },
@@ -68,14 +74,5 @@
         "build"
       ]
     },
-    "test:types": {
-      "inputs": [
-        "type-tests/*"
-      ],
-      "outputs": [],
-      "dependsOn": [
-        "build"
-      ]
-    }
   }
 }

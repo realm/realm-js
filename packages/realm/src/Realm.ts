@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as binding from "@realm/bindgen";
+import * as binding from "@realm/binding";
 
 import { getInternal as getObjectInternal, Object as RealmObject } from "./Object";
 import { createWrapper as createResultsWrapper, Results } from "./Results";

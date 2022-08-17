@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "target": "es2020",
+    "noEmit": true
+  },
+  "exclude": [
+    "tests/"
+  ]
+}

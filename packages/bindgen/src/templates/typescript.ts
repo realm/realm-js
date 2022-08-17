@@ -112,21 +112,16 @@ export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): vo
   enumsOut("// Enums");
   for (const e of spec.enums) {
     // Using const enum to avoid having to emit JS backing these
-    enumsOut(`export const enum ${e.jsName} {`);
+    enumsOut(`export enum ${e.jsName} {`);
     enumsOut(...e.enumerators.map(({ name, value }) => `${name} = ${value},\n`));
     enumsOut("};");
   }
-
-  const js = file("native.js", "eslint");
-  js("// This file is generated: Update the spec instead of editing this file directly");
-  js("import bindings from 'bindings';");
 
   const out = file("native.d.ts", "eslint", "typescript-checker");
   out("// This file is generated: Update the spec instead of editing this file directly");
 
   out("import {", spec.enums.map((e) => e.name).join(", "), '} from "./enums";');
   out('export * from "./enums";');
-  js('export * from "./enums";');
 
   out("// Utilities");
   out(`type DeepRequired<T> = 
@@ -151,7 +146,6 @@ export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): vo
 
   out("// Classes");
   for (const cls of spec.classes) {
-    js(`export const {${cls.jsName}} = bindings("realm.node");`);
     out(`export class ${cls.jsName} {`);
     out(`private constructor();`);
     for (const prop of cls.properties) {

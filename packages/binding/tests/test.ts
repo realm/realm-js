@@ -1,5 +1,3 @@
-#!/usr/bin/env -S node --loader tsm --no-warnings --
-
 ////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2022 Realm Inc.
@@ -18,11 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-/* eslint-disable header/header */
+import { Realm, PropertyType, Helpers, Mixed, Results, SortDescriptor, NotificationToken } from "../dist/bundle.cjs.js";
 
-import { Realm, PropertyType, Helpers, Mixed, Results, SortDescriptor, NotificationToken } from "../index";
-
-import { strict as assert } from "assert";
+import assert from "assert";
 import * as util from "util";
 
 util; // mark as used since it is useful for debugging.

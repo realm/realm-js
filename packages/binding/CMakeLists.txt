@@ -150,11 +150,12 @@ endif()
 
 # This only needs to be done with ninja
 set(NODE_FORCE_COLOR ${CMAKE_COMMAND} -E env FORCE_COLOR=1)
+set(BINDGEN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../bindgen)
 
 file(GLOB_RECURSE TS_FILES
     LIST_DIRECTORIES false
     CONFIGURE_DEPENDS
-    src/*.ts
+    ${BINDGEN_DIR}/src/*.ts
 )
 
 # Each template command should include its file as an explicit dependency.
@@ -162,52 +163,46 @@ file(GLOB_RECURSE TS_FILES
 list(FILTER TS_FILES EXCLUDE REGEX "templates/[^/]*\.ts$")
 list(FILTER TS_FILES EXCLUDE REGEX "tests/[^/]*\.ts$")
 
-set(SPEC_FILE ${CMAKE_CURRENT_SOURCE_DIR}/spec.yml)
-
-# Unfortunately this path is hard coded in the reader.
-# TODO 
-set(SCHEMA_FILE ${CMAKE_CURRENT_SOURCE_DIR}/generated/spec.schema.json)
+set(SPEC_FILE ${BINDGEN_DIR}/spec.yml)
 
 # We could look into changing this, but perhaps it is correct?
 set(TYPESCRIPT_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/generated/ts/)
 
 set(GENERATED_TS_FILES
     ${TYPESCRIPT_OUTPUT_DIR}/native.d.ts
-    ${TYPESCRIPT_OUTPUT_DIR}/native.js
     ${TYPESCRIPT_OUTPUT_DIR}/enums.ts
 )
 
-add_custom_command(
-    OUTPUT ${SCHEMA_FILE}
-    COMMAND ${NODE_FORCE_COLOR} npx typescript-json-schema ${CMAKE_CURRENT_SOURCE_DIR}/src/spec/relaxed-model.ts RelaxedSpec --out ${SCHEMA_FILE} --required --noExtraProps
-    VERBATIM
-    MAIN_DEPENDENCY src/spec/relaxed-model.ts
-    DEPENDS
-        # Note: The json-schema generation task is extremely slow so we don't want to rerun it any time any TS file is modified.
-        # Instead we assume that it will only transitively import the listed files
-        src/spec/model.ts
-)
+set(GENERATED_NODE_LOADER ${TYPESCRIPT_OUTPUT_DIR}/native.js)
 
 add_custom_command(
     OUTPUT node_init.cpp
-    COMMAND ${NODE_FORCE_COLOR} ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts --spec ${SPEC_FILE} --template node --output ${CMAKE_CURRENT_BINARY_DIR}
+    COMMAND ${NODE_FORCE_COLOR} ${BINDGEN_DIR}/realm-bindgen.ts --spec ${SPEC_FILE} --template node --output ${CMAKE_CURRENT_BINARY_DIR}
     VERBATIM
-    MAIN_DEPENDENCY src/templates/node.ts
+    MAIN_DEPENDENCY ${BINDGEN_DIR}/src/templates/node.ts
     DEPENDS
         ${SPEC_FILE}
-        ${SCHEMA_FILE}
+        ${TS_FILES}
+)
+
+add_custom_command(
+    OUTPUT ${GENERATED_NODE_LOADER}
+    COMMAND ${NODE_FORCE_COLOR} ${BINDGEN_DIR}/realm-bindgen.ts --spec ${SPEC_FILE} --template node-loader --output ${TYPESCRIPT_OUTPUT_DIR}
+    VERBATIM
+    MAIN_DEPENDENCY ${BINDGEN_DIR}/src/templates/node-loader.ts
+    DEPENDS
+        ${SPEC_FILE}
         ${TS_FILES}
 )
 
 add_custom_command(
     OUTPUT ${GENERATED_TS_FILES}
-    COMMAND ${NODE_FORCE_COLOR} ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts --spec ${SPEC_FILE} --template typescript --output ${TYPESCRIPT_OUTPUT_DIR}
+    COMMAND ${NODE_FORCE_COLOR} ${BINDGEN_DIR}/realm-bindgen.ts --spec ${SPEC_FILE} --template typescript --output ${TYPESCRIPT_OUTPUT_DIR}
     VERBATIM
-    MAIN_DEPENDENCY src/templates/typescript.ts
+    MAIN_DEPENDENCY ${BINDGEN_DIR}/src/templates/typescript.ts
     DEPENDS
         ${SPEC_FILE}
-        ${SCHEMA_FILE}
         ${TS_FILES}
 )
 
-add_custom_target(TypeScript ALL DEPENDS ${GENERATED_TS_FILES})
+add_custom_target(TypeScript ALL DEPENDS ${GENERATED_TS_FILES} ${GENERATED_NODE_LOADER})

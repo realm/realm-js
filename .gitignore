@@ -98,6 +98,9 @@ integration-tests/**/.lock
 
 # Generated artifacts
 /packages/bindgen/generated/
+/packages/binding/generated/
+/packages/binding/dist/
+/packages/realm/dist/
 
 # Turbo repo caches
 .turbo

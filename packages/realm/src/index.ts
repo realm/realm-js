@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export * from "./Realm";
-export * from "./Configuration";
+export type { Configuration } from "./Configuration";
+export { Realm } from "./Realm";
 export { Results } from "./Results";
 export { Object } from "./Object";

@@ -16,10 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-// import { strict as assert } from "assert";
-import { DataType, Decimal128, Mixed, ObjectId, ObjLink, Timestamp, Uuid } from "./generated/ts/native.js";
+// enums are transitively exported.
+export * from "../generated/ts/native";
 
-export * from "./generated/ts/native.js"; // enums are transitively exported.
+// import { strict as assert } from "assert";
+import { DataType, Decimal128, Mixed, ObjectId, ObjLink, Timestamp, Uuid } from "../generated/ts/native";
 
 const customInspectSymbol = Symbol.for("nodejs.util.inspect.custom");
 
@@ -37,7 +38,7 @@ export type MixedValues =
   | Uuid
   | ObjLink;
 
-declare module "./generated/ts/native.js" {
+declare module "../generated/ts/native" {
   interface Mixed {
     toJsValue(): MixedValues;
     toString(): string;
