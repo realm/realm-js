@@ -101,5 +101,8 @@ integration-tests/**/.lock
 /tests/js/realm-tests*.tgz
 /react-native/ios/realm-js-ios.xcframework/
 
+# Generated artifacts
+/packages/bindgen/generated/
+
 # Turbo repo caches
 .turbo
