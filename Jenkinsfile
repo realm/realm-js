@@ -207,7 +207,7 @@ def buildMacOS(workerFunction) {
   return {
     myNode('osx_vegas') {
       withEnv([
-        "DEVELOPER_DIR=/Applications/Xcode-13.4.1.app/Contents/Developer",
+        "DEVELOPER_DIR=/Applications/Xcode-13.1.app/Contents/Developer",
       ]) {
         unstash 'source'
         sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
@@ -221,7 +221,7 @@ def buildMacOSArm(workerFunction) {
   return {
     myNode('osx_vegas') {
       withEnv([
-        "DEVELOPER_DIR=/Applications/Xcode-13.4.1.app/Contents/Developer",
+        "DEVELOPER_DIR=/Applications/Xcode-13.1.app/Contents/Developer",
         "NODE_ARCH_ARM=1",
       ]) {
         unstash 'source'
@@ -259,8 +259,8 @@ def buildWindows(nodeVersion, arch) {
 
 def buildiOS() {
   return buildMacOS {
-    withEnv(['SDK_ROOT_OVERRIDE=/Applications/Xcode-13.4.1.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/',
-          'DEVELOPER_DIR_OVERRIDE=/Applications/Xcode-13.4.1.app']) {
+    withEnv(['SDK_ROOT_OVERRIDE=/Applications/Xcode-13.1.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/',
+          'DEVELOPER_DIR_OVERRIDE=/Applications/Xcode-13.1.app']) {
       sh './scripts/build-iOS.sh -c Release'
         dir('react-native/ios') {
         // Uncomment this when testing build changes if you want to be able to download pre-built artifacts from Jenkins.
@@ -497,9 +497,9 @@ def testLinux(target, postStep = null, Boolean enableSync = false) {
 def testMacOS(target, postStep = null) {
   return {
     node('osx_vegas') {
-      withEnv(['SDK_ROOT_OVERRIDE=/Applications/Xcode-13.4.1.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/',
-               'DEVELOPER_DIR_OVERRIDE=/Applications/Xcode-13.4.1.app',
-               'DEVELOPER_DIR=/Applications/Xcode-13.4.1.app/Contents/Developer',
+      withEnv(['SDK_ROOT_OVERRIDE=/Applications/Xcode-13.1.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/',
+               'DEVELOPER_DIR_OVERRIDE=/Applications/Xcode-13.1.app',
+               'DEVELOPER_DIR=/Applications/Xcode-13.1.app/Contents/Developer',
                'REALM_SET_NVM_ALIAS=1',
                'REALM_DISABLE_SYNC_TESTS=1',
                'npm_config_realm_local_prebuilds=prebuilds']) {
