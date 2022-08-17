@@ -109,26 +109,26 @@ stage('build') {
     parallel parallelExecutors
 }
 
-stage('pretest') {
-  parallelExecutors = [:]
-    parallelExecutors["jsdoc"] = testLinux("jsdoc Release ${nodeTestVersion}", { // "Release is not used
-    publishHTML([
-      allowMissing: false,
-      alwaysLinkToLastBuild: false,
-      keepAll: false,
-      reportDir: 'docs/output',
-      reportFiles: 'index.html',
-      reportName: 'Docs'
-    ])
-  })
-  parallel parallelExecutors
-}
+// stage('pretest') {
+//   parallelExecutors = [:]
+//     parallelExecutors["jsdoc"] = testLinux("jsdoc Release ${nodeTestVersion}", { // "Release is not used
+//     publishHTML([
+//       allowMissing: false,
+//       alwaysLinkToLastBuild: false,
+//       keepAll: false,
+//       reportDir: 'docs/output',
+//       reportFiles: 'index.html',
+//       reportName: 'Docs'
+//     ])
+//   })
+//   parallel parallelExecutors
+// }
 
-if (gitTag) {
-  stage('publish') {
-    publish(dependencies, gitTag)
-  }
-}
+// if (gitTag) {
+//   stage('publish') {
+//     publish(dependencies, gitTag)
+//   }
+// }
 
 stage('test') {
   parallelExecutors = [:]
