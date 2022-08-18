@@ -184,7 +184,7 @@ xctest() {
 catalystTest() {
   # - Run the build and test
   echo "Building application"
-  xcrun xcodebuild -workspace "$1.xcworkspace" -scheme "$1" -configuration "$CONFIGURATION" -destination 'platform=macOS,arch=x86_64,variant=Mac Catalyst' -derivedDataPath ./build build-for-testing || {
+  xcrun xcodebuild -workspace "$1.xcworkspace" -scheme "$1" -configuration "$CONFIGURATION" -destination 'platform=macOS,variant=Mac Catalyst' -derivedDataPath ./build build-for-testing || {
       EXITCODE=$?
       echo "*** Failure (exit code $EXITCODE). ***"
       exit $EXITCODE
@@ -192,7 +192,7 @@ catalystTest() {
 
   log_temp="$(pwd)/build/out.txt"
   echo "Launching tests. (output is in ${log_temp})"
-  xcrun xcodebuild -workspace "$1.xcworkspace" -scheme "$1" -configuration "$CONFIGURATION" -destination 'platform=macOS,arch=x86_64,variant=Mac Catalyst' -derivedDataPath ./build test-without-building 2>&1 | tee "$log_temp" || {
+  xcrun xcodebuild -workspace "$1.xcworkspace" -scheme "$1" -configuration "$CONFIGURATION" -destination 'platform=macOS,variant=Mac Catalyst' -derivedDataPath ./build test-without-building 2>&1 | tee "$log_temp" || {
       EXITCODE=$?
       echo "*** Failure (exit code $EXITCODE). ***"
       exit $EXITCODE
