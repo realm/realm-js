@@ -3,11 +3,13 @@
 set -o pipefail
 set -e
 
-printenv
 # Make sure SDKROOT variable is not set before building
 unset SDKROOT
 unset USER_HEADER_SEARCH_PATHS
 unset HEADER_SEARCH_PATHS
+unset CPATH
+
+printenv
 
 # If set, make sure the DEVELOPER_DIR variable is set to a valid directory
 if [[ -n "${DEVELOPER_DIR}" && ! -d "${DEVELOPER_DIR}" ]]; then
