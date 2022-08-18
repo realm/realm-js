@@ -79,17 +79,9 @@ jobs:
         if: ${{ (matrix.variant.runner == 'ubuntu-20.04') }}
         run: sudo apt-get install ccache ninja-build xvfb
 
-      - name: Download ccache for Windows
-        if: ${{ runner.os == 'Windows' }}
-        id: ccache
-        shell: cmake -P {0}
-        run: |
-          set(ccache_url "https://github.com/cristianadam/ccache/releases/download/v4.6/Windows.tar.xz")
-          file(DOWNLOAD "${ccache_url}" ./ccache.tar.xz SHOW_PROGRESS)
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./ccache.tar.xz)
-
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1
+        if: ${{ runner.os != 'Windows' }}
         #TODO: figure out using ccache or equivalent on windows
         with:
           key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}
@@ -101,6 +93,7 @@ jobs:
           echo "/usr/lib/ccache:/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
 
       - name: Configure ccache
+        if: ${{ runner.os != 'Windows' }}
         run: |
           ccache --set-config="compiler_check=content"
           ccache --show-config
@@ -287,6 +280,16 @@ jobs:
         if: ${{ matrix.variant.environment == 'react-native' }}
         run: |
           echo "/usr/lib/ccache:/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
+
+      - name: Fix ccache as default compiler
+        if: ${{ matrix.variant.environment == 'react-native' }}
+        run: |
+          ln -s ccache /usr/local/bin/gcc
+          ln -s ccache /usr/local/bin/g++
+          ln -s ccache /usr/local/bin/cc
+          ln -s ccache /usr/local/bin/c++
+          ln -s ccache /usr/local/bin/clang
+          ln -s ccache /usr/local/bin/clang++
 
       - name: Configure ccache
         if: ${{ matrix.variant.environment == 'react-native' }}
