@@ -21,7 +21,8 @@
     },
     "@realm/binding#compile": {
       "inputs": [
-        "../bindgen/src/"
+        "../bindgen/src/",
+        "../../vendor/realm-core/"
       ],
       "outputs": [
         "build/Release/realm.node",
