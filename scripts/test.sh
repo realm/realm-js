@@ -318,12 +318,13 @@ case "$TARGET" in
   start_packager
 
   pushd ios
-  pod install --clean-install
+  pod install
+  # pod install might find gflags but it most be ignored
+  sed -i -e 's/#define HAVE_LIB_GFLAGS 1/#undef HAVE_LIBB_GFLAGS/' Pods/glog/src/config.h
   xctest ReactTestApp
   stop_server
   ;;
 "catalyst-tests")
-  unset SDKROOT
   npm ci --ignore-scripts
   npm run check-environment
 
@@ -340,7 +341,9 @@ case "$TARGET" in
   start_packager
 
   pushd ios
-  pod install --clean-install
+  pod install
+  # pod install might find gflags but it most be ignored
+  sed -i -e 's/#define HAVE_LIB_GFLAGS 1/#undef HAVE_LIBB_GFLAGS/' Pods/glog/src/config.h
   catalystTest ReactTestApp
   stop_server
   ;;
