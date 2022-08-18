@@ -8,6 +8,7 @@ unset SDKROOT
 unset USER_HEADER_SEARCH_PATHS
 unset HEADER_SEARCH_PATHS
 unset CPATH
+unset LIBRARY_PATH
 
 printenv
 
@@ -317,7 +318,7 @@ case "$TARGET" in
   start_packager
 
   pushd ios
-  pod install
+  pod install --clean-install
   xctest ReactTestApp
   stop_server
   ;;
@@ -339,7 +340,7 @@ case "$TARGET" in
   start_packager
 
   pushd ios
-  pod install
+  pod install --clean-install
   catalystTest ReactTestApp
   stop_server
   ;;
