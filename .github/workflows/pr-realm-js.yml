@@ -80,8 +80,8 @@ jobs:
         run: sudo apt-get install ccache ninja-build xvfb
 
       - name: ccache
-        uses: hendrikmuhs/ccache-action@v1
-        if: ${{ runner.os != 'Windows' }}
+        uses: hendrikmuhs/ccache-action@bd43b7f5fb36d5f97ef5c6cc818a2055b04f610a
+        #if: ${{ runner.os != 'Windows' }}
         #TODO: figure out using ccache or equivalent on windows
         with:
           key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}
@@ -93,7 +93,7 @@ jobs:
           echo "/usr/lib/ccache:/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
 
       - name: Configure ccache
-        if: ${{ runner.os != 'Windows' }}
+        #if: ${{ runner.os != 'Windows' }}
         run: |
           ccache --set-config="compiler_check=content"
           ccache --show-config
