@@ -1392,9 +1392,12 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         return realm.create<IPerson>(FlexiblePersonSchema.name, { _id: new BSON.ObjectId(), name: "Tom", age: 36 });
       });
 
+      // Save the values we want to return, as this could be invalid after uploading, depending on the flexible sync criteria
+      const returnValue = { person, id: person._id };
+
       await realm?.syncSession?.uploadAllLocalChanges();
 
-      return { person, id: person._id };
+      return returnValue;
     }
 
     /**
