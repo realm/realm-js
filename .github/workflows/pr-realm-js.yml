@@ -206,7 +206,7 @@ jobs:
       REALM_BASE_URL: ${{ secrets.REALM_QA_BASE_URL }}
       REALM_PUBLIC_KEY: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
       REALM_PRIVATE_KEY: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
-      MOCHA_REMOTE_CONTEXT: realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ needs.baas-realm-js.outputs.clusterName }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      MOCHA_REMOTE_CONTEXT: missingServer=true,realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ needs.baas-realm-js.outputs.clusterName }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
       MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
       MOCHA_REMOTE_EXIT_ON_ERROR: true
       SPAWN_LOGCAT: true
@@ -223,15 +223,15 @@ jobs:
       matrix:
         variant:
           #type: [Release, Debug]
-          - { os: linux, target: test, runner: ubuntu-20.04, environment: node }
-          - { os: linux, target: "test:main", runner: ubuntu-20.04, environment: electron }
-          - { os: linux, target: "test:renderer", runner: ubuntu-20.04, environment: electron }
+          # - { os: linux, target: test, runner: ubuntu-20.04, environment: node }
+          # - { os: linux, target: "test:main", runner: ubuntu-20.04, environment: electron }
+          # - { os: linux, target: "test:renderer", runner: ubuntu-20.04, environment: electron }
           #- { os: windows, target: test, runner: windows-2019, environment: node}
           #- { os: windows, target: "test:main", runner: windows-2019, environment: electron }
           #- { os: windows, target: "test:renderer", runner: windows-2019, environment: electron }
-          - { os: darwin, target: "test:main", runner: macos-11, environment: electron }
-          - { os: darwin, target: "test:renderer", runner: macos-11, environment: electron }
-          - { os: darwin, target: test, runner: macos-11, environment: node }
+          # - { os: darwin, target: "test:main", runner: macos-11, environment: electron }
+          # - { os: darwin, target: "test:renderer", runner: macos-11, environment: electron }
+          # - { os: darwin, target: test, runner: macos-11, environment: node }
           - { os: android, target: "test:android", runner: macos-11, environment: react-native }
           #- { os: android, target: "test:android:chrome", runner: macos-11, environment: react-native }
           - { os: ios, target: "test:ios", runner: macos-11, environment: react-native }
