@@ -321,7 +321,7 @@ case "$TARGET" in
   pod install
   # pod install might find gflags but it most be ignored
   sed -i '' -e 's/#define HAVE_LIB_GFLAGS 1/#undef HAVE_LIB_GFLAGS/' Pods/glog/src/config.h
-  sed -i '' -e 's/#include <gflags/gflags.h>//' Pods/glog/src/glog/logging.h
+  sed -i '' -e 's/#include <gflags\/gflags.h>//' Pods/glog/src/glog/logging.h
   cat Pods/glog/src/config.h
   xctest ReactTestApp
   stop_server
@@ -346,7 +346,7 @@ case "$TARGET" in
   pod install
   # pod install might find gflags but it most be ignored
   sed -i '' -e 's/#define HAVE_LIB_GFLAGS 1/#undef HAVE_LIB_GFLAGS/' Pods/glog/src/config.h
-  sed -i '' -e 's/#include <gflags/gflags.h>//' Pods/glog/src/glog/logging.h
+  sed -i '' -e 's/#include <gflags\/gflags.h>//' Pods/glog/src/glog/logging.h
   echo "== Pods/glog/src/config.h =="
   cat Pods/glog/src/config.h
   echo "== Pods/glog/src/glog/logging.h"
