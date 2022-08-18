@@ -72,7 +72,7 @@ export function closeThisRealm(this: Partial<RealmContext> & Mocha.Context): voi
  * the config. Useful for testing if something has been persisted between sessions. Defaults to true.
  * @returns New re-opened Realm instance
  */
-export function closeAndReopenRealm(realm: Realm, config: Realm.Configuration, clearRealm = true): Realm {
+export function closeAndReopenRealm(realm: Realm, config: Realm.Configuration, clearRealm = true): Promise<Realm> {
   closeRealm(realm, config, clearRealm, clearRealm);
-  return new Realm(config);
+  return Realm.open(config);
 }

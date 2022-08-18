@@ -1352,7 +1352,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           await addSubscriptionForPersonAndSync(this.realm);
           expect(this.realm.subscriptions).to.have.length(1);
 
-          const newRealm = closeAndReopenRealm(this.realm, this.config, false);
+          const newRealm = await closeAndReopenRealm(this.realm, this.config, false);
 
           expect(newRealm.subscriptions).to.have.length(1);
 
@@ -1425,7 +1425,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
       const { id } = await addPersonAndWaitForUpload(realm);
 
-      const newRealm = closeAndReopenRealm(realm, config);
+      const newRealm = await closeAndReopenRealm(realm, config);
       expect(newRealm.objectForPrimaryKey(FlexiblePersonSchema.name, id)).to.be.undefined;
 
       await newRealm.subscriptions.update((mutableSubs) => subsUpdateFn(mutableSubs, newRealm));
@@ -1469,7 +1469,8 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       expect(newRealm.objectForPrimaryKey(FlexiblePersonSchema.name, id)).to.be.undefined;
     });
 
-    it("starts syncing items if a new subscription is added matching some items", async function (this: RealmContext) {
+    // TODO: Probably remove this as it is testing old functionality
+    it.skip("starts syncing items if a new subscription is added matching some items", async function (this: RealmContext) {
       const { id, newRealm } = await addPersonAndResyncWithSubscription(
         this.realm,
         this.config,
@@ -1489,7 +1490,8 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       });
     });
 
-    it("starts syncing items if the subscription is replaced to match some items", async function (this: RealmContext) {
+    // TODO: Probably remove this as it is testing old functionality
+    it.skip("starts syncing items if the subscription is replaced to match some items", async function (this: RealmContext) {
       const { id, newRealm } = await addPersonAndResyncWithSubscription(
         this.realm,
         this.config,
