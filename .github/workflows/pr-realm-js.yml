@@ -60,18 +60,6 @@ jobs:
           path: ${{ matrix.variant.artifact-path }}
           key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}-${{ env.cache-name }}-${{hashFiles('./src/**', './vendor/**')}}
 
-      - name: Cache iOS build artifacts
-        if: ${{ (matrix.variant.os == 'ios') }}
-        id: ios-cache
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-ios-build
-        with:
-          path: react-native/ios/realm-js-ios.xcframework
-          key: ${{ runner.os }}-ios-${{ hashFiles('./src/**', './vendor/**') }}
-          restore-keys: |
-            ${{ runner.os }}-ios-
-
       - name: MSVC Setup
         if: ${{ runner.os == 'Windows' }}
         uses: ilammy/msvc-dev-cmd@v1
@@ -97,12 +85,18 @@ jobs:
         if: ${{ runner.os != 'Windows' }}
         with:
           key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}
+          max-size: '2.0G'
 
       - name: Prepend ccache executables to the PATH
         if: ${{ runner.os != 'Windows' }}
         run: |
-          echo "/usr/lib/ccache" >> $GITHUB_PATH
-          echo "/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
+          echo "/usr/lib/ccache:/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
+
+      - name: Configure ccache
+        if: ${{ runner.os != 'Windows' }}
+        run: |
+          ccache --set-config="compiler_check=content"
+          ccache --show-config
 
       - name: Install deps
         run: npm ci --ignore-scripts
@@ -119,7 +113,7 @@ jobs:
 
       # build the c++ library for IOS
       - name: Build IOS
-        if: ${{ (matrix.variant.os == 'ios') && (steps.cache-prebuild.outputs.cache-hit == 'false') }}
+        if: ${{ (matrix.variant.os == 'ios') }}
         run: npm run prebuild:ios
 
       # build the c++ library for Android
@@ -273,6 +267,25 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1
+        #TODO: figure out using ccache or equivalent on windows
+        if: ${{ matrix.variant.environment == 'react-native' }}
+        with:
+          key: ${{ matrix.variant.environment }}-${{ runner.os }}-${{ matrix.variant.os }}
+          max-size: '2.0G'
+
+      - name: Prepend ccache executables to the PATH
+        if: ${{ matrix.variant.environment == 'react-native' }}
+        run: |
+          echo "/usr/lib/ccache:/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
+
+      - name: Configure ccache
+        if: ${{ matrix.variant.environment == 'react-native' }}
+        run: |
+          ccache --set-config="compiler_check=content"
+          ccache --show-config
 
       - name: Restore React Native cache
         if: ${{ matrix.variant.environment == 'react-native' }}
