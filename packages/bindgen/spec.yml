@@ -375,7 +375,14 @@ classes:
       data_types_are_comparable: '(l: DataType, r: DataType) -> bool'
 
 
-  Timestamp: {}
+  # TODO should this be nullable or always non-null?
+  Timestamp:
+    constructors:
+      make: '(seconds: int64_t, nanoseconds: int32_t)'
+    properties:
+      get_seconds: int64_t
+      get_nanoseconds: int32_t
+
   ObjectId: {}
   Decimal128: {}
   UUID: {}
