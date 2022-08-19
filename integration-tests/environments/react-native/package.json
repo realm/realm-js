@@ -32,9 +32,10 @@
     "mocha-remote-client": "^1.5.0",
     "path-browserify": "^1.0.1",
     "react": "18.1.0",
-    "react-native": "0.70.0-rc.1",
+    "react-native": "facebook/react-native",
     "react-native-fs": "^2.18.0",
     "react-native-progress": "^4.1.2",
+    "react-native-codegen": "*",
     "realm": "*"
   },
   "devDependencies": {
