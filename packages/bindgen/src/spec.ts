@@ -129,6 +129,7 @@ function normalizeConstantSpec(spec: RelaxedConstantSpec): ConstantSpec {
 
 function normalizeRecordSpec(spec: RelaxedRecordSpec): RecordSpec {
   return {
+    cppName: spec.cppName,
     fields: mapObjectValues(spec.fields || {}, normalizeFieldSpec),
   };
 }
