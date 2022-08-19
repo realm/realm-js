@@ -33,6 +33,7 @@ typeAliases:
   Schema: std::vector<ObjectSchema>
   KeyPath: std::vector<std::pair<TableKey, ColKey>>
   KeyPathArray: std::vector<KeyPath>
+  IndexRange: std::pair<count_t, count_t>
 
 
 templates: # value tells you how many arguments it takes ('*' means any number)
@@ -41,6 +42,7 @@ templates: # value tells you how many arguments it takes ('*' means any number)
   std::shared_ptr: 1
   std::pair: 2
   std::tuple: '*'
+  # std::unordered_map: 2
 
 enums:
   SchemaMode:
@@ -215,6 +217,23 @@ records:
     fields:
       is_deleted: bool
       changed_columns: std::vector<ColKey>
+
+  # TODO nested type?
+  CollectionChangeSetMove:
+    cppName: CollectionChangeSet::Move
+    fields:
+      from: count_t
+      to: count_t
+  CollectionChangeSet:
+    fields:
+      deletions: IndexSet
+      insertions: IndexSet
+      modifications: IndexSet
+      modifications_new: IndexSet
+      moves: std::vector<CollectionChangeSetMove>
+      collection_root_was_deleted: bool
+      collection_was_cleared: bool
+      # columns: std::unordered_map<int64_t, IndexSet>
 
 opaqueTypes:
   - Group
@@ -414,6 +433,8 @@ classes:
       average: '(column: ColKey) -> util::Optional<Mixed>'
       sum: '(column: ColKey) -> util::Optional<Mixed>'
 
+      add_notification_callback: '(cb: (changes: const CollectionChangeSet&), keyPaths: KeyPathArray) -> NotificationToken'
+
   Realm:
     sharedPtrWrapped: SharedRealm
 
@@ -484,6 +505,18 @@ classes:
     methods:
       add_callback: '(cb: (changes: ObjectChangeSet), keyPaths: KeyPathArray) -> uint64_t'
       remove_callback: '(token: uint64_t)'
+
+  IndexSet:
+    iterable: IndexRange
+    # methods:
+    #   as_indexes: () const -> IndexSetIndexes
+
+  # NOTE this is currently done in sdk language so we have less VM<->Native transitions.
+  # TODO make this a nested type of IndexSet?
+  # TODO this needs support for non-default-constructible types
+  # IndexSetIndexes:
+  #   cppName: IndexSet::IndexIteratableAdaptor
+  #   iterable: count_t
 
 interfaces:
   Scheduler:
