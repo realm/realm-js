@@ -73,7 +73,7 @@ describe("Realm Query Language", () => {
       expect(dennis.length).equal(0);
     });
 
-    it.only("array of primitive types", () => {
+    it("array of primitive types", () => {
       const hasTwoPhones = contacts.filtered("phones.@count = 2");
       expect(hasTwoPhones.length).equal(1);
       expect(hasTwoPhones[0].name).equal("Bob");
