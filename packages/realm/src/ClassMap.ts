@@ -20,14 +20,10 @@ import * as binding from "@realm/bindgen";
 
 import { PropertyMap, ObjectWrapCreator } from "./PropertyMap";
 import { Realm } from "./Realm";
-import {
-  createWrapper as createObjectWrapperImpl,
-  getInternal,
-  INTERNAL_HELPERS,
-  Object as RealmObject,
-} from "./Object";
+import { createWrapper as createObjectWrapperImpl, INTERNAL_HELPERS, Object as RealmObject } from "./Object";
 
 import { Constructor, RealmObjectConstructor } from "./schema";
+import { getInternal } from "./internal";
 
 function createNamedConstructor<T extends Constructor>(name: string): T {
   const obj = {
@@ -56,11 +52,11 @@ function createClass<T extends RealmObjectConstructor = RealmObjectConstructor>(
     const { get, set } = properties.get(property.name);
     Object.defineProperty(result.prototype, property.name, {
       enumerable: true,
-      get() {
+      get(this: RealmObject) {
         const obj = getInternal(this);
         return get(obj);
       },
-      set(value: unknown) {
+      set(this: RealmObject, value: unknown) {
         const obj = getInternal(this);
         try {
           set(obj, value);
