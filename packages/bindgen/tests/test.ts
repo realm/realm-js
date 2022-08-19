@@ -20,7 +20,7 @@
 
 /* eslint-disable header/header */
 
-import { Realm, PropertyType, Helpers, Mixed, Results, SortDescriptor, NotificationToken } from "../index";
+import { Realm, PropertyType, Helpers, Mixed, Results, SortDescriptor } from "../index";
 
 import { strict as assert } from "assert";
 import * as util from "util";
@@ -74,14 +74,11 @@ obj3.setAny(lnkCol, Mixed.fromObj(obj2));
 realm.commitTransaction();
 
 const notifier = Helpers.makeObjectNotifier(realm, obj1);
-NotificationToken.forObject(
-  notifier,
-  notifier.addCallback(
-    (changes) => {
-      console.log(changes);
-    },
-    [[[tableKey, numCol]]], // Or [] to monitor all fields
-  ),
+const token = notifier.addCallback(
+  (changes) => {
+    console.log(changes);
+  },
+  [[[tableKey, numCol]]], // Or [] to monitor all fields
 );
 
 realm.beginTransaction();
@@ -91,6 +88,8 @@ realm.commitTransaction();
 realm.beginTransaction();
 obj1.setAny(numCol, Mixed.fromInt(123456));
 realm.commitTransaction();
+
+notifier.removeCallback(token);
 
 for (const obj of table) {
   console.log("---");
