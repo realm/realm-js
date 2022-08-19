@@ -19,7 +19,7 @@
 import { Results } from "./Results";
 
 type PropertyType = string;
-type SortDescriptor = [string] | [string, boolean];
+export type SortDescriptor = [string] | [string, boolean];
 type CollectionChangeCallback<T> = unknown;
 
 export class Collection<T = unknown> implements ReadonlyArray<T> {

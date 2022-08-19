@@ -221,7 +221,7 @@ export class Realm {
 
     const table = binding.Helpers.getTable(this[INTERNAL], objectSchema.tableKey);
     const results = binding.Results.fromTable(this[INTERNAL], table);
-    return createResultsWrapper(results, (results, index) => {
+    return createResultsWrapper(results, this[INTERNAL], table, (results, index) => {
       const obj = results.getObj(index);
       return createObjectWrapper(obj);
     });
