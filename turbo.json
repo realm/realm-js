@@ -21,6 +21,7 @@
     },
     "@realm/binding#compile": {
       "inputs": [
+        "../bindgen/spec.yml",
         "../bindgen/src/",
         "../../vendor/realm-core/"
       ],
