@@ -43,6 +43,16 @@ declare module "./generated/ts/native.js" {
     toString(): string;
     [customInspectSymbol](): string;
   }
+  interface IndexSet {
+    asIndexes(): Iterator<number>;
+  }
+  interface Timestamp {
+    toDate(): Date;
+  }
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Timestamp {
+    export function fromDate(d: Date): Timestamp;
+  }
 }
 
 Mixed.prototype.toJsValue = function () {
@@ -79,11 +89,6 @@ Mixed.prototype.toString = function () {
 
 Mixed.prototype[customInspectSymbol] = Mixed.prototype.toString;
 
-declare module "./generated/ts/native.js" {
-  interface IndexSet {
-    asIndexes(): Iterator<number>;
-  }
-}
 IndexSet.prototype.asIndexes = function* (this: IndexSet) {
   for (const [from, to] of this) {
     let i = from;
@@ -92,4 +97,10 @@ IndexSet.prototype.asIndexes = function* (this: IndexSet) {
       i++;
     }
   }
+};
+
+Timestamp.fromDate = (d: Date) => Timestamp.make(BigInt(d.valueOf() / 1000), (d.valueOf() % 1000) * 1000_000);
+
+Timestamp.prototype.toDate = function () {
+  return new Date(Number(this.seconds) * 1000 + this.nanoseconds / 1000_000);
 };
