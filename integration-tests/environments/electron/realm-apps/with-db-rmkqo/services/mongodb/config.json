@@ -1,0 +1,25 @@
+{
+  "name": "mongodb",
+  "type": "mongodb-atlas",
+  "config": {
+    "sync": {
+      "state": "enabled",
+      "database_name": "test-database-62ff58393571ca683736441e",
+      "partition": {
+        "key": "partition",
+        "type": "string",
+        "required": true,
+        "permissions": {
+          "read": true,
+          "write": true
+        }
+      }
+    },
+    "clusterName": "Cluster0",
+    "readPreference": "primary",
+    "wireProtocolEnabled": false
+  },
+  "secret_config": {
+    "uri": "local-mongodb-uri"
+  }
+}

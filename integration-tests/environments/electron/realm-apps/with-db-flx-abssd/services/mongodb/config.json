@@ -1,0 +1,32 @@
+{
+  "name": "mongodb",
+  "type": "mongodb-atlas",
+  "config": {
+    "flexible_sync": {
+      "state": "enabled",
+      "database_name": "test-database-62ff58a13571ca6837364450",
+      "queryable_fields_names": [
+        "age",
+        "name"
+      ],
+      "permissions": {
+        "rules": {},
+        "defaultRoles": [
+          {
+            "name": "all",
+            "applyWhen": {},
+            "read": true,
+            "write": true
+          }
+        ]
+      }
+    },
+    "clusterName": "Cluster0",
+    "readPreference": "primary",
+    "wireProtocolEnabled": false
+  },
+  "secret_config": {
+    "uri": "local-mongodb-uri"
+  },
+  "version": 1
+}

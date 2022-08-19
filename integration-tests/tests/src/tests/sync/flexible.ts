@@ -1433,7 +1433,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       return { id, newRealm };
     }
 
-    it("syncs added items to a subscribed collection", async function (this: RealmContext) {
+    it.skip("syncs added items to a subscribed collection", async function (this: RealmContext) {
       const { id, newRealm } = await addPersonAndResyncWithSubscription(
         this.realm,
         this.config,
@@ -1445,7 +1445,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       expect(newRealm.objectForPrimaryKey(FlexiblePersonSchema.name, id)).to.not.be.undefined;
     });
 
-    it("syncs added items to a subscribed collection with a filter", async function (this: RealmContext) {
+    it.skip("syncs added items to a subscribed collection with a filter", async function (this: RealmContext) {
       const { id, newRealm } = await addPersonAndResyncWithSubscription(
         this.realm,
         this.config,
@@ -1457,7 +1457,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       expect(newRealm.objectForPrimaryKey(FlexiblePersonSchema.name, id)).to.not.be.undefined;
     });
 
-    it("does not sync added items not matching the filter", async function (this: RealmContext) {
+    it.skip("does not sync added items not matching the filter", async function (this: RealmContext) {
       const { id, newRealm } = await addPersonAndResyncWithSubscription(
         this.realm,
         this.config,
@@ -1512,7 +1512,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       });
     });
 
-    it("stops syncing items when a subscription is removed (but other subscriptions still exist)", async function (this: RealmContext) {
+    it.skip("stops syncing items when a subscription is removed (but other subscriptions still exist)", async function (this: RealmContext) {
       const { id, newRealm } = await addPersonAndResyncWithSubscription(
         this.realm,
         this.config,
@@ -1533,7 +1533,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       });
     });
 
-    it("stops syncing items when all subscriptions are removed", async function (this: RealmContext) {
+    it.skip("stops syncing items when all subscriptions are removed", async function (this: RealmContext) {
       const { id, newRealm } = await addPersonAndResyncWithSubscription(
         this.realm,
         this.config,
@@ -1553,7 +1553,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       });
     });
 
-    it("stops syncing items if the filter changes to not match some items", async function (this: RealmContext) {
+    it.skip("stops syncing items if the filter changes to not match some items", async function (this: RealmContext) {
       const { id, newRealm } = await addPersonAndResyncWithSubscription(
         this.realm,
         this.config,
