@@ -18,7 +18,8 @@
 
 import * as binding from "@realm/bindgen";
 
-import { Object as RealmObject, getInternal } from "./Object";
+import { getInternal } from "./internal";
+import { Object as RealmObject } from "./Object";
 import { DefaultObject } from "./schema";
 
 export type ObjectWrapCreator<T = DefaultObject> = (obj: binding.Obj) => RealmObject<T> & T;

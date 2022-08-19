@@ -18,7 +18,8 @@
 
 import * as binding from "@realm/bindgen";
 
-import { getInternal as getObjectInternal, Object as RealmObject } from "./Object";
+import { INTERNAL, getInternal } from "./internal";
+import { Object as RealmObject } from "./Object";
 import { createWrapper as createResultsWrapper, Results } from "./Results";
 import {
   fromBindingSchema,
@@ -33,17 +34,15 @@ import { Configuration } from "./Configuration";
 import { ClassMap } from "./ClassMap";
 import { List } from "./List";
 
-const INTERNAL = Symbol("Realm.Realm#internal");
-
-export function getInternal(object: Realm): binding.Realm {
-  return object[INTERNAL];
-}
-
 export class Realm {
   public static Object = RealmObject;
   public static Results = Results;
 
-  private [INTERNAL]!: binding.Realm;
+  /**
+   * The Realms's representation in the binding.
+   * @internal
+   */
+  public [INTERNAL]!: binding.Realm;
   private classes: ClassMap;
 
   constructor(config: Configuration = {}) {
@@ -60,16 +59,16 @@ export class Realm {
     this.classes = new ClassMap(this, internal.schema);
 
     Object.defineProperties(this, {
+      classes: {
+        enumerable: false,
+        configurable: false,
+        writable: true,
+      },
       [INTERNAL]: {
         enumerable: false,
         configurable: false,
         writable: false,
         value: internal,
-      },
-      classes: {
-        enumerable: false,
-        configurable: false,
-        writable: true,
       },
     });
   }
@@ -128,7 +127,7 @@ export class Realm {
     if (arguments.length > 2) {
       throw new Error("Creating objects with update mode specified is not yet supported");
     }
-    if (values instanceof RealmObject && !getObjectInternal(values)) {
+    if (values instanceof RealmObject && !getInternal(values)) {
       throw new Error("Cannot create an object from a detached Realm.Object instance");
     }
     this[INTERNAL].verifyOpen();
@@ -170,7 +169,7 @@ export class Realm {
   delete<T>(subject: (RealmObject<T> & T) | RealmObject[] | List<T> | Results<T>): void {
     if (subject instanceof RealmObject) {
       const { objectSchema } = this.classes.getHelpers(subject);
-      const obj = getObjectInternal(subject);
+      const obj = getInternal(subject);
       const table = binding.Helpers.getTable(this[INTERNAL], objectSchema.tableKey);
       table.removeObject(obj.key);
     } else {

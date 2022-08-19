@@ -19,22 +19,14 @@
 import * as binding from "@realm/bindgen";
 import { Helpers } from "@realm/bindgen";
 
+import { INTERNAL, getInternal } from "./internal";
 import { ClassHelpers } from "./ClassMap";
-import { Realm, getInternal as getRealmInternal } from "./Realm";
+import { Realm } from "./Realm";
 import { Results } from "./Results";
-import { CanonicalObjectSchema, Constructor, DefaultObject, RealmObjectConstructor } from "./schema";
+import { CanonicalObjectSchema, Constructor, DefaultObject } from "./schema";
 
 export const INTERNAL_HELPERS = Symbol("Realm.Object#helpers");
-const INTERNAL = Symbol("Realm.Object#internal");
 const INTERNAL_NOTIFIER = Symbol("Realm.Object#notifier");
-
-export function getInternal<T>(object: InstanceType<RealmObjectConstructor<T>>): binding.Obj {
-  return object[INTERNAL];
-}
-
-export function setInternal(object: InstanceType<RealmObjectConstructor>, internal: binding.Obj) {
-  object[INTERNAL] = internal;
-}
 
 export function createWrapper<T extends RealmObject>(
   realm: Realm,
@@ -55,6 +47,11 @@ export function createWrapper<T extends RealmObject>(
       writable: false,
       value: internal,
     },
+    [INTERNAL_NOTIFIER]: {
+      enumerable: false,
+      configurable: false,
+      writable: true,
+    },
   });
   // TODO: Wrap in a proxy to trap keys, enabling the spread operator
   return result;
@@ -65,17 +62,24 @@ export type ObjectChangeCallback<T> = (object: RealmObject<T> & T, changes: Obje
 
 class RealmObject<T = DefaultObject> {
   /**
-   * The object's representation in the underlying database.
+   * The Realm managing the object.
    */
   public realm!: Realm;
 
   /**
-   * The object's representation in the underlying database.
+   * The object's representation in the binding.
+   * @internal
    */
-  private [INTERNAL]!: binding.Obj;
+  public [INTERNAL]!: binding.Obj;
+
+  /**
+   * @internal
+   */
+  private [INTERNAL_NOTIFIER]: binding.ObjectNotifier | null = null;
 
   /**
    * This property is stored on the per class prototype when transforming the schema
+   * @internal
    */
   private static [INTERNAL_HELPERS]: ClassHelpers<unknown>;
 
@@ -136,14 +140,12 @@ class RealmObject<T = DefaultObject> {
     throw new Error("Not yet implemented");
   }
 
-  private [INTERNAL_NOTIFIER]: binding.ObjectNotifier | null = null;
-
   private get notifier(): binding.ObjectNotifier {
     let notifier = this[INTERNAL_NOTIFIER];
     if (notifier) {
       return notifier;
     } else {
-      const internalRealm = getRealmInternal(this.realm);
+      const internalRealm = getInternal(this.realm);
       notifier = Helpers.makeObjectNotifier(internalRealm, this[INTERNAL]);
       return notifier;
     }
