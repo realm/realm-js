@@ -19,31 +19,36 @@
 import * as binding from "@realm/bindgen";
 
 import { Collection } from "./Collection";
+import { INTERNAL } from "./internal";
 
 type Getter<T = unknown> = (results: binding.Results, index: number) => T;
 
-const INTERNAL = Symbol("Realm.Object#internal");
 const GETTER = Symbol("Realm.Object#getter");
-
-export function getInternal(object: Results): binding.Results {
-  return object[INTERNAL];
-}
-
-export function setInternal(object: Results, internal: binding.Results) {
-  object[INTERNAL] = internal;
-}
 
 export function createWrapper(internal: binding.Results, getter: Getter) {
   const result = Object.create(Results.prototype);
-  result[INTERNAL] = internal;
-  result[GETTER] = getter;
+  Object.defineProperties(result, {
+    [GETTER]: {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: getter,
+    },
+    [INTERNAL]: {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: internal,
+    },
+  });
   // TODO: Wrap in a proxy to trap keys, enabling the spread operator
   return result;
 }
 
 export class Results<T = unknown> extends Collection<T> {
   /**
-   * The representation in the underlying database.
+   * The representation in the binding.
+   * @internal
    */
   private [INTERNAL]!: binding.Results;
 
