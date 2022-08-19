@@ -476,21 +476,14 @@ classes:
 
       close: ()
 
-  NotificationToken:
-    #TODO need a way to destroy this or at least assign over it with a default constructed token
-    constructors:
-      for_object: '(notifier: SharedObjectNotifier, token: uint64_t)'
-    methods:
-      suppress_next: ()
-
   ObjectNotifier:
     cppName: _impl::ObjectNotifier
     sharedPtrWrapped: SharedObjectNotifier
     constructors:
       make: '(realm: SharedRealm, table: TableKey, obj: ObjKey)'
     methods:
-      # Pass return to NotificationToken constructor
       add_callback: '(cb: (changes: ObjectChangeSet), keyPaths: KeyPathArray) -> uint64_t'
+      remove_callback: '(token: uint64_t)'
 
 interfaces:
   Scheduler:
