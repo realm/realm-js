@@ -27,6 +27,7 @@ import { CanonicalObjectSchema, Constructor, DefaultObject } from "./schema";
 
 export const INTERNAL_HELPERS = Symbol("Realm.Object#helpers");
 const INTERNAL_NOTIFIER = Symbol("Realm.Object#notifier");
+const INTERNAL_LISTENERS = Symbol("Realm.Object#listeners");
 
 export function createWrapper<T extends RealmObject>(
   realm: Realm,
@@ -51,10 +52,45 @@ export function createWrapper<T extends RealmObject>(
       enumerable: false,
       configurable: false,
       writable: true,
+      value: null,
+    },
+    [INTERNAL_LISTENERS]: {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: new Map(),
     },
   });
   // TODO: Wrap in a proxy to trap keys, enabling the spread operator
   return result;
+}
+
+/**
+ * Get or create the object notifier for an object.
+ * NOTE: This is a free function instead of a member of RealmObject to limit conflicts with user defined properties.
+ * @param obj The object to get a notifier for.
+ * @returns Cached notifier for the object.
+ */
+function getNotifier<T>(obj: RealmObject<T>): binding.ObjectNotifier {
+  let notifier = obj[INTERNAL_NOTIFIER];
+  if (notifier) {
+    return notifier;
+  } else {
+    const internalRealm = getInternal(obj.realm);
+    notifier = Helpers.makeObjectNotifier(internalRealm, obj[INTERNAL]);
+    obj[INTERNAL_NOTIFIER] = notifier;
+    return notifier;
+  }
+}
+
+/**
+ * Get internal helpers.
+ * NOTE: This is a free function instead of a member of RealmObject to limit conflicts with user defined properties.
+ * @param obj The object to get a helpers for.
+ * @returns Helpers injected onto the class by the `ClassMap`.
+ */
+function getHelpers<T>(obj: RealmObject<T>): ClassHelpers<T> {
+  return (obj.constructor as typeof RealmObject)[INTERNAL_HELPERS] as ClassHelpers<T>;
 }
 
 export type ObjectChangeSet<T> = { deleted: boolean; changedProperties: (keyof T)[] };
@@ -75,7 +111,12 @@ class RealmObject<T = DefaultObject> {
   /**
    * @internal
    */
-  private [INTERNAL_NOTIFIER]: binding.ObjectNotifier | null = null;
+  private [INTERNAL_NOTIFIER]!: binding.ObjectNotifier | null;
+
+  /**
+   * @internal
+   */
+  private [INTERNAL_LISTENERS]!: Map<ObjectChangeCallback<T>, bigint>;
 
   /**
    * This property is stored on the per class prototype when transforming the schema
@@ -114,8 +155,12 @@ class RealmObject<T = DefaultObject> {
     throw new Error("Not yet implemented");
   }
   addListener(callback: ObjectChangeCallback<T>): void {
-    const properties = this.helpers.properties;
-    this.notifier.addCallback((changes) => {
+    const properties = getHelpers(this).properties;
+    if (this[INTERNAL_LISTENERS].has(callback)) {
+      // No need to add a listener twice
+      return;
+    }
+    const token = getNotifier(this).addCallback((changes) => {
       try {
         callback(this as unknown as RealmObject<T> & T, {
           deleted: changes.isDeleted,
@@ -129,30 +174,24 @@ class RealmObject<T = DefaultObject> {
         });
       }
     }, []);
+    // Store the notification token by the callback to enable later removal.
+    this[INTERNAL_LISTENERS].set(callback, token);
   }
-  removeListener(): void {
-    throw new Error("Not yet implemented");
+  removeListener(callback: ObjectChangeCallback<T>): void {
+    const token = this[INTERNAL_LISTENERS].get(callback);
+    if (typeof token !== "undefined") {
+      getNotifier(this).removeCallback(token);
+      this[INTERNAL_LISTENERS].delete(callback);
+    }
   }
   removeAllListeners(): void {
-    throw new Error("Not yet implemented");
+    for (const [, token] of this[INTERNAL_LISTENERS]) {
+      getNotifier(this).removeCallback(token);
+    }
+    this[INTERNAL_LISTENERS].clear();
   }
   getPropertyType(): string {
     throw new Error("Not yet implemented");
-  }
-
-  private get notifier(): binding.ObjectNotifier {
-    let notifier = this[INTERNAL_NOTIFIER];
-    if (notifier) {
-      return notifier;
-    } else {
-      const internalRealm = getInternal(this.realm);
-      notifier = Helpers.makeObjectNotifier(internalRealm, this[INTERNAL]);
-      return notifier;
-    }
-  }
-
-  private get helpers() {
-    return (this.constructor as typeof RealmObject)[INTERNAL_HELPERS];
   }
 }
 
