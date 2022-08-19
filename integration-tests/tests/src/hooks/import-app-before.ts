@@ -53,8 +53,7 @@ export function importAppBefore(
   after(async function (this: Partial<AppContext> & Mocha.Context) {
     if (environment.preserveAppAfterRun) return;
     if (this.app) {
-      // TODO: I disabled this so I can read the logs
-      //await deleteApp(this.app.id);
+      await deleteApp(this.app.id);
     } else {
       console.warn("No app on context when trying to delete app");
     }
