@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { resolve } from "path";
 
 import { Realm, ObjectChangeSet } from "../index";
 import { closeRealm, generateTempRealmPath, RealmContext } from "./utils";
@@ -27,6 +26,7 @@ describe("Milestone #3", () => {
     beforeEach(function (this: RealmContext) {
       this.realm = new Realm({
         path: generateTempRealmPath(),
+        inMemory: true,
         schema: [{ name: "Person", properties: { name: "string", bestFriend: "Person", friends: "Person[]" } }],
       });
     });
