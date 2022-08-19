@@ -64,7 +64,27 @@ function createHelpers<T>(
   } else if (collectionType === binding.PropertyType.Dictionary) {
     throw new Error("Dictionaries are not yet supported!");
   }
-  if (type === binding.PropertyType.String) {
+  if (type === binding.PropertyType.Int) {
+    return {
+      toMixed(value) {
+        // TODO: Refactor to use an assert
+        if (typeof value !== "number") {
+          throw new Error("Expected a string");
+        }
+        return binding.Mixed.fromInt(value);
+      },
+      fromMixed(value) {
+        // TODO: Support returning bigints to end-users
+        return Number(value.getInt());
+      },
+      get(obj) {
+        return this.fromMixed(obj.getAny(columnKey));
+      },
+      set(obj, value) {
+        obj.setAny(columnKey, this.toMixed(value));
+      },
+    };
+  } else if (type === binding.PropertyType.String) {
     return {
       toMixed(value) {
         // TODO: Refactor to use an assert
