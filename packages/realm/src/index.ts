@@ -20,3 +20,4 @@ export * from "./Realm";
 export * from "./Configuration";
 export { Results } from "./Results";
 export { Object } from "./Object";
+export type { ObjectChangeSet, ObjectChangeCallback } from "./Object";
