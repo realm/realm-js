@@ -10,8 +10,6 @@ unset HEADER_SEARCH_PATHS
 unset CPATH
 unset LIBRARY_PATH
 
-printenv
-
 # If set, make sure the DEVELOPER_DIR variable is set to a valid directory
 if [[ -n "${DEVELOPER_DIR}" && ! -d "${DEVELOPER_DIR}" ]]; then
     echo "error: DEVELOPER_DIR is not a valid directory: ${DEVELOPER_DIR}"
