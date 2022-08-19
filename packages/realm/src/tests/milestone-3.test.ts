@@ -17,8 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
+import { resolve } from "path";
 
-import { Realm } from "../index";
+import { Realm, ObjectChangeSet } from "../index";
 import { closeRealm, generateTempRealmPath, RealmContext } from "./utils";
 
 describe("Milestone #3", () => {
@@ -92,6 +93,108 @@ describe("Milestone #3", () => {
           }
         });
       });
+    });
+
+    it("doesn't fire if removed", async function (this: RealmContext) {
+      const { realm } = this;
+      const alice = realm.write(() => realm.create("Person", { name: "Alice" }));
+      let calls = 0;
+      await new Promise<void>((resolve, reject) => {
+        function callback(object: typeof alice, changes: ObjectChangeSet<unknown>) {
+          if (calls === 0) {
+            // Initial fire
+            calls++;
+            expect(object).equals(alice);
+            expect(changes.deleted).equals(false);
+            expect(changes.changedProperties.length).equals(0);
+            // Remove the listener
+            alice.removeListener(callback);
+            // Update the name to trigger another event
+            realm.write(() => (alice.name = "Alison"));
+            // Wait a bit to allow for an async update to trigger a rejection first
+            setTimeout(resolve);
+          } else {
+            const err = new Error(`Unexpected number of calls (${calls})`);
+            reject(err);
+          }
+        }
+        alice.addListener(callback);
+      });
+    });
+
+    it("doesn't fire if all are removed", async function (this: RealmContext) {
+      const { realm } = this;
+      const alice = realm.write(() => realm.create("Person", { name: "Alice" }));
+      let fooCalls = 0;
+      let barCalls = 0;
+      await Promise.all([
+        new Promise<void>((resolve) => {
+          function foo() {
+            fooCalls++;
+            // Remove the listener
+            alice.removeListener(foo);
+            // Update the name to trigger another event
+            realm.write(() => (alice.name = "Alison"));
+            resolve();
+          }
+          alice.addListener(foo);
+        }),
+        new Promise<void>((resolve) => {
+          function bar() {
+            barCalls++;
+            if (barCalls === 2) {
+              // Remove the listener
+              alice.removeAllListeners();
+              resolve();
+            }
+          }
+          alice.addListener(bar);
+        }),
+      ]);
+      expect(fooCalls).equals(1);
+      expect(barCalls).equals(2);
+      // Trigger another change and expect no more calls
+      realm.write(() => (alice.name = "Alice"));
+      await new Promise((resolve) => setTimeout(resolve));
+      expect(fooCalls).equals(1);
+      expect(barCalls).equals(2);
+    });
+
+    it("adds only once", async function (this: RealmContext) {
+      const { realm } = this;
+      const alice = realm.write(() => realm.create("Person", { name: "Alice" }));
+      let fooCalls = 0;
+      function foo() {
+        fooCalls++;
+      }
+      alice.addListener(foo);
+      alice.addListener(foo);
+      realm.write(() => (alice.name = "Alison"));
+      await new Promise((resolve) => setTimeout(resolve));
+      // Expect initial event + change
+      expect(fooCalls).equals(2);
+    });
+
+    it("handles double removals", async function (this: RealmContext) {
+      const { realm } = this;
+      const alice = realm.write(() => realm.create("Person", { name: "Alice" }));
+      function foo() {
+        /* ... */
+      }
+      alice.addListener(foo);
+      alice.removeListener(foo);
+      alice.removeListener(foo);
+    });
+
+    it("handles removal before adding", async function (this: RealmContext) {
+      const { realm } = this;
+      const alice = realm.write(() => realm.create("Person", { name: "Alice" }));
+      function foo() {
+        /* ... */
+      }
+      alice.removeListener(foo);
+      alice.addListener(foo);
+      alice.removeListener(foo);
     });
   });
 });
