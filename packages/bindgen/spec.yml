@@ -433,7 +433,7 @@ classes:
       average: '(column: ColKey) -> util::Optional<Mixed>'
       sum: '(column: ColKey) -> util::Optional<Mixed>'
 
-      add_notification_callback: '(cb: (changes: const CollectionChangeSet&), keyPaths: KeyPathArray) -> NotificationToken'
+      #add_notification_callback: '(cb: (changes: const CollectionChangeSet&), keyPaths: KeyPathArray) -> NotificationToken'
 
   Realm:
     sharedPtrWrapped: SharedRealm
