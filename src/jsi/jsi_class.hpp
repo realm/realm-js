@@ -127,8 +127,14 @@ inline void ObjectSetPrototypeOf(JsiEnv env, const fbjsi::Value& target, const f
 
 inline JsiObj ObjectCreate(JsiEnv env, const fbjsi::Object& proto)
 {
-    auto obj = js::globalType(env, "Object");
-    return env(obj.getPropertyAsFunction(env, "create").callWithThis(env, obj, proto)).asObject();
+    // auto obj = js::globalType(env, "Object");
+    // return env(obj.getPropertyAsFunction(env, "create").callWithThis(env, obj, proto)).asObject();
+    fbjsi::Object obj{env};
+    auto object_global = js::globalType(env, "Object");
+    object_global.getPropertyAsFunction(env, "setPrototypeOf").callWithThis(env, object_global, obj, proto);
+
+    // ObjectSetPrototypeOf(env, obj, proto);
+    return JsiObj(env, obj);
 }
 
 inline void defineProperty(JsiEnv env, const fbjsi::Object& target, StringData name, const fbjsi::Object& descriptor)
