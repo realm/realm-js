@@ -27,7 +27,6 @@ import { closeRealm, generateRandomInteger, generateTempRealmPath, RealmContext,
 
 type Person = { name: string };
 type PersonWithFriend = { name: string; bestFriend: Person | null };
-type PersonWithFriends = { name: string; bestFriend: Person | null; friends: Person[] };
 
 const SIMPLE_REALM_PATH = path.resolve(REALMS_DIR, "simple.realm");
 
