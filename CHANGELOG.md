@@ -32,6 +32,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Fixed an issue starting the integration test runner on iOS. ([#4742](https://github.com/realm/realm-js/pull/4742]))
 * Fixed dark mode logo in README.md. ([#4780](https://github.com/realm/realm-js/pull/4780))
 * Migrated to `std::optional` and `std::nullopt`.
+* Disabled testing on iOS and Catalyst on legacy CI system.
 
 10.19.5 Release notes (2022-7-6)
 =============================================================
