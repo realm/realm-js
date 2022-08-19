@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 // import { strict as assert } from "assert";
-import { DataType, Decimal128, Mixed, ObjectId, ObjLink, Timestamp, Uuid } from "./generated/ts/native.js";
+import { DataType, Decimal128, IndexSet, Mixed, ObjectId, ObjLink, Timestamp, Uuid } from "./generated/ts/native.js";
 
 export * from "./generated/ts/native.js"; // enums are transitively exported.
 
@@ -78,3 +78,18 @@ Mixed.prototype.toString = function () {
 };
 
 Mixed.prototype[customInspectSymbol] = Mixed.prototype.toString;
+
+declare module "./generated/ts/native.js" {
+  interface IndexSet {
+    asIndexes(): Iterator<number>;
+  }
+}
+IndexSet.prototype.asIndexes = function* (this: IndexSet) {
+  for (const [from, to] of this) {
+    let i = from;
+    while (i < to) {
+      yield i;
+      i++;
+    }
+  }
+};
