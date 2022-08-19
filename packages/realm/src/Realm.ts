@@ -50,6 +50,7 @@ export class Realm {
       path: config.path || this.getDefaultPath(),
       fifoFilesFallbackPath: this.fifoFilesFallbackPath(),
       schema: config.schema ? toBindingSchema(normalizeRealmSchema(config.schema)) : undefined,
+      inMemory: config.inMemory === true,
       schemaVersion: config.schema
         ? typeof config.schemaVersion === "number"
           ? BigInt(config.schemaVersion)

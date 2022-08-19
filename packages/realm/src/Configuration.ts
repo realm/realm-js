@@ -25,6 +25,7 @@ type BaseConfiguration = {
   path?: string;
   schema?: (RealmObjectConstructor<any> | ObjectSchema)[];
   schemaVersion?: number;
+  inMemory?: boolean;
 };
 
 // type ConfigurationWithSync = BaseConfiguration & {
