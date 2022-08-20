@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2021 Realm Inc.
+// Copyright 2022 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,22 +16,27 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import chaiAsPromised from "chai-as-promised";
-import chai from "chai";
+/* tslint:disable max-classes-per-file */
 
-chai.use(chaiAsPromised);
+import Realm from "realm";
 
-import "./realm-constructor";
-import "./serialization";
-import "./objects";
-import "./iterators";
-import "./queries";
-import "./dynamic-schema-updates";
-import "./bson";
-import "./dictionary";
-import "./credentials/anonymous";
-import "./sync/mixed";
-import "./sync/flexible";
-import "./sync/asymmetric";
-import "./sync/sync-as-local";
-import "./transaction";
+export interface IContact {
+  name: string;
+  phones: Realm.List<string>;
+}
+
+export const ContactSchema: Realm.ObjectSchema = {
+  name: "Contact",
+  primaryKey: "name",
+  properties: {
+    name: "string",
+    phones: "string[]",
+  },
+};
+
+export class Contact extends Realm.Object implements IContact {
+  name!: string;
+  phones!: Realm.List<string>;
+
+  static schema: Realm.ObjectSchema = ContactSchema;
+}

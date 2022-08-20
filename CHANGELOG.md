@@ -1,7 +1,8 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* None.
+* Introducing query support for constant list expressions such as `fruit IN {'apple', 'orange'}`. This also includes general query support for list vs list matching such as `NONE fruits IN {'apple', 'orange'}`. ([#2781](https://github.com/realm/realm-js/issues/2781) and [#4596](https://github.com/realm/realm-js/issues/4596))
+* Allow multiple anonymous sessions. ([realm/realm-core#4607](https://github.com/realm/realm-core/issues/4607))
 
 ### Fixed
 * Fixed issue where React Native apps on Android would sometimes show stale Realm data until the user interacted with the app UI. ([#4389](https://github.com/realm/realm-js/issues/4389), since v10.0.0)
@@ -13,6 +14,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * Decimal128 values with more than 110 significant bits were not synchronized correctly with the server. ([realm/realm-swift#7868](https://github.com/realm/realm-swift/issues/7868), since v10.0.0)
 * Fixed an incorrect git merge in the Xcode project from RN iOS. ([#4756](https://github.com/realm/realm-js/issues/4756), since v10.19.5)
 * Fixed detection of emulator environments to be more robust ([#4784](https://github.com/realm/realm-js/issues/4784)).  Thanks to [Ferry Kranenburg](https://github.com/fkranenburg) for identifying the issue and supplying a PR
+* Opening a read-only synced Realm for the first time could lead to `m_schema_version != ObjectStore::NotVersioned` assertion.
 
 ### Compatibility
 * Atlas App Services.
@@ -22,7 +24,7 @@ x.x.x Release notes (yyyy-MM-dd)
 
 ### Internal
 * Updated ccache build scripts to be location agnostic([#4764](https://github.com/realm/realm-js/pull/4764))
-* Upgraded Realm Core from v12.3.0 to v12.4.0. ([#4753](https://github.com/realm/realm-js/issues/4753)
+* Upgraded Realm Core from v12.3.0 to v12.5.1. ([#4753](https://github.com/realm/realm-js/issues/4753 and [[#4763](https://github.com/realm/realm-js/issues/4763))
 * Upgraded React Native integration tests app to React Native v0.68.2. ([#4583](https://github.com/realm/realm-js/pull/4583))
 * Upgrading `react-native-fs` to avoid a peer dependency failure. ([#4709](https://github.com/realm/realm-js/pull/4709))
 * Upgraded React Native integration tests app to React Native v0.69.1. ([#4713](https://github.com/realm/realm-js/pull/4713))
