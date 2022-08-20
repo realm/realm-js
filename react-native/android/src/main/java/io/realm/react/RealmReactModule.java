@@ -38,6 +38,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 
 import fi.iki.elonen.NanoHTTPD;
 
