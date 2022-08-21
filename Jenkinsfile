@@ -141,11 +141,11 @@ stage('test') {
   parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
 
   parallelExecutors["React Native Android Release"] = inAndroidContainer { testAndroid('test-android') }
-  parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
-  parallelExecutors["React Native Catalyst Release"] = testMacOS('catalyst-tests Release')
+  // parallelExecutors["React Native iOS Release"] = testMacOS("react-tests Release ${nodeTestVersion}")
+  // parallelExecutors["React Native Catalyst Release"] = testMacOS("catalyst-tests Release ${nodeTestVersion}")
 
-  parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
-  parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
+  parallelExecutors["macOS Electron Debug"] = testMacOS("electron Debug ${nodeTestVersion}")
+  parallelExecutors["macOS Electron Release"] = testMacOS("electron Release ${nodeTestVersion}")
   parallel parallelExecutors
 }
 
@@ -274,7 +274,7 @@ def buildiOS() {
 
 def inAndroidContainer(workerFunction) {
   return {
-    myNode('docker-cph-03') {
+    myNode('docker-cph-01') {
       unstash 'source'
       def image
       withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
