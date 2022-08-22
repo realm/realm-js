@@ -179,34 +179,15 @@ jobs:
       - name: Publish to Github
         run: npx prebuild --upload-all ${{ secrets.GITHUB_TOKEN }}
 
-  baas-realm-js:
-    runs-on: ubuntu-20.04
-    name: Deploy MDB Realm for realm js
-    outputs:
-      clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
-    timeout-minutes: 20
-    steps:
-      - uses: realm/ci-actions/mdb-realm/deployApps@fac1d6958f03d71de743305ce3ab27594efbe7b7
-        id: deploy-mdb-apps
-        with:
-          realmUrl: ${{ secrets.REALM_QA_BASE_URL }}
-          projectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
-          atlasUrl: ${{ secrets.ATLAS_QA_BASE_URL}}
-          apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
-          privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
-          differentiator: realm-js
-
   integration-tests:
     name: Integration tests (${{matrix.variant.target}}) for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
-    needs: [build, baas-realm-js]
+    needs: [build]
     env:
       REALM_DISABLE_ANALYTICS: 1
       MOCHA_REMOTE_TIMEOUT: 60000
-      CLUSTER_NAME: ${{ needs.baas-realm-js.outputs.clusterName }}
       REALM_BASE_URL: ${{ secrets.REALM_QA_BASE_URL }}
       REALM_PUBLIC_KEY: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
       REALM_PRIVATE_KEY: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
-      MOCHA_REMOTE_CONTEXT: syncLogLevel=all,realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ needs.baas-realm-js.outputs.clusterName }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
       MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
       MOCHA_REMOTE_EXIT_ON_ERROR: true
       SPAWN_LOGCAT: true
@@ -240,6 +221,15 @@ jobs:
           #- { os: ios, target: "test:catalyst:chrome", runner: macos-11, environment: react-native }
     timeout-minutes: 60
     steps:
+      - uses: realm/ci-actions/mdb-realm/deployApps@fac1d6958f03d71de743305ce3ab27594efbe7b7
+        id: deploy-mdb-apps
+        with:
+          realmUrl: ${{ secrets.REALM_QA_BASE_URL }}
+          projectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+          atlasUrl: ${{ secrets.ATLAS_QA_BASE_URL}}
+          apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+          privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
+          differentiator: realm-js
       - name: Checkout code
         uses: actions/checkout@v2
         with:
@@ -341,12 +331,16 @@ jobs:
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ (matrix.variant.os != 'android') && (matrix.variant.os != 'ios') }}
+        env:
+          MOCHA_REMOTE_CONTEXT: syncLogLevel=all,realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ steps.deploy-mdb-apps.outputs.clusterName }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
         # The non react native environments should not take so long
         timeout-minutes: 20
         run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ (matrix.variant.os == 'ios') }}
+        env:
+          MOCHA_REMOTE_CONTEXT: syncLogLevel=all,realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ steps.deploy-mdb-apps.outputs.clusterName }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
         timeout-minutes: 45
         run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
@@ -368,6 +362,8 @@ jobs:
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ (matrix.variant.os == 'android') }}
+        env:
+          MOCHA_REMOTE_CONTEXT: syncLogLevel=all,realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ steps.deploy-mdb-apps.outputs.clusterName }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
         timeout-minutes: 45
         uses: reactivecircus/android-emulator-runner@v2
         with:
