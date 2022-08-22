@@ -200,7 +200,6 @@ jobs:
     runs-on: ${{ matrix.variant.runner }}
     strategy:
       fail-fast: false
-      max-parallel: 3
       matrix:
         variant:
           #type: [Release, Debug]
