@@ -220,13 +220,6 @@ jobs:
           #- { os: ios, target: "test:catalyst:chrome", runner: macos-11, environment: react-native }
     timeout-minutes: 60
     steps:
-      - uses: TGPSKI/name-generator-node-action@v2
-        id: uid
-        with:
-          separator: '-'
-          length: '2'
-          style: 'upperCase'
-
       - uses: realm/ci-actions/mdb-realm/deployApps@fac1d6958f03d71de743305ce3ab27594efbe7b7
         id: deploy-mdb-apps
         with:
@@ -235,7 +228,7 @@ jobs:
           atlasUrl: ${{ secrets.ATLAS_QA_BASE_URL}}
           apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
           privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
-          differentiator: realm-js-${{steps.uid.outputs.name}}
+          differentiator: realm-js-${{matrix.variant.os}}-${{matrix.variant.target}}-${{matrix.variant.environment}}
 
       - name: Checkout code
         uses: actions/checkout@v2
