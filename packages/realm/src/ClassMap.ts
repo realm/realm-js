@@ -20,10 +20,11 @@ import * as binding from "@realm/bindgen";
 
 import { PropertyMap, ObjectWrapCreator } from "./PropertyMap";
 import { Realm } from "./Realm";
-import { createWrapper as createObjectWrapperImpl, INTERNAL_HELPERS, Object as RealmObject } from "./Object";
-
+import { Object as RealmObject } from "./Object";
 import { Constructor, RealmObjectConstructor } from "./schema";
 import { getInternal } from "./internal";
+
+export const INTERNAL_HELPERS = Symbol("Realm.Object#helpers");
 
 function createNamedConstructor<T extends Constructor>(name: string): T {
   const obj = {
@@ -84,6 +85,25 @@ export type ClassHelpers<T> = {
 };
 
 export class ClassMap {
+  /**
+   * Get internal helpers.
+   * NOTE: This is a free function instead of a member of RealmObject to limit conflicts with user defined properties.
+   * @param arg The object or constructor to get a helpers for.
+   * @returns Helpers injected onto the class by the `ClassMap`.
+   */
+  public static getHelpers<T>(arg: RealmObject<T> | typeof RealmObject): ClassHelpers<T> {
+    if (arg instanceof RealmObject) {
+      return ClassMap.getHelpers(arg.constructor as typeof RealmObject);
+    } else {
+      const helpers = arg[INTERNAL_HELPERS];
+      if (helpers) {
+        return helpers as ClassHelpers<T>;
+      } else {
+        throw new Error("Expected INTERNAL_HELPERS to be set on the class");
+      }
+    }
+  }
+
   private mapping: Record<string, RealmObjectConstructor>;
 
   /**
@@ -94,7 +114,7 @@ export class ClassMap {
     this.mapping = Object.fromEntries(
       realmSchema.map((objectSchema) => {
         function createObjectWrapper(obj: binding.Obj): RealmObject<unknown> {
-          return createObjectWrapperImpl(realm, constructor, obj) as RealmObject<unknown>;
+          return RealmObject.create(realm, constructor, obj) as RealmObject<unknown>;
         }
         const properties = new PropertyMap(objectSchema, createObjectWrapper);
         const constructor = createClass(objectSchema, properties) as RealmObjectConstructor;
@@ -110,18 +130,18 @@ export class ClassMap {
     );
   }
 
-  public get<T = unknown>(type: string | RealmObject<T> | RealmObjectConstructor<T>): RealmObjectConstructor<T> {
-    if (typeof type === "string") {
-      return this.mapping[type] as RealmObjectConstructor<T>;
-    } else if (typeof type === "object") {
-      return this.get(type.constructor.name);
+  public get<T = unknown>(arg: string | RealmObject<T> | RealmObjectConstructor<T>): RealmObjectConstructor<T> {
+    if (typeof arg === "string") {
+      return this.mapping[arg] as RealmObjectConstructor<T>;
+    } else if (arg instanceof Realm.Object) {
+      return this.get(arg.constructor.name);
     } else {
       throw new Error("Not yet implemented");
     }
   }
 
-  public getHelpers<T = unknown>(name: string | RealmObject<T> | RealmObjectConstructor<T>) {
-    const constructor = this.get(name) as unknown as typeof RealmObject;
-    return constructor[INTERNAL_HELPERS] as ClassHelpers<T>;
+  public getHelpers<T = unknown>(arg: string | RealmObject<T> | RealmObjectConstructor<T>) {
+    const constructor = this.get(arg);
+    return ClassMap.getHelpers<T>(constructor as unknown as typeof RealmObject);
   }
 }
