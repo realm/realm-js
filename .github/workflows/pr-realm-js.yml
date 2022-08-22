@@ -228,7 +228,7 @@ jobs:
           atlasUrl: ${{ secrets.ATLAS_QA_BASE_URL}}
           apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
           privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
-          differentiator: realm-js-${{matrix.variant.os}}-${{matrix.variant.target}}-${{matrix.variant.environment}}
+          differentiator: realm-js-${{matrix.variant.os}}-${{matrix.variant.target}}-${{matrix.variant.environment}}-${{env.GITHUB_RUN_ATTEMPT}}
 
       - name: Checkout code
         uses: actions/checkout@v2
