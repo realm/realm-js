@@ -11,6 +11,7 @@ jobs:
       name: "on realm.dev"
       with:
         realmUrl: ${{ secrets.REALM_BASE_URL }}
+        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
         apiKey: ${{ secrets.ATLAS_PUBLIC_API_KEY }}
         privateApiKey: ${{ secrets.ATLAS_PRIVATE_API_KEY }}
@@ -18,6 +19,7 @@ jobs:
       name: "on realm.qa"
       with:
         realmUrl: ${{ secrets.REALM_QA_BASE_URL }}
+        atlasUrl: ${{ secrets.ATLAS_QA_BASE_URL }}
         projectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
         apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
         privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
