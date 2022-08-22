@@ -376,16 +376,12 @@ jobs:
           cmake: 3.10.2.4988404
           script: npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
-  cleanup-realm-js:
-    runs-on: ubuntu-20.04
-    name: Cleanup realm js
-    needs: [integration-tests]
-    timeout-minutes: 15
-    steps:
       - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56
+        if: ${{always()}}
         with:
           realmUrl: ${{ secrets.REALM_QA_BASE_URL }}
+          atlasUrl: ${{ secrets.ATLAS_QA_BASE_URL}}
           projectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
           apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
           privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
-          differentiator: realm js
+          differentiator: realm-js-${{matrix.variant.os}}-${{matrix.variant.target}}-${{matrix.variant.environment}}-${{env.GITHUB_RUN_ATTEMPT}}
