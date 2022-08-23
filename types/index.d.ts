@@ -320,8 +320,6 @@ declare namespace Realm {
          */
         linkingObjectsCount(): number;
 
-        _objectId(): string;
-
         /**
          * @returns void
          */
