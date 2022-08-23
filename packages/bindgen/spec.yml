@@ -27,6 +27,7 @@ primitives:
   - StringData
   - OwnedBinaryData
   - BinaryData
+  - Mixed
 
 typeAliases:
   uint_fast64_t: uint64_t
@@ -43,6 +44,48 @@ templates: # value tells you how many arguments it takes ('*' means any number)
   std::pair: 2
   std::tuple: '*'
   # std::unordered_map: 2
+
+mixedInfo:
+  dataTypes:
+    Int:
+      getter: get_int
+      type: int64_t
+    Bool:
+      getter: get_bool
+      type: bool
+    Float:
+      getter: get_float
+      type: float
+    Double:
+      getter: get_double
+      type: double
+    String:
+      getter: get_string
+      type: StringData
+    Binary:
+      getter: get_binary
+      type: BinaryData
+    Timestamp:
+      getter: get_timestamp
+      type: Timestamp
+    Decimal:
+      getter: get_decimal
+      type: Decimal128
+    ObjectId:
+      getter: get_object_id
+      type: ObjectId
+    UUID:
+      getter: get_uuid
+      type: UUID
+    TypedLink:
+      getter: get_link # get_link is for TypedLink, not Link!
+      type: ObjLink
+  unusedDataTypes:
+    - Mixed
+    - LinkList
+    - Link # This can be used with get<ObjKey>(), but there are better APIs to use with link columns.
+  extraCtors:
+    - Obj
 
 enums:
   SchemaMode:
@@ -319,61 +362,6 @@ classes:
       schema_from_group: '(group: Group) -> Schema'
 
       # some more...
-
-  Mixed:
-    #TODO may want to make this a primitive. Need to think about how to handle 'float' since js doesn't preserve it
-    constructors:
-      from_null: ()
-      from_int: '(v: int)'
-      from_int64_t: '(v: int64_t)'
-      from_bool: '(v: bool)'
-      from_float: '(v: float)'
-      from_double: '(v: double)'
-      #TODO do we want to list optional<T> ctors here?
-      from_timestamp: '(v: Timestamp)'
-      from_decimal128: '(v: Decimal128)'
-      from_objectid: '(v: ObjectId)'
-      from_objkey: '(v: ObjKey)'
-      from_obj: '(v: const Obj&)'
-      from_link: '(v: ObjLink)'
-      from_uuid: '(v: UUID)'
-      from_binary: '(v: BinaryData)'
-
-      # Warning: This requires some special workarounds because it is a view.
-      from_string: '(v: StringData)'
-
-    properties:
-      get_type: DataType
-
-    methods:
-      is_type: '(type: DataType) const -> bool' # Not supporting varargs. Could if needed.
-
-      # Intentionally not making these properties since they are fallable converters.
-      get_int: '() const -> int64_t'
-      get_bool: '() const -> bool'
-      get_float: '() const -> float'
-      get_double: '() const -> double'
-      get_string: '() const -> StringData'
-      get_binary: '() const -> BinaryData'
-      get_timestamp: '() const -> Timestamp'
-      get_decimal: '() const -> Decimal128'
-      get_object_id: '() const -> ObjectId'
-      get_uuid: '() const -> UUID'
-      get_link: '() const -> ObjLink'
-
-      is_null: '() const -> bool'
-      accumulate_numeric_to: '(destination: Decimal128&) const -> bool'
-      is_unresolved_link: '() const -> bool'
-      is_same_type: '(b: Mixed) const -> bool'
-      compare: '(b: Mixed) const -> int'
-      compare_signed: '(b: Mixed) const -> int'
-      #hash: '() const -> size_t' # TODO decide what to do about size_t
-
-    staticMethods:
-      is_numeric: '(type: DataType) -> bool' # Not supporting varargs. Could if needed.
-      types_are_comparable: '(l: Mixed, r: Mixed) -> bool'
-      data_types_are_comparable: '(l: DataType, r: DataType) -> bool'
-
 
   # TODO should this be nullable or always non-null?
   Timestamp:
