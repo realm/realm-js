@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { strict as assert } from "assert";
-import { pascalCase } from "change-case";
 
 import { TemplateContext } from "../context";
 import {
@@ -106,15 +105,15 @@ class NodeAddon extends CppClass {
       }),
     );
 
-    this.members.push(new CppVar("Napi::FunctionReference", NodeAddon.memberNameFor("Float")));
+    const injectables = ["Float", "UUID", "ObjectId", "Decimal128"];
+    injectables.forEach((t) => this.members.push(new CppVar("Napi::FunctionReference", NodeAddon.memberNameFor(t))));
     this.addMethod(
       new CppMethod("injectInjectables", "void", [node_callback_info], {
         body: `
           auto ctors = info[0].As<Napi::Object>();
-          // TODO also inject BSON types.
-          ${["Float"].map(
-            (t) => `${NodeAddon.memberNameFor(t)} = Napi::Persistent(ctors.Get("${t}").As<Napi::Function>());`,
-          )}
+          ${injectables
+            .map((t) => `${NodeAddon.memberNameFor(t)} = Napi::Persistent(ctors.Get("${t}").As<Napi::Function>());`)
+            .join("\n")}
         `,
       }),
     );
@@ -262,6 +261,11 @@ function convertPrimToNode(addon: NodeAddon, type: string, expr: string): string
             }(${expr}))`;
     case "Mixed":
       return `NODE_FROM_MIXED(${env}, ${expr})`;
+
+    case "ObjectId":
+    case "UUID":
+    case "Decimal128":
+      return `${addon.accessCtor(type)}.New({${convertPrimToNode(addon, "std::string", `${expr}.to_string()`)}})`;
   }
   assert.fail(`unexpected primitive type '${type}'`);
 }
@@ -308,6 +312,14 @@ function convertPrimFromNode(addon: NodeAddon, type: string, expr: string): stri
             })(${expr})`;
     case "Mixed":
       return `NODE_TO_MIXED(${env}, ${expr})`;
+
+    case "UUID":
+    case "Decimal128":
+      return `${type}(${convertPrimFromNode(addon, "std::string", `${expr}.ToString()`)})`;
+
+    // TODO add a StringData overload to the ObjectId ctor in core so this can merge with above.
+    case "ObjectId":
+      return `${type}(${convertPrimFromNode(addon, "std::string", `${expr}.ToString()`)}.c_str())`;
   }
   assert.fail(`unexpected primitive type '${type}'`);
 }
@@ -700,11 +712,19 @@ class NodeCppDecls extends CppDecls {
                 return ${convertFromNode(this.addon, spec.types["BinaryData"], "val")};
               } ${
                 // This list should be sorted in in roughly the expected frequency since earlier entries will be faster.
-                ["Obj", "Timestamp", "float", "ObjLink", "ObjectId", "Decimal128", "UUID"]
+                [
+                  ["Obj", "Obj"],
+                  ["Timestamp", "Timestamp"],
+                  ["float", "Float"],
+                  ["ObjLink", "ObjLink"],
+                  ["ObjectId", "ObjectId"],
+                  ["Decimal128", "Decimal128"],
+                  ["UUID", "UUID"],
+                ]
                   .map(
-                    (t) =>
-                      `else if (obj.InstanceOf(addon->${NodeAddon.memberNameFor(pascalCase(t))}.Value())) {
-                          return ${convertFromNode(this.addon, spec.types[t], "val")};
+                    ([typeName, jsName]) =>
+                      `else if (obj.InstanceOf(addon->${NodeAddon.memberNameFor(jsName)}.Value())) {
+                          return ${convertFromNode(this.addon, spec.types[typeName], "val")};
                       }`,
                   )
                   .join(" ")
