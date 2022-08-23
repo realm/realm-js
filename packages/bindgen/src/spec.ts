@@ -97,6 +97,7 @@ export function normalizeSpec(spec: RelaxedSpec): Spec {
     primitives: spec.primitives || [],
     typeAliases: mapObjectValues(spec.typeAliases || {}, normalizeTypeSpec),
     templates: spec.templates || {},
+    mixedInfo: spec.mixedInfo,
     enums: mapObjectValues(spec.enums || {}, normalizeEnumSpec),
     constants: mapObjectValues(spec.constants || {}, normalizeConstantSpec),
     opaqueTypes: spec.opaqueTypes || [],

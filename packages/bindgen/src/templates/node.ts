@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { strict as assert } from "assert";
+import { pascalCase } from "change-case";
 
 import { TemplateContext } from "../context";
 import {
@@ -50,13 +51,14 @@ function tryWrap(body: string) {
 }
 
 class CppNodeMethod extends CppMethod {
-  constructor(name: string, props?: CppFuncProps) {
+  constructor(private addon: NodeAddon, name: string, props?: CppFuncProps) {
     super(name, "Napi::Value", [node_callback_info], props);
   }
 
   definition() {
     return super.definition(`
             ${envFromCbInfo}
+            const auto callBlock = ${this.addon.get()}->startCall();
             ${tryWrap(this.body)}
         `);
   }
@@ -89,6 +91,33 @@ class NodeAddon extends CppClass {
   constructor() {
     super("RealmAddon");
     this.withCrtpBase("Napi::Addon");
+
+    this.members.push(new CppVar("std::deque<std::string>", "m_string_bufs"));
+    this.addMethod(
+      new CppMethod("wrapString", "const std::string&", [new CppVar("std::string", "str")], {
+        attributes: "inline",
+        body: `return m_string_bufs.emplace_back(std::move(str));`,
+      }),
+    );
+    this.addMethod(
+      new CppMethod("startCall", "auto", [], {
+        attributes: "inline",
+        body: `return ContainerResizer(m_string_bufs);`,
+      }),
+    );
+
+    this.members.push(new CppVar("Napi::FunctionReference", NodeAddon.memberNameFor("Float")));
+    this.addMethod(
+      new CppMethod("injectInjectables", "void", [node_callback_info], {
+        body: `
+          auto ctors = info[0].As<Napi::Object>();
+          // TODO also inject BSON types.
+          ${["Float"].map(
+            (t) => `${NodeAddon.memberNameFor(t)} = Napi::Persistent(ctors.Get("${t}").As<Napi::Function>());`,
+          )}
+        `,
+      }),
+    );
   }
 
   generateMembers() {
@@ -101,6 +130,7 @@ class NodeAddon extends CppClass {
                 ${Object.entries(this.exports)
                   .map(([name, val]) => `InstanceValue(${name}, ${val}.Value(), napi_enumerable),`)
                   .join("\n")}
+                InstanceMethod<&${this.name}::injectInjectables>("injectInjectables"),
             });
             `,
       }),
@@ -108,18 +138,23 @@ class NodeAddon extends CppClass {
   }
 
   addClass(cls: NodeObjectWrap) {
-    const mem = this.memberNameFor(cls);
+    const mem = NodeAddon.memberNameFor(cls);
     this.members.push(new CppVar("Napi::FunctionReference", mem));
     this.inits.push(`${mem} = Persistent(${cls.name}::makeCtor(${env}));`);
     this.exports[`${cls.name}::jsName`] = mem;
   }
 
-  memberNameFor(cls: CppClass) {
-    return `m_cls_${cls.name}_ctor`;
+  static memberNameFor(cls: string | NodeObjectWrap) {
+    if (typeof cls != "string") cls = cls.jsName;
+    return `m_cls_${cls}_ctor`;
   }
 
-  accessCtor(cls: CppClass) {
-    return `${env}.GetInstanceData<${this.name}>()->${this.memberNameFor(cls)}`;
+  accessCtor(cls: string | NodeObjectWrap) {
+    return `${this.get()}->${NodeAddon.memberNameFor(cls)}`;
+  }
+
+  get() {
+    return `${env}.GetInstanceData<${this.name}>()`;
   }
 }
 
@@ -184,7 +219,7 @@ function toCpp(type: Type): string {
   }
 }
 
-function convertPrimToNode(type: string, expr: string): string {
+function convertPrimToNode(addon: NodeAddon, type: string, expr: string): string {
   switch (type) {
     case "void":
       return `((void)(${expr}), ${env}.Undefined())`;
@@ -192,9 +227,11 @@ function convertPrimToNode(type: string, expr: string): string {
     case "bool":
       return `Napi::Boolean::New(${env}, ${expr})`;
 
+    case "float":
+      return `${addon.accessCtor("Float")}.New({${convertPrimToNode(addon, "double", expr)}})`;
+
     case "count_t":
     case "double":
-    case "float":
     case "int":
     case "int32_t":
       return `Napi::Number::New(${env}, ${expr})`;
@@ -215,7 +252,7 @@ function convertPrimToNode(type: string, expr: string): string {
             }(${expr}))`;
 
     case "OwnedBinaryData":
-      return convertPrimToNode("BinaryData", `${expr}.get()`);
+      return convertPrimToNode(addon, "BinaryData", `${expr}.get()`);
 
     case "BinaryData":
       return `([&] (BinaryData bd) -> Napi::Value {
@@ -223,10 +260,12 @@ function convertPrimToNode(type: string, expr: string): string {
                 memcpy(arr.Data(), bd.data(), bd.size());
                 return arr;
             }(${expr}))`;
+    case "Mixed":
+      return `NODE_FROM_MIXED(${env}, ${expr})`;
   }
   assert.fail(`unexpected primitive type '${type}'`);
 }
-function convertPrimFromNode(type: string, expr: string) {
+function convertPrimFromNode(addon: NodeAddon, type: string, expr: string): string {
   // TODO consider using coercion using ToString, ToNumber, ToBoolean.
   switch (type) {
     case "void":
@@ -238,7 +277,7 @@ function convertPrimFromNode(type: string, expr: string) {
     case "double":
       return `(${expr}).As<Napi::Number>().DoubleValue()`;
     case "float":
-      return `(${expr}).As<Napi::Number>().FloatValue()`;
+      return `(${expr}).As<Napi::Object>().Get("value").As<Napi::Number>().FloatValue()`;
 
     case "int":
     case "int32_t":
@@ -253,10 +292,13 @@ function convertPrimFromNode(type: string, expr: string) {
     case "uint64_t":
       return `extractUint64FromNode(${expr})`;
 
-    case "StringData":
-    case "std::string_view":
     case "std::string":
       return `(${expr}).As<Napi::String>().Utf8Value()`;
+
+    case "StringData":
+    case "std::string_view":
+      // TODO look into not wrapping if directly converting into an argument.
+      return `${addon.get()}->wrapString(${convertPrimFromNode(addon, "std::string", expr)})`;
 
     case "OwnedBinaryData":
     case "BinaryData":
@@ -264,15 +306,17 @@ function convertPrimFromNode(type: string, expr: string) {
                 auto buf = v.As<Napi::ArrayBuffer>();
                 return BinaryData(static_cast<const char*>(buf.Data()), buf.ByteLength());
             })(${expr})`;
+    case "Mixed":
+      return `NODE_TO_MIXED(${env}, ${expr})`;
   }
   assert.fail(`unexpected primitive type '${type}'`);
 }
 
-function convertToNode(type: Type, expr: string): string {
-  const c = convertToNode; // shortcut for recursion
+function convertToNode(addon: NodeAddon, type: Type, expr: string): string {
+  const c = convertToNode.bind(null, addon); // shortcut for recursion
   switch (type.kind) {
     case "Primitive":
-      return convertPrimToNode(type.name, expr);
+      return convertPrimToNode(addon, type.name, expr);
     case "Pointer":
       return `[&](auto* ptr){ return ptr ? ${c(type.type, "*ptr")}: ${env}.Null(); } (${expr})`;
 
@@ -334,11 +378,12 @@ function convertToNode(type: Type, expr: string): string {
                 }
                 return Napi::Function::New(${env}, [cb] (const Napi::CallbackInfo& info) {
                     auto ${env} = info.Env();
+                    const auto callBlock = ${addon.get()}->startCall();
                     ${tryWrap(`
-                        return ${convertToNode(
+                        return ${c(
                           type.ret,
                           `cb(
-                            ${type.args.map((arg, i) => convertFromNode(arg.type, `info[${i}]`)).join(", ")}
+                            ${type.args.map((arg, i) => convertFromNode(addon, arg.type, `info[${i}]`)).join(", ")}
                         )`,
                         )};
                     `)}
@@ -356,11 +401,11 @@ function convertToNode(type: Type, expr: string): string {
       return _exhaustiveCheck;
   }
 }
-function convertFromNode(type: Type, expr: string): string {
-  const c = convertFromNode; // shortcut for recursion
+function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
+  const c = convertFromNode.bind(null, addon); // shortcut for recursion
   switch (type.kind) {
     case "Primitive":
-      return convertPrimFromNode(type.name, expr);
+      return convertPrimFromNode(addon, type.name, expr);
     case "Pointer":
       return `[&] (Napi::Value v) { return (v.IsNull() || v.IsUndefined()) ? nullptr : &${c(
         type.type,
@@ -438,11 +483,11 @@ function convertFromNode(type: Type, expr: string): string {
                     auto ${env} = cb->Env();
                     Napi::HandleScope hs(${env});
                     try {
-                        return ${convertFromNode(
+                        return ${c(
                           type.ret,
                           `cb->MakeCallback(
                               ${env}.Global(),
-                              {${type.args.map(({ name, type }) => convertToNode(type, name)).join(", ")}
+                              {${type.args.map(({ name, type }) => convertToNode(addon, type, name)).join(", ")}
                         })`,
                         )};
                     } catch (Napi::Error& e) {
@@ -472,12 +517,12 @@ class NodeCppDecls extends CppDecls {
       const fieldsTo = [];
       for (const field of struct.fields) {
         const cppFieldName = field.name;
-        fieldsFrom.push(`out.Set("${field.jsName}", ${convertToNode(field.type, `in.${cppFieldName}`)});`);
+        fieldsFrom.push(`out.Set("${field.jsName}", ${convertToNode(this.addon, field.type, `in.${cppFieldName}`)});`);
         // TODO: consider doing lazy conversion of some types to JS, only if the field is accessed.
         fieldsTo.push(`{
                     auto field = obj.Get("${field.jsName}");
                     if (!field.IsUndefined()) {
-                        out.${cppFieldName} = ${convertFromNode(field.type, "field")};
+                        out.${cppFieldName} = ${convertFromNode(this.addon, field.type, "field")};
                     } else if constexpr (${field.required ? "true" : "false"}) {
                         throw Napi::TypeError::New(${env}, "${struct.name}::${field.jsName} is required");
                     }
@@ -490,6 +535,7 @@ class NodeCppDecls extends CppDecls {
           "Napi::Value",
           [new CppVar("Napi::Env", env), new CppVar(struct.cppName, "in")],
           {
+            attributes: "[[maybe_unused]]", // TODO look into generating these functions on demand instead.
             body: `
                 auto out = Napi::Object::New(${env});
                 ${fieldsFrom.join("")}
@@ -500,6 +546,7 @@ class NodeCppDecls extends CppDecls {
       );
       this.free_funcs.push(
         new CppFunc(`NODE_TO_STRUCT_${struct.name}`, struct.cppName, [new CppVar("Napi::Value", "val")], {
+          attributes: "[[maybe_unused]]",
           body: `
               auto ${env} = val.Env();
               if (!val.IsObject())
@@ -518,46 +565,23 @@ class NodeCppDecls extends CppDecls {
       const descriptors: string[] = [];
       const self = specClass.needsDeref ? "(*m_val)" : "(m_val)";
 
-      if (specClass.name == "Mixed") {
-        cls.members.push(new CppVar("std::string", "m_buffer"));
-      }
-
       for (const method of specClass.methods) {
-        const cppMeth = cls.addMethod(new CppNodeMethod(method.jsName, { static: method.isStatic }));
+        const cppMeth = cls.addMethod(new CppNodeMethod(this.addon, method.jsName, { static: method.isStatic }));
         descriptors.push(
           `${method.isStatic ? "Static" : "Instance"}Method<&${cppMeth.qualName()}>("${method.jsName}")`,
         );
 
-        const args = method.sig.args.map((a, i) => convertFromNode(a.type, `info[${i}]`));
+        const args = method.sig.args.map((a, i) => convertFromNode(this.addon, a.type, `info[${i}]`));
 
         cppMeth.body += `
-                    if (info.Length() != ${args.length})
-                        throw Napi::TypeError::New(${env}, "expected ${args.length} arguments");
+            if (info.Length() != ${args.length})
+                throw Napi::TypeError::New(${env}, "expected ${args.length} arguments");
+            return ${convertToNode(this.addon, method.sig.ret, method.call({ self }, ...args))};
         `;
-
-        if (method.id == "Mixed::from_string") {
-          assert.equal(args.length, 1);
-          cppMeth.body += `
-              auto ret = ${convertToNode(method.sig.ret, "Mixed()")};
-              auto self = Unwrap(ret.ToObject());
-              self->m_buffer = ${args};
-              self->m_val = Mixed(self->m_buffer);
-              return ret;
-            `;
-        } else if (method.id == "Mixed::from_binary") {
-          assert.equal(args.length, 1);
-          cppMeth.body += `
-              auto ret = ${convertToNode(method.sig.ret, method.call({ self }, ...args))};
-              ret.ToObject().Set("_keepAlive", info[0]);
-              return ret;
-            `;
-        } else {
-          cppMeth.body += `return ${convertToNode(method.sig.ret, method.call({ self }, ...args))};`;
-        }
       }
 
       if (specClass.iterable) {
-        const cppMeth = cls.addMethod(new CppNodeMethod("Symbol_iterator"));
+        const cppMeth = cls.addMethod(new CppNodeMethod(this.addon, "Symbol_iterator"));
         descriptors.push(`InstanceMethod<&${cppMeth.qualName()}>(Napi::Symbol::WellKnown(${env}, "iterator"))`);
         cppMeth.body += `
             if (info.Length() != 0)
@@ -573,7 +597,7 @@ class NodeCppDecls extends CppDecls {
                     if (it == end) {
                         ret.Set("done", Napi::Boolean::New(${env}, true));
                     } else {
-                        ret.Set("value", ${convertToNode(specClass.iterable, "*it")});
+                        ret.Set("value", ${convertToNode(this.addon, specClass.iterable, "*it")});
                         ++it;
                     }
                     return ret;
@@ -584,8 +608,8 @@ class NodeCppDecls extends CppDecls {
       }
 
       for (const prop of specClass.properties) {
-        const cppMeth = cls.addMethod(new CppNodeMethod(prop.jsName));
-        cppMeth.body += `return ${convertToNode(prop.type, `${self}.${prop.name}()`)};`;
+        const cppMeth = cls.addMethod(new CppNodeMethod(this.addon, prop.jsName));
+        cppMeth.body += `return ${convertToNode(this.addon, prop.type, `${self}.${prop.name}()`)};`;
         descriptors.push(`InstanceAccessor<&${cppMeth.qualName()}>("${prop.jsName}")`);
       }
 
@@ -635,6 +659,71 @@ class NodeCppDecls extends CppDecls {
 
       this.addon.addClass(cls);
     }
+
+    this.free_funcs.push(
+      new CppFunc("NODE_FROM_MIXED", "Napi::Value", [new CppVar("Napi::Env", env), new CppVar("Mixed", "val")], {
+        body: `
+          if (val.is_null())
+              return ${env}.Null();
+          switch (val.get_type()) {
+          ${spec.mixedInfo.getters
+            .map(
+              (g) => `
+                case DataType::Type::${g.dataType}:
+                  return ${convertToNode(this.addon, g.type, `val.${g.getter}()`)};
+              `,
+            )
+            .join("\n")}
+          // The remaining cases are never stored in a Mixed.
+          ${spec.mixedInfo.unusedDataTypes.map((t) => `case DataType::Type::${t}: break;`).join("\n")}
+          }
+          REALM_UNREACHABLE();
+        `,
+      }),
+      new CppFunc("NODE_TO_MIXED", "Mixed", [new CppVar("Napi::Env", env), new CppVar("Napi::Value", "val")], {
+        body: `
+          switch(val.Type()) {
+          case napi_null:
+              return Mixed();
+          case napi_string:
+              return ${convertFromNode(this.addon, spec.types["StringData"], "val")};
+          case napi_number:
+              return ${convertFromNode(this.addon, spec.types["double"], "val")};
+          case napi_bigint:
+              return ${convertFromNode(this.addon, spec.types["int64_t"], "val")};
+          case napi_boolean:
+              return ${convertFromNode(this.addon, spec.types["bool"], "val")};
+          case napi_object: {
+              const auto obj = val.As<Napi::Object>();
+              const auto addon = ${this.addon.get()};
+              if (val.IsArrayBuffer()) {
+                return ${convertFromNode(this.addon, spec.types["BinaryData"], "val")};
+              } ${
+                // This list should be sorted in in roughly the expected frequency since earlier entries will be faster.
+                ["Obj", "Timestamp", "float", "ObjLink", "ObjectId", "Decimal128", "UUID"]
+                  .map(
+                    (t) =>
+                      `else if (obj.InstanceOf(addon->${NodeAddon.memberNameFor(pascalCase(t))}.Value())) {
+                          return ${convertFromNode(this.addon, spec.types[t], "val")};
+                      }`,
+                  )
+                  .join(" ")
+              }
+
+              // TODO should we check for "boxed" values like 'new Number(1)'?
+
+              const auto ctorName = obj.Get("constructor").As<Napi::Object>().Get("name").As<Napi::String>().Utf8Value();
+              throw Napi::TypeError::New(${env}, "Unable to convert an object with ctor '" + ctorName + "' to a Mixed");
+          }
+          // TODO consider treating undefined as null
+          ${["undefined", "symbol", "function", "external"]
+            .map((t) => `case napi_${t}: throw Napi::TypeError::New(${env}, "Can't convert ${t} to Mixed");`)
+            .join("\n")}
+          }
+          REALM_UNREACHABLE();
+        `,
+      }),
+    );
 
     this.addon.generateMembers();
   }
@@ -707,6 +796,24 @@ export function generateNode({ spec, file: makeFile }: TemplateContext): void {
 
       // These helpers are used by the generated code.
       // TODO Consider moving them to a header.
+
+      template <typename Container>
+      class [[nodiscard]] ContainerResizer {
+      public:
+          explicit ContainerResizer(Container& container) : m_container(&container), m_old_size(container.size()) {}
+          ContainerResizer(ContainerResizer&&) = delete;
+          ~ContainerResizer() {
+              if (m_old_size == 0) {
+                  // this can be a bit faster than resize()
+                  m_container->clear();
+              } else {
+                  m_container->resize(m_old_size);
+              }
+          }
+      private:
+          Container* const m_container;
+          const size_t m_old_size;
+      };
 
       // TODO consider allowing Number (double) with (u)int64_t.
       int64_t extractInt64FromNode(const Napi::Value& input) {

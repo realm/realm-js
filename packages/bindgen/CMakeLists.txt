@@ -138,6 +138,14 @@ target_link_libraries(realm-js Realm::ObjectStore NodeJS)
 # The rest of this file is custom to the binding generator. #
 #############################################################
 
+# TODO look into how to sync our warning flags with core
+# TODO consider -Werror
+if (MSVC)
+    target_compile_options(realm-js PRIVATE /W3)
+else()
+    target_compile_options(realm-js PRIVATE -Wall -Wextra)
+endif()
+
 # Right now we only support Ninja generators because they are the only ones that can correctly handle
 # mutliple custom_commands in separate targets that transitively depend on a common output file from
 # another custom_command. Right now we have the situation where all generators depend on the json schema

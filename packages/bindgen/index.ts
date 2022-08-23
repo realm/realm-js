@@ -17,32 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 // import { strict as assert } from "assert";
-import { DataType, Decimal128, IndexSet, Mixed, ObjectId, ObjLink, Timestamp, Uuid } from "./generated/ts/native.js";
+import { IndexSet, Timestamp } from "./generated/ts/native.js";
 
-export * from "./generated/ts/native.js"; // enums are transitively exported.
-
-const customInspectSymbol = Symbol.for("nodejs.util.inspect.custom");
-
-// Make Mixed easier to work with.
-export type MixedValues =
-  | null //
-  | bigint
-  | boolean
-  | number
-  | string
-  | ArrayBuffer
-  | Timestamp
-  | Decimal128
-  | ObjectId
-  | Uuid
-  | ObjLink;
+export * from "./generated/ts/native.js"; // core types are transitively exported.
 
 declare module "./generated/ts/native.js" {
-  interface Mixed {
-    toJsValue(): MixedValues;
-    toString(): string;
-    [customInspectSymbol](): string;
-  }
   interface IndexSet {
     asIndexes(): Iterator<number>;
   }
@@ -54,40 +33,6 @@ declare module "./generated/ts/native.js" {
     export function fromDate(d: Date): Timestamp;
   }
 }
-
-Mixed.prototype.toJsValue = function () {
-  if (this.isNull()) return null;
-
-  const t = this.type;
-  switch (t) {
-    case DataType.Int:
-      return this.getInt(); // Note: returns bigint, not number
-    case DataType.String:
-      return this.getString();
-    case DataType.Float:
-      return this.getFloat();
-    case DataType.Double:
-      return this.getDouble();
-  }
-  throw new Error(`Unsupported DataType for Mixed.toJsValue(): ${t}`);
-};
-
-Mixed.prototype.toString = function () {
-  if (this.isNull()) return "Mixed(null)";
-
-  try {
-    switch (this.type) {
-      case DataType.Float:
-        return `Mixed(float:${this.toJsValue()})`;
-      default:
-        return `Mixed(${this.toJsValue()})`;
-    }
-  } catch {
-    return "Mixed(NOT_SUPPORTED_YET)";
-  }
-};
-
-Mixed.prototype[customInspectSymbol] = Mixed.prototype.toString;
 
 IndexSet.prototype.asIndexes = function* (this: IndexSet) {
   for (const [from, to] of this) {
