@@ -150,8 +150,6 @@ export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): vo
     const nativeModule = bindings("realm.node")
 
     import { ObjectId, UUID, Decimal128 } from "bson";
-
-    // TODO inject BSON types.
     import { Float } from "./core";
     nativeModule.injectInjectables({ Float, ObjectId, UUID, Decimal128 });
   `);
