@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 ////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2022 Realm Inc.
@@ -16,4 +15,8 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-require("./dist/cli");
+const AppImporter = {};
+const Credentials = {};
+const AppImporterOptions = {};
+
+export { AppImporter, Credentials, AppImporterOptions };

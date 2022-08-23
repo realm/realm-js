@@ -128,6 +128,11 @@ yargs
     default: DEFAULTS.baseUrl,
     description: "Base url of Altas App Services to import the app into",
   })
+  .option("atlas-cluster", {
+    type: "string",
+    description: "The cluster name to use when deploying to Atlas",
+    default: undefined,
+  })
   .option("username", {
     type: "string",
     default: DEFAULTS.username,
@@ -242,7 +247,6 @@ yargs
         .option("hostname", {
           type: "string",
           description: "Hostname used when listening for connections",
-          default: "0.0.0.0",
         })
         .option("port", {
           type: "number",

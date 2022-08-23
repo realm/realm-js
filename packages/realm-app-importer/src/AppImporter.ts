@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import cp from "child_process";
 import fetch from "node-fetch";
 import path from "path";
 import fs from "fs-extra";
@@ -48,6 +47,13 @@ type LoginResponse = {
   refresh_token: string;
 };
 
+type AppConfig = {
+  name: string;
+  security?: {
+    allowed_request_origins?: string[];
+  };
+};
+
 type ErrorResponse = {
   error: string;
 };
@@ -57,6 +63,19 @@ type ProfileResponse = {
 };
 
 type Role = { role_name: string; group_id: string };
+
+type AuthProvider = {
+  _id: string;
+  name: string;
+  type: string;
+  disabled: boolean;
+};
+
+type RemoteFunction = {
+  _id: string;
+  name: string;
+  last_modified: number;
+};
 
 function isString(value: unknown): value is string {
   return typeof value === "string";
@@ -96,10 +115,7 @@ function isErrorResponse(json: unknown): json is ErrorResponse {
 
 function isProfileResponse(json: unknown): json is ProfileResponse {
   if (isObject(json)) {
-    return (
-      Array.isArray(json.roles) &&
-      json.roles.every((item) => typeof item.role_name === "string" && typeof item.group_id === "string")
-    );
+    return Array.isArray(json.roles) && json.roles.every((item) => typeof item.role_name === "string");
   } else {
     return false;
   }
@@ -163,52 +179,36 @@ export class AppImporter {
    * @returns A promise of an object containing the app id.
    */
   public async importApp(appTemplatePath: string, replacements: TemplateReplacements = {}): Promise<{ appId: string }> {
-    const { name: appName } = this.loadAppConfigJson(appTemplatePath);
-    await this.logIn();
-    const groupId = await this.getGroupId();
+    const { name: appName, security } = this.loadAppConfigJson(appTemplatePath);
 
-    // Get or create an application
+    await this.logIn();
+
+    const groupId = await this.getGroupId();
     const app = await this.createApp(groupId, appName);
     const appId = app.client_app_id;
-    // Create all secrets in parallel
-    const secrets = this.loadSecretsJson(appTemplatePath);
-    await Promise.all(
-      Object.entries<string>(secrets).map(async ([name, value]) => {
-        if (typeof value !== "string") {
-          throw new Error(`Expected a secret string value for '${name}'`);
-        }
-        return this.createSecret(groupId, app._id, name, value);
-      }),
-    );
 
     // Determine the path of the new app
     const appPath = path.resolve(this.appsDirectoryPath, appId);
+
     // Copy over the app template
     this.copyAppTemplate(appPath, appTemplatePath);
+
     // Apply any replacements to the files before importing from them
     this.applyReplacements(appPath, replacements);
 
-    // Import
-    this.realmCli(
-      "import",
-      "--config-path",
-      this.realmConfigPath,
-      "--base-url",
-      this.baseUrl,
-      "--app-name",
-      appName,
-      "--app-id",
-      appId,
-      "--path",
-      appPath,
-      "--project-id",
-      groupId,
-      "--strategy",
-      "replace",
-      "--yes", // Bypass prompts
-    );
+    // Apply allowed request origins if they exist
+    if (security?.allowed_request_origins) {
+      this.applyAllowedRequestOrigins(security.allowed_request_origins, app._id, groupId);
+    }
 
-    // Return the app id of the newly created app
+    // Create the app service
+    await this.applyAppConfiguration(appPath, app._id, groupId);
+
+    if (appId) {
+      console.log(`The application ${appId} was successfully deployed...`);
+      console.log(`${this.baseUrl}/groups/${groupId}/apps/${app._id}/dashboard`);
+    }
+
     return { appId };
   }
 
@@ -244,7 +244,7 @@ export class AppImporter {
     }
   }
 
-  private loadAppConfigJson(appTemplatePath: string) {
+  private loadAppConfigJson(appTemplatePath: string): AppConfig {
     const configJsonPath = path.resolve(appTemplatePath, "config.json");
     return this.loadJson(configJsonPath);
   }
@@ -281,9 +281,250 @@ export class AppImporter {
     }
   }
 
-  private realmCli(...args: string[]) {
-    const cliPath = require.resolve("mongodb-realm-cli/wrapper.js");
-    cp.execFileSync(cliPath, args, { stdio: "inherit" });
+  private async applyAllowedRequestOrigins(origins: string[], appId: string, groupId: string) {
+    console.log("Applying allowed request origins: ", origins);
+    const originsUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/security/allowed_request_origins`;
+    const response = await fetch(originsUrl, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(origins),
+    });
+    if (!response.ok) {
+      console.error("Could not apply request origins: ", origins, originsUrl, response.status, response.statusText);
+    }
+  }
+
+  private async enableDevelopmentMode(groupId: string, appId: string) {
+    const configUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/sync/config`;
+    const config = { development_mode_enabled: true };
+    const response = await fetch(configUrl, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(config),
+    });
+    if (!response.ok) {
+      console.error("Could not apply development mode: ", config, configUrl, response.status, response.statusText);
+    }
+  }
+
+  private async configureServiceFromAppPath(appPath: string, appId: string, groupId: string) {
+    const servicesDir = path.join(appPath, "services");
+    if (fs.existsSync(servicesDir)) {
+      console.log("Applying services... ");
+      const serviceDirectories = fs.readdirSync(servicesDir);
+
+      // It is possible for there to be multiple service directories
+      for (const serviceDir of serviceDirectories) {
+        const configFilePath = path.join(servicesDir, serviceDir, "config.json");
+        if (fs.existsSync(configFilePath)) {
+          const config = this.loadJson(configFilePath);
+          console.log("Creating service: ", config.name);
+          const tmpConfig = { name: config.name, type: config.type, config: config.config };
+          if (config.type === "mongodb-atlas") {
+            tmpConfig.config = { clusterName: config.config.clusterName };
+          }
+          const dbName = config.config.sync
+            ? config.config.sync?.database_name
+            : config.config.flexible_sync?.database_name;
+          const serviceUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/services`;
+          const response = await fetch(serviceUrl, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${this.accessToken}`,
+              "content-type": "application/json",
+            },
+            body: JSON.stringify(config),
+          });
+          if (!response.ok) {
+            console.warn("Could not create service: ", tmpConfig, serviceUrl, response.statusText);
+          } else {
+            await this.enableDevelopmentMode(groupId, appId);
+            const rulesDir = path.join(servicesDir, serviceDir, "rules");
+            const responseJson = await response.json();
+            const serviceId = responseJson._id;
+            // rules must be applied after the service is created
+            if (fs.existsSync(rulesDir)) {
+              console.log("Applying rules...");
+              const ruleFiles = fs.readdirSync(rulesDir);
+              for (const ruleFile of ruleFiles) {
+                const ruleFilePath = path.join(rulesDir, ruleFile);
+                const ruleConfig = this.loadJson(ruleFilePath);
+                if (dbName) {
+                  ruleConfig.database = dbName ?? "";
+                }
+                const schemaConfig = ruleConfig.schema || null;
+                if (schemaConfig) {
+                  // Schema is not valid in a rule request, but is included when exporting an app from realm
+                  delete ruleConfig.schema;
+                }
+                const rulesUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/services/${serviceId}/rules`;
+                const response = await fetch(rulesUrl, {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${this.accessToken}`,
+                    "content-type": "application/json",
+                  },
+                  body: JSON.stringify(ruleConfig),
+                });
+                if (!response.ok) {
+                  console.warn("Could not create rule: ", ruleConfig, rulesUrl, response.statusText);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private async configureAuthProvidersFromAppPath(appPath: string, appId: string, groupId: string) {
+    const authProviderDir = path.join(appPath, "auth_providers");
+
+    // Some auth providers use a remote function.  This makes sure the ids are available to add to the configuration
+    const remoteFunctions = await this.getFunctions(appId, groupId);
+
+    if (fs.existsSync(authProviderDir)) {
+      console.log("Applying auth providers...");
+      const authFileNames = fs.readdirSync(authProviderDir);
+      const providers = await this.getAuthProviders(appId, groupId);
+      for (const authFileName of authFileNames) {
+        const authFilePath = path.join(authProviderDir, authFileName);
+        const authConfig = this.loadJson(authFilePath);
+
+        console.log("Applying ", authConfig.name);
+
+        // Add the ID of the resetFunction to the configuration
+        if (authConfig?.config?.resetFunctionName) {
+          const resetFunctionId = remoteFunctions.find((func) => func.name === authConfig.config.resetFunctionName)
+            ?._id;
+          authConfig.config.resetFunctionId = resetFunctionId;
+        }
+
+        // Add the ID of the authFunction to the configuration
+        if (authConfig?.config?.authFunctionName) {
+          const authFunctionId = remoteFunctions.find((func) => func.name === authConfig.config.authFunctionName)?._id;
+          authConfig.config.authFunctionId = authFunctionId;
+        }
+
+        const currentProvider = providers.find((provider) => provider.type === authConfig.type);
+        if (currentProvider) {
+          const authUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/auth_providers/${currentProvider._id}`;
+          const response = await fetch(authUrl, {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${this.accessToken}`,
+              "content-type": "application/json",
+            },
+            body: JSON.stringify({ ...authConfig, _id: currentProvider._id }),
+          });
+          if (!response.ok) {
+            console.error("Could not patch auth_provider: ", authConfig, authUrl);
+          }
+        } else {
+          const authUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/auth_providers`;
+          const response = await fetch(authUrl, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${this.accessToken}`,
+              "content-type": "application/json",
+            },
+            body: JSON.stringify(authConfig),
+          });
+          const result = await response.json();
+          if (!response.ok) {
+            console.error("Could not apply auth_provider: ", authConfig, authUrl, result.error);
+          }
+        }
+      }
+    }
+  }
+
+  private async getFunctions(appId: string, groupId: string): Promise<RemoteFunction[]> {
+    const functionsUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/functions`;
+    const response = await fetch(functionsUrl, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+        "content-type": "application/json",
+      },
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      console.error("Could not retrieve functions: ", functionsUrl, result.error);
+    }
+    return result;
+  }
+
+  private async configureFunctionsFromAppPath(appPath: string, appId: string, groupId: string) {
+    const functionsDir = path.join(appPath, "functions");
+
+    if (fs.existsSync(functionsDir)) {
+      console.log("Applying functions...");
+      const functionDirs = fs.readdirSync(functionsDir);
+      for (const functionDir of functionDirs) {
+        const functionConfigPath = path.join(functionsDir, functionDir, "config.json");
+        const functionConfig = this.loadJson(functionConfigPath);
+        const functionSourcePath = path.join(functionsDir, functionDir, "source.js");
+        const functionSource = fs.readFileSync(functionSourcePath, "utf8");
+
+        delete functionConfig.id;
+
+        console.log("creating new function provider: ", functionConfig);
+        const functionsUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/functions`;
+        const response = await fetch(functionsUrl, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({ ...functionConfig, source: functionSource }),
+        });
+        if (!response.ok) {
+          console.error("Could create apply function: ", functionConfig, functionsUrl);
+        }
+      }
+    }
+  }
+
+  private async getAuthProviders(appId: string, groupId: string): Promise<AuthProvider[]> {
+    const authUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/auth_providers`;
+    const response = await fetch(authUrl, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+        "content-type": "application/json",
+      },
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      console.error("Could not retrieve auth_providers: ", authUrl, result.error);
+    }
+    return result;
+  }
+
+  private async applyAppConfiguration(appPath: string, appId: string, groupId: string) {
+    // Create all secrets in parallel
+    const secrets = this.loadSecretsJson(appPath);
+    await Promise.all(
+      Object.entries<string>(secrets).map(async ([name, value]) => {
+        if (typeof value !== "string") {
+          throw new Error(`Expected a secret string value for '${name}'`);
+        }
+        return this.createSecret(groupId, appId, name, value);
+      }),
+    );
+
+    await this.configureServiceFromAppPath(appPath, appId, groupId);
+
+    await this.configureFunctionsFromAppPath(appPath, appId, groupId);
+
+    await this.configureAuthProvidersFromAppPath(appPath, appId, groupId);
   }
 
   private performLogIn() {
@@ -397,12 +638,33 @@ export class AppImporter {
     }
   }
 
+  private async findApp(groupId: string, name: string) {
+    if (!this.accessToken) {
+      throw new Error("Login before calling this method");
+    }
+    const response = await fetch(`${this.apiUrl}/groups/${groupId}/apps`, {
+      method: "GET",
+      headers: { authorization: `Bearer ${this.accessToken}` },
+    });
+    if (response.ok) {
+      const appList = (await response.json()) as Array<App>;
+      return appList.find((app) => app.name === name);
+    } else {
+      throw new Error(`Failed reach app listing in group '${groupId}'`);
+    }
+  }
+
   private async createApp(groupId: string, name: string) {
     if (!this.accessToken) {
       throw new Error("Login before calling this method");
     }
     const url = `${this.baseUrl}/api/admin/v3.0/groups/${groupId}/apps`;
-    const body = JSON.stringify({ name });
+    const body = JSON.stringify({
+      name,
+      sync: {
+        development_mode_enabled: true,
+      },
+    });
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -427,7 +689,7 @@ export class AppImporter {
     if (!this.accessToken) {
       throw new Error("Login before calling this method");
     }
-    const url = `${this.baseUrl}/api/admin/v3.0/groups/${groupId}/apps/${internalAppId}/secrets`;
+    const url = `${this.apiUrl}/groups/${groupId}/apps/${internalAppId}/secrets`;
     const body = JSON.stringify({ name, value });
     const response = await fetch(url, {
       method: "POST",
@@ -438,7 +700,7 @@ export class AppImporter {
       body,
     });
     if (!response.ok) {
-      throw new Error(`Failed to create secred '${name}'`);
+      throw new Error(`Failed to create secret '${name}'`);
     }
   }
 }
