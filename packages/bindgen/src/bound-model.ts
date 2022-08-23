@@ -219,24 +219,31 @@ export class BoundSpec {
   records: Struct[] = [];
   enums: Enum[] = [];
   opaqueTypes: Opaque[] = [];
+  mixedInfo!: MixedInfo;
+  types: Record<string, Type> = {};
 }
+
+type MixedInfo = {
+  getters: { dataType: string; getter: string; type: Type }[];
+  unusedDataTypes: string[];
+  ctors: Type[];
+};
 
 export function bindModel(spec: Spec): BoundSpec {
   const templates: Map<string, Spec["templates"][string]> = new Map();
-  const types: Record<string, Type> = {};
 
   const out = new BoundSpec();
 
   function addType<T extends Type>(name: string, type: T | (new (name: string) => T)) {
-    assert(!(name in types));
+    assert(!(name in out.types));
     if (typeof type == "function") type = new type(name);
 
-    types[name] = type;
+    out.types[name] = type;
     return type;
   }
   function addShared<T extends Type>(name: string, type: T) {
-    assert(!(name in types));
-    return (types[name] = new Template("std::shared_ptr", [type]));
+    assert(!(name in out.types));
+    return (out.types[name] = new Template("std::shared_ptr", [type]));
   }
 
   function resolveTypes(typeSpec: TypeSpec): Type {
@@ -264,8 +271,8 @@ export function bindModel(spec: Spec): BoundSpec {
     const name = unqualify(typeSpec.names);
     switch (typeSpec.kind) {
       case "qualified-name":
-        assert(name in types, `no such type: ${name}`);
-        return types[name];
+        assert(name in out.types, `no such type: ${name}`);
+        return out.types[name];
       case "template-instance":
         assert(templates.has(name), `no such template: ${name}`);
         const argCount = templates.get(name);
@@ -345,7 +352,7 @@ export function bindModel(spec: Spec): BoundSpec {
 
   // Now clean up the Type instances to refer to other Types, rather than just using strings.
   for (const [name, { cppName, fields }] of Object.entries(spec.records)) {
-    const struct = types[name] as Struct;
+    const struct = out.types[name] as Struct;
     struct.cppName = cppName ?? name;
     struct.fields = Object.entries(fields).map(
       ([name, field]) => new Field(name, resolveTypes(field.type), field.default === undefined),
@@ -354,7 +361,7 @@ export function bindModel(spec: Spec): BoundSpec {
 
   for (const subtree of ["classes", "interfaces"] as const) {
     for (const [name, raw] of Object.entries(spec[subtree])) {
-      const cls = types[name] as Class;
+      const cls = out.types[name] as Class;
       cls.cppName = raw.cppName ?? name;
       handleMethods(InstanceMethod, cls, raw.methods);
       handleMethods(StaticMethod, cls, raw.staticMethods);
@@ -382,6 +389,18 @@ export function bindModel(spec: Spec): BoundSpec {
       }
     }
   }
+
+  out.mixedInfo = {
+    getters: Object.entries(spec.mixedInfo.dataTypes).map(([k, v]) => ({
+      dataType: k,
+      getter: v.getter,
+      type: out.types[v.type],
+    })),
+    unusedDataTypes: spec.mixedInfo.unusedDataTypes,
+    ctors: spec.mixedInfo.extraCtors
+      .map((t) => out.types[t])
+      .concat(Object.values(spec.mixedInfo.dataTypes).map(({ type }) => out.types[type])),
+  };
 
   return out;
 }
