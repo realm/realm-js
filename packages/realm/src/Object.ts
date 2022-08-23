@@ -116,9 +116,24 @@ class RealmObject<T = DefaultObject> {
   linkingObjectsCount(): number {
     throw new Error("Not yet implemented");
   }
+
+  /**
+   * @deprecated
+   * @internal
+   * TODO: Remove completely once the type tests are obandend.
+   */
   _objectId(): string {
-    throw new Error("Not yet implemented");
+    throw new Error("This is now removed!");
   }
+
+  /**
+   * @internal
+   * The ObjKey of the internal Obj.
+   */
+  _objectKey(): string {
+    return this[INTERNAL].key.value.toString();
+  }
+
   addListener(callback: ObjectChangeCallback<T>): void {
     this[INTERNAL_NOTIFIER].addListener(callback);
   }
