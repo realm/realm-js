@@ -25,8 +25,8 @@ import { DefaultObject } from "./schema";
 export type ObjectWrapCreator<T = DefaultObject> = (obj: binding.Obj) => RealmObject<T> & T;
 
 type PropertyHelpers = {
-  toMixed: (value: unknown) => binding.Mixed;
-  fromMixed: (value: binding.Mixed) => unknown;
+  toBinding: (value: unknown) => binding.MixedArg;
+  fromBinding: (value: unknown) => unknown;
   get: (obj: binding.Obj) => unknown;
   set: (obj: binding.Obj, value: unknown) => unknown;
 };
@@ -46,10 +46,10 @@ function createHelpers<T>(
   const collectionType = property.type & binding.PropertyType.Collection;
   if (collectionType === binding.PropertyType.Array) {
     return {
-      toMixed(value) {
+      toBinding(value) {
         throw new Error("Lists are not yet supported!");
       },
-      fromMixed(value) {
+      fromBinding(value) {
         throw new Error("Lists are not yet supported!");
       },
       get(obj) {
@@ -66,50 +66,50 @@ function createHelpers<T>(
   }
   if (type === binding.PropertyType.Int) {
     return {
-      toMixed(value) {
+      toBinding(value) {
         // TODO: Refactor to use an assert
         if (typeof value !== "number") {
           throw new Error("Expected a string");
         }
-        return binding.Mixed.fromInt(value);
+        return BigInt(value);
       },
-      fromMixed(value) {
+      fromBinding(value) {
         // TODO: Support returning bigints to end-users
-        return Number(value.getInt());
+        return Number(value);
       },
       get(obj) {
-        return this.fromMixed(obj.getAny(columnKey));
+        return this.fromBinding(obj.getAny(columnKey));
       },
       set(obj, value) {
-        obj.setAny(columnKey, this.toMixed(value));
+        obj.setAny(columnKey, this.toBinding(value));
       },
     };
   } else if (type === binding.PropertyType.String) {
     return {
-      toMixed(value) {
+      toBinding(value) {
         // TODO: Refactor to use an assert
         if (typeof value !== "string") {
           throw new Error("Expected a string");
         }
-        return binding.Mixed.fromString(value);
+        return value;
       },
-      fromMixed(value) {
-        return value.getString();
+      fromBinding(value) {
+        return value;
       },
       get(obj) {
-        return this.fromMixed(obj.getAny(columnKey));
+        return this.fromBinding(obj.getAny(columnKey));
       },
       set(obj, value) {
-        obj.setAny(columnKey, this.toMixed(value));
+        obj.setAny(columnKey, this.toBinding(value));
       },
     };
   } else if (type === binding.PropertyType.Object) {
     return {
-      toMixed() {
-        throw new Error("Cannot use toMixed on an object link property. Use set instead.");
+      toBinding() {
+        throw new Error("Cannot use toBinding on an object link property. Use set instead.");
       },
-      fromMixed() {
-        throw new Error("Cannot use fromMixed on an object link property. Use get instead.");
+      fromBinding() {
+        throw new Error("Cannot use fromBinding on an object link property. Use get instead.");
       },
       get(obj) {
         if (obj.isNull(columnKey)) {
@@ -121,10 +121,10 @@ function createHelpers<T>(
       },
       set(obj, value) {
         if (value === null) {
-          obj.setAny(columnKey, binding.Mixed.fromNull());
+          obj.setAny(columnKey, null);
         } else if (value instanceof RealmObject) {
           const valueObj = getInternal(value);
-          obj.setAny(columnKey, binding.Mixed.fromObj(valueObj));
+          obj.setAny(columnKey, valueObj);
         } else {
           throw new Error(`Expected a Realm.Object, got '${value}'`);
         }
@@ -151,8 +151,8 @@ export class PropertyMap<T = DefaultObject> {
       objectSchema.persistedProperties.map((p) => {
         const helpers = createHelpers(p, createObjectWrapper);
         // Binding the methods, making the object spreadable
-        helpers.toMixed = helpers.toMixed.bind(helpers);
-        helpers.fromMixed = helpers.fromMixed.bind(helpers);
+        helpers.toBinding = helpers.toBinding.bind(helpers);
+        helpers.fromBinding = helpers.fromBinding.bind(helpers);
         helpers.get = helpers.get.bind(helpers);
         helpers.set = helpers.set.bind(helpers);
         return [p.name, helpers];

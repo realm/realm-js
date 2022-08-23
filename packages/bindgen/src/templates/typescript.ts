@@ -95,8 +95,10 @@ function generateMixedTypes(spec: BoundSpec) {
   // TODO should undefined be allowed in MixedArg?
   // TODO consider interface rather than type here.
   return `
-    type Mixed = null | ${spec.mixedInfo.getters.map(({ type }) => generateType(spec, type, Kind.Ret)).join(" | ")};
-    type MixedArg = null | ${spec.mixedInfo.ctors.map((type) => generateType(spec, type, Kind.Arg)).join(" | ")};
+    export type Mixed = null | ${spec.mixedInfo.getters
+      .map(({ type }) => generateType(spec, type, Kind.Ret))
+      .join(" | ")};
+    export type MixedArg = null | ${spec.mixedInfo.ctors.map((type) => generateType(spec, type, Kind.Arg)).join(" | ")};
   `;
 }
 
