@@ -253,21 +253,26 @@ template <>
 inline OwnedBinaryData node::Value::to_binary(Napi::Env env, const Napi::Value& value)
 {
     OwnedBinaryData binary_data(nullptr, 0);
+    bool legal_conversion = false;
 
     if (value.IsDataView()) {
         binary_data = NodeBinaryManager<Napi::DataView, Napi::Value>{value}.create_binary_blob();
+        legal_conversion = true;
     }
     else if (value.IsBuffer()) {
         binary_data = NodeBinaryManager<Napi::Buffer<char>, Napi::Value>{value}.create_binary_blob();
+        legal_conversion = true;
     }
     else if (value.IsTypedArray()) {
         binary_data = NodeBinaryManager<Napi::TypedArray, Napi::Value>{value}.create_binary_blob();
+        legal_conversion = true;
     }
     else if (value.IsArrayBuffer()) {
         binary_data = NodeBinaryManager<Napi::ArrayBuffer, Napi::Value>{value}.create_binary_blob();
+        legal_conversion = true;
     }
 
-    if (binary_data.data() == nullptr) {
+    if (!legal_conversion) {
         throw std::runtime_error("Can only convert Buffer, ArrayBuffer, and ArrayBufferView objects to binary");
     }
 
