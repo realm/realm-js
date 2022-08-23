@@ -18,11 +18,12 @@
 
 import * as binding from "@realm/bindgen";
 
-import { PropertyMap, ObjectWrapCreator } from "./PropertyMap";
+import { PropertyMap, ObjectWrapCreator, ObjectLinkResolver } from "./PropertyMap";
 import { Realm } from "./Realm";
 import { Object as RealmObject } from "./Object";
 import { Constructor, RealmObjectConstructor } from "./schema";
 import { getInternal } from "./internal";
+import { Helpers } from "@realm/bindgen";
 
 export const INTERNAL_HELPERS = Symbol("Realm.Object#helpers");
 
@@ -110,13 +111,13 @@ export class ClassMap {
    * @param objectSchema
    * TODO: Refactor this to use the binding.ObjectSchema type once the DeepRequired gets removed from types
    */
-  constructor(realm: Realm, realmSchema: binding.Realm["schema"]) {
+  constructor(realm: Realm, realmSchema: binding.Realm["schema"], resolveObjectLink: ObjectLinkResolver) {
     this.mapping = Object.fromEntries(
       realmSchema.map((objectSchema) => {
         function createObjectWrapper(obj: binding.Obj): RealmObject<unknown> {
           return RealmObject.create(realm, constructor, obj) as RealmObject<unknown>;
         }
-        const properties = new PropertyMap(objectSchema, createObjectWrapper);
+        const properties = new PropertyMap(objectSchema, createObjectWrapper, resolveObjectLink);
         const constructor = createClass(objectSchema, properties) as RealmObjectConstructor;
         // Store the properties map on the object class
         Object.defineProperty(constructor, INTERNAL_HELPERS, {
