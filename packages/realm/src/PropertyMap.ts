@@ -23,6 +23,7 @@ import { Object as RealmObject } from "./Object";
 import { DefaultObject } from "./schema";
 
 export type ObjectWrapCreator<T = DefaultObject> = (obj: binding.Obj) => RealmObject<T> & T;
+export type ObjectLinkResolver = (link: binding.ObjLink) => binding.Obj;
 
 type PropertyHelpers = {
   toBinding: (value: unknown) => binding.MixedArg;
@@ -39,9 +40,23 @@ function extractBaseType(type: binding.PropertyType) {
 function createHelpers<T>(
   property: binding.Realm["schema"][0]["persistedProperties"][0],
   createObjectWrapper: ObjectWrapCreator<T>,
+  resolveObjectLink: ObjectLinkResolver,
 ): PropertyHelpers {
   const type = extractBaseType(property.type);
   const { columnKey } = property;
+
+  function defaultGet(this: PropertyHelpers, obj: binding.Obj) {
+    return this.fromBinding(obj.getAny(columnKey));
+  }
+
+  function defaultSet(this: PropertyHelpers, obj: binding.Obj, value: unknown) {
+    obj.setAny(columnKey, this.toBinding(value));
+  }
+
+  function defaultFromBinding(value: unknown) {
+    return value;
+  }
+
   // TODO: Support collections
   const collectionType = property.type & binding.PropertyType.Collection;
   if (collectionType === binding.PropertyType.Array) {
@@ -64,25 +79,38 @@ function createHelpers<T>(
   } else if (collectionType === binding.PropertyType.Dictionary) {
     throw new Error("Dictionaries are not yet supported!");
   }
+
   if (type === binding.PropertyType.Int) {
     return {
       toBinding(value) {
         // TODO: Refactor to use an assert
-        if (typeof value !== "number") {
-          throw new Error("Expected a string");
+        if (typeof value === "number") {
+          return BigInt(value);
+        } else if (typeof value === "bigint") {
+          return value;
+        } else {
+          throw new Error("Expected a number or bigint");
         }
-        return BigInt(value);
       },
       fromBinding(value) {
         // TODO: Support returning bigints to end-users
         return Number(value);
       },
-      get(obj) {
-        return this.fromBinding(obj.getAny(columnKey));
+      get: defaultGet,
+      set: defaultSet,
+    };
+  } else if (type === binding.PropertyType.Bool) {
+    return {
+      toBinding(value) {
+        // TODO: Refactor to use an assert
+        if (typeof value !== "boolean") {
+          throw new Error("Expected a boolean");
+        }
+        return value;
       },
-      set(obj, value) {
-        obj.setAny(columnKey, this.toBinding(value));
-      },
+      fromBinding: defaultFromBinding,
+      get: defaultGet,
+      set: defaultSet,
     };
   } else if (type === binding.PropertyType.String) {
     return {
@@ -93,15 +121,73 @@ function createHelpers<T>(
         }
         return value;
       },
-      fromBinding(value) {
+      fromBinding: defaultFromBinding,
+      get: defaultGet,
+      set: defaultSet,
+    };
+  } else if (type === binding.PropertyType.Data) {
+    return {
+      toBinding(value) {
+        // TODO: Refactor to use an assert
+        if (!(value instanceof ArrayBuffer)) {
+          throw new Error("Expected an ArrayBuffer");
+        }
         return value;
       },
-      get(obj) {
-        return this.fromBinding(obj.getAny(columnKey));
+      fromBinding: defaultFromBinding,
+      get: defaultGet,
+      set: defaultSet,
+    };
+  } else if (type === binding.PropertyType.Date) {
+    return {
+      toBinding(value) {
+        // TODO: Refactor to use an assert
+        if (!(value instanceof Date)) {
+          throw new Error("Expected a Date");
+        }
+        return binding.Timestamp.fromDate(value);
       },
-      set(obj, value) {
-        obj.setAny(columnKey, this.toBinding(value));
+      fromBinding(value) {
+        if (value instanceof binding.Timestamp) {
+          return value.toDate();
+        } else {
+          throw new Error("Expected a Timestamp");
+        }
       },
+      get: defaultGet,
+      set: defaultSet,
+    };
+  } else if (type === binding.PropertyType.Float) {
+    return {
+      toBinding(value) {
+        // TODO: Refactor to use an assert
+        if (typeof value !== "number") {
+          throw new Error("Expected a number");
+        }
+        return new binding.Float(value);
+      },
+      fromBinding(value) {
+        if (value instanceof binding.Float) {
+          return value.value;
+        } else {
+          throw new Error("Expected a Float");
+        }
+      },
+      get: defaultGet,
+      set: defaultSet,
+    };
+  } else if (type === binding.PropertyType.Double) {
+    return {
+      toBinding(value) {
+        // TODO: Refactor to use an assert
+        if (typeof value !== "number") {
+          throw new Error("Expected a number");
+        }
+        return value;
+      },
+      fromBinding: defaultFromBinding,
+      get: defaultGet,
+      set: defaultSet,
     };
   } else if (type === binding.PropertyType.Object) {
     return {
@@ -130,6 +216,70 @@ function createHelpers<T>(
         }
       },
     };
+  } else if (type === binding.PropertyType.LinkingObjects) {
+    throw new Error(`Converting values of type "linking objects" is not yet supported`);
+  } else if (type === binding.PropertyType.Mixed) {
+    return {
+      toBinding(value) {
+        // TODO: Refactor to use an assert
+        if (value instanceof Date) {
+          return binding.Timestamp.fromDate(value);
+        } else if (value instanceof RealmObject) {
+          return getInternal(value);
+        } else {
+          return value as binding.Mixed;
+        }
+      },
+      fromBinding(value) {
+        if (typeof value === "bigint") {
+          return Number(value);
+        } else if (value instanceof binding.Timestamp) {
+          return value.toDate();
+        } else if (value instanceof binding.Float) {
+          return value.value;
+        } else if (value instanceof binding.ObjLink) {
+          const linkedObj = resolveObjectLink(value);
+          return createObjectWrapper(linkedObj);
+        } else {
+          return value;
+        }
+      },
+      get: defaultGet,
+      set: defaultSet,
+    };
+  } else if (type === binding.PropertyType.ObjectId) {
+    return {
+      toBinding(value) {
+        throw new Error(`Converting values of type "ObjectId" is not yet supported`);
+      },
+      fromBinding(value) {
+        throw new Error(`Converting values of type "ObjectId" is not yet supported`);
+      },
+      get: defaultGet,
+      set: defaultSet,
+    };
+  } else if (type === binding.PropertyType.Decimal) {
+    return {
+      toBinding(value) {
+        throw new Error(`Converting values of type "Decimal" is not yet supported`);
+      },
+      fromBinding(value) {
+        throw new Error(`Converting values of type "Decimal" is not yet supported`);
+      },
+      get: defaultGet,
+      set: defaultSet,
+    };
+  } else if (type === binding.PropertyType.UUID) {
+    return {
+      toBinding(value) {
+        throw new Error(`Converting values of type "UUID" is not yet supported`);
+      },
+      fromBinding(value) {
+        throw new Error(`Converting values of type "UUID" is not yet supported`);
+      },
+      get: defaultGet,
+      set: defaultSet,
+    };
   } else {
     throw new Error(`Converting values of type "${property.type}" is not yet supported`);
   }
@@ -143,13 +293,17 @@ export class PropertyMap<T = DefaultObject> {
    * @param objectSchema
    * TODO: Refactor this to use the binding.ObjectSchema type once the DeepRequired gets removed from types
    */
-  constructor(objectSchema: binding.Realm["schema"][0], createObjectWrapper: ObjectWrapCreator<T>) {
+  constructor(
+    objectSchema: binding.Realm["schema"][0],
+    createObjectWrapper: ObjectWrapCreator<T>,
+    resolveObjectLink: ObjectLinkResolver,
+  ) {
     if (objectSchema.computedProperties.length > 0) {
       throw new Error("Computed properties are not yet supported");
     }
     this.mapping = Object.fromEntries(
       objectSchema.persistedProperties.map((p) => {
-        const helpers = createHelpers(p, createObjectWrapper);
+        const helpers = createHelpers(p, createObjectWrapper, resolveObjectLink);
         // Binding the methods, making the object spreadable
         helpers.toBinding = helpers.toBinding.bind(helpers);
         helpers.fromBinding = helpers.fromBinding.bind(helpers);
