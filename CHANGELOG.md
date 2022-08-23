@@ -1,5 +1,7 @@
 10.20.0 Release notes (2022-8-23)
 =============================================================
+NOTE: This version is unrelated to the v10.20.0-alpha and v10.20.0-beta prereleases. Hermes is **not** supported by this release. If your app depends on one of the preleases, you must upgrade to the v11.0.0-rc releases.
+
 ### Enhancements
 * Introducing query support for constant list expressions such as `fruit IN {'apple', 'orange'}`. This also includes general query support for list vs list matching such as `NONE fruits IN {'apple', 'orange'}`. ([#2781](https://github.com/realm/realm-js/issues/2781) and [#4596](https://github.com/realm/realm-js/issues/4596))
 * Allow multiple anonymous sessions. ([realm/realm-core#4607](https://github.com/realm/realm-core/issues/4607))
