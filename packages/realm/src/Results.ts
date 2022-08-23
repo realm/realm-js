@@ -21,7 +21,6 @@ import { Helpers } from "@realm/bindgen";
 
 import { Collection, SortDescriptor } from "./Collection";
 import { INTERNAL } from "./internal";
-import { coerceToMixed } from "./Mixed";
 
 type Getter<T = unknown> = (results: binding.Results, index: number) => T;
 
@@ -152,7 +151,7 @@ export class Results<T = unknown> extends Collection<T> {
     const { [INTERNAL]: parent, [INTERNAL_REALM]: realm, [INTERNAL_TABLE]: table, [GETTER]: getter } = this;
     const kpMapping = Helpers.getKeypathMapping(realm);
     // TODO: Perform a mapping of the arguments
-    const query = table.query(queryString, args.map(coerceToMixed), kpMapping);
+    const query = table.query(queryString, args, kpMapping);
     const results = parent.filter(query);
     return createWrapper(results, realm, table, getter);
   }

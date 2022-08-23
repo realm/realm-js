@@ -144,7 +144,7 @@ export class Realm {
     if (primaryKey) {
       const primaryKeyValue = values[primaryKey];
       // TODO: Consider handling an undefined primary key value
-      const pk = properties.get(primaryKey).toMixed(primaryKeyValue);
+      const pk = properties.get(primaryKey).toBinding(primaryKeyValue);
       obj = table.createObjectWithPrimaryKey(pk);
     } else {
       obj = table.createObject();
@@ -195,7 +195,7 @@ export class Realm {
       throw new Error(`Expected a primary key on "${objectSchema.name}"`);
     }
     const table = binding.Helpers.getTable(this[INTERNAL], objectSchema.tableKey);
-    const value = properties.get(objectSchema.primaryKey).toMixed(primaryKey);
+    const value = properties.get(objectSchema.primaryKey).toBinding(primaryKey);
     try {
       const obj = table.getObjectWithPrimaryKey(value);
       return createObjectWrapper(obj);
