@@ -3,6 +3,7 @@
 ### Notes
 Based on Realm JS v10.21.1: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.19.5).
 
+<<<<<<< HEAD
 ### Breaking changes
 * Removal of deprecated functions, which should be replaced with `Realm.Credentials#apiKey`:
    * `Realm.Credentials#serverApiKey`
@@ -10,6 +11,7 @@ Based on Realm JS v10.21.1: See changelog below for details on enhancements and 
 * When no object is found calling `Realm#objectForPrimaryKey`, `null` is returned instead of `undefined`
 * Replaced `Realm#empty` with `Realm#isEmpty`
 * Replaced `Realm#readOnly` with `Realm#isReadOnly`
+* Removed `Object#_objectId`, which is now replaced by `Object#_objectKey`
 * Removed deprecated positional arguments to Email/Password authentication functions
     * The following functions now only accept object arguments:
     ```javascript
