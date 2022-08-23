@@ -23,6 +23,7 @@ export type Spec = {
   primitives: string[];
   typeAliases: { [name: string]: TypeSpec };
   templates: { [name: string]: number | "*" };
+  mixedInfo: MixedInfo;
   enums: { [name: string]: EnumSpec };
   constants: { [name: string]: ConstantSpec };
   records: { [name: string]: RecordSpec };
@@ -112,4 +113,10 @@ export type FunctionTypeSpec = {
 export type ArgumentSpec = {
   name: string;
   type: TypeSpec;
+};
+
+export type MixedInfo = {
+  dataTypes: { [dataType: string]: { getter: string; type: string } };
+  unusedDataTypes: string[];
+  extraCtors: string[];
 };

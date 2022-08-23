@@ -18,6 +18,7 @@
 
 import { TemplateContext } from "../context";
 import { Arg, bindModel, BoundSpec, Type } from "../bound-model";
+import { strict as assert } from "assert";
 
 import "../js-passes";
 
@@ -26,7 +27,7 @@ const PRIMITIVES_MAPPING: Record<string, string> = {
   bool: "boolean",
   int: "number",
   double: "number",
-  float: "number",
+  float: "Float",
   int64_t: "bigint",
   int32_t: "number",
   count_t: "number",
@@ -70,6 +71,7 @@ function generateType(spec: BoundSpec, type: Type, kind: Kind): string {
       return kind == Kind.Arg ? type.jsName : `DeepRequired<${type.jsName}>`;
 
     case "Primitive":
+      if (type.name == "Mixed") return kind == Kind.Arg ? "MixedArg" : "Mixed";
       return PRIMITIVES_MAPPING[type.name];
 
     case "Template":
@@ -89,50 +91,81 @@ function generateArguments(spec: BoundSpec, args: Arg[]) {
   return args.map((arg) => `${arg.name}: ${generateType(spec, arg.type, Kind.Arg)}`).join(", ");
 }
 
+function generateMixedTypes(spec: BoundSpec) {
+  // TODO should undefined be allowed in MixedArg?
+  // TODO consider interface rather than type here.
+  return `
+    export type Mixed = null | ${spec.mixedInfo.getters
+      .map(({ type }) => generateType(spec, type, Kind.Ret))
+      .join(" | ")};
+    export type MixedArg = null | ${spec.mixedInfo.ctors.map((type) => generateType(spec, type, Kind.Arg)).join(" | ")};
+  `;
+}
+
 export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): void {
   // Check the support for primitives used
   for (const primitive of rawSpec.primitives) {
-    if (!Object.keys(PRIMITIVES_MAPPING).includes(primitive)) {
-      console.warn(`Spec declares an unsupported primitive: "${primitive}"`);
-    }
+    if (primitive == "Mixed") continue;
+    assert(
+      Object.keys(PRIMITIVES_MAPPING).includes(primitive),
+      `Spec declares an unsupported primitive: "${primitive}"`,
+    );
   }
 
   // Check the support for template instances used
   for (const template of Object.keys(rawSpec.templates)) {
-    if (!Object.keys(TEMPLATE_MAPPING).includes(template)) {
-      console.warn(`Spec declares an unsupported template instance: "${template}"`);
-    }
+    assert(
+      Object.keys(TEMPLATE_MAPPING).includes(template),
+      `Spec declares an unsupported template instance: "${template}"`,
+    );
   }
 
   const spec = bindModel(rawSpec);
 
-  const enumsOut = file("enums.ts", "eslint", "typescript-checker");
-  enumsOut("// This file is generated: Update the spec instead of editing this file directly");
+  const coreOut = file("core.ts", "eslint", "typescript-checker");
+  coreOut("// This file is generated: Update the spec instead of editing this file directly");
 
-  enumsOut("// Enums");
+  coreOut("// Enums");
   for (const e of spec.enums) {
     // Using const enum to avoid having to emit JS backing these
-    enumsOut(`export const enum ${e.jsName} {`);
-    enumsOut(...e.enumerators.map(({ name, value }) => `${name} = ${value},\n`));
-    enumsOut("};");
+    coreOut(`export const enum ${e.jsName} {`);
+    coreOut(...e.enumerators.map(({ name, value }) => `${name} = ${value},\n`));
+    coreOut("};");
   }
+  coreOut(`
+    // Wrapped types
+    export class Float {
+      constructor(public value: number) {}
+      valueOf() { return this.value; }
+    }
+  `);
 
   const js = file("native.js", "eslint");
   js("// This file is generated: Update the spec instead of editing this file directly");
-  js("import bindings from 'bindings';");
+  js(`
+    import bindings from 'bindings';
+    const nativeModule = bindings("realm.node")
+
+    // TODO inject BSON types.
+    import { Float } from "./core";
+    nativeModule.injectInjectables({Float});
+  `);
 
   const out = file("native.d.ts", "eslint", "typescript-checker");
   out("// This file is generated: Update the spec instead of editing this file directly");
 
-  out("import {", spec.enums.map((e) => e.name).join(", "), '} from "./enums";');
-  out('export * from "./enums";');
-  js('export * from "./enums";');
+  out("import { Float, ", spec.enums.map((e) => e.name).join(", "), '} from "./core";');
+  out('export * from "./core";');
+  js('export * from "./core";');
 
   out("// Utilities");
   out(`type DeepRequired<T> = 
           T extends CallableFunction ? T :
           T extends object ? {[K in keyof T]-? : DeepRequired<T[K]>} :
           T;`);
+
+  out("// Mixed types");
+  out(generateMixedTypes(spec));
 
   out("// Opaque types");
   for (const { jsName } of spec.opaqueTypes) {
@@ -151,7 +184,7 @@ export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): vo
 
   out("// Classes");
   for (const cls of spec.classes) {
-    js(`export const {${cls.jsName}} = bindings("realm.node");`);
+    js(`export const {${cls.jsName}} = nativeModule;`);
     out(`export class ${cls.jsName} {`);
     out(`private constructor();`);
     for (const prop of cls.properties) {

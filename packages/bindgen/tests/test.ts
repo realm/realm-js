@@ -20,7 +20,7 @@
 
 /* eslint-disable header/header */
 
-import { Realm, PropertyType, Helpers, Mixed, Results, SortDescriptor } from "../index";
+import { Realm, Float, PropertyType, Helpers, Results, SortDescriptor } from "../index";
 
 import { strict as assert } from "assert";
 import * as util from "util";
@@ -60,16 +60,16 @@ console.log(table.getColumnType(numCol));
 realm.beginTransaction();
 
 const obj1 = table.createObject();
-obj1.setAny(numCol, Mixed.fromInt(1234));
-obj1.setAny(strCol, Mixed.fromString("hello"));
-obj1.setAny(fltCol, Mixed.fromFloat(0.1234));
+obj1.setAny(numCol, 1234n);
+obj1.setAny(strCol, "hello");
+obj1.setAny(fltCol, new Float(0.1234));
 
 const obj2 = table.createObject();
-obj2.setAny(numCol, Mixed.fromInt(9876));
-obj2.setAny(strCol, Mixed.fromString("world"));
+obj2.setAny(numCol, 9876n);
+obj2.setAny(strCol, "world");
 
 const obj3 = table.createObject();
-obj3.setAny(lnkCol, Mixed.fromObj(obj2));
+obj3.setAny(lnkCol, obj2);
 
 realm.commitTransaction();
 
@@ -82,11 +82,11 @@ const token = notifier.addCallback(
 );
 
 realm.beginTransaction();
-obj1.setAny(numCol, Mixed.fromInt(12345));
+obj1.setAny(numCol, 12345n);
 realm.commitTransaction();
 
 realm.beginTransaction();
-obj1.setAny(numCol, Mixed.fromInt(123456));
+obj1.setAny(numCol, 123456n);
 realm.commitTransaction();
 
 notifier.removeCallback(token);
@@ -97,15 +97,15 @@ for (const obj of table) {
   console.log(obj.key);
 
   console.log(obj.getAny(numCol));
-  console.log(obj.getAnyByName("num").getInt());
+  console.log(obj.getAnyByName("num"));
 
   console.log(obj.getAny(strCol));
-  console.log(obj.getAny(strCol).toJsValue());
 
   console.log(obj.isNull(fltCol));
   console.log(obj.getAny(fltCol));
-  console.log(obj.getAny(fltCol).toJsValue());
-  if (!obj.isNull(fltCol)) console.log(obj.getAny(fltCol).getFloat());
+  if (!obj.isNull(fltCol)) {
+    console.log(obj.getAny(fltCol));
+  }
 
   if (!obj.isNull(lnkCol)) {
     const dest = obj.getLinkedObject(lnkCol);
@@ -117,7 +117,7 @@ for (const obj of table) {
 
 console.log("---");
 const kpMapping = Helpers.getKeypathMapping(realm);
-const query = table.query("num = $0", [Mixed.fromInt(9876)], kpMapping);
+const query = table.query("num = $0", [9876n], kpMapping);
 console.log(query.count());
 const results = Helpers.resultsFromQuery(realm, query);
 {

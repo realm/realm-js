@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { InterfaceSpec, ClassSpec, Spec } from "./model";
+import { InterfaceSpec, ClassSpec, Spec, MixedInfo } from "./model";
 
 /**
  * Needed we want to avoid quoting all the values that are primitive non-strings
@@ -29,6 +29,7 @@ export type RelaxedSpec = Omit<
   Partial<Spec>,
   "enums" | "records" | "classes" | "constants" | "typeAliases" | "interfaces"
 > & {
+  mixedInfo: MixedInfo; // Not optional
   enums?: { [name: string]: RelaxedEnumSpec };
   records?: { [name: string]: RelaxedRecordSpec };
   classes?: { [name: string]: RelaxedClassSpec };
