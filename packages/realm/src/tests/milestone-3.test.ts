@@ -169,10 +169,20 @@ describe("Milestone #3", () => {
       }
       alice.addListener(foo);
       alice.addListener(foo);
+      // Make a change to fire the listerner
       realm.write(() => (alice.name = "Alison"));
-      await new Promise((resolve) => setTimeout(resolve));
+      // Begin a new write transaction to ensure the read transaction gets advanced
+      realm.beginTransaction();
+      realm.cancelTransaction();
       // Expect initial event + change
       expect(fooCalls).equals(2);
+      // Make another change to fire the listerner
+      realm.write(() => (alice.name = "Alison!"));
+      // Begin a new write transaction to ensure the read transaction gets advanced
+      realm.beginTransaction();
+      realm.cancelTransaction();
+      // Expect initial event + 2 * change
+      expect(fooCalls).equals(3);
     });
 
     it("handles double removals", async function (this: RealmContext) {
