@@ -28,6 +28,9 @@ primitives:
   - OwnedBinaryData
   - BinaryData
   - Mixed
+  - ObjectId
+  - Decimal128
+  - UUID
 
 typeAliases:
   uint_fast64_t: uint64_t
@@ -370,10 +373,6 @@ classes:
     properties:
       get_seconds: int64_t
       get_nanoseconds: int32_t
-
-  ObjectId: {}
-  Decimal128: {}
-  UUID: {}
 
   ObjLink:
     properties:
