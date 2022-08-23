@@ -36,6 +36,9 @@ const PRIMITIVES_MAPPING: Record<string, string> = {
   StringData: "string",
   BinaryData: "ArrayBuffer",
   OwnedBinaryData: "ArrayBuffer",
+  ObjectId: "ObjectId",
+  UUID: "UUID",
+  Decimal128: "Decimal128",
 };
 
 const TEMPLATE_MAPPING: Record<string, (...args: string[]) => string> = {
@@ -146,14 +149,17 @@ export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): vo
     import bindings from 'bindings';
     const nativeModule = bindings("realm.node")
 
+    import { ObjectId, UUID, Decimal128 } from "bson";
+
     // TODO inject BSON types.
     import { Float } from "./core";
-    nativeModule.injectInjectables({Float});
+    nativeModule.injectInjectables({ Float, ObjectId, UUID, Decimal128 });
   `);
 
   const out = file("native.d.ts", "eslint", "typescript-checker");
   out("// This file is generated: Update the spec instead of editing this file directly");
 
+  out('import { ObjectId, UUID, Decimal128 } from "bson";');
   out("import { Float, ", spec.enums.map((e) => e.name).join(", "), '} from "./core";');
   out('export * from "./core";');
   js('export * from "./core";');

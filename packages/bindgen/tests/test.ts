@@ -20,6 +20,7 @@
 
 /* eslint-disable header/header */
 
+import { Decimal128 } from "bson";
 import { Realm, Float, PropertyType, Helpers, Results, SortDescriptor } from "../index";
 
 import { strict as assert } from "assert";
@@ -38,6 +39,7 @@ const realm = Realm.getSharedRealm({
         { name: "num", type: PropertyType.Int },
         { name: "str", type: PropertyType.String },
         { name: "maybeFloat", type: PropertyType.Float | PropertyType.Nullable },
+        { name: "maybeDec", type: PropertyType.Decimal | PropertyType.Nullable },
         { name: "link", type: PropertyType.Object | PropertyType.Nullable, objectType: "Foo" },
       ],
     },
@@ -52,7 +54,8 @@ const table = Helpers.getTable(realm, tableKey);
 const numCol = schema[0].persistedProperties[0].columnKey;
 const strCol = schema[0].persistedProperties[1].columnKey;
 const fltCol = schema[0].persistedProperties[2].columnKey;
-const lnkCol = schema[0].persistedProperties[3].columnKey;
+const decCol = schema[0].persistedProperties[3].columnKey;
+const lnkCol = schema[0].persistedProperties[4].columnKey;
 
 console.log(numCol);
 console.log(table.getColumnType(numCol));
@@ -63,6 +66,7 @@ const obj1 = table.createObject();
 obj1.setAny(numCol, 1234n);
 obj1.setAny(strCol, "hello");
 obj1.setAny(fltCol, new Float(0.1234));
+obj1.setAny(decCol, new Decimal128("0.9876"));
 
 const obj2 = table.createObject();
 obj2.setAny(numCol, 9876n);
@@ -105,6 +109,10 @@ for (const obj of table) {
   console.log(obj.getAny(fltCol));
   if (!obj.isNull(fltCol)) {
     console.log(obj.getAny(fltCol));
+  }
+
+  if (!obj.isNull(decCol)) {
+    console.log(obj.getAny(decCol));
   }
 
   if (!obj.isNull(lnkCol)) {
