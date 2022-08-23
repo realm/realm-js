@@ -57,7 +57,13 @@ export class Realm {
           : 0n
         : undefined,
     });
-    this.classes = new ClassMap(this, internal.schema);
+
+    function resolveObjectLink(link: binding.ObjLink): binding.Obj {
+      const table = binding.Helpers.getTable(internal, link.tableKey);
+      return table.getObject(link.objKey);
+    }
+
+    this.classes = new ClassMap(this, internal.schema, resolveObjectLink);
 
     Object.defineProperties(this, {
       classes: {
