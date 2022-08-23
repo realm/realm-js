@@ -22,6 +22,10 @@ function getProcessId(packageName) {
   try {
     return android.adb.shellPidOf(packageName);
   } catch (err) {
+    if (err instanceof Error && err.message.includes("no devices/emulators found")) {
+      console.error("The emulator disappeared - exiting the runner!");
+      process.exit(1);
+    }
     // We'll consider the pid unavailable on any failure
     return undefined;
   }
