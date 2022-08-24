@@ -21,6 +21,3 @@ src/object-store/**/CMakeFiles/
 src/object-store/**/Makefile
 src/object-store/src/librealm-object-store.*
 src/object-store/tests/tests
-
-tests/ios/
-tests/ReactTestApp/
