@@ -25,7 +25,6 @@ import "../js-passes";
 const PRIMITIVES_MAPPING: Record<string, string> = {
   void: "void",
   bool: "boolean",
-  int: "number",
   double: "number",
   float: "Float",
   int64_t: "bigint",
@@ -189,8 +188,8 @@ export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): vo
   out("// Classes");
   for (const cls of spec.classes) {
     js(`export const {${cls.jsName}} = nativeModule;`);
-    out(`export class ${cls.jsName} {`);
-    out(`private constructor();`);
+    out(`export class ${cls.jsName} ${cls.base ? `extends ${cls.base.jsName}` : ""} {`);
+    out(`${cls.subclasses.length == 0 ? "private" : "protected"} constructor();`);
     for (const prop of cls.properties) {
       out(prop.jsName, ": ", generateType(spec, prop.type, Kind.Ret));
     }

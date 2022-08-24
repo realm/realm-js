@@ -20,7 +20,6 @@ primitives:
   - double
   - float
   - bool
-  - int
   - void
   - std::string
   # TODO: see if we need nullable versions of these. For now null buffers are treated as empty.
@@ -33,7 +32,7 @@ primitives:
   - UUID
 
 typeAliases:
-  uint_fast64_t: uint64_t
+  int: int32_t
   Schema: std::vector<ObjectSchema>
   KeyPath: std::vector<std::pair<TableKey, ColKey>>
   KeyPathArray: std::vector<KeyPath>
@@ -511,6 +510,132 @@ classes:
   # IndexSetIndexes:
   #   cppName: IndexSet::IndexIteratableAdaptor
   #   iterable: count_t
+
+  Collection:
+    cppName: object_store::Collection
+    abstract: true
+    properties:
+      get_type: PropertyType
+      get_realm: SharedRealm
+      get_parent_column_key: ColKey
+      get_parent_object_key: ObjKey
+      get_parent_table_key: TableKey
+      size: count_t
+      is_valid: bool
+      is_frozen: bool
+    methods:
+      get_any: '(ndx: count_t) const -> Mixed'
+      find_any: '(value: Mixed) const -> count_t'
+      verify_attached: () const
+      verify_in_transaction: () const
+      as_results: () const -> Results
+      snapshot: () const -> Results
+      sort:
+        - '(order: SortDescriptor) const -> Results'
+        - sig: '(keyPaths: std::vector<std::pair<std::string, bool>> const&) const -> Results'
+          suffix: 'by_name'
+
+  List:
+    base: Collection
+    constructors:
+      make: '(r: SharedRealm, parent: const Obj&, col: ColKey)'
+    methods:
+      get: '(ndx: count_t) const -> Obj'
+      move: '(source_ndx: count_t, dest_ndx: count_t)'
+      remove: '(ndx: count_t)'
+      remove_all: '()'
+      swap: '(ndx1: count_t, ndx2: count_t)'
+      delete_at: '(ndx: count_t)'
+      delete_all: '()'
+      insert_any: '(list_ndx: count_t, value: Mixed)'
+      set_any: '(list_ndx: count_t, value: Mixed)'
+      filter: '(q: Query) const -> Results'
+      freeze: '(frozen_realm: std::shared_ptr<Realm> const&) const -> List'
+
+      max:
+        - '() const -> util::Optional<Mixed>'
+        - sig: '(column: ColKey) const -> util::Optional<Mixed>'
+          suffix: of
+      min:
+        - '() const -> util::Optional<Mixed>'
+        - sig: '(column: ColKey) const -> util::Optional<Mixed>'
+          suffix: of
+      average:
+        - '() const -> util::Optional<Mixed>'
+        - sig: '(column: ColKey) const -> util::Optional<Mixed>'
+          suffix: of
+      sum:
+        - '() const -> Mixed'
+        - sig: '(column: ColKey) const -> Mixed'
+          suffix: of
+
+  Set:
+    cppName: object_store::Set
+    base: Collection
+    constructors:
+      make: '(r: SharedRealm, parent: const Obj&, col: ColKey)'
+    methods:
+      get: '(ndx: count_t) const -> Obj'
+      insert_any: '(val: Mixed) -> std::pair<count_t, bool>'
+      remove_any: '(val: Mixed) -> std::pair<count_t, bool>'
+      remove_all: '()'
+      delete_all: '()'
+      filter: '(q: Query) const -> Results'
+
+      # TODO Anything that takes a Collection (or any other Base) isn't possible while using Napi::ObjectWrap
+      # is_subset_of: '(rhs: const Collection&) const -> bool'
+      # is_strict_subset_of: '(rhs: const Collection&) const -> bool'
+      # is_superset_of: '(rhs: const Collection&) const -> bool'
+      # is_strict_superset_of: '(rhs: const Collection&) const -> bool'
+      # intersects: '(rhs: const Collection&) const -> bool'
+      # set_equals: '(rhs: const Collection&) const -> bool'
+      # assign_intersection: '(rhs: const Collection&) -> void'
+      # assign_union: '(rhs: const Collection&) -> void'
+      # assign_difference: '(rhs: const Collection&) -> void'
+      # assign_symmetric_difference: '(rhs: const Collection&) -> void'
+
+      max:
+        - '() const -> util::Optional<Mixed>'
+        - sig: '(column: ColKey) const -> util::Optional<Mixed>'
+          suffix: of
+      min:
+        - '() const -> util::Optional<Mixed>'
+        - sig: '(column: ColKey) const -> util::Optional<Mixed>'
+          suffix: of
+      average:
+        - '() const -> util::Optional<Mixed>'
+        - sig: '(column: ColKey) const -> util::Optional<Mixed>'
+          suffix: of
+      sum:
+        - '() const -> Mixed'
+        - sig: '(column: ColKey) const -> Mixed'
+          suffix: of
+
+  Dictionary:
+    cppName: object_store::Dictionary
+    base: Collection
+    iterable: std::pair<const Mixed, Mixed>
+    constructors:
+      make: '(r: SharedRealm, parent: const Obj&, col: ColKey)'
+    properties:
+      get_keys: Results
+      get_values: Results
+    methods:
+      get:
+        - sig: '(key: StringData) const -> Obj'
+          cppName: get<Obj> # TODO add default
+      insert_any: '(key: StringData, val: Mixed) -> std::pair<count_t, bool>'
+      insert_embedded: '(key: StringData) -> Obj'
+      erase: '(key: StringData)'
+      try_erase: '(key: StringData) -> bool'
+      remove_all: '()'
+      get_any: # Note conflicts with method in base class
+        - sig: '(key: StringData) -> Mixed'
+          suffix: by_key
+      try_get_any: '(key: StringData) -> util::Optional<Mixed>' # TODO can't distinguish null from missing
+      get_pair: '(ndx: count_t) const -> std::pair<StringData, Mixed>'
+      contains: '(key: StringData) -> bool'
+      freeze: '(frozen_realm: std::shared_ptr<Realm> const&) const -> Dictionary'
 
 interfaces:
   Scheduler:
