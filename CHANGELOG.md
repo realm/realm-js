@@ -1,3 +1,22 @@
+x.x.x Release notes (yyyy-MM-dd)
+=============================================================
+### Enhancements
+* None.
+
+### Fixed
+* Fixed dangling pointer in binary datatype handling in Node ([#3781](https://github.com/realm/realm-js/issues/3781), since v10.5.0)
+
+### Compatibility
+* MongoDB Realm Cloud.
+* Realm Studio v11.0.0.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
+* File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Internal
+* <Either mention core version or upgrade>
+* <Using Realm Core vX.Y.Z>
+* <Upgraded Realm Core from vX.Y.Z to vA.B.C>
+
 10.20.0 Release notes (2022-8-23)
 =============================================================
 NOTE: This version is unrelated to the v10.20.0-alpha and v10.20.0-beta prereleases. Hermes is **not** supported by this release. If your app depends on one of the preleases, you must upgrade to the v11.0.0-rc releases.
