@@ -11,6 +11,9 @@
   "dependencies": {
     "@realm/bindgen": "^0.1.0"
   },
+  "peerDependencies": {
+    "bson": "^4"
+  },
   "devDependencies": {
     "@types/chai": "^4.3.1",
     "@types/mocha": "^9.1.1",

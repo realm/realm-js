@@ -18,6 +18,7 @@
 
 import { expect } from "chai";
 import { inspect } from "node:util";
+import { ObjectId, UUID, Decimal128 } from "bson";
 
 import { Realm, Object as RealmObject } from "../index";
 import { PropertyTypeName, ObjectSchemaProperty } from "../schema";
@@ -48,7 +49,6 @@ type PropertySuite = [PropertyTypeName | ObjectSchemaProperty, (unknown | Proper
   Set = 256,
   Dictionary = 512,
   Collection = 896,
-  Flags = 960,
  */
 
 function testArrayBuffer(value: unknown, expected: ArrayBuffer) {
@@ -82,6 +82,30 @@ function testObject(value: unknown, input: RealmObject) {
   }
 }
 
+function testObjectId(value: unknown, input: ObjectId) {
+  if (value instanceof ObjectId) {
+    expect(value.equals(input)).equals(true);
+  } else {
+    throw new Error("Expected an ObjectId");
+  }
+}
+
+function testUUID(value: unknown, input: UUID) {
+  if (value instanceof UUID) {
+    expect(value.equals(input)).equals(true);
+  } else {
+    throw new Error("Expected a UUID");
+  }
+}
+
+function testDecimal128(value: unknown, input: Decimal128) {
+  if (value instanceof Decimal128) {
+    expect(value.bytes).deep.equals(input.bytes);
+  } else {
+    throw new Error("Expected a Decimal128");
+  }
+}
+
 function createArrayBuffer() {
   const value = new ArrayBuffer(12);
   const view = new Int32Array(value);
@@ -92,7 +116,19 @@ function createArrayBuffer() {
 }
 
 const TESTS: PropertySuite[] = [
-  ["int", [0, 123, 1_000_000, 1_000_000_000, 1_000_000_000_000, Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER]],
+  [
+    "int",
+    [
+      0,
+      123,
+      1_000_000,
+      1_000_000_000,
+      1_000_000_000_000,
+      Number.MIN_SAFE_INTEGER,
+      Number.MAX_SAFE_INTEGER,
+      [10n, 10], // bigint is coerced to number when read from the binding
+    ],
+  ],
   ["bool", [true, false]],
   ["string", ["", "Hello!", "💣💥"]],
   ["data", [[createArrayBuffer, testArrayBuffer]]],
@@ -113,6 +149,9 @@ const TESTS: PropertySuite[] = [
   [{ type: "object", objectType: "MyObject" }, [[(realm: Realm) => realm.create("MyObject", {}), testObject]]],
   // TODO: We should add some tests for 👇
   ["linkingObjects", []],
+  ["objectId", [[new ObjectId(ObjectId.generate()), testObjectId]]],
+  ["uuid", [[new UUID(UUID.generate()), testUUID]]],
+  ["decimal128", [[new Decimal128("123"), testDecimal128]]],
   [
     "mixed",
     /*
@@ -140,9 +179,13 @@ const TESTS: PropertySuite[] = [
       [createArrayBuffer, testArrayBuffer],
       [new Date("2022-11-04T12:00:00"), testDate],
       123.567,
+      [10n, 10], // bigint is coerced to number when read from the binding
       [Number.MIN_VALUE, testNumber],
       [Number.MAX_VALUE, testNumber],
       [(realm: Realm) => realm.create("MyObject", {}), testObject],
+      [new ObjectId(ObjectId.generate()), testObjectId],
+      [new UUID(UUID.generate()), testUUID],
+      [new Decimal128("123"), testDecimal128],
     ],
   ],
 ];
