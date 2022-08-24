@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import * as binding from "@realm/bindgen";
+import { Decimal128, ObjectId, UUID } from "bson";
+import { assert, AssertionError } from "./assert";
 
 import { getInternal } from "./internal";
 import { Object as RealmObject } from "./Object";
@@ -83,13 +85,12 @@ function createHelpers<T>(
   if (type === binding.PropertyType.Int) {
     return {
       toBinding(value) {
-        // TODO: Refactor to use an assert
         if (typeof value === "number") {
           return BigInt(value);
         } else if (typeof value === "bigint") {
           return value;
         } else {
-          throw new Error("Expected a number or bigint");
+          throw new TypeError(`Expected a number or bigint, got ${typeof value}`);
         }
       },
       fromBinding(value) {
@@ -102,10 +103,7 @@ function createHelpers<T>(
   } else if (type === binding.PropertyType.Bool) {
     return {
       toBinding(value) {
-        // TODO: Refactor to use an assert
-        if (typeof value !== "boolean") {
-          throw new Error("Expected a boolean");
-        }
+        assert.boolean(value);
         return value;
       },
       fromBinding: defaultFromBinding,
@@ -115,10 +113,7 @@ function createHelpers<T>(
   } else if (type === binding.PropertyType.String) {
     return {
       toBinding(value) {
-        // TODO: Refactor to use an assert
-        if (typeof value !== "string") {
-          throw new Error("Expected a string");
-        }
+        assert.string(value);
         return value;
       },
       fromBinding: defaultFromBinding,
@@ -128,10 +123,7 @@ function createHelpers<T>(
   } else if (type === binding.PropertyType.Data) {
     return {
       toBinding(value) {
-        // TODO: Refactor to use an assert
-        if (!(value instanceof ArrayBuffer)) {
-          throw new Error("Expected an ArrayBuffer");
-        }
+        assert.instanceOf(value, ArrayBuffer);
         return value;
       },
       fromBinding: defaultFromBinding,
@@ -141,18 +133,12 @@ function createHelpers<T>(
   } else if (type === binding.PropertyType.Date) {
     return {
       toBinding(value) {
-        // TODO: Refactor to use an assert
-        if (!(value instanceof Date)) {
-          throw new Error("Expected a Date");
-        }
+        assert.instanceOf(value, Date);
         return binding.Timestamp.fromDate(value);
       },
       fromBinding(value) {
-        if (value instanceof binding.Timestamp) {
-          return value.toDate();
-        } else {
-          throw new Error("Expected a Timestamp");
-        }
+        assert.instanceOf(value, binding.Timestamp);
+        return value.toDate();
       },
       get: defaultGet,
       set: defaultSet,
@@ -160,18 +146,12 @@ function createHelpers<T>(
   } else if (type === binding.PropertyType.Float) {
     return {
       toBinding(value) {
-        // TODO: Refactor to use an assert
-        if (typeof value !== "number") {
-          throw new Error("Expected a number");
-        }
+        assert.number(value);
         return new binding.Float(value);
       },
       fromBinding(value) {
-        if (value instanceof binding.Float) {
-          return value.value;
-        } else {
-          throw new Error("Expected a Float");
-        }
+        assert.instanceOf(value, binding.Float);
+        return value.value;
       },
       get: defaultGet,
       set: defaultSet,
@@ -179,10 +159,7 @@ function createHelpers<T>(
   } else if (type === binding.PropertyType.Double) {
     return {
       toBinding(value) {
-        // TODO: Refactor to use an assert
-        if (typeof value !== "number") {
-          throw new Error("Expected a number");
-        }
+        assert.number(value);
         return value;
       },
       fromBinding: defaultFromBinding,
@@ -221,7 +198,6 @@ function createHelpers<T>(
   } else if (type === binding.PropertyType.Mixed) {
     return {
       toBinding(value) {
-        // TODO: Refactor to use an assert
         if (value instanceof Date) {
           return binding.Timestamp.fromDate(value);
         } else if (value instanceof RealmObject) {
@@ -250,33 +226,30 @@ function createHelpers<T>(
   } else if (type === binding.PropertyType.ObjectId) {
     return {
       toBinding(value) {
-        throw new Error(`Converting values of type "ObjectId" is not yet supported`);
+        assert.instanceOf(value, ObjectId);
+        return value;
       },
-      fromBinding(value) {
-        throw new Error(`Converting values of type "ObjectId" is not yet supported`);
-      },
+      fromBinding: defaultFromBinding,
       get: defaultGet,
       set: defaultSet,
     };
   } else if (type === binding.PropertyType.Decimal) {
     return {
       toBinding(value) {
-        throw new Error(`Converting values of type "Decimal" is not yet supported`);
+        assert.instanceOf(value, Decimal128);
+        return value;
       },
-      fromBinding(value) {
-        throw new Error(`Converting values of type "Decimal" is not yet supported`);
-      },
+      fromBinding: defaultFromBinding,
       get: defaultGet,
       set: defaultSet,
     };
   } else if (type === binding.PropertyType.UUID) {
     return {
       toBinding(value) {
-        throw new Error(`Converting values of type "UUID" is not yet supported`);
+        assert.instanceOf(value, UUID);
+        return value;
       },
-      fromBinding(value) {
-        throw new Error(`Converting values of type "UUID" is not yet supported`);
-      },
+      fromBinding: defaultFromBinding,
       get: defaultGet,
       set: defaultSet,
     };
