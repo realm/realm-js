@@ -65,6 +65,8 @@ export type RelaxedClassSpec = Pick<Partial<ClassSpec>, "sharedPtrWrapped"> & {
   cppName?: string;
   iterable?: string;
   needsDeref?: boolean;
+  abstract?: boolean;
+  base?: string;
   constructors?: { [name: string]: string };
   staticMethods?: { [name: string]: RelaxedMethodSpec | RelaxedMethodSpec[] };
   properties?: { [name: string]: string };
