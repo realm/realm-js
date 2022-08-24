@@ -23,6 +23,15 @@ declare function clearImmediate(timer: Timer): void;
 
 declare interface Console {
   log(...args: unknown[]): void;
+  assert(assertion: boolean, ...objs: unknown[]): asserts assertion;
+  assert(assertion: boolean, msg: string, ...substitutions: unknown[]): asserts assertion;
 }
 
 declare const console: Console;
+
+/**
+ * We don't wont our cross platform SDK to rely on a Node.js type, so we're declaring it ourselves.
+ */
+declare module "buffer" {
+  type Buffer = Uint8Array;
+}

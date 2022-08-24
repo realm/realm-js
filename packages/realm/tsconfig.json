@@ -10,7 +10,9 @@
     "lib": [
       "ES2020"
     ],
-    "types": []
+    "types": [
+      "bson"
+    ]
   },
   "include": [
     "src/",
