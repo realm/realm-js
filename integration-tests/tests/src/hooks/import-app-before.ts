@@ -35,7 +35,7 @@ export function importAppBefore(
         const date = new Date();
         console.log(date.toString(), date.getMilliseconds(), level, message);
       });
-      // Realm.App.Sync.setLogLevel(this.app, logLevel);
+
       // Set a default logger as Android does not forward stdout
       Realm.App.Sync.setLogger(this.app, (level, message) => {
         const time = new Date().toISOString().split("T")[1].replace("Z", "");

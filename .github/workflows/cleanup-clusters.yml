@@ -10,7 +10,6 @@ jobs:
     - uses: realm/ci-actions/mdb-realm/deleteAllClusters@3d95b9f473d06ef0f56e1a5d8c5981743dc4fed9
       name: "on realm.dev"
       with:
-        atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
         realmUrl: ${{ secrets.REALM_BASE_URL }}
         atlasUrl: ${{ secrets.ATLAS_BASE_URL }}
         projectId: ${{ secrets.ATLAS_PROJECT_ID }}
