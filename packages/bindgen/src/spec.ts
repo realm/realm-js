@@ -138,6 +138,8 @@ function normalizeRecordSpec(spec: RelaxedRecordSpec): RecordSpec {
 function normalizeClassSpec(spec: RelaxedClassSpec): ClassSpec {
   return {
     cppName: spec.cppName,
+    abstract: !!spec.abstract,
+    base: spec.base,
     iterable: spec.iterable ? parseTypeSpec(spec.iterable) : undefined,
     needsDeref: !!spec.needsDeref || !!spec.sharedPtrWrapped,
     sharedPtrWrapped: spec.sharedPtrWrapped,

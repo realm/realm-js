@@ -135,9 +135,12 @@ export class NamedType {
   constructor(public name: string) {}
 }
 
-class Class extends NamedType {
+export class Class extends NamedType {
   readonly kind = "Class";
   cppName!: string;
+  abstract = false;
+  base?: Class;
+  subclasses: Class[] = [];
   isInterface = false;
   properties: Property[] = [];
   methods: Method[] = [];
@@ -147,6 +150,14 @@ class Class extends NamedType {
 
   toString() {
     return `class ${this.name}`;
+  }
+
+  *decedents(): Iterable<Class> {
+    for (const sub of this.subclasses) {
+      assert.notEqual(sub, this, `base class loop detected on ${this.name}`);
+      yield sub;
+      yield* sub.decedents();
+    }
   }
 }
 
@@ -215,6 +226,8 @@ export class BoundSpec {
   // Note: For now, all aliases are fully resolved and no trace is left here.
   // Most consumers don't care about them. Will see if we ever want to use aliases
   // TS definition files for documentation purposes.
+
+  /** base classes are guaranteed to be at an earlier index than their subclasses to simplify consumption. */
   classes: Class[] = [];
   records: Struct[] = [];
   enums: Enum[] = [];
@@ -231,6 +244,7 @@ type MixedInfo = {
 
 export function bindModel(spec: Spec): BoundSpec {
   const templates: Map<string, Spec["templates"][string]> = new Map();
+  const rootClasses: Class[] = [];
 
   const out = new BoundSpec();
 
@@ -322,7 +336,6 @@ export function bindModel(spec: Spec): BoundSpec {
   ] as const) {
     for (const [name, { sharedPtrWrapped }] of Object.entries(spec[subtree])) {
       const cls = addType<Class>(name, ctor);
-      out.classes.push(cls);
       if (sharedPtrWrapped) {
         cls.sharedPtrWrapped = true;
         addShared(sharedPtrWrapped, cls);
@@ -365,9 +378,21 @@ export function bindModel(spec: Spec): BoundSpec {
       cls.cppName = raw.cppName ?? name;
       handleMethods(InstanceMethod, cls, raw.methods);
       handleMethods(StaticMethod, cls, raw.staticMethods);
+
+      if (raw.base) {
+        const base = out.types[raw.base];
+        assert(base, `${name} has unknown base ${raw.base}`);
+        assert(base instanceof Class, `Bases must be classes, but ${raw.base} is a ${base.constructor.name}`);
+        cls.base = base;
+        base.subclasses.push(cls);
+      } else {
+        rootClasses.push(cls);
+      }
+
       if (subtree == "classes") {
         const rawCls = raw as ClassSpec;
         cls.needsDeref = rawCls.needsDeref;
+        cls.abstract = rawCls.abstract;
 
         if (rawCls.iterable) cls.iterable = resolveTypes(rawCls.iterable);
 
@@ -388,6 +413,10 @@ export function bindModel(spec: Spec): BoundSpec {
         }
       }
     }
+  }
+
+  for (const cls of rootClasses) {
+    out.classes.push(cls, ...cls.decedents());
   }
 
   out.mixedInfo = {
