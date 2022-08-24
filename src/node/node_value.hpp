@@ -273,7 +273,7 @@ inline OwnedBinaryData node::Value::to_binary(Napi::Env env, const Napi::Value& 
     }
 
     if (!legal_conversion) {
-        throw std::runtime_error("Can only convert Buffer, ArrayBuffer, and ArrayBufferView objects to binary");
+        throw std::runtime_error("Can only convert Buffer, ArrayBuffer, and ArrayBufferView objects to binary -- got " + std::to_string(value.Type()));
     }
 
     return std::move(binary_data);
