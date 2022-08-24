@@ -92,5 +92,5 @@ export type ObjectSchemaProperty = {
 };
 
 export type DefaultObject = Record<string, unknown>;
-export type Constructor<T = unknown> = { new(...args: unknown[]): T };
+export type Constructor<T = unknown> = { new (...args: unknown[]): T };
 export type RealmObjectConstructor<T = unknown> = Constructor<RealmObject<T> & T>;
