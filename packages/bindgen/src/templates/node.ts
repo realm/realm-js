@@ -29,7 +29,7 @@ import {
   CppDecls,
   CppCtorProps,
 } from "../cpp";
-import { bindModel, BoundSpec, Type } from "../bound-model";
+import { bindModel, BoundSpec, Class, Type } from "../bound-model";
 
 import "../js-passes";
 
@@ -123,6 +123,7 @@ class NodeAddon extends CppClass {
     this.addMethod(
       new CppCtor(this.name, [new CppVar("Napi::Env", env), new CppVar("Napi::Object", "exports")], {
         body: `
+            const auto setPrototypeOf = ${env}.Global().Get("Object").As<Napi::Object>().Get("setPrototypeOf").As<Napi::Function>();
             ${this.inits.join("\n")}
 
             DefineAddon(exports, {
@@ -136,14 +137,19 @@ class NodeAddon extends CppClass {
     );
   }
 
-  addClass(cls: NodeObjectWrap) {
+  addClass(cls: NodeObjectWrap, base: Class | undefined) {
     const mem = NodeAddon.memberNameFor(cls);
     this.members.push(new CppVar("Napi::FunctionReference", mem));
     this.inits.push(`${mem} = Persistent(${cls.name}::makeCtor(${env}));`);
+    if (base) {
+      const baseMem = NodeAddon.memberNameFor(base);
+      this.inits.push(`setPrototypeOf.Call({${mem}.Value(), ${baseMem}.Value()});`);
+      this.inits.push(`setPrototypeOf.Call({${mem}.Value().Get("prototype"), ${baseMem}.Value().Get("prototype")});`);
+    }
     this.exports[`${cls.name}::jsName`] = mem;
   }
 
-  static memberNameFor(cls: string | NodeObjectWrap) {
+  static memberNameFor(cls: string | { jsName: string }) {
     if (typeof cls != "string") cls = cls.jsName;
     return `m_cls_${cls}_ctor`;
   }
@@ -159,6 +165,7 @@ class NodeAddon extends CppClass {
 
 class NodeObjectWrap extends CppClass {
   ctor: CppCtor;
+  descriptors: string[] = [];
   constructor(public jsName: string) {
     super(`Node_${jsName}`);
     this.withCrtpBase("Napi::ObjectWrap");
@@ -170,6 +177,15 @@ class NodeObjectWrap extends CppClass {
     );
 
     this.members.push(new CppVar("constexpr const char*", "jsName", { value: `"${jsName}"`, static: true }));
+  }
+
+  addFactory() {
+    this.addMethod(
+      new CppMethod("makeCtor", "Napi::Function", [new CppVar("Napi::Env", env)], {
+        static: true,
+        body: `return DefineClass(${env}, "${this.jsName}", { ${this.descriptors.map((d) => d + ",").join("\n")} });`,
+      }),
+    );
   }
 }
 
@@ -231,7 +247,6 @@ function convertPrimToNode(addon: NodeAddon, type: string, expr: string): string
 
     case "count_t":
     case "double":
-    case "int":
     case "int32_t":
       return `Napi::Number::New(${env}, ${expr})`;
 
@@ -283,13 +298,12 @@ function convertPrimFromNode(addon: NodeAddon, type: string, expr: string): stri
     case "float":
       return `(${expr}).As<Napi::Object>().Get("value").As<Napi::Number>().FloatValue()`;
 
-    case "int":
     case "int32_t":
       return `(${expr}).As<Napi::Number>().Int32Value()`;
 
     case "count_t":
       // TODO consider calling Int32Value on 32-bit platforms. Probably not worth it though.
-      return `(${expr}).As<Napi::Number>().Int64Value()`;
+      return `size_t((${expr}).As<Napi::Number>().Int64Value())`;
 
     case "int64_t":
       return `extractInt64FromNode(${expr})`;
@@ -571,30 +585,49 @@ class NodeCppDecls extends CppDecls {
         }),
       );
     }
+
     for (const specClass of spec.classes) {
       // TODO need to do extra work to enable JS implementation of interfaces
       const cls = pushRet(this.classes, new NodeObjectWrap(specClass.jsName));
-      const descriptors: string[] = [];
       const self = specClass.needsDeref ? "(*m_val)" : "(m_val)";
 
-      for (const method of specClass.methods) {
+      if (specClass.abstract) {
+        // For now, these get nothing.
+        cls.addFactory();
+        this.addon.addClass(cls, specClass.base);
+        continue;
+      }
+
+      const includeDerived = function* <Kind extends "methods" | "properties">(
+        kind: Kind,
+        cls: Class,
+      ): Iterable<Class[Kind][number]> {
+        // For now, we copy everything to most-derived type. That will change when we stop using ObjectWrap.
+        if (cls.base) yield* includeDerived(kind, cls.base);
+        yield* cls[kind];
+      };
+
+      for (const method of includeDerived("methods", specClass)) {
         const cppMeth = cls.addMethod(new CppNodeMethod(this.addon, method.jsName, { static: method.isStatic }));
-        descriptors.push(
+        cls.descriptors.push(
           `${method.isStatic ? "Static" : "Instance"}Method<&${cppMeth.qualName()}>("${method.jsName}")`,
         );
 
         const args = method.sig.args.map((a, i) => convertFromNode(this.addon, a.type, `info[${i}]`));
 
+        // This can go away when we stop duplicating methods onto subclasses.
+        // Might also be able to remove after https://github.com/realm/realm-core/pull/5774
+        const castedSelf = method.on == specClass ? self : `static_cast<${method.on.cppName}&>(${self})`;
         cppMeth.body += `
             if (info.Length() != ${args.length})
                 throw Napi::TypeError::New(${env}, "expected ${args.length} arguments");
-            return ${convertToNode(this.addon, method.sig.ret, method.call({ self }, ...args))};
+            return ${convertToNode(this.addon, method.sig.ret, method.call({ self: castedSelf }, ...args))};
         `;
       }
 
       if (specClass.iterable) {
         const cppMeth = cls.addMethod(new CppNodeMethod(this.addon, "Symbol_iterator"));
-        descriptors.push(`InstanceMethod<&${cppMeth.qualName()}>(Napi::Symbol::WellKnown(${env}, "iterator"))`);
+        cls.descriptors.push(`InstanceMethod<&${cppMeth.qualName()}>(Napi::Symbol::WellKnown(${env}, "iterator"))`);
         cppMeth.body += `
             if (info.Length() != 0)
                 throw Napi::TypeError::New(${env}, "expected 0 arguments");
@@ -619,10 +652,10 @@ class NodeCppDecls extends CppDecls {
         `;
       }
 
-      for (const prop of specClass.properties) {
+      for (const prop of includeDerived("properties", specClass)) {
         const cppMeth = cls.addMethod(new CppNodeMethod(this.addon, prop.jsName));
         cppMeth.body += `return ${convertToNode(this.addon, prop.type, `${self}.${prop.name}()`)};`;
-        descriptors.push(`InstanceAccessor<&${cppMeth.qualName()}>("${prop.jsName}")`);
+        cls.descriptors.push(`InstanceAccessor<&${cppMeth.qualName()}>("${prop.jsName}")`);
       }
 
       cls.ctor.body += `
@@ -662,14 +695,8 @@ class NodeCppDecls extends CppDecls {
         ),
       );
 
-      cls.addMethod(
-        new CppMethod("makeCtor", "Napi::Function", [new CppVar("Napi::Env", env)], {
-          static: true,
-          body: `return DefineClass(${env}, "${specClass.jsName}", { ${descriptors.map((d) => d + ",").join("\n")} });`,
-        }),
-      );
-
-      this.addon.addClass(cls);
+      cls.addFactory();
+      this.addon.addClass(cls, specClass.base);
     }
 
     this.free_funcs.push(
