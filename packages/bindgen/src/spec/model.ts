@@ -67,6 +67,8 @@ export type MethodSpec = {
 export type ClassSpec = {
   cppName?: string;
   iterable?: TypeSpec;
+  abstract: boolean;
+  base?: string;
   needsDeref: boolean;
   sharedPtrWrapped?: string;
   constructors: { [name: string]: FunctionTypeSpec };
@@ -77,6 +79,7 @@ export type ClassSpec = {
 
 export type InterfaceSpec = {
   cppName?: string;
+  base?: string;
   sharedPtrWrapped?: string;
   staticMethods: { [name: string]: MethodSpec[] };
   methods: { [name: string]: MethodSpec[] };

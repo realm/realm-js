@@ -21,7 +21,7 @@
 /* eslint-disable header/header */
 
 import { Decimal128 } from "bson";
-import { Realm, Float, PropertyType, Helpers, Results, SortDescriptor } from "../index";
+import { Realm, Float, PropertyType, Helpers, Results, SortDescriptor, List } from "../index";
 
 import { strict as assert } from "assert";
 import * as util from "util";
@@ -41,6 +41,7 @@ const realm = Realm.getSharedRealm({
         { name: "maybeFloat", type: PropertyType.Float | PropertyType.Nullable },
         { name: "maybeDec", type: PropertyType.Decimal | PropertyType.Nullable },
         { name: "link", type: PropertyType.Object | PropertyType.Nullable, objectType: "Foo" },
+        { name: "list", type: PropertyType.String | PropertyType.Array },
       ],
     },
   ],
@@ -56,6 +57,7 @@ const strCol = schema[0].persistedProperties[1].columnKey;
 const fltCol = schema[0].persistedProperties[2].columnKey;
 const decCol = schema[0].persistedProperties[3].columnKey;
 const lnkCol = schema[0].persistedProperties[4].columnKey;
+const lstCol = schema[0].persistedProperties[5].columnKey;
 
 console.log(numCol);
 console.log(table.getColumnType(numCol));
@@ -74,6 +76,10 @@ obj2.setAny(strCol, "world");
 
 const obj3 = table.createObject();
 obj3.setAny(lnkCol, obj2);
+const obj3list = List.make(realm, obj3, lstCol);
+obj3list.insertAny(0, "hello");
+obj3list.insertAny(1, "world");
+console.log([obj3list.getAny(0), obj3list.getAny(1)]);
 
 realm.commitTransaction();
 
