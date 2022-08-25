@@ -1,3 +1,4 @@
+#include "realm/util/function_ref.hpp"
 #include <napi.h>
 
 // Used by Helpers::get_keypath_mapping
@@ -13,6 +14,112 @@
 
 namespace realm::js::node {
 namespace {
+
+
+
+
+struct MyConfig {
+    std::string name;
+    std::vector<std::string> strings;
+};
+
+class MyClass {
+public:
+    MyClass() = default;
+    MyClass(MyConfig conf)
+        : m_config(conf)
+    {
+    }
+
+    static int add(int a, int b) {
+        return a + b;
+    }
+    static int add(const std::vector<int>& ints) {
+        int sum = 0;
+        for (auto i : ints) {
+            sum += i;
+        }
+        return sum;
+    }
+
+    template <typename T>
+    static T apply(T init, const util::FunctionRef<T(T current)>& op) {
+        return op(init);
+    }
+
+    std::string name() const { return m_config.name; }
+    MyConfig get_config() const { return m_config; }
+
+    auto begin() const { return m_config.strings.begin(); }
+    auto end() const { return m_config.strings.end(); }
+
+private:
+    MyConfig m_config;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // These types are exposed to JS in the spec.
 // TODO look into moving some of this to realm-core

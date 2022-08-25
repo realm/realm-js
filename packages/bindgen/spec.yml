@@ -161,6 +161,11 @@ constants:
     value: 0x7FFF_FFFF_FFFF_FFFF
 
 records:
+  MyConfig:
+    fields:
+      name: std::string
+      strings: std::vector<std::string>
+
   Property:
     fields:
       name: std::string
@@ -297,8 +302,38 @@ opaqueTypes:
   - AuditInterface
 
 classes:
-  #ThreadSafeReference: {}
-  #SchemaChange: {}
+  MyClass:
+    staticMethods:
+      add:
+        - '(a: int, b: int) -> int'
+        - sig: '(ints: std::vector<int>) -> int'
+          suffix: all
+
+      apply:
+        - sig: '(init: int, op: (cur: int) -> int) -> int'
+          cppName: apply<int>
+
+    constructors:
+      make: '(conf: MyConfig)'
+
+    properties:
+      name: std::string
+      get_config: MyConfig
+
+    iterable: std::string
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   Helpers:
     staticMethods:
