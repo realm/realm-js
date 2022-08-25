@@ -16,11 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export * from "./Realm";
-export * from "./Configuration";
-export { Results } from "./Results";
-export { Object } from "./Object";
-export { List } from "./List";
-export { Dictionary } from "./Dictionary";
-export { Set } from "./Set";
-export type { ObjectChangeSet, ObjectChangeCallback } from "./ObjectNotifier";
+import { Collection } from "./Collection";
+
+export class Set<T = unknown> extends Collection<T> {}
