@@ -182,7 +182,7 @@ set(TYPESCRIPT_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/generated/ts/)
 set(GENERATED_TS_FILES
     ${TYPESCRIPT_OUTPUT_DIR}/native.d.ts
     ${TYPESCRIPT_OUTPUT_DIR}/native.js
-    ${TYPESCRIPT_OUTPUT_DIR}/enums.ts
+    ${TYPESCRIPT_OUTPUT_DIR}/core.ts
 )
 
 add_custom_command(
