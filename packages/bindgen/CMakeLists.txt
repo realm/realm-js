@@ -146,6 +146,8 @@ else()
     target_compile_options(realm-js PRIVATE -Wall -Wextra)
 endif()
 
+target_include_directories(realm-js PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
+
 # Right now we only support Ninja generators because they are the only ones that can correctly handle
 # mutliple custom_commands in separate targets that transitively depend on a common output file from
 # another custom_command. Right now we have the situation where all generators depend on the json schema
