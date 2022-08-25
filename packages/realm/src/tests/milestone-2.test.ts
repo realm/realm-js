@@ -75,6 +75,14 @@ describe("Milestone #2", () => {
       const alice = this.realm.objectForPrimaryKey("Person", "Alice");
       expect(alice).instanceOf(Realm.Object);
     });
+
+    it("returns a spreadable object", function (this: RealmContext) {
+      const alice = this.realm.objectForPrimaryKey<PersonWithFriend>("Person", "Alice");
+      expect(alice.keys()).deep.equals(["name", "bestFriend"]);
+      const spreaded = { ...alice };
+      expect(Object.keys(spreaded)).deep.equals(alice.keys());
+      expect(spreaded.name).deep.equals(alice.name);
+    });
   });
 
   describe("Reading a “string” property from an object", () => {
@@ -233,6 +241,21 @@ describe("Milestone #2", () => {
       }
       expect(alice).instanceOf(Realm.Object);
       expect(alice.name).equals("Alice");
+    });
+
+    it("allows random index access", function (this: RealmContext) {
+      const persons = this.realm.objects("Person");
+      expect(persons).instanceOf(Results);
+      expect(persons.length).greaterThan(0);
+      expect(persons[0]).instanceOf(Realm.Object);
+    });
+
+    it("allows object spreads", function (this: RealmContext) {
+      const persons = this.realm.objects("Person");
+      expect(persons).instanceOf(Results);
+      expect(persons.length).greaterThan(0);
+      const spreaded = { ...persons };
+      expect(Object.keys(spreaded));
     });
   });
 });

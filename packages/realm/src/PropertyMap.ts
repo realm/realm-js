@@ -262,6 +262,8 @@ export class PropertyMap<T = DefaultObject> {
   private mapping: Record<string, PropertyHelpers>;
   private nameByColumnKey: Record<number, string>;
 
+  public names: string[];
+
   /**
    * @param objectSchema
    * TODO: Refactor this to use the binding.ObjectSchema type once the DeepRequired gets removed from types
@@ -288,6 +290,8 @@ export class PropertyMap<T = DefaultObject> {
     this.nameByColumnKey = Object.fromEntries(
       objectSchema.persistedProperties.map((p) => [Number(p.columnKey.value), p.publicName || p.name]),
     );
+    // TODO: Consider including the computed properties?
+    this.names = objectSchema.persistedProperties.map((p) => p.publicName || p.name);
   }
 
   public get(property: string): PropertyHelpers {
