@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as binding from "@realm/bindgen";
+import * as binding from "./binding";
 
 import { INTERNAL, getInternal } from "./internal";
 import { Object as RealmObject } from "./Object";
