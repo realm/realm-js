@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Realm, PropertyType, TableType } from "@realm/bindgen";
+import { Realm, PropertyType, TableType } from "../binding";
 import { expect } from "chai";
 import { inspect } from "util";
 

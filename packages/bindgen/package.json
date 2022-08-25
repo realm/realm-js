@@ -7,8 +7,7 @@
     "realm-bindgen": "./realm-bindgen.ts"
   },
   "type": "module",
-  "main": "./index.ts",
-  "exports": "./index.ts",
+  "main": "./realm-bindgen.ts",
   "scripts": {
     "start": "./realm-bindgen.ts",
     "test": "mocha",

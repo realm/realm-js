@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Realm, PropertyType } from "@realm/bindgen";
+import { Realm, PropertyType } from "../binding";
 
 // TODO: Update these once the binding expose proper types
 type BindingObjectSchema = Realm["schema"][0];
