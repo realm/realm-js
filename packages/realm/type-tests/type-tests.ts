@@ -21,6 +21,11 @@ import * as lib from "../src";
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
+declare class Person {
+  name: string;
+  age: number;
+}
+
 // Realm constructor
 
 {
@@ -43,14 +48,22 @@ import * as lib from "../src";
 // Realm.Object
 
 {
-  const object: Realm.Object = new lib.Realm.Object();
+  const object: Realm.Object<Person> = null as unknown as lib.Object<Person>;
 }
 
 // Realm.Result
 
 {
-  class T {
-    name!: string;
-  }
-  const results: Realm.Results<T> = new lib.Realm.Results<T>();
+  const results: Realm.Results<Person> = null as unknown as lib.Results<Person>;
+}
+
+// List
+{
+  const list: Realm.List<Person> = null as unknown as lib.List<Person>;
+}
+
+// Dictionary
+{
+  type T = { foo: string; bar: number };
+  const dict: Realm.Dictionary<Person> = null as unknown as lib.Dictionary<Person>;
 }

@@ -23,7 +23,6 @@ import { Realm } from "./Realm";
 import { Object as RealmObject } from "./Object";
 import { Constructor, RealmObjectConstructor } from "./schema";
 import { getInternal } from "./internal";
-import { Helpers } from "./binding";
 
 export const INTERNAL_HELPERS = Symbol("Realm.Object#helpers");
 
@@ -75,6 +74,11 @@ function createClass<T extends RealmObjectConstructor = RealmObjectConstructor>(
       },
     });
   }
+  // Implement the per class optimized methods
+  const propertyNames = schema.persistedProperties.map((p) => p.publicName || p.name);
+  result.prototype.keys = function (this: T) {
+    return propertyNames;
+  };
   return result;
 }
 
@@ -114,8 +118,8 @@ export class ClassMap {
   constructor(realm: Realm, realmSchema: binding.Realm["schema"], resolveObjectLink: ObjectLinkResolver) {
     this.mapping = Object.fromEntries(
       realmSchema.map((objectSchema) => {
-        function createObjectWrapper(obj: binding.Obj): RealmObject<unknown> {
-          return RealmObject.create(realm, constructor, obj) as RealmObject<unknown>;
+        function createObjectWrapper<T>(obj: binding.Obj) {
+          return new RealmObject<T>(realm, constructor, obj);
         }
         const properties = new PropertyMap(objectSchema, createObjectWrapper, resolveObjectLink);
         const constructor = createClass(objectSchema, properties) as RealmObjectConstructor;
