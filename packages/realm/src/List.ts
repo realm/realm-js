@@ -18,4 +18,35 @@
 
 import { Collection } from "./Collection";
 
-export class List<T = unknown> extends Collection<T> {}
+type PartiallyWriteableArray<T> = Pick<Array<T>, "pop" | "push" | "shift" | "unshift" | "splice">;
+
+export class List<T = unknown> extends Collection<T> implements PartiallyWriteableArray<T> {
+  pop(): T | undefined {
+    throw new Error("Not yet implemented");
+  }
+
+  /**
+   * @param  {T} object
+   * @returns number
+   */
+  push(...items: T[]): number {
+    throw new Error("Not yet implemented");
+  }
+
+  /**
+   * @returns T
+   */
+  shift(): T | undefined {
+    throw new Error("Not yet implemented");
+  }
+
+  unshift(...items: T[]): number {
+    throw new Error("Not yet implemented");
+  }
+
+  splice(start: number, deleteCount?: number): T[];
+  splice(start: number, deleteCount: number, ...items: T[]): T[];
+  splice(start: number, deleteCount?: number, ...items: T[]): T[] {
+    throw new Error("Not yet implemented");
+  }
+}
