@@ -10,6 +10,7 @@
   "exclude": [],
   "include": [
     "../../types/index.d.ts",
+    "../src/types.d.ts",
     "type-tests.ts"
   ]
 }
