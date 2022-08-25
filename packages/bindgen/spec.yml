@@ -280,6 +280,13 @@ records:
       collection_was_cleared: bool
       # columns: std::unordered_map<int64_t, IndexSet>
 
+  DictionaryChangeSet:
+    fields:
+      deletions: std::vector<Mixed>
+      insertions: std::vector<Mixed>
+      modifications: std::vector<Mixed>
+      collection_root_was_deleted: bool
+
 opaqueTypes:
   - Group
   - AuditInterface
@@ -426,7 +433,7 @@ classes:
       average: '(column: ColKey) -> util::Optional<Mixed>'
       sum: '(column: ColKey) -> util::Optional<Mixed>'
 
-      #add_notification_callback: '(cb: (changes: const CollectionChangeSet&), keyPaths: KeyPathArray) -> NotificationToken'
+      add_notification_callback: '(cb: (changes: const CollectionChangeSet&), keyPaths: KeyPathArray) -> NotificationToken'
 
   Realm:
     sharedPtrWrapped: SharedRealm
@@ -499,6 +506,13 @@ classes:
       add_callback: '(cb: (changes: ObjectChangeSet), keyPaths: KeyPathArray) -> uint64_t'
       remove_callback: '(token: uint64_t)'
 
+  NotificationToken:
+    constructors:
+      for_object: '(notifier: SharedObjectNotifier, token: uint64_t)'
+    methods:
+      suppress_next: ()
+      unregister: ()
+
   IndexSet:
     iterable: IndexRange
     # methods:
@@ -534,6 +548,7 @@ classes:
         - '(order: SortDescriptor) const -> Results'
         - sig: '(keyPaths: std::vector<std::pair<std::string, bool>> const&) const -> Results'
           suffix: 'by_name'
+      add_notification_callback: '(cb: (changes: const CollectionChangeSet&), keyPaths: KeyPathArray) -> NotificationToken'
 
   List:
     base: Collection
@@ -623,19 +638,11 @@ classes:
     methods:
       get:
         - sig: '(key: StringData) const -> Obj'
-          cppName: get<Obj> # TODO add default
-      insert_any: '(key: StringData, val: Mixed) -> std::pair<count_t, bool>'
-      insert_embedded: '(key: StringData) -> Obj'
-      erase: '(key: StringData)'
-      try_erase: '(key: StringData) -> bool'
-      remove_all: '()'
-      get_any: # Note conflicts with method in base class
-        - sig: '(key: StringData) -> Mixed'
-          suffix: by_key
-      try_get_any: '(key: StringData) -> util::Optional<Mixed>' # TODO can't distinguish null from missing
+          cppName: get<Obj> # TODO can't distinguish null from missing
       get_pair: '(ndx: count_t) const -> std::pair<StringData, Mixed>'
       contains: '(key: StringData) -> bool'
       freeze: '(frozen_realm: std::shared_ptr<Realm> const&) const -> Dictionary'
+      add_key_based_notification_callback: '(cb: (changes: DictionaryChangeSet), keyPaths: KeyPathArray) -> NotificationToken'
 
 interfaces:
   Scheduler:
