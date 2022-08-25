@@ -30,6 +30,8 @@ primitives:
   - ObjectId
   - Decimal128
   - UUID
+  - EncryptionKey # vector<char> in C++, but should have API of OwnedBinaryData in SDK
+                  # TODO consider changing type in realm-core.
 
 typeAliases:
   int: int32_t
@@ -249,6 +251,9 @@ records:
       schema_mode:
         type: SchemaMode
         default: SchemaMode::Automatic
+      encryption_key:
+        type: EncryptionKey
+        default: {}
 
       # migration_function
       initialization_function:

@@ -33,6 +33,7 @@ const PRIMITIVES_MAPPING: Record<string, string> = {
   uint64_t: "bigint",
   "std::string": "string",
   StringData: "string",
+  EncryptionKey: "ArrayBuffer",
   BinaryData: "ArrayBuffer",
   OwnedBinaryData: "ArrayBuffer",
   ObjectId: "ObjectId",

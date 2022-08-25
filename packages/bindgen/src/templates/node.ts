@@ -217,6 +217,7 @@ function toCpp(type: Type): string {
     case "Primitive":
       const primitiveMap: Record<string, string> = {
         count_t: "size_t",
+        EncryptionKey: "std::vector<char>",
       };
       return primitiveMap[type.name] ?? type.name;
 
@@ -265,11 +266,10 @@ function convertPrimToNode(addon: NodeAddon, type: string, expr: string): string
                 return Napi::String::New(${env}, sd.data(), sd.size());
             }(${expr}))`;
 
+    case "EncryptionKey":
     case "OwnedBinaryData":
-      return convertPrimToNode(addon, "BinaryData", `${expr}.get()`);
-
     case "BinaryData":
-      return `([&] (BinaryData bd) -> Napi::Value {
+      return `([&] (const auto& bd) -> Napi::Value {
                 auto arr = Napi::ArrayBuffer::New(${env}, bd.size());
                 memcpy(arr.Data(), bd.data(), bd.size());
                 return arr;
@@ -324,6 +324,16 @@ function convertPrimFromNode(addon: NodeAddon, type: string, expr: string): stri
                 auto buf = v.As<Napi::ArrayBuffer>();
                 return BinaryData(static_cast<const char*>(buf.Data()), buf.ByteLength());
             })(${expr})`;
+
+    case "EncryptionKey":
+      return `([&] (const Napi::Value& v) -> std::vector<char> {
+                auto buf = v.As<Napi::ArrayBuffer>();
+                const auto data = static_cast<const char*>(buf.Data());
+                const auto size = buf.ByteLength();
+                if (size == 0) return {};
+                return std::vector<char>(data, data + size);
+            })(${expr})`;
+
     case "Mixed":
       return `NODE_TO_MIXED(${env}, ${expr})`;
 
