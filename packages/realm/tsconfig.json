@@ -16,8 +16,7 @@
   },
   "include": [
     "src/",
-    "../bindgen/index.ts",
-    "../bindgen/generated/ts/"
+    "generated/ts/"
   ],
   "exclude": [
     "src/tests/",

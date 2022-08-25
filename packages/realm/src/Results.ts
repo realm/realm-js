@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as binding from "@realm/bindgen";
-import { Helpers } from "@realm/bindgen";
+import * as binding from "./binding";
+import { Helpers } from "./binding";
 
 import { Collection, SortDescriptor } from "./Collection";
 import { INTERNAL } from "./internal";

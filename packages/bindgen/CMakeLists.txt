@@ -176,12 +176,18 @@ set(SPEC_FILE ${CMAKE_CURRENT_SOURCE_DIR}/spec.yml)
 # TODO 
 set(SCHEMA_FILE ${CMAKE_CURRENT_SOURCE_DIR}/generated/spec.schema.json)
 
-# We could look into changing this, but perhaps it is correct?
-set(TYPESCRIPT_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/generated/ts/)
+set(SDK_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../realm)
+
+set(TYPESCRIPT_OUTPUT_DIR ${SDK_DIR}/generated/ts)
+
+set_target_properties(realm-js PROPERTIES
+    # Need a dummy generator expression to avoid adding in the config name
+    LIBRARY_OUTPUT_DIRECTORY "${TYPESCRIPT_OUTPUT_DIR}/$<0:dummy_genex>"
+)
 
 set(GENERATED_TS_FILES
-    ${TYPESCRIPT_OUTPUT_DIR}/native.d.ts
-    ${TYPESCRIPT_OUTPUT_DIR}/native.js
+    ${TYPESCRIPT_OUTPUT_DIR}/native.d.mts
+    ${TYPESCRIPT_OUTPUT_DIR}/native.mjs
     ${TYPESCRIPT_OUTPUT_DIR}/core.ts
 )
 

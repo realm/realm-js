@@ -143,18 +143,19 @@ export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): vo
     }
   `);
 
-  const js = file("native.js", "eslint");
+  const js = file("native.mjs", "eslint");
   js("// This file is generated: Update the spec instead of editing this file directly");
   js(`
-    import bindings from 'bindings';
-    const nativeModule = bindings("realm.node")
+    import { createRequire } from 'node:module';
+    const require = createRequire(import.meta.url);
+    const nativeModule = require("./realm.node");
 
     import { ObjectId, UUID, Decimal128 } from "bson";
     import { Float } from "./core";
     nativeModule.injectInjectables({ Float, ObjectId, UUID, Decimal128 });
   `);
 
-  const out = file("native.d.ts", "eslint", "typescript-checker");
+  const out = file("native.d.mts", "eslint", "typescript-checker");
   out("// This file is generated: Update the spec instead of editing this file directly");
 
   out('import { ObjectId, UUID, Decimal128 } from "bson";');

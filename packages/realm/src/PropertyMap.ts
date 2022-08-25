@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as binding from "@realm/bindgen";
+import * as binding from "./binding";
 import { Decimal128, ObjectId, UUID } from "bson";
 import { assert, AssertionError } from "./assert";
 
