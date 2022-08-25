@@ -27,7 +27,7 @@ describe("Milestone #3", () => {
       this.realm = new Realm({
         path: generateTempRealmPath(),
         inMemory: true,
-        schema: [{ name: "Person", properties: { name: "string", bestFriend: "Person", friends: "Person[]" } }],
+        schema: [{ name: "Person", properties: { name: "string", bestFriend: "Person" } }],
       });
     });
     afterEach(closeRealm);
@@ -36,7 +36,7 @@ describe("Milestone #3", () => {
       const alice = this.realm.write(() => this.realm.create("Person", { name: "Alice" }));
       await new Promise<void>((resolve) => {
         alice.addListener((object, changes) => {
-          expect(object).equals(alice);
+          expect(object).deep.equals(alice);
           expect(changes.deleted).equals(false);
           expect(changes.changedProperties.length).equals(0);
           resolve();
@@ -51,14 +51,14 @@ describe("Milestone #3", () => {
         alice.addListener((object, changes) => {
           if (calls === 0) {
             calls++;
-            expect(object).equals(alice);
+            expect(object).deep.equals(alice);
             expect(changes.deleted).equals(false);
             expect(changes.changedProperties.length).equals(0);
             // Update the name to trigger another event
             this.realm.write(() => (alice.name = "Alison"));
           } else if (calls === 1) {
             calls++;
-            expect(object).equals(alice);
+            expect(object).deep.equals(alice);
             expect(changes.deleted).equals(false);
             expect(changes.changedProperties).deep.equals(["name"]);
             expect(object.name).equals("Alison");
@@ -77,14 +77,15 @@ describe("Milestone #3", () => {
         alice.addListener((object, changes) => {
           if (calls === 0) {
             calls++;
-            expect(object).equals(alice);
+            expect(object).deep.equals(alice);
             expect(changes.deleted).equals(false);
             expect(changes.changedProperties.length).equals(0);
             // Delete the object to trigger another event
             this.realm.write(() => this.realm.delete(alice));
           } else if (calls === 1) {
             calls++;
-            expect(object).equals(alice);
+            expect(object.isValid()).equals(false);
+            expect(alice.isValid()).equals(false);
             expect(changes.deleted).equals(true);
             expect(changes.changedProperties.length).equals(0);
             resolve();
@@ -104,7 +105,7 @@ describe("Milestone #3", () => {
           if (calls === 0) {
             // Initial fire
             calls++;
-            expect(object).equals(alice);
+            expect(object).deep.equals(alice);
             expect(changes.deleted).equals(false);
             expect(changes.changedProperties.length).equals(0);
             // Remove the listener
