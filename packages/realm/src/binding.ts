@@ -16,12 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-// import { strict as assert } from "assert";
-import { IndexSet, Timestamp } from "./generated/ts/native.js";
+import { IndexSet, Timestamp } from "../generated/ts/native.mjs";
 
-export * from "./generated/ts/native.js"; // core types are transitively exported.
+export * from "../generated/ts/native.mjs"; // core types are transitively exported.
 
-declare module "./generated/ts/native.js" {
+declare module "../generated/ts/native.mjs" {
   interface IndexSet {
     asIndexes(): Iterator<number>;
   }

@@ -16,14 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as binding from "@realm/bindgen";
+import * as binding from "./binding";
 
 import { PropertyMap, ObjectWrapCreator, ObjectLinkResolver } from "./PropertyMap";
 import { Realm } from "./Realm";
 import { Object as RealmObject } from "./Object";
 import { Constructor, RealmObjectConstructor } from "./schema";
 import { getInternal } from "./internal";
-import { Helpers } from "@realm/bindgen";
+import { Helpers } from "./binding";
 
 export const INTERNAL_HELPERS = Symbol("Realm.Object#helpers");
 

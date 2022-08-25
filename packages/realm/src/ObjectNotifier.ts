@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as binding from "@realm/bindgen";
+import * as binding from "./binding";
 
 import { ClassMap } from "./ClassMap";
 import { getInternal, INTERNAL } from "./internal";
