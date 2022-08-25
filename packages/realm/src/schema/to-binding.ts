@@ -20,7 +20,7 @@ import {
   ObjectSchema as BindingObjectSchema,
   Property as BindingProperty,
   PropertyType as BindingPropertyType,
-} from "@realm/bindgen";
+} from "../binding";
 
 import { CanonicalObjectSchema, CanonicalObjectSchemaProperty, PropertyTypeName } from "./types";
 
