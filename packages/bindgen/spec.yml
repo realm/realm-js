@@ -164,7 +164,9 @@ records:
   MyConfig:
     fields:
       name: std::string
-      strings: std::vector<std::string>
+      strings:
+        type: std::vector<std::string>
+        default: []
 
   Property:
     fields:
