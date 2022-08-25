@@ -20,7 +20,7 @@ import { expect } from "chai";
 import { inspect } from "node:util";
 import { ObjectId, UUID, Decimal128 } from "bson";
 
-import { Realm, Object as RealmObject } from "../index";
+import { Realm, Object as RealmObject, List } from "../index";
 import { PropertyTypeName, ObjectSchemaProperty } from "../schema";
 import { closeRealm, generateTempRealmPath, RealmContext } from "./utils";
 
@@ -106,6 +106,14 @@ function testDecimal128(value: unknown, input: Decimal128) {
   }
 }
 
+function testList(value: unknown, input: List) {
+  if (value instanceof List) {
+    expect(value).deep.equals(input);
+  } else {
+    throw new Error("Expected a List");
+  }
+}
+
 function createArrayBuffer() {
   const value = new ArrayBuffer(12);
   const view = new Int32Array(value);
@@ -188,6 +196,7 @@ const TESTS: PropertySuite[] = [
       [new Decimal128("123"), testDecimal128],
     ],
   ],
+  // [{ type: "list", objectType: "MyObject" }, [[(realm: Realm) => [realm.create("MyObject", {})], testList]]],
 ];
 
 type PropertyTestContext = RealmContext & { value: unknown };

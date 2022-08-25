@@ -19,13 +19,28 @@
 import * as binding from "./binding";
 
 import { INTERNAL, getInternal } from "./internal";
-import { ClassHelpers, INTERNAL_HELPERS } from "./ClassMap";
+import { ClassHelpers, ClassMap, INTERNAL_HELPERS } from "./ClassMap";
 import { Realm } from "./Realm";
 import { Results } from "./Results";
 import { CanonicalObjectSchema, Constructor, DefaultObject } from "./schema";
 import { ObjectChangeCallback, ObjectNotifier } from "./ObjectNotifier";
 
 const INTERNAL_NOTIFIER = Symbol("Realm.Object#notifier");
+const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true, writable: true };
+
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+const PROXY_HANDLER: ProxyHandler<RealmObject<any>> = {
+  ownKeys(target) {
+    return Reflect.ownKeys(target).concat([...target.keys()].map(String));
+  },
+  getOwnPropertyDescriptor(target, prop) {
+    if (typeof prop === "string" && target.keys().includes(prop)) {
+      return DEFAULT_PROPERTY_DESCRIPTOR;
+    } else {
+      return Reflect.getOwnPropertyDescriptor(target, prop);
+    }
+  },
+};
 
 class RealmObject<T = DefaultObject> {
   /**
@@ -35,18 +50,13 @@ class RealmObject<T = DefaultObject> {
   public static [INTERNAL_HELPERS]: ClassHelpers<unknown>;
 
   /**
-   * @internal
    * Create a `RealmObject` wrapping an `Obj` from the binding.
+   * @internal Only intended for use internally
    * @param realm The Realm managing the object.
    * @param constructor The constructor of the object.
    * @param internal The internal Obj from the binding.
-   * @returns Returns a wrapping RealmObject.
    */
-  public static create<T extends RealmObject>(
-    realm: Realm,
-    constructor: Constructor,
-    internal: binding.Obj,
-  ): InstanceType<Constructor<T>> {
+  public constructor(realm: Realm, constructor: Constructor, internal: binding.Obj) {
     const result = Object.create(constructor.prototype);
     Object.defineProperties(result, {
       realm: {
@@ -69,7 +79,8 @@ class RealmObject<T = DefaultObject> {
       },
     });
     // TODO: Wrap in a proxy to trap keys, enabling the spread operator
-    return result;
+    return new Proxy<RealmObject<T>>(result, PROXY_HANDLER);
+    // return result;
   }
 
   /**
@@ -89,15 +100,11 @@ class RealmObject<T = DefaultObject> {
    */
   private readonly [INTERNAL_NOTIFIER]!: ObjectNotifier<T>;
 
-  /**
-   * FIXME: Use keyof in this methods return signature type signature
-   */
+  // TODO: Find a way to bind this in
   keys(): string[] {
-    throw new Error("Not yet implemented");
+    throw new Error("This is expected to have a per-class implementation");
   }
-  /**
-   * FIXME: Use keyof in this methods return signature type signature
-   */
+
   entries(): [string, unknown][] {
     throw new Error("Not yet implemented");
   }

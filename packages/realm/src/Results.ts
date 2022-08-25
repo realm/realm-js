@@ -27,45 +27,78 @@ type Getter<T = unknown> = (results: binding.Results, index: number) => T;
 const GETTER = Symbol("Realm.Object#getter");
 const INTERNAL_REALM = Symbol("Realm.Object#realm");
 const INTERNAL_TABLE = Symbol("Realm.Object#table");
-
-export function createWrapper(
-  internal: binding.Results,
-  internalRealm: binding.Realm,
-  internalTable: binding.TableRef,
-  getter: Getter,
-) {
-  const result = Object.create(Results.prototype);
-  Object.defineProperties(result, {
-    [INTERNAL]: {
-      enumerable: false,
-      configurable: false,
-      writable: false,
-      value: internal,
-    },
-    [INTERNAL_REALM]: {
-      enumerable: false,
-      configurable: false,
-      writable: false,
-      value: internalRealm,
-    },
-    [INTERNAL_TABLE]: {
-      enumerable: false,
-      configurable: false,
-      writable: false,
-      value: internalTable,
-    },
-    [GETTER]: {
-      enumerable: false,
-      configurable: false,
-      writable: false,
-      value: getter,
-    },
-  });
-  // TODO: Wrap in a proxy to trap keys, enabling the spread operator
-  return result;
-}
+const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true, writable: true };
+const PROXY_HANDLER: ProxyHandler<Results> = {
+  get(target, prop) {
+    if (Reflect.has(target, prop)) {
+      return Reflect.get(target, prop);
+    } else if (typeof prop === "string") {
+      const index = Number.parseInt(prop, 10);
+      if (!Number.isNaN(index)) {
+        return target[GETTER](target[INTERNAL], index);
+      }
+    }
+  },
+  ownKeys(target) {
+    return Reflect.ownKeys(target).concat([...target.keys()].map(String));
+  },
+  getOwnPropertyDescriptor(target, prop) {
+    if (Reflect.has(target, prop)) {
+      return Reflect.getOwnPropertyDescriptor(target, prop);
+    } else if (typeof prop === "string") {
+      const index = Number.parseInt(prop, 10);
+      if (index < target.length) {
+        return DEFAULT_PROPERTY_DESCRIPTOR;
+      }
+    }
+  },
+};
 
 export class Results<T = unknown> extends Collection<T> {
+  /**
+   * Create a `Results` wrapping a set of query `Results` from the binding.
+   * @internal Only intended for use internally
+   * @param internal The internal representation of the results.
+   * @param internalRealm The internal representation of the Realm managing these results.
+   * @param internalTable The internal representation of the table.
+   */
+  constructor(
+    internal: binding.Results,
+    internalRealm: binding.Realm,
+    internalTable: binding.TableRef,
+    getter: Getter,
+  ) {
+    super();
+    Object.defineProperties(this, {
+      [INTERNAL]: {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: internal,
+      },
+      [INTERNAL_REALM]: {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: internalRealm,
+      },
+      [INTERNAL_TABLE]: {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: internalTable,
+      },
+      [GETTER]: {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: getter,
+      },
+    });
+    // Wrap in a proxy to trap ownKeys and get, enabling the spread operator
+    return new Proxy<Results<T>>(this, PROXY_HANDLER);
+  }
+
   /**
    * The representation in the binding.
    * @internal
@@ -153,7 +186,7 @@ export class Results<T = unknown> extends Collection<T> {
     // TODO: Perform a mapping of the arguments
     const query = table.query(queryString, args, kpMapping);
     const results = parent.filter(query);
-    return createWrapper(results, realm, table, getter);
+    return new Results(results, realm, table, getter);
   }
 
   sorted(arg0?: boolean | SortDescriptor[] | string, arg1?: boolean): Results<T> {
@@ -163,7 +196,7 @@ export class Results<T = unknown> extends Collection<T> {
       const descriptors = arg0.map<[string, boolean]>(([name, reversed]) => [name, reversed ? false : true]);
       // TODO: Call `parent.sort`, avoiding property name to colkey conversion to speed up performance here.
       const results = parent.sortByNames(descriptors);
-      return createWrapper(results, realm, table, getter);
+      return new Results(results, realm, table, getter);
     } else if (typeof arg0 === "string") {
       return this.sorted([[arg0, arg1 === true]]);
     } else {
