@@ -171,7 +171,7 @@ export class Field {
   constructor(public name: string, public type: Type, public required: boolean) {}
 }
 
-class Struct extends NamedType {
+export class Struct extends NamedType {
   readonly kind = "Struct";
   cppName!: string;
   fields: Field[] = [];
