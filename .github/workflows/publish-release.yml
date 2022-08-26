@@ -97,20 +97,6 @@ jobs:
         draft: false
         prerelease: ${{ steps.get-version.outputs.prerelease }}
 
-    - name: Prepare Android and iOS artifacts for uploading
-      run: |
-        for platform in $(cd react-native/android/src/main/jniLibs; ls); do
-          tar cfva prebuilds/realm-v${{ steps.get-version.outputs.version }}-android-$platform.tar.gz react-native/android/src/main/jniLibs/$platform
-        done
-        for platform in $(cd react-native/ios/realm-js-ios.xcframework; ls -d ios-*); do
-          tar cfva prebuilds/realm-v${{ steps.get-version.outputs.version }}-$platform.tar.gz react-native/ios/realm-js-ios.xcframework/$platform
-        done
-
-    - name: Upload Github Release artifacts
-      run: |
-        npm install -g prebuild
-        prebuild --upload-all ${{ secrets.GITHUB_TOKEN }} --verbose
-
     - name: 'Post to #realm-releases'
       uses: realm/ci-actions/release-to-slack@v3
       with:
