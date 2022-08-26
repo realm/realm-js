@@ -27,7 +27,7 @@ jobs:
       id: update-version
       shell: bash
       run: |
-        templates/scripts/bump-template-versions.sh
+        templates/scripts/bump_template_versions.sh
         cd templates/react-native-template-realm-js
         pkgVersion=$(npm pkg get version)
         echo "::set-output name=version::$pkgVersion"
@@ -37,6 +37,6 @@ jobs:
       with:
         branch: templates/${{ steps.update-version.outputs.version }}
         title: Prepare for ${{ steps.update-version.outputs.version }}
-        draft: true
+        draft: false
         body: An automated PR for next react native templates release.
         commit-message: "[${{ steps.update-version.outputs.version }}] Bump version"
