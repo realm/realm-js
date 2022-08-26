@@ -135,50 +135,6 @@ jobs:
             dependencies.list
             ${{ matrix.variant.artifact-path }}
 
-  publish:
-    runs-on: ubuntu-20.04
-    needs: [build]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Setup node version
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
-
-      - name: Setup NPM version
-        run: npm install -g npm@7
-
-      - name: Get NPM cache directory
-        id: npm-cache-dir
-        run: echo "::set-output name=dir::$(npm config get cache)"
-
-      - name: Restore NPM cache
-        id: npm-cache
-        uses: actions/cache@v2
-        with:
-          path: ${{ steps.npm-cache-dir.outputs.dir }}
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install node modules
-        run: npm ci --ignore-scripts
-
-      - name: Download prebuilds
-        uses: actions/download-artifact@v2
-        with:
-          name: realm-js-prebuilds
-
-      - name: Display structure of downloaded files
-        run: ls -R prebuilds react-native/android/src/main/jniLibs
-
-      - name: Publish to Github
-        run: npx prebuild --upload-all ${{ secrets.GITHUB_TOKEN }}
-
   integration-tests:
     name: Integration tests (${{matrix.variant.target}}) for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
     needs: [build]
