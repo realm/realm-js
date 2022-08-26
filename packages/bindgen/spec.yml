@@ -292,6 +292,19 @@ records:
       modifications: std::vector<Mixed>
       collection_root_was_deleted: bool
 
+  BindingContext:
+    cppName: Helpers::BindingContextMethods
+    fields:
+      did_change:
+        type: '(r: SharedRealm)'
+        default: {}
+      before_notify:
+        type: '(r: SharedRealm)'
+        default: {}
+      schema_did_change:
+        type: '(r: SharedRealm)' # new schema available as r.schema
+        default: {}
+
 opaqueTypes:
   - Group
   - AuditInterface
@@ -309,6 +322,8 @@ classes:
       get_keypath_mapping: '(r: SharedRealm) -> KeyPathMapping'
       results_from_query: '(r: SharedRealm, q: Query) -> Results'
       make_object_notifier: '(r: SharedRealm, o: Obj) -> SharedObjectNotifier'
+      has_binding_context: '(r: Realm) -> bool'
+      set_binding_context: '(r: SharedRealm, methods: BindingContext)'
 
   TableRef:
     needsDeref: true

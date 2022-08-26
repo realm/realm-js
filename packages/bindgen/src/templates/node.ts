@@ -401,7 +401,7 @@ function convertToNode(addon: NodeAddon, type: Type, expr: string): string {
       return `NODE_FROM_CLASS_${type.name}(${env}, ${expr})`;
 
     case "Struct":
-      return `NODE_FROM_STRUCT_${type.name}(${env}, ${expr})`;
+      return `${type.toNode().name}(${env}, ${expr})`;
 
     case "Func":
       // TODO: see if we want to try to propagate a function name in rather than always making them anonymous.
@@ -500,7 +500,7 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
       return `NODE_TO_CLASS_${type.name}(${expr})`;
 
     case "Struct":
-      return `NODE_TO_STRUCT_${type.name}(${expr})`;
+      return `${type.fromNode().name}(${expr})`;
 
     case "Func":
       // TODO see if we ever need to do any conversion from Napi::Error exceptions to something else.
@@ -542,6 +542,13 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
   }
 }
 
+declare module "../bound-model" {
+  interface Struct {
+    toNode: () => CppFunc;
+    fromNode: () => CppFunc;
+  }
+}
+
 class NodeCppDecls extends CppDecls {
   inits: string[] = [];
   addon = pushRet(this.classes, new NodeAddon());
@@ -549,51 +556,71 @@ class NodeCppDecls extends CppDecls {
     super();
 
     for (const struct of spec.records) {
-      const fieldsFrom = [];
-      const fieldsTo = [];
-      for (const field of struct.fields) {
-        const cppFieldName = field.name;
-        fieldsFrom.push(`out.Set("${field.jsName}", ${convertToNode(this.addon, field.type, `in.${cppFieldName}`)});`);
-        // TODO: consider doing lazy conversion of some types to JS, only if the field is accessed.
-        fieldsTo.push(`{
-                    auto field = obj.Get("${field.jsName}");
-                    if (!field.IsUndefined()) {
-                        out.${cppFieldName} = ${convertFromNode(this.addon, field.type, "field")};
-                    } else if constexpr (${field.required ? "true" : "false"}) {
-                        throw Napi::TypeError::New(${env}, "${struct.name}::${field.jsName} is required");
-                    }
-                }`);
-      }
+      // Lazily create the to/from conversions only as needed. This is important because some structs
+      // can only be converted in one direction.
+      let toNode: CppFunc | undefined;
+      let fromNode: CppFunc | undefined;
 
-      this.free_funcs.push(
-        new CppFunc(
-          `NODE_FROM_STRUCT_${struct.name}`,
-          "Napi::Value",
-          [new CppVar("Napi::Env", env), new CppVar(struct.cppName, "in")],
-          {
-            attributes: "[[maybe_unused]]", // TODO look into generating these functions on demand instead.
-            body: `
-                auto out = Napi::Object::New(${env});
-                ${fieldsFrom.join("")}
+      struct.toNode = () => {
+        if (!toNode) {
+          toNode = new CppFunc(
+            `STRUCT_TO_NODE_${struct.name}`,
+            "Napi::Value",
+            [new CppVar("Napi::Env", env), new CppVar(struct.cppName, "in")],
+            {
+              body: `
+                    auto out = Napi::Object::New(${env});
+                    ${struct.fields
+                      .map(
+                        (field) =>
+                          `out.Set("${field.jsName}", ${convertToNode(this.addon, field.type, `in.${field.name}`)});`,
+                      )
+                      .join("\n")}
+                    return out;
+                `,
+            },
+          );
+          this.free_funcs.push(toNode);
+        }
+        return toNode;
+      };
+
+      struct.fromNode = () => {
+        if (!fromNode) {
+          fromNode = new CppFunc(
+            `STRUCT_FROM_NODE_${struct.name}`,
+            struct.cppName,
+            [new CppVar("Napi::Value", "val")],
+            {
+              body: `
+                auto ${env} = val.Env();
+                if (!val.IsObject())
+                    throw Napi::TypeError::New(${env}, "expected an object");
+                auto obj = val.As<Napi::Object>();
+                auto out = ${struct.cppName}();
+                ${struct.fields
+                  .map(
+                    (field) => `{
+                        auto field = obj.Get("${field.jsName}");
+                        // Make functions on structs behave like bound methods.
+                        if (field.IsFunction())
+                            field = bindFunc(field.As<Napi::Function>(), obj);
+                        if (!field.IsUndefined()) {
+                            out.${field.name} = ${convertFromNode(this.addon, field.type, "field")};
+                        } else if constexpr (${field.required ? "true" : "false"}) {
+                            throw Napi::TypeError::New(${env}, "${struct.name}::${field.jsName} is required");
+                        }
+                    }`,
+                  )
+                  .join("\n")}
                 return out;
             `,
-          },
-        ),
-      );
-      this.free_funcs.push(
-        new CppFunc(`NODE_TO_STRUCT_${struct.name}`, struct.cppName, [new CppVar("Napi::Value", "val")], {
-          attributes: "[[maybe_unused]]",
-          body: `
-              auto ${env} = val.Env();
-              if (!val.IsObject())
-                  throw Napi::TypeError::New(${env}, "expected an object");
-              auto obj = val.As<Napi::Object>();
-              auto out = ${struct.cppName}();
-              ${fieldsTo.join("")}
-              return out;
-          `,
-        }),
-      );
+            },
+          );
+          this.free_funcs.push(fromNode);
+        }
+        return fromNode;
+      };
     }
 
     for (const specClass of spec.classes) {
