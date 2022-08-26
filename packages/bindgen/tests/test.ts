@@ -47,6 +47,23 @@ const realm = Realm.getSharedRealm({
   ],
 });
 
+assert(!Helpers.hasBindingContext(realm));
+
+// This needs to be a separate const rather than an inline argument due to
+// https://github.com/microsoft/TypeScript/issues/50467.
+const bindingContext = {
+  isBoundCorrectly: true,
+  didChange(realm: Realm) {
+    assert(this.isBoundCorrectly);
+    console.log("in didChange()", realm.currentTransactionVersion);
+  },
+  beforeNotify(realm: Realm) {
+    assert(this.isBoundCorrectly);
+    console.log("in beforeNotify()", realm.currentTransactionVersion);
+  },
+};
+Helpers.setBindingContext(realm, bindingContext);
+
 // console.log(util.inspect(realm.schema, false, null, true))
 
 const schema = realm.schema;
