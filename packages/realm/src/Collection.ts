@@ -20,7 +20,14 @@ import { Results } from "./Results";
 
 type PropertyType = string;
 export type SortDescriptor = [string] | [string, boolean];
-type CollectionChangeCallback<T> = unknown;
+
+export type CollectionChangeSet = {
+  insertions: number[];
+  deletions: number[];
+  newModifications: number[];
+  oldModifications: number[];
+};
+export type CollectionChangeCallback<T> = (collection: Collection<T>, changes: CollectionChangeSet) => void;
 
 export class Collection<T = unknown> implements ReadonlyArray<T> {
   readonly [n: number]: T;
@@ -210,17 +217,17 @@ export class Collection<T = unknown> implements ReadonlyArray<T> {
   }
 
   /**
-   * @returns void
-   */
-  removeAllListeners(): void {
-    throw new Error("Method not implemented.");
-  }
-
-  /**
    * @param  {()=>void} callback this is the callback to remove
    * @returns void
    */
   removeListener(callback: CollectionChangeCallback<T>): void {
+    throw new Error("Method not implemented.");
+  }
+
+  /**
+   * @returns void
+   */
+  removeAllListeners(): void {
     throw new Error("Method not implemented.");
   }
 }
