@@ -37,6 +37,7 @@ import { List } from "./List";
 export class Realm {
   public static Object = RealmObject;
   public static Results = Results;
+  public static List = List;
 
   /**
    * The Realms's representation in the binding.
@@ -63,7 +64,11 @@ export class Realm {
       return table.getObject(link.objKey);
     }
 
-    this.classes = new ClassMap(this, internal.schema, resolveObjectLink);
+    function resolveList(columnKey: binding.ColKey, obj: binding.Obj): binding.List {
+      return binding.List.make(internal, obj, columnKey);
+    }
+
+    this.classes = new ClassMap(this, internal.schema, resolveObjectLink, resolveList);
 
     Object.defineProperties(this, {
       classes: {
