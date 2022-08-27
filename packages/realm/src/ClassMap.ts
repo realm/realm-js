@@ -18,10 +18,10 @@
 
 import * as binding from "./binding";
 
-import { PropertyMap, ObjectWrapCreator, ObjectLinkResolver } from "./PropertyMap";
+import { PropertyMap, ObjectWrapCreator, ObjectLinkResolver, ListResolver } from "./PropertyMap";
 import { Realm } from "./Realm";
 import { Object as RealmObject } from "./Object";
-import { Constructor, RealmObjectConstructor } from "./schema";
+import { Constructor, DefaultObject, RealmObjectConstructor } from "./schema";
 import { getInternal } from "./internal";
 
 export const INTERNAL_HELPERS = Symbol("Realm.Object#helpers");
@@ -115,13 +115,18 @@ export class ClassMap {
    * @param objectSchema
    * TODO: Refactor this to use the binding.ObjectSchema type once the DeepRequired gets removed from types
    */
-  constructor(realm: Realm, realmSchema: binding.Realm["schema"], resolveObjectLink: ObjectLinkResolver) {
+  constructor(
+    realm: Realm,
+    realmSchema: binding.Realm["schema"],
+    resolveObjectLink: ObjectLinkResolver,
+    resolveList: ListResolver,
+  ) {
     this.mapping = Object.fromEntries(
       realmSchema.map((objectSchema) => {
-        function createObjectWrapper<T>(obj: binding.Obj) {
-          return new RealmObject<T>(realm, constructor, obj);
+        function createObjectWrapper<T = DefaultObject>(obj: binding.Obj) {
+          return new RealmObject<T>(realm, constructor, obj) as RealmObject<T> & T;
         }
-        const properties = new PropertyMap(objectSchema, createObjectWrapper, resolveObjectLink);
+        const properties = new PropertyMap(objectSchema, createObjectWrapper, resolveObjectLink, resolveList);
         const constructor = createClass(objectSchema, properties) as RealmObjectConstructor;
         // Store the properties map on the object class
         Object.defineProperty(constructor, INTERNAL_HELPERS, {
@@ -137,7 +142,11 @@ export class ClassMap {
 
   public get<T = unknown>(arg: string | RealmObject<T> | RealmObjectConstructor<T>): RealmObjectConstructor<T> {
     if (typeof arg === "string") {
-      return this.mapping[arg] as RealmObjectConstructor<T>;
+      const constructor = this.mapping[arg];
+      if (!constructor) {
+        throw new Error(`Object schema named '${arg}' is missing from the schema`);
+      }
+      return constructor as RealmObjectConstructor<T>;
     } else if (arg instanceof Realm.Object) {
       return this.get(arg.constructor.name);
     } else {
