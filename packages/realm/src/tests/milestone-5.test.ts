@@ -106,12 +106,27 @@ function testDecimal128(value: unknown, input: Decimal128) {
   }
 }
 
-function testList(value: unknown, input: List) {
+function defaultTest(a: unknown, b: unknown) {
+  expect(a).deep.equals(b);
+}
+
+function testList(value: unknown, input: unknown[], test = defaultTest) {
   if (value instanceof List) {
-    expect(value).deep.equals(input);
+    expect(value.length).equals(input.length);
+    for (const [index, item] of value.entries()) {
+      test(item, input[index]);
+    }
   } else {
     throw new Error("Expected a List");
   }
+}
+
+function testObjectList(value: unknown, input: unknown[]) {
+  testList(value, input, testObject);
+}
+
+function testDataList(value: unknown, input: unknown[]) {
+  testList(value, input, testArrayBuffer);
 }
 
 function createArrayBuffer() {
@@ -196,7 +211,13 @@ const TESTS: PropertySuite[] = [
       [new Decimal128("123"), testDecimal128],
     ],
   ],
-  // [{ type: "list", objectType: "MyObject" }, [[(realm: Realm) => [realm.create("MyObject", {})], testList]]],
+  [{ type: "list", objectType: "int" }, [[[1, 2, 3], testList]]],
+  [{ type: "list", objectType: "bool" }, [[[true, false], testList]]],
+  [{ type: "list", objectType: "bool", optional: true }, [[[true, false, null], testList]]],
+  [{ type: "list", objectType: "string" }, [[["hi", "💣💥"], testList]]],
+  [{ type: "list", objectType: "string", optional: true }, [[["hi", "💣💥", null], testList]]],
+  [{ type: "list", objectType: "data" }, [[() => [createArrayBuffer()], testDataList]]],
+  [{ type: "list", objectType: "MyObject" }, [[(realm: Realm) => [realm.create("MyObject", {})], testObjectList]]],
 ];
 
 type PropertyTestContext = RealmContext & { value: unknown };
@@ -248,4 +269,28 @@ describe("Milestone #5", () => {
       }
     });
   }
+
+  describe("lists", () => {
+    type MyClass = { numbers: List<number> };
+
+    beforeEach(function (this: RealmContext) {
+      this.realm = new Realm({
+        path: generateTempRealmPath(),
+        inMemory: true,
+        schema: [{ name: "MyClass", properties: { numbers: "int[]" } }],
+      });
+      this.realm.write(() => {
+        this.realm.create("MyClass", { numbers: [10, 20, 30] });
+      });
+    });
+
+    afterEach(closeRealm);
+
+    it("enables index access", function (this: RealmContext) {
+      const [obj] = this.realm.objects<MyClass>("MyClass");
+      expect(obj.numbers[0]).equals(10);
+      expect(obj.numbers[1]).equals(20);
+      expect(obj.numbers[2]).equals(30);
+    });
+  });
 });
