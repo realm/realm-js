@@ -23,6 +23,7 @@ import { assert } from "./assert";
 import { getInternal } from "./internal";
 import { Object as RealmObject } from "./Object";
 import { DefaultObject } from "./schema";
+import { ColKey, MixedArg } from "./binding";
 
 export type ObjectWrapCreator<T = DefaultObject> = (obj: binding.Obj) => RealmObject<T> & T;
 export type ObjectLinkResolver = (link: binding.ObjLink) => binding.Obj;
@@ -34,57 +35,33 @@ type PropertyHelpers = {
   set: (obj: binding.Obj, value: unknown) => unknown;
 };
 
-function extractBaseType(type: binding.PropertyType) {
-  return type & ~binding.PropertyType.Flags;
+function defaultHelpers({ columnKey }: MappingOptions): PropertyHelpers {
+  return {
+    toBinding(value: unknown): MixedArg {
+      return value as MixedArg;
+    },
+    fromBinding(value: unknown) {
+      return value;
+    },
+    get(this: PropertyHelpers, obj: binding.Obj) {
+      return this.fromBinding(obj.getAny(columnKey));
+    },
+    set(this: PropertyHelpers, obj: binding.Obj, value: unknown) {
+      obj.setAny(columnKey, this.toBinding(value));
+    },
+  };
 }
 
-// TODO: Support converting all types
-function createHelpers<T>(
-  property: binding.Realm["schema"][0]["persistedProperties"][0],
-  createObjectWrapper: ObjectWrapCreator<T>,
-  resolveObjectLink: ObjectLinkResolver,
-): PropertyHelpers {
-  const type = extractBaseType(property.type);
-  const { columnKey } = property;
+type MappingOptions = {
+  columnKey: ColKey;
+  createObjectWrapper: ObjectWrapCreator<unknown>;
+  resolveObjectLink: ObjectLinkResolver;
+};
 
-  function defaultGet(this: PropertyHelpers, obj: binding.Obj) {
-    return this.fromBinding(obj.getAny(columnKey));
-  }
-
-  function defaultSet(this: PropertyHelpers, obj: binding.Obj, value: unknown) {
-    obj.setAny(columnKey, this.toBinding(value));
-  }
-
-  function defaultFromBinding(value: unknown) {
-    return value;
-  }
-
-  // TODO: Support collections
-  const collectionType = property.type & binding.PropertyType.Collection;
-  if (collectionType === binding.PropertyType.Array) {
+const TYPES_MAPPING: Record<binding.PropertyType, (options: MappingOptions) => Partial<PropertyHelpers>> = {
+  [binding.PropertyType.Int]() {
     return {
-      toBinding(value) {
-        throw new Error("Lists are not yet supported!");
-      },
-      fromBinding(value) {
-        throw new Error("Lists are not yet supported!");
-      },
-      get(obj) {
-        throw new Error("Lists are not yet supported!");
-      },
-      set(obj, value) {
-        throw new Error("Lists are not yet supported!");
-      },
-    };
-  } else if (collectionType === binding.PropertyType.Set) {
-    throw new Error("Sets are not yet supported!");
-  } else if (collectionType === binding.PropertyType.Dictionary) {
-    throw new Error("Dictionaries are not yet supported!");
-  }
-
-  if (type === binding.PropertyType.Int) {
-    return {
-      toBinding(value) {
+      toBinding(value: unknown) {
         if (typeof value === "number") {
           return BigInt(value);
         } else if (typeof value === "bigint") {
@@ -93,44 +70,54 @@ function createHelpers<T>(
           throw new TypeError(`Expected a number or bigint, got ${typeof value}`);
         }
       },
-      fromBinding(value) {
+      fromBinding(value: unknown) {
         // TODO: Support returning bigints to end-users
         return Number(value);
       },
-      get: defaultGet,
-      set: defaultSet,
     };
-  } else if (type === binding.PropertyType.Bool) {
+  },
+  [binding.PropertyType.Int]() {
     return {
-      toBinding(value) {
+      toBinding(value: unknown) {
+        if (typeof value === "number") {
+          return BigInt(value);
+        } else if (typeof value === "bigint") {
+          return value;
+        } else {
+          throw new TypeError(`Expected a number or bigint, got ${typeof value}`);
+        }
+      },
+      fromBinding(value: unknown) {
+        // TODO: Support returning bigints to end-users
+        return Number(value);
+      },
+    };
+  },
+  [binding.PropertyType.Bool]() {
+    return {
+      toBinding(value: unknown) {
         assert.boolean(value);
         return value;
       },
-      fromBinding: defaultFromBinding,
-      get: defaultGet,
-      set: defaultSet,
     };
-  } else if (type === binding.PropertyType.String) {
+  },
+  [binding.PropertyType.String]() {
     return {
-      toBinding(value) {
+      toBinding(value: unknown) {
         assert.string(value);
         return value;
       },
-      fromBinding: defaultFromBinding,
-      get: defaultGet,
-      set: defaultSet,
     };
-  } else if (type === binding.PropertyType.Data) {
+  },
+  [binding.PropertyType.Data]() {
     return {
       toBinding(value) {
         assert.instanceOf(value, ArrayBuffer);
         return value;
       },
-      fromBinding: defaultFromBinding,
-      get: defaultGet,
-      set: defaultSet,
     };
-  } else if (type === binding.PropertyType.Date) {
+  },
+  [binding.PropertyType.Date]() {
     return {
       toBinding(value) {
         assert.instanceOf(value, Date);
@@ -140,10 +127,9 @@ function createHelpers<T>(
         assert.instanceOf(value, binding.Timestamp);
         return value.toDate();
       },
-      get: defaultGet,
-      set: defaultSet,
     };
-  } else if (type === binding.PropertyType.Float) {
+  },
+  [binding.PropertyType.Float]() {
     return {
       toBinding(value) {
         assert.number(value);
@@ -153,20 +139,17 @@ function createHelpers<T>(
         assert.instanceOf(value, binding.Float);
         return value.value;
       },
-      get: defaultGet,
-      set: defaultSet,
     };
-  } else if (type === binding.PropertyType.Double) {
+  },
+  [binding.PropertyType.Double]() {
     return {
       toBinding(value) {
         assert.number(value);
         return value;
       },
-      fromBinding: defaultFromBinding,
-      get: defaultGet,
-      set: defaultSet,
     };
-  } else if (type === binding.PropertyType.Object) {
+  },
+  [binding.PropertyType.Object]({ createObjectWrapper, columnKey }) {
     return {
       toBinding() {
         throw new Error("Cannot use toBinding on an object link property. Use set instead.");
@@ -193,9 +176,11 @@ function createHelpers<T>(
         }
       },
     };
-  } else if (type === binding.PropertyType.LinkingObjects) {
-    throw new Error(`Converting values of type "linking objects" is not yet supported`);
-  } else if (type === binding.PropertyType.Mixed) {
+  },
+  [binding.PropertyType.LinkingObjects]() {
+    throw new Error("Not yet supported");
+  },
+  [binding.PropertyType.Mixed]({ resolveObjectLink, createObjectWrapper }) {
     return {
       toBinding(value) {
         if (value instanceof Date) {
@@ -220,41 +205,101 @@ function createHelpers<T>(
           return value;
         }
       },
-      get: defaultGet,
-      set: defaultSet,
     };
-  } else if (type === binding.PropertyType.ObjectId) {
+  },
+  [binding.PropertyType.ObjectId]() {
     return {
       toBinding(value) {
         assert.instanceOf(value, ObjectId);
         return value;
       },
-      fromBinding: defaultFromBinding,
-      get: defaultGet,
-      set: defaultSet,
     };
-  } else if (type === binding.PropertyType.Decimal) {
+  },
+  [binding.PropertyType.Decimal]() {
     return {
       toBinding(value) {
         assert.instanceOf(value, Decimal128);
         return value;
       },
-      fromBinding: defaultFromBinding,
-      get: defaultGet,
-      set: defaultSet,
     };
-  } else if (type === binding.PropertyType.UUID) {
+  },
+  [binding.PropertyType.UUID]() {
     return {
       toBinding(value) {
         assert.instanceOf(value, UUID);
         return value;
       },
-      fromBinding: defaultFromBinding,
-      get: defaultGet,
-      set: defaultSet,
     };
+  },
+  [binding.PropertyType.Array]() {
+    return {
+      fromBinding(value) {
+        throw new Error("Not yet supported");
+      },
+      toBinding(value) {
+        throw new Error("Not yet supported");
+      },
+    };
+  },
+  [binding.PropertyType.Set]() {
+    return {
+      fromBinding(value) {
+        throw new Error("Not yet supported");
+      },
+      toBinding(value) {
+        throw new Error("Not yet supported");
+      },
+    };
+  },
+  [binding.PropertyType.Dictionary]() {
+    return {
+      fromBinding(value) {
+        throw new Error("Not yet supported");
+      },
+      toBinding(value) {
+        throw new Error("Not yet supported");
+      },
+    };
+  },
+  [binding.PropertyType.Nullable]() {
+    throw new Error("Not directly mappable");
+  },
+  [binding.PropertyType.Collection]() {
+    throw new Error("Not directly mappable");
+  },
+  [binding.PropertyType.Flags]() {
+    throw new Error("Not directly mappable");
+  },
+};
+
+function getHelpers(type: binding.PropertyType, options: MappingOptions): PropertyHelpers {
+  // Apply defaults
+  const helpers = TYPES_MAPPING[type];
+  const result = { ...defaultHelpers(options), ...helpers(options) };
+  // Bind the methods to the resulting object
+  return {
+    fromBinding: result.fromBinding.bind(result),
+    toBinding: result.toBinding.bind(result),
+    get: result.get.bind(result),
+    set: result.set.bind(result),
+  };
+}
+
+// TODO: Support converting all types
+function createHelpers<T>(
+  property: binding.Realm["schema"][0]["persistedProperties"][0],
+  createObjectWrapper: ObjectWrapCreator<unknown>,
+  resolveObjectLink: ObjectLinkResolver,
+): PropertyHelpers {
+  const { columnKey } = property;
+
+  // TODO: Support collections
+  const collectionType = property.type & binding.PropertyType.Collection;
+  if (collectionType) {
+    return getHelpers(collectionType, { columnKey, createObjectWrapper, resolveObjectLink });
   } else {
-    throw new Error(`Converting values of type "${property.type}" is not yet supported`);
+    const baseType = property.type & ~binding.PropertyType.Flags;
+    return getHelpers(baseType, { columnKey, createObjectWrapper, resolveObjectLink });
   }
 }
 
@@ -270,7 +315,7 @@ export class PropertyMap<T = DefaultObject> {
    */
   constructor(
     objectSchema: binding.Realm["schema"][0],
-    createObjectWrapper: ObjectWrapCreator<T>,
+    createObjectWrapper: ObjectWrapCreator<unknown>,
     resolveObjectLink: ObjectLinkResolver,
   ) {
     if (objectSchema.computedProperties.length > 0) {
