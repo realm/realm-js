@@ -19,14 +19,15 @@
 import * as binding from "./binding";
 import { Helpers } from "./binding";
 
-import { Collection, SortDescriptor } from "./Collection";
+import { Collection, CollectionChangeCallback, SortDescriptor } from "./Collection";
 import { INTERNAL } from "./internal";
+import { ResultsListeners } from "./ResultsListeners";
 
 type Getter<T = unknown> = (results: binding.Results, index: number) => T;
 
-const GETTER = Symbol("Realm.Object#getter");
-const INTERNAL_REALM = Symbol("Realm.Object#realm");
-const INTERNAL_TABLE = Symbol("Realm.Object#table");
+const GETTER = Symbol("Realm.Results#getter");
+const INTERNAL_REALM = Symbol("Realm.Results#realm");
+const INTERNAL_TABLE = Symbol("Realm.Results#table");
 const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true, writable: true };
 const PROXY_HANDLER: ProxyHandler<Results> = {
   get(target, prop) {
@@ -94,16 +95,21 @@ export class Results<T = unknown> extends Collection<T> {
         writable: false,
         value: getter,
       },
+      listeners: {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+      },
     });
     // Wrap in a proxy to trap ownKeys and get, enabling the spread operator
-    return new Proxy<Results<T>>(this, PROXY_HANDLER);
+    return new Proxy<Results<T>>(this, PROXY_HANDLER as ProxyHandler<this>);
   }
 
   /**
    * The representation in the binding.
    * @internal
    */
-  private [INTERNAL]!: binding.Results;
+  public [INTERNAL]!: binding.Results;
 
   /**
    * The Realm's representation in the binding.
@@ -121,6 +127,8 @@ export class Results<T = unknown> extends Collection<T> {
    * Getter used for random access read of elements from the underlying result.
    */
   private [GETTER]!: Getter<T>;
+
+  private listeners = new ResultsListeners<T>(this);
 
   get length(): number {
     return this[INTERNAL].size();
@@ -202,5 +210,28 @@ export class Results<T = unknown> extends Collection<T> {
     } else {
       throw new Error("Expected either a property name and optional bool or an array of descriptors");
     }
+  }
+
+  /**
+   * @param  {(collection:any,changes:any)=>void} callback
+   * @returns void
+   */
+  addListener(callback: CollectionChangeCallback<T>): void {
+    this.listeners.addListener(callback);
+  }
+
+  /**
+   * @param  {()=>void} callback this is the callback to remove
+   * @returns void
+   */
+  removeListener(callback: CollectionChangeCallback<T>): void {
+    this.listeners.removeListener(callback);
+  }
+
+  /**
+   * @returns void
+   */
+  removeAllListeners(): void {
+    this.listeners.removeAllListeners();
   }
 }

@@ -16,12 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export * from "./Realm";
-export * from "./Configuration";
-export { Results } from "./Results";
-export { Object } from "./Object";
-export { List } from "./List";
-export { Dictionary } from "./Dictionary";
-export { Set } from "./Set";
-export type { ObjectChangeSet, ObjectChangeCallback } from "./ObjectListeners";
-export type { CollectionChangeSet, CollectionChangeCallback } from "./Collection";
+import { expect } from "chai";
+import { unwind } from "../ranges";
+
+describe("unwind range", () => {
+  it("handles an empty range set", () => {
+    expect(unwind([])).deep.equals([]);
+  });
+  it("handles an empty single set", () => {
+    expect(unwind([[0, 1]])).deep.equals([0]);
+  });
+  it("handles an empty multiple sets", () => {
+    expect(
+      unwind([
+        [0, 1],
+        [4, 6],
+      ]),
+    ).deep.equals([0, 4, 5]);
+  });
+});
