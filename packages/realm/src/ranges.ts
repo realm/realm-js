@@ -16,12 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export * from "./Realm";
-export * from "./Configuration";
-export { Results } from "./Results";
-export { Object } from "./Object";
-export { List } from "./List";
-export { Dictionary } from "./Dictionary";
-export { Set } from "./Set";
-export type { ObjectChangeSet, ObjectChangeCallback } from "./ObjectListeners";
-export type { CollectionChangeSet, CollectionChangeCallback } from "./Collection";
+type IndexSet = [number, number];
+
+export function unwind(ranges: IndexSet[] | Iterable<IndexSet>): number[] {
+  if (Array.isArray(ranges)) {
+    return ranges.flatMap(([start, end]) => new Array(end - start).fill(0).map((_, index) => start + index));
+  } else {
+    return unwind([...ranges]);
+  }
+}

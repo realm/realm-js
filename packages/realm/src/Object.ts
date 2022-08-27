@@ -23,9 +23,9 @@ import { ClassHelpers, ClassMap, INTERNAL_HELPERS } from "./ClassMap";
 import { Realm } from "./Realm";
 import { Results } from "./Results";
 import { CanonicalObjectSchema, Constructor, DefaultObject } from "./schema";
-import { ObjectChangeCallback, ObjectNotifier } from "./ObjectNotifier";
+import { ObjectChangeCallback, ObjectListeners } from "./ObjectListeners";
 
-const INTERNAL_NOTIFIER = Symbol("Realm.Object#notifier");
+const INTERNAL_LISTENERS = Symbol("Realm.Object#listeners");
 const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true, writable: true };
 
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -71,11 +71,11 @@ class RealmObject<T = DefaultObject> {
         writable: false,
         value: internal,
       },
-      [INTERNAL_NOTIFIER]: {
+      [INTERNAL_LISTENERS]: {
         enumerable: false,
         configurable: false,
         writable: true,
-        value: new ObjectNotifier(getInternal(realm), result),
+        value: new ObjectListeners(getInternal(realm), result),
       },
     });
     // TODO: Wrap in a proxy to trap keys, enabling the spread operator
@@ -98,7 +98,7 @@ class RealmObject<T = DefaultObject> {
    * @internal
    * Wrapper for the object notifier.
    */
-  private readonly [INTERNAL_NOTIFIER]!: ObjectNotifier<T>;
+  private readonly [INTERNAL_LISTENERS]!: ObjectListeners<T>;
 
   // TODO: Find a way to bind this in
   keys(): string[] {
@@ -142,13 +142,13 @@ class RealmObject<T = DefaultObject> {
   }
 
   addListener(callback: ObjectChangeCallback<T>): void {
-    this[INTERNAL_NOTIFIER].addListener(callback);
+    this[INTERNAL_LISTENERS].addListener(callback);
   }
   removeListener(callback: ObjectChangeCallback<T>): void {
-    this[INTERNAL_NOTIFIER].removeListener(callback);
+    this[INTERNAL_LISTENERS].removeListener(callback);
   }
   removeAllListeners(): void {
-    this[INTERNAL_NOTIFIER].removeAllListeners();
+    this[INTERNAL_LISTENERS].removeAllListeners();
   }
   getPropertyType(): string {
     throw new Error("Not yet implemented");
