@@ -23,10 +23,21 @@ import { assert } from "./assert";
 import { getInternal } from "./internal";
 import { Object as RealmObject } from "./Object";
 import { DefaultObject } from "./schema";
-import { ColKey, MixedArg } from "./binding";
+import { List } from "./List";
+import { MixedArg, Obj, ObjLink, PropertyType } from "./binding";
 
 export type ObjectWrapCreator<T = DefaultObject> = (obj: binding.Obj) => RealmObject<T> & T;
 export type ObjectLinkResolver = (link: binding.ObjLink) => binding.Obj;
+export type ListResolver = (columnKey: binding.ColKey, obj: binding.Obj) => binding.List;
+
+type MappingOptions = {
+  type: binding.PropertyType;
+  columnKey: binding.ColKey;
+  optional: boolean;
+  createObjectWrapper: ObjectWrapCreator;
+  resolveObjectLink: ObjectLinkResolver;
+  resolveList: ListResolver;
+};
 
 type PropertyHelpers = {
   toBinding: (value: unknown) => binding.MixedArg;
@@ -37,32 +48,28 @@ type PropertyHelpers = {
 
 function defaultHelpers({ columnKey }: MappingOptions): PropertyHelpers {
   return {
-    toBinding(value: unknown): MixedArg {
-      return value as MixedArg;
+    toBinding(value: unknown): binding.MixedArg {
+      return value as binding.MixedArg;
     },
     fromBinding(value: unknown) {
       return value;
     },
     get(this: PropertyHelpers, obj: binding.Obj) {
-      return this.fromBinding(obj.getAny(columnKey));
+      return obj.isNull(columnKey) ? null : this.fromBinding(obj.getAny(columnKey));
     },
     set(this: PropertyHelpers, obj: binding.Obj, value: unknown) {
-      obj.setAny(columnKey, this.toBinding(value));
+      obj.setAny(columnKey, value === null ? null : this.toBinding(value));
     },
   };
 }
 
-type MappingOptions = {
-  columnKey: ColKey;
-  createObjectWrapper: ObjectWrapCreator<unknown>;
-  resolveObjectLink: ObjectLinkResolver;
-};
-
 const TYPES_MAPPING: Record<binding.PropertyType, (options: MappingOptions) => Partial<PropertyHelpers>> = {
-  [binding.PropertyType.Int]() {
+  [binding.PropertyType.Int]({ optional }) {
     return {
       toBinding(value: unknown) {
-        if (typeof value === "number") {
+        if (value === null && optional) {
+          return null;
+        } else if (typeof value === "number") {
           return BigInt(value);
         } else if (typeof value === "bigint") {
           return value;
@@ -76,10 +83,12 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: MappingOptions) => P
       },
     };
   },
-  [binding.PropertyType.Int]() {
+  [binding.PropertyType.Int]({ optional }) {
     return {
       toBinding(value: unknown) {
-        if (typeof value === "number") {
+        if (value === null && optional) {
+          return null;
+        } else if (typeof value === "number") {
           return BigInt(value);
         } else if (typeof value === "bigint") {
           return value;
@@ -93,33 +102,45 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: MappingOptions) => P
       },
     };
   },
-  [binding.PropertyType.Bool]() {
+  [binding.PropertyType.Bool]({ optional }) {
     return {
       toBinding(value: unknown) {
+        if (value === null && optional) {
+          return null;
+        }
         assert.boolean(value);
         return value;
       },
     };
   },
-  [binding.PropertyType.String]() {
+  [binding.PropertyType.String]({ optional }) {
     return {
       toBinding(value: unknown) {
+        if (value === null && optional) {
+          return null;
+        }
         assert.string(value);
         return value;
       },
     };
   },
-  [binding.PropertyType.Data]() {
+  [binding.PropertyType.Data]({ optional }) {
     return {
       toBinding(value) {
+        if (value === null && optional) {
+          return null;
+        }
         assert.instanceOf(value, ArrayBuffer);
         return value;
       },
     };
   },
-  [binding.PropertyType.Date]() {
+  [binding.PropertyType.Date]({ optional }) {
     return {
       toBinding(value) {
+        if (value === null && optional) {
+          return null;
+        }
         assert.instanceOf(value, Date);
         return binding.Timestamp.fromDate(value);
       },
@@ -129,9 +150,12 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: MappingOptions) => P
       },
     };
   },
-  [binding.PropertyType.Float]() {
+  [binding.PropertyType.Float]({ optional }) {
     return {
       toBinding(value) {
+        if (value === null && optional) {
+          return null;
+        }
         assert.number(value);
         return new binding.Float(value);
       },
@@ -141,30 +165,41 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: MappingOptions) => P
       },
     };
   },
-  [binding.PropertyType.Double]() {
+  [binding.PropertyType.Double]({ optional }) {
     return {
       toBinding(value) {
+        if (value === null && optional) {
+          return null;
+        }
         assert.number(value);
         return value;
       },
     };
   },
-  [binding.PropertyType.Object]({ createObjectWrapper, columnKey }) {
+  [binding.PropertyType.Object]({ createObjectWrapper, resolveObjectLink, columnKey }) {
     return {
-      toBinding() {
-        throw new Error("Cannot use toBinding on an object link property. Use set instead.");
-      },
-      fromBinding() {
-        throw new Error("Cannot use fromBinding on an object link property. Use get instead.");
-      },
-      get(obj) {
-        if (obj.isNull(columnKey)) {
+      toBinding(value) {
+        if (value === null) {
           return null;
+        }
+        assert.instanceOf(value, RealmObject);
+        return getInternal(value);
+      },
+      fromBinding(this: PropertyHelpers, value: unknown) {
+        if (value === null) {
+          return null;
+        } else if (value instanceof ObjLink) {
+          const obj = resolveObjectLink(value);
+          // console.log("Resolved obj", { obj }, obj instanceof ObjLink);
+          return this.fromBinding(obj);
         } else {
-          const linkedObj = obj.getLinkedObject(columnKey);
-          return createObjectWrapper(linkedObj);
+          return createObjectWrapper(value as binding.Obj);
         }
       },
+      get(this: PropertyHelpers, obj) {
+        return obj.isNull(columnKey) ? null : this.fromBinding(obj.getLinkedObject(columnKey));
+      },
+      /*
       set(obj, value) {
         if (value === null) {
           obj.setAny(columnKey, null);
@@ -175,6 +210,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: MappingOptions) => P
           throw new Error(`Expected a Realm.Object, got '${value}'`);
         }
       },
+      */
     };
   },
   [binding.PropertyType.LinkingObjects]() {
@@ -207,37 +243,67 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: MappingOptions) => P
       },
     };
   },
-  [binding.PropertyType.ObjectId]() {
+  [binding.PropertyType.ObjectId]({ optional }) {
     return {
       toBinding(value) {
+        if (value === null && optional) {
+          return null;
+        }
         assert.instanceOf(value, ObjectId);
         return value;
       },
     };
   },
-  [binding.PropertyType.Decimal]() {
+  [binding.PropertyType.Decimal]({ optional }) {
     return {
       toBinding(value) {
+        if (value === null && optional) {
+          return null;
+        }
         assert.instanceOf(value, Decimal128);
         return value;
       },
     };
   },
-  [binding.PropertyType.UUID]() {
+  [binding.PropertyType.UUID]({ optional }) {
     return {
       toBinding(value) {
+        if (value === null && optional) {
+          return null;
+        }
         assert.instanceOf(value, UUID);
         return value;
       },
     };
   },
-  [binding.PropertyType.Array]() {
+  [binding.PropertyType.Array](options) {
+    const itemType = options.type & ~binding.PropertyType.Flags;
+    const { toBinding: itemToBinding, fromBinding: itemFromBinding } = getHelpers(itemType, options);
+    const resolveList = options.resolveList.bind(null, options.columnKey);
+    function getter(results: binding.Results, index: number) {
+      return itemFromBinding(results.getAny(index));
+    }
     return {
-      fromBinding(value) {
-        throw new Error("Not yet supported");
+      fromBinding() {
+        throw new Error("Not supported");
       },
-      toBinding(value) {
-        throw new Error("Not yet supported");
+      toBinding() {
+        throw new Error("Not supported");
+      },
+      get(obj) {
+        return new List(resolveList(obj), getter);
+      },
+      set(obj, values) {
+        // Implements https://github.com/realm/realm-core/blob/v12.0.0/src/realm/object-store/list.hpp#L258-L286
+        assert.array(values);
+        const list = resolveList(obj);
+        list.removeAll();
+        for (const [index, value] of values.entries()) {
+          list.insertAny(index, itemToBinding(value));
+          // TODO: Unwrap objects and bigint
+          // list.insertAny(index, value as MixedArg);
+          // list.insertAny(index, BigInt(value as number) as MixedArg);
+        }
       },
     };
   },
@@ -288,18 +354,25 @@ function getHelpers(type: binding.PropertyType, options: MappingOptions): Proper
 // TODO: Support converting all types
 function createHelpers<T>(
   property: binding.Realm["schema"][0]["persistedProperties"][0],
-  createObjectWrapper: ObjectWrapCreator<unknown>,
+  createObjectWrapper: ObjectWrapCreator,
   resolveObjectLink: ObjectLinkResolver,
+  resolveList: ListResolver,
 ): PropertyHelpers {
-  const { columnKey } = property;
-
-  // TODO: Support collections
+  const { type, columnKey } = property;
+  const mappingOptions: MappingOptions = {
+    type,
+    columnKey,
+    optional: (type & PropertyType.Nullable) > 0,
+    createObjectWrapper,
+    resolveObjectLink,
+    resolveList,
+  };
   const collectionType = property.type & binding.PropertyType.Collection;
   if (collectionType) {
-    return getHelpers(collectionType, { columnKey, createObjectWrapper, resolveObjectLink });
+    return getHelpers(collectionType, mappingOptions);
   } else {
     const baseType = property.type & ~binding.PropertyType.Flags;
-    return getHelpers(baseType, { columnKey, createObjectWrapper, resolveObjectLink });
+    return getHelpers(baseType, mappingOptions);
   }
 }
 
@@ -315,15 +388,16 @@ export class PropertyMap<T = DefaultObject> {
    */
   constructor(
     objectSchema: binding.Realm["schema"][0],
-    createObjectWrapper: ObjectWrapCreator<unknown>,
+    createObjectWrapper: ObjectWrapCreator,
     resolveObjectLink: ObjectLinkResolver,
+    resolveList: ListResolver,
   ) {
     if (objectSchema.computedProperties.length > 0) {
       throw new Error("Computed properties are not yet supported");
     }
     this.mapping = Object.fromEntries(
       objectSchema.persistedProperties.map((p) => {
-        const helpers = createHelpers(p, createObjectWrapper, resolveObjectLink);
+        const helpers = createHelpers(p, createObjectWrapper, resolveObjectLink, resolveList);
         // Binding the methods, making the object spreadable
         helpers.toBinding = helpers.toBinding.bind(helpers);
         helpers.fromBinding = helpers.fromBinding.bind(helpers);

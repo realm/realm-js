@@ -43,7 +43,7 @@ export const PRIMITIVE_TYPES: PropertyTypeName[] = [
 export const COLLECTION_TYPES: PropertyTypeName[] = ["set", "dictionary", "list"];
 
 function removeUndefinedValues<T extends Record<string, unknown>>(obj: T): T {
-  return Object.fromEntries(Object.entries(obj).filter(([_, v]) => typeof v !== "undefined")) as T;
+  return Object.fromEntries(Object.entries(obj).filter(([, v]) => typeof v !== "undefined")) as T;
 }
 
 export function normalizeRealmSchema(

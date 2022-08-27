@@ -97,3 +97,9 @@ assert.null = (value: unknown): asserts value is bigint => {
     throw new TypeError(`Expected ${value} to be null, got ${typeof value}`);
   }
 };
+
+assert.array = (value: unknown): asserts value is Array<unknown> => {
+  if (!Array.isArray(value)) {
+    throw new TypeError(`Expected ${value} to be an array`);
+  }
+};
