@@ -18,7 +18,7 @@
 
 import * as binding from "./binding";
 import { Decimal128, ObjectId, UUID } from "bson";
-import { assert, AssertionError } from "./assert";
+import { assert } from "./assert";
 
 import { getInternal } from "./internal";
 import { Object as RealmObject } from "./Object";
@@ -294,15 +294,15 @@ export class PropertyMap<T = DefaultObject> {
     this.names = objectSchema.persistedProperties.map((p) => p.publicName || p.name);
   }
 
-  public get(property: string): PropertyHelpers {
+  public get = (property: string): PropertyHelpers => {
     return this.mapping[property];
-  }
+  };
 
-  public getName<T>(columnKey: binding.ColKey): keyof T {
+  public getName = <T>(columnKey: binding.ColKey): keyof T => {
     if (columnKey.value) {
       return this.nameByColumnKey[Number(columnKey.value)] as keyof T;
     } else {
       throw new Error("Expected a value on columnKey");
     }
-  }
+  };
 }
