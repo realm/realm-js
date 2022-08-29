@@ -101,13 +101,13 @@ export abstract class Method {
   abstract call({ self }: { self: string }, ...args: string[]): string;
 }
 
-class InstanceMethod extends Method {
+export class InstanceMethod extends Method {
   readonly isStatic = false;
   call({ self }: { self: string }, ...args: string[]) {
     return `${self}.${this.cppName}(${args})`;
   }
 }
-class StaticMethod extends Method {
+export class StaticMethod extends Method {
   readonly isStatic = true;
   call(_ignored: { self?: string }, ...args: string[]) {
     return `${this.on.cppName}::${this.cppName}(${args})`;
@@ -127,8 +127,15 @@ class Constructor extends StaticMethod {
   }
 }
 
-export class Property {
-  constructor(public name: string, public type: Type) {}
+export class Property extends InstanceMethod {
+  constructor(on: Class, name: string, type: Type) {
+    // TODO should noexcept be true? Maybe provide a way to specify it?
+    super(on, name, name, name, new Func(type, [], true, /*noexcept*/ false));
+  }
+
+  get type() {
+    return this.sig.ret;
+  }
 }
 
 export class NamedType {
@@ -142,7 +149,6 @@ export class Class extends NamedType {
   base?: Class;
   subclasses: Class[] = [];
   isInterface = false;
-  properties: Property[] = [];
   methods: Method[] = [];
   sharedPtrWrapped = false;
   needsDeref = false;
@@ -409,7 +415,7 @@ export function bindModel(spec: Spec): BoundSpec {
         );
 
         for (const [name, type] of Object.entries(rawCls.properties ?? {})) {
-          cls.properties.push(new Property(name, resolveTypes(type)));
+          cls.methods.push(new Property(cls, name, resolveTypes(type)));
         }
       }
     }
