@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { TemplateContext } from "../context";
-import { Arg, bindModel, BoundSpec, Type } from "../bound-model";
+import { Arg, bindModel, BoundSpec, Property, Type } from "../bound-model";
 import { strict as assert } from "assert";
 
 import "../js-passes";
@@ -192,10 +192,11 @@ export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): vo
     js(`export const {${cls.jsName}} = nativeModule;`);
     out(`export class ${cls.jsName} ${cls.base ? `extends ${cls.base.jsName}` : ""} {`);
     out(`${cls.subclasses.length == 0 ? "private" : "protected"} constructor();`);
-    for (const prop of cls.properties) {
-      out(prop.jsName, ": ", generateType(spec, prop.type, Kind.Ret));
-    }
     for (const meth of cls.methods) {
+      if (meth instanceof Property) {
+        out("readonly ", meth.jsName, ": ", generateType(spec, meth.type, Kind.Ret));
+        continue;
+      }
       out(
         meth.isStatic ? "static" : "",
         meth.jsName,

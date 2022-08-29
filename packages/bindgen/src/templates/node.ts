@@ -29,7 +29,7 @@ import {
   CppDecls,
   CppCtorProps,
 } from "../cpp";
-import { bindModel, BoundSpec, Class, Type } from "../bound-model";
+import { bindModel, BoundSpec, Class, InstanceMethod, StaticMethod, Property, Type, Method } from "../bound-model";
 
 import "../js-passes";
 
@@ -547,7 +547,18 @@ declare module "../bound-model" {
     toNode: () => CppFunc;
     fromNode: () => CppFunc;
   }
+  interface Method {
+    readonly nodeDescriptorType: string;
+  }
 }
+
+function constCast<T>(obj: T) {
+  return obj as { -readonly [k in keyof T]: T[k] };
+}
+
+constCast(InstanceMethod.prototype).nodeDescriptorType = "InstanceMethod";
+constCast(StaticMethod.prototype).nodeDescriptorType = "StaticMethod";
+constCast(Property.prototype).nodeDescriptorType = "InstanceAccessor";
 
 class NodeCppDecls extends CppDecls {
   inits: string[] = [];
@@ -635,20 +646,15 @@ class NodeCppDecls extends CppDecls {
         continue;
       }
 
-      const includeDerived = function* <Kind extends "methods" | "properties">(
-        kind: Kind,
-        cls: Class,
-      ): Iterable<Class[Kind][number]> {
+      const includeDerived = function* (cls: Class): Iterable<Method> {
         // For now, we copy everything to most-derived type. That will change when we stop using ObjectWrap.
-        if (cls.base) yield* includeDerived(kind, cls.base);
-        yield* cls[kind];
+        if (cls.base) yield* includeDerived(cls.base);
+        yield* cls.methods;
       };
 
-      for (const method of includeDerived("methods", specClass)) {
+      for (const method of includeDerived(specClass)) {
         const cppMeth = cls.addMethod(new CppNodeMethod(this.addon, method.jsName, { static: method.isStatic }));
-        cls.descriptors.push(
-          `${method.isStatic ? "Static" : "Instance"}Method<&${cppMeth.qualName()}>("${method.jsName}")`,
-        );
+        cls.descriptors.push(`${method.nodeDescriptorType}<&${cppMeth.qualName()}>("${method.jsName}")`);
 
         const args = method.sig.args.map((a, i) => convertFromNode(this.addon, a.type, `info[${i}]`));
 
@@ -689,23 +695,17 @@ class NodeCppDecls extends CppDecls {
         `;
       }
 
-      for (const prop of includeDerived("properties", specClass)) {
-        const cppMeth = cls.addMethod(new CppNodeMethod(this.addon, prop.jsName));
-        cppMeth.body += `return ${convertToNode(this.addon, prop.type, `${self}.${prop.name}()`)};`;
-        cls.descriptors.push(`InstanceAccessor<&${cppMeth.qualName()}>("${prop.jsName}")`);
-      }
-
-      cls.ctor.body += `
-            if (info.Length() != 1 || !info[0].IsExternal())
-                throw Napi::TypeError::New(${env}, "need 1 external argument");
-        `;
-
       const valueType = specClass.sharedPtrWrapped ? `std::shared_ptr<${specClass.cppName}>` : specClass.cppName;
       const refType = specClass.sharedPtrWrapped ? `const ${valueType}&` : `${valueType}&`;
       const kind = specClass.sharedPtrWrapped ? "SHARED" : "CLASS";
 
       cls.members.push(new CppVar(valueType, "m_val"));
-      cls.ctor.body += `m_val = std::move(*info[0].As<Napi::External<${valueType}>>().Data());`;
+      cls.ctor.body = `
+          if (info.Length() != 1 || !info[0].IsExternal())
+              throw Napi::TypeError::New(${env}, "need 1 external argument");
+          m_val = std::move(*info[0].As<Napi::External<${valueType}>>().Data());
+        `;
+
       // TODO in napi 8 we can use type_tags to validate that the object REALLY is from us.
       this.free_funcs.push(
         new CppFunc(`NODE_TO_${kind}_${specClass.name}`, refType, [new CppVar("Napi::Value", "val")], {
