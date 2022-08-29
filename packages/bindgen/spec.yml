@@ -35,7 +35,6 @@ primitives:
 
 typeAliases:
   int: int32_t
-  Schema: std::vector<ObjectSchema>
   KeyPath: std::vector<std::pair<TableKey, ColKey>>
   KeyPathArray: std::vector<KeyPath>
   IndexRange: std::pair<count_t, count_t>
@@ -243,7 +242,7 @@ records:
         type: bool
         default: false
       schema:
-        type: util::Optional<Schema>
+        type: util::Optional<std::vector<ObjectSchema>>
         default: {}
       schema_version:
         type: uint64_t
@@ -255,7 +254,9 @@ records:
         type: EncryptionKey
         default: {}
 
-      # migration_function
+      migration_function:
+        type: '(old_realm: SharedRealm, new_realm: SharedRealm, new_schema_handle: Schema&) -> void'
+        default: {}
       initialization_function:
         type: '(realm: SharedRealm) -> void'
         default: {}
@@ -306,6 +307,7 @@ records:
         default: {}
 
 opaqueTypes:
+  - Schema
   - Group
   - AuditInterface
 
@@ -390,7 +392,7 @@ classes:
       # table_for_object_type
       # table_for_Schema_type
       
-      schema_from_group: '(group: Group) -> Schema'
+      schema_from_group: '(group: Group) -> std::vector<ObjectSchema>'
 
       # some more...
 
@@ -476,7 +478,7 @@ classes:
 
     properties:
       config: const RealmConfig&
-      schema: const Schema&
+      schema: const std::vector<ObjectSchema>&
       schema_version: uint64_t
       is_in_transaction: bool
       is_frozen: bool
