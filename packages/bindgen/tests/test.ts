@@ -144,6 +144,15 @@ for (const obj of table) {
     console.log(dest.key);
     console.log(dest.getAnyByName("str"));
   }
+
+  const backLinks = function* () {
+    const res = Results.fromTableView(realm, obj.getBacklinkView(table, lnkCol));
+    const size = res.size();
+    for (let i = 0; i < size; i++) {
+      yield res.getObj(i);
+    }
+  };
+  console.log({ backlinks: [...backLinks()].map((o) => o.key) });
 }
 
 console.log("---");
