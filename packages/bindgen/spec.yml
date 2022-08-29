@@ -365,6 +365,8 @@ classes:
           suffix: with_default
       get_linked_object: '(column: ColKey) const -> Obj'
       to_string: () const -> std::string
+      get_backlink_count: '() const -> count_t'
+      get_backlink_view: '(src_table: TableRef, src_col_key: ColKey) -> TableView'
 
   Transaction:
     sharedPtrWrapped: TransactionRef
@@ -421,10 +423,15 @@ classes:
     properties:
       is_valid: bool
 
+  TableView: {}
+
   Results:
     constructors:
       make_empty: ()
       from_table: '(r: SharedRealm, table: TableRef)'
+      # TODO It might be too expensive to copy TableView.
+      # Consider a Helper to combine with Obj::get_backlink_view(), or some way to get move semantics.
+      from_table_view: '(r: SharedRealm, table: TableView)'
       # from_query: '(r: SharedRealm, query: Query, ordering: DescriptorOrdering)'
     properties:
       is_frozen: bool
