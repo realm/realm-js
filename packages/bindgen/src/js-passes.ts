@@ -36,7 +36,7 @@ declare module "./bound-model" {
 }
 
 Object.defineProperty(Property.prototype, "jsName", {
-  get: function (this: Property) {
+  get(this: Property) {
     let name = this.name;
     if (name.startsWith("get_")) name = name.substring("get_".length);
     return camelCase(name);
@@ -44,19 +44,19 @@ Object.defineProperty(Property.prototype, "jsName", {
 });
 
 Object.defineProperty(Method.prototype, "jsName", {
-  get: function (this: Method) {
+  get(this: Method) {
     return camelCase(this.unique_name);
   },
 });
 
 Object.defineProperty(Field.prototype, "jsName", {
-  get: function (this: Field) {
+  get(this: Field) {
     return camelCase(this.name);
   },
 });
 
 Object.defineProperty(NamedType.prototype, "jsName", {
-  get: function (this: NamedType) {
+  get(this: NamedType) {
     return pascalCase(this.name);
   },
 });
