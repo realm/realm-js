@@ -1,5 +1,18 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
+### Breaking change
+* Fix the type of PropertyType ([#4840](https://github.com/realm/realm-js/pull/4840))
+      * Example:
+    ```typescript
+      const schema : Realm.ObjectSchema = {
+        name: "MySchema",
+        properties:{
+          name: 'string' // the type will now autocomplete
+          thing: 'invalid' // this will be shown as a type error
+        }
+      }
+    ```
+
 ### Enhancements
 * None.
 
