@@ -333,7 +333,7 @@ module.exports = {
     let user = await app.logIn(credentials);
 
     TestCase.assertEqual(await user.callFunction("sumFunc"), 0);
-    TestCase.assertEqual(await user.callFunction("sumFunc", [123]), 123);
+    TestCase.assertEqual(await user.callFunction("sumFunc", 123), 123);
     TestCase.assertEqual(await user.functions.sumFunc(123), 123);
     TestCase.assertEqual(await user.functions["sumFunc"](123), 123);
 

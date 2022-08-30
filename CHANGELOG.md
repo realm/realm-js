@@ -14,6 +14,11 @@ Based on Realm JS v10.21.0: See changelog below for details on enhancements and 
   Realm.Auth.EmailPasswordAuth.resetPassword({token, tokenId, password});
   Realm.Auth.EmailPasswordAuth.sendResetPasswordEmail({email});
   Realm.Auth.EmailPasswordAuth.callResetPasswordFunction({email, password}, ...args);
+* Unify the call signature documentation of `User#callFunction` ([#3733](https://github.com/realm/realm-js/issues/3733))
+    * Example:
+    ```javascript
+    user.callFunction("sum", 1, 2, 3); // Valid
+    user.callFunction("sum", [1, 2, 3]); // Invalid
     ```
 ### Enhancements
 * Small improvement to performance by caching JSI property String object [#4863](https://github.com/realm/realm-js/pull/4863)
