@@ -14,6 +14,7 @@ x.x.x Release notes (yyyy-MM-dd)
 * None.
 
 ### Compatibility
+* React Native >= v0.64.0
 * Atlas App Services.
 * Realm Studio v12.0.0.
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.

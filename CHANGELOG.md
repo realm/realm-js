@@ -19,6 +19,7 @@ NOTE: This version is unrelated to the v10.20.0-alpha and v10.20.0-beta prerelea
 * Opening a read-only synced Realm for the first time could lead to `m_schema_version != ObjectStore::NotVersioned` assertion.
 
 ### Compatibility
+* React Native >= v0.64.0
 * Atlas App Services.
 * Realm Studio v12.0.0.
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
