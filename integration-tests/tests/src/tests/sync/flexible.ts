@@ -193,22 +193,6 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         }).to.not.throw();
       });
 
-      it("throws an error if flexible sync is enabled and client reset mode is discardLocal", function () {
-        expect(() => {
-          // @ts-expect-error Intentionally testing the wrong type
-          new Realm({
-            sync: {
-              _sessionStopPolicy: SessionStopPolicy.Immediately,
-              flexible: true,
-              user: this.user,
-              clientReset: {
-                mode: ClientResetMode.DiscardLocal,
-              },
-            },
-          });
-        }).to.throw("Only manual client resets are supported with flexible sync");
-      });
-
       describe("initialSubscriptions option", function () {
         function getConfig(
           user: Realm.User,
