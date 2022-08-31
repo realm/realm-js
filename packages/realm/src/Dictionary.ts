@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Collection } from "./Collection";
+import { OrderedCollection } from "./OrderedCollection";
 
 type DictionaryMethods = "set" | "remove" | "addListener" | "removeListener" | "removeAllListeners";
 
@@ -24,7 +24,7 @@ type DictionaryMethods = "set" | "remove" | "addListener" | "removeListener" | "
  * TODO: Make this extends Collection<T> (once that doesn't have a nummeric index accessor)
  */
 export class Dictionary<T = unknown>
-  implements Pick<Collection<T>, "addListener" | "removeListener" | "removeAllListeners">
+  implements Pick<OrderedCollection<T>, "addListener" | "removeListener" | "removeAllListeners">
 {
   [key: string]: T;
   /**
