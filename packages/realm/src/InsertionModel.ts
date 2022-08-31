@@ -33,7 +33,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Collection } from "./Collection";
+import { OrderedCollection } from "./OrderedCollection";
 import { Dictionary } from "./Dictionary";
 import { List } from "./List";
 import { Object as RealmObject } from "./Object";
@@ -66,7 +66,7 @@ type OmittedRealmTypes<T> = Omit<
   | keyof RealmObject
   /* eslint-disable-next-line @typescript-eslint/ban-types */
   | ExtractPropertyNamesOfType<T, Function> // TODO: Figure out the use-case for this
-  | ExtractPropertyNamesOfType<T, Collection>
+  | ExtractPropertyNamesOfType<T, OrderedCollection>
   | ExtractPropertyNamesOfType<T, Dictionary>
 >;
 
