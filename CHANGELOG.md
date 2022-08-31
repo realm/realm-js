@@ -36,6 +36,7 @@ NOTE: This version is unrelated to the v10.20.0-alpha and v10.20.0-beta prerelea
 * Fixed an incorrect git merge in the Xcode project from RN iOS. ([#4756](https://github.com/realm/realm-js/issues/4756), since v10.19.5)
 * Fixed detection of emulator environments to be more robust.  Thanks to [Ferry Kranenburg](https://github.com/fkranenburg) for identifying the issue and supplying a PR. ([#4784](https://github.com/realm/realm-js/issues/4784))
 * Opening a read-only synced Realm for the first time could lead to `m_schema_version != ObjectStore::NotVersioned` assertion.
+* Fixed an offset error in Node buffer handling ([#3781](https://github.com/realm/realm-js/issues/3781), since v10.0.0)
 
 ### Compatibility
 * React Native >= v0.64.0

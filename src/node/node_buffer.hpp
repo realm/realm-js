@@ -48,15 +48,15 @@ auto get_data(ArrayBuffer buffer)
 template <>
 auto get_data<DataView>(DataView data_view)
 {
-    auto buffer = data_view.ArrayBuffer();
-    return static_cast<const char*>(buffer.Data());
+    Napi::ArrayBuffer buffer = data_view.ArrayBuffer();
+    return (static_cast<const char*>(buffer.Data()) + data_view.ByteOffset());
 }
 
 template <>
 auto get_data<TypedArray>(TypedArray typed_array)
 {
-    auto buffer = typed_array.ArrayBuffer();
-    return static_cast<const char*>(buffer.Data());
+    Napi::ArrayBuffer buffer = typed_array.ArrayBuffer();
+    return (static_cast<const char*>(buffer.Data())) + typed_array.ByteOffset();
 }
 
 class NodeBinary {
