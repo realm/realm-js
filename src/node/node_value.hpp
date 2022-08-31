@@ -252,34 +252,31 @@ inline double node::Value::to_number(Napi::Env env, const Napi::Value& value)
 template <>
 inline OwnedBinaryData node::Value::to_binary(Napi::Env env, const Napi::Value& value)
 {
-
-    // TODO:  this pointer is no good :(  It is never de-allocated
-    NodeBinary* node_binary = nullptr;
-
+    OwnedBinaryData binary_data(nullptr, 0);
+    bool legal_conversion = false;
 
     if (value.IsDataView()) {
-        node_binary = new NodeBinaryManager<Napi::DataView, Napi::Value>{value};
+        binary_data = NodeBinaryManager<Napi::DataView, Napi::Value>{value}.create_binary_blob();
+        legal_conversion = true;
     }
     else if (value.IsBuffer()) {
-        node_binary = new NodeBinaryManager<Napi::Buffer<char>, Napi::Value>{value};
+        binary_data = NodeBinaryManager<Napi::Buffer<char>, Napi::Value>{value}.create_binary_blob();
+        legal_conversion = true;
     }
     else if (value.IsTypedArray()) {
-        node_binary = new NodeBinaryManager<Napi::TypedArray, Napi::Value>{value};
+        binary_data = NodeBinaryManager<Napi::TypedArray, Napi::Value>{value}.create_binary_blob();
+        legal_conversion = true;
     }
     else if (value.IsArrayBuffer()) {
-        node_binary = new NodeBinaryManager<Napi::ArrayBuffer, Napi::Value>{value};
+        binary_data = NodeBinaryManager<Napi::ArrayBuffer, Napi::Value>{value}.create_binary_blob();
+        legal_conversion = true;
     }
 
-    if (node_binary == nullptr) {
+    if (!legal_conversion) {
         throw std::runtime_error("Can only convert Buffer, ArrayBuffer, and ArrayBufferView objects to binary");
     }
 
-    if (node_binary->is_empty()) {
-        char placeholder;
-        return OwnedBinaryData(&placeholder, 0);
-    }
-
-    return node_binary->create_binary_blob();
+    return std::move(binary_data);
 }
 
 
