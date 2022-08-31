@@ -16,6 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Collection } from "./Collection";
+import { OrderedCollection } from "./OrderedCollection";
 
-export class Set<T = unknown> extends Collection<T> {}
+export class Set<T = unknown> extends OrderedCollection<T> {}
