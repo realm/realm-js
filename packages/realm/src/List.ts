@@ -17,50 +17,19 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import * as binding from "./binding";
-import { Collection } from "./Collection";
+import { Getter, OrderedCollection } from "./OrderedCollection";
 import { INTERNAL } from "./internal";
-
-const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true, writable: true };
-const PROXY_HANDLER: ProxyHandler<List> = {
-  get(target, prop) {
-    if (Reflect.has(target, prop)) {
-      return Reflect.get(target, prop);
-    } else if (typeof prop === "string") {
-      const index = Number.parseInt(prop, 10);
-      if (!Number.isNaN(index)) {
-        // FIXME: Do not get a new Results for every index access!!!
-        return target[GETTER](target[INTERNAL].asResults(), index);
-      }
-    }
-  },
-  ownKeys(target) {
-    return Reflect.ownKeys(target).concat([...target.keys()].map(String));
-  },
-  getOwnPropertyDescriptor(target, prop) {
-    if (Reflect.has(target, prop)) {
-      return Reflect.getOwnPropertyDescriptor(target, prop);
-    } else if (typeof prop === "string") {
-      const index = Number.parseInt(prop, 10);
-      if (index < target.length) {
-        return DEFAULT_PROPERTY_DESCRIPTOR;
-      }
-    }
-  },
-};
-
-const GETTER = Symbol("Realm.List#getter");
-type Getter<T = unknown> = (list: binding.Results, index: number) => T;
 
 type PartiallyWriteableArray<T> = Pick<Array<T>, "pop" | "push" | "shift" | "unshift" | "splice">;
 
-export class List<T = unknown> extends Collection<T> implements PartiallyWriteableArray<T> {
+export class List<T = unknown> extends OrderedCollection<T> implements PartiallyWriteableArray<T> {
   /**
    * Create a list
    * @param internal
    * @internal
    */
-  constructor(internal: binding.List, getter: Getter) {
-    super();
+  constructor(internal: binding.List, getter: Getter<T>) {
+    super(internal.asResults(), getter);
     Object.defineProperties(this, {
       [INTERNAL]: {
         enumerable: false,
@@ -68,15 +37,7 @@ export class List<T = unknown> extends Collection<T> implements PartiallyWriteab
         writable: false,
         value: internal,
       },
-      [GETTER]: {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-        value: getter,
-      },
     });
-    // Wrap in a proxy to trap ownKeys and get, enabling the spread operator
-    return new Proxy<List<T>>(this, PROXY_HANDLER as ProxyHandler<this>);
   }
 
   /**
@@ -85,49 +46,8 @@ export class List<T = unknown> extends Collection<T> implements PartiallyWriteab
    */
   public [INTERNAL]!: binding.List;
 
-  /**
-   * Getter used for random access read of elements from the underlying result.
-   */
-  private [GETTER]!: Getter<T>;
-
   get length(): number {
     return this[INTERNAL].size;
-  }
-
-  keys(): IterableIterator<number> {
-    const size = this[INTERNAL].size;
-    let index = 0;
-    return {
-      next(): IteratorResult<number, void> {
-        if (index < size) {
-          return { value: index++, done: false };
-        } else {
-          return { value: undefined, done: true };
-        }
-      },
-      [Symbol.iterator]() {
-        return this;
-      },
-    };
-  }
-
-  values(): IterableIterator<T> {
-    const getter = this[GETTER];
-    const snapshot = this[INTERNAL].snapshot();
-    const keys = this.keys();
-    return {
-      next(): IteratorResult<T, void> {
-        const { done, value: index } = keys.next();
-        if (done) {
-          return { value: undefined, done };
-        } else {
-          return { value: getter(snapshot, index), done };
-        }
-      },
-      [Symbol.iterator]() {
-        return this;
-      },
-    };
   }
 
   pop(): T | undefined {
