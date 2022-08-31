@@ -475,8 +475,10 @@ typename T::Object Schema<T>::object_for_object_schema(ContextType ctx, const Ob
     switch (object_schema.table_type) {
         case ObjectSchema::ObjectType::Embedded:
             Object::set_property(ctx, object, embedded_string, Value::from_boolean(ctx, true));
+            Object::set_property(ctx, object, asymmetric_string, Value::from_boolean(ctx, false));
             break;
         case ObjectSchema::ObjectType::TopLevelAsymmetric:
+            Object::set_property(ctx, object, embedded_string, Value::from_boolean(ctx, false));
             Object::set_property(ctx, object, asymmetric_string, Value::from_boolean(ctx, true));
             break;
         default:
