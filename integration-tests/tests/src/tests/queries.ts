@@ -20,15 +20,17 @@ import Realm from "realm";
 
 import { IPerson, Person, PersonSchema } from "../schemas/person-and-dogs";
 import { IContact, Contact, ContactSchema } from "../schemas/contact";
+import { IPrimitive, Primitive, PrimitiveSchema } from "../schemas/primitive-types";
 
 describe("Realm Query Language", () => {
   let realm: Realm;
   let persons: Realm.Results<IPerson>;
   let contacts: Realm.Results<IContact>;
+  let primitives: Realm.Results<IPrimitive>;
 
   beforeEach(() => {
     Realm.clearTestState();
-    realm = new Realm({ schema: [PersonSchema, ContactSchema] });
+    realm = new Realm({ schema: [PersonSchema, ContactSchema, PrimitiveSchema] });
     realm.write(() => {
       const alice = realm.create<IPerson>(PersonSchema.name, { name: "Alice", age: 15 });
       const bob = realm.create<IPerson>(PersonSchema.name, { name: "Bob", age: 14, friends: [alice] });
@@ -37,9 +39,27 @@ describe("Realm Query Language", () => {
       realm.create<IContact>(ContactSchema.name, { name: "Alice", phones: ["555-1234-567"] });
       realm.create<IContact>(ContactSchema.name, { name: "Bob", phones: ["555-1122-333", "555-1234-567"] });
       realm.create<IContact>(ContactSchema.name, { name: "Charlie" });
+
+      realm.create<IPrimitive>(PrimitiveSchema.name, {
+        s: "foo",
+        b: true,
+        i: 2,
+        f: 3.14,
+        d: 2.72,
+        t: new Date("2001-05-11T12:45:05"),
+      });
+      realm.create<IPrimitive>(PrimitiveSchema.name, {
+        s: "Here is a Unicorn 🦄 today",
+        b: false,
+        i: 44,
+        f: 1.41,
+        d: 4.67,
+        t: new Date("2004-02-26T10:15:02"),
+      });
     });
     persons = realm.objects<IPerson>(PersonSchema.name);
     contacts = realm.objects<IContact>(ContactSchema.name);
+    primitives = realm.objects<IPrimitive>(PrimitiveSchema.name);
   });
 
   afterEach(() => {
@@ -58,6 +78,15 @@ describe("Realm Query Language", () => {
       expect(contacts[0].phones.length).equal(1);
       expect(contacts[1].phones.length).equal(2);
       expect(contacts[2].phones.length).equal(0);
+    });
+
+    // https://github.com/realm/realm-js/issues/4844
+    it("emoiji and contains", () => {
+      expect(primitives.length).equal(2);
+      const unicorn1 = primitives.filtered("s CONTAINS 'unicorn 🦄 today'");
+      const unicorn2 = primitives.filtered("s CONTAINS[c] 'unicorn 🦄 today'");
+      expect(unicorn1.length).equal(0);
+      expect(unicorn2.length).equal(1);
     });
   });
 
