@@ -161,7 +161,7 @@ jobs:
           - { os: darwin, target: test, runner: macos-11, environment: node }
           - { os: android, target: "test:android", runner: macos-11, environment: react-native }
           - { os: ios, target: "test:ios", runner: macos-11, environment: react-native }
-          - { os: ios, target: "test:catalyst", runner: macos-11, environment: react-native }
+          #- { os: ios, target: "test:catalyst", runner: macos-11, environment: react-native }
     timeout-minutes: 60
     steps:
       - name: Generate Cluster Differentiator
