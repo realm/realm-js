@@ -3,7 +3,6 @@
 	"compilerOptions": {
 		"target": "es2018",
 		"moduleResolution": "node",
-		"noEmit": true,
 		"forceConsistentCasingInFileNames": true,
 		"types": [
 			"node",
@@ -17,5 +16,4 @@
 	"include": [
 		"src/**/*.ts"
 	],
-	"exclude": []
 }

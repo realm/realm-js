@@ -1,0 +1,29 @@
+name: Publish Realm React Native templates
+
+on:
+  push:
+    paths:
+      - templates/*/package.json
+
+jobs:
+  publish-templates:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup node version
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      - name: Setup NPM version
+        run: npm install -g npm@8
+
+      - name: Publish templates
+        run: templates/scripts/publish_templates.sh
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -18,7 +18,7 @@
     "watch:catalyst:chrome": "PLATFORM=catalyst WATCH=true MODE=chrome-debugging npm run common",
     "watch:android": "PLATFORM=android WATCH=true MODE=native npm run common",
     "watch:android:chrome": "PLATFORM=android WATCH=true MODE=chrome-debugging npm run common",
-    "common": "mocha-remote --template @realm/mocha-reporter --context mode=$MODE,$MOCHA_REMOTE_CONTEXT --watch $WATCH -- concurrently --kill-others-on-fail npm:app-importer npm:metro npm:runner",
+    "common": "mocha-remote --template @realm/mocha-reporter --context mode=$MODE,appImporterIsRemote,$MOCHA_REMOTE_CONTEXT --watch $WATCH -- concurrently --kill-others-on-fail npm:metro npm:runner npm:app-importer",
     "app-importer": "realm-app-importer serve ../../realm-apps",
     "metro": "react-native start --reset-cache",
     "runner": "node harness/runner.js",
@@ -35,7 +35,8 @@
     "react-native": "0.69.1",
     "react-native-fs": "^2.20.0",
     "react-native-progress": "^4.1.2",
-    "realm": "*"
+    "realm": "*",
+    "realm-app-importer": "*"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
@@ -46,7 +47,6 @@
     "mocha-github-actions-reporter": "^0.2.3",
     "mocha-remote-cli": "^1.5.0",
     "pod-install": "^0.1.23",
-    "puppeteer": "^9.0.0",
-    "realm-app-importer": "*"
+    "puppeteer": "^9.0.0"
   }
 }
