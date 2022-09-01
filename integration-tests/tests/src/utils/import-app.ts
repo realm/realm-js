@@ -34,7 +34,7 @@ function getUrls() {
   };
 }
 
-const { appImporterIsRemote } = environment;
+const { appImporterIsRemote, appTemplatesPath = "../../realm-apps" } = environment;
 
 function getCredentials(): Credentials {
   const { publicKey, privateKey, username, password } = environment;
@@ -123,7 +123,7 @@ export async function importApp(
       cleanUp: true,
     });
 
-    const appTemplatePath = `../../realm-apps/${name}`;
+    const appTemplatePath = `${appTemplatesPath}/${name}`;
 
     const { appId } = await importer.importApp(appTemplatePath, replacements);
 

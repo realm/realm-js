@@ -7,10 +7,10 @@
   "scripts": {
     "build": "rollup -c && tsc --noEmit",
     "prepare": "npm run build",
-    "start": "node start.js --watch",
+    "start": "CONTEXT=appTemplatesPath=../realm-apps,$CONTEXT node start.js --watch",
     "start:missing-server": "CONTEXT=missingServer,$CONTEXT npm start",
     "start:performance": "CONTEXT=missingServer,performance,integration=false,$CONTEXT npm start",
-    "test": "node start.js --exit",
+    "test": "CONTEXT=appTemplatesPath=../realm-apps,$CONTEXT node start.js --exit",
     "test:performance": "CONTEXT=missingServer,performance,integration=false,$CONTEXT npm test",
     "app-importer": "realm-app-importer serve ../realm-apps",
     "mocha": "mocha src/index.ts",
