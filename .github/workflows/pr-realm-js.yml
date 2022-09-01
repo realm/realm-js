@@ -13,15 +13,15 @@ jobs:
       fail-fast: false
       matrix:
         variant:
-          - { os: linux, runner: ubuntu-20.04, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
-          - { os: windows, runner: windows-2019, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
-          - { os: windows, runner: windows-2019, arch: ia32, artifact-path: prebuilds }
-          - { os: android, runner: ubuntu-20.04, arch: x86_64, artifact-path: react-native/android/src/main/jniLibs }
-          - { os: android, runner: ubuntu-20.04, arch: armeabi-v7a, artifact-path: react-native/android/src/main/jniLibs }
-          - { os: android, runner: ubuntu-20.04, arch: arm64-v8a, artifact-path: react-native/android/src/main/jniLibs }
-          - { os: android, runner: ubuntu-20.04, arch: x86, artifact-path: react-native/android/src/main/jniLibs }
-          - { os: darwin, runner: macos-11, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
-          - { os: ios, runner: macos-11, arch: apple, artifact-path: react-native/ios/realm-js-ios.xcframework }
+          - { os: linux, runner: ubuntu-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
+          - { os: windows, runner: windows-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
+          - { os: windows, runner: windows-latest, arch: ia32, artifact-path: prebuilds }
+          - { os: android, runner: ubuntu-latest, arch: x86_64, artifact-path: react-native/android/src/main/jniLibs }
+          - { os: android, runner: ubuntu-latest, arch: armeabi-v7a, artifact-path: react-native/android/src/main/jniLibs }
+          - { os: android, runner: ubuntu-latest, arch: arm64-v8a, artifact-path: react-native/android/src/main/jniLibs }
+          - { os: android, runner: ubuntu-latest, arch: x86, artifact-path: react-native/android/src/main/jniLibs }
+          - { os: darwin, runner: macos-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
+          - { os: ios, runner: macos-latest, arch: apple, artifact-path: react-native/ios/realm-js-ios.xcframework }
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -74,7 +74,7 @@ jobs:
       # On linux, electron requires a connected display.  We fake this by giving it a headless environment using xvfb
       # Relevant issue: https://github.com/juliangruber/browser-run/issues/147
       - name: Linux Environment setup
-        if: ${{ (matrix.variant.runner == 'ubuntu-20.04') }}
+        if: ${{ (matrix.variant.runner == 'ubuntu-latest') }}
         run: sudo apt-get install ccache ninja-build
 
       - name: ccache
@@ -150,18 +150,18 @@ jobs:
       fail-fast: false
       matrix:
         variant:
-          - { os: linux, target: test, runner: ubuntu-20.04, environment: node }
-          - { os: linux, target: "test:main", runner: ubuntu-20.04, environment: electron }
-          - { os: linux, target: "test:renderer", runner: ubuntu-20.04, environment: electron }
-          #- { os: windows, target: test, runner: windows-2019, environment: node}
-          #- { os: windows, target: "test:main", runner: windows-2019, environment: electron }
-          #- { os: windows, target: "test:renderer", runner: windows-2019, environment: electron }
-          - { os: darwin, target: "test:main", runner: macos-11, environment: electron }
-          - { os: darwin, target: "test:renderer", runner: macos-11, environment: electron }
-          - { os: darwin, target: test, runner: macos-11, environment: node }
-          - { os: android, target: "test:android", runner: macos-11, environment: react-native }
-          - { os: ios, target: "test:ios", runner: macos-11, environment: react-native }
-          #- { os: ios, target: "test:catalyst", runner: macos-11, environment: react-native }
+          - { os: linux, target: test, runner: ubuntu-latest, environment: node }
+          - { os: linux, target: "test:main", runner: ubuntu-latest, environment: electron }
+          - { os: linux, target: "test:renderer", runner: ubuntu-latest, environment: electron }
+          #- { os: windows, target: test, runner: windows-latest, environment: node}
+          #- { os: windows, target: "test:main", runner: windows-latest, environment: electron }
+          #- { os: windows, target: "test:renderer", runner: windows-latest, environment: electron }
+          - { os: darwin, target: "test:main", runner: macos-latest, environment: electron }
+          - { os: darwin, target: "test:renderer", runner: macos-latest, environment: electron }
+          - { os: darwin, target: test, runner: macos-latest, environment: node }
+          - { os: android, target: "test:android", runner: macos-latest, environment: react-native }
+          - { os: ios, target: "test:ios", runner: macos-latest, environment: react-native }
+          #- { os: ios, target: "test:catalyst", runner: macos-latest, environment: react-native }
     timeout-minutes: 60
     steps:
       - name: Generate Cluster Differentiator
