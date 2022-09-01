@@ -35,8 +35,8 @@ function getUrls() {
 }
 
 function getIsAppImporterRemote() {
-  const { isAppImporterRemote } = environment;
-  return isAppImporterRemote === "true";
+  const { appImporterIsRemote } = environment;
+  return appImporterIsRemote !== undefined;
 }
 
 type Credentials =
