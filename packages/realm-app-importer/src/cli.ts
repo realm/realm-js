@@ -22,7 +22,8 @@ import fs from "fs";
 import http from "http";
 import chalk from "chalk";
 
-import { AppImporter, Credentials } from "./AppImporter";
+import { AppImporter } from "./AppImporter";
+import { Credentials } from "./sharedTypes";
 import { AppImportServer } from "./AppImportServer";
 
 /* eslint-disable no-console */
@@ -242,7 +243,6 @@ yargs
         .option("hostname", {
           type: "string",
           description: "Hostname used when listening for connections",
-          default: "0.0.0.0",
         })
         .option("port", {
           type: "number",

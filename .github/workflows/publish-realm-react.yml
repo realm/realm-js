@@ -22,10 +22,20 @@ jobs:
           registry-url: https://registry.npmjs.org/
 
       - name: Install npm v7
-        run: npm install -g npm@7
+        run: npm install -g npm@8
+
+      - name: Prepend ccache executables to the PATH
+        run: |
+          echo "/usr/lib/ccache:/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
+
+      - name: Configure ccache
+        if: ${{ runner.os != 'Windows' }}
+        run: |
+          ccache --set-config="compiler_check=content"
+          ccache --show-config
 
       - name: Install realm node dependencies
-        run: npm ci --ignore-scripts
+        run: npm ci
 
       - name: Bootstrap @realm/react
         run: npm install realm --prefix packages/realm-react --no-save

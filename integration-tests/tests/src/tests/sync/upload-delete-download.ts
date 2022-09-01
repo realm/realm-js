@@ -32,7 +32,7 @@ export function itUploadsDeletesAndDownloads(): void {
 
     await this.realm.syncSession.uploadAllLocalChanges();
 
-    this.realm = closeAndReopenRealm(this.realm, this.config);
+    this.realm = await closeAndReopenRealm(this.realm, this.config);
 
     if (!this.realm.syncSession) {
       throw new Error("Expected a 'syncSession' on the realm");

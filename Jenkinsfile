@@ -4,7 +4,7 @@ import groovy.json.JsonOutput
 @Library('realm-ci') _
 repoName = 'realm-js'
 
-platforms = ['win32-ia32', 'win32-x64', 'darwin-x64', 'darwin-arm64', 'linux-x64', 'linux-arm']
+platforms = ['linux-x64']
 nodeTestVersion = '16.13.1'
 npmVersion = '8.1.2'
 
@@ -95,57 +95,15 @@ if (skipBuild) {
 
 stage('build') {
     parallelExecutors = [:]
-    parallelExecutors["OS x86_64 NAPI ${nodeTestVersion}"] = buildMacOS { buildCommon(nodeTestVersion, it) }
-    parallelExecutors["macOS arm NAPI ${nodeTestVersion}"] = buildMacOSArm { buildCommon(nodeTestVersion, it, '-- --arch=arm64') }
-
     parallelExecutors["Linux x86_64 NAPI ${nodeTestVersion}"] = buildLinux { buildCommon(nodeTestVersion, it) }
-    parallelExecutors["Linux armhf NAPI ${nodeTestVersion}"] = buildLinuxRpi { buildCommon(nodeTestVersion, it, '-- --arch=arm -- --CDCMAKE_TOOLCHAIN_FILE=./vendor/realm-core/tools/cmake/armhf.toolchain.cmake') }
-    parallelExecutors["Windows ia32 NAPI ${nodeTestVersion}"] = buildWindows(nodeTestVersion, 'ia32')
-    parallelExecutors["Windows x64 NAPI ${nodeTestVersion}"] = buildWindows(nodeTestVersion, 'x64')
-
-    parallelExecutors["Android RN"] = buildAndroid()
-    parallelExecutors["iOS RN"] = buildiOS()
-
     parallel parallelExecutors
 }
 
-stage('pretest') {
-  parallelExecutors = [:]
-    parallelExecutors["jsdoc"] = testLinux("jsdoc Release ${nodeTestVersion}", { // "Release is not used
-    publishHTML([
-      allowMissing: false,
-      alwaysLinkToLastBuild: false,
-      keepAll: false,
-      reportDir: 'docs/output',
-      reportFiles: 'index.html',
-      reportName: 'Docs'
-    ])
-  })
-  parallel parallelExecutors
-}
-
-if (gitTag) {
-  stage('publish') {
-    publish(dependencies, gitTag)
-  }
-}
 
 stage('test') {
   parallelExecutors = [:]
-
-  parallelExecutors["macOS node ${nodeTestVersion} Debug"]   = testMacOS("node Debug ${nodeTestVersion}")
-  parallelExecutors["macOS node ${nodeTestVersion} Release"] = testMacOS("node Release ${nodeTestVersion}")
-  parallelExecutors["macOS test runners ${nodeTestVersion}"] = testMacOS("test-runners Release ${nodeTestVersion}")
   parallelExecutors["Linux node ${nodeTestVersion} Release"] = testLinux("node Release ${nodeTestVersion}", null, true)
   parallelExecutors["Linux test runners ${nodeTestVersion}"] = testLinux("test-runners Release ${nodeTestVersion}")
-  parallelExecutors["Windows node ${nodeTestVersion}"] = testWindows(nodeTestVersion)
-
-  parallelExecutors["React Native Android Release"] = inAndroidContainer { testAndroid('test-android') }
-  // parallelExecutors["React Native iOS Release"] = testMacOS('react-tests Release')
-  // parallelExecutors["React Native Catalyst Release"] = testMacOS('catalyst-tests Release')
-
-  parallelExecutors["macOS Electron Debug"] = testMacOS('electron Debug')
-  parallelExecutors["macOS Electron Release"] = testMacOS('electron Release')
   parallel parallelExecutors
 }
 
@@ -169,7 +127,7 @@ def buildDockerEnv(name, extra_args='') {
 }
 
 def buildCommon(nodeVersion, platform, extraFlags='') {
-  sh "./scripts/nvm-wrapper.sh ${nodeVersion} npm run package ${extraFlags}"
+  sh "./scripts/nvm-wrapper.sh ${nodeVersion} npm run jenkins-build ${extraFlags}"
 
   dir('prebuilds') {
     // Uncomment this when testing build changes if you want to be able to download pre-built artifacts from Jenkins.
@@ -198,121 +156,6 @@ def buildLinuxRpi(workerFunction) {
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
       buildDockerEnv("ci/realm-js:rpi", '-f armhf.Dockerfile').inside('-e HOME=/tmp') {
         workerFunction('linux-arm')
-      }
-    }
-  }
-}
-
-def buildMacOS(workerFunction) {
-  return {
-    myNode('osx_vegas') {
-      withEnv([
-        "DEVELOPER_DIR=/Applications/Xcode-13.app/Contents/Developer",
-      ]) {
-        unstash 'source'
-        sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
-        workerFunction('darwin-x64')
-      }
-    }
-  }
-}
-
-def buildMacOSArm(workerFunction) {
-  return {
-    myNode('osx_vegas') {
-      withEnv([
-        "DEVELOPER_DIR=/Applications/Xcode-13.app/Contents/Developer",
-        "NODE_ARCH_ARM=1",
-      ]) {
-        unstash 'source'
-        sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
-        workerFunction('darwin-arm64')
-      }
-    }
-  }
-}
-
-
-def buildWindows(nodeVersion, arch) {
-  return {
-    myNode('windows && nodejs') {
-      unstash 'source'
-      bat "nodist add ${nodeVersion}"
-      bat "nodist npm add ${npmVersion}"
-      withEnv([
-        "NODIST_NODE_VERSION=${nodeVersion}",
-        "NODIST_NPM_VERSION=${npmVersion}",
-        "_MSPDBSRV_ENDPOINT_=${UUID.randomUUID().toString()}",
-        "PATH+CMAKE=${tool 'cmake'}\\.."
-        ]) {
-        bat "npm run package -- --arch=${arch}"
-      }
-
-      dir('prebuilds') {
-        // Uncomment this when testing build changes if you want to be able to download pre-built artifacts from Jenkins.
-        // archiveArtifacts("realm-*")
-        stash includes: "realm-v${dependencies.VERSION}-napi-v${dependencies.NAPI_VERSION}-win32-${arch}*.tar.gz", name: "prebuild-win32-${arch}"
-      }
-    }
-  }
-}
-
-def buildiOS() {
-  return buildMacOS {
-    withEnv(['SDK_ROOT_OVERRIDE=/Applications/Xcode-13.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/',
-          'DEVELOPER_DIR_OVERRIDE=/Applications/Xcode-13.app']) {
-      sh './scripts/build-iOS.sh -c Release'
-        dir('react-native/ios') {
-        // Uncomment this when testing build changes if you want to be able to download pre-built artifacts from Jenkins.
-        // archiveArtifacts('realm-js-ios.xcframework/**')
-        stash includes: 'realm-js-ios.xcframework/**', name: 'realm-js-ios.xcframework'
-      }
-    }
-  }
-}
-
-def inAndroidContainer(workerFunction) {
-  return {
-    myNode('docker-cph-01') {
-      unstash 'source'
-      def image
-      withCredentials([[$class: 'StringBinding', credentialsId: 'packagecloud-sync-devel-master-token', variable: 'PACKAGECLOUD_MASTER_TOKEN']]) {
-        image = buildDockerEnv('ci/realm-js:android-build', '-f Dockerfile.android')
-      }
-
-      // Locking prevent concurrent usage of the gradle-cache
-      lock("${env.NODE_NAME}-android") {
-        image.inside(
-          // Mounting ~/.android/adbkey(.pub) to reuse the adb keys
-          "-v ${HOME}/.android/adbkey:/home/jenkins/.android/adbkey:ro -v ${HOME}/.android/adbkey.pub:/home/jenkins/.android/adbkey.pub:ro " +
-          // Mounting ~/gradle-cache as ~/.gradle to prevent gradle from being redownloaded
-          "-v ${HOME}/gradle-cache:/home/jenkins/.gradle " +
-          // Mounting ~/ccache as ~/.ccache to reuse the cache across builds
-          "-v ${HOME}/ccache:/home/jenkins/.ccache " +
-          // Mounting /dev/bus/usb with --privileged to allow connecting to the device via USB
-          "-v /dev/bus/usb:/dev/bus/usb --privileged"
-        ) {
-          workerFunction()
-        }
-      }
-    }
-  }
-}
-
-def buildAndroid() {
-  return {
-    myNode('docker') {
-      unstash 'source'
-      def image = buildDockerEnv('ci/realm-js:android-build', '-f Dockerfile.android')
-      image.inside('-e HOME=/tmp') {
-        // Using --ignore-scripts to skip building for node
-        sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} npm ci --ignore-scripts"
-        sh "./scripts/nvm-wrapper.sh ${nodeTestVersion} node scripts/build-android.js"
-      }
-      dir('react-native/android/src/main') {
-        // Uncomment this when testing build changes if you want to be able to download pre-built artifacts from Jenkins.
-        // archiveArtifacts('jniLibs/**')
-        stash includes: 'jniLibs/**', name: 'android-jnilibs'
       }
     }
   }
@@ -412,30 +255,6 @@ def doDockerInside(script, target, postStep = null) {
   }
 }
 
-def runEmulator() {
-  sh """yes '\n' | avdmanager create avd -n CIRJSEmulator -k 'system-images;android-29;default;x86' --force"""
-  sh "adb start-server" // https://stackoverflow.com/questions/56198290/problems-with-adb-exe
-  // Need to go to ANDROID_HOME due to https://askubuntu.com/questions/1005944/emulator-avd-does-not-launch-the-virtual-device
-  sh "cd \$ANDROID_HOME/tools && emulator -avd CIRJSEmulator -no-boot-anim -no-window -wipe-data -noaudio -partition-size 4098 -gpu swiftshader_indirect &"
-  echo "Waiting for the emulator to be available"
-  sh 'adb wait-for-device'
-  sh 'adb devices'
-}
-
-def testAndroid(target, postStep = null) {
-  timeout(30) {
-    runEmulator();
-    try {
-      sh "./scripts/test.sh ${target}"
-    } finally {
-      sh "adb emu kill"
-      if (postStep) {
-        postStep.call()
-      }
-    }
-  }
-}
-
 def testLinux(target, postStep = null, Boolean enableSync = false) {
   return {
     node('docker') {
@@ -489,50 +308,6 @@ def testLinux(target, postStep = null, Boolean enableSync = false) {
         } catch(Exception e) {
           reportStatus(reportName, 'FAILURE', e.toString())
           throw e
-      }
-    }
-  }
-}
-
-def testMacOS(target, postStep = null) {
-  return {
-    node('osx_vegas') {
-      withEnv(['SDK_ROOT_OVERRIDE=/Applications/Xcode-13.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/',
-               'DEVELOPER_DIR_OVERRIDE=/Applications/Xcode-13.app',
-               'REALM_SET_NVM_ALIAS=1',
-               'REALM_DISABLE_SYNC_TESTS=1',
-               'npm_config_realm_local_prebuilds=prebuilds']) {
-        doInside('./scripts/test.sh', target, postStep)
-      }
-    }
-  }
-}
-
-def testWindows(nodeVersion) {
-  return {
-    node('windows && nodist') {
-      unstash 'source'
-      bat "nodist add ${nodeVersion}"
-      bat "nodist npm add ${npmVersion}"
-      try {
-        withEnv([
-          "NODIST_NODE_VERSION=${nodeVersion}",
-          "NODIST_NPM_VERSION=${npmVersion}",
-          "PATH+CMAKE=${tool 'cmake'}\\..",
-        ]) {
-          // FIXME: remove debug option when the Release builds are working again
-          bat '''
-            npm install --ignore-scripts
-            npm run build -- --debug
-          '''
-          dir('tests') {
-            bat 'npm install'
-            bat 'npm run test'
-            junit 'junitresults-*.xml'
-          }
-        }
-      } finally {
-        deleteDir()
       }
     }
   }

@@ -39,7 +39,7 @@ target 'RealmReactNativeTests' do
   post_install do |installer|
     react_native_post_install(installer)
     __apply_Xcode_12_5_M1_post_install_workaround(installer)
-    # TODO: The following is a workaround for a bug in CocoaPods when using Catalyst  
+    # TODO: The following is a workaround for a bug in CocoaPods when using Catalyst
     # https://github.com/CocoaPods/CocoaPods/issues/8891
     # Fix bundle targets' 'Signing Certificate' to 'Sign to Run Locally'
     installer.pods_project.targets.each do |target|

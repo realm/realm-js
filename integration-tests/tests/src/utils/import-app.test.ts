@@ -30,16 +30,6 @@ describe.skipIf(environment.missingServer, "importApp utility", function () {
   }).timeout(2 * 60 * 1000); // This may take a long time when running against a real server
 
   it("throws on unexpected app names", async () => {
-    let threw = false;
-    try {
-      await importApp("unexpected-app-name");
-    } catch (err) {
-      threw = true;
-      if (err instanceof Error) {
-        expect(err.message).contains("Unexpected app name");
-      }
-    } finally {
-      expect(threw).equals(true);
-    }
+    await expect(importApp("unexpected-app-name")).to.be.rejectedWith(Error);
   });
 });
