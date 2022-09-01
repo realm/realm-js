@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"target": "es2020",
+		"target": "es2018",
 		"module": "commonjs",
 		"moduleResolution": "node",
 		"strict": true,
@@ -9,7 +9,7 @@
 		"resolveJsonModule": true,
 		"outDir": "dist",
 		"lib": [
-			"es2020"
+			"es2018"
 		],
 		"types": [
 			"realm",

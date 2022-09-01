@@ -67,9 +67,8 @@ if (options.clean) {
   }
 }
 
-if (!fs.existsSync(buildPath)) {
-  fs.ensureDirSync(buildPath, { recursive: true });
-}
+fs.ensureDirSync(buildPath, { recursive: true });
+
 //shared root dir to download jsc once for all architectures
 const jscDir = path.resolve(buildPath, "jsc-android");
 
