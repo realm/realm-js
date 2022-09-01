@@ -34,7 +34,7 @@ function getUrls() {
   };
 }
 
-function getIsAppImporterRemote() {
+function getIsAppImporterRemote(): boolean {
   const { appImporterIsRemote } = environment;
   return appImporterIsRemote !== undefined;
 }
