@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 import { App, BSON } from "realm";
 
-import { AppImporter } from "realm-app-importer";
+import { AppImporter, Credentials } from "realm-app-importer";
 import { fetch } from "./fetch";
 
 export type TemplateReplacements = Record<string, Record<string, unknown>>;
@@ -34,22 +34,7 @@ function getUrls() {
   };
 }
 
-function getIsAppImporterRemote(): boolean {
-  const { appImporterIsRemote } = environment;
-  return appImporterIsRemote !== undefined;
-}
-
-type Credentials =
-  | {
-      kind: "api-key";
-      publicKey: string;
-      privateKey: string;
-    }
-  | {
-      kind: "username-password";
-      username: string;
-      password: string;
-    };
+const { appImporterIsRemote } = environment;
 
 function getCredentials(): Credentials {
   const { publicKey, privateKey, username, password } = environment;
@@ -109,9 +94,8 @@ export async function importApp(
   replacements: TemplateReplacements = getDefaultReplacements(name),
 ): Promise<App> {
   const { baseUrl, appImporterUrl } = getUrls();
-  const isAppImporterRemote = getIsAppImporterRemote();
 
-  if (isAppImporterRemote) {
+  if (appImporterIsRemote) {
     const response = await fetch(appImporterUrl, {
       method: "POST",
       body: JSON.stringify({ name, replacements }),
@@ -149,9 +133,8 @@ export async function importApp(
 
 export async function deleteApp(clientAppId: string): Promise<void> {
   const { baseUrl, appImporterUrl } = getUrls();
-  const isAppImporterRemote = getIsAppImporterRemote();
 
-  if (isAppImporterRemote) {
+  if (appImporterIsRemote) {
     // This might take some time, so we just send it and forget it
     fetch(`${appImporterUrl}/app/${clientAppId}`, {
       method: "DELETE",

@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 const AppImporter = {};
-const Credentials = {};
 const AppImporterOptions = {};
 
-export { AppImporter, Credentials, AppImporterOptions };
+export { AppImporter, AppImporterOptions };
+export { Credentials } from "../sharedTypes";

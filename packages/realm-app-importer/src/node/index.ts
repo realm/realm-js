@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2020 Realm Inc.
+// Copyright 2022 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,4 +16,5 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export { AppImporter, Credentials, AppImporterOptions } from "../AppImporter";
+export { AppImporter, AppImporterOptions } from "../AppImporter";
+export { Credentials } from "../sharedTypes";

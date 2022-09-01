@@ -21,6 +21,7 @@ import path from "path";
 import fs from "fs-extra";
 import glob from "glob";
 import deepmerge from "deepmerge";
+import { Credentials } from "./sharedTypes";
 
 /**
  * First level keys are file globs and the values are objects that are spread over the content of the files matching the glob.
@@ -29,18 +30,6 @@ import deepmerge from "deepmerge";
 export type TemplateReplacements = Record<string, Record<string, unknown>>;
 
 /* eslint-disable no-console */
-
-export type Credentials =
-  | {
-      kind: "api-key";
-      publicKey: string;
-      privateKey: string;
-    }
-  | {
-      kind: "username-password";
-      username: string;
-      password: string;
-    };
 
 type LoginResponse = {
   access_token: string;
