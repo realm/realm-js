@@ -44,8 +44,7 @@ describe.skipIf(environment.missingServer, "Asymmetric sync", function () {
       },
     });
 
-    // TODO: Look into what caused this test to fail
-    it.skip("Schema with asymmetric = true and embedded = false", function () {
+    it("Schema with asymmetric = true and embedded = false", function () {
       const schema = this.realm.schema;
       expect(schema.length).to.equal(1);
       expect(schema[0].asymmetric).to.equal(true);
