@@ -1084,8 +1084,7 @@ inline bool ObjectWrap<ClassType>::set_property(JSContextRef ctx, JSObjectRef ob
 namespace js {
 
 template <typename ClassType>
-class ObjectWrap<jsc::Types, ClassType> : public jsc::ObjectWrap<ClassType> {
-};
+class ObjectWrap<jsc::Types, ClassType> : public jsc::ObjectWrap<ClassType> {};
 
 template <jsc::ArgumentsMethodType F>
 JSValueRef wrap(JSContextRef ctx, JSObjectRef, JSObjectRef this_object, size_t argc, const JSValueRef arguments[],
