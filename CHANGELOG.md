@@ -1,6 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
+* Small improvement to performance by caching JSI property String object [#4863](https://github.com/realm/realm-js/pull/4863)
 * None.
 
 ### Fixed

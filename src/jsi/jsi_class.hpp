@@ -240,6 +240,10 @@ public:
     // Also, may need to suppress destruction.
     inline static std::optional<JsiFunc> s_ctor;
 
+    // Cache the JSI String instance representing the field name of the internal
+    // C++ object for the lifetime of the current env, as this is a hot path
+    inline static std::optional<fbjsi::String> s_js_internal_field_name;
+
     /**
      * @brief callback for invalid access to index setters
      * Throws an error when a users attemps to write to an index on a type that
@@ -310,9 +314,10 @@ public:
                          .asFunction(env));
 
         js::Context<js::realmjsi::Types>::register_invalidator([] {
-            // Ensure the static constructor is destructed when the runtime goes away.
-            // This is to avoid the reassignment of s_ctor throwing because the runtime has disappeared.
+            // Ensure the static constructor and JSI String reference are destructed when the runtime goes away.
+            // This is to avoid the reassignment throwing because the runtime has disappeared.
             s_ctor.reset();
+            s_js_internal_field_name.reset();
         });
 
         for (auto&& [name, prop] : s_type.static_properties) {
@@ -490,7 +495,11 @@ public:
 
     static Internal* get_internal(JsiEnv env, const JsiObj& object)
     {
-        auto internal = object->getProperty(env, g_internal_field);
+        if (!s_js_internal_field_name) {
+            s_js_internal_field_name = fbjsi::String::createFromAscii(env, g_internal_field);
+        }
+
+        auto internal = object->getProperty(env, *s_js_internal_field_name);
         if (internal.isUndefined()) {
             // In the case of a user opening a Realm with a class-based model,
             // the user defined constructor will get called before the "internal" property has been set.
@@ -663,7 +672,8 @@ private:
 } // namespace realmjsi
 
 template <typename ClassType>
-class ObjectWrap<realmjsi::Types, ClassType> : public realm::js::realmjsi::ObjectWrap<ClassType> {};
+class ObjectWrap<realmjsi::Types, ClassType> : public realm::js::realmjsi::ObjectWrap<ClassType> {
+};
 
 template <realmjsi::ArgumentsMethodType F>
 fbjsi::Value wrap(fbjsi::Runtime& rt, const fbjsi::Value& thisVal, const fbjsi::Value* args, size_t count)
