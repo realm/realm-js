@@ -1,6 +1,7 @@
 x.x.x Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
+* Small improvement to performance by caching JSI property String object [#4862](https://github.com/realm/realm-js/pull/4862)
 * None.
 
 ### Fixed
