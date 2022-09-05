@@ -510,7 +510,7 @@ public:
     {
         auto internal = (Internal*)(object->getNativeState<WrappedState<Internal*>>(env)).get();
 
-        if (internal.isUndefined()) {
+        if (!internal) {
             // In the case of a user opening a Realm with a class-based model,
             // the user defined constructor will get called before the "internal" property has been set.
             if constexpr (std::is_same_v<T, RealmObjectClass<realmjsi::Types>>)
