@@ -490,9 +490,7 @@ public:
 
     static Internal* get_internal(JsiEnv env, const JsiObj& object)
     {
-        static const auto js_internal_field = fbjsi::String::createFromAscii(env, g_internal_field);
-
-        auto internal = object->getProperty(env, js_internal_field);
+        auto internal = object->getProperty(env, g_internal_field);
         if (internal.isUndefined()) {
             // In the case of a user opening a Realm with a class-based model,
             // the user defined constructor will get called before the "internal" property has been set.
@@ -665,8 +663,7 @@ private:
 } // namespace realmjsi
 
 template <typename ClassType>
-class ObjectWrap<realmjsi::Types, ClassType> : public realm::js::realmjsi::ObjectWrap<ClassType> {
-};
+class ObjectWrap<realmjsi::Types, ClassType> : public realm::js::realmjsi::ObjectWrap<ClassType> {};
 
 template <realmjsi::ArgumentsMethodType F>
 fbjsi::Value wrap(fbjsi::Runtime& rt, const fbjsi::Value& thisVal, const fbjsi::Value* args, size_t count)
