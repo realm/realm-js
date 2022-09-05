@@ -1,0 +1,27 @@
+{
+    "name": "custom-token",
+    "type": "custom-token",
+    "config": {
+        "audience": "my-audience",
+        "signingAlgorithm": "HS256",
+        "useJWKURI": false
+    },
+    "secret_config": {
+        "signingKeys": [
+            "customTokenKey"
+        ]
+    },
+    "disabled": false,
+    "metadata_fields": [
+        {
+            "required": true,
+            "name": "id",
+            "field_name": "id"
+        },
+        {
+            "required": true,
+            "name": "license",
+            "field_name": "license"
+        }
+    ]
+}

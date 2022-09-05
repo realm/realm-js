@@ -46,15 +46,20 @@ function makeAppConfig(appId) {
 }
 
 function getConfigPath(testName) {
-  let pathToJson = `../../mongodb/${testName}/config.json`;
-  const isNodeProcess = typeof process === "object" && process + "" === "[object process]";
+  if (process.env.LEGACY_TESTS_M1) {
+    let pathToJson = `../../mongodb-qa-apps/${testName}/app_id.json`;
+    return pathToJson;
+  } else {
+    let pathToJson = `../../mongodb/${testName}/config.json`;
+    const isNodeProcess = typeof process === "object" && process + "" === "[object process]";
 
-  if (isNodeProcess && process.env.ELECTRON_TESTS_REALM_MODULE_PATH) {
-    const path = nodeRequire("path");
-    console.log("ELECTRON_TESTS_REALM_MODULE_PATH " + process.env.ELECTRON_TESTS_REALM_MODULE_PATH);
-    pathToJson = path.resolve(process.env.ELECTRON_TESTS_REALM_MODULE_PATH, `../${pathToJson}`);
+    if (isNodeProcess && process.env.ELECTRON_TESTS_REALM_MODULE_PATH) {
+      const path = nodeRequire("path");
+      console.log("ELECTRON_TESTS_REALM_MODULE_PATH " + process.env.ELECTRON_TESTS_REALM_MODULE_PATH);
+      pathToJson = path.resolve(process.env.ELECTRON_TESTS_REALM_MODULE_PATH, `../${pathToJson}`);
+    }
+    return pathToJson;
   }
-  return pathToJson;
 }
 
 const pathToStitchJson = getConfigPath("common-tests");

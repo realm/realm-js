@@ -25,7 +25,11 @@
   },
   "scripts": {
     "check-typescript": "tsc --types --noEmit --alwaysStrict ./../types/index.d.ts --lib es2018",
+    "setup": "node js/setup.js",
     "js-tests": "node --expose_gc node_modules/jasmine/bin/jasmine.js spec/unit_tests.js --filter=.",
     "test": "npm run check-typescript && npm run js-tests"
+  },
+  "devDependencies": {
+    "realm-app-importer": "file:../packages/realm-app-importer"
   }
 }

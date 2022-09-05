@@ -1,0 +1,14 @@
+{
+    "collection": "testRemoteMongoClient",
+    "database": "test_data",
+    "roles": [
+        {
+            "name": "default",
+            "apply_when": {},
+            "insert": true,
+            "delete": true,
+            "additional_fields": {}
+        }
+    ],
+    "schema": {}
+}

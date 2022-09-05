@@ -1,0 +1,23 @@
+{
+    "name": "BackingDB",
+    "type": "mongodb-atlas",
+    "config": {
+        "sync": {
+            "state": "enabled",
+            "database_name": "test_data",
+            "partition": {
+                "key": "realm_id",
+                "type": "string",
+                "permissions": {
+                    "read": true,
+                    "write": true
+                }
+            }
+        },
+        "clusterName": "Cluster0"
+    },
+    "secret_config": {
+        "uri": "BackingDB_uri"
+    },
+    "version": 1
+}

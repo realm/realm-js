@@ -1,6 +1,6 @@
 {
   "name": "realm-app-importer",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Wrapping the Stitch CLI to import an app from a template (w. secrets)",
   "main": "./dist/bundle.cjs.js",
   "module": "./dist/bundle.es.js",

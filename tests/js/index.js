@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 const Realm = require("realm");
-const BSON = require("bson");
 
 if (typeof Realm.App !== "undefined" && Realm.App !== null) {
   global.WARNING = "global is not available in React Native. Use it only in tests";
