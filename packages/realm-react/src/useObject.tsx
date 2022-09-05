@@ -61,7 +61,7 @@ export function createUseObject(useRealm: () => Realm) {
       // When this is implemented, remove `?? null`
       () =>
         createCachedObject({
-          object: realm.objectForPrimaryKey(type, primaryKey) ?? null,
+          object: realm.objectForPrimaryKey<unknown>(type, primaryKey) ?? null,
           realm,
           updateCallback: forceRerender,
         }),
@@ -79,6 +79,6 @@ export function createUseObject(useRealm: () => Realm) {
     }
 
     // Wrap object in a proxy to update the reference on rerender ( should only rerender when something has changed )
-    return new Proxy(object, {});
+    return new Proxy(object, {}) as T & Realm.Object<T>;
   };
 }
