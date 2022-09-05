@@ -1,4 +1,4 @@
-#!/usr/bin/env -S node --loader tsm --no-warnings --
+#!/usr/bin/env -S node --loader tsm --enable-source-maps --no-warnings --
 
 ////////////////////////////////////////////////////////////////////////////
 //
