@@ -13,7 +13,7 @@
     "build-cli": "tsc -p tsconfig.build.json",
     "watch": "rollup -w --config",
     "lint": "eslint --ext .js,.ts .",
-    "prepare": "rm -rf dist && npm run build",
+    "prepare": "npm run build",
     "start": "ts-node src/cli.ts"
   },
   "files": [
