@@ -16,6 +16,7 @@ This project hosts the JavaScript versions of [Realm](https://realm.io/). Curren
 ## Getting Started
 
 Please see the detailed instructions in our docs to use [Realm JavaScript for Node.js](https://docs.mongodb.com/realm/sdk/node/) and [Realm JavaScript for React Native](https://docs.mongodb.com/realm/sdk/react-native/). Please notice that currently only Node.js version 10 or later (excluding 11) are supported.
+
 ## Documentation
 
 ### Realm React Native and Node.js
@@ -55,6 +56,7 @@ See [CONTRIBUTING.md](https://github.com/realm/realm-js/blob/master/CONTRIBUTING
    * [Flipper](https://fbflipper.com/) has many similar features in relation to the Chrome Debugger. Please consider trying out our [Hermes release](https://github.com/realm/realm-js/issues/3940) to use the Hermes Debugger in Flipper and set breakpoints in your code.
    * [Safari](https://reactnative.dev/docs/debugging#safari-developer-tools) also has a similar feature set, but requires [some setup](https://blog.nparashuram.com/2019/10/debugging-react-native-ios-apps-with.html) and only supports debugging in iOS.
    * **NOTE:** For the above methods, it is not neccessary to enable `Debug with Chrome` in the Debug Menu.
+* [What to expect in Realm JavaScript v11.0.0](https://github.com/realm/realm-js/discussions/4839)
 
 ## Building Realm JS
 
