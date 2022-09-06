@@ -52,6 +52,7 @@ namespace node {
 
 Napi::FunctionReference ObjectGetOwnPropertyDescriptor;
 node::Protected<Napi::Symbol> ExternalSymbol;
+Napi::FunctionReference ObjectCreate;
 Napi::FunctionReference ObjectSetPrototypeOf;
 Napi::FunctionReference GlobalProxy;
 Napi::FunctionReference FunctionBind;
@@ -62,6 +63,11 @@ static void node_class_init(Napi::Env env)
     auto setPrototypeOf = env.Global().Get("Object").As<Napi::Object>().Get("setPrototypeOf").As<Napi::Function>();
     ObjectSetPrototypeOf = Napi::Persistent(setPrototypeOf);
     ObjectSetPrototypeOf.SuppressDestruct();
+
+    auto create = env.Global().Get("Object").As<Napi::Object>().Get("create").As<Napi::Function>();
+    ObjectCreate = Napi::Persistent(create);
+    ObjectCreate.SuppressDestruct();
+
 
     auto getOwnPropertyDescriptor =
         env.Global().Get("Object").As<Napi::Object>().Get("getOwnPropertyDescriptor").As<Napi::Function>();
@@ -205,7 +211,7 @@ public:
     static bool is_instance(Napi::Env env, const Napi::Object& object);
 
     static Internal* get_internal(Napi::Env env, const Napi::Object& object);
-    static void set_internal(Napi::Env env, const Napi::Object& object, Internal* data);
+    static void set_internal(Napi::Env env, Napi::Object& object, Internal* data);
 
     static Napi::Value constructor_callback(const Napi::CallbackInfo& info);
     static bool has_native_method(const std::string& name);
@@ -1274,10 +1280,12 @@ Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Nap
         }
 
         Napi::External<Internal> externalValue = Napi::External<Internal>::New(env, internal, internal_finalizer);
-        instance = schemaObjectConstructor.New({});
+        Napi::Object constructorPrototype = schemaObjectConstructor.Get("prototype").As<Napi::Object>();
+        instance = ObjectCreate.Call({constructorPrototype}).As<Napi::Object>();
         instance.Set(externalSymbol, externalValue);
     }
     else {
+        Napi::Object constructorPrototype = constructor.Get("prototype").As<Napi::Object>();
         // creating a RealmObject with user defined constructor
 
         bool schemaExists = schemaObjects->count(schemaName);
@@ -1297,8 +1305,7 @@ Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Nap
         if (schemaExists) {
             schemaObjectType = schemaObjects->at(schemaName);
             schemaObjectConstructor = schemaObjectType->constructor.Value();
-
-            instance = schemaObjectConstructor.New({});
+            instance = ObjectCreate.Call({constructorPrototype}).As<Napi::Object>();
 
             Napi::External<Internal> externalValue = Napi::External<Internal>::New(env, internal, internal_finalizer);
             instance.Set(externalSymbol, externalValue);
@@ -1307,52 +1314,18 @@ Napi::Object ObjectWrap<ClassType>::create_instance_by_schema(Napi::Env env, Nap
         }
 
         schemaObjectConstructor = constructor;
-        Napi::Object constructorPrototype = constructor.Get("prototype").As<Napi::Object>();
 
         // get all properties from the schema
         std::vector<Napi::PropertyDescriptor> properties =
             create_napi_property_descriptors(env, constructorPrototype, schema, false /*redefine*/);
-
-        Napi::Function realmObjectClassConstructor = ObjectWrap<ClassType>::create_constructor(env);
-        bool isInstanceOfRealmObjectClass = constructorPrototype.InstanceOf(realmObjectClassConstructor);
-
-        // Skip if the user defined constructor inherited the RealmObjectClass. All RealmObjectClass members are
-        // available already.
-        if (!isInstanceOfRealmObjectClass) {
-            // setup all RealmObjectClass<T> methods to the prototype of the object
-            for (auto& pair : s_class.methods) {
-                // don't redefine if exists
-                if (!constructorPrototype.HasOwnProperty(pair.first)) {
-                    auto descriptor = Napi::PropertyDescriptor::Function(
-                        env, constructorPrototype, Napi::String::New(env, pair.first) /*name*/, &method_callback,
-                        napi_default | realm::js::PropertyAttributes::DontEnum, (void*)pair.second /*callback*/);
-                    properties.push_back(descriptor);
-                }
-            }
-
-            for (auto& pair : s_class.properties) {
-                // don't redefine if exists
-                if (!constructorPrototype.HasOwnProperty(pair.first)) {
-                    napi_property_attributes napi_attributes =
-                        napi_default |
-                        (realm::js::PropertyAttributes::DontEnum | realm::js::PropertyAttributes::DontDelete);
-                    auto descriptor = Napi::PropertyDescriptor::Accessor<property_getter_callback>(
-                        Napi::String::New(env, pair.first) /*name*/, napi_attributes,
-                        (void*)&pair.second /*callback*/);
-                    properties.push_back(descriptor);
-                }
-            }
-        }
 
         // define the properties on the prototype of the schema object constructor
         if (properties.size() > 0) {
             constructorPrototype.DefineProperties(properties);
         }
 
-        instance = schemaObjectConstructor.New({});
-        if (!instance.InstanceOf(schemaObjectConstructor)) {
-            throw Napi::Error::New(env, "Realm object constructor must not return another value");
-        }
+        instance = ObjectCreate.Call({constructorPrototype}).As<Napi::Object>();
+
 
         Napi::External<Internal> externalValue = Napi::External<Internal>::New(env, internal, internal_finalizer);
         instance.Set(externalSymbol, externalValue);
@@ -1411,8 +1384,7 @@ typename ClassType::Internal* ObjectWrap<ClassType>::get_internal(Napi::Env env,
 }
 
 template <typename ClassType>
-void ObjectWrap<ClassType>::set_internal(Napi::Env env, const Napi::Object& object,
-                                         typename ClassType::Internal* internal)
+void ObjectWrap<ClassType>::set_internal(Napi::Env env, Napi::Object& object, typename ClassType::Internal* internal)
 {
     bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::node::Types>>::value;
     if (isRealmObjectClass) {
@@ -1439,11 +1411,6 @@ Napi::Value ObjectWrap<ClassType>::constructor_callback(const Napi::CallbackInfo
         return scope.Escape(env.Null()); // return a value to comply with Napi::FunctionCallback
     }
     else {
-        bool isRealmObjectClass = std::is_same<ClassType, realm::js::RealmObjectClass<realm::node::Types>>::value;
-        if (isRealmObjectClass) {
-            return scope.Escape(env.Null()); // return a value to comply with Napi::FunctionCallback
-        }
-
         throw Napi::Error::New(env, "Illegal constructor");
     }
 }

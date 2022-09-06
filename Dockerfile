@@ -29,6 +29,6 @@ ENV LD_LIBRARY_PATH /opt/rh/httpd24/root/usr/lib64:/opt/rh/python27/root/usr/lib
 
 # Ensure a new enough version of CMake is available.
 RUN cd /opt \
-    && curl -O -J https://cmake.org/files/v3.15/cmake-3.15.2-Linux-x86_64.tar.gz \
-    && tar zxf cmake-3.15.2-Linux-x86_64.tar.gz
-ENV PATH "/opt/cmake-3.15.2-Linux-x86_64/bin:$PATH"
+    && curl -O -J https://cmake.org/files/v3.21/cmake-3.21.3-linux-x86_64.tar.gz \
+    && tar zxf cmake-3.21.3-linux-x86_64.tar.gz
+ENV PATH "/opt/cmake-3.21.3-linux-x86_64/bin/:$PATH"

@@ -143,7 +143,7 @@ const testSetups: TestSetup[] = [
     },
   },
   {
-    name: "Class models (NO primaryKey)",
+    name: "Class model (NO primaryKey)",
     schema: [PlaylistNoId, SongNoId],
     testData(realm: Realm) {
       realm.write(() => {
@@ -287,7 +287,7 @@ const testSetups: TestSetup[] = [
     },
   },
   {
-    name: "Class models (Int primaryKey)",
+    name: "Class model (Int primaryKey)",
     schema: [PlaylistWithId, SongWithId],
     testData(realm: Realm) {
       realm.write(() => {

@@ -31,6 +31,7 @@
 #include "platform.hpp"
 #include "realm/binary_data.hpp"
 #include <stdexcept>
+#include <string>
 
 #if REALM_ENABLE_SYNC
 #include "js_sync.hpp"
@@ -346,6 +347,11 @@ public:
     static void get_schema_name_from_object(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void update_schema(ContextType, ObjectType, Arguments&, ReturnValue&);
 
+    // NOTE:  __to_object and __to_boolean are shims that allow type conversion tests
+    // on unit tests / CI.  They probably shouldn't be available in production
+    static void __to_object(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void __to_boolean(ContextType, ObjectType, Arguments&, ReturnValue&);
+
 #if REALM_ENABLE_SYNC
     static void async_open_realm(ContextType, ObjectType, Arguments&, ReturnValue&);
 #endif
@@ -431,6 +437,11 @@ public:
         {"_objectForObjectKey", wrap<object_for_object_key>},
         {"_updateSchema", wrap<update_schema>},
         {"_schemaName", wrap<get_schema_name_from_object>},
+
+        // NOTE:  __to_object and __to_boolean are shims that allow type conversion tests
+        // on unit tests / CI.  They probably shouldn't be available in production
+        {"__to_object", wrap<__to_object>},
+        {"__to_boolean", wrap<__to_boolean>},
     };
 
     PropertyMap<T> const properties = {
@@ -534,6 +545,9 @@ private:
 template <typename T>
 inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx)
 {
+    // Only calling to populate static cache. Eventually this should be stored somewhere non-static.
+    (void)ObjectWrap<T, ObservableClass<T>>::create_constructor(ctx);
+
     FunctionType realm_constructor = ObjectWrap<T, RealmClass<T>>::create_constructor(ctx);
     FunctionType collection_constructor = ObjectWrap<T, CollectionClass<T>>::create_constructor(ctx);
     FunctionType list_constructor = ObjectWrap<T, ListClass<T>>::create_constructor(ctx);
@@ -674,7 +688,26 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
             ValueType schema_value = Object::get_property(ctx, object, schema_string);
             if (!Value::is_undefined(ctx, schema_value)) {
                 ObjectType schema_array = Value::validated_to_array(ctx, schema_value, "schema");
-                config.schema.emplace(Schema<T>::parse_schema(ctx, schema_array, defaults, constructors));
+                auto schema = Schema<T>::parse_schema(ctx, schema_array, defaults, constructors);
+                // Check that all constructors provided by the user extend Realm.Object
+                const auto& realm_constructor = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
+                const auto& realm_object_constructor = Object::validated_get_object(ctx, realm_constructor, "Object");
+                for (const auto& [name, constructor] : constructors) {
+                    const auto& prototype = Value::validated_to_object(ctx, Object::get_prototype(ctx, constructor));
+                    if (prototype != realm_object_constructor) {
+                        const std::string& class_name =
+                            Object::validated_get_string(ctx, constructor, "name", "Failed to read class name");
+                        if (class_name == name) {
+                            throw std::invalid_argument(
+                                util::format("Class '%1' must extend Realm.Object", class_name));
+                        }
+                        else {
+                            throw std::invalid_argument(util::format(
+                                "Class '%1' (declaring '%2' schema) must extend Realm.Object", class_name, name));
+                        }
+                    }
+                }
+                config.schema.emplace(std::move(schema));
                 schema_updated = true;
             }
 
@@ -1165,10 +1198,10 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
         Function<T>::callback(protected_ctx, protected_callback, protected_this, 1, callback_arguments);
     }
 
-    std::shared_ptr<AsyncOpenTask> task;
-    task = Realm::get_synchronized_realm(config);
+    std::shared_ptr<AsyncOpenTask> task = Realm::get_synchronized_realm(config);
 
-    realm::util::EventLoopDispatcher<RealmCallbackHandler> callback_handler([=, defaults = std::move(defaults),
+    realm::util::EventLoopDispatcher<RealmCallbackHandler> callback_handler([=, args_count = args.count,
+                                                                             defaults = std::move(defaults),
                                                                              constructors = std::move(constructors)](
                                                                                 ThreadSafeReference&& realm_ref,
                                                                                 std::exception_ptr error) {
@@ -1200,7 +1233,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
 
         try {
             ValueType unprotected_args = protected_args;
-            handle_initial_subscriptions(protected_ctx, args.count - 1, &unprotected_args, realm, realm_exists);
+            handle_initial_subscriptions(protected_ctx, args_count - 1, &unprotected_args, realm, realm_exists);
         }
         catch (TypeErrorException e) {
             auto error = Object::create_error(protected_ctx, e.what());
@@ -1725,6 +1758,24 @@ void RealmClass<T>::get_schema_name_from_object(ContextType ctx, ObjectType this
     SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
     auto& object_schema = validated_object_schema_for_value(ctx, realm, args[0]);
     return_value.set(object_schema.name);
+}
+
+template <typename T>
+void RealmClass<T>::__to_object(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
+{
+    args.validate_count(1);
+    ObjectType newobj = Value::to_object(ctx, args[0]);
+
+    return_value.set(newobj);
+}
+
+template <typename T>
+void RealmClass<T>::__to_boolean(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
+{
+    args.validate_count(1);
+    bool is_bool = Value::to_boolean(ctx, args[0]);
+
+    return_value.set(is_bool);
 }
 
 /**

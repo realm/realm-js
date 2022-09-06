@@ -21,19 +21,20 @@
 #include <ReactCommon/CallInvokerHolder.h>
 #include <android/log.h>
 #include <android/asset_manager_jni.h>
+#include <jsi/jsi.h>
 
-#include "io_realm_react_RealmReactModule.h"
-#include "rpc.hpp"
+#include <jsi/jsi_init.h>
+#include <jsi/jsi_externs.hpp>
 #include "platform.hpp"
 #include "jni_utils.hpp"
-#include "jsc_externs.hpp"
 #include "hack.hpp"
 
-using namespace realm::rpc;
+#include "io_realm_react_RealmReactModule.h"
+
+namespace jsi = facebook::jsi;
+
 using namespace realm::jni_util;
 
-static RPCServer* s_rpc_server;
-extern bool realmContextInjected;
 jclass ssl_helper_class;
 
 namespace realm {
@@ -99,42 +100,22 @@ JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileD
                         realm::default_realm_file_directory().c_str());
 }
 
-JNIEXPORT jlong JNICALL Java_io_realm_react_RealmReactModule_setupChromeDebugModeRealmJsContext(JNIEnv*, jobject)
+JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_install(JNIEnv*, jobject, jlong runtimePointer)
 {
-    __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "setupChromeDebugModeRealmJsContext");
-    if (s_rpc_server) {
-        delete s_rpc_server;
+    __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "install");
+    auto runtime = reinterpret_cast<jsi::Runtime*>(runtimePointer);
+    if (runtime) {
+        __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "Building an exports object");
+        auto exports = jsi::Object(*runtime);
+        __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "Initializing ...");
+        realm_jsi_init(*runtime, exports, [] {});
     }
-    s_rpc_server = new RPCServer();
-    return (jlong)s_rpc_server;
 }
 
-JNIEXPORT jstring JNICALL Java_io_realm_react_RealmReactModule_processChromeDebugCommand(JNIEnv* env, jobject,
-                                                                                         jstring chrome_cmd,
-                                                                                         jstring chrome_args)
+JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_invalidateCaches(JNIEnv*, jobject)
 {
-    const char* cmd = env->GetStringUTFChars(chrome_cmd, NULL);
-    const char* args = env->GetStringUTFChars(chrome_args, NULL);
-    std::string response = s_rpc_server->perform_request(cmd, args);
-    env->ReleaseStringUTFChars(chrome_cmd, cmd);
-    env->ReleaseStringUTFChars(chrome_args, args);
-    return env->NewStringUTF(response.c_str());
-}
-
-JNIEXPORT jboolean JNICALL Java_io_realm_react_RealmReactModule_tryRunTask(JNIEnv* env, jobject)
-{
-    jboolean result = s_rpc_server->try_run_task();
-    return result;
-}
-
-JNIEXPORT jboolean JNICALL Java_io_realm_react_RealmReactModule_isContextInjected(JNIEnv* env, jobject)
-{
-    return realmContextInjected;
-}
-
-JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_clearContextInjectedFlag(JNIEnv* env, jobject)
-{
-    realmContextInjected = false;
+    __android_log_print(ANDROID_LOG_VERBOSE, "JSRealm", "invalidateCaches");
+    realm_jsi_invalidate_caches();
 }
 
 // Setup the flush_ui_queue function we use to flush the React Native UI queue whenever we call from C++ to JS.

@@ -88,8 +88,8 @@ module.exports = {
     let constructorCalled = false;
     //test class syntax support
     class Car extends Realm.Object {
-      constructor() {
-        super();
+      constructor(realm) {
+        super(realm);
         constructorCalled = true;
       }
     }
@@ -125,28 +125,10 @@ module.exports = {
     Object.setPrototypeOf(Car2.prototype, Realm.Object.prototype);
     Object.setPrototypeOf(Car2, Realm.Object);
 
-    //test class syntax support without extending Realm.Object
-    let car3ConstructorCalled = false;
-    class Car3 {
-      constructor() {
-        car3ConstructorCalled = true;
-      }
-    }
-
-    Car3.schema = {
-      name: "Car3",
-      properties: {
-        make: "string",
-        model: "string",
-        otherType: { type: "string", mapTo: "type", optional: true },
-        kilometers: { type: "int", default: 0 },
-      },
-    };
-
-    let realm = new Realm({ schema: [Car, Car2, Car3] });
+    let realm = new Realm({ schema: [Car, Car2] });
     realm.write(() => {
       let car = realm.create("Car", { make: "Audi", model: "A4", kilometers: 24 });
-      TestCase.assertTrue(constructorCalled);
+      TestCase.assertFalse(constructorCalled);
       TestCase.assertEqual(car.make, "Audi");
       TestCase.assertEqual(car.model, "A4");
       TestCase.assertEqual(car.kilometers, 24);
@@ -162,34 +144,25 @@ module.exports = {
 
       constructorCalled = false;
       let car1 = realm.create("Car", { make: "VW", model: "Touareg", kilometers: 13 });
-      TestCase.assertTrue(constructorCalled);
+      TestCase.assertFalse(constructorCalled);
       TestCase.assertEqual(car1.make, "VW");
       TestCase.assertEqual(car1.model, "Touareg");
       TestCase.assertEqual(car1.kilometers, 13);
       TestCase.assertInstanceOf(car1, Realm.Object, "car1 not an instance of Realm.Object");
 
       let car2 = realm.create("Car2", { make: "Audi", model: "A4", kilometers: 24 });
-      TestCase.assertTrue(calledAsConstructor);
+      TestCase.assertFalse(calledAsConstructor);
       TestCase.assertEqual(car2.make, "Audi");
       TestCase.assertEqual(car2.model, "A4");
       TestCase.assertEqual(car2.kilometers, 24);
       TestCase.assertInstanceOf(car2, Realm.Object, "car2 not an instance of Realm.Object");
 
       let car2_1 = realm.create("Car2", { make: "VW", model: "Touareg", kilometers: 13 });
-      TestCase.assertTrue(calledAsConstructor);
+      TestCase.assertFalse(calledAsConstructor);
       TestCase.assertEqual(car2_1.make, "VW");
       TestCase.assertEqual(car2_1.model, "Touareg");
       TestCase.assertEqual(car2_1.kilometers, 13);
       TestCase.assertInstanceOf(car2_1, Realm.Object, "car2_1 not an instance of Realm.Object");
-
-      let car3 = realm.create("Car3", { make: "Audi", model: "A4", kilometers: 24 });
-      TestCase.assertTrue(car3ConstructorCalled);
-      TestCase.assertEqual(car3.make, "Audi");
-      TestCase.assertEqual(car3.model, "A4");
-      TestCase.assertEqual(car3.kilometers, 24);
-
-      //methods from Realm.Objects should be present
-      TestCase.assertDefined(car3.addListener);
     });
     realm.close();
   },
@@ -1176,6 +1149,7 @@ module.exports = {
         intCol: "int",
       },
     };
+    Object.setPrototypeOf(CustomObject, Realm.Object);
 
     function InvalidObject() {
       return {};
@@ -1191,26 +1165,25 @@ module.exports = {
         intCol: "int",
       },
     };
+    Object.setPrototypeOf(InvalidObject, Realm.Object);
     let realm = new Realm({ schema: [CustomObject, InvalidObject] });
 
     realm.write(() => {
       let object = realm.create("CustomObject", { intCol: 1 });
       TestCase.assertTrue(object instanceof CustomObject);
       TestCase.assertTrue(Object.getPrototypeOf(object) == CustomObject.prototype);
-      TestCase.assertEqual(customCreated, 1);
+      TestCase.assertEqual(customCreated, 0);
 
       // Should be able to create object by passing in constructor.
       object = realm.create(CustomObject, { intCol: 2 });
       TestCase.assertTrue(object instanceof CustomObject);
       TestCase.assertTrue(Object.getPrototypeOf(object) == CustomObject.prototype);
-      TestCase.assertEqual(customCreated, 2);
+      TestCase.assertEqual(customCreated, 0);
     });
 
-    TestCase.assertThrowsContaining(() => {
-      realm.write(() => {
-        realm.create("InvalidObject", { intCol: 1 });
-      });
-    }, "Realm object constructor must not return another value");
+    realm.write(() => {
+      realm.create("InvalidObject", { intCol: 1 });
+    });
 
     // Only the original constructor should be valid.
     function InvalidCustomObject() {}
@@ -1238,6 +1211,7 @@ module.exports = {
         intCol: "int",
       },
     };
+    Object.setPrototypeOf(CustomObject, Realm.Object);
 
     let realm = new Realm({ schema: [CustomObject] });
     realm.write(() => {
@@ -1247,6 +1221,7 @@ module.exports = {
 
     function NewCustomObject() {}
     NewCustomObject.schema = CustomObject.schema;
+    Object.setPrototypeOf(NewCustomObject, Realm.Object);
 
     realm = new Realm({ schema: [NewCustomObject] });
     realm.write(() => {
@@ -1617,22 +1592,22 @@ module.exports = {
   testErrorMessageFromInvalidWrite: function () {
     const realm = new Realm({ schema: [schemas.PersonObject] });
 
-    TestCase.assertThrowsException(() => {
+    TestCase.assertThrowsContaining(() => {
       realm.write(() => {
         const p1 = realm.create("PersonObject", { name: "Ari", age: 10 });
         p1.age = "Ten";
       });
-    }, new Error("PersonObject.age must be of type 'number', got 'string' ('Ten')"));
+    }, "PersonObject.age must be of type 'number', got 'string' ('Ten')");
   },
 
   testErrorMessageFromInvalidCreate: function () {
     const realm = new Realm({ schema: [schemas.PersonObject] });
 
-    TestCase.assertThrowsException(() => {
+    TestCase.assertThrowsContaining(() => {
       realm.write(() => {
-        const p1 = realm.create("PersonObject", { name: "Ari", age: "Ten" });
+        realm.create("PersonObject", { name: "Ari", age: "Ten" });
       });
-    }, new Error("PersonObject.age must be of type 'number', got 'string' ('Ten')"));
+    }, "PersonObject.age must be of type 'number', got 'string' ('Ten')");
   },
 
   testValidTypesForListProperties: function () {

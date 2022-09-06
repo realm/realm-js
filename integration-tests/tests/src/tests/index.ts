@@ -22,8 +22,9 @@ import chai from "chai";
 chai.use(chaiAsPromised);
 
 import "./realm-constructor";
-import "./serialization";
 import "./objects";
+import "./class-models";
+import "./serialization";
 import "./iterators";
 import "./queries";
 import "./dynamic-schema-updates";
