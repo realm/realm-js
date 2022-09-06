@@ -107,8 +107,9 @@ declare namespace Realm {
      * ObjectClass
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.html#~ObjectClass }
      */
-    interface ObjectClass {
-        schema: ObjectSchema;
+    type ObjectClass<T extends Realm.Object<T> = any> = {
+        new(...args: any): Realm.Object<T>;
+        schema?: ObjectSchema;
     }
 
     type PrimaryKey = number | string | Realm.BSON.ObjectId | Realm.BSON.UUID;
@@ -278,7 +279,12 @@ declare namespace Realm {
      * Object
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Object.html }
      */
-    abstract class Object {
+    abstract class Object<T = unknown> {
+        /**
+         * Creates a new object in the database.
+         */
+        constructor(realm: Realm, values: Unmanaged<T>);
+
         /**
          * @returns An array of the names of the object's properties.
          */
@@ -319,9 +325,9 @@ declare namespace Realm {
         /**
          * @returns void
          */
-        addListener(callback: ObjectChangeCallback<this>): void;
+        addListener(callback: ObjectChangeCallback<T>): void;
 
-        removeListener(callback: ObjectChangeCallback<this>): void;
+        removeListener(callback: ObjectChangeCallback<T>): void;
 
         removeAllListeners(): void;
 
@@ -992,10 +998,10 @@ type ExtractPropertyNamesOfType<T, PropType> = {
 }[keyof T];
 
 /**
- * Exchanges properties defined as Realm.List<Model> with an optional Array<Model | RealmInsertionModel<Model>>.
+ * Exchanges properties defined as Realm.List<Model> with an optional Array<Model | Unmanaged<Model>>.
  */
 type RealmListsRemappedModelPart<T> = {
-    [K in ExtractPropertyNamesOfType<T, Realm.List<any>>]?: T[K] extends Realm.List<infer GT> ? Array<GT | RealmInsertionModel<GT>> : never
+    [K in ExtractPropertyNamesOfType<T, Realm.List<any>>]?: T[K] extends Realm.List<infer GT> ? Array<GT | Unmanaged<GT>> : never
 }
 
 /**
@@ -1022,7 +1028,7 @@ type RemappedRealmTypes<T> =
  * Joins T stripped of all keys which value extends Realm.Collection and all inherited from Realm.Object,
  * with only the keys which value extends Realm.List, remapped as Arrays.
  */
-type RealmInsertionModel<T> = OmittedRealmTypes<T> & RemappedRealmTypes<T>;
+type Unmanaged<T> = OmittedRealmTypes<T> & RemappedRealmTypes<T>;
 declare class Realm {
     static defaultPath: string;
 
@@ -1127,8 +1133,8 @@ declare class Realm {
      * @param  {Realm.UpdateMode} mode? If not provided, `Realm.UpdateMode.Never` is used.
      * @returns T & Realm.Object
      */
-    create<T>(type: string, properties: RealmInsertionModel<T>, mode?: Realm.UpdateMode.Never): T & Realm.Object;
-    create<T>(type: string, properties: Partial<T> | Partial<RealmInsertionModel<T>>, mode: Realm.UpdateMode.All | Realm.UpdateMode.Modified): T & Realm.Object;
+    create<T>(type: string, properties: Unmanaged<T>, mode?: Realm.UpdateMode.Never): T & Realm.Object;
+    create<T>(type: string, properties: Partial<T> | Partial<Unmanaged<T>>, mode: Realm.UpdateMode.All | Realm.UpdateMode.Modified): T & Realm.Object;
 
     /**
      * @param  {Class} type
@@ -1136,8 +1142,8 @@ declare class Realm {
      * @param  {Realm.UpdateMode} mode? If not provided, `Realm.UpdateMode.Never` is used.
      * @returns T
      */
-    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: RealmInsertionModel<T>, mode?: Realm.UpdateMode.Never): T;
-    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: Partial<T> | Partial<RealmInsertionModel<T>>, mode: Realm.UpdateMode.All | Realm.UpdateMode.Modified): T;
+    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: Unmanaged<T>, mode?: Realm.UpdateMode.Never): T;
+    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: Partial<T> | Partial<Unmanaged<T>>, mode: Realm.UpdateMode.All | Realm.UpdateMode.Modified): T;
 
     /**
      * @param  {Realm.Object|Realm.Object[]|Realm.List<any>|Realm.Results<any>|any} object
@@ -1170,7 +1176,7 @@ declare class Realm {
     objectForPrimaryKey<T extends Realm.Object>(type: {new(...arg: any[]): T; }, key: Realm.PrimaryKey): T | undefined;
 
     // Combined definitions
-    objectForPrimaryKey<T>(type: string | {new(...arg: any[]): T; }, key: Realm.PrimaryKey): (T & Realm.Object) | undefined;
+    objectForPrimaryKey<T>(type: string | {new(...arg: any[]): T; }, key: Realm.PrimaryKey): (T & Realm.Object<T>) | undefined;
 
     /**
      * @param  {string} type

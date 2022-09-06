@@ -1,7 +1,7 @@
 {
   "name": "realm",
   "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
-  "version": "10.22.0",
+  "version": "11.0.0-rc.1",
   "license": "See the actual license in the file LICENSE",
   "homepage": "https://realm.io",
   "keywords": [
@@ -31,14 +31,13 @@
   },
   "types": "types/index.d.ts",
   "main": "lib/index.js",
+  "react-native": "lib/index.native.js",
   "files": [
     "cmake",
     "lib",
     "types",
     "react-native",
     "scripts",
-    "src",
-    "vendor",
     "dependencies.list",
     "react-native.config.js",
     "RealmJS.podspec",
@@ -104,7 +103,7 @@
     "url-parse": "^1.4.4"
   },
   "peerDependencies": {
-    "react-native": ">=0.64"
+    "react-native": ">=0.66.0"
   },
   "peerDependenciesMeta": {
     "react-native": {
@@ -140,7 +139,7 @@
     "mockery": "^2.0.0",
     "prebuild": "^10.0.1",
     "prettier": "^2.0.4",
-    "react-native": "^0.69.1",
+    "react-native": "0.69.1",
     "rimraf": "^2.6.3",
     "semver": "^5.6.0",
     "shelljs": "^0.8.5",

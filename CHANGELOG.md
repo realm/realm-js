@@ -125,8 +125,78 @@
 * Migrated to `std::optional` and `std::nullopt`.
 * Disabled testing on iOS and Catalyst on legacy CI system.
 
-## 10.19.5 (2022-7-6)
+## 11.0.0-rc.1 (2022-7-11)
 
+### Notes
+This is primarily a re-release of `11.0.0-rc.0`, which is compatible with React Native v0.69.0 or above.
+The release is based on Realm JS v10.19.5.
+
+### Enhancements
+* None.
+
+### Fixed
+* None.
+
+### Compatibility
+* React Native equal to or above `v0.69.0` and above, since we're shipping binaries pre-compiled against the JSI ABI.
+* Atlas App Services.
+* Realm Studio v12.0.0.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
+* File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+## 11.0.0-rc.0 (2022-7-7)
+
+### Notes
+Based on Realm JS v10.19.5: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.17.0).
+
+### Breaking change
+* Removed all code related to the legacy Chrome Debugger. Please use [Flipper](https://fbflipper.com/) as debugger.
+* Model classes passed as schema to the `Realm` constructor must now extend `Realm.Object` and will no longer have their constructors called when pulling an object of that type from the database. Existing classes already extending `Realm.Object` now need to call the `super` constructor passing two arguments:
+  - `realm`: The Realm to create the object in.
+  - `values`: Values to pass to the `realm.create` call when creating the object in the database.
+* Renamed the `RealmInsertionModel<T>` type to `Unmanaged<T>` to simplify and highlight its usage.
+* Installing via NPM from a `git://` URL is no longer supported, since we removed `src` and `vendor` from the NPM bundle, to reduce size blow-up caused by files recently added to the sub-module. This will force end-users to checkout the Git repository from GitHub when building from source. ([#4060](https://github.com/realm/realm-js/issues/4060))
+
+### Enhancements
+* Adding support for Hermes on iOS & Android.
+* Class-based models (i.e. user defined classes extending `Realm.Object` and passed through the `schema` when opening a Realm), will now create object when their constructor is called:
+
+```ts
+class Person extends Realm.Object<Person> {
+  name!: string;
+
+  static schema = {
+    name: "Person",
+    properties: { name: "string" },
+  };
+}
+
+const realm = new Realm({ schema: [Person] });
+realm.write(() => {
+  const alice = new Person(realm, { name: "Alice" });
+  // A Person { name: "Alice" } is now persisted in the database
+  console.log("Hello " + alice.name);
+});
+```
+
+### Fixed
+* Fixed build error (call to implicitly-deleted copy constructor of 'realm::js::RealmClass<realm::js::realmjsi::Types>::Arguments') (follow up to [#4568](https://github.com/realm/realm-js/pull/4568))
+
+### Compatibility
+* React Native equal to or above `v0.66.0` and below `v0.69.0` (not included), since we're shipping binaries pre-compiled against the JSI ABI.
+* Atlas App Services.
+* Realm Studio v12.0.0.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
+* File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Internal
+* Remove the previous implementation to the JavaScriptCore engine (in `src/jsc`).
+* Upgrade Example to RN v0.68.2
+* Upgrade dependencies of the Realm Web integration tests
+* Throw instances of `Error` instead of plain objects on app errors.
+* Make integration tests on React Native Android connect to host machine by default
+
+## 10.19.5 (2022-7-6)
 ### Enhancements
 * None.
 
@@ -142,7 +212,7 @@
 ### Internal
 * Using Realm Core v12.3.0.
 
-10.19.4 (2022-7-5)
+## 10.19.4 (2022-7-5)
 
 ### Enhancements
 * Allow flexible sync with discard local client resets. ([realm/realm-core#5404](https://github.com/realm/realm-core/pull/5404))
@@ -342,6 +412,11 @@ const Person = {
 * Fixed a typo in the `testRealmConversions` test which prevented some test scenarios from executing.
 * Upgraded Realm Core from v11.14.0 to v11.15.0.
 
+## 10.20.0-beta.5 (2022-4-13)
+
+### Notes
+Based on Realm JS v10.16.0: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.15.0).
+
 ## 10.16.0 (2022-4-12)
 
 ### Enhancements
@@ -359,8 +434,16 @@ const Person = {
 ### Internal
 * Upgraded Realm Core from v11.13.0 to v11.14.0.
 
-## 10.15.0 (2022-4-11)
+## 10.20.0-beta.4 (2022-4-11)
 
+### Notes
+Based on Realm JS v10.15.0: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.14.0).
+
+### Fixed
+* Changed "react-native" main field to point to a `lib/index.native.js` file to help bundlers pick the right file when loading our library on React Native. ([#4459](https://github.com/realm/realm-js/issues/4459))
+* Fixed resolving the "react-native" package when building from source, enabling developers to run the `./scripts/build-ios.sh` script themselves to build our iOS artifacts with the same version of Xcode / LLVM as they're building their app.
+
+## 10.15.0 (2022-4-11)
 ### Enhancements
 * None.
 
@@ -380,6 +463,11 @@ const Person = {
 * Update token in integration test.
 * Upgraded Realm Core from v11.12.0 to v11.13.0.
 * Added a failing test case for Node.js scripts failing to exit cleanly ([#4556](https://github.com/realm/realm-js/pull/4556))
+
+## 10.20.0-beta.3 (2022-3-24)
+
+### Notes
+Based on Realm JS v10.14.0: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.13.0).
 
 ## 10.14.0 (2022-3-24)
 
@@ -413,6 +501,11 @@ const Person = {
 * Fixed React Native Android integration test harness to read only one pid when starting logcat.
 * Added a script to generate JS template apps from TS, and updated JS templates. ([4374](https://github.com/realm/realm-js/pull/4374))
 
+## 10.20.0-beta.2 Release notes (2022-2-14)
+
+### Notes
+Based on Realm JS v10.13.0: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.12.0).
+
 ## 10.13.0 (2022-2-11)
 
 ### Enhancements
@@ -437,6 +530,23 @@ const Person = {
 * Enabled mixed tests for flexible sync. ([#4279](https://github.com/realm/realm-js/pull/4279))
 * Fixed an issue where some references were not updated from `Subscriptions` to `SubscriptionSet`. ([#4298](https://github.com/realm/realm-js/pull/4298))
 * Submitting [analytics](https://github.com/realm/realm-js/blob/master/README.md#analytics) as a postinstall script.
+
+## 10.20.0-beta.1 (2022-1-27)
+
+### Notes
+Based on Realm JS v10.12.0: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.11.0).
+
+### Breaking change
+* Removed all code related to the legacy Chrome Debugger. Please use [Flipper](https://fbflipper.com/) as debugger.
+
+### Enhancements
+* None.
+
+### Fixed
+* Fixed "JSCRuntime destroyed with a dangling API object" assertion when reloading an app in debug mode while running with Hermes engine disabled. ([#4115](https://github.com/realm/realm-js/issues/4115), since 10.20.0-alpha.0)
+
+### Internal
+* Remove the previous implementation to the JavaScriptCore engine (in `src/jsc`).
 
 ## 10.12.0 (2022-1-24)
 
@@ -477,8 +587,19 @@ Please note the following API changes from the `10.12.0-beta.1` release of Flexi
 * Enabled `strictNullChecks` for integration tests
 * Updated release instructions
 
-## 10.11.0 (2021-12-21)
+## 10.20.0-beta.0 (2021-12-21)
 
+### Notes
+Based on Realm JS v10.11.0: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.10.1).
+
+### Enhancements
+* Catching missing libjsi.so when loading the librealm.so and rethrowing a more meaningful error, instructing users to upgrade their version of React Native.
+
+### Fixed
+* Fixed support of user defined classes that don't extend `Realm.Object`.
+* Fixed throwing "Illegal constructor" when `new` constructing anything other than `Realm` and `Realm.Object`.
+
+## 10.11.0 (2021-12-21)
 ### Enhancements
 * Added templates for Expo (https://www.npmjs.com/package/@realm/expo-template-js and https://www.npmjs.com/package/@realm/expo-template-ts).
 * A new mode `discardLocal` for client reset has been introduced. The old behavior is supported (but deprecated) through the `manual` mode. The new mode will discard any local changes, and a fresh copy of the Realm will be downloaded. An example of the configuration:
@@ -528,6 +649,23 @@ const config = {
 * Adding a new private `@realm/metro-config` package to share this across any React Native app in our repo that reference other packages via symbolic links.
 * Added a performance test suite to the integration test.
 * Upgraded Realm Core from v11.6.1 to v11.7.0.
+
+## 10.20.0-alpha.2 (2021-11-25)
+
+### Notes
+NOTE: DO NOT USE THIS RELEASE IN PRODUCTION!
+NOTE: This is an early (alpha) release with Hermes/JSI support: We expect crashes and bugs.
+
+Based on Realm JS v10.10.1: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.8.0).
+
+### Enhancements
+* None.
+
+### Fixed
+* Hot reloading on Android no longer crash the app.
+
+### Internal
+* Restructured C++ namespaces and files to reflect that we support JSI, not just Hermes.
 
 ## 10.10.1 (2021-11-18)
 
@@ -641,8 +779,18 @@ const config = {
 * Using Realm Core v11.4.1.
 * Small fix to Jenkins to publish Docker image for Raspberry Pi.
 
-## 10.8.0 (2021-9-14)
+## 10.20.0-alpha.1 (2021-9-1)
 
+### Notes
+NOTE: DO NOT USE THIS RELEASE IN PRODUCTION!
+NOTE: This is an early (alpha) release with Hermes/JSI support. Only iOS is supported and we expect crashes and bugs.
+
+Based on Realm JS v10.8.0: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.7.0).
+
+### Enhancements
+* Adding support for Hermes on Android.
+
+## 10.8.0 (2021-9-14)
 ### Enhancements
 * Synchronized Realms are no longer opened twice, cutting the address space and file descriptors used in half. ([realm/realm-core#4839](https://github.com/realm/realm-core/pull/4839))
 * `Realm.write()` now returns callback return value. ([#2237](https://github.com/realm/realm-js/issues/2237))
@@ -665,6 +813,17 @@ const config = {
 * Upgraded Realm Core from v11.3.1 to v11.4.1. ([#3942](https://github.com/realm/realm-js/issues/3942))
 * Extend Jest test runner to cover opening and closing of a Realm.
 * Disable analytics if the `CI` environment variable is set to some value.
+
+## 10.20.0-alpha.0 (2021-9-1)
+
+### Notes
+NOTE: DO NOT USE THIS RELEASE IN PRODUCTION!
+NOTE: This is an early (alpha) release with Hermes/JSI support. Only iOS is supported and we expect crashes and bugs.
+
+Based on Realm JS v10.7.0: See changelog below for details on enhancements and fixes introduced by that version.
+
+### Enhancements
+- Adding support for Hermes (iOS only).
 
 ## 10.7.0 (2021-8-30)
 
