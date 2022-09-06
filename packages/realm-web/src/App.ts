@@ -61,8 +61,9 @@ export interface AppConfiguration extends Realm.AppConfiguration {
  */
 export class App<
   FunctionsFactoryType = Realm.DefaultFunctionsFactory & Realm.BaseFunctionsFactory,
-  CustomDataType = SimpleObject
-> implements Realm.App<FunctionsFactoryType, CustomDataType> {
+  CustomDataType = SimpleObject,
+> implements Realm.App<FunctionsFactoryType, CustomDataType>
+{
   /**
    * A map of app instances returned from calling getApp.
    */
