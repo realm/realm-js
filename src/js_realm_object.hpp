@@ -64,6 +64,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::js::RealmObject<T>> {
     using FunctionType = typename T::Function;
     using ObjectType = typename T::Object;
     using ValueType = typename T::Value;
+    using Context = js::Context<T>;
     using String = js::String<T>;
     using Value = js::Value<T>;
     using Object = js::Object<T>;
@@ -74,6 +75,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::js::RealmObject<T>> {
 
     static ObjectType create_instance(ContextType, realm::js::RealmObject<T>);
 
+    static void constructor(ContextType, ObjectType, Arguments&);
     static void get_property(ContextType, ObjectType, const String&, ReturnValue&);
     static bool set_property(ContextType, ObjectType, const String&, ValueType);
     static std::vector<String> get_property_names(ContextType, ObjectType);
@@ -166,6 +168,44 @@ typename T::Object RealmObjectClass<T>::create_instance(ContextType ctx, realm::
         delete internal;
         throw;
     }
+}
+
+/**
+ * @brief Implements the constructor for a Realm.Object, calling the `Realm#create` instance method to create an
+ * object in the database.
+ *
+ * @note This differs from `RealmObjectClass<T>::create_instance` as it is executed when end-users construct a `new
+ * Realm.Object()` (or another user-defined class extending `Realm.Object`), whereas `create_instance` is called when
+ * reading objects from the database.
+ *
+ * @tparam T Engine specific types.
+ * @param ctx JS context.
+ * @param this_object JS object being returned to the user once constructed.
+ * @param args Arguments passed by the user when calling the constructor.
+ */
+template <typename T>
+void RealmObjectClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments& args)
+{
+    // Parse aguments
+    args.validate_count(2);
+    auto constructor = Object::validated_get_object(ctx, this_object, "constructor");
+    auto realm = Value::validated_to_object(ctx, args[0], "realm");
+    auto values = Value::validated_to_object(ctx, args[1], "values");
+
+    // Create an object
+    std::vector<ValueType> create_args{constructor, values};
+    Arguments create_arguments{ctx, create_args.size(), create_args.data()};
+    ReturnValue result{ctx};
+    RealmClass<T>::create(ctx, realm, create_arguments, result);
+    ObjectType tmp_realm_object = Value::validated_to_object(ctx, result);
+
+    // Copy the internal from the constructed object onto this_object
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, tmp_realm_object);
+    // The finalizer on the ObjectWrap (applied inside of set_internal) will delete the `new_realm_object` which is
+    // why we create a new instance to avoid a double free (the first of which will happen when the `tmp_realm_object`
+    // destructs).
+    auto new_realm_object = new realm::js::RealmObject<T>(*realm_object);
+    set_internal<T, RealmObjectClass<T>>(ctx, this_object, new_realm_object);
 }
 
 template <typename T>
@@ -394,7 +434,7 @@ void RealmObjectClass<T>::add_listener(ContextType ctx, ObjectType this_object, 
     auto callback = Value::validated_to_function(ctx, args[0]);
     Protected<FunctionType> protected_callback(ctx, callback);
     Protected<ObjectType> protected_this(ctx, this_object);
-    Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
+    Protected<typename T::GlobalContext> protected_ctx(Context::get_global_context(ctx));
 
     auto token = realm_object->add_notification_callback([=](CollectionChangeSet const& change_set,
                                                              std::exception_ptr exception) {

@@ -7,22 +7,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#undef io_realm_react_RealmReactModule_DEFAULT_PORT
-#define io_realm_react_RealmReactModule_DEFAULT_PORT 8083L
-/*
- * Class:     io_realm_react_RealmReactModule
- * Method:    isContextInjected
- * Signature: ()Z
- */
-JNIEXPORT jboolean JNICALL Java_io_realm_react_RealmReactModule_isContextInjected(JNIEnv*, jobject);
-
-/*
- * Class:     io_realm_react_RealmReactModule
- * Method:    clearContextInjectedFlag
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_clearContextInjectedFlag(JNIEnv*, jobject);
-
 /*
  * Class:     io_realm_react_RealmReactModule
  * Method:    setDefaultRealmFileDirectory
@@ -33,26 +17,20 @@ JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileD
 
 /*
  * Class:     io_realm_react_RealmReactModule
- * Method:    setupChromeDebugModeRealmJsContext
- * Signature: ()J
+ * Method:    install
+ * Signature: (J)V
  */
-JNIEXPORT jlong JNICALL Java_io_realm_react_RealmReactModule_setupChromeDebugModeRealmJsContext(JNIEnv*, jobject);
+JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_install
+  (JNIEnv *, jobject, jlong);
 
 /*
  * Class:     io_realm_react_RealmReactModule
- * Method:    processChromeDebugCommand
- * Signature: (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+ * Method:    invalidateCaches
+ * Signature: ()V
  */
-JNIEXPORT jstring JNICALL Java_io_realm_react_RealmReactModule_processChromeDebugCommand(JNIEnv*, jobject, jstring,
-                                                                                         jstring);
-
-/*
- * Class:     io_realm_react_RealmReactModule
- * Method:    tryRunTask
- * Signature: ()Z
- */
-JNIEXPORT jboolean JNICALL Java_io_realm_react_RealmReactModule_tryRunTask(JNIEnv*, jobject);
-
+JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_invalidateCaches
+  (JNIEnv *, jobject);
+  
 /*
  * Class:     io_realm_react_RealmReactModule
  * Method:    setupFlushUiQueue

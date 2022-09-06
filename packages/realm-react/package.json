@@ -39,7 +39,8 @@
     "prettier": "^2.3.2",
     "react": "^17.0.2",
     "react-native": "^0.65.1",
-    "react-test-renderer": "^17.0.2"
+    "react-test-renderer": "^17.0.2",
+    "realm": "*"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

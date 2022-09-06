@@ -45,7 +45,10 @@ export function createUseObject(useRealm: () => Realm) {
    * @param primaryKey - The primary key of the desired object which will be retrieved using {@link Realm.objectForPrimaryKey}
    * @returns either the desired {@link Realm.Object} or `null` in the case of it being deleted or not existing.
    */
-  return function useObject<T>(type: string | { new (): T }, primaryKey: PrimaryKey): (T & Realm.Object) | null {
+  return function useObject<T>(
+    type: string | { new (...args: any): T },
+    primaryKey: PrimaryKey,
+  ): (T & Realm.Object<T>) | null {
     const realm = useRealm();
 
     // Create a forceRerender function for the cachedObject to use as its updateCallback, so that
@@ -58,7 +61,7 @@ export function createUseObject(useRealm: () => Realm) {
       // When this is implemented, remove `?? null`
       () =>
         createCachedObject({
-          object: realm.objectForPrimaryKey(type, primaryKey) ?? null,
+          object: realm.objectForPrimaryKey<unknown>(type, primaryKey) ?? null,
           realm,
           updateCallback: forceRerender,
         }),
@@ -76,6 +79,6 @@ export function createUseObject(useRealm: () => Realm) {
     }
 
     // Wrap object in a proxy to update the reference on rerender ( should only rerender when something has changed )
-    return new Proxy(object, {});
+    return new Proxy(object, {}) as T & Realm.Object<T>;
   };
 }

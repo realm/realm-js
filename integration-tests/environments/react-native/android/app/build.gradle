@@ -79,7 +79,7 @@ import org.apache.tools.ant.taskdefs.condition.Os
  */
 
 project.ext.react = [
-    enableHermes: false,  // clean and rebuild if changing
+    enableHermes: System.getenv().getOrDefault("USE_HERMES", "1") == "1",  // default: true
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"

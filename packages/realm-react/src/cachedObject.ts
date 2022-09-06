@@ -21,11 +21,11 @@ import { createCachedCollection } from "./cachedCollection";
 /**
  * Arguments object for `cachedObject`.
  */
-type CachedObjectArgs<T> = {
+type CachedObjectArgs = {
   /**
    * The {@link Realm.Object} to proxy
    */
-  object: T | null;
+  object: Realm.Object | null;
   /**
    * The {@link Realm} instance
    */
@@ -49,11 +49,11 @@ type CachedObjectArgs<T> = {
  * @param args - {@link CachedObjectArgs} object arguments
  * @returns Proxy object wrapping the {@link Realm.Object}
  */
-export function createCachedObject<T extends Realm.Object>({
+export function createCachedObject({
   object,
   realm,
   updateCallback,
-}: CachedObjectArgs<T>): { object: T | null; tearDown: () => void } {
+}: CachedObjectArgs): { object: Realm.Object | null; tearDown: () => void } {
   const listCaches = new Map();
   const listTearDowns: Array<() => void> = [];
   // If the object doesn't exist, just return it with an noop tearDown
@@ -64,7 +64,7 @@ export function createCachedObject<T extends Realm.Object>({
   // This Proxy handler intercepts any accesses into properties of the cached object
   // of type `Realm.List`, and returns a `cachedCollection` wrapping those properties
   // to allow changes in the list to trigger re-renders
-  const cachedObjectHandler: ProxyHandler<T & Realm.Object> = {
+  const cachedObjectHandler: ProxyHandler<Realm.Object> = {
     get: function (target, key) {
       const value = Reflect.get(target, key);
       // Pass methods through
@@ -92,14 +92,14 @@ export function createCachedObject<T extends Realm.Object>({
   };
 
   const cachedObjectResult = new Proxy(object, cachedObjectHandler);
-  const listenerCallback: Realm.ObjectChangeCallback<T> = (obj, changes) => {
+  const listenerCallback: Realm.ObjectChangeCallback<any> = (obj, changes) => {
     if (changes.deleted) {
       updateCallback();
     } else if (changes.changedProperties.length > 0) {
       // Don't force a second re-render if any of the changed properties is a Realm.List,
       // as the List's cachedCollection will force a re-render itself
       const anyListPropertyModified = changes.changedProperties.some((property) => {
-        return obj[property as keyof T] instanceof Realm.List;
+        return obj[property] instanceof Realm.List;
       });
       const shouldRerender = !anyListPropertyModified;
 

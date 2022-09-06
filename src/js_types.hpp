@@ -104,8 +104,37 @@ template <typename T>
 struct Context {
     using ContextType = typename T::Context;
     using GlobalContextType = typename T::GlobalContext;
+    using Invalidator = std::function<void()>;
+
+    inline static std::vector<Invalidator> invalidators{};
 
     static GlobalContextType get_global_context(ContextType);
+
+    /**
+     * @brief Register a function to be called just before the current context gets destroyed.
+     *
+     * Use this function to ensure caches derived from a context gets invalidated and destructed
+     * while the context is still around.
+     *
+     * @param invalidator The function to call just before the context gets destroyed.
+     */
+    static void register_invalidator(Invalidator invalidator)
+    {
+        invalidators.emplace_back(invalidator);
+    }
+
+    /**
+     * @brief Call all registered invalidator functions.
+     *
+     * This clears the list of invalidators, ensuring that they'll only get called once per context.
+     */
+    static void invalidate()
+    {
+        for (auto& invalidator : invalidators) {
+            invalidator();
+        }
+        invalidators.clear();
+    }
 };
 
 class TypeErrorException : public std::invalid_argument {
@@ -463,7 +492,7 @@ public:
     static typename ClassType::Internal* get_internal(ContextType ctx, const ObjectType&);
 
     template <typename ClassType>
-    static void set_internal(ContextType ctx, const ObjectType&, typename ClassType::Internal*);
+    static void set_internal(ContextType ctx, ObjectType&, typename ClassType::Internal*);
 
     static ObjectType create_from_app_error(ContextType, const app::AppError&);
     static ValueType create_from_optional_app_error(ContextType, const std::optional<app::AppError>&);
@@ -535,6 +564,8 @@ struct ReturnValue {
     void set(uint32_t);
     void set_null();
     void set_undefined();
+
+    operator ValueType() const;
 };
 
 template <typename T, typename ClassType>
@@ -560,14 +591,35 @@ REALM_JS_INLINE typename T::Object create_instance_by_schema(typename T::Context
     return Object<T>::template create_instance_by_schema<ClassType>(ctx, schema, internal);
 }
 
+/**
+ * @brief Get the internal (C++) object backing a JS object.
+ *
+ * @tparam T Engine specific types.
+ * @tparam ClassType Class implementing the C++ interface backing the JS accessor object (passed as `object`).
+ * @param ctx JS context.
+ * @param object JS object with an internal object.
+ * @return Pointer to the internal object.
+ */
 template <typename T, typename ClassType>
 REALM_JS_INLINE typename ClassType::Internal* get_internal(typename T::Context ctx, const typename T::Object& object)
 {
     return Object<T>::template get_internal<ClassType>(ctx, object);
 }
 
+/**
+ * @brief Set the internal (C++) object backing the JS object.
+ *
+ * @note Calling this transfer ownership of the object pointed to by `ptr` and links it to the lifetime of to the
+ * `object` passed as argument.
+ *
+ * @tparam T Engine specific types.
+ * @tparam ClassType Class implementing the C++ interface backing the JS accessor object (passed as `object`).
+ * @param ctx JS context.
+ * @param object JS object having its internal set.
+ * @param ptr A pointer to an internal object.
+ */
 template <typename T, typename ClassType>
-REALM_JS_INLINE void set_internal(typename T::Context ctx, const typename T::Object& object,
+REALM_JS_INLINE void set_internal(typename T::Context ctx, typename T::Object& object,
                                   typename ClassType::Internal* ptr)
 {
     Object<T>::template set_internal<ClassType>(ctx, object, ptr);
