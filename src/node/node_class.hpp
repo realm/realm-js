@@ -1523,8 +1523,7 @@ ObjectWrap<ClassType>::setup_static_property(Napi::Env env, const std::string& n
 namespace js {
 
 template <typename ClassType>
-class ObjectWrap<node::Types, ClassType> : public node::ObjectWrap<ClassType> {
-};
+class ObjectWrap<node::Types, ClassType> : public node::ObjectWrap<ClassType> {};
 
 
 #define HANDLE_WRAP_EXCEPTION                                                                                        \
