@@ -4,6 +4,7 @@
 #include <fbjni/fbjni.h>
 #include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
 #include <react/renderer/components/rncore/ComponentDescriptors.h>
+#include <rncli.h>
 
 namespace facebook {
 namespace react {
@@ -27,6 +28,9 @@ MainComponentsRegistry::initHybrid(
     jni::alias_ref<jclass>,
     ComponentFactory *delegate) {
   auto instance = makeCxxInstance(delegate);
+
+  // Autolinked providers registered by RN CLI
+  rncli_registerProviders(providerRegistry);
 
   auto buildRegistryFunction =
       [](EventDispatcher::Weak const &eventDispatcher,
