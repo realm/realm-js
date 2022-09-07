@@ -123,8 +123,16 @@ function describeRoundtrip({
     it("reads", async function (this: RealmContext) {
       await setupTest(this.realm);
 
-      const obj = this.realm.objectForPrimaryKey<MixedClass>("MixedClass", this._id);
-      if (!obj) throw new Error("Object not found");
+      const obj = await new Promise<MixedClass>((resolve) => {
+        this.realm
+          .objects<MixedClass>("MixedClass")
+          .filtered("_id = $0", this._id)
+          .addListener(([obj]) => {
+            if (obj) {
+              resolve(obj);
+            }
+          });
+      });
 
       expect(typeof obj).equals("object");
       // Test the single value
