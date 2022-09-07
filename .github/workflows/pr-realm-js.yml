@@ -1,5 +1,9 @@
 name: pr-realm-js
-on: pull_request
+on:
+  push:
+    branches:
+      - master
+  pull_request:
 
 jobs:
   build:
