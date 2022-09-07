@@ -16,59 +16,54 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { expect } from "chai";
-import Realm from "realm";
+import { openRealmBeforeEach } from "../hooks";
 
 import { PersonSchema } from "../schemas/person-and-dogs";
 
 describe("Realm transactions", () => {
-  beforeEach(() => {
-    Realm.clearTestState();
-  });
+  openRealmBeforeEach({ schema: [PersonSchema] });
 
   describe("Manual transactions", () => {
-    it("throw exception in transaction", () => {
-      // https://github.com/realm/realm-js/issues/4747
-      const message = "Something is wrong";
-      const realm = new Realm({ schema: [PersonSchema] });
+    it("rolls back when cancelled", function (this: RealmContext) {
+      const { realm } = this;
       realm.beginTransaction();
-      try {
-        realm.create(PersonSchema.name, {
-          name: "John Doe",
-          age: 42,
-        });
-        throw new Error(message);
-        realm.commitTransaction();
-      } catch (err) {
-        expect((err as Error).message).equals(message);
-        expect(realm.isInTransaction).to.be.true;
-        realm.cancelTransaction();
-      } finally {
-        expect(realm.objects(PersonSchema.name).length).equals(0);
-        realm.close();
-      }
-      expect(realm.isClosed).to.be.true;
+
+      const persons = realm.objects(PersonSchema.name);
+      expect(persons.length).equals(0);
+
+      realm.create(PersonSchema.name, {
+        name: "John Doe",
+        age: 42,
+      });
+
+      expect(persons.length).equals(1);
+      expect(realm.isInTransaction).to.be.true;
+
+      realm.cancelTransaction();
+      expect(persons.length).equals(0);
     });
 
-    it("invalid object", () => {
-      // https://github.com/realm/realm-js/issues/4747
-      const message = "Person.age must be of type 'number', got 'string' ('five')";
-      const realm = new Realm({ schema: [PersonSchema] });
+    it("throws on an invalid object", function (this: RealmContext) {
+      const { realm } = this;
       realm.beginTransaction();
-      try {
+
+      const persons = realm.objects(PersonSchema.name);
+      expect(persons.length).equals(0);
+
+      expect(() => {
         realm.create(PersonSchema.name, {
           name: "John Doe",
           age: "five", // wrong type
         });
-        realm.commitTransaction();
-      } catch (err) {
-        expect((err as Error).message).equals(message);
-        expect(realm.isInTransaction).to.be.true;
-        realm.cancelTransaction();
-      } finally {
-        expect(realm.objects(PersonSchema.name).length).equals(0);
-        realm.close();
-      }
-      expect(realm.isClosed).to.be.true;
+        realm.commitTransaction(); // We don't expect this to be called
+      }).throws("Person.age must be of type 'number', got 'string' ('five')");
+
+      // TODO: Fix 👇 ... its a bit surprising that an object gets created at all
+      expect(persons.length).equals(1);
+      expect(realm.isInTransaction).to.be.true;
+
+      realm.cancelTransaction();
+      expect(persons.length).equals(0);
     });
   });
 });
