@@ -65,6 +65,12 @@ function ensureOsAndArch() {
   assert.equal(process.arch, "arm64", "This script is intended for an arm 64 mac");
 }
 
+function ensureNodeVersion() {
+  const [major] = process.versions.node.split(".");
+  const evenMajor = parseInt(major, 10) % 2 === 0;
+  assert(evenMajor, "Expected even major Node.js version (requirement of pkg dependency when building translator)");
+}
+
 function ensureDocker() {
   try {
     const version = execSync("docker --version", { encoding: "utf8" }).trim();
@@ -218,6 +224,7 @@ function spawnBaaS() {
 }
 
 ensureOsAndArch();
+ensureNodeVersion();
 ensureDocker();
 ensureBaasRepo();
 ensureGo();
