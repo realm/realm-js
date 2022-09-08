@@ -28,12 +28,17 @@ const MONGO_CONTAINER_NAME = "mongo";
 const STITCH_SUPPORT_URL =
   "https://mciuploads.s3.amazonaws.com/mongodb-mongo-master-nightly/stitch-support/macos-arm64/796351fa200293a91413699c8da073eb314ac2cd/stitch-support-6.1.0-alpha-527-g796351f.tgz";
 // This can be updated once https://github.com/10gen/baas/pull/7405 gets merged
-const BAAS_REPO = "git@github.com:kraenhansen/baas.git";
+const BAAS_REPO = "git@github.com:10gen/baas.git";
+const BAAS_UI_REPO = "git@github.com:10gen/baas-ui.git";
+const MONGODB_PORT = 27017;
+const MONGODB_URL = `mongodb://localhost:${MONGODB_PORT}`;
 
 dotenv.config();
 
 const currentDirPath = path.dirname(new URL(import.meta.url).pathname);
 const baasPath = path.resolve(currentDirPath, "baas");
+const staticPath = path.resolve(baasPath, "static");
+const staticAppPath = path.resolve(staticPath, "app");
 const dylibPath = path.resolve(baasPath, "etc/dylib");
 const transpilerPath = path.resolve(baasPath, "etc/transpiler");
 const transpilerBinPath = path.resolve(transpilerPath, "bin");
@@ -83,23 +88,48 @@ function ensureDocker() {
   }
 }
 
-function getBaasCommit() {
-  return execSync("git rev-parse HEAD", { cwd: baasPath, encoding: "utf8" }).trim();
+function getHeadCommit(cwd: string) {
+  return execSync("git rev-parse HEAD", { cwd, encoding: "utf8" }).trim();
 }
 
 function getGoVersion() {
-  return execSync("go version", { cwd: baasPath, encoding: "utf8" }).trim();
+  return execSync("go version", { encoding: "utf8" }).trim();
 }
 
 function ensureBaasRepo() {
   try {
-    const commit = getBaasCommit();
+    const commit = getHeadCommit(baasPath);
     console.log(`Using BaaS ${commit}`);
   } catch (err) {
-    // Clone the baas repository
-    execSync(`git clone --depth=1 --branch kh/translator-pkg-upgraded ${BAAS_REPO} baas`, {
-      stdio: "inherit",
-    });
+    if (err instanceof Error && err.message.includes("ENOENT")) {
+      // Clone the baas repository
+      execSync(`git clone --depth=1 ${BAAS_REPO} baas`, {
+        stdio: "inherit",
+      });
+    } else {
+      throw err;
+    }
+  }
+}
+
+function ensureBaasUIRepo() {
+  if (!fs.existsSync(staticPath)) {
+    console.log("Missing the static directory - creating!");
+    fs.mkdirSync(staticPath, { recursive: true });
+  }
+  try {
+    const commit = getHeadCommit(staticAppPath);
+    console.log(`Using BaaS UI ${commit}`);
+  } catch (err) {
+    if (err instanceof Error && err.message.includes("ENOENT")) {
+      // Clone the baas ui repository
+      execSync(`git clone --depth=1 ${BAAS_UI_REPO} app`, {
+        cwd: staticPath,
+        stdio: "inherit",
+      });
+    } else {
+      throw err;
+    }
   }
 }
 
@@ -131,6 +161,24 @@ function ensureBaasTranspiler() {
     console.log("Missing the etc/transpiler binary - building!");
     execSync("yarn", { cwd: transpilerPath, stdio: "inherit" });
     execSync("yarn build", { cwd: transpilerPath, stdio: "inherit" });
+  }
+}
+
+function patchBaasUIPackageJson() {
+  // Patch the package.json - remove once https://github.com/10gen/baas-ui/pull/2705 is merged
+  const packageJsonPath = path.resolve(staticAppPath, "package.json");
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, { encoding: "utf8" }));
+  // Nuke the preinstall script
+  delete packageJson.scripts.preinstall;
+  fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+}
+
+function ensureBaasUI() {
+  const distPath = path.resolve(staticAppPath, "dist/static");
+  if (!fs.existsSync(distPath)) {
+    console.log("Missing the UI dist - building!");
+    patchBaasUIPackageJson();
+    execSync("yarn && yarn build", { cwd: staticAppPath, stdio: "inherit" });
   }
 }
 
@@ -186,21 +234,21 @@ async function spawnMongoDB() {
     "-it",
     "--rm",
     "--publish",
-    "26000:26000",
+    `${MONGODB_PORT}:${MONGODB_PORT}`,
     "mongo",
     "mongod",
     "--replSet",
     "local",
     "--port",
-    "26000",
+    MONGODB_PORT.toString(),
     // Ask it to bind to localhost too
     "--bind_ip",
     "localhost",
   ]);
   // Wait for the server to appear
-  await waitForServer(26000);
+  await waitForServer(MONGODB_PORT);
   console.log("MongoDB is ready! 🚀 Initializing mongo replicasets");
-  execSync(`docker exec ${MONGO_CONTAINER_NAME} mongosh mongodb://localhost:26000 --eval 'rs.initiate()'`, {
+  execSync(`docker exec ${MONGO_CONTAINER_NAME} mongosh ${MONGODB_URL} --eval 'rs.initiate()'`, {
     stdio: "inherit",
   });
 }
@@ -208,7 +256,7 @@ async function spawnMongoDB() {
 function ensureBaasAdminUser() {
   // Create a user
   execSync(
-    "go run cmd/auth/user.go addUser -domainID 000000000000000000000000 -mongoURI mongodb://localhost:26000 -salt 'DQOWene1723baqD!_@#' -id 'unique_user@domain.com' -password 'password'",
+    `go run cmd/auth/user.go addUser -domainID 000000000000000000000000 -mongoURI ${MONGODB_URL} -salt 'DQOWene1723baqD!_@#' -id 'unique_user@domain.com' -password 'password'`,
     { cwd: baasPath, stdio: "inherit" },
   );
 }
@@ -217,7 +265,7 @@ function spawnBaaS() {
   // Build and run the BaaS binary - we're doing this over "go run" because that doesn't propagate a kill signal
   // Build a binary
   execSync("go build -o baas_server cmd/server/main.go", { cwd: baasPath, stdio: "inherit" });
-  spawn(chalk.blueBright("baas"), "./baas_server", ["--configFile", "./etc/configs/test_config.json"], {
+  spawn(chalk.blueBright("baas"), "./baas_server", ["--configFile", "./etc/configs/local_config.json"], {
     cwd: baasPath,
     env: { ...process.env, PATH: process.env.PATH + ":" + transpilerBinPath },
   });
@@ -227,10 +275,14 @@ try {
   ensureOsAndArch();
   ensureNodeVersion();
   ensureDocker();
-  ensureBaasRepo();
   ensureGo();
+
+  ensureBaasRepo();
+  ensureBaasUIRepo();
+
   ensureBaasDylib();
   ensureBaasTranspiler();
+  ensureBaasUI();
   ensureBaasTmpDir();
   ensureBaasAwsCredentials();
   ensureNoMongoDB();
