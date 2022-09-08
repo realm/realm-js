@@ -1,6 +1,12 @@
 name: Prepare Release
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Use this to provide a version, instead of deriving it from the changelog.
+        required: false
+        type: string
 
 jobs:
   prepare-release:
@@ -12,8 +18,9 @@ jobs:
       # action is at https://github.com/realm/ci-actions/tree/main/update-changelog
       - name: Update Changelog
         id: update-changelog
-        uses: realm/ci-actions/update-changelog@v2
+        uses: realm/ci-actions/update-changelog@master
         with:
+          version: ${{ inputs.version }} 
           changelog: ${{ github.workspace }}/CHANGELOG.md
 
       - name: Update package.json
