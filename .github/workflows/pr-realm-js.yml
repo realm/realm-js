@@ -67,6 +67,7 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Get vcpkg submodule commit sha
+        if: ${{ runner.os == 'Windows' }}
         id: vcpkg_cache_key
         working-directory: vendor/realm-core/tools/vcpkg/ports
         shell: bash
@@ -79,6 +80,11 @@ jobs:
           path: vendor/realm-core/tools/vcpkg/ports
           cache-key: vcpkg-windows-${{ matrix.variant.arch }}-${{ steps.vcpkg_cache_key.outputs.commit }}-${{ hashFiles('./vendor/realm-core/tools/vcpkg/vcpkg.json') }}
           cache-restore-keys: vcpkg-windows-${{ matrix.variant.arch }}-${{ steps.vcpkg_cache_key.outputs.commit }}-${{ hashFiles('./vendor/realm-core/tools/vcpkg/vcpkg.json') }}
+
+      - name: Refetch Vcpkg
+        if: ${{ runner.os == 'Windows' }}
+        run: git fetch --unshallow
+        working-directory: vendor/realm-core/tools/vcpkg/ports
 
       # ninja-build is used by default if available and results in faster build times
       # On linux, electron requires a connected display.  We fake this by giving it a headless environment using xvfb
