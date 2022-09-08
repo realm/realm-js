@@ -223,16 +223,26 @@ function spawnBaaS() {
   });
 }
 
-ensureOsAndArch();
-ensureNodeVersion();
-ensureDocker();
-ensureBaasRepo();
-ensureGo();
-ensureBaasDylib();
-ensureBaasTranspiler();
-ensureBaasTmpDir();
-ensureBaasAwsCredentials();
-ensureNoMongoDB();
-await spawnMongoDB();
-ensureBaasAdminUser();
-spawnBaaS();
+try {
+  ensureOsAndArch();
+  ensureNodeVersion();
+  ensureDocker();
+  ensureBaasRepo();
+  ensureGo();
+  ensureBaasDylib();
+  ensureBaasTranspiler();
+  ensureBaasTmpDir();
+  ensureBaasAwsCredentials();
+  ensureNoMongoDB();
+  await spawnMongoDB();
+  ensureBaasAdminUser();
+  spawnBaaS();
+} catch (err) {
+  console.error("\n💥 Failure!");
+  if (err instanceof Error) {
+    console.error(chalk.red(err.message));
+    console.error(chalk.dim(err.stack));
+  } else {
+    throw err;
+  }
+}
