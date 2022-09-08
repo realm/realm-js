@@ -41,6 +41,7 @@ describe("Realm transactions", () => {
 
       realm.cancelTransaction();
       expect(persons.length).equals(0);
+      expect(realm.isInTransaction).to.be.false;
     });
 
     it("throws on an invalid object", function (this: RealmContext) {
