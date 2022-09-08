@@ -105,10 +105,6 @@ unacceptable behavior to [community-conduct@mongodb.com](mailto:community-conduc
 
 Realm JS and [Realm Core](https://github.com/realm/realm-core) are published under the Apache License 2.0.
 
-**This product is not being made available to any person located in Cuba, Iran,
-North Korea, Sudan, Syria or the Crimea region, or to any other person that is
-not eligible to receive the product under U.S. law.**
-
 ## Feedback
 
 **_If you use Realm and are happy with it, all we ask is that you please consider sending out a tweet mentioning [@realm](https://twitter.com/realm) to share your thoughts_**

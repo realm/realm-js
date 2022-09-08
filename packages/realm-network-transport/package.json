@@ -33,7 +33,7 @@
   "bugs": {
     "url": "https://github.com/realm/realm-js/issues"
   },
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "Apache-2.0",
   "dependencies": {
     "@realm.io/common": "^0.1.4",
     "abort-controller": "^3.0.0",
