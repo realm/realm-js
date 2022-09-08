@@ -22,6 +22,7 @@ import fs from "fs";
 import chalk from "chalk";
 import dotenv from "dotenv";
 import assert from "node:assert";
+import { Socket } from "node:net";
 
 const MONGO_CONTAINER_NAME = "mongo";
 const STITCH_SUPPORT_URL =
@@ -39,6 +40,10 @@ const transpilerBinPath = path.resolve(transpilerPath, "bin");
 const baasTmpPath = path.resolve(baasPath, "tmp");
 const dylibFilename = "libstitch_support.dylib";
 const dylibUsrLocalLibPath = "/usr/local/lib/" + dylibFilename;
+
+function sleep(ms = 1000) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 function registerExitListeners(logPrefix: string, child: cp.ChildProcess) {
   function killChild() {
@@ -141,6 +146,29 @@ function ensureNoMongoDB() {
   execSync(`docker rm -f ${MONGO_CONTAINER_NAME}`);
 }
 
+async function connectToServer(port: number) {
+  return new Promise((resolve, reject) => {
+    const socket = new Socket();
+    socket.once("connect", resolve);
+    socket.once("error", reject);
+    socket.connect(port);
+  });
+}
+
+async function waitForServer(port: number) {
+  for (let retry = 0; retry < 100; retry++) {
+    try {
+      await connectToServer(port);
+    } catch (err) {
+      if (err instanceof Error && err.message.includes("ECONNREFUSED")) {
+        await sleep();
+      } else {
+        throw err;
+      }
+    }
+  }
+}
+
 async function spawnMongoDB() {
   spawn(chalk.greenBright("mongo"), "docker", [
     "run",
@@ -163,9 +191,9 @@ async function spawnMongoDB() {
     "--bind_ip",
     "localhost",
   ]);
-  // Wait a sec (or two)
-  await new Promise((resolve) => setTimeout(resolve, 2000));
-  console.log("Initializing mongo replicasets");
+  // Wait for the server to appear
+  await waitForServer(26000);
+  console.log("MongoDB is ready! 🚀 Initializing mongo replicasets");
   execSync(`docker exec ${MONGO_CONTAINER_NAME} mongosh mongodb://localhost:26000 --eval 'rs.initiate()'`, {
     stdio: "inherit",
   });
