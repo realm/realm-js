@@ -529,7 +529,9 @@ void SessionClass<T>::simulate_error(ContextType ctx, ObjectType this_object, Ar
         std::error_code error_code(err_code, type == "realm::sync::ProtocolError"
                                                  ? realm::sync::protocol_error_category()
                                                  : realm::sync::client_error_category());
-        SyncSession::OnlyForTesting::handle_error(*session, std::move(SyncError(error_code, message, is_fatal)));
+        SyncError sync_error(error_code, message, is_fatal);
+        sync_error.server_requests_action = sync::ProtocolErrorInfo::Action::Transient; // ignore any actions
+        SyncSession::OnlyForTesting::handle_error(*session, std::move(sync_error));
     }
 }
 
