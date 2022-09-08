@@ -75,5 +75,5 @@
   "bugs": {
     "url": "https://github.com/realm/realm-js/issues"
   },
-  "license": "SEE LICENSE IN LICENSE"
+  "license": "Apache-2.0"
 }

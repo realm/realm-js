@@ -32,7 +32,7 @@
   "bugs": {
     "url": "https://github.com/realm/realm-js/issues"
   },
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "Apache-2.0",
   "dependencies": {},
   "devDependencies": {
     "@rollup/plugin-commonjs": "^14.0.0",

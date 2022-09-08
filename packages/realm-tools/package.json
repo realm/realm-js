@@ -33,7 +33,7 @@
   "contributors": [
     "Kenneth Geisshirt <kenneth.geisshirt@mongodb.com> (https://github.com/kneth)"
   ],
-  "license": "See the actual license in the file LICENSE",
+  "license": "Apache-2.0",
   "dependencies": {
     "realm": ">=10",
     "ts-command-line-args": "^2.2.1"
