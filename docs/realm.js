@@ -311,14 +311,14 @@ class Realm {
    * Writes a compacted copy of the Realm α) to the given path or β) with the given output
    *
    * For invocation with α):
-   *   * Input Realms may be local or synced, encrypted or non-encrypted
+   *   * Input Realms may be local or partition-based synced, encrypted or non-encrypted
    *   * Output Realms will be local only, encrypted or non-encrypted
    * Deprecation Warning: Invoking `writeCopyTo` with a path string is deprecated and will be removed in the next breaking release.
    * Please invoke `writeCopyTo` with a {@link Realm~Configuration | Configuration}.
    *
    * For invocation with β):
-   *   * Input Realms may be local or synced, encrypted or non-encrypted
-   *   * Output Realms will be local or synced, encrypted or non-encrypted, depending on the configuration passed to the function
+   *   * Input Realms may be local or partition-based synced, encrypted or non-encrypted
+   *   * Output Realms will be local or partition-based synced, encrypted or non-encrypted, depending on the configuration passed to the function
    *
    * The destination file cannot already exist.
    *
@@ -327,6 +327,7 @@ class Realm {
    * @param {string|Realm~Configuration} pathOrConfig a α) path to save the Realm to, OR β) {@link Realm~Configuration | Configuration} that describes the output realm.
    * @param {ArrayBuffer|ArrayBufferView} [encryptionKey] - Optional 64-byte encryption key to encrypt the new file with.  Must not be present when
    * β) a {@link Realm~Configuration | Configuration} is given as first parameter, in which case encryptionKey can be set in {@link Realm~Configuration#encryptionKey}.
+   * @throws {Error} if either input or output Realm has flexible sync enabled.
    */
   writeCopyTo(pathOrConfig, encryptionKey) {}
 

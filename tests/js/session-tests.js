@@ -1557,6 +1557,10 @@ module.exports = {
       // wrong `sync` property type
       realm.writeCopyTo({ path: "outputPath", sync: "invalidProperty" });
     }, "'sync' property must be an object");
+    TestCase.assertThrowsContaining(() => {
+      // flexible sync is not supported
+      realm.writeCopyTo({ sync: { flexible: true } });
+    }, "'`writeCopyTo` does not support flexible sync");
 
     /*
      *  Test 2:  check that `writeCopyTo` can only be called at the right time

@@ -11,7 +11,8 @@
 * Fixed an exception `fcntl() with F_BARRIERFSYNC failed: Inappropriate ioctl for device` when running with MacOS on an exFAT drive. ([realm/realm-core#5789](https://github.com/realm/realm-core/issues/5789), since v10.18.0)
 * Syncing of a Decimal128 with big significand could result in a crash. ([realm/realm-core#5728](https://github.com/realm/realm-core/issues/5728), since v10.0.0)
 * `discardLocal` client reset mode will now wait for flexible sync Realms to be fully synchronized before beginning recovery operations. ([realm/realm-core#5705](https://github.com/realm/realm-core/issues/5705), since v10.11.0)
-  
+* `Realm#writeCopyTo()` doesn't support flexible sync, and an exception is thrown. ([realm/realm-core#5798](https://github.com/realm/realm-core/issues/5798))
+
 ### Compatibility
 * MongoDB Realm Cloud.
 * Realm Studio v11.0.0.
