@@ -378,13 +378,12 @@ void ResultsClass<T>::add_listener(ContextType ctx, U& collection, ObjectType th
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
-    auto token = collection.add_notification_callback(
-        [=](CollectionChangeSet const& change_set) {
-            HANDLESCOPE(protected_ctx)
-            ValueType arguments[]{static_cast<ObjectType>(protected_this),
-                                  CollectionClass<T>::create_collection_change_set(protected_ctx, change_set)};
-            Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
-        });
+    auto token = collection.add_notification_callback([=](CollectionChangeSet const& change_set) {
+        HANDLESCOPE(protected_ctx)
+        ValueType arguments[]{static_cast<ObjectType>(protected_this),
+                              CollectionClass<T>::create_collection_change_set(protected_ctx, change_set)};
+        Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
+    });
     NotificationBucket::emplace(collection.m_notification_handle, std::move(protected_callback), std::move(token));
 }
 
