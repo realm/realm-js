@@ -14,6 +14,7 @@
 
 ### Internal
 * Updated C++ `clang-format` version to match newer MacOS default ([#4869](https://github.com/realm/realm-js/pull/4869))
+* Tested the PR workflow.
 
 ## 10.20.0 (2022-8-23)
 
