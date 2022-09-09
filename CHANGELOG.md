@@ -1,11 +1,17 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None.
+* Automatic handling backlinks for schema migrations where a class/object type changes to being embedded. ([realm/realm-core#5737](https://github.com/realm/realm-core/pull/5737))
+* Improve performance when a new Realm file connects to the server for the first time, especially when significant amounts of data has been written while offline.
+* Improve the performance of the sync changeset parser, which speeds up applying changesets from the server.
 
 ### Fixed
 * Fixed dangling pointer in binary datatype handling in Node ([#3781](https://github.com/realm/realm-js/issues/3781), since v10.5.0)
-
+* Fixed undefined behaviour on queries involving a constant and an indexed property on some property types like UUID and Date. ([realm/realm-core#5753](https://github.com/realm/realm-core/issues/5753), since v10.20.0)
+* Fixed an exception `fcntl() with F_BARRIERFSYNC failed: Inappropriate ioctl for device` when running with MacOS on an exFAT drive. ([realm/realm-core#5789](https://github.com/realm/realm-core/issues/5789), since v10.18.0)
+* Syncing of a Decimal128 with big significand could result in a crash. ([realm/realm-core#5728](https://github.com/realm/realm-core/issues/5728), since v10.0.0)
+* `discardLocal` client reset mode will now wait for flexible sync Realms to be fully synchronized before beginning recovery operations. ([realm/realm-core#5705](https://github.com/realm/realm-core/issues/5705), since v10.11.0)
+  
 ### Compatibility
 * MongoDB Realm Cloud.
 * Realm Studio v11.0.0.
@@ -13,6 +19,7 @@
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
+* Upgraded Realm Core from v12.5.1 to v12.6.0. ([#4865](https://github.com/realm/realm-js/issues/4865))
 * Updated C++ `clang-format` version to match newer MacOS default ([#4869](https://github.com/realm/realm-js/pull/4869))
 
 ## 10.20.0 (2022-8-23)

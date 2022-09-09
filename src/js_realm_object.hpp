@@ -396,8 +396,7 @@ void RealmObjectClass<T>::add_listener(ContextType ctx, ObjectType this_object, 
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
-    auto token = realm_object->add_notification_callback([=](CollectionChangeSet const& change_set,
-                                                             std::exception_ptr exception) {
+    auto token = realm_object->add_notification_callback([=](CollectionChangeSet const& change_set) {
         HANDLESCOPE(protected_ctx)
 
         bool deleted = false;

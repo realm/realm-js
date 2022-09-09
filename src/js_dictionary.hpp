@@ -342,15 +342,14 @@ void DictionaryClass<T>::add_listener(ContextType ctx, ObjectType this_object, A
     Protected<FunctionType> protected_callback(ctx, callback);
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
-    auto token = dictionary->add_key_based_notification_callback(
-        [=](DictionaryChangeSet const& change_set, std::exception_ptr exception) {
-            HANDLESCOPE(protected_ctx)
+    auto token = dictionary->add_key_based_notification_callback([=](DictionaryChangeSet const& change_set) {
+        HANDLESCOPE(protected_ctx)
 
-            ValueType arguments[]{DictionaryClass<T>::create_instance(protected_ctx, *dictionary),
-                                  DictionaryClass<T>::create_dictionary_change_set(protected_ctx, change_set)};
+        ValueType arguments[]{DictionaryClass<T>::create_instance(protected_ctx, *dictionary),
+                              DictionaryClass<T>::create_dictionary_change_set(protected_ctx, change_set)};
 
-            Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
-        });
+        Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
+    });
     NotificationBucket::emplace(dictionary->m_notification_handle, std::move(protected_callback), std::move(token));
 }
 
