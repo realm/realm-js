@@ -18,7 +18,7 @@ jobs:
       # action is at https://github.com/realm/ci-actions/tree/main/update-changelog
       - name: Update Changelog
         id: update-changelog
-        uses: realm/ci-actions/update-changelog@master
+        uses: realm/ci-actions/update-changelog@main
         with:
           version: ${{ inputs.version }} 
           changelog: ${{ github.workspace }}/CHANGELOG.md
