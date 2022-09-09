@@ -1608,7 +1608,9 @@ realm::Realm::Config RealmClass<T>::write_copy_to_helper(ContextType ctx, Object
     ConstructorMap constructors;
     bool schema_updated = get_realm_config(ctx, args.count, args.value, config, defaults, constructors);
 
-    // TODO: remove when https://github.com/realm/realm-core/issues/5798 or https://github.com/realm/realm-core/issues/5711 is fixed
+    // TODO: remove when following issues are fixed
+    //       - https://github.com/realm/realm-core/issues/5798
+    //       - https://github.com/realm/realm-core/issues/5711
     if (config.sync_config && config.sync_config->flx_sync_requested) {
         throw std::runtime_error("`writeCopyTo` does not currently support flexible sync");
     }
@@ -1717,7 +1719,9 @@ void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Argumen
         config = write_copy_to_helper_deprecated(ctx, this_object, args);
     }
 
-    // TODO: remove when https://github.com/realm/realm-core/issues/5798 or https://github.com/realm/realm-core/issues/5711 is fixed
+    // TODO: remove when following issues are fixed
+    //       - https://github.com/realm/realm-core/issues/5798
+    //       - https://github.com/realm/realm-core/issues/5711
     if (config.sync_config && config.sync_config->flx_sync_requested) {
         throw std::runtime_error("`writeCopyTo` does not currently support flexible sync");
     }
