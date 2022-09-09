@@ -88,6 +88,8 @@ function getRealmTypeForTSTypeReference(path: NodePath<types.TSTypeReference>): 
     return { type: "uuid" };
   } else if (isRealmTypeAlias(path, "Date") || typeName.isIdentifier({ name: "Date" })) {
     return { type: "date" };
+  } else if (isRealmTypeAlias(path, "Data") || typeName.isIdentifier({ name: "ArrayBuffer" })) {
+    return { type: "data" };
   } else if (isRealmTypeAlias(path, "List") || isRealmTypeAlias(path, "List", null)) {
     const objectType = getRealmTypeForTypeArgument(typeParameters);
     return { type: "list", objectType: objectType?.type, optional: objectType?.optional };

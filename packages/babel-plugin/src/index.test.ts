@@ -174,6 +174,16 @@ describe("Babel plugin", () => {
       ],
     });
 
+    describeProperty("data", {
+      type: "data",
+      defaults: [
+        undefined,
+        { source: "new ArrayBuffer()" },
+        { source: "new Types.Data()" },
+        { source: "new Realm.Types.Data()" },
+      ],
+    });
+
     describeProperty("list", {
       type: "list",
       // TODO: Extend the `objectType` being tested
