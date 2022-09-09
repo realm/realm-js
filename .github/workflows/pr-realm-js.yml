@@ -112,11 +112,7 @@ jobs:
           ccache --set-config="compiler_check=content"
           ccache --show-config
 
-      - name: Install deps
-        run: npm ci --ignore-scripts
-
-      # Install node dependencies
-      - name: Install prebuilds
+      - name: Install dependencies
         run: npm ci
 
       # build the c++ library for standard targets
