@@ -1565,7 +1565,7 @@ module.exports = {
     TestCase.assertThrowsContaining(() => {
       // flexible sync is not supported: https://github.com/realm/realm-core/issues/5798, https://github.com/realm/realm-core/issues/5711
       realm.writeCopyTo({ path: "output", sync: { flexible: true, user } });
-    }, "'`writeCopyTo` does not currently support flexible sync");
+    }, "''writeCopyTo' does not currently support flexible sync");
 
     /*
      *  Test 2:  check that `writeCopyTo` can only be called at the right time
