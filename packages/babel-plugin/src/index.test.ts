@@ -21,6 +21,7 @@ import * as babel from "@babel/core";
 import type { ObjectSchema } from "realm";
 
 import { describeProperty, extractSchema } from "./tests/generator";
+import { transformProperty } from "./tests/generator/transform";
 import { transform, TransformOptions } from "./tests/transform";
 
 type TransformTestOptions = { name: string; test: (result: babel.BabelFileResult) => void } & TransformOptions;
@@ -174,6 +175,16 @@ describe("Babel plugin", () => {
       ],
     });
 
+    describeProperty("data", {
+      type: "data",
+      defaults: [
+        undefined,
+        { source: "new ArrayBuffer()" },
+        { source: "new Types.Data()" },
+        { source: "new Realm.Types.Data()" },
+      ],
+    });
+
     describeProperty("list", {
       type: "list",
       // TODO: Extend the `objectType` being tested
@@ -198,16 +209,69 @@ describe("Babel plugin", () => {
       defaults: [undefined, "foo", 123],
     });
 
-    /*
-    describeProperty("linkingObjects", {
-      type: "linkingObjects",
-      objectTypes: ["Person"],
-      linkingProperty: ["friends"],
-    });
-    */
-
     describeProperty("link", {
       type: "Person",
+    });
+
+    // LinkingObjects has sufficiently unique syntax that we test it manually
+    // rather than with the test generator
+    describe("linkingObjects", () => {
+      [
+        'prop: Realm.Types.LinkingObjects<Person, "friends">;',
+        'prop: Types.LinkingObjects<Person, "friends">;',
+      ].forEach((code) => {
+        it(`transforms: \`${code}\``, () => {
+          const transformCode = transformProperty(code);
+          const parsedSchema = extractSchema(transformCode);
+          const expectedSchema = {
+            prop: {
+              type: "linkingObjects",
+              objectType: "Person",
+              property: "friends",
+            },
+          };
+
+          expect(parsedSchema?.properties).toStrictEqual(expectedSchema);
+        });
+      });
+
+      describe("error handling", () => {
+        it("does not allow the property to be optional", () => {
+          expect(() => transformProperty('prop?: Realm.Types.LinkingObjects<Person, "friends">;')).toThrow(
+            "Properties of type LinkingObjects cannot be optional",
+          );
+        });
+
+        it("does not allow the property to be undefined", () => {
+          expect(() => transformProperty('prop: Realm.Types.LinkingObjects<Person, "friends"> | undefined;')).toThrow(
+            "Properties of type LinkingObjects cannot be optional",
+          );
+        });
+
+        it("throws if no type parameters are provided", () => {
+          expect(() => transformProperty("prop: Realm.Types.LinkingObjects;")).toThrow(
+            "Missing type arguments for LinkingObjects",
+          );
+        });
+
+        it("throws if the incorrect number of type parameters are provided", () => {
+          expect(() => transformProperty("prop: Realm.Types.LinkingObjects<Person>;")).toThrow(
+            "Incorrect number of type arguments for LinkingObjects",
+          );
+        });
+
+        it("throws if the first type parameter's type is incorrect", () => {
+          expect(() => transformProperty('prop: Realm.Types.LinkingObjects<"Person", "friends">;')).toThrow(
+            "First type argument for LinkingObjects should be a reference to the linked object's object type",
+          );
+        });
+
+        it("throws if the second type parameter's type is incorrect", () => {
+          expect(() => transformProperty("prop: Realm.Types.LinkingObjects<Person, friends>;")).toThrow(
+            "Second type argument for LinkingObjects should be the property name of the relationship it inverts",
+          );
+        });
+      });
     });
   });
 });
