@@ -495,7 +495,7 @@ public:
 
     static Internal* get_internal(JsiEnv env, const JsiObj& object)
     {
-        if (!s_js_internal_field_name) {
+        if (REALM_UNLIKELY(!s_js_internal_field_name)) {
             s_js_internal_field_name = fbjsi::String::createFromAscii(env, g_internal_field);
         }
 
