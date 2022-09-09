@@ -315,7 +315,7 @@ public:
 
         js::Context<js::realmjsi::Types>::register_invalidator([] {
             // Ensure the static constructor and JSI String reference are destructed when the runtime goes away.
-            // This is to avoid the reassignment throwing because the runtime has disappeared.
+            // This is to avoid reassignment and destruction throwing because the runtime has disappeared.
             s_ctor.reset();
             s_js_internal_field_name.reset();
         });
