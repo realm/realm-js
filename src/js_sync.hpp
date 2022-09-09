@@ -530,7 +530,8 @@ void SessionClass<T>::simulate_error(ContextType ctx, ObjectType this_object, Ar
                                                  ? realm::sync::protocol_error_category()
                                                  : realm::sync::client_error_category());
         SyncError sync_error(error_code, message, is_fatal);
-        sync_error.server_requests_action = sync::ProtocolErrorInfo::Action::Warning;
+        // the action depends on the error code (err_code); 211 is used for simulating client reset
+        sync_error.server_requests_action = err_code == 211 ? sync::ProtocolErrorInfo::Action::ClientReset : sync::ProtocolErrorInfo::Action::Warning;
         SyncSession::OnlyForTesting::handle_error(*session, std::move(sync_error));
     }
 }
