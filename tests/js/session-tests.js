@@ -1527,7 +1527,7 @@ module.exports = {
 
     // user for flexible sync test
     let app = new Realm.App(appConfig);
-    const credentials1 = await Utils.getRegisteredEmailPassCredentials(app);
+    const credentials = await Utils.getRegisteredEmailPassCredentials(app);
     let user = await app.logIn(credentials);
 
     /*
