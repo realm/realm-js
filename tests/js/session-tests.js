@@ -1559,7 +1559,8 @@ module.exports = {
     }, "'sync' property must be an object");
     TestCase.assertThrowsContaining(() => {
       // flexible sync is not supported: https://github.com/realm/realm-core/issues/5798, https://github.com/realm/realm-core/issues/5711
-      realm.writeCopyTo({ path: "output", sync: { flexible: true } });
+      // the user object is faking a real one - just for the test
+      realm.writeCopyTo({ path: "output", sync: { flexible: true, user: {} } });
     }, "'`writeCopyTo` does not currently support flexible sync");
 
     /*
