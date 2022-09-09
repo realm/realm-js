@@ -145,7 +145,10 @@ inline void copyProperty(JsiEnv env, const fbjsi::Object& from, const fbjsi::Obj
     defineProperty(env, to, name, *prop);
 }
 
-inline constexpr const char g_internal_field[] = "__Realm_internal";
+// The name used for the property on the JS object which stores the reference to the corresponding C++ object.
+// We use an empty string as testing showed it was 1% faster with JSC and 4% faster with Hermes than using
+// an actual string, and also has the benefit that it is not a valid Realm object key name.
+inline constexpr const char g_internal_field[] = "";
 
 template <typename T>
 using ClassDefinition = js::ClassDefinition<js::realmjsi::Types, T>;
@@ -240,6 +243,10 @@ public:
     // Also, may need to suppress destruction.
     inline static std::optional<JsiFunc> s_ctor;
 
+    // Cache the JSI String instance representing the field name of the internal
+    // C++ object for the lifetime of the current env, as this is a hot path
+    inline static std::optional<fbjsi::String> s_js_internal_field_name;
+
     /**
      * @brief callback for invalid access to index setters
      * Throws an error when a users attemps to write to an index on a type that
@@ -310,9 +317,10 @@ public:
                          .asFunction(env));
 
         js::Context<js::realmjsi::Types>::register_invalidator([] {
-            // Ensure the static constructor is destructed when the runtime goes away.
-            // This is to avoid the reassignment of s_ctor throwing because the runtime has disappeared.
+            // Ensure the static constructor and JSI String reference are destructed when the runtime goes away.
+            // This is to avoid reassignment and destruction throwing because the runtime has disappeared.
             s_ctor.reset();
+            s_js_internal_field_name.reset();
         });
 
         for (auto&& [name, prop] : s_type.static_properties) {
@@ -490,7 +498,11 @@ public:
 
     static Internal* get_internal(JsiEnv env, const JsiObj& object)
     {
-        auto internal = object->getProperty(env, g_internal_field);
+        if (REALM_UNLIKELY(!s_js_internal_field_name)) {
+            s_js_internal_field_name = fbjsi::String::createFromAscii(env, g_internal_field);
+        }
+
+        auto internal = object->getProperty(env, *s_js_internal_field_name);
         if (internal.isUndefined()) {
             // In the case of a user opening a Realm with a class-based model,
             // the user defined constructor will get called before the "internal" property has been set.
