@@ -69,7 +69,7 @@ jobs:
     - name: Publish realm v${{ steps.get-version.outputs.version }} on NPM
       run: npm publish --tag '${{ inputs.tag}}' realm@${{ steps.get-version.outputs.version }}
       env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
 
     - name: Find Release PR
       uses: juliangruber/find-pull-request-action@f9f7484f8237cf8485e5ab826e542ba5dd9e9c6e
