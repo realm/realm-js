@@ -34,8 +34,8 @@ jobs:
       - name: Update dependencies.list
         uses: jacobtomlinson/gha-find-replace@0dfd0777cc234ef6947ec1f20873c632114c4167 #! 0.1.4
         with:
-          find: '^VERSION=.*'
-          replace: 'VERSION=${{ steps.update-changelog.outputs.new-version }}'
+          find: '\nVERSION=.*'
+          replace: '\nVERSION=${{ steps.update-changelog.outputs.new-version }}'
           include: dependencies.list
 
       - name: Update xcode project
