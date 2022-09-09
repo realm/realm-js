@@ -672,8 +672,7 @@ private:
 } // namespace realmjsi
 
 template <typename ClassType>
-class ObjectWrap<realmjsi::Types, ClassType> : public realm::js::realmjsi::ObjectWrap<ClassType> {
-};
+class ObjectWrap<realmjsi::Types, ClassType> : public realm::js::realmjsi::ObjectWrap<ClassType> {};
 
 template <realmjsi::ArgumentsMethodType F>
 fbjsi::Value wrap(fbjsi::Runtime& rt, const fbjsi::Value& thisVal, const fbjsi::Value* args, size_t count)
