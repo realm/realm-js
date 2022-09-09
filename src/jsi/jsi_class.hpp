@@ -125,10 +125,21 @@ inline void ObjectSetPrototypeOf(JsiEnv env, const fbjsi::Value& target, const f
     obj.getPropertyAsFunction(env, "setPrototypeOf").callWithThis(env, obj, target, proto);
 }
 
+// Cache various objects we fetch from the runtime which are hot paths
+// during object creation
+static std::optional<fbjsi::Function> s_object;
+static std::optional<fbjsi::Function> s_object_create;
+
 inline JsiObj ObjectCreate(JsiEnv env, const fbjsi::Object& proto)
 {
-    auto obj = js::globalType(env, "Object");
-    return env(obj.getPropertyAsFunction(env, "create").callWithThis(env, obj, proto)).asObject();
+    if (REALM_UNLIKELY(!s_object)) {
+        s_object = js::globalType(env, "Object");
+    }
+    if (REALM_UNLIKELY(!s_object_create)) {
+        s_object_create = (*s_object).getPropertyAsFunction(env, "create");
+    }
+
+    return env((*s_object_create).callWithThis(env, *s_object, proto)).asObject();
 }
 
 inline void defineProperty(JsiEnv env, const fbjsi::Object& target, StringData name, const fbjsi::Object& descriptor)
@@ -247,6 +258,11 @@ public:
     // C++ object for the lifetime of the current env, as this is a hot path
     inline static std::optional<fbjsi::String> s_js_internal_field_name;
 
+    // Cache various objects we fetch from the runtime which are hot paths
+    // during object creation
+    inline static std::optional<fbjsi::Object> s_proto;
+    inline static std::optional<fbjsi::Value> s_wrapper;
+
     /**
      * @brief callback for invalid access to index setters
      * Throws an error when a users attemps to write to an index on a type that
@@ -317,10 +333,14 @@ public:
                          .asFunction(env));
 
         js::Context<js::realmjsi::Types>::register_invalidator([] {
-            // Ensure the static constructor and JSI String reference are destructed when the runtime goes away.
+            // Ensure all static references tied to the runtime are destructed when the runtime goes away.
             // This is to avoid reassignment and destruction throwing because the runtime has disappeared.
             s_ctor.reset();
             s_js_internal_field_name.reset();
+            s_proto.reset();
+            s_wrapper.reset();
+            s_object.reset();
+            s_object_create.reset();
         });
 
         for (auto&& [name, prop] : s_type.static_properties) {
@@ -463,13 +483,20 @@ public:
 
     static JsiObj create_instance(JsiEnv env, Internal* ptr = nullptr)
     {
-        auto proto = (*s_ctor)->getPropertyAsObject(env, "prototype");
-        auto obj = ObjectCreate(env, proto);
+        if (REALM_UNLIKELY(!s_proto)) {
+            s_proto = (*s_ctor)->getPropertyAsObject(env, "prototype");
+        }
+
+        auto obj = ObjectCreate(env, *s_proto);
+
         set_internal(env, obj, ptr);
 
-        auto wrapper = (*s_ctor)->getProperty(env, "_proxyWrapper");
-        if (!wrapper.isUndefined()) {
-            obj = env(wrapper.asObject(env).asFunction(env).call(env, std::move(obj.get()))).asObject();
+        if (REALM_UNLIKELY(!s_wrapper)) {
+            s_wrapper = (*s_ctor)->getProperty(env, "_proxyWrapper");
+        }
+
+        if (!(*s_wrapper).isUndefined()) {
+            obj = env((*s_wrapper).asObject(env).asFunction(env).call(env, std::move(obj.get()))).asObject();
         }
 
         return obj;
