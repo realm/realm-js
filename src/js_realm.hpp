@@ -1568,6 +1568,7 @@ realm::Realm::Config RealmClass<T>::write_copy_to_helper(ContextType ctx, Object
      * 3) args[0].path must be present and be a string
      * 4) args[0].encryptionKey may be present, and must be a binary if it is present
      * 5) args[0].sync may be present, and must be an object if it is present
+     * 6) flexible sync in not supported
      */
 
 
