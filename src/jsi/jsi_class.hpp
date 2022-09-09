@@ -145,7 +145,10 @@ inline void copyProperty(JsiEnv env, const fbjsi::Object& from, const fbjsi::Obj
     defineProperty(env, to, name, *prop);
 }
 
-inline constexpr const char g_internal_field[] = "__Realm_internal";
+// The name used for the property on the JS object which stores the reference to the corresponding C++ object.
+// We use an empty string as testing showed it was 1% faster with JSC and 4% faster with Hermes than using
+// an actual string, and also has the benefit that it is not a valid Realm object key name.
+inline constexpr const char g_internal_field[] = "";
 
 template <typename T>
 using ClassDefinition = js::ClassDefinition<js::realmjsi::Types, T>;
