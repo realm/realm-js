@@ -1525,6 +1525,11 @@ module.exports = {
       path: "dogsLocal.realm",
     };
 
+    // user for flexible sync test
+    let app = new Realm.App(appConfig);
+    const credentials1 = await Utils.getRegisteredEmailPassCredentials(app);
+    let user = await app.logIn(credentials);
+
     /*
      *  Test 1:  check that `writeCopyTo` verifies parameter count and types
      */
@@ -1559,8 +1564,7 @@ module.exports = {
     }, "'sync' property must be an object");
     TestCase.assertThrowsContaining(() => {
       // flexible sync is not supported: https://github.com/realm/realm-core/issues/5798, https://github.com/realm/realm-core/issues/5711
-      // the user object is faking a real one - just for the test
-      realm.writeCopyTo({ path: "output", sync: { flexible: true, user: {} } });
+      realm.writeCopyTo({ path: "output", sync: { flexible: true, user } });
     }, "'`writeCopyTo` does not currently support flexible sync");
 
     /*
