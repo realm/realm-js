@@ -32,11 +32,7 @@ jobs:
         run: npm install --ignore-scripts
 
       - name: Update dependencies.list
-        uses: jacobtomlinson/gha-find-replace@0dfd0777cc234ef6947ec1f20873c632114c4167 #! 0.1.4
-        with:
-          find: '\nVERSION=.*'
-          replace: '\nVERSION=${{ steps.update-changelog.outputs.new-version }}'
-          include: dependencies.list
+        run: sed -i 's/^VERSION=.*/VERSION=${{ steps.update-changelog.outputs.new-version }}/' dependencies.list
 
       - name: Update xcode project
         uses: jacobtomlinson/gha-find-replace@0dfd0777cc234ef6947ec1f20873c632114c4167 #! 0.1.4
