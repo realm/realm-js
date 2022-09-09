@@ -1,9 +1,7 @@
 name: Publish Realm React Native templates
 
 on:
-  push:
-    paths:
-      - templates/*/package.json
+  workflow_dispatch:
 
 jobs:
   publish-templates:
