@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None.
+* Small improvement to performance by caching JSI property String object [#4863](https://github.com/realm/realm-js/pull/4863)
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
@@ -19,7 +19,7 @@
 <!-- * Using Realm Core vX.Y.Z -->
 <!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
 
-## 10.21.0 (2022-09-12)
+## 10.21.0 (2022-09-09)
 
 ### Enhancements
 * Automatic handling backlinks for schema migrations where a class/object type changes to being embedded. ([realm/realm-core#5737](https://github.com/realm/realm-core/pull/5737))
