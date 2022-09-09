@@ -5,6 +5,7 @@
     "packages/*",
     "packages/realm-react/testApp",
     "integration-tests",
+    "integration-tests/baas-test-server",
     "integration-tests/tests",
     "integration-tests/environments/*"
   ],
