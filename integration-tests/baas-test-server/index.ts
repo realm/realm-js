@@ -30,7 +30,7 @@ const STITCH_SUPPORT_URL =
 // This can be updated once https://github.com/10gen/baas/pull/7405 gets merged
 const BAAS_REPO = "git@github.com:10gen/baas.git";
 const BAAS_UI_REPO = "git@github.com:10gen/baas-ui.git";
-const MONGODB_PORT = 27017;
+const MONGODB_PORT = 26000;
 const MONGODB_URL = `mongodb://localhost:${MONGODB_PORT}`;
 
 dotenv.config();
@@ -265,7 +265,7 @@ function spawnBaaS() {
   // Build and run the BaaS binary - we're doing this over "go run" because that doesn't propagate a kill signal
   // Build a binary
   execSync("go build -o baas_server cmd/server/main.go", { cwd: baasPath, stdio: "inherit" });
-  spawn(chalk.blueBright("baas"), "./baas_server", ["--configFile", "./etc/configs/local_config.json"], {
+  spawn(chalk.blueBright("baas"), "./baas_server", ["--configFile", "./etc/configs/test_config.json"], {
     cwd: baasPath,
     env: { ...process.env, PATH: process.env.PATH + ":" + transpilerBinPath },
   });

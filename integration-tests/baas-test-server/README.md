@@ -19,3 +19,9 @@ Run the `start` script, sit back and relax as a mongo server is started, BaaS is
 ```shell
 npm start
 ```
+
+Visit the administrative UI in your browser, if you need to.
+
+```shell
+open http://localhost:9090
+```
