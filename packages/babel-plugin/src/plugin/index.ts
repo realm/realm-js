@@ -101,6 +101,8 @@ function getRealmTypeForTSTypeReference(path: NodePath<types.TSTypeReference>): 
     return { type: "dictionary", objectType: objectType?.type, optional: objectType?.optional };
   } else if (isRealmTypeAlias(path, "Mixed") || isRealmTypeAlias(path, "Mixed", null)) {
     return { type: "mixed" };
+  } else if (isRealmTypeAlias(path, "LinkingObjects")) {
+    return { type: "linkingObjects" };
   } else if (typeName.isIdentifier()) {
     // TODO: Consider checking the scope to ensure it is a declared identifier
     return { type: typeName.node.name };
