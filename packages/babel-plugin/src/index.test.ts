@@ -178,9 +178,9 @@ describe("Babel plugin", () => {
       type: "data",
       defaults: [
         undefined,
-        { source: "new ArrayBuffer()" },
-        { source: "new Types.Data()" },
-        { source: "new Realm.Types.Data()" },
+        // { source: "new ArrayBuffer()" },
+        // { source: "new Types.Data()" },
+        // { source: "new Realm.Types.Data()" },
       ],
     });
 
