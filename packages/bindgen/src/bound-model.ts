@@ -94,8 +94,11 @@ export abstract class Method {
     public sig: Func,
   ) {}
 
+  /**
+   * This is a valid identifier for this method that is unique across all classes.
+   */
   get id() {
-    return `${this.on.name}::${this.unique_name}`;
+    return `${this.on.name}_${this.unique_name}`;
   }
 
   abstract call({ self }: { self: string }, ...args: string[]): string;
@@ -139,7 +142,9 @@ export class Property extends InstanceMethod {
 }
 
 export class NamedType {
-  constructor(public name: string) {}
+  constructor(public name: string) {
+    assert(!name.includes("_"), `Illegal type name '${name}': '_' is not allowed.`);
+  }
 }
 
 export class Class extends NamedType {
