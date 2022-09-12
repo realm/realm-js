@@ -152,6 +152,11 @@ function inferTypeFromInitializer(path: NodePath<types.Expression>): RealmType |
       path.get("callee").isIdentifier({ name: "Date" })
     ) {
       return { type: "date" };
+    } else if (
+      isPropertyImportedFromRealm(path.get("callee"), "Data") ||
+      path.get("callee").isIdentifier({ name: "ArrayBuffer" })
+    ) {
+      return { type: "data" };
     }
   }
 }
