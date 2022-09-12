@@ -51,15 +51,15 @@ jobs:
     - name: Install node modules
       run: npm ci --ignore-scripts
 
-    - name: Download prebuild PR artifacts
-      uses: dawidd6/action-download-artifact@d0f291cf39bd21965ea9c4c6e210fc355c3844ed
-      with:
-        workflow: pr-realm-js.yml
-        commit: ${{ inputs.commit || github.sha }}
-        path: ${{ github.workspace }}
-        workflow_conclusion: completed
-        github_token: ${{ secrets.REALM_CI_PAT }}
-        name: realm-js-prebuilds
+#    - name: Download prebuild PR artifacts
+#      uses: dawidd6/action-download-artifact@d0f291cf39bd21965ea9c4c6e210fc355c3844ed
+#      with:
+#        workflow: pr-realm-js.yml
+#        commit: ${{ inputs.commit || github.sha }}
+#        path: ${{ github.workspace }}
+#        workflow_conclusion: completed
+#        github_token: ${{ secrets.REALM_CI_PAT }}
+#        name: realm-js-prebuilds
 
     - name: Read version
       id: get-version
@@ -71,36 +71,42 @@ jobs:
         echo "::set-output name=prerelease::$prerelease"
       shell: bash
 
-    - name: Publish realm v${{ steps.get-version.outputs.version }} on NPM
-      run: npm publish --tag '${{ inputs.tag}}'
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+#    - name: Publish realm v${{ steps.get-version.outputs.version }} on NPM
+#      run: npm publish --tag '${{ inputs.tag}}'
+#      env:
+#        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-    - name: Find Release PR
-      uses: juliangruber/find-pull-request-action@f9f7484f8237cf8485e5ab826e542ba5dd9e9c6e
-      id: find-pull-request
-      with:
-        branch: ${{ github.ref }}
+#    - name: Find Release PR
+#      uses: juliangruber/find-pull-request-action@f9f7484f8237cf8485e5ab826e542ba5dd9e9c6e
+#      id: find-pull-request
+#      with:
+#        branch: ${{ github.ref }}
 
-    - name: Merge Pull Request
-      uses: juliangruber/merge-pull-request-action@8a13f2645ad8b6ada32f829b2fae9c0955a5265d
+#    - name: Merge Pull Request
+#      uses: juliangruber/merge-pull-request-action@8a13f2645ad8b6ada32f829b2fae9c0955a5265d
+#      with:
+#        github-token: ${{ secrets.GITHUB_TOKEN }}
+#        number: ${{ steps.find-pull-request.outputs.number }}
+#        method: squash
+
+    - name: Checkout base branch (after merge)
+      uses: actions/checkout@v3
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        number: ${{ steps.find-pull-request.outputs.number }}
-        method: squash
+        submodules: recursive
+        ref: ${{ github.base_ref }}
 
     - name: Extract Changelog
       run: scripts/extract-changelog.sh ${{ steps.get-version.outputs.version }} > ExtractedChangelog.md
 
-    - name: Create Github Release
-      uses: ncipollo/release-action@10c84d509b28aae3903113151bfd832314964f2e
-      with:
-        bodyFile: ExtractedChangelog.md
-        name: ${{ steps.get-version.outputs.version }}
-        tag: v${{ steps.get-version.outputs.version }}
-        token: ${{ secrets.GITHUB_TOKEN }}
-        draft: false
-        prerelease: ${{ steps.get-version.outputs.prerelease }}
+#    - name: Create Github Release
+#      uses: ncipollo/release-action@10c84d509b28aae3903113151bfd832314964f2e
+#      with:
+#        bodyFile: ExtractedChangelog.md
+#        name: ${{ steps.get-version.outputs.version }}
+#        tag: v${{ steps.get-version.outputs.version }}
+#        token: ${{ secrets.GITHUB_TOKEN }}
+#        draft: false
+#        prerelease: ${{ steps.get-version.outputs.prerelease }}
 
     - name: 'Post to #realm-releases'
       uses: realm/ci-actions/release-to-slack@v3
@@ -126,9 +132,9 @@ jobs:
         commit-message: Prepare for vNext
         base: master
 
-    - name: Merge Pull Request
-      uses: juliangruber/merge-pull-request-action@8a13f2645ad8b6ada32f829b2fae9c0955a5265d
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        number: ${{ steps.vnext-pr.outputs.pull-request-number }}
-        method: squash
+#    - name: Merge Pull Request
+#      uses: juliangruber/merge-pull-request-action@8a13f2645ad8b6ada32f829b2fae9c0955a5265d
+#      with:
+#        github-token: ${{ secrets.GITHUB_TOKEN }}
+#        number: ${{ steps.vnext-pr.outputs.pull-request-number }}
+#        method: squash
