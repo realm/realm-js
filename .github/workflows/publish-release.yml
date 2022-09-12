@@ -25,9 +25,10 @@ jobs:
         ref: ${{ inputs.commit || github.event.pull_request.head.sha }}
 
     - name: Setup node version
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
         node-version: 16
+        registry-url: 'https://registry.npmjs.org'
         cache: 'npm'
         cache-dependency-path: '**/package-lock.json'
 
