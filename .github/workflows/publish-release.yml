@@ -8,10 +8,6 @@ on:
         required: true
         type: string
         default: 'latest'
-      commit:
-        description: Optional commit to publish from
-        required: false
-        type: string
 
 jobs:
   main:
@@ -19,10 +15,10 @@ jobs:
     steps:
 
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: recursive
-        ref: ${{ inputs.commit || github.event.pull_request.head.sha }}
+        ref: ${{ github.event.pull_request.head.sha }}
 
     - name: Setup node version
       uses: actions/setup-node@v2
