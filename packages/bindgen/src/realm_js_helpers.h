@@ -75,17 +75,20 @@ struct Helpers {
                 if (methods.did_change)
                     methods.did_change(get_realm());
             }
-            void before_notify() override {
+            void before_notify() override
+            {
                 if (methods.before_notify)
                     methods.before_notify(get_realm());
             }
-            void schema_did_change(realm::Schema const&) override {
+            void schema_did_change(realm::Schema const&) override
+            {
                 if (methods.schema_did_change)
                     methods.schema_did_change(get_realm());
             }
-        private:
 
-            SharedRealm get_realm() {
+        private:
+            SharedRealm get_realm()
+            {
                 if (auto ptr = realm.lock())
                     return ptr;
                 throw std::runtime_error("Realm no longer exists");
@@ -160,7 +163,8 @@ inline uint64_t extractUint64FromNode(const Napi::Value& input)
 }
 
 template <typename... Args>
-inline Napi::Function bindFunc(Napi::Function func, Napi::Object self, Args... args) {
+inline Napi::Function bindFunc(Napi::Function func, Napi::Object self, Args... args)
+{
     return func.Get("bind").As<Napi::Function>().Call(func, {self, args...}).template As<Napi::Function>();
 }
 
