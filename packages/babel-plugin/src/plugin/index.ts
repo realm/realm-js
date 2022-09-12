@@ -20,7 +20,13 @@ import { types, NodePath, PluginObj } from "@babel/core";
 
 import { isPropertyImportedFromRealm, isImportedFromRealm } from "./import-checking";
 
-type RealmType = { type: string; objectType?: string; default?: types.Expression; optional?: boolean };
+type RealmType = {
+  type: string;
+  objectType?: string;
+  default?: types.Expression;
+  optional?: boolean;
+  property?: string;
+};
 
 // This could be "int" or "double", but we default to "double" because this is how a JS Number is represented internally
 const DEFAULT_NUMERIC_TYPE = "double";
@@ -55,6 +61,7 @@ function isRealmTypeAlias(
   } else if (path.isIdentifier({ name })) {
     return isImportedFromRealm(path);
   }
+
   return false;
 }
 
@@ -65,6 +72,10 @@ function getRealmTypeForTypeArgument(
     const objectTypePath = typeParameters.get("params")[0];
     return getRealmTypeForTSType(objectTypePath);
   }
+}
+
+function getLinkingObjectsError(message: string) {
+  return message + '. Correct syntax is: `fieldName: Realm.LinkingObjects<LinkedObjectType, "invertedPropertyName">`';
 }
 
 function getRealmTypeForTSTypeReference(path: NodePath<types.TSTypeReference>): RealmType | undefined {
@@ -102,7 +113,49 @@ function getRealmTypeForTSTypeReference(path: NodePath<types.TSTypeReference>): 
   } else if (isRealmTypeAlias(path, "Mixed") || isRealmTypeAlias(path, "Mixed", null)) {
     return { type: "mixed" };
   } else if (isRealmTypeAlias(path, "LinkingObjects")) {
-    return { type: "linkingObjects" };
+    const classPropertyNode = path.parentPath?.parentPath?.node;
+    if (
+      // Keep TS happy
+      !types.isClassProperty(classPropertyNode) ||
+      classPropertyNode.optional
+    ) {
+      throw new Error(getLinkingObjectsError("Properties of type LinkingObjects cannot be optional"));
+    }
+
+    if (!typeParameters.isTSTypeParameterInstantiation()) {
+      throw new Error(getLinkingObjectsError("Missing type arguments for LinkingObjects"));
+    }
+
+    const params = typeParameters.get("params");
+
+    if (params.length !== 2) {
+      throw new Error(getLinkingObjectsError("Incorrect number of type arguments for LinkingObjects"));
+    }
+
+    const objectTypeNode = params[0];
+
+    if (!objectTypeNode.isTSTypeReference() || !types.isIdentifier(objectTypeNode.node.typeName)) {
+      throw new Error(
+        getLinkingObjectsError(
+          "First type argument for LinkingObjects should be a reference to the linked object's object type",
+        ),
+      );
+    }
+
+    const propertyNode = params[1];
+
+    if (!propertyNode.isTSLiteralType() || !types.isStringLiteral(propertyNode.node.literal)) {
+      throw new Error(
+        getLinkingObjectsError(
+          "Second type argument for LinkingObjects should be the property name of the relationship it inverts",
+        ),
+      );
+    }
+
+    const objectType = objectTypeNode.node.typeName.name;
+    const property = propertyNode.node.literal.value;
+
+    return { type: "linkingObjects", objectType, property };
   } else if (typeName.isIdentifier()) {
     // TODO: Consider checking the scope to ensure it is a declared identifier
     return { type: typeName.node.name };
@@ -189,6 +242,9 @@ function visitRealmClassProperty(path: NodePath<types.ClassProperty>) {
         properties.push(
           types.objectProperty(types.identifier("objectType"), types.stringLiteral(realmType.objectType)),
         );
+      }
+      if (realmType.property) {
+        properties.push(types.objectProperty(types.identifier("property"), types.stringLiteral(realmType.property)));
       }
       if (valuePath.isLiteral()) {
         properties.push(types.objectProperty(types.identifier("default"), valuePath.node));
