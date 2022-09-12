@@ -24,6 +24,11 @@ jobs:
         submodules: recursive
         ref: ${{ inputs.commit || github.event.pull_request.head.sha }}
 
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GITHUB_CONTEXT"
+
     - name: Setup node version
       uses: actions/setup-node@v3
       with:
