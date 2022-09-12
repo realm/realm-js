@@ -93,7 +93,7 @@ jobs:
       uses: actions/checkout@v3
       with:
         submodules: recursive
-        ref: ${{ github.base_ref }}
+        ref: ${{ github.event.pull_request.base.ref }}
 
     - name: Extract Changelog
       run: scripts/extract-changelog.sh ${{ steps.get-version.outputs.version }} > ExtractedChangelog.md
