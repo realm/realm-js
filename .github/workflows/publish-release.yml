@@ -8,6 +8,10 @@ on:
         required: true
         type: string
         default: 'latest'
+      commit:
+        description: Optional commit to publish from
+        required: false
+        type: string
 
 jobs:
   main:
@@ -18,7 +22,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: recursive
-        ref: ${{ github.event.pull_request.head.sha }}
+        ref: ${{ inputs.commit || github.event.pull_request.head.sha }}
 
     - name: Setup node version
       uses: actions/setup-node@v2
@@ -67,7 +71,7 @@ jobs:
       shell: bash
 
     - name: Publish realm v${{ steps.get-version.outputs.version }} on NPM
-      run: npm publish --tag '${{ inputs.tag}}' realm@${{ steps.get-version.outputs.version }}
+      run: npm publish --tag '${{ inputs.tag}}'
       env:
         NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
 
