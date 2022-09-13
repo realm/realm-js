@@ -19,7 +19,7 @@ vendor/realm-*
 !vendor/realm-core
 
 # extracted changelog
-ExtractedChangelog.md
+EXTRACTED_CHANGELOG.md
 
 # jsdoc
 /docs/output
