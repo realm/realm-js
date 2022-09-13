@@ -18,7 +18,7 @@
 
 import * as babel from "@babel/core";
 
-import type { ObjectSchema } from "realm";
+import type { ObjectSchema, ObjectSchemaProperty } from "realm";
 
 import { describeProperty, extractSchema } from "./tests/generator";
 import { transformProperty } from "./tests/generator/transform";
@@ -317,6 +317,30 @@ describe("Babel plugin", () => {
       expect(parsedSchema?.primaryKey).toEqual("test");
       expect(parsedSchema?.embedded).toEqual(true);
       expect(parsedSchema?.asymmetric).toEqual(true);
+    });
+  });
+
+  describe("decorators", () => {
+    it("handles `@index` decorators", () => {
+      const transformCode = transformProperty(`@index name: Realm.Types.String;`);
+      const parsedSchema = extractSchema(transformCode);
+
+      expect((parsedSchema?.properties.name as ObjectSchemaProperty).indexed).toEqual(true);
+    });
+
+    it("handles `@mapTo` decorators", () => {
+      const transformCode = transformProperty(`@mapTo("rename") name: Realm.Types.String;`);
+      const parsedSchema = extractSchema(transformCode);
+
+      expect((parsedSchema?.properties.name as ObjectSchemaProperty).mapTo).toEqual("rename");
+    });
+
+    it("handles multiple decorators on a property", () => {
+      const transformCode = transformProperty(`@index @mapTo("rename") name: Realm.Types.String;`);
+      const parsedSchema = extractSchema(transformCode);
+
+      expect((parsedSchema?.properties.name as ObjectSchemaProperty).indexed).toEqual(true);
+      expect((parsedSchema?.properties.name as ObjectSchemaProperty).mapTo).toEqual("rename");
     });
   });
 });
