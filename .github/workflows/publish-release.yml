@@ -101,7 +101,7 @@ jobs:
         ref: ${{ github.event.pull_request.base.ref }}
 
     - name: Extract Changelog
-      run: scripts/extract-changelog.sh ${{ steps.get-version.outputs.version }} > ExtractedChangelog.md
+      run: node scripts/extract-changelog.js ${{ steps.get-version.outputs.version }} > ExtractedChangelog.md
 
 #    - name: Create Github Release
 #      uses: ncipollo/release-action@10c84d509b28aae3903113151bfd832314964f2e
