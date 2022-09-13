@@ -225,9 +225,36 @@ function getRealmTypeForClassProperty(path: NodePath<types.ClassProperty>): Real
   }
 }
 
+function hasDecorator(decoratorsPath: NodePath<types.Decorator>[], name: string) {
+  return Boolean(
+    decoratorsPath.find((d) => d.node && types.isIdentifier(d.node.expression) && d.node.expression.name === name),
+  );
+}
+
+function getDecoratorArgs(decoratorsPath: NodePath<types.Decorator>[], name: string) {
+  const node = decoratorsPath.find(
+    (d) =>
+      d.node &&
+      types.isCallExpression(d.node.expression) &&
+      types.isIdentifier(d.node.expression.callee) &&
+      d.node.expression.callee.name === name &&
+      types.isStringLiteral(d.node.expression.arguments[0]),
+  );
+
+  if (!node) return null;
+
+  return ((node.node.expression as any).arguments as any).map((a: any) => a.value);
+}
+
 function visitRealmClassProperty(path: NodePath<types.ClassProperty>) {
   const keyPath = path.get("key");
   const valuePath = path.get("value");
+  const decoratorsPath: NodePath<types.Decorator>[] = path.get("decorators");
+
+  const index = hasDecorator(decoratorsPath, "index");
+  const mapToArgs = getDecoratorArgs(decoratorsPath, "mapTo");
+  const mapTo = mapToArgs ? mapToArgs[0] : false;
+
   if (keyPath.isIdentifier()) {
     const name = keyPath.node.name;
     const realmType = getRealmTypeForClassProperty(path);
@@ -235,17 +262,21 @@ function visitRealmClassProperty(path: NodePath<types.ClassProperty>) {
       const properties: types.ObjectProperty[] = [
         types.objectProperty(types.identifier("type"), types.stringLiteral(realmType.type)),
       ];
+
       if (path.node.optional || realmType.optional) {
         properties.push(types.objectProperty(types.identifier("optional"), types.booleanLiteral(true)));
       }
+
       if (realmType.objectType) {
         properties.push(
           types.objectProperty(types.identifier("objectType"), types.stringLiteral(realmType.objectType)),
         );
       }
+
       if (realmType.property) {
         properties.push(types.objectProperty(types.identifier("property"), types.stringLiteral(realmType.property)));
       }
+
       if (valuePath.isLiteral()) {
         properties.push(types.objectProperty(types.identifier("default"), valuePath.node));
       } else if (valuePath.isExpression()) {
@@ -253,6 +284,15 @@ function visitRealmClassProperty(path: NodePath<types.ClassProperty>) {
           types.objectProperty(types.identifier("default"), types.arrowFunctionExpression([], valuePath.node)),
         );
       }
+
+      if (index) {
+        properties.push(types.objectProperty(types.identifier("indexed"), types.booleanLiteral(true)));
+      }
+
+      if (mapTo) {
+        properties.push(types.objectProperty(types.identifier("mapTo"), types.stringLiteral(mapTo)));
+      }
+
       return types.objectProperty(types.identifier(name), types.objectExpression(properties));
     } else {
       console.warn(`Unable to determine type of '${name}' property`);

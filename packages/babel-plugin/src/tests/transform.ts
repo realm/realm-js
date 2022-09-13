@@ -40,7 +40,7 @@ export function transform({ source, extraPresets = [], extraPlugins = [] }: Tran
       ],
       ...extraPresets,
     ],
-    plugins: [plugin, ...extraPlugins],
+    plugins: [plugin, ["@babel/plugin-proposal-decorators", { legacy: true }], ...extraPlugins],
     ast: true,
   });
   if (result) {
