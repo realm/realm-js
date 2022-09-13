@@ -7,8 +7,6 @@
     "outDir": "dist",
     "strict": true
   },
-  "include": [
-    "src/**/*.ts"
-  ],
+  "include": ["src/**/*.ts"],
   "exclude": []
 }
