@@ -77,11 +77,10 @@ jobs:
 #        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     - name: Find Release PR
-      uses: sharesight/find-github-pull-request@v1.1.2
+      uses: kraenhansen/find-pull-request-action@master
       id: find-pull-request
       with:
-        commitSha: ${{ github.sha }}
-        failIfNotFound: true
+        branch: ${{ github.ref }}
 
     - name: Dump PR context
       env:
