@@ -29,7 +29,17 @@ import {
   CppDecls,
   CppCtorProps,
 } from "../cpp";
-import { bindModel, BoundSpec, Class, InstanceMethod, StaticMethod, Property, Type, Method } from "../bound-model";
+import {
+  bindModel,
+  BoundSpec,
+  Class,
+  InstanceMethod,
+  StaticMethod,
+  Property,
+  Type,
+  Method,
+  Primitive,
+} from "../bound-model";
 
 import "../js-passes";
 
@@ -207,7 +217,18 @@ function toCpp(type: Type): string {
     case "RRef":
       return `${toCpp(type.type)}&&`;
     case "Template":
-      return `${type.name}<${type.args.map(toCpp).join(", ")}>`;
+      let args;
+      if (["util::UniqueFunction", "std::function"].includes(type.name)) {
+        // Functions can't normally be toCpp'd because lambda types are unutterable.
+        // But if a wrapper type is used, we can do this.
+        const func = type.args[0];
+        assert.equal(func.kind, "Func");
+        assert(func.kind == "Func"); // This is redundant, but required for TypeScript
+        args = `${toCpp(func.ret)}(${func.args.map((arg) => toCpp(arg.type)).join(", ")})`;
+      } else {
+        args = type.args.map(toCpp).join(", ");
+      }
+      return `${type.name}<${args}>`;
 
     case "Struct":
     case "Enum":
@@ -392,6 +413,20 @@ function convertToNode(addon: NodeAddon, type: Type, expr: string): string {
                 ${type.args.map((arg, i) => `out[${i}u] = ${c(arg, `std::get<${i}>(tup)`)};`).join("\n")}
                 return out;
             }(${expr})`;
+        case "std::map":
+        case "std::unordered_map":
+          // Note: currently assuming that key is natively supported by js object setter (string or number).
+          return `
+            [&] (auto&& map) {
+                auto out = Napi::Object::New(${env});
+                for (auto&& [k, v] : map) {
+                    out.Set(k, ${c(type.args[1], "v")});
+                }
+                return out;
+            }(${expr})`;
+        case "util::UniqueFunction":
+          assert.equal(inner.kind, "Func");
+          return `FWD(${expr})`;
       }
       assert.fail(`unknown template ${type.name}`);
       break;
@@ -412,7 +447,7 @@ function convertToNode(addon: NodeAddon, type: Type, expr: string): string {
                         return ${env}.Null();
                     }
                 }
-                return Napi::Function::New(${env}, [cb] (const Napi::CallbackInfo& info) {
+                return Napi::Function::New(${env}, [cb = FWD(cb)] (const Napi::CallbackInfo& info) {
                     auto ${env} = info.Env();
                     const auto callBlock = ${addon.get()}->startCall();
                     ${tryWrap(`
@@ -491,6 +526,25 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
                 throw Napi::TypeError::New(${env}, "Need an array with exactly ${nArgs} elements");
               return std::make_${suffix}(${type.args.map((arg, i) => c(arg, `arr[${i}u]`))});
           }((${expr}).As<Napi::Array>())`;
+        case "std::map":
+          // For know, can only convert string-keyed maps to C++.
+          // We could also support numbers pretty easily. Anything else will be problematic.
+          // Consider list-of-pairs for keys that aren't strings or numbers.
+          assert.deepEqual(type.args[0], new Primitive("std::string"));
+          return `[&] (const Napi::Object obj) {
+                auto out = ${toCpp(type)}();
+                const auto names = obj.GetPropertyNames();
+                const auto length = names.Length();
+                for (uint32_t i = 0; i < length; i++) {
+                    out.insert({
+                        names[i].As<Napi::String>().Utf8Value(),
+                        ${c(type.args[1], "obj.Get(names[i])")}
+                    });
+                }
+                return out;
+            }((${expr}).As<Napi::Object>())`;
+        case "util::UniqueFunction":
+          return `${toCpp(type)}(${c(inner, expr)})`;
       }
       assert.fail(`unknown template ${type.name}`);
       break;
