@@ -225,25 +225,22 @@ function getRealmTypeForClassProperty(path: NodePath<types.ClassProperty>): Real
   }
 }
 
-function hasDecorator(decoratorsPath: NodePath<types.Decorator>[], name: string) {
-  return Boolean(
-    decoratorsPath.find((d) => d.node && types.isIdentifier(d.node.expression) && d.node.expression.name === name),
-  );
+function findDecoratorIdentifier(decoratorsPath: NodePath<types.Decorator>[], name: string) {
+  return decoratorsPath.find((d) => d.node && types.isIdentifier(d.node.expression) && d.node.expression.name === name);
 }
 
-function getDecoratorArgs(decoratorsPath: NodePath<types.Decorator>[], name: string) {
+function findDecoratorCall(decoratorsPath: NodePath<types.Decorator>[], name: string) {
   const node = decoratorsPath.find(
     (d) =>
       d.node &&
       types.isCallExpression(d.node.expression) &&
       types.isIdentifier(d.node.expression.callee) &&
-      d.node.expression.callee.name === name &&
-      types.isStringLiteral(d.node.expression.arguments[0]),
+      d.node.expression.callee.name === name,
   );
 
   if (!node) return null;
 
-  return ((node.node.expression as any).arguments as any).map((a: any) => a.value);
+  return node.node.expression as types.CallExpression;
 }
 
 function visitRealmClassProperty(path: NodePath<types.ClassProperty>) {
@@ -251,9 +248,12 @@ function visitRealmClassProperty(path: NodePath<types.ClassProperty>) {
   const valuePath = path.get("value");
   const decoratorsPath: NodePath<types.Decorator>[] = path.get("decorators");
 
-  const index = hasDecorator(decoratorsPath, "index");
-  const mapToArgs = getDecoratorArgs(decoratorsPath, "mapTo");
-  const mapTo = mapToArgs ? mapToArgs[0] : false;
+  const index = Boolean(findDecoratorIdentifier(decoratorsPath, "index"));
+  const mapToDecorator = findDecoratorCall(decoratorsPath, "mapTo");
+  const mapTo =
+    mapToDecorator && types.isStringLiteral(mapToDecorator.arguments[0])
+      ? mapToDecorator.arguments[0].value
+      : undefined;
 
   if (keyPath.isIdentifier()) {
     const name = keyPath.node.name;
