@@ -10,6 +10,12 @@ headers:
   - "realm/object-store/collection_notifications.hpp"
   - "realm/object-store/impl/object_notifier.hpp"
   - "realm/object-store/impl/realm_coordinator.hpp"
+  - "realm/object-store/sync/app_credentials.hpp"
+  - "realm/object-store/sync/generic_network_transport.hpp"
+  - "realm/object-store/sync/app.hpp"
+  - "realm/object-store/sync/sync_manager.hpp"
+  - "realm/object-store/sync/sync_user.hpp"
+  - "realm/object-store/util/bson/bson.hpp"
 
 primitives:
   # TODO need to distinguish 64bit types where all bits are needed vs where double would be fine
@@ -38,7 +44,7 @@ typeAliases:
   KeyPath: std::vector<std::pair<TableKey, ColKey>>
   KeyPathArray: std::vector<KeyPath>
   IndexRange: std::pair<count_t, count_t>
-
+  AppCredentialsToken: std::string
 
 templates: # value tells you how many arguments it takes ('*' means any number)
   util::Optional: 1
@@ -47,6 +53,8 @@ templates: # value tells you how many arguments it takes ('*' means any number)
   std::pair: 2
   std::tuple: '*'
   # std::unordered_map: 2
+  std::map: 2
+  util::UniqueFunction: 1
 
 mixedInfo:
   dataTypes:
@@ -154,6 +162,46 @@ enums:
       TypedLink: 16
       UUID: 17
 
+  AuthProvider:
+    cppName: app::AuthProvider
+    values:
+      - ANONYMOUS
+      - ANONYMOUS_NO_REUSE
+      - FACEBOOK
+      - GOOGLE
+      - APPLE
+      - CUSTOM
+      - USERNAME_PASSWORD
+      - FUNCTION
+      - USER_API_KEY
+      - SERVER_API_KEY
+  MetadataMode:
+    cppName: SyncClientConfig::MetadataMode
+    values:
+      - NoEncryption
+      - Encryption
+      - NoMetadata
+  LoggerLevel:
+    cppName: util::Logger::Level
+    values:
+      - all
+      - trace
+      - debug
+      - detail
+      - info
+      - warn
+      - error
+      - fatal
+      - off
+  HttpMethod:
+    cppName: app::HttpMethod
+    values:
+      - get
+      - post
+      - patch
+      - put
+      - del
+
 constants:
   null_col_key:
     type: int64_t
@@ -232,9 +280,9 @@ records:
     fields:
       path: std::string
       # realm_data: BinaryData
-      #encryption_key:
-        #type: std::vector<char>
-        #default: {}
+      encryption_key:
+        type: EncryptionKey
+        default: {}
       fifo_files_fallback_path:
         type: std::string
         default: ""
@@ -250,9 +298,6 @@ records:
       schema_mode:
         type: SchemaMode
         default: SchemaMode::Automatic
-      encryption_key:
-        type: EncryptionKey
-        default: {}
 
       migration_function:
         type: '(old_realm: SharedRealm, new_realm: SharedRealm, new_schema_handle: Schema&) -> void'
@@ -305,6 +350,82 @@ records:
       schema_did_change:
         type: '(r: SharedRealm)' # new schema available as r.schema
         default: {}
+
+  SyncClientTimeouts:
+    fields:
+      connect_timeout: 
+        type: uint64_t
+        default: 120000
+      connection_linger_time:
+        type: uint64_t
+        default: 30000
+      ping_keepalive_period:
+        type: uint64_t
+        default: 60000
+      pong_keepalive_timeout:
+        type: uint64_t
+        default: 120000
+      fast_reconnect_limit:
+        type: uint64_t
+        default: 60000
+
+  SyncClientConfig:
+    fields:
+      base_file_path: std::string
+      metadata_mode:
+        type: MetadataMode
+        default: MetadataMode::Encryption
+      custom_encryption_key:
+        type: util::Optional<EncryptionKey>
+        default: {}
+      # logger_factory: (level: LoggerLevel) -> std::unique_ptr<util::Logger>
+      log_level:
+        type: LoggerLevel
+        default: LoggerLevel::info
+      # reconnect_mode is probably internal-only
+      multiplex_sessions:
+        type: bool
+        default: false
+      user_agent_binding_info:
+        type: std::string
+        default: ""
+      user_agent_application_info:
+        type: std::string
+        default: ""
+      timeouts:
+        type: SyncClientTimeouts
+        default: {}
+
+  Request:
+    cppName: app::Request
+    fields:
+      method: HttpMethod
+      url: std::string 
+      timeout_ms: uint64_t
+      headers: std::map<std::string, std::string>
+      body: std::string 
+      uses_refresh_token: bool
+
+  Response:
+    cppName: app::Response
+    fields:
+      http_status_code: int
+      custom_status_code: int
+      headers: std::map<std::string, std::string>
+      body: std::string
+
+  AppConfig:
+    cppName: app::App::Config
+    fields:
+      app_id: std::string
+      transport: std::shared_ptr<GenericNetworkTransport>
+      base_url: util::Optional<std::string>
+      local_app_name: util::Optional<std::string>
+      local_app_version: util::Optional<std::string>
+      default_request_timeout_ms: util::Optional<uint64_t>
+      platform: std::string
+      platform_version: std::string
+      sdk_version: std::string
 
 opaqueTypes:
   - Schema
@@ -673,6 +794,95 @@ classes:
       freeze: '(frozen_realm: std::shared_ptr<Realm> const&) const -> Dictionary'
       add_key_based_notification_callback: '(cb: (changes: DictionaryChangeSet), keyPaths: KeyPathArray) -> NotificationToken'
 
+
+  BsonDocument: # TODO this should probably be a primitive
+    cppName: bson::BsonDocument
+
+  # These are a bit of a hack.
+  # TODO rename one of the AppCredentials::google() functions.
+  # TODO these need support for non-default-constructible types
+  # GoogleAuthCode:
+  #   cppName: app::AuthCode
+  #   constructors:
+  #     make: '(code: std::string)'
+  # GoogleIdToken:
+  #   cppName: app::IdToken
+  #   constructors:
+  #     make: '(token: std::string)'
+
+  AppCredentials:
+    cppName: app::AppCredentials
+    staticMethods:
+      facebook: '(access_token: const AppCredentialsToken) -> AppCredentials'
+      anonymous: '(reuse_anonymous_credentials: bool) -> AppCredentials'
+      apple: '(id_token: const AppCredentialsToken) -> AppCredentials'
+      # google:
+      #   - sig: '(id_token: GoogleAuthCode&&) -> AppCredentials'
+      #     suffix: auth
+      #   - sig: '(id_token: GoogleIdToken&&) -> AppCredentials'
+      #     suffix: id
+      custom: '(token: const AppCredentialsToken) -> AppCredentials'
+      username_password: '(username: std::string, password: std::string) -> AppCredentials'
+      function:
+        - '(serialized_payload: const std::string&) -> AppCredentials'
+        - sig: '(payload: const BsonDocument&) -> AppCredentials'
+          suffix: 'bson'
+      user_api_key: '(api_key: std::string) -> AppCredentials'
+      server_api_key: '(api_key: std::string) -> AppCredentials'
+    properties:
+      provider: AuthProvider
+      provider_as_string: std::string
+
+  SyncUser:
+    sharedPtrWrapped: SharedSyncUser
+    properties:
+      is_logged_in: bool
+      identity: const std::string&
+      provider_type: const std::string&
+      local_identity: const std::string&
+      access_token: std::string
+      refresh_token: std::string
+      device_id: std::string
+      has_device_id: bool
+      # user_profile: SyncUserProfile # TODO
+      # identities: std::vector<SyncUserIdentity> # TODO
+      custom_data: util::Optional<BsonDocument>
+      # state: SyncUserState # TODO this shouldn't be a 64-bit enum
+    methods:
+      log_out: ()
+      # TODO update methods?
+
+  App:
+    cppName: app::App
+    sharedPtrWrapped: SharedApp
+    properties:
+      config: const AppConfig&
+      base_url: const std::string&
+      current_user: SharedSyncUser
+      all_users: std::vector<SharedSyncUser>
+      sync_manager: SharedSyncManager
+    staticMethods:
+      get_shared_app: '(config: AppConfig, sync_client_config: SyncClientConfig) -> SharedApp'
+      get_uncached_app: '(config: AppConfig, sync_client_config: SyncClientConfig) -> SharedApp'
+      get_cached_app: '(app_id: const std::string&) -> SharedApp'
+      clear_cached_apps: ()
+        #close_all_sessions: () XXX
+
+  SyncManager:
+    sharedPtrWrapped: SharedSyncManager
+    properties:
+      log_level: LoggerLevel
+      has_existing_sessions: bool
+    methods:
+      immediately_run_file_actions: '(original_name: std::string)'
+      enable_session_multiplexing: ()
+      set_log_level: '(level: LoggerLevel)'
+      #set_logger_factory: '(factory: (level: LoggerLevel) -> std::unique_ptr<util::Logger>)'
+      set_user_agent: '(user_agent: std::string)'
+      set_timeouts: '(timeouts SyncClientTimeouts)'
+      reconnect: ()
+      wait_for_sessions_to_terminate: ()
+
 interfaces:
   Scheduler:
     cppName: util::Scheduler
@@ -685,3 +895,8 @@ interfaces:
       make_frozen: '(version: VersionID) -> std::shared_ptr<Scheduler>'
       make_default: '() -> std::shared_ptr<Scheduler>'
       set_default_factory: '(factory: () -> std::shared_ptr<Scheduler>)'
+  GenericNetworkTransport:
+    cppName: app::GenericNetworkTransport
+    methods:
+      send_request_to_server: '(request: Request&&, completionBlock: util::UniqueFunction<(response: const Response&)>&&)'
+

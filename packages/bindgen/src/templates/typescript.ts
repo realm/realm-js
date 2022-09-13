@@ -47,6 +47,8 @@ const TEMPLATE_MAPPING: Record<string, (...args: string[]) => string> = {
   "std::shared_ptr": (arg) => arg,
   "std::pair": (a, b) => `[${a}, ${b}]`,
   "std::tuple": (...args) => `[${args}]`,
+  "std::map": (k, v) => `Record<${k}, ${v}>`,
+  "util::UniqueFunction": (f) => f,
 };
 
 const enum Kind {
