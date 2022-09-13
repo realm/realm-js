@@ -260,6 +260,24 @@ function visitRealmClassProperty(path: NodePath<types.ClassProperty>) {
   }
 }
 
+const STATIC_STRING_PROPERTIES: string[] = ["name", "primaryKey"];
+const STATIC_BOOLEAN_PROPERTIES: string[] = ["embedded", "asymmetric"];
+
+function visitRealmClassStatic(path: NodePath<types.ClassProperty>) {
+  const keyPath = path.get("key");
+  const valuePath = path.get("value");
+
+  if (keyPath.isIdentifier()) {
+    const name = keyPath.node.name;
+
+    if (STATIC_STRING_PROPERTIES.includes(name) && types.isStringLiteral(valuePath.node)) {
+      return types.objectProperty(types.identifier(name), types.stringLiteral(valuePath.node.value));
+    } else if (STATIC_BOOLEAN_PROPERTIES.includes(name) && types.isBooleanLiteral(valuePath.node)) {
+      return types.objectProperty(types.identifier(name), types.booleanLiteral(valuePath.node.value));
+    }
+  }
+}
+
 function visitRealmClass(path: NodePath<types.ClassDeclaration>) {
   path.addComment("leading", " Modified by @realm/babel-plugin", true);
   const className = path.node.id.name;
@@ -270,12 +288,19 @@ function visitRealmClass(path: NodePath<types.ClassDeclaration>) {
     .filter((p) => p.isClassProperty()) as NodePath<types.ClassProperty>[];
 
   const schemaProperties = classProperties
+    .filter((p) => !p.node.static)
     .map(visitRealmClassProperty)
+    .filter((property) => property) as types.ObjectProperty[];
+
+  const schemaStatics = classProperties
+    .filter((p) => p.node.static)
+    .map(visitRealmClassStatic)
     .filter((property) => property) as types.ObjectProperty[];
 
   const schema = types.objectExpression([
     types.objectProperty(types.identifier("name"), types.stringLiteral(className)),
     types.objectProperty(types.identifier("properties"), types.objectExpression(schemaProperties)),
+    ...schemaStatics,
   ]);
 
   // Add the schema as a static
