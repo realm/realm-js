@@ -213,23 +213,24 @@ declare namespace Realm {
       /**
        * An operation performed on a document.
        */
-      type OperationType =
+      enum OperationType {
         /** A document got inserted into the collection. */
-        | "insert"
+        Insert = "insert",
         /** A document got deleted from the collection. */
-        | "delete"
+        Delete = "delete",
         /** A document got replaced in the collection. */
-        | "replace"
+        Replace = "replace",
         /** A document got updated in the collection. */
-        | "update"
+        Update = "update",
         /** Occurs when a collection is dropped from a database. */
-        | "drop"
+        Drop = "drop",
         /** Occurs when a collection is renamed. */
-        | "rename"
+        Rename = "rename",
         /** Occurs when a database is dropped. */
-        | "dropDatabase"
+        DropDatabase = "dropDatabase",
         /** Invalidate events close the change stream cursor. */
-        | "invalidate";
+        Invalidate = "invalidate",
+      }
 
       /**
        * The namespace of a document.
@@ -298,7 +299,7 @@ declare namespace Realm {
         documentKey: DocumentKey<T["_id"]>;
         /** The new document created by the operation */
         fullDocument: T;
-      } & BaseChangeEvent<"insert">;
+      } & BaseChangeEvent<OperationType.Insert>;
 
       /**
        * A document got updated in the collection.
@@ -314,7 +315,7 @@ declare namespace Realm {
          * For change streams opened with the `fullDocument: updateLookup` option, this will represents the most current majority-committed version of the document modified by the update operation.
          */
         fullDocument?: T;
-      } & BaseChangeEvent<"update">;
+      } & BaseChangeEvent<OperationType.Update>;
 
       /**
        * A document got replaced in the collection.
@@ -326,7 +327,7 @@ declare namespace Realm {
         documentKey: DocumentKey<T["_id"]>;
         /** The document after the insert of the replacement document. */
         fullDocument: T;
-      } & BaseChangeEvent<"replace">;
+      } & BaseChangeEvent<OperationType.Replace>;
 
       /**
        * A document got deleted from the collection.
@@ -336,7 +337,7 @@ declare namespace Realm {
         ns: DocumentNamespace;
         /** A document that contains the _id of the deleted document. */
         documentKey: DocumentKey<T["_id"]>;
-      } & BaseChangeEvent<"delete">;
+      } & BaseChangeEvent<OperationType.Delete>;
 
       /**
        * Occurs when a collection is dropped from a database.
@@ -344,7 +345,7 @@ declare namespace Realm {
       type DropEvent = {
         /** The namespace (database and collection) of the collection that got dropped. */
         ns: DocumentNamespace;
-      } & BaseChangeEvent<"drop">;
+      } & BaseChangeEvent<OperationType.Drop>;
 
       /**
        * Occurs when a collection is renamed.
@@ -354,7 +355,7 @@ declare namespace Realm {
         ns: DocumentNamespace;
         /** The namespace (database and collection) going forward. */
         to: DocumentNamespace;
-      } & BaseChangeEvent<"rename">;
+      } & BaseChangeEvent<OperationType.Rename>;
 
       /**
        * Occurs when a database is dropped.
@@ -362,12 +363,12 @@ declare namespace Realm {
       type DropDatabaseEvent = {
         /** The namespace (specifying only the database name) of the database that got dropped. */
         ns: Omit<DocumentNamespace, "coll">;
-      } & BaseChangeEvent<"dropDatabase">;
+      } & BaseChangeEvent<OperationType.DropDatabase>;
 
       /**
        * Invalidate events close the change stream cursor.
        */
-      type InvalidateEvent = BaseChangeEvent<"invalidate">;
+      type InvalidateEvent = BaseChangeEvent<OperationType.Invalidate>;
 
       /**
        * Represents a change event communicated via a MongoDB change stream.

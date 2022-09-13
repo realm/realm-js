@@ -613,16 +613,30 @@ declare namespace Realm {
         Connected = "connected",
     }
 
+    enum SessionState {
+        Invalid = "invalid",
+        Active = "active",
+        Inactive = "inactive",
+    }
+
+    enum ProgressDirection {
+        Download = "download",
+        Upload = "upload",
+    }
+
+    enum ProgressMode {
+        ReportIndefinitely = "reportIndefinitely",
+        ForCurrentlyOutstandingWork = "forCurrentlyOutstandingWork",
+    }
+
     type ProgressNotificationCallback = (transferred: number, transferable: number) => void;
-    type ProgressDirection = 'download' | 'upload';
-    type ProgressMode = 'reportIndefinitely' | 'forCurrentlyOutstandingWork';
 
     type ConnectionNotificationCallback = (newState: ConnectionState, oldState: ConnectionState) => void;
 
     namespace App.Sync {
         class Session {
             readonly config: SyncConfiguration;
-            readonly state: 'invalid' | 'active' | 'inactive';
+            readonly state: SessionState;
             readonly url: string;
             readonly user: User;
             readonly connectionState: ConnectionState;
@@ -763,7 +777,7 @@ declare namespace Realm {
              * of the `Subscriptions`. You should not use a superseded SubscriptionSet,
              * and instead obtain a new instance from {@link Realm.subscriptions}.
              */
-            Superseded = "Superseded",
+            Superseded = "superseded",
         }
 
         /**
