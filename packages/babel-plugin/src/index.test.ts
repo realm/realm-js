@@ -274,4 +274,49 @@ describe("Babel plugin", () => {
       });
     });
   });
+
+  describe("static properties", () => {
+    it("reads a static property for `name`", () => {
+      const transformCode = transformProperty(`static name = 'test';`);
+      const parsedSchema = extractSchema(transformCode);
+
+      expect(parsedSchema?.name).toEqual("test");
+    });
+
+    it("reads a static property for `primaryKey`", () => {
+      const transformCode = transformProperty(`static primaryKey = 'test';`);
+      const parsedSchema = extractSchema(transformCode);
+
+      expect(parsedSchema?.primaryKey).toEqual("test");
+    });
+
+    it("reads a static property for `embedded`", () => {
+      const transformCode = transformProperty(`static embedded = true;`);
+      const parsedSchema = extractSchema(transformCode);
+
+      expect(parsedSchema?.embedded).toEqual(true);
+    });
+
+    it("reads a static property for `asymmetric`", () => {
+      const transformCode = transformProperty(`static asymmetric = true;`);
+      const parsedSchema = extractSchema(transformCode);
+
+      expect(parsedSchema?.asymmetric).toEqual(true);
+    });
+
+    it("reads multiple static properties", () => {
+      const code = `static name = 'test';
+      static primaryKey = 'test';
+      static embedded = true;
+      static asymmetric = true;`;
+
+      const transformCode = transformProperty(code);
+      const parsedSchema = extractSchema(transformCode);
+
+      expect(parsedSchema?.name).toEqual("test");
+      expect(parsedSchema?.primaryKey).toEqual("test");
+      expect(parsedSchema?.embedded).toEqual(true);
+      expect(parsedSchema?.asymmetric).toEqual(true);
+    });
+  });
 });
