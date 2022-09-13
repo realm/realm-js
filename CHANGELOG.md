@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Notes
-Based on Realm JS v10.21.0: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.19.5).
+## 10.22.0 (2022-09-13)
 
 ### Enhancements
 * Small improvement to performance by caching JSI property String object [#4863](https://github.com/realm/realm-js/pull/4863)
