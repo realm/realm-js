@@ -77,10 +77,11 @@ jobs:
 #        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     - name: Find Release PR
-      uses: juliangruber/find-pull-request-action@f9f7484f8237cf8485e5ab826e542ba5dd9e9c6e
+      uses: sharesight/find-github-pull-request@v1.1.2
       id: find-pull-request
       with:
-        branch: ${{ github.ref }}
+        commitSha: ${{ github.sha }}
+        failIfNotFound: true
 
     - name: Dump PR context
       env:
@@ -118,7 +119,7 @@ jobs:
       with:
         changelog: ExtractedChangelog.md
         sdk: JS
-        webhook-url: ${{ secrets.SLACK_RELEASE_WEBHOOK }}
+        webhook-url: ${{ secrets.SLACK_TEST_WEBHOOK }}
         version: ${{ steps.get-version.outputs.version }}
       # This job might fail due to failed markdown-to-slack conversion.
       continue-on-error: true
@@ -135,7 +136,7 @@ jobs:
         body: Update Changelog for vNext
         delete-branch: true
         commit-message: Prepare for vNext
-        base: master
+        base: ${{ steps.find-pull-request.outputs.base-ref }}
 
 #    - name: Merge Pull Request
 #      uses: juliangruber/merge-pull-request-action@8a13f2645ad8b6ada32f829b2fae9c0955a5265d
