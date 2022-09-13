@@ -117,7 +117,7 @@ jobs:
       uses: realm/ci-actions/release-to-slack@v3
       with:
         changelog: ExtractedChangelog.md
-        sdk: JS
+        sdk: JavaScript
         webhook-url: ${{ secrets.SLACK_TEST_WEBHOOK }}
         version: ${{ steps.get-version.outputs.version }}
       # This job might fail due to failed markdown-to-slack conversion.
