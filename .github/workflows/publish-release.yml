@@ -77,6 +77,7 @@ jobs:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     - name: Find Release PR
+      # TODO: Revert this to upstream action once https://github.com/juliangruber/find-pull-request-action/pull/33 gets merged
       uses: kraenhansen/find-pull-request-action@master
       id: find-pull-request
       with:
