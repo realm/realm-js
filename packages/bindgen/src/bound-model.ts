@@ -192,7 +192,7 @@ export class Struct extends NamedType {
   }
 }
 
-class Primitive {
+export class Primitive {
   readonly kind = "Primitive";
   constructor(public name: string) {}
 
@@ -378,9 +378,12 @@ export function bindModel(spec: Spec): BoundSpec {
   for (const [name, { cppName, fields }] of Object.entries(spec.records)) {
     const struct = out.types[name] as Struct;
     struct.cppName = cppName ?? name;
-    struct.fields = Object.entries(fields).map(
-      ([name, field]) => new Field(name, resolveTypes(field.type), field.default === undefined),
-    );
+    struct.fields = Object.entries(fields).map(([name, field]) => {
+      const type = resolveTypes(field.type);
+      // Optional fields are never required.
+      const required = field.default === undefined && !(type.kind == "Template" && type.name == "util::Optional");
+      return new Field(name, type, required);
+    });
   }
 
   for (const subtree of ["classes", "interfaces"] as const) {

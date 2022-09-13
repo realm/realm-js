@@ -11,6 +11,7 @@
 #include <realm/object-store/impl/realm_coordinator.hpp>
 #include <realm/object-store/shared_realm.hpp>
 
+#define FWD(x) std::forward<decltype(x)>(x)
 
 namespace realm::js::node {
 namespace {
