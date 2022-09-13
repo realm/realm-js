@@ -879,7 +879,7 @@ classes:
       set_log_level: '(level: LoggerLevel)'
       #set_logger_factory: '(factory: (level: LoggerLevel) -> std::unique_ptr<util::Logger>)'
       set_user_agent: '(user_agent: std::string)'
-      set_timeouts: '(timeouts SyncClientTimeouts)'
+      set_timeouts: '(timeouts: SyncClientTimeouts)'
       reconnect: ()
       wait_for_sessions_to_terminate: ()
 
