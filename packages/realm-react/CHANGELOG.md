@@ -1,10 +1,17 @@
-0.3.2 Release notes (2022-07-14)
-=============================================================
+## 0.4.0 (2022-09-14)
+
+### Fixed
+* Fix realm collection and object typing to reflect changes to Class Based Models introduced in Realm `11.0.0` ([#4905](https://github.com/realm/realm-js/issues/4905))
+
+### Compatibility
+* Realm >= v0.11.0
+
+## 0.3.2 (2022-07-14)
 ### Fixed
 * Fix peer dependency for Realm in package.json to support `-rc` branches of Realm ([#4621](https://github.com/realm/realm-js/issues/4621))
 * Add generic type parameters to `@realm/react` hooks ([#4716](https://github.com/realm/realm-js/pull/4716))
 
-# 0.3.1 Release notes (2022-05-31)
+## 0.3.1 (2022-05-31)
 
 ### Enhancements
 * Add realmRef property to `RealmProvider` to access the configured realm outside of the provider component ([#4571](https://github.com/realm/realm-js/issues/4571))
@@ -13,7 +20,7 @@
 ### Fixed
 * Results from `useQuery` could not be passed to `MutableSubscriptionSet.add`/`remove` ([#4507](https://github.com/realm/realm-js/issues/4507), since v0.1.0)
 
-# 0.3.0 Release notes (2022-05-11)
+## 0.3.0 (2022-05-11)
 
 ### Enhancements
 
@@ -77,7 +84,7 @@ const SomeComponent = () => {
 
 - Tests run with `--forceExit` to prevent them hanging ([#4531](https://github.com/realm/realm-js/pull/4531))
 
-  # 0.2.1 Release notes (2022-03-24)
+## 0.2.1 (2022-03-24)
 
 ### Enhancements
 
@@ -96,7 +103,7 @@ const SomeComponent = () => {
 
 - None
 
-  # 0.2.0 Release notes (2022-03-07)
+## 0.2.0 (2022-03-07)
 
 ### Enhancements
 
@@ -108,7 +115,7 @@ const SomeComponent = () => {
 - List properties of a Realm.Object now rerender on change
 - Broadened test coverage for collections, lists and linked objects
 
-  # 0.1.0 Release notes (2021-11-10)
+## 0.1.0 (2021-11-10)
 
 ### Enhancements
 
