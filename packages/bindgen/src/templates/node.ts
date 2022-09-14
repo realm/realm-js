@@ -18,28 +18,8 @@
 import { strict as assert } from "assert";
 
 import { TemplateContext } from "../context";
-import {
-  CppVar,
-  CppFunc,
-  CppFuncProps,
-  CppMemInit,
-  CppCtor,
-  CppMethod,
-  CppClass,
-  CppDecls,
-  CppCtorProps,
-} from "../cpp";
-import {
-  bindModel,
-  BoundSpec,
-  Class,
-  InstanceMethod,
-  StaticMethod,
-  Property,
-  Type,
-  Method,
-  Primitive,
-} from "../bound-model";
+import { CppVar, CppFunc, CppFuncProps, CppCtor, CppMethod, CppClass, CppDecls } from "../cpp";
+import { bindModel, BoundSpec, Class, InstanceMethod, StaticMethod, Property, Type, Primitive } from "../bound-model";
 
 import "../js-passes";
 
@@ -59,7 +39,7 @@ function tryWrap(body: string) {
         `;
 }
 
-class CppNodeMethod extends CppMethod {
+class CppNodeFunc extends CppFunc {
   constructor(private addon: NodeAddon, name: string, props?: CppFuncProps) {
     super(name, "Napi::Value", [node_callback_info], props);
   }
@@ -73,21 +53,6 @@ class CppNodeMethod extends CppMethod {
   }
 }
 
-class CppNodeCtor extends CppCtor {
-  constructor(name: string, props?: CppCtorProps) {
-    super(name, [node_callback_info], props);
-  }
-
-  definition() {
-    // Note: if we ever want need to try to catch failing member inits, need to
-    // change CppCtor to support function-try blocks.
-    return super.definition(`
-            ${envFromCbInfo}
-            ${tryWrap(this.body)}
-        `);
-  }
-}
-
 function pushRet<T, U extends T>(arr: T[], elem: U) {
   arr.push(elem);
   return elem;
@@ -96,6 +61,8 @@ function pushRet<T, U extends T>(arr: T[], elem: U) {
 class NodeAddon extends CppClass {
   inits: string[] = [];
   exports: Record<string, string> = {};
+  classes: string[] = [];
+  injectables = ["Float", "UUID", "ObjectId", "Decimal128"];
 
   constructor() {
     super("RealmAddon");
@@ -114,31 +81,41 @@ class NodeAddon extends CppClass {
         body: `return ContainerResizer(m_string_bufs);`,
       }),
     );
+  }
 
-    const injectables = ["Float", "UUID", "ObjectId", "Decimal128"];
-    injectables.forEach((t) => this.members.push(new CppVar("Napi::FunctionReference", NodeAddon.memberNameFor(t))));
+  generateMembers() {
+    this.injectables.forEach((t) =>
+      this.members.push(new CppVar("Napi::FunctionReference", NodeAddon.memberNameFor(t))),
+    );
+    this.classes.forEach((t) =>
+      this.members.push(new CppVar("Napi::FunctionReference", NodeAddon.memberNameForExtractor(t))),
+    );
     this.addMethod(
       new CppMethod("injectInjectables", "void", [node_callback_info], {
         body: `
           auto ctors = info[0].As<Napi::Object>();
-          ${injectables
+          ${this.injectables
             .map((t) => `${NodeAddon.memberNameFor(t)} = Napi::Persistent(ctors.Get("${t}").As<Napi::Function>());`)
+            .join("\n")}
+          ${this.classes
+            .map(
+              (cls) =>
+                `${NodeAddon.memberNameForExtractor(cls)} =
+                  Napi::Persistent(${NodeAddon.memberNameFor(cls)}.Value().Get("_extract").As<Napi::Function>());`,
+            )
             .join("\n")}
         `,
       }),
     );
-  }
 
-  generateMembers() {
     this.addMethod(
       new CppCtor(this.name, [new CppVar("Napi::Env", env), new CppVar("Napi::Object", "exports")], {
         body: `
-            const auto setPrototypeOf = ${env}.Global().Get("Object").As<Napi::Object>().Get("setPrototypeOf").As<Napi::Function>();
             ${this.inits.join("\n")}
 
             DefineAddon(exports, {
                 ${Object.entries(this.exports)
-                  .map(([name, val]) => `InstanceValue(${name}, ${val}.Value(), napi_enumerable),`)
+                  .map(([name, val]) => `InstanceValue("${name}", ${val}.Value(), napi_enumerable),`)
                   .join("\n")}
                 InstanceMethod<&${this.name}::injectInjectables>("injectInjectables"),
             });
@@ -147,55 +124,43 @@ class NodeAddon extends CppClass {
     );
   }
 
-  addClass(cls: NodeObjectWrap, base: Class | undefined) {
-    const mem = NodeAddon.memberNameFor(cls);
+  addFunc(name: string, props?: CppFuncProps) {
+    const func = new CppNodeFunc(this, name, props);
+    const mem = NodeAddon.memberNameForFuncId(name);
+
     this.members.push(new CppVar("Napi::FunctionReference", mem));
-    this.inits.push(`${mem} = Persistent(${cls.name}::makeCtor(${env}));`);
-    if (base) {
-      const baseMem = NodeAddon.memberNameFor(base);
-      this.inits.push(`setPrototypeOf.Call({${mem}.Value(), ${baseMem}.Value()});`);
-      this.inits.push(`setPrototypeOf.Call({${mem}.Value().Get("prototype"), ${baseMem}.Value().Get("prototype")});`);
-    }
-    this.exports[`${cls.name}::jsName`] = mem;
+    this.inits.push(`${mem} = Persistent(Napi::Function::New<${func.name}>(${env}, "${name}"));`);
+    this.exports[name] = mem;
+    return func;
   }
 
+  addClass(cls: Class) {
+    this.injectables.push(cls.jsName);
+    this.classes.push(cls.jsName);
+  }
+
+  static memberNameForFuncId(id: string) {
+    return `m_func_${id}`;
+  }
+  static memberNameForExtractor(cls: string | { jsName: string }) {
+    if (typeof cls != "string") cls = cls.jsName;
+    return `m_cls_${cls}_extractor`;
+  }
   static memberNameFor(cls: string | { jsName: string }) {
     if (typeof cls != "string") cls = cls.jsName;
     return `m_cls_${cls}_ctor`;
   }
 
-  accessCtor(cls: string | NodeObjectWrap) {
+  accessCtor(cls: string | { jsName: string }) {
     return `${this.get()}->${NodeAddon.memberNameFor(cls)}`;
+  }
+
+  accessExtractor(cls: string | { jsName: string }) {
+    return `${this.get()}->${NodeAddon.memberNameForExtractor(cls)}`;
   }
 
   get() {
     return `${env}.GetInstanceData<${this.name}>()`;
-  }
-}
-
-class NodeObjectWrap extends CppClass {
-  ctor: CppCtor;
-  descriptors: string[] = [];
-  constructor(public jsName: string) {
-    super(`Node_${jsName}`);
-    this.withCrtpBase("Napi::ObjectWrap");
-
-    this.ctor = this.addMethod(
-      new CppNodeCtor(this.name, {
-        mem_inits: [new CppMemInit(this.bases[0], "info")],
-      }),
-    );
-
-    this.members.push(new CppVar("constexpr const char*", "jsName", { value: `"${jsName}"`, static: true }));
-  }
-
-  addFactory() {
-    this.addMethod(
-      new CppMethod("makeCtor", "Napi::Function", [new CppVar("Napi::Env", env)], {
-        static: true,
-        body: `return DefineClass(${env}, "${this.jsName}", { ${this.descriptors.map((d) => d + ",").join("\n")} });`,
-      }),
-    );
   }
 }
 
@@ -296,7 +261,7 @@ function convertPrimToNode(addon: NodeAddon, type: string, expr: string): string
                 return arr;
             }(${expr}))`;
     case "Mixed":
-      return `NODE_FROM_MIXED(${env}, ${expr})`;
+      return `NODE_FROM_Mixed(${env}, ${expr})`;
 
     case "ObjectId":
     case "UUID":
@@ -356,7 +321,7 @@ function convertPrimFromNode(addon: NodeAddon, type: string, expr: string): stri
             })(${expr})`;
 
     case "Mixed":
-      return `NODE_TO_MIXED(${env}, ${expr})`;
+      return `NODE_TO_Mixed(${env}, ${expr})`;
 
     case "UUID":
     case "Decimal128":
@@ -688,110 +653,116 @@ class NodeCppDecls extends CppDecls {
       };
     }
 
-    for (const specClass of spec.classes) {
+    for (const cls of spec.classes) {
       // TODO need to do extra work to enable JS implementation of interfaces
-      const cls = pushRet(this.classes, new NodeObjectWrap(specClass.jsName));
-      const self = specClass.needsDeref ? "(*m_val)" : "(m_val)";
 
-      if (specClass.abstract) {
-        // For now, these get nothing.
-        cls.addFactory();
-        this.addon.addClass(cls, specClass.base);
-        continue;
+      assert(
+        !cls.sharedPtrWrapped || (!cls.base && cls.subclasses.length == 0),
+        `We don't support mixing sharedPtrWrapped and class hierarchies. ${cls.name} requires this.`,
+      );
+
+      this.addon.addClass(cls);
+
+      // TODO look into using enabled_shared_from for all shared thingies so we can just store T*.
+      const baseType = cls.sharedPtrWrapped ? `std::shared_ptr<${cls.cppName}>` : cls.rootBase().cppName;
+      const derivedType = cls.sharedPtrWrapped ? `std::shared_ptr<${cls.cppName}>` : cls.cppName;
+      const ptr = (expr: string) => `${expr}.As<Napi::External<${baseType}>>().Data()`;
+      const casted = (expr: string) => (cls.base ? `static_cast<${derivedType}*>(${ptr(expr)})` : ptr(expr));
+      const self = `(${cls.needsDeref ? "**" : "*"}${casted("info[0]")})`;
+
+      const selfCheck = (isStatic: boolean) =>
+        isStatic ? "" : `if (!info[0].IsExternal()) throw Napi::TypeError::New(${env}, "need 1 external argument");`;
+
+      for (const method of cls.methods) {
+        const argOffset = method.isStatic ? 0 : 1; // `this` takes arg 0 if not static
+        const args = method.sig.args.map((a, i) => convertFromNode(this.addon, a.type, `info[${i + argOffset}]`));
+
+        this.free_funcs.push(
+          this.addon.addFunc(method.id, {
+            body: `
+              if (info.Length() != ${args.length + argOffset})
+                  throw Napi::TypeError::New(${env}, "expected ${args.length} arguments");
+              ${selfCheck(method.isStatic)}
+              return ${convertToNode(this.addon, method.sig.ret, method.call({ self }, ...args))};
+            `,
+          }),
+        );
       }
 
-      const includeDerived = function* (cls: Class): Iterable<Method> {
-        // For now, we copy everything to most-derived type. That will change when we stop using ObjectWrap.
-        if (cls.base) yield* includeDerived(cls.base);
-        yield* cls.methods;
-      };
+      if (cls.iterable) {
+        this.free_funcs.push(
+          this.addon.addFunc(cls.iteratorMethodId(), {
+            body: `
+              if (info.Length() != 1)
+                  throw Napi::TypeError::New(${env}, "expected 0 arguments");
+              ${selfCheck(false)}
 
-      for (const method of includeDerived(specClass)) {
-        const cppMeth = cls.addMethod(new CppNodeMethod(this.addon, method.jsName, { static: method.isStatic }));
-        cls.descriptors.push(`${method.nodeDescriptorType}<&${cppMeth.qualName()}>("${method.jsName}")`);
+              auto& self = ${self};
+              auto jsIt = Napi::Object::New(${env});
+              jsIt.Set("_keepAlive", info.This());
+              jsIt.Set("next", Napi::Function::New(napi_env_var_ForBindGen,
+                  [it = self.begin(), end = self.end()] (const Napi::CallbackInfo& info) mutable {
+                      const auto ${env} = info.Env();
 
-        const args = method.sig.args.map((a, i) => convertFromNode(this.addon, a.type, `info[${i}]`));
+                      auto ret = Napi::Object::New(${env});
+                      if (it == end) {
+                          ret.Set("done", Napi::Boolean::New(${env}, true));
+                      } else {
+                          ret.Set("value", ${convertToNode(this.addon, cls.iterable, "*it")});
+                          ++it;
+                      }
+                      return ret;
+                  }));
 
-        // This can go away when we stop duplicating methods onto subclasses.
-        // Might also be able to remove after https://github.com/realm/realm-core/pull/5774
-        const castedSelf = method.on == specClass ? self : `static_cast<${method.on.cppName}&>(${self})`;
-        cppMeth.body += `
-            if (info.Length() != ${args.length})
-                throw Napi::TypeError::New(${env}, "expected ${args.length} arguments");
-            return ${convertToNode(this.addon, method.sig.ret, method.call({ self: castedSelf }, ...args))};
-        `;
+              return jsIt;
+            `,
+          }),
+        );
       }
 
-      if (specClass.iterable) {
-        const cppMeth = cls.addMethod(new CppNodeMethod(this.addon, "Symbol_iterator"));
-        cls.descriptors.push(`InstanceMethod<&${cppMeth.qualName()}>(Napi::Symbol::WellKnown(${env}, "iterator"))`);
-        cppMeth.body += `
-            if (info.Length() != 0)
-                throw Napi::TypeError::New(${env}, "expected 0 arguments");
-
-            auto jsIt = Napi::Object::New(${env});
-            jsIt.Set("_keepAlive", info.This());
-            jsIt.Set("next", Napi::Function::New(napi_env_var_ForBindGen,
-                [it = ${self}.begin(), end = ${self}.end()] (const Napi::CallbackInfo& info) mutable {
-                    const auto ${env} = info.Env();
-
-                    auto ret = Napi::Object::New(${env});
-                    if (it == end) {
-                        ret.Set("done", Napi::Boolean::New(${env}, true));
-                    } else {
-                        ret.Set("value", ${convertToNode(this.addon, specClass.iterable, "*it")});
-                        ++it;
-                    }
-                    return ret;
-                }));
-
-            return jsIt;
-        `;
-      }
-
-      const valueType = specClass.sharedPtrWrapped ? `std::shared_ptr<${specClass.cppName}>` : specClass.cppName;
-      const refType = specClass.sharedPtrWrapped ? `const ${valueType}&` : `${valueType}&`;
-      const kind = specClass.sharedPtrWrapped ? "SHARED" : "CLASS";
-
-      cls.members.push(new CppVar(valueType, "m_val"));
-      cls.ctor.body = `
-          if (info.Length() != 1 || !info[0].IsExternal())
-              throw Napi::TypeError::New(${env}, "need 1 external argument");
-          m_val = std::move(*info[0].As<Napi::External<${valueType}>>().Data());
-        `;
+      const refType = cls.sharedPtrWrapped ? `const ${derivedType}&` : `${derivedType}&`;
+      const kind = cls.sharedPtrWrapped ? "SHARED" : "CLASS";
 
       // TODO in napi 8 we can use type_tags to validate that the object REALLY is from us.
       this.free_funcs.push(
-        new CppFunc(`NODE_TO_${kind}_${specClass.name}`, refType, [new CppVar("Napi::Value", "val")], {
+        new CppFunc(`NODE_TO_${kind}_${cls.name}`, refType, [new CppVar("Napi::Value", "val")], {
           attributes: "[[maybe_unused]]",
           body: `
             auto ${env} = val.Env();
             auto obj = val.ToObject();
-            if (!obj.InstanceOf(${this.addon.accessCtor(cls)}.Value()))
-                throw Napi::TypeError::New(${env}, "Expected a ${cls.jsName}");
-            return ${cls.name}::Unwrap(obj)->m_val;
+            auto external = ${this.addon.accessExtractor(cls)}.Call({obj});
+            return *${casted(`external`)};
           `,
         }),
       );
 
-      this.free_funcs.push(
-        new CppFunc(
-          `NODE_FROM_${kind}_${specClass.name}`,
-          "Napi::Value",
-          [new CppVar("Napi::Env", env), new CppVar(valueType, "val")],
-          {
-            attributes: "[[maybe_unused]]",
-            body: `return ${this.addon.accessCtor(cls)}.New({Napi::External<${valueType}>::New(${env}, &val)});`,
-          },
-        ),
-      );
-
-      cls.addFactory();
-      this.addon.addClass(cls, specClass.base);
+      if (!cls.abstract) {
+        this.free_funcs.push(
+          new CppFunc(
+            `NODE_FROM_${kind}_${cls.name}`,
+            "Napi::Value",
+            [new CppVar("Napi::Env", env), new CppVar(derivedType, "val")],
+            {
+              attributes: "[[maybe_unused]]",
+              // Note: the External::New constructor taking a finalizer does an extra heap allocation for the finalizer.
+              // We can look into bypassing that if it is a problem.
+              body: `
+                return ${this.addon.accessCtor(cls)}.New({Napi::External<${derivedType}>::New(
+                  ${env},
+                  new auto(std::move(val)),
+                  [] (Napi::Env, ${baseType}* ptr) {
+                    delete static_cast<${derivedType}*>(ptr);
+                  }
+                )});
+              `,
+            },
+          ),
+        );
+      }
     }
 
     this.free_funcs.push(
-      new CppFunc("NODE_FROM_MIXED", "Napi::Value", [new CppVar("Napi::Env", env), new CppVar("Mixed", "val")], {
+      new CppFunc("NODE_FROM_Mixed", "Napi::Value", [new CppVar("Napi::Env", env), new CppVar("Mixed", "val")], {
         body: `
           if (val.is_null())
               return ${env}.Null();
@@ -810,7 +781,7 @@ class NodeCppDecls extends CppDecls {
           REALM_UNREACHABLE();
         `,
       }),
-      new CppFunc("NODE_TO_MIXED", "Mixed", [new CppVar("Napi::Env", env), new CppVar("Napi::Value", "val")], {
+      new CppFunc("NODE_TO_Mixed", "Mixed", [new CppVar("Napi::Env", env), new CppVar("Napi::Value", "val")], {
         body: `
           switch(val.Type()) {
           case napi_null:
