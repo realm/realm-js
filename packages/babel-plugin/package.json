@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "jest",
-    "build": "test"
+    "build": "tsc"
   },
   "keywords": [
     "realm",
