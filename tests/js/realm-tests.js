@@ -430,21 +430,21 @@ module.exports = {
     realm.write(() => {
       realm.create("TestObject", [1]);
     });
-    TestCase.assertEqual(realm.readOnly, false);
+    TestCase.assertEqual(realm.isReadOnly, false);
     realm.close();
 
     realm = new Realm({ readOnly: true, schema: [schemas.TestObject] });
     const objects = realm.objects("TestObject");
     TestCase.assertEqual(objects.length, 1);
     TestCase.assertEqual(objects[0].doubleCol, 1.0);
-    TestCase.assertEqual(realm.readOnly, true);
+    TestCase.assertEqual(realm.isReadOnly, true);
 
     TestCase.assertThrowsContaining(() => realm.write(() => {}), "Can't perform transactions on read-only Realms.");
     realm.close();
 
     realm = new Realm({ readOnly: true });
     TestCase.assertEqual(realm.schema.length, 1);
-    TestCase.assertEqual(realm.readOnly, true);
+    TestCase.assertEqual(realm.isReadOnly, true);
     realm.close();
   },
 
@@ -1627,18 +1627,18 @@ module.exports = {
 
   testEmpty: function () {
     const realm = new Realm({ schema: [schemas.PersonObject] });
-    TestCase.assertTrue(realm.empty);
+    TestCase.assertTrue(realm.isEmpty);
 
     realm.write(() => realm.create("PersonObject", { name: "Ari", age: 10 }));
-    TestCase.assertTrue(!realm.empty);
+    TestCase.assertTrue(!realm.isEmpty);
 
     realm.write(() => realm.delete(realm.objects("PersonObject")));
-    TestCase.assertTrue(realm.empty);
+    TestCase.assertTrue(realm.isEmpty);
   },
 
   testManualTransaction: function () {
     const realm = new Realm({ schema: [schemas.TestObject] });
-    TestCase.assertTrue(realm.empty);
+    TestCase.assertTrue(realm.isEmpty);
 
     realm.beginTransaction();
     realm.create("TestObject", { doubleCol: 3.1415 });
@@ -1649,13 +1649,13 @@ module.exports = {
 
   testCancelTransaction: function () {
     const realm = new Realm({ schema: [schemas.TestObject] });
-    TestCase.assertTrue(realm.empty);
+    TestCase.assertTrue(realm.isEmpty);
 
     realm.beginTransaction();
     realm.create("TestObject", { doubleCol: 3.1415 });
     realm.cancelTransaction();
 
-    TestCase.assertTrue(realm.empty);
+    TestCase.assertTrue(realm.isEmpty);
   },
 
   testIsInTransaction: function () {
@@ -1714,7 +1714,7 @@ module.exports = {
         realm.compact();
       }, "Cannot compact a Realm within a transaction.");
     });
-    TestCase.assertTrue(realm.empty);
+    TestCase.assertTrue(realm.isEmpty);
   },
 
   testManualCompactMultipleInstances: function () {
@@ -1963,7 +1963,7 @@ module.exports = {
   // FIXME: We need to test adding a property also calls the listener
   testSchemaUpdatesNewClass: function () {
     let realm1 = new Realm();
-    TestCase.assertTrue(realm1.empty);
+    TestCase.assertTrue(realm1.isEmpty);
     TestCase.assertEqual(realm1.schema.length, 0); // empty schema
 
     const schema = [

@@ -1032,9 +1032,9 @@ type Unmanaged<T> = OmittedRealmTypes<T> & RemappedRealmTypes<T>;
 declare class Realm {
     static defaultPath: string;
 
-    readonly empty: boolean;
+    readonly isEmpty: boolean;
     readonly path: string;
-    readonly readOnly: boolean;
+    readonly isReadOnly: boolean;
     readonly schema: Realm.CanonicalObjectSchema[];
     readonly schemaVersion: number;
     readonly isInTransaction: boolean;
