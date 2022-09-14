@@ -189,8 +189,10 @@ set_target_properties(realm-js PROPERTIES
 
 set(GENERATED_TS_FILES
     ${TYPESCRIPT_OUTPUT_DIR}/native.d.mts
-    ${TYPESCRIPT_OUTPUT_DIR}/native.mjs
     ${TYPESCRIPT_OUTPUT_DIR}/core.ts
+)
+set(GENERATED_JS_FILES
+    ${TYPESCRIPT_OUTPUT_DIR}/native.mjs
 )
 
 add_custom_command(
@@ -226,4 +228,15 @@ add_custom_command(
         ${TS_FILES}
 )
 
-add_custom_target(TypeScript ALL DEPENDS ${GENERATED_TS_FILES})
+add_custom_command(
+    OUTPUT ${GENERATED_JS_FILES}
+    COMMAND ${NODE_FORCE_COLOR} ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts --spec ${SPEC_FILE} --template node-wrapper --output ${TYPESCRIPT_OUTPUT_DIR}
+    VERBATIM
+    MAIN_DEPENDENCY src/templates/node-wrapper.ts
+    DEPENDS
+        ${SPEC_FILE}
+        ${SCHEMA_FILE}
+        ${TS_FILES}
+)
+
+add_custom_target(TypeScript ALL DEPENDS ${GENERATED_TS_FILES} ${GENERATED_JS_FILES})
