@@ -16,8 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-module.exports = {
-  preset: "ts-jest",
-  testEnvironment: "node",
-  // roots: ["src/tests"],
-};
+import Realm from "realm";
+
+describe("Realm.Types namespace", () => {
+  it("Realm.Types.Decimal128 can be constructed", () => {
+    const instance = new Realm.Types.Decimal128();
+  });
+
+  it("Realm.Types.ObjectId can be constructed", () => {});
+
+  it("Realm.Types.Date can be constructed", () => {});
+
+  it("Realm.Types.Data can be constructed", () => {});
+
+  it("Realm.Types.List can be constructed", () => {});
+
+  it("Realm.Types.Set can be constructed", () => {});
+
+  it("Realm.Types.Dictionary can be constructed", () => {});
+});
