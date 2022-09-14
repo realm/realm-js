@@ -490,7 +490,7 @@ declare namespace Realm {
      *
      * @example
      * // These are all equivalent:
-     * await user.callFunction("doThing", [a1, a2, a3]);
+     * await user.callFunction("doThing", a1, a2, a3);
      * await user.functions.doThing(a1, a2, a3);
      * await user.functions["doThing"](a1, a2, a3);
      * @example

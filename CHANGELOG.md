@@ -3,6 +3,23 @@
 ### Notes
 Based on Realm JS v10.21.0: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.19.5).
 
+### Breaking change
+* Removed deprecated positional arguments to Email/Password authentication functions
+    * The following functions now only accept object arguments:
+    ```javascript
+  Realm.Auth.EmailPasswordAuth.registerUser({email, password});
+  Realm.Auth.EmailPasswordAuth.confirmUser({token, tokenId});
+  Realm.Auth.EmailPasswordAuth.resendConfirmationEmail({email});
+  Realm.Auth.EmailPasswordAuth.retryCustomConfirmation({email});
+  Realm.Auth.EmailPasswordAuth.resetPassword({token, tokenId, password});
+  Realm.Auth.EmailPasswordAuth.sendResetPasswordEmail({email});
+  Realm.Auth.EmailPasswordAuth.callResetPasswordFunction({email, password}, ...args);
+* Unify the call signature documentation of `User#callFunction` ([#3733](https://github.com/realm/realm-js/issues/3733))
+    * Example:
+    ```javascript
+    user.callFunction("sum", 1, 2, 3); // Valid
+    user.callFunction("sum", [1, 2, 3]); // Invalid
+    ```
 ### Enhancements
 * Small improvement to performance by caching JSI property String object [#4863](https://github.com/realm/realm-js/pull/4863)
 
@@ -28,7 +45,7 @@ Based on Realm JS v10.21.0: See changelog below for details on enhancements and 
 * Fixed an exception `fcntl() with F_BARRIERFSYNC failed: Inappropriate ioctl for device` when running with MacOS on an exFAT drive. ([realm/realm-core#5789](https://github.com/realm/realm-core/issues/5789), since v10.18.0)
 * Syncing of a Decimal128 with big significand could result in a crash. ([realm/realm-core#5728](https://github.com/realm/realm-core/issues/5728), since v10.0.0)
 * `discardLocal` client reset mode will now wait for flexible sync Realms to be fully synchronized before beginning recovery operations. ([realm/realm-core#5705](https://github.com/realm/realm-core/issues/5705), since v10.11.0)
-  
+
 ### Compatibility
 * MongoDB Realm Cloud.
 * Realm Studio v11.0.0.
