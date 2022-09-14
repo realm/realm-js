@@ -225,6 +225,7 @@ function getRealmTypeForClassProperty(path: NodePath<types.ClassProperty>): Real
   }
 }
 
+// TODO check it was imported from realm
 function findDecoratorIdentifier(decoratorsPath: NodePath<types.Decorator>[], name: string) {
   return decoratorsPath.find((d) => d.node && types.isIdentifier(d.node.expression) && d.node.expression.name === name);
 }
@@ -290,10 +291,12 @@ function visitRealmClassProperty(path: NodePath<types.ClassProperty>) {
       }
 
       if (mapTo) {
-        properties.push(types.objectProperty(types.identifier("mapTo"), types.stringLiteral(mapTo)));
+        properties.push(types.objectProperty(types.identifier("mapTo"), types.stringLiteral(name)));
       }
 
-      return types.objectProperty(types.identifier(name), types.objectExpression(properties));
+      // In the case of mapTo, we want the field name in the schema to match the name in the DB
+      // and the field name specified in mapTo matches the model
+      return types.objectProperty(types.identifier(mapTo || name), types.objectExpression(properties));
     } else {
       console.warn(`Unable to determine type of '${name}' property`);
     }

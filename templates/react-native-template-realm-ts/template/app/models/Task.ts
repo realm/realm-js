@@ -1,9 +1,12 @@
 import {Realm} from '@realm/react';
+import {index, mapTo} from '@realm/babel-plugin';
 
 export class Task extends Realm.Object {
   _id!: Realm.BSON.ObjectId;
+  @index
   description!: string;
-  isComplete!: boolean;
+  @mapTo('isComplete')
+  complete!: boolean;
   createdAt!: Date;
   userId!: string;
 

@@ -16,7 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import plugin from "./plugin";
-export default plugin;
+export function index(target: any, memberName: string) {}
 
-export * from "./decorators";
+export function mapTo(realmPropertyName: string) {
+  return (target: any, memberName: string) => {};
+}

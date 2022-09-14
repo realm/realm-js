@@ -6,7 +6,8 @@
     "esModuleInterop": true,
     "outDir": "dist",
     "strict": true,
-    "module": "CommonJS"
+    "module": "CommonJS",
+    "declaration": true
   },
   "include": ["src/**/*.ts"],
   "exclude": []
