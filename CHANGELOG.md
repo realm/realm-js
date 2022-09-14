@@ -4,8 +4,7 @@
 * None.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* Fixed pinning of the NDK used to build our prebuilt binaries for Android. Our previous version, Realm JS v10.21.0 was compiled with NDK 25.1.8937393, which could result in unpredictable crashes, since this needs to match the one being used by React Native. ((#4910)[https://github.com/realm/realm-js/pull/4910], since v10.21.0)
 
 ### Compatibility
 * React Native >= v0.64.0
