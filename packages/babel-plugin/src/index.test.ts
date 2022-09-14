@@ -343,4 +343,15 @@ describe("Babel plugin", () => {
       expect((parsedSchema?.properties.name as ObjectSchemaProperty).mapTo).toEqual("rename");
     });
   });
+
+  it("handles a full scheme", () => {
+    const transformCode = transformProperty(`
+      _id!: Realm.BSON.ObjectId;
+      description!: string;
+      isComplete!: boolean;
+      createdAt!: Date;
+      userId!: string;`);
+
+    console.log(transformCode);
+  });
 });
