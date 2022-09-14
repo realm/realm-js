@@ -168,7 +168,7 @@ export class AppImporter {
    * @returns A promise of an object containing the app id.
    */
   public async importApp(appTemplatePath: string, replacements: TemplateReplacements = {}): Promise<{ appId: string }> {
-    const { name: appName, security } = this.loadAppConfigJson(appTemplatePath);
+    const { name: appName, security } = this.loadAppConfigJson(appTemplatePath, replacements);
 
     await this.logIn();
 
@@ -233,9 +233,10 @@ export class AppImporter {
     }
   }
 
-  private loadAppConfigJson(appTemplatePath: string): AppConfig {
+  private loadAppConfigJson(appTemplatePath: string, replacements: TemplateReplacements = {}): AppConfig {
     const configJsonPath = path.resolve(appTemplatePath, "config.json");
-    return this.loadJson(configJsonPath);
+    const configJson = this.loadJson(configJsonPath);
+    return replacements["config.json"] ? { ...configJson, ...replacements["config.json"] } : configJson;
   }
 
   private loadSecretsJson(appTemplatePath: string) {

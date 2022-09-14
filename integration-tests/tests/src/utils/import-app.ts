@@ -56,8 +56,10 @@ export function getDefaultReplacements(name: string): TemplateReplacements {
   // When running on CI we connect through mongodb-atlas instead of local-mongodb
   const { mongodbClusterName } = environment;
   if (typeof mongodbClusterName === "string") {
+    const replacements = { "config.json": { name: `${name}-${mongodbClusterName}` } };
     if (name === "with-db") {
       return {
+        ...replacements,
         "services/mongodb/config.json": {
           type: "mongodb-atlas",
           config: {
@@ -72,6 +74,8 @@ export function getDefaultReplacements(name: string): TemplateReplacements {
       };
     } else if (name === "with-db-flx") {
       return {
+        ...replacements,
+        "config.json": { name: `${name}-${mongodbClusterName}` },
         "services/mongodb/config.json": {
           type: "mongodb-atlas",
           config: {
@@ -85,6 +89,7 @@ export function getDefaultReplacements(name: string): TemplateReplacements {
         },
       };
     }
+    return replacements;
   }
   return {};
 }
