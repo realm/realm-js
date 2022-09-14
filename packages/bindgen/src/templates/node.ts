@@ -747,7 +747,7 @@ class NodeCppDecls extends CppDecls {
               // Note: the External::New constructor taking a finalizer does an extra heap allocation for the finalizer.
               // We can look into bypassing that if it is a problem.
               body: `
-                return ${this.addon.accessCtor(cls)}.New({Napi::External<${derivedType}>::New(
+                return ${this.addon.accessCtor(cls)}.New({Napi::External<${baseType}>::New(
                   ${env},
                   new auto(std::move(val)),
                   [] (Napi::Env, ${baseType}* ptr) {
