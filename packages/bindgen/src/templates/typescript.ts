@@ -145,25 +145,12 @@ export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): vo
     }
   `);
 
-  const js = file("native.mjs", "eslint");
-  js("// This file is generated: Update the spec instead of editing this file directly");
-  js(`
-    import { createRequire } from 'node:module';
-    const require = createRequire(import.meta.url);
-    const nativeModule = require("./realm.node");
-
-    import { ObjectId, UUID, Decimal128 } from "bson";
-    import { Float } from "./core";
-    nativeModule.injectInjectables({ Float, ObjectId, UUID, Decimal128 });
-  `);
-
   const out = file("native.d.mts", "eslint", "typescript-checker");
   out("// This file is generated: Update the spec instead of editing this file directly");
 
   out('import { ObjectId, UUID, Decimal128 } from "bson";');
   out("import { Float, ", spec.enums.map((e) => e.name).join(", "), '} from "./core";');
   out('export * from "./core";');
-  js('export * from "./core";');
 
   out("// Utilities");
   out(`type DeepRequired<T> = 
@@ -191,7 +178,6 @@ export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): vo
 
   out("// Classes");
   for (const cls of spec.classes) {
-    js(`export const {${cls.jsName}} = nativeModule;`);
     out(`export class ${cls.jsName} ${cls.base ? `extends ${cls.base.jsName}` : ""} {`);
     out(`${cls.subclasses.length == 0 ? "private" : "protected"} constructor();`);
     for (const meth of cls.methods) {
