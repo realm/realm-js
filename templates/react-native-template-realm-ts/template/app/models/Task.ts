@@ -6,7 +6,7 @@ export class Task extends Realm.Object {
   @index
   description!: string;
   @mapTo('isComplete')
-  complete!: boolean;
+  complete!: Realm.Types.Bool;
   createdAt!: Date;
   userId!: string;
 
