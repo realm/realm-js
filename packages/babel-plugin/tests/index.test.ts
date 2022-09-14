@@ -20,9 +20,9 @@ import * as babel from "@babel/core";
 
 import type { ObjectSchema, ObjectSchemaProperty } from "realm";
 
-import { describeProperty, extractSchema } from "./tests/generator";
-import { transformProperty } from "./tests/generator/transform";
-import { transform, TransformOptions } from "./tests/transform";
+import { describeProperty, extractSchema } from "./generator";
+import { transformProperty } from "./generator/transform";
+import { transform, TransformOptions } from "./transform";
 
 type TransformTestOptions = { name: string; test: (result: babel.BabelFileResult) => void } & TransformOptions;
 
@@ -54,45 +54,65 @@ describe("Babel plugin", () => {
       },
     );
 
-    itTransformsSchema(
-      "transform class using via `import * as Realm from 'realm'`",
-      "import * as Realm from 'realm'; class Person extends Realm.Object {}",
-      (schema) => {
-        expect(schema && schema.name).toBe("Person");
-      },
-    );
+    describe("importing from 'realm'", () => {
+      itTransformsSchema(
+        "transform class using via `import * as Realm from 'realm'`",
+        "import * as Realm from 'realm'; class Person extends Realm.Object {}",
+        (schema) => {
+          expect(schema && schema.name).toBe("Person");
+        },
+      );
 
-    itTransformsSchema(
-      "transform class using via `import Realm from 'realm'`",
-      "import Realm from 'realm'; class Person extends Realm.Object {}",
-      (schema) => {
-        expect(schema && schema.name).toBe("Person");
-      },
-    );
+      itTransformsSchema(
+        "transform class using via `import Realm from 'realm'`",
+        "import Realm from 'realm'; class Person extends Realm.Object {}",
+        (schema) => {
+          expect(schema && schema.name).toBe("Person");
+        },
+      );
 
-    itTransformsSchema(
-      "transform class using via `import { Object } from 'realm'`",
-      "import { Object } from 'realm'; class Person extends Object {}",
-      (schema) => {
-        expect(schema && schema.name).toBe("Person");
-      },
-    );
+      itTransformsSchema(
+        "transform class using via `import { Object } from 'realm'`",
+        "import { Object } from 'realm'; class Person extends Object {}",
+        (schema) => {
+          expect(schema && schema.name).toBe("Person");
+        },
+      );
 
-    itTransformsSchema(
-      "transform class using `import Realm, { Object } from 'realm'`",
-      "import Realm, { Object } from 'realm'; class Person extends Object {}",
-      (schema) => {
-        expect(schema && schema.name).toBe("Person");
-      },
-    );
+      itTransformsSchema(
+        "transform class using `import Realm, { Object } from 'realm'`",
+        "import Realm, { Object } from 'realm'; class Person extends Object {}",
+        (schema) => {
+          expect(schema && schema.name).toBe("Person");
+        },
+      );
 
-    itTransformsSchema(
-      "transform class using via `import { Object } from 'realm'` and providing type argument",
-      "import { Object } from 'realm'; class Person extends Object<Person> {}",
-      (schema) => {
-        expect(schema && schema.name).toBe("Person");
-      },
-    );
+      itTransformsSchema(
+        "transform class using via `import { Object } from 'realm'` and providing type argument",
+        "import { Object } from 'realm'; class Person extends Object<Person> {}",
+        (schema) => {
+          expect(schema && schema.name).toBe("Person");
+        },
+      );
+    });
+
+    describe("importing from '@realm/react'", () => {
+      itTransformsSchema(
+        "transform class using via `import * as RealmReact from '@realm/react'`",
+        "import * as RealmReact from '@realm/react'; class Person extends RealmReact.Realm.Object {}",
+        (schema) => {
+          expect(schema && schema.name).toBe("Person");
+        },
+      );
+
+      itTransformsSchema(
+        "transform class using via `import { Realm } from '@realm/react'`",
+        "import { Realm } from '@realm/react'; class Person extends Realm.Object {}",
+        (schema) => {
+          expect(schema && schema.name).toBe("Person");
+        },
+      );
+    });
   });
 
   /*
