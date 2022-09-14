@@ -163,6 +163,15 @@ export class Class extends NamedType {
     return `class ${this.name}`;
   }
 
+  rootBase() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    let cls: Class = this;
+    while (cls.base) {
+      cls = cls.base;
+    }
+    return cls;
+  }
+
   *decedents(): Iterable<Class> {
     for (const sub of this.subclasses) {
       assert.notEqual(sub, this, `base class loop detected on ${this.name}`);
