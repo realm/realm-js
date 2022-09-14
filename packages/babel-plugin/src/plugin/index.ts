@@ -291,12 +291,12 @@ function visitRealmClassProperty(path: NodePath<types.ClassProperty>) {
       }
 
       if (mapTo) {
-        properties.push(types.objectProperty(types.identifier("mapTo"), types.stringLiteral(name)));
+        properties.push(types.objectProperty(types.identifier("mapTo"), types.stringLiteral(mapTo)));
       }
 
       // In the case of mapTo, we want the field name in the schema to match the name in the DB
       // and the field name specified in mapTo matches the model
-      return types.objectProperty(types.identifier(mapTo || name), types.objectExpression(properties));
+      return types.objectProperty(types.identifier(name), types.objectExpression(properties));
     } else {
       console.warn(`Unable to determine type of '${name}' property`);
     }
