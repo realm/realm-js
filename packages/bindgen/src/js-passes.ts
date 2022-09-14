@@ -15,8 +15,9 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import { Field, Method, NamedType, Property } from "./bound-model";
+import { Class, Field, Method, NamedType, Property } from "./bound-model";
 import { camelCase, pascalCase } from "change-case";
+import { strict as assert } from "assert";
 
 // Any js-specific data needed on the bound model will live in this file.
 
@@ -32,6 +33,9 @@ declare module "./bound-model" {
   }
   interface Field {
     readonly jsName: string;
+  }
+  interface Class {
+    iteratorMethodId(): string;
   }
 }
 
@@ -60,3 +64,8 @@ Object.defineProperty(NamedType.prototype, "jsName", {
     return pascalCase(this.name);
   },
 });
+
+Class.prototype.iteratorMethodId = function () {
+  assert(this.iterable);
+  return `${this.name}_Symbol_iterator`;
+};

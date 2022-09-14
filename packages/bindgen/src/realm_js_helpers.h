@@ -11,8 +11,6 @@
 #include <realm/object-store/impl/realm_coordinator.hpp>
 #include <realm/object-store/shared_realm.hpp>
 
-#define FWD(x) std::forward<decltype(x)>(x)
-
 namespace realm::js::node {
 namespace {
 
@@ -180,6 +178,8 @@ inline Napi::Function bindFunc(Napi::Function func, Napi::Object self, Args... a
 
 // Equivalent to auto(x) in c++23.
 #define REALM_DECAY_COPY(x) std::decay_t<decltype(x)>(x)
+
+#define FWD(x) std::forward<decltype(x)>(x)
 
 } // namespace
 } // namespace realm::js::node
