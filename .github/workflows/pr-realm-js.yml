@@ -12,7 +12,7 @@ jobs:
     env:
       npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
       REALM_DISABLE_ANALYTICS: 1
-      ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/21.4.7075529
+      NDK_VERSION: 21.0.6113669
     strategy:
       fail-fast: false
       matrix:
@@ -94,6 +94,21 @@ jobs:
         if: ${{ (matrix.variant.runner == 'ubuntu-latest') }}
         run: sudo apt-get install ccache ninja-build
 
+      - name: Setup Java
+        if: ${{ matrix.variant.os == 'android' }}
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu' # See 'Supported distributions' for available options
+          java-version: '11'
+
+      - name: Setup Android SDK
+        if: ${{ matrix.variant.os == 'android' }}
+        uses: android-actions/setup-android@v2
+  
+      - name: Install NDK
+        if: ${{ matrix.variant.os == 'android' }}
+        run: sdkmanager --install "ndk;${{ env.NDK_VERSION }}"
+
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1
         #TODO: figure out using ccache or equivalent on windows
@@ -130,6 +145,8 @@ jobs:
       - name: Build Android
         if: ${{ (matrix.variant.os == 'android') }}
         run: npm run prebuild:android -- --arch=${{matrix.variant.arch}}
+        env:
+          ANDROID_NDK: ${{ env.ANDROID_SDK_ROOT }}/ndk/${{ env.NDK_VERSION }}
 
       - name: Install the node dependencies in the test folder
         working-directory: ./tests
@@ -157,7 +174,6 @@ jobs:
       SPAWN_LOGCAT: true
       # Pin the Xcode version
       DEVELOPER_DIR: /Applications/Xcode_12.5.1.app
-      ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/21.4.7075529
     runs-on: ${{ matrix.variant.runner }}
     strategy:
       fail-fast: false
@@ -309,7 +325,7 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           arch: x86
-          ndk: 21.0.6113669
+          ndk: ${{ env.NDK_VERSION }}
           cmake: 3.10.2.4988404
           script: npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 

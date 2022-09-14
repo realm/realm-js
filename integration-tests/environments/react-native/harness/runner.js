@@ -162,7 +162,8 @@ async function run(headless, spawnLogcat, retries, retryDelay) {
         logcat.start("com.realmreactnativetests", true).catch(console.error);
       }
       // Ask React Native to build and run the app
-      rn.sync("run-android", "--no-packager");
+      // Using --active-arch-only as per https://reactnative.dev/docs/build-speed#build-only-one-abi-during-development-android-only
+      rn.sync("run-android", "--no-packager", "--active-arch-only");
     } else if (PLATFORM === "ios") {
       // Ask React Native to build and run the app
       rn.sync("run-ios", "--no-packager", "--simulator", IOS_DEVICE_NAME);
