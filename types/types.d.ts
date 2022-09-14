@@ -16,8 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-module.exports = {
-  preset: "ts-jest",
-  testEnvironment: "node",
-  // roots: ["src/tests"],
-};
+type JSDate = Date;
+
+declare namespace Realm {
+  namespace Types {
+    type Bool = boolean;
+    type String = string;
+    type Int = number;
+    type Float = number;
+    type Double = number;
+    type Decimal128 = Realm.BSON.Decimal128;
+    type ObjectId = Realm.BSON.ObjectId;
+    type Date = JSDate;
+    type Data = ArrayBuffer;
+    type List<T> = Realm.List<T>;
+    type Set<T> = Realm.Set<T>;
+    type Dictionary<T> = Realm.Dictionary<T>;
+    type Mixed = unknown;
+  }
+}

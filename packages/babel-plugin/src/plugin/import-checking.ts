@@ -28,7 +28,10 @@ export function isImportedFromRealm(path: NodePath<types.Node>): boolean {
   } else if (path.isIdentifier()) {
     const binding = path.scope.getBinding(path.node.name);
     if (binding && binding.path.parentPath && binding.path.parentPath.isImportDeclaration()) {
-      return binding.path.parentPath.get("source").isStringLiteral({ value: "realm" });
+      return (
+        binding.path.parentPath.get("source").isStringLiteral({ value: "realm" }) ||
+        binding.path.parentPath.get("source").isStringLiteral({ value: "@realm/react" })
+      );
     }
   }
   return false;

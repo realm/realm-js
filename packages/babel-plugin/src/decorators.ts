@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-module.exports = {
-  preset: "ts-jest",
-  testEnvironment: "node",
-  // roots: ["src/tests"],
-};
+export function index(target: any, memberName: string) {}
+
+export function mapTo(realmPropertyName: string) {
+  return (target: any, memberName: string) => {};
+}
