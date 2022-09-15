@@ -7,11 +7,11 @@ CHANGELOG=$(cat <<EOF
 ## vNext (TBD)
 
 ### Enhancements
-* None.
+* None
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None.
+* None
 
 ### Compatibility
 * React Native >= v0.64.0
