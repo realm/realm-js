@@ -21,7 +21,7 @@
 * Small improvement to performance by caching JSI property String object [#4863](https://github.com/realm/realm-js/pull/4863)
 
 ### Compatibility
-* React Native >= v0.64.0
+* React Native >= v0.70.0
 * Atlas App Services.
 * Realm Studio v12.0.0.
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
