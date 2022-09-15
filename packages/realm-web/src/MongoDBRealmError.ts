@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Method, FetchResponse, Request } from "realm-network-transport";
+import { Method, FetchResponse, Request } from "@realm/network-transport";
 
 // TODO: Determine if the shape of an error response is specific to each service or widely used.
 

@@ -12,8 +12,8 @@
 			"es2018"
 		],
 		"types": [
+			"@realm/network-transport",
 			"realm",
-			"realm-network-transport",
 			"bson",
 			"buffer",
 			"mocha",
