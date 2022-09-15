@@ -366,13 +366,24 @@ describe("Babel plugin", () => {
 
   it("handles a full scheme", () => {
     const transformCode = transformProperty(`
-      _id!: Realm.BSON.ObjectId;
-      description!: string;
-      isComplete!: boolean;
-      createdAt!: Date;
-      userId!: string;`);
+      _id: Realm.BSON.ObjectId;
+      @index
+      description: string;
+      @mapTo("complete")
+      isComplete: boolean;
+      createdAt: Date;
+      userId: string;`);
     const parsedSchema = extractSchema(transformCode);
 
-    expect(parsedSchema).to.dee;
+    expect(parsedSchema).toEqual({
+      name: "Person",
+      properties: {
+        _id: { type: "objectId" },
+        description: { type: "string", indexed: true },
+        isComplete: { type: "bool", mapTo: "complete" },
+        createdAt: { type: "date" },
+        userId: { type: "string" },
+      },
+    });
   });
 });

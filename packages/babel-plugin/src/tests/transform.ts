@@ -18,7 +18,7 @@
 
 import * as babel from "@babel/core";
 
-import plugin from "../src/plugin";
+import plugin from "../plugin";
 
 export type TransformOptions = {
   source: string;
