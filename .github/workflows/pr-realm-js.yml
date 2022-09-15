@@ -133,7 +133,7 @@ jobs:
         run: npm run prebuild:node -- --arch=${{matrix.variant.arch}}
 
       # build the c++ library for IOS
-      - name: Build IOS
+      - name: Build iOS
         if: ${{ (matrix.variant.os == 'ios') }}
         run: npm run prebuild:ios
 
