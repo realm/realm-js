@@ -40,9 +40,6 @@ jobs:
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      - name: Setup NPM version
-        run: npm install -g npm@8
-
       - name: Get NPM cache directory
         id: npm-cache-dir
         run: echo "::set-output name=dir::$(npm config get cache)"
@@ -218,9 +215,6 @@ jobs:
           node-version: '16'
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
-
-      - name: Setup NPM version
-        run: npm install -g npm@8
 
       - name: Get NPM cache directory
         id: npm-cache-dir
