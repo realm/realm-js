@@ -1,43 +1,3 @@
-## vNext (TBD)
-
-### Notes
-Based on Realm JS v10.21.1: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.19.5).
-
-### Breaking change
-* Removed deprecated positional arguments to Email/Password authentication functions
-    * The following functions now only accept object arguments:
-    ```javascript
-  Realm.Auth.EmailPasswordAuth.registerUser({email, password});
-  Realm.Auth.EmailPasswordAuth.confirmUser({token, tokenId});
-  Realm.Auth.EmailPasswordAuth.resendConfirmationEmail({email});
-  Realm.Auth.EmailPasswordAuth.retryCustomConfirmation({email});
-  Realm.Auth.EmailPasswordAuth.resetPassword({token, tokenId, password});
-  Realm.Auth.EmailPasswordAuth.sendResetPasswordEmail({email});
-  Realm.Auth.EmailPasswordAuth.callResetPasswordFunction({email, password}, ...args);
-* Unify the call signature documentation of `User#callFunction` ([#3733](https://github.com/realm/realm-js/issues/3733))
-    * Example:
-    ```javascript
-    user.callFunction("sum", 1, 2, 3); // Valid
-    user.callFunction("sum", [1, 2, 3]); // Invalid
-    ```
-### Enhancements
-* Small improvement to performance by caching JSI property String object [#4863](https://github.com/realm/realm-js/pull/4863)
-
-### Fixed
-* None
-
-### Compatibility
-* React Native >= v0.64.0
-* Atlas App Services.
-* Realm Studio v12.0.0.
-* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
-* File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
-
-### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
-
 ## 10.22.0 (2022-10-17)
 
 ### Enhancements
@@ -63,6 +23,40 @@ Based on Realm JS v10.21.1: See changelog below for details on enhancements and 
 ### Internal
 * Upgraded Realm Core from v12.6.0 to v12.9.0. ([#4932](https://github.com/realm/realm-js/issues/4932) and [#4983](https://github.com/realm/realm-js/issues/4983))
 * Added ARM/Linux build guide.
+
+## 11.0.0-rc.2 (2022-09-15)
+
+### Breaking change
+* Removed deprecated positional arguments to Email/Password authentication functions
+    * The following functions now only accept object arguments:
+    ```javascript
+  Realm.Auth.EmailPasswordAuth.registerUser({email, password});
+  Realm.Auth.EmailPasswordAuth.confirmUser({token, tokenId});
+  Realm.Auth.EmailPasswordAuth.resendConfirmationEmail({email});
+  Realm.Auth.EmailPasswordAuth.retryCustomConfirmation({email});
+  Realm.Auth.EmailPasswordAuth.resetPassword({token, tokenId, password});
+  Realm.Auth.EmailPasswordAuth.sendResetPasswordEmail({email});
+  Realm.Auth.EmailPasswordAuth.callResetPasswordFunction({email, password}, ...args);
+* Unify the call signature documentation of `User#callFunction` ([#3733](https://github.com/realm/realm-js/issues/3733))
+    * Example:
+    ```javascript
+    user.callFunction("sum", 1, 2, 3); // Valid
+    user.callFunction("sum", [1, 2, 3]); // Invalid
+    ```
+### Enhancements
+* Small improvement to performance by caching JSI property String object [#4863](https://github.com/realm/realm-js/pull/4863)
+
+### Compatibility
+* React Native >= v0.70.0
+* Atlas App Services.
+* Realm Studio v12.0.0.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
+* File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Internal
+<!-- * Either mention core version or upgrade -->
+<!-- * Using Realm Core vX.Y.Z -->
+<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
 
 ## 10.21.1 (2022-09-15)
 
