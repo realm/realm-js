@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Notes
-Based on Realm JS v10.21.1: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.19.5).
+## 11.0.0-rc.2 (2022-09-15)
 
 ### Breaking change
 * Removed deprecated positional arguments to Email/Password authentication functions
@@ -22,9 +19,6 @@ Based on Realm JS v10.21.1: See changelog below for details on enhancements and 
     ```
 ### Enhancements
 * Small improvement to performance by caching JSI property String object [#4863](https://github.com/realm/realm-js/pull/4863)
-
-### Fixed
-* None
 
 ### Compatibility
 * React Native >= v0.64.0
