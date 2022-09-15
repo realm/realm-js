@@ -208,7 +208,7 @@ class App {
    * await app.emailPasswordAuth.registerUser({ email: 'john@example.com', password: 'some-secure-password' });
    * }
    *
-   * @type {Realm.Auth.EmailPasswordAuth}
+   * @type {Realm.Auth.EmailPassword}
    */
   get emailPasswordAuth() {}
 
@@ -527,8 +527,8 @@ class Credentials {
 
 /**
  * A namespace for auth providers
- * @see Realm.Auth.EmailPasswordAuth
- * @see Realm.Auth.ApiKeyAuth
+ * @see Realm.Auth.EmailPassword
+ * @see Realm.Auth.ApiKey
  * @memberof Realm
  */
 class Auth {}
@@ -537,7 +537,7 @@ class Auth {}
  * Class for managing email/password for users
  * @memberof Realm.Auth
  */
-class EmailPasswordAuth {
+class EmailPassword {
   /**
    * Registers a new email identity with the email/password provider,
    * and sends a confirmation email to the provided address.
@@ -625,7 +625,7 @@ class EmailPasswordAuth {
  * client should only be used by an authenticated user.
  * @memberof Realm.Auth
  */
-class ApiKeyAuth {
+class ApiKey {
   /**
    * Creates a user API key that can be used to authenticate as the current user.
    *
@@ -793,7 +793,7 @@ class User {
 
   /**
    * Returns a provider to interact with API keys.
-   * @return {Realm.Auth.ApiKeyAuth} - the provider
+   * @return {Realm.Auth.ApiKey} - the provider
    */
   apiKeys() {}
 

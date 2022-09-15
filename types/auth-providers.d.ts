@@ -22,9 +22,9 @@ declare namespace Realm {
    */
   interface AuthProviders {
     /** Authentication provider where users identify using email and password. */
-    emailPassword: Realm.Auth.EmailPasswordAuth;
+    emailPassword: Realm.Auth.EmailPassword;
     /** Authentication provider where users identify using an API-key. */
-    apiKey: Realm.Auth.ApiKeyAuth;
+    apiKey: Realm.Auth.ApiKey;
   }
 
   namespace Auth {
@@ -97,7 +97,7 @@ declare namespace Realm {
     /**
      * Authentication provider where users identify using email and password.
      */
-    class EmailPasswordAuth {
+    class EmailPassword {
       /**
        * Register a new user.
        *
@@ -159,7 +159,7 @@ declare namespace Realm {
     /**
      * The representation of an API-key stored in the service.
      */
-    type ApiKey = {
+    type ApiKeyConfig = {
       /**
        * The internal identifier of the key.
        */
@@ -184,25 +184,25 @@ declare namespace Realm {
     /**
      * Authentication provider where users identify using an API-key.
      */
-    class ApiKeyAuth {
+    class ApiKey {
       /**
        * Creates an API key that can be used to authenticate as the current user.
        *
        * @param name the name of the API key to be created.
        */
-      create(name: string): Promise<ApiKey>;
+      create(name: string): Promise<ApiKeyConfig>;
 
       /**
        * Fetches an API key associated with the current user.
        *
        * @param keyId the id of the API key to fetch.
        */
-      fetch(keyId: string): Promise<ApiKey>;
+      fetch(keyId: string): Promise<ApiKeyConfig>;
 
       /**
        * Fetches the API keys associated with the current user.
        */
-      fetchAll(): Promise<ApiKey[]>;
+      fetchAll(): Promise<ApiKeyConfig[]>;
 
       /**
        * Deletes an API key associated with the current user.

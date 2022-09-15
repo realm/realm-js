@@ -4,6 +4,8 @@
 Based on Realm JS v10.21.0: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.19.5).
 
 ### Breaking change
+* Rename `Realm.Auth.EmailPasswordAuth` to `Realm.Auth.EmailPassword`
+* Rename `Realm.Auth.ApiKeyAuth` to `Realm.Auth.ApiKey`
 * Removed deprecated positional arguments to Email/Password authentication functions
     * The following functions now only accept object arguments:
     ```javascript
