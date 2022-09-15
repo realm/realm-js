@@ -1,3 +1,20 @@
+?.?.? Release notes (2020-??-??)
+=============================================================
+
+### Breaking Changes
+* Removal of deprecated functions, which should be replaced with `Realm.Credentials#apiKey`:
+   * `Realm.Credentials#serverApiKey`
+   * `Realm.Credentials#userApiKey`
+
+### Enhancements
+* None
+
+### Fixed
+* None
+
+### Internal
+* None
+
 1.7.1 Release notes (2022-07-04)
 =============================================================
 

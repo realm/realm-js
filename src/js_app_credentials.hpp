@@ -48,15 +48,19 @@ public:
     static void apple(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void email_password(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void function(ContextType, ObjectType, Arguments&, ReturnValue&);
-    static void user_api_key(ContextType, ObjectType, Arguments&, ReturnValue&);
-    static void server_api_key(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void api_key(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void google(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void jwt(ContextType, ObjectType, Arguments&, ReturnValue&);
 
     MethodMap<T> const static_methods = {
-        {"facebook", wrap<facebook>},       {"anonymous", wrap<anonymous>},          {"apple", wrap<apple>},
-        {"google", wrap<google>},           {"emailPassword", wrap<email_password>}, {"_function", wrap<function>},
-        {"userApiKey", wrap<user_api_key>}, {"serverApiKey", wrap<server_api_key>},  {"jwt", wrap<jwt>},
+        {"facebook", wrap<facebook>},
+        {"anonymous", wrap<anonymous>},
+        {"apple", wrap<apple>},
+        {"google", wrap<google>},
+        {"emailPassword", wrap<email_password>},
+        {"_function", wrap<function>},
+        {"apiKey", wrap<api_key>},
+        {"jwt", wrap<jwt>},
     };
 
     static void get_payload(ContextType, ObjectType, ReturnValue&);
@@ -195,23 +199,13 @@ void CredentialsClass<T>::function(ContextType ctx, ObjectType this_object, Argu
 }
 
 template <typename T>
-void CredentialsClass<T>::user_api_key(ContextType ctx, ObjectType this_object, Arguments& arguments,
-                                       ReturnValue& return_value)
+void CredentialsClass<T>::api_key(ContextType ctx, ObjectType this_object, Arguments& arguments,
+                                  ReturnValue& return_value)
 {
     arguments.validate_count(1);
-    const std::string user_api_key = Value::validated_to_string(ctx, arguments[0], "user API key");
+    const std::string api_key = Value::validated_to_string(ctx, arguments[0], "user API key");
 
-    auto credentials = realm::app::AppCredentials::user_api_key(user_api_key);
-    return_value.set(create_object<T, CredentialsClass<T>>(ctx, new app::AppCredentials(credentials)));
-}
-template <typename T>
-void CredentialsClass<T>::server_api_key(ContextType ctx, ObjectType this_object, Arguments& arguments,
-                                         ReturnValue& return_value)
-{
-    arguments.validate_count(1);
-    const std::string server_api_key = Value::validated_to_string(ctx, arguments[0], "server API key");
-
-    auto credentials = realm::app::AppCredentials::server_api_key(server_api_key);
+    auto credentials = realm::app::AppCredentials::user_api_key(api_key);
     return_value.set(create_object<T, CredentialsClass<T>>(ctx, new app::AppCredentials(credentials)));
 }
 
