@@ -371,7 +371,8 @@ describe("Babel plugin", () => {
       isComplete!: boolean;
       createdAt!: Date;
       userId!: string;`);
+    const parsedSchema = extractSchema(transformCode);
 
-    console.log(transformCode);
+    expect(parsedSchema).to.dee;
   });
 });
