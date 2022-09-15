@@ -17,15 +17,15 @@ jobs:
       fail-fast: false
       matrix:
         variant:
-          - { os: linux, runner: ubuntu-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
-          - { os: windows, runner: windows-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
-          - { os: windows, runner: windows-2019, arch: ia32, artifact-path: prebuilds }
-          - { os: android, runner: ubuntu-latest, arch: x86_64, artifact-path: react-native/android/src/main/jniLibs }
-          - { os: android, runner: ubuntu-latest, arch: armeabi-v7a, artifact-path: react-native/android/src/main/jniLibs }
-          - { os: android, runner: ubuntu-latest, arch: arm64-v8a, artifact-path: react-native/android/src/main/jniLibs }
+          #- { os: linux, runner: ubuntu-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
+          #- { os: windows, runner: windows-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
+          #- { os: windows, runner: windows-2019, arch: ia32, artifact-path: prebuilds }
+          #- { os: android, runner: ubuntu-latest, arch: x86_64, artifact-path: react-native/android/src/main/jniLibs }
+          #- { os: android, runner: ubuntu-latest, arch: armeabi-v7a, artifact-path: react-native/android/src/main/jniLibs }
+          #- { os: android, runner: ubuntu-latest, arch: arm64-v8a, artifact-path: react-native/android/src/main/jniLibs }
           - { os: android, runner: ubuntu-latest, arch: x86, artifact-path: react-native/android/src/main/jniLibs }
-          - { os: darwin, runner: macos-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
-          - { os: darwin, runner: macos-latest, arch: arm64, artifact-path: prebuilds, test-node: true, test-electron: true }
+          #- { os: darwin, runner: macos-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
+          #- { os: darwin, runner: macos-latest, arch: arm64, artifact-path: prebuilds, test-node: true, test-electron: true }
           - { os: ios, runner: macos-latest, arch: apple, artifact-path: react-native/ios/realm-js-ios.xcframework }
     steps:
       - name: Checkout code
@@ -162,7 +162,7 @@ jobs:
             ${{ matrix.variant.artifact-path }}
 
   integration-tests:
-    name: Integration tests (${{matrix.variant.target}}) for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
+    name: Integration tests (${{matrix.variant.target}}) for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}${{ matrix.variant.newArch && ' (new arch)' || ''}}
     needs: [build]
     env:
       REALM_DISABLE_ANALYTICS: 1
@@ -180,17 +180,19 @@ jobs:
       fail-fast: false
       matrix:
         variant:
-          - { os: linux, target: test, runner: ubuntu-latest, environment: node }
-          - { os: linux, target: "test:main", runner: ubuntu-latest, environment: electron }
-          - { os: linux, target: "test:renderer", runner: ubuntu-latest, environment: electron }
+          #- { os: linux, target: test, runner: ubuntu-latest, environment: node }
+          #- { os: linux, target: "test:main", runner: ubuntu-latest, environment: electron }
+          #- { os: linux, target: "test:renderer", runner: ubuntu-latest, environment: electron }
           #- { os: windows, target: test, runner: windows-latest, environment: node}
           #- { os: windows, target: "test:main", runner: windows-latest, environment: electron }
           #- { os: windows, target: "test:renderer", runner: windows-latest, environment: electron }
-          - { os: darwin, target: "test:main", runner: macos-latest, environment: electron }
-          - { os: darwin, target: "test:renderer", runner: macos-latest, environment: electron }
-          - { os: darwin, target: test, runner: macos-latest, environment: node }
-          - { os: android, target: "test:android", runner: macos-latest, environment: react-native }
-          - { os: ios, target: "test:ios", runner: macos-latest, environment: react-native }
+          #- { os: darwin, target: "test:main", runner: macos-latest, environment: electron }
+          #- { os: darwin, target: "test:renderer", runner: macos-latest, environment: electron }
+          #- { os: darwin, target: test, runner: macos-latest, environment: node }
+          - { os: android, target: "test:android", runner: macos-latest, environment: react-native, newArch: false }
+          - { os: android, target: "test:android", runner: macos-latest, environment: react-native, newArch: true }
+          - { os: ios, target: "test:ios", runner: macos-latest, environment: react-native, newArch: false }
+          - { os: ios, target: "test:ios", runner: macos-latest, environment: react-native, newArch: true }
           #- { os: ios, target: "test:catalyst", runner: macos-latest, environment: react-native }
     timeout-minutes: 60
     steps:
@@ -282,6 +284,14 @@ jobs:
       - name: Create Mocha Env
         id: mocha-env
         run: echo "::set-output name=name::syncLogLevel=warn,realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ steps.deploy-mdb-apps.outputs.clusterName }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}"
+
+      - name: Enable new React Native architecture on Android
+        if: ${{ matrix.variant.os == 'android' && matrix.variant.newArch }}
+        run: echo "ORG_GRADLE_PROJECT_newArchEnabled=true" >> $GITHUB_ENV
+
+      - name: Enable new React Native architecture on iOS
+        if: ${{ matrix.variant.os == 'android' && matrix.variant.newArch }}
+        run: echo "RCT_NEW_ARCH_ENABLED=1" >> $GITHUB_ENV
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ (matrix.variant.os != 'android') && (matrix.variant.os != 'ios') }}
