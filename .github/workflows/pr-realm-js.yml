@@ -129,7 +129,7 @@ jobs:
           ccache --show-config
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       # build the c++ library for standard targets
       - name: Build node
