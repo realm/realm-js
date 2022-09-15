@@ -198,7 +198,7 @@ jobs:
     steps:
       - name: Generate Cluster Differentiator
         id: differentiator
-        run: echo "::set-output name=name::${{matrix.variant.os}}-${{matrix.variant.target}}-${{matrix.variant.environment}}-${{env.GITHUB_RUN_ATTEMPT}}"
+        run: echo "::set-output name=name::${{matrix.variant.os}}-${{matrix.variant.target}}-${{matrix.variant.environment}}${{matrix.variant.newArch && '-new-arch' || ''}}-${{env.GITHUB_RUN_ATTEMPT}}"
 
       - uses: realm/ci-actions/mdb-realm/deployApps@fac1d6958f03d71de743305ce3ab27594efbe7b7
         id: deploy-mdb-apps
