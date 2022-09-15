@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 10.22.0 (2022-09-15)
 
 ### Enhancements
 * None.
