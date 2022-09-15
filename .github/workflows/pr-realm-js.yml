@@ -144,10 +144,6 @@ jobs:
         env:
           ANDROID_NDK: ${{ env.ANDROID_SDK_ROOT }}/ndk/${{ env.NDK_VERSION }}
 
-      - name: Install the node dependencies in the test folder
-        working-directory: ./tests
-        run: npm ci --ignore-scripts
-
       - name: Upload prebuild artifact
         uses: actions/upload-artifact@v2
         with:
