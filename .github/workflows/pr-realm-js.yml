@@ -10,7 +10,6 @@ jobs:
     name: Build for ${{ matrix.variant.os }} ${{ matrix.variant.arch }}
     runs-on: ${{ matrix.variant.runner }}
     env:
-      npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
       REALM_DISABLE_ANALYTICS: 1
       NDK_VERSION: 21.0.6113669
     strategy:
@@ -261,6 +260,8 @@ jobs:
 
       - name: Install prebuilds
         run: npm ci
+        env:
+          npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
 
       - name: Bootstrap lerna sub-packages
         run: npx lerna bootstrap --scope realm-${{ matrix.variant.environment }}-tests --include-dependencies
