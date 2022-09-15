@@ -129,6 +129,7 @@ jobs:
           ccache --show-config
 
       - name: Install dependencies
+        # Ignoring scripts to prevent a prebuilt from getting fetched / built
         run: npm ci --ignore-scripts
 
       # build the c++ library for standard targets
