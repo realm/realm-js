@@ -236,7 +236,7 @@ export class AppImporter {
   private loadAppConfigJson(appTemplatePath: string, replacements: TemplateReplacements = {}): AppConfig {
     const configJsonPath = path.resolve(appTemplatePath, "config.json");
     const configJson = this.loadJson(configJsonPath);
-    return replacements["config.json"] ? { ...configJson, ...replacements["config.json"] } : configJson;
+    return { ...configJson, ...replacements["config.json"] };
   }
 
   private loadSecretsJson(appTemplatePath: string) {
