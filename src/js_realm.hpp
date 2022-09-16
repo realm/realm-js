@@ -1286,7 +1286,7 @@ void RealmClass<T>::object_for_primary_key(ContextType ctx, ObjectType this_obje
         return_value.set(RealmObjectClass<T>::create_instance(ctx, std::move(realm_object)));
     }
     else {
-        return_value.set_undefined();
+        return_value.set_null();
     }
 }
 

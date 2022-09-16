@@ -307,7 +307,7 @@ module.exports = {
 
     // objectForPrimaryKey tests
     const nonExisting = realm.objectForPrimaryKey(primUuidSchema.name, new UUID(nonExistingStringUuid));
-    TestCase.assertUndefined(
+    TestCase.assertNull(
       nonExisting,
       `objectForPrimaryKey should return undefined for new UUID("${nonExistingStringUuid}")`,
     );
