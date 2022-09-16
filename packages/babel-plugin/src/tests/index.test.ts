@@ -293,6 +293,15 @@ describe("Babel plugin", () => {
         });
       });
     });
+
+    // This doesn't make a great deal of sense as TS would complain,
+    // but is here to document the precedence
+    it("the type annotation takes precedence over the type inferred from the property initializer", () => {
+      const transformCode = transformProperty(`name: string = 2;`);
+      const parsedSchema = extractSchema(transformCode);
+
+      expect(parsedSchema?.properties).toEqual({ name: { type: "string", default: 2 } });
+    });
   });
 
   describe("static properties", () => {
