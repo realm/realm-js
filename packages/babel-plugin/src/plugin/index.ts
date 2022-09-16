@@ -227,17 +227,20 @@ function getRealmTypeForClassProperty(path: NodePath<types.ClassProperty>): Real
 
 // TODO check it was imported from realm
 function findDecoratorIdentifier(decoratorsPath: NodePath<types.Decorator>[], name: string) {
-  return decoratorsPath.find((d) => d.node && types.isIdentifier(d.node.expression) && d.node.expression.name === name);
+  return decoratorsPath.find((d) => {
+    const expression = d.get("expression");
+    return types.isIdentifier(expression.node) && expression.node.name === name; //&& isImportedFromRealm(d);
+  });
 }
 
 function findDecoratorCall(decoratorsPath: NodePath<types.Decorator>[], name: string) {
-  const node = decoratorsPath.find(
-    (d) =>
-      d.node &&
-      types.isCallExpression(d.node.expression) &&
-      types.isIdentifier(d.node.expression.callee) &&
-      d.node.expression.callee.name === name,
-  );
+  const node = decoratorsPath.find((d) => {
+    const expression = d.get("expression");
+    if (!types.isCallExpression(expression)) return false;
+
+    const callee = expression.get("callee");
+    return types.isIdentifier(callee) && callee.node.name === name;
+  });
 
   if (!node) return null;
 
