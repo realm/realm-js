@@ -26,7 +26,7 @@ const App = () => {
   useEffect(() => {
     const realm = new Realm({ schema });
     // Write persons into the database
-    if (realm.empty) {
+    if (realm.isEmpty) {
       realm.write(() => {
         realm.create("Person", { name: "Alice" });
         realm.create("Person", { name: "Bob" });

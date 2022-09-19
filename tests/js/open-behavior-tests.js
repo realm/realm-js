@@ -139,7 +139,7 @@ module.exports = {
 
     const realm = await Realm.open(config);
 
-    TestCase.assertTrue(realm.empty);
+    TestCase.assertTrue(realm.isEmpty);
 
     realm.close();
     await user.logOut();

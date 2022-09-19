@@ -445,12 +445,12 @@ public:
     };
 
     PropertyMap<T> const properties = {
-        {"empty", {wrap<get_empty>, nullptr}},
+        {"isEmpty", {wrap<get_empty>, nullptr}},
         {"path", {wrap<get_path>, nullptr}},
         {"schemaVersion", {wrap<get_schema_version>, nullptr}},
         {"schema", {wrap<get_schema>, nullptr}},
-        {"inMemory", {wrap<get_in_memory>, nullptr}},
-        {"readOnly", {wrap<get_read_only>, nullptr}},
+        {"isInMemory", {wrap<get_in_memory>, nullptr}},
+        {"isReadOnly", {wrap<get_read_only>, nullptr}},
         {"isInTransaction", {wrap<get_is_in_transaction>, nullptr}},
         {"isClosed", {wrap<get_is_closed>, nullptr}},
 #if REALM_ENABLE_SYNC
