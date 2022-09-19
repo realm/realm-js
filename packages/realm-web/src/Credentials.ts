@@ -63,28 +63,6 @@ export class Credentials<PayloadType extends SimpleObject = SimpleObject> implem
   /**
    * Creates credentials that logs in using the [API Key Provider](https://docs.mongodb.com/realm/authentication/api-key/).
    *
-   * @deprecated Use `Credentials.apiKey`.
-   * @param key The secret content of the API key.
-   * @returns The credentials instance, which can be passed to `app.logIn`.
-   */
-  static userApiKey(key: string): Credentials<ApiKeyPayload> {
-    return new Credentials<ApiKeyPayload>("api-key", "api-key", { key });
-  }
-
-  /**
-   * Creates credentials that logs in using the [API Key Provider](https://docs.mongodb.com/realm/authentication/api-key/).
-   *
-   * @deprecated Use `Credentials.apiKey`.
-   * @param key The secret content of the API key.
-   * @returns The credentials instance, which can be passed to `app.logIn`.
-   */
-  static serverApiKey(key: string): Credentials<ApiKeyPayload> {
-    return new Credentials<ApiKeyPayload>("api-key", "api-key", { key });
-  }
-
-  /**
-   * Creates credentials that logs in using the [API Key Provider](https://docs.mongodb.com/realm/authentication/api-key/).
-   *
    * @param key The secret content of the API key.
    * @returns The credentials instance, which can be passed to `app.logIn`.
    */
