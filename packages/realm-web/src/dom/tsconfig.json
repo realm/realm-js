@@ -3,8 +3,8 @@
 	"compilerOptions": {
 		"noResolve": true,
 		"types": [
-			"realm-network-transport",
-			"@realm.io/common",
+			"@realm/common",
+			"@realm/network-transport",
 			"js-base64",
 			"bson",
 			"buffer",

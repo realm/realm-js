@@ -1,5 +1,5 @@
 {
-  "name": "realm-app-importer",
+  "name": "@realm/app-importer",
   "version": "0.1.0",
   "description": "Wrapping the Stitch CLI to import an app from a template (w. secrets)",
   "main": "./dist/bundle.cjs.js",
@@ -45,7 +45,7 @@
     "fs-extra": "^8.1.0",
     "glob": "^7.1.6",
     "node-fetch": "^2.6.0",
-    "realm-network-transport": "*",
+    "@realm/network-transport": "*",
     "yargs": "^16.2.0"
   },
   "devDependencies": {

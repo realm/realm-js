@@ -38,9 +38,15 @@ Based on Realm JS v10.21.1: See changelog below for details on enhancements and 
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Renamed the following internal packages:
+   * `@realm.io/common` -> `@realm/common`
+   * `realm-network-transport` -> `@realm/network-transport`
+   * `realm-app-importer` -> `@realm/app-importer`
+   * `realm-example` -> `@realm/example`
+   * `realm-electron-tests` -> `@realm/electron-tests`
+   * `realm-node-tests` -> `@realm/node-tests`
+   * `realm-react-native-tests` -> `@realm/react-native-tests`
+
 
 ## 10.21.1 (2022-09-15)
 

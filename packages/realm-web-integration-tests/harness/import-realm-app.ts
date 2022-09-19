@@ -18,7 +18,7 @@
 
 import path from "path";
 
-import { AppImporter } from "realm-app-importer";
+import { AppImporter } from "@realm/app-importer";
 
 const MDB_REALM_BASE_URL = process.env.MDB_REALM_BASE_URL || "http://localhost:9090";
 const MDB_REALM_USERNAME = process.env.MDB_REALM_USERNAME || "unique_user@domain.com";

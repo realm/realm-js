@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { NetworkTransport, Request, FetchResponse, FetchHeaders } from "realm-network-transport";
+import { NetworkTransport, Request, FetchResponse, FetchHeaders } from "@realm/network-transport";
 
 import { MongoDBRealmError } from "../..";
 

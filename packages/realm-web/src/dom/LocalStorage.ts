@@ -18,7 +18,7 @@
 
 import { Storage, StorageChangeListener } from "../storage/Storage";
 import { PrefixedStorage } from "../storage/PrefixedStorage";
-import { safeGlobalThis } from "@realm.io/common";
+import { safeGlobalThis } from "@realm/common";
 
 /**
  * In-memory storage that will not be persisted.

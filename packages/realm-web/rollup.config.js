@@ -105,7 +105,7 @@ export default [
     },
     plugins: [
       dts({
-        // Ensures that the realm-network-transport types are included in the bundle
+        // Ensures that the @realm/network-transport types are included in the bundle
         respectExternal: true,
       }),
       nodeResolve(),

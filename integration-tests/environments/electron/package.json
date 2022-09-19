@@ -1,5 +1,5 @@
 {
-  "name": "realm-electron-tests",
+  "name": "@realm/electron-tests",
   "description": "Test harness running the Realm JS tests in the Electron renderer process.",
   "version": "0.1.0",
   "author": {
@@ -34,7 +34,7 @@
     "fs-extra": "^9.1.0",
     "mocha": "^8.3.2",
     "mocha-remote-client": "^1.5.0",
-    "realm-app-importer": "*"
+    "@realm/app-importer": "*"
   },
   "build": {
     "appId": "io.realm.realm-js.electron-tests",

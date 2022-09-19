@@ -18,7 +18,7 @@
 
 export * from "../index";
 
-import { safeGlobalThis } from "@realm.io/common";
+import { safeGlobalThis } from "@realm/common";
 import { DefaultNetworkTransport } from "../DefaultNetworkTransport";
 import { AbortController, Fetch } from "../types";
 

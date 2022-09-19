@@ -32,6 +32,6 @@ jobs:
       # Install the root package to get dev-dependencies
       # (--ignore-scripts to avoid downloading or building the native module)
       - run: npm ci --ignore-scripts
-      - run: npm run lerna:bootstrap -- --scope '{realm-network-transport,@realm.io/common}' --include-dependencies
+      - run: npm run lerna:bootstrap -- --scope '{@realm/network-transport,@realm/common}' --include-dependencies
       - run: npm test --prefix packages/realm-network-transport
       - run: npm test --prefix packages/realm-common

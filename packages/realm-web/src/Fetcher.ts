@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { NetworkTransport, Request, FetchResponse, Headers } from "realm-network-transport";
+import { NetworkTransport, Request, FetchResponse, Headers } from "@realm/network-transport";
 
 import { MongoDBRealmError } from "./MongoDBRealmError";
 
@@ -133,7 +133,7 @@ export type FetcherConfig = {
 };
 
 /**
- * Wraps a NetworkTransport from the "realm-network-transport" package.
+ * Wraps a NetworkTransport from the "@realm/network-transport" package.
  * Extracts error messages and throws `MongoDBRealmError` objects upon failures.
  * Injects access or refresh tokens for a current or specific user.
  * Refreshes access tokens if requests fails due to a 401 error.
