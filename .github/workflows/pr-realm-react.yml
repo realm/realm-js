@@ -52,7 +52,10 @@ jobs:
         run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
 
       - name: Install realm node dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
+
+      - name: Build realm for node
+        run: npm run prebuild:node -- --arch=${{matrix.variant.arch}}
 
       - name: Bootstrap @realm.io/react
         run: npx lerna bootstrap --scope @realm/react --include-dependencies
