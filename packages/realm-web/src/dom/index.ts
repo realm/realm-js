@@ -29,7 +29,7 @@ import { MemoryStorage } from "../storage/MemoryStorage";
 import { OAuth2Helper } from "../OAuth2Helper";
 
 import { LocalStorage } from "./LocalStorage";
-import { safeGlobalThis } from "@realm.io/common";
+import { safeGlobalThis } from "@realm/common";
 export { LocalStorage };
 
 const browser = detect();

@@ -1,5 +1,5 @@
 {
-  "name": "realm-network-transport",
+  "name": "@realm/network-transport",
   "version": "0.7.2",
   "description": "Implements cross-platform fetching used by Realm JS",
   "main": "./dist/bundle.cjs.js",
@@ -35,7 +35,7 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@realm.io/common": "^0.1.4",
+    "@realm/common": "^0.1.4",
     "abort-controller": "^3.0.0",
     "node-fetch": "^2.6.0"
   },

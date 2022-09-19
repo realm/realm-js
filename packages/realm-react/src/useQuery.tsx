@@ -19,7 +19,7 @@
 import Realm from "realm";
 import { useEffect, useReducer, useMemo } from "react";
 import { createCachedCollection } from "./cachedCollection";
-import { symbols } from "@realm.io/common";
+import { symbols } from "@realm/common";
 
 /**
  * Generates the `useQuery` hook from a given `useRealm` hook.

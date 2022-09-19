@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { NetworkTransport, DefaultNetworkTransport } from "realm-network-transport";
+import { NetworkTransport, DefaultNetworkTransport } from "@realm/network-transport";
 import { ObjectId } from "bson";
 
 import { User, UserState } from "./User";

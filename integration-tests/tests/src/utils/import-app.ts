@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 import { App, BSON } from "realm";
 
-import { AppImporter, Credentials } from "realm-app-importer";
+import { AppImporter, Credentials } from "@realm/app-importer";
 import { fetch } from "./fetch";
 
 export type TemplateReplacements = Record<string, Record<string, unknown>>;

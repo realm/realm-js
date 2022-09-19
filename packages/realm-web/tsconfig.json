@@ -11,8 +11,8 @@
 			"../../node_modules/@types",
 		],
 		"types": [
-			"realm-network-transport",
-			"@realm.io/common",
+			"@realm/common",
+			"@realm/network-transport",
 			"realm",
 			"js-base64",
 			"bson",

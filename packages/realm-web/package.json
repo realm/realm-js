@@ -46,7 +46,7 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@realm.io/common": "^0.1.4",
+    "@realm/common": "^0.1.4",
     "bson": "^4.5.4",
     "detect-browser": "^5.2.1",
     "js-base64": "^3.7.2"
@@ -70,7 +70,7 @@
     "fs-extra": "^10.0.0",
     "mocha": "^5.2.0",
     "node-fetch": "^3.2.10",
-    "realm-network-transport": "^0.7.2",
+    "@realm/network-transport": "^0.7.2",
     "rollup": "^2.6.1",
     "rollup-plugin-dts": "^1.4.0",
     "rollup-plugin-node-builtins": "^2.1.2"

@@ -15,6 +15,6 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import { DefaultNetworkTransport } from "realm-network-transport";
+import { DefaultNetworkTransport } from "@realm/network-transport";
 
 export const fetch = DefaultNetworkTransport.fetch;

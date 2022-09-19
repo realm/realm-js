@@ -100,7 +100,7 @@ jobs:
       - name: Setup Android SDK
         if: ${{ matrix.variant.os == 'android' }}
         uses: android-actions/setup-android@v2
-  
+
       - name: Install NDK
         if: ${{ matrix.variant.os == 'android' }}
         run: sdkmanager --install "ndk;${{ env.NDK_VERSION }}"
@@ -266,7 +266,7 @@ jobs:
           npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
 
       - name: Bootstrap lerna sub-packages
-        run: npx lerna bootstrap --scope realm-${{ matrix.variant.environment }}-tests --include-dependencies
+        run: npx lerna bootstrap --scope @realm/${{ matrix.variant.environment }}-tests --include-dependencies
 
       - name: Build tests
         run: npm run build --prefix integration-tests/tests

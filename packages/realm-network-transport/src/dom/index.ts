@@ -20,7 +20,7 @@ export * from "../index";
 
 import { DefaultNetworkTransport } from "../DefaultNetworkTransport";
 import { AbortController, Fetch } from "../types";
-import { safeGlobalThis } from "@realm.io/common";
+import { safeGlobalThis } from "@realm/common";
 
 DefaultNetworkTransport.fetch = safeGlobalThis.fetch.bind(safeGlobalThis) as Fetch;
 DefaultNetworkTransport.AbortController = safeGlobalThis.AbortController.bind(safeGlobalThis) as AbortController;

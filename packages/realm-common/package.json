@@ -1,5 +1,5 @@
 {
-  "name": "@realm.io/common",
+  "name": "@realm/common",
   "version": "0.1.4",
   "description": "Cross-product common code used by Realm",
   "main": "./dist/bundle.cjs.js",
