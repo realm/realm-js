@@ -1393,11 +1393,11 @@ module.exports = {
       realm.create("TestObject", { doubleCol: 0 });
     });
 
-    TestCase.assertEqual(realm.objectForPrimaryKey("IntPrimaryObject", -1), undefined);
+    TestCase.assertEqual(realm.objectForPrimaryKey("IntPrimaryObject", -1), null);
     TestCase.assertEqual(realm.objectForPrimaryKey("IntPrimaryObject", 0).valueCol, "val0");
     TestCase.assertEqual(realm.objectForPrimaryKey("IntPrimaryObject", 1).valueCol, "val1");
 
-    TestCase.assertEqual(realm.objectForPrimaryKey("StringPrimaryObject", "invalid"), undefined);
+    TestCase.assertEqual(realm.objectForPrimaryKey("StringPrimaryObject", "invalid"), null);
     TestCase.assertEqual(realm.objectForPrimaryKey("StringPrimaryObject", "").valueCol, -1);
     TestCase.assertEqual(realm.objectForPrimaryKey("StringPrimaryObject", "val0").valueCol, 0);
     TestCase.assertEqual(realm.objectForPrimaryKey("StringPrimaryObject", "val1").valueCol, 1);
