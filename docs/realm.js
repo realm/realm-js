@@ -33,7 +33,7 @@ class Realm {
    * @readonly
    * @since 1.10.0
    */
-  get empty() {}
+  get isEmpty() {}
 
   /**
    * The path to the file where this Realm is stored.
@@ -49,7 +49,7 @@ class Realm {
    * @readonly
    * @since 0.12.0
    */
-  get readOnly() {}
+  get isReadOnly() {}
 
   /**
    * A normalized representation of the schema provided in the
