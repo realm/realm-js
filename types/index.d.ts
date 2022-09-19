@@ -1164,9 +1164,9 @@ declare class Realm {
     /**
      * @param  {string} type
      * @param  {number|string|ObjectId|UUID} key
-     * @returns {T | undefined}
+     * @returns {T | null}
      */
-    objectForPrimaryKey<T>(type: string, key: Realm.PrimaryKey): (T & Realm.Object) | undefined;
+    objectForPrimaryKey<T>(type: string, key: Realm.PrimaryKey): (T & Realm.Object) | null;
 
     /**
      * @param  {Class} type

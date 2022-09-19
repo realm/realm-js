@@ -205,7 +205,7 @@ class Realm {
    * @param {number|string} key - The primary key value of the object to search for.
    * @throws {Error} If type passed into this method is invalid or if the object type did
    *   not have a `primaryKey` specified in its {@link Realm~ObjectSchema ObjectSchema}.
-   * @returns {Realm.Object|undefined} if no object is found.
+   * @returns {Realm.Object|null} if no object is found.
    * @since 0.14.0
    */
   objectForPrimaryKey(type, key) {}
