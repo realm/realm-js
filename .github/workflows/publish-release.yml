@@ -114,7 +114,7 @@ jobs:
       uses: ncipollo/release-action@10c84d509b28aae3903113151bfd832314964f2e
       with:
         bodyFile: EXTRACTED_CHANGELOG.md
-        name: ${{ steps.get-version.outputs.version }}
+        name: Realm JavaScript v${{ steps.get-version.outputs.version }}
         tag: v${{ steps.get-version.outputs.version }}
         token: ${{ secrets.GITHUB_TOKEN }}
         draft: false
