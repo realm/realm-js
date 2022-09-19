@@ -174,20 +174,10 @@ declare namespace Realm {
     /**
      * Factory for `Credentials` which authenticate using the [API Key Provider](https://docs.mongodb.com/realm/authentication/api-key/).
      *
-     * @deprecated Use `Credentials.apiKey`.
      * @param key The secret content of the API key.
      * @returns A `Credentials` object for logging in using `app.logIn`.
      */
-    static userApiKey(key: string): Credentials<Credentials.ApiKeyPayload>;
-
-    /**
-     * Factory for `Credentials` which authenticate using the [API Key Provider](https://docs.mongodb.com/realm/authentication/api-key/).
-     *
-     * @deprecated Use `Credentials.apiKey`.
-     * @param key The secret content of the API key.
-     * @returns A `Credentials` object for logging in using `app.logIn`.
-     */
-    static serverApiKey(key: string): Credentials<Credentials.ApiKeyPayload>;
+    static apiKey(key: string): Credentials<Credentials.ApiKeyPayload>;
 
     /**
      * Factory for `Credentials` which authenticate using the [Email/Password Provider](https://docs.mongodb.com/realm/authentication/email-password/).
