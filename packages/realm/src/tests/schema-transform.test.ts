@@ -51,7 +51,7 @@ describe("schema transform", () => {
         ...bindingSchema,
       });
       const normalizedReversedSchema = normalizePropertySchema(PROP_NAME, reversedSchema);
-      expect(normalizedSchema).deep.equals(normalizedReversedSchema);
+      expect(normalizedReversedSchema).deep.equals(normalizedSchema);
     });
   }
 });

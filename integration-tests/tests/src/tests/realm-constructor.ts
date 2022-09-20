@@ -218,35 +218,35 @@ describe("Realm#constructor", () => {
       expect(() => {
         //@ts-expect-error passing plain empty object to schema
         new Realm({ schema: {} });
-      }).throws("schema must be of type 'array', got");
+      }).throws("Expected 'schema' to be an array, got an object");
     });
 
     it("fails when passed an array with non-objects", () => {
       expect(() => {
         //@ts-expect-error can not pass plain string as schema
         new Realm({ schema: [""] });
-      }).throws("Failed to read ObjectSchema: JS value must be of type 'object', got");
+      }).throws("Expected 'object schema' to be an object, got a string");
     });
 
     it("fails when passed an array with empty object", () => {
       expect(() => {
         //@ts-expect-error passing array of empty object
         new Realm({ schema: [{}] });
-      }).throws("Failed to read ObjectSchema: name must be of type 'string', got ");
+      }).throws("Expected 'name' to be a string, got undefined");
     });
 
     it("fails when passed an array with an object without 'properties'", () => {
       expect(() => {
         //@ts-expect-error object without properties
         new Realm({ schema: [{ name: "SomeObject" }] });
-      }).throws("Failed to read ObjectSchema: properties must be of type 'object', got ");
+      }).throws("Expected 'properties' to be an object, got undefined");
     });
 
     it("fails when passed an array with an object without 'name'", () => {
       expect(() => {
         //@ts-expect-error object without name
         new Realm({ schema: [{ properties: {} }] });
-      }).throws("Failed to read ObjectSchema: name must be of type 'string', got ");
+      }).throws("Expected 'name' to be a string, got undefined");
     });
 
     function expectInvalidProperty(badProperty: Realm.PropertyType | Realm.ObjectSchemaProperty, message: string) {
@@ -270,19 +270,19 @@ describe("Realm#constructor", () => {
     it("fails when asking for a list of lists", () => {
       expectInvalidProperty(
         { type: "list[]", objectType: "InvalidObject" },
-        "List property 'InvalidObject.bad' must have a non-list value type",
+        "List property 'InvalidObject#bad' cannot have list elements",
       );
     });
 
     it("fails when asking for an optional list", () => {
       expectInvalidProperty(
         { type: "list?", objectType: "InvalidObject" },
-        "List property 'InvalidObject.bad' cannot be optional",
+        "List property 'InvalidObject#bad' of 'InvalidObject' elements, cannot be optional",
       );
     });
 
     it("fails when asking for an empty type string", () => {
-      expectInvalidProperty("", "Property 'InvalidObject.bad' must have a non-empty type");
+      expectInvalidProperty("", "Property 'InvalidObject#bad' cannot have an empty object type");
     });
 
     it("fails when asking for linkingObjects to a non-existing property", () => {
