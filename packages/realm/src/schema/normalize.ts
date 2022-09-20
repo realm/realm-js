@@ -77,9 +77,14 @@ export function normalizeObjectSchema(schema: RealmObjectConstructor<unknown> | 
   } else {
     return {
       name: schema.name,
+      primaryKey: schema.primaryKey,
       properties: Object.fromEntries(
         Object.entries(schema.properties).map(([name, property]) => {
           const canonicalPropertySchema = normalizePropertySchema(name, property);
+          // A primary key is always indexed
+          if (name === schema.primaryKey) {
+            canonicalPropertySchema.indexed = true;
+          }
           validateCanonicalPropertySchema(schema.name, canonicalPropertySchema);
           return [name, canonicalPropertySchema];
         }),
