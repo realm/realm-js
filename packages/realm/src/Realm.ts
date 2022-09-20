@@ -37,6 +37,7 @@ import { Configuration } from "./Configuration";
 import { ClassMap } from "./ClassMap";
 import { List } from "./List";
 import { App } from "./App";
+import { validateConfiguration } from "./validation/configuration";
 
 // Using a set of weak refs to avoid prevention of garbage collection
 const RETURNED_REALMS = new Set<WeakRef<binding.Realm>>();
@@ -114,6 +115,8 @@ export class Realm {
   constructor(config: Configuration);
   constructor(arg: Configuration | string = {}) {
     const config = typeof arg === "string" ? { path: arg } : arg;
+    validateConfiguration(config);
+
     const path = Realm.determinePath(config);
     const internal = binding.Realm.getSharedRealm({
       path,
