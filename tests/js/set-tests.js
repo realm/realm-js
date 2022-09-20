@@ -22,7 +22,7 @@ function nodeRequire(module) {
   return require_method(module);
 }
 
-const Realm = require("realm");
+const { Realm } = require("realm");
 const TestCase = require("./asserts");
 
 const isNodeProcess = typeof process === "object" && process + "" === "[object process]";
