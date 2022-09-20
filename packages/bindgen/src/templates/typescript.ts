@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { TemplateContext } from "../context";
-import { Arg, bindModel, BoundSpec, Property, Type } from "../bound-model";
+import { Arg, bindModel, BoundSpec, NamedType, Property, Type } from "../bound-model";
 import { strict as assert } from "assert";
 
 import "../js-passes";
@@ -67,6 +67,7 @@ function generateType(spec: BoundSpec, type: Type, kind: Kind): string {
     case "Const":
       return `Readonly<${generateType(spec, type.type, kind)}>`;
 
+    case "KeyType":
     case "Opaque":
     case "Enum":
     case "Class":
@@ -161,8 +162,8 @@ export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): vo
   out("// Mixed types");
   out(generateMixedTypes(spec));
 
-  out("// Opaque types");
-  for (const { jsName } of spec.opaqueTypes) {
+  out("// Opaque types (including Key types)");
+  for (const { jsName } of (spec.opaqueTypes as NamedType[]).concat(spec.keyTypes)) {
     out.lines("/** Using an empty enum to express a nominal type */", `export declare enum ${jsName} {}`);
   }
 
