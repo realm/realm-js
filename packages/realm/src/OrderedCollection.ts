@@ -32,6 +32,7 @@ export type CollectionChangeSet = {
 };
 export type CollectionChangeCallback<T> = (collection: OrderedCollection<T>, changes: CollectionChangeSet) => void;
 
+/** @internal */
 export type Getter<T = unknown> = (results: binding.Results, index: number) => T;
 
 const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true, writable: true };
@@ -65,7 +66,8 @@ export class OrderedCollection<T = unknown>
   extends Collection<T, CollectionChangeCallback<T>>
   implements ReadonlyArray<T>
 {
-  constructor(private results: binding.Results, protected getter: Getter<T>) {
+  /** @internal */
+  constructor(/** @internal */ private results: binding.Results, /** @internal */ protected getter: Getter<T>) {
     super((callback) => {
       return this.results.addNotificationCallback((changes) => {
         try {

@@ -24,10 +24,15 @@ import { getInternal } from "./internal";
 import { Object as RealmObject } from "./Object";
 import { DefaultObject } from "./schema";
 import { List } from "./List";
-import { MixedArg, Obj, ObjLink, PropertyType } from "./binding";
+import { ObjLink, PropertyType } from "./binding";
 
+/** @internal */
 export type ObjectWrapCreator<T = DefaultObject> = (obj: binding.Obj) => RealmObject<T> & T;
+
+/** @internal */
 export type ObjectLinkResolver = (link: binding.ObjLink) => binding.Obj;
+
+/** @internal */
 export type ListResolver = (columnKey: binding.ColKey, obj: binding.Obj) => binding.List;
 
 type MappingOptions = {
@@ -376,6 +381,7 @@ function createHelpers<T>(
   }
 }
 
+/** @internal */
 export class PropertyMap<T = DefaultObject> {
   private mapping: Record<string, PropertyHelpers>;
   private nameByColumnKey: Record<number, string>;

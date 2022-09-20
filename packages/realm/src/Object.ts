@@ -19,12 +19,13 @@
 import * as binding from "./binding";
 
 import { INTERNAL, getInternal } from "./internal";
-import { ClassHelpers, ClassMap, INTERNAL_HELPERS } from "./ClassMap";
+import { ClassHelpers } from "./ClassMap";
 import { Realm } from "./Realm";
 import { Results } from "./Results";
 import { CanonicalObjectSchema, Constructor, DefaultObject } from "./schema";
 import { ObjectChangeCallback, ObjectListeners } from "./ObjectListeners";
 
+export const INTERNAL_HELPERS = Symbol("Realm.Object#helpers");
 const INTERNAL_LISTENERS = Symbol("Realm.Object#listeners");
 const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true, writable: true };
 
@@ -51,7 +52,7 @@ class RealmObject<T = DefaultObject> {
 
   /**
    * Create a `RealmObject` wrapping an `Obj` from the binding.
-   * @internal Only intended for use internally
+   * @internal
    * @param realm The Realm managing the object.
    * @param constructor The constructor of the object.
    * @param internal The internal Obj from the binding.
@@ -126,7 +127,6 @@ class RealmObject<T = DefaultObject> {
 
   /**
    * @deprecated
-   * @internal
    * TODO: Remove completely once the type tests are obandend.
    */
   _objectId(): string {
