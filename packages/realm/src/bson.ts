@@ -15,17 +15,10 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+import { ObjectId, Decimal128, UUID } from "bson";
 
-export * from "./Realm";
-export * from "./Configuration";
-export { Results } from "./Results";
-export { Object } from "./Object";
-export { List } from "./List";
-export { Dictionary } from "./Dictionary";
-export { Set } from "./Set";
-export type { ObjectChangeSet, ObjectChangeCallback } from "./ObjectListeners";
-export type { CollectionChangeSet, CollectionChangeCallback } from "./OrderedCollection";
-
-// Exporting default for backwards compatibility
-import { Realm } from "./Realm";
-export default Realm;
+export const BSON = {
+  ObjectId,
+  Decimal128,
+  UUID,
+};
