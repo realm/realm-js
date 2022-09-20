@@ -233,9 +233,6 @@ function findDecoratorIdentifier(decoratorsPath: NodePath<types.Decorator>[], na
 }
 
 function findDecoratorCall(decoratorsPath: NodePath<types.Decorator>[], name: string) {
-  decoratorsPath.forEach((d) => {
-    const result = isImportedFromRealm(d);
-  });
   const node = decoratorsPath.find(
     (d) =>
       d.node &&

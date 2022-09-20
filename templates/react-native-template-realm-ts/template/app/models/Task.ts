@@ -1,12 +1,9 @@
 import {Realm} from '@realm/react';
-import {index, mapTo} from '@realm/babel-plugin-decorators';
 
 export class Task extends Realm.Object {
   _id!: Realm.BSON.ObjectId;
-  @index
   description!: string;
-  @mapTo('isComplete')
-  complete!: Realm.Types.Bool;
+  isComplete!: Realm.Types.Bool;
   createdAt!: Date;
   userId!: string;
 
