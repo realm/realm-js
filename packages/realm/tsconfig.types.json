@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "declarationDir": "generated/types",
+    "stripInternal": true
+  },
+  "exclude": [
+    "src/node",
+    "src/tests/",
+    "type-tests/"
+  ]
+}
