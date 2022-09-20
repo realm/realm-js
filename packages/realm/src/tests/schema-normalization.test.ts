@@ -48,7 +48,7 @@ describe("normalizePropertySchema", () => {
     expect(result.name).equals("prop");
     expect(result.type).equals("list");
     expect(result.objectType).equals("Person");
-    expect(result.optional).equals(true);
+    expect(result.optional).equals(false); // Lists of objects may never be optional
   });
 });
 

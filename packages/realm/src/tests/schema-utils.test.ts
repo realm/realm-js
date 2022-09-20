@@ -133,7 +133,7 @@ describe("schema-utils", () => {
             friends: {
               name: "friends",
               type: "list",
-              optional: true,
+              optional: false,
               mapTo: "friends",
               objectType: "Person",
               indexed: false,
