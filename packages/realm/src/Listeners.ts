@@ -18,8 +18,10 @@
 
 import { NotificationToken } from "./binding";
 
+/** @internal */
 export type CallbackRegistrator<T> = (callback: T) => NotificationToken;
 
+/** @internal */
 export class Listeners<CallbackType> {
   constructor(private registerCallback: CallbackRegistrator<CallbackType>) {}
   /**

@@ -24,6 +24,7 @@ import {
 
 import { CanonicalObjectSchema, CanonicalObjectSchemaProperty, PropertyTypeName } from "./types";
 
+/** @internal */
 export const TYPE_MAPPINGS: Record<PropertyTypeName, BindingPropertyType> = {
   int: BindingPropertyType.Int,
   bool: BindingPropertyType.Bool,
@@ -43,10 +44,12 @@ export const TYPE_MAPPINGS: Record<PropertyTypeName, BindingPropertyType> = {
   object: BindingPropertyType.Object,
 };
 
+/** @internal */
 export function transformRealmSchema(schema: CanonicalObjectSchema[]): BindingObjectSchema[] {
   return schema.map(transformObjectSchema);
 }
 
+/** @internal */
 export function transformObjectSchema(schema: CanonicalObjectSchema): BindingObjectSchema {
   // TODO: Enable declaring the alias of the object schema
   // TODO: Enable declaring the table type (asymmetric / embedded)
@@ -62,6 +65,7 @@ export function transformObjectSchema(schema: CanonicalObjectSchema): BindingObj
   };
 }
 
+/** @internal */
 export function transformPropertySchema(name: string, schema: CanonicalObjectSchemaProperty): BindingProperty {
   if (name !== schema.name) {
     // TODO: Consider if this API should be used to support declaring an alias?
@@ -77,6 +81,7 @@ export function transformPropertySchema(name: string, schema: CanonicalObjectSch
   return result;
 }
 
+/** @internal */
 export function transformPropertyType(schema: CanonicalObjectSchemaProperty): BindingPropertyType {
   let type = TYPE_MAPPINGS[schema.type];
   let isNullable = schema.optional;

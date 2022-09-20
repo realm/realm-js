@@ -20,11 +20,9 @@ import * as binding from "./binding";
 
 import { PropertyMap, ObjectWrapCreator, ObjectLinkResolver, ListResolver } from "./PropertyMap";
 import { Realm } from "./Realm";
-import { Object as RealmObject } from "./Object";
+import { INTERNAL_HELPERS, Object as RealmObject } from "./Object";
 import { Constructor, DefaultObject, RealmObjectConstructor } from "./schema";
 import { getInternal } from "./internal";
-
-export const INTERNAL_HELPERS = Symbol("Realm.Object#helpers");
 
 function createNamedConstructor<T extends Constructor>(name: string): T {
   const obj = {
@@ -82,6 +80,9 @@ function createClass<T extends RealmObjectConstructor = RealmObjectConstructor>(
   return result;
 }
 
+/**
+ * @internal
+ */
 export type ClassHelpers<T> = {
   // TODO: Use a different type, once exposed by the binding
   objectSchema: binding.Realm["schema"][0];
@@ -89,6 +90,9 @@ export type ClassHelpers<T> = {
   createObjectWrapper: ObjectWrapCreator<T>;
 };
 
+/**
+ * @internal
+ */
 export class ClassMap {
   /**
    * Get internal helpers.
