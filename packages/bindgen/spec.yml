@@ -207,6 +207,12 @@ constants:
     type: int64_t
     value: 0x7FFF_FFFF_FFFF_FFFF
 
+# These types are handled specially. They must be structs with a single fields named "value".
+keyTypes:
+  ColKey: int64_t
+  ObjKey: int64_t
+  TableKey: int32_t
+
 records:
   Property:
     fields:
@@ -239,21 +245,6 @@ records:
       index:
         type: int32_t
         default: 0
-  ColKey:
-    fields:
-      value:
-        type: int64_t
-        default: 0x7FFF_FFFF_FFFF_FFFF
-  ObjKey:
-    fields:
-      value:
-        type: int64_t
-        default: 0x7FFF_FFFF_FFFF_FFFF
-  TableKey:
-    fields:
-      value:
-        type: int32_t
-        default: 0x7FFF_FFFF
   ObjectSchema:
     fields:
       name: std::string
