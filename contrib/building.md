@@ -21,6 +21,7 @@
     - [Building for Android](#building-for-android)
     - [Building for Node.js](#building-for-nodejs)
       - [Additional steps for Windows](#additional-steps-for-windows)
+      - [Building for ARM/Linux](#building-for-armlinux)
     - [Building the documentation](#building-the-documentation)
   - [Installing the project's sub-packages](#installing-the-projects-sub-packages)
   - [Running the tests](#running-the-tests)
@@ -256,6 +257,38 @@ vcpkg install openssl:x64-windows-static
 mkdir C:\src\vcpkg\installed\x64-windows-static\lib
 copy .\packages\openssl-windows_x64-windows-static\lib\libeay32.lib C:\src\vcpkg\installed\x64-windows-static\lib\
 copy .\packages\openssl-windows_x64-windows-static\lib\ssleay32.lib C:\src\vcpkg\installed\x64-windows-static\lib
+```
+
+#### Building for ARM/Linux
+
+You can build Realm JS for ARM/Linux from source and include it in your own project.
+
+The following instructions assume you are using [Debian GNU/Linux](https://www.debian.org) or a derived distribution.
+
+First you need to have your build environment set up:
+
+```sh
+apt install build-essential cmake git openssl-dev
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+nvm install 16 # you can use any supported node version
+```
+
+You can now build Realm JS from source:
+
+```sh 
+export REALM_USE_SYSTEM_OPENSSL=1
+git clone https://github.com/realm/realm-js
+cd realm-js
+git submodule update —-init —-recursive
+npm install
+```
+
+Finally, you can use Realm JS in your project `MyProject`:
+
+```sh
+cd MyProject
+npm init -y  # ignore it you already have initialized your project
+npm install path/to/realm-js
 ```
 
 ### Building the documentation
