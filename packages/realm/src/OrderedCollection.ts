@@ -259,6 +259,10 @@ export class OrderedCollection<T = unknown>
   flat<D extends number = 1>(depth?: D): FlatArray<this, D>[] {
     throw new Error("Method not implemented.");
   }
+  at(index: number) {
+    return [...this].at(index);
+  }
+
   [Symbol.iterator](): IterableIterator<T> {
     return this.values();
   }
