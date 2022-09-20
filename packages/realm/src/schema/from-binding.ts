@@ -60,9 +60,11 @@ export function transformObjectSchema({
   name,
   computedProperties,
   persistedProperties,
+  primaryKey,
 }: BindingObjectSchema): CanonicalObjectSchema {
   return {
     name,
+    primaryKey,
     properties: Object.fromEntries(
       [...computedProperties, ...persistedProperties].map((property) => [
         property.name,
