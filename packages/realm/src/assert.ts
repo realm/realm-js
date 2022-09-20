@@ -32,74 +32,103 @@ export function assert(value: unknown, err?: string | Error): asserts value {
   }
 }
 
-/* eslint-disable-next-line @typescript-eslint/ban-types */
-assert.instanceOf = <T extends Function>(obj: unknown, constructor: T): asserts obj is T["prototype"] => {
-  let msg = `Expected ${obj} to be instance of ${constructor.name}`;
-  if (typeof obj === "object" && obj) {
-    msg += ", got " + obj.constructor.name;
+function deriveActualType(value: unknown) {
+  if (typeof value === "object") {
+    if (value === null) {
+      return "null";
+    } else {
+      const name = value.constructor.name;
+      if (name === "Object") {
+        return "an object";
+      } else if (name === "Array") {
+        return "an array";
+      } else {
+        return "an instance of " + name;
+      }
+    }
+  } else if (typeof value === "undefined") {
+    return typeof value;
+  } else {
+    return "a " + typeof value;
   }
-  if (!(obj instanceof constructor)) {
-    throw new TypeError(msg);
+}
+
+function createTypeError(expected: string, value: unknown, name: string | undefined) {
+  const actual = deriveActualType(value);
+  return new TypeError(`Expected ${name ? "'" + name + "'" : "value"} to be ${expected}, got ${actual}`);
+}
+
+/* eslint-disable-next-line @typescript-eslint/ban-types */
+assert.instanceOf = <T extends Function>(
+  value: unknown,
+  constructor: T,
+  name?: string,
+): asserts value is T["prototype"] => {
+  if (!(value instanceof constructor)) {
+    throw createTypeError(`an instance of ${constructor.name}`, value, name);
   }
 };
 
-assert.string = (value: unknown): asserts value is string => {
+assert.string = (value: unknown, name?: string): asserts value is string => {
   if (typeof value !== "string") {
-    throw new TypeError(`Expected ${value} to be a string, got ${typeof value}`);
+    throw createTypeError("a string", value, name);
   }
 };
 
-assert.number = (value: unknown): asserts value is number => {
+assert.number = (value: unknown, name?: string): asserts value is number => {
   if (typeof value !== "number") {
-    throw new TypeError(`Expected ${value} to be a number, got ${typeof value}`);
+    throw createTypeError("a number", value, name);
   }
 };
 
-assert.boolean = (value: unknown): asserts value is boolean => {
+assert.boolean = (value: unknown, name?: string): asserts value is boolean => {
   if (typeof value !== "boolean") {
-    throw new TypeError(`Expected ${value} to be a boolean, got ${typeof value}`);
+    throw createTypeError("a boolean", value, name);
   }
 };
 
-assert.bigInt = (value: unknown): asserts value is bigint => {
+assert.bigInt = (value: unknown, name?: string): asserts value is bigint => {
   if (typeof value !== "bigint") {
-    throw new TypeError(`Expected ${value} to be a bigint, got ${typeof value}`);
+    throw createTypeError("a bigint", value, name);
   }
 };
 
 /* eslint-disable-next-line @typescript-eslint/ban-types */
-assert.function = (value: unknown): asserts value is Function => {
+assert.function = (value: unknown, name?: string): asserts value is Function => {
   if (typeof value !== "function") {
-    throw new TypeError(`Expected ${value} to be a function, got ${typeof value}`);
+    throw createTypeError("a function", value, name);
   }
 };
 
-assert.symbol = (value: unknown): asserts value is symbol => {
+assert.symbol = (value: unknown, name?: string): asserts value is symbol => {
   if (typeof value !== "symbol") {
-    throw new TypeError(`Expected ${value} to be a symbol, got ${typeof value}`);
+    throw createTypeError("a symbol", value, name);
   }
 };
 
-assert.object = (value: unknown): asserts value is object => {
+assert.object = <K extends string | number | symbol = string, V = unknown>(
+  value: unknown,
+  name?: string,
+): asserts value is Record<K, V> => {
   if (typeof value !== "object") {
-    throw new TypeError(`Expected ${value} to be an object, got ${typeof value}`);
+    throw createTypeError("an object", value, name);
   }
 };
 
-assert.undefined = (value: unknown): asserts value is undefined => {
+assert.undefined = (value: unknown, name?: string): asserts value is undefined => {
   if (typeof value !== "undefined") {
-    throw new TypeError(`Expected ${value} to be undefined, got ${typeof value}`);
+    throw createTypeError("undefined", value, name);
   }
 };
 
-assert.null = (value: unknown): asserts value is bigint => {
+assert.null = (value: unknown, name?: string): asserts value is bigint => {
   if (value !== null) {
-    throw new TypeError(`Expected ${value} to be null, got ${typeof value}`);
+    throw createTypeError("null", value, name);
   }
 };
 
-assert.array = (value: unknown): asserts value is Array<unknown> => {
+assert.array = (value: unknown, name?: string): asserts value is Array<unknown> => {
   if (!Array.isArray(value)) {
-    throw new TypeError(`Expected ${value} to be an array`);
+    throw createTypeError("an array", value, name);
   }
 };
