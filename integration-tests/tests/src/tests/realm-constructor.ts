@@ -111,13 +111,6 @@ describe("Realm#constructor", () => {
         new Realm("");
       }).to.throw(); // The actual message varies across environments
     });
-
-    it("throws when called with two strings", () => {
-      expect(() => {
-        //@ts-expect-error constructing new realm with too many arguments.
-        new Realm("", "");
-      }).to.throw("Invalid arguments when constructing 'Realm'");
-    });
   });
 
   describe("opening, closing and re-opening", () => {
