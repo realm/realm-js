@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 const isNodeProcess = typeof process === "object" && process + "" === "[object process]";
-const Realm = require("realm");
+const { Realm } = require("realm");
 let TestCase = require("./asserts");
 
 const SingleSchema = {

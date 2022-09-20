@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-const Realm = require("realm");
+const { Realm } = require("realm");
 const TestCase = require("./asserts");
 const testCases = require("./query-tests.json");
 const schemas = require("./schemas");

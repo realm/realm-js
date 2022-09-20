@@ -18,7 +18,7 @@
 
 const require_method = require;
 
-const Realm = require("realm");
+const { Realm } = require("realm");
 const TestCase = require("./asserts");
 const AppConfig = require("./support/testConfig");
 const { ObjectId, UUID } = Realm.BSON;

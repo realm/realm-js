@@ -23,7 +23,7 @@
 // Run these tests with the `DEBUG=tests:session` environment variable set to get the stdout of sub-processes.
 
 const debug = require("debug")("tests:session");
-const Realm = require("realm");
+const { Realm } = require("realm");
 const { ObjectId, UUID } = Realm.BSON;
 
 const TestCase = require("./asserts");

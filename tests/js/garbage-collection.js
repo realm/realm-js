@@ -24,7 +24,7 @@
  * @see https://github.com/electron/electron/issues/2601#issuecomment-135258750
  */
 
-const Realm = require("realm");
+const { Realm } = require("realm");
 const TestCase = require("./asserts");
 
 const NUMBER_OF_OBJECTS = 1000;

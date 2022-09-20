@@ -26,7 +26,7 @@ function closeAfterUpload(realm) {
   return realm.syncSession.uploadAllLocalChanges().then(() => realm.close());
 }
 
-const Realm = require("realm");
+const { Realm } = require("realm");
 const TestCase = require("./asserts");
 const schemas = require("./schemas");
 const Utils = require("./test-utils");
