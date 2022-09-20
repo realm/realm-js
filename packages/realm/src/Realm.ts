@@ -36,16 +36,43 @@ import { RealmInsertionModel } from "./InsertionModel";
 import { Configuration } from "./Configuration";
 import { ClassMap } from "./ClassMap";
 import { List } from "./List";
+import { App } from "./App";
+
+// Using a set of weak refs to avoid prevention of garbage collection
+const RETURNED_REALMS = new Set<WeakRef<binding.Realm>>();
 
 export class Realm {
   public static Object = RealmObject;
   public static Results = Results;
   public static List = List;
   public static BSON = BSON;
+  public static App = App;
 
   public static readonly defaultPath = "default.realm";
   public static clearTestState(): void {
-    // Tumbleweed
+    // Close any realms not already closed
+    for (const weakRealm of RETURNED_REALMS) {
+      const realm = weakRealm.deref();
+      if (realm && !realm.isClosed) {
+        realm.close();
+      }
+    }
+    RETURNED_REALMS.clear();
+    // Delete all Realm files in the default directory
+    const defaultDirectoryPath = fs.getDefaultDirectoryPath();
+    for (const dirent of fs.readDirectory(defaultDirectoryPath)) {
+      const direntPath = fs.joinPaths(defaultDirectoryPath, dirent.name);
+      if (dirent.isDirectory() && dirent.name.endsWith(".realm.management")) {
+        fs.removeDirectory(direntPath);
+      } else if (
+        dirent.name.endsWith(".realm") ||
+        dirent.name.endsWith(".realm.note") ||
+        dirent.name.endsWith(".realm.lock") ||
+        dirent.name.endsWith(".realm.log")
+      ) {
+        fs.removeFile(direntPath);
+      }
+    }
   }
 
   public static deleteFile(config: Configuration): void {
@@ -92,6 +119,8 @@ export class Realm {
           : 0n
         : undefined,
     });
+
+    RETURNED_REALMS.add(new WeakRef(internal));
 
     function resolveObjectLink(link: binding.ObjLink): binding.Obj {
       const table = binding.Helpers.getTable(internal, link.tableKey);
