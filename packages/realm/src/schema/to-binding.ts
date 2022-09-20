@@ -54,15 +54,25 @@ export function transformObjectSchema(schema: CanonicalObjectSchema): BindingObj
   // TODO: Enable declaring the alias of the object schema
   // TODO: Enable declaring the table type (asymmetric / embedded)
   // TODO: Enable declaring computed properties
-  const properties = Object.entries(schema.properties).map(([name, property]) =>
-    transformPropertySchema(name, property),
-  );
-  return {
+  const properties = Object.entries(schema.properties)
+    .map(([name, property]) => transformPropertySchema(name, property))
+    .map((property) => {
+      // Ensure the primary property is marked accordingly
+      if (property.name === schema.primaryKey) {
+        property.isPrimary = true;
+      }
+      return property;
+    });
+  const result: BindingObjectSchema = {
     name: schema.name,
-    primaryKey: schema.primaryKey,
     persistedProperties: properties.filter((p) => p.type !== BindingPropertyType.LinkingObjects),
     computedProperties: properties.filter((p) => p.type === BindingPropertyType.LinkingObjects),
   };
+  // The object schema itself must also know the name of the primary key
+  if (schema.primaryKey) {
+    result.primaryKey = schema.primaryKey;
+  }
+  return result;
 }
 
 /** @internal */
