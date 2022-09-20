@@ -47,7 +47,6 @@ export default [
     ],
     external: ["node:module", "node:fs", "bson"],
   },
-  /*
   {
     input: "generated/types/src/index.d.ts",
     output: {
@@ -57,5 +56,4 @@ export default [
     plugins: [dts({ respectExternal: true })],
     external: ["bson"],
   },
-  */
 ];
