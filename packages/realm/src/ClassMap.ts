@@ -18,11 +18,12 @@
 
 import * as binding from "./binding";
 
-import { PropertyMap, ObjectWrapCreator, ObjectLinkResolver, ListResolver } from "./PropertyMap";
-import { Realm } from "./Realm";
-import { INTERNAL_HELPERS, Object as RealmObject } from "./Object";
+import { PropertyMap, ObjectLinkResolver, ListResolver } from "./PropertyMap";
+import type { Realm } from "./Realm";
+import { Object as RealmObject } from "./Object";
 import { Constructor, DefaultObject, RealmObjectConstructor } from "./schema";
 import { getInternal } from "./internal";
+import { getHelpers, setHelpers } from "./ClassHelpers";
 
 function createNamedConstructor<T extends Constructor>(name: string): T {
   const obj = {
@@ -38,10 +39,10 @@ function createClass<T extends RealmObjectConstructor = RealmObjectConstructor>(
   properties: PropertyMap,
 ): T {
   const result = createNamedConstructor<T>(schema.name);
-  // Make the new constructor extend Realm.Object
-  // TODO: Use the end-users constructor, instead of `Realm.Object` if provided
-  Object.setPrototypeOf(result, Realm.Object);
-  Object.setPrototypeOf(result.prototype, Realm.Object.prototype);
+  // Make the new constructor extend RealmObject
+  // TODO: Use the end-users constructor, instead of `RealmObject` if provided
+  Object.setPrototypeOf(result, RealmObject);
+  Object.setPrototypeOf(result.prototype, RealmObject.prototype);
   // TODO: Support computed properties
   if (schema.computedProperties.length > 1) {
     throw new Error("computedProperties are not yet supported!");
@@ -83,36 +84,7 @@ function createClass<T extends RealmObjectConstructor = RealmObjectConstructor>(
 /**
  * @internal
  */
-export type ClassHelpers<T> = {
-  // TODO: Use a different type, once exposed by the binding
-  objectSchema: binding.Realm["schema"][0];
-  properties: PropertyMap;
-  createObjectWrapper: ObjectWrapCreator<T>;
-};
-
-/**
- * @internal
- */
 export class ClassMap {
-  /**
-   * Get internal helpers.
-   * NOTE: This is a free function instead of a member of RealmObject to limit conflicts with user defined properties.
-   * @param arg The object or constructor to get a helpers for.
-   * @returns Helpers injected onto the class by the `ClassMap`.
-   */
-  public static getHelpers<T>(arg: RealmObject<T> | typeof RealmObject): ClassHelpers<T> {
-    if (arg instanceof RealmObject) {
-      return ClassMap.getHelpers(arg.constructor as typeof RealmObject);
-    } else {
-      const helpers = arg[INTERNAL_HELPERS];
-      if (helpers) {
-        return helpers as ClassHelpers<T>;
-      } else {
-        throw new Error("Expected INTERNAL_HELPERS to be set on the class");
-      }
-    }
-  }
-
   private mapping: Record<string, RealmObjectConstructor>;
 
   /**
@@ -132,13 +104,7 @@ export class ClassMap {
         }
         const properties = new PropertyMap(objectSchema, createObjectWrapper, resolveObjectLink, resolveList);
         const constructor = createClass(objectSchema, properties) as RealmObjectConstructor;
-        // Store the properties map on the object class
-        Object.defineProperty(constructor, INTERNAL_HELPERS, {
-          enumerable: false,
-          writable: false,
-          configurable: false,
-          value: { objectSchema, properties, createObjectWrapper },
-        });
+        setHelpers(constructor as typeof RealmObject, { objectSchema, properties, createObjectWrapper });
         return [objectSchema.name, constructor];
       }),
     );
@@ -151,7 +117,7 @@ export class ClassMap {
         throw new Error(`Object schema named '${arg}' is missing from the schema`);
       }
       return constructor as RealmObjectConstructor<T>;
-    } else if (arg instanceof Realm.Object) {
+    } else if (arg instanceof RealmObject) {
       return this.get(arg.constructor.name);
     } else {
       throw new Error("Not yet implemented");
@@ -160,6 +126,6 @@ export class ClassMap {
 
   public getHelpers<T = unknown>(arg: string | RealmObject<T> | RealmObjectConstructor<T>) {
     const constructor = this.get(arg);
-    return ClassMap.getHelpers<T>(constructor as unknown as typeof RealmObject);
+    return getHelpers<T>(constructor as unknown as typeof RealmObject);
   }
 }
