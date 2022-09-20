@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { unlinkSync, rmSync } from "node:fs";
+import { unlinkSync, rmSync, readdirSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
 
-import { inject } from "../platform/file-system";
+import { inject, Dirent } from "../platform/file-system";
 
 inject({
   removeFile(path: string) {
@@ -36,6 +36,9 @@ inject({
   },
   joinPaths(...segments: string[]) {
     return join(...segments);
+  },
+  readDirectory(path: string): Dirent[] {
+    return readdirSync(path, { encoding: "utf8", withFileTypes: true });
   },
 });
 
