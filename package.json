@@ -112,7 +112,8 @@
   },
   "workspaces": [
     "packages/bindgen",
-    "packages/realm"
+    "packages/realm",
+    "integration-tests/tests"
   ],
   "devDependencies": {
     "@babel/runtime": "^7.16.3",
