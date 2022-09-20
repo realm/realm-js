@@ -18,8 +18,8 @@
 
 import * as binding from "./binding";
 import { NotificationToken } from "./binding";
+import { getHelpers } from "./ClassHelpers";
 
-import { ClassMap } from "./ClassMap";
 import { getInternal, INTERNAL } from "./internal";
 import { Listeners } from "./Listeners";
 import type { Object as RealmObject } from "./Object";
@@ -31,7 +31,7 @@ export type ObjectChangeCallback<T> = (object: RealmObject<T> & T, changes: Obje
 /** @internal */
 export class ObjectListeners<T> {
   constructor(private realm: binding.Realm, private object: RealmObject<T> & T) {
-    this.properties = ClassMap.getHelpers(this.object).properties;
+    this.properties = getHelpers(this.object.constructor as typeof RealmObject).properties;
   }
 
   /**

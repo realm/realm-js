@@ -19,13 +19,12 @@
 import * as binding from "./binding";
 
 import { INTERNAL, getInternal } from "./internal";
-import { ClassHelpers } from "./ClassMap";
 import { Realm } from "./Realm";
 import { Results } from "./Results";
 import { CanonicalObjectSchema, Constructor, DefaultObject } from "./schema";
 import { ObjectChangeCallback, ObjectListeners } from "./ObjectListeners";
+import { INTERNAL_HELPERS, ClassHelpers } from "./ClassHelpers";
 
-export const INTERNAL_HELPERS = Symbol("Realm.Object#helpers");
 const INTERNAL_LISTENERS = Symbol("Realm.Object#listeners");
 const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true, writable: true };
 

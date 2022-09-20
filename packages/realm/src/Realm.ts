@@ -48,7 +48,10 @@ export class Realm {
   public static BSON = BSON;
   public static App = App;
 
-  public static readonly defaultPath = "default.realm";
+  public static get defaultPath() {
+    return Realm.normalizePath("default.realm");
+  }
+
   public static clearTestState(): void {
     // Close any realms not already closed
     for (const weakRealm of RETURNED_REALMS) {
@@ -83,8 +86,12 @@ export class Realm {
     fs.removeDirectory(path + ".management");
   }
 
-  private static normalizePath(path: string) {
-    if (fs.isAbsolutePath(path)) {
+  private static normalizePath(path: string | undefined): string {
+    if (typeof path === "undefined") {
+      return Realm.defaultPath;
+    } else if (path.length === 0) {
+      throw new Error("Unexpected empty path");
+    } else if (fs.isAbsolutePath(path)) {
       return path;
     } else {
       return fs.joinPaths(fs.getDefaultDirectoryPath(), path);
@@ -92,7 +99,7 @@ export class Realm {
   }
 
   private static determinePath(config: Configuration): string {
-    return Realm.normalizePath(config.path || Realm.defaultPath);
+    return Realm.normalizePath(config.path);
   }
 
   /**
@@ -107,9 +114,9 @@ export class Realm {
   constructor(config: Configuration);
   constructor(arg: Configuration | string = {}) {
     const config = typeof arg === "string" ? { path: arg } : arg;
-
+    const path = Realm.determinePath(config);
     const internal = binding.Realm.getSharedRealm({
-      path: Realm.determinePath(config),
+      path,
       fifoFilesFallbackPath: config.fifoFilesFallbackPath,
       schema: config.schema ? toBindingSchema(normalizeRealmSchema(config.schema)) : undefined,
       inMemory: config.inMemory === true,
