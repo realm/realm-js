@@ -22,6 +22,13 @@ type FileSystemType = {
   isAbsolutePath(path: string): boolean;
   joinPaths(...segments: string[]): string;
   getDefaultDirectoryPath(): string;
+  readDirectory(path: string): Dirent[];
+};
+
+export type Dirent = {
+  name: string;
+  isFile(): boolean;
+  isDirectory(): boolean;
 };
 
 export const fs: FileSystemType = {
@@ -39,6 +46,9 @@ export const fs: FileSystemType = {
   },
   getDefaultDirectoryPath() {
     throw new Error("Not supported on this platform");
+  },
+  readDirectory() {
+    throw new Error("Not supported on this playform");
   },
 };
 
