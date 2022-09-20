@@ -5,7 +5,7 @@
   "main": "src/index.ts",
   "private": true,
   "scripts": {
-    "build": "rollup -c && tsc --noEmit",
+    "build": "rollup -c",
     "prepare": "npm run build",
     "start": "CONTEXT=appTemplatesPath=../realm-apps,$CONTEXT node start.js --watch",
     "start:missing-server": "CONTEXT=missingServer,$CONTEXT npm start",
