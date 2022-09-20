@@ -173,6 +173,7 @@ function toCpp(type: Type): string {
   switch (type.kind) {
     case "Pointer":
       return `${toCpp(type.type)}*`;
+    case "KeyType":
     case "Opaque":
       return type.name;
     case "Const":
@@ -350,6 +351,9 @@ function convertToNode(addon: NodeAddon, type: Type, expr: string): string {
     case "RRef": // Note: not explicitly taking advantage of moveability yet. TODO?
       return c(type.type, expr);
 
+    case "KeyType":
+      return c(type.type, `(${expr}).value`);
+
     case "Template":
       // Most templates only take a single argument so do this here.
       const inner = type.args[0];
@@ -449,6 +453,9 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
       )}; }(${expr})`;
     case "Opaque":
       return `*((${expr}).As<Napi::External<${type.name}>>().Data())`;
+
+    case "KeyType":
+      return `${type.name}(${c(type.type, expr)})`;
 
     case "Const":
     case "Ref":

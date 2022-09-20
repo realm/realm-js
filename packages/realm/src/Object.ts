@@ -137,7 +137,7 @@ class RealmObject<T = DefaultObject> {
    * The ObjKey of the internal Obj.
    */
   _objectKey(): string {
-    return this[INTERNAL].key.value.toString();
+    return this[INTERNAL].key.toString();
   }
 
   addListener(callback: ObjectChangeCallback<T>): void {
