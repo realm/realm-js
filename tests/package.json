@@ -17,7 +17,7 @@
     "node-fetch": "^2.6.1",
     "node-pre-gyp": "^0.17.0",
     "node-rsa": "^1.1.1",
-    "realm": "file:..",
+    "realm": "file:../packages/realm",
     "spawn-sync": "^2.0.0",
     "terminate": "^1.0.8",
     "tmp": "^0.0.30",

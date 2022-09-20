@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-const Realm = require("realm");
+const { Realm } = require("realm");
 const bson = Realm.BSON;
 const { assertEqual, assertNotEqual } = require("./asserts");
 
