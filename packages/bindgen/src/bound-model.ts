@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { strict as assert } from "assert";
+import { Key } from "readline";
 
 import { Spec, TypeSpec, ClassSpec, MethodSpec } from "./spec";
 
@@ -228,6 +229,11 @@ class Enum extends NamedType {
   }
 }
 
+class KeyType extends NamedType {
+  readonly kind = "KeyType";
+  type!: Type;
+}
+
 export type Type =
   | Const //
   | Pointer
@@ -240,6 +246,7 @@ export type Type =
   | Struct
   | Primitive
   | Opaque
+  | KeyType
   | Enum;
 
 export class BoundSpec {
@@ -250,6 +257,7 @@ export class BoundSpec {
   /** base classes are guaranteed to be at an earlier index than their subclasses to simplify consumption. */
   classes: Class[] = [];
   records: Struct[] = [];
+  keyTypes: KeyType[] = [];
   enums: Enum[] = [];
   opaqueTypes: Opaque[] = [];
   mixedInfo!: MixedInfo;
@@ -375,6 +383,9 @@ export function bindModel(spec: Spec): BoundSpec {
   for (const name of Object.keys(spec.records)) {
     out.records.push(addType(name, Struct));
   }
+  for (const name of Object.keys(spec.keyTypes)) {
+    out.keyTypes.push(addType(name, KeyType));
+  }
   for (const name of spec.opaqueTypes) {
     out.opaqueTypes.push(addType(name, Opaque));
   }
@@ -384,6 +395,7 @@ export function bindModel(spec: Spec): BoundSpec {
   }
 
   // Now clean up the Type instances to refer to other Types, rather than just using strings.
+
   for (const [name, { cppName, fields }] of Object.entries(spec.records)) {
     const struct = out.types[name] as Struct;
     struct.cppName = cppName ?? name;
@@ -393,6 +405,11 @@ export function bindModel(spec: Spec): BoundSpec {
       const required = field.default === undefined && !(type.kind == "Template" && type.name == "util::Optional");
       return new Field(name, type, required);
     });
+  }
+
+  for (const [name, type] of Object.entries(spec.keyTypes)) {
+    const keyType = out.types[name] as KeyType;
+    keyType.type = resolveTypes(type);
   }
 
   for (const subtree of ["classes", "interfaces"] as const) {

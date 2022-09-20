@@ -25,18 +25,21 @@ import { InterfaceSpec, ClassSpec, Spec, MixedInfo } from "./model";
  */
 export type RelaxedValueType = string | boolean | number | [] | Record<string, never>;
 
-export type RelaxedSpec = Omit<
+type ReplaceFields<Base, Replacements> = Omit<Base, keyof Replacements> & Replacements;
+
+export type RelaxedSpec = ReplaceFields<
   Partial<Spec>,
-  "enums" | "records" | "classes" | "constants" | "typeAliases" | "interfaces"
-> & {
-  mixedInfo: MixedInfo; // Not optional
-  enums?: { [name: string]: RelaxedEnumSpec };
-  records?: { [name: string]: RelaxedRecordSpec };
-  classes?: { [name: string]: RelaxedClassSpec };
-  constants?: { [name: string]: RelaxedConstantSpec };
-  typeAliases?: { [name: string]: string };
-  interfaces?: { [name: string]: RelaxedInterfaceSpec };
-};
+  {
+    mixedInfo: MixedInfo; // Not optional
+    enums?: { [name: string]: RelaxedEnumSpec };
+    records?: { [name: string]: RelaxedRecordSpec };
+    classes?: { [name: string]: RelaxedClassSpec };
+    constants?: { [name: string]: RelaxedConstantSpec };
+    typeAliases?: { [name: string]: string };
+    keyTypes?: { [name: string]: string };
+    interfaces?: { [name: string]: RelaxedInterfaceSpec };
+  }
+>;
 
 export type RelaxedEnumSpec = {
   cppName?: string;
