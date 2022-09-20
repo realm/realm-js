@@ -26,7 +26,7 @@ import {
   RealmObjectConstructor,
 } from "./types";
 
-export const PRIMITIVE_TYPES: PropertyTypeName[] = [
+export const PRIMITIVE_TYPES = new Set<PropertyTypeName>([
   "bool",
   "int",
   "float",
@@ -38,7 +38,26 @@ export const PRIMITIVE_TYPES: PropertyTypeName[] = [
   "date",
   "mixed",
   "uuid",
-];
+]);
+
+function isPrimitive(type: string | undefined) {
+  return PRIMITIVE_TYPES.has(type as PropertyTypeName);
+}
+
+function validateCanonicalPropertySchema(
+  objectSchemaName: string,
+  { name, type, objectType, optional }: CanonicalObjectSchemaProperty,
+) {
+  if (type === "list" && objectType === "list") {
+    throw new Error(`List property '${objectSchemaName}#${name}' cannot have list elements`);
+  }
+  if (type === "list" && !isPrimitive(objectType) && optional) {
+    throw new Error(`List property '${objectSchemaName}#${name}' of '${objectType}' elements, cannot be optional`);
+  }
+  if (objectType === "") {
+    throw new Error(`Property '${objectSchemaName}#${name}' cannot have an empty object type`);
+  }
+}
 
 export const COLLECTION_TYPES: PropertyTypeName[] = ["set", "dictionary", "list"];
 
@@ -60,7 +79,9 @@ export function normalizeObjectSchema(schema: RealmObjectConstructor<unknown> | 
       name: schema.name,
       properties: Object.fromEntries(
         Object.entries(schema.properties).map(([name, property]) => {
-          return [name, normalizePropertySchema(name, property)];
+          const canonicalPropertySchema = normalizePropertySchema(name, property);
+          validateCanonicalPropertySchema(schema.name, canonicalPropertySchema);
+          return [name, canonicalPropertySchema];
         }),
       ),
     };
@@ -97,7 +118,7 @@ export function normalizePropertyType(type: string): ObjectSchemaProperty {
     return {
       type: "list",
       objectType: item.type === "object" ? item.objectType : item.type,
-      optional: item.optional,
+      optional: item.type === "object" ? false : item.optional,
     };
   } else if (type.endsWith("<>")) {
     const item = normalizePropertyType(type.substring(0, type.length - 2));
