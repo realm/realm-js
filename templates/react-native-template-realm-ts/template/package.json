@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@babel/plugin-proposal-decorators": "^7.19.0",
-    "@realm/babel-plugin": "file:../../../packages/babel-plugin",
+    "@realm/babel-plugin": "file:../../../packages/babel-plugin/realm-babel-plugin-0.1.0.tgz",
     "@realm/babel-plugin-decorators": "file:../../../packages/babel-plugin-decorators/realm-babel-plugin-decorators-0.1.0.tgz",
     "@realm/react": "^0.3.1",
     "react": "17.0.2",
