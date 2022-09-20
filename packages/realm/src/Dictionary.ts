@@ -16,17 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { OrderedCollection } from "./OrderedCollection";
+import { Collection } from "./Collection";
 
-type DictionaryMethods = "set" | "remove" | "addListener" | "removeListener" | "removeAllListeners";
+// TODO: Implement this
+type DictionaryChangeCallback = () => void;
 
 /**
  * TODO: Make this extends Collection<T> (once that doesn't have a nummeric index accessor)
  */
-export class Dictionary<T = unknown>
-  implements Pick<OrderedCollection<T>, "addListener" | "removeListener" | "removeAllListeners">
-{
+export class Dictionary<T = unknown> extends Collection<T, DictionaryChangeCallback> {
+  // @ts-expect-error Collection is declaring types that doesn't match the index access
   [key: string]: T;
+
   /**
    * Adds given element to the dictionary
    * @returns The dictionary
@@ -44,21 +45,4 @@ export class Dictionary<T = unknown>
   remove(key: string | string[]): this {
     throw new Error("Not yet implemented");
   }
-
-  // @ts-expect-error We're exposing methods in the users value namespace
-  addListener(callback: unknown): void {
-    throw new Error("Not yet implemented");
-  }
-
-  // @ts-expect-error We're exposing methods in the users value namespace
-  removeListener(callback: unknown): void {
-    throw new Error("Not yet implemented");
-  }
-
-  // @ts-expect-error We're exposing methods in the users value namespace
-  removeAllListeners(): void {
-    throw new Error("Not yet implemented");
-  }
 }
-
-declare const d: Dictionary<{ foo: string }>;

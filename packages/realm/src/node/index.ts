@@ -16,16 +16,29 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export * from "./Realm";
-export * from "./Configuration";
-export { Results } from "./Results";
-export { Object } from "./Object";
-export { List } from "./List";
-export { Dictionary } from "./Dictionary";
-export { Set } from "./Set";
-export type { ObjectChangeSet, ObjectChangeCallback } from "./ObjectListeners";
-export type { CollectionChangeSet, CollectionChangeCallback } from "./OrderedCollection";
+import { unlinkSync, rmSync } from "node:fs";
+import { isAbsolute, join } from "node:path";
 
-// Exporting default for backwards compatibility
-import { Realm } from "./Realm";
+import { inject } from "../platform/file-system";
+
+inject({
+  removeFile(path: string) {
+    unlinkSync(path);
+  },
+  removeDirectory(path: string) {
+    rmSync(path, { recursive: true, force: true });
+  },
+  getDefaultDirectoryPath() {
+    return process.cwd();
+  },
+  isAbsolutePath(path: string) {
+    return isAbsolute(path);
+  },
+  joinPaths(...segments: string[]) {
+    return join(...segments);
+  },
+});
+
+export * from "../index";
+import { Realm } from "../index";
 export default Realm;

@@ -23,11 +23,12 @@ import { ClassMap } from "./ClassMap";
 import { getInternal, INTERNAL } from "./internal";
 import { Listeners } from "./Listeners";
 import type { Object as RealmObject } from "./Object";
-import { PropertyMap } from "./PropertyMap";
+import type { PropertyMap } from "./PropertyMap";
 
 export type ObjectChangeSet<T> = { deleted: boolean; changedProperties: (keyof T)[] };
 export type ObjectChangeCallback<T> = (object: RealmObject<T> & T, changes: ObjectChangeSet<T>) => void;
 
+/** @internal */
 export class ObjectListeners<T> {
   constructor(private realm: binding.Realm, private object: RealmObject<T> & T) {
     this.properties = ClassMap.getHelpers(this.object).properties;
