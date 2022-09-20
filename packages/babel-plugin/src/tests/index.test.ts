@@ -357,11 +357,31 @@ describe("Babel plugin", () => {
       expect((parsedSchema?.properties.name as ObjectSchemaProperty).indexed).toEqual(true);
     });
 
+    it("ignores `@index` decorators not imported from `@realm/react`", () => {
+      const transformCode = transform({
+        source: `import Realm, { Types, BSON, List, Set, Dictionary, Mixed } from "realm";
+        export class Person extends Realm.Object { @index name: Realm.Types.String; }`,
+      });
+      const parsedSchema = extractSchema(transformCode);
+
+      expect((parsedSchema?.properties.name as ObjectSchemaProperty).indexed).toBeUndefined();
+    });
+
     it("handles `@mapTo` decorators", () => {
       const transformCode = transformProperty(`@mapTo("rename") name: Realm.Types.String;`);
       const parsedSchema = extractSchema(transformCode);
 
       expect((parsedSchema?.properties.name as ObjectSchemaProperty).mapTo).toEqual("rename");
+    });
+
+    it("ignores `@mapTo` decorators not imported from `@realm/react`", () => {
+      const transformCode = transform({
+        source: `import Realm, { Types, BSON, List, Set, Dictionary, Mixed } from "realm";
+        export class Person extends Realm.Object { @mapTo("rename") name: Realm.Types.String; }`,
+      });
+      const parsedSchema = extractSchema(transformCode);
+
+      expect((parsedSchema?.properties.name as ObjectSchemaProperty).mapTo).toBeUndefined();
     });
 
     it("handles multiple decorators on a property", () => {
