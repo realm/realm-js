@@ -8,7 +8,7 @@
     "esModuleInterop": true,
     "noResolve": true,
     "lib": [
-      "ES2020"
+      "ES2022"
     ],
     "types": [
       "bson"
