@@ -5,6 +5,7 @@
   "main": "./dist/bundle.cjs.js",
   "module": "./dist/bundle.es.js",
   "types": "./dist/bundle.d.ts",
+  "react-native": "./dist/bundle.react-native.es.js",
   "scripts": {
     "generate-types": "tsc --project tsconfig.types.json --declaration --emitDeclarationOnly --declarationDir types/generated",
     "build": "npm run generate-types && rollup --config",

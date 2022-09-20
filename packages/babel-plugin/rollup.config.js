@@ -42,7 +42,7 @@ export default [
         tsconfig: "src/node/tsconfig.json",
       }),
     ],
-    external: ["abort-controller", "node-fetch"],
+    external: ["@babel/core"],
   },
   {
     input: "src/react-native/index.ts",
