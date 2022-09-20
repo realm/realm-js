@@ -25,8 +25,16 @@ export function isImportedFromRealm(path: NodePath<types.Node>): boolean {
     return isImportedFromRealm(path.get("object"));
   } else if (path.isTSQualifiedName()) {
     return isImportedFromRealm(path.get("left"));
-  } else if (path.isIdentifier()) {
-    const binding = path.scope.getBinding(path.node.name);
+  } else if (path.isIdentifier() || path.isDecorator()) {
+    const node = path.isDecorator()
+      ? types.isCallExpression(path.node.expression)
+        ? path.node.expression.callee
+        : path.node.expression
+      : path.node;
+    if (!types.isIdentifier(node)) return false;
+
+    const binding = path.scope.getBinding(node.name);
+
     if (binding && binding.path.parentPath && binding.path.parentPath.isImportDeclaration()) {
       return (
         binding.path.parentPath.get("source").isStringLiteral({ value: "realm" }) ||
