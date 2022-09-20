@@ -19,7 +19,7 @@
 export default [
   {
     // See ./src/bench/README.md for details
-    input: "node_modules/@thi.ng/bench/index.js",
+    input: "../../node_modules/@thi.ng/bench/index.js",
     output: {
       file: "src/bench/rolledup.js",
       format: "cjs",
