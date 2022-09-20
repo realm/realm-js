@@ -104,6 +104,7 @@ export function normalizeSpec(spec: RelaxedSpec): Spec {
     records: mapObjectValues(spec.records || {}, normalizeRecordSpec),
     classes: mapObjectValues(spec.classes || {}, normalizeClassSpec),
     interfaces: mapObjectValues(spec.interfaces || {}, normalizeInterfaceSpec),
+    keyTypes: mapObjectValues(spec.keyTypes || {}, normalizeTypeSpec),
   };
 }
 

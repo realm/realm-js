@@ -384,7 +384,7 @@ function createHelpers<T>(
 /** @internal */
 export class PropertyMap<T = DefaultObject> {
   private mapping: Record<string, PropertyHelpers>;
-  private nameByColumnKey: Record<number, string>;
+  private nameByColumnKey: Map<binding.ColKey, string>;
 
   public names: string[];
 
@@ -412,9 +412,7 @@ export class PropertyMap<T = DefaultObject> {
         return [p.name, helpers];
       }),
     );
-    this.nameByColumnKey = Object.fromEntries(
-      objectSchema.persistedProperties.map((p) => [Number(p.columnKey.value), p.publicName || p.name]),
-    );
+    this.nameByColumnKey = new Map(objectSchema.persistedProperties.map((p) => [p.columnKey, p.publicName || p.name]));
     // TODO: Consider including the computed properties?
     this.names = objectSchema.persistedProperties.map((p) => p.publicName || p.name);
   }
@@ -424,10 +422,6 @@ export class PropertyMap<T = DefaultObject> {
   };
 
   public getName = <T>(columnKey: binding.ColKey): keyof T => {
-    if (columnKey.value) {
-      return this.nameByColumnKey[Number(columnKey.value)] as keyof T;
-    } else {
-      throw new Error("Expected a value on columnKey");
-    }
+    return this.nameByColumnKey.get(columnKey) as keyof T;
   };
 }
