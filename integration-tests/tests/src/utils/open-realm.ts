@@ -38,7 +38,7 @@ export async function openRealm(
   partialConfig: LocalConfiguration | SyncedConfiguration = {},
   user: Realm.User,
 ): Promise<{ config: Realm.Configuration; realm: Realm }> {
-  const nonce = new Realm.BSON.ObjectID().toHexString();
+  const nonce = new Realm.BSON.ObjectId().toHexString();
   const path = `temp-${nonce}.realm`;
 
   if (!partialConfig.sync) {

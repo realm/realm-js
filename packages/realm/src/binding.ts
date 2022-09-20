@@ -18,8 +18,10 @@
 
 import { IndexSet, Timestamp } from "../generated/ts/native.mjs";
 
+/** @internal */
 export * from "../generated/ts/native.mjs"; // core types are transitively exported.
 
+/** @internal */
 declare module "../generated/ts/native.mjs" {
   interface IndexSet {
     asIndexes(): Iterator<number>;

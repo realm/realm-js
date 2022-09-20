@@ -16,16 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export * from "./Realm";
-export * from "./Configuration";
-export { Results } from "./Results";
-export { Object } from "./Object";
-export { List } from "./List";
-export { Dictionary } from "./Dictionary";
-export { Set } from "./Set";
-export type { ObjectChangeSet, ObjectChangeCallback } from "./ObjectListeners";
-export type { CollectionChangeSet, CollectionChangeCallback } from "./OrderedCollection";
+import { isAbsolute } from "node:path";
+import { existsSync } from "node:fs";
 
-// Exporting default for backwards compatibility
-import { Realm } from "./Realm";
-export default Realm;
+import { Realm } from "../index";
+import { expect } from "chai";
+
+describe("platform specifics", () => {
+  describe("default path", () => {
+    it("is absolute", () => {
+      const realm = new Realm();
+      const realmPath = realm.path;
+      try {
+        expect(realmPath).satisfies(isAbsolute);
+        expect(realmPath).satisfies(existsSync);
+        Realm.deleteFile({});
+        expect(realmPath).not.satisfies(existsSync);
+      } finally {
+        realm.close();
+      }
+    });
+  });
+});
