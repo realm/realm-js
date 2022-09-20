@@ -1525,6 +1525,11 @@ module.exports = {
       path: "dogsLocal.realm",
     };
 
+    // user for flexible sync test
+    let app = new Realm.App(appConfig);
+    const credentials = await Utils.getRegisteredEmailPassCredentials(app);
+    let user = await app.logIn(credentials);
+
     /*
      *  Test 1:  check that `writeCopyTo` verifies parameter count and types
      */
@@ -1557,7 +1562,9 @@ module.exports = {
       // wrong `sync` property type
       realm.writeCopyTo({ path: "outputPath", sync: "invalidProperty" });
     }, "'sync' property must be an object");
-
+    TestCase.assertThrowsContaining(() => {
+      realm.writeCopyTo({ path: "output", sync: { flexible: true, user } });
+    }, "''writeCopyTo' does not currently support flexible sync");
     /*
      *  Test 2:  check that `writeCopyTo` can only be called at the right time
      */

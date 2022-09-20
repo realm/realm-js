@@ -311,14 +311,14 @@ class Realm {
    * Writes a compacted copy of the Realm α) to the given path or β) with the given output
    *
    * For invocation with α):
-   *   * Input Realms may be local or synced, encrypted or non-encrypted
+   *   * Input Realms may be local or partition-based synced, encrypted or non-encrypted
    *   * Output Realms will be local only, encrypted or non-encrypted
    * Deprecation Warning: Invoking `writeCopyTo` with a path string is deprecated and will be removed in the next breaking release.
    * Please invoke `writeCopyTo` with a {@link Realm~Configuration | Configuration}.
    *
    * For invocation with β):
-   *   * Input Realms may be local or synced, encrypted or non-encrypted
-   *   * Output Realms will be local or synced, encrypted or non-encrypted, depending on the configuration passed to the function
+   *   * Input Realms may be local or partition-based synced, encrypted or non-encrypted
+   *   * Output Realms will be local or partition-based synced, encrypted or non-encrypted, depending on the configuration passed to the function
    *
    * The destination file cannot already exist.
    *
