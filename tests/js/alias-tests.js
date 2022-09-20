@@ -18,7 +18,7 @@
 
 /* eslint-env es6, node */
 
-var Realm = require("realm");
+const { Realm } = require("realm");
 var TestCase = require("./asserts");
 var schemas = require("./schemas");
 

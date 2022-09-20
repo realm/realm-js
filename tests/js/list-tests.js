@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-const Realm = require("realm");
+const { Realm } = require("realm");
 const { Decimal128, ObjectId, UUID } = Realm.BSON;
 let TestCase = require("./asserts");
 let schemas = require("./schemas");
