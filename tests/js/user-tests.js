@@ -18,7 +18,7 @@
 
 /* eslint-env es6, node */
 
-const Realm = require("realm");
+const { Realm } = require("realm");
 const TestCase = require("./asserts");
 const Utils = require("./test-utils");
 const isNodeProcess = typeof process === "object" && process + "" === "[object process]";
