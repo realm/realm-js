@@ -26,6 +26,7 @@ type BaseConfiguration = {
   schema?: (RealmObjectConstructor<any> | ObjectSchema)[];
   schemaVersion?: number;
   inMemory?: boolean;
+  fifoFilesFallbackPath?: string;
 };
 
 // type ConfigurationWithSync = BaseConfiguration & {

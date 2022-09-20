@@ -17,10 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import * as binding from "./binding";
+import { BSON } from "./bson";
 
 import { INTERNAL, getInternal } from "./internal";
-import { Object as RealmObject } from "./Object";
-import { Results } from "./Results";
 import {
   fromBindingSchema,
   toBindingSchema,
@@ -29,6 +28,10 @@ import {
   RealmObjectConstructor,
   normalizeRealmSchema,
 } from "./schema";
+import { fs } from "./platform";
+
+import { Object as RealmObject } from "./Object";
+import { Results } from "./Results";
 import { RealmInsertionModel } from "./InsertionModel";
 import { Configuration } from "./Configuration";
 import { ClassMap } from "./ClassMap";
@@ -38,6 +41,32 @@ export class Realm {
   public static Object = RealmObject;
   public static Results = Results;
   public static List = List;
+  public static BSON = BSON;
+
+  public static readonly defaultPath = "default.realm";
+  public static clearTestState(): void {
+    // Tumbleweed
+  }
+
+  public static deleteFile(config: Configuration): void {
+    const path = Realm.determinePath(config);
+    fs.removeFile(path);
+    fs.removeFile(path + ".lock");
+    fs.removeFile(path + ".note");
+    fs.removeDirectory(path + ".management");
+  }
+
+  private static normalizePath(path: string) {
+    if (fs.isAbsolutePath(path)) {
+      return path;
+    } else {
+      return fs.joinPaths(fs.getDefaultDirectoryPath(), path);
+    }
+  }
+
+  private static determinePath(config: Configuration): string {
+    return Realm.normalizePath(config.path || Realm.defaultPath);
+  }
 
   /**
    * The Realms's representation in the binding.
@@ -46,10 +75,15 @@ export class Realm {
   public [INTERNAL]!: binding.Realm;
   private classes: ClassMap;
 
-  constructor(config: Configuration = {}) {
+  constructor();
+  constructor(path: string);
+  constructor(config: Configuration);
+  constructor(arg: Configuration | string = {}) {
+    const config = typeof arg === "string" ? { path: arg } : arg;
+
     const internal = binding.Realm.getSharedRealm({
-      path: config.path || this.getDefaultPath(),
-      fifoFilesFallbackPath: this.fifoFilesFallbackPath(),
+      path: Realm.determinePath(config),
+      fifoFilesFallbackPath: config.fifoFilesFallbackPath,
       schema: config.schema ? toBindingSchema(normalizeRealmSchema(config.schema)) : undefined,
       inMemory: config.inMemory === true,
       schemaVersion: config.schema
@@ -284,19 +318,5 @@ export class Realm {
 
   _updateSchema(): unknown {
     throw new Error("Not yet implemented");
-  }
-
-  /**
-   * TODO: Make this platform dependent
-   */
-  private getDefaultPath() {
-    return "default.realm";
-  }
-
-  /**
-   * TODO: Make this platform dependent
-   */
-  private fifoFilesFallbackPath() {
-    return "";
   }
 }

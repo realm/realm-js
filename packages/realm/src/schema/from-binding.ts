@@ -54,6 +54,7 @@ const COLLECTION_TYPES = [PropertyType.Array, PropertyType.Set, PropertyType.Dic
  * Implements https://github.com/realm/realm-js/blob/v11/src/js_schema.hpp#L433-L478
  * @param objectSchema The object schema, as represented by the binding.
  * @returns The object schema, as represented by the SDK.
+ * @internal
  */
 export function transformObjectSchema({
   name,
@@ -75,6 +76,7 @@ export function transformObjectSchema({
  * Implements https://github.com/realm/realm-js/blob/v11/src/js_schema.hpp#L480-L530
  * @param propertySchema The property schema, as represented by the binding.
  * @returns The property schema, as represented by the SDK.
+ * @internal
  */
 export function transformPropertySchema(propertySchema: BindingProperty): CanonicalObjectSchemaProperty {
   const { name, isIndexed, publicName } = propertySchema;
@@ -134,6 +136,7 @@ function transformPropertyTypeName(
   }
 }
 
+/** @internal */
 export function transformRealmSchema(schema: Readonly<BindingObjectSchema[]>): CanonicalObjectSchema[] {
   return schema.map(transformObjectSchema);
 }

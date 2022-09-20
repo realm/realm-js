@@ -19,8 +19,10 @@
 import { Listeners, CallbackRegistrator } from "./Listeners";
 
 export class Collection<T, ChangeCallbackType> implements Iterable<T> {
+  /** @internal */
   private listeners: Listeners<ChangeCallbackType>;
 
+  /** @internal */
   constructor(registerCallback: CallbackRegistrator<ChangeCallbackType>) {
     this.listeners = new Listeners<ChangeCallbackType>(registerCallback);
     // Make the internal properties non-enumerable

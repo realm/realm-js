@@ -2,5 +2,6 @@
   "loader": "tsm",
   "enable-source-maps": true,
   "no-warnings": true,
+  "require": "src/node/index.ts",
   "spec": "src/tests/*.test.ts"
 }
