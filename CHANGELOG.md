@@ -4,8 +4,10 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* If a case insensitive query searched for a string including an 4-byte UTF8 character, the program would crash. ([realm/realm-core#5825](https://github.com/realm/realm-core/issues/5825), since v1.0.0)
+* `Realm#writeCopyTo()` doesn't support flexible sync, and an exception is thrown. ([realm/realm-core#5798](https://github.com/realm/realm-core/issues/5798) and , since v10.10.0)
+* Asymmetric object types/classes cannot be used with partition-based sync, and an exception is thrown. ([realm/realm-core#5691](https://github.com/realm/realm-core/issues/5691), since v10.19.0)
+* If you set a subscription on a link in flexible sync, the server would not know how to handle it. ([realm/realm-core#5409](https://github.com/realm/realm-core/issues/5409), since v10.10.1)
 
 ### Compatibility
 * React Native >= v0.64.0
@@ -15,9 +17,7 @@
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v12.6.0 to v12.7.0. ([#4932](https://github.com/realm/realm-js/issues/4932))
 
 ## 10.21.1 (2022-09-15)
 
@@ -32,9 +32,7 @@
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Using Realm Core v12.6.0.
 
 ## 10.21.0 (2022-09-12)
 
