@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "target": "es2018",
+    "moduleResolution": "node",
+    "forceConsistentCasingInFileNames": true,
+    "types": ["node"],
+    "lib": ["es2019"]
+  }
+}
