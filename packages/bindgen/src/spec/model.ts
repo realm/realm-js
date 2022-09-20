@@ -30,6 +30,7 @@ export type Spec = {
   opaqueTypes: string[];
   classes: { [name: string]: ClassSpec };
   interfaces: { [name: string]: InterfaceSpec };
+  keyTypes: { [name: string]: TypeSpec };
 };
 
 export type EnumSpec = {
