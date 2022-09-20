@@ -77,6 +77,7 @@ export function transformPropertySchema(name: string, schema: CanonicalObjectSch
     isIndexed: schema.indexed,
     publicName: name !== schema.mapTo ? schema.mapTo : undefined,
     objectType: schema.objectType && schema.objectType in TYPE_MAPPINGS ? undefined : schema.objectType,
+    linkOriginPropertyName: schema.property,
   };
   return result;
 }
@@ -85,7 +86,9 @@ export function transformPropertySchema(name: string, schema: CanonicalObjectSch
 export function transformPropertyType(schema: CanonicalObjectSchemaProperty): BindingPropertyType {
   let type = TYPE_MAPPINGS[schema.type];
   let isNullable = schema.optional;
-  if (schema.objectType) {
+  if (type === BindingPropertyType.LinkingObjects) {
+    return type | BindingPropertyType.Array;
+  } else if (schema.objectType) {
     if (schema.objectType in TYPE_MAPPINGS) {
       type |= TYPE_MAPPINGS[schema.objectType as PropertyTypeName];
     } else {

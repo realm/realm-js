@@ -110,7 +110,7 @@ function transformPropertyTypeName(
       return {
         type: TYPE_MAPPINGS[collectionType] as PropertyTypeName,
         objectType: item.type === "object" ? item.objectType : item.type,
-        optional: item.optional,
+        optional: item.type === "object" ? false : item.optional,
       };
     }
   }
