@@ -27,7 +27,7 @@ convert() {
   # Any files suffixed ".override.js" should override their automatically converted TS versions.
   # This allows us to have a non-Babel plugin version of any models. *.override.js files are excluded
   # from the final npm publish.
-  for i in `find . -path ./node_modules -prune -o -name "*.override.js" -print`; do mv $i ${i/\.override.js*/\.js} ; done
+  for i in `find . -path ./node_modules -prune -o -name "*.override.js" -print`; do mv $i $2/${i/\.override.js*/\.js} ; done
 
   popd
 }
