@@ -27,7 +27,7 @@ import { List } from "./List";
 import { ObjLink, PropertyType } from "./binding";
 
 /** @internal */
-export type ObjectWrapCreator<T = DefaultObject> = (obj: binding.Obj) => RealmObject<T> & T;
+export type ObjectWrapCreator<T extends RealmObject = RealmObject> = (obj: binding.Obj) => T;
 
 /** @internal */
 export type ObjectLinkResolver = (link: binding.ObjLink) => binding.Obj;

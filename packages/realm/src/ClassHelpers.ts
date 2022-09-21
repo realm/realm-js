@@ -26,14 +26,14 @@ export const INTERNAL_HELPERS = Symbol("Realm.Object#helpers");
 /**
  * @internal
  */
-export type ClassHelpers<T> = {
+export type ClassHelpers<T extends RealmObject = RealmObject> = {
   // TODO: Use a different type, once exposed by the binding
   objectSchema: binding.Realm["schema"][0];
   properties: PropertyMap;
   createObjectWrapper: ObjectWrapCreator<T>;
 };
 
-export function setHelpers<T>(constructor: typeof RealmObject, value: ClassHelpers<T>): void {
+export function setHelpers<T extends RealmObject>(constructor: typeof RealmObject, value: ClassHelpers<T>): void {
   // Store the properties map on the object class
   Object.defineProperty(constructor, INTERNAL_HELPERS, {
     enumerable: false,
@@ -49,7 +49,7 @@ export function setHelpers<T>(constructor: typeof RealmObject, value: ClassHelpe
  * @param arg The object or constructor to get a helpers for.
  * @returns Helpers injected onto the class by the `ClassMap`.
  */
-export function getHelpers<T>(arg: typeof RealmObject): ClassHelpers<T> {
+export function getHelpers<T extends RealmObject = RealmObject>(arg: typeof RealmObject): ClassHelpers<T> {
   const helpers = arg[INTERNAL_HELPERS];
   if (helpers) {
     return helpers as ClassHelpers<T>;
