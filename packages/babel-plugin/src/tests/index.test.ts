@@ -423,4 +423,59 @@ describe("Babel plugin", () => {
       },
     });
   });
+
+  describe("Typescript-only source file support", () => {
+    let consoleWarnMock: jest.SpyInstance<void, [message?: any, ...optionalParams: any[]]>;
+
+    beforeEach(() => {
+      consoleWarnMock = jest.spyOn(console, "warn").mockImplementation();
+    });
+
+    afterEach(() => {
+      consoleWarnMock.mockRestore();
+    });
+
+    it("outputs an error and does not transform if a non-Typescript source file contains a class extending Realm.Object", () => {
+      transform({
+        source: `
+import Realm, { Types, BSON, List, Set, Dictionary, Mixed } from "realm";
+
+class Test extends Realm.Object {
+  static schema = {
+    name: 'Task',
+    primaryKey: '_id',
+    properties: {
+      _id: 'objectId',
+    }
+  }
+}`,
+        filename: "test.js",
+      });
+
+      expect(console.warn).toHaveBeenCalledTimes(1);
+      expect(console.warn).toHaveBeenLastCalledWith(
+        expect.stringMatching(
+          new RegExp("@realm/babel-plugin can only be used with Typescript source files. Ignoring.*"),
+        ),
+      );
+    });
+
+    it("does not output an error if a non-Typescript source file does not contain a class extending Realm.Object", () => {
+      transform({
+        source: `
+class Test {
+  static schema = {
+    name: 'Task',
+    primaryKey: '_id',
+    properties: {
+      _id: 'objectId',
+    }
+  }
+}`,
+        filename: "test.js",
+      });
+
+      expect(console.warn).toHaveBeenCalledTimes(0);
+    });
+  });
 });
