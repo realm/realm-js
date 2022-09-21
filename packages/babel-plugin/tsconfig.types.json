@@ -4,5 +4,5 @@
     "types": [],
     "emitDeclarationOnly": true
   },
-  "exclude": ["src/node/index.ts", "src/react-native/index.ts", "src/tests/**"]
+  "exclude": ["src/node/index.ts", "src/react-native/index.ts", "src/**/*.test.ts", "src/tests"]
 }

@@ -36,10 +36,14 @@ export default [
       {
         file: pkg.main,
         format: "cjs",
+        // Allow both named and default exports
+        exports: "named",
       },
       {
         file: pkg.module,
         format: "es",
+        // Allow both named and default exports
+        exports: "named",
       },
     ],
     plugins: [
