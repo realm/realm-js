@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2020 Realm Inc.
+// Copyright 2022 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,6 +15,12 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+
+/**
+ * We generate different bundles for RN and Node because the Node bundle includes
+ * the plugin as a default export, which in turn includes @babel/core, which won't
+ * load in a non-Node environment.
+ */
 
 import typescript from "@rollup/plugin-typescript";
 import nodeResolve from "@rollup/plugin-node-resolve";
