@@ -47,7 +47,7 @@ class RealmObject<T = DefaultObject> {
    * @internal
    * This property is stored on the per class prototype when transforming the schema.
    */
-  public static [INTERNAL_HELPERS]: ClassHelpers<unknown>;
+  public static [INTERNAL_HELPERS]: ClassHelpers;
 
   /**
    * Create a `RealmObject` wrapping an `Obj` from the binding.
