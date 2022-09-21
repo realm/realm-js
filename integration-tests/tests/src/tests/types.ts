@@ -20,23 +20,29 @@ import { expect } from "chai";
 import Realm from "realm";
 
 describe("Realm.Types namespace", () => {
+  // We specify explicit types on the instance so TS will error if the type def is wrong
   it("Realm.Types.Decimal128 can be constructed", () => {
-    const instance = new Realm.Types.Decimal128();
+    const instance: Realm.Types.Decimal128 = new Realm.Types.Decimal128();
     expect(instance).to.be.instanceOf(Realm.BSON.Decimal128);
   });
 
   it("Realm.Types.ObjectId can be constructed", () => {
-    const instance = new Realm.Types.ObjectId();
+    const instance: Realm.Types.ObjectId = new Realm.Types.ObjectId();
     expect(instance).to.be.instanceOf(Realm.BSON.ObjectId);
   });
 
+  it("Realm.Types.UUID can be constructed", () => {
+    const instance: Realm.Types.UUID = new Realm.Types.UUID();
+    expect(instance).to.be.instanceOf(Realm.BSON.UUID);
+  });
+
   it("Realm.Types.Date can be constructed", () => {
-    const instance = new Realm.Types.Date();
+    const instance: Realm.Types.Date = new Realm.Types.Date();
     expect(instance).to.be.instanceOf(Date);
   });
 
   it("Realm.Types.Data can be constructed", () => {
-    const instance = new Realm.Types.Data();
+    const instance: Realm.Types.Data = new Realm.Types.Data();
     expect(instance).to.be.instanceOf(ArrayBuffer);
   });
 });
