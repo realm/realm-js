@@ -39,6 +39,7 @@ describe("Milestone #2", () => {
         const expectedSchema: CanonicalObjectSchema[] = [
           {
             name: "Person",
+            primaryKey: "name",
             properties: {
               name: {
                 name: "name",
