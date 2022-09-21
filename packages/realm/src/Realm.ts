@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import * as binding from "./binding";
-import { BSON as bson } from "./bson";
+import { BSON } from "./bson";
 
 import { INTERNAL, getInternal } from "./internal";
 import {
@@ -28,6 +28,7 @@ import {
   RealmObjectConstructor,
   normalizeRealmSchema,
   ObjectSchema,
+  Constructor,
 } from "./schema";
 import { fs } from "./platform";
 
@@ -56,7 +57,7 @@ export class Realm {
   public static List = List;
   public static App = App;
   public static UpdateMode = UpdateMode;
-  public static BSON = bson;
+  public static BSON = BSON;
 
   public static get defaultPath() {
     return Realm.normalizePath("default.realm");
@@ -218,17 +219,13 @@ export class Realm {
     values: Partial<T> | Partial<RealmInsertionModel<T>>,
     mode: UpdateMode.All | UpdateMode.Modified,
   ): RealmObject<T> & T;
+  create<T extends RealmObject>(type: Constructor<T>, values: RealmInsertionModel<T>, mode?: UpdateMode.Never): T;
   create<T extends RealmObject>(
-    type: RealmObjectConstructor<T>,
-    values: RealmInsertionModel<T>,
-    mode?: UpdateMode.Never,
-  ): T;
-  create<T extends RealmObject>(
-    type: RealmObjectConstructor<T>,
+    type: Constructor<T>,
     values: Partial<T> | Partial<RealmInsertionModel<T>>,
     mode: UpdateMode.All | UpdateMode.Modified,
   ): T;
-  create(type: string | RealmObjectConstructor, values: Record<string, unknown>) {
+  create<T extends RealmObject>(type: string | Constructor<T>, values: Record<string, unknown>) {
     // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1260-L1321
     if (values instanceof RealmObject && !getInternal(values)) {
       throw new Error("Cannot create an object from a detached Realm.Object instance");
@@ -269,7 +266,7 @@ export class Realm {
     return result;
   }
 
-  delete<T>(subject: (RealmObject<T> & T) | RealmObject[] | List<T> | Results<T>): void {
+  delete(subject: RealmObject | RealmObject[] | List | Results): void {
     if (subject instanceof RealmObject) {
       const { objectSchema } = this.classes.getHelpers(subject);
       const obj = getInternal(subject);
@@ -288,12 +285,12 @@ export class Realm {
     throw new Error("Not yet implemented");
   }
 
-  objectForPrimaryKey<T = DefaultObject>(type: string, primaryKey: T[keyof T]): RealmObject<T> & T;
-  objectForPrimaryKey<T = DefaultObject>(type: RealmObjectConstructor<T>, primaryKey: T[keyof T]): RealmObject<T> & T;
-  objectForPrimaryKey<T>(type: string | RealmObjectConstructor<T>, primaryKey: T[keyof T]): RealmObject<T> & T {
+  objectForPrimaryKey<T>(type: string, primaryKey: T[keyof T]): RealmObject<T> & T;
+  objectForPrimaryKey<T extends RealmObject>(type: Constructor<T>, primaryKey: T[keyof T]): T;
+  objectForPrimaryKey<T extends RealmObject>(type: string | Constructor<T>, primaryKey: string[]): RealmObject<T> & T {
     // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1240-L1258
-    const { objectSchema, properties, createObjectWrapper } = this.classes.getHelpers<T>(type);
-    if (objectSchema.primaryKey === "") {
+    const { objectSchema, properties, createObjectWrapper } = this.classes.getHelpers(type);
+    if (!objectSchema.primaryKey) {
       throw new Error(`Expected a primary key on "${objectSchema.name}"`);
     }
     const table = binding.Helpers.getTable(this[INTERNAL], objectSchema.tableKey);
@@ -311,9 +308,9 @@ export class Realm {
     }
   }
 
-  objects<T = DefaultObject>(type: string): Results<T>;
-  objects<T = DefaultObject>(type: RealmObjectConstructor<T>): Results<T>;
-  objects<T = DefaultObject>(type: string | RealmObjectConstructor<T>): Results<T> {
+  objects<T extends RealmObject = RealmObject>(type: string): Results<T>;
+  objects<T extends RealmObject = RealmObject>(type: Constructor<T>): Results<T>;
+  objects<T extends RealmObject = RealmObject>(type: string | Constructor<T>): Results<T> {
     const { objectSchema, createObjectWrapper } = this.classes.getHelpers(type);
     if (objectSchema.tableType === binding.TableType.Embedded) {
       throw new Error("You cannot query an embedded object.");
@@ -387,10 +384,11 @@ type CollectionType<T> = Collection<T>;
 type AppType = App;
 type UpdateModeType = UpdateMode;
 type ObjectSchemaType = ObjectSchema;
+type BSONType = typeof BSON;
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Realm {
-  export type Object<T> = RealmObject<T>;
+  export type Object<T = DefaultObject> = RealmObject<T>;
   export type Results<T> = ResultsType<T>;
   export type List<T> = ListType<T>;
   export type Collection<T> = CollectionType<T>;
@@ -399,8 +397,8 @@ export namespace Realm {
   export type ObjectSchema = ObjectSchemaType;
   // eslint-disable-next-line @typescript-eslint/no-namespace
   export namespace BSON {
-    export type ObjectId = bson.ObjectId;
-    export type Decimal128 = bson.Decimal128;
-    export type UUID = bson.UUID;
+    export type ObjectId = InstanceType<BSONType["ObjectId"]>;
+    export type Decimal128 = InstanceType<BSONType["Decimal128"]>;
+    export type UUID = InstanceType<BSONType["UUID"]>;
   }
 }
