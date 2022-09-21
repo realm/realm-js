@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { types, NodePath, PluginObj } from "@babel/core";
+import { types, NodePath, PluginObj, PluginPass } from "@babel/core";
 
 import { isPropertyImportedFromRealm, isImportedFromRealm } from "./import-checking";
 
@@ -371,12 +371,26 @@ function isClassExtendingRealmObject(path: NodePath<types.ClassDeclaration>) {
   return false;
 }
 
-export default function (): PluginObj<unknown> {
+// Thanks to https://twitter.com/NicoloRibaudo/status/1572482164230348800
+function isTypescriptFile(filename: string | undefined) {
+  if (!filename) return false;
+
+  const extension = filename.split(".").pop();
+  return extension && ["ts", "cts", "mts", "tsx"].includes(extension);
+}
+
+export default function (): PluginObj<PluginPass> {
   return {
     visitor: {
       ClassDeclaration(path) {
         if (isClassExtendingRealmObject(path)) {
-          visitRealmClass(path);
+          if (!isTypescriptFile(this.filename)) {
+            console.warn(
+              `@realm/babel-plugin can only be used with Typescript source files. Ignoring ${this.filename}`,
+            );
+          } else {
+            visitRealmClass(path);
+          }
         }
       },
     },
