@@ -18,6 +18,10 @@
 
 import { Object as RealmObject } from "../Object";
 
+export type DefaultObject = Record<string, unknown>;
+export type Constructor<T = unknown> = { new (...args: unknown[]): T };
+export type RealmObjectConstructor<T = unknown> = Constructor<RealmObject<T> & T>;
+
 export type PropertyTypeName =
   | "bool"
   | "int"
@@ -41,7 +45,7 @@ export type PropertyType = string | PropertyTypeName;
 /**
  * The canonical representation of the schema of a specific type of object.
  */
-export type CanonicalObjectSchema<T = { [name: string]: unknown }> = {
+export type CanonicalObjectSchema<T = DefaultObject> = {
   name: string;
   properties: Record<keyof T, CanonicalObjectSchemaProperty>;
   primaryKey?: string;
@@ -90,7 +94,3 @@ export type ObjectSchemaProperty = {
   indexed?: boolean;
   mapTo?: string;
 };
-
-export type DefaultObject = Record<string, unknown>;
-export type Constructor<T = unknown> = { new (...args: unknown[]): T };
-export type RealmObjectConstructor<T = unknown> = Constructor<RealmObject<T> & T>;

@@ -15,10 +15,16 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import { ObjectId, Decimal128, UUID } from "bson";
 
-export const BSON = {
-  ObjectId,
-  Decimal128,
-  UUID,
-};
+// export { ObjectId, Decimal128, UUID } from "bson";
+import * as bson from "bson";
+
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace BSON {
+  export const ObjectId = bson.ObjectId;
+  export type ObjectId = bson.ObjectId;
+  export const Decimal128 = bson.Decimal128;
+  export type Decimal128 = bson.Decimal128;
+  export const UUID = bson.UUID;
+  export type UUID = bson.UUID;
+}
