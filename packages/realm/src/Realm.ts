@@ -202,6 +202,7 @@ export class Realm {
 
   // TODO: Support the third argument (update mode)
   // TODO: Support embedded objects and asymmetric sync
+  // TODO: Rollback by deleting the object if any property assignment fails (fixing #2638)
   create<T = DefaultObject>(type: string, values: RealmInsertionModel<T>): RealmObject<T> & T;
   create<T = DefaultObject>(type: RealmObjectConstructor<T>, values: RealmInsertionModel<T>): RealmObject<T> & T;
   create<T = DefaultObject>(
