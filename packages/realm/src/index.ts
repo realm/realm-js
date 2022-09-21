@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export * from "./Realm";
-export * from "./Configuration";
+export { UpdateMode } from "./Realm";
+export { Configuration } from "./Configuration";
 export { App } from "./App";
 export { Results } from "./Results";
 export { Object } from "./Object";
@@ -26,8 +26,10 @@ export { Dictionary } from "./Dictionary";
 export { Set } from "./Set";
 export type { ObjectChangeSet, ObjectChangeCallback } from "./ObjectListeners";
 export type { CollectionChangeSet, CollectionChangeCallback } from "./OrderedCollection";
+
 export { BSON } from "./bson";
 
 // Exporting default for backwards compatibility
 import { Realm } from "./Realm";
 export default Realm;
+export { Realm };
