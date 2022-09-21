@@ -24,11 +24,17 @@ export type TransformOptions = {
   source: string;
   extraPresets?: babel.PluginItem[];
   extraPlugins?: babel.PluginItem[];
+  filename?: string;
 };
 
-export function transform({ source, extraPresets = [], extraPlugins = [] }: TransformOptions): babel.BabelFileResult {
+export function transform({
+  source,
+  extraPresets = [],
+  extraPlugins = [],
+  filename = "test.ts",
+}: TransformOptions): babel.BabelFileResult {
   const result = babel.transform(source, {
-    filename: "test.ts",
+    filename,
     presets: [
       // TODO: Consider moving this to a @realm/babel-preset
       [
