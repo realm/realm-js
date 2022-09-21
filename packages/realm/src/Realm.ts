@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import * as binding from "./binding";
-import { BSON } from "./bson";
+import { BSON as bson } from "./bson";
 
 import { INTERNAL, getInternal } from "./internal";
 import {
@@ -27,6 +27,7 @@ import {
   DefaultObject,
   RealmObjectConstructor,
   normalizeRealmSchema,
+  ObjectSchema,
 } from "./schema";
 import { fs } from "./platform";
 
@@ -38,6 +39,13 @@ import { ClassMap } from "./ClassMap";
 import { List } from "./List";
 import { App } from "./App";
 import { validateConfiguration } from "./validation/configuration";
+import { Collection } from "./Collection";
+
+export enum UpdateMode {
+  Never = "never",
+  Modified = "modified",
+  All = "all",
+}
 
 // Using a set of weak refs to avoid prevention of garbage collection
 const RETURNED_REALMS = new Set<WeakRef<binding.Realm>>();
@@ -46,8 +54,9 @@ export class Realm {
   public static Object = RealmObject;
   public static Results = Results;
   public static List = List;
-  public static BSON = BSON;
   public static App = App;
+  public static UpdateMode = UpdateMode;
+  public static BSON = bson;
 
   public static get defaultPath() {
     return Realm.normalizePath("default.realm");
@@ -203,16 +212,24 @@ export class Realm {
   // TODO: Support the third argument (update mode)
   // TODO: Support embedded objects and asymmetric sync
   // TODO: Rollback by deleting the object if any property assignment fails (fixing #2638)
-  create<T = DefaultObject>(type: string, values: RealmInsertionModel<T>): RealmObject<T> & T;
-  create<T = DefaultObject>(type: RealmObjectConstructor<T>, values: RealmInsertionModel<T>): RealmObject<T> & T;
+  create<T = DefaultObject>(type: string, values: RealmInsertionModel<T>, mode?: UpdateMode.Never): RealmObject<T> & T;
   create<T = DefaultObject>(
-    type: string | RealmObjectConstructor<T>,
-    values: Record<string, unknown>,
-  ): RealmObject<T> & T {
+    type: string,
+    values: Partial<T> | Partial<RealmInsertionModel<T>>,
+    mode: UpdateMode.All | UpdateMode.Modified,
+  ): RealmObject<T> & T;
+  create<T extends RealmObject>(
+    type: RealmObjectConstructor<T>,
+    values: RealmInsertionModel<T>,
+    mode?: UpdateMode.Never,
+  ): T;
+  create<T extends RealmObject>(
+    type: RealmObjectConstructor<T>,
+    values: Partial<T> | Partial<RealmInsertionModel<T>>,
+    mode: UpdateMode.All | UpdateMode.Modified,
+  ): T;
+  create(type: string | RealmObjectConstructor, values: Record<string, unknown>) {
     // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1260-L1321
-    if (arguments.length > 2) {
-      throw new Error("Creating objects with update mode specified is not yet supported");
-    }
     if (values instanceof RealmObject && !getInternal(values)) {
       throw new Error("Cannot create an object from a detached Realm.Object instance");
     }
@@ -249,7 +266,7 @@ export class Realm {
       }
     }
 
-    return result as unknown as RealmObject<T> & T;
+    return result;
   }
 
   delete<T>(subject: (RealmObject<T> & T) | RealmObject[] | List<T> | Results<T>): void {
@@ -358,5 +375,32 @@ export class Realm {
 
   _updateSchema(): unknown {
     throw new Error("Not yet implemented");
+  }
+}
+
+// Declare the Realm namespace for backwards compatibility
+
+// We need this alias because of https://github.com/Swatinem/rollup-plugin-dts/issues/223
+type ResultsType<T> = Results<T>;
+type ListType<T> = List<T>;
+type CollectionType<T> = Collection<T>;
+type AppType = App;
+type UpdateModeType = UpdateMode;
+type ObjectSchemaType = ObjectSchema;
+
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace Realm {
+  export type Object<T> = RealmObject<T>;
+  export type Results<T> = ResultsType<T>;
+  export type List<T> = ListType<T>;
+  export type Collection<T> = CollectionType<T>;
+  export type App = AppType;
+  export type UpdateMode = UpdateModeType;
+  export type ObjectSchema = ObjectSchemaType;
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  export namespace BSON {
+    export type ObjectId = bson.ObjectId;
+    export type Decimal128 = bson.Decimal128;
+    export type UUID = bson.UUID;
   }
 }
