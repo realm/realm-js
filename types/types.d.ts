@@ -27,11 +27,13 @@ declare namespace Realm {
     type Double = number;
     type Decimal128 = Realm.BSON.Decimal128;
     type ObjectId = Realm.BSON.ObjectId;
+    type UUID = Realm.BSON.UUID;
     type Date = JSDate;
     type Data = ArrayBuffer;
     type List<T> = Realm.List<T>;
     type Set<T> = Realm.Set<T>;
     type Dictionary<T> = Realm.Dictionary<T>;
     type Mixed = unknown;
+    type LinkingObjects<ObjectTypeT, LinkingPropertyName> = Realm.Results<ObjectTypeT>;
   }
 }
