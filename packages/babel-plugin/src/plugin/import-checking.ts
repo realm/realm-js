@@ -38,9 +38,7 @@ export function isImportedFromRealm(path: NodePath<types.Node>): boolean {
     if (binding && binding.path.parentPath && binding.path.parentPath.isImportDeclaration()) {
       return (
         binding.path.parentPath.get("source").isStringLiteral({ value: "realm" }) ||
-        binding.path.parentPath.get("source").isStringLiteral({ value: "@realm/react" }) ||
-        // TODO merge
-        binding.path.parentPath.get("source").isStringLiteral({ value: "@realm/babel-plugin-decorators" })
+        binding.path.parentPath.get("source").isStringLiteral({ value: "@realm/react" })
       );
     }
   }
