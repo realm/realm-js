@@ -4,5 +4,5 @@
     "types": ["node-fetch"],
     "lib": ["ES2015"]
   },
-  "exclude": ["../react-native/*", "../tests/*"]
+  "exclude": ["../react-native/*", "../tests/*", "../index.test.ts"]
 }
