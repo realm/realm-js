@@ -16,14 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { unlinkSync, rmSync, readdirSync } from "node:fs";
+import { unlinkSync, rmSync, readdirSync, existsSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
 
 import { inject, Dirent } from "../platform/file-system";
 
 inject({
   removeFile(path: string) {
-    unlinkSync(path);
+    if (existsSync(path)) {
+      unlinkSync(path);
+    }
   },
   removeDirectory(path: string) {
     rmSync(path, { recursive: true, force: true });
