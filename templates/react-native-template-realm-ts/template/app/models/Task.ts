@@ -6,6 +6,7 @@ export class Task extends Realm.Object {
   isComplete!: Realm.Types.Bool;
   createdAt!: Date;
   userId!: string;
+  x!: HTMLElement;
 
   static generate(description: string, userId?: string) {
     return {
