@@ -25,11 +25,32 @@ declare namespace Realm {
     type Int = number;
     type Float = number;
     type Double = number;
-    type Decimal128 = Realm.BSON.Decimal128;
-    type ObjectId = Realm.BSON.ObjectId;
-    type UUID = Realm.BSON.UUID;
+
+    type Decimal128 = import("bson").Decimal128;
+    const Decimal128: {
+      new (): Decimal128;
+    };
+
+    type ObjectId = import("bson").ObjectId;
+    const ObjectId: {
+      new (): ObjectId;
+    };
+
+    type UUID = import("bson").UUID;
+    const UUID: {
+      new (): UUID;
+    };
+
     type Date = JSDate;
+    const Date: {
+      new (): Date;
+    };
+
     type Data = ArrayBuffer;
+    const Data: {
+      new (): Data;
+    };
+
     type List<T> = Realm.List<T>;
     type Set<T> = Realm.Set<T>;
     type Dictionary<T> = Realm.Dictionary<T>;
