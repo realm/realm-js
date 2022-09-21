@@ -268,8 +268,9 @@ The following instructions assume you are using [Debian GNU/Linux](https://www.d
 First you need to have your build environment set up:
 
 ```sh
-apt install build-essential cmake git openssl-dev
+apt install build-essential cmake git libssl-dev curl
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+source $HOME/.bashrc
 nvm install 16 # you can use any supported node version
 ```
 
@@ -280,14 +281,15 @@ export REALM_USE_SYSTEM_OPENSSL=1
 git clone https://github.com/realm/realm-js
 cd realm-js
 git submodule update —-init —-recursive
-npm install
+npm install --ignore-scripts
+npx cmake-js build
 ```
 
 Finally, you can use Realm JS in your project `MyProject`:
 
 ```sh
 cd MyProject
-npm init -y  # ignore it you already have initialized your project
+npm init -y  # skip this if you've already initialised your project
 npm install path/to/realm-js
 ```
 
