@@ -438,6 +438,7 @@ classes:
       make_object_notifier: '(r: SharedRealm, o: Obj) -> SharedObjectNotifier'
       has_binding_context: '(r: Realm) -> bool'
       set_binding_context: '(r: SharedRealm, methods: BindingContext)'
+      get_or_create_object_with_primary_key: '(t: TableRef, pk: Mixed) -> std::pair<Obj, bool>'
 
   TableRef:
     needsDeref: true

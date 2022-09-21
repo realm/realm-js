@@ -44,6 +44,11 @@ struct Helpers {
         _impl::RealmCoordinator::register_notifier(notifier);
         return notifier;
     }
+    static std::pair<Obj, bool> get_or_create_object_with_primary_key(TableRef table, const Mixed& primary_key) {
+        bool did_create;
+        auto obj = table->create_object_with_primary_key(primary_key, &did_create);
+        return {obj, did_create};
+    };
 
     // Binding context is hard to wrap in part due to unique_ptr, and in part due to circular weak_ptr.
     // Also, some of the arguments passed are difficult to bind to, and unnecessary.
