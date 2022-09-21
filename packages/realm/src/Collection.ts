@@ -18,7 +18,7 @@
 
 import { Listeners, CallbackRegistrator } from "./Listeners";
 
-export class Collection<T, ChangeCallbackType = unknown> implements Iterable<T> {
+export class Collection<T = unknown, ChangeCallbackType = unknown> implements Iterable<T> {
   /** @internal */
   private listeners: Listeners<ChangeCallbackType>;
 

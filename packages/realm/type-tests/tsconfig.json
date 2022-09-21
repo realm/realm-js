@@ -4,7 +4,7 @@
     "noEmit": true,
     "noResolve": false,
     "lib": [
-      "ES2020",
+      "ES2022",
     ]
   },
   "exclude": [],

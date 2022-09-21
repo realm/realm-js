@@ -15,28 +15,11 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////
-//
-// Copyright 2022 Realm Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-////////////////////////////////////////////////////////////////////////////
 
-import { OrderedCollection } from "./OrderedCollection";
 import { Dictionary } from "./Dictionary";
 import { List } from "./List";
 import { Object as RealmObject } from "./Object";
+import { Collection } from "./Collection";
 
 type ExtractPropertyNamesOfType<T, PropType> = {
   [K in keyof T]: T[K] extends PropType ? K : never;
@@ -66,7 +49,7 @@ type OmittedRealmTypes<T> = Omit<
   | keyof RealmObject
   /* eslint-disable-next-line @typescript-eslint/ban-types */
   | ExtractPropertyNamesOfType<T, Function> // TODO: Figure out the use-case for this
-  | ExtractPropertyNamesOfType<T, OrderedCollection>
+  | ExtractPropertyNamesOfType<T, Collection>
   | ExtractPropertyNamesOfType<T, Dictionary>
 >;
 
