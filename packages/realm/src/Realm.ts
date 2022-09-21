@@ -41,6 +41,7 @@ import { List } from "./List";
 import { App } from "./App";
 import { validateConfiguration } from "./validation/configuration";
 import { Collection } from "./Collection";
+import { ClassHelpers } from "./ClassHelpers";
 
 export enum UpdateMode {
   Never = "never",
@@ -210,7 +211,7 @@ export class Realm {
     this[INTERNAL].close();
   }
 
-  // TODO: Support the third argument (update mode)
+  // TODO: Fully support update mode
   // TODO: Support embedded objects and asymmetric sync
   // TODO: Rollback by deleting the object if any property assignment fails (fixing #2638)
   create<T = DefaultObject>(type: string, values: RealmInsertionModel<T>, mode?: UpdateMode.Never): RealmObject<T> & T;
@@ -225,35 +226,25 @@ export class Realm {
     values: Partial<T> | Partial<RealmInsertionModel<T>>,
     mode: UpdateMode.All | UpdateMode.Modified,
   ): T;
-  create<T extends RealmObject>(type: string | Constructor<T>, values: Record<string, unknown>) {
+  create<T extends RealmObject>(
+    type: string | Constructor<T>,
+    values: DefaultObject,
+    mode: UpdateMode = UpdateMode.Never,
+  ) {
     // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1260-L1321
     if (values instanceof RealmObject && !getInternal(values)) {
       throw new Error("Cannot create an object from a detached Realm.Object instance");
     }
     this[INTERNAL].verifyOpen();
-    const {
-      objectSchema: { tableKey, primaryKey, persistedProperties },
-      properties,
-      createObjectWrapper,
-    } = this.classes.getHelpers(type);
+    const helpers = this.classes.getHelpers(type);
 
     // Create the underlying object
-    const table = binding.Helpers.getTable(this[INTERNAL], tableKey);
-    let obj: binding.Obj;
-    if (primaryKey) {
-      const primaryKeyValue = values[primaryKey];
-      // TODO: Consider handling an undefined primary key value
-      const pk = properties.get(primaryKey).toBinding(primaryKeyValue);
-      obj = table.createObjectWithPrimaryKey(pk);
-    } else {
-      obj = table.createObject();
-    }
-
-    const result = createObjectWrapper(obj) as unknown as DefaultObject;
+    const obj = this.createObj(helpers, values, mode);
+    const result = helpers.createObjectWrapper(obj) as unknown as DefaultObject;
 
     // Persist any values provided
     // TODO: Consider using the `converters` directly to improve performance
-    for (const property of persistedProperties) {
+    for (const property of helpers.objectSchema.persistedProperties) {
       if (property.isPrimary) {
         continue; // Skip setting this, as we already provided it on object creation
       }
@@ -264,6 +255,34 @@ export class Realm {
     }
 
     return result;
+  }
+
+  private createObj<T extends RealmObject>(
+    helpers: ClassHelpers<T>,
+    values: DefaultObject,
+    mode: UpdateMode,
+  ): binding.Obj {
+    const {
+      objectSchema: { name, tableKey, primaryKey },
+      properties,
+    } = helpers;
+
+    // Create the underlying object
+    const table = binding.Helpers.getTable(this[INTERNAL], tableKey);
+    if (primaryKey) {
+      const primaryKeyValue = values[primaryKey];
+      // TODO: Consider handling an undefined primary key value
+      const pk = properties.get(primaryKey).toBinding(primaryKeyValue);
+      const [obj, created] = binding.Helpers.getOrCreateObjectWithPrimaryKey(table, pk);
+      if (mode === UpdateMode.Never && !created) {
+        throw new Error(
+          `Attempting to create an object of type '${name}' with an existing primary key value '${primaryKeyValue}'.`,
+        );
+      }
+      return obj;
+    } else {
+      return table.createObject();
+    }
   }
 
   delete(subject: RealmObject | RealmObject[] | List | Results): void {
@@ -287,7 +306,7 @@ export class Realm {
 
   objectForPrimaryKey<T>(type: string, primaryKey: T[keyof T]): RealmObject<T> & T;
   objectForPrimaryKey<T extends RealmObject>(type: Constructor<T>, primaryKey: T[keyof T]): T;
-  objectForPrimaryKey<T extends RealmObject>(type: string | Constructor<T>, primaryKey: string[]): RealmObject<T> & T {
+  objectForPrimaryKey<T extends RealmObject>(type: string | Constructor<T>, primaryKey: string[]): T {
     // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1240-L1258
     const { objectSchema, properties, createObjectWrapper } = this.classes.getHelpers(type);
     if (!objectSchema.primaryKey) {
