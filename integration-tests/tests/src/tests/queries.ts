@@ -20,7 +20,26 @@ import Realm from "realm";
 
 import { IPerson, Person, PersonSchema } from "../schemas/person-and-dogs";
 import { IContact, Contact, ContactSchema } from "../schemas/contact";
-import { IPrimitive, Primitive, PrimitiveSchema } from "../schemas/primitive-types";
+interface IPrimitive {
+  s: string;
+  b: boolean;
+  i: number;
+  f: number;
+  d: number;
+  t: Date;
+}
+
+const PrimitiveSchema: Realm.ObjectSchema = {
+  name: "Primitive",
+  properties: {
+    s: "string",
+    b: "bool",
+    i: "int",
+    f: "float",
+    d: "double",
+    t: "date",
+  },
+};
 
 describe("Realm Query Language", () => {
   let realm: Realm;
@@ -82,11 +101,16 @@ describe("Realm Query Language", () => {
 
     // https://github.com/realm/realm-js/issues/4844
     it("emoiji and contains", () => {
+      const text = "unicorn 🦄 today";
       expect(primitives.length).equal(2);
       const unicorn1 = primitives.filtered("s CONTAINS 'unicorn 🦄 today'");
       const unicorn2 = primitives.filtered("s CONTAINS[c] 'unicorn 🦄 today'");
+      const unicorn3 = primitives.filtered("s CONTAINS $0", text);
+      const unicorn4 = primitives.filtered("s CONTAINS[c] $0", text);
       expect(unicorn1.length).equal(0);
       expect(unicorn2.length).equal(1);
+      expect(unicorn3.length).equal(0);
+      expect(unicorn4.length).equal(1);
     });
   });
 
