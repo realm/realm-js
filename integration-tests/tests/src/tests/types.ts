@@ -16,22 +16,27 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { expect } from "chai";
 import Realm from "realm";
 
 describe("Realm.Types namespace", () => {
   it("Realm.Types.Decimal128 can be constructed", () => {
     const instance = new Realm.Types.Decimal128();
+    expect(instance).to.be.instanceOf(Realm.BSON.Decimal128);
   });
 
-  it("Realm.Types.ObjectId can be constructed", () => {});
+  it("Realm.Types.ObjectId can be constructed", () => {
+    const instance = new Realm.Types.ObjectId();
+    expect(instance).to.be.instanceOf(Realm.BSON.ObjectId);
+  });
 
-  it("Realm.Types.Date can be constructed", () => {});
+  it("Realm.Types.Date can be constructed", () => {
+    const instance = new Realm.Types.Date();
+    expect(instance).to.be.instanceOf(Date);
+  });
 
-  it("Realm.Types.Data can be constructed", () => {});
-
-  it("Realm.Types.List can be constructed", () => {});
-
-  it("Realm.Types.Set can be constructed", () => {});
-
-  it("Realm.Types.Dictionary can be constructed", () => {});
+  it("Realm.Types.Data can be constructed", () => {
+    const instance = new Realm.Types.Data();
+    expect(instance).to.be.instanceOf(ArrayBuffer);
+  });
 });

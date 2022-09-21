@@ -36,3 +36,4 @@ import "./sync/flexible";
 import "./sync/asymmetric";
 import "./sync/sync-as-local";
 import "./transaction";
+import "./types";
