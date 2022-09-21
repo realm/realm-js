@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Realm, PropertyType, TableType } from "../binding";
+import { Realm, PropertyType, TableType, ColKey, TableKey } from "../binding";
 import { expect } from "chai";
 import { inspect } from "util";
 
@@ -27,6 +27,9 @@ import { transformPropertySchema, transformObjectSchema } from "../schema/from-b
 type BindingObjectSchema = Realm["schema"][0];
 type BindingProperty = Realm["schema"][0]["persistedProperties"][0];
 
+const columnKey = { value: 0n } as unknown as ColKey;
+const tableKey = { value: 0 } as unknown as TableKey;
+
 describe("schema-utils", () => {
   describe("transformPropertySchema", () => {
     const TESTS: [BindingProperty, CanonicalObjectSchemaProperty][] = [
@@ -34,7 +37,7 @@ describe("schema-utils", () => {
         {
           name: "prop",
           type: PropertyType.Int,
-          columnKey: { value: 0n },
+          columnKey,
           isIndexed: false,
           isPrimary: false,
           linkOriginPropertyName: "",
@@ -47,7 +50,7 @@ describe("schema-utils", () => {
         {
           name: "prop",
           type: PropertyType.Int | PropertyType.Nullable,
-          columnKey: { value: 0n },
+          columnKey,
           isIndexed: false,
           isPrimary: false,
           linkOriginPropertyName: "",
@@ -60,7 +63,7 @@ describe("schema-utils", () => {
         {
           name: "prop",
           type: PropertyType.String,
-          columnKey: { value: 0n },
+          columnKey,
           isIndexed: false,
           isPrimary: false,
           linkOriginPropertyName: "",
@@ -73,7 +76,7 @@ describe("schema-utils", () => {
         {
           name: "prop",
           type: PropertyType.String | PropertyType.Nullable,
-          columnKey: { value: 0n },
+          columnKey,
           isIndexed: false,
           isPrimary: false,
           linkOriginPropertyName: "",
@@ -101,7 +104,7 @@ describe("schema-utils", () => {
             {
               name: "name",
               type: PropertyType.String,
-              columnKey: { value: 0n },
+              columnKey,
               isIndexed: false,
               isPrimary: false,
               linkOriginPropertyName: "",
@@ -112,7 +115,7 @@ describe("schema-utils", () => {
               name: "friends",
               type: PropertyType.Object ^ PropertyType.Array,
               objectType: "Person",
-              columnKey: { value: 1n },
+              columnKey,
               isIndexed: false,
               isPrimary: false,
               linkOriginPropertyName: "",
@@ -122,9 +125,7 @@ describe("schema-utils", () => {
           computedProperties: [],
           primaryKey: "",
           alias: "",
-          tableKey: {
-            value: 0,
-          },
+          tableKey,
         },
         {
           name: "Person",
