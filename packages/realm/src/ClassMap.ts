@@ -110,13 +110,13 @@ export class ClassMap {
     );
   }
 
-  public get<T = unknown>(arg: string | RealmObject<T> | RealmObjectConstructor<T>): RealmObjectConstructor<T> {
+  public get<T extends Realm.Object>(arg: string | RealmObject | Constructor<T>): Constructor<T> {
     if (typeof arg === "string") {
       const constructor = this.mapping[arg];
       if (!constructor) {
         throw new Error(`Object schema named '${arg}' is missing from the schema`);
       }
-      return constructor as RealmObjectConstructor<T>;
+      return constructor as Constructor<T>;
     } else if (arg instanceof RealmObject) {
       return this.get(arg.constructor.name);
     } else {
@@ -124,7 +124,7 @@ export class ClassMap {
     }
   }
 
-  public getHelpers<T = unknown>(arg: string | RealmObject<T> | RealmObjectConstructor<T>) {
+  public getHelpers<T extends Realm.Object>(arg: string | RealmObject | Constructor<T>) {
     const constructor = this.get(arg);
     return getHelpers<T>(constructor as unknown as typeof RealmObject);
   }

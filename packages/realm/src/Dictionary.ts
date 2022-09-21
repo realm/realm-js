@@ -19,7 +19,13 @@
 import { Collection } from "./Collection";
 
 // TODO: Implement this
-type DictionaryChangeCallback = () => void;
+
+type DictionaryChangeSet = {
+  deletions: string[];
+  modifications: string[];
+  insertions: string[];
+};
+type DictionaryChangeCallback = (dictionary: Dictionary, changes: DictionaryChangeSet) => void;
 
 /**
  * TODO: Make this extends Collection<T> (once that doesn't have a nummeric index accessor)
