@@ -62,9 +62,8 @@ export function transformObjectSchema({
   persistedProperties,
   primaryKey,
 }: BindingObjectSchema): CanonicalObjectSchema {
-  return {
+  const result: CanonicalObjectSchema = {
     name,
-    primaryKey,
     properties: Object.fromEntries(
       [...computedProperties, ...persistedProperties].map((property) => [
         property.name,
@@ -72,6 +71,11 @@ export function transformObjectSchema({
       ]),
     ),
   };
+  // The primary key from the binding is an empty string when not set
+  if (primaryKey) {
+    result.primaryKey = primaryKey;
+  }
+  return result;
 }
 
 /**
