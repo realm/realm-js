@@ -125,7 +125,8 @@ jobs:
           ccache --show-config
 
       - name: Install dependencies
-        run: npm ci
+        # Ignoring scripts to prevent building if a prebuild is missing
+        run: npm ci --ignore-scripts
 
       # build the c++ library for standard targets
       - name: Build node
@@ -254,8 +255,13 @@ jobs:
         with:
           name: realm-js-prebuilds
 
-      - name: Install prebuilds
-        run: npm ci
+      - name: Install dependencies
+        # Ignoring scripts to prevent building if a prebuild is missing
+        run: npm ci --ignore-scripts
+
+      - name: Install prebuild
+        if: ${{ matrix.variant.environment == 'node' || matrix.variant.environment == 'electron' }}
+        run: npx prebuild-install --tag-prefix= -r napi
         env:
           npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
 
