@@ -41,5 +41,5 @@ sync_ts_app_code() {
 
 sync_ts_app_code "../../example" "../react-native-template-realm-ts/template"
 convert "../react-native-template-realm-ts/template" "../../react-native-template-realm-js/template"
-sync_ts_app_code "../react-native-template-realm-ts/template" "../expo-template-ts"
+sync_ts_app_code "../../example" "../expo-template-ts"
 convert "../expo-template-ts" "../expo-template-js"

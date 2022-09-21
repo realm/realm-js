@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@realm/react": "^0.3.1",
+    "@realm/babel-plugin": "^0.1.0",
     "expo": "^44.0.6",
     "expo-dev-client": "~0.8.4",
     "expo-splash-screen": "~0.14.2",
