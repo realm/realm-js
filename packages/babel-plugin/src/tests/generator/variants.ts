@@ -48,7 +48,7 @@ const TYPE_NAME_VARIANTS: Record<string, string[]> = {
   list: ["Realm.List", "Realm.Types.List", "Types.List", "List"],
   set: ["Realm.Set", "Realm.Types.Set", "Types.Set", "Set"],
   dictionary: ["Realm.Dictionary", "Realm.Types.Dictionary", "Types.Dictionary", "Dictionary"],
-  mixed: ["Realm.Mixed", "Mixed"],
+  mixed: ["Realm.Types.Mixed", "Types.Mixed", "Realm.Mixed", "Mixed"],
 };
 
 const DEFAULT_INFERABLE_TYPES = new Set<string>([
