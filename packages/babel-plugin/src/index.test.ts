@@ -401,7 +401,7 @@ describe("Babel plugin", () => {
     });
   });
 
-  it("handles a full scheme", () => {
+  it("handles a full schema", () => {
     const transformCode = transformProperty(`
       _id: Realm.BSON.ObjectId;
       @index
