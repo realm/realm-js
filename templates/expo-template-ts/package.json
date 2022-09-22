@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "@realm/react": "^0.3.1",
-    "@realm/babel-plugin": "^0.1.0",
     "expo": "^44.0.6",
     "expo-dev-client": "~0.8.4",
     "expo-splash-screen": "~0.14.2",
@@ -22,6 +21,8 @@
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
+    "@babel/plugin-proposal-decorators": "^7.19.0",
+    "@realm/babel-plugin": "^0.1.0",
     "@types/react": "~17.0.21",
     "@types/react-native": "~0.67.6",
     "typescript": "~4.3.5"
