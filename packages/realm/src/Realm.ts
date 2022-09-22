@@ -39,9 +39,10 @@ import { Configuration } from "./Configuration";
 import { ClassMap } from "./ClassMap";
 import { List } from "./List";
 import { App } from "./App";
-import { validateConfiguration } from "./validation/configuration";
+import { validateConfiguration, validateObjectSchema } from "./validation/configuration";
 import { Collection } from "./Collection";
 import { ClassHelpers } from "./ClassHelpers";
+import { assert } from "./assert";
 
 export enum UpdateMode {
   Never = "never",
@@ -115,6 +116,19 @@ export class Realm {
     return Realm.normalizePath(config.path);
   }
 
+  private static extractDefaults(schemas: CanonicalObjectSchema[]): Record<string, Record<string, unknown>> {
+    return Object.fromEntries(
+      schemas.map((schema) => {
+        const defaults = Object.fromEntries(
+          Object.entries(schema.properties).map(([name, property]) => {
+            return [name, property.default];
+          }),
+        );
+        return [schema.name, defaults];
+      }),
+    );
+  }
+
   /**
    * The Realms's representation in the binding.
    * @internal
@@ -128,12 +142,13 @@ export class Realm {
   constructor(arg: Configuration | string = {}) {
     const config = typeof arg === "string" ? { path: arg } : arg;
     validateConfiguration(config);
+    const normalizedSchema = config.schema && normalizeRealmSchema(config.schema);
 
     const path = Realm.determinePath(config);
     const internal = binding.Realm.getSharedRealm({
       path,
       fifoFilesFallbackPath: config.fifoFilesFallbackPath,
-      schema: config.schema ? toBindingSchema(normalizeRealmSchema(config.schema)) : undefined,
+      schema: normalizedSchema ? toBindingSchema(normalizedSchema) : undefined,
       inMemory: config.inMemory === true,
       schemaVersion: config.schema
         ? typeof config.schemaVersion === "number"
@@ -153,7 +168,19 @@ export class Realm {
       return binding.List.make(internal, obj, columnKey);
     }
 
-    this.classes = new ClassMap(this, internal.schema, resolveObjectLink, resolveList);
+    const classBasedSchemas = (config.schema || []).filter((s) => typeof s === "function") as Constructor[];
+    const constructors = Object.fromEntries(
+      classBasedSchemas.map((s) => {
+        assert.extends(s, RealmObject);
+        assert.object(s.schema, "schema static");
+        assert.string(s.schema.name, "name");
+        return [s.schema.name, s] as [string, RealmObjectConstructor];
+      }),
+    );
+
+    const defaults = Realm.extractDefaults(normalizedSchema || []);
+
+    this.classes = new ClassMap(this, internal.schema, constructors, defaults, resolveObjectLink, resolveList);
 
     Object.defineProperties(this, {
       classes: {
@@ -252,6 +279,11 @@ export class Realm {
       const propertyValue = values[property.name];
       if (typeof propertyValue !== "undefined" && propertyValue !== null) {
         result[property.name] = propertyValue;
+      } else {
+        const defaultValue = helpers.properties.get(property.name).default;
+        if (typeof defaultValue !== "undefined") {
+          result[property.name] = defaultValue;
+        }
       }
     }
 

@@ -20,7 +20,7 @@ import { Object as RealmObject } from "../Object";
 
 export type DefaultObject = Record<string, unknown>;
 export type Constructor<T = unknown> = { new (...args: unknown[]): T };
-export type RealmObjectConstructor<T = unknown> = Constructor<RealmObject<T> & T>;
+export type RealmObjectConstructor<T extends RealmObject = RealmObject> = Constructor<T>;
 
 export type PropertyTypeName =
   | "bool"
@@ -64,6 +64,7 @@ export type CanonicalObjectSchemaProperty = {
   mapTo: string; // TODO: Make this optional and leave it out when it equals the name
   objectType?: string;
   property?: string;
+  default?: unknown;
 };
 
 /**

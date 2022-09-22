@@ -31,7 +31,7 @@ describe("Class models", () => {
       class Person extends Realm.Object {}
       expect(() => {
         new Realm({ schema: [Person as any] });
-      }).throws("must have a 'schema' property");
+      }).throws("Expected 'schema static' to be an object, got undefined");
     });
 
     it("fails without a schema.properties static", () => {
@@ -40,7 +40,7 @@ describe("Class models", () => {
       }
       expect(() => {
         new Realm({ schema: [Person as any] });
-      }).throws("properties must be of type 'object'");
+      }).throws("Expected 'properties' to be an object, got undefined");
     });
 
     it("fails if it doesn't extend Realm.Object", () => {
@@ -111,7 +111,7 @@ describe("Class models", () => {
         expect(alice.name).equals("Alice");
         // Expect the first element to be the object we just added
         expect(persons.length).equals(1);
-        expect(persons[0]._objectId()).equals(alice._objectId());
+        expect(persons[0]._objectKey()).equals(alice._objectKey());
         expect(persons[0].name).equals("Alice");
         // Property value fallback to the default
         expect(persons[0].age).equals(32);
