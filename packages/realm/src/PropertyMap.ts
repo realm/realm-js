@@ -22,9 +22,10 @@ import { assert } from "./assert";
 
 import { getInternal } from "./internal";
 import { Object as RealmObject } from "./Object";
-import { DefaultObject } from "./schema";
 import { List } from "./List";
 import { ObjLink, PropertyType } from "./binding";
+
+type PropertyContext = binding.Realm["schema"][0]["persistedProperties"][0] & { default?: unknown };
 
 /** @internal */
 export type ObjectWrapCreator<T extends RealmObject = RealmObject> = (obj: binding.Obj) => T;
@@ -36,19 +37,19 @@ export type ObjectLinkResolver = (link: binding.ObjLink) => binding.Obj;
 export type ListResolver = (columnKey: binding.ColKey, obj: binding.Obj) => binding.List;
 
 type MappingOptions = {
-  type: binding.PropertyType;
   columnKey: binding.ColKey;
-  optional: boolean;
   createObjectWrapper: ObjectWrapCreator;
   resolveObjectLink: ObjectLinkResolver;
   resolveList: ListResolver;
-};
+  optional: boolean;
+} & binding.Property;
 
 type PropertyHelpers = {
-  toBinding: (value: unknown) => binding.MixedArg;
-  fromBinding: (value: unknown) => unknown;
-  get: (obj: binding.Obj) => unknown;
-  set: (obj: binding.Obj, value: unknown) => unknown;
+  toBinding(value: unknown): binding.MixedArg;
+  fromBinding(value: unknown): unknown;
+  get(obj: binding.Obj): unknown;
+  set(obj: binding.Obj, value: unknown): unknown;
+  default: unknown;
 };
 
 function defaultHelpers({ columnKey }: MappingOptions): PropertyHelpers {
@@ -65,6 +66,7 @@ function defaultHelpers({ columnKey }: MappingOptions): PropertyHelpers {
     set(this: PropertyHelpers, obj: binding.Obj, value: unknown) {
       obj.setAny(columnKey, value === null ? null : this.toBinding(value));
     },
+    default: undefined,
   };
 }
 
@@ -218,8 +220,17 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: MappingOptions) => P
       */
     };
   },
-  [binding.PropertyType.LinkingObjects]() {
-    throw new Error("Not yet supported");
+  [binding.PropertyType.LinkingObjects]({ linkOriginPropertyName, objectType }) {
+    return {
+      get(obj) {
+        throw new Error("Get of linking objects are not yet supported");
+      },
+      set() {
+        return new Error(
+          `Cannot assign to linking objects, update the ${objectType}'s '${linkOriginPropertyName}' property instead`,
+        );
+      },
+    };
   },
   [binding.PropertyType.Mixed]({ resolveObjectLink, createObjectWrapper }) {
     return {
@@ -353,21 +364,20 @@ function getHelpers(type: binding.PropertyType, options: MappingOptions): Proper
     toBinding: result.toBinding.bind(result),
     get: result.get.bind(result),
     set: result.set.bind(result),
+    default: result.default,
   };
 }
 
 // TODO: Support converting all types
-function createHelpers<T>(
-  property: binding.Realm["schema"][0]["persistedProperties"][0],
+function createHelpers(
+  property: PropertyContext,
   createObjectWrapper: ObjectWrapCreator,
   resolveObjectLink: ObjectLinkResolver,
   resolveList: ListResolver,
 ): PropertyHelpers {
-  const { type, columnKey } = property;
   const mappingOptions: MappingOptions = {
-    type,
-    columnKey,
-    optional: (type & PropertyType.Nullable) > 0,
+    ...property,
+    optional: !!(property.type & PropertyType.Nullable),
     createObjectWrapper,
     resolveObjectLink,
     resolveList,
@@ -382,7 +392,7 @@ function createHelpers<T>(
 }
 
 /** @internal */
-export class PropertyMap<T = DefaultObject> {
+export class PropertyMap {
   private mapping: Record<string, PropertyHelpers>;
   private nameByColumnKey: Map<binding.ColKey, string>;
 
@@ -394,22 +404,19 @@ export class PropertyMap<T = DefaultObject> {
    */
   constructor(
     objectSchema: binding.Realm["schema"][0],
+    defaults: Record<string, unknown>,
     createObjectWrapper: ObjectWrapCreator,
     resolveObjectLink: ObjectLinkResolver,
     resolveList: ListResolver,
   ) {
-    if (objectSchema.computedProperties.length > 0) {
-      throw new Error("Computed properties are not yet supported");
-    }
+    const allProperties = [...objectSchema.persistedProperties, ...objectSchema.computedProperties];
     this.mapping = Object.fromEntries(
-      objectSchema.persistedProperties.map((p) => {
-        const helpers = createHelpers(p, createObjectWrapper, resolveObjectLink, resolveList);
-        // Binding the methods, making the object spreadable
-        helpers.toBinding = helpers.toBinding.bind(helpers);
-        helpers.fromBinding = helpers.fromBinding.bind(helpers);
-        helpers.get = helpers.get.bind(helpers);
-        helpers.set = helpers.set.bind(helpers);
-        return [p.name, helpers];
+      allProperties.map((property) => {
+        const helpers = createHelpers(property, createObjectWrapper, resolveObjectLink, resolveList);
+        // Allow users to override the default value of properties
+        const defaultValue = defaults[property.name];
+        helpers.default = typeof defaultValue !== "undefined" ? defaultValue : helpers.default;
+        return [property.name, helpers];
       }),
     );
     this.nameByColumnKey = new Map(objectSchema.persistedProperties.map((p) => [p.columnKey, p.publicName || p.name]));

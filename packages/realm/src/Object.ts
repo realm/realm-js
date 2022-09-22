@@ -21,9 +21,10 @@ import * as binding from "./binding";
 import { INTERNAL, getInternal } from "./internal";
 import { Realm } from "./Realm";
 import { Results } from "./Results";
-import { CanonicalObjectSchema, Constructor, DefaultObject } from "./schema";
+import { CanonicalObjectSchema, Constructor, DefaultObject, RealmObjectConstructor } from "./schema";
 import { ObjectChangeCallback, ObjectListeners } from "./ObjectListeners";
 import { INTERNAL_HELPERS, ClassHelpers } from "./ClassHelpers";
+import { RealmInsertionModel } from "./InsertionModel";
 
 const INTERNAL_LISTENERS = Symbol("Realm.Object#listeners");
 const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true, writable: true };
@@ -49,14 +50,7 @@ class RealmObject<T = DefaultObject> {
    */
   public static [INTERNAL_HELPERS]: ClassHelpers;
 
-  /**
-   * Create a `RealmObject` wrapping an `Obj` from the binding.
-   * @internal
-   * @param realm The Realm managing the object.
-   * @param constructor The constructor of the object.
-   * @param internal The internal Obj from the binding.
-   */
-  public constructor(realm: Realm, constructor: Constructor, internal: binding.Obj) {
+  private createWrapper<T>(realm: Realm, constructor: Constructor, internal: binding.Obj) {
     const result = Object.create(constructor.prototype);
     Object.defineProperties(result, {
       realm: {
@@ -83,6 +77,27 @@ class RealmObject<T = DefaultObject> {
     // return result;
   }
 
+  private createObject(realm: Realm, values: RealmInsertionModel<T>): Realm.Object<T> {
+    return realm.create(this.constructor as RealmObjectConstructor, values) as Realm.Object<T>;
+  }
+
+  /**
+   * Create a `RealmObject` wrapping an `Obj` from the binding.
+   * @internal
+   * @param realm The Realm managing the object.
+   * @param constructor The constructor of the object.
+   * @param internal The internal Obj from the binding.
+   */
+  public constructor(realm: Realm, constructor: Constructor, internal: binding.Obj);
+  public constructor(realm: Realm, values: RealmInsertionModel<T>);
+  public constructor(realm: Realm, arg1: Constructor | RealmInsertionModel<T>, arg2?: binding.Obj) {
+    if (arg2) {
+      return this.createWrapper(realm, arg1 as Constructor, arg2);
+    } else {
+      return this.createObject(realm, arg1 as RealmInsertionModel<T>);
+    }
+  }
+
   /**
    * The Realm managing the object.
    */
@@ -98,7 +113,7 @@ class RealmObject<T = DefaultObject> {
    * @internal
    * Wrapper for the object notifier.
    */
-  private readonly [INTERNAL_LISTENERS]!: ObjectListeners<T>;
+  private readonly [INTERNAL_LISTENERS]!: ObjectListeners<this>;
 
   // TODO: Find a way to bind this in
   keys(): string[] {
@@ -133,17 +148,16 @@ class RealmObject<T = DefaultObject> {
   }
 
   /**
-   * @internal
-   * The ObjKey of the internal Obj.
+   * A string uniquely identifying the object across all objects of the same type.
    */
   _objectKey(): string {
     return this[INTERNAL].key.toString();
   }
 
-  addListener(callback: ObjectChangeCallback<T>): void {
+  addListener(callback: ObjectChangeCallback<this>): void {
     this[INTERNAL_LISTENERS].addListener(callback);
   }
-  removeListener(callback: ObjectChangeCallback<T>): void {
+  removeListener(callback: ObjectChangeCallback<this>): void {
     this[INTERNAL_LISTENERS].removeListener(callback);
   }
   removeAllListeners(): void {
@@ -153,5 +167,8 @@ class RealmObject<T = DefaultObject> {
     throw new Error("Not yet implemented");
   }
 }
+
+//  We like to refer to this as "Realm.Object"
+Object.defineProperty(RealmObject, "name", { value: "Realm.Object" });
 
 export { RealmObject as Object };
