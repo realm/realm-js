@@ -26,7 +26,7 @@ import type { Object as RealmObject } from "./Object";
 import type { PropertyMap } from "./PropertyMap";
 
 export type ObjectChangeSet<T> = { deleted: boolean; changedProperties: (keyof T)[] };
-export type ObjectChangeCallback<T> = (object: RealmObject<T> & T, changes: ObjectChangeSet<T>) => void;
+export type ObjectChangeCallback<T> = (object: T, changes: ObjectChangeSet<T>) => void;
 
 /** @internal */
 export class ObjectListeners<T> {
@@ -39,7 +39,7 @@ export class ObjectListeners<T> {
    */
   private [INTERNAL]!: binding.ObjectNotifier | null;
 
-  private properties: PropertyMap<T>;
+  private properties: PropertyMap;
 
   private listeners = new Listeners<ObjectChangeCallback<T>>((callback) => {
     const token = this.notifier.addCallback((changes) => {

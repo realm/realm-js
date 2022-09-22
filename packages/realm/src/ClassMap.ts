@@ -24,6 +24,7 @@ import { Object as RealmObject } from "./Object";
 import { Constructor, DefaultObject, RealmObjectConstructor } from "./schema";
 import { getInternal } from "./internal";
 import { getHelpers, setHelpers } from "./ClassHelpers";
+import { assert } from "./assert";
 
 function createNamedConstructor<T extends Constructor>(name: string): T {
   const obj = {
@@ -37,12 +38,18 @@ function createNamedConstructor<T extends Constructor>(name: string): T {
 function createClass<T extends RealmObjectConstructor = RealmObjectConstructor>(
   schema: binding.Realm["schema"][0],
   properties: PropertyMap,
+  constructor: Constructor | undefined,
 ): T {
   const result = createNamedConstructor<T>(schema.name);
   // Make the new constructor extend RealmObject
   // TODO: Use the end-users constructor, instead of `RealmObject` if provided
-  Object.setPrototypeOf(result, RealmObject);
-  Object.setPrototypeOf(result.prototype, RealmObject.prototype);
+  if (constructor) {
+    Object.setPrototypeOf(result, constructor);
+    Object.setPrototypeOf(result.prototype, constructor.prototype);
+  } else {
+    Object.setPrototypeOf(result, RealmObject);
+    Object.setPrototypeOf(result.prototype, RealmObject.prototype);
+  }
   // TODO: Support computed properties
   if (schema.computedProperties.length > 1) {
     throw new Error("computedProperties are not yet supported!");
@@ -94,16 +101,28 @@ export class ClassMap {
   constructor(
     realm: Realm,
     realmSchema: binding.Realm["schema"],
+    constructors: Record<string, RealmObjectConstructor>,
+    defaults: Record<string, Record<string, unknown> | undefined>,
     resolveObjectLink: ObjectLinkResolver,
     resolveList: ListResolver,
   ) {
     this.mapping = Object.fromEntries(
       realmSchema.map((objectSchema) => {
         function createObjectWrapper<T = DefaultObject>(obj: binding.Obj) {
-          return new RealmObject<T>(realm, constructor, obj) as RealmObject<T> & T;
+          return new RealmObject<T>(realm, constructor, obj);
         }
-        const properties = new PropertyMap(objectSchema, createObjectWrapper, resolveObjectLink, resolveList);
-        const constructor = createClass(objectSchema, properties) as RealmObjectConstructor;
+        const properties = new PropertyMap(
+          objectSchema,
+          defaults[objectSchema.name] || {},
+          createObjectWrapper,
+          resolveObjectLink,
+          resolveList,
+        );
+        const constructor = createClass(
+          objectSchema,
+          properties,
+          constructors[objectSchema.name],
+        ) as RealmObjectConstructor;
         setHelpers(constructor as typeof RealmObject, { objectSchema, properties, createObjectWrapper });
         return [objectSchema.name, constructor];
       }),
@@ -119,8 +138,14 @@ export class ClassMap {
       return constructor as Constructor<T>;
     } else if (arg instanceof RealmObject) {
       return this.get(arg.constructor.name);
+    } else if (typeof arg === "function") {
+      assert.extends(arg, RealmObject);
+      assert.object(arg.schema, "schema static");
+      assert.string(arg.schema.name, "name");
+      return this.get(arg.schema.name);
+      // return this.get(arg.name);
     } else {
-      throw new Error("Not yet implemented");
+      throw new Error("Expected an object schema name, object instance or class");
     }
   }
 
