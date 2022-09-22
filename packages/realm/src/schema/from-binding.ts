@@ -63,6 +63,7 @@ export function transformObjectSchema({
   primaryKey,
 }: BindingObjectSchema): CanonicalObjectSchema {
   const result: CanonicalObjectSchema = {
+    constructor: undefined,
     name,
     properties: Object.fromEntries(
       [...computedProperties, ...persistedProperties].map((property) => [
