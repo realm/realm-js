@@ -53,3 +53,5 @@ export class Task extends Realm.Object {
 </td>
 </tr>
 </table>
+
+npm start -- --reset-cache
