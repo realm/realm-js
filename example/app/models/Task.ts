@@ -10,6 +10,8 @@ export class Task extends Realm.Object {
   createdAt!: Date;
   userId!: string;
 
+  static primaryKey = '_id';
+
   static generate(description: string, userId?: string) {
     return {
       _id: new Realm.BSON.ObjectId(),

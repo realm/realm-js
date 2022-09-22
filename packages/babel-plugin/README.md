@@ -43,6 +43,8 @@ export class Task extends Realm.Object {
   description!: string;
   @index
   isComplete = false;
+
+  static primaryKey = "_id";
 }
 ```
 
