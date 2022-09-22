@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { assert } from "../assert";
 import { TYPE_MAPPINGS } from "./to-binding";
 import {
   CanonicalObjectSchema,
@@ -25,6 +26,7 @@ import {
   PropertyTypeName,
   RealmObjectConstructor,
 } from "./types";
+import { Object as RealmObject } from "../Object";
 
 export const PRIMITIVE_TYPES = new Set<PropertyTypeName>([
   "bool",
@@ -65,27 +67,27 @@ function removeUndefinedValues<T extends Record<string, unknown>>(obj: T): T {
   return Object.fromEntries(Object.entries(obj).filter(([, v]) => typeof v !== "undefined")) as T;
 }
 
-export function normalizeRealmSchema(
-  schema: (RealmObjectConstructor<unknown> | ObjectSchema)[],
-): CanonicalObjectSchema[] {
+export function normalizeRealmSchema(schema: (RealmObjectConstructor | ObjectSchema)[]): CanonicalObjectSchema[] {
   return schema.map(normalizeObjectSchema);
 }
 
-export function normalizeObjectSchema(schema: RealmObjectConstructor<unknown> | ObjectSchema): CanonicalObjectSchema {
-  if (typeof schema === "function") {
-    throw new Error("Not yet implemented");
+export function normalizeObjectSchema(arg: RealmObjectConstructor | ObjectSchema): CanonicalObjectSchema {
+  if (typeof arg === "function") {
+    assert.extends(arg, RealmObject);
+    assert.object(arg.schema, "schema static");
+    return normalizeObjectSchema(arg.schema as ObjectSchema);
   } else {
     return {
-      name: schema.name,
-      primaryKey: schema.primaryKey,
+      name: arg.name,
+      primaryKey: arg.primaryKey,
       properties: Object.fromEntries(
-        Object.entries(schema.properties).map(([name, property]) => {
+        Object.entries(arg.properties).map(([name, property]) => {
           const canonicalPropertySchema = normalizePropertySchema(name, property);
           // A primary key is always indexed
-          if (name === schema.primaryKey) {
+          if (name === arg.primaryKey) {
             canonicalPropertySchema.indexed = true;
           }
-          validateCanonicalPropertySchema(schema.name, canonicalPropertySchema);
+          validateCanonicalPropertySchema(arg.name, canonicalPropertySchema);
           return [name, canonicalPropertySchema];
         }),
       ),
