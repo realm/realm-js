@@ -336,6 +336,26 @@ declare namespace Realm {
          * @returns string
          */
         getPropertyType(propertyName: string): string;
+
+        /**
+         * Optionally specify the name of the schema when using @realm/babel-plugin
+         */
+         static name?: string;
+
+         /**
+          * Optionally specify the primary key of the schema when using @realm/babel-plugin
+          */
+         static primaryKey?: string;
+
+         /**
+          * Optionally specify that the schema is an embedded schema when using @realm/babel-plugin
+          */
+         static embedded?: boolean;
+
+         /**
+          * Optionally specify that the schema should use asymmetric sync when using @realm/babel-plugin
+          */
+         static asymmetric?: boolean;
     }
 
     /**
