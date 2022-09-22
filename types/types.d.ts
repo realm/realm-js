@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-type JSDate = Date;
+type DateType = Date;
 
 declare namespace Realm {
   namespace Types {
@@ -41,7 +41,7 @@ declare namespace Realm {
       new (): UUID;
     };
 
-    type Date = JSDate;
+    type Date = DateType;
     const Date: {
       new (): Date;
     };
