@@ -65,8 +65,12 @@ export function transformObjectSchema(schema: CanonicalObjectSchema): BindingObj
     });
   const result: BindingObjectSchema = {
     name: schema.name,
-    persistedProperties: properties.filter((p) => p.type !== BindingPropertyType.LinkingObjects),
-    computedProperties: properties.filter((p) => p.type === BindingPropertyType.LinkingObjects),
+    persistedProperties: properties.filter(
+      (p) => (p.type & ~BindingPropertyType.Flags) !== BindingPropertyType.LinkingObjects,
+    ),
+    computedProperties: properties.filter(
+      (p) => (p.type & ~BindingPropertyType.Flags) === BindingPropertyType.LinkingObjects,
+    ),
   };
   // The object schema itself must also know the name of the primary key
   if (schema.primaryKey) {
