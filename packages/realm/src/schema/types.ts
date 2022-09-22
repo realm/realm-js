@@ -51,6 +51,7 @@ export type CanonicalObjectSchema<T = DefaultObject> = {
   primaryKey?: string;
   embedded?: boolean;
   asymmetric?: boolean;
+  constructor?: RealmObjectConstructor;
 };
 
 /**
