@@ -26,6 +26,13 @@ import { getInternal } from "./internal";
 import { getHelpers, setHelpers } from "./ClassHelpers";
 import { assert } from "./assert";
 
+export type RealmSchemaExtra = Record<string, ObjectSchemaExtra | undefined>;
+
+export type ObjectSchemaExtra = {
+  constructor?: RealmObjectConstructor;
+  defaults: Record<string, unknown>;
+};
+
 function createNamedConstructor<T extends Constructor>(name: string): T {
   const obj = {
     [name]: function () {
@@ -101,8 +108,7 @@ export class ClassMap {
   constructor(
     realm: Realm,
     realmSchema: binding.Realm["schema"],
-    constructors: Record<string, RealmObjectConstructor>,
-    defaults: Record<string, Record<string, unknown> | undefined>,
+    schemaExtras: RealmSchemaExtra,
     resolveObjectLink: ObjectLinkResolver,
     resolveList: ListResolver,
   ) {
@@ -113,7 +119,7 @@ export class ClassMap {
         }
         const properties = new PropertyMap(
           objectSchema,
-          defaults[objectSchema.name] || {},
+          schemaExtras[objectSchema.name]?.defaults || {},
           createObjectWrapper,
           resolveObjectLink,
           resolveList,
@@ -121,7 +127,7 @@ export class ClassMap {
         const constructor = createClass(
           objectSchema,
           properties,
-          constructors[objectSchema.name],
+          schemaExtras[objectSchema.name]?.constructor,
         ) as RealmObjectConstructor;
         setHelpers(constructor as typeof RealmObject, { objectSchema, properties, createObjectWrapper });
         return [objectSchema.name, constructor];
