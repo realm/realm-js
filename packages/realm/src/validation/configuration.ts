@@ -18,7 +18,8 @@
 
 import { assert } from "../assert";
 import { Configuration } from "../Configuration";
-import { ObjectSchema } from "../schema";
+import { DefaultObject, ObjectSchema } from "../schema";
+import { Object as RealmObject } from "../Object";
 
 export function validateConfiguration(arg: unknown): asserts arg is Configuration {
   assert.object(arg);
@@ -33,7 +34,23 @@ export function validateConfiguration(arg: unknown): asserts arg is Configuratio
 }
 
 export function validateObjectSchema(arg: unknown): asserts arg is ObjectSchema {
-  assert.object(arg, "object schema");
-  assert.string(arg.name, "name");
-  assert.object(arg.properties, "properties");
+  if (typeof arg === "function") {
+    // Class based model
+    const clazz = arg as unknown as DefaultObject;
+    // We assert this later, but want a custom error message
+    if (!(arg.prototype instanceof RealmObject)) {
+      const schemaName = clazz.schema && (clazz.schema as DefaultObject).name;
+      if (typeof schemaName === "string" && schemaName != arg.name) {
+        throw new TypeError(`Class '${arg.name}' (declaring '${schemaName}' schema) must extend Realm.Object`);
+      } else {
+        throw new TypeError(`Class '${arg.name}' must extend Realm.Object`);
+      }
+    }
+    assert.object(clazz.schema, "schema static");
+    validateObjectSchema(clazz.schema);
+  } else {
+    assert.object(arg, "object schema");
+    assert.string(arg.name, "name");
+    assert.object(arg.properties, "properties");
+  }
 }

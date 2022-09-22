@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { DefaultObject } from "./schema";
+
 export class AssertionError extends Error {
   constructor(message = "Assertion failed!") {
     super(message);
@@ -48,6 +50,8 @@ function deriveActualType(value: unknown) {
     }
   } else if (typeof value === "undefined") {
     return typeof value;
+  } else if (typeof value === "function") {
+    return `a function or class named ${value.name}`;
   } else {
     return "a " + typeof value;
   }
@@ -130,5 +134,17 @@ assert.null = (value: unknown, name?: string): asserts value is bigint => {
 assert.array = (value: unknown, name?: string): asserts value is Array<unknown> => {
   if (!Array.isArray(value)) {
     throw createTypeError("an array", value, name);
+  }
+};
+
+/* eslint-disable-next-line @typescript-eslint/ban-types */
+assert.extends = <T extends Function>(
+  value: unknown,
+  constructor: T,
+  name?: string,
+): asserts value is T & DefaultObject => {
+  assert.function(value, name);
+  if (!(value.prototype instanceof constructor)) {
+    throw createTypeError(`a class extending ${constructor.name}`, value, name);
   }
 };
