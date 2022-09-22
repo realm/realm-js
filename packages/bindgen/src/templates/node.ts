@@ -395,7 +395,7 @@ function convertToNode(addon: NodeAddon, type: Type, expr: string): string {
             }(${expr})`;
         case "util::UniqueFunction":
           assert.equal(inner.kind, "Func");
-          return `FWD(${expr})`;
+          return c(inner, `FWD(${expr})`);
       }
       assert.fail(`unknown template ${type.name}`);
       break;

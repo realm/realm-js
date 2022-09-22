@@ -10,6 +10,9 @@
 #include <realm/object-store/impl/object_notifier.hpp>
 #include <realm/object-store/impl/realm_coordinator.hpp>
 #include <realm/object-store/shared_realm.hpp>
+#include <realm/object-store/sync/generic_network_transport.hpp>
+#include <realm/object-store/util/event_loop_dispatcher.hpp>
+#include <realm/util/functional.hpp>
 
 namespace realm::js::node {
 namespace {
@@ -102,6 +105,28 @@ struct Helpers {
         };
 
         realm->m_binding_context = std::make_unique<TheBindingContext>(realm, std::move(methods));
+    }
+
+    // This requires the ability to a) implement interfaces and b) mark which functions may be called off-thread.
+    // Both are planned, but for now, providing a helper unlocks sync.
+    using NetworkFuncSig = void(app::Request&&, util::UniqueFunction<void(const app::Response&)>&&);
+    static std::shared_ptr<app::GenericNetworkTransport>
+    make_network_transport(util::UniqueFunction<NetworkFuncSig> runRequest)
+    {
+        class Impl final : public app::GenericNetworkTransport {
+        public:
+            Impl(util::UniqueFunction<NetworkFuncSig>&& runRequest)
+                : runRequest(std::move(runRequest))
+            {
+            }
+            void send_request_to_server(app::Request&& request,
+                                        util::UniqueFunction<void(const app::Response&)>&& completionBlock) override
+            {
+                runRequest(std::move(request), std::move(completionBlock));
+            }
+            util::EventLoopDispatcher<NetworkFuncSig> runRequest;
+        };
+        return std::make_shared<Impl>(std::move(runRequest));
     }
 };
 
