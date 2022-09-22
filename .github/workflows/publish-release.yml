@@ -89,7 +89,7 @@ jobs:
 
     - name: Find Release PR
       # TODO: Revert this to upstream action once https://github.com/juliangruber/find-pull-request-action/pull/33 gets merged
-      uses: kraenhansen/find-pull-request-action@master
+      uses: juliangruber/find-pull-request-action@v1.7.0
       id: find-pull-request
       with:
         branch: ${{ github.ref }}
