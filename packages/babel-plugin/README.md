@@ -1,6 +1,4 @@
-<h1 align="center">
-  Realm Babel Plugin
-</h1>
+# Realm Babel Plugin
 
 ## Introduction
 
@@ -19,8 +17,6 @@ export class Task extends Realm.Object {
   _id!: Realm.BSON.ObjectId;
   description!: string;
   isComplete!: boolean;
-  createdAt!: Date;
-  userId!: string;
 
   static schema = {
     name: "Task",
@@ -28,9 +24,11 @@ export class Task extends Realm.Object {
     properties: {
       _id: "objectId",
       description: "string",
-      isComplete: { type: "bool", default: false },
-      createdAt: "date",
-      userId: "string",
+      isComplete: {
+        type: "bool",
+        default: false,
+        indexed: true,
+      },
     },
   };
 }
@@ -43,9 +41,8 @@ export class Task extends Realm.Object {
 export class Task extends Realm.Object {
   _id!: Realm.BSON.ObjectId;
   description!: string;
-  isComplete!: boolean;
-  createdAt!: Date;
-  userId!: string;
+  @index
+  isComplete = false;
 }
 ```
 
@@ -54,4 +51,21 @@ export class Task extends Realm.Object {
 </tr>
 </table>
 
+## Features
+
+- Schema properties can be defined as class properties by using standard TypeScript types or specific `Realm.Types` types, supporting every Realm type
+- Support for default values using property initialiser syntax
+- Support for specifying additional schema properties (e.g. primary key) using class statics
+- Support for indexing and remapping fields using decorators
+
+## Installation
+
 npm start -- --reset-cache
+
+## Usage
+
+### Supported types
+
+## Restrictions
+
+### Classes extending Realm.Object cannot be constructed with `new`
