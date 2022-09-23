@@ -402,14 +402,14 @@ module.exports = {
     realm1.write(() => {
       realm1.create("TestObject", [1]);
     });
-    TestCase.assertEqual(realm1.inMemory, true);
+    TestCase.assertEqual(realm1.isInMemory, true);
 
     // open a second instance of the same realm and check that they share data
     const realm2 = new Realm({ inMemory: true });
     const objects = realm2.objects("TestObject");
     TestCase.assertEqual(objects.length, 1);
     TestCase.assertEqual(objects[0].doubleCol, 1.0);
-    TestCase.assertEqual(realm2.inMemory, true);
+    TestCase.assertEqual(realm2.isInMemory, true);
 
     // Close both realms (this should delete the realm since there are no more
     // references to it.
