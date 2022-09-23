@@ -39,6 +39,7 @@ const PRIMITIVES_MAPPING: Record<string, string> = {
   ObjectId: "ObjectId",
   UUID: "UUID",
   Decimal128: "Decimal128",
+  AppError: "(Error & {code: number})",
 };
 
 const TEMPLATE_MAPPING: Record<string, (...args: string[]) => string> = {
@@ -49,6 +50,8 @@ const TEMPLATE_MAPPING: Record<string, (...args: string[]) => string> = {
   "std::tuple": (...args) => `[${args}]`,
   "std::map": (k, v) => `Record<${k}, ${v}>`,
   "util::UniqueFunction": (f) => f,
+  AsyncResult: (t) => `Promise<${t}>`,
+  AsyncCallback: (sig) => assert.fail(`async transfrom not applied to function taking AsyncCallback<${sig}>`),
 };
 
 const enum Kind {
@@ -186,13 +189,14 @@ export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): vo
         out("readonly ", meth.jsName, ": ", generateType(spec, meth.type, Kind.Ret));
         continue;
       }
+      const transformedSig = meth.sig.asyncTransformOrSelf();
       out(
         meth.isStatic ? "static" : "",
         meth.jsName,
         "(",
-        generateArguments(spec, meth.sig.args),
+        generateArguments(spec, transformedSig.args),
         "):",
-        generateType(spec, meth.sig.ret, Kind.Ret),
+        generateType(spec, transformedSig.ret, Kind.Ret),
         ";",
       );
     }
