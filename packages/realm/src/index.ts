@@ -25,7 +25,7 @@ export { List } from "./List";
 export { Dictionary } from "./Dictionary";
 export { Set } from "./Set";
 export type { ObjectChangeSet, ObjectChangeCallback } from "./ObjectListeners";
-export type { CollectionChangeSet, CollectionChangeCallback } from "./OrderedCollection";
+export type { OrderedCollection, CollectionChangeSet, CollectionChangeCallback } from "./OrderedCollection";
 
 export { BSON } from "./bson";
 

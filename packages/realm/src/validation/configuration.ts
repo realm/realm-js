@@ -28,9 +28,14 @@ export function validateConfiguration(arg: unknown): asserts arg is Configuratio
     assert(path.length > 0, "Expected a non-empty path or none at all");
   }
   if (schema) {
-    assert.array(schema, "schema");
-    schema.forEach(validateObjectSchema);
+    validateRealmSchema(schema);
   }
+}
+
+export function validateRealmSchema(schema: unknown): asserts schema is Configuration["schema"][] {
+  assert.array(schema, "schema");
+  schema.forEach(validateObjectSchema);
+  // TODO: Assert that backlinks point to object schemas that are actually declared
 }
 
 export function validateObjectSchema(arg: unknown): asserts arg is ObjectSchema {

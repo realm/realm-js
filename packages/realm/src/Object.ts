@@ -50,7 +50,7 @@ class RealmObject<T = DefaultObject> {
    */
   public static [INTERNAL_HELPERS]: ClassHelpers;
 
-  private createWrapper<T>(realm: Realm, constructor: Constructor, internal: binding.Obj) {
+  private createWrapper(realm: Realm, constructor: Constructor, internal: binding.Obj) {
     const result = Object.create(constructor.prototype);
     Object.defineProperties(result, {
       realm: {
@@ -73,12 +73,12 @@ class RealmObject<T = DefaultObject> {
       },
     });
     // TODO: Wrap in a proxy to trap keys, enabling the spread operator
-    return new Proxy<RealmObject<T>>(result, PROXY_HANDLER);
+    return new Proxy(result, PROXY_HANDLER);
     // return result;
   }
 
-  private createObject(realm: Realm, values: RealmInsertionModel<T>): Realm.Object<T> {
-    return realm.create(this.constructor as RealmObjectConstructor, values) as Realm.Object<T>;
+  private createObject(realm: Realm, values: RealmInsertionModel<T>): this {
+    return realm.create(this.constructor as RealmObjectConstructor, values) as unknown as this;
   }
 
   /**
@@ -113,7 +113,7 @@ class RealmObject<T = DefaultObject> {
    * @internal
    * Wrapper for the object notifier.
    */
-  private readonly [INTERNAL_LISTENERS]!: ObjectListeners<this>;
+  private readonly [INTERNAL_LISTENERS]!: ObjectListeners<T>;
 
   // TODO: Find a way to bind this in
   keys(): string[] {
@@ -154,10 +154,10 @@ class RealmObject<T = DefaultObject> {
     return this[INTERNAL].key.toString();
   }
 
-  addListener(callback: ObjectChangeCallback<this>): void {
+  addListener(callback: ObjectChangeCallback<T>): void {
     this[INTERNAL_LISTENERS].addListener(callback);
   }
-  removeListener(callback: ObjectChangeCallback<this>): void {
+  removeListener(callback: ObjectChangeCallback<T>): void {
     this[INTERNAL_LISTENERS].removeListener(callback);
   }
   removeAllListeners(): void {

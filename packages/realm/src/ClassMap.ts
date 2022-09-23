@@ -18,13 +18,15 @@
 
 import * as binding from "./binding";
 
-import { PropertyMap, ObjectLinkResolver, ListResolver } from "./PropertyMap";
+import { PropertyMap } from "./PropertyMap";
 import type { Realm } from "./Realm";
 import { Object as RealmObject } from "./Object";
 import { Constructor, DefaultObject, RealmObjectConstructor } from "./schema";
-import { getInternal } from "./internal";
+import { getInternal, INTERNAL } from "./internal";
 import { getHelpers, setHelpers } from "./ClassHelpers";
 import { assert } from "./assert";
+import { Results } from "./Results";
+import { OrderedCollectionHelpers } from "./OrderedCollection";
 
 export type RealmSchemaExtra = Record<string, ObjectSchemaExtra | undefined>;
 
@@ -44,7 +46,7 @@ function createNamedConstructor<T extends Constructor>(name: string): T {
 
 function createClass<T extends RealmObjectConstructor = RealmObjectConstructor>(
   schema: binding.Realm["schema"][0],
-  properties: PropertyMap,
+  propertyMap: PropertyMap,
   constructor: Constructor | undefined,
 ): T {
   const result = createNamedConstructor<T>(schema.name);
@@ -62,8 +64,9 @@ function createClass<T extends RealmObjectConstructor = RealmObjectConstructor>(
     throw new Error("computedProperties are not yet supported!");
   }
   // Create bound functions for getting and setting properties
-  for (const property of schema.persistedProperties) {
-    const { get, set } = properties.get(property.name);
+  const properties = [...schema.persistedProperties, ...schema.computedProperties];
+  for (const property of properties) {
+    const { get, set } = propertyMap.get(property.name);
     Object.defineProperty(result.prototype, property.name, {
       enumerable: true,
       get(this: RealmObject) {
@@ -88,7 +91,7 @@ function createClass<T extends RealmObjectConstructor = RealmObjectConstructor>(
     });
   }
   // Implement the per class optimized methods
-  const propertyNames = schema.persistedProperties.map((p) => p.publicName || p.name);
+  const propertyNames = properties.map((p) => p.publicName || p.name);
   result.prototype.keys = function (this: T) {
     return propertyNames;
   };
@@ -105,25 +108,42 @@ export class ClassMap {
    * @param objectSchema
    * TODO: Refactor this to use the binding.ObjectSchema type once the DeepRequired gets removed from types
    */
-  constructor(
-    realm: Realm,
-    realmSchema: binding.Realm["schema"],
-    schemaExtras: RealmSchemaExtra,
-    resolveObjectLink: ObjectLinkResolver,
-    resolveList: ListResolver,
-  ) {
+  constructor(realm: Realm, realmSchema: binding.Realm["schema"], schemaExtras: RealmSchemaExtra) {
+    const realmInternal = realm[INTERNAL];
+    function resolveObjectLink(link: binding.ObjLink): binding.Obj {
+      const table = binding.Helpers.getTable(realmInternal, link.tableKey);
+      return table.getObject(link.objKey);
+    }
+
+    function resolveList(columnKey: binding.ColKey, obj: binding.Obj): binding.List {
+      return binding.List.make(realmInternal, obj, columnKey);
+    }
+
+    function resolveTable(tableKey: binding.TableKey) {
+      return binding.Helpers.getTable(realmInternal, tableKey);
+    }
+
+    function createResultsFromTableView(tableView: binding.TableView, helpers: OrderedCollectionHelpers) {
+      const results = binding.Results.fromTableView(realmInternal, tableView);
+      return new Results(results, realmInternal, helpers);
+    }
+
+    const resolveClassHelpers = (name: string) => this.getHelpers(name);
+
     this.mapping = Object.fromEntries(
       realmSchema.map((objectSchema) => {
-        function createObjectWrapper<T = DefaultObject>(obj: binding.Obj) {
-          return new RealmObject<T>(realm, constructor, obj);
+        function createObjectWrapper<T = DefaultObject>(obj: binding.Obj, ctor = constructor) {
+          return new RealmObject<T>(realm, ctor, obj);
         }
-        const properties = new PropertyMap(
-          objectSchema,
-          schemaExtras[objectSchema.name]?.defaults || {},
+
+        const properties = new PropertyMap(objectSchema, schemaExtras[objectSchema.name]?.defaults || {}, {
           createObjectWrapper,
           resolveObjectLink,
           resolveList,
-        );
+          resolveClassHelpers,
+          resolveTable,
+          createResultsFromTableView,
+        });
         const constructor = createClass(
           objectSchema,
           properties,
@@ -139,7 +159,7 @@ export class ClassMap {
     if (typeof arg === "string") {
       const constructor = this.mapping[arg];
       if (!constructor) {
-        throw new Error(`Object schema named '${arg}' is missing from the schema`);
+        throw new Error(`Object type '${arg}' not found in schema.`);
       }
       return constructor as Constructor<T>;
     } else if (arg instanceof RealmObject) {
