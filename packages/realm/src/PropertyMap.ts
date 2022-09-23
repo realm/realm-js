@@ -24,6 +24,9 @@ import { getInternal } from "./internal";
 import { Object as RealmObject } from "./Object";
 import { List } from "./List";
 import { ObjLink, PropertyType } from "./binding";
+import { OrderedCollectionHelpers } from "./OrderedCollection";
+import { ClassHelpers } from "./ClassHelpers";
+import { Results } from "./Results";
 
 type PropertyContext = binding.Realm["schema"][0]["persistedProperties"][0] & { default?: unknown };
 
@@ -36,17 +39,28 @@ export type ObjectLinkResolver = (link: binding.ObjLink) => binding.Obj;
 /** @internal */
 export type ListResolver = (columnKey: binding.ColKey, obj: binding.Obj) => binding.List;
 
-type MappingOptions = {
-  columnKey: binding.ColKey;
+/** @internal */
+export type TypeHelpers = {
+  toBinding(value: unknown): binding.MixedArg;
+  fromBinding(value: unknown): unknown;
+};
+
+type HelperOptions = {
   createObjectWrapper: ObjectWrapCreator;
   resolveObjectLink: ObjectLinkResolver;
   resolveList: ListResolver;
-  optional: boolean;
-} & binding.Property;
+  resolveClassHelpers: (name: string) => ClassHelpers;
+  resolveTable: (tableKey: binding.TableKey) => binding.TableRef;
+  createResultsFromTableView: (tableView: binding.TableView, helpers: OrderedCollectionHelpers) => Results;
+};
 
-type PropertyHelpers = {
-  toBinding(value: unknown): binding.MixedArg;
-  fromBinding(value: unknown): unknown;
+type MappingOptions = {
+  columnKey: binding.ColKey;
+  optional: boolean;
+} & HelperOptions &
+  binding.Property;
+
+type PropertyHelpers = TypeHelpers & {
   get(obj: binding.Obj): unknown;
   set(obj: binding.Obj, value: unknown): unknown;
   default: unknown;
@@ -197,7 +211,6 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: MappingOptions) => P
           return null;
         } else if (value instanceof ObjLink) {
           const obj = resolveObjectLink(value);
-          // console.log("Resolved obj", { obj }, obj instanceof ObjLink);
           return this.fromBinding(obj);
         } else {
           return createObjectWrapper(value as binding.Obj);
@@ -220,15 +233,17 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: MappingOptions) => P
       */
     };
   },
-  [binding.PropertyType.LinkingObjects]({ linkOriginPropertyName, objectType }) {
+  [binding.PropertyType.LinkingObjects]({ createObjectWrapper }) {
     return {
-      get(obj) {
-        throw new Error("Get of linking objects are not yet supported");
+      fromBinding(value) {
+        assert.instanceOf(value, binding.Obj);
+        return createObjectWrapper(value);
+      },
+      get() {
+        throw new Error("Getting linking objects happens through Array");
       },
       set() {
-        return new Error(
-          `Cannot assign to linking objects, update the ${objectType}'s '${linkOriginPropertyName}' property instead`,
-        );
+        throw new Error("Setting linking objects happens through Array");
       },
     };
   },
@@ -294,34 +309,85 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: MappingOptions) => P
   },
   [binding.PropertyType.Array](options) {
     const itemType = options.type & ~binding.PropertyType.Flags;
-    const { toBinding: itemToBinding, fromBinding: itemFromBinding } = getHelpers(itemType, options);
-    const resolveList = options.resolveList.bind(null, options.columnKey);
-    function getter(results: binding.Results, index: number) {
-      return itemFromBinding(results.getAny(index));
+    function getObj(results: binding.Results, index: number) {
+      return results.getObj(index);
     }
-    return {
-      fromBinding() {
-        throw new Error("Not supported");
-      },
-      toBinding() {
-        throw new Error("Not supported");
-      },
-      get(obj) {
-        return new List(resolveList(obj), getter);
-      },
-      set(obj, values) {
-        // Implements https://github.com/realm/realm-core/blob/v12.0.0/src/realm/object-store/list.hpp#L258-L286
-        assert.array(values);
-        const list = resolveList(obj);
-        list.removeAll();
-        for (const [index, value] of values.entries()) {
-          list.insertAny(index, itemToBinding(value));
-          // TODO: Unwrap objects and bigint
-          // list.insertAny(index, value as MixedArg);
-          // list.insertAny(index, BigInt(value as number) as MixedArg);
-        }
-      },
-    };
+    function getAny(results: binding.Results, index: number) {
+      return results.getAny(index);
+    }
+
+    if (itemType === binding.PropertyType.LinkingObjects) {
+      const { objectType, linkOriginPropertyName, resolveClassHelpers, resolveTable, createResultsFromTableView } =
+        options;
+
+      // Locate the table of the targeted object
+      assert.string(objectType, "object type");
+
+      return {
+        fromBinding() {
+          throw new Error("Not supported");
+        },
+        toBinding() {
+          throw new Error("Not supported");
+        },
+        get(obj: binding.Obj) {
+          // TODO: To improve performance: Refactor to resolve the class helper earlier.
+          const targetClassHelpers = resolveClassHelpers(objectType);
+          const { tableKey, persistedProperties } = targetClassHelpers.objectSchema;
+          // TODO: Check if we want to match with the `p.name` or `p.publicName` here
+          const targetProperty = persistedProperties.find((p) => p.name === linkOriginPropertyName);
+          assert(targetProperty, `Expected a '${linkOriginPropertyName}' property on ${objectType}`);
+          const tableRef = resolveTable(tableKey);
+          const tableView = obj.getBacklinkView(tableRef, targetProperty.columnKey);
+          const itemHelpers = getHelpers(itemType, {
+            ...options,
+            createObjectWrapper: targetClassHelpers.createObjectWrapper,
+          });
+          const collectionHelpers: OrderedCollectionHelpers = {
+            get: getObj,
+            fromBinding: itemHelpers.fromBinding,
+            toBinding: itemHelpers.toBinding,
+          };
+          return createResultsFromTableView(tableView, collectionHelpers);
+        },
+        set() {
+          throw new Error("Not supported");
+        },
+      };
+    } else {
+      const itemHelpers = getHelpers(itemType, options);
+      const collectionHelpers: OrderedCollectionHelpers = {
+        get: itemType & binding.PropertyType.Object ? getObj : getAny,
+        fromBinding: itemHelpers.fromBinding,
+        toBinding: itemHelpers.toBinding,
+      };
+      const itemToBinding = itemHelpers.toBinding;
+      const resolveList = options.resolveList.bind(null, options.columnKey);
+
+      return {
+        fromBinding() {
+          throw new Error("Not supported");
+        },
+        toBinding() {
+          throw new Error("Not supported");
+        },
+        get(obj: binding.Obj) {
+          return new List(resolveList(obj), collectionHelpers);
+        },
+        set(obj, values) {
+          // Implements https://github.com/realm/realm-core/blob/v12.0.0/src/realm/object-store/list.hpp#L258-L286
+          assert.array(values);
+          const list = resolveList(obj);
+          list.removeAll();
+          for (const [index, value] of values.entries()) {
+            list.insertAny(index, itemToBinding(value));
+            // TODO: Unwrap objects and bigint
+            // list.insertAny(index, value as MixedArg);
+            // list.insertAny(index, BigInt(value as number) as MixedArg);
+          }
+        },
+      };
+    }
   },
   [binding.PropertyType.Set]() {
     return {
@@ -369,18 +435,11 @@ function getHelpers(type: binding.PropertyType, options: MappingOptions): Proper
 }
 
 // TODO: Support converting all types
-function createHelpers(
-  property: PropertyContext,
-  createObjectWrapper: ObjectWrapCreator,
-  resolveObjectLink: ObjectLinkResolver,
-  resolveList: ListResolver,
-): PropertyHelpers {
+function createHelpers(property: PropertyContext, options: HelperOptions): PropertyHelpers {
   const mappingOptions: MappingOptions = {
     ...property,
+    ...options,
     optional: !!(property.type & PropertyType.Nullable),
-    createObjectWrapper,
-    resolveObjectLink,
-    resolveList,
   };
   const collectionType = property.type & binding.PropertyType.Collection;
   if (collectionType) {
@@ -402,26 +461,20 @@ export class PropertyMap {
    * @param objectSchema
    * TODO: Refactor this to use the binding.ObjectSchema type once the DeepRequired gets removed from types
    */
-  constructor(
-    objectSchema: binding.Realm["schema"][0],
-    defaults: Record<string, unknown>,
-    createObjectWrapper: ObjectWrapCreator,
-    resolveObjectLink: ObjectLinkResolver,
-    resolveList: ListResolver,
-  ) {
-    const allProperties = [...objectSchema.persistedProperties, ...objectSchema.computedProperties];
+  constructor(objectSchema: binding.Realm["schema"][0], defaults: Record<string, unknown>, options: HelperOptions) {
+    const properties = [...objectSchema.persistedProperties, ...objectSchema.computedProperties];
     this.mapping = Object.fromEntries(
-      allProperties.map((property) => {
-        const helpers = createHelpers(property, createObjectWrapper, resolveObjectLink, resolveList);
+      properties.map((property) => {
+        const helpers = createHelpers(property, options);
         // Allow users to override the default value of properties
         const defaultValue = defaults[property.name];
         helpers.default = typeof defaultValue !== "undefined" ? defaultValue : helpers.default;
         return [property.name, helpers];
       }),
     );
-    this.nameByColumnKey = new Map(objectSchema.persistedProperties.map((p) => [p.columnKey, p.publicName || p.name]));
+    this.nameByColumnKey = new Map(properties.map((p) => [p.columnKey, p.publicName || p.name]));
     // TODO: Consider including the computed properties?
-    this.names = objectSchema.persistedProperties.map((p) => p.publicName || p.name);
+    this.names = properties.map((p) => p.publicName || p.name);
   }
 
   public get = (property: string): PropertyHelpers => {

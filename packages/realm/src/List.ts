@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import * as binding from "./binding";
-import { Getter, OrderedCollection } from "./OrderedCollection";
+import { OrderedCollection, OrderedCollectionHelpers } from "./OrderedCollection";
 import { INTERNAL } from "./internal";
 
 type PartiallyWriteableArray<T> = Pick<Array<T>, "pop" | "push" | "shift" | "unshift" | "splice">;
@@ -28,8 +28,8 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
    * @param internal
    * @internal
    */
-  constructor(internal: binding.List, getter: Getter<T>) {
-    super(internal.asResults(), getter);
+  constructor(internal: binding.List, helpers: OrderedCollectionHelpers) {
+    super(internal.asResults(), helpers);
     Object.defineProperties(this, {
       [INTERNAL]: {
         enumerable: false,
@@ -59,7 +59,13 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
    * @returns number
    */
   push(...items: T[]): number {
-    throw new Error("Not yet implemented");
+    const { toBinding } = this.helpers;
+    let i = this[INTERNAL].size;
+    for (const item of items) {
+      // Convert item to a mixedArg
+      this[INTERNAL].insertAny(i++, toBinding(item));
+    }
+    return this[INTERNAL].size;
   }
 
   /**
