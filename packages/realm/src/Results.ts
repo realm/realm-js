@@ -19,7 +19,7 @@
 import * as binding from "./binding";
 import { Helpers } from "./binding";
 
-import { Getter, OrderedCollection, SortDescriptor } from "./OrderedCollection";
+import { OrderedCollection, SortDescriptor, OrderedCollectionHelpers } from "./OrderedCollection";
 import { INTERNAL } from "./internal";
 
 const INTERNAL_REALM = Symbol("Realm.Results#realm");
@@ -33,13 +33,8 @@ export class Results<T = unknown> extends OrderedCollection<T> {
    * @param internalRealm The internal representation of the Realm managing these results.
    * @param internalTable The internal representation of the table.
    */
-  constructor(
-    internal: binding.Results,
-    internalRealm: binding.Realm,
-    internalTable: binding.TableRef,
-    getter: Getter<T>,
-  ) {
-    super(internal, getter);
+  constructor(internal: binding.Results, internalRealm: binding.Realm, helpers: OrderedCollectionHelpers) {
+    super(internal, helpers);
     Object.defineProperties(this, {
       [INTERNAL]: {
         enumerable: false,
@@ -52,12 +47,6 @@ export class Results<T = unknown> extends OrderedCollection<T> {
         configurable: false,
         writable: false,
         value: internalRealm,
-      },
-      [INTERNAL_TABLE]: {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-        value: internalTable,
       },
     });
   }
@@ -103,22 +92,22 @@ export class Results<T = unknown> extends OrderedCollection<T> {
   }
 
   filtered(queryString: string, ...args: any[]): Results<T> {
-    const { [INTERNAL]: parent, [INTERNAL_REALM]: realm, [INTERNAL_TABLE]: table, getter } = this;
+    const { [INTERNAL]: parent, [INTERNAL_REALM]: realm, helpers } = this;
     const kpMapping = Helpers.getKeypathMapping(realm);
     // TODO: Perform a mapping of the arguments
-    const query = table.query(queryString, args, kpMapping);
+    const query = parent.query.table.query(queryString, args, kpMapping);
     const results = parent.filter(query);
-    return new Results(results, realm, table, getter);
+    return new Results(results, realm, helpers);
   }
 
   sorted(arg0?: boolean | SortDescriptor[] | string, arg1?: boolean): Results<T> {
     if (Array.isArray(arg0)) {
-      const { [INTERNAL]: parent, [INTERNAL_REALM]: realm, [INTERNAL_TABLE]: table, getter } = this;
+      const { [INTERNAL]: parent, [INTERNAL_REALM]: realm, [INTERNAL_TABLE]: table, helpers } = this;
       // Map optional "reversed" to "accending" (expected by the binding)
       const descriptors = arg0.map<[string, boolean]>(([name, reversed]) => [name, reversed ? false : true]);
       // TODO: Call `parent.sort`, avoiding property name to colkey conversion to speed up performance here.
       const results = parent.sortByNames(descriptors);
-      return new Results(results, realm, table, getter);
+      return new Results(results, realm, helpers);
     } else if (typeof arg0 === "string") {
       return this.sorted([[arg0, arg1 === true]]);
     } else {

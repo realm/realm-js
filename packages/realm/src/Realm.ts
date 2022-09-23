@@ -159,19 +159,6 @@ export class Realm {
         : undefined,
     });
 
-    RETURNED_REALMS.add(new WeakRef(internal));
-
-    function resolveObjectLink(link: binding.ObjLink): binding.Obj {
-      const table = binding.Helpers.getTable(internal, link.tableKey);
-      return table.getObject(link.objKey);
-    }
-
-    function resolveList(columnKey: binding.ColKey, obj: binding.Obj): binding.List {
-      return binding.List.make(internal, obj, columnKey);
-    }
-
-    this.classes = new ClassMap(this, internal.schema, this.schemaExtras, resolveObjectLink, resolveList);
-
     Object.defineProperties(this, {
       classes: {
         enumerable: false,
@@ -185,6 +172,9 @@ export class Realm {
         value: internal,
       },
     });
+
+    RETURNED_REALMS.add(new WeakRef(internal));
+    this.classes = new ClassMap(this, internal.schema, this.schemaExtras);
   }
 
   get empty(): boolean {
@@ -294,9 +284,14 @@ export class Realm {
     // Create the underlying object
     const table = binding.Helpers.getTable(this[INTERNAL], tableKey);
     if (primaryKey) {
+      const primaryKeyHelpers = properties.get(primaryKey);
       const primaryKeyValue = values[primaryKey];
-      // TODO: Consider handling an undefined primary key value
-      const pk = properties.get(primaryKey).toBinding(primaryKeyValue);
+      const pk = primaryKeyHelpers.toBinding(
+        // Fallback to default value if the provided value is undefined or null
+        typeof primaryKeyValue !== "undefined" && primaryKeyValue !== null
+          ? primaryKeyValue
+          : primaryKeyHelpers.default,
+      );
       const [obj, created] = binding.Helpers.getOrCreateObjectWithPrimaryKey(table, pk);
       if (mode === UpdateMode.Never && !created) {
         throw new Error(
@@ -351,7 +346,7 @@ export class Realm {
     }
   }
 
-  objects<T extends RealmObject = RealmObject>(type: string): Results<T>;
+  objects<T>(type: string): Results<RealmObject & T>;
   objects<T extends RealmObject = RealmObject>(type: Constructor<T>): Results<T>;
   objects<T extends RealmObject = RealmObject>(type: string | Constructor<T>): Results<T> {
     const { objectSchema, createObjectWrapper } = this.classes.getHelpers(type);
@@ -363,9 +358,14 @@ export class Realm {
 
     const table = binding.Helpers.getTable(this[INTERNAL], objectSchema.tableKey);
     const results = binding.Results.fromTable(this[INTERNAL], table);
-    return new Results<T>(results, this[INTERNAL], table, (results, index) => {
-      const obj = results.getObj(index);
-      return createObjectWrapper(obj);
+    return new Results<T>(results, this[INTERNAL], {
+      get(results: binding.Results, index: number) {
+        return results.getObj(index);
+      },
+      fromBinding: createObjectWrapper,
+      toBinding() {
+        throw new Error("Cannot assign into Results");
+      },
     });
   }
 
