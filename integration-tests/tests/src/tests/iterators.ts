@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import Realm from "realm";
+import Realm, { OrderedCollection } from "realm";
 
 import { DogSchema, IDog, IPerson, PersonSchema } from "../schemas/person-and-dogs";
 
@@ -84,10 +84,10 @@ describe("Iterating", () => {
   it("throws if object schema doesn't exist", () => {
     expect(() => {
       realm.objects("SomeOtherClass");
-    }).throws("Object type 'SomeOtherClass' not found in schema.");
+    }).throws("Object type 'SomeOtherClass' not found in schema");
   });
 
-  type CollectionCallback = () => Realm.Collection<IPerson | IDog>;
+  type CollectionCallback = () => OrderedCollection<IPerson | IDog>;
 
   function itCanIterate(getCollection: CollectionCallback, expectedNames: string[]) {
     it("iterates using forEach", () => {
@@ -170,7 +170,6 @@ describe("Iterating", () => {
     itCanIterate(() => {
       const result = realm.objectForPrimaryKey<IPerson>("Person", "Alice");
       if (!result) throw new Error("Object not found");
-
       return result.dogs;
     }, ["Max", "Rex"]);
   });
