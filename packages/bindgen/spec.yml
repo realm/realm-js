@@ -38,6 +38,7 @@ primitives:
   - UUID
   - EncryptionKey # vector<char> in C++, but should have API of OwnedBinaryData in SDK
                   # TODO consider changing type in realm-core.
+  - AppError
 
 typeAliases:
   int: int32_t
@@ -55,6 +56,9 @@ templates: # value tells you how many arguments it takes ('*' means any number)
   # std::unordered_map: 2
   std::map: 2
   util::UniqueFunction: 1
+  AsyncCallback: 1 # same as UniqueFunction, but guaranteed to be called exactly once.
+                   # Recomended to convert to Future/Promise/Task in bound language.
+  AsyncResult: 1 # Synthetic type. Not used in spec, but created by utilities.
 
 mixedInfo:
   dataTypes:
@@ -867,7 +871,30 @@ classes:
       get_uncached_app: '(config: AppConfig, sync_client_config: SyncClientConfig) -> SharedApp'
       get_cached_app: '(app_id: const std::string&) -> SharedApp'
       clear_cached_apps: ()
-        #close_all_sessions: () XXX
+      close_all_sync_sessions: ()
+
+    methods:
+      log_in_with_credentials: '(credentials: AppCredentials, cb: AsyncCallback<(user: const SharedSyncUser&, err: util::Optional<AppError>)>&&)'
+      log_out:
+        - '(cb: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+        - sig: '(user: SharedSyncUser, cb: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+          suffix: user
+      refresh_custom_data: '(user: SharedSyncUser, cb: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      link_user: '(user: SharedSyncUser, credentials: const AppCredentials&, cb: AsyncCallback<(user: const SharedSyncUser&, err: util::Optional<AppError>)>&&)'
+      switch_user: '(user: SharedSyncUser)'
+      remove_user: '(user: SharedSyncUser, cb: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      delete_user: '(user: SharedSyncUser, cb: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      usernamePasswordProviderClient:
+        - sig: () -> UsernamePasswordProviderClient
+          cppName: provider_client<app::App::UsernamePasswordProviderClient>
+      userAPIKeyProviderClient:
+        - sig: () -> UserAPIKeyProviderClient
+          cppName: provider_client<app::App::UserAPIKeyProviderClient>
+
+  UsernamePasswordProviderClient:
+    cppName: app::App::UsernamePasswordProviderClient
+  UserAPIKeyProviderClient:
+    cppName: app::App::UserAPIKeyProviderClient
 
   SyncManager:
     sharedPtrWrapped: SharedSyncManager

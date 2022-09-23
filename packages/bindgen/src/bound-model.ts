@@ -57,7 +57,9 @@ class RRef {
 }
 
 export class Arg {
-  constructor(public name: string, public type: Type) {}
+  constructor(public name: string, public type: Type) {
+    assert(!name.startsWith("_"), `argument "${name}" starts with a '_', but that is reserved`);
+  }
 
   toString() {
     return `${this.name}: ${this.type}`;
@@ -72,6 +74,44 @@ class Func {
   toString() {
     const args = this.args.map((a) => a.toString()).join(", ");
     return `(${args})${this.isConst ? " const" : ""}${this.noexcept ? " noexcept" : ""} -> ${this.ret}`;
+  }
+
+  // For functions that take a final AsyncCallback argument, transforms into a
+  // function signature that omits that argument and returns an AsyncResult.
+  // Other functions return undefined.
+  asyncTransform(): Func | undefined {
+    if (this.ret.kind != "Primitive" || this.ret.name != "void") return undefined;
+    const voidType = this.ret;
+    if (this.args.length == 0) return undefined;
+    let lastArgType = this.args[this.args.length - 1].type;
+    if (lastArgType.kind == "RRef" || lastArgType.kind == "Ref") lastArgType = lastArgType.type;
+    if (lastArgType.kind != "Template" || lastArgType.name != "AsyncCallback") return undefined;
+
+    // Now we know we are an async function. Validate requirements and do the transform.
+    const cb = lastArgType.args[0];
+    assert.equal(cb.kind, "Func" as const);
+    assert.equal(cb.ret, voidType);
+    assert([1, 2].includes(cb.args.length));
+    const lastCbArg = cb.args[cb.args.length - 1];
+    assert.deepEqual(lastCbArg.type, new Template("util::Optional", [new Primitive("AppError")]));
+    let res: Type = voidType;
+    if (cb.args.length == 2) {
+      let firstCbArgType = cb.args[0].type;
+      while (firstCbArgType.kind == "Const" || firstCbArgType.kind == "RRef" || firstCbArgType.kind == "Ref") {
+        firstCbArgType = firstCbArgType.type;
+      }
+      if (firstCbArgType.kind == "Template" && firstCbArgType.name == "util::Optional") {
+        firstCbArgType = firstCbArgType.args[0];
+      }
+      res = firstCbArgType;
+    }
+    return new Func(new Template("AsyncResult", [res]), this.args.slice(0, -1), this.isConst, this.noexcept);
+  }
+
+  // Like asyncTransform(), but returns self for non-async functions. This is useful if you only care
+  // about the exposed signature, and not whether it is an async function.
+  asyncTransformOrSelf(): Func {
+    return this.asyncTransform() ?? this;
   }
 }
 
