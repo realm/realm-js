@@ -183,8 +183,13 @@ function toCpp(type: Type): string {
     case "RRef":
       return `${toCpp(type.type)}&&`;
     case "Template":
+      assert.notEqual(type.name, "AsyncResult", "Should never see AsyncResult here");
+      const templateMap: Record<string, string> = {
+        AsyncCallback: "util::UniqueFunction",
+      };
+      const cppTemplate = templateMap[type.name] ?? type.name;
       let args;
-      if (["util::UniqueFunction", "std::function"].includes(type.name)) {
+      if (["util::UniqueFunction", "std::function"].includes(cppTemplate)) {
         // Functions can't normally be toCpp'd because lambda types are unutterable.
         // But if a wrapper type is used, we can do this.
         const func = type.args[0];
@@ -194,7 +199,7 @@ function toCpp(type: Type): string {
       } else {
         args = type.args.map(toCpp).join(", ");
       }
-      return `${type.name}<${args}>`;
+      return `${cppTemplate}<${args}>`;
 
     case "Struct":
     case "Enum":
@@ -205,6 +210,7 @@ function toCpp(type: Type): string {
       const primitiveMap: Record<string, string> = {
         count_t: "size_t",
         EncryptionKey: "std::vector<char>",
+        AppError: "app::AppError",
       };
       return primitiveMap[type.name] ?? type.name;
 
@@ -213,7 +219,7 @@ function toCpp(type: Type): string {
       // We could make a UniqueFunction for the type, but we may want to
       // use other types instead, such as std::function in some cases.
       // This will be more important when implementing interfaces.
-      assert.fail("Cannot convert function types to Cpp type names");
+      assert.fail(`Cannot convert function types to Cpp type names: ${type}`);
       break;
 
     default:
@@ -268,6 +274,14 @@ function convertPrimToNode(addon: NodeAddon, type: string, expr: string): string
     case "UUID":
     case "Decimal128":
       return `${addon.accessCtor(type)}.New({${convertPrimToNode(addon, "std::string", `${expr}.to_string()`)}})`;
+
+    case "AppError":
+      // This matches old JS SDK. The C++ type will be changing as part of the unify error handleing project.
+      return `([&] (const app::AppError& err) {
+                auto jsErr =  Napi::Error::New(${env}, err.message).Value();
+                jsErr.Set("code", double(err.error_code.value()));
+                return jsErr;
+              }(${expr}))`;
   }
   assert.fail(`unexpected primitive type '${type}'`);
 }
@@ -331,6 +345,9 @@ function convertPrimFromNode(addon: NodeAddon, type: string, expr: string): stri
     // TODO add a StringData overload to the ObjectId ctor in core so this can merge with above.
     case "ObjectId":
       return `${type}(${convertPrimFromNode(addon, "std::string", `${expr}.ToString()`)}.c_str())`;
+
+    case "AppError":
+      assert.fail("Cannot convert AppError to C++, only from C++.");
   }
   assert.fail(`unexpected primitive type '${type}'`);
 }
@@ -393,9 +410,12 @@ function convertToNode(addon: NodeAddon, type: Type, expr: string): string {
                 }
                 return out;
             }(${expr})`;
+        case "AsyncCallback":
         case "util::UniqueFunction":
           assert.equal(inner.kind, "Func");
           return c(inner, `FWD(${expr})`);
+        case "AsyncResult":
+          assert.fail("Should never see AsyncResult here");
       }
       assert.fail(`unknown template ${type.name}`);
       break;
@@ -515,6 +535,7 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
                 }
                 return out;
             }((${expr}).As<Napi::Object>())`;
+        case "AsyncCallback":
         case "util::UniqueFunction":
           return `${toCpp(type)}(${c(inner, expr)})`;
       }
@@ -707,7 +728,7 @@ class NodeCppDecls extends CppDecls {
               auto& self = ${self};
               auto jsIt = Napi::Object::New(${env});
               jsIt.Set("_keepAlive", info.This());
-              jsIt.Set("next", Napi::Function::New(napi_env_var_ForBindGen,
+              jsIt.Set("next", Napi::Function::New(${env},
                   [it = self.begin(), end = self.end()] (const Napi::CallbackInfo& info) mutable {
                       const auto ${env} = info.Env();
 

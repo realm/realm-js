@@ -34,6 +34,25 @@ export function generateNodeWrapper({ spec: rawSpec, file }: TemplateContext): v
     import { Float } from "./core";
 
     export * from "./core";
+
+    // Copied from lib/utils.js.
+    // TODO consider importing instead.
+    // Might be slightly faster to make dedicated wrapper for 1 and 2 argument forms, but unlikely to be worth it.
+    function _promisify(func) {
+      return new Promise((resolve, reject) => {
+        func((...cbargs) => {
+          if (cbargs.length < 1 || cbargs.length > 2) throw Error("invalid cbargs length " + cbargs.length);
+          let error = cbargs[cbargs.length - 1];
+          if (error) {
+            reject(error);
+          } else if (cbargs.length == 2) {
+            resolve(cbargs[0]);
+          } else {
+            resolve();
+          }
+        });
+      });
+    }
   `);
 
   const injectables = ["Float", "ObjectId", "UUID", "Decimal128"];
@@ -45,7 +64,7 @@ export function generateNodeWrapper({ spec: rawSpec, file }: TemplateContext): v
 
     // It will always be accessed via this name rather than a static to enable optimizations
     // that depend on the symbol not changing.
-    const symb = `${cls.rootBase().jsName}_Symbol`;
+    const symb = `_${cls.rootBase().jsName}_Symbol`;
 
     if (!cls.base) {
       // Only root classes get symbols and constructors
@@ -68,21 +87,28 @@ export function generateNodeWrapper({ spec: rawSpec, file }: TemplateContext): v
 
     for (const method of cls.methods) {
       // Eagerly bind the name once from the native module.
-      const native = `native_${method.id}`;
+      const native = `_native_${method.id}`;
       js(`const ${native} = nativeModule.${method.id};`);
-      const self = method.isStatic ? "" : `this[${symb}], `;
       // TODO consider pre-extracting class-typed arguments while still in JIT VM.
-      const args = method.sig.args.map((a) => a.name);
+      const asyncSig = method.sig.asyncTransform();
+      const params = (asyncSig ?? method.sig).args.map((a) => a.name);
+      const args = [
+        method.isStatic ? [] : `this[${symb}]`, //
+        ...params,
+        asyncSig ? "_cb" : [],
+      ].flat();
+      let call = `${native}(${args})`;
+      if (asyncSig) call = `_promisify(_cb => ${call})`;
       body += `
         ${method.isStatic ? "static" : ""}
         ${method instanceof Property ? "get" : ""}
-        ${method.jsName}(${args}) {
-          return ${native}(${self} ${args});
+        ${method.jsName}(${params}) {
+          return ${call};
         }`;
     }
 
     if (cls.iterable) {
-      const native = `native_${cls.iteratorMethodId()}`;
+      const native = `_native_${cls.iteratorMethodId()}`;
       js(`const ${native} = nativeModule.${cls.iteratorMethodId()};`);
       body += `\n[Symbol.iterator]() { return ${native}(this[${symb}]); }`;
     }
