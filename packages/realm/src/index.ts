@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 export { UpdateMode } from "./Realm";
-export { Configuration } from "./Configuration";
+export type { Configuration } from "./Configuration";
 export { App } from "./App";
 export { Results } from "./Results";
 export { Object } from "./Object";
