@@ -441,7 +441,7 @@ classes:
       get_or_create_object_with_primary_key: '(t: TableRef, pk: Mixed) -> std::pair<Obj, bool>'
       make_network_transport: '(runRequest: (request: Request&&, callback: util::UniqueFunction<(response: Response&&)>&&))'
 
-  TableRef:
+  ConstTableRef:
     needsDeref: true
     iterable: Obj
     properties:
@@ -450,14 +450,20 @@ classes:
     methods:
       is_embedded: () const -> bool
       get_column_type: '(column: ColKey) const -> DataType'
-      get_link_target: '(column: ColKey) const -> TableRef'
-      create_object: () -> Obj
-      create_object_with_primary_key: '(pk: Mixed) -> Obj'
+      get_link_target: '(column: ColKey) const -> ConstTableRef'
       get_object: '(key: ObjKey) const -> Obj'
       get_object_with_primary_key: '(pk: Mixed) const -> Obj'
       try_get_object: '(key: ObjKey) const -> Obj'
       query: '(query_string: std::string, args: std::vector<Mixed>, mapping: KeyPathMapping) const -> Query'
+
+  TableRef:
+    base: ConstTableRef
+    needsDeref: true
+    methods:
+      create_object: () -> Obj
+      create_object_with_primary_key: '(pk: Mixed) -> Obj'
       remove_object: '(key: ObjKey)'
+      get_link_target: '(column: ColKey) -> TableRef'
 
   Obj:
     properties:
@@ -529,6 +535,8 @@ classes:
     cppName: query_parser::KeyPathMapping
 
   Query:
+    properties:
+      get_table: ConstTableRef
     methods:
       count: () const -> count_t
 
@@ -544,7 +552,7 @@ classes:
   Results:
     constructors:
       make_empty: ()
-      from_table: '(r: SharedRealm, table: TableRef)'
+      from_table: '(r: SharedRealm, table: ConstTableRef)'
       # TODO It might be too expensive to copy TableView.
       # Consider a Helper to combine with Obj::get_backlink_view(), or some way to get move semantics.
       from_table_view: '(r: SharedRealm, table: TableView)'
