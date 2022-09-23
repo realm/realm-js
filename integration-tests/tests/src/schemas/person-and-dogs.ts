@@ -24,7 +24,7 @@ export interface IPerson {
   name: string;
   age: number;
   friends: Realm.List<IPerson>;
-  dogs: Realm.Collection<IDog>;
+  dogs: Realm.Results<IDog>;
 }
 
 export const PersonSchema: Realm.ObjectSchema = {

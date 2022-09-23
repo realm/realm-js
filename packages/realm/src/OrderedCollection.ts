@@ -20,6 +20,7 @@ import * as binding from "./binding";
 import { Results } from "./Results";
 import { Collection } from "./Collection";
 import { unwind } from "./ranges";
+import { TypeHelpers } from "./PropertyMap";
 
 type PropertyType = string;
 export type SortDescriptor = [string] | [string, boolean];
@@ -33,7 +34,9 @@ export type CollectionChangeSet = {
 export type CollectionChangeCallback<T> = (collection: OrderedCollection<T>, changes: CollectionChangeSet) => void;
 
 /** @internal */
-export type Getter<T = unknown> = (results: binding.Results, index: number) => T;
+export type OrderedCollectionHelpers = TypeHelpers & {
+  get(results: binding.Results, index: number): unknown;
+};
 
 const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true, writable: true };
 const PROXY_HANDLER: ProxyHandler<OrderedCollection> = {
@@ -67,7 +70,10 @@ export class OrderedCollection<T = unknown>
   implements ReadonlyArray<T>
 {
   /** @internal */
-  constructor(/** @internal */ private results: binding.Results, /** @internal */ protected getter: Getter<T>) {
+  constructor(
+    /** @internal */ private results: binding.Results,
+    /** @internal */ protected helpers: OrderedCollectionHelpers,
+  ) {
     super((callback) => {
       return this.results.addNotificationCallback((changes) => {
         try {
@@ -93,7 +99,7 @@ export class OrderedCollection<T = unknown>
         configurable: false,
         writable: false,
       },
-      getter: {
+      helpers: {
         enumerable: false,
         configurable: false,
         writable: false,
@@ -110,7 +116,7 @@ export class OrderedCollection<T = unknown>
    * @internal
    */
   public get(index: number): T {
-    return this.getter(this.results, index);
+    return this.helpers.fromBinding(this.helpers.get(this.results, index)) as T;
   }
 
   keys(): IterableIterator<number> {
@@ -131,8 +137,12 @@ export class OrderedCollection<T = unknown>
   }
 
   values(): IterableIterator<T> {
-    const getter = this.getter;
     const snapshot = this.results.snapshot();
+    const fromBinding = this.helpers.fromBinding;
+    const get = this.helpers.get;
+    function getter(index: number) {
+      return fromBinding(get(snapshot, index)) as T;
+    }
     const keys = this.keys();
     return {
       next(): IteratorResult<T, void> {
@@ -140,7 +150,7 @@ export class OrderedCollection<T = unknown>
         if (done) {
           return { value: undefined, done };
         } else {
-          return { value: getter(snapshot, index), done };
+          return { value: getter(index), done };
         }
       },
       [Symbol.iterator]() {
