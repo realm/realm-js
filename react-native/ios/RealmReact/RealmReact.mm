@@ -18,7 +18,11 @@
 
 #import "RealmReact.h"
 
+#if TARGET_OS_OSX
+#import "jsc_init.h"
+#else
 #import <realm-js-ios/jsc_init.h>
+#endif
 
 #import <React/RCTBridge+Private.h>
 #import <React/RCTJavaScriptExecutor.h>
@@ -34,7 +38,13 @@
 #import <thread>
 
 #if DEBUG
+
+#if TARGET_OS_OSX
+#include "rpc.hpp"
+#else
 #include <realm-js-ios/rpc.hpp>
+#endif
+
 #import "GCDWebServer.h"
 #import "GCDWebServerDataRequest.h"
 #import "GCDWebServerDataResponse.h"
@@ -59,29 +69,9 @@ using namespace realm::rpc;
 - (std::shared_ptr<facebook::react::CallInvoker>)jsCallInvoker;
 @end
 
+// no longer needed in React Native > 0.44
 extern "C" JSGlobalContextRef RealmReactGetJSGlobalContextForExecutor(id executor, bool create) {
-    Ivar contextIvar = class_getInstanceVariable([executor class], "_context");
-    if (!contextIvar) {
-        return NULL;
-    }
-
-    id rctJSContext = object_getIvar(executor, contextIvar);
-    if (!rctJSContext && create) {
-        Class RCTJavaScriptContext = NSClassFromString(@"RCTJavaScriptContext");
-        if ([RCTJavaScriptContext instancesRespondToSelector:@selector(initWithJSContext:onThread:)]) {
-            // for RN 0.28.0+
-            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:[JSContext new] onThread:[NSThread currentThread]];
-        }
-        else {
-            // for RN < 0.28.0
-            NSCAssert([RCTJavaScriptContext instancesRespondToSelector:@selector(initWithJSContext:)], @"React Native version too old");
-            rctJSContext = [[RCTJavaScriptContext alloc] initWithJSContext:[JSContext new]];
-        }
-
-        object_setIvar(executor, contextIvar, rctJSContext);
-    }
-
-    return [rctJSContext context].JSGlobalContextRef;
+    return NULL;
 }
 
 @interface RealmReact () <RCTBridgeModule, RCTInvalidating>

@@ -33,7 +33,7 @@ Pod::Spec.new do |s|
 
   s.authors                = package['author']
   s.homepage               = package['homepage']
-  s.platform               = :ios, '9.0'
+  s.platforms              = { :ios => "9.0", :osx => "10.13" }
 
   # The source field is a required field in the podspec, but it is not ment to be used.
   # This is because the Podspec is not ment to be published into a CocoaPod repository, instead React Native uses a :path style dependency when adding this to the users projects Podfile.
@@ -63,7 +63,9 @@ Pod::Spec.new do |s|
                               }
 
   # TODO: Consider providing an option to build with the -dbg binaries instead
-  s.vendored_frameworks = 'react-native/ios/realm-js-ios.xcframework'
+  s.ios.vendored_frameworks = 'react-native/ios/realm-js-ios.xcframework'
+  s.osx.vendored_libraries = 'react-native/ios/realm-js-ios.xcframework/macos-arm64_x86_64/librealm-js-ios.a'
+  s.osx.public_header_files = ['react-native/ios/realm-js-ios.xcframework/macos-arm64_x86_64/Headers/realm-js-ios/jsc_init.h', 'react-native/ios/realm-js-ios.xcframework/macos-arm64_x86_64/Headers/realm-js-ios/rpc.hpp']
 
   s.dependency 'React'
   # TODO: Ensure the same version of GCDWebServer is used for Android
