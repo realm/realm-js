@@ -802,15 +802,14 @@ classes:
 
   # These are a bit of a hack.
   # TODO rename one of the AppCredentials::google() functions.
-  # TODO these need support for non-default-constructible types
-  # GoogleAuthCode:
-  #   cppName: app::AuthCode
-  #   constructors:
-  #     make: '(code: std::string)'
-  # GoogleIdToken:
-  #   cppName: app::IdToken
-  #   constructors:
-  #     make: '(token: std::string)'
+  GoogleAuthCode:
+    cppName: app::AuthCode
+    constructors:
+      make: '(code: std::string)'
+  GoogleIdToken:
+    cppName: app::IdToken
+    constructors:
+      make: '(token: std::string)'
 
   AppCredentials:
     cppName: app::AppCredentials
@@ -818,11 +817,11 @@ classes:
       facebook: '(access_token: const AppCredentialsToken) -> AppCredentials'
       anonymous: '(reuse_anonymous_credentials: bool) -> AppCredentials'
       apple: '(id_token: const AppCredentialsToken) -> AppCredentials'
-      # google:
-      #   - sig: '(id_token: GoogleAuthCode&&) -> AppCredentials'
-      #     suffix: auth
-      #   - sig: '(id_token: GoogleIdToken&&) -> AppCredentials'
-      #     suffix: id
+      google:
+        - sig: '(id_token: GoogleAuthCode&&) -> AppCredentials'
+          suffix: auth
+        - sig: '(id_token: GoogleIdToken&&) -> AppCredentials'
+          suffix: id
       custom: '(token: const AppCredentialsToken) -> AppCredentials'
       username_password: '(username: std::string, password: std::string) -> AppCredentials'
       function:
