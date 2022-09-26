@@ -1,6 +1,7 @@
 # yaml-language-server: $schema=generated/spec.schema.json
 
 headers:
+  - "realm/sync/config.hpp"
   - "realm/object-store/shared_realm.hpp"
   - "realm/object-store/object_store.hpp"
   - "realm/object-store/object_schema.hpp"
@@ -56,9 +57,11 @@ templates: # value tells you how many arguments it takes ('*' means any number)
   # std::unordered_map: 2
   std::map: 2
   util::UniqueFunction: 1
+  std::function: 1
   AsyncCallback: 1 # same as UniqueFunction, but guaranteed to be called exactly once.
                    # Recomended to convert to Future/Promise/Task in bound language.
   AsyncResult: 1 # Synthetic type. Not used in spec, but created by utilities.
+  Nullable: 1 # By default most types in the spec are assumed to be non-null. This marks those that are nullable.
 
 mixedInfo:
   dataTypes:
@@ -284,25 +287,27 @@ records:
       in_memory:
         type: bool
         default: false
-      schema:
-        type: util::Optional<std::vector<ObjectSchema>>
-        default: {}
+      schema: util::Optional<std::vector<ObjectSchema>>
       schema_version:
         type: uint64_t
         default: -1
       schema_mode:
         type: SchemaMode
         default: SchemaMode::Automatic
+      sync_config: Nullable<std::shared_ptr<SyncConfig>>
+      migration_function: 'Nullable<std::function<(old_realm: SharedRealm, new_realm: SharedRealm, new_schema_handle: Schema&) -> void>>'
+      initialization_function: 'Nullable<std::function<(realm: SharedRealm) -> void>>'
+      should_compact_on_launch_function: 'Nullable<std::function<(total_bytes: uint64_t, used_bytes: uint64_t) -> bool>>'
 
-      migration_function:
-        type: '(old_realm: SharedRealm, new_realm: SharedRealm, new_schema_handle: Schema&) -> void'
-        default: {}
-      initialization_function:
-        type: '(realm: SharedRealm) -> void'
-        default: {}
-      should_compact_on_launch_function:
-        type: '(total_bytes: uint64_t, used_bytes: uint64_t) -> bool'
-        default: {}
+  SyncConfig:
+    fields:
+      user: SharedSyncUser
+      partition_value:
+        type: std::string
+        default: ""
+      flx_sync_requested:
+        type: bool
+        default: false;
 
   ObjectChangeSet:
     fields:
@@ -336,15 +341,9 @@ records:
   BindingContext:
     cppName: Helpers::BindingContextMethods
     fields:
-      did_change:
-        type: '(r: SharedRealm)'
-        default: {}
-      before_notify:
-        type: '(r: SharedRealm)'
-        default: {}
-      schema_did_change:
-        type: '(r: SharedRealm)' # new schema available as r.schema
-        default: {}
+      did_change: 'Nullable<util::UniqueFunction<(r: SharedRealm)>>'
+      before_notify: 'Nullable<util::UniqueFunction<(r: SharedRealm)>>'
+      schema_did_change: 'Nullable<util::UniqueFunction<(r: SharedRealm)>>' # new schema available as r.schema
 
   SyncClientTimeouts:
     fields:
@@ -370,9 +369,7 @@ records:
       metadata_mode:
         type: MetadataMode
         default: MetadataMode::Encryption
-      custom_encryption_key:
-        type: util::Optional<EncryptionKey>
-        default: {}
+      custom_encryption_key: util::Optional<EncryptionKey>
       # logger_factory: (level: LoggerLevel) -> std::unique_ptr<util::Logger>
       log_level:
         type: LoggerLevel
