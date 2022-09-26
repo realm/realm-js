@@ -331,6 +331,12 @@ function visitRealmClass(path: NodePath<types.ClassDeclaration>) {
     .get("body")
     .filter((p) => p.isClassProperty()) as NodePath<types.ClassProperty>[];
 
+  if (classProperties.find((p) => p.node.static && types.isIdentifier(p.node.key) && p.node.key.name === "schema")) {
+    throw new Error(
+      "Classes extending Realm.Object cannot define their own `schema` static, all properties must be defined using TypeScript syntax",
+    );
+  }
+
   const schemaProperties = classProperties
     .filter((p) => !p.node.static)
     .map(visitRealmClassProperty)
