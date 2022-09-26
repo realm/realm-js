@@ -441,8 +441,9 @@ export function bindModel(spec: Spec): BoundSpec {
     struct.cppName = cppName ?? name;
     struct.fields = Object.entries(fields).map(([name, field]) => {
       const type = resolveTypes(field.type);
-      // Optional fields are never required.
-      const required = field.default === undefined && !(type.kind == "Template" && type.name == "util::Optional");
+      // Optional and Nullable fields are never required.
+      const required =
+        field.default === undefined && !(type.kind == "Template" && ["util::Optional", "Nullable"].includes(type.name));
       return new Field(name, type, required);
     });
   }
