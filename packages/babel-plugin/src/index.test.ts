@@ -20,9 +20,9 @@ import * as babel from "@babel/core";
 
 import type { ObjectSchema, ObjectSchemaProperty } from "realm";
 
-import { describeProperty, extractSchema } from "./generator";
-import { transformProperty } from "./generator/transform";
-import { transform, TransformOptions } from "./transform";
+import { describeProperty, extractSchema } from "./tests/generator";
+import { transformProperty } from "./tests/generator/transform";
+import { transform, TransformOptions } from "./tests/transform";
 
 type TransformTestOptions = { name: string; test: (result: babel.BabelFileResult) => void } & TransformOptions;
 
@@ -346,6 +346,12 @@ describe("Babel plugin", () => {
       expect(parsedSchema?.primaryKey).toEqual("test");
       expect(parsedSchema?.embedded).toEqual(true);
       expect(parsedSchema?.asymmetric).toEqual(true);
+    });
+
+    it("throws an error if there is already a static `schema` property", () => {
+      expect(() => transformProperty(`static schema = {};`)).toThrow(
+        "Classes extending Realm.Object cannot define their own `schema` static, all properties must be defined using TypeScript syntax",
+      );
     });
   });
 
