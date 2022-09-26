@@ -42,7 +42,6 @@ import {
   RelaxedMethodSpec,
   RelaxedRecordSpec,
   RelaxedSpec,
-  RelaxedValueType,
 } from "./spec/relaxed-model";
 import { parseTypeSpec } from "./spec/type-transformer";
 
@@ -168,7 +167,7 @@ function normalizeFieldSpec(spec: RelaxedFieldSpec): FieldSpec {
   }
 }
 
-function normalizeValueType(value: RelaxedValueType | undefined): ValueType | undefined {
+function normalizeValueType(value: unknown): ValueType | undefined {
   if (typeof value === "string" || typeof value === "undefined") {
     return value;
   } else {
