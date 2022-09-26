@@ -44,12 +44,14 @@ const PRIMITIVES_MAPPING: Record<string, string> = {
 
 const TEMPLATE_MAPPING: Record<string, (...args: string[]) => string> = {
   "std::vector": (arg) => `${arg}[]`,
-  "util::Optional": (arg) => `(${arg} | null)`,
+  "util::Optional": (arg) => `null | undefined | ${arg}`,
+  Nullable: (t) => `null | undefined | ${t}`,
   "std::shared_ptr": (arg) => arg,
   "std::pair": (a, b) => `[${a}, ${b}]`,
   "std::tuple": (...args) => `[${args}]`,
   "std::map": (k, v) => `Record<${k}, ${v}>`,
   "util::UniqueFunction": (f) => f,
+  "std::function": (f) => f,
   AsyncResult: (t) => `Promise<${t}>`,
   AsyncCallback: (sig) => assert.fail(`async transfrom not applied to function taking AsyncCallback<${sig}>`),
 };

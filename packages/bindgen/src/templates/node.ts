@@ -184,6 +184,10 @@ function toCpp(type: Type): string {
       return `${toCpp(type.type)}&&`;
     case "Template":
       assert.notEqual(type.name, "AsyncResult", "Should never see AsyncResult here");
+
+      // Nullable is just a marker, not actually a part of the C++ interface.
+      if (type.name == "Nullable") return toCpp(type.args[0]);
+
       const templateMap: Record<string, string> = {
         AsyncCallback: "util::UniqueFunction",
       };
@@ -378,6 +382,8 @@ function convertToNode(addon: NodeAddon, type: Type, expr: string): string {
         case "std::shared_ptr":
           if (inner.kind == "Class" && inner.sharedPtrWrapped) return `NODE_FROM_SHARED_${inner.name}(${env}, ${expr})`;
           return c(inner, `*${expr}`);
+        case "Nullable":
+          return `[&] (auto&& val) { return !val ? ${env}.Null() : ${c(inner, "val")}; }(${expr})`;
         case "util::Optional":
           return `[&] (auto&& opt) { return !opt ? ${env}.Null() : ${c(inner, "*opt")}; }(${expr})`;
         case "std::vector":
@@ -412,6 +418,7 @@ function convertToNode(addon: NodeAddon, type: Type, expr: string): string {
             }(${expr})`;
         case "AsyncCallback":
         case "util::UniqueFunction":
+        case "std::function":
           assert.equal(inner.kind, "Func");
           return c(inner, `FWD(${expr})`);
         case "AsyncResult":
@@ -432,9 +439,7 @@ function convertToNode(addon: NodeAddon, type: Type, expr: string): string {
       return `
             [&] (auto&& cb) -> Napi::Value {
                 if constexpr(std::is_constructible_v<bool, decltype(cb)>) {
-                    if (!bool(cb)) {
-                        return ${env}.Null();
-                    }
+                    REALM_ASSERT(bool(cb) && "Must mark nullable callbacks with Nullable<> in spec");
                 }
                 return Napi::Function::New(${env}, [cb = FWD(cb)] (const Napi::CallbackInfo& info) {
                     auto ${env} = info.Env();
@@ -467,10 +472,7 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
     case "Primitive":
       return convertPrimFromNode(addon, type.name, expr);
     case "Pointer":
-      return `[&] (Napi::Value v) { return (v.IsNull() || v.IsUndefined()) ? nullptr : &${c(
-        type.type,
-        "v",
-      )}; }(${expr})`;
+      return `&(${c(type.type, expr)})`;
     case "Opaque":
       return `*((${expr}).As<Napi::External<${type.name}>>().Data())`;
 
@@ -492,11 +494,11 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
       switch (type.name) {
         case "std::shared_ptr":
           if (inner.kind == "Class" && inner.sharedPtrWrapped) return `NODE_TO_SHARED_${inner.name}(${expr})`;
-          return c(inner, `*${expr}`);
+          return `std::make_shared<${toCpp(inner)}>(${c(inner, expr)})`;
+        case "Nullable":
         case "util::Optional":
           return `[&] (Napi::Value val) {
-                        using Opt = util::Optional<${toCpp(inner)}>;
-                        return (val.IsNull() || val.IsUndefined()) ? Opt() : Opt(${c(inner, "val")});
+                        return (val.IsNull() || val.IsUndefined()) ? ${toCpp(type)}() : ${c(inner, "val")};
                     }(${expr})`;
         case "std::vector":
           return `[&] (const Napi::Array vec) {
@@ -537,6 +539,7 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
             }((${expr}).As<Napi::Object>())`;
         case "AsyncCallback":
         case "util::UniqueFunction":
+        case "std::function":
           return `${toCpp(type)}(${c(inner, expr)})`;
       }
       assert.fail(`unknown template ${type.name}`);
@@ -551,7 +554,6 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
 
     case "Func":
       // TODO see if we ever need to do any conversion from Napi::Error exceptions to something else.
-      // TODO need to handle null/undefined here. A bit tricky since we don't know the real type in the YAML.
       // TODO need to consider different kinds of functions:
       // - functions called inline (or otherwise called from within a JS context)
       // - async functions called from JS thread (need to use MakeCallback() rather than call) (current impl)

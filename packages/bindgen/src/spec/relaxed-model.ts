@@ -18,13 +18,6 @@
 
 import { InterfaceSpec, ClassSpec, Spec, MixedInfo } from "./model";
 
-/**
- * Needed we want to avoid quoting all the values that are primitive non-strings
- *
- * TODO: Determine if we should require this being wrapped in quotes instead
- */
-export type RelaxedValueType = string | boolean | number | [] | Record<string, never>;
-
 type ReplaceFields<Base, Replacements> = Omit<Base, keyof Replacements> & Replacements;
 
 export type RelaxedSpec = ReplaceFields<
@@ -61,7 +54,7 @@ export type RelaxedFieldSpec =
   | string
   | {
       type: string;
-      default?: RelaxedValueType;
+      default?: unknown;
     };
 
 export type RelaxedClassSpec = Pick<Partial<ClassSpec>, "sharedPtrWrapped"> & {
