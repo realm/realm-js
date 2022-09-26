@@ -70,6 +70,8 @@ export class Task extends Realm.Object {
 
    `npm install --save-dev @babel/plugin-proposal-decorators`
 
+   and enable decorators in your `tsconfig.json` by adding: `"experimentalDecorators": true` to the `compilerOptions`.
+
 3. Update your project's `babel.config.js` to load these two plugins:
 
    ```js
@@ -146,6 +148,71 @@ The supported types are shown in the table below. See [the Realm documentation](
 | `Types.Mixed`                                | `mixed`           | `unknown`       | `Realm.Mixed`           |                                                                                        |
 | <code>Types.LinkingObjects<T,&nbsp;N></code> | `linkingObjects`  |                 |                         | `T` is the type of objects, `N` is the property name of the relationship (as a string) |
 
+### Specifying schema properties as `static`s
+
+Additional schema properties can be specified by adding `static` properties to your class, as shown in the table below. See [the Realm documentation](https://www.mongodb.com/docs/realm/sdk/node/examples/define-a-realm-object-model/) for more details.
+
+| Static property | Type      | Notes                                                                      |
+| --------------- | --------- | -------------------------------------------------------------------------- |
+| `name`          | `string`  | Specifies the name of the Realm schema. Defaults to your class name.       |
+| `primaryKey`    | `string`  | Specifies the name of a property to be used as the primary key.            |
+| `embedded`      | `boolean` | Specifies this is an embedded schema.                                      |
+| `asymmetric`    | `boolean` | Specifies this schema should sync unidirectionally if using flexible sync. |
+
+For example:
+
+```ts
+import Realm from "realm";
+
+export class Task extends Realm.Object {
+  _id!: Realm.BSON.ObjectId;
+  description!: string;
+  isComplete = false;
+
+  static primaryKey = "_id";
+}
+```
+
+### Using decorators to index and remap properties
+
+The `@realm/babel-plugin` package exports decorators to allow you to specify certain properties should be indexed (using the `@index` decorators) or should remap to a Realm schema property with a different name (using the `@mapTo` decorator). To learn more about this functionality, see [the documentation](https://www.mongodb.com/docs/realm/sdk/react-native/examples/define-a-realm-object-model/#index-a-property).
+
+Note that use of decorators requires using the `@babel/plugin-proposal-decorators` plugin and for `experimentalDecorators` to be enabled in your `tsconfig.json`. There is currently no way to specifying properties to be indexed or remapped without using decorators.
+
+This table shows the available decorators:
+
+| Decorator | Parameters                    | Notes                                                                                                |
+| --------- | ----------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `index`   | none                          | Specifies that the decorated property should be indexed by Realm.                                    |
+| `mapTo`   | `(realmPropertyName: string)` | Specifies that the decorated property should be stored as `realmPropertyName` in the Realm database. |
+
+The example below shows both decorators in use:
+
+```ts
+import Realm from "realm";
+import { mapTo, index } from "@realm/babel-plugin";
+
+export class Task extends Realm.Object {
+  _id!: Realm.BSON.ObjectId;
+  // Add an index to the `description` property
+  @index
+  description!: string;
+  // Specify that the `isComplete` property should be stored as `complete` in the Realm database
+  @mapTo("complete")
+  isComplete = false;
+}
+```
+
+### Full example
+
+The following code shows an example of all types, schema properties and decorators in use:
+
 ## Restrictions
 
+### All class properties will be added to the Realm schema
+
+There is currently no way to specify a property on your class which should not be persisted to the Realm .
+
 ### Classes extending Realm.Object cannot be constructed with `new`
+
+This plugin does not change the behaviour of `Realm.Object`, which cannot be constructed using `new`. Instead, you may wish to add a `static` `generate` method to your class which returns an object representing the new instance, as shown in our [example app](https://github.com/realm/realm-js/blob/master/example/app/models/Task.ts).

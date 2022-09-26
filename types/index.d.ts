@@ -353,7 +353,7 @@ declare namespace Realm {
          static embedded?: boolean;
 
          /**
-          * Optionally specify that the schema should use asymmetric sync when using @realm/babel-plugin
+          * Optionally specify that the schema should sync unidirectionally if using flexible sync when using @realm/babel-plugin
           */
          static asymmetric?: boolean;
     }
