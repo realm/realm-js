@@ -280,11 +280,11 @@ declare namespace Realm {
      * Object
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Object.html }
      */
-    abstract class Object<T = unknown> {
+    abstract class Object<T = unknown, RequiredFields extends keyof T = never> {
         /**
          * Creates a new object in the database.
          */
-        constructor(realm: Realm, values: Unmanaged<T>);
+        constructor(realm: Realm, values: Unmanaged<T, RequiredFields>);
 
         /**
          * @returns An array of the names of the object's properties.
@@ -1040,6 +1040,16 @@ type OmittedRealmTypes<T> = Omit<T,
     ExtractPropertyNamesOfType<T, Realm.Dictionary>
 >;
 
+/** Make all fields optional except those specified in K */
+type OptionalExcept<T, K extends keyof T> = Partial<T> & Pick<T, K>;
+
+/**
+ * Omits all properties of a model which are not defined by the schema,
+ * making all properties optional except those specified in RequiredFields.
+ */
+type OmittedRealmTypesWithRequired<T, RequiredFields extends keyof OmittedRealmTypes<T>> =
+    OptionalExcept<OmittedRealmTypes<T>, RequiredFields>;
+
 /** Remaps realm types to "simpler" types (arrays and objects) */
 type RemappedRealmTypes<T> =
     RealmListsRemappedModelPart<T> &
@@ -1047,9 +1057,12 @@ type RemappedRealmTypes<T> =
 
 /**
  * Joins T stripped of all keys which value extends Realm.Collection and all inherited from Realm.Object,
- * with only the keys which value extends Realm.List, remapped as Arrays.
+ * with only the keys which value extends Realm.List, remapped as Arrays. All properties are optional
+ * except those specified in RequiredFields.
  */
-type Unmanaged<T> = OmittedRealmTypes<T> & RemappedRealmTypes<T>;
+type Unmanaged<T, RequiredFields extends keyof OmittedRealmTypes<T>> =
+    OmittedRealmTypesWithRequired<T, RequiredFields> & RemappedRealmTypes<T>;
+
 declare class Realm {
     static defaultPath: string;
 
