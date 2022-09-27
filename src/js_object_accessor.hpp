@@ -27,6 +27,8 @@
 #include "js_set.hpp"
 #include "js_realm_object.hpp"
 #include "js_schema.hpp"
+#include "js_types.hpp"
+#include "realm/util/optional.hpp"
 
 #if REALM_ENABLE_SYNC
 #include <realm/util/base64.hpp>
@@ -119,9 +121,20 @@ public:
 
     OptionalValue default_value_for_property(const ObjectSchema& object_schema, const Property& prop)
     {
-        auto defaults = get_delegate<JSEngine>(m_realm.get())->m_defaults[object_schema.name];
+        const auto& defaults = get_delegate<JSEngine>(m_realm.get())->m_defaults[object_schema.name];
         auto it = defaults.find(prop.name);
-        return it != defaults.end() ? util::make_optional(ValueType(it->second)) : std::nullopt;
+
+        if (it == defaults.end()) {
+            return std::nullopt;
+        }
+        else {
+            auto value = ValueType(it->second);
+            if (Value::is_function(m_ctx, value)) {
+                value = Function<JSEngine>::call(m_ctx, Value::validated_to_function(m_ctx, value), 0, {});
+            }
+            return util::make_optional(value);
+        }
+        // return it != defaults.end() ? util::make_optional(ValueType(it->second)) : std::nullopt;
     }
 
     template <typename T>
