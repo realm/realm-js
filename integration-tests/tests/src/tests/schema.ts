@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2021 Realm Inc.
+// Copyright 2022 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,24 +16,35 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import chaiAsPromised from "chai-as-promised";
-import chai from "chai";
+import { expect } from "chai";
+import Realm from "realm";
 
-chai.use(chaiAsPromised);
+describe("Realm schema", () => {
+  describe("Default property values", () => {
+    it("can take a function as a default property value", () => {
+      interface Test {
+        dynamic?: number;
+      }
 
-import "./realm-constructor";
-import "./objects";
-import "./class-models";
-import "./serialization";
-import "./iterators";
-import "./queries";
-import "./dynamic-schema-updates";
-import "./bson";
-import "./dictionary";
-import "./credentials/anonymous";
-import "./sync/mixed";
-import "./sync/flexible";
-import "./sync/asymmetric";
-import "./sync/sync-as-local";
-import "./transaction";
-import "./schema";
+      const realm = new Realm({
+        schema: [
+          {
+            name: "Test",
+            properties: {
+              dynamic: {
+                type: "int",
+                default: () => 42,
+              },
+            },
+          },
+        ],
+      });
+
+      const test = realm.write(() => {
+        return realm.create<Test>("Test", {});
+      });
+
+      expect(test.dynamic).to.equal(42);
+    });
+  });
+});
