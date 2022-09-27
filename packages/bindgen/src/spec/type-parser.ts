@@ -104,12 +104,9 @@ class TypeParser extends CstParser {
     this.MANY({
       DEF: () => {
         this.OR([
-          {
-            ALT: () => this.CONSUME(TOKEN_TYPES.Const),
-          },
-          {
-            ALT: () => this.CONSUME1(TOKEN_TYPES.NoExcept),
-          },
+          { ALT: () => this.CONSUME(TOKEN_TYPES.Const) },
+          { ALT: () => this.CONSUME1(TOKEN_TYPES.NoExcept) },
+          { ALT: () => this.CONSUME1(TOKEN_TYPES.OffThread) },
         ]);
       },
     });
