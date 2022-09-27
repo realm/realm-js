@@ -15,14 +15,4 @@ export class Task extends Realm.Object<Task> {
   constructor(realm: Realm, description: string, userId?: string) {
     super(realm, {description, userId: userId || '_SYNC_DISABLED_'});
   }
-
-  // static generate(description: string, userId?: string) {
-  //   return {
-  //     _id: new Realm.BSON.ObjectId(),
-  //     description,
-  //     isComplete: false,
-  //     createdAt: new Date(),
-  //     userId: userId || '_SYNC_DISABLED_',
-  //   };
-  // }
 }
