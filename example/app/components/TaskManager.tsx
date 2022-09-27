@@ -30,7 +30,7 @@ export const TaskManager: React.FC<{
       // no changes propagate and the transaction needs to start over when connectivity allows.
       realm.write(() => {
         // realm.create('Task', Task.generate(description, userId));
-        new Task(realm, {userId: 'test'});
+        return new Task(realm, description, userId);
       });
     },
     [realm, userId],
