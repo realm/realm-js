@@ -54,6 +54,7 @@ const RETURNED_REALMS = new Set<WeakRef<binding.Realm>>();
 
 export class Realm {
   public static Object = RealmObject;
+  public static Collection = Collection;
   public static Results = Results;
   public static List = List;
   public static App = App;
