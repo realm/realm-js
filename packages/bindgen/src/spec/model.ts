@@ -112,6 +112,7 @@ export type FunctionTypeSpec = {
   return: TypeSpec;
   isConst: boolean;
   isNoExcept: boolean;
+  isOffThread: boolean;
 };
 
 export type ArgumentSpec = {

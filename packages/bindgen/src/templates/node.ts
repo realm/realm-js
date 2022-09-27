@@ -565,8 +565,8 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
       //     - This has a risk of deadlock if not done correctly.
       // Note: putting the FunctionReference in a shared_ptr because some of these need to be put into a std::function
       // which requires copyability, but FunctionReferences are move-only.
-      return `
-                [cb = std::make_shared<Napi::FunctionReference>(Napi::Persistent(${expr}.As<Napi::Function>()))]
+      const lambda = `
+              [cb = std::make_shared<Napi::FunctionReference>(Napi::Persistent(${expr}.As<Napi::Function>()))]
                 (${type.args.map(({ name, type }) => `${toCpp(type)} ${name}`).join(", ")}) -> ${toCpp(type.ret)} {
                     auto ${env} = cb->Env();
                     Napi::HandleScope hs(${env});
@@ -584,6 +584,12 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
                         throw;
                     }
                 }`;
+      if (!type.isOffThread) return lambda;
+
+      // For now assuming that all void-returning functions are "notifications" and don't need to block until done.
+      // Non-void returning functions *must* block so they have something to return.
+      const shouldBlock = !(type.ret.kind == "Primitive" && type.ret.name == "void");
+      return shouldBlock ? `schedulerWrapBlockingFunction(${lambda})` : `util::EventLoopDispatcher(${lambda})`;
 
     case "Enum":
       return `${type.cppName}((${expr}).As<Napi::Number>().DoubleValue())`;

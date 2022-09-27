@@ -25,6 +25,7 @@ export const TOKEN_TYPES = {
     group: Lexer.SKIPPED,
   }),
   Const: createToken({ name: "Const", pattern: "const" }),
+  OffThread: createToken({ name: "OffThread", pattern: "off_thread" }),
   NoExcept: createToken({ name: "NoExcept", pattern: "noexcept" }),
   Identifier: createToken({ name: "Identifier", pattern: /[_a-zA-Z]+[_a-zA-Z0-9]*/ }),
   /*

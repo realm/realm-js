@@ -297,7 +297,7 @@ records:
       sync_config: Nullable<std::shared_ptr<SyncConfig>>
       migration_function: 'Nullable<std::function<(old_realm: SharedRealm, new_realm: SharedRealm, new_schema_handle: Schema&) -> void>>'
       initialization_function: 'Nullable<std::function<(realm: SharedRealm) -> void>>'
-      should_compact_on_launch_function: 'Nullable<std::function<(total_bytes: uint64_t, used_bytes: uint64_t) -> bool>>'
+      should_compact_on_launch_function: 'Nullable<std::function<(total_bytes: uint64_t, used_bytes: uint64_t) off_thread -> bool>>'
 
   SyncConfig:
     fields:
@@ -440,7 +440,7 @@ classes:
       has_binding_context: '(r: Realm) -> bool'
       set_binding_context: '(r: SharedRealm, methods: BindingContext)'
       get_or_create_object_with_primary_key: '(t: TableRef, pk: Mixed) -> std::pair<Obj, bool>'
-      make_network_transport: '(runRequest: (request: Request&&, callback: util::UniqueFunction<(response: Response&&)>&&))'
+      make_network_transport: '(runRequest: (request: Request&&, callback: util::UniqueFunction<(response: Response&&)>&&) off_thread)'
 
   ConstTableRef:
     needsDeref: true
