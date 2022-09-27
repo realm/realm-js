@@ -243,10 +243,13 @@ function convertPrimToNode(addon: NodeAddon, type: string, expr: string): string
     case "float":
       return `${addon.accessCtor("Float")}.New({${convertPrimToNode(addon, "double", expr)}})`;
 
-    case "count_t":
     case "double":
     case "int32_t":
       return `Napi::Number::New(${env}, ${expr})`;
+
+    case "count_t":
+      // NOTE: using int64_t cast here to get -1.0 for size_t(-1), aka npos.
+      return `Napi::Number::New(${env}, int64_t(${expr}))`;
 
     case "int64_t":
     case "uint64_t":
@@ -307,7 +310,7 @@ function convertPrimFromNode(addon: NodeAddon, type: string, expr: string): stri
       return `(${expr}).As<Napi::Number>().Int32Value()`;
 
     case "count_t":
-      // TODO consider calling Int32Value on 32-bit platforms. Probably not worth it though.
+      // NOTE: using Int64 here is important to correctly handle -1.0 aka npos.
       return `size_t((${expr}).As<Napi::Number>().Int64Value())`;
 
     case "int64_t":
