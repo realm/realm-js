@@ -1,4 +1,7 @@
+#include <condition_variable>
+#include <exception>
 #include <memory>
+#include <mutex>
 #include <napi.h>
 
 #include <realm/object-store/keypath_helpers.hpp>
@@ -13,6 +16,13 @@
 #include <realm/object-store/sync/generic_network_transport.hpp>
 #include <realm/object-store/util/event_loop_dispatcher.hpp>
 #include <realm/util/functional.hpp>
+#include <type_traits>
+#include <utility>
+
+// Equivalent to auto(x) in c++23.
+#define REALM_DECAY_COPY(x) std::decay_t<decltype(x)>(x)
+
+#define FWD(x) std::forward<decltype(x)>(x)
 
 namespace realm::js::node {
 namespace {
@@ -47,7 +57,8 @@ struct Helpers {
         _impl::RealmCoordinator::register_notifier(notifier);
         return notifier;
     }
-    static std::pair<Obj, bool> get_or_create_object_with_primary_key(TableRef table, const Mixed& primary_key) {
+    static std::pair<Obj, bool> get_or_create_object_with_primary_key(TableRef table, const Mixed& primary_key)
+    {
         bool did_create;
         auto obj = table->create_object_with_primary_key(primary_key, &did_create);
         return {obj, did_create};
@@ -107,16 +118,16 @@ struct Helpers {
         realm->m_binding_context = std::make_unique<TheBindingContext>(realm, std::move(methods));
     }
 
-    // This requires the ability to a) implement interfaces and b) mark which functions may be called off-thread.
-    // Both are planned, but for now, providing a helper unlocks sync.
-    using NetworkFuncSig = void(app::Request&&, util::UniqueFunction<void(const app::Response&)>&&);
-    static std::shared_ptr<app::GenericNetworkTransport>
-    make_network_transport(util::UniqueFunction<NetworkFuncSig> runRequest)
+    // This requires the ability to implement interfaces.
+    // This is planned, but for now, providing a helper unlocks sync.
+    template <typename F>
+    static std::shared_ptr<app::GenericNetworkTransport> make_network_transport(F&& runRequest)
     {
+
         class Impl final : public app::GenericNetworkTransport {
         public:
-            Impl(util::UniqueFunction<NetworkFuncSig>&& runRequest)
-                : runRequest(std::move(runRequest))
+            Impl(F&& runRequest)
+                : runRequest(FWD(runRequest))
             {
             }
             void send_request_to_server(app::Request&& request,
@@ -124,9 +135,9 @@ struct Helpers {
             {
                 runRequest(std::move(request), std::move(completionBlock));
             }
-            util::EventLoopDispatcher<NetworkFuncSig> runRequest;
+            std::decay_t<F> runRequest;
         };
-        return std::make_shared<Impl>(std::move(runRequest));
+        return std::make_shared<Impl>(FWD(runRequest));
     }
 };
 
@@ -147,7 +158,6 @@ struct ObjectChangeSet {
 ////////////////////////////////////////////////////////////
 
 // These helpers are used by the generated code.
-
 template <typename Container>
 class [[nodiscard]] ContainerResizer {
 public:
@@ -206,10 +216,40 @@ inline Napi::Function bindFunc(Napi::Function func, Napi::Object self, Args... a
     throw Napi::Error::New(env, e.what());
 }
 
-// Equivalent to auto(x) in c++23.
-#define REALM_DECAY_COPY(x) std::decay_t<decltype(x)>(x)
+template <typename F>
+auto schedulerWrapBlockingFunction(F&& f)
+{
+    return [f = FWD(f), sched = util::Scheduler::make_default()](auto&&... args) {
+        using Ret = std::decay_t<decltype(f(FWD(args)...))>;
+        if (sched->is_on_thread())
+            return f(FWD(args)...);
 
-#define FWD(x) std::forward<decltype(x)>(x)
+        // TODO in C++20, can use std::atomic<bool>::wait() and notify() rather than mutex and condvar.
+        std::mutex mx;
+        std::condition_variable cond;
+        std::optional<Ret> ret;
+        std::exception_ptr ex;
+
+        sched->invoke([&] {
+            auto lk = std::lock_guard(mx);
+            try {
+                ret.emplace(f(FWD(args)...));
+            }
+            catch (...) {
+                ex = std::current_exception();
+            }
+            cond.notify_all();
+        });
+
+        auto lk = std::unique_lock(mx);
+        cond.wait(lk, [&] {
+            return ret || ex;
+        });
+        if (ex)
+            std::rethrow_exception(ex);
+        return std::move(*ret);
+    };
+}
 
 } // namespace
 } // namespace realm::js::node

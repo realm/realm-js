@@ -48,6 +48,7 @@ function makeFunctionType(partial: Partial<FunctionTypeSpec>): FunctionTypeSpec 
     arguments: partial.arguments || [],
     isConst: !!partial.isConst,
     isNoExcept: !!partial.isNoExcept,
+    isOffThread: !!partial.isOffThread,
     return: partial.return || makeQualifiedName({ names: ["void"] }),
   };
 }
@@ -130,9 +131,13 @@ class CstToTypeSpecTransformer extends BaseCstVisitor {
     };
   }
 
-  functionModifiers(ctx: any): Partial<Pick<FunctionTypeSpec, "isConst" | "isNoExcept">> {
+  functionModifiers(ctx: any): Partial<Pick<FunctionTypeSpec, "isConst" | "isNoExcept" | "isOffThread">> {
     debug("Visiting functionModifiers %o", ctx);
-    return { isConst: ctx.Const ? true : undefined, isNoExcept: ctx.NoExcept ? true : undefined };
+    return {
+      isConst: ctx.Const ? true : undefined,
+      isNoExcept: ctx.NoExcept ? true : undefined,
+      isOffThread: ctx.OffThread ? true : undefined,
+    };
   }
 }
 
