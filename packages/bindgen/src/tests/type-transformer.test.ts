@@ -88,6 +88,7 @@ const TESTS: [string, TypeSpec][] = [
       },
       isConst: false,
       isNoExcept: false,
+      isOffThread: false,
     },
   ],
   [
@@ -117,6 +118,7 @@ const TESTS: [string, TypeSpec][] = [
       },
       isConst: false,
       isNoExcept: false,
+      isOffThread: false,
     },
   ],
   [
@@ -143,6 +145,7 @@ const TESTS: [string, TypeSpec][] = [
             ],
             isConst: false,
             isNoExcept: false,
+            isOffThread: false,
             return: {
               kind: "qualified-name",
               names: ["d"],
@@ -164,6 +167,7 @@ const TESTS: [string, TypeSpec][] = [
       },
       isConst: false,
       isNoExcept: false,
+      isOffThread: false,
     },
   ],
   [
@@ -181,6 +185,7 @@ const TESTS: [string, TypeSpec][] = [
       },
       isConst: true,
       isNoExcept: true,
+      isOffThread: false,
     },
   ],
   [

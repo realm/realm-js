@@ -69,7 +69,13 @@ export class Arg {
 class Func {
   readonly kind = "Func";
 
-  constructor(public ret: Type, public args: Arg[], public isConst: boolean, public noexcept: boolean) {}
+  constructor(
+    public ret: Type,
+    public args: Arg[],
+    public isConst: boolean,
+    public noexcept: boolean,
+    public isOffThread: boolean,
+  ) {}
 
   toString() {
     const args = this.args.map((a) => a.toString()).join(", ");
@@ -105,7 +111,13 @@ class Func {
       }
       res = firstCbArgType;
     }
-    return new Func(new Template("AsyncResult", [res]), this.args.slice(0, -1), this.isConst, this.noexcept);
+    return new Func(
+      new Template("AsyncResult", [res]),
+      this.args.slice(0, -1),
+      this.isConst,
+      this.noexcept,
+      this.isOffThread,
+    );
   }
 
   // Like asyncTransform(), but returns self for non-async functions. This is useful if you only care
@@ -174,7 +186,7 @@ class Constructor extends StaticMethod {
 export class Property extends InstanceMethod {
   constructor(on: Class, name: string, type: Type) {
     // TODO should noexcept be true? Maybe provide a way to specify it?
-    super(on, name, name, name, new Func(type, [], true, /*noexcept*/ false));
+    super(on, name, name, name, new Func(type, [], true, /*noexcept*/ false, /*isOffThread*/ false));
   }
 
   get type() {
@@ -335,6 +347,7 @@ export function bindModel(spec: Spec): BoundSpec {
         typeSpec.arguments.map((a) => new Arg(a.name, resolveTypes(a.type))),
         typeSpec.isConst,
         typeSpec.isNoExcept,
+        typeSpec.isOffThread,
       );
     }
 
