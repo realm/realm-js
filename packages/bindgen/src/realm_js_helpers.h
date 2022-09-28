@@ -22,7 +22,8 @@
 // Equivalent to auto(x) in c++23.
 #define REALM_DECAY_COPY(x) std::decay_t<decltype(x)>(x)
 
-#define FWD(x) std::forward<decltype(x)>(x)
+// Equivalent to std::forward<decltype(x)>(x), but faster to compile and less impact on debug builds
+#define FWD(x) ((decltype(x)&&)(x))
 
 namespace realm::js::node {
 namespace {
@@ -207,6 +208,32 @@ inline Napi::Function bindFunc(Napi::Function func, Napi::Object self, Args... a
     return func.Get("bind").As<Napi::Function>().Call(func, {self, args...}).template As<Napi::Function>();
 }
 
+REALM_NOINLINE inline Napi::Object toNodeErrorCode(Napi::Env& env, const std::error_code& e) noexcept
+{
+    REALM_ASSERT_RELEASE(e);
+    auto out = Napi::Object::New(env);
+    out.Set("code", e.value());
+    out.Set("message", e.message());
+    out.Set("category", e.category().name());
+    return out;
+}
+
+REALM_NOINLINE inline Napi::Object toNodeException(Napi::Env& env, const std::exception_ptr& e) noexcept
+{
+    try {
+        std::rethrow_exception(e);
+    }
+    catch (const Napi::Error& e) {
+        return e.Value();
+    }
+    catch (const std::exception& e) {
+        return Napi::Error::New(env, e.what()).Value();
+    }
+    catch (...) {
+        return Napi::Error::New(env, "Unknown Error").Value();
+    }
+}
+
 [[noreturn]] REALM_NOINLINE inline void throwNodeException(Napi::Env& env, const std::exception& e)
 {
     if (dynamic_cast<const Napi::Error*>(&e))
@@ -219,7 +246,8 @@ inline Napi::Function bindFunc(Napi::Function func, Napi::Object self, Args... a
 template <typename F>
 auto schedulerWrapBlockingFunction(F&& f)
 {
-    return [f = FWD(f), sched = util::Scheduler::make_default()](auto&&... args) {
+    return [f = FWD(f),
+            sched = util::Scheduler::make_default()](auto&&... args) -> std::decay_t<decltype(f(FWD(args)...))> {
         using Ret = std::decay_t<decltype(f(FWD(args)...))>;
         if (sched->is_on_thread())
             return f(FWD(args)...);
@@ -230,7 +258,7 @@ auto schedulerWrapBlockingFunction(F&& f)
         std::optional<Ret> ret;
         std::exception_ptr ex;
 
-        sched->invoke([&] {
+        sched->invoke([&]() noexcept {
             auto lk = std::lock_guard(mx);
             try {
                 ret.emplace(f(FWD(args)...));
