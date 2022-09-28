@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import Realm, { BSON } from "realm";
+import Realm, { BSON, SessionStopPolicy } from "realm";
 
 import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "../../hooks";
 
@@ -41,6 +41,7 @@ describe.skipIf(environment.missingServer, "Asymmetric sync", function () {
       schema: [PersonSchema],
       sync: {
         flexible: true,
+        _sessionStopPolicy: SessionStopPolicy.Immediately,
       },
     });
 

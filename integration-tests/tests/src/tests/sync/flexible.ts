@@ -127,6 +127,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
     schema: [FlexiblePersonSchema, DogSchema],
     sync: {
       flexible: true,
+      _sessionStopPolicy: SessionStopPolicy.Immediately,
     },
   });
 
