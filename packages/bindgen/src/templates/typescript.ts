@@ -40,6 +40,8 @@ const PRIMITIVES_MAPPING: Record<string, string> = {
   UUID: "UUID",
   Decimal128: "Decimal128",
   AppError: "(Error & {code: number})",
+  "std::exception_ptr": "Error",
+  "std::error_code": "CppErrorCode",
 };
 
 const TEMPLATE_MAPPING: Record<string, (...args: string[]) => string> = {
@@ -53,7 +55,7 @@ const TEMPLATE_MAPPING: Record<string, (...args: string[]) => string> = {
   "util::UniqueFunction": (f) => f,
   "std::function": (f) => f,
   AsyncResult: (t) => `Promise<${t}>`,
-  AsyncCallback: (sig) => assert.fail(`async transfrom not applied to function taking AsyncCallback<${sig}>`),
+  AsyncCallback: (sig) => assert.fail(`async transform not applied to function taking AsyncCallback<${sig}>`),
 };
 
 const enum Kind {
@@ -163,6 +165,7 @@ export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): vo
           T extends CallableFunction ? T :
           T extends object ? {[K in keyof T]-? : DeepRequired<T[K]>} :
           T;`);
+  out("type CppErrorCode = {code: number, message: string, category: string};");
 
   out("// Mixed types");
   out(generateMixedTypes(spec));

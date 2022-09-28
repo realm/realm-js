@@ -2,6 +2,7 @@
 
 headers:
   - "realm/sync/config.hpp"
+  - "realm/sync/subscriptions.hpp"
   - "realm/object-store/shared_realm.hpp"
   - "realm/object-store/object_store.hpp"
   - "realm/object-store/object_schema.hpp"
@@ -11,10 +12,12 @@ headers:
   - "realm/object-store/collection_notifications.hpp"
   - "realm/object-store/impl/object_notifier.hpp"
   - "realm/object-store/impl/realm_coordinator.hpp"
+  - "realm/object-store/sync/async_open_task.hpp"
   - "realm/object-store/sync/app_credentials.hpp"
   - "realm/object-store/sync/generic_network_transport.hpp"
   - "realm/object-store/sync/app.hpp"
   - "realm/object-store/sync/sync_manager.hpp"
+  - "realm/object-store/sync/sync_session.hpp"
   - "realm/object-store/sync/sync_user.hpp"
   - "realm/object-store/util/bson/bson.hpp"
 
@@ -40,6 +43,8 @@ primitives:
   - EncryptionKey # vector<char> in C++, but should have API of OwnedBinaryData in SDK
                   # TODO consider changing type in realm-core.
   - AppError
+  - std::exception_ptr
+  - std::error_code
 
 typeAliases:
   int: int32_t
@@ -59,7 +64,7 @@ templates: # value tells you how many arguments it takes ('*' means any number)
   util::UniqueFunction: 1
   std::function: 1
   AsyncCallback: 1 # same as UniqueFunction, but guaranteed to be called exactly once.
-                   # Recomended to convert to Future/Promise/Task in bound language.
+                   # Recommended to convert to Future/Promise/Task in bound language.
   AsyncResult: 1 # Synthetic type. Not used in spec, but created by utilities.
   Nullable: 1 # By default most types in the spec are assumed to be non-null. This marks those that are nullable.
 
@@ -208,6 +213,24 @@ enums:
       - patch
       - put
       - del
+  SyncSessionState:
+    cppName: SyncSession::State
+    values:
+      - Active
+      - Dying
+      - Inactive
+      - WaitingForAccessToken
+  SyncSessionConnectionState:
+    cppName: SyncSession::ConnectionState
+    values:
+      - Disconnected
+      - Connecting
+      - Connected
+  ProgressDirection:
+    cppName: SyncSession::ProgressDirection
+    values:
+      - upload
+      - download
 
 constants:
   null_col_key:
@@ -295,6 +318,8 @@ records:
         type: SchemaMode
         default: SchemaMode::Automatic
       sync_config: Nullable<std::shared_ptr<SyncConfig>>
+      # Unclear if migration_function and initialization_function should be marked as off_thread.
+      # Existing JS sdk treats them as not.
       migration_function: 'Nullable<std::function<(old_realm: SharedRealm, new_realm: SharedRealm, new_schema_handle: Schema&) -> void>>'
       initialization_function: 'Nullable<std::function<(realm: SharedRealm) -> void>>'
       should_compact_on_launch_function: 'Nullable<std::function<(total_bytes: uint64_t, used_bytes: uint64_t) off_thread -> bool>>'
@@ -425,7 +450,6 @@ opaqueTypes:
   - AuditInterface
 
 classes:
-  #ThreadSafeReference: {}
   #SchemaChange: {}
 
   Helpers:
@@ -593,10 +617,12 @@ classes:
     staticMethods:
       get_shared_realm:
         - '(config: RealmConfig) -> SharedRealm'
-        #- suffix: for_thread
-          #sig: '(thread: ThreadSafeReference) -> SharedRealm'
-        #- suffix: for_thread_with_sched
-          #sig: '(thread: ThreadSafeReference, scheduler: std::shared_ptr<util::Scheduler>) -> SharedRealm'
+        # These are important, but we need to handle move-only types, and that is tricky
+        # - suffix: from_reference
+        #   sig: '(thread: ThreadSafeReference) -> SharedRealm'
+        # - suffix: from_reference_with_sched
+        #   sig: '(thread: ThreadSafeReference, scheduler: std::shared_ptr<Scheduler>) -> SharedRealm'
+      get_synchronized_realm: '(config: RealmConfig) -> SharedAsyncOpenTask'
       #make_shared_realm: '(config: Realm::Config, version: util::Optional<VersionID>, coordinator: std::shared_ptr<_impl::RealmCoordinator>) -> SharedRealm'
 
     properties:
@@ -619,6 +645,10 @@ classes:
       is_closed: bool
 
       audit_context: AuditInterface*
+
+      sync_session: SharedSyncSession
+      get_latest_subscription_set: SyncSubscriptionSet
+      get_active_subscription_set: SyncSubscriptionSet
 
     methods:
       begin_transaction: ()
@@ -906,6 +936,41 @@ classes:
       set_timeouts: '(timeouts: SyncClientTimeouts)'
       reconnect: ()
       wait_for_sessions_to_terminate: ()
+
+  ThreadSafeReference: {}
+  AsyncOpenTask:
+    sharedPtrWrapped: SharedAsyncOpenTask
+    methods:
+      start: '(callback: (realm: Nullable<ThreadSafeReference>, error: Nullable<std::exception_ptr>) off_thread)'
+      cancel: ()
+      register_download_progress_notifier: '(callback: (transferred_bytes: uint64_t, transferrable_bytes: uint64_t) off_thread) -> uint64_t'
+      unregister_download_progress_notifier: '(token: uint64_t)'
+
+  SyncSession:
+    sharedPtrWrapped: SharedSyncSession
+    properties:
+      state: SyncSessionState
+      connection_state: SyncSessionConnectionState
+      path: std::string
+      user: SharedSyncUser
+      config: SyncConfig
+      full_realm_url: util::Optional<std::string>
+    methods:
+      wait_for_upload_completion: '(callback: (err: Nullable<std::error_code>) off_thread)'
+      wait_for_download_completion: '(callback: (err: Nullable<std::error_code>) off_thread)'
+      register_progress_notifier: '(callback: (transferred_bytes: uint64_t, transferrable_bytes: uint64_t) off_thread, direction: ProgressDirection, is_streaming: bool) -> uint64_t'
+      unregister_progress_notifier: '(token: uint64_t)'
+      register_connection_change_callback: '(callback: (old_state: SyncSessionConnectionState, new_state: SyncSessionConnectionState) off_thread) -> uint64_t'
+      unregister_connection_change_callback: '(token: uint64_t)'
+      revive_if_needed: ()
+      handle_reconnect: ()
+      close: ()
+      log_out: ()
+      shutdown_and_wait: ()
+      update_configuration: '(config: SyncConfig)'
+
+  SyncSubscriptionSet:
+    cppName: sync::SubscriptionSet
 
 interfaces:
   Scheduler:

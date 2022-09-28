@@ -289,6 +289,10 @@ function convertPrimToNode(addon: NodeAddon, type: string, expr: string): string
                 jsErr.Set("code", double(err.error_code.value()));
                 return jsErr;
               }(${expr}))`;
+    case "std::exception_ptr":
+      return `toNodeException(${env}, ${expr})`;
+    case "std::error_code":
+      return `toNodeErrorCode(${env}, ${expr})`;
   }
   assert.fail(`unexpected primitive type '${type}'`);
 }
@@ -386,9 +390,9 @@ function convertToNode(addon: NodeAddon, type: Type, expr: string): string {
           if (inner.kind == "Class" && inner.sharedPtrWrapped) return `NODE_FROM_SHARED_${inner.name}(${env}, ${expr})`;
           return c(inner, `*${expr}`);
         case "Nullable":
-          return `[&] (auto&& val) { return !val ? ${env}.Null() : ${c(inner, "val")}; }(${expr})`;
+          return `[&] (auto&& val) { return !val ? ${env}.Null() : ${c(inner, "FWD(val)")}; }(${expr})`;
         case "util::Optional":
-          return `[&] (auto&& opt) { return !opt ? ${env}.Null() : ${c(inner, "*opt")}; }(${expr})`;
+          return `[&] (auto&& opt) { return !opt ? ${env}.Null() : ${c(inner, "*FWD(opt)")}; }(${expr})`;
         case "std::vector":
           // TODO try different ways to create the array to see what is fastest.
           // eg, try calling push() with and without passing size argument to New().
@@ -405,7 +409,7 @@ function convertToNode(addon: NodeAddon, type: Type, expr: string): string {
           return `
             [&] (auto&& tup) {
                 auto out = Napi::Array::New(${env}, ${type.args.length});
-                ${type.args.map((arg, i) => `out[${i}u] = ${c(arg, `std::get<${i}>(tup)`)};`).join("\n")}
+                ${type.args.map((arg, i) => `out[${i}u] = ${c(arg, `std::get<${i}>(FWD(tup))`)};`).join("\n")}
                 return out;
             }(${expr})`;
         case "std::map":
@@ -566,21 +570,23 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
       // Note: putting the FunctionReference in a shared_ptr because some of these need to be put into a std::function
       // which requires copyability, but FunctionReferences are move-only.
       const lambda = `
-              [cb = std::make_shared<Napi::FunctionReference>(Napi::Persistent(${expr}.As<Napi::Function>()))]
+              [_cb = std::make_shared<Napi::FunctionReference>(Napi::Persistent(${expr}.As<Napi::Function>()))]
                 (${type.args.map(({ name, type }) => `${toCpp(type)} ${name}`).join(", ")}) -> ${toCpp(type.ret)} {
-                    auto ${env} = cb->Env();
+                    auto ${env} = _cb->Env();
                     Napi::HandleScope hs(${env});
                     try {
                         return ${c(
                           type.ret,
-                          `cb->MakeCallback(
+                          `_cb->MakeCallback(
                               ${env}.Global(),
-                              {${type.args.map(({ name, type }) => convertToNode(addon, type, name)).join(", ")}
+                              {${type.args
+                                .map(({ name, type }) => convertToNode(addon, type, `FWD(${name})`))
+                                .join(", ")}
                         })`,
                         )};
-                    } catch (Napi::Error& e) {
+                    } catch (Napi::Error& _e) {
                         // Populate the cache of the message now to ensure it is safe for any C++ code to call what().
-                        (void)e.what();
+                        (void)_e.what();
                         throw;
                     }
                 }`;
