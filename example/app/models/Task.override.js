@@ -10,10 +10,10 @@ export class Task extends Realm.Object {
     name: 'Task',
     primaryKey: '_id',
     properties: {
-      _id: 'objectId',
+      _id: {type: 'objectId', default: () => new Realm.BSON.ObjectId()},
       description: 'string',
       isComplete: {type: 'bool', default: false},
-      createdAt: 'date',
+      createdAt: {type: 'date', default: () => new Date()},
       userId: 'string',
     },
   };

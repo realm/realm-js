@@ -28,19 +28,8 @@ export const TaskManager: React.FC<{
       // may occasionally be online during short time spans we want to increase the probability
       // of sync participants to successfully sync everything in the transaction, otherwise
       // no changes propagate and the transaction needs to start over when connectivity allows.
-      console.log('hello');
       realm.write(() => {
-        console.log('r.w');
-
-        // realm.create('Task', Task.generate(description, userId));
-        const task = new Task(realm, {
-          _id: new Realm.BSON.ObjectId(),
-          description,
-          userId: 'test',
-          createdAt: new Date(),
-          isComlete: false,
-        });
-        console.log({task});
+        return new Task(realm, description, userId);
       });
     },
     [realm, userId],
