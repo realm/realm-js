@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useCallback, useMemo, useReducer } from "react";
 import Realm from "realm";
 import { render, waitFor, fireEvent, act } from "@testing-library/react-native";
 import { View, TextInput, TouchableHighlight, Text, FlatList, ListRenderItem } from "react-native";
@@ -71,6 +71,7 @@ const configuration: Realm.Configuration = {
 
 const itemRenderCounter = jest.fn();
 const tagRenderCounter = jest.fn();
+const memoUpdateCounter = jest.fn();
 
 let testRealm: Realm = new Realm(configuration);
 
@@ -178,8 +179,11 @@ const SORTED_ARGS: [string, boolean] = ["id", true];
 
 const TestComponent = ({ queryType, useUseObject }: { queryType: QueryType; useUseObject: boolean }) => {
   const collection = useQuery(Item);
+  const [, forceRerender] = useReducer((x) => x + 1, 0);
 
   const result = useMemo(() => {
+    memoUpdateCounter();
+
     switch (queryType) {
       case QueryType.filtered:
         return collection.filtered(...FILTER_ARGS);
@@ -197,7 +201,14 @@ const TestComponent = ({ queryType, useUseObject }: { queryType: QueryType; useU
 
   const keyExtractor = useCallback((item: Item & Realm.Object) => `${item.id}`, []);
 
-  return <FlatList testID={"list"} data={result} keyExtractor={keyExtractor} renderItem={renderItem} />;
+  return (
+    <>
+      <TouchableHighlight testID="rerenderButton" onPress={forceRerender}>
+        <Text>Delete</Text>
+      </TouchableHighlight>
+      <FlatList testID={"list"} data={result} keyExtractor={keyExtractor} renderItem={renderItem} />
+    </>
+  );
 };
 
 function getTestCollection(queryType: QueryType) {
@@ -238,6 +249,7 @@ describe.each`
   afterEach(() => {
     itemRenderCounter.mockClear();
     tagRenderCounter.mockClear();
+    memoUpdateCounter.mockClear();
     Realm.clearTestState();
   });
 
@@ -320,6 +332,18 @@ describe.each`
     });
 
     expect(itemRenderCounter).toHaveBeenCalledTimes(10);
+  });
+
+  it("does not rerender items if something else causes a rerender", async () => {
+    const { getByTestId } = await setupTest({ queryType });
+
+    const rerenderButton = getByTestId(`rerenderButton`);
+
+    await act(async () => {
+      fireEvent.press(rerenderButton);
+    });
+
+    expect(memoUpdateCounter).toHaveBeenCalledTimes(1);
   });
   it("collection objects rerender on changes to their linked objects", async () => {
     const { collection, getByText, queryByText } = await setupTest({ queryType });

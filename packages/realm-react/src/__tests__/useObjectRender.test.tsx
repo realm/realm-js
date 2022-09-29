@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { fireEvent, render, waitFor, act } from "@testing-library/react-native";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { TextInput, Text, TouchableHighlight, View, FlatList, ListRenderItem } from "react-native";
 import Realm from "realm";
 import { createUseObject } from "../useObject";
@@ -76,6 +76,7 @@ function forceSynchronousNotifications(realm: Realm) {
 
 const itemRenderCounter = jest.fn();
 const listRenderCounter = jest.fn();
+const memoUpdateCounter = jest.fn();
 
 let testRealm: Realm = new Realm(configuration);
 
@@ -161,6 +162,12 @@ const TestComponent: React.FC<{ testID?: string }> = ({ testID }) => {
 
   listRenderCounter();
 
+  const [, forceRerender] = useReducer((x) => x + 1, 0);
+
+  useMemo(() => {
+    memoUpdateCounter(list);
+  }, [list]);
+
   const renderItem = useCallback<ListRenderItem<ListItem>>(({ item }) => <Item item={item} />, []);
 
   const keyExtractor = useCallback((item: ListItem) => `${item.id}`, []);
@@ -171,6 +178,9 @@ const TestComponent: React.FC<{ testID?: string }> = ({ testID }) => {
 
   return (
     <View testID={testID}>
+      <TouchableHighlight testID="rerenderButton" onPress={forceRerender}>
+        <Text>Delete</Text>
+      </TouchableHighlight>
       <FlatList testID="list" data={list?.items ?? []} keyExtractor={keyExtractor} renderItem={renderItem} />;
       <View testID={`list${list.id}`}>
         <View testID={`listTitle${list.id}`}>
@@ -223,6 +233,7 @@ describe("useObject: rendering objects with a Realm.List property", () => {
   afterEach(() => {
     listRenderCounter.mockClear();
     itemRenderCounter.mockClear();
+    memoUpdateCounter.mockClear();
   });
   afterAll(() => {
     testRealm.close();
@@ -306,6 +317,17 @@ describe("useObject: rendering objects with a Realm.List property", () => {
 
       // We should only have re-rendered once, as only the last change actually modified an item
       expect(itemRenderCounter).toHaveBeenCalledTimes(11);
+    });
+    it("does not rerender items if something else causes a rerender", async () => {
+      const { getByTestId } = await setupTest();
+
+      const rerenderButton = getByTestId(`rerenderButton`);
+
+      await act(async () => {
+        fireEvent.press(rerenderButton);
+      });
+
+      expect(memoUpdateCounter).toHaveBeenCalledTimes(1);
     });
   });
   describe("rendering objects with a Realm.List property", () => {
