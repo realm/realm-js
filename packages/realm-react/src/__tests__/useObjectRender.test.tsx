@@ -16,10 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, waitFor, act } from "@testing-library/react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { TextInput, Text, TouchableHighlight, View, FlatList } from "react-native";
-import { act } from "react-test-renderer";
+import { TextInput, Text, TouchableHighlight, View, FlatList, ListRenderItem } from "react-native";
 import Realm from "realm";
 import { createUseObject } from "../useObject";
 
@@ -124,7 +123,7 @@ const SetupComponent = ({ children }: { children: JSX.Element }): JSX.Element | 
   return children;
 };
 
-const Item: React.FC<{ item: ListItem & Realm.Object }> = React.memo(({ item }) => {
+const Item: React.FC<{ item: ListItem }> = React.memo(({ item }) => {
   itemRenderCounter();
   const realm = useRealm();
 
@@ -162,9 +161,9 @@ const TestComponent: React.FC<{ testID?: string }> = ({ testID }) => {
 
   listRenderCounter();
 
-  const renderItem = useCallback(({ item }) => <Item item={item} />, []);
+  const renderItem = useCallback<ListRenderItem<ListItem>>(({ item }) => <Item item={item} />, []);
 
-  const keyExtractor = useCallback((item) => item.id, []);
+  const keyExtractor = useCallback((item: ListItem) => `${item.id}`, []);
 
   if (list === null) {
     return <View testID={testID} />;
@@ -224,7 +223,6 @@ describe("useObject: rendering objects with a Realm.List property", () => {
   afterEach(() => {
     listRenderCounter.mockClear();
     itemRenderCounter.mockClear();
-    Realm.clearTestState();
   });
   afterAll(() => {
     testRealm.close();
@@ -269,7 +267,7 @@ describe("useObject: rendering objects with a Realm.List property", () => {
       expect(testRealm.objectForPrimaryKey(List, 1)).toBe(undefined);
 
       const testContainer = getByTestId("testContainer");
-      expect(testContainer).toBeEmpty();
+      expect(testContainer).toBeEmptyElement();
 
       expect(listRenderCounter).toHaveBeenCalledTimes(2);
     });

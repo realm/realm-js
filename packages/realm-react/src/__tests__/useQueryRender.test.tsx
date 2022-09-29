@@ -19,9 +19,8 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import Realm from "realm";
 import { render, waitFor, fireEvent, act } from "@testing-library/react-native";
-import { View, TextInput, TouchableHighlight, Text, FlatList } from "react-native";
+import { View, TextInput, TouchableHighlight, Text, FlatList, ListRenderItem } from "react-native";
 import "@testing-library/jest-native/extend-expect";
-import { ReactTestInstance } from "react-test-renderer";
 import { createRealmContext } from "..";
 
 class Item extends Realm.Object {
@@ -113,7 +112,7 @@ const SetupComponent = ({ children }: { children: JSX.Element }): JSX.Element | 
   return children;
 };
 
-const UseObjectItemComponent: React.FC<{ item: Item & Realm.Object }> = React.memo(({ item }) => {
+const UseObjectItemComponent: React.FC<{ item: Item | (Item & Realm.Object) }> = React.memo(({ item }) => {
   // Testing that useObject also works and properly handles renders
   const localItem = useObject(Item, item.id);
   if (!localItem) {
@@ -122,11 +121,11 @@ const UseObjectItemComponent: React.FC<{ item: Item & Realm.Object }> = React.me
   return <ItemComponent item={localItem}></ItemComponent>;
 });
 
-const ItemComponent: React.FC<{ item: Item & Realm.Object }> = React.memo(({ item }) => {
+const ItemComponent: React.FC<{ item: Item | (Item & Realm.Object) }> = React.memo(({ item }) => {
   itemRenderCounter();
   const realm = useRealm();
-  const renderItem = useCallback(({ item }) => <TagComponent tag={item} />, []);
-  const keyExtractor = useCallback((item) => `tag-${item.id}`, []);
+  const renderItem = useCallback<ListRenderItem<Tag>>(({ item }) => <TagComponent tag={item} />, []);
+  const keyExtractor = useCallback((item: Tag) => `tag-${item.id}`, []);
 
   return (
     <View testID={`result${item.id}`}>
@@ -163,7 +162,7 @@ const ItemComponent: React.FC<{ item: Item & Realm.Object }> = React.memo(({ ite
   );
 });
 
-const TagComponent: React.FC<{ tag: Tag & Realm.Object }> = React.memo(({ tag }) => {
+const TagComponent: React.FC<{ tag: Tag }> = React.memo(({ tag }) => {
   tagRenderCounter();
   return (
     <View testID={`tagResult${tag.id}`}>
@@ -191,12 +190,12 @@ const TestComponent = ({ queryType, useUseObject }: { queryType: QueryType; useU
     }
   }, [queryType, collection]);
 
-  const renderItem = useCallback(
+  const renderItem = useCallback<ListRenderItem<Item & Realm.Object>>(
     ({ item }) => (useUseObject ? <UseObjectItemComponent item={item} /> : <ItemComponent item={item} />),
     [useUseObject],
   );
 
-  const keyExtractor = useCallback((item) => item.id, []);
+  const keyExtractor = useCallback((item: Item & Realm.Object) => `${item.id}`, []);
 
   return <FlatList testID={"list"} data={result} keyExtractor={keyExtractor} renderItem={renderItem} />;
 };
@@ -260,7 +259,7 @@ describe.each`
 
     expect(nameElement).toHaveTextContent(`${id}`);
 
-    fireEvent.changeText(input as ReactTestInstance, "apple");
+    fireEvent.changeText(input, "apple");
 
     // Wait for change events to finish their callbacks
     await act(async () => {
@@ -287,7 +286,7 @@ describe.each`
     expect(nameElement).toHaveTextContent(`${id}`);
     expect(itemRenderCounter).toHaveBeenCalledTimes(10);
 
-    fireEvent.press(deleteButton as ReactTestInstance);
+    fireEvent.press(deleteButton);
 
     await waitFor(() => getByTestId(`name${nextVisible.id}`));
 
