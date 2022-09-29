@@ -19,6 +19,7 @@ import { expect } from "chai";
 import Realm from "realm";
 
 import { importAppBefore, authenticateUserBefore, openRealmBefore } from "../../hooks";
+import { closeAndReopenRealm } from "../../utils/close-realm";
 
 import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
 
@@ -118,7 +119,29 @@ function describeRoundtrip({
       });
     });
 
-    itUploadsDeletesAndDownloads();
+    // itUploadsDeletesAndDownloads();
+
+    it("uploads, cleans and downloads", async function (this: RealmContext) {
+      if (!this.realm) {
+        throw new Error("Expected a 'realm' on the mocha context");
+      }
+      if (!this.config) {
+        throw new Error("Expected a 'config' on the mocha context");
+      }
+      if (!this.realm.syncSession) {
+        throw new Error("Expected a 'syncSession' on the realm");
+      }
+
+      await this.realm.syncSession.uploadAllLocalChanges();
+
+      this.realm = await closeAndReopenRealm(this.realm, this.config);
+
+      if (!this.realm.syncSession) {
+        throw new Error("Expected a 'syncSession' on the realm");
+      }
+
+      await this.realm.syncSession.downloadAllServerChanges();
+    });
 
     it("reads", async function (this: RealmContext) {
       await setupTest(this.realm);
