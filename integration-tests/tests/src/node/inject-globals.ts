@@ -18,6 +18,10 @@
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 
+// Set the defult depth of objects logged with console.log to improve DX when debugging
+const util = require("node:util") as any;
+util.inspect.defaultOptions.depth = null;
+
 // Require this file to get the Realm constructor injected into the global.
 // This is only useful when we want to run the tests outside of any particular environment
 
