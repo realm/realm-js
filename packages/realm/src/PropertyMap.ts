@@ -368,7 +368,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: MappingOptions) => P
     } else {
       const itemHelpers = getHelpers(itemType, options);
       const collectionHelpers: OrderedCollectionHelpers = {
-        get: itemType & binding.PropertyType.Object ? getObj : getAny,
+        get: itemType === binding.PropertyType.Object ? getObj : getAny,
         fromBinding: itemHelpers.fromBinding,
         toBinding: itemHelpers.toBinding,
       };
