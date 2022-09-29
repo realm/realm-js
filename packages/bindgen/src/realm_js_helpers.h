@@ -1,5 +1,6 @@
 #include <condition_variable>
 #include <exception>
+#include <iostream>
 #include <memory>
 #include <mutex>
 #include <napi.h>

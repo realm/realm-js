@@ -129,10 +129,8 @@ describe("Dictionary", () => {
     });
 
     it("is an instance of Dictionary", function (this: RealmContext) {
-      this.realm.write(() => {
-        const item = this.realm.create<Item>("Item", {});
-        expect(item.dict instanceof Realm.Dictionary);
-      });
+      const item = this.realm.write(() => this.realm.create<Item>("Item", {}));
+      expect(item.dict instanceof Realm.Dictionary);
     });
 
     const methodNames = [
@@ -147,65 +145,68 @@ describe("Dictionary", () => {
 
     for (const name of methodNames) {
       it(`exposes a method named '${name}'`, function (this: RealmContext) {
-        this.realm.write(() => {
-          const item = this.realm.create<Item>("Item", {});
-          expect(typeof item.dict[name]).equals("function");
-        });
+        const item = this.realm.write(() => this.realm.create<Item>("Item", {}));
+        expect(typeof item.dict[name]).equals("function");
       });
     }
 
     it("can store string values using string keys", function (this: RealmContext) {
-      this.realm.write(() => {
+      const item = this.realm.write(() => {
         const item = this.realm.create<Item>("Item", {});
         item.dict.key1 = "hello";
-        expect(item.dict.key1).equals("hello");
+        return item;
       });
+      expect(item.dict.key1).equals("hello");
     });
 
     it("can store number values using string keys", function (this: RealmContext) {
-      this.realm.write(() => {
-        // Creation
-        const item = this.realm.create<Item<number>>("Item", {
+      const item = this.realm.write(() =>
+        this.realm.create<Item<number>>("Item", {
           dict: { key1: 0 },
-        });
-        expect(item.dict).deep.equals({ key1: 0 });
+        }),
+      );
+
+      expect(item.dict).deep.equals({ key1: 0 });
+      this.realm.write(() => {
         // Assignment
         item.dict.key1 = 1234;
         item.dict.key2 = Number.MAX_VALUE;
         item.dict.key3 = Number.MIN_VALUE;
-        expect(item.dict).deep.equals({
-          key1: 1234,
-          key2: Number.MAX_VALUE,
-          key3: Number.MIN_VALUE,
-        });
+      });
+
+      expect(item.dict).deep.equals({
+        key1: 1234,
+        key2: Number.MAX_VALUE,
+        key3: Number.MIN_VALUE,
       });
     });
 
     it("can store boolean values using string keys", function (this: RealmContext) {
-      this.realm.write(() => {
-        // Creation
-        const item = this.realm.create<Item>("Item", {
+      const item = this.realm.write(() =>
+        this.realm.create<Item>("Item", {
           dict: {
             key1: true,
             key2: false,
           },
-        });
-        expect(item.dict).deep.equals({
-          key1: true,
-          key2: false,
-        });
-        // After assignment
+        }),
+      );
+      expect(item.dict).deep.equals({
+        key1: true,
+        key2: false,
+      });
+
+      this.realm.write(() => {
         item.dict.key1 = false;
         item.dict.key2 = true;
-        expect(item.dict).deep.equals({
-          key1: false,
-          key2: true,
-        });
+      });
+      expect(item.dict).deep.equals({
+        key1: false,
+        key2: true,
       });
     });
 
     it("can store object link values using string keys", function (this: RealmContext) {
-      this.realm.write(() => {
+      const { alice, bob, item } = this.realm.write(() => {
         const alice = this.realm.create("Person", { name: "Alice" });
         const bob = this.realm.create("Person", { name: "Bob" });
         // Creation
@@ -214,50 +215,46 @@ describe("Dictionary", () => {
             key1: alice,
           },
         });
-        expect(item.dict).deep.equals({
-          key1: alice,
-        });
-        // After assignment
+        return { alice, bob, item };
+      });
+      expect(item.dict).deep.equals({
+        key1: alice,
+      });
+      this.realm.write(() => {
         item.dict.key1 = bob;
-        expect(item.dict).deep.equals({
-          key1: bob,
-        });
+      });
+      expect(item.dict).deep.equals({
+        key1: bob,
       });
     });
 
     it("is spreadable", function (this: RealmContext) {
-      this.realm.write(() => {
-        const item = this.realm.create<Item>("Item", { dict: { key1: "hi" } });
-        expect({ ...item.dict, key2: "hello" }).deep.equals({ key1: "hi", key2: "hello" });
-      });
+      const item = this.realm.write(() => this.realm.create<Item>("Item", { dict: { key1: "hi" } }));
+      expect({ ...item.dict, key2: "hello" }).deep.equals({ key1: "hi", key2: "hello" });
     });
 
     it("can JSON.stringify", function (this: RealmContext) {
-      this.realm.write(() => {
-        const values: DictValues = {
-          key1: "hello",
-          key2: 1234,
-          key3: false,
-          key4: null,
-        };
-        const item = this.realm.create<Item>("Item", { dict: values });
-        const stringifiedAndParsed = JSON.parse(JSON.stringify(item.dict));
-        expect(stringifiedAndParsed).deep.equals(values);
-      });
+      const values: DictValues = {
+        key1: "hello",
+        key2: 1234,
+        key3: false,
+        key4: null,
+      };
+      const item = this.realm.write(() => this.realm.create<Item>("Item", { dict: values }));
+      const stringifiedAndParsed = JSON.parse(JSON.stringify(item.dict));
+      expect(stringifiedAndParsed).deep.equals(values);
     });
 
     it("can JSON.stringify via the object", function (this: RealmContext) {
-      this.realm.write(() => {
-        const values: DictValues = {
-          key1: "hello",
-          key2: 1234,
-          key3: false,
-          key4: null,
-        };
-        const item = this.realm.create<Item>("Item", { dict: values });
-        const stringifiedAndParsed = JSON.parse(JSON.stringify(item));
-        expect(stringifiedAndParsed).deep.equals({ dict: values });
-      });
+      const values: DictValues = {
+        key1: "hello",
+        key2: 1234,
+        key3: false,
+        key4: null,
+      };
+      const item = this.realm.write(() => this.realm.create<Item>("Item", { dict: values }));
+      const stringifiedAndParsed = JSON.parse(JSON.stringify(item));
+      expect(stringifiedAndParsed).deep.equals({ dict: values });
     });
 
     // TODO: Unskip once https://github.com/realm/realm-core/issues/4805 is fixed
