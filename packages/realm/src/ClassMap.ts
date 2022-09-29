@@ -110,25 +110,6 @@ export class ClassMap {
    */
   constructor(realm: Realm, realmSchema: binding.Realm["schema"], schemaExtras: RealmSchemaExtra) {
     const realmInternal = realm[INTERNAL];
-    function resolveObjectLink(link: binding.ObjLink): binding.Obj {
-      const table = binding.Helpers.getTable(realmInternal, link.tableKey);
-      return table.getObject(link.objKey);
-    }
-
-    function resolveList(columnKey: binding.ColKey, obj: binding.Obj): binding.List {
-      return binding.List.make(realmInternal, obj, columnKey);
-    }
-
-    function resolveTable(tableKey: binding.TableKey) {
-      return binding.Helpers.getTable(realmInternal, tableKey);
-    }
-
-    function createResultsFromTableView(tableView: binding.TableView, helpers: OrderedCollectionHelpers) {
-      const results = binding.Results.fromTableView(realmInternal, tableView);
-      return new Results(results, realmInternal, helpers);
-    }
-
-    const resolveClassHelpers = (name: string) => this.getHelpers(name);
 
     this.mapping = Object.fromEntries(
       realmSchema.map((objectSchema) => {
@@ -137,12 +118,9 @@ export class ClassMap {
         }
 
         const properties = new PropertyMap(objectSchema, schemaExtras[objectSchema.name]?.defaults || {}, {
+          realm: realmInternal,
           createObjectWrapper,
-          resolveObjectLink,
-          resolveList,
-          resolveClassHelpers,
-          resolveTable,
-          createResultsFromTableView,
+          resolveClassHelpers: (name: string) => this.getHelpers(name),
         });
         const constructor = createClass(
           objectSchema,
