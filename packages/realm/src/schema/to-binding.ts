@@ -105,6 +105,10 @@ export function transformPropertyType(schema: CanonicalObjectSchemaProperty): Bi
   } else if (schema.objectType) {
     if (schema.objectType in TYPE_MAPPINGS) {
       type |= TYPE_MAPPINGS[schema.objectType as PropertyTypeName];
+      if (schema.objectType === "mixed") {
+        // Implicitly nullable - will throw if not sat
+        isNullable = true;
+      }
     } else {
       type |= BindingPropertyType.Object;
       // Implicitly nullable - will throw if sat

@@ -41,6 +41,7 @@ import { App } from "./App";
 import { validateConfiguration } from "./validation/configuration";
 import { Collection } from "./Collection";
 import { ClassHelpers } from "./ClassHelpers";
+import { Dictionary } from "./Dictionary";
 
 export enum UpdateMode {
   Never = "never",
@@ -56,6 +57,7 @@ export class Realm {
   public static Collection = Collection;
   public static Results = Results;
   public static List = List;
+  public static Dictionary = Dictionary;
   public static App = App;
   public static UpdateMode = UpdateMode;
   public static BSON = BSON;
@@ -144,13 +146,14 @@ export class Realm {
     validateConfiguration(config);
 
     const normalizedSchema = config.schema && normalizeRealmSchema(config.schema);
+    const bindingSchema = normalizedSchema && toBindingSchema(normalizedSchema);
     this.schemaExtras = Realm.extractSchemaExtras(normalizedSchema || []);
 
     const path = Realm.determinePath(config);
     const internal = binding.Realm.getSharedRealm({
       path,
       fifoFilesFallbackPath: config.fifoFilesFallbackPath,
-      schema: normalizedSchema && toBindingSchema(normalizedSchema),
+      schema: bindingSchema,
       inMemory: config.inMemory === true,
       schemaVersion: config.schema
         ? typeof config.schemaVersion === "number"
@@ -158,6 +161,7 @@ export class Realm {
           : 0n
         : undefined,
     });
+    // console.log("Did open!");
 
     Object.defineProperties(this, {
       classes: {
@@ -421,9 +425,10 @@ export class Realm {
 // Declare the Realm namespace for backwards compatibility
 
 // We need this alias because of https://github.com/Swatinem/rollup-plugin-dts/issues/223
+type CollectionType<T> = Collection<T>;
 type ResultsType<T> = Results<T>;
 type ListType<T> = List<T>;
-type CollectionType<T> = Collection<T>;
+type DictionaryType<T> = Dictionary<T>;
 type AppType = App;
 type UpdateModeType = UpdateMode;
 type ObjectSchemaType = ObjectSchema;
@@ -432,12 +437,14 @@ type BSONType = typeof BSON;
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Realm {
   export type Object<T = DefaultObject> = RealmObject<T>;
+  export type Collection<T> = CollectionType<T>;
   export type Results<T> = ResultsType<T>;
   export type List<T> = ListType<T>;
-  export type Collection<T> = CollectionType<T>;
   export type App = AppType;
   export type UpdateMode = UpdateModeType;
   export type ObjectSchema = ObjectSchemaType;
+  export type Dictionary<T = unknown> = DictionaryType<T>;
+  export type Mixed = unknown;
   // eslint-disable-next-line @typescript-eslint/no-namespace
   export namespace BSON {
     export type ObjectId = InstanceType<BSONType["ObjectId"]>;

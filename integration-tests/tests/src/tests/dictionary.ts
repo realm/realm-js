@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import Realm, { clearTestState } from "realm";
+import Realm, { ObjectSchemaProperty } from "realm";
 
 import { openRealmBefore, openRealmBeforeEach } from "../hooks";
 import { sleep } from "../utils/sleep";
@@ -122,7 +122,7 @@ describe("Dictionary", () => {
 
     it("can be used as a property type in a schema", function (this: RealmContext) {
       expect(this.realm.isClosed).equals(false);
-      const dictSchemaProperty = this.realm.schema[0].properties.dict as Realm.ObjectSchemaProperty;
+      const dictSchemaProperty = this.realm.schema[0].properties.dict as ObjectSchemaProperty;
       expect(typeof dictSchemaProperty).equals("object");
       expect(dictSchemaProperty.type).equals("dictionary");
       expect(dictSchemaProperty.objectType).equals("mixed");
