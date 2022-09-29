@@ -20,7 +20,7 @@ import * as binding from "./binding";
 import { Results } from "./Results";
 import { Collection } from "./Collection";
 import { unwind } from "./ranges";
-import { TypeHelpers } from "./binding/types";
+import { TypeHelpers } from "./types";
 
 type PropertyType = string;
 export type SortDescriptor = [string] | [string, boolean];
