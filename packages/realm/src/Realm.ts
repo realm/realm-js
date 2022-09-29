@@ -253,7 +253,7 @@ export class Realm {
 
     // Create the underlying object
     const obj = this.createObj(helpers, values, mode);
-    const result = helpers.createObjectWrapper(obj) as unknown as DefaultObject;
+    const result = helpers.wrapObject(obj) as unknown as DefaultObject;
 
     // Persist any values provided
     // TODO: Consider using the `converters` directly to improve performance
@@ -331,7 +331,7 @@ export class Realm {
   objectForPrimaryKey<T extends RealmObject>(type: Constructor<T>, primaryKey: T[keyof T]): T;
   objectForPrimaryKey<T extends RealmObject>(type: string | Constructor<T>, primaryKey: string[]): T {
     // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1240-L1258
-    const { objectSchema, properties, createObjectWrapper } = this.classes.getHelpers(type);
+    const { objectSchema, properties, wrapObject } = this.classes.getHelpers(type);
     if (!objectSchema.primaryKey) {
       throw new Error(`Expected a primary key on "${objectSchema.name}"`);
     }
@@ -339,7 +339,7 @@ export class Realm {
     const value = properties.get(objectSchema.primaryKey).toBinding(primaryKey);
     try {
       const obj = table.getObjectWithPrimaryKey(value);
-      return createObjectWrapper(obj);
+      return wrapObject(obj);
     } catch (err) {
       // TODO: Match on something else than the error message, when exposed by the binding
       if (err instanceof Error && err.message.startsWith("No object with key")) {
@@ -353,7 +353,7 @@ export class Realm {
   objects<T>(type: string): Results<RealmObject & T>;
   objects<T extends RealmObject = RealmObject>(type: Constructor<T>): Results<T>;
   objects<T extends RealmObject = RealmObject>(type: string | Constructor<T>): Results<T> {
-    const { objectSchema, createObjectWrapper } = this.classes.getHelpers(type);
+    const { objectSchema, wrapObject } = this.classes.getHelpers(type);
     if (objectSchema.tableType === binding.TableType.Embedded) {
       throw new Error("You cannot query an embedded object.");
     } else if (objectSchema.tableType === binding.TableType.TopLevelAsymmetric) {
@@ -366,7 +366,7 @@ export class Realm {
       get(results: binding.Results, index: number) {
         return results.getObj(index);
       },
-      fromBinding: createObjectWrapper,
+      fromBinding: wrapObject,
       toBinding() {
         throw new Error("Cannot assign into Results");
       },
