@@ -34,13 +34,9 @@ type BindingPropertySchema = BindingObjectSchema["persistedProperties"][0];
 
 type PropertyContext = BindingPropertySchema & { default?: unknown };
 
-/** @internal */
-export type ObjectWrapCreator<T extends RealmObject = RealmObject> = (obj: binding.Obj) => T;
-
 export type HelperOptions = {
   realm: binding.Realm;
-  resolveClassHelpers: (name: string) => ClassHelpers;
-  createObjectWrapper: ObjectWrapCreator;
+  getClassHelpers: (name: string) => ClassHelpers;
 };
 
 type PropertyOptions = {
@@ -115,8 +111,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     columnKey,
     objectType,
     linkOriginPropertyName,
-    resolveClassHelpers,
-    createObjectWrapper,
+    getClassHelpers,
     optional,
   }) {
     // TODO: Move this destructure into the argument once `getHelpers` is no longer called
@@ -131,14 +126,15 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
 
     const itemHelpers = getTypeHelpers(itemType, {
       realm,
-      createObjectWrapper,
       optional,
+      getClassHelpers,
+      objectType,
     });
 
     if (itemType === binding.PropertyType.LinkingObjects) {
       // Locate the table of the targeted object
       assert.string(objectType, "object type");
-      const targetClassHelpers = resolveClassHelpers(objectType);
+      const targetClassHelpers = getClassHelpers(objectType);
       // TODO: To improve performance: Refactor to resolve the class helper earlier.
       const { tableKey, persistedProperties } = targetClassHelpers.objectSchema;
       // TODO: Check if we want to match with the `p.name` or `p.publicName` here
@@ -190,12 +186,13 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       };
     }
   },
-  [binding.PropertyType.Dictionary]({ columnKey, realm, type, createObjectWrapper, optional }) {
+  [binding.PropertyType.Dictionary]({ columnKey, realm, type, optional, objectType, getClassHelpers }) {
     const itemType = type & ~binding.PropertyType.Flags;
     const itemHelpers = getTypeHelpers(itemType, {
       realm,
-      createObjectWrapper,
-      optional, // TODO: Determine if this is a fair assumption
+      getClassHelpers,
+      objectType,
+      optional,
     });
     return {
       get(obj) {
@@ -234,7 +231,8 @@ export function createHelpers(property: PropertyContext, options: HelperOptions)
   const collectionType = property.type & binding.PropertyType.Collection;
   const typeOptions: TypeOptions = {
     realm: options.realm,
-    createObjectWrapper: options.createObjectWrapper,
+    getClassHelpers: options.getClassHelpers,
+    objectType: property.objectType,
     optional: !!(property.type & binding.PropertyType.Nullable),
   };
   if (collectionType) {
