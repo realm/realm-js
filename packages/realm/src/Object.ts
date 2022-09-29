@@ -50,10 +50,14 @@ class RealmObject<T = DefaultObject> {
    */
   public static [INTERNAL_HELPERS]: ClassHelpers;
 
+  /**
+   * @internal
+   * Create a wrapper for accessing an object from the database
+   */
   public static createWrapper<T = DefaultObject>(
     realm: Realm,
-    constructor: Constructor,
     internal: binding.Obj,
+    constructor: Constructor,
   ): RealmObject<T> & T {
     const result = Object.create(constructor.prototype);
     Object.defineProperties(result, {
