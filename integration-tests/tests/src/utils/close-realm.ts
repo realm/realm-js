@@ -32,13 +32,13 @@ export function closeRealm(
 ): void {
   realm.close();
 
-  if (deleteRealmFile) {
-    Realm.deleteFile(config);
-  }
-
   if (clearTestState) {
     // Clearing the test state to ensure the sync session gets completely reset and nothing is cached between tests
     Realm.clearTestState();
+  }
+
+  if (deleteRealmFile) {
+    Realm.deleteFile(config);
   }
 }
 

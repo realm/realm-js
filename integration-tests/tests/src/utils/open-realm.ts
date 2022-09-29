@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Realm from "realm";
+import Realm, { SessionStopPolicy } from "realm";
 
 // Either the sync property is left out (local Realm)
 export type LocalConfiguration = Omit<Realm.Configuration, "sync"> & { sync?: never };
@@ -52,7 +52,7 @@ export async function openRealm(
       sync: {
         user: user,
         ...(partialConfig.sync.flexible ? { flexible: true } : { partitionValue: nonce }),
-        _sessionStopPolicy: "immediately",
+        _sessionStopPolicy: SessionStopPolicy.Immediately,
         ...partialConfig.sync,
       },
     } as Realm.Configuration;
