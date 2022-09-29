@@ -20,6 +20,9 @@ import * as binding from "./binding";
 
 import type { PropertyMap, ObjectWrapCreator } from "./PropertyMap";
 import type { Object as RealmObject } from "./Object";
+import { RealmObjectConstructor } from ".";
+
+type BindingObjectSchema = binding.Realm["schema"][0];
 
 export const INTERNAL_HELPERS = Symbol("Realm.Object#helpers");
 
@@ -28,12 +31,12 @@ export const INTERNAL_HELPERS = Symbol("Realm.Object#helpers");
  */
 export type ClassHelpers<T extends RealmObject = RealmObject> = {
   // TODO: Use a different type, once exposed by the binding
-  objectSchema: binding.Realm["schema"][0];
+  objectSchema: BindingObjectSchema;
   properties: PropertyMap;
   createObjectWrapper: ObjectWrapCreator<T>;
 };
 
-export function setHelpers<T extends RealmObject>(constructor: typeof RealmObject, value: ClassHelpers<T>): void {
+export function setHelpers(constructor: RealmObjectConstructor, value: ClassHelpers): void {
   // Store the properties map on the object class
   Object.defineProperty(constructor, INTERNAL_HELPERS, {
     enumerable: false,

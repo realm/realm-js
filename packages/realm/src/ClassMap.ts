@@ -25,8 +25,8 @@ import { Constructor, DefaultObject, RealmObjectConstructor } from "./schema";
 import { getInternal, INTERNAL } from "./internal";
 import { getHelpers, setHelpers } from "./ClassHelpers";
 import { assert } from "./assert";
-import { Results } from "./Results";
-import { OrderedCollectionHelpers } from "./OrderedCollection";
+
+type BindingObjectSchema = binding.Realm["schema"][0];
 
 export type RealmSchemaExtra = Record<string, ObjectSchemaExtra | undefined>;
 
@@ -35,102 +35,101 @@ export type ObjectSchemaExtra = {
   defaults: Record<string, unknown>;
 };
 
-function createNamedConstructor<T extends Constructor>(name: string): T {
-  const obj = {
-    [name]: function () {
-      /* no-op */
-    },
-  };
-  return obj[name] as unknown as T;
-}
-
-function createClass<T extends RealmObjectConstructor = RealmObjectConstructor>(
-  schema: binding.Realm["schema"][0],
-  propertyMap: PropertyMap,
-  constructor: Constructor | undefined,
-): T {
-  const result = createNamedConstructor<T>(schema.name);
-  // Make the new constructor extend RealmObject
-  // TODO: Use the end-users constructor, instead of `RealmObject` if provided
-  if (constructor) {
-    Object.setPrototypeOf(result, constructor);
-    Object.setPrototypeOf(result.prototype, constructor.prototype);
-  } else {
-    Object.setPrototypeOf(result, RealmObject);
-    Object.setPrototypeOf(result.prototype, RealmObject.prototype);
-  }
-  // TODO: Support computed properties
-  if (schema.computedProperties.length > 1) {
-    throw new Error("computedProperties are not yet supported!");
-  }
-  // Create bound functions for getting and setting properties
-  const properties = [...schema.persistedProperties, ...schema.computedProperties];
-  for (const property of properties) {
-    const { get, set } = propertyMap.get(property.name);
-    Object.defineProperty(result.prototype, property.name, {
-      enumerable: true,
-      get(this: RealmObject) {
-        const obj = getInternal(this);
-        return get(obj);
-      },
-      set(this: RealmObject, value: unknown) {
-        const obj = getInternal(this);
-        try {
-          set(obj, value);
-        } catch (err) {
-          // TODO: Match on something else than a message, once exposed by the binding
-          if (err instanceof Error && err.message.startsWith("Wrong transactional state")) {
-            throw new Error(
-              "Expected a write transaction: Wrap the assignment in `realm.write(() => { /* assignment*/ });`",
-            );
-          } else {
-            throw err;
-          }
-        }
-      },
-    });
-  }
-  // Implement the per class optimized methods
-  const propertyNames = properties.map((p) => p.publicName || p.name);
-  result.prototype.keys = function (this: T) {
-    return propertyNames;
-  };
-  return result;
-}
-
 /**
  * @internal
  */
 export class ClassMap {
   private mapping: Record<string, RealmObjectConstructor>;
 
-  /**
-   * @param objectSchema
-   * TODO: Refactor this to use the binding.ObjectSchema type once the DeepRequired gets removed from types
-   */
-  constructor(realm: Realm, realmSchema: binding.Realm["schema"], schemaExtras: RealmSchemaExtra) {
+  private static createNamedConstructor<T extends Constructor>(name: string): T {
+    const obj = {
+      [name]: function () {
+        /* no-op */
+      },
+    };
+    return obj[name] as unknown as T;
+  }
+
+  private static createClass<T extends RealmObjectConstructor = RealmObjectConstructor>(
+    schema: BindingObjectSchema,
+    constructor: Constructor | undefined,
+  ): T {
+    const result = ClassMap.createNamedConstructor<T>(schema.name);
+    // Make the new constructor extend RealmObject
+    // TODO: Use the end-users constructor, instead of `RealmObject` if provided
+    if (constructor) {
+      Object.setPrototypeOf(result, constructor);
+      Object.setPrototypeOf(result.prototype, constructor.prototype);
+    } else {
+      Object.setPrototypeOf(result, RealmObject);
+      Object.setPrototypeOf(result.prototype, RealmObject.prototype);
+    }
+    return result;
+  }
+
+  private static defineProperties(constructor: Constructor, schema: BindingObjectSchema, propertyMap: PropertyMap) {
+    // Create bound functions for getting and setting properties
+    const properties = [...schema.persistedProperties, ...schema.computedProperties];
+    for (const property of properties) {
+      const { get, set } = propertyMap.get(property.name);
+      Object.defineProperty(constructor.prototype, property.name, {
+        enumerable: true,
+        get(this: RealmObject) {
+          const obj = getInternal(this);
+          return get(obj);
+        },
+        set(this: RealmObject, value: unknown) {
+          const obj = getInternal(this);
+          try {
+            set(obj, value);
+          } catch (err) {
+            // TODO: Match on something else than a message, once exposed by the binding
+            if (err instanceof Error && err.message.startsWith("Wrong transactional state")) {
+              throw new Error(
+                "Expected a write transaction: Wrap the assignment in `realm.write(() => { /* assignment*/ });`",
+              );
+            } else {
+              throw err;
+            }
+          }
+        },
+      });
+    }
+    // Implement the per class optimized methods
+    const propertyNames = properties.map((p) => p.publicName || p.name);
+    constructor.prototype.keys = function () {
+      return propertyNames;
+    };
+  }
+
+  constructor(realm: Realm, realmSchema: BindingObjectSchema[], schemaExtras: RealmSchemaExtra) {
     const realmInternal = realm[INTERNAL];
 
     this.mapping = Object.fromEntries(
       realmSchema.map((objectSchema) => {
-        function createObjectWrapper<T = DefaultObject>(obj: binding.Obj, ctor = constructor) {
-          return RealmObject.createWrapper<T>(realm, ctor, obj);
-        }
-
-        const properties = new PropertyMap(objectSchema, schemaExtras[objectSchema.name]?.defaults || {}, {
-          realm: realmInternal,
-          createObjectWrapper,
-          resolveClassHelpers: (name: string) => this.getHelpers(name),
-        });
-        const constructor = createClass(
-          objectSchema,
-          properties,
-          schemaExtras[objectSchema.name]?.constructor,
-        ) as RealmObjectConstructor;
-        setHelpers(constructor as typeof RealmObject, { objectSchema, properties, createObjectWrapper });
+        // Create the wrapping class first
+        const constructor = ClassMap.createClass(objectSchema, schemaExtras[objectSchema.name]?.constructor);
         return [objectSchema.name, constructor];
       }),
     );
+
+    for (const objectSchema of realmSchema) {
+      const constructor = this.mapping[objectSchema.name];
+      // Simplifying the createWrapper signature, as we know the
+      const createObjectWrapper = <T = DefaultObject>(obj: binding.Obj, ctor = constructor) => {
+        return RealmObject.createWrapper<T>(realm, obj, ctor);
+      };
+      // Create property getters and setters
+      const properties = new PropertyMap(objectSchema, schemaExtras[objectSchema.name]?.defaults || {}, {
+        realm: realmInternal,
+        createObjectWrapper,
+        resolveClassHelpers: (name: string) => this.getHelpers(name),
+      });
+      // Make the helpers available on the class
+      setHelpers(constructor, { objectSchema, properties, createObjectWrapper });
+      // Transfer property getters and setters onto the prototype of the class
+      ClassMap.defineProperties(constructor, objectSchema, properties);
+    }
   }
 
   public get<T extends Realm.Object>(arg: string | RealmObject | Constructor<T>): Constructor<T> {
