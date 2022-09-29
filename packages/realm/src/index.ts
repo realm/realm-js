@@ -27,6 +27,8 @@ export { Set } from "./Set";
 export type { ObjectChangeSet, ObjectChangeCallback } from "./ObjectListeners";
 export type { OrderedCollection, CollectionChangeSet, CollectionChangeCallback } from "./OrderedCollection";
 
+export * from "./schema/types";
+
 export { BSON } from "./bson";
 
 // Exporting default for backwards compatibility

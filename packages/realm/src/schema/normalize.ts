@@ -122,9 +122,7 @@ export function normalizePropertySchema(
 export function normalizePropertyType(type: string): ObjectSchemaProperty {
   if (type.endsWith("[]")) {
     const item = normalizePropertyType(type.substring(0, type.length - 2));
-    if (item.type !== "object" && item.objectType) {
-      throw new Error(`Unexpected nested object type ${item.objectType}`);
-    }
+    assert(item.type === "object" || !item.objectType, `Unexpected nested object type ${item.objectType}`);
     return {
       type: "list",
       objectType: item.type === "object" ? item.objectType : item.type,
@@ -132,19 +130,17 @@ export function normalizePropertyType(type: string): ObjectSchemaProperty {
     };
   } else if (type.endsWith("<>")) {
     const item = normalizePropertyType(type.substring(0, type.length - 2));
-    if (item.objectType) {
-      throw new Error(`Unexpected nested object type ${item.objectType}`);
-    }
+    assert(!item.objectType, `Unexpected nested object type ${item.objectType}`);
     return {
       type: "set",
       objectType: item.type,
       optional: item.optional,
     };
   } else if (type.endsWith("{}")) {
-    const item = normalizePropertyType(type.substring(0, type.length - 2));
-    if (item.objectType) {
-      throw new Error(`Unexpected nested object type ${item.objectType}`);
-    }
+    const itemType = type.substring(0, type.length - 2);
+    // Item type defaults to mixed
+    const item: ObjectSchemaProperty = itemType ? normalizePropertyType(itemType) : { type: "mixed" };
+    assert(!item.objectType, `Unexpected nested object type ${item.objectType}`);
     return {
       type: "dictionary",
       objectType: item.type,

@@ -825,6 +825,9 @@ classes:
       contains: '(key: StringData) -> bool'
       freeze: '(frozen_realm: std::shared_ptr<Realm> const&) const -> Dictionary'
       add_key_based_notification_callback: '(cb: (changes: DictionaryChangeSet), keyPaths: KeyPathArray) -> NotificationToken'
+      insert_any: '(key: StringData, value: Mixed) -> std::pair<count_t, bool>'
+      try_get_any: '(key: StringData) const -> util::Optional<Mixed>'
+      remove_all: '()'
 
 
   BsonDocument: # TODO this should probably be a primitive
