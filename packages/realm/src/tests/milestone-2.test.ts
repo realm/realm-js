@@ -38,6 +38,7 @@ describe("Milestone #2", () => {
         const schema = realm.schema;
         const expectedSchema: CanonicalObjectSchema[] = [
           {
+            constructor: undefined,
             name: "Person",
             primaryKey: "name",
             properties: {
