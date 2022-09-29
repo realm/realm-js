@@ -29,7 +29,10 @@ import { Results } from "./Results";
 import { Dictionary } from "./Dictionary";
 import { MixedArg } from "./binding";
 
-type PropertyContext = binding.Realm["schema"][0]["persistedProperties"][0] & { default?: unknown };
+type BindingObjectSchema = binding.Realm["schema"][0];
+type BindingPropertySchema = BindingObjectSchema["persistedProperties"][0];
+
+type PropertyContext = BindingPropertySchema & { default?: unknown };
 
 /** @internal */
 export type ObjectWrapCreator<T extends RealmObject = RealmObject> = (obj: binding.Obj) => T;
@@ -49,15 +52,10 @@ type HelperOptions = {
   resolveClassHelpers: (name: string) => ClassHelpers;
 };
 
-type HelperFunctions = {
-  createResultsFromTableView: (tableView: binding.TableView, helpers: OrderedCollectionHelpers) => Results;
-};
-
 type MappingOptions = {
   columnKey: binding.ColKey;
   optional: boolean;
 } & HelperOptions &
-  HelperFunctions &
   binding.Property;
 
 type PropertyHelpers = TypeHelpers & {
@@ -312,15 +310,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: MappingOptions) => P
   },
   [binding.PropertyType.Array](options) {
     // TODO: Move this destructure into the argument once `getHelpers` is no longer called
-    const {
-      type,
-      realm,
-      columnKey,
-      objectType,
-      linkOriginPropertyName,
-      resolveClassHelpers,
-      createResultsFromTableView,
-    } = options;
+    const { type, realm, columnKey, objectType, linkOriginPropertyName, resolveClassHelpers } = options;
 
     const itemType = type & ~binding.PropertyType.Flags;
     function getObj(results: binding.Results, index: number) {
@@ -333,6 +323,23 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: MappingOptions) => P
     if (itemType === binding.PropertyType.LinkingObjects) {
       // Locate the table of the targeted object
       assert.string(objectType, "object type");
+      const targetClassHelpers = resolveClassHelpers(objectType);
+      // TODO: To improve performance: Refactor to resolve the class helper earlier.
+      const { tableKey, persistedProperties } = targetClassHelpers.objectSchema;
+      // TODO: Check if we want to match with the `p.name` or `p.publicName` here
+      const targetProperty = persistedProperties.find((p) => p.name === linkOriginPropertyName);
+      assert(targetProperty, `Expected a '${linkOriginPropertyName}' property on ${objectType}`);
+      const tableRef = binding.Helpers.getTable(realm, tableKey);
+      const itemHelpers = getHelpers(itemType, {
+        // TODO: Refactor to be able to create toBinding and fromBinding without all these helpers
+        ...options,
+        createObjectWrapper: targetClassHelpers.createObjectWrapper,
+      });
+      const collectionHelpers: OrderedCollectionHelpers = {
+        get: getObj,
+        fromBinding: itemHelpers.fromBinding,
+        toBinding: itemHelpers.toBinding,
+      };
 
       return {
         fromBinding() {
@@ -342,24 +349,9 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: MappingOptions) => P
           throw new Error("Not supported");
         },
         get(obj: binding.Obj) {
-          // TODO: To improve performance: Refactor to resolve the class helper earlier.
-          const targetClassHelpers = resolveClassHelpers(objectType);
-          const { tableKey, persistedProperties } = targetClassHelpers.objectSchema;
-          // TODO: Check if we want to match with the `p.name` or `p.publicName` here
-          const targetProperty = persistedProperties.find((p) => p.name === linkOriginPropertyName);
-          assert(targetProperty, `Expected a '${linkOriginPropertyName}' property on ${objectType}`);
-          const tableRef = binding.Helpers.getTable(realm, tableKey);
           const tableView = obj.getBacklinkView(tableRef, targetProperty.columnKey);
-          const itemHelpers = getHelpers(itemType, {
-            ...options,
-            createObjectWrapper: targetClassHelpers.createObjectWrapper,
-          });
-          const collectionHelpers: OrderedCollectionHelpers = {
-            get: getObj,
-            fromBinding: itemHelpers.fromBinding,
-            toBinding: itemHelpers.toBinding,
-          };
-          return createResultsFromTableView(tableView, collectionHelpers);
+          const results = binding.Results.fromTableView(realm, tableView);
+          return new Results(results, realm, collectionHelpers);
         },
         set() {
           throw new Error("Not supported");
@@ -464,7 +456,7 @@ function getHelpers(type: binding.PropertyType, options: MappingOptions): Proper
 }
 
 // TODO: Support converting all types
-function createHelpers(property: PropertyContext, options: HelperOptions & HelperFunctions): PropertyHelpers {
+function createHelpers(property: PropertyContext, options: HelperOptions): PropertyHelpers {
   const mappingOptions: MappingOptions = {
     ...property,
     ...options,
@@ -482,7 +474,7 @@ function createHelpers(property: PropertyContext, options: HelperOptions & Helpe
 /** @internal */
 export class PropertyMap {
   private mapping: Record<string, PropertyHelpers>;
-  private nameByColumnKey: Map<binding.ColKey, string>;
+  private readonly nameByColumnKey: Map<binding.ColKey, string>;
 
   public names: string[];
 
@@ -490,19 +482,11 @@ export class PropertyMap {
    * @param objectSchema
    * TODO: Refactor this to use the binding.ObjectSchema type once the DeepRequired gets removed from types
    */
-  constructor(objectSchema: binding.Realm["schema"][0], defaults: Record<string, unknown>, options: HelperOptions) {
+  constructor(objectSchema: BindingObjectSchema, defaults: Record<string, unknown>, options: HelperOptions) {
     const properties = [...objectSchema.persistedProperties, ...objectSchema.computedProperties];
-    const { realm } = options;
-    const optionsAndFunctions: HelperOptions & HelperFunctions = {
-      ...options,
-      createResultsFromTableView(tableView: binding.TableView, helpers: OrderedCollectionHelpers) {
-        const results = binding.Results.fromTableView(realm, tableView);
-        return new Results(results, realm, helpers);
-      },
-    };
     this.mapping = Object.fromEntries(
       properties.map((property) => {
-        const helpers = createHelpers(property, optionsAndFunctions);
+        const helpers = createHelpers(property, options);
         // Allow users to override the default value of properties
         const defaultValue = defaults[property.name];
         helpers.default = typeof defaultValue !== "undefined" ? defaultValue : helpers.default;
