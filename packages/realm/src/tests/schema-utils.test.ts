@@ -128,6 +128,7 @@ describe("schema-utils", () => {
           tableKey,
         },
         {
+          constructor: undefined,
           name: "Person",
           properties: {
             name: { name: "name", type: "string", optional: false, mapTo: "name", indexed: false },
