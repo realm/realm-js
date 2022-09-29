@@ -19,7 +19,9 @@ import { assert } from "./assert";
 import * as binding from "./binding";
 import { Collection } from "./Collection";
 import { INTERNAL } from "./internal";
-import { Object as RealmObject } from "./Object";
+import { TypeHelpers } from "./binding/types";
+
+const HELPERS = Symbol("Dictionary#helpers");
 
 // TODO: Implement this
 
@@ -30,13 +32,14 @@ type DictionaryChangeSet = {
 };
 type DictionaryChangeCallback = (dictionary: Dictionary, changes: DictionaryChangeSet) => void;
 
-const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true, writable: true };
+const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true };
 const PROXY_HANDLER: ProxyHandler<Dictionary> = {
   get(target, prop, receiver) {
     const internal = target[INTERNAL];
     const value = Reflect.get(target, prop, receiver);
     if (typeof value === "undefined" && typeof prop === "string") {
-      return internal.tryGetAny(prop);
+      const fromBinding = target[HELPERS].fromBinding;
+      return fromBinding(internal.tryGetAny(prop));
     } else {
       return value;
     }
@@ -44,11 +47,15 @@ const PROXY_HANDLER: ProxyHandler<Dictionary> = {
   set(target, prop, value) {
     const internal = target[INTERNAL];
     if (typeof prop === "string") {
+      const toBinding = target[HELPERS].toBinding;
+      internal.insertAny(prop, toBinding(value));
+      /*
       if (value instanceof RealmObject) {
         internal.insertAny(prop, value[INTERNAL]);
       } else {
         internal.insertAny(prop, value);
       }
+      */
       return true;
     } else {
       return false;
@@ -57,6 +64,7 @@ const PROXY_HANDLER: ProxyHandler<Dictionary> = {
   ownKeys(target) {
     const internal = target[INTERNAL];
     const result: (string | symbol)[] = Reflect.ownKeys(target);
+    // assert(internal.isValid, "Expected a valid dicitonary");
     const keys = internal.keys.snapshot();
     for (let i = 0; i < keys.size(); i++) {
       const key = keys.getAny(i);
@@ -68,7 +76,11 @@ const PROXY_HANDLER: ProxyHandler<Dictionary> = {
   getOwnPropertyDescriptor(target, prop) {
     const internal = target[INTERNAL];
     if (typeof prop === "string" && internal.contains(prop)) {
-      return DEFAULT_PROPERTY_DESCRIPTOR;
+      return {
+        ...DEFAULT_PROPERTY_DESCRIPTOR,
+        get: PROXY_HANDLER.get?.bind(null, target, prop, null),
+        set: PROXY_HANDLER.set?.bind(null, target, prop, null),
+      };
     } else {
       return Reflect.getOwnPropertyDescriptor(target, prop);
     }
@@ -84,7 +96,7 @@ export class Dictionary<T = unknown> extends Collection<T, DictionaryChangeCallb
    * @internal
    * @param internal The internal representation of the dictionary.
    */
-  constructor(internal: binding.Dictionary) {
+  constructor(internal: binding.Dictionary, helpers: TypeHelpers) {
     super(() => {
       throw new Error("Not yet implemented!");
     });
@@ -98,6 +110,8 @@ export class Dictionary<T = unknown> extends Collection<T, DictionaryChangeCallb
       },
     });
 
+    this[HELPERS] = helpers;
+
     return new Proxy(this, PROXY_HANDLER) as Dictionary<T>;
   }
 
@@ -106,6 +120,11 @@ export class Dictionary<T = unknown> extends Collection<T, DictionaryChangeCallb
    * @internal
    */
   public [INTERNAL]!: binding.Dictionary;
+
+  /**
+   * @internal
+   */
+  public [HELPERS]: TypeHelpers;
 
   // @ts-expect-error Collection is declaring types that doesn't match the index access
   [key: string]: T;

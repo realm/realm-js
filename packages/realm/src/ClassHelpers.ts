@@ -18,9 +18,10 @@
 
 import * as binding from "./binding";
 
-import type { PropertyMap, ObjectWrapCreator } from "./PropertyMap";
+import type { PropertyMap } from "./PropertyMap";
 import type { Object as RealmObject } from "./Object";
 import { RealmObjectConstructor } from ".";
+import { ObjectWrapCreator } from "./PropertyHelpers";
 
 type BindingObjectSchema = binding.Realm["schema"][0];
 
