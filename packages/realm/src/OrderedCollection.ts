@@ -65,7 +65,7 @@ const PROXY_HANDLER: ProxyHandler<OrderedCollection> = {
   },
 };
 
-export class OrderedCollection<T = unknown>
+export abstract class OrderedCollection<T = unknown>
   extends Collection<T, CollectionChangeCallback<T>>
   implements ReadonlyArray<T>
 {
