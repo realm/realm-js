@@ -19,7 +19,7 @@ import { assert } from "./assert";
 import * as binding from "./binding";
 import { Collection } from "./Collection";
 import { INTERNAL } from "./internal";
-import { TypeHelpers } from "./binding/types";
+import { TypeHelpers } from "./types";
 
 const HELPERS = Symbol("Dictionary#helpers");
 
