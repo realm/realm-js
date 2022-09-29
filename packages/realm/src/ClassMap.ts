@@ -114,7 +114,7 @@ export class ClassMap {
     this.mapping = Object.fromEntries(
       realmSchema.map((objectSchema) => {
         function createObjectWrapper<T = DefaultObject>(obj: binding.Obj, ctor = constructor) {
-          return new RealmObject<T>(realm, ctor, obj);
+          return RealmObject.createWrapper<T>(realm, ctor, obj);
         }
 
         const properties = new PropertyMap(objectSchema, schemaExtras[objectSchema.name]?.defaults || {}, {
