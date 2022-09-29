@@ -27,7 +27,7 @@ import { ClassHelpers } from "./ClassHelpers";
 import { Results } from "./Results";
 import { Dictionary } from "./Dictionary";
 import { MixedArg } from "./binding";
-import { TypeHelpers, getHelpers as getTypeHelpers, TypeOptions } from "./binding/types";
+import { TypeHelpers, getHelpers as getTypeHelpers, TypeOptions } from "./types";
 
 type BindingObjectSchema = binding.Realm["schema"][0];
 type BindingPropertySchema = BindingObjectSchema["persistedProperties"][0];
