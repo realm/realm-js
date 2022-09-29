@@ -20,6 +20,7 @@ import { Decimal128, ObjectId, UUID } from "bson";
 
 import { assert } from "../assert";
 import * as binding from "../binding";
+import { ClassHelpers } from "../ClassHelpers";
 import { getInternal } from "../internal";
 import { Object as RealmObject } from "../Object";
 
@@ -29,13 +30,11 @@ export type TypeHelpers = {
   fromBinding(value: unknown): unknown;
 };
 
-/** @internal */
-type ObjectWrapCreator<T extends RealmObject = RealmObject> = (obj: binding.Obj) => T;
-
 export type TypeOptions = {
   realm: binding.Realm;
   optional: boolean;
-  createObjectWrapper: ObjectWrapCreator;
+  objectType: string | undefined;
+  getClassHelpers(nameOrTableKey: string | binding.TableKey): ClassHelpers;
 };
 
 function defaultToBinding(value: unknown): binding.MixedArg {
@@ -144,7 +143,9 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
       fromBinding: defaultFromBinding,
     };
   },
-  [binding.PropertyType.Object]({ realm, createObjectWrapper }) {
+  [binding.PropertyType.Object]({ realm, objectType, getClassHelpers }) {
+    assert(objectType);
+    const { wrapObject } = getClassHelpers(objectType);
     return {
       toBinding(value) {
         if (value === null) {
@@ -162,21 +163,23 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
           return this.fromBinding(linkedObj);
         } else {
           assert.instanceOf(value, binding.Obj);
-          return createObjectWrapper(value);
+          return wrapObject(value);
         }
       },
     };
   },
-  [binding.PropertyType.LinkingObjects]({ createObjectWrapper }) {
+  [binding.PropertyType.LinkingObjects]({ objectType, getClassHelpers }) {
+    assert(objectType);
+    const { wrapObject } = getClassHelpers(objectType);
     return {
       toBinding: defaultToBinding,
       fromBinding(value) {
         assert.instanceOf(value, binding.Obj);
-        return createObjectWrapper(value);
+        return wrapObject(value);
       },
     };
   },
-  [binding.PropertyType.Mixed]({ realm, createObjectWrapper }) {
+  [binding.PropertyType.Mixed]({ realm, getClassHelpers }) {
     return {
       toBinding(value) {
         if (value instanceof Date) {
@@ -197,7 +200,8 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
         } else if (value instanceof binding.ObjLink) {
           const table = binding.Helpers.getTable(realm, value.tableKey);
           const linkedObj = table.getObject(value.objKey);
-          return createObjectWrapper(linkedObj);
+          const { wrapObject } = getClassHelpers(value.tableKey);
+          return wrapObject(linkedObj);
         } else {
           return value;
         }
@@ -284,10 +288,5 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
 export function getHelpers(type: binding.PropertyType, options: TypeOptions): TypeHelpers {
   const helpers = TYPES_MAPPING[type];
   assert(helpers, `Unexpected type ${type}`);
-  const result = helpers(options);
-  // Bind the methods to the resulting object
-  return {
-    fromBinding: result.fromBinding.bind(result),
-    toBinding: result.toBinding.bind(result),
-  };
+  return helpers(options);
 }
