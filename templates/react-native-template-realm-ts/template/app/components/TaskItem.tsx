@@ -1,5 +1,4 @@
 import React from 'react';
-import Realm from 'realm';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
 
 import {shadows} from '../styles/shadows';

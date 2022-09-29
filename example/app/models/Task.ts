@@ -1,18 +1,31 @@
 import {Realm} from '@realm/react';
-
-// To use a class as a Realm object type in Typescript with the @realm/babel-plugin plugin,
-// simply define the properties on the class with the correct type and the plugin will convert
-// it to a Realm schema automatically.
-export class Task extends Realm.Object<Task, 'description' | 'userId'> {
-  _id: Realm.BSON.ObjectId = new Realm.BSON.ObjectId();
+export class Task extends Realm.Object {
+  _id!: Realm.BSON.ObjectId;
   description!: string;
-  isComplete: boolean = false;
-  createdAt: Date = new Date();
+  isComplete!: boolean;
+  createdAt!: Date;
   userId!: string;
 
-  static primaryKey = '_id';
-
-  constructor(realm: Realm, description: string, userId?: string) {
-    super(realm, {description, userId: userId || '_SYNC_DISABLED_'});
+  static generate(description: string, userId?: string) {
+    return {
+      _id: new Realm.BSON.ObjectId(),
+      description,
+      isComplete: false,
+      createdAt: new Date(),
+      userId: userId || '_SYNC_DISABLED_',
+    };
   }
+
+  // To use a class as a Realm object type, define the object schema on the static property "schema".
+  static schema = {
+    name: 'Task',
+    primaryKey: '_id',
+    properties: {
+      _id: 'objectId',
+      description: 'string',
+      isComplete: {type: 'bool', default: false},
+      createdAt: 'date',
+      userId: 'string',
+    },
+  };
 }

@@ -6,6 +6,7 @@ import {buttonStyles} from '../styles/button';
 import {Realm, useApp} from '@realm/react';
 
 export let AuthState;
+
 (function (AuthState) {
   AuthState[(AuthState['None'] = 0)] = 'None';
   AuthState[(AuthState['Loading'] = 1)] = 'Loading';
