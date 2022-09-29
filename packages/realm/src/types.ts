@@ -18,11 +18,11 @@
 
 import { Decimal128, ObjectId, UUID } from "bson";
 
-import { assert } from "../assert";
-import * as binding from "../binding";
-import { ClassHelpers } from "../ClassHelpers";
-import { getInternal } from "../internal";
-import { Object as RealmObject } from "../Object";
+import { assert } from "./assert";
+import * as binding from "./binding";
+import { ClassHelpers } from "./ClassHelpers";
+import { getInternal } from "./internal";
+import { Object as RealmObject } from "./Object";
 
 /** @internal */
 export type TypeHelpers = {
