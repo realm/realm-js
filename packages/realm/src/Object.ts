@@ -50,7 +50,11 @@ class RealmObject<T = DefaultObject> {
    */
   public static [INTERNAL_HELPERS]: ClassHelpers;
 
-  private createWrapper(realm: Realm, constructor: Constructor, internal: binding.Obj) {
+  public static createWrapper<T = DefaultObject>(
+    realm: Realm,
+    constructor: Constructor,
+    internal: binding.Obj,
+  ): RealmObject<T> & T {
     const result = Object.create(constructor.prototype);
     Object.defineProperties(result, {
       realm: {
@@ -77,25 +81,14 @@ class RealmObject<T = DefaultObject> {
     // return result;
   }
 
-  private createObject(realm: Realm, values: RealmInsertionModel<T>): this {
-    return realm.create(this.constructor as RealmObjectConstructor, values) as unknown as this;
-  }
-
   /**
    * Create a `RealmObject` wrapping an `Obj` from the binding.
-   * @internal
    * @param realm The Realm managing the object.
    * @param constructor The constructor of the object.
    * @param internal The internal Obj from the binding.
    */
-  public constructor(realm: Realm, constructor: Constructor, internal: binding.Obj);
-  public constructor(realm: Realm, values: RealmInsertionModel<T>);
-  public constructor(realm: Realm, arg1: Constructor | RealmInsertionModel<T>, arg2?: binding.Obj) {
-    if (arg2) {
-      return this.createWrapper(realm, arg1 as Constructor, arg2);
-    } else {
-      return this.createObject(realm, arg1 as RealmInsertionModel<T>);
-    }
+  public constructor(realm: Realm, values: RealmInsertionModel<T>) {
+    return realm.create(this.constructor as RealmObjectConstructor, values) as unknown as this;
   }
 
   /**
