@@ -22,18 +22,20 @@ import { createHelpers, HelperOptions, PropertyHelpers } from "./PropertyHelpers
 
 type BindingObjectSchema = binding.Realm["schema"][0];
 
+class UninitializedPropertyMapError extends Error {
+  constructor() {
+    super("Property Map was accessed before it got initialized");
+  }
+}
+
 /** @internal */
 export class PropertyMap {
-  private mapping: Record<string, PropertyHelpers>;
-  private readonly nameByColumnKey: Map<binding.ColKey, string>;
+  private initialized = false;
+  private mapping: Record<string, PropertyHelpers> = {};
+  private nameByColumnKey: Map<binding.ColKey, string> = new Map();
+  private _names: string[] = [];
 
-  public names: string[];
-
-  /**
-   * @param objectSchema
-   * TODO: Refactor this to use the binding.ObjectSchema type once the DeepRequired gets removed from types
-   */
-  constructor(objectSchema: BindingObjectSchema, defaults: Record<string, unknown>, options: HelperOptions) {
+  public initialize(objectSchema: BindingObjectSchema, defaults: Record<string, unknown>, options: HelperOptions) {
     const properties = [...objectSchema.persistedProperties, ...objectSchema.computedProperties];
     this.mapping = Object.fromEntries(
       properties.map((property) => {
@@ -45,15 +47,31 @@ export class PropertyMap {
       }),
     );
     this.nameByColumnKey = new Map(properties.map((p) => [p.columnKey, p.publicName || p.name]));
-    // TODO: Consider including the computed properties?
-    this.names = properties.map((p) => p.publicName || p.name);
+    this._names = properties.map((p) => p.publicName || p.name);
+    this.initialized = true;
   }
 
   public get = (property: string): PropertyHelpers => {
-    return this.mapping[property];
+    if (this.initialized) {
+      return this.mapping[property];
+    } else {
+      throw new UninitializedPropertyMapError();
+    }
   };
 
   public getName = <T>(columnKey: binding.ColKey): keyof T => {
-    return this.nameByColumnKey.get(columnKey) as keyof T;
+    if (this.initialized) {
+      return this.nameByColumnKey.get(columnKey) as keyof T;
+    } else {
+      throw new UninitializedPropertyMapError();
+    }
   };
+
+  public get names(): string[] {
+    if (this.initialized) {
+      return this._names;
+    } else {
+      throw new UninitializedPropertyMapError();
+    }
+  }
 }

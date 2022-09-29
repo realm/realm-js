@@ -21,11 +21,12 @@ import * as binding from "./binding";
 import type { PropertyMap } from "./PropertyMap";
 import type { Object as RealmObject } from "./Object";
 import { RealmObjectConstructor } from ".";
-import { ObjectWrapCreator } from "./PropertyHelpers";
 
 type BindingObjectSchema = binding.Realm["schema"][0];
 
 export const INTERNAL_HELPERS = Symbol("Realm.Object#helpers");
+
+type ObjectWrapper<T extends RealmObject = RealmObject> = (obj: binding.Obj) => T;
 
 /**
  * @internal
@@ -34,7 +35,7 @@ export type ClassHelpers<T extends RealmObject = RealmObject> = {
   // TODO: Use a different type, once exposed by the binding
   objectSchema: BindingObjectSchema;
   properties: PropertyMap;
-  createObjectWrapper: ObjectWrapCreator<T>;
+  wrapObject: ObjectWrapper<T>;
 };
 
 export function setHelpers(constructor: RealmObjectConstructor, value: ClassHelpers): void {
@@ -58,6 +59,6 @@ export function getHelpers<T extends RealmObject = RealmObject>(arg: typeof Real
   if (helpers) {
     return helpers as ClassHelpers<T>;
   } else {
-    throw new Error("Expected INTERNAL_HELPERS to be set on the class");
+    throw new Error(`Expected INTERNAL_HELPERS to be set on the '${arg.name}' class`);
   }
 }

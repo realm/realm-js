@@ -23,8 +23,9 @@ import type { Realm } from "./Realm";
 import { Object as RealmObject } from "./Object";
 import { Constructor, DefaultObject, RealmObjectConstructor } from "./schema";
 import { getInternal, INTERNAL } from "./internal";
-import { getHelpers, setHelpers } from "./ClassHelpers";
+import { ClassHelpers, getHelpers, setHelpers } from "./ClassHelpers";
 import { assert } from "./assert";
+import { TableKey } from "./binding";
 
 type BindingObjectSchema = binding.Realm["schema"][0];
 
@@ -40,6 +41,7 @@ export type ObjectSchemaExtra = {
  */
 export class ClassMap {
   private mapping: Record<string, RealmObjectConstructor>;
+  private nameByTableKey: Record<TableKey, string>;
 
   private static createNamedConstructor<T extends Constructor>(name: string): T {
     const obj = {
@@ -109,30 +111,37 @@ export class ClassMap {
       realmSchema.map((objectSchema) => {
         // Create the wrapping class first
         const constructor = ClassMap.createClass(objectSchema, schemaExtras[objectSchema.name]?.constructor);
+        // Create property getters and setters
+        const properties = new PropertyMap();
+        // Setting the helpers on the class
+        setHelpers(constructor, {
+          objectSchema,
+          properties,
+          wrapObject(obj) {
+            return RealmObject.createWrapper(realm, obj, constructor);
+          },
+        });
         return [objectSchema.name, constructor];
       }),
     );
 
+    this.nameByTableKey = Object.fromEntries(realmSchema.map(({ name, tableKey }) => [tableKey, name]));
+
     for (const objectSchema of realmSchema) {
       const constructor = this.mapping[objectSchema.name];
-      // Simplifying the createWrapper signature, as we know the
-      const createObjectWrapper = <T = DefaultObject>(obj: binding.Obj, ctor = constructor) => {
-        return RealmObject.createWrapper<T>(realm, obj, ctor);
-      };
-      // Create property getters and setters
-      const properties = new PropertyMap(objectSchema, schemaExtras[objectSchema.name]?.defaults || {}, {
+      // Get the uninitialized property map
+      const { properties } = getHelpers(constructor as typeof RealmObject);
+      // Initialize the property map, now that all classes have helpers set
+      properties.initialize(objectSchema, schemaExtras[objectSchema.name]?.defaults || {}, {
         realm: realmInternal,
-        createObjectWrapper,
-        resolveClassHelpers: (name: string) => this.getHelpers(name),
+        getClassHelpers: (name: string) => this.getHelpers(name),
       });
-      // Make the helpers available on the class
-      setHelpers(constructor, { objectSchema, properties, createObjectWrapper });
       // Transfer property getters and setters onto the prototype of the class
       ClassMap.defineProperties(constructor, objectSchema, properties);
     }
   }
 
-  public get<T extends Realm.Object>(arg: string | RealmObject | Constructor<T>): Constructor<T> {
+  public get<T extends Realm.Object>(arg: string | RealmObject | Constructor<T> | binding.TableKey): Constructor<T> {
     if (typeof arg === "string") {
       const constructor = this.mapping[arg];
       if (!constructor) {
@@ -147,6 +156,9 @@ export class ClassMap {
       assert.string(arg.schema.name, "name");
       return this.get(arg.schema.name);
       // return this.get(arg.name);
+    } else if (arg in this.nameByTableKey) {
+      const name = this.nameByTableKey[arg];
+      return this.get(name);
     } else {
       throw new Error("Expected an object schema name, object instance or class");
     }
