@@ -103,10 +103,12 @@ mixedInfo:
     TypedLink:
       getter: get_link # get_link is for TypedLink, not Link!
       type: ObjLink
+    Link:
+      getter: get<ObjKey>
+      type: ObjKey
   unusedDataTypes:
     - Mixed
     - LinkList
-    - Link # This can be used with get<ObjKey>(), but there are better APIs to use with link columns.
   extraCtors:
     - Obj
 
