@@ -18,12 +18,10 @@
 import React, { useRef, useState } from "react";
 import Realm, { User } from "realm";
 import "@testing-library/jest-native/extend-expect";
-import { renderHook, act } from "@testing-library/react-hooks";
 import { createRealmContext } from "..";
 import { mergeRealmConfiguration, areConfigurationsIdentical } from "../RealmProvider";
 import { View, Button, Text } from "react-native";
-import { render, fireEvent, waitFor } from "@testing-library/react-native";
-import { ReactTestInstance } from "react-test-renderer";
+import { render, fireEvent, waitFor, renderHook, act } from "@testing-library/react-native";
 
 const dogSchema: Realm.ObjectSchema = {
   name: "dog",
@@ -55,22 +53,24 @@ describe("RealmProvider", () => {
   afterEach(() => {
     Realm.clearTestState();
   });
+
   it("returns the configured realm with useRealm and closes on unmount", async () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => <RealmProvider>{children}</RealmProvider>;
-    const { result, waitForNextUpdate, unmount } = renderHook(() => useRealm(), { wrapper });
-    await waitForNextUpdate();
+    const { result, unmount } = renderHook(() => useRealm(), { wrapper });
+    await waitFor(() => expect(result.current).not.toBe(null));
     const realm = result.current;
     expect(realm).not.toBe(null);
     expect(realm.schema[0].name).toBe("dog");
     unmount();
     expect(realm.isClosed).toBe(true);
   });
+
   it("will override the the configuration provided in createRealmContext", async () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <RealmProvider schema={[catSchema]}>{children}</RealmProvider>
     );
-    const { result, waitForNextUpdate } = renderHook(() => useRealm(), { wrapper });
-    await waitForNextUpdate();
+    const { result } = renderHook(() => useRealm(), { wrapper });
+    await waitFor(() => expect(result.current).not.toBe(null));
     const realm = result.current;
     expect(realm).not.toBe(null);
     expect(realm.schema[0].name).toBe("cat");
@@ -79,12 +79,13 @@ describe("RealmProvider", () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <EmptyRealmContext.RealmProvider schema={[catSchema]}>{children}</EmptyRealmContext.RealmProvider>
     );
-    const { result, waitForNextUpdate } = renderHook(() => EmptyRealmContext.useRealm(), { wrapper });
-    await waitForNextUpdate();
+    const { result } = renderHook(() => EmptyRealmContext.useRealm(), { wrapper });
+    await waitFor(() => expect(result.current).not.toBe(null));
     const realm = result.current;
     expect(realm).not.toBe(null);
     expect(realm.schema[0].name).toBe("cat");
   });
+
   it("can be provided in multiple parts of an application", async () => {
     const RealmComponent = () => {
       const realm = useRealm();
@@ -121,14 +122,14 @@ describe("RealmProvider", () => {
       );
     };
     const { getByTestId } = render(<App />);
-    const secondRealmProvider: ReactTestInstance = getByTestId("secondRealmProvider");
+    const secondRealmProvider = getByTestId("secondRealmProvider");
     const toggleComponent = getByTestId("toggle");
     const actionComponent = await waitFor(() => getByTestId("action"));
 
-    expect(secondRealmProvider).not.toBeEmpty();
+    expect(secondRealmProvider).not.toBeEmptyElement();
 
     await act(async () => {
-      fireEvent.press(toggleComponent as ReactTestInstance);
+      fireEvent.press(toggleComponent);
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
     expect(() => getByTestId("secondRealmProvider")).toThrow(
@@ -137,9 +138,7 @@ describe("RealmProvider", () => {
 
     // This is actually a bug that we need to fix on a deeper level
     await act(async () => {
-      expect(() => fireEvent.press(actionComponent as ReactTestInstance)).toThrow(
-        "Cannot access realm that has been closed.",
-      );
+      expect(() => fireEvent.press(actionComponent)).toThrow("Cannot access realm that has been closed.");
     });
   });
   it("handle state changes to its configuration", async () => {
@@ -167,7 +166,7 @@ describe("RealmProvider", () => {
     expect(schemaNameContainer).toHaveTextContent("dog");
 
     await act(async () => {
-      fireEvent.press(changeSchemaButton as ReactTestInstance);
+      fireEvent.press(changeSchemaButton);
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
@@ -201,7 +200,8 @@ describe("RealmProvider", () => {
         </>
       );
     };
-    const { getByTestId } = render(<App />);
+    const { getByTestId, queryByTestId } = render(<App />);
+    await waitFor(() => getByTestId("schemaName"));
     const toggleRefPath = getByTestId("toggleRefPath");
 
     // Wait a tick for the RealmProvider to set the reference and then call a function that uses the ref
@@ -210,7 +210,7 @@ describe("RealmProvider", () => {
       fireEvent.press(toggleRefPath);
     });
 
-    const realmRefPathText = await waitFor(() => getByTestId("realmRefPath"));
+    const realmRefPathText = await waitFor(() => queryByTestId("realmRefPath"));
 
     expect(realmRefPathText).toHaveTextContent("testPath.realm");
   });

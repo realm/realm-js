@@ -1,10 +1,33 @@
-0.3.2 Release notes (2022-07-14)
-=============================================================
+## vNext (TBD)
+
+### Enhancements
+* None
+
+### Fixed
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None
+
+### Compatibility
+* React Native >= v0.64.0
+* Atlas App Services.
+* Realm Studio v12.0.0.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
+* File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Internal
+* Update devDependencies for testing:
+  * react v18.1.0
+  * react-native v0.70.1
+	* react-test-renderer v18.1.0
+	* @testing-library/react-native v11.2.0
+	* @testing-library/jest-native v4.0.13
+* Refactor tests to use updated `testing-library`
+## 0.3.2 (2022-07-14)
 ### Fixed
 * Fix peer dependency for Realm in package.json to support `-rc` branches of Realm ([#4621](https://github.com/realm/realm-js/issues/4621))
 * Add generic type parameters to `@realm/react` hooks ([#4716](https://github.com/realm/realm-js/pull/4716))
 
-# 0.3.1 Release notes (2022-05-31)
+## 0.3.1 (2022-05-31)
 
 ### Enhancements
 * Add realmRef property to `RealmProvider` to access the configured realm outside of the provider component ([#4571](https://github.com/realm/realm-js/issues/4571))
@@ -13,7 +36,7 @@
 ### Fixed
 * Results from `useQuery` could not be passed to `MutableSubscriptionSet.add`/`remove` ([#4507](https://github.com/realm/realm-js/issues/4507), since v0.1.0)
 
-# 0.3.0 Release notes (2022-05-11)
+## 0.3.0 (2022-05-11)
 
 ### Enhancements
 
@@ -77,7 +100,7 @@ const SomeComponent = () => {
 
 - Tests run with `--forceExit` to prevent them hanging ([#4531](https://github.com/realm/realm-js/pull/4531))
 
-  # 0.2.1 Release notes (2022-03-24)
+## 0.2.1 (2022-03-24)
 
 ### Enhancements
 
@@ -96,7 +119,7 @@ const SomeComponent = () => {
 
 - None
 
-  # 0.2.0 Release notes (2022-03-07)
+## 0.2.0 (2022-03-07)
 
 ### Enhancements
 
@@ -108,7 +131,7 @@ const SomeComponent = () => {
 - List properties of a Realm.Object now rerender on change
 - Broadened test coverage for collections, lists and linked objects
 
-  # 0.1.0 Release notes (2021-11-10)
+## 0.1.0 (2021-11-10)
 
 ### Enhancements
 

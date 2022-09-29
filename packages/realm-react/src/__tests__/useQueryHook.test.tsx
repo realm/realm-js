@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 import Realm from "realm";
 import { useState, useEffect } from "react";
-import { renderHook } from "@testing-library/react-hooks";
+import { renderHook } from "@testing-library/react-native";
 import { createUseQuery } from "../useQuery";
 
 const dogSchema: Realm.ObjectSchema = {
