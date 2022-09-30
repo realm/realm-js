@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { strict as assert } from "assert";
-import { Key } from "readline";
 
 import { Spec, TypeSpec, ClassSpec, MethodSpec } from "./spec";
 
