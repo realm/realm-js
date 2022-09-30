@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Added a [contribution guide](https://github.com/realm/realm-js/blob/master/packages/realm-react/CONTRIBUTING.md) to assist in contributions from the community.
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
