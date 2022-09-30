@@ -2,18 +2,18 @@
 
 ## Introduction
 
-The Realm Babel Plugin enables you to define your Realm models using standard Typescript syntax - no need to define a separate schema.
+The Realm Babel plugin enables you to define your Realm models using standard Typescript syntax - no need to define a separate schema.
 
 <table>
 <tr>
-<th>Before</th>
-<th>After</th>
+<th>Before: without the Realm Babel plugin</th>
+<th>After: with the Realm Babel plugin</th>
 </tr>
 <tr>
 <td width="50%" valign="top">
 
 ```ts
-export class Task extends Realm.Object<Task, "description"> {
+class Task extends Realm.Object<Task, "description"> {
   _id!: Realm.BSON.ObjectId;
   description!: string;
   isComplete!: boolean;
@@ -45,7 +45,7 @@ export class Task extends Realm.Object<Task, "description"> {
 <td width="50%" valign="top">
 
 ```ts
-export class Task extends Realm.Object<Task, "description"> {
+class Task extends Realm.Object<Task, "description"> {
   _id = new Realm.BSON.ObjectId();
   description!: string;
   @index
@@ -77,7 +77,7 @@ export class Task extends Realm.Object<Task, "description"> {
 
    `npm install --save-dev @realm/babel-plugin`
 
-2. If you don't already have it installed, install the `@babel/plugin-proposal-decorators` (only required if you need to use the `@index` or `@mapTo` decorators):
+2. If you don't already have it installed, install the `@babel/plugin-proposal-decorators` package (only required if you need to use the `@index` or `@mapTo` decorators):
 
    `npm install --save-dev @babel/plugin-proposal-decorators`
 
