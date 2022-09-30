@@ -1,6 +1,6 @@
 # Contribution Guide
 ## Introduction
-We are extremely happy for any contributions to `@realm/react`.  Realm is a very busy team and has many things to work on.  If you are having an issue with this package and want to take it on yourself, feel free to open a PR and we will help guide you to get it merged.
+We are extremely happy for any contributions to `@realm/react`.  While we (the Realm team) are working hard to provide you the best possible experience as developers, we have a long backlog of things we want to do. If you are having an issue with or an idea for this package and want to take it on yourself, feel free to open a PR and we will help guide you to get it merged.
 
 That being said, the following should be considered along with the code changes:
 * Regression tests that fail without the code changes and pass with the code changes
@@ -17,7 +17,7 @@ That being said, the following should be considered along with the code changes:
 ## Building and Running the Tests
 `realm-js` is a monorepo that uses `lerna` to dynamically link dependencies.  In the case of `@realm/react`, the `realm` library is linked into the package.  Therefore, one must build `realm` in order to run the `@realm/react` tests.  There is already a [guide for building realm](https://github.com/realm/realm-js/blob/master/contrib/building.md), but an abridged version is provided here.
 
-It is assumed you are already setup to run a `react-native` project and are on a mac (if not see the [guide for building realm](https://github.com/realm/realm-js/blob/master/contrib/building.md)), so a good amount of the required [pre-req steps](https://github.com/realm/realm-js/blob/master/contrib/building.md#setup-instructions-for-macos) are already accomplished.  On requirement is `cmake`, which can be installed with:
+It is assumed you are already setup to run a `react-native` project and are on a mac (if not see the [guide for building realm](https://github.com/realm/realm-js/blob/master/contrib/building.md)), so a good amount of the required [pre-req steps](https://github.com/realm/realm-js/blob/master/contrib/building.md#setup-instructions-for-macos) are already accomplished.  One requirement is `cmake`, which can be installed with:
 
 ```
 brew install cocoapods cmake
