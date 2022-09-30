@@ -225,7 +225,6 @@ function getRealmTypeForClassProperty(path: NodePath<types.ClassProperty>): Real
   }
 }
 
-// TODO check it was imported from realm
 function findDecoratorIdentifier(decoratorsPath: NodePath<types.Decorator>[], name: string) {
   return decoratorsPath.find(
     (d) => d.node && types.isIdentifier(d.node.expression) && d.node.expression.name === name && isImportedFromRealm(d),
