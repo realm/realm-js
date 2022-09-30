@@ -129,12 +129,12 @@ public:
         }
         else {
             auto value = ValueType(it->second);
+            // Call functions passed as the default value to allow dynamic defaults
             if (Value::is_function(m_ctx, value)) {
                 value = Function<JSEngine>::call(m_ctx, Value::validated_to_function(m_ctx, value), 0, {});
             }
             return util::make_optional(value);
         }
-        // return it != defaults.end() ? util::make_optional(ValueType(it->second)) : std::nullopt;
     }
 
     template <typename T>
