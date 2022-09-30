@@ -324,13 +324,6 @@ export abstract class OrderedCollection<T = unknown>
 
   // Other methods
 
-  /**
-   * @returns An object for JSON serialization.
-   */
-  toJSON(): Array<unknown> {
-    throw new Error("Method not implemented.");
-  }
-
   description(): string {
     throw new Error("Method not implemented.");
   }

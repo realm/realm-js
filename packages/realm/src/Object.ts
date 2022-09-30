@@ -51,6 +51,8 @@ const PROXY_HANDLER: ProxyHandler<RealmObject<any>> = {
   },
 };
 
+type JSONCacheMap = Map<string, Map<string, DefaultObject>>;
+
 class RealmObject<T = DefaultObject> {
   /**
    * @internal
@@ -214,13 +216,52 @@ class RealmObject<T = DefaultObject> {
   entries(): [string, unknown][] {
     throw new Error("Not yet implemented");
   }
-  toJSON(): unknown {
-    // return { ...this };
+
+  toJSON(_?: string, cache: JSONCacheMap = new Map()): DefaultObject {
+    // Construct a reference-id of table-name & primaryKey if it exists, or fall back to objectId.
+
+    // Check if current objectId has already processed, to keep object references the same.
+    const existing = this._getOwnCache(cache);
+    if (existing) {
+      return existing;
+    }
+
+    // Create new result, and store in cache.
+    const result: DefaultObject = {};
+    this._setOwnCache(cache, result);
+
+    // Move all enumerable keys to result, triggering any specific toJSON implementation in the process.
+    // TODO: Consider Object.keys(this)
+    //   .concat(Object.keys(Object.getPrototypeOf(this)))
+    //   .forEach((key) => {
     for (const key in this) {
       const value = this[key];
-      console.log({ key, value });
+
+      // skip any functions & constructors (in case of class models).
+      if (typeof value === "function") {
+        continue; // continue
+      }
+
+      if (value === null || value === undefined) {
+        result[key] = value;
+      } else if (value instanceof RealmObject || value instanceof Realm.Collection) {
+        // recursively trigger `toJSON` for Realm instances with the same cache.
+        result[key] = value.toJSON(key, cache);
+      } else if (value instanceof Realm.Dictionary /* TODO: value[Symbol.IS_PROXIED_DICTIONARY] */) {
+        // TODO: Consider dictionary compatibility comment.
+        // Allows us to detect if this is a proxied Dictionary on JSC pre-v11. See realm-common/symbols.ts for details.
+        // value[Symbol.IS_PROXIED_DICTIONARY]
+        // Dictionary special case to share the "cache" for dictionary-values,
+        // in case of circular structures involving links.
+        result[key] = Object.fromEntries(
+          Object.entries(value).map(([k, v]) => [k, v instanceof RealmObject ? v.toJSON(k, cache) : v]),
+        );
+        throw new Error("Dictionary support not fully implemented");
+      } else {
+        result[key] = value;
+      }
     }
-    return { ...this };
+    return result;
   }
   isValid(): boolean {
     return this[INTERNAL] && this[INTERNAL].isValid;
@@ -248,6 +289,25 @@ class RealmObject<T = DefaultObject> {
    */
   _objectKey(): string {
     return this[INTERNAL].key.toString();
+  }
+
+  /**
+   * @internal
+   * Gets cached self in a given cache, if it is cached already.
+   */
+  private _getOwnCache(cache: JSONCacheMap): DefaultObject | undefined {
+    return cache.get(this[INTERNAL].table.name)?.get(this._objectKey());
+  }
+  /**
+   * @internal
+   * Set cache belonging to this object to given value
+   */
+  private _setOwnCache(cache: JSONCacheMap, value: DefaultObject) {
+    const exists = cache.get(this[INTERNAL].table.name);
+    if (!exists) {
+      cache.set(this[INTERNAL].table.name, new Map());
+    }
+    cache.get(this[INTERNAL].table.name)?.set(this._objectKey(), value);
   }
 
   addListener(callback: ObjectChangeCallback<T>): void {
