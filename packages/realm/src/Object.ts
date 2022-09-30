@@ -121,7 +121,12 @@ class RealmObject<T = DefaultObject> {
     throw new Error("Not yet implemented");
   }
   toJSON(): unknown {
-    throw new Error("Not yet implemented");
+    // return { ...this };
+    for (const key in this) {
+      const value = this[key];
+      console.log({ key, value });
+    }
+    return { ...this };
   }
   isValid(): boolean {
     return this[INTERNAL] && this[INTERNAL].isValid;

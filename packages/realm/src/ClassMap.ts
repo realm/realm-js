@@ -72,36 +72,51 @@ export class ClassMap {
   private static defineProperties(constructor: Constructor, schema: BindingObjectSchema, propertyMap: PropertyMap) {
     // Create bound functions for getting and setting properties
     const properties = [...schema.persistedProperties, ...schema.computedProperties];
-    for (const property of properties) {
-      const { get, set } = propertyMap.get(property.name);
-      Object.defineProperty(constructor.prototype, property.name, {
-        enumerable: true,
-        get(this: RealmObject) {
-          const obj = getInternal(this);
-          return get(obj);
-        },
-        set(this: RealmObject, value: unknown) {
-          const obj = getInternal(this);
-          try {
-            set(obj, value);
-          } catch (err) {
-            // TODO: Match on something else than a message, once exposed by the binding
-            if (err instanceof Error && err.message.startsWith("Wrong transactional state")) {
-              throw new Error(
-                "Expected a write transaction: Wrap the assignment in `realm.write(() => { /* assignment*/ });`",
-              );
-            } else {
-              throw err;
-            }
-          }
-        },
-      });
-    }
-    // Implement the per class optimized methods
     const propertyNames = properties.map((p) => p.publicName || p.name);
-    constructor.prototype.keys = function () {
-      return propertyNames;
+
+    // Build a map of property descriptors from the properties declared in the schema
+    const descriptors: PropertyDescriptorMap = Object.fromEntries(
+      properties.map((property) => {
+        const { get, set } = propertyMap.get(property.name);
+        return [
+          property.name,
+          {
+            enumerable: true,
+            get(this: RealmObject) {
+              const obj = getInternal(this);
+              return get(obj);
+            },
+            set(this: RealmObject, value: unknown) {
+              const obj = getInternal(this);
+              try {
+                set(obj, value);
+              } catch (err) {
+                // TODO: Match on something else than a message, once exposed by the binding
+                if (err instanceof Error && err.message.startsWith("Wrong transactional state")) {
+                  throw new Error(
+                    "Expected a write transaction: Wrap the assignment in `realm.write(() => { /* assignment*/ });`",
+                  );
+                } else {
+                  throw err;
+                }
+              }
+            },
+          },
+        ];
+      }),
+    );
+
+    // Per class optimized methods
+    descriptors.keys = {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value() {
+        return propertyNames;
+      },
     };
+
+    Object.defineProperties(constructor.prototype, descriptors);
   }
 
   constructor(realm: Realm, realmSchema: BindingObjectSchema[], schemaExtras: RealmSchemaExtra) {
