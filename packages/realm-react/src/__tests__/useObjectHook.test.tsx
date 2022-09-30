@@ -91,4 +91,16 @@ describe("useObject hook", () => {
 
     expect(object).toEqual(null);
   });
+
+  it("identical useObject calls return the same reference", () => {
+    const [, dog2] = testDataSet;
+    const { result } = renderHook(() => useObject<IDog>("dog", dog2._id));
+    const { result: result2 } = renderHook(() => useObject<IDog>("dog", dog2._id));
+
+    const object = result.current;
+    const object2 = result2.current;
+
+    expect(object).toBeDefined();
+    expect(object).toBe(object2);
+  });
 });

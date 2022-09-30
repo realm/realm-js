@@ -95,6 +95,7 @@ describe("useQueryHook", () => {
     expect(collection[1]).toMatchObject(dog2);
     expect(collection[2]).toMatchObject(dog3);
   });
+
   it("returns the same collection reference if there are no changes", () => {
     const { result } = renderHook(() => useQuery<IDog>("dog"));
     const collection = result.current;
@@ -103,10 +104,26 @@ describe("useQueryHook", () => {
     expect(collection.length).toBe(6);
     expect(collection[0]).toEqual(collection?.[0]);
   });
+
   it("should return undefined indexes that are out of bounds", () => {
     const { result } = renderHook(() => useQuery<IDog>("dog"));
     const collection = result.current;
 
     expect(collection[99]).toBe(undefined);
+  });
+
+  it("identical useQuery calls return the same reference", () => {
+    const { result } = renderHook(() => useQuery<IDog>("dog"));
+    const { result: result2 } = renderHook(() => useQuery<IDog>("dog"));
+
+    const collection1 = result.current;
+    const collection2 = result2.current;
+
+    expect(collection1).toBeDefined();
+
+    // The same collection should be returned
+    // Normally toBe would be used, but the collection is a proxy and there seems
+    // to be a bug in jest that causes it to fail
+    expect(collection1 === collection2).toBe(true);
   });
 });
