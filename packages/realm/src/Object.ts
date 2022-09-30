@@ -303,8 +303,7 @@ class RealmObject<T = DefaultObject> {
    * Set cache belonging to this object to given value
    */
   private _setOwnCache(cache: JSONCacheMap, value: DefaultObject) {
-    const exists = cache.get(this[INTERNAL].table.name);
-    if (!exists) {
+    if (!cache.has(this[INTERNAL].table.name)) {
       cache.set(this[INTERNAL].table.name, new Map());
     }
     cache.get(this[INTERNAL].table.name)?.set(this._objectKey(), value);
