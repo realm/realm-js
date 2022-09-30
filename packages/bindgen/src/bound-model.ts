@@ -20,36 +20,84 @@ import { Key } from "readline";
 
 import { Spec, TypeSpec, ClassSpec, MethodSpec } from "./spec";
 
-class Const {
+abstract class TypeBase {
+  abstract readonly kind: TypeKind;
+
+  // This is mostly because TS doesn't know that Type covers all types derived from TypeBase.
+  is<Kind extends TypeKind>(kind: Kind): this is Type & { kind: Kind } {
+    return this.kind == kind;
+  }
+
+  isOptional(): this is Template & { name: "util::Optional" };
+  isOptional(type: string): boolean;
+  isOptional(type?: string): boolean {
+    return this.isTemplate("util::Optional") && (!type || ("name" in this.args[0] && this.args[0].name == type));
+  }
+
+  isTemplate(): this is Template;
+  isTemplate<Name extends string>(type: Name): this is Template & { name: Name };
+  isTemplate(type?: string): boolean {
+    return this.is("Template") && (!type || this.name == type);
+  }
+
+  isPrimitive(): this is Primitive;
+  isPrimitive<Name extends string>(type: Name): this is Primitive & { name: Name };
+  isPrimitive(type?: string): boolean {
+    return this.is("Primitive") && (!type || this.name == type);
+  }
+
+  isVoid(): this is Primitive & { name: "void" } {
+    return this.isPrimitive("void");
+  }
+
+  removeConstRef(this: Type): Exclude<Type, Const | Ref | RRef> {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    let self = this;
+    while (self.is("Const") || self.is("Ref") || self.is("RRef")) {
+      self = self.type;
+    }
+    return self;
+  }
+}
+
+class Const extends TypeBase {
   readonly kind = "Const";
-  constructor(public type: Type) {}
+  constructor(public type: Type) {
+    super();
+  }
 
   toString() {
     return `${this.type} const`;
   }
 }
 
-class Pointer {
+class Pointer extends TypeBase {
   readonly kind = "Pointer";
-  constructor(public type: Type) {}
+  constructor(public type: Type) {
+    super();
+  }
 
   toString() {
     return `${this.type}*`;
   }
 }
 
-class Ref {
+class Ref extends TypeBase {
   readonly kind = "Ref";
-  constructor(public type: Type) {}
+  constructor(public type: Type) {
+    super();
+  }
 
   toString() {
     return `${this.type}&`;
   }
 }
 
-class RRef {
+class RRef extends TypeBase {
   readonly kind = "RRef";
-  constructor(public type: Type) {}
+  constructor(public type: Type) {
+    super();
+  }
 
   toString() {
     return `${this.type}&&`;
@@ -66,7 +114,7 @@ export class Arg {
   }
 }
 
-class Func {
+class Func extends TypeBase {
   readonly kind = "Func";
 
   constructor(
@@ -75,7 +123,9 @@ class Func {
     public isConst: boolean,
     public noexcept: boolean,
     public isOffThread: boolean,
-  ) {}
+  ) {
+    super();
+  }
 
   toString() {
     const args = this.args.map((a) => a.toString()).join(", ");
@@ -86,30 +136,28 @@ class Func {
   // function signature that omits that argument and returns an AsyncResult.
   // Other functions return undefined.
   asyncTransform(): Func | undefined {
-    if (this.ret.kind != "Primitive" || this.ret.name != "void") return undefined;
+    if (!this.ret.isVoid()) return undefined;
     const voidType = this.ret;
     if (this.args.length == 0) return undefined;
-    let lastArgType = this.args[this.args.length - 1].type;
-    if (lastArgType.kind == "RRef" || lastArgType.kind == "Ref") lastArgType = lastArgType.type;
-    if (lastArgType.kind != "Template" || lastArgType.name != "AsyncCallback") return undefined;
+    const lastArgType = this.args[this.args.length - 1].type.removeConstRef();
+    if (!lastArgType.isTemplate("AsyncCallback")) return undefined;
 
     // Now we know we are an async function. Validate requirements and do the transform.
     const cb = lastArgType.args[0];
     assert.equal(cb.kind, "Func" as const);
     assert.equal(cb.ret, voidType);
+
+    // Callback arguments are either (error?) or (result?, error?).
+    // In the latter case, result is the "real" return value from the async op.
     assert([1, 2].includes(cb.args.length));
     const lastCbArg = cb.args[cb.args.length - 1];
     assert.deepEqual(lastCbArg.type, new Template("util::Optional", [new Primitive("AppError")]));
     let res: Type = voidType;
     if (cb.args.length == 2) {
-      let firstCbArgType = cb.args[0].type;
-      while (firstCbArgType.kind == "Const" || firstCbArgType.kind == "RRef" || firstCbArgType.kind == "Ref") {
-        firstCbArgType = firstCbArgType.type;
+      res = cb.args[0].type.removeConstRef();
+      if (res.isOptional()) {
+        res = res.args[0];
       }
-      if (firstCbArgType.kind == "Template" && firstCbArgType.name == "util::Optional") {
-        firstCbArgType = firstCbArgType.args[0];
-      }
-      res = firstCbArgType;
     }
     return new Func(
       new Template("AsyncResult", [res]),
@@ -127,9 +175,11 @@ class Func {
   }
 }
 
-class Template {
+class Template extends TypeBase {
   readonly kind = "Template";
-  constructor(public name: string, public args: Type[]) {}
+  constructor(public name: string, public args: Type[]) {
+    super();
+  }
 
   toString() {
     return `${this.name}<${this.args.join(", ")}>`;
@@ -194,8 +244,9 @@ export class Property extends InstanceMethod {
   }
 }
 
-export class NamedType {
+export abstract class NamedType extends TypeBase {
   constructor(public name: string) {
+    super();
     assert(!name.includes("_"), `Illegal type name '${name}': '_' is not allowed.`);
   }
 }
@@ -254,9 +305,11 @@ export class Struct extends NamedType {
   }
 }
 
-export class Primitive {
+export class Primitive extends TypeBase {
   readonly kind = "Primitive";
-  constructor(public name: string) {}
+  constructor(public name: string) {
+    super();
+  }
 
   toString() {
     return this.name;
@@ -300,6 +353,8 @@ export type Type =
   | Opaque
   | KeyType
   | Enum;
+
+export type TypeKind = Type["kind"];
 
 export class BoundSpec {
   // Note: For now, all aliases are fully resolved and no trace is left here.
@@ -496,7 +551,7 @@ export function bindModel(spec: Spec): BoundSpec {
           ...Object.entries(rawCls.constructors).flatMap(([name, rawSig]) => {
             const sig = resolveTypes(rawSig);
             // Constructors implicitly return the type of the class.
-            assert(sig.kind == "Func" && sig.ret.kind == "Primitive" && sig.ret.name == "void");
+            assert(sig.kind == "Func" && sig.ret.isVoid());
             sig.ret = cls.sharedPtrWrapped ? new Template("std::shared_ptr", [cls]) : cls;
             return new Constructor(cls, name, sig);
           }),
