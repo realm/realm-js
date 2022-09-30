@@ -61,7 +61,10 @@ export function createUseObject(useRealm: () => Realm) {
       () => {
         const updateCallback = () => {
           // Wrap object in a proxy to update the reference on rerender ( should only rerender when something has changed )
-          objectRef.current = cachedObject.object ? new Proxy(cachedObject.object, {}) : null;
+          const objectProxy = objectRef.current ? new Proxy(objectRef.current, {}) : null;
+          objectRef.current = objectProxy;
+
+          // Force rerender to return the new proxy object
           forceRerender();
         };
         const cachedObject = createCachedObject({
