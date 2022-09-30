@@ -46,8 +46,8 @@ const PRIMITIVES_MAPPING: Record<string, string> = {
 
 const TEMPLATE_MAPPING: Record<string, (...args: string[]) => string> = {
   "std::vector": (arg) => `${arg}[]`,
-  "util::Optional": (arg) => `null | undefined | ${arg}`,
-  Nullable: (t) => `null | undefined | ${t}`,
+  "util::Optional": (arg) => `undefined | ${arg}`,
+  Nullable: (t) => `null | ${t}`,
   "std::shared_ptr": (arg) => arg,
   "std::pair": (a, b) => `[${a}, ${b}]`,
   "std::tuple": (...args) => `[${args}]`,
@@ -61,6 +61,9 @@ const TEMPLATE_MAPPING: Record<string, (...args: string[]) => string> = {
 const enum Kind {
   Arg, // JS -> CPP
   Ret, // Cpp -> JS
+}
+function suffix(kind: Kind) {
+  return kind == Kind.Arg ? "_Relaxed" : "";
 }
 
 function generateType(spec: BoundSpec, type: Type, kind: Kind): string {
@@ -81,7 +84,7 @@ function generateType(spec: BoundSpec, type: Type, kind: Kind): string {
       return type.jsName;
 
     case "Struct":
-      return kind == Kind.Arg ? type.jsName : `DeepRequired<${type.jsName}>`;
+      return type.jsName + suffix(kind);
 
     case "Primitive":
       if (type.name == "Mixed") return kind == Kind.Arg ? "MixedArg" : "Mixed";
@@ -105,7 +108,6 @@ function generateArguments(spec: BoundSpec, args: Arg[]) {
 }
 
 function generateMixedTypes(spec: BoundSpec) {
-  // TODO should undefined be allowed in MixedArg?
   // TODO consider interface rather than type here.
   return `
     export type Mixed = null | ${spec.mixedInfo.getters
@@ -161,10 +163,6 @@ export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): vo
   out('export * from "./core";');
 
   out("// Utilities");
-  out(`type DeepRequired<T> = 
-          T extends CallableFunction ? T :
-          T extends object ? {[K in keyof T]-? : DeepRequired<T[K]>} :
-          T;`);
   out("type CppErrorCode = {code: number, message: string, category: string};");
 
   out("// Mixed types");
@@ -177,12 +175,16 @@ export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): vo
 
   out("// Records");
   for (const rec of spec.records) {
-    out(`export type ${rec.jsName} = {`);
-    for (const field of rec.fields) {
-      // Using Kind.Arg here because when a Record is used as a Ret, it will be "fixed" to behave like one.
-      out(field.jsName, field.required ? "" : "?", ": ", generateType(spec, field.type, Kind.Arg), ";");
+    for (const kind of [Kind.Ret, Kind.Arg]) {
+      out(`export type ${rec.jsName}${suffix(kind)} = {`);
+      for (const field of rec.fields) {
+        // For Optional<T> fields, the field will always be there in Ret mode, but it may be undefined.
+        // This is handled by Optional<T> becoming `undefined | T`.
+        const optField = !field.required && kind == Kind.Arg;
+        out(field.jsName, optField ? "?" : "", ": ", generateType(spec, field.type, kind), ";");
+      }
+      out(`}`);
     }
-    out(`}`);
   }
 
   out("// Classes");
