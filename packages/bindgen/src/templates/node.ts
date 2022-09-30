@@ -197,8 +197,7 @@ function toCpp(type: Type): string {
         // Functions can't normally be toCpp'd because lambda types are unutterable.
         // But if a wrapper type is used, we can do this.
         const func = type.args[0];
-        assert.equal(func.kind, "Func");
-        assert(func.kind == "Func"); // This is redundant, but required for TypeScript
+        assert.equal(func.kind, "Func" as const);
         args = `${toCpp(func.ret)}(${func.args.map((arg) => toCpp(arg.type)).join(", ")})`;
       } else {
         args = type.args.map(toCpp).join(", ");
@@ -594,7 +593,7 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
 
       // For now assuming that all void-returning functions are "notifications" and don't need to block until done.
       // Non-void returning functions *must* block so they have something to return.
-      const shouldBlock = !(type.ret.kind == "Primitive" && type.ret.name == "void");
+      const shouldBlock = !type.ret.isVoid();
       return shouldBlock ? `schedulerWrapBlockingFunction(${lambda})` : `util::EventLoopDispatcher(${lambda})`;
 
     case "Enum":
