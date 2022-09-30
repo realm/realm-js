@@ -17,8 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
-  ObjectSchema as BindingObjectSchema,
-  Property as BindingProperty,
+  ObjectSchema_Relaxed as BindingObjectSchema,
+  Property_Relaxed as BindingProperty,
   PropertyType as BindingPropertyType,
 } from "../binding";
 
