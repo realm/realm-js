@@ -291,7 +291,12 @@ class Interface extends Class {
 }
 
 export class Field {
-  constructor(public name: string, public type: Type, public required: boolean) {}
+  constructor(
+    public name: string,
+    public type: Type,
+    public required: boolean,
+    public defaultVal: undefined | string,
+  ) {}
 }
 
 export class Struct extends NamedType {
@@ -511,7 +516,7 @@ export function bindModel(spec: Spec): BoundSpec {
       // Optional and Nullable fields are never required.
       const required =
         field.default === undefined && !(type.kind == "Template" && ["util::Optional", "Nullable"].includes(type.name));
-      return new Field(name, type, required);
+      return new Field(name, type, required, field.default);
     });
   }
 

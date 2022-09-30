@@ -176,12 +176,21 @@ export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): vo
   out("// Records");
   for (const rec of spec.records) {
     for (const kind of [Kind.Ret, Kind.Arg]) {
+      // TODO consider making the Arg version just alias the Ret version if the bodies are the same.
       out(`export type ${rec.jsName}${suffix(kind)} = {`);
       for (const field of rec.fields) {
         // For Optional<T> fields, the field will always be there in Ret mode, but it may be undefined.
         // This is handled by Optional<T> becoming `undefined | T`.
         const optField = !field.required && kind == Kind.Arg;
-        out(field.jsName, optField ? "?" : "", ": ", generateType(spec, field.type, kind), ";");
+        const hasInterestingDefault = ![undefined, "", "{}", "[]"].includes(field.defaultVal);
+        out(
+          field.jsName,
+          optField ? "?" : "",
+          ": ",
+          generateType(spec, field.type, kind),
+          ";",
+          hasInterestingDefault ? `/// @default ${field.defaultVal}` : "",
+        );
       }
       out(`}`);
     }
