@@ -61,13 +61,13 @@ export function createUseQuery(useRealm: () => Realm) {
       const updateCallback = () => {
         // This makes sure the collection has a different reference on a rerender
         // Also we are ensuring the type returned is Realm.Results, as this is known in this context
-        const proxy = new Proxy(cachedCollection.collection as Realm.Results<T & Realm.Object>, {});
+        const collectionProxy = new Proxy(collectionRef.current as Realm.Results<T & Realm.Object>, {});
 
         // Store the original, unproxied result as a non-enumerable field with a symbol
         // key on the proxy object, so that we can check for this and get the original results
         // when passing the result of `useQuery` into the subscription mutation methods
         // (see `lib/mutable-subscription-set.js` for more details)
-        Object.defineProperty(proxy, symbols.PROXY_TARGET, {
+        Object.defineProperty(collectionProxy, symbols.PROXY_TARGET, {
           value: realm.objects(type),
           enumerable: false,
           configurable: false,
@@ -75,7 +75,7 @@ export function createUseQuery(useRealm: () => Realm) {
         });
         // This makes sure the collection has a different reference on a rerender
         // Also we are ensuring the type returned is Realm.Results, as this is known in this context
-        collectionRef.current = proxy;
+        collectionRef.current = collectionProxy;
         forceRerender();
       };
       const cachedCollection = createCachedCollection({ collection: realm.objects(type), realm, updateCallback });
