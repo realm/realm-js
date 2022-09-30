@@ -1094,7 +1094,7 @@ type RemappedRealmTypes<T> =
  * with only the keys which value extends Realm.List, remapped as Arrays. All properties are optional
  * except those specified in RequiredProperties.
  */
-type Unmanaged<T, RequiredProperties extends keyof OmittedRealmTypes<T>> =
+type Unmanaged<T, RequiredProperties extends keyof OmittedRealmTypes<T> = never> =
     OmittedRealmTypesWithRequired<T, RequiredProperties> & RemappedRealmTypes<T>;
 
 declare class Realm {
