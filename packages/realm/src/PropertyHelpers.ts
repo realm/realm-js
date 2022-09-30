@@ -44,7 +44,7 @@ type PropertyOptions = {
   columnKey: binding.ColKey;
   optional: boolean;
 } & HelperOptions &
-  binding.Property;
+  binding.Property_Relaxed;
 
 type PropertyAccessors = {
   get(obj: binding.Obj): unknown;

@@ -391,7 +391,7 @@ function convertToNode(addon: NodeAddon, type: Type, expr: string): string {
         case "Nullable":
           return `[&] (auto&& val) { return !val ? ${env}.Null() : ${c(inner, "FWD(val)")}; }(${expr})`;
         case "util::Optional":
-          return `[&] (auto&& opt) { return !opt ? ${env}.Null() : ${c(inner, "*FWD(opt)")}; }(${expr})`;
+          return `[&] (auto&& opt) { return !opt ? ${env}.Undefined() : ${c(inner, "*FWD(opt)")}; }(${expr})`;
         case "std::vector":
           // TODO try different ways to create the array to see what is fastest.
           // eg, try calling push() with and without passing size argument to New().
@@ -502,10 +502,9 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
           if (inner.kind == "Class" && inner.sharedPtrWrapped) return `NODE_TO_SHARED_${inner.name}(${expr})`;
           return `std::make_shared<${toCpp(inner)}>(${c(inner, expr)})`;
         case "Nullable":
+          return `[&] (Napi::Value val) { return val.IsNull() ? ${toCpp(inner)}() : ${c(inner, "val")}; }(${expr})`;
         case "util::Optional":
-          return `[&] (Napi::Value val) {
-                        return (val.IsNull() || val.IsUndefined()) ? ${toCpp(type)}() : ${c(inner, "val")};
-                    }(${expr})`;
+          return `[&] (Napi::Value val) { return val.IsUndefined() ? ${toCpp(type)}() : ${c(inner, "val")}; }(${expr})`;
         case "std::vector":
           return `[&] (const Napi::Array vec) {
                 auto out = std::vector<${toCpp(inner)}>();
@@ -676,10 +675,10 @@ class NodeCppDecls extends CppDecls {
                   .map(
                     (field) => `{
                         auto field = obj.Get("${field.jsName}");
-                        // Make functions on structs behave like bound methods.
-                        if (field.IsFunction())
-                            field = bindFunc(field.As<Napi::Function>(), obj);
                         if (!field.IsUndefined()) {
+                            // Make functions on structs behave like bound methods.
+                            if (field.IsFunction())
+                                field = bindFunc(field.As<Napi::Function>(), obj);
                             out.${field.name} = ${convertFromNode(this.addon, field.type, "field")};
                         } else if constexpr (${field.required ? "true" : "false"}) {
                             throw Napi::TypeError::New(${env}, "${struct.name}::${field.jsName} is required");
@@ -868,7 +867,7 @@ class NodeCppDecls extends CppDecls {
               const auto ctorName = obj.Get("constructor").As<Napi::Object>().Get("name").As<Napi::String>().Utf8Value();
               throw Napi::TypeError::New(${env}, "Unable to convert an object with ctor '" + ctorName + "' to a Mixed");
           }
-          // TODO consider treating undefined as null
+          // NOTE: must not treat undefined as null here, because that makes Optional<Mixed> ambiguous.
           ${["undefined", "symbol", "function", "external"]
             .map((t) => `case napi_${t}: throw Napi::TypeError::New(${env}, "Can't convert ${t} to Mixed");`)
             .join("\n")}
