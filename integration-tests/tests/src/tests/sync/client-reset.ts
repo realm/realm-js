@@ -16,12 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { doesNotMatch } from "assert";
 import { ObjectId, UUID } from "bson";
 import { expect } from "chai";
-import exp from "constants";
 import Realm, { ClientResetDidRecover, ClientResetMode, SessionStopPolicy } from "realm";
 import { authenticateUserBefore, importAppBefore } from "../../hooks";
-import { DogSchema, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
+import { Dog, DogSchema, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { expectClientResetError } from "../../utils/expect-sync-error";
 
 function getPartitionValue() {
@@ -81,6 +81,22 @@ describe.skipIf(environment.missingServer, "client reset handling", function () 
   importAppBefore("with-db");
   authenticateUserBefore();
 
+  it("manual client reset requires either error handler, client reset callback or both", async function (this: RealmContext) {
+    const config: Realm.Configuration = {
+      schema: [PersonSchema, DogSchema],
+      sync: {
+        _sessionStopPolicy: SessionStopPolicy.Immediately,
+        partitionValue: getPartitionValue(),
+        user: this.user,
+        clientReset: {
+          mode: ClientResetMode.Manual,
+        },
+      },
+    };
+
+    expect(() => new Realm(config)).throws();
+  });
+
   it("handles manual client resets with partition-based sync enabled", async function (this: RealmContext) {
     await expectClientResetError(
       {
@@ -102,12 +118,68 @@ describe.skipIf(environment.missingServer, "client reset handling", function () 
         session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false); // 211 -> diverging histories
       },
       (error) => {
-        console.log(`FISK 101: ${JSON.stringify(error)}`);
         expect(error.name).to.equal("ClientReset");
         expect(error.message).to.equal("Simulate Client Reset");
         expect(error.code).to.equal(211);
       },
     );
+  });
+
+  it("handles manual resets by callback with partition-based sync enabled", async function (this: RealmContext) {
+    return new Promise((resolve, _) => {
+      const config: Realm.Configuration = {
+        schema: [PersonSchema, DogSchema],
+        sync: {
+          _sessionStopPolicy: SessionStopPolicy.Immediately,
+          partitionValue: getPartitionValue(),
+          user: this.user,
+          clientReset: {
+            mode: ClientResetMode.Manual,
+            clientResetAfter: (session, path) => {
+              expect(session).to.be.not.null;
+              expect(path).to.not.empty;
+              resolve();
+            },
+          },
+        },
+      };
+
+      const realm = new Realm(config);
+      const session = realm.syncSession;
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore calling undocumented method _simulateError
+      session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", true); // 211 -> diverging histories
+    });
+  });
+
+  it("handles manual resets by callback from error handler with partition-based sync enabled", async function (this: RealmContext) {
+    return new Promise((resolve, reject) => {
+      const config: Realm.Configuration = {
+        schema: [PersonSchema, DogSchema],
+        sync: {
+          _sessionStopPolicy: SessionStopPolicy.Immediately,
+          partitionValue: getPartitionValue(),
+          user: this.user,
+          error: (_) => {
+            reject();
+          },
+          clientReset: {
+            mode: ClientResetMode.Manual,
+            clientResetAfter: (session, path) => {
+              expect(session).to.be.not.null;
+              expect(path).to.not.empty;
+              resolve();
+            },
+          },
+        },
+      };
+
+      const realm = new Realm(config);
+      const session = realm.syncSession;
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore calling undocumented method _simulateError
+      session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", true); // 211 -> diverging histories
+    });
   });
 
   it("client reset fails, the error handler is called", async function (this: RealmContext) {
