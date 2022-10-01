@@ -20,6 +20,7 @@
 
 #include <math.h>
 #include <cstdlib>
+#include <memory>
 #include <optional>
 
 #include "js_class.hpp"
@@ -201,15 +202,13 @@ public:
         SharedRealm after_realm =
             Realm::get_shared_realm(std::move(after_realm_ref), util::Scheduler::make_default());
 
-        const size_t argument_count = m_ignore_recover ? 2 : 3;
-        typename T::Value arguments[argument_count];
-
+        typename T::Value arguments[3];
         arguments[0] = create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(before_realm));
         arguments[1] = create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(after_realm));
         if (!m_ignore_recover) {
             arguments[2] = Value<T>::from_string(m_ctx, did_recover ? "yes" : "no");
         }
-        Function<T>::callback(m_ctx, m_func, argument_count, arguments);
+        Function<T>::callback(m_ctx, m_func, m_ignore_recover ? 2 : 3, arguments);
     }
 
 private:
@@ -234,7 +233,7 @@ public:
 
     void operator()(SharedRealm local_realm)
     {
-        HANDLESCOPE(m_ctx)
+        HANDLESCOPE(m_ctx);
 
         typename T::Value arguments[] = {
             create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(local_realm)),
@@ -248,16 +247,121 @@ private:
     const Protected<typename T::Function> m_func;
 };
 
-// error_func and client_reset_func are validated to be functions or `undefined` before calling
-// the constructor of SyncSessionErrorHandlerFunctor and we can use `to_function()` instead of
-// `validated_to_function()`
 template <typename T>
-class SyncSessionErrorHandlerFunctor {
+class SyncSessionErrorBase {
 public:
-    SyncSessionErrorHandlerFunctor(typename T::Context ctx, typename T::Value error_func, typename T::Value client_reset_func)
+    virtual typename T::Function func() const {} ;
+    virtual void operator()(std::shared_ptr<SyncSession>, SyncError) {};
+};
+
+template <typename T>
+class SyncSessionClientResetManualFunctor : public SyncSessionErrorBase<T> {
+public:
+    SyncSessionClientResetManualFunctor(typename T::Context ctx, typename T::Function client_reset_func)
+        : m_ctx(Context<T>::get_global_context(ctx))
+        , m_client_reset_func(ctx, client_reset_func)
+    {
+#if defined(REALM_PLATFORM_NODE)
+        // Suppressing destruct prevents a crash when closing an Electron app with a
+        // custom sync error handler: https://github.com/realm/realm-js/issues/4150
+        m_client_reset_func.SuppressDestruct();
+#endif
+    }
+
+    typename T::Function func() const
+    {
+        return m_client_reset_func;
+    }
+
+    void operator()(std::shared_ptr<SyncSession> session, SyncError error) 
+    {
+        HANDLESCOPE(m_ctx);
+
+        if (error.is_client_reset_requested()) {
+            typename T::Value arguments[] = {
+                create_object<T, SessionClass<T>>(m_ctx, new WeakSession(session)),
+                Value<T>::from_string(m_ctx, error.user_info[SyncError::c_recovery_file_path_key]),
+            };
+            Function<T>::callback(m_ctx, m_client_reset_func, 2, arguments);            
+        }
+    }
+
+private:
+    const Protected<typename T::GlobalContext> m_ctx;
+    Protected<typename T::Function> m_client_reset_func;
+};
+
+template <typename T>
+class SyncSessionErrorAndClientResetManualFunctor : SyncSessionErrorBase<T>{
+public:
+    SyncSessionErrorAndClientResetManualFunctor(typename T::Context ctx, typename T::Function error_func, typename T::Function client_reset_func)
         : m_ctx(Context<T>::get_global_context(ctx))
         , m_func(ctx, error_func)
         , m_client_reset_func(ctx, client_reset_func)
+    {
+#if defined(REALM_PLATFORM_NODE)
+        // Suppressing destruct prevents a crash when closing an Electron app with a
+        // custom sync error handler: https://github.com/realm/realm-js/issues/4150
+        m_func.SuppressDestruct();
+        m_client_reset_func.SuppressDestruct();
+#endif
+    }
+
+    typename T::Function func() const
+    {
+        return m_func;
+    }
+
+    void operator()(std::shared_ptr<SyncSession> session, SyncError error)
+    {
+        HANDLESCOPE(m_ctx);
+
+        if (error.is_client_reset_requested()) {
+            typename T::Value arguments[] = {
+                create_object<T, SessionClass<T>>(m_ctx, new WeakSession(session)),
+                Value<T>::from_string(m_ctx, error.user_info[SyncError::c_recovery_file_path_key]),
+            };
+            Function<T>::callback(m_ctx, m_client_reset_func, 2, arguments);
+        }
+        else {
+            std::string name = "Error";
+            auto error_object = Object<T>::create_empty(m_ctx);
+
+            Object<T>::set_property(m_ctx, error_object, "name", Value<T>::from_string(m_ctx, name));
+            Object<T>::set_property(m_ctx, error_object, "message", Value<T>::from_string(m_ctx, error.message));
+            Object<T>::set_property(m_ctx, error_object, "isFatal", Value<T>::from_boolean(m_ctx, error.is_fatal));
+            Object<T>::set_property(m_ctx, error_object, "category",
+                                    Value<T>::from_string(m_ctx, error.error_code.category().name()));
+            Object<T>::set_property(m_ctx, error_object, "code", Value<T>::from_number(m_ctx, error.error_code.value()));
+
+            auto user_info = Object<T>::create_empty(m_ctx);
+            for (auto& kvp : error.user_info) {
+                Object<T>::set_property(m_ctx, user_info, kvp.first, Value<T>::from_string(m_ctx, kvp.second));
+            }
+            Object<T>::set_property(m_ctx, error_object, "userInfo", user_info);
+
+            typename T::Value arguments[] = {
+                create_object<T, SessionClass<T>>(m_ctx, new WeakSession(session)),
+                error_object,
+            };
+
+            Function<T>::callback(m_ctx, m_func, 2, arguments);
+        }
+    }
+
+private:
+    const Protected<typename T::GlobalContext> m_ctx;
+    Protected<typename T::Function> m_func;
+    Protected<typename T::Function> m_client_reset_func;
+};
+
+
+template <typename T>
+class SyncSessionErrorHandlerFunctor : SyncSessionErrorBase<T>{
+public:
+    SyncSessionErrorHandlerFunctor(typename T::Context ctx, typename T::Function error_func)
+        : m_ctx(Context<T>::get_global_context(ctx))
+        , m_func(ctx, error_func)
     {
 #if defined(REALM_PLATFORM_NODE)
         // Suppressing destruct prevents a crash when closing an Electron app with a
@@ -268,27 +372,12 @@ public:
 
     typename T::Function func() const
     {
-        return Value<T>::to_function(m_ctx, m_func);
+        return m_func;
     }
 
     void operator()(std::shared_ptr<SyncSession> session, SyncError error)
     {
-        HANDLESCOPE(m_ctx)
-
-        if (error.is_client_reset_requested()) {
-            if (!Value<T>::is_undefined(m_ctx, m_client_reset_func)) {
-                typename T::Value arguments[] = {
-                    create_object<T, SessionClass<T>>(m_ctx, new WeakSession(session)),
-                    Value<T>::from_string(m_ctx, error.user_info[SyncError::c_recovery_file_path_key]),
-                };
-                Function<T>::callback(m_ctx, Value<T>::to_function(m_ctx, m_client_reset_func), 2, arguments);
-                return;
-            }
-        }
-
-        if (Value<T>::is_undefined(m_ctx, m_func)) {
-            return;
-        }
+        HANDLESCOPE(m_ctx);
 
         std::string name = "Error";
         auto error_object = Object<T>::create_empty(m_ctx);
@@ -321,13 +410,12 @@ public:
             error_object,
         };
 
-        Function<T>::callback(m_ctx, Value<T>::to_function(m_ctx, m_func), 2, arguments);
+        Function<T>::callback(m_ctx, m_func, 2, arguments);
     }
 
 private:
     const Protected<typename T::GlobalContext> m_ctx;
-    Protected<typename T::Value> m_func; // general error callback
-    Protected<typename T::Value> m_client_reset_func; // callback for client reset in manual mode
+    Protected<typename T::Function> m_func; // general error callback
 };
 
 
@@ -381,7 +469,7 @@ public:
                                   const std::string& pem_certificate, int preverify_ok, int depth)
     {
         const Protected<typename T::GlobalContext>& ctx = this_object->m_ctx;
-        HANDLESCOPE(ctx)
+        HANDLESCOPE(ctx);
 
 
         typename T::Object ssl_certificate_object = Object<T>::create_empty(ctx);
@@ -467,7 +555,7 @@ void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue
         auto conf = session->config();
         if (auto dispatcher =
                 conf.error_handler.template target<util::EventLoopDispatcher<SyncSessionErrorHandler>>()) {
-            if (auto handler = dispatcher->func().template target<SyncSessionErrorHandlerFunctor<T>>()) {
+            if (auto handler = dispatcher->func().template target<SyncSessionErrorBase<T>>()) {
                 Object::set_property(ctx, config, "error", handler->func());
             }
         }
@@ -990,7 +1078,6 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         //   b) if the error handler is not specified, the callback will be wrap as an error handler
         //   c) if no callback and no error handler, an exception is thrown
         // otherwise, the error handler is used as it is 
-        std::function<SyncSessionErrorHandler> error_handler;
         ValueType error_func = Object::get_property(ctx, sync_config_object, "error");
         
         ObjectType user_object = Object::validated_get_object(ctx, sync_config_object, "user");
@@ -1088,20 +1175,17 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             if (!Value::is_undefined(ctx, client_reset_after_value)) {
                 auto client_reset_after_callback = Value::validated_to_function(ctx, client_reset_after_value);
                 if (config.sync_config->client_resync_mode == realm::ClientResyncMode::Manual) {
-                    if (Value::is_undefined(ctx, error_func) && Value::is_undefined(ctx, client_reset_after_callback)) {
-                        throw std::invalid_argument("When clientReset.mode is 'manual', you need to specify 'error', 'clientResetAfter' or both");
-                    }
-
                     if (!Value::is_undefined(ctx, error_func)) {
-                        Value::validated_to_function(ctx, error_func); // we need to check it is a function
-                        Value::validated_to_function(ctx, client_reset_after_callback); // we need to check it is a function
-                        error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(
-                            SyncSessionErrorHandlerFunctor<T>(ctx, error_func, client_reset_after_callback));
+                        auto error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(
+                            SyncSessionErrorAndClientResetManualFunctor<T>(ctx, Value::validated_to_function(ctx, error_func), client_reset_after_callback));
+                        config.sync_config->error_handler = std::move(error_handler);
+
                     }
                     else {
-                        Value::validated_to_function(ctx, client_reset_after_callback); // we need to check it is a function
-                        error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(
-                            SyncSessionErrorHandlerFunctor<T>(ctx, Value::from_undefined(ctx), client_reset_after_callback));
+                        auto error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(
+                            SyncSessionClientResetManualFunctor<T>(ctx, client_reset_after_callback));
+                        config.sync_config->error_handler = std::move(error_handler);
+
                     }
                 }
                 else {    
@@ -1109,17 +1193,25 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                         ClientResetAfterFunctor<T>(ctx, client_reset_after_callback,
                                                    config.sync_config->client_resync_mode ==
                                                        realm::ClientResyncMode::DiscardLocal));
+                    config.sync_config->notify_after_client_reset = std::move(client_reset_after_handler);
+
                     if (!Value::is_undefined(ctx, error_func)) {
-                        Value::validated_to_function(ctx, error_func); // we need to check it is a function
-                        error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(
-                            SyncSessionErrorHandlerFunctor<T>(ctx, error_func, Value::from_undefined(ctx)));
+                        auto error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(
+                            SyncSessionErrorHandlerFunctor<T>(ctx, Value::validated_to_function(ctx, error_func)));
+                        config.sync_config->error_handler = std::move(error_handler);
                     }
                 }
-                config.sync_config->notify_after_client_reset = std::move(client_reset_after_handler);
+            }
+            else {
+                if (Value::is_undefined(ctx, error_func)) {
+                    throw std::invalid_argument("When clientReset.mode is 'manual', you need to specify 'error', 'clientResetAfter' or both");
+                }
+                auto error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(
+                    SyncSessionErrorHandlerFunctor<T>(ctx, Value::validated_to_function(ctx, error_func)));
+                config.sync_config->error_handler = std::move(error_handler);
             }
         }
 
-        config.sync_config->error_handler = std::move(error_handler);
 
         // Custom HTTP headers
         ValueType sync_custom_http_headers_value = Object::get_property(ctx, sync_config_object, "customHttpHeaders");

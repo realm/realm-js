@@ -143,19 +143,46 @@ declare namespace Realm {
     }
 
     enum ClientResetMode {
-        Manual = "manual",
-        DiscardLocal = "discardLocal",
-        Recover = "recover",
-        RecoverOrDiscard = "recoverOrDiscard",
+        Manual = 'manual',
+        DiscardLocal = 'discardLocal',
+        Recover = 'recover',
+        RecoverOrDiscard = 'recoverOrDiscard'
     }
 
-    type ClientResetBeforeCallback = (localRealm: Realm) => void;
-    type ClientResetAfterCallback = (localRealm: Realm, remoteRealm: Realm, didRecover?: boolean) => void;
-    interface ClientResetConfiguration {
-        mode: ClientResetMode;
-        clientResetBefore?: ClientResetBeforeCallback;
-        clientResetAfter?: ClientResetAfterCallback;
+    enum ClientResetDidRecover {
+      Yes = 'yes',
+      No = 'no'
     }
+
+    type ClientResetManualCallback = (session: Realm.App.Sync.Session, path: string) => void;
+    type ClientResetBeforeCallback = (localRealm: Realm) => void;
+    type ClientResetAfterCallback = (localRealm: Realm, remoteRealm: Realm) => void;
+    type ClientResetAfterRecoveryCallback = (localRealm: Realm, remoteRealm: Realm, didRecover: ClientResetDidRecover) => void;
+
+    interface ClientResetManualConfiguration<ClientResetModeT = ClientResetMode.Manual> {
+      mode: ClientResetModeT;
+      clientResetAfter?: ClientResetManualCallback;
+    }
+
+    interface ClientResetDiscardLocalConfiguration<ClientResetModeT = ClientResetMode.DiscardLocal> {
+      mode: ClientResetModeT;
+      clientResetBefore?: ClientResetBeforeCallback;
+      clientResetAfter?: ClientResetAfterCallback;
+    }
+
+    interface ClientResetRecoveryConfiguration<ClientResetModeT = ClientResetMode.Recover> {
+      mode: ClientResetModeT;
+      clientResetBefore?: ClientResetBeforeCallback;
+      clientResetAfter?: ClientResetAfterRecoveryCallback;
+    }
+
+    interface ClientResetRecoveryOrDiscardConfiguration<ClientResetModeT = ClientResetMode.RecoverOrDiscard> {
+      mode: ClientResetModeT;
+      clientResetBefore?: ClientResetBeforeCallback;
+      clientResetAfter?: ClientResetAfterRecoveryCallback;
+    }
+
+    type ClientResetConfiguration = ClientResetManualConfiguration | ClientResetDiscardLocalConfiguration | ClientResetRecoveryConfiguration | ClientResetRecoveryOrDiscardConfiguration;
 
     interface BaseSyncConfiguration{
         user: User;

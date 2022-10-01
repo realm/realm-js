@@ -18,7 +18,8 @@
 
 import { ObjectId, UUID } from "bson";
 import { expect } from "chai";
-import Realm, { ClientResetMode, SessionStopPolicy } from "realm";
+import exp from "constants";
+import Realm, { ClientResetDidRecover, ClientResetMode, SessionStopPolicy } from "realm";
 import { authenticateUserBefore, importAppBefore } from "../../hooks";
 import { DogSchema, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { expectClientResetError } from "../../utils/expect-sync-error";
@@ -32,7 +33,7 @@ async function waitClientResetCallbacks(
   user: Realm.User,
   mode: Realm.ClientResetMode,
   actionBefore: (realm: Realm) => void,
-  actionAfter: (beforeRealm: Realm, afterRealm: Realm, didRecover: boolean) => void,
+  actionAfter: (beforeRealm: Realm, afterRealm: Realm, didRecover: Realm.ClientResetDidRecover) => void,
 ): Promise<void> {
   return new Promise((resolve) => {
     let afterCalled = false;
@@ -47,7 +48,7 @@ async function waitClientResetCallbacks(
         partitionValue: getPartitionValue(),
         clientReset: {
           mode,
-          clientResetAfter: (before: Realm, after: Realm, recover: boolean) => {
+          clientResetAfter: (before: Realm, after: Realm, recover: Realm.ClientResetDidRecover) => {
             afterCalled = true;
             actionAfter(before, after, recover);
             if (beforeCalled) {
@@ -101,6 +102,7 @@ describe.skipIf(environment.missingServer, "client reset handling", function () 
         session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false); // 211 -> diverging histories
       },
       (error) => {
+        console.log(`FISK 101: ${JSON.stringify(error)}`);
         expect(error.name).to.equal("ClientReset");
         expect(error.message).to.equal("Simulate Client Reset");
         expect(error.code).to.equal(211);
@@ -169,13 +171,13 @@ describe.skipIf(environment.missingServer, "client reset handling", function () 
     const clientResetBefore = (realm: Realm): void => {
       expect(realm.objects(DogSchema.name).length).to.equal(1);
     };
-    const clientResetAfter = (beforeRealm: Realm, afterRealm: Realm, didRecover: boolean) => {
-      expect(didRecover).to.be.true;
+    const clientResetAfter = (beforeRealm: Realm, afterRealm: Realm, didRecover: ClientResetDidRecover) => {
+      // FIXME: the assert should be: expect(didRecover).to.be(ClientResetDidRecover.Yes);
+      expect(didRecover).to.equal("yes");
       expect(beforeRealm.objects(DogSchema.name).length).to.equal(1);
       expect(afterRealm.objects(DogSchema.name).length).to.equal(1);
     };
 
-    console.log("ClientResetMode", Realm.ClientResetMode);
     await waitClientResetCallbacks(
       [PersonSchema, DogSchema],
       this.user,
