@@ -466,7 +466,7 @@ classes:
       has_binding_context: '(r: Realm) -> bool'
       set_binding_context: '(r: SharedRealm, methods: BindingContext)'
       get_or_create_object_with_primary_key: '(t: TableRef, pk: Mixed) -> std::pair<Obj, bool>'
-      make_network_transport: '(runRequest: (request: Request&&, callback: util::UniqueFunction<(response: Response&&)>&&) off_thread)'
+      make_network_transport: '(runRequest: (request: Request&&, callback: util::UniqueFunction<(response: Response&&)>&&) off_thread) -> std::shared_ptr<GenericNetworkTransport>'
 
   ConstTableRef:
     needsDeref: true
