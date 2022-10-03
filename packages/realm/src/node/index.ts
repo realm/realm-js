@@ -18,29 +18,48 @@
 
 import { unlinkSync, rmSync, readdirSync, existsSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
+import { fetch } from "undici";
 
-import { inject, Dirent } from "../platform/file-system";
+import * as fs from "../platform/file-system";
+import * as network from "../platform/network";
 
-inject({
-  removeFile(path: string) {
+fs.inject({
+  removeFile(path) {
     if (existsSync(path)) {
       unlinkSync(path);
     }
   },
-  removeDirectory(path: string) {
+  removeDirectory(path) {
     rmSync(path, { recursive: true, force: true });
   },
   getDefaultDirectoryPath() {
     return process.cwd();
   },
-  isAbsolutePath(path: string) {
+  isAbsolutePath(path) {
     return isAbsolute(path);
   },
-  joinPaths(...segments: string[]) {
+  joinPaths(...segments) {
     return join(...segments);
   },
-  readDirectory(path: string): Dirent[] {
+  readDirectory(path) {
     return readdirSync(path, { encoding: "utf8", withFileTypes: true });
+  },
+});
+
+network.inject({
+  async fetch(request): Promise<network.Response> {
+    const response = await fetch(request.url, { body: request.body });
+    throw new Error("Not yet implemented");
+    /*
+    return {
+      body: await response.text(),
+      httpStatusCode: response.status,
+      // TODO: Consider updating the binding API
+      headers: Object.fromEntries(response.headers.entries()),
+      // TODO: Determine if we want to set this differently
+      customStatusCode: 0,
+    };
+  */
   },
 });
 
