@@ -49,8 +49,6 @@ fs.inject({
 network.inject({
   async fetch(request): Promise<network.Response> {
     const response = await fetch(request.url, { body: request.body });
-    throw new Error("Not yet implemented");
-    /*
     return {
       body: await response.text(),
       httpStatusCode: response.status,
@@ -59,7 +57,6 @@ network.inject({
       // TODO: Determine if we want to set this differently
       customStatusCode: 0,
     };
-  */
   },
 });
 
