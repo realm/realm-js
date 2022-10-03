@@ -29,7 +29,7 @@ interface fs {
 
 interface path {
   dirname: (path: string) => string;
-  resolve: (basePath: string, path?: string) => string;
+  resolve: (...paths: string[]) => string;
 }
 
 type Require = (id: string) => unknown;
