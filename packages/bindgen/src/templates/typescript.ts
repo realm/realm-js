@@ -184,12 +184,12 @@ export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): vo
         const optField = !field.required && kind == Kind.Arg;
         const hasInterestingDefault = ![undefined, "", "{}", "[]"].includes(field.defaultVal);
         out(
+          hasInterestingDefault ? `/** @default ${field.defaultVal} */\n` : "",
           field.jsName,
           optField ? "?" : "",
           ": ",
           generateType(spec, field.type, kind),
           ";",
-          hasInterestingDefault ? `/// @default ${field.defaultVal}` : "",
         );
       }
       out(`}`);
