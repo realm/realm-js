@@ -16,4 +16,45 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export class App {}
+import * as binding from "./binding";
+import { fs } from "./platform";
+
+export type AppConfiguration = {
+  id: string;
+  baseUrl?: string;
+};
+
+export class App {
+  private static PLATFORM = "Unknown";
+  private static PLATFORM_VERSION = "0.0.0";
+  private static SDK_VERSION = "0.0.0";
+
+  private internal: binding.App;
+
+  constructor(id: string);
+  constructor(config: AppConfiguration);
+  constructor(configOrId: AppConfiguration | string) {
+    const { id, baseUrl }: AppConfiguration = typeof configOrId === "string" ? { id: configOrId } : configOrId;
+    this.internal = binding.App.getUncachedApp(
+      {
+        appId: id,
+        platform: App.PLATFORM,
+        platformVersion: App.PLATFORM_VERSION,
+        sdkVersion: App.SDK_VERSION,
+        transport: this.createNetworkTransport(),
+        baseUrl,
+      },
+      {
+        baseFilePath: fs.getDefaultDirectoryPath(),
+      },
+    );
+  }
+
+  public get id(): string {
+    return this.internal.config.appId;
+  }
+
+  private createNetworkTransport(): binding.GenericNetworkTransport {
+    throw new Error("Not yet implemented");
+  }
+}
