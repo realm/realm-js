@@ -67,8 +67,8 @@ export class InvalidSpecError extends Error {
 
 const ajv = new Ajv({ allowUnionTypes: true });
 const schemaFile = new URL("../generated/spec.schema.json", import.meta.url);
-const schmeaJson = JSON.parse(fs.readFileSync(schemaFile, { encoding: "utf8" }));
-export const validate = ajv.compile<RelaxedSpec>(schmeaJson);
+const schemaJson = JSON.parse(fs.readFileSync(schemaFile, { encoding: "utf8" }));
+export const validate = ajv.compile<RelaxedSpec>(schemaJson);
 
 export function parseSpec(filePath: string): Spec {
   const text = fs.readFileSync(filePath, { encoding: "utf8" });
