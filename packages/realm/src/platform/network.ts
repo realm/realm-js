@@ -16,5 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export { fs } from "./platform/file-system";
-export { network } from "./platform/network";
+import * as binding from "../binding";
+
+export type Request = binding.Request_Relaxed;
+export type Response = binding.Response;
+
+type NetworkType = {
+  fetch(request: Request): Promise<Response>;
+};
+
+export const network: NetworkType = {
+  fetch() {
+    throw new Error("Not supported on this platform");
+  },
+};
+
+export function inject(injected: NetworkType) {
+  Object.assign(network, injected);
+}
