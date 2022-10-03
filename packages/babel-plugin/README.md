@@ -155,9 +155,9 @@ The supported types are shown in the table below. See [the Realm documentation](
 | -------------------------------------------- | ----------------- | --------------- | ----------------------- | -------------------------------------------------------------------------------------- |
 | `Types.Bool`                                 | `bool`            | `boolean`       |                         |                                                                                        |
 | `Types.String`                               | `string`          | `string`        |                         |                                                                                        |
-| `Types.Int`                                  | `int`             | `number`        |                         |                                                                                        |
-| `Types.Float`                                | `float`           | `number`        |                         |                                                                                        |
-| `Types.Double`                               | `double`          | `number`        |                         |                                                                                        |
+| `Types.Int`                                  | `int`             |                 |                         |                                                                                        |
+| `Types.Float`                                | `float`           |                 |                         |                                                                                        |
+| `Types.Double`                               | `double`          | `number`        |                         | Double is the default number type                                                      |
 | `Types.Decimal128`                           | `decimal128`      |                 | `Realm.BSON.Decimal128` |                                                                                        |
 | `Types.ObjectId`                             | `objectId`        |                 | `Realm.BSON.UUID`       |                                                                                        |
 | `Types.UUID`                                 | `uuid`            |                 |                         |                                                                                        |
@@ -223,10 +223,6 @@ export class Task extends Realm.Object {
   isComplete = false;
 }
 ```
-
-### Full example
-
-The following code shows an example of all types, schema properties and decorators in use:
 
 ## Restrictions
 
