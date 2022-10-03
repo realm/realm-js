@@ -474,6 +474,7 @@ classes:
     properties:
       get_name: StringData
       get_column_count: count_t
+      get_key: TableKey
     methods:
       is_embedded: () const -> bool
       get_column_type: '(column: ColKey) const -> DataType'
