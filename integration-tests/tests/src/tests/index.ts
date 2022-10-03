@@ -38,6 +38,7 @@ import "./dynamic-schema-updates";
 import "./bson";
 import "./dictionary";
 import "./list";
+import "./set";
 import "./credentials/anonymous";
 import "./linking-objects";
 import "./sync/open";

@@ -16,6 +16,50 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { OrderedCollection } from "./OrderedCollection";
+import * as binding from "./binding";
 
-export class Set<T = unknown> extends OrderedCollection<T> {}
+import { Object as RealmObject } from "./Object";
+import { OrderedCollection, OrderedCollectionHelpers } from "./OrderedCollection";
+
+export class Set<T = unknown> extends OrderedCollection<T> {
+  /** @internal */
+  constructor(private internal: binding.Set, helpers: OrderedCollectionHelpers) {
+    super(internal.asResults(), helpers);
+  }
+
+  /**
+   * Delete a value from the Set
+   * @param {T} object Value to delete from the Set
+   * @returns Boolean:  true if the value existed in the Set prior to deletion, false otherwise
+   */
+  delete(value: T): boolean {
+    const [, success] = this.internal.removeAny(this.helpers.toBinding(value));
+    return success;
+  }
+
+  /**
+   * Add a new value to the Set
+   * @param  {T} object Value to add to the Set
+   * @returns The Realm.Set<T> itself, after adding the new value
+   */
+  add(value: T): this {
+    this.internal.insertAny(this.helpers.toBinding(value));
+    return this;
+  }
+
+  /**
+   * Clear all values from the Set
+   */
+  clear(): void {
+    this.internal.deleteAll();
+  }
+
+  /**
+   * Check for existence of a value in the Set
+   * @param  {T} object Value to search for in the Set
+   * @returns Boolean: true if the value exists in the Set, false otherwise
+   */
+  has(value: T): boolean {
+    return this.includes(value);
+  }
+}
