@@ -7,6 +7,9 @@
     "ts-node/register/transpile-only",
     "src/node/inject-globals.ts"
   ],
+  "spec": [
+    "src/index.ts"
+  ],
   "node-option": [
     "expose_gc"
   ]
