@@ -45,7 +45,7 @@ export default [
         },
       }),
     ],
-    external: ["node:module", "node:fs", "bson"],
+    external: ["node:module", "node:fs", "undici", "bson"],
   },
   {
     input: "generated/types/src/index.d.ts",
