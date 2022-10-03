@@ -23,11 +23,7 @@ import { INTERNAL } from "./internal";
 type PartiallyWriteableArray<T> = Pick<Array<T>, "pop" | "push" | "shift" | "unshift" | "splice">;
 
 export class List<T = unknown> extends OrderedCollection<T> implements PartiallyWriteableArray<T> {
-  /**
-   * Create a list
-   * @param internal
-   * @internal
-   */
+  /** @internal */
   constructor(internal: binding.List, helpers: OrderedCollectionHelpers) {
     super(internal.asResults(), helpers);
     Object.defineProperties(this, {

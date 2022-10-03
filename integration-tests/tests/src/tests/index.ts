@@ -29,6 +29,7 @@ import "./iterators";
 import "./dynamic-schema-updates";
 import "./bson";
 import "./dictionary";
+import "./set";
 import "./credentials/anonymous";
 import "./sync/mixed";
 import "./sync/flexible";
