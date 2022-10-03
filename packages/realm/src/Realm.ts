@@ -42,6 +42,7 @@ import { validateConfiguration } from "./validation/configuration";
 import { Collection } from "./Collection";
 import { ClassHelpers } from "./ClassHelpers";
 import { Dictionary } from "./Dictionary";
+import { Set as RealmSet } from "./Set";
 
 export enum UpdateMode {
   Never = "never",
@@ -58,6 +59,7 @@ export class Realm {
   public static Results = Results;
   public static List = List;
   public static Dictionary = Dictionary;
+  public static Set = RealmSet;
   public static App = App;
   public static UpdateMode = UpdateMode;
   public static BSON = BSON;
@@ -429,6 +431,7 @@ type CollectionType<T> = Collection<T>;
 type ResultsType<T> = Results<T>;
 type ListType<T> = List<T>;
 type DictionaryType<T> = Dictionary<T>;
+type SetType<T> = RealmSet<T>;
 type AppType = App;
 type UpdateModeType = UpdateMode;
 type ObjectSchemaType = ObjectSchema;
@@ -437,13 +440,14 @@ type BSONType = typeof BSON;
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Realm {
   export type Object<T = DefaultObject> = RealmObject<T>;
-  export type Collection<T> = CollectionType<T>;
-  export type Results<T> = ResultsType<T>;
-  export type List<T> = ListType<T>;
+  export type Collection<T = unknown> = CollectionType<T>;
+  export type Results<T = unknown> = ResultsType<T>;
+  export type List<T = unknown> = ListType<T>;
+  export type Dictionary<T = unknown> = DictionaryType<T>;
+  export type Set<T = unknown> = SetType<T>;
   export type App = AppType;
   export type UpdateMode = UpdateModeType;
   export type ObjectSchema = ObjectSchemaType;
-  export type Dictionary<T = unknown> = DictionaryType<T>;
   export type Mixed = unknown;
   // eslint-disable-next-line @typescript-eslint/no-namespace
   export namespace BSON {
