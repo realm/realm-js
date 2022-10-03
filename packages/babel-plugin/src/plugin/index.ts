@@ -75,7 +75,7 @@ function getRealmTypeForTypeArgument(
 }
 
 function getLinkingObjectsError(message: string) {
-  return message + '. Correct syntax is: `fieldName: Realm.LinkingObjects<LinkedObjectType, "invertedPropertyName">`';
+  return message + '. Correct syntax is: `fieldName!: Realm.LinkingObjects<LinkedObjectType, "invertedPropertyName">`';
 }
 
 function getRealmTypeForTSTypeReference(path: NodePath<types.TSTypeReference>): RealmType | undefined {
@@ -119,23 +119,23 @@ function getRealmTypeForTSTypeReference(path: NodePath<types.TSTypeReference>): 
       !types.isClassProperty(classPropertyNode) ||
       classPropertyNode.optional
     ) {
-      throw new Error(getLinkingObjectsError("Properties of type LinkingObjects cannot be optional"));
+      throw path.buildCodeFrameError(getLinkingObjectsError("Properties of type LinkingObjects cannot be optional"));
     }
 
     if (!typeParameters.isTSTypeParameterInstantiation()) {
-      throw new Error(getLinkingObjectsError("Missing type arguments for LinkingObjects"));
+      throw path.buildCodeFrameError(getLinkingObjectsError("Missing type arguments for LinkingObjects"));
     }
 
     const params = typeParameters.get("params");
 
     if (params.length !== 2) {
-      throw new Error(getLinkingObjectsError("Incorrect number of type arguments for LinkingObjects"));
+      throw path.buildCodeFrameError(getLinkingObjectsError("Incorrect number of type arguments for LinkingObjects"));
     }
 
     const objectTypeNode = params[0];
 
     if (!objectTypeNode.isTSTypeReference() || !types.isIdentifier(objectTypeNode.node.typeName)) {
-      throw new Error(
+      throw path.buildCodeFrameError(
         getLinkingObjectsError(
           "First type argument for LinkingObjects should be a reference to the linked object's object type",
         ),
@@ -145,7 +145,7 @@ function getRealmTypeForTSTypeReference(path: NodePath<types.TSTypeReference>): 
     const propertyNode = params[1];
 
     if (!propertyNode.isTSLiteralType() || !types.isStringLiteral(propertyNode.node.literal)) {
-      throw new Error(
+      throw path.buildCodeFrameError(
         getLinkingObjectsError(
           "Second type argument for LinkingObjects should be the property name of the relationship it inverts",
         ),
