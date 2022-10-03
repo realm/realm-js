@@ -162,7 +162,7 @@ export abstract class OrderedCollection<T = unknown>
   readonly [n: number]: T;
 
   get length(): number {
-    throw new Error("Method not implemented.");
+    return this.results.size();
   }
 
   get type(): PropertyType {

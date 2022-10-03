@@ -26,6 +26,7 @@ import { OrderedCollectionHelpers } from "./OrderedCollection";
 import { ClassHelpers } from "./ClassHelpers";
 import { Results } from "./Results";
 import { Dictionary } from "./Dictionary";
+import { Set } from "./Set";
 import { MixedArg } from "./binding";
 import { TypeHelpers, getHelpers as getTypeHelpers, TypeOptions } from "./types";
 
@@ -33,6 +34,13 @@ type BindingObjectSchema = binding.Realm["schema"][0];
 type BindingPropertySchema = BindingObjectSchema["persistedProperties"][0];
 
 type PropertyContext = BindingPropertySchema & { default?: unknown };
+
+function getObj(results: binding.Results, index: number) {
+  return results.getObj(index);
+}
+function getAny(results: binding.Results, index: number) {
+  return results.getAny(index);
+}
 
 export type HelperOptions = {
   realm: binding.Realm;
@@ -117,12 +125,6 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     // TODO: Move this destructure into the argument once `getHelpers` is no longer called
 
     const itemType = type & ~binding.PropertyType.Flags;
-    function getObj(results: binding.Results, index: number) {
-      return results.getObj(index);
-    }
-    function getAny(results: binding.Results, index: number) {
-      return results.getAny(index);
-    }
 
     const itemHelpers = getTypeHelpers(itemType, {
       realm,
@@ -205,12 +207,36 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
         internal.removeAll();
         assert.object(value, "values");
         for (const [k, v] of Object.entries(value)) {
-          if (v instanceof RealmObject) {
-            internal.insertAny(k, v[INTERNAL]);
-          } else {
-            // TODO: Validate the v before blindly inserting it
-            internal.insertAny(k, v as MixedArg);
-          }
+          internal.insertAny(k, itemHelpers.toBinding(v));
+        }
+      },
+    };
+  },
+  [binding.PropertyType.Set]({ columnKey, realm, type, optional, objectType, getClassHelpers }) {
+    const itemType = type & ~binding.PropertyType.Flags;
+    const itemHelpers = getTypeHelpers(itemType, {
+      realm,
+      getClassHelpers,
+      objectType,
+      optional,
+    });
+    const collectionHelpers: OrderedCollectionHelpers = {
+      get: itemType === binding.PropertyType.Object ? getObj : getAny,
+      fromBinding: itemHelpers.fromBinding,
+      toBinding: itemHelpers.toBinding,
+    };
+    return {
+      get(obj) {
+        const internal = binding.Set.make(realm, obj, columnKey);
+        return new Set(internal, collectionHelpers);
+      },
+      set(obj, value) {
+        const internal = binding.Set.make(realm, obj, columnKey);
+        // Clear the dictionary before adding new values
+        internal.removeAll();
+        assert.object(value, "values");
+        for (const [k, v] of Object.entries(value)) {
+          internal.insertAny(itemHelpers.toBinding(v));
         }
       },
     };
