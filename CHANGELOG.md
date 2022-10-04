@@ -27,7 +27,7 @@ Based on Realm JS v10.21.1: See changelog below for details on enhancements and 
   Realm.App.Sync.Session.addProgressNotification(direction: ProgressDirection, mode: ProgressMode, progressCallback: ProgressNotificationCallback): void;
   ```
   * A typo was fixed in the `SubscriptionsState` enum, in which `SubscriptionsState.Superseded` now returns `superseded` in place of `Superseded`
-  * `Realm.Services.MongoDB.OperationType` is now enumerated and can be checked against `watch` events
+  
 ### Enhancements
 * Small improvement to performance by caching JSI property String object [#4863](https://github.com/realm/realm-js/pull/4863)
 
