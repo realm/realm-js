@@ -19,71 +19,53 @@
 import { expect } from "chai";
 import Realm from "realm";
 
-import {
-  IPlaylist as IPlaylistNoId,
-  ISong as ISongNoId,
-  PlaylistSchema as PlaylistSchemaNoId,
-  SongSchema as SongSchemaNoId,
-  Playlist as PlaylistNoId,
-  Song as SongNoId,
-} from "../schemas/playlist-with-songs";
-import {
-  IPlaylist as IPlaylistWithId,
-  ISong as ISongWithId,
-  PlaylistSchema as PlaylistSchemaWithId,
-  SongSchema as SongSchemaWithId,
-  Playlist as PlaylistWithId,
-  Song as SongWithId,
-} from "../schemas/playlist-with-songs-with-ids";
+import { IPlaylist, ISong, PlaylistSchema, SongSchema } from "../schemas/playlist-with-songs";
 import circularCollectionResult from "../structures/circular-collection-result.json";
-import circularCollectionResultWithIds from "../structures/circular-collection-result-with-primary-ids.json";
 import { openRealmBeforeEach } from "../hooks";
 
 type TestSetup = {
   name: string;
-  schema: (Realm.ObjectSchema | Realm.ObjectClass)[];
+  schema: Realm.ObjectSchema[];
   testData: (realm: Realm) => unknown;
 };
 
 /**
- * Create test data (TestSetups) in 4 ways, with the same data structure:
- * 1. Literals without primaryKeys
- * 2. Class Models without primaryKeys
- * 3. Literals with primaryKeys
- * 4. Class Models with primaryKeys
+ * Create test data (TestSetups) in 2
+ * 1. Objects that have list fields with circular references of other objects.
+ * 2. Object with a dictionary struct
  */
 const testSetups: TestSetup[] = [
   {
-    name: "Object literal (NO primaryKey)",
-    schema: [PlaylistSchemaNoId, SongSchemaNoId],
+    name: "Object literals with list fields",
+    schema: [PlaylistSchema, SongSchema],
     testData(realm: Realm) {
       realm.write(() => {
         // Shared songs
-        const s1 = realm.create<ISongNoId>(SongSchemaNoId.name, {
+        const s1 = realm.create<ISong>(SongSchema.name, {
           artist: "Shared artist name 1",
           title: "Shared title name 1",
         });
-        const s2 = realm.create<ISongNoId>(SongSchemaNoId.name, {
+        const s2 = realm.create<ISong>(SongSchema.name, {
           artist: "Shared artist name 2",
           title: "Shared title name 2",
         });
-        const s3 = realm.create<ISongNoId>(SongSchemaNoId.name, {
+        const s3 = realm.create<ISong>(SongSchema.name, {
           artist: "Shared artist name 3",
           title: "Shared title name 3",
         });
 
         // Playlists
-        const p1 = realm.create<IPlaylistNoId>(PlaylistSchemaNoId.name, {
+        const p1 = realm.create<IPlaylist>(PlaylistSchema.name, {
           title: "Playlist 1",
           songs: [s1, s2, s3],
           related: [],
         });
-        const p2 = realm.create<IPlaylistNoId>(PlaylistSchemaNoId.name, {
+        const p2 = realm.create<IPlaylist>(PlaylistSchema.name, {
           title: "Playlist 2",
           songs: [s3],
           related: [p1],
         });
-        const p3 = realm.create<IPlaylistNoId>(PlaylistSchemaNoId.name, {
+        const p3 = realm.create<IPlaylist>(PlaylistSchema.name, {
           title: "Playlist 3",
           songs: [s1, s2],
           related: [p1, p2],
@@ -97,142 +79,16 @@ const testSetups: TestSetup[] = [
     },
   },
   {
-    name: "Class model (NO primaryKey)",
-    schema: [PlaylistNoId, SongNoId],
+    name: "Objects with dictionary fields",
+    schema: [
+      {
+        name: "Item",
+        properties: { dict: "{}" },
+      },
+    ],
     testData(realm: Realm) {
-      realm.write(() => {
-        // Shared songs
-        const s1 = realm.create(SongNoId, {
-          artist: "Shared artist name 1",
-          title: "Shared title name 1",
-        });
-        const s2 = realm.create(SongNoId, {
-          artist: "Shared artist name 2",
-          title: "Shared title name 2",
-        });
-        const s3 = realm.create(SongNoId, {
-          artist: "Shared artist name 3",
-          title: "Shared title name 3",
-        });
-
-        // Playlists
-        const p1 = realm.create(PlaylistNoId, {
-          title: "Playlist 1",
-          songs: [s1, s2, s3],
-          related: [],
-        });
-        const p2 = realm.create(PlaylistNoId, {
-          title: "Playlist 2",
-          songs: [s3],
-          related: [p1],
-        });
-        const p3 = realm.create(PlaylistNoId, {
-          title: "Playlist 3",
-          songs: [s1, s2],
-          related: [p1, p2],
-        });
-
-        // ensure circular references for p1 (ensure p1 reference self fist)
-        p1.related.push(p1, p2, p3); // test self reference
-      });
-
-      return circularCollectionResult;
-    },
-  },
-  {
-    name: "Object literal (Int primaryKey)",
-    schema: [PlaylistSchemaWithId, SongSchemaWithId],
-    testData(realm: Realm) {
-      realm.write(() => {
-        // Shared songs
-        const s1 = realm.create<ISongWithId>(SongSchemaWithId.name, {
-          _id: 1,
-          artist: "Shared artist name 1",
-          title: "Shared title name 1",
-        });
-        const s2 = realm.create<ISongWithId>(SongSchemaWithId.name, {
-          _id: 2,
-          artist: "Shared artist name 2",
-          title: "Shared title name 2",
-        });
-        const s3 = realm.create<ISongWithId>(SongSchemaWithId.name, {
-          _id: 3,
-          artist: "Shared artist name 3",
-          title: "Shared title name 3",
-        });
-
-        // Playlists
-        const p1 = realm.create<IPlaylistWithId>(PlaylistSchemaWithId.name, {
-          _id: 1,
-          title: "Playlist 1",
-          songs: [s1, s2, s3],
-        });
-        const p2 = realm.create<IPlaylistWithId>(PlaylistSchemaWithId.name, {
-          _id: 2,
-          title: "Playlist 2",
-          songs: [s3],
-          related: [p1],
-        });
-        const p3 = realm.create<IPlaylistWithId>(PlaylistSchemaWithId.name, {
-          _id: 3,
-          title: "Playlist 3",
-          songs: [s1, s2],
-          related: [p1, p2],
-        });
-
-        // ensure circular references for p1 (ensure p1 reference self fist)
-        p1.related.push(p1, p2, p3); // test self reference
-      });
-
-      return circularCollectionResultWithIds;
-    },
-  },
-  {
-    name: "Class model (Int primaryKey)",
-    schema: [PlaylistWithId, SongWithId],
-    testData(realm: Realm) {
-      realm.write(() => {
-        // Shared songs
-        const s1 = realm.create(SongWithId, {
-          _id: 1,
-          artist: "Shared artist name 1",
-          title: "Shared title name 1",
-        });
-        const s2 = realm.create(SongWithId, {
-          _id: 2,
-          artist: "Shared artist name 2",
-          title: "Shared title name 2",
-        });
-        const s3 = realm.create(SongWithId, {
-          _id: 3,
-          artist: "Shared artist name 3",
-          title: "Shared title name 3",
-        });
-
-        // Playlists
-        const p1 = realm.create(PlaylistWithId, {
-          _id: 1,
-          title: "Playlist 1",
-          songs: [s1, s2, s3],
-        });
-        const p2 = realm.create(PlaylistWithId, {
-          _id: 2,
-          title: "Playlist 2",
-          songs: [s3],
-          related: [p1],
-        });
-        const p3 = realm.create(PlaylistWithId, {
-          _id: 3,
-          title: "Playlist 3",
-          songs: [s1, s2],
-          related: [p1, p2],
-        });
-
-        // ensure circular references for p1 (ensure p1 reference self fist)
-        p1.related.push(p1, p2, p3); // test self reference
-      });
-
-      return circularCollectionResultWithIds;
+      // realm.write(() => {});
+      return;
     },
   },
 ];
@@ -249,7 +105,7 @@ describe("toJSON functionality", () => {
 
       beforeEach(function (this: RealmContext) {
         this.predefinedStructure = testData(this.realm);
-        this.playlists = this.realm.objects(PlaylistSchemaNoId.name).sorted("title");
+        this.playlists = this.realm.objects(PlaylistSchema.name).sorted("title");
       });
 
       describe("Realm.Object", () => {
@@ -273,8 +129,8 @@ describe("toJSON functionality", () => {
           expect(Array.isArray(serializable.related)).equals(true);
           // Check that the serializable object is the same as the first related object.
           // (this check only makes sense because of our structure)
-          const relatedObjects = serializable.related as Array<typeof serializable>;
-          expect(serializable).equals(relatedObjects[0]);
+          // @ts-expect-error We know serialzable[0].related is a list.
+          expect(serializable).equals(serializable.related[0]);
         });
 
         it("throws correct error on serialization", function (this: TestContext) {
@@ -314,8 +170,8 @@ describe("toJSON functionality", () => {
 
           // Check that the serializable object is the same as the first related object.
           // (this check only makes sense because of our structure)
-          const relatedObjects = serializable[0].related as Array<typeof serializable>;
-          expect(serializable[0]).equals(relatedObjects[0]);
+          // @ts-expect-error We know serialzable[0].related is a list.
+          expect(serializable[0].related).equals(serialzable[0].related[0]);
         });
 
         it("throws correct error on serialization", function (this: TestContext) {

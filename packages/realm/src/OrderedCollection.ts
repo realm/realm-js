@@ -21,13 +21,14 @@ import { Results } from "./Results";
 import { Collection } from "./Collection";
 import { unwind } from "./ranges";
 import { TypeHelpers } from "./types";
-import { getBaseTypeName } from "./schema";
 import { IllegalConstructorError, TypeAssertionError } from "./errors";
 import { Realm } from "./Realm";
-import { Object as RealmObject } from "./Object";
 import { getInternal } from "./internal";
 import { assert } from "./assert";
 import { ClassHelpers } from "./ClassHelpers";
+import { JSONCacheMap } from "./JSONCacheMap";
+import { Object as RealmObject } from "./Object";
+import { DefaultObject, getBaseTypeName } from "./schema";
 
 const DEFAULT_COLUMN_KEY = 0n as unknown as binding.ColKey;
 
@@ -175,6 +176,26 @@ export abstract class OrderedCollection<T = unknown>
    */
   public set(index: number, value: unknown) {
     throw new Error(`Assigning into a ${this.constructor.name} is not support`);
+  }
+
+   /**
+   * Returns a plain object representation with possible circular references
+   * from the ordered collection for JSON serialization.
+   * @returns A plain object
+   */
+    toJSON(_?: string, cache = new JSONCacheMap<T>()): Array<DefaultObject> {
+      // return this.map((item, index) =>
+      const result: Array<DefaultObject> = [];
+      let index = 0;
+      for (const item of this) {
+        if (item instanceof RealmObject) {
+          result[index] = item.toJSON(index.toString(), cache);
+        } else {
+          result[index] = item as DefaultObject;
+        }
+        index++;
+      }
+      return result;
   }
 
   *keys() {

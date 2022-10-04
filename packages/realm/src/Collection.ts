@@ -17,8 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { IllegalConstructorError } from "./errors";
-import { Object as RealmObject } from "./Object";
-import { DefaultObject } from "./schema";
 import { Listeners, CallbackRegistrator } from "./Listeners";
 
 export abstract class Collection<KeyType = unknown, ValueType = unknown, T = ValueType, ChangeCallbackType = unknown>
@@ -48,20 +46,6 @@ export abstract class Collection<KeyType = unknown, ValueType = unknown, T = Val
   abstract entries(): Iterable<[KeyType, ValueType]>;
   abstract [Symbol.iterator](): Iterator<T>;
 
-  toJSON(_?: string, cache = new Map()): Array<DefaultObject> {
-    // return this.map((item, index) =>
-    const result: Array<DefaultObject> = [];
-    let index = 0;
-    for (const item of this) {
-      if (item instanceof RealmObject) {
-        result[index] = item.toJSON(index.toString(), cache);
-      } else {
-        result[index] = item as DefaultObject;
-      }
-      index++;
-    }
-    return result;
-  }
   addListener(callback: ChangeCallbackType): void {
     this.listeners.add(callback);
   }
