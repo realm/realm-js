@@ -264,7 +264,7 @@ describe("useObject: rendering objects with a Realm.List property", () => {
 
       expect(object.isValid()).toBe(false);
 
-      expect(testRealm.objectForPrimaryKey(List, 1)).toBe(undefined);
+      expect(testRealm.objectForPrimaryKey(List, 1)).toBe(null);
 
       const testContainer = getByTestId("testContainer");
       expect(testContainer).toBeEmptyElement();
