@@ -183,19 +183,14 @@ export abstract class OrderedCollection<T = unknown>
    * from the ordered collection for JSON serialization.
    * @returns A plain object
    */
-    toJSON(_?: string, cache = new JSONCacheMap<T>()): Array<DefaultObject> {
-      // return this.map((item, index) =>
-      const result: Array<DefaultObject> = [];
-      let index = 0;
-      for (const item of this) {
-        if (item instanceof RealmObject) {
-          result[index] = item.toJSON(index.toString(), cache);
-        } else {
-          result[index] = item as DefaultObject;
-        }
-        index++;
+  toJSON(_?: string, cache = new JSONCacheMap<T>()): Array<DefaultObject> {
+    return this.map((item, index) => {
+      if (item instanceof RealmObject) {
+        return item.toJSON(index.toString(), cache);
+      } else {
+        return item as DefaultObject;
       }
-      return result;
+    });
   }
 
   *keys() {

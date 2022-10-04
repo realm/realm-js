@@ -17,9 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import Realm from "realm";
+import Realm, { DefaultObject } from "realm";
 
-import { IPlaylist, ISong, PlaylistSchema, SongSchema } from "../schemas/playlist-with-songs";
+import { IPlaylist, PlaylistSchema, SongSchema } from "../schemas/playlist-with-songs";
 import { openRealmBefore, openRealmBeforeEach } from "../hooks";
 
 interface Dict {
@@ -29,7 +29,10 @@ interface Dict {
 describe("toJSON functionality", () => {
   type TestContext = {
     playlists: Realm.Results<Realm.Object>;
-    dictObject: Dict;
+    brithdays: Dict;
+    p1Serialized: DefaultObject;
+    resultsSerialized: DefaultObject[];
+    birthdaysSerialized: DefaultObject;
   } & RealmContext;
   describe("with Object, Results, and Dictionary", () => {
     openRealmBefore({
@@ -64,12 +67,12 @@ describe("toJSON functionality", () => {
           title: "Playlist 1",
           songs: [],
         };
-        this.p2Serialized = {
+        const p2Serialized = {
           title: "Playlist 2",
           songs: [],
           related: [this.p1Serialized],
         };
-        this.p1Serialized.related = [this.p1Serialized, this.p2Serialized];
+        this.p1Serialized.related = [this.p1Serialized, p2Serialized];
 
         // Create expected serialized Realm Results object.
         this.resultsSerialized = this.p1Serialized.related;
