@@ -227,23 +227,23 @@ class RealmObject<T = DefaultObject> {
     if (existing) {
       return existing;
     }
-
-    // Create new result, and store in cache.
     const result: DefaultObject = {};
     cache.add(this, result);
-
     // Move all enumerable keys to result, triggering any specific toJSON implementation in the process.
-    return Object.fromEntries(
-      Object.entries(this).map(([key, value]) => {
-        if (value instanceof RealmObject || value instanceof OrderedCollection || value instanceof Dictionary) {
-          // recursively trigger `toJSON` for Realm instances with the same cache.
-          return [key, value.toJSON(key, cache)];
-        } else {
-          // Other cases, including null and undefined.
-          return [key, value];
-        }
-      }),
-    );
+    Object.entries(this).forEach(([key, value]) => {
+      if (typeof value == "function") {
+        // continue
+        return;
+      }
+      if (value instanceof RealmObject || value instanceof OrderedCollection || value instanceof Dictionary) {
+        // recursively trigger `toJSON` for Realm instances with the same cache.
+        result[key] = value.toJSON(key, cache);
+      } else {
+        // Other cases, including null and undefined.
+        result[key] = value;
+      }
+    });
+    return result;
   }
   isValid(): boolean {
     return this[INTERNAL] && this[INTERNAL].isValid;

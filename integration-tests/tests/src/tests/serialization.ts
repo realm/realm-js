@@ -20,170 +20,198 @@ import { expect } from "chai";
 import Realm from "realm";
 
 import { IPlaylist, ISong, PlaylistSchema, SongSchema } from "../schemas/playlist-with-songs";
-import circularCollectionResult from "../structures/circular-collection-result.json";
-import { openRealmBeforeEach } from "../hooks";
+import { openRealmBefore, openRealmBeforeEach } from "../hooks";
 
-type TestSetup = {
-  name: string;
-  schema: Realm.ObjectSchema[];
-  testData: (realm: Realm) => unknown;
-};
-
-/**
- * Create test data (TestSetups) in 2
- * 1. Objects that have list fields with circular references of other objects.
- * 2. Object with a dictionary struct
- */
-const testSetups: TestSetup[] = [
-  {
-    name: "Object literals with list fields",
-    schema: [PlaylistSchema, SongSchema],
-    testData(realm: Realm) {
-      realm.write(() => {
-        // Shared songs
-        const s1 = realm.create<ISong>(SongSchema.name, {
-          artist: "Shared artist name 1",
-          title: "Shared title name 1",
-        });
-        const s2 = realm.create<ISong>(SongSchema.name, {
-          artist: "Shared artist name 2",
-          title: "Shared title name 2",
-        });
-        const s3 = realm.create<ISong>(SongSchema.name, {
-          artist: "Shared artist name 3",
-          title: "Shared title name 3",
-        });
-
-        // Playlists
-        const p1 = realm.create<IPlaylist>(PlaylistSchema.name, {
-          title: "Playlist 1",
-          songs: [s1, s2, s3],
-          related: [],
-        });
-        const p2 = realm.create<IPlaylist>(PlaylistSchema.name, {
-          title: "Playlist 2",
-          songs: [s3],
-          related: [p1],
-        });
-        const p3 = realm.create<IPlaylist>(PlaylistSchema.name, {
-          title: "Playlist 3",
-          songs: [s1, s2],
-          related: [p1, p2],
-        });
-
-        // ensure circular references for p1 (ensure p1 reference self fist)
-        p1.related.push(p1, p2, p3); // test self reference
-      });
-
-      return circularCollectionResult;
-    },
-  },
-  {
-    name: "Objects with dictionary fields",
-    schema: [
-      {
-        name: "Item",
-        properties: { dict: "{}" },
-      },
-    ],
-    testData(realm: Realm) {
-      // realm.write(() => {});
-      return;
-    },
-  },
-];
+interface Dict {
+  dict: Record<string, any>;
+}
 
 describe("toJSON functionality", () => {
-  type TestContext = { predefinedStructure: any; playlists: Realm.Results<Realm.Object> } & RealmContext;
+  type TestContext = {
+    playlists: Realm.Results<Realm.Object>;
+    dictObject: Dict;
+  } & RealmContext;
+  describe("with Object, Results, and Dictionary", () => {
+    openRealmBefore({
+      inMemory: true,
+      schema: [
+        PlaylistSchema,
+        SongSchema,
+        {
+          name: "DictObject",
+          properties: {
+            dict: "string{}",
+          },
+        },
+      ],
+    });
 
-  for (const { name, schema, testData } of testSetups) {
-    describe(`Repeated test for "${name}":`, () => {
-      openRealmBeforeEach({
-        inMemory: true,
-        schema,
-      });
+    before(function (this: RealmContext) {
+      this.realm.write(() => {
+        // Playlists
+        const p1 = this.realm.create<IPlaylist>(PlaylistSchema.name, {
+          title: "Playlist 1",
+        });
+        const p2 = this.realm.create<IPlaylist>(PlaylistSchema.name, {
+          title: "Playlist 2",
+          related: [p1],
+        });
+        // ensure circular references for p1 (ensure p1 references itself)
+        p1.related.push(p1, p2);
 
-      beforeEach(function (this: RealmContext) {
-        this.predefinedStructure = testData(this.realm);
+        // Create expected serialized p1 and p2 objects.
+        this.p1Serialized = {
+          title: "Playlist 1",
+          songs: [],
+        };
+        this.p2Serialized = {
+          title: "Playlist 2",
+          songs: [],
+          related: [this.p1Serialized],
+        };
+        this.p1Serialized.related = [this.p1Serialized, this.p2Serialized];
+
+        // Create expected serialized Realm Results object.
+        this.resultsSerialized = this.p1Serialized.related;
+
+        this.birthdaysSerialized = {
+          dict: {
+            Bob: "August",
+            Tom: "January",
+          },
+        };
+        // Dictionary object test
+        this.birthdays = this.realm.create<Dict>("DictObject", this.birthdaysSerialized);
+        // This throws an error: this.birthdays.dict.parent = this.birthdays.dict;
+        this.birthdays.dict.grandparent = this.birthdays;
+        this.birthdaysSerialized.dict.grandparent = this.birthdaysSerialzied;
         this.playlists = this.realm.objects(PlaylistSchema.name).sorted("title");
       });
+    });
 
-      describe("Realm.Object", () => {
-        it("extends Realm.Object", function (this: TestContext) {
-          // Check that entries in the result set extends Realm.Object.
-          expect(this.playlists[0]).instanceOf(Realm.Object);
-        });
-
-        it("implements toJSON", function (this: TestContext) {
-          // Check that fist Playlist has toJSON implemented.
-          expect(typeof this.playlists[0].toJSON).equals("function");
-        });
-
-        it("toJSON returns a circular structure", function (this: TestContext) {
-          const serializable = this.playlists[0].toJSON();
-          // Check that no props are functions on the serializable object.
-          expect(Object.values(serializable).some((val) => typeof val === "function")).equals(false);
-          // Check that linked list is not a Realm entity.
-          expect(serializable.related).not.instanceOf(Realm.Collection);
-          // But is a plain Array
-          expect(Array.isArray(serializable.related)).equals(true);
-          // Check that the serializable object is the same as the first related object.
-          // (this check only makes sense because of our structure)
-          // @ts-expect-error We know serialzable[0].related is a list.
-          expect(serializable).equals(serializable.related[0]);
-        });
-
-        it("throws correct error on serialization", function (this: TestContext) {
-          // Check that we get a circular structure error.
-          // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Cyclic_object_value
-          expect(() => JSON.stringify(this.playlists[0])).throws(TypeError, /circular|cyclic/i);
-        });
+    describe("Realm.Object", () => {
+      it("extends Realm.Object", function (this: TestContext) {
+        // Check that entries in the result set extends Realm.Object.
+        expect(this.playlists[0]).instanceOf(Realm.Object);
       });
 
-      describe("Realm.Results", () => {
-        it("extends Realm.Collection", function (this: TestContext) {
-          // Check that the result set extends Realm.Collection.
-          expect(this.playlists).instanceOf(Realm.Collection);
-        });
+      it("implements toJSON", function (this: TestContext) {
+        // Check that fist Playlist has toJSON implemented.
+        expect(typeof this.playlists[0].toJSON).equals("function");
+      });
 
-        it("implements toJSON", function (this: TestContext) {
-          expect(typeof this.playlists.toJSON).equals("function");
-        });
+      it("toJSON returns a circular structure", function (this: TestContext) {
+        const serializable = this.playlists[0].toJSON();
+        // Check that no props are functions on the serializable object.
+        expect(Object.values(serializable).some((val) => typeof val === "function")).equals(false);
 
-        it("toJSON returns a circular structure", function (this: TestContext) {
-          const serializable = this.playlists.toJSON();
+        // Check that the object is not a Realm entity
+        expect(serializable).not.instanceOf(Realm.Object);
+        // But is a plain object
+        expect(Object.getPrototypeOf(serializable)).equals(Object.prototype);
 
-          // Check that the serializable object is not a Realm entity.
-          expect(serializable).not.instanceOf(Realm.Collection);
-          // But is a plain Array
-          expect(Array.isArray(serializable)).equals(true);
+        // Check that linked list is not a Realm entity.
+        expect(serializable.related).not.instanceOf(Realm.Collection);
+        // But is a plain Array
+        expect(Array.isArray(serializable.related)).equals(true);
+        // Check that the serializable object is the same as the first related object.
+        // (this check only makes sense because of our structure)
+        // @ts-expect-error We know serialzable[0].related is a list.
+        expect(serializable).equals(serializable.related[0]);
+      });
 
-          // Check that the serializable object is not a Realm entity.
-          expect(serializable).not.instanceOf(Realm.Collection);
-          // But is a plain Array
-          expect(Array.isArray(serializable)).equals(true);
+      it("toJSON matches expected structure", function (this: TestContext) {
+        const serializable = this.playlists[0].toJSON();
+        // Ensure the object is deeply equal to the expected serialized object.
+        expect(serializable).deep.equals(this.p1Serialized);
+      });
 
-          // Check that linked list is not a Realm entity.
-          expect(serializable[0].related).not.instanceOf(Realm.Collection);
-          // But is a plain Array
-          expect(Array.isArray(serializable[0].related)).equals(true);
-
-          // Check that the serializable object is the same as the first related object.
-          // (this check only makes sense because of our structure)
-          // @ts-expect-error We know serialzable[0].related is a list.
-          expect(serializable[0].related).equals(serialzable[0].related[0]);
-        });
-
-        it("throws correct error on serialization", function (this: TestContext) {
-          // Check that we get a circular structure error.
-          // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Cyclic_object_value
-          expect(() => JSON.stringify(this.playlists)).throws(TypeError, /circular|cyclic/i);
-        });
+      it("throws correct error on serialization", function (this: TestContext) {
+        // Check that we get a circular structure error.
+        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Cyclic_object_value
+        expect(() => JSON.stringify(this.playlists[0])).throws(TypeError, /circular|cyclic/i);
       });
     });
-  }
 
-  describe("toJSON edge case handling", function () {
+    describe("Realm.Results", () => {
+      it("extends Realm.Collection", function (this: TestContext) {
+        // Check that the result set extends Realm.Collection.
+        expect(this.playlists).instanceOf(Realm.Collection);
+      });
+
+      it("implements toJSON", function (this: TestContext) {
+        expect(typeof this.playlists.toJSON).equals("function");
+      });
+
+      it("toJSON returns a circular structure", function (this: TestContext) {
+        const serializable = this.playlists.toJSON();
+
+        // Check that the serializable object is not a Realm entity.
+        expect(serializable).not.instanceOf(Realm.Collection);
+        // But is a plain Array
+        expect(Array.isArray(serializable)).equals(true);
+
+        // Check that the serializable object is not a Realm entity.
+        expect(serializable).not.instanceOf(Realm.Collection);
+        // But is a plain Array
+        expect(Array.isArray(serializable)).equals(true);
+
+        // Check that linked list is not a Realm entity.
+        expect(serializable[0].related).not.instanceOf(Realm.Collection);
+        // But is a plain Array
+        expect(Array.isArray(serializable[0].related)).equals(true);
+
+        // Check that the serializable object is the same as the first related object.
+        // (this check only makes sense because of our structure)
+        // @ts-expect-error We know serialzable[0].related is a list.
+        expect(serializable[0]).equals(serializable[0].related[0]);
+      });
+
+      it("toJSON matches expected structure", function (this: TestContext) {
+        const serializable = this.playlists.toJSON();
+        // Ensure the array is deeply equal to the expected serialized array.
+        expect(serializable).deep.equals(this.resultsSerialized);
+      });
+
+      it("throws correct error on serialization", function (this: TestContext) {
+        // Check that we get a circular structure error.
+        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Cyclic_object_value
+        expect(() => JSON.stringify(this.playlists)).throws(TypeError, /circular|cyclic/i);
+      });
+    });
+    describe("Realm.Dictionary", () => {
+      it("extends Realm.Dictionary", function (this: TestContext) {
+        // Check that the dict field extends Realm.Collection.
+        expect(this.birthdays.dict).instanceOf(Realm.Dictionary);
+      });
+
+      it("implements toJSON", function (this: TestContext) {
+        expect(typeof this.birthdays.dict.toJSON).equals("function");
+      });
+
+      it("toJSON returns a circular structure", function (this: TestContext) {
+        const serializable = this.birthdays.toJSON();
+
+        // Check that the serializable object and its dict field are not Realm entities.
+        expect(serializable).not.instanceOf(Realm.Object);
+        expect(serializable.dict).not.instanceOf(Realm.Dictionary);
+        // And the entire object is a plain object
+        expect(Object.getPrototypeOf(serializable)).equals(Object.prototype);
+        expect(Object.getPrototypeOf(serializable.dict)).equals(Object.prototype);
+
+        // Check that the serializable object is the same as the first related object.
+        expect(serializable).equals(serializable.dict.grandparent);
+      });
+
+      it("throws correct error on serialization", function (this: TestContext) {
+        // Check that we get a circular structure error.
+        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Cyclic_object_value
+        expect(() => JSON.stringify(this.birthdays)).throws(TypeError, /circular|cyclic/i);
+      });
+    });
+  });
+
+  describe("with edge cases", function () {
     interface EdgeCaseSchema {
       maybeNull: null;
     }
