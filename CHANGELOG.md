@@ -10,6 +10,13 @@ Based on Realm JS v10.22.0: See changelog below for details on enhancements and 
 * When no object is found calling `Realm#objectForPrimaryKey`, `null` is returned instead of `undefined`
 * Replaced `Realm#empty` with `Realm#isEmpty`
 * Replaced `Realm#readOnly` with `Realm#isReadOnly`
+* Replace string unions with enums where it makes sense.
+  * Following functions and properties will be effected by this change:
+  ```typescript
+  Realm.App.Sync.Session.State : SessionState
+  Realm.App.Sync.Session.addProgressNotification(direction: ProgressDirection, mode: ProgressMode, progressCallback: ProgressNotificationCallback): void;
+  ```
+  * A typo was fixed in the `SubscriptionsState` enum, in which `SubscriptionsState.Superseded` now returns `superseded` in place of `Superseded`
 
 ### Enhancements
 * None
