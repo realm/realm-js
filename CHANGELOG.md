@@ -10,6 +10,7 @@ Based on Realm JS v10.22.0: See changelog below for details on enhancements and 
 * When no object is found calling `Realm#objectForPrimaryKey`, `null` is returned instead of `undefined`
 * Replaced `Realm#empty` with `Realm#isEmpty`
 * Replaced `Realm#readOnly` with `Realm#isReadOnly`
+* Removed `Object#_objectId`, which is now replaced by `Object#_objectKey`
 * Replace string unions with enums where it makes sense.
   * Following functions and properties will be effected by this change:
   ```typescript
