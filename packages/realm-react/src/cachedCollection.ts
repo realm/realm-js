@@ -112,7 +112,7 @@ export function createCachedCollection<T extends Realm.Object>({
         return undefined;
       }
 
-      const objectId = object._objectId();
+      const objectId = object._objectKey();
       const cacheKey = getCacheKey(objectId);
 
       // If we do, return it...
@@ -141,7 +141,7 @@ export function createCachedCollection<T extends Realm.Object>({
 
       // Possible solutions:
       // a. the listenerCollection is a frozen copy of the collection before the deletion,
-      // allowing accessing the _objectId() using listenerCollection[index]._objectId()
+      // allowing accessing the _objectKey() using listenerCollection[index]._objectKey()
       // b. the callback provides an array of changed objectIds
 
       if (changes.deletions.length > 0) {
@@ -150,7 +150,7 @@ export function createCachedCollection<T extends Realm.Object>({
 
       // Item(s) were modified, just clear them from the cache so that we return new instances for them
       changes.newModifications.forEach((index) => {
-        const objectId = listenerCollection[index]._objectId();
+        const objectId = listenerCollection[index]._objectKey();
         if (objectId) {
           const cacheKey = getCacheKey(objectId);
           if (objectCache.has(cacheKey)) {

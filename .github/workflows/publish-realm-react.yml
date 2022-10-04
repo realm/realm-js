@@ -38,7 +38,7 @@ jobs:
         run: npm ci
 
       - name: Bootstrap @realm/react
-        run: npm install realm --prefix packages/realm-react --no-save
+        run: npx lerna bootstrap --scope=@realm/react
         env:
           npm_config_realm_local_prebuilds: ${{ github.workspace }}/prebuilds
 

@@ -111,7 +111,7 @@ describe("Class models", () => {
         expect(alice.name).equals("Alice");
         // Expect the first element to be the object we just added
         expect(persons.length).equals(1);
-        expect(persons[0]._objectId()).equals(alice._objectId());
+        expect(persons[0]._objectKey()).equals(alice._objectKey());
         expect(persons[0].name).equals("Alice");
         // Property value fallback to the default
         expect(persons[0].age).equals(32);

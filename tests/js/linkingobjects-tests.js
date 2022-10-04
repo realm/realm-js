@@ -213,21 +213,21 @@ module.exports = {
     TestCase.assertEqual(john.linkingObjectsCount(), 0);
 
     var olivier;
-    var id;
+    var key;
     realm.write(function () {
       olivier = realm.create("PersonObject", { name: "Olivier", age: 0 });
-      id = olivier._objectId();
+      key = olivier._objectKey();
       realm.create("PersonObject", { name: "Christine", age: 25, children: [olivier] });
     });
 
     TestCase.assertEqual(olivier.linkingObjectsCount(), 1);
-    TestCase.assertEqual(olivier._objectId(), id);
+    TestCase.assertEqual(olivier._objectKey(), key);
 
     realm.write(function () {
       john.children.push(olivier);
     });
 
-    TestCase.assertEqual(olivier._objectId(), id);
+    TestCase.assertEqual(olivier._objectKey(), key);
     TestCase.assertEqual(john.children.length, 1);
     TestCase.assertEqual(john.children[0]["name"], "Olivier");
     TestCase.assertEqual(realm.objects("PersonObject").length, 3);
