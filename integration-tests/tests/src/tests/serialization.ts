@@ -19,17 +19,51 @@
 import { expect } from "chai";
 import Realm, { DefaultObject } from "realm";
 
-import { IPlaylist, PlaylistSchema, SongSchema } from "../schemas/playlist-with-songs";
 import { openRealmBefore, openRealmBeforeEach } from "../hooks";
 
-interface Dict {
+const PlaylistSchema: Realm.ObjectSchema = {
+  name: "Playlist",
+  properties: {
+    title: "string",
+    songs: "Song[]",
+    related: "Playlist[]",
+  },
+};
+
+const SongSchema: Realm.ObjectSchema = {
+  name: "Song",
+  properties: {
+    artist: "string",
+    title: "string",
+  },
+};
+
+interface ISong {
+  artist: string;
+  title: string;
+}
+
+interface IPlaylist {
+  title: string;
+  related: Realm.List<IPlaylist>;
+  songs: Realm.List<ISong>;
+}
+
+const BirthdaysSchema: Realm.ObjectSchema = {
+  name: "Birthdays",
+  properties: {
+    dict: "string{}",
+  },
+};
+
+interface IBirthdays {
   dict: Record<string, any>;
 }
 
 describe("toJSON functionality", () => {
   type TestContext = {
     playlists: Realm.Results<Realm.Object>;
-    brithdays: Dict;
+    brithdays: IBirthdays;
     p1Serialized: DefaultObject;
     resultsSerialized: DefaultObject[];
     birthdaysSerialized: DefaultObject;
@@ -37,16 +71,7 @@ describe("toJSON functionality", () => {
   describe("with Object, Results, and Dictionary", () => {
     openRealmBefore({
       inMemory: true,
-      schema: [
-        PlaylistSchema,
-        SongSchema,
-        {
-          name: "DictObject",
-          properties: {
-            dict: "string{}",
-          },
-        },
-      ],
+      schema: [PlaylistSchema, SongSchema, BirthdaysSchema],
     });
 
     before(function (this: RealmContext) {
@@ -84,7 +109,7 @@ describe("toJSON functionality", () => {
           },
         };
         // Dictionary object test
-        this.birthdays = this.realm.create<Dict>("DictObject", this.birthdaysSerialized);
+        this.birthdays = this.realm.create<IBirthdays>("Birthdays", this.birthdaysSerialized);
         // This throws an error: this.birthdays.dict.parent = this.birthdays.dict;
         this.birthdays.dict.grandparent = this.birthdays;
         this.birthdaysSerialized.dict.grandparent = this.birthdaysSerialzied;

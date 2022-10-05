@@ -219,15 +219,17 @@ class RealmObject<T = DefaultObject> {
    * from the object for JSON serialization.
    * @returns A plain object
    */
-  toJSON(_?: string, cache = new JSONCacheMap<T>()): DefaultObject {
+  toJSON(_?: string, cache = new JSONCacheMap()): DefaultObject {
     // Construct a reference-id of table-name & primaryKey if it exists, or fall back to objectId.
 
     // Check if current objectId has already processed, to keep object references the same.
+    // @ts-expect-error Type of RealmObject does not matter for sake of caching
     const existing = cache.find(this);
     if (existing) {
       return existing;
     }
     const result: DefaultObject = {};
+    // @ts-expect-error Type of RealmObject does not matter for sake of caching
     cache.add(this, result);
     // Move all enumerable keys to result, triggering any specific toJSON implementation in the process.
     Object.entries(this).forEach(([key, value]) => {
