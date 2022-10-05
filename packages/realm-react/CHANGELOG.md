@@ -4,15 +4,10 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fix non-realm re-renders events from creating a new instance of collections and objects returned from `useObject` and `useQuery` ([#4513](https://github.com/realm/realm-js/issues/4513), since v0.2.0, special thanks to @mfbx9da4 for the PR)
 
 ### Compatibility
-* React Native >= v0.64.0
-* Atlas App Services.
-* Realm Studio v12.0.0.
-* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
-* File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+* Tested with React Native v0.70.1 and React v18.1.0
 
 ### Internal
 * Update devDependencies for testing:

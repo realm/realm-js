@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import Realm from "realm";
-import { useEffect, useReducer, useMemo } from "react";
+import { useEffect, useMemo, useRef, useReducer } from "react";
 import { createCachedCollection } from "./cachedCollection";
 import { symbols } from "@realm.io/common";
 
@@ -54,33 +54,41 @@ export function createUseQuery(useRealm: () => Realm) {
     // Create a forceRerender function for the cachedCollection to use as its updateCallback, so that
     // the cachedCollection can force the component using this hook to re-render when a change occurs.
     const [, forceRerender] = useReducer((x) => x + 1, 0);
+    const collectionRef = useRef({} as Realm.Results<T & Realm.Object>);
 
     // Wrap the cachedObject in useMemo, so we only replace it with a new instance if `primaryKey` or `type` change
-    const { collection, tearDown } = useMemo(
-      () => createCachedCollection({ collection: realm.objects(type), realm, updateCallback: forceRerender }),
-      [type, realm],
-    );
+    const { tearDown } = useMemo(() => {
+      const updateCallback = () => {
+        // This makes sure the collection has a different reference on a rerender
+        // Also we are ensuring the type returned is Realm.Results, as this is known in this context
+        const collectionProxy = new Proxy(collectionRef.current as Realm.Results<T & Realm.Object>, {});
+
+        // Store the original, unproxied result as a non-enumerable field with a symbol
+        // key on the proxy object, so that we can check for this and get the original results
+        // when passing the result of `useQuery` into the subscription mutation methods
+        // (see `lib/mutable-subscription-set.js` for more details)
+        Object.defineProperty(collectionProxy, symbols.PROXY_TARGET, {
+          value: realm.objects(type),
+          enumerable: false,
+          configurable: false,
+          writable: true,
+        });
+        // This makes sure the collection has a different reference on a rerender
+        // Also we are ensuring the type returned is Realm.Results, as this is known in this context
+        collectionRef.current = collectionProxy;
+        forceRerender();
+      };
+      const cachedCollection = createCachedCollection({ collection: realm.objects(type), realm, updateCallback });
+      collectionRef.current = cachedCollection.collection as Realm.Results<T & Realm.Object>;
+      return cachedCollection;
+    }, [type, realm]);
 
     // Invoke the tearDown of the cachedCollection when useQuery is unmounted
     useEffect(() => {
       return tearDown;
     }, [tearDown]);
 
-    // This makes sure the collection has a different reference on a rerender
-    // Also we are ensuring the type returned is Realm.Results, as this is known in this context
-    const proxy = new Proxy(collection as Realm.Results<T & Realm.Object>, {});
-
-    // Store the original, unproxied result as a non-enumerable field with a symbol
-    // key on the proxy object, so that we can check for this and get the original results
-    // when passing the result of `useQuery` into the subscription mutation methods
-    // (see `lib/mutable-subscription-set.js` for more details)
-    Object.defineProperty(proxy, symbols.PROXY_TARGET, {
-      value: realm.objects(type),
-      enumerable: false,
-      configurable: false,
-      writable: true,
-    });
-
-    return proxy;
+    // Return the current collection reference, which should only cause a rerender when something in the visible collection has changed
+    return collectionRef.current;
   };
 }
