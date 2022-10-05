@@ -17,7 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import Realm, { DefaultObject } from "realm";
+import Realm from "realm";
+// import { stringify, parse } from "@ungap/structured-clone/json";
 
 import { openRealmBefore, openRealmBeforeEach } from "../hooks";
 
@@ -52,21 +53,21 @@ interface IPlaylist {
 const BirthdaysSchema: Realm.ObjectSchema = {
   name: "Birthdays",
   properties: {
-    dict: "string{}",
+    dict: "{}",
   },
 };
 
 interface IBirthdays {
-  dict: Record<string, any>;
+  dict: Record<any, any>;
 }
 
 describe("toJSON functionality", () => {
   type TestContext = {
     playlists: Realm.Results<Realm.Object>;
-    brithdays: IBirthdays;
-    p1Serialized: DefaultObject;
-    resultsSerialized: DefaultObject[];
-    birthdaysSerialized: DefaultObject;
+    birthdays: Realm.Object<IBirthdays>;
+    p1Serialized: Record<string, any>;
+    resultsSerialized: Record<string, any>;
+    birthdaysSerialized: Record<string, any>;
   } & RealmContext;
   describe("with Object, Results, and Dictionary", () => {
     openRealmBefore({
@@ -110,7 +111,11 @@ describe("toJSON functionality", () => {
         };
         // Dictionary object test
         this.birthdays = this.realm.create<IBirthdays>("Birthdays", this.birthdaysSerialized);
-        // This throws an error: this.birthdays.dict.parent = this.birthdays.dict;
+
+        // See #4980. Setting dictionary to other dictionaries (or itself)
+        // is currently error-prone.
+        // this.birthdays.dict.parent = this.birthdays.dict;
+
         this.birthdays.dict.grandparent = this.birthdays;
         this.birthdaysSerialized.dict.grandparent = this.birthdaysSerialzied;
         this.playlists = this.realm.objects(PlaylistSchema.name).sorted("title");
@@ -144,7 +149,6 @@ describe("toJSON functionality", () => {
         expect(Array.isArray(serializable.related)).equals(true);
         // Check that the serializable object is the same as the first related object.
         // (this check only makes sense because of our structure)
-        // @ts-expect-error We know serialzable[0].related is a list.
         expect(serializable).equals(serializable.related[0]);
       });
 
@@ -191,7 +195,6 @@ describe("toJSON functionality", () => {
 
         // Check that the serializable object is the same as the first related object.
         // (this check only makes sense because of our structure)
-        // @ts-expect-error We know serialzable[0].related is a list.
         expect(serializable[0]).equals(serializable[0].related[0]);
       });
 
@@ -228,6 +231,7 @@ describe("toJSON functionality", () => {
         expect(Object.getPrototypeOf(serializable.dict)).equals(Object.prototype);
 
         // Check that the serializable object is the same as the first related object.
+        console.log(serializable)
         expect(serializable).equals(serializable.dict.grandparent);
       });
 
@@ -235,6 +239,10 @@ describe("toJSON functionality", () => {
         // Check that we get a circular structure error.
         // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Cyclic_object_value
         expect(() => JSON.stringify(this.birthdays)).throws(TypeError, /circular|cyclic/i);
+      });
+
+      it("but works with a circular JSON serialization frameworks", function (this: TestContext) {
+        // console.log(stringify({ any: "serializable" }));
       });
     });
   });
