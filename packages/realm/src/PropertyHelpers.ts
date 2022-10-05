@@ -19,15 +19,12 @@
 import * as binding from "./binding";
 import { assert } from "./assert";
 
-import { INTERNAL } from "./internal";
-import { Object as RealmObject } from "./Object";
 import { List } from "./List";
 import { OrderedCollectionHelpers } from "./OrderedCollection";
 import { ClassHelpers } from "./ClassHelpers";
 import { Results } from "./Results";
 import { Dictionary } from "./Dictionary";
 import { Set } from "./Set";
-import { MixedArg } from "./binding";
 import { TypeHelpers, getHelpers as getTypeHelpers, TypeOptions } from "./types";
 
 type BindingObjectSchema = binding.Realm["schema"][0];
@@ -64,11 +61,14 @@ export type PropertyHelpers = TypeHelpers &
     default?: unknown;
   };
 
-const defaultGet =
-  ({ typeHelpers: { fromBinding }, columnKey }: PropertyOptions) =>
-  (obj: binding.Obj) => {
-    return obj.isNull(columnKey) ? null : fromBinding(obj.getAny(columnKey));
-  };
+const defaultGet = ({ typeHelpers: { fromBinding }, columnKey, optional }: PropertyOptions) =>
+  optional
+    ? (obj: binding.Obj) => {
+        return obj.isNull(columnKey) ? null : fromBinding(obj.getAny(columnKey));
+      }
+    : (obj: binding.Obj) => {
+        return fromBinding(obj.getAny(columnKey));
+      };
 
 const defaultSet =
   ({ typeHelpers: { toBinding }, columnKey }: PropertyOptions) =>
