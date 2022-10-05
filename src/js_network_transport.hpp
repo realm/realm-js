@@ -220,7 +220,7 @@ struct JavaScriptNetworkTransport : public app::GenericNetworkTransport {
         return request_object;
     }
 
-    void send_request_to_server(app::Request&& request,
+    void send_request_to_server(const app::Request& request,
                                 util::UniqueFunction<void(const app::Response&)>&& completion_callback) override
     {
         m_dispatcher([ctx = m_ctx, request = std::move(request),
