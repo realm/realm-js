@@ -24,11 +24,13 @@ import path from "path";
 import { debug, enableDebugging } from "./debug";
 import { generate } from "./generator";
 import { InvalidSpecError, parseSpec } from "./spec";
-import { Template, TEMPLATES } from "./templates";
+import { importTemplate, Template, TEMPLATES_NAMES } from "./templates";
+
+const ROOT_DIR = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 
 type GenerateOptions = {
   spec: string;
-  template: Template;
+  template: Promise<Template>;
   output: string;
   debug: boolean;
 };
@@ -64,18 +66,15 @@ program.name("realm-bindgen");
 
 const specOption = program
   .createOption("-s, --spec <output>", "Path of the API specification")
+  .default(path.resolve(ROOT_DIR, "spec.yml"))
   .argParser(parseExistingFilePath)
   .makeOptionMandatory();
 
 const templateOption = program
   .createOption("-t, --template <template>", "Template to apply when generating")
-  .choices(Object.keys(TEMPLATES))
+  .choices(TEMPLATES_NAMES)
   .argParser((name) => {
-    if (name in TEMPLATES) {
-      return TEMPLATES[name as keyof typeof TEMPLATES];
-    } else {
-      throw new InvalidArgumentError(`Unsupported template (${name})`);
-    }
+    return importTemplate(name);
   })
   .makeOptionMandatory();
 
@@ -92,7 +91,7 @@ program
   .addOption(templateOption)
   .addOption(outputOption)
   .addOption(debugOption)
-  .action((args: GenerateOptions) => {
+  .action(async (args: GenerateOptions) => {
     const { spec: specPath, template, output: outputPath, debug: isDebugging } = args;
     if (isDebugging) {
       enableDebugging();
@@ -100,7 +99,7 @@ program
     }
     try {
       const spec = parseSpec(specPath);
-      generate({ spec, template, outputPath });
+      generate({ spec, template: await template, outputPath });
       process.exit(0);
     } catch (err) {
       printError(err);
