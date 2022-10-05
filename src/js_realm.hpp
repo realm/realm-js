@@ -598,6 +598,8 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
         throw std::runtime_error("Invalid arguments when constructing 'Realm'");
     }
 
+    config.cache = true;
+
     if (argc == 0) {
         config.path = default_path();
     }
@@ -780,10 +782,15 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
                 config.disable_format_upgrade =
                     Value::validated_to_boolean(ctx, disable_format_upgrade_value, "disableFormatUpgrade");
             }
+
+	    static const String cache_string = "cache";
+	    ValueType cache_value = Object::get_property(ctx, object, cache_string);
+	    if (!Value::is_undefined(ctx, cache_value)) {
+		config.cache = Value::validated_to_boolean(ctx, cache_value, "cache");
+	    }
         }
     }
 
-    config.cache = true;
     config.path = normalize_realm_path(config.path);
     ensure_directory_exists_for_file(config.path);
     return schema_updated;

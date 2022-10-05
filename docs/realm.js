@@ -426,6 +426,7 @@ class Realm {
  *    what fits in memory, but it is not persistent and will be removed when the last instance
  *    is closed. This option is incompatible with `sync`.
  * @property {boolean} [readOnly=false] - Specifies if this Realm should be opened as read-only.
+ * @property {boolean} [cache=true] - Cache Realm instances. 
  * @property {boolean} [disableFormatUpgrade=false] - Specifies if this Realm's file format should
  *    be automatically upgraded if it was created with an older version of the Realm library.
  *    If set to `true` and a file format upgrade is required, an error will be thrown instead.

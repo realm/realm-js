@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Added option `Realm.Configuration.cache` to control if Realm instances are cached or not. The default value is `true`.
 
 ### Fixed
 * If a case insensitive query searched for a string including an 4-byte UTF8 character, the program would crash. ([realm/realm-core#5825](https://github.com/realm/realm-core/issues/5825), since v1.0.0)

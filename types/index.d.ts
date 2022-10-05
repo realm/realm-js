@@ -233,6 +233,7 @@ declare namespace Realm {
         path?: string;
         fifoFilesFallbackPath?: string;
         readOnly?: boolean;
+	cache?: boolean;
     }
 
     interface ConfigurationWithSync extends BaseConfiguration {
