@@ -163,7 +163,6 @@ export class Realm {
           : 0n
         : undefined,
     });
-    // console.log("Did open!");
 
     Object.defineProperties(this, {
       classes: {
