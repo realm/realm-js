@@ -20,7 +20,7 @@ import { TemplateContext } from "../context";
 
 import "../js-passes";
 
-export function generateNodeWrapper({ spec: rawSpec, file }: TemplateContext): void {
+export function generate({ spec: rawSpec, file }: TemplateContext): void {
   const spec = bindModel(rawSpec);
 
   const js = file("native.mjs", "eslint");
