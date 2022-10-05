@@ -26,6 +26,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
   /** @internal */
   constructor(internal: binding.List, helpers: OrderedCollectionHelpers) {
     super(internal.asResults(), helpers);
+    // TODO: Consider if this could be a simple assignment
     Object.defineProperties(this, {
       [INTERNAL]: {
         enumerable: false,

@@ -67,49 +67,69 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
   },
   [binding.PropertyType.Bool]({ optional }) {
     return {
-      toBinding(value: unknown) {
-        if (value === null && optional) {
-          return null;
-        }
-        assert.boolean(value);
-        return value;
-      },
+      toBinding: optional
+        ? (value: unknown) => {
+            if (value === null) {
+              return null;
+            }
+            assert.boolean(value);
+            return value;
+          }
+        : (value: unknown) => {
+            assert.boolean(value);
+            return value;
+          },
       fromBinding: defaultFromBinding,
     };
   },
   [binding.PropertyType.String]({ optional }) {
     return {
-      toBinding(value: unknown) {
-        if (value === null && optional) {
-          return null;
-        }
-        assert.string(value);
-        return value;
-      },
+      toBinding: optional
+        ? (value: unknown) => {
+            if (value === null) {
+              return null;
+            }
+            assert.string(value);
+            return value;
+          }
+        : (value: unknown) => {
+            assert.string(value);
+            return value;
+          },
       fromBinding: defaultFromBinding,
     };
   },
   [binding.PropertyType.Data]({ optional }) {
     return {
-      toBinding(value) {
-        if (value === null && optional) {
-          return null;
-        }
-        assert.instanceOf(value, ArrayBuffer);
-        return value;
-      },
+      toBinding: optional
+        ? (value) => {
+            if (value === null) {
+              return null;
+            }
+            assert.instanceOf(value, ArrayBuffer);
+            return value;
+          }
+        : (value) => {
+            assert.instanceOf(value, ArrayBuffer);
+            return value;
+          },
       fromBinding: defaultFromBinding,
     };
   },
   [binding.PropertyType.Date]({ optional }) {
     return {
-      toBinding(value) {
-        if (value === null && optional) {
-          return null;
-        }
-        assert.instanceOf(value, Date);
-        return binding.Timestamp.fromDate(value);
-      },
+      toBinding: optional
+        ? (value) => {
+            if (value === null) {
+              return null;
+            }
+            assert.instanceOf(value, Date);
+            return binding.Timestamp.fromDate(value);
+          }
+        : (value) => {
+            assert.instanceOf(value, Date);
+            return binding.Timestamp.fromDate(value);
+          },
       fromBinding(value) {
         assert.instanceOf(value, binding.Timestamp);
         return value.toDate();
@@ -118,13 +138,18 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
   },
   [binding.PropertyType.Float]({ optional }) {
     return {
-      toBinding(value) {
-        if (value === null && optional) {
-          return null;
-        }
-        assert.number(value);
-        return new binding.Float(value);
-      },
+      toBinding: optional
+        ? (value) => {
+            if (value === null) {
+              return null;
+            }
+            assert.number(value);
+            return new binding.Float(value);
+          }
+        : (value) => {
+            assert.number(value);
+            return new binding.Float(value);
+          },
       fromBinding(value) {
         assert.instanceOf(value, binding.Float);
         return value.value;
@@ -133,13 +158,18 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
   },
   [binding.PropertyType.Double]({ optional }) {
     return {
-      toBinding(value) {
-        if (value === null && optional) {
-          return null;
-        }
-        assert.number(value);
-        return value;
-      },
+      toBinding: optional
+        ? (value) => {
+            if (value === null) {
+              return null;
+            }
+            assert.number(value);
+            return value;
+          }
+        : (value) => {
+            assert.number(value);
+            return value;
+          },
       fromBinding: defaultFromBinding,
     };
   },
@@ -210,37 +240,52 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
   },
   [binding.PropertyType.ObjectId]({ optional }) {
     return {
-      toBinding(value) {
-        if (value === null && optional) {
-          return null;
-        }
-        assert.instanceOf(value, ObjectId);
-        return value;
-      },
+      toBinding: optional
+        ? (value) => {
+            if (value === null) {
+              return null;
+            }
+            assert.instanceOf(value, ObjectId);
+            return value;
+          }
+        : (value) => {
+            assert.instanceOf(value, ObjectId);
+            return value;
+          },
       fromBinding: defaultFromBinding,
     };
   },
   [binding.PropertyType.Decimal]({ optional }) {
     return {
-      toBinding(value) {
-        if (value === null && optional) {
-          return null;
-        }
-        assert.instanceOf(value, Decimal128);
-        return value;
-      },
+      toBinding: optional
+        ? (value) => {
+            if (value === null) {
+              return null;
+            }
+            assert.instanceOf(value, Decimal128);
+            return value;
+          }
+        : (value) => {
+            assert.instanceOf(value, Decimal128);
+            return value;
+          },
       fromBinding: defaultFromBinding,
     };
   },
   [binding.PropertyType.UUID]({ optional }) {
     return {
-      toBinding(value) {
-        if (value === null && optional) {
-          return null;
-        }
-        assert.instanceOf(value, UUID);
-        return value;
-      },
+      toBinding: optional
+        ? (value) => {
+            if (value === null) {
+              return null;
+            }
+            assert.instanceOf(value, UUID);
+            return value;
+          }
+        : (value) => {
+            assert.instanceOf(value, UUID);
+            return value;
+          },
       fromBinding: defaultFromBinding,
     };
   },

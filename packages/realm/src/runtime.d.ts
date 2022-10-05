@@ -23,8 +23,6 @@ declare function clearImmediate(timer: Timer): void;
 
 declare interface Console {
   log(...args: unknown[]): void;
-  assert(assertion: boolean, ...objs: unknown[]): asserts assertion;
-  assert(assertion: boolean, msg: string, ...substitutions: unknown[]): asserts assertion;
 }
 
 declare const console: Console;
