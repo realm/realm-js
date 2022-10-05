@@ -32,5 +32,5 @@ export const network: NetworkType = {
 };
 
 export function inject(injected: NetworkType) {
-  Object.assign(network, injected);
+  Object.freeze(Object.assign(network, injected));
 }
