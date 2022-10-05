@@ -16,24 +16,26 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { readdirSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+
 import { TemplateContext } from "./context";
 
-// TOOO: Load these dynamically
-
-import { generateTypeScript } from "./templates/typescript";
-import { generateNode } from "./templates/node";
-import { generateNodeWrapper } from "./templates/node-wrapper";
+const TEMPLATES_DIR = resolve(dirname(new URL(import.meta.url).pathname), "templates");
 
 export type Template = (context: TemplateContext) => void;
 
-export enum TemplateName {
-  typescript = "typescript",
-  node = "node",
-  node_wrapper = "node-wrapper",
-}
+export const TEMPLATES_NAMES = readdirSync(TEMPLATES_DIR).map((fileName) => fileName.replace(/\.ts$/, ""));
 
-export const TEMPLATES: Record<TemplateName, Template> = {
-  [TemplateName.typescript]: generateTypeScript,
-  [TemplateName.node]: generateNode,
-  [TemplateName.node_wrapper]: generateNodeWrapper,
-};
+export async function importTemplate(name: string): Promise<Template> {
+  if (TEMPLATES_NAMES.includes(name)) {
+    const templatePath = resolve(TEMPLATES_DIR, `${name}.ts`);
+    const template = (await import(templatePath)) as { generate: Template };
+    if (typeof template !== "object" || typeof template.generate !== "function") {
+      throw new Error("Expected template to export a 'generate' function");
+    }
+    return template.generate;
+  } else {
+    throw new Error(`Expected one of these template names: ${TEMPLATES_NAMES.join(", ")}`);
+  }
+}

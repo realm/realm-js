@@ -886,7 +886,7 @@ class NodeCppDecls extends CppDecls {
   }
 }
 
-export function generateNode({ spec, file: makeFile }: TemplateContext): void {
+export function generate({ spec, file: makeFile }: TemplateContext): void {
   const out = makeFile("node_init.cpp", "clang-format");
 
   // HEADER
