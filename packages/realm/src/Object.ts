@@ -232,10 +232,10 @@ class RealmObject<T = DefaultObject> {
     // @ts-expect-error Type of RealmObject does not matter for sake of caching
     cache.add(this, result);
     // Move all enumerable keys to result, triggering any specific toJSON implementation in the process.
-    Object.entries(this).forEach(([key, value]) => {
+    for (const key in this) {
+      const value = this[key];
       if (typeof value == "function") {
-        // continue
-        return;
+        continue;
       }
       if (value instanceof RealmObject || value instanceof OrderedCollection || value instanceof Dictionary) {
         // recursively trigger `toJSON` for Realm instances with the same cache.
@@ -244,9 +244,10 @@ class RealmObject<T = DefaultObject> {
         // Other cases, including null and undefined.
         result[key] = value;
       }
-    });
+    }
     return result;
   }
+
   isValid(): boolean {
     return this[INTERNAL] && this[INTERNAL].isValid;
   }

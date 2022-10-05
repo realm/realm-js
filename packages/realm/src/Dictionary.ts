@@ -124,6 +124,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
         value: internal,
       },
     });
+
     this[HELPERS] = helpers;
 
     return new Proxy(this, PROXY_HANDLER) as Dictionary<T>;
