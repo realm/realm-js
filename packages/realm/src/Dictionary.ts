@@ -99,13 +99,6 @@ const PROXY_HANDLER: ProxyHandler<Dictionary> = {
   },
 };
 
-function toJSON(this: Dictionary, _?: string, cache = new JSONCacheMap()): DefaultObject {
-  return Object.fromEntries(
-    Object.entries(this)
-      .filter(([k]) => k != "toJSON")
-      .map(([k, v]) => [k, v instanceof RealmObject ? v.toJSON(k, cache) : v]),
-  );
-}
 /**
  * TODO: Make this extends Collection<T> (once that doesn't have a nummeric index accessor)
  */
@@ -130,15 +123,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
         writable: false,
         value: internal,
       },
-      toJSON: {
-        enumerable: false,
-        configurable: false,
-        writable: true,
-        value: this.toJSON,
-      },
     });
-    //@ts-expect-error Yes
-    this.toJSON = toJSON;
     this[HELPERS] = helpers;
 
     return new Proxy(this, PROXY_HANDLER) as Dictionary<T>;
@@ -240,4 +225,12 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
   //  * from the dictionary for JSON serialization.
   //  * @returns A plain object
   //  */
+  // @ts-expect-error We're exposing methods in the users value namespace
+  toJSON(_?: string, cache = new JSONCacheMap()): DefaultObject {
+    return Object.fromEntries(
+      Object.entries(this)
+        .filter(([k]) => k != "toJSON")
+        .map(([k, v]) => [k, v instanceof RealmObject ? v.toJSON(k, cache) : v]),
+    );
+  }
 }
