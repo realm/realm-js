@@ -117,7 +117,7 @@ function generateMixedTypes(spec: BoundSpec) {
   `;
 }
 
-export function generateTypeScript({ spec: rawSpec, file }: TemplateContext): void {
+export function generate({ spec: rawSpec, file }: TemplateContext): void {
   // Check the support for primitives used
   for (const primitive of rawSpec.primitives) {
     if (primitive == "Mixed") continue;

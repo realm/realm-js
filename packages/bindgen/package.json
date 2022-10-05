@@ -16,7 +16,7 @@
     "compile:node": "cmake-js compile --debug"
   },
   "dependencies": {
-    "@types/node": "^12.20.55",
+    "@types/node": "^16.0.0",
     "ajv": "^8.11.0",
     "chalk": "^4.1.2",
     "change-case": "^4.1.2",
