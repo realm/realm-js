@@ -18,8 +18,10 @@
 
 import { unlinkSync, rmSync, readdirSync, existsSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
-import { fetch } from "undici";
+import http from "node:http";
 
+import { assert } from "../assert";
+import * as binding from "../binding";
 import * as fs from "../platform/file-system";
 import * as network from "../platform/network";
 
@@ -46,17 +48,61 @@ fs.inject({
   },
 });
 
+const HTTP_METHOD: Record<binding.HttpMethod, string> = {
+  [binding.HttpMethod.get]: "get",
+  [binding.HttpMethod.post]: "post",
+  [binding.HttpMethod.put]: "put",
+  [binding.HttpMethod.patch]: "patch",
+  [binding.HttpMethod.del]: "del",
+};
+
+function flattenHeaders(headers: http.IncomingHttpHeaders) {
+  const result: Record<string, string> = {};
+  for (const key in headers) {
+    const value = headers[key];
+    if (typeof value === "string") {
+      result[key] = value;
+    } else if (Array.isArray(value)) {
+      // Notice: If multiple headers of the same key is returned from the server, the last entry win
+      const item = value.shift();
+      if (typeof item === "string") {
+        result[key] = item;
+      }
+    }
+  }
+  return result;
+}
+
 network.inject({
   async fetch(request): Promise<network.Response> {
-    const response = await fetch(request.url, { body: request.body });
-    return {
-      body: await response.text(),
-      httpStatusCode: response.status,
-      // TODO: Consider updating the binding API
-      headers: Object.fromEntries(response.headers.entries()),
-      // TODO: Determine if we want to set this differently
-      customStatusCode: 0,
-    };
+    return new Promise((resolve) => {
+      const req = http.request(
+        request.url,
+        {
+          method: HTTP_METHOD[request.method],
+          timeout: Number(request.timeoutMs),
+          headers: request.headers,
+        },
+        (res) => {
+          res.setEncoding("utf8");
+          const body = res.read();
+          assert.string(body, "body");
+          const { headers, statusCode } = res;
+          assert.number(statusCode, "response status code");
+          assert.object(headers, "headers");
+          resolve({
+            body,
+            headers: flattenHeaders(headers),
+            httpStatusCode: statusCode,
+            // TODO: Determine if we want to set this differently
+            customStatusCode: 0,
+          });
+        },
+      );
+      // Write the request body
+      req.write(request.body, "utf8");
+      req.end();
+    });
   },
 });
 
