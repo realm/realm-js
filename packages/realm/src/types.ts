@@ -18,11 +18,11 @@
 
 import { Decimal128, ObjectId, UUID } from "bson";
 
-import { assert } from "./assert";
+import { assert, createTypeError } from "./assert";
 import * as binding from "./binding";
 import { ClassHelpers } from "./ClassHelpers";
 import { getInternal } from "./internal";
-import { Object as RealmObject } from "./Object";
+import { Object as RealmObject, UpdateMode } from "./Object";
 
 /** @internal */
 export type TypeHelpers = {
@@ -32,6 +32,7 @@ export type TypeHelpers = {
 
 export type TypeOptions = {
   realm: binding.Realm;
+  name: string;
   optional: boolean;
   objectType: string | undefined;
   getClassHelpers(nameOrTableKey: string | binding.TableKey): ClassHelpers;
@@ -45,6 +46,17 @@ function defaultFromBinding(value: unknown) {
   return value;
 }
 
+/**
+ * Adds a branch to a function, which checks for the argument to be null, in which case it returns early.
+ */
+function nullPassthrough<F extends (value: unknown) => unknown>(fn: F, enabled: boolean): F {
+  if (enabled) {
+    return ((value) => (value === null ? null : fn(value))) as F;
+  } else {
+    return fn;
+  }
+}
+
 const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => TypeHelpers> = {
   [binding.PropertyType.Int]({ optional }) {
     return {
@@ -56,138 +68,95 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
         } else if (typeof value === "bigint") {
           return value;
         } else {
-          throw new TypeError(`Expected a number or bigint, got ${typeof value}`);
+          throw createTypeError("a number or bigint", value);
         }
       },
-      fromBinding(value: unknown) {
-        // TODO: Support returning bigints to end-users
-        return Number(value);
-      },
+      // TODO: Support returning bigints to end-users
+      fromBinding: nullPassthrough((value) => Number(value), optional),
     };
   },
   [binding.PropertyType.Bool]({ optional }) {
     return {
-      toBinding: optional
-        ? (value: unknown) => {
-            if (value === null) {
-              return null;
-            }
-            assert.boolean(value);
-            return value;
-          }
-        : (value: unknown) => {
-            assert.boolean(value);
-            return value;
-          },
+      toBinding: nullPassthrough((value: unknown) => {
+        assert.boolean(value);
+        return value;
+      }, optional),
       fromBinding: defaultFromBinding,
     };
   },
   [binding.PropertyType.String]({ optional }) {
     return {
-      toBinding: optional
-        ? (value: unknown) => {
-            if (value === null) {
-              return null;
-            }
-            assert.string(value);
-            return value;
-          }
-        : (value: unknown) => {
-            assert.string(value);
-            return value;
-          },
+      toBinding: nullPassthrough((value: unknown) => {
+        assert.string(value);
+        return value;
+      }, optional),
       fromBinding: defaultFromBinding,
     };
   },
   [binding.PropertyType.Data]({ optional }) {
     return {
-      toBinding: optional
-        ? (value) => {
-            if (value === null) {
-              return null;
-            }
-            assert.instanceOf(value, ArrayBuffer);
-            return value;
-          }
-        : (value) => {
-            assert.instanceOf(value, ArrayBuffer);
-            return value;
-          },
+      toBinding: nullPassthrough((value: unknown) => {
+        if (value instanceof Uint8Array) {
+          return value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength);
+        } else {
+          assert.instanceOf(value, ArrayBuffer);
+          return value;
+        }
+      }, optional),
       fromBinding: defaultFromBinding,
     };
   },
   [binding.PropertyType.Date]({ optional }) {
     return {
-      toBinding: optional
-        ? (value) => {
-            if (value === null) {
-              return null;
-            }
-            assert.instanceOf(value, Date);
-            return binding.Timestamp.fromDate(value);
-          }
-        : (value) => {
-            assert.instanceOf(value, Date);
-            return binding.Timestamp.fromDate(value);
-          },
-      fromBinding(value) {
+      toBinding: nullPassthrough((value: unknown) => {
+        assert.instanceOf(value, Date);
+        return binding.Timestamp.fromDate(value);
+      }, optional),
+      fromBinding: nullPassthrough((value: unknown) => {
         assert.instanceOf(value, binding.Timestamp);
         return value.toDate();
-      },
+      }, optional),
     };
   },
   [binding.PropertyType.Float]({ optional }) {
     return {
-      toBinding: optional
-        ? (value) => {
-            if (value === null) {
-              return null;
-            }
-            assert.number(value);
-            return new binding.Float(value);
-          }
-        : (value) => {
-            assert.number(value);
-            return new binding.Float(value);
-          },
-      fromBinding(value) {
+      toBinding: nullPassthrough((value: unknown) => {
+        assert.number(value);
+        return new binding.Float(value);
+      }, optional),
+      fromBinding: nullPassthrough((value: unknown) => {
         assert.instanceOf(value, binding.Float);
         return value.value;
-      },
+      }, optional),
     };
   },
   [binding.PropertyType.Double]({ optional }) {
     return {
-      toBinding: optional
-        ? (value) => {
-            if (value === null) {
-              return null;
-            }
-            assert.number(value);
-            return value;
-          }
-        : (value) => {
-            assert.number(value);
-            return value;
-          },
+      toBinding: nullPassthrough((value: unknown) => {
+        assert.number(value);
+        return value;
+      }, optional),
       fromBinding: defaultFromBinding,
     };
   },
-  [binding.PropertyType.Object]({ realm, objectType, getClassHelpers }) {
+  [binding.PropertyType.Object]({ realm, name, objectType, optional, getClassHelpers }) {
     assert(objectType);
-    const { wrapObject } = getClassHelpers(objectType);
+    const helpers = getClassHelpers(objectType);
+    const { wrapObject } = helpers;
     return {
-      toBinding(value) {
-        if (value === null) {
-          return null;
+      toBinding: nullPassthrough((value: unknown) => {
+        if (value instanceof RealmObject) {
+          assert.instanceOf(value, helpers.constructor, "value");
+          return getInternal(value);
+        } else {
+          assert.object(value, name);
+          // Some other object is assumed to be an unmanged object, that the user wants to create
+          const createdObject = RealmObject.create(realm, helpers, value, UpdateMode.Never);
+          return getInternal(createdObject);
         }
-        assert.instanceOf(value, RealmObject);
-        return getInternal(value);
-      },
-      fromBinding(this: TypeHelpers, value: unknown) {
-        if (value === null) {
-          return null;
-        } else if (value instanceof binding.ObjLink) {
+      }, optional),
+      fromBinding: nullPassthrough(function (this: TypeHelpers, value: unknown) {
+        if (value instanceof binding.ObjLink) {
           const table = binding.Helpers.getTable(realm, value.tableKey);
           const linkedObj = table.getObject(value.objKey);
           return this.fromBinding(linkedObj);
@@ -195,7 +164,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
           assert.instanceOf(value, binding.Obj);
           return wrapObject(value);
         }
-      },
+      }, optional),
     };
   },
   [binding.PropertyType.LinkingObjects]({ objectType, getClassHelpers }) {
@@ -240,52 +209,28 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
   },
   [binding.PropertyType.ObjectId]({ optional }) {
     return {
-      toBinding: optional
-        ? (value) => {
-            if (value === null) {
-              return null;
-            }
-            assert.instanceOf(value, ObjectId);
-            return value;
-          }
-        : (value) => {
-            assert.instanceOf(value, ObjectId);
-            return value;
-          },
+      toBinding: nullPassthrough((value: unknown) => {
+        assert.instanceOf(value, ObjectId);
+        return value;
+      }, optional),
       fromBinding: defaultFromBinding,
     };
   },
   [binding.PropertyType.Decimal]({ optional }) {
     return {
-      toBinding: optional
-        ? (value) => {
-            if (value === null) {
-              return null;
-            }
-            assert.instanceOf(value, Decimal128);
-            return value;
-          }
-        : (value) => {
-            assert.instanceOf(value, Decimal128);
-            return value;
-          },
+      toBinding: nullPassthrough((value: unknown) => {
+        assert.instanceOf(value, Decimal128);
+        return value;
+      }, optional),
       fromBinding: defaultFromBinding,
     };
   },
   [binding.PropertyType.UUID]({ optional }) {
     return {
-      toBinding: optional
-        ? (value) => {
-            if (value === null) {
-              return null;
-            }
-            assert.instanceOf(value, UUID);
-            return value;
-          }
-        : (value) => {
-            assert.instanceOf(value, UUID);
-            return value;
-          },
+      toBinding: nullPassthrough((value: unknown) => {
+        assert.instanceOf(value, UUID);
+        return value;
+      }, optional),
       fromBinding: defaultFromBinding,
     };
   },
