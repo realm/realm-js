@@ -1420,7 +1420,7 @@ module.exports = {
 
       if (list.type === "date") {
         TestCase.assertThrowsContaining(() => list.sum(), "Cannot sum 'date' array: operation not supported");
-        TestCase.assertThrowsContaining(() => list.avg(), "Cannot average 'date' array: operation not supported");
+        TestCase.assertThrowsContaining(() => list.avg(), "Cannot avg 'date' array: operation not supported");
         continue;
       }
 
