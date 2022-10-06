@@ -26,7 +26,6 @@ type BindingObjectSchema = binding.Realm["schema"][0];
 
 export const INTERNAL_HELPERS = Symbol("Realm.Object#helpers");
 
-type ObjectCreator = (values: Record<string, unknown>) => binding.Obj;
 type ObjectWrapper = (obj: binding.Obj) => RealmObject & DefaultObject;
 
 /**
@@ -37,7 +36,6 @@ export type ClassHelpers = {
   // TODO: Use a different type, once exposed by the binding
   objectSchema: BindingObjectSchema;
   properties: PropertyMap;
-  createObject: ObjectCreator;
   wrapObject: ObjectWrapper;
 };
 
