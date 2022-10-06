@@ -133,9 +133,6 @@ export class ClassMap {
           constructor,
           objectSchema,
           properties,
-          createObject() {
-            throw new Error("Not yet implemented!");
-          },
           wrapObject(obj) {
             return RealmObject.createWrapper(realm, obj, constructor);
           },
