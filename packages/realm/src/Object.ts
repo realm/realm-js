@@ -26,6 +26,12 @@ import { ObjectChangeCallback, ObjectListeners } from "./ObjectListeners";
 import { INTERNAL_HELPERS, ClassHelpers } from "./ClassHelpers";
 import { RealmInsertionModel } from "./InsertionModel";
 
+export enum UpdateMode {
+  Never = "never",
+  Modified = "modified",
+  All = "all",
+}
+
 const INTERNAL_LISTENERS = Symbol("Realm.Object#listeners");
 const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true, writable: true };
 
@@ -49,6 +55,81 @@ class RealmObject<T = DefaultObject> {
    * This property is stored on the per class prototype when transforming the schema.
    */
   public static [INTERNAL_HELPERS]: ClassHelpers;
+
+  /**
+   * @internal
+   * Create an object in the database and set values on it
+   */
+  public static create(
+    realmInternal: binding.Realm,
+    helpers: ClassHelpers,
+    values: Record<string, unknown>,
+    mode: UpdateMode,
+  ): RealmObject {
+    // TODO: Consider wrapping any exception thrown instead of calling into c++
+    realmInternal.verifyInWrite();
+    // Create the underlying object
+    const [obj, created] = RealmObject.createObj(realmInternal, helpers, values, mode);
+    const result = helpers.wrapObject(obj);
+    // Persist any values provided
+    // TODO: Consider using the property helpers directly to improve performance
+    for (const property of helpers.objectSchema.persistedProperties) {
+      if (property.isPrimary) {
+        continue; // Skip setting this, as we already provided it on object creation
+      }
+      const propertyValue = values[property.name];
+      if (typeof propertyValue !== "undefined" && propertyValue !== null) {
+        result[property.name] = propertyValue;
+      } else if (property.type & binding.PropertyType.Nullable || property.type & binding.PropertyType.Collection) {
+        const defaultValue = helpers.properties.get(property.name).default;
+        if (typeof defaultValue !== "undefined") {
+          result[property.name] = defaultValue;
+        }
+      } else if (created) {
+        throw new Error(`Missing value for property '${property.name}'`);
+      }
+    }
+    return result as RealmObject;
+  }
+
+  /**
+   * @internal
+   * Create an object in the database and populate its primary key value, if required
+   */
+  public static createObj(
+    realmInternal: binding.Realm,
+    helpers: ClassHelpers,
+    values: DefaultObject,
+    mode: UpdateMode,
+  ): [binding.Obj, boolean] {
+    const {
+      objectSchema: { name, tableKey, primaryKey },
+      properties,
+    } = helpers;
+
+    // Create the underlying object
+    const table = binding.Helpers.getTable(realmInternal, tableKey);
+    if (primaryKey) {
+      const primaryKeyHelpers = properties.get(primaryKey);
+      const primaryKeyValue = values[primaryKey];
+      const pk = primaryKeyHelpers.toBinding(
+        // Fallback to default value if the provided value is undefined or null
+        typeof primaryKeyValue !== "undefined" && primaryKeyValue !== null
+          ? primaryKeyValue
+          : primaryKeyHelpers.default,
+      );
+      const result = binding.Helpers.getOrCreateObjectWithPrimaryKey(table, pk);
+      const [, created] = result;
+      if (mode === UpdateMode.Never && !created) {
+        throw new Error(
+          `Attempting to create an object of type '${name}' with an existing primary key value '${primaryKeyValue}'.`,
+        );
+      }
+      return result;
+    } else {
+      return [table.createObject(), true];
+    }
+  }
 
   /**
    * @internal

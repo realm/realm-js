@@ -16,21 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export type { Configuration } from "./Configuration";
-export { App } from "./App";
-export { Results } from "./Results";
-export { Object, UpdateMode } from "./Object";
-export { List } from "./List";
-export { Dictionary } from "./Dictionary";
-export { Set } from "./Set";
-export type { ObjectChangeSet, ObjectChangeCallback } from "./ObjectListeners";
-export type { OrderedCollection, CollectionChangeSet, CollectionChangeCallback } from "./OrderedCollection";
+export class AssertionError extends Error {
+  constructor(message = "Assertion failed!") {
+    super(message);
+  }
+}
 
-export * from "./schema/types";
-
-export { BSON } from "./bson";
-
-// Exporting default for backwards compatibility
-import { Realm } from "./Realm";
-export default Realm;
-export { Realm };
+export class IllegalConstructorError extends Error {
+  constructor(type: string) {
+    super(`Illegal constructor: ${type} objects are read from managed objects only.`);
+  }
+}

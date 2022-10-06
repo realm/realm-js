@@ -21,6 +21,8 @@ import { Results } from "./Results";
 import { Collection } from "./Collection";
 import { unwind } from "./ranges";
 import { TypeHelpers } from "./types";
+import { getBaseTypeName } from "./schema";
+import { IllegalConstructorError } from "./errors";
 
 type PropertyType = string;
 export type SortDescriptor = [string] | [string, boolean];
@@ -40,15 +42,31 @@ export type OrderedCollectionHelpers = TypeHelpers & {
 
 const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true, writable: true };
 const PROXY_HANDLER: ProxyHandler<OrderedCollection> = {
+  // TODO: Consider executing the `parseInt` first to optimize for index access over accessing a member on the list
   get(target, prop) {
     if (Reflect.has(target, prop)) {
       return Reflect.get(target, prop);
     } else if (typeof prop === "string") {
       const index = Number.parseInt(prop, 10);
-      if (!Number.isNaN(index)) {
+      // TODO: Consider catching an error from access out of bounds, instead of checking the length, to optimize for the hot path
+      if (!Number.isNaN(index) && index >= 0 && index < target.length) {
         return target.get(index);
       }
     }
+  },
+  set(target, prop, value, receiver) {
+    if (typeof prop === "string") {
+      const index = Number.parseInt(prop, 10);
+      // TODO: Consider catching an error from access out of bounds, instead of checking the length, to optimize for the hot path
+      // TODO: Do we expect an upper bound check on the index when setting?
+      if (!Number.isNaN(index) && index >= 0) {
+        target.set(index, value);
+        return true;
+      } else if (index < 0) {
+        throw new Error(`Index ${index} cannot be less than zero.`);
+      }
+    }
+    return Reflect.set(target, prop, value, receiver);
   },
   ownKeys(target) {
     return Reflect.ownKeys(target).concat([...target.keys()].map(String));
@@ -74,6 +92,9 @@ export abstract class OrderedCollection<T = unknown>
     /** @internal */ private results: binding.Results,
     /** @internal */ protected helpers: OrderedCollectionHelpers,
   ) {
+    if (arguments.length === 0) {
+      throw new IllegalConstructorError("OrderedCollection");
+    }
     super((callback) => {
       return this.results.addNotificationCallback((changes) => {
         try {
@@ -117,6 +138,16 @@ export abstract class OrderedCollection<T = unknown>
    */
   public get(index: number): T {
     return this.helpers.fromBinding(this.helpers.get(this.results, index)) as T;
+  }
+
+  /**
+   * Set an element of the ordered collection by index
+   * @param index The index
+   * @param value The value
+   * @internal
+   */
+  public set(index: number, value: unknown) {
+    throw new Error(`Assigning into a ${this.constructor.name} is not support`);
   }
 
   keys(): IterableIterator<number> {
@@ -166,17 +197,17 @@ export abstract class OrderedCollection<T = unknown>
   }
 
   get type(): PropertyType {
-    throw new Error("Method not implemented.");
+    return getBaseTypeName(this.results.type);
   }
   get optional(): boolean {
-    throw new Error("Method not implemented.");
+    return !!(this.results.type & binding.PropertyType.Nullable);
   }
 
   toString(): string {
-    throw new Error("Method not implemented.");
+    return [...this].toString();
   }
   toLocaleString(): string {
-    throw new Error("Method not implemented.");
+    return [...this].toLocaleString();
   }
   concat(...items: ConcatArray<T>[]): T[];
   concat(...items: (T | ConcatArray<T>)[]): T[];
@@ -256,6 +287,7 @@ export abstract class OrderedCollection<T = unknown>
   entries(): IterableIterator<[number, T]> {
     return [...this].entries();
   }
+  // TODO: Implement support for RealmObjects, by comparing their #objectKey values
   includes(searchElement: T, fromIndex?: number): boolean {
     return [...this].includes(searchElement, fromIndex);
   }

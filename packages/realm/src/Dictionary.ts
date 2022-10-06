@@ -18,6 +18,7 @@
 import { assert } from "./assert";
 import * as binding from "./binding";
 import { Collection } from "./Collection";
+import { IllegalConstructorError } from "./errors";
 import { INTERNAL } from "./internal";
 import { TypeHelpers } from "./types";
 
@@ -49,14 +50,15 @@ const PROXY_HANDLER: ProxyHandler<Dictionary> = {
     if (typeof prop === "string") {
       const toBinding = target[HELPERS].toBinding;
       internal.insertAny(prop, toBinding(value));
-      /*
-      if (value instanceof RealmObject) {
-        internal.insertAny(prop, value[INTERNAL]);
-      } else {
-        internal.insertAny(prop, value);
-      }
-      */
       return true;
+    } else {
+      return false;
+    }
+  },
+  deleteProperty(target, prop) {
+    const internal = target[INTERNAL];
+    if (typeof prop === "string") {
+      return internal.tryErase(prop);
     } else {
       return false;
     }
@@ -97,6 +99,9 @@ export class Dictionary<T = unknown> extends Collection<T, DictionaryChangeCallb
    * @param internal The internal representation of the dictionary.
    */
   constructor(internal: binding.Dictionary, helpers: TypeHelpers) {
+    if (arguments.length === 0 || !(internal instanceof binding.Dictionary)) {
+      throw new IllegalConstructorError("Dictionary");
+    }
     super(() => {
       throw new Error("Not yet implemented!");
     });

@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { assert } from "../assert";
 import { Realm, PropertyType } from "../binding";
 
 // TODO: Update these once the binding expose proper types
@@ -40,13 +41,26 @@ const TYPE_MAPPINGS: Record<PropertyType, PropertyTypeName | null> = {
   [PropertyType.Set]: "set",
   [PropertyType.Dictionary]: "dictionary",
   [PropertyType.LinkingObjects]: "linkingObjects",
+  [PropertyType.Object]: "object",
   // These have no direct
-  [PropertyType.Object]: null,
   [PropertyType.Nullable]: null,
   //
   [PropertyType.Collection]: null,
   [PropertyType.Flags]: null,
 };
+
+/**
+ * Get the string representation of a property type's base type (not including flags)
+ * @internal
+ */
+export function getBaseTypeName(type: PropertyType): PropertyTypeName {
+  const baseType = type & ~PropertyType.Flags;
+  const result = TYPE_MAPPINGS[baseType as PropertyType];
+  if (!result) {
+    throw new Error(`Unexpected type ${type}`);
+  }
+  return result;
+}
 
 const COLLECTION_TYPES = [PropertyType.Array, PropertyType.Set, PropertyType.Dictionary];
 
@@ -99,17 +113,29 @@ export function transformPropertySchema(propertySchema: BindingProperty): Canoni
  */
 function transformPropertyTypeName(
   propertySchema: BindingProperty,
-): Pick<CanonicalObjectSchemaProperty, "type" | "optional" | "objectType"> {
-  const { type, objectType } = propertySchema;
+): Pick<CanonicalObjectSchemaProperty, "type" | "optional" | "objectType" | "property"> {
+  const { type, objectType, linkOriginPropertyName } = propertySchema;
+  const itemType = type & ~PropertyType.Collection;
 
   if (type & PropertyType.Nullable) {
-    const item = transformPropertyTypeName({ ...propertySchema, type: type ^ PropertyType.Nullable });
+    const item = transformPropertyTypeName({ ...propertySchema, type: type & ~PropertyType.Nullable });
     return { ...item, optional: true };
+  }
+
+  if (itemType === PropertyType.LinkingObjects) {
+    assert(type & PropertyType.Array);
+    assert.string(linkOriginPropertyName, "linkOriginPropertyName");
+    return {
+      type: "linkingObjects",
+      optional: false,
+      objectType,
+      property: linkOriginPropertyName,
+    };
   }
 
   for (const collectionType of COLLECTION_TYPES) {
     if (type & collectionType) {
-      const item = transformPropertyTypeName({ ...propertySchema, type: type ^ collectionType });
+      const item = transformPropertyTypeName({ ...propertySchema, type: itemType });
       return {
         type: TYPE_MAPPINGS[collectionType] as PropertyTypeName,
         objectType: item.type === "object" ? item.objectType : item.type,
