@@ -108,13 +108,16 @@ describe("toJSON functionality", () => {
       // Create expected serialized p1 and p2 objects.
       const p1Serialized = {
         title: "Playlist 1",
-        songs: [],
+        songs: [
+          { title: "Song", artist: "First" },
+          { title: "Another", artist: "Second" },
+        ],
         related: [],
       };
 
       const p2Serialized = {
         title: "Playlist 2",
-        songs: [],
+        songs: [{ title: "Title", artist: "Third" }],
         related: [],
       };
       // Playlists
@@ -197,7 +200,7 @@ describe("toJSON functionality", () => {
     }
   });
 
-  describe("with edge cases", function () {
+  describe("edge cases", function () {
     it("handles null values", function (this: RealmContext) {
       const object = this.realm.write(() => {
         return this.realm.create<EdgeCaseSchema>(EdgeCaseSchema.name, {
