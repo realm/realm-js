@@ -148,7 +148,8 @@ describe("Dictionary", () => {
       });
     });
 
-    it("can store dictionary values using string keys", function (this: RealmContext) {
+    // This is currently not supported
+    it.skip("can store dictionary values using string keys", function (this: RealmContext) {
       const item = this.realm.write(() => {
         const item = this.realm.create<Item>("Item", {});
         const item2 = this.realm.create<Item>("Item", {});
@@ -166,7 +167,12 @@ describe("Dictionary", () => {
         item.dict.key1 = item;
         return item;
       });
-      expect(item.dict.key1).equals(item);
+      const value = item.dict.key1;
+      if (value instanceof Realm.Object) {
+        expect(value._objectKey()).equals(item._objectKey());
+      } else {
+        throw new Error("Expected a Realm.Object");
+      }
     });
 
     it("is spreadable", function (this: RealmContext) {
