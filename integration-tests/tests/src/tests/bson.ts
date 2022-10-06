@@ -23,7 +23,6 @@ describe("BSON", () => {
     expect(typeof Realm.BSON).equals("object");
     expect(typeof Realm.BSON.ObjectId).equals("function");
     expect(typeof Realm.BSON.Decimal128).equals("function");
-    expect(typeof Realm.BSON.Binary).equals("function");
-    expect(typeof Realm.BSON.EJSON).equals("object");
+    expect(typeof Realm.BSON.UUID).equals("function");
   });
 });
