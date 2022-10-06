@@ -21,6 +21,7 @@ import { Helpers } from "./binding";
 
 import { OrderedCollection, SortDescriptor, OrderedCollectionHelpers } from "./OrderedCollection";
 import { INTERNAL } from "./internal";
+import { IllegalConstructorError } from "./errors";
 
 const INTERNAL_REALM = Symbol("Realm.Results#realm");
 const INTERNAL_TABLE = Symbol("Realm.Results#table");
@@ -34,6 +35,9 @@ export class Results<T = unknown> extends OrderedCollection<T> {
    * @param internalTable The internal representation of the table.
    */
   constructor(internal: binding.Results, internalRealm: binding.Realm, helpers: OrderedCollectionHelpers) {
+    if (arguments.length === 0 || !(internal instanceof binding.Results)) {
+      throw new IllegalConstructorError("Results");
+    }
     super(internal, helpers);
     Object.defineProperties(this, {
       [INTERNAL]: {

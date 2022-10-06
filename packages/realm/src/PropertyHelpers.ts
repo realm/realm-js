@@ -73,7 +73,7 @@ const defaultGet = ({ typeHelpers: { fromBinding }, columnKey, optional }: Prope
 const defaultSet =
   ({ typeHelpers: { toBinding }, columnKey }: PropertyOptions) =>
   (obj: binding.Obj, value: unknown) => {
-    obj.setAny(columnKey, value === null ? null : toBinding(value));
+    obj.setAny(columnKey, toBinding(value));
   };
 
 type AccessorFactory = (options: PropertyOptions) => PropertyAccessors;
@@ -116,6 +116,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
   [binding.PropertyType.Array]({
     realm,
     type,
+    name,
     columnKey,
     objectType,
     linkOriginPropertyName,
@@ -128,6 +129,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
 
     const itemHelpers = getTypeHelpers(itemType, {
       realm,
+      name: `element of ${name}`,
       optional,
       getClassHelpers,
       objectType,
@@ -188,10 +190,11 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       };
     }
   },
-  [binding.PropertyType.Dictionary]({ columnKey, realm, type, optional, objectType, getClassHelpers }) {
+  [binding.PropertyType.Dictionary]({ columnKey, realm, name, type, optional, objectType, getClassHelpers }) {
     const itemType = type & ~binding.PropertyType.Flags;
     const itemHelpers = getTypeHelpers(itemType, {
       realm,
+      name: `value in ${name}`,
       getClassHelpers,
       objectType,
       optional,
@@ -212,10 +215,11 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       },
     };
   },
-  [binding.PropertyType.Set]({ columnKey, realm, type, optional, objectType, getClassHelpers }) {
+  [binding.PropertyType.Set]({ columnKey, realm, name, type, optional, objectType, getClassHelpers }) {
     const itemType = type & ~binding.PropertyType.Flags;
     const itemHelpers = getTypeHelpers(itemType, {
       realm,
+      name: `value in ${name}`,
       getClassHelpers,
       objectType,
       optional,
@@ -257,6 +261,7 @@ export function createHelpers(property: PropertyContext, options: HelperOptions)
   const collectionType = property.type & binding.PropertyType.Collection;
   const typeOptions: TypeOptions = {
     realm: options.realm,
+    name: property.name,
     getClassHelpers: options.getClassHelpers,
     objectType: property.objectType,
     optional: !!(property.type & binding.PropertyType.Nullable),

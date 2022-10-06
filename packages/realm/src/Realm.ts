@@ -31,7 +31,7 @@ import {
 } from "./schema";
 import { fs } from "./platform";
 
-import { Object as RealmObject } from "./Object";
+import { Object as RealmObject, UpdateMode } from "./Object";
 import { Results } from "./Results";
 import { RealmInsertionModel } from "./InsertionModel";
 import { Configuration } from "./Configuration";
@@ -40,15 +40,8 @@ import { List } from "./List";
 import { App } from "./App";
 import { validateConfiguration } from "./validation/configuration";
 import { Collection } from "./Collection";
-import { ClassHelpers } from "./ClassHelpers";
 import { Dictionary } from "./Dictionary";
 import { Set as RealmSet } from "./Set";
-
-export enum UpdateMode {
-  Never = "never",
-  Modified = "modified",
-  All = "all",
-}
 
 // Using a set of weak refs to avoid prevention of garbage collection
 const RETURNED_REALMS = new Set<WeakRef<binding.Realm>>();
@@ -249,64 +242,10 @@ export class Realm {
     if (values instanceof RealmObject && !getInternal(values)) {
       throw new Error("Cannot create an object from a detached Realm.Object instance");
     }
-    this[INTERNAL].verifyOpen();
+    const { [INTERNAL]: internal } = this;
+    internal.verifyOpen();
     const helpers = this.classes.getHelpers(type);
-
-    // Create the underlying object
-    const obj = this.createObj(helpers, values, mode);
-    const result = helpers.wrapObject(obj) as unknown as DefaultObject;
-
-    // Persist any values provided
-    // TODO: Consider using the `converters` directly to improve performance
-    for (const property of helpers.objectSchema.persistedProperties) {
-      if (property.isPrimary) {
-        continue; // Skip setting this, as we already provided it on object creation
-      }
-      const propertyValue = values[property.name];
-      if (typeof propertyValue !== "undefined" && propertyValue !== null) {
-        result[property.name] = propertyValue;
-      } else {
-        const defaultValue = helpers.properties.get(property.name).default;
-        if (typeof defaultValue !== "undefined") {
-          result[property.name] = defaultValue;
-        }
-      }
-    }
-
-    return result;
-  }
-
-  private createObj<T extends RealmObject>(
-    helpers: ClassHelpers<T>,
-    values: DefaultObject,
-    mode: UpdateMode,
-  ): binding.Obj {
-    const {
-      objectSchema: { name, tableKey, primaryKey },
-      properties,
-    } = helpers;
-
-    // Create the underlying object
-    const table = binding.Helpers.getTable(this[INTERNAL], tableKey);
-    if (primaryKey) {
-      const primaryKeyHelpers = properties.get(primaryKey);
-      const primaryKeyValue = values[primaryKey];
-      const pk = primaryKeyHelpers.toBinding(
-        // Fallback to default value if the provided value is undefined or null
-        typeof primaryKeyValue !== "undefined" && primaryKeyValue !== null
-          ? primaryKeyValue
-          : primaryKeyHelpers.default,
-      );
-      const [obj, created] = binding.Helpers.getOrCreateObjectWithPrimaryKey(table, pk);
-      if (mode === UpdateMode.Never && !created) {
-        throw new Error(
-          `Attempting to create an object of type '${name}' with an existing primary key value '${primaryKeyValue}'.`,
-        );
-      }
-      return obj;
-    } else {
-      return table.createObject();
-    }
+    return RealmObject.create(internal, helpers, values, mode);
   }
 
   delete(subject: RealmObject | RealmObject[] | List | Results): void {
@@ -340,7 +279,7 @@ export class Realm {
     const value = properties.get(objectSchema.primaryKey).toBinding(primaryKey);
     try {
       const obj = table.getObjectWithPrimaryKey(value);
-      return wrapObject(obj);
+      return wrapObject(obj) as T;
     } catch (err) {
       // TODO: Match on something else than the error message, when exposed by the binding
       if (err instanceof Error && err.message.startsWith("No object with key")) {

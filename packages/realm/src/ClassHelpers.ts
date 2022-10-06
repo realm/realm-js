@@ -20,22 +20,25 @@ import * as binding from "./binding";
 
 import type { PropertyMap } from "./PropertyMap";
 import type { Object as RealmObject } from "./Object";
-import { RealmObjectConstructor } from ".";
+import { DefaultObject, RealmObjectConstructor } from ".";
 
 type BindingObjectSchema = binding.Realm["schema"][0];
 
 export const INTERNAL_HELPERS = Symbol("Realm.Object#helpers");
 
-type ObjectWrapper<T extends RealmObject = RealmObject> = (obj: binding.Obj) => T;
+type ObjectCreator = (values: Record<string, unknown>) => binding.Obj;
+type ObjectWrapper = (obj: binding.Obj) => RealmObject & DefaultObject;
 
 /**
  * @internal
  */
-export type ClassHelpers<T extends RealmObject = RealmObject> = {
+export type ClassHelpers = {
+  constructor: RealmObjectConstructor;
   // TODO: Use a different type, once exposed by the binding
   objectSchema: BindingObjectSchema;
   properties: PropertyMap;
-  wrapObject: ObjectWrapper<T>;
+  createObject: ObjectCreator;
+  wrapObject: ObjectWrapper;
 };
 
 export function setHelpers(constructor: RealmObjectConstructor, value: ClassHelpers): void {
@@ -54,10 +57,10 @@ export function setHelpers(constructor: RealmObjectConstructor, value: ClassHelp
  * @param arg The object or constructor to get a helpers for.
  * @returns Helpers injected onto the class by the `ClassMap`.
  */
-export function getHelpers<T extends RealmObject = RealmObject>(arg: typeof RealmObject): ClassHelpers<T> {
+export function getHelpers(arg: typeof RealmObject): ClassHelpers {
   const helpers = arg[INTERNAL_HELPERS];
   if (helpers) {
-    return helpers as ClassHelpers<T>;
+    return helpers as ClassHelpers;
   } else {
     throw new Error(`Expected INTERNAL_HELPERS to be set on the '${arg.name}' class`);
   }

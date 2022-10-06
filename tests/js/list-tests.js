@@ -142,7 +142,8 @@ module.exports = {
       obj.arrayCol = [{ doubleCol: 1 }, { doubleCol: 2 }];
       TestCase.assertEqual(array.length, 2);
 
-      TestCase.assertThrowsContaining(() => (array.length = 0), "Cannot assign to read only property 'length'");
+      // Commented out, since it's testing undocumented and arbitrary behaviour
+      // TestCase.assertThrowsContaining(() => (array.length = 0), "Cannot assign to read only property 'length'");
     });
 
     TestCase.assertEqual(array.length, 2);
@@ -266,17 +267,14 @@ module.exports = {
       TestCase.assertEqual(array[0].doubleCol, 1);
       TestCase.assertEqual(array[1].doubleCol, 2);
 
-      TestCase.assertThrowsContaining(() => (array[0] = null), "JS value must be of type 'object', got (null)");
-      TestCase.assertThrowsContaining(() => (array[0] = {}), "Missing value for property 'TestObject.doubleCol'");
-      TestCase.assertThrowsContaining(
-        () => (array[0] = { foo: "bar" }),
-        "Missing value for property 'TestObject.doubleCol'",
-      );
+      TestCase.assertThrowsContaining(() => (array[0] = null), "null");
+      TestCase.assertThrowsContaining(() => (array[0] = {}), "Missing value for property 'doubleCol'");
+      TestCase.assertThrowsContaining(() => (array[0] = { foo: "bar" }), "Missing value for property 'doubleCol'");
       TestCase.assertThrowsContaining(
         () => (array[0] = prim),
-        "Object of type (PrimitiveArrays) does not match List type (TestObject)",
+        "Expected 'value' to be an instance of TestObject, got an instance of PrimitiveArrays",
       );
-      TestCase.assertThrowsContaining(() => (array[0] = array), "Missing value for property 'TestObject.doubleCol'");
+      TestCase.assertThrowsContaining(() => (array[0] = array), "Missing value for property 'doubleCol'");
       TestCase.assertThrowsContaining(() => (array[2] = { doubleCol: 1 }), "Requested index 2 greater than max 1");
       TestCase.assertThrowsContaining(() => (array[-1] = { doubleCol: 1 }), "Index -1 cannot be less than zero.");
 
@@ -301,19 +299,19 @@ module.exports = {
       function testAssignNull(name, expected) {
         TestCase.assertThrowsContaining(
           () => (prim[name][0] = null),
-          `Property must be of type '${expected}', got (null)`,
+          `Expected value to be ${expected}, got null`,
           undefined,
           1,
         );
       }
 
-      testAssignNull("bool", "bool");
-      testAssignNull("int", "int");
-      testAssignNull("float", "float");
-      testAssignNull("double", "double");
-      testAssignNull("string", "string");
-      testAssignNull("data", "data");
-      testAssignNull("date", "date");
+      testAssignNull("bool", "a boolean");
+      testAssignNull("int", "a number or bigint");
+      testAssignNull("float", "a number");
+      testAssignNull("double", "a number");
+      testAssignNull("string", "a string");
+      testAssignNull("data", "an instance of ArrayBuffer");
+      testAssignNull("date", "an instance of Date");
 
       testAssign("optBool", true, null);
       testAssign("optInt", 1, null);

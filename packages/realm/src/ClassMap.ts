@@ -21,9 +21,9 @@ import * as binding from "./binding";
 import { PropertyMap } from "./PropertyMap";
 import type { Realm } from "./Realm";
 import { Object as RealmObject } from "./Object";
-import { Constructor, DefaultObject, RealmObjectConstructor } from "./schema";
+import { Constructor, RealmObjectConstructor } from "./schema";
 import { getInternal, INTERNAL } from "./internal";
-import { ClassHelpers, getHelpers, setHelpers } from "./ClassHelpers";
+import { getHelpers, setHelpers } from "./ClassHelpers";
 import { assert } from "./assert";
 import { TableKey } from "./binding";
 
@@ -130,8 +130,12 @@ export class ClassMap {
         const properties = new PropertyMap();
         // Setting the helpers on the class
         setHelpers(constructor, {
+          constructor,
           objectSchema,
           properties,
+          createObject() {
+            throw new Error("Not yet implemented!");
+          },
           wrapObject(obj) {
             return RealmObject.createWrapper(realm, obj, constructor);
           },
@@ -181,6 +185,6 @@ export class ClassMap {
 
   public getHelpers<T extends Realm.Object>(arg: string | RealmObject | Constructor<T>) {
     const constructor = this.get(arg);
-    return getHelpers<T>(constructor as unknown as typeof RealmObject);
+    return getHelpers(constructor as unknown as typeof RealmObject);
   }
 }

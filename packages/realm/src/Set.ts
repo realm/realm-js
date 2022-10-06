@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import * as binding from "./binding";
+import { IllegalConstructorError } from "./errors";
 
 import { Object as RealmObject } from "./Object";
 import { OrderedCollection, OrderedCollectionHelpers } from "./OrderedCollection";
@@ -24,6 +25,9 @@ import { OrderedCollection, OrderedCollectionHelpers } from "./OrderedCollection
 export class Set<T = unknown> extends OrderedCollection<T> {
   /** @internal */
   constructor(private internal: binding.Set, helpers: OrderedCollectionHelpers) {
+    if (arguments.length === 0 || !(internal instanceof binding.Set)) {
+      throw new IllegalConstructorError("Set");
+    }
     super(internal.asResults(), helpers);
   }
 
