@@ -260,10 +260,77 @@ declare namespace Realm {
 
   type AppChangeCallback = () => void;
 
+  type BaseAppTypes = {
+    /**
+     * Holds the remove atlas function shape
+     * Example:
+     * type MyAppTypes = AppTypes<{
+     *   Functions: {
+     *     echo: () => promise<void>
+     *   },
+     * }>;
+     * Usage:
+     *  app.currentUser.functions.echo();
+     */
+    Functions: unknown;
+    /**
+     * Structure of custom user data, defined in Atlas
+     * Example:
+     * type MyAppTypes = AppTypes<{
+     *   CustomUserData: {
+     *   mothersMaidenName: string;
+     *  }>;
+     * Usage:
+     *  app.currentUser.customData.mothersMaidenName
+     */
+    CustomUserDataType: unknown;
+    /**
+     * Structure of the meta data being returned from an auth provider
+     * Example:
+     * type MyAppTypes = AppTypes<{
+     *   ProfileDataType: {
+     *   firstName: string;
+     *  }>;
+     * Usage:
+     *  app.currentUser.profile.firstName
+     */
+    ProfileDataType: unknown;
+  };
+
+  type DefaultAppTypes = {
+    /**
+     *
+     */
+    Functions: DefaultFunctionsFactory;
+    /**
+     *
+     */
+    CustomUserDataType: Record<string, unknown>;
+    /**
+     *
+     */
+    ProfileDataType: DefaultUserProfileData;
+  };
+
+  /**
+   * // The user can declare their own app's types, wrapping them in AppTypes, to allow defaults to be applied for (sub)types that are not declared.
+   *  type MyAppTypes = AppTypes<{
+   *      Functions: {
+   *          echo: () => Promise<void>
+   *      },
+   *  }>;
+   *  // Using the types
+   *  const app = new App<MyAppTypes>();
+   *  if (app.currentUser) {
+   *      app.currentUser.functions.echo();
+   *  }
+   */
+  type AppTypes<T extends Partial<BaseAppTypes>> = T & BaseAppTypes;
+
   /**
    * An Atlas App Services App.
    */
-  class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType = SimpleObject> {
+  class App<T = DefaultAppTypes> {
     /**
      * Construct an Atlas App Services Application.
      *
@@ -289,12 +356,12 @@ declare namespace Realm {
     /**
      * The last user to log in or being switched to.
      */
-    readonly currentUser: User<FunctionsFactoryType, CustomDataType> | null;
+    readonly currentUser: User<T> | null;
 
     /**
      * All authenticated users.
      */
-    readonly allUsers: Readonly<Record<string, User<FunctionsFactoryType, CustomDataType>>>;
+    readonly allUsers: Readonly<Record<string, User<T>>>;
 
     /**
      * Get or create a singleton Realm App from an id.
@@ -310,19 +377,19 @@ declare namespace Realm {
      *
      * @param credentials the credentials to use when logging in
      */
-    logIn(credentials: Credentials): Promise<User<FunctionsFactoryType, CustomDataType>>;
+    logIn(credentials: Credentials): Promise<User<T>>;
 
     /**
      * Switch current user, from an instance of `User` or the string id of the user.
      */
-    switchUser(user: User<FunctionsFactoryType, CustomDataType>): void;
+    switchUser(user: User<T>): void;
 
     /**
      * Logs out and removes a user from the client.
      *
      * @returns A promise that resolves once the user has been logged out and removed from the app.
      */
-    removeUser(user: User<FunctionsFactoryType, CustomDataType>): Promise<void>;
+    removeUser(user: User<T>): Promise<void>;
 
     /**
      * Delete the user.
@@ -330,7 +397,7 @@ declare namespace Realm {
      *
      * @returns A promise that resolves once the user has been deleted.
      */
-    deleteUser(user: User<FunctionsFactoryType, CustomDataType>): Promise<void>;
+    deleteUser(user: User<T>): Promise<void>;
 
     /**
      * Adds a listener that will be fired on various user events.
@@ -391,11 +458,7 @@ declare namespace Realm {
   /**
    * Representation of an authenticated user of an app.
    */
-  class User<
-    FunctionsFactoryType = DefaultFunctionsFactory,
-    CustomDataType = SimpleObject,
-    UserProfileDataType = DefaultUserProfileData
-  > {
+  class User<T extends Partial<BaseAppTypes>> {
     /**
      * The automatically-generated internal ID of the user.
      */
@@ -443,17 +506,17 @@ declare namespace Realm {
      *
      * If this value has not been configured, it will be empty.
      */
-    readonly customData: CustomDataType;
+    readonly customData: T["CustomUserDataType"];
 
     /**
      * A profile containing additional information about the user.
      */
-    readonly profile: UserProfileDataType;
+    readonly profile: T["ProfileDataType"];
 
     /**
      * Use this to call functions defined by the Atlas App Services application, as this user.
      */
-    readonly functions: FunctionsFactoryType & BaseFunctionsFactory;
+    readonly functions: T["Functions"] & BaseFunctionsFactory;
 
     /**
      * Perform operations related to the API-key auth provider.
