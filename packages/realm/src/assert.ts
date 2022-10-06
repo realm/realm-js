@@ -16,13 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { AssertionError } from "./errors";
 import { DefaultObject } from "./schema";
-
-export class AssertionError extends Error {
-  constructor(message = "Assertion failed!") {
-    super(message);
-  }
-}
 
 export function assert(value: unknown, err?: string | Error): asserts value {
   if (!value) {
@@ -57,7 +52,7 @@ function deriveActualType(value: unknown) {
   }
 }
 
-function createTypeError(expected: string, value: unknown, name: string | undefined) {
+export function createTypeError(expected: string, value: unknown, name?: string) {
   const actual = deriveActualType(value);
   return new TypeError(`Expected ${name ? "'" + name + "'" : "value"} to be ${expected}, got ${actual}`);
 }
@@ -114,7 +109,7 @@ assert.object = <K extends string | number | symbol = string, V = unknown>(
   value: unknown,
   name?: string,
 ): asserts value is Record<K, V> => {
-  if (typeof value !== "object") {
+  if (typeof value !== "object" || value === null) {
     throw createTypeError("an object", value, name);
   }
 };
@@ -125,7 +120,7 @@ assert.undefined = (value: unknown, name?: string): asserts value is undefined =
   }
 };
 
-assert.null = (value: unknown, name?: string): asserts value is bigint => {
+assert.null = (value: unknown, name?: string): asserts value is null => {
   if (value !== null) {
     throw createTypeError("null", value, name);
   }

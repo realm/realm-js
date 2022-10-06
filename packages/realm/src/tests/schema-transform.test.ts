@@ -33,6 +33,7 @@ const TEST_CASES: (string | ObjectSchemaProperty)[] = [
   "string<>",
   "Person",
   "Person[]",
+  { type: "linkingObjects", property: "friend", objectType: "Person" },
 ];
 
 describe("schema transform", () => {
