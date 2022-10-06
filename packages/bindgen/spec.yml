@@ -831,6 +831,7 @@ classes:
       insert_any: '(key: StringData, value: Mixed) -> std::pair<count_t, bool>'
       try_get_any: '(key: StringData) const -> util::Optional<Mixed>'
       remove_all: '()'
+      try_erase: '(key: StringData) -> bool'
 
 
   BsonDocument: # TODO this should probably be a primitive

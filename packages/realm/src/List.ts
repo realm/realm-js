@@ -19,12 +19,16 @@
 import * as binding from "./binding";
 import { OrderedCollection, OrderedCollectionHelpers } from "./OrderedCollection";
 import { INTERNAL } from "./internal";
+import { IllegalConstructorError } from "./errors";
 
 type PartiallyWriteableArray<T> = Pick<Array<T>, "pop" | "push" | "shift" | "unshift" | "splice">;
 
 export class List<T = unknown> extends OrderedCollection<T> implements PartiallyWriteableArray<T> {
   /** @internal */
   constructor(internal: binding.List, helpers: OrderedCollectionHelpers) {
+    if (arguments.length === 0 || !(internal instanceof binding.List)) {
+      throw new IllegalConstructorError("List");
+    }
     super(internal.asResults(), helpers);
     // TODO: Consider if this could be a simple assignment
     Object.defineProperties(this, {
@@ -42,6 +46,16 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
    * @internal
    */
   public [INTERNAL]!: binding.List;
+
+  /**
+   * Set an element of the ordered collection by index
+   * @param index The index
+   * @param value The value
+   * @internal
+   */
+  public set(index: number, value: unknown) {
+    this[INTERNAL].setAny(index, this.helpers.toBinding(value));
+  }
 
   get length(): number {
     return this[INTERNAL].size;
