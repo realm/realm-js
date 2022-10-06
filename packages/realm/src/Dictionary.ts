@@ -36,9 +36,9 @@ type DictionaryChangeCallback = (dictionary: Dictionary, changes: DictionaryChan
 const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true };
 const PROXY_HANDLER: ProxyHandler<Dictionary> = {
   get(target, prop, receiver) {
-    const internal = target[INTERNAL];
     const value = Reflect.get(target, prop, receiver);
     if (typeof value === "undefined" && typeof prop === "string") {
+      const internal = target[INTERNAL];
       const fromBinding = target[HELPERS].fromBinding;
       return fromBinding(internal.tryGetAny(prop));
     } else {
@@ -46,18 +46,25 @@ const PROXY_HANDLER: ProxyHandler<Dictionary> = {
     }
   },
   set(target, prop, value) {
-    const internal = target[INTERNAL];
     if (typeof prop === "string") {
+      const internal = target[INTERNAL];
       const toBinding = target[HELPERS].toBinding;
       internal.insertAny(prop, toBinding(value));
+      /*
+      if (value instanceof RealmObject) {
+        internal.insertAny(prop, value[INTERNAL]);
+      } else {
+        internal.insertAny(prop, value);
+      }
+      */
       return true;
     } else {
       return false;
     }
   },
   deleteProperty(target, prop) {
-    const internal = target[INTERNAL];
     if (typeof prop === "string") {
+      const internal = target[INTERNAL];
       return internal.tryErase(prop);
     } else {
       return false;
@@ -140,7 +147,11 @@ export class Dictionary<T = unknown> extends Collection<T, DictionaryChangeCallb
    */
   // @ts-expect-error We're exposing methods in the users value namespace
   set(element: { [key: string]: T }): this {
-    throw new Error("Not yet implemented");
+    const internal = this[INTERNAL];
+    const toBinding = this[HELPERS].toBinding;
+    for (const [key, value] of Object.entries(element)) {
+      internal.insertAny(key, toBinding(value));
+    }
   }
 
   /**
@@ -149,6 +160,19 @@ export class Dictionary<T = unknown> extends Collection<T, DictionaryChangeCallb
    */
   // @ts-expect-error We're exposing methods in the users value namespace
   remove(key: string | string[]): this {
-    throw new Error("Not yet implemented");
+    const internal = this[INTERNAL];
+    const keys = typeof key === "string" ? [key] : key;
+    const missingKeys: string[] = [];
+    for (const k of keys) {
+      const success = internal.tryErase(k);
+      if (!success) {
+        missingKeys.push(k);
+      }
+    }
+    if (missingKeys.length > 0) {
+      const keysSummary = missingKeys.map((k) => `'${k}'`).join(", ");
+      const keySuffix = missingKeys.length > 0 ? "s" : "";
+      throw new Error(`Failed to remove missing key${keySuffix} from dictionary: ${keysSummary}`);
+    }
   }
 }
