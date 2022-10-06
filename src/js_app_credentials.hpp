@@ -20,6 +20,7 @@
 
 #include <stdexcept>
 #include "js_class.hpp"
+#include "js_util.hpp"
 #include <realm/object-store/sync/app_credentials.hpp>
 
 namespace realm {
@@ -126,13 +127,9 @@ void CredentialsClass<T>::google(ContextType ctx, ObjectType this_object, Argume
         // the bare string is deprecated but we keep it until next major version
         // auth_code begins with "4/" while we assume all other cases are id_tokens
         if (Value::is_string(ctx, arguments[0])) {
-            std::string token = Value::validated_to_string(ctx, arguments[0]);
-            if (token.substr(0, 2) == "4/") {
-                return app::AppCredentials::google(app::AuthCode(token));
-            }
-            else if (token.substr(0, 2) == "ey") {
-                return app::AppCredentials::google(app::IdToken(token));
-            }
+            log_to_console<T>(ctx,
+                              "`google(<tokenString>)` has been deprecated.  Please use `google(<authCodeObject>).",
+                              JSLogFunction::Error);
         }
 
         if (Value::is_object(ctx, arguments[0])) {

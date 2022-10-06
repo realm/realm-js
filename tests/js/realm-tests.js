@@ -2033,56 +2033,6 @@ module.exports = {
     realm.close();
   },
 
-  testWriteCopyTo: function () {
-    const realm = new Realm({
-      schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes],
-    });
-
-    realm.write(() => {
-      realm.create("TestObject", { doubleCol: 1 });
-    });
-    TestCase.assertEqual(1, realm.objects("TestObject").length);
-
-    TestCase.assertThrowsContaining(() => {
-      realm.writeCopyTo();
-    }, "`writeCopyTo` requires <output configuration> or <path, [encryptionKey]> parameters");
-
-    TestCase.assertThrowsContaining(() => {
-      realm.writeCopyTo(34);
-    }, "`config` parameter must be an object");
-
-    // make sure that copies are in the same directory as the original file
-    // that is important for running tests on mobile devices,
-    // so we don't have issues with permissisons
-    const copyName = realm.path + ".copy.realm";
-
-    realm.writeCopyTo(copyName);
-
-    const copyConfig = { path: copyName };
-    const realmCopy = new Realm(copyConfig);
-    TestCase.assertEqual(1, realmCopy.objects("TestObject").length);
-    realmCopy.close();
-
-    TestCase.assertThrowsContaining(() => {
-      realm.writeCopyTo(realm.path + ".copy-invalid-key.realm", "hello");
-    }, "Encryption key for 'writeCopyTo' must be an ArrayBuffer or ArrayBufferView");
-
-    const encryptedCopyName = realm.path + ".copy-encrypted.realm";
-
-    var encryptionKey = new Int8Array(64);
-    for (let i = 0; i < 64; i++) {
-      encryptionKey[i] = 1;
-    }
-    realm.writeCopyTo(encryptedCopyName, encryptionKey);
-
-    const encryptedCopyConfig = { path: encryptedCopyName, encryptionKey: encryptionKey };
-    const encryptedRealmCopy = new Realm(encryptedCopyConfig);
-    TestCase.assertEqual(1, encryptedRealmCopy.objects("TestObject").length);
-    encryptedRealmCopy.close();
-
-    realm.close();
-  },
-
   testObjectWithoutProperties: function () {
     const realm = new Realm({ schema: [schemas.ObjectWithoutProperties] });
     realm.write(() => {

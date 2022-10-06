@@ -3,11 +3,14 @@
 ### Notes
 Based on Realm JS v10.21.1: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.19.5).
 
-<<<<<<< HEAD
 ### Breaking changes
+* The following deprecated methods have been removed:
+    * `Realm#automaticSyncConfiguration`
+    * `Realm.Credentials#google` with `authCode` parameter (use `authObject`)
+* `Realm#writeCopyTo` now only accepts an output Realm configuration as a parameter.
 * Removal of deprecated functions, which should be replaced with `Realm.Credentials#apiKey`:
-   * `Realm.Credentials#serverApiKey`
-   * `Realm.Credentials#userApiKey`
+    * `Realm.Credentials#serverApiKey`
+    * `Realm.Credentials#userApiKey`
 * When no object is found calling `Realm#objectForPrimaryKey`, `null` is returned instead of `undefined`
 * Replaced `Realm#empty` with `Realm#isEmpty`
 * Replaced `Realm#readOnly` with `Realm#isReadOnly`
@@ -35,7 +38,7 @@ Based on Realm JS v10.21.1: See changelog below for details on enhancements and 
   Realm.App.Sync.Session.addProgressNotification(direction: ProgressDirection, mode: ProgressMode, progressCallback: ProgressNotificationCallback): void;
   ```
   * A typo was fixed in the `SubscriptionsState` enum, in which `SubscriptionsState.Superseded` now returns `superseded` in place of `Superseded`
-  
+
 ### Enhancements
 * Small improvement to performance by caching JSI property String object [#4863](https://github.com/realm/realm-js/pull/4863)
 
