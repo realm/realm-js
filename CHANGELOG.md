@@ -1,7 +1,10 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Prioritize integration of local changes over remote changes. This shortens the time users may have to wait when committing local changes. Stop storing downloaded changesets in history. ([realm/realm-core#5844](https://github.com/realm/realm-core/pull/5844))
+* Greatly improve the performance of sorting or distincting a Dictionary's keys or values. The most expensive operation is now performed O(log N) rather than O(N log N) times, and large Dictionaries can see upwards of 99% reduction in time to sort. ([realm/realm-core#5166](https://github.com/realm/realm-core/pulls/5166))
+* Cut the runtime of aggregate operations on large dictionaries in half. ([realm/realm-core#5864](https://github.com/realm/realm-core/pull/5864))
+* Improve performance of aggregate operations on collections of objects by 2x to 10x. ([realm/realm-core#5864](https://github.com/realm/realm-core/pull/5864))
 
 ### Fixed
 * If a case insensitive query searched for a string including an 4-byte UTF8 character, the program would crash. ([realm/realm-core#5825](https://github.com/realm/realm-core/issues/5825), since v1.0.0)
@@ -17,7 +20,7 @@
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v12.6.0 to v12.7.0. ([#4932](https://github.com/realm/realm-js/issues/4932))
+* Upgraded Realm Core from v12.6.0 to v12.9.0. ([#4932](https://github.com/realm/realm-js/issues/4932) and [#4983](https://github.com/realm/realm-js/issues/4983)
 * Added ARM/Linux build guide.
 
 ## 10.21.1 (2022-09-15)

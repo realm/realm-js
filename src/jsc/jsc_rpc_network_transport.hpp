@@ -58,7 +58,7 @@ struct RPCNetworkTransport : public app::GenericNetworkTransport {
     {
     }
 
-    void send_request_to_server(app::Request&& request,
+    void send_request_to_server(const app::Request& request,
                                 util::UniqueFunction<void(const app::Response&)>&& completion_callback) override
     {
         // Build up a JS request object
