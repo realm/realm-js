@@ -45,7 +45,8 @@ IndexSet.prototype.asIndexes = function* (this: IndexSet) {
   }
 };
 
-Timestamp.fromDate = (d: Date) => Timestamp.make(BigInt(d.valueOf() / 1000), (d.valueOf() % 1000) * 1000_000);
+Timestamp.fromDate = (d: Date) =>
+  Timestamp.make(BigInt(Math.floor(d.valueOf() / 1000)), (d.valueOf() % 1000) * 1000_000);
 
 Timestamp.prototype.toDate = function () {
   return new Date(Number(this.seconds) * 1000 + this.nanoseconds / 1000_000);

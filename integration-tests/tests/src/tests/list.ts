@@ -654,18 +654,18 @@ describe("Lists", () => {
         expect(array[0].doubleCol).equals(1);
         expect(array[1].doubleCol).equals(2);
         //@ts-expect-error can not assign null to list of objects.
-        expect(() => (array[0] = null)).throws(Error, "JS value must be of type 'object', got (null)");
+        expect(() => (array[0] = null)).throws(Error, "null");
         //@ts-expect-error can not pass incomplete object to list.
-        expect(() => (array[0] = {})).throws(Error, "Missing value for property 'TestObject.doubleCol'");
+        expect(() => (array[0] = {})).throws(Error, "Missing value for property 'doubleCol'");
         //@ts-expect-error can not pass object with invalid properties to list.
-        expect(() => (array[0] = { foo: "bar" })).throws(Error, "Missing value for property 'TestObject.doubleCol'");
+        expect(() => (array[0] = { foo: "bar" })).throws(Error, "Missing value for property 'doubleCol'");
         //@ts-expect-error can not assign an invalid object type to list.
         expect(() => (array[0] = prim)).throws(
           Error,
-          "Object of type (PrimitiveArrays) does not match List type (TestObject)",
+          "Expected 'value' to be an instance of TestObject, got an instance of PrimitiveArrays",
         );
         //@ts-expect-error can not assign an array to a list of objects.
-        expect(() => (array[0] = array)).throws(Error, "Missing value for property 'TestObject.doubleCol'");
+        expect(() => (array[0] = array)).throws(Error, "Missing value for property 'doubleCol'");
         expect(() => (array[2] = { doubleCol: 1 })).throws(Error, "Requested index 2 greater than max 1");
         expect(() => (array[-1] = { doubleCol: 1 })).throws(Error, "Index -1 cannot be less than zero.");
 
@@ -695,16 +695,16 @@ describe("Lists", () => {
 
         function testAssignNull(name: string, expected: string) {
           //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
-          expect(() => (prim[name][0] = null)).throws(Error, `Property must be of type '${expected}', got (null)`);
+          expect(() => (prim[name][0] = null)).throws(`Expected value to be ${expected}, got null`);
         }
 
-        testAssignNull("bool", "bool");
-        testAssignNull("int", "int");
-        testAssignNull("float", "float");
-        testAssignNull("double", "double");
-        testAssignNull("string", "string");
-        testAssignNull("data", "data");
-        testAssignNull("date", "date");
+        testAssignNull("bool", "a boolean");
+        testAssignNull("int", "a number or bigint");
+        testAssignNull("float", "a number");
+        testAssignNull("double", "a number");
+        testAssignNull("string", "a string");
+        testAssignNull("data", "an instance of ArrayBuffer");
+        testAssignNull("date", "an instance of Date");
 
         testAssign("optBool", true, null);
         testAssign("optInt", 1, null);
