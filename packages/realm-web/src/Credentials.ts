@@ -115,7 +115,7 @@ export class Credentials<PayloadType extends SimpleObject = SimpleObject> implem
    * @param payload The URL that users should be redirected to, the auth code or id token from Google.
    * @returns The credentials instance, which can be passed to `app.logIn`.
    */
-  static google<P extends OAuth2RedirectPayload | GooglePayload>(payload: string | GoogleOptions): Credentials<P> {
+  static google<P extends OAuth2RedirectPayload | GooglePayload>(payload: GoogleOptions): Credentials<P> {
     return new Credentials<P>("oauth2-google", "oauth2-google", Credentials.derivePayload(payload) as P);
   }
 
@@ -123,17 +123,9 @@ export class Credentials<PayloadType extends SimpleObject = SimpleObject> implem
    * @param payload The payload string.
    * @returns A payload object based on the string.
    */
-  private static derivePayload(payload: string | GoogleOptions): SimpleObject {
+  private static derivePayload(payload: GoogleOptions): SimpleObject {
     if (typeof payload === "string") {
-      if (payload.includes("://")) {
-        return this.derivePayload({ redirectUrl: payload });
-      } else if (payload.startsWith("4/")) {
-        return this.derivePayload({ authCode: payload });
-      } else if (payload.startsWith("ey")) {
-        return this.derivePayload({ idToken: payload });
-      } else {
-        throw new Error(`Unexpected payload: ${payload}`);
-      }
+      throw new Error("`google(<tokenString>)` has been deprecated.  Please use `google(<authCodeObject>).");
     } else if (Object.keys(payload).length === 1) {
       if ("authCode" in payload || "redirectUrl" in payload) {
         return payload;

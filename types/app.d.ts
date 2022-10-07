@@ -208,14 +208,6 @@ declare namespace Realm {
     static jwt(token: string): Credentials<Credentials.JWTPayload>;
 
     /**
-     * Factory for `Credentials` which authenticate using the [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
-     *
-     * @param authCode The auth code returned from Google.
-     * @returns A `Credentials` object for logging in using `app.logIn`.
-     */
-    static google(authCodeOrIdToken: string): Credentials<Credentials.GooglePayload>;
-
-    /**
      * Factory for `Credentials` which authenticate using the Auth Token OAuth 2.0 [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
      *
      * @param payload.authCode The auth code from Google.
@@ -236,7 +228,7 @@ declare namespace Realm {
      */
     static google(payload: {
       /**
-       *
+       * The id token from Google.
        */
       idToken: string;
     }): Credentials<Credentials.GoogleIdTokenPayload>;

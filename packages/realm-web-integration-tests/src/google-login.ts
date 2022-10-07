@@ -34,9 +34,9 @@ const app = createApp();
 
 function onSuccess(googleUser: any) {
   const response = googleUser.getAuthResponse();
-  const idToken = response.id_token;
+  const idToken = response.id_token as string;
   // Try authenticating with Atlas App Services
-  const credentials = Credentials.google(idToken);
+  const credentials = Credentials.google({ idToken });
   app.logIn(credentials).then(
     (user) => {
       console.log("Successfully authenticated as", user);

@@ -214,7 +214,7 @@ describe("User", () => {
         }
 
         // Link user
-        const googleCredentials = Credentials.google("http://localhost:8080/google-callback");
+        const googleCredentials = Credentials.google({ redirectUrl: "http://localhost:8080/google-callback" });
         await user.linkCredentials(googleCredentials);
 
         // Expect the ids from the user object and tokens to match
