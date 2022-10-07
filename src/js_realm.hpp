@@ -1669,16 +1669,14 @@ void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Argumen
 
     realm::Realm::Config config;
     if (args.count == 0) {
-        throw std::invalid_argument(
-            "`writeCopyTo` requires <output configuration> as a parameter. See documentation for details.");
+        throw std::invalid_argument("Expected a config object");
     }
 
     if (args.count == 1 && !Value::is_string(ctx, args[0])) {
         config = write_copy_to_helper(ctx, this_object, args);
     }
     else {
-        throw std::invalid_argument("`writeCopyTo` requires <output configuration> parameter. <path, "
-                                    "[encryptionKey]> parameters are not supported");
+        throw std::invalid_argument("Expected a config object. <path, [encryptionKey]> parameters are not supported");
     }
 
     realm->convert(config);

@@ -129,7 +129,7 @@ void CredentialsClass<T>::google(ContextType ctx, ObjectType this_object, Argume
         if (Value::is_string(ctx, arguments[0])) {
             log_to_console<T>(ctx,
                               "`google(<tokenString>)` has been deprecated.  Please use `google(<authCodeObject>).",
-                              JSLogFunction::Error);
+                              JSLogFunction::Warning);
         }
 
         if (Value::is_object(ctx, arguments[0])) {

@@ -228,7 +228,7 @@ declare namespace Realm {
      */
     static google(payload: {
       /**
-       *
+       * The id token from Google.
        */
       idToken: string;
     }): Credentials<Credentials.GoogleIdTokenPayload>;

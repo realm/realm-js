@@ -99,7 +99,8 @@ describe("Credentials", () => {
       this.timeout(60 * 1000); // 1 min
       const app = createApp();
       // Log in
-      const credentials = Credentials.google("http://localhost:8080/google-callback");
+      const credentials = Credentials.google({ redirectUrl: "http://localhost:8080/google-callback" });
+
       const user = await app.logIn(credentials);
       expect(user).to.be.instanceOf(User);
     });
