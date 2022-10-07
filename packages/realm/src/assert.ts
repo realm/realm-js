@@ -16,8 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { AssertionError } from "./errors";
+import { AssertionError, TypeAssertionError } from "./errors";
 import { DefaultObject } from "./schema";
+import type { Realm } from "./Realm";
 
 export function assert(value: unknown, err?: string | Error): asserts value {
   if (!value) {
@@ -29,34 +30,6 @@ export function assert(value: unknown, err?: string | Error): asserts value {
   }
 }
 
-function deriveActualType(value: unknown) {
-  if (typeof value === "object") {
-    if (value === null) {
-      return "null";
-    } else {
-      const name = value.constructor.name;
-      if (name === "Object") {
-        return "an object";
-      } else if (name === "Array") {
-        return "an array";
-      } else {
-        return "an instance of " + name;
-      }
-    }
-  } else if (typeof value === "undefined") {
-    return typeof value;
-  } else if (typeof value === "function") {
-    return `a function or class named ${value.name}`;
-  } else {
-    return "a " + typeof value;
-  }
-}
-
-export function createTypeError(expected: string, value: unknown, name?: string) {
-  const actual = deriveActualType(value);
-  return new TypeError(`Expected ${name ? "'" + name + "'" : "value"} to be ${expected}, got ${actual}`);
-}
-
 /* eslint-disable-next-line @typescript-eslint/ban-types */
 assert.instanceOf = <T extends Function>(
   value: unknown,
@@ -64,44 +37,44 @@ assert.instanceOf = <T extends Function>(
   name?: string,
 ): asserts value is T["prototype"] => {
   if (!(value instanceof constructor)) {
-    throw createTypeError(`an instance of ${constructor.name}`, value, name);
+    throw new TypeAssertionError(`an instance of ${constructor.name}`, value, name);
   }
 };
 
 assert.string = (value: unknown, name?: string): asserts value is string => {
   if (typeof value !== "string") {
-    throw createTypeError("a string", value, name);
+    throw new TypeAssertionError("a string", value, name);
   }
 };
 
 assert.number = (value: unknown, name?: string): asserts value is number => {
   if (typeof value !== "number") {
-    throw createTypeError("a number", value, name);
+    throw new TypeAssertionError("a number", value, name);
   }
 };
 
 assert.boolean = (value: unknown, name?: string): asserts value is boolean => {
   if (typeof value !== "boolean") {
-    throw createTypeError("a boolean", value, name);
+    throw new TypeAssertionError("a boolean", value, name);
   }
 };
 
 assert.bigInt = (value: unknown, name?: string): asserts value is bigint => {
   if (typeof value !== "bigint") {
-    throw createTypeError("a bigint", value, name);
+    throw new TypeAssertionError("a bigint", value, name);
   }
 };
 
 /* eslint-disable-next-line @typescript-eslint/ban-types */
 assert.function = (value: unknown, name?: string): asserts value is Function => {
   if (typeof value !== "function") {
-    throw createTypeError("a function", value, name);
+    throw new TypeAssertionError("a function", value, name);
   }
 };
 
 assert.symbol = (value: unknown, name?: string): asserts value is symbol => {
   if (typeof value !== "symbol") {
-    throw createTypeError("a symbol", value, name);
+    throw new TypeAssertionError("a symbol", value, name);
   }
 };
 
@@ -110,25 +83,25 @@ assert.object = <K extends string | number | symbol = string, V = unknown>(
   name?: string,
 ): asserts value is Record<K, V> => {
   if (typeof value !== "object" || value === null) {
-    throw createTypeError("an object", value, name);
+    throw new TypeAssertionError("an object", value, name);
   }
 };
 
 assert.undefined = (value: unknown, name?: string): asserts value is undefined => {
   if (typeof value !== "undefined") {
-    throw createTypeError("undefined", value, name);
+    throw new TypeAssertionError("undefined", value, name);
   }
 };
 
 assert.null = (value: unknown, name?: string): asserts value is null => {
   if (value !== null) {
-    throw createTypeError("null", value, name);
+    throw new TypeAssertionError("null", value, name);
   }
 };
 
 assert.array = (value: unknown, name?: string): asserts value is Array<unknown> => {
   if (!Array.isArray(value)) {
-    throw createTypeError("an array", value, name);
+    throw new TypeAssertionError("an array", value, name);
   }
 };
 
@@ -140,6 +113,16 @@ assert.extends = <T extends Function>(
 ): asserts value is T & DefaultObject => {
   assert.function(value, name);
   if (!(value.prototype instanceof constructor)) {
-    throw createTypeError(`a class extending ${constructor.name}`, value, name);
+    throw new TypeAssertionError(`a class extending ${constructor.name}`, value, name);
   }
+};
+
+// SDK specific
+
+assert.isOpen = (realm: Realm) => {
+  assert(!realm.isClosed, "Cannot access realm that has been closed.");
+};
+
+assert.inTransaction = (realm: Realm) => {
+  assert(realm.isInTransaction, "Cannot modify managed objects outside of a write transaction.");
 };

@@ -18,13 +18,14 @@
 
 import * as binding from "./binding";
 
-import { INTERNAL, getInternal } from "./internal";
+import { INTERNAL } from "./internal";
 import { Realm } from "./Realm";
 import { Results } from "./Results";
 import { CanonicalObjectSchema, Constructor, DefaultObject, RealmObjectConstructor } from "./schema";
 import { ObjectChangeCallback, ObjectListeners } from "./ObjectListeners";
 import { INTERNAL_HELPERS, ClassHelpers } from "./ClassHelpers";
 import { RealmInsertionModel } from "./InsertionModel";
+import { assert } from "./assert";
 
 export enum UpdateMode {
   Never = "never",
@@ -61,15 +62,15 @@ class RealmObject<T = DefaultObject> {
    * Create an object in the database and set values on it
    */
   public static create(
-    realmInternal: binding.Realm,
+    realm: Realm,
     helpers: ClassHelpers,
     values: Record<string, unknown>,
     mode: UpdateMode,
   ): RealmObject {
-    // TODO: Consider wrapping any exception thrown instead of calling into c++
-    realmInternal.verifyInWrite();
+    assert.isOpen(realm);
+    assert.inTransaction(realm);
     // Create the underlying object
-    const [obj, created] = RealmObject.createObj(realmInternal, helpers, values, mode);
+    const [obj, created] = RealmObject.createObj(realm, helpers, values, mode);
     const result = helpers.wrapObject(obj);
     // Persist any values provided
     // TODO: Consider using the property helpers directly to improve performance
@@ -101,7 +102,7 @@ class RealmObject<T = DefaultObject> {
    * Create an object in the database and populate its primary key value, if required
    */
   public static createObj(
-    realmInternal: binding.Realm,
+    realm: Realm,
     helpers: ClassHelpers,
     values: DefaultObject,
     mode: UpdateMode,
@@ -112,7 +113,7 @@ class RealmObject<T = DefaultObject> {
     } = helpers;
 
     // Create the underlying object
-    const table = binding.Helpers.getTable(realmInternal, tableKey);
+    const table = binding.Helpers.getTable(realm.internal, tableKey);
     if (primaryKey) {
       const primaryKeyHelpers = properties.get(primaryKey);
       const primaryKeyValue = values[primaryKey];
@@ -162,7 +163,7 @@ class RealmObject<T = DefaultObject> {
         enumerable: false,
         configurable: false,
         writable: true,
-        value: new ObjectListeners(getInternal(realm), result),
+        value: new ObjectListeners(realm.internal, result),
       },
     });
     // TODO: Wrap in a proxy to trap keys, enabling the spread operator
