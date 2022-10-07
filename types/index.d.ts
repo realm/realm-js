@@ -341,7 +341,7 @@ declare namespace Realm {
      * SortDescriptor
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Collection.html#~SortDescriptor }
      */
-    type SortDescriptor = [string] | [string, boolean];
+    type SortDescriptor = string | [string, boolean];
 
     /**
      * Dictionary
