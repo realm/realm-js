@@ -20,13 +20,23 @@ import * as binding from "./binding";
 import { Helpers } from "./binding";
 
 import { OrderedCollection, SortDescriptor, OrderedCollectionHelpers } from "./OrderedCollection";
-import { INTERNAL } from "./internal";
+import { getInternal } from "./internal";
 import { IllegalConstructorError } from "./errors";
-
-const INTERNAL_REALM = Symbol("Realm.Results#realm");
-const INTERNAL_TABLE = Symbol("Realm.Results#table");
+import type { Realm } from "./Realm";
 
 export class Results<T = unknown> extends OrderedCollection<T> {
+  /**
+   * The Realm's representation in the binding.
+   * @internal
+   */
+  private realm!: Realm;
+
+  /**
+   * The representation in the binding.
+   * @internal
+   */
+  public internal!: binding.Results;
+
   /**
    * Create a `Results` wrapping a set of query `Results` from the binding.
    * @internal
@@ -34,47 +44,29 @@ export class Results<T = unknown> extends OrderedCollection<T> {
    * @param internalRealm The internal representation of the Realm managing these results.
    * @param internalTable The internal representation of the table.
    */
-  constructor(internal: binding.Results, internalRealm: binding.Realm, helpers: OrderedCollectionHelpers) {
+  constructor(realm: Realm, internal: binding.Results, helpers: OrderedCollectionHelpers) {
     if (arguments.length === 0 || !(internal instanceof binding.Results)) {
       throw new IllegalConstructorError("Results");
     }
     super(internal, helpers);
     Object.defineProperties(this, {
-      [INTERNAL]: {
+      internal: {
         enumerable: false,
         configurable: false,
         writable: false,
         value: internal,
       },
-      [INTERNAL_REALM]: {
+      realm: {
         enumerable: false,
         configurable: false,
         writable: false,
-        value: internalRealm,
+        value: realm,
       },
     });
   }
 
-  /**
-   * The representation in the binding.
-   * @internal
-   */
-  public [INTERNAL]!: binding.Results;
-
-  /**
-   * The Realm's representation in the binding.
-   * @internal
-   */
-  private [INTERNAL_REALM]!: binding.Realm;
-
-  /**
-   * The Realm's representation in the binding.
-   * @internal
-   */
-  private [INTERNAL_TABLE]!: binding.TableRef;
-
   get length(): number {
-    return this[INTERNAL].size();
+    return this.internal.size();
   }
 
   /**
@@ -88,30 +80,30 @@ export class Results<T = unknown> extends OrderedCollection<T> {
   }
 
   isValid(): boolean {
-    return this[INTERNAL].isValid;
+    return this.internal.isValid;
   }
 
   isEmpty(): boolean {
-    return this[INTERNAL].size() === 0;
+    return this.internal.size() === 0;
   }
 
   filtered(queryString: string, ...args: any[]): Results<T> {
-    const { [INTERNAL]: parent, [INTERNAL_REALM]: realm, helpers } = this;
-    const kpMapping = Helpers.getKeypathMapping(realm);
+    const { internal: parent, realm, helpers } = this;
+    const kpMapping = Helpers.getKeypathMapping(realm.internal);
     // TODO: Perform a mapping of the arguments
     const query = parent.query.table.query(queryString, args, kpMapping);
     const results = parent.filter(query);
-    return new Results(results, realm, helpers);
+    return new Results(realm, results, helpers);
   }
 
   sorted(arg0?: boolean | SortDescriptor[] | string, arg1?: boolean): Results<T> {
     if (Array.isArray(arg0)) {
-      const { [INTERNAL]: parent, [INTERNAL_REALM]: realm, [INTERNAL_TABLE]: table, helpers } = this;
+      const { internal: parent, realm, helpers } = this;
       // Map optional "reversed" to "accending" (expected by the binding)
       const descriptors = arg0.map<[string, boolean]>(([name, reversed]) => [name, reversed ? false : true]);
       // TODO: Call `parent.sort`, avoiding property name to colkey conversion to speed up performance here.
       const results = parent.sortByNames(descriptors);
-      return new Results(results, realm, helpers);
+      return new Results(realm, results, helpers);
     } else if (typeof arg0 === "string") {
       return this.sorted([[arg0, arg1 === true]]);
     } else {
