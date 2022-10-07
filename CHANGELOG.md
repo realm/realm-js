@@ -8,6 +8,49 @@ Based on Realm JS v10.21.1: See changelog below for details on enhancements and 
     * `Realm#automaticSyncConfiguration`
     * `Realm.Credentials#google` with `authCode` parameter (use `authObject`)
 * `Realm#writeCopyTo` now only accepts an output Realm configuration as a parameter.
+* Following callbacks were renamed:
+    * `Realm.Config#migration` -> `Realm.Config#onMigration`
+        ``` typescript
+        // before
+        Realm.open({migration:() => {}})
+        // after
+        Realm.open({onMigration:() => {}})
+        ```
+    * `Realm.Config#shouldCompactOnLaunch` -> `Realm.Config#shouldCompact`
+    * `Realm.App.Sync~SyncConfiguration.error` -> `Realm.App.Sync~SyncConfiguration.onError`
+    * `Realm.App.Sync~SyncConfiguration.clientReset.clientResetBefore` -> `Realm.App.Sync~SyncConfiguration.clientReset.onBefore`
+    * `Realm.App.Sync~SyncConfiguration.clientReset.clientResetAfter` -> `Realm.App.Sync~SyncConfiguration.clientReset.onAfter`
+    * `Realm.App.Sync~SyncConfiguration.ssl.validateCallback` -> `Realm.App.Sync~SyncConfiguration.ssl.validateCertificates`
+        ``` typescript
+        // before
+        Realm.open({
+          sync: {
+            shouldCompactOnLaunch: /**/
+            error: /**/
+            clientReset: {
+              clientResetBefore: /**/
+              clientResetAfter: /**/
+            }
+            ssl:{
+              validateCallback: /**/
+            }
+          }
+        })
+        // after
+        Realm.open({
+          sync: {
+            shouldCompact: /**/
+            onError: /**/
+            clientReset: {
+              onBefore: /**/
+              onAfter: /**/
+            }
+            ssl:{
+              validateCertificates: /**/
+            }
+          }
+        })
+        ```
 * Removal of deprecated functions, which should be replaced with `Realm.Credentials#apiKey`:
     * `Realm.Credentials#serverApiKey`
     * `Realm.Credentials#userApiKey`

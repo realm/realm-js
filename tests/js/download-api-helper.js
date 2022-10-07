@@ -47,7 +47,7 @@ function createObjects(user) {
     sync: {
       user: user,
       partitionValue: partition,
-      error: (err) => console.log(err),
+      onError: (err) => console.log(err),
     },
     schema: [
       {
