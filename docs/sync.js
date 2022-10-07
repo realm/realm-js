@@ -38,8 +38,8 @@
  * This describes the options to configure client reset.
  * @typedef {Object} Realm.App.Sync~ClientResetConfiguration
  * @property {string} mode - Either "manual" (deprecated, see also `Realm.App.Sync.initiateClientReset()`) or "discardLocal" (download a fresh copy from the server).
- * @property {callback(realm)|null} [clientResetBefore] - called before sync initiates a client reset.
- * @property {callback(beforeRealm, afterRealm)|null} [clientResetAfter] - called after client reset has been executed; `beforeRealm` and `afterRealm` are instances of the Realm before and after the client reset.
+ * @property {callback(realm)|null} [onBefore] - called before sync initiates a client reset.
+ * @property {callback(beforeRealm, afterRealm)|null} [onAfter] - called after client reset has been executed; `beforeRealm` and `afterRealm` are instances of the Realm before and after the client reset.
  * @since {10.11.0}
  */
 
@@ -51,7 +51,7 @@
  * @property {boolean} flexible - Whether to use flexible sync (if `true`) or partition based sync (default)
  * @property {string|number|BSON.ObjectId|null} partitionValue - The value of the partition key. Only valid if using partition based sync.
  * @property {Realm.App.Sync~InitialSubscriptionsConfiguration} initialSubscriptions - Optional object to configure the setup of an initial set of flexible sync subscriptions to be used when opening the Realm. Only valid if using flexible sync. See {@link Realm.App.Sync~InitialSubscriptionsConfiguration}.
- * @property {callback(session, syncError)} [error] - A callback function which is called in error situations.
+ * @property {callback(session, syncError)} [onError] - A callback function which is called in error situations.
  *    The callback is passed two arguments: `session` and `syncError`. If `syncError.name == "ClientReset"`, `syncError.path` and `syncError.config` are set
  *    and `syncError.readOnly` is true (deprecated, see `Realm.App.Sync~ClientResetConfiguration`). Otherwise, `syncError` can have up to five properties:
  *    `name`, `message`, `isFatal`, `category`, and `code`.
@@ -105,7 +105,7 @@
  * @typedef {Object} Realm.App.Sync~SSLConfiguration
  * @property {boolean} validate - Indicating if SSL certificates must be validated. Default is `true`.
  * @property {string} certificatePath - A path where to find trusted SSL certificates.
- * @property {Realm.Sync~sslValidateCallback} validateCallback - A callback function used to accept or reject the server's SSL certificate.
+ * @property {Realm.Sync~sslValidateCallback} validateCertificates - A callback function used to accept or reject the server's SSL certificate.
  */
 
 /**
