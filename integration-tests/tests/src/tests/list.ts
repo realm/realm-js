@@ -738,18 +738,17 @@ describe("Lists", () => {
         const personList = this.realm.create<IPersonListSchema>(PersonListSchema.name, { list: [person] }).list;
 
         //@ts-expect-error number is not assignable to TestObject.
-        expect(() => (obj.arrayCol = [0])).throws(Error, "JS value must be of type 'object', got (0)");
+        expect(() => (obj.arrayCol = [0])).throws("Expected 'arrayCol[0]' to be an object, got a number");
         //@ts-expect-error null is not assignable to TestObject.
-        expect(() => (obj.arrayCol = [null])).throws(Error, "JS value must be of type 'object', got (null)");
+        expect(() => (obj.arrayCol = [null])).throws("Expected 'arrayCol[0]' to be an object, got null");
         //@ts-expect-error Person is not assignable to TestObject.
         expect(() => (obj.arrayCol = [person])).throws(
-          Error,
-          "Object of type (PersonObject) does not match List type (TestObject)",
+          "Expected 'arrayCol[0]' to be an instance of TestObject, got an instance of PersonObject",
         );
         //@ts-expect-error PersonList is not assignable to TestObjectList.
         expect(() => (obj.arrayCol = personList)).throws(
           Error,
-          "LinkTypesObject.arrayCol must be of type 'TestObject[]', got 'object' (",
+          "Expected 'arrayCol[0]' to be an instance of TestObject, got an instance of PersonObject",
         );
         //@ts-expect-error TYPEBUG: type missmatch, forcecasting shouldn't be done
         obj.arrayCol = [this.realm.create<ITestObjectSchema>(TestObjectSchema.name, { doubleCol: 1.0 })];
@@ -760,59 +759,59 @@ describe("Lists", () => {
         //@ts-expect-error Person is not assignable to boolean.
         expect(() => (prim.bool = [person])).throws(
           Error,
-          "PrimitiveArrays.bool must be of type 'boolean[]', got 'object' ([PersonObject{",
+          "Expected 'bool[0]' to be a boolean, got an instance of PersonObject",
         );
         //@ts-expect-error Person is not assignable to int.
         expect(() => (prim.int = [person])).throws(
-          "PrimitiveArrays.int must be of type 'number[]', got 'object' ([PersonObject{",
+          "Expected 'int[0]' to be a number or bigint, got an instance of PersonObject",
         );
         //@ts-expect-error Person is not assignable to float.
         expect(() => (prim.float = [person])).throws(
-          "PrimitiveArrays.float must be of type 'number[]', got 'object' ([PersonObject{",
+          "Expected 'float[0]' to be a number, got an instance of PersonObject",
         );
         //@ts-expect-error Person is not assignable to double.
         expect(() => (prim.double = [person])).throws(
-          "PrimitiveArrays.double must be of type 'number[]', got 'object' ([PersonObject{",
+          "Expected 'double[0]' to be a number, got an instance of PersonObject",
         );
         //@ts-expect-error Person is not assignable to string.
         expect(() => (prim.string = [person])).throws(
-          "PrimitiveArrays.string must be of type 'string[]', got 'object' ([PersonObject{",
+          "Expected 'string[0]' to be a string, got an instance of PersonObject",
         );
         //@ts-expect-error Person is not assignable to data.
         expect(() => (prim.data = [person])).throws(
-          "PrimitiveArrays.data must be of type 'binary[]', got 'object' ([PersonObject{",
+          "Expected 'data[0]' to be an instance of ArrayBuffer, got an instance of PersonObject",
         );
         //@ts-expect-error Person is not assignable to date.
         expect(() => (prim.date = [person])).throws(
-          "PrimitiveArrays.date must be of type 'date[]', got 'object' ([PersonObject{",
+          "Expected 'date[0]' to be an instance of Date, got an instance of PersonObject",
         );
         //@ts-expect-error Person is not assignable to optional bool.
         expect(() => (prim.optBool = [person])).throws(
-          "PrimitiveArrays.optBool must be of type 'boolean?[]', got 'object' ([PersonObject{",
+          "Expected 'optBool[0]' to be a boolean, got an instance of PersonObject",
         );
         //@ts-expect-error Person is not assignable to optional int.
         expect(() => (prim.optInt = [person])).throws(
-          "PrimitiveArrays.optInt must be of type 'number?[]', got 'object' ([PersonObject{",
+          "Expected 'optInt[0]' to be a number or bigint, got an instance of PersonObject",
         );
         //@ts-expect-error Person is not assignable to optional float.
         expect(() => (prim.optFloat = [person])).throws(
-          "PrimitiveArrays.optFloat must be of type 'number?[]', got 'object' ([PersonObject{",
+          "Expected 'optFloat[0]' to be a number, got an instance of PersonObject",
         );
         //@ts-expect-error Person is not assignable to optional double.
         expect(() => (prim.optDouble = [person])).throws(
-          "PrimitiveArrays.optDouble must be of type 'number?[]', got 'object' ([PersonObject{",
+          "Expected 'optDouble[0]' to be a number, got an instance of PersonObject",
         );
         //@ts-expect-error Person is not assignable to optional string.
         expect(() => (prim.optString = [person])).throws(
-          "PrimitiveArrays.optString must be of type 'string?[]', got 'object' ([PersonObject{",
+          "Expected 'optString[0]' to be a string, got an instance of PersonObject",
         );
         //@ts-expect-error Person is not assignable to optional data.
         expect(() => (prim.optData = [person])).throws(
-          "PrimitiveArrays.optData must be of type 'binary?[]', got 'object' ([PersonObject{",
+          "Expected 'optData[0]' to be an instance of ArrayBuffer, got an instance of PersonObject",
         );
         //@ts-expect-error Person is not assignable to optional date.
         expect(() => (prim.optDate = [person])).throws(
-          "PrimitiveArrays.optDate must be of type 'date?[]', got 'object' ([PersonObject{",
+          "Expected 'optDate[0]' to be an instance of Date, got an instance of PersonObject",
         );
 
         function testAssign(name: string, value: any) {
@@ -832,21 +831,18 @@ describe("Lists", () => {
 
         function testAssignNull(name: string, expected: string) {
           //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
-          expect(() => (prim[name] = [null])).throws(
-            Error,
-            `PrimitiveArrays.${name} must be of type '${expected}[]', got 'object' ([null])`,
-          );
+          expect(() => (prim[name] = [null])).throws(Error, `Expected '${name}[0]' to be ${expected}, got null`);
           //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
           expect(prim[name].length).equals(1);
         }
 
-        testAssignNull("bool", "boolean");
-        testAssignNull("int", "number");
-        testAssignNull("float", "number");
-        testAssignNull("double", "number");
-        testAssignNull("string", "string");
-        testAssignNull("data", "binary");
-        testAssignNull("date", "date");
+        testAssignNull("bool", "a boolean");
+        testAssignNull("int", "a number or bigint");
+        testAssignNull("float", "a number");
+        testAssignNull("double", "a number");
+        testAssignNull("string", "a string");
+        testAssignNull("data", "an instance of ArrayBuffer");
+        testAssignNull("date", "an instance of Date");
 
         testAssign("optBool", true);
         testAssign("optInt", 1);
@@ -946,8 +942,6 @@ describe("Lists", () => {
         expect(array.pop()?.doubleCol).equals(3);
         expect(array.length).equals(0);
         expect(array.pop()).equals(undefined);
-        //@ts-expect-error not allowed to pass an argument to pop.
-        expect(() => array.pop(1)).throws(Error, "Invalid argument");
       });
 
       expect(() => array.pop()).throws("Cannot modify managed objects outside of a write transaction.");
@@ -998,9 +992,6 @@ describe("Lists", () => {
         expect(array.shift()?.doubleCol).equals(4);
         expect(array.length).equals(0);
         expect(array.shift()).equals(undefined);
-
-        //@ts-expect-error not allowed to pass an argument to shift.
-        expect(() => array.shift(1)).throws("Invalid argument");
       });
 
       expect(() => array.shift()).throws("Cannot modify managed objects outside of a write transaction.");
@@ -1052,8 +1043,9 @@ describe("Lists", () => {
         expect(removed[0].doubleCol).equals(1);
         expect(array.length).equals(0);
 
-        //@ts-expect-error TYPEBUG: should be able to pass string that is convertible to number.
-        removed = array.splice("0", "0", obj.objectCol);
+        // While supported on arrays by some engines, we don't coerce strings to numbers here
+        // removed = array.splice("0", "0", obj.objectCol);
+        removed = array.splice(0, 0, obj.objectCol);
         expect(removed.length).equals(0);
         expect(array.length).equals(1);
 
@@ -1066,9 +1058,9 @@ describe("Lists", () => {
         expect(array.length).equals(0);
 
         //@ts-expect-error can not pass string that is non-convertible to number.
-        expect(() => array.splice("cat", 1)).throws("Value 'cat' not convertible to a number");
+        expect(() => array.splice("cat", 1)).throws("Expected 'start' to be a number, got a string");
 
-        expect(() => array.splice(0, 0, 0)).throws("JS value must be of type 'object', got (0)");
+        expect(() => array.splice(0, 0, 0)).throws("Expected 'element of arrayCol' to be an object, got a number");
       });
       expect(() => array.splice(0, 0, { doubleCol: 1 })).throws(
         "Cannot modify managed objects outside of a write transaction",
@@ -1156,7 +1148,12 @@ describe("Lists", () => {
       let array!: Realm.List<ITestObjectSchema>;
 
       this.realm.write(() => {
-        const obj = this.realm.create<ILinkTypeSchema>(LinkTypeSchema.name, [[1], [2], [[3], [4]], [[5], [6]]]);
+        const obj = this.realm.create<ILinkTypeSchema>(LinkTypeSchema.name, {
+          objectCol: { doubleCol: 1 },
+          objectCol1: { doubleCol: 2 },
+          arrayCol: [{ doubleCol: 3 }, { doubleCol: 4 }],
+          arrayCol1: [{ doubleCol: 5 }, { doubleCol: 6 }],
+        });
         array = obj.arrayCol;
       });
 
@@ -1167,8 +1164,7 @@ describe("Lists", () => {
       expect(arrayCopy.length).equals(2);
 
       this.realm.write(() => {
-        //@ts-expect-error TYPEBUG: type missmatch, forcecasting shouldn't be done
-        array.push([5]);
+        array.push({ doubleCol: 5 });
         expect(objectsCopy.length).equals(6);
         expect(arrayCopy.length).equals(2);
 

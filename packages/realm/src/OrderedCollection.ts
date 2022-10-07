@@ -23,6 +23,7 @@ import { unwind } from "./ranges";
 import { TypeHelpers } from "./types";
 import { getBaseTypeName } from "./schema";
 import { IllegalConstructorError } from "./errors";
+import type { Realm } from "./Realm";
 
 type PropertyType = string;
 export type SortDescriptor = [string] | [string, boolean];
@@ -89,6 +90,7 @@ export abstract class OrderedCollection<T = unknown>
 {
   /** @internal */
   constructor(
+    /** @internal */ protected realm: Realm,
     /** @internal */ private results: binding.Results,
     /** @internal */ protected helpers: OrderedCollectionHelpers,
   ) {
@@ -115,6 +117,11 @@ export abstract class OrderedCollection<T = unknown>
     });
     // Make the internal properties non-enumerable
     Object.defineProperties(this, {
+      realm: {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+      },
       results: {
         enumerable: false,
         configurable: false,
@@ -363,6 +370,6 @@ export abstract class OrderedCollection<T = unknown>
    * @returns Results
    */
   snapshot(): Results<T> {
-    throw new Error("Method not implemented");
+    return new Results(this.realm, this.results.snapshot(), this.helpers);
   }
 }

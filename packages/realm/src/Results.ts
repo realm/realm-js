@@ -20,17 +20,10 @@ import * as binding from "./binding";
 import { Helpers } from "./binding";
 
 import { OrderedCollection, SortDescriptor, OrderedCollectionHelpers } from "./OrderedCollection";
-import { getInternal } from "./internal";
 import { IllegalConstructorError } from "./errors";
 import type { Realm } from "./Realm";
 
 export class Results<T = unknown> extends OrderedCollection<T> {
-  /**
-   * The Realm's representation in the binding.
-   * @internal
-   */
-  private realm!: Realm;
-
   /**
    * The representation in the binding.
    * @internal
@@ -48,7 +41,7 @@ export class Results<T = unknown> extends OrderedCollection<T> {
     if (arguments.length === 0 || !(internal instanceof binding.Results)) {
       throw new IllegalConstructorError("Results");
     }
-    super(internal, helpers);
+    super(realm, internal, helpers);
     Object.defineProperties(this, {
       internal: {
         enumerable: false,

@@ -492,6 +492,7 @@ classes:
       create_object_with_primary_key: '(pk: Mixed) -> Obj'
       remove_object: '(key: ObjKey)'
       get_link_target: '(column: ColKey) -> TableRef'
+      clear: ()
 
   Obj:
     properties:
