@@ -117,12 +117,20 @@ assert.extends = <T extends Function>(
   }
 };
 
+assert.iterable = (value: unknown, name?: string): asserts value is Iterable<unknown> => {
+  assert.object(value, name);
+  if (!(Symbol.iterator in value)) {
+    throw new TypeAssertionError("iterable", value, name);
+  }
+};
+
 // SDK specific
 
-assert.isOpen = (realm: Realm) => {
+assert.open = (realm: Realm) => {
   assert(!realm.isClosed, "Cannot access realm that has been closed.");
 };
 
 assert.inTransaction = (realm: Realm) => {
+  assert.open(realm);
   assert(realm.isInTransaction, "Cannot modify managed objects outside of a write transaction.");
 };

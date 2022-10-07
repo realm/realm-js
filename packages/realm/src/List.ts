@@ -19,6 +19,8 @@
 import * as binding from "./binding";
 import { OrderedCollection, OrderedCollectionHelpers } from "./OrderedCollection";
 import { IllegalConstructorError } from "./errors";
+import type { Realm } from "./Realm";
+import { assert } from "./assert";
 
 type PartiallyWriteableArray<T> = Pick<Array<T>, "pop" | "push" | "shift" | "unshift" | "splice">;
 
@@ -30,11 +32,11 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
   public internal!: binding.List;
 
   /** @internal */
-  constructor(internal: binding.List, helpers: OrderedCollectionHelpers) {
+  constructor(realm: Realm, internal: binding.List, helpers: OrderedCollectionHelpers) {
     if (arguments.length === 0 || !(internal instanceof binding.List)) {
       throw new IllegalConstructorError("List");
     }
-    super(internal.asResults(), helpers);
+    super(realm, internal.asResults(), helpers);
     // TODO: Consider if this could be a simple assignment
     Object.defineProperties(this, {
       internal: {
@@ -53,6 +55,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
    * @internal
    */
   public set(index: number, value: unknown) {
+    assert.inTransaction(this.realm);
     this.internal.setAny(index, this.helpers.toBinding(value));
   }
 
@@ -61,7 +64,17 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
   }
 
   pop(): T | undefined {
-    throw new Error("Not yet implemented");
+    assert.inTransaction(this.realm);
+    const {
+      internal,
+      helpers: { fromBinding },
+    } = this;
+    const lastIndex = internal.size - 1;
+    if (lastIndex >= 0) {
+      const result = fromBinding(internal.getAny(lastIndex));
+      internal.remove(lastIndex);
+      return result as T;
+    }
   }
 
   /**
@@ -69,29 +82,86 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
    * @returns number
    */
   push(...items: T[]): number {
-    const { toBinding } = this.helpers;
-    let i = this.internal.size;
+    assert.inTransaction(this.realm);
+    const {
+      internal,
+      helpers: { toBinding },
+    } = this;
+    let i = internal.size;
     for (const item of items) {
       // Convert item to a mixedArg
-      this.internal.insertAny(i++, toBinding(item));
+      internal.insertAny(i++, toBinding(item));
     }
-    return this.internal.size;
+    return internal.size;
   }
 
   /**
    * @returns T
    */
   shift(): T | undefined {
-    throw new Error("Not yet implemented");
+    assert.inTransaction(this.realm);
+    const {
+      internal,
+      helpers: { fromBinding },
+    } = this;
+    if (internal.size > 0) {
+      const result = fromBinding(internal.getAny(0)) as T;
+      internal.remove(0);
+      return result;
+    }
   }
 
   unshift(...items: T[]): number {
-    throw new Error("Not yet implemented");
+    assert.inTransaction(this.realm);
+    const {
+      internal,
+      helpers: { toBinding },
+    } = this;
+    let i = 0;
+    for (const item of items) {
+      // Convert item to a mixedArg
+      internal.insertAny(i++, toBinding(item));
+    }
+    return internal.size;
   }
 
   splice(start: number, deleteCount?: number): T[];
   splice(start: number, deleteCount: number, ...items: T[]): T[];
   splice(start: number, deleteCount?: number, ...items: T[]): T[] {
-    throw new Error("Not yet implemented");
+    // Comments in the code below is copied from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice
+    assert.inTransaction(this.realm);
+    assert.number(start, "start");
+    const {
+      internal,
+      helpers: { fromBinding, toBinding },
+    } = this;
+    // If negative, it will begin that many elements from the end of the array.
+    if (start < 0) {
+      start = internal.size + start;
+    }
+    // If greater than the length of the array, start will be set to the length of the array.
+    if (start > internal.size) {
+      start = internal.size;
+    }
+    // If deleteCount is omitted, or if its value is equal to or larger than array.length - start
+    // (that is, if it is equal to or greater than the number of elements left in the array, starting at start),
+    // then all the elements from start to the end of the array will be deleted.
+    const end = typeof deleteCount === "number" ? Math.min(start + deleteCount, internal.size) : internal.size;
+    // Get the elements that are about to be deleted
+    const result: T[] = [];
+    for (let i = start; i < end; i++) {
+      result.push(fromBinding(internal.getAny(i)) as T);
+    }
+    // Remove the elements from the list (backwards to avoid skipping elements as they're being deleted)
+    for (let i = end - 1; i >= start; i--) {
+      internal.remove(i);
+    }
+    // Insert any new elements
+    let i = start;
+    for (const item of items) {
+      // Convert item to a mixedArg
+      internal.insertAny(i++, toBinding(item));
+    }
+    return result;
   }
 }
