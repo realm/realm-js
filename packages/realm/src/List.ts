@@ -18,12 +18,17 @@
 
 import * as binding from "./binding";
 import { OrderedCollection, OrderedCollectionHelpers } from "./OrderedCollection";
-import { INTERNAL } from "./internal";
 import { IllegalConstructorError } from "./errors";
 
 type PartiallyWriteableArray<T> = Pick<Array<T>, "pop" | "push" | "shift" | "unshift" | "splice">;
 
 export class List<T = unknown> extends OrderedCollection<T> implements PartiallyWriteableArray<T> {
+  /**
+   * The representation in the binding.
+   * @internal
+   */
+  public internal!: binding.List;
+
   /** @internal */
   constructor(internal: binding.List, helpers: OrderedCollectionHelpers) {
     if (arguments.length === 0 || !(internal instanceof binding.List)) {
@@ -32,7 +37,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     super(internal.asResults(), helpers);
     // TODO: Consider if this could be a simple assignment
     Object.defineProperties(this, {
-      [INTERNAL]: {
+      internal: {
         enumerable: false,
         configurable: false,
         writable: false,
@@ -42,23 +47,17 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
   }
 
   /**
-   * The representation in the binding.
-   * @internal
-   */
-  public [INTERNAL]!: binding.List;
-
-  /**
    * Set an element of the ordered collection by index
    * @param index The index
    * @param value The value
    * @internal
    */
   public set(index: number, value: unknown) {
-    this[INTERNAL].setAny(index, this.helpers.toBinding(value));
+    this.internal.setAny(index, this.helpers.toBinding(value));
   }
 
   get length(): number {
-    return this[INTERNAL].size;
+    return this.internal.size;
   }
 
   pop(): T | undefined {
@@ -71,12 +70,12 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
    */
   push(...items: T[]): number {
     const { toBinding } = this.helpers;
-    let i = this[INTERNAL].size;
+    let i = this.internal.size;
     for (const item of items) {
       // Convert item to a mixedArg
-      this[INTERNAL].insertAny(i++, toBinding(item));
+      this.internal.insertAny(i++, toBinding(item));
     }
-    return this[INTERNAL].size;
+    return this.internal.size;
   }
 
   /**

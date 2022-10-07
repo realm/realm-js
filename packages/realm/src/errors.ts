@@ -22,6 +22,45 @@ export class AssertionError extends Error {
   }
 }
 
+export class TypeAssertionError extends AssertionError {
+  /** @internal */
+  private static deriveType(value: unknown) {
+    if (typeof value === "object") {
+      if (value === null) {
+        return "null";
+      } else {
+        const name = value.constructor.name;
+        if (name === "Object") {
+          return "an object";
+        } else if (name === "Array") {
+          return "an array";
+        } else {
+          return "an instance of " + name;
+        }
+      }
+    } else if (typeof value === "undefined") {
+      return typeof value;
+    } else if (typeof value === "function") {
+      return `a function or class named ${value.name}`;
+    } else {
+      return "a " + typeof value;
+    }
+  }
+
+  private static message(expected: string, value: unknown, name?: string) {
+    const actual = TypeAssertionError.deriveType(value);
+    return `Expected ${name ? "'" + name + "'" : "value"} to be ${expected}, got ${actual}`;
+  }
+
+  constructor(private expected: string, private value: unknown, name?: string) {
+    super(TypeAssertionError.message(expected, value, name));
+  }
+
+  public rename(name: string) {
+    this.message = TypeAssertionError.message(this.expected, this.value, name);
+  }
+}
+
 export class IllegalConstructorError extends Error {
   constructor(type: string) {
     super(`Illegal constructor: ${type} objects are read from managed objects only.`);

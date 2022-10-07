@@ -128,7 +128,7 @@ export class Realm {
    * The Realms's representation in the binding.
    * @internal
    */
-  public [INTERNAL]!: binding.Realm;
+  public internal!: binding.Realm;
 
   private schemaExtras: RealmSchemaExtra;
   private classes: ClassMap;
@@ -163,7 +163,7 @@ export class Realm {
         configurable: false,
         writable: true,
       },
-      [INTERNAL]: {
+      internal: {
         enumerable: false,
         configurable: false,
         writable: false,
@@ -181,7 +181,7 @@ export class Realm {
   }
 
   get path(): string {
-    return this[INTERNAL].config.path;
+    return this.internal.config.path;
   }
 
   get readOnly(): boolean {
@@ -191,19 +191,19 @@ export class Realm {
 
   // TODO: Stitch in the defaults and constructors stored in this.schemaExtras
   get schema(): CanonicalObjectSchema[] {
-    return fromBindingSchema(this[INTERNAL].schema);
+    return fromBindingSchema(this.internal.schema);
   }
 
   get schemaVersion(): number {
-    return Number(this[INTERNAL].schemaVersion);
+    return Number(this.internal.schemaVersion);
   }
 
   get isInTransaction(): boolean {
-    return this[INTERNAL].isInTransaction;
+    return this.internal.isInTransaction;
   }
 
   get isClosed(): boolean {
-    return this[INTERNAL].isClosed;
+    return this.internal.isClosed;
   }
 
   get syncSession(): any {
@@ -215,7 +215,7 @@ export class Realm {
   }
 
   close(): void {
-    this[INTERNAL].close();
+    this.internal.close();
   }
 
   // TODO: Fully support update mode
@@ -242,17 +242,16 @@ export class Realm {
     if (values instanceof RealmObject && !getInternal(values)) {
       throw new Error("Cannot create an object from a detached Realm.Object instance");
     }
-    const { [INTERNAL]: internal } = this;
-    internal.verifyOpen();
+    this.internal.verifyOpen();
     const helpers = this.classes.getHelpers(type);
-    return RealmObject.create(internal, helpers, values, mode);
+    return RealmObject.create(this, helpers, values, mode);
   }
 
   delete(subject: RealmObject | RealmObject[] | List | Results): void {
     if (subject instanceof RealmObject) {
       const { objectSchema } = this.classes.getHelpers(subject);
       const obj = getInternal(subject);
-      const table = binding.Helpers.getTable(this[INTERNAL], objectSchema.tableKey);
+      const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
       table.removeObject(obj.key);
     } else {
       throw new Error("Not yet implemented");
@@ -275,7 +274,7 @@ export class Realm {
     if (!objectSchema.primaryKey) {
       throw new Error(`Expected a primary key on "${objectSchema.name}"`);
     }
-    const table = binding.Helpers.getTable(this[INTERNAL], objectSchema.tableKey);
+    const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
     const value = properties.get(objectSchema.primaryKey).toBinding(primaryKey);
     try {
       const obj = table.getObjectWithPrimaryKey(value);
@@ -300,9 +299,9 @@ export class Realm {
       throw new Error("You cannot query an asymmetric class.");
     }
 
-    const table = binding.Helpers.getTable(this[INTERNAL], objectSchema.tableKey);
-    const results = binding.Results.fromTable(this[INTERNAL], table);
-    return new Results<T>(results, this[INTERNAL], {
+    const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
+    const results = binding.Results.fromTable(this.internal, table);
+    return new Results<T>(this, results, {
       get(results: binding.Results, index: number) {
         return results.getObj(index);
       },
@@ -327,26 +326,26 @@ export class Realm {
 
   write<T>(callback: () => T): T {
     try {
-      this[INTERNAL].beginTransaction();
+      this.internal.beginTransaction();
       const result = callback();
-      this[INTERNAL].commitTransaction();
+      this.internal.commitTransaction();
       return result;
     } catch (err) {
-      this[INTERNAL].cancelTransaction();
+      this.internal.cancelTransaction();
       throw err;
     }
   }
 
   beginTransaction(): void {
-    this[INTERNAL].beginTransaction();
+    this.internal.beginTransaction();
   }
 
   commitTransaction(): void {
-    this[INTERNAL].commitTransaction();
+    this.internal.commitTransaction();
   }
 
   cancelTransaction(): void {
-    this[INTERNAL].cancelTransaction();
+    this.internal.cancelTransaction();
   }
 
   compact(): boolean {

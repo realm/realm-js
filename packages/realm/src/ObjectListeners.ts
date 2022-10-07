@@ -20,7 +20,7 @@ import * as binding from "./binding";
 import { NotificationToken } from "./binding";
 import { getHelpers } from "./ClassHelpers";
 
-import { getInternal, INTERNAL } from "./internal";
+import { getInternal } from "./internal";
 import { Listeners } from "./Listeners";
 import type { Object as RealmObject } from "./Object";
 import type { PropertyMap } from "./PropertyMap";
@@ -30,14 +30,14 @@ export type ObjectChangeCallback<T> = (object: RealmObject<T> & T, changes: Obje
 
 /** @internal */
 export class ObjectListeners<T> {
-  constructor(private realm: binding.Realm, private object: RealmObject<T> & T) {
-    this.properties = getHelpers(this.object.constructor as typeof RealmObject).properties;
-  }
-
   /**
    * Storage for the momoized, lacyly created object notifier.
    */
-  private [INTERNAL]!: binding.ObjectNotifier | null;
+  private internal!: binding.ObjectNotifier | null;
+
+  constructor(private realm: binding.Realm, private object: RealmObject<T> & T) {
+    this.properties = getHelpers(this.object.constructor as typeof RealmObject).properties;
+  }
 
   private properties: PropertyMap;
 
@@ -64,12 +64,12 @@ export class ObjectListeners<T> {
    * A momoized, lacyly created object notifier.
    */
   private get notifier() {
-    let notifier = this[INTERNAL];
+    let notifier = this.internal;
     if (notifier) {
       return notifier;
     } else {
       notifier = binding.Helpers.makeObjectNotifier(this.realm, getInternal(this.object));
-      this[INTERNAL] = notifier;
+      this.internal = notifier;
       return notifier;
     }
   }

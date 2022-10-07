@@ -26,6 +26,8 @@ import { Results } from "./Results";
 import { Dictionary } from "./Dictionary";
 import { Set } from "./Set";
 import { TypeHelpers, getHelpers as getTypeHelpers, TypeOptions } from "./types";
+import { TypeAssertionError } from "./errors";
+import type { Realm } from "./Realm";
 
 type BindingObjectSchema = binding.Realm["schema"][0];
 type BindingPropertySchema = BindingObjectSchema["persistedProperties"][0];
@@ -40,7 +42,7 @@ function getAny(results: binding.Results, index: number) {
 }
 
 export type HelperOptions = {
-  realm: binding.Realm;
+  realm: Realm;
   getClassHelpers: (name: string) => ClassHelpers;
 };
 
@@ -71,8 +73,9 @@ const defaultGet = ({ typeHelpers: { fromBinding }, columnKey, optional }: Prope
       };
 
 const defaultSet =
-  ({ typeHelpers: { toBinding }, columnKey }: PropertyOptions) =>
+  ({ realm, typeHelpers: { toBinding }, columnKey }: PropertyOptions) =>
   (obj: binding.Obj, value: unknown) => {
+    assert.inTransaction(realm);
     obj.setAny(columnKey, toBinding(value));
   };
 
@@ -89,18 +92,6 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
         return obj.isNull(columnKey) ? null : fromBinding(obj.getLinkedObject(columnKey));
       },
       set: defaultSet(options),
-      /*
-      set(obj, value) {
-        if (value === null) {
-          obj.setAny(columnKey, null);
-        } else if (value instanceof RealmObject) {
-          const valueObj = getInternal(value);
-          obj.setAny(columnKey, valueObj);
-        } else {
-          throw new Error(`Expected a Realm.Object, got '${value}'`);
-        }
-      },
-      */
     };
   },
   [binding.PropertyType.LinkingObjects]() {
@@ -125,6 +116,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
   }) {
     // TODO: Move this destructure into the argument once `getHelpers` is no longer called
 
+    const realmInternal = realm.internal;
     const itemType = type & ~binding.PropertyType.Flags;
 
     const itemHelpers = getTypeHelpers(itemType, {
@@ -144,7 +136,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       // TODO: Check if we want to match with the `p.name` or `p.publicName` here
       const targetProperty = persistedProperties.find((p) => p.name === linkOriginPropertyName);
       assert(targetProperty, `Expected a '${linkOriginPropertyName}' property on ${objectType}`);
-      const tableRef = binding.Helpers.getTable(realm, tableKey);
+      const tableRef = binding.Helpers.getTable(realmInternal, tableKey);
 
       const collectionHelpers: OrderedCollectionHelpers = {
         get: getObj,
@@ -155,8 +147,8 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       return {
         get(obj: binding.Obj) {
           const tableView = obj.getBacklinkView(tableRef, targetProperty.columnKey);
-          const results = binding.Results.fromTableView(realm, tableView);
-          return new Results(results, realm, collectionHelpers);
+          const results = binding.Results.fromTableView(realmInternal, tableView);
+          return new Results(realm, results, collectionHelpers);
         },
         set() {
           throw new Error("Not supported");
@@ -172,16 +164,24 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
 
       return {
         get(obj: binding.Obj) {
-          const internal = binding.List.make(realm, obj, columnKey);
+          const internal = binding.List.make(realm.internal, obj, columnKey);
           return new List(internal, collectionHelpers);
         },
         set(obj, values) {
+          assert.inTransaction(realm);
           // Implements https://github.com/realm/realm-core/blob/v12.0.0/src/realm/object-store/list.hpp#L258-L286
           assert.array(values);
-          const internal = binding.List.make(realm, obj, columnKey);
+          const internal = binding.List.make(realm.internal, obj, columnKey);
           internal.removeAll();
           for (const [index, value] of values.entries()) {
-            internal.insertAny(index, itemToBinding(value));
+            try {
+              internal.insertAny(index, itemToBinding(value));
+            } catch (err) {
+              if (err instanceof TypeAssertionError) {
+                err.rename(`${name}[${index}]`);
+              }
+              throw err;
+            }
             // TODO: Unwrap objects and bigint
             // list.insertAny(index, value as MixedArg);
             // list.insertAny(index, BigInt(value as number) as MixedArg);
@@ -201,11 +201,11 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     });
     return {
       get(obj) {
-        const internal = binding.Dictionary.make(realm, obj, columnKey);
+        const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
         return new Dictionary(internal, itemHelpers);
       },
       set(obj, value) {
-        const internal = binding.Dictionary.make(realm, obj, columnKey);
+        const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
         // Clear the dictionary before adding new values
         internal.removeAll();
         assert.object(value, "values");
@@ -231,11 +231,11 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     };
     return {
       get(obj) {
-        const internal = binding.Set.make(realm, obj, columnKey);
+        const internal = binding.Set.make(realm.internal, obj, columnKey);
         return new Set(internal, collectionHelpers);
       },
       set(obj, value) {
-        const internal = binding.Set.make(realm, obj, columnKey);
+        const internal = binding.Set.make(realm.internal, obj, columnKey);
         // Clear the dictionary before adding new values
         internal.removeAll();
         assert.object(value, "values");
