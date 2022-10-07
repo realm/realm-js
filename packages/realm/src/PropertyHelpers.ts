@@ -87,6 +87,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       columnKey,
       typeHelpers: { fromBinding },
     } = options;
+    assert(options.optional, "Objects are always nullable");
     return {
       get(this: PropertyHelpers, obj) {
         return obj.isNull(columnKey) ? null : fromBinding(obj.getLinkedObject(columnKey));
@@ -165,26 +166,36 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       return {
         get(obj: binding.Obj) {
           const internal = binding.List.make(realm.internal, obj, columnKey);
-          return new List(internal, collectionHelpers);
+          return new List(realm, internal, collectionHelpers);
         },
         set(obj, values) {
           assert.inTransaction(realm);
           // Implements https://github.com/realm/realm-core/blob/v12.0.0/src/realm/object-store/list.hpp#L258-L286
-          assert.array(values);
-          const internal = binding.List.make(realm.internal, obj, columnKey);
-          internal.removeAll();
-          for (const [index, value] of values.entries()) {
-            try {
-              internal.insertAny(index, itemToBinding(value));
-            } catch (err) {
-              if (err instanceof TypeAssertionError) {
-                err.rename(`${name}[${index}]`);
+          assert.iterable(values);
+          const bindingValues = [];
+          // Transform all values to mixed before inserting into the list
+          {
+            let index = 0;
+            for (const value of values) {
+              try {
+                bindingValues.push(itemToBinding(value));
+              } catch (err) {
+                if (err instanceof TypeAssertionError) {
+                  err.rename(`${name}[${index}]`);
+                }
+                throw err;
               }
-              throw err;
+              index++;
             }
-            // TODO: Unwrap objects and bigint
-            // list.insertAny(index, value as MixedArg);
-            // list.insertAny(index, BigInt(value as number) as MixedArg);
+          }
+          // Move values into the internal list
+          {
+            const internal = binding.List.make(realm.internal, obj, columnKey);
+            internal.removeAll();
+            let index = 0;
+            for (const value of bindingValues) {
+              internal.insertAny(index++, value);
+            }
           }
         },
       };
@@ -232,7 +243,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     return {
       get(obj) {
         const internal = binding.Set.make(realm.internal, obj, columnKey);
-        return new Set(internal, collectionHelpers);
+        return new Set(realm, internal, collectionHelpers);
       },
       set(obj, value) {
         const internal = binding.Set.make(realm.internal, obj, columnKey);

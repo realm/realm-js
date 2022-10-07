@@ -119,7 +119,11 @@ export class ClassMap {
           objectSchema,
           properties,
           wrapObject(obj) {
-            return RealmObject.createWrapper(realm, obj, constructor);
+            if (obj.isValid) {
+              return RealmObject.createWrapper(realm, obj, constructor);
+            } else {
+              return null;
+            }
           },
         });
         return [objectSchema.name, constructor];
