@@ -22,7 +22,7 @@ import { PropertyMap } from "./PropertyMap";
 import type { Realm } from "./Realm";
 import { Object as RealmObject } from "./Object";
 import { Constructor, RealmObjectConstructor } from "./schema";
-import { getInternal, INTERNAL } from "./internal";
+import { getInternal } from "./internal";
 import { getHelpers, setHelpers } from "./ClassHelpers";
 import { assert } from "./assert";
 import { TableKey } from "./binding";
@@ -83,23 +83,10 @@ export class ClassMap {
           {
             enumerable: true,
             get(this: RealmObject) {
-              const obj = getInternal(this);
-              return get(obj);
+              return get(getInternal(this));
             },
             set(this: RealmObject, value: unknown) {
-              const obj = getInternal(this);
-              try {
-                set(obj, value);
-              } catch (err) {
-                // TODO: Match on something else than a message, once exposed by the binding
-                if (err instanceof Error && err.message.startsWith("Wrong transactional state")) {
-                  throw new Error(
-                    "Expected a write transaction: Wrap the assignment in `realm.write(() => { /* assignment*/ });`",
-                  );
-                } else {
-                  throw err;
-                }
-              }
+              set(getInternal(this), value);
             },
           },
         ];
@@ -120,8 +107,6 @@ export class ClassMap {
   }
 
   constructor(realm: Realm, realmSchema: BindingObjectSchema[], schemaExtras: RealmSchemaExtra) {
-    const realmInternal = realm[INTERNAL];
-
     this.mapping = Object.fromEntries(
       realmSchema.map((objectSchema) => {
         // Create the wrapping class first
@@ -149,7 +134,7 @@ export class ClassMap {
       const { properties } = getHelpers(constructor as typeof RealmObject);
       // Initialize the property map, now that all classes have helpers set
       properties.initialize(objectSchema, schemaExtras[objectSchema.name]?.defaults || {}, {
-        realm: realmInternal,
+        realm,
         getClassHelpers: (name: string) => this.getHelpers(name),
       });
       // Transfer property getters and setters onto the prototype of the class
