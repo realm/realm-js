@@ -180,7 +180,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       return app.logIn(credentials).then((user) => {
         let config = getSyncConfiguration(user, partition);
-        config.migration = (_) => {
+        config.onMigration = (_) => {
           /* empty function */
         };
         return Realm.open(config)
@@ -362,7 +362,7 @@ module.exports = {
     return app.logIn(credentials).then((user) => {
       return new Promise((resolve, _reject) => {
         const config = getSyncConfiguration(user, partition);
-        config.sync.error = (_, error) => {
+        config.sync.onError = (_, error) => {
           try {
             TestCase.assertEqual(error.message, "simulated error");
             TestCase.assertEqual(error.code, 123);
@@ -374,7 +374,7 @@ module.exports = {
         const realm = new Realm(config);
         const session = realm.syncSession;
 
-        TestCase.assertEqual(session.config.error, config.sync.error);
+        TestCase.assertEqual(session.config.onError, config.sync.onError);
         session._simulateError(123, "simulated error", "realm::sync::ProtocolError", false);
       });
     });
@@ -569,7 +569,7 @@ module.exports = {
       return new Promise((resolve, _reject) => {
         let realm;
         const config = getSyncConfiguration(user, partition);
-        config.sync.error = (sender, error) => {
+        config.sync.onError = (sender, error) => {
           try {
             console.log(JSON.stringify(error));
             TestCase.assertEqual(error.name, "ClientReset");
@@ -587,7 +587,7 @@ module.exports = {
         realm = new Realm(config);
         const session = realm.syncSession;
 
-        TestCase.assertEqual(session.config.error, config.sync.error);
+        TestCase.assertEqual(session.config.onError, config.sync.onError);
         session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false); // 211 -> diverging histories
       });
     });
@@ -609,14 +609,16 @@ module.exports = {
         const config = getSyncConfiguration(user, partition);
         config.sync.clientReset = {
           mode: "discardLocal",
-          clientResetBefore: (realm) => {
+          onBefore: (realm) => {
+            console.log("XXXXXXXXXXXXXXXx this happen?");
             reject("clientResetBefore");
           },
-          clientResetAfter: (beforeRealm, afterRealm) => {
+          onAfter: (beforeRealm, afterRealm) => {
+            console.log("YYYYYYYYYYYYYYy or this?");
             reject("clientResetAfter");
           },
         };
-        config.sync.error = (sender, error) => {
+        config.sync.onError = (sender, error) => {
           resolve();
         };
 
@@ -648,17 +650,17 @@ module.exports = {
         const config = getSyncConfiguration(user, partition);
         config.sync.clientReset = {
           mode: "discardLocal",
-          clientResetBefore: (realm) => {
+          onBefore: (realm) => {
             beforeCalled = true;
             TestCase.assertEqual(realm.objects("Dog").length, 1, "local");
           },
-          clientResetAfter: (beforeRealm, afterRealm) => {
+          onAfter: (beforeRealm, afterRealm) => {
             afterCalled = true;
             TestCase.assertEqual(beforeRealm.objects("Dog").length, 1, "local");
             TestCase.assertEqual(afterRealm.objects("Dog").length, 1, "after");
           },
         };
-        config.sync.error = (sender, error) => {
+        config.sync.onError = (sender, error) => {
           reject(`error: ${JSON.stringify(error)}`);
         };
 

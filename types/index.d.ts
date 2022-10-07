@@ -140,7 +140,7 @@ declare namespace Realm {
     interface SSLConfiguration {
         validate?: boolean;
         certificatePath?: string;
-        validateCallback?: SSLVerifyCallback;
+        validateCertificates?: SSLVerifyCallback;
     }
 
     enum ClientResetMode {
@@ -152,8 +152,8 @@ declare namespace Realm {
     type ClientResetAfterCallback = (localRealm: Realm, remoteRealm: Realm) => void;
     interface ClientResetConfiguration<ClientResetModeT = ClientResetMode> {
         mode: ClientResetModeT;
-        clientResetBefore?: ClientResetBeforeCallback;
-        clientResetAfter?: ClientResetAfterCallback;
+        onBefore?: ClientResetBeforeCallback;
+        onAfter?: ClientResetAfterCallback;
     }
 
     interface BaseSyncConfiguration{
@@ -163,7 +163,7 @@ declare namespace Realm {
         _sessionStopPolicy?: SessionStopPolicy;
         newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
         existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
-        error?: ErrorCallback;
+        onError?: ErrorCallback;
     }
 
     // We only allow `flexible` to be `true` or `undefined` - `{ flexible: false }`
@@ -229,7 +229,7 @@ declare namespace Realm {
         encryptionKey?: ArrayBuffer | ArrayBufferView | Int8Array;
         schema?: (ObjectClass | ObjectSchema)[];
         schemaVersion?: number;
-        shouldCompactOnLaunch?: (totalBytes: number, usedBytes: number) => boolean;
+        shouldCompact?: (totalBytes: number, usedBytes: number) => boolean;
         onFirstOpen?: (realm: Realm) => void;
         path?: string;
         fifoFilesFallbackPath?: string;
@@ -238,7 +238,7 @@ declare namespace Realm {
 
     interface ConfigurationWithSync extends BaseConfiguration {
         sync: SyncConfiguration;
-        migration?: never;
+        onMigration?: never;
         inMemory?: never;
         deleteRealmIfMigrationNeeded?: never;
         disableFormatUpgrade?: never;
@@ -246,7 +246,7 @@ declare namespace Realm {
 
     interface ConfigurationWithoutSync extends BaseConfiguration {
         sync?: never;
-        migration?: MigrationCallback;
+        onMigration?: MigrationCallback;
         inMemory?: boolean;
         deleteRealmIfMigrationNeeded?: boolean;
         disableFormatUpgrade?: boolean;

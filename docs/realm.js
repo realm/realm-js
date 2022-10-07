@@ -371,7 +371,7 @@ class Realm {
  * @type {Object}
  * @property {ArrayBuffer|ArrayBufferView} [encryptionKey] - The 512-bit (64-byte) encryption
  *   key used to encrypt and decrypt all data in the Realm.
- * @property {callback(Realm, Realm)} [migration] - The function to run if a migration is needed.
+ * @property {callback(Realm, Realm)} [onMigration] - The function to run if a migration is needed.
  *   This function should provide all the logic for converting data models from previous schemas
  *   to the new schema. This option is incompatible with `sync`.
  *   This function takes two arguments:
@@ -380,7 +380,7 @@ class Realm {
  * @property {boolean} [deleteRealmIfMigrationNeeded=false] - Specifies if this Realm should be deleted
  *   if a migration is needed.
  *   This option is not available on synced realms.
- * @property {callback(number, number)} [shouldCompactOnLaunch] - The function called when opening
+ * @property {callback(number, number)} [shouldCompact] - The function called when opening
  *   a Realm for the first time during the life of a process to determine if it should be compacted
  *   before being returned to the user. The function takes two arguments:
  *     - `totalSize` - The total file size (data + free space)

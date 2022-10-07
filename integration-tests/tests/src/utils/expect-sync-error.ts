@@ -48,7 +48,7 @@ export async function expectSyncError(
       ...config,
       sync: {
         ...config.sync,
-        error(_, error: Error) {
+        onError(_, error: Error) {
           try {
             expectation(error);
             resolve();

@@ -718,15 +718,15 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
                 config.schema_version = 0;
             }
 
-            static const String compact_on_launch_string = "shouldCompactOnLaunch";
+            static const String compact_on_launch_string = "shouldCompact";
             ValueType compact_value = Object::get_property(ctx, object, compact_on_launch_string);
             if (!Value::is_undefined(ctx, compact_value)) {
                 if (config.schema_mode == SchemaMode::Immutable) {
-                    throw std::invalid_argument("Cannot set 'shouldCompactOnLaunch' when 'readOnly' is set.");
+                    throw std::invalid_argument("Cannot set 'shouldCompact' when 'readOnly' is set.");
                 }
 
                 FunctionType should_compact_on_launch_function =
-                    Value::validated_to_function(ctx, compact_value, "shouldCompactOnLaunch");
+                    Value::validated_to_function(ctx, compact_value, "shouldCompact");
                 ShouldCompactOnLaunchFunctor<T> should_compact_on_launch_functor{ctx,
                                                                                  should_compact_on_launch_function};
                 config.should_compact_on_launch_function = std::move(should_compact_on_launch_functor);
@@ -755,18 +755,18 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
                 };
             }
 
-            static const String migration_string = "migration";
+            static const String migration_string = "onMigration";
             ValueType migration_value = Object::get_property(ctx, object, migration_string);
             if (!Value::is_undefined(ctx, migration_value)) {
                 if (config.force_sync_history || config.sync_config) {
-                    throw std::invalid_argument("Options 'migration' and 'sync' are mutual exclusive.");
+                    throw std::invalid_argument("Options 'onMigration' and 'sync' are mutual exclusive.");
                 }
 
-                FunctionType migration_function = Value::validated_to_function(ctx, migration_value, "migration");
+                FunctionType migration_function = Value::validated_to_function(ctx, migration_value, "onMigration");
 
                 if (config.schema_mode == SchemaMode::SoftResetFile) {
                     throw std::invalid_argument(
-                        "Cannot include 'migration' when 'deleteRealmIfMigrationNeeded' is set.");
+                        "Cannot include 'onMigration' when 'deleteRealmIfMigrationNeeded' is set.");
                 }
 
                 config.migration_function = [=](SharedRealm old_realm, SharedRealm realm, realm::Schema&) {
