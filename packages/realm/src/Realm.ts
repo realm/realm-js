@@ -42,6 +42,7 @@ import { validateConfiguration } from "./validation/configuration";
 import { Collection } from "./Collection";
 import { Dictionary } from "./Dictionary";
 import { Set as RealmSet } from "./Set";
+import { assert } from "./assert";
 
 // Using a set of weak refs to avoid prevention of garbage collection
 const RETURNED_REALMS = new Set<WeakRef<binding.Realm>>();
@@ -199,10 +200,12 @@ export class Realm {
   }
 
   get isInTransaction(): boolean {
+    // TODO: Consider keeping a local state in JS for this
     return this.internal.isInTransaction;
   }
 
   get isClosed(): boolean {
+    // TODO: Consider keeping a local state in JS for this
     return this.internal.isClosed;
   }
 
@@ -263,7 +266,11 @@ export class Realm {
   }
 
   deleteAll(): void {
-    throw new Error("Not yet implemented");
+    assert.inTransaction(this);
+    for (const objectSchema of this.internal.schema) {
+      const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
+      table.clear();
+    }
   }
 
   objectForPrimaryKey<T>(type: string, primaryKey: T[keyof T]): RealmObject<T> & T;
