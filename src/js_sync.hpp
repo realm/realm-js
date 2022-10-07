@@ -1015,11 +1015,11 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         // i)  manual: the error handler is called with the proper error code and a client reset is initiated
         // ii) discardLocal: the sync client handles it but notifications are send before and after
         //
-        // The default setting is manual
+        // The default setting is discardLocal
 
         const std::string client_reset_manual = "manual";
         const std::string client_reset_discard_local = "discardLocal";
-        config.sync_config->client_resync_mode = realm::ClientResyncMode::Manual;
+        config.sync_config->client_resync_mode = realm::ClientResyncMode::DiscardLocal;
         ValueType client_reset_value = Object::get_property(ctx, sync_config_object, "clientReset");
         if (!Value::is_undefined(ctx, client_reset_value)) {
             auto client_reset_object = Value::validated_to_object(ctx, client_reset_value);
