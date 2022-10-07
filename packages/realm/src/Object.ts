@@ -26,6 +26,7 @@ import { ObjectChangeCallback, ObjectListeners } from "./ObjectListeners";
 import { INTERNAL_HELPERS, ClassHelpers } from "./ClassHelpers";
 import { RealmInsertionModel } from "./InsertionModel";
 import { assert } from "./assert";
+import { TypeAssertionError } from "./errors";
 
 export enum UpdateMode {
   Never = "never",
@@ -67,11 +68,14 @@ class RealmObject<T = DefaultObject> {
     values: Record<string, unknown>,
     mode: UpdateMode,
   ): RealmObject {
-    assert.isOpen(realm);
     assert.inTransaction(realm);
+    if (Array.isArray(values)) {
+      throw new Error("Array values on object creation is no longer supported");
+    }
     // Create the underlying object
     const [obj, created] = RealmObject.createObj(realm, helpers, values, mode);
     const result = helpers.wrapObject(obj);
+    assert(result);
     // Persist any values provided
     // TODO: Consider using the property helpers directly to improve performance
     for (const property of helpers.objectSchema.persistedProperties) {

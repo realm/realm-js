@@ -26,7 +26,7 @@ type BindingObjectSchema = binding.Realm["schema"][0];
 
 export const INTERNAL_HELPERS = Symbol("Realm.Object#helpers");
 
-type ObjectWrapper = (obj: binding.Obj) => RealmObject & DefaultObject;
+type ObjectWrapper = (obj: binding.Obj) => (RealmObject & DefaultObject) | null;
 
 /**
  * @internal
