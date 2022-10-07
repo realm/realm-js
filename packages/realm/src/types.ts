@@ -51,9 +51,9 @@ function defaultFromBinding(value: unknown) {
 /**
  * Adds a branch to a function, which checks for the argument to be null, in which case it returns early.
  */
-function nullPassthrough<F extends (value: unknown) => unknown>(fn: F, enabled: boolean): F {
+function nullPassthrough<T, F extends (value: unknown) => unknown>(this: T, fn: F, enabled: boolean): F {
   if (enabled) {
-    return ((value) => (value === null ? null : fn(value))) as F;
+    return ((value) => (value === null ? null : fn.call(this, value))) as F;
   } else {
     return fn;
   }
@@ -62,7 +62,7 @@ function nullPassthrough<F extends (value: unknown) => unknown>(fn: F, enabled: 
 const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => TypeHelpers> = {
   [binding.PropertyType.Int]({ optional }) {
     return {
-      toBinding(value: unknown) {
+      toBinding(value) {
         if (value === null && optional) {
           return null;
         } else if (typeof value === "number") {
@@ -79,7 +79,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
   },
   [binding.PropertyType.Bool]({ optional }) {
     return {
-      toBinding: nullPassthrough((value: unknown) => {
+      toBinding: nullPassthrough((value) => {
         assert.boolean(value);
         return value;
       }, optional),
@@ -88,7 +88,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
   },
   [binding.PropertyType.String]({ optional }) {
     return {
-      toBinding: nullPassthrough((value: unknown) => {
+      toBinding: nullPassthrough((value) => {
         assert.string(value);
         return value;
       }, optional),
@@ -97,7 +97,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
   },
   [binding.PropertyType.Data]({ optional }) {
     return {
-      toBinding: nullPassthrough((value: unknown) => {
+      toBinding: nullPassthrough((value) => {
         if (value instanceof Uint8Array) {
           return value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength);
         } else {
@@ -110,11 +110,11 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
   },
   [binding.PropertyType.Date]({ optional }) {
     return {
-      toBinding: nullPassthrough((value: unknown) => {
+      toBinding: nullPassthrough((value) => {
         assert.instanceOf(value, Date);
         return binding.Timestamp.fromDate(value);
       }, optional),
-      fromBinding: nullPassthrough((value: unknown) => {
+      fromBinding: nullPassthrough((value) => {
         assert.instanceOf(value, binding.Timestamp);
         return value.toDate();
       }, optional),
@@ -122,11 +122,11 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
   },
   [binding.PropertyType.Float]({ optional }) {
     return {
-      toBinding: nullPassthrough((value: unknown) => {
+      toBinding: nullPassthrough((value) => {
         assert.number(value);
         return new binding.Float(value);
       }, optional),
-      fromBinding: nullPassthrough((value: unknown) => {
+      fromBinding: nullPassthrough((value) => {
         assert.instanceOf(value, binding.Float);
         return value.value;
       }, optional),
@@ -134,7 +134,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
   },
   [binding.PropertyType.Double]({ optional }) {
     return {
-      toBinding: nullPassthrough((value: unknown) => {
+      toBinding: nullPassthrough((value) => {
         assert.number(value);
         return value;
       }, optional),
@@ -146,7 +146,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
     const helpers = getClassHelpers(objectType);
     const { wrapObject } = helpers;
     return {
-      toBinding: nullPassthrough((value: unknown) => {
+      toBinding: nullPassthrough((value) => {
         if (value instanceof RealmObject) {
           assert.instanceOf(value, helpers.constructor);
           return getInternal(value);
@@ -157,11 +157,11 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
           return getInternal(createdObject);
         }
       }, optional),
-      fromBinding: nullPassthrough(function (this: TypeHelpers, value: unknown) {
+      fromBinding: nullPassthrough((value) => {
         if (value instanceof binding.ObjLink) {
           const table = binding.Helpers.getTable(realm.internal, value.tableKey);
           const linkedObj = table.getObject(value.objKey);
-          return this.fromBinding(linkedObj);
+          return wrapObject(linkedObj);
         } else {
           assert.instanceOf(value, binding.Obj);
           return wrapObject(value);
@@ -211,7 +211,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
   },
   [binding.PropertyType.ObjectId]({ optional }) {
     return {
-      toBinding: nullPassthrough((value: unknown) => {
+      toBinding: nullPassthrough((value) => {
         assert.instanceOf(value, ObjectId);
         return value;
       }, optional),
@@ -220,7 +220,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
   },
   [binding.PropertyType.Decimal]({ optional }) {
     return {
-      toBinding: nullPassthrough((value: unknown) => {
+      toBinding: nullPassthrough((value) => {
         assert.instanceOf(value, Decimal128);
         return value;
       }, optional),
@@ -229,7 +229,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
   },
   [binding.PropertyType.UUID]({ optional }) {
     return {
-      toBinding: nullPassthrough((value: unknown) => {
+      toBinding: nullPassthrough((value) => {
         assert.instanceOf(value, UUID);
         return value;
       }, optional),

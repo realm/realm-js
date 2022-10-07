@@ -272,7 +272,7 @@ module.exports = {
       TestCase.assertThrowsContaining(() => (array[0] = { foo: "bar" }), "Missing value for property 'doubleCol'");
       TestCase.assertThrowsContaining(
         () => (array[0] = prim),
-        "Expected 'value' to be an instance of TestObject, got an instance of PrimitiveArrays",
+        "Expected value to be an instance of TestObject, got an instance of PrimitiveArrays",
       );
       TestCase.assertThrowsContaining(() => (array[0] = array), "Missing value for property 'doubleCol'");
       TestCase.assertThrowsContaining(() => (array[2] = { doubleCol: 1 }), "Requested index 2 greater than max 1");
@@ -349,15 +349,21 @@ module.exports = {
       let person = realm.create("PersonObject", { name: "a", age: 2.0 });
       let personList = realm.create("PersonList", { list: [person] }).list;
 
-      TestCase.assertThrowsContaining(() => (obj.arrayCol = [0]), "JS value must be of type 'object', got (0)");
-      TestCase.assertThrowsContaining(() => (obj.arrayCol = [null]), "JS value must be of type 'object', got (null)");
+      TestCase.assertThrowsContaining(
+        () => (obj.arrayCol = [0]),
+        "Expected 'arrayCol[0]' to be an object, got a number",
+      );
+      TestCase.assertThrowsContaining(
+        () => (obj.arrayCol = [null]),
+        "Expected 'arrayCol[0]' to be an object, got null",
+      );
       TestCase.assertThrowsContaining(
         () => (obj.arrayCol = [person]),
-        "Object of type (PersonObject) does not match List type (TestObject)",
+        "Expected 'arrayCol[0]' to be an instance of TestObject, got an instance of PersonObject",
       );
       TestCase.assertThrowsContaining(
         () => (obj.arrayCol = personList),
-        "LinkTypesObject.arrayCol must be of type 'TestObject[]', got 'object' (",
+        "Expected 'arrayCol[0]' to be an instance of TestObject, got an instance of PersonObject",
       );
       obj.arrayCol = [realm.create("TestObject", { doubleCol: 1.0 })];
       TestCase.assertEqual(obj.arrayCol[0].doubleCol, 1.0);
@@ -366,59 +372,59 @@ module.exports = {
 
       TestCase.assertThrowsContaining(
         () => (prim.bool = [person]),
-        "PrimitiveArrays.bool must be of type 'boolean[]', got 'object' ([PersonObject{",
+        "Expected 'bool[0]' to be a boolean, got an instance of PersonObject",
       );
       TestCase.assertThrowsContaining(
         () => (prim.int = [person]),
-        "PrimitiveArrays.int must be of type 'number[]', got 'object' ([PersonObject{",
+        "Expected 'int[0]' to be a number or bigint, got an instance of PersonObject",
       );
       TestCase.assertThrowsContaining(
         () => (prim.float = [person]),
-        "PrimitiveArrays.float must be of type 'number[]', got 'object' ([PersonObject{",
+        "Expected 'float[0]' to be a number, got an instance of PersonObject",
       );
       TestCase.assertThrowsContaining(
         () => (prim.double = [person]),
-        "PrimitiveArrays.double must be of type 'number[]', got 'object' ([PersonObject{",
+        "Expected 'double[0]' to be a number, got an instance of PersonObject",
       );
       TestCase.assertThrowsContaining(
         () => (prim.string = [person]),
-        "PrimitiveArrays.string must be of type 'string[]', got 'object' ([PersonObject{",
+        "Expected 'string[0]' to be a string, got an instance of PersonObject",
       );
       TestCase.assertThrowsContaining(
         () => (prim.data = [person]),
-        "PrimitiveArrays.data must be of type 'binary[]', got 'object' ([PersonObject{",
+        "Expected 'data[0]' to be an instance of ArrayBuffer, got an instance of PersonObject",
       );
       TestCase.assertThrowsContaining(
         () => (prim.date = [person]),
-        "PrimitiveArrays.date must be of type 'date[]', got 'object' ([PersonObject{",
+        "Expected 'date[0]' to be an instance of Date, got an instance of PersonObject",
       );
       TestCase.assertThrowsContaining(
         () => (prim.optBool = [person]),
-        "PrimitiveArrays.optBool must be of type 'boolean?[]', got 'object' ([PersonObject{",
+        "Expected 'optBool[0]' to be a boolean, got an instance of PersonObject",
       );
       TestCase.assertThrowsContaining(
         () => (prim.optInt = [person]),
-        "PrimitiveArrays.optInt must be of type 'number?[]', got 'object' ([PersonObject{",
+        "Expected 'optInt[0]' to be a number or bigint, got an instance of PersonObject",
       );
       TestCase.assertThrowsContaining(
         () => (prim.optFloat = [person]),
-        "PrimitiveArrays.optFloat must be of type 'number?[]', got 'object' ([PersonObject{",
+        "Expected 'optFloat[0]' to be a number, got an instance of PersonObject",
       );
       TestCase.assertThrowsContaining(
         () => (prim.optDouble = [person]),
-        "PrimitiveArrays.optDouble must be of type 'number?[]', got 'object' ([PersonObject{",
+        "Expected 'optDouble[0]' to be a number, got an instance of PersonObject",
       );
       TestCase.assertThrowsContaining(
         () => (prim.optString = [person]),
-        "PrimitiveArrays.optString must be of type 'string?[]', got 'object' ([PersonObject{",
+        "Expected 'optString[0]' to be a string, got an instance of PersonObject",
       );
       TestCase.assertThrowsContaining(
         () => (prim.optData = [person]),
-        "PrimitiveArrays.optData must be of type 'binary?[]', got 'object' ([PersonObject{",
+        "Expected 'optData[0]' to be an instance of ArrayBuffer, got an instance of PersonObject",
       );
       TestCase.assertThrowsContaining(
         () => (prim.optDate = [person]),
-        "PrimitiveArrays.optDate must be of type 'date?[]', got 'object' ([PersonObject{",
+        "Expected 'optDate[0]' to be an instance of Date, got an instance of PersonObject",
       );
 
       function testAssign(name, value) {
@@ -437,20 +443,19 @@ module.exports = {
       function testAssignNull(name, expected) {
         TestCase.assertThrowsContaining(
           () => (prim[name] = [null]),
-          `PrimitiveArrays.${name} must be of type '${expected}[]', got 'object' ([null])`,
+          `Expected '${name}[0]' to be ${expected}, got null`,
           undefined,
           1,
         );
         TestCase.assertEqual(prim[name].length, 1, "List should not have been cleared by invalid assignment", 1);
       }
-
-      testAssignNull("bool", "boolean");
-      testAssignNull("int", "number");
-      testAssignNull("float", "number");
-      testAssignNull("double", "number");
-      testAssignNull("string", "string");
-      testAssignNull("data", "binary");
-      testAssignNull("date", "date");
+      testAssignNull("bool", "a boolean");
+      testAssignNull("int", "a number or bigint");
+      testAssignNull("float", "a number");
+      testAssignNull("double", "a number");
+      testAssignNull("string", "a string");
+      testAssignNull("data", "an instance of ArrayBuffer");
+      testAssignNull("date", "an instance of Date");
 
       testAssign("optBool", true);
       testAssign("optInt", 1);
@@ -561,8 +566,6 @@ module.exports = {
       TestCase.assertEqual(array.length, 0);
 
       TestCase.assertEqual(array.pop(), undefined);
-
-      TestCase.assertThrowsContaining(() => array.pop(1), "Invalid argument");
     });
 
     TestCase.assertThrowsContaining(() => array.pop(), "Cannot modify managed objects outside of a write transaction.");
@@ -619,8 +622,6 @@ module.exports = {
       TestCase.assertEqual(array.length, 0);
 
       TestCase.assertEqual(array.shift(), undefined);
-
-      TestCase.assertThrowsContaining(() => array.shift(1), "Invalid argument");
     });
 
     TestCase.assertThrowsContaining(() => {
@@ -675,7 +676,9 @@ module.exports = {
       TestCase.assertEqual(removed[0].doubleCol, 1);
       TestCase.assertEqual(array.length, 0);
 
-      removed = array.splice("0", "0", obj.objectCol);
+      // While supported on arrays by some engines, we don't coerce strings to numbers here
+      // removed = array.splice("0", "0", obj.objectCol);
+      removed = array.splice(0, 0, obj.objectCol);
       TestCase.assertEqual(removed.length, 0);
       TestCase.assertEqual(array.length, 1);
 
@@ -689,11 +692,11 @@ module.exports = {
 
       TestCase.assertThrowsContaining(() => {
         array.splice("cat", 1);
-      }, "Value 'cat' not convertible to a number");
+      }, "Expected 'start' to be a number, got a string");
 
       TestCase.assertThrowsContaining(() => {
         array.splice(0, 0, 0);
-      }, "JS value must be of type 'object', got (0)");
+      }, "Expected 'element of arrayCol' to be an object, got a number");
     });
 
     TestCase.assertThrowsContaining(() => {
@@ -788,7 +791,12 @@ module.exports = {
     let array;
 
     realm.write(() => {
-      let obj = realm.create("LinkTypesObject", [[1], [2], [[3], [4]], [[5], [6]]]);
+      let obj = realm.create("LinkTypesObject", {
+        objectCol: { doubleCol: 1 },
+        objectCol1: { doubleCol: 2 },
+        arrayCol: [{ doubleCol: 3 }, { doubleCol: 4 }],
+        arrayCol1: [{ doubleCol: 5 }, { doubleCol: 6 }],
+      });
       array = obj.arrayCol;
     });
 
@@ -799,7 +807,7 @@ module.exports = {
     TestCase.assertEqual(arrayCopy.length, 2);
 
     realm.write(() => {
-      array.push([5]);
+      array.push({ doubleCol: 5 });
       TestCase.assertEqual(objectsCopy.length, 6);
       TestCase.assertEqual(arrayCopy.length, 2);
 
