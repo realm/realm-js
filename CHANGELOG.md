@@ -22,6 +22,7 @@
 ### Internal
 * Upgraded Realm Core from v12.6.0 to v12.9.0. ([#4932](https://github.com/realm/realm-js/issues/4932) and [#4983](https://github.com/realm/realm-js/issues/4983)
 * Added ARM/Linux build guide.
+* Check peer dependencies in analytics post-install script.
 
 ## 10.21.1 (2022-09-15)
 

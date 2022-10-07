@@ -153,6 +153,10 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
     framework = "react-native";
     frameworkVersion = packageJson.devDependencies["react-native"];
   }
+  if (packageJson.peerDependencies && packageJson.peerDependencies["react-native"]) {
+    framework = "react-native";
+    frameworkVersion = packageJson.peerDependencies["react-native"];
+  }
 
   if (framework === "react-native") {
     try {
@@ -184,6 +188,10 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
   if (packageJson.devDependencies && packageJson.devDependencies["electron"]) {
     framework = "electron";
     frameworkVersion = packageJson.devDependencies["electron"];
+  }
+  if (packageJson.peerDependencies && packageJson.peerDependencies["electron"]) {
+    framework = "electron";
+    frameworkVersion = packageJson.peerDependencies["electron"];
   }
   if (framework === "electron") {
     try {
