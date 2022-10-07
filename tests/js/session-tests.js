@@ -1154,8 +1154,8 @@ module.exports = {
     const partition = Utils.genPartition();
 
     /*
-        Test 1:  check whether calls to `writeCopyTo` are allowed at the right times
-      */
+      Test 1:  check whether calls to `writeCopyTo` are allowed at the right times
+    */
     let user1 = await app.logIn(credentials1);
     const config1 = {
       sync: {
@@ -1182,8 +1182,12 @@ module.exports = {
     await realm1.syncSession.uploadAllLocalChanges();
     await realm1.syncSession.downloadAllServerChanges();
 
+    const outputConfig1 = {
+      schema: [schemas.PersonForSync, schemas.DogForSync],
+      path: realm1Path + "copy1.realm",
+    };
     // changes are synced -- we should be able to copy the realm
-    realm1.writeCopyTo(realm1Path + "copy1.realm");
+    realm1.writeCopyTo(outputConfig1);
 
     // log out the user that created the realm
     await user1.logOut();
@@ -1200,9 +1204,22 @@ module.exports = {
       }
     });
 
+    // Log user back in to attempt to copy synced changes
+    user1 = await app.logIn(credentials1);
+    const realm2Path = `${realm1Path}copy2.realm`;
+    const outputConfig2 = {
+      sync: {
+        user: user1,
+        partitionValue: partition,
+        _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
+      },
+      schema: [schemas.PersonForSync, schemas.DogForSync],
+      path: realm2Path,
+    };
+
     // we haven't uploaded our recent changes -- we're not allowed to copy
     TestCase.assertThrowsContaining(() => {
-      realm1.writeCopyTo(realm1Path + "copy2.realm");
+      realm1.writeCopyTo(outputConfig2);
     }, "Could not write file as not all client changes are integrated in server");
 
     // log back in and upload the changes we made locally
@@ -1210,8 +1227,7 @@ module.exports = {
     await realm1.syncSession.uploadAllLocalChanges();
 
     // create copy no. 2 of the realm
-    const realm2Path = realm1Path + "copy2.realm";
-    realm1.writeCopyTo(realm2Path);
+    realm1.writeCopyTo(outputConfig2);
 
     /*
       Test 2:  check that a copied realm can be opened by another user, and that
@@ -1275,7 +1291,9 @@ module.exports = {
         in partition keys
     */
     const realm3Path = realm1Path + "copy3.realm";
-    realm1.writeCopyTo(realm3Path);
+    const outputConfig3 = { ...config1, path: realm3Path };
+    realm1.writeCopyTo(outputConfig3);
+
     const user3 = await app.logIn(credentials3);
     const otherPartition = Utils.genPartition();
     const config3 = {
@@ -1537,11 +1555,11 @@ module.exports = {
     TestCase.assertThrowsContaining(() => {
       // too many arguments
       realm.writeCopyTo("path", "encryptionKey", "invalidParameter");
-    }, "Invalid arguments: at most 2 expected, but 3 supplied.");
+    }, "Invalid arguments: at most 1 expected, but 3 supplied.");
     TestCase.assertThrowsContaining(() => {
       // too few arguments
       realm.writeCopyTo();
-    }, "`writeCopyTo` requires <output configuration> or <path, [encryptionKey]> parameters");
+    }, "Expected a config object");
     TestCase.assertThrowsContaining(() => {
       // wrong argument type
       realm.writeCopyTo(null);
@@ -1624,7 +1642,9 @@ module.exports = {
     for (let i = 0; i < 64; i++) {
       encryptionKey[i] = 1;
     }
-    realm1.writeCopyTo(encryptedCopyName, encryptionKey);
+
+    const outputConfig1 = { ...config1, path: encryptedCopyName, encryptionKey: encryptionKey };
+    realm1.writeCopyTo(outputConfig1);
     await user1.logOut();
 
     const user2 = await app.logIn(credentials2);

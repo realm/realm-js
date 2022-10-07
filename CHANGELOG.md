@@ -4,9 +4,13 @@
 Based on Realm JS v10.22.0: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.19.5).
 
 ### Breaking changes
+* The following deprecated methods have been removed:
+    * `Realm#automaticSyncConfiguration`
+    * `Realm.Credentials#google` with `authCode` parameter (use `authObject`)
+* `Realm#writeCopyTo` now only accepts an output Realm configuration as a parameter.
 * Removal of deprecated functions, which should be replaced with `Realm.Credentials#apiKey`:
-   * `Realm.Credentials#serverApiKey`
-   * `Realm.Credentials#userApiKey`
+    * `Realm.Credentials#serverApiKey`
+    * `Realm.Credentials#userApiKey`
 * When no object is found calling `Realm#objectForPrimaryKey`, `null` is returned instead of `undefined`
 * Replaced `Realm#empty` with `Realm#isEmpty`
 * Replaced `Realm#readOnly` with `Realm#isReadOnly`
