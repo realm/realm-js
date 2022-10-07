@@ -18,11 +18,13 @@
 
 import { Decimal128, ObjectId, UUID } from "bson";
 
-import { assert, createTypeError } from "./assert";
+import { assert } from "./assert";
 import * as binding from "./binding";
 import { ClassHelpers } from "./ClassHelpers";
+import { TypeAssertionError } from "./errors";
 import { getInternal } from "./internal";
 import { Object as RealmObject, UpdateMode } from "./Object";
+import type { Realm } from "./Realm";
 
 /** @internal */
 export type TypeHelpers = {
@@ -31,7 +33,7 @@ export type TypeHelpers = {
 };
 
 export type TypeOptions = {
-  realm: binding.Realm;
+  realm: Realm;
   name: string;
   optional: boolean;
   objectType: string | undefined;
@@ -68,7 +70,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
         } else if (typeof value === "bigint") {
           return value;
         } else {
-          throw createTypeError("a number or bigint", value);
+          throw new TypeAssertionError("a number or bigint", value);
         }
       },
       // TODO: Support returning bigints to end-users
@@ -146,7 +148,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
     return {
       toBinding: nullPassthrough((value: unknown) => {
         if (value instanceof RealmObject) {
-          assert.instanceOf(value, helpers.constructor, "value");
+          assert.instanceOf(value, helpers.constructor);
           return getInternal(value);
         } else {
           assert.object(value, name);
@@ -157,7 +159,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
       }, optional),
       fromBinding: nullPassthrough(function (this: TypeHelpers, value: unknown) {
         if (value instanceof binding.ObjLink) {
-          const table = binding.Helpers.getTable(realm, value.tableKey);
+          const table = binding.Helpers.getTable(realm.internal, value.tableKey);
           const linkedObj = table.getObject(value.objKey);
           return this.fromBinding(linkedObj);
         } else {
@@ -197,7 +199,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
         } else if (value instanceof binding.Float) {
           return value.value;
         } else if (value instanceof binding.ObjLink) {
-          const table = binding.Helpers.getTable(realm, value.tableKey);
+          const table = binding.Helpers.getTable(realm.internal, value.tableKey);
           const linkedObj = table.getObject(value.objKey);
           const { wrapObject } = getClassHelpers(value.tableKey);
           return wrapObject(linkedObj);
