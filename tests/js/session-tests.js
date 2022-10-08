@@ -584,6 +584,9 @@ module.exports = {
             _reject(e);
           }
         };
+        config.sync.clientReset = {
+          mode: "manual",
+        };
         realm = new Realm(config);
         const session = realm.syncSession;
 
@@ -1283,6 +1286,9 @@ module.exports = {
         user: user3,
         partitionValue: otherPartition,
         _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
+        clientReset: {
+          mode: "manual",
+        },
       },
       schema: [schemas.PersonForSync, schemas.DogForSync],
       path: realm3Path,
