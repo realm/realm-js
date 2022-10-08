@@ -26,7 +26,7 @@ import { IllegalConstructorError } from "./errors";
 import type { Realm } from "./Realm";
 
 type PropertyType = string;
-export type SortDescriptor = [string] | [string, boolean];
+export type SortDescriptor = string | [string, boolean];
 
 export type CollectionChangeSet = {
   insertions: number[];
@@ -355,15 +355,35 @@ export abstract class OrderedCollection<T = unknown>
    * @param  {any[]} ...arg
    * @returns Results
    */
-  filtered(query: string, ...arg: any[]): Results<T> {
-    throw new Error("Method not implemented.");
+  filtered(queryString: string, ...args: any[]): Results<T> {
+    const { results: parent, realm, helpers } = this;
+    const kpMapping = binding.Helpers.getKeypathMapping(realm.internal);
+    // TODO: Perform a mapping of the arguments
+    const query = parent.query.table.query(queryString, args, kpMapping);
+    const results = parent.filter(query);
+    return new Results(realm, results, helpers);
   }
 
   sorted(reverse?: boolean): Results<T>;
   sorted(descriptor: SortDescriptor[]): Results<T>;
   sorted(descriptor: string, reverse?: boolean): Results<T>;
-  sorted(arg0?: boolean | SortDescriptor[] | string, arg1?: boolean): Results<T> {
-    throw new Error("Method not implemented.");
+  sorted(arg0: boolean | SortDescriptor[] | string = "self", arg1?: boolean): Results<T> {
+    if (Array.isArray(arg0)) {
+      const { results: parent, realm, helpers } = this;
+      // Map optional "reversed" to "accending" (expected by the binding)
+      const descriptors = arg0.map<[string, boolean]>((arg) =>
+        typeof arg === "string" ? [arg, true] : [arg[0], !arg[1]],
+      );
+      // TODO: Call `parent.sort`, avoiding property name to colkey conversion to speed up performance here.
+      const results = parent.sortByNames(descriptors);
+      return new Results(realm, results, helpers);
+    } else if (typeof arg0 === "string") {
+      return this.sorted([[arg0, arg1 === true]]);
+    } else if (typeof arg0 === "boolean") {
+      return this.sorted([["self", arg0]]);
+    } else {
+      throw new Error("Expected either a property name and optional bool or an array of descriptors");
+    }
   }
 
   /**
