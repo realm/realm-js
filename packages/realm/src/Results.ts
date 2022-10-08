@@ -79,28 +79,4 @@ export class Results<T = unknown> extends OrderedCollection<T> {
   isEmpty(): boolean {
     return this.internal.size() === 0;
   }
-
-  filtered(queryString: string, ...args: any[]): Results<T> {
-    const { internal: parent, realm, helpers } = this;
-    const kpMapping = Helpers.getKeypathMapping(realm.internal);
-    // TODO: Perform a mapping of the arguments
-    const query = parent.query.table.query(queryString, args, kpMapping);
-    const results = parent.filter(query);
-    return new Results(realm, results, helpers);
-  }
-
-  sorted(arg0?: boolean | SortDescriptor[] | string, arg1?: boolean): Results<T> {
-    if (Array.isArray(arg0)) {
-      const { internal: parent, realm, helpers } = this;
-      // Map optional "reversed" to "accending" (expected by the binding)
-      const descriptors = arg0.map<[string, boolean]>(([name, reversed]) => [name, reversed ? false : true]);
-      // TODO: Call `parent.sort`, avoiding property name to colkey conversion to speed up performance here.
-      const results = parent.sortByNames(descriptors);
-      return new Results(realm, results, helpers);
-    } else if (typeof arg0 === "string") {
-      return this.sorted([[arg0, arg1 === true]]);
-    } else {
-      throw new Error("Expected either a property name and optional bool or an array of descriptors");
-    }
-  }
 }
