@@ -81,6 +81,7 @@ Based on Realm JS v10.21.1: See changelog below for details on enhancements and 
   Realm.App.Sync.Session.addProgressNotification(direction: ProgressDirection, mode: ProgressMode, progressCallback: ProgressNotificationCallback): void;
   ```
   * A typo was fixed in the `SubscriptionsState` enum, in which `SubscriptionsState.Superseded` now returns `superseded` in place of `Superseded`
+* `"discardLocal"` is now the default client reset mode. ([#4382](https://github.com/realm/realm-js/issues/4382))
 
 ### Enhancements
 * Small improvement to performance by caching JSI property String object [#4863](https://github.com/realm/realm-js/pull/4863)
