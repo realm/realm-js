@@ -180,7 +180,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       return app.logIn(credentials).then((user) => {
         let config = getSyncConfiguration(user, partition);
-        config.migration = (_) => {
+        config.onMigration = (_) => {
           /* empty function */
         };
         return Realm.open(config)
@@ -362,7 +362,7 @@ module.exports = {
     return app.logIn(credentials).then((user) => {
       return new Promise((resolve, _reject) => {
         const config = getSyncConfiguration(user, partition);
-        config.sync.error = (_, error) => {
+        config.sync.onError = (_, error) => {
           try {
             TestCase.assertEqual(error.message, "simulated error");
             TestCase.assertEqual(error.code, 123);
@@ -374,7 +374,7 @@ module.exports = {
         const realm = new Realm(config);
         const session = realm.syncSession;
 
-        TestCase.assertEqual(session.config.error, config.sync.error);
+        TestCase.assertEqual(session.config.onError, config.sync.onError);
         session._simulateError(123, "simulated error", "realm::sync::ProtocolError", false);
       });
     });
@@ -569,7 +569,7 @@ module.exports = {
       return new Promise((resolve, _reject) => {
         let realm;
         const config = getSyncConfiguration(user, partition);
-        config.sync.error = (sender, error) => {
+        config.sync.onError = (sender, error) => {
           try {
             console.log(JSON.stringify(error));
             TestCase.assertEqual(error.name, "ClientReset");
@@ -590,7 +590,7 @@ module.exports = {
         realm = new Realm(config);
         const session = realm.syncSession;
 
-        TestCase.assertEqual(session.config.error, config.sync.error);
+        TestCase.assertEqual(session.config.onError, config.sync.onError);
         session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false); // 211 -> diverging histories
       });
     });
@@ -612,14 +612,16 @@ module.exports = {
         const config = getSyncConfiguration(user, partition);
         config.sync.clientReset = {
           mode: "discardLocal",
-          clientResetBefore: (realm) => {
+          onBefore: (realm) => {
+            console.log("XXXXXXXXXXXXXXXx this happen?");
             reject("clientResetBefore");
           },
-          clientResetAfter: (beforeRealm, afterRealm) => {
+          onAfter: (beforeRealm, afterRealm) => {
+            console.log("YYYYYYYYYYYYYYy or this?");
             reject("clientResetAfter");
           },
         };
-        config.sync.error = (sender, error) => {
+        config.sync.onError = (sender, error) => {
           resolve();
         };
 
@@ -651,17 +653,17 @@ module.exports = {
         const config = getSyncConfiguration(user, partition);
         config.sync.clientReset = {
           mode: "discardLocal",
-          clientResetBefore: (realm) => {
+          onBefore: (realm) => {
             beforeCalled = true;
             TestCase.assertEqual(realm.objects("Dog").length, 1, "local");
           },
-          clientResetAfter: (beforeRealm, afterRealm) => {
+          onAfter: (beforeRealm, afterRealm) => {
             afterCalled = true;
             TestCase.assertEqual(beforeRealm.objects("Dog").length, 1, "local");
             TestCase.assertEqual(afterRealm.objects("Dog").length, 1, "after");
           },
         };
-        config.sync.error = (sender, error) => {
+        config.sync.onError = (sender, error) => {
           reject(`error: ${JSON.stringify(error)}`);
         };
 
@@ -1157,8 +1159,8 @@ module.exports = {
     const partition = Utils.genPartition();
 
     /*
-        Test 1:  check whether calls to `writeCopyTo` are allowed at the right times
-      */
+      Test 1:  check whether calls to `writeCopyTo` are allowed at the right times
+    */
     let user1 = await app.logIn(credentials1);
     const config1 = {
       sync: {
@@ -1185,8 +1187,12 @@ module.exports = {
     await realm1.syncSession.uploadAllLocalChanges();
     await realm1.syncSession.downloadAllServerChanges();
 
+    const outputConfig1 = {
+      schema: [schemas.PersonForSync, schemas.DogForSync],
+      path: realm1Path + "copy1.realm",
+    };
     // changes are synced -- we should be able to copy the realm
-    realm1.writeCopyTo(realm1Path + "copy1.realm");
+    realm1.writeCopyTo(outputConfig1);
 
     // log out the user that created the realm
     await user1.logOut();
@@ -1203,9 +1209,22 @@ module.exports = {
       }
     });
 
+    // Log user back in to attempt to copy synced changes
+    user1 = await app.logIn(credentials1);
+    const realm2Path = `${realm1Path}copy2.realm`;
+    const outputConfig2 = {
+      sync: {
+        user: user1,
+        partitionValue: partition,
+        _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
+      },
+      schema: [schemas.PersonForSync, schemas.DogForSync],
+      path: realm2Path,
+    };
+
     // we haven't uploaded our recent changes -- we're not allowed to copy
     TestCase.assertThrowsContaining(() => {
-      realm1.writeCopyTo(realm1Path + "copy2.realm");
+      realm1.writeCopyTo(outputConfig2);
     }, "Could not write file as not all client changes are integrated in server");
 
     // log back in and upload the changes we made locally
@@ -1213,8 +1232,7 @@ module.exports = {
     await realm1.syncSession.uploadAllLocalChanges();
 
     // create copy no. 2 of the realm
-    const realm2Path = realm1Path + "copy2.realm";
-    realm1.writeCopyTo(realm2Path);
+    realm1.writeCopyTo(outputConfig2);
 
     /*
       Test 2:  check that a copied realm can be opened by another user, and that
@@ -1278,7 +1296,9 @@ module.exports = {
         in partition keys
     */
     const realm3Path = realm1Path + "copy3.realm";
-    realm1.writeCopyTo(realm3Path);
+    const outputConfig3 = { ...config1, path: realm3Path };
+    realm1.writeCopyTo(outputConfig3);
+
     const user3 = await app.logIn(credentials3);
     const otherPartition = Utils.genPartition();
     const config3 = {
@@ -1538,11 +1558,11 @@ module.exports = {
     TestCase.assertThrowsContaining(() => {
       // too many arguments
       realm.writeCopyTo("path", "encryptionKey", "invalidParameter");
-    }, "Invalid arguments: at most 2 expected, but 3 supplied.");
+    }, "Invalid arguments: at most 1 expected, but 3 supplied.");
     TestCase.assertThrowsContaining(() => {
       // too few arguments
       realm.writeCopyTo();
-    }, "`writeCopyTo` requires <output configuration> or <path, [encryptionKey]> parameters");
+    }, "Expected a config object");
     TestCase.assertThrowsContaining(() => {
       // wrong argument type
       realm.writeCopyTo(null);
@@ -1623,7 +1643,9 @@ module.exports = {
     for (let i = 0; i < 64; i++) {
       encryptionKey[i] = 1;
     }
-    realm1.writeCopyTo(encryptedCopyName, encryptionKey);
+
+    const outputConfig1 = { ...config1, path: encryptedCopyName, encryptionKey: encryptionKey };
+    realm1.writeCopyTo(outputConfig1);
     await user1.logOut();
 
     const user2 = await app.logIn(credentials2);

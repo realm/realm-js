@@ -442,7 +442,7 @@ void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue
         if (auto dispatcher =
                 conf.error_handler.template target<util::EventLoopDispatcher<SyncSessionErrorHandler>>()) {
             if (auto handler = dispatcher->func().template target<SyncSessionErrorHandlerFunctor<T>>()) {
-                Object::set_property(ctx, config, "error", handler->func());
+                Object::set_property(ctx, config, "onError", handler->func());
             }
         }
         if (!session->config().custom_http_headers.empty()) {
@@ -958,7 +958,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         auto sync_config_object = Value::validated_to_object(ctx, sync_config_value);
 
         std::function<SyncSessionErrorHandler> error_handler;
-        ValueType error_func = Object::get_property(ctx, sync_config_object, "error");
+        ValueType error_func = Object::get_property(ctx, sync_config_object, "onError");
         if (!Value::is_undefined(ctx, error_func)) {
             error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(
                 SyncSessionErrorHandlerFunctor<T>(ctx, Value::validated_to_function(ctx, error_func)));
@@ -1039,8 +1039,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                 }
 
                 std::function<void(SharedRealm)> client_reset_before_handler;
-                ValueType client_reset_before_value =
-                    Object::get_property(ctx, client_reset_object, "clientResetBefore");
+                ValueType client_reset_before_value = Object::get_property(ctx, client_reset_object, "onBefore");
                 if (!Value::is_undefined(ctx, client_reset_before_value)) {
                     client_reset_before_handler =
                         util::EventLoopDispatcher<void(SharedRealm)>(ClientResetBeforeFunctor<T>(
@@ -1049,8 +1048,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                 config.sync_config->notify_before_client_reset = std::move(client_reset_before_handler);
 
                 std::function<void(SharedRealm, ThreadSafeReference, bool)> client_reset_after_handler;
-                ValueType client_reset_after_value =
-                    Object::get_property(ctx, client_reset_object, "clientResetAfter");
+                ValueType client_reset_after_value = Object::get_property(ctx, client_reset_object, "onAfter");
                 if (!Value::is_undefined(ctx, client_reset_after_value)) {
                     client_reset_after_handler =
                         util::EventLoopDispatcher<void(SharedRealm, ThreadSafeReference, bool)>(
@@ -1140,7 +1138,7 @@ void SyncClass<T>::populate_sync_config_for_ssl(ContextType ctx, ObjectType conf
         config.ssl_trust_certificate_path = std::string(Value::to_string(ctx, certificate_path));
     }
 
-    ValueType validate_callback = Object::get_property(ctx, config_object, "validateCallback");
+    ValueType validate_callback = Object::get_property(ctx, config_object, "validateCertificates");
     if (Value::is_function(ctx, validate_callback)) {
         config.ssl_verify_callback =
             SSLVerifyCallbackSyncThreadFunctor<T>{ctx, Value::to_function(ctx, validate_callback)};

@@ -127,17 +127,6 @@ class Realm {
   static open(config) {}
 
   /**
-   * Return a configuration for a default synced Realm. The server URL for the user will be used as base for
-   * the URL for the synced Realm. If no user is supplied, the current user will be used.
-   * @param {Realm.User} - an optional sync user
-   * @throws {Error} if zero or multiple users are logged in
-   * @returns {Realm~Configuration} - a configuration matching a default synced Realm.
-   * @since 2.3.0
-   * @deprecated use {@link Sync.User.createConfiguration()} instead.
-   */
-  static automaticSyncConfiguration(user) {}
-
-  /**
    * Creates a template object for a Realm model class where all optional fields are `undefined` and all required
    * fields have the default value for the given data type, either the value set by the `default` property in the
    * schema or the default value for the datatype if the schema doesn't specify one, i.e. `0`, false and `""`.
@@ -308,27 +297,17 @@ class Realm {
   compact() {}
 
   /**
-   * Writes a compacted copy of the Realm α) to the given path or β) with the given output
-   *
-   * For invocation with α):
-   *   * Input Realms may be local or synced, encrypted or non-encrypted
-   *   * Output Realms will be local only, encrypted or non-encrypted
-   * Deprecation Warning: Invoking `writeCopyTo` with a path string is deprecated and will be removed in the next breaking release.
-   * Please invoke `writeCopyTo` with a {@link Realm~Configuration | Configuration}.
-   *
-   * For invocation with β):
+   * Writes a compacted copy of the Realm with the given output configuration:
    *   * Input Realms may be local or synced, encrypted or non-encrypted
    *   * Output Realms will be local or synced, encrypted or non-encrypted, depending on the configuration passed to the function
    *
-   * The destination file cannot already exist.
+   * The destination Realm path cannot already exist.
    *
    * Note that if this method is called from within a write transaction, the current data is written,
    * not the data from the point when the previous write transaction was committed.
-   * @param {string|Realm~Configuration} pathOrConfig a α) path to save the Realm to, OR β) {@link Realm~Configuration | Configuration} that describes the output realm.
-   * @param {ArrayBuffer|ArrayBufferView} [encryptionKey] - Optional 64-byte encryption key to encrypt the new file with.  Must not be present when
-   * β) a {@link Realm~Configuration | Configuration} is given as first parameter, in which case encryptionKey can be set in {@link Realm~Configuration#encryptionKey}.
+   * @param {@link Realm~Configuration | Configuration} that describes the output Realm.
    */
-  writeCopyTo(pathOrConfig, encryptionKey) {}
+  writeCopyTo(pathOrConfig) {}
 
   /**
    * Get the current schema version of the Realm at the given path.
@@ -392,7 +371,7 @@ class Realm {
  * @type {Object}
  * @property {ArrayBuffer|ArrayBufferView} [encryptionKey] - The 512-bit (64-byte) encryption
  *   key used to encrypt and decrypt all data in the Realm.
- * @property {callback(Realm, Realm)} [migration] - The function to run if a migration is needed.
+ * @property {callback(Realm, Realm)} [onMigration] - The function to run if a migration is needed.
  *   This function should provide all the logic for converting data models from previous schemas
  *   to the new schema. This option is incompatible with `sync`.
  *   This function takes two arguments:
@@ -401,7 +380,7 @@ class Realm {
  * @property {boolean} [deleteRealmIfMigrationNeeded=false] - Specifies if this Realm should be deleted
  *   if a migration is needed.
  *   This option is not available on synced realms.
- * @property {callback(number, number)} [shouldCompactOnLaunch] - The function called when opening
+ * @property {callback(number, number)} [shouldCompact] - The function called when opening
  *   a Realm for the first time during the life of a process to determine if it should be compacted
  *   before being returned to the user. The function takes two arguments:
  *     - `totalSize` - The total file size (data + free space)

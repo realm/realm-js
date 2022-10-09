@@ -391,8 +391,6 @@ public:
 
     // helper methods
     static realm::Realm::Config write_copy_to_helper(ContextType ctx, ObjectType this_object, Arguments& args);
-    static realm::Realm::Config write_copy_to_helper_deprecated(ContextType ctx, ObjectType this_object,
-                                                                Arguments& args);
 
 
     // static properties
@@ -720,15 +718,15 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
                 config.schema_version = 0;
             }
 
-            static const String compact_on_launch_string = "shouldCompactOnLaunch";
+            static const String compact_on_launch_string = "shouldCompact";
             ValueType compact_value = Object::get_property(ctx, object, compact_on_launch_string);
             if (!Value::is_undefined(ctx, compact_value)) {
                 if (config.schema_mode == SchemaMode::Immutable) {
-                    throw std::invalid_argument("Cannot set 'shouldCompactOnLaunch' when 'readOnly' is set.");
+                    throw std::invalid_argument("Cannot set 'shouldCompact' when 'readOnly' is set.");
                 }
 
                 FunctionType should_compact_on_launch_function =
-                    Value::validated_to_function(ctx, compact_value, "shouldCompactOnLaunch");
+                    Value::validated_to_function(ctx, compact_value, "shouldCompact");
                 ShouldCompactOnLaunchFunctor<T> should_compact_on_launch_functor{ctx,
                                                                                  should_compact_on_launch_function};
                 config.should_compact_on_launch_function = std::move(should_compact_on_launch_functor);
@@ -757,18 +755,18 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
                 };
             }
 
-            static const String migration_string = "migration";
+            static const String migration_string = "onMigration";
             ValueType migration_value = Object::get_property(ctx, object, migration_string);
             if (!Value::is_undefined(ctx, migration_value)) {
                 if (config.force_sync_history || config.sync_config) {
-                    throw std::invalid_argument("Options 'migration' and 'sync' are mutual exclusive.");
+                    throw std::invalid_argument("Options 'onMigration' and 'sync' are mutual exclusive.");
                 }
 
-                FunctionType migration_function = Value::validated_to_function(ctx, migration_value, "migration");
+                FunctionType migration_function = Value::validated_to_function(ctx, migration_value, "onMigration");
 
                 if (config.schema_mode == SchemaMode::SoftResetFile) {
                     throw std::invalid_argument(
-                        "Cannot include 'migration' when 'deleteRealmIfMigrationNeeded' is set.");
+                        "Cannot include 'onMigration' when 'deleteRealmIfMigrationNeeded' is set.");
                 }
 
                 config.migration_function = [=](SharedRealm old_realm, SharedRealm realm, realm::Schema&) {
@@ -1643,85 +1641,23 @@ realm::Realm::Config RealmClass<T>::write_copy_to_helper(ContextType ctx, Object
     return config;
 }
 
-/**
- * @brief Helper function for `writeCopyTo()` -- parses parameters for the deprecated <path, [encryption key]>
- * invocation
- *
- * @param ctx JS context
- * @param this_object JS's object holding the `RealmClass`
- * @param args Arguments passed to `writeCopyTo()` from JS
- * @return realm::Realm::Config A new `Realm::Config` containing the given parameters
- */
-template <typename T>
-realm::Realm::Config RealmClass<T>::write_copy_to_helper_deprecated(ContextType ctx, ObjectType this_object,
-                                                                    Arguments& args)
-{
-    /* Validation rules:
-     * 1) there must be one or two parameters
-     * 2) first parameter must be a string
-     * 3) second parameter, if present, must be a binary
-     */
-
-    // log deprecation warning to console.warn
-    log_to_console<T>(
-        ctx, "`writeCopyTo(<path>, [encryption key])` has been deprecated.  Please use `writeCopyTo(<config>).",
-        JSLogFunction::Warning);
-
-    realm::Realm::Config config;
-    // validate 1)
-    if (args.count != 1 && args.count != 2) {
-        throw std::invalid_argument("`writeCopyTo(<path>, [encryption key])` accepts exactly one or two parameters");
-    }
-
-    // validate 2)
-    // make sure that `path` parameter exists and that it is a string
-    ValueType pathValue = args[0];
-    if (!Value::is_string(ctx, pathValue)) {
-        throw std::invalid_argument("`path` parameter must be a string");
-    }
-
-    config.path = Value::to_string(ctx, pathValue);
-
-    // validate 3)
-    if (args.count == 2) {
-        // a second parameter is given -- it must be an encryption key for the destination Realm
-        ValueType encKeyValue = args[1];
-        if (!Value::is_binary(ctx, encKeyValue)) {
-            throw std::invalid_argument("Encryption key for 'writeCopyTo' must be an ArrayBuffer or ArrayBufferView");
-        }
-
-        OwnedBinaryData encryption_key = Value::to_binary(ctx, encKeyValue);
-        config.encryption_key.assign(encryption_key.data(), encryption_key.data() + encryption_key.size());
-    }
-
-    SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
-    if (static_cast<bool>(realm->sync_session())) {
-        // input realm is synced, and we're in deprecated mode.
-        // copy the sync config
-        config.sync_config = realm->config().sync_config;
-    }
-
-    return config;
-}
 
 /**
  * @brief Create a copy of one realm file to another realm file.
  *  Conversion between synced and non-synced realms is supported.
- *  Invocation of `writeCopyTo` is overloaded to two scenarios:
- *  1) `writeCopyTo(<path: string>, [encryption key: string])`, which supports copying a local realm
- *    to another local realm, or converting a synced realm to a local realm.
- *  2) `writeCopyTo(<config: object>)`, which, in addition to the above, supports conversion of a local
+ *  Invocation of `writeCopyTo` is:
+ *  * `writeCopyTo(<config: object>)`, which supports conversion of a local
  *    realm to a synced realm if the `sync` section is present in `config`.
  *
  * @param ctx JS enviroment context
  * @param this_object Realm object passed from JS
- * @param args Either `<string>, [string]`, or `object` -- see function brief.
+ * @param args `object` -- see function brief.
  * @param return_value none
  */
 template <typename T>
 void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Arguments& args, ReturnValue& return_value)
 {
-    args.validate_maximum(2);
+    args.validate_maximum(1);
 
     SharedRealm realm = *get_internal<T, RealmClass<T>>(ctx, this_object);
 
@@ -1733,15 +1669,14 @@ void RealmClass<T>::writeCopyTo(ContextType ctx, ObjectType this_object, Argumen
 
     realm::Realm::Config config;
     if (args.count == 0) {
-        throw std::invalid_argument(
-            "`writeCopyTo` requires <output configuration> or <path, [encryptionKey]> parameters");
+        throw std::invalid_argument("Expected a config object");
     }
 
     if (args.count == 1 && !Value::is_string(ctx, args[0])) {
         config = write_copy_to_helper(ctx, this_object, args);
     }
     else {
-        config = write_copy_to_helper_deprecated(ctx, this_object, args);
+        throw std::invalid_argument("Expected a config object. <path, [encryptionKey]> parameters are not supported");
     }
 
     realm->convert(config);

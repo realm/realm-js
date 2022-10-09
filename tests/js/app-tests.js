@@ -186,7 +186,7 @@ module.exports = {
     const partition = Utils.genPartition();
     const realmConfig = {
       schema: [schemas.PersonForSync, schemas.DogForSync],
-      shouldCompactOnLaunch: (t, u) => {
+      shouldCompact: (t, u) => {
         nCalls++;
         return true;
       },

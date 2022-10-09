@@ -502,12 +502,12 @@ module.exports = {
 
   testRealmOpenShouldCompactOnLaunch: function () {
     let called = false;
-    const shouldCompactOnLaunch = (total, used) => {
+    const shouldCompact = (total, used) => {
       called = true;
       return true;
     };
 
-    return Realm.open({ schema: [schemas.TestObject], shouldCompactOnLaunch: shouldCompactOnLaunch }).then((realm) => {
+    return Realm.open({ schema: [schemas.TestObject], shouldCompact }).then((realm) => {
       TestCase.assertTrue(called);
       realm.close();
     });
@@ -1687,7 +1687,7 @@ module.exports = {
       const fiveHundredKB = 500 * 1024;
       return totalBytes > fiveHundredKB && usedBytes / totalBytes < 0.2;
     };
-    const realm2 = new Realm({ schema: [schemas.StringOnly], shouldCompactOnLaunch: shouldCompact });
+    const realm2 = new Realm({ schema: [schemas.StringOnly], shouldCompact });
     TestCase.assertTrue(wasCalled);
     TestCase.assertEqual(realm2.objects("StringOnlyObject").length, count + 2);
     // we don't check if the file is smaller as we assume that Object Store does it
@@ -1817,7 +1817,7 @@ module.exports = {
 
     realm.close();
 
-    realm = new Realm({ schema: schema, deleteRealmIfMigrationNeeded: true, schemaVersion: 1, migration: undefined });
+    realm = new Realm({ schema: schema, deleteRealmIfMigrationNeeded: true, schemaVersion: 1, onMigration: undefined });
 
     // object should be gone as Realm should get deleted
     TestCase.assertEqual(realm.objects("TestObject").length, 0);
@@ -1834,7 +1834,7 @@ module.exports = {
       schema: schema,
       deleteRealmIfMigrationNeeded: false,
       schemaVersion: 2,
-      migration: function (oldRealm, newRealm) {
+      onMigration: function (oldRealm, newRealm) {
         migrationWasCalled = true;
       },
     });
@@ -1904,7 +1904,11 @@ module.exports = {
 
     TestCase.assertThrows(function (e) {
       // updating schema without changing schemaVersion OR setting deleteRealmIfMigrationNeeded = true should raise an error
-      new Realm({ schema: schema2, deleteRealmIfMigrationNeeded: false, migration: function (oldRealm, newRealm) {} });
+      new Realm({
+        schema: schema2,
+        deleteRealmIfMigrationNeeded: false,
+        onMigration: function (oldRealm, newRealm) {},
+      });
     });
 
     var migrationWasCalled = false;
@@ -1914,7 +1918,7 @@ module.exports = {
       schema: schema2,
       deleteRealmIfMigrationNeeded: false,
       schemaVersion: 1,
-      migration: function (oldRealm, newRealm) {
+      onMigration: function (oldRealm, newRealm) {
         migrationWasCalled = true;
       },
     });
@@ -1943,8 +1947,8 @@ module.exports = {
     }, "Cannot set 'deleteRealmIfMigrationNeeded' when 'readOnly' is set.");
 
     TestCase.assertThrows(function () {
-      new Realm({ schema: schema, deleteRealmIfMigrationNeeded: true, migration: function (oldRealm, newRealm) {} });
-    }, "Cannot include 'migration' when 'deleteRealmIfMigrationNeeded' is set.");
+      new Realm({ schema: schema, deleteRealmIfMigrationNeeded: true, onMigration: function (oldRealm, newRealm) {} });
+    }, "Cannot include 'onMigration' when 'deleteRealmIfMigrationNeeded' is set.");
   },
 
   testDisableFileFormatUpgrade: function () {
@@ -2029,56 +2033,6 @@ module.exports = {
     TestCase.assertEqual(managedObj.objectCol.doubleCol, 1);
     TestCase.assertEqual(managedObj.nullObjectCol, null);
     TestCase.assertEqual(managedObj.arrayCol[0].doubleCol, 2);
-
-    realm.close();
-  },
-
-  testWriteCopyTo: function () {
-    const realm = new Realm({
-      schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes],
-    });
-
-    realm.write(() => {
-      realm.create("TestObject", { doubleCol: 1 });
-    });
-    TestCase.assertEqual(1, realm.objects("TestObject").length);
-
-    TestCase.assertThrowsContaining(() => {
-      realm.writeCopyTo();
-    }, "`writeCopyTo` requires <output configuration> or <path, [encryptionKey]> parameters");
-
-    TestCase.assertThrowsContaining(() => {
-      realm.writeCopyTo(34);
-    }, "`config` parameter must be an object");
-
-    // make sure that copies are in the same directory as the original file
-    // that is important for running tests on mobile devices,
-    // so we don't have issues with permissisons
-    const copyName = realm.path + ".copy.realm";
-
-    realm.writeCopyTo(copyName);
-
-    const copyConfig = { path: copyName };
-    const realmCopy = new Realm(copyConfig);
-    TestCase.assertEqual(1, realmCopy.objects("TestObject").length);
-    realmCopy.close();
-
-    TestCase.assertThrowsContaining(() => {
-      realm.writeCopyTo(realm.path + ".copy-invalid-key.realm", "hello");
-    }, "Encryption key for 'writeCopyTo' must be an ArrayBuffer or ArrayBufferView");
-
-    const encryptedCopyName = realm.path + ".copy-encrypted.realm";
-
-    var encryptionKey = new Int8Array(64);
-    for (let i = 0; i < 64; i++) {
-      encryptionKey[i] = 1;
-    }
-    realm.writeCopyTo(encryptedCopyName, encryptionKey);
-
-    const encryptedCopyConfig = { path: encryptedCopyName, encryptionKey: encryptionKey };
-    const encryptedRealmCopy = new Realm(encryptedCopyConfig);
-    TestCase.assertEqual(1, encryptedRealmCopy.objects("TestObject").length);
-    encryptedRealmCopy.close();
 
     realm.close();
   },

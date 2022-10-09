@@ -30,18 +30,18 @@ module.exports = {
     }
 
     // no migration should be run
-    var realm = new Realm({ schema: [], migration: migrationFunction });
+    var realm = new Realm({ schema: [], onMigration: migrationFunction });
     TestCase.assertEqual(0, count);
     realm.close();
 
     // migration should be run
-    realm = new Realm({ schema: [Schemas.TestObject], migration: migrationFunction, schemaVersion: 1 });
+    realm = new Realm({ schema: [Schemas.TestObject], onMigration: migrationFunction, schemaVersion: 1 });
     TestCase.assertEqual(1, count);
     realm.close();
 
     // invalid migration function
     TestCase.assertThrows(function () {
-      new Realm({ schema: [], schemaVersion: 2, migration: "invalid" });
+      new Realm({ schema: [], schemaVersion: 2, onMigration: "invalid" });
     });
 
     // migration function exceptions should propogate
@@ -51,7 +51,7 @@ module.exports = {
       realm = new Realm({
         schema: [],
         schemaVersion: 3,
-        migration: function () {
+        onMigration: function () {
           throw exception;
         },
       });
@@ -60,14 +60,14 @@ module.exports = {
     TestCase.assertEqual(Realm.schemaVersion(Realm.defaultPath), 1);
 
     // migration function shouldn't run if nothing changes
-    realm = new Realm({ schema: [Schemas.TestObject], migration: migrationFunction, schemaVersion: 1 });
+    realm = new Realm({ schema: [Schemas.TestObject], onMigration: migrationFunction, schemaVersion: 1 });
     TestCase.assertEqual(1, count);
     realm.close();
 
     // migration function should run if only schemaVersion changes
     realm = new Realm({
       schema: [Schemas.TestObject],
-      migration: function () {
+      onMigration: function () {
         count++;
       },
       schemaVersion: 2,
@@ -104,7 +104,7 @@ module.exports = {
         },
       ],
       schemaVersion: 1,
-      migration: function (oldRealm, newRealm) {
+      onMigration: function (oldRealm, newRealm) {
         var oldObjects = oldRealm.objects("TestObject");
         var newObjects = newRealm.objects("TestObject");
         TestCase.assertEqual(oldObjects.length, 1);
@@ -160,7 +160,7 @@ module.exports = {
     var realm2 = new Realm({
       schema: [FirstObjectType, SecondObjectType],
       schemaVersion: 1,
-      migration: function (oldRealm, newRealm) {
+      onMigration: function (oldRealm, newRealm) {
         var oldObjects_1 = oldRealm.objects("FirstObjectType");
         var newObjects_1 = newRealm.objects("FirstObjectType");
         var newObjects_2 = newRealm.objects("SecondObjectType");
@@ -210,7 +210,7 @@ module.exports = {
         },
       ],
       schemaVersion: 1,
-      migration: function (oldRealm, newRealm) {
+      onMigration: function (oldRealm, newRealm) {
         var oldSchema = oldRealm.schema;
         var newSchema = newRealm.schema;
         TestCase.assertEqual(oldSchema.length, 1);
@@ -259,7 +259,7 @@ module.exports = {
     realm = new Realm({
       schemaVersion: 1,
       schema: [schemaV1],
-      migration: (oldRealm, newRealm) => {
+      onMigration: (oldRealm, newRealm) => {
         newRealm.create("Person", { name: "Freddy Bloggson", firstName: "Freddy" });
         newRealm.create("Person", { name: "Blogs Fredson" });
       },
@@ -312,7 +312,7 @@ module.exports = {
     realm = new Realm({
       schema: [],
       schemaVersion: 3,
-      migration: function (oldRealm, newRealm) {
+      onMigration: function (oldRealm, newRealm) {
         newRealm.deleteModel("TestObject");
       },
     });
@@ -352,7 +352,7 @@ module.exports = {
     realm = new Realm({
       schema: schema,
       schemaVersion: 1,
-      migration: function (oldRealm, newRealm) {
+      onMigration: function (oldRealm, newRealm) {
         newRealm.deleteModel("TestObject");
       },
     });
@@ -391,7 +391,7 @@ module.exports = {
     realm = new Realm({
       schema: schema,
       schemaVersion: 1,
-      migration: function (oldRealm, newRealm) {
+      onMigration: function (oldRealm, newRealm) {
         newRealm.deleteModel("NonExistingModel");
       },
     });
@@ -442,7 +442,7 @@ module.exports = {
     realm = new Realm({
       schema: [ShipSchema, CaptainSchema],
       schemaVersion: 1,
-      migration: function (oldRealm, newRealm) {
+      onMigration: function (oldRealm, newRealm) {
         TestCase.assertThrows(function (e) {
           // deleting a model which is target of linkingObjects results in an exception
           newRealm.deleteModel("Captain");
@@ -459,7 +459,7 @@ module.exports = {
     realm = new Realm({
       schema: [ShipSchema, CaptainSchema],
       schemaVersion: 2,
-      migration: function (oldRealm, newRealm) {
+      onMigration: function (oldRealm, newRealm) {
         // deleting a model which isn't target of linkingObjects works fine
         newRealm.deleteModel("Ship");
       },
@@ -488,7 +488,7 @@ module.exports = {
     realm = new Realm({
       schema: [{ name: "TestObject", properties: { values: "int[]" } }],
       schemaVersion: 1,
-      migration: function (oldRealm, newRealm) {
+      onMigration: function (oldRealm, newRealm) {
         const oldObjects = oldRealm.objects("TestObject");
         const newObjects = newRealm.objects("TestObject");
         TestCase.assertEqual(oldObjects.length, 2);
