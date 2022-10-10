@@ -356,7 +356,7 @@ void RealmObjectClass<T>::get_object_key(ContextType ctx, ObjectType object, Arg
 
 template <typename T>
 void RealmObjectClass<T>::get_table_key(ContextType ctx, ObjectType object, Arguments& args,
-                                         ReturnValue& return_value)
+                                        ReturnValue& return_value)
 {
     args.validate_maximum(0);
 
