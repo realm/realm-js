@@ -60,6 +60,7 @@ type PropertyAccessors = {
 
 export type PropertyHelpers = TypeHelpers &
   PropertyAccessors & {
+    columnKey: binding.ColKey;
     default?: unknown;
   };
 
@@ -131,9 +132,11 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     if (itemType === binding.PropertyType.LinkingObjects) {
       // Locate the table of the targeted object
       assert.string(objectType, "object type");
+      assert(objectType !== "", "Expected a non-empty string");
       const targetClassHelpers = getClassHelpers(objectType);
-      // TODO: To improve performance: Refactor to resolve the class helper earlier.
-      const { tableKey, persistedProperties } = targetClassHelpers.objectSchema;
+      const {
+        objectSchema: { tableKey, persistedProperties },
+      } = targetClassHelpers;
       // TODO: Check if we want to match with the `p.name` or `p.publicName` here
       const targetProperty = persistedProperties.find((p) => p.name === linkOriginPropertyName);
       assert(targetProperty, `Expected a '${linkOriginPropertyName}' property on ${objectType}`);
@@ -156,6 +159,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
         },
       };
     } else {
+      // Properties of items are only available on lists of objects
       const collectionHelpers: OrderedCollectionHelpers = {
         get: itemType === binding.PropertyType.Object ? getObj : getAny,
         fromBinding: itemHelpers.fromBinding,
@@ -235,6 +239,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       objectType,
       optional,
     });
+    assert.string(objectType);
     const collectionHelpers: OrderedCollectionHelpers = {
       get: itemType === binding.PropertyType.Object ? getObj : getAny,
       fromBinding: itemHelpers.fromBinding,
@@ -247,10 +252,10 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       },
       set(obj, value) {
         const internal = binding.Set.make(realm.internal, obj, columnKey);
-        // Clear the dictionary before adding new values
+        // Clear the set before adding new values
         internal.removeAll();
-        assert.object(value, "values");
-        for (const [k, v] of Object.entries(value)) {
+        assert.array(value, "values");
+        for (const v of value) {
           internal.insertAny(itemHelpers.toBinding(v));
         }
       },
@@ -259,12 +264,13 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
 };
 
 function getHelpers(type: binding.PropertyType, options: PropertyOptions): PropertyHelpers {
+  const { typeHelpers, columnKey } = options;
   const accessorFactory = ACCESSOR_FACTORIES[type];
   if (accessorFactory) {
     const accessors = accessorFactory(options);
-    return { ...accessors, ...options.typeHelpers };
+    return { ...accessors, ...typeHelpers, columnKey };
   } else {
-    return { get: defaultGet(options), set: defaultSet(options), ...options.typeHelpers };
+    return { get: defaultGet(options), set: defaultSet(options), ...typeHelpers, columnKey };
   }
 }
 

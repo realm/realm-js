@@ -1441,7 +1441,7 @@ module.exports = {
     TestCase.assertThrowsContaining(() => object.bool.min(), "Cannot min 'bool' array: operation not supported");
     TestCase.assertThrowsContaining(
       () => object.int.min("foo"),
-      "Invalid arguments: at most 0 expected, but 1 supplied",
+      "Cannot get property named 'foo' on a list of primitives",
     );
   },
 
@@ -1542,24 +1542,24 @@ module.exports = {
 
     TestCase.assertThrowsContaining(
       () => object.list.min("foo"),
-      "Property 'foo' does not exist on object 'PersonObject'",
+      "Property 'foo' does not exist on 'PersonObject' objects",
     );
     TestCase.assertThrowsContaining(
       () => object.list.max("foo"),
-      "Property 'foo' does not exist on object 'PersonObject'",
+      "Property 'foo' does not exist on 'PersonObject' objects",
     );
     TestCase.assertThrowsContaining(
       () => object.list.sum("foo"),
-      "Property 'foo' does not exist on object 'PersonObject'",
+      "Property 'foo' does not exist on 'PersonObject' objects",
     );
     TestCase.assertThrowsContaining(
       () => object.list.avg("foo"),
-      "Property 'foo' does not exist on object 'PersonObject'",
+      "Property 'foo' does not exist on 'PersonObject' objects",
     );
-    TestCase.assertThrowsContaining(() => object.list.min(), "JS value must be of type 'string', got (undefined)");
-    TestCase.assertThrowsContaining(() => object.list.max(), "JS value must be of type 'string', got (undefined)");
-    TestCase.assertThrowsContaining(() => object.list.sum(), "JS value must be of type 'string', got (undefined)");
-    TestCase.assertThrowsContaining(() => object.list.avg(), "JS value must be of type 'string', got (undefined)");
+    TestCase.assertThrowsContaining(() => object.list.min(), "Expected 'name' to be a string, got undefined");
+    TestCase.assertThrowsContaining(() => object.list.max(), "Expected 'name' to be a string, got undefined");
+    TestCase.assertThrowsContaining(() => object.list.sum(), "Expected 'name' to be a string, got undefined");
+    TestCase.assertThrowsContaining(() => object.list.avg(), "Expected 'name' to be a string, got undefined");
   },
 
   testListNested: function () {

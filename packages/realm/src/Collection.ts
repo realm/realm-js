@@ -19,7 +19,7 @@
 import { IllegalConstructorError } from "./errors";
 import { Listeners, CallbackRegistrator } from "./Listeners";
 
-export abstract class Collection<T = unknown, ChangeCallbackType = unknown> implements Iterable<T> {
+export abstract class Collection<K = unknown, V = unknown, I = V, ChangeCallbackType = unknown> implements Iterable<I> {
   /** @internal */
   private listeners: Listeners<ChangeCallbackType>;
 
@@ -39,9 +39,9 @@ export abstract class Collection<T = unknown, ChangeCallbackType = unknown> impl
     });
   }
 
-  [Symbol.iterator](): Iterator<T> {
-    throw new Error("Not yet implemented");
-  }
+  abstract [Symbol.iterator](): Iterator<I>;
+  abstract keys(): Iterator<K>;
+  abstract values(): Iterator<V>;
 
   addListener(callback: ChangeCallbackType): void {
     this.listeners.add(callback);

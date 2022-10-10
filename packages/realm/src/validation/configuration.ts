@@ -55,7 +55,15 @@ export function validateObjectSchema(arg: unknown): asserts arg is ObjectSchema 
     validateObjectSchema(clazz.schema);
   } else {
     assert.object(arg, "object schema");
-    assert.string(arg.name, "name");
-    assert.object(arg.properties, "properties");
+    const { name, properties, asymmetric, embedded } = arg;
+    assert.string(name, "name");
+    assert.object(properties, "properties");
+    if (typeof asymmetric !== "undefined") {
+      assert.boolean(asymmetric);
+    }
+    if (typeof embedded !== "undefined") {
+      assert.boolean(embedded);
+    }
+    assert(!asymmetric || !embedded, `Cannot be both asymmetric and embedded`);
   }
 }
