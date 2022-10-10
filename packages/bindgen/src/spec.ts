@@ -199,7 +199,7 @@ function normalizeConstructor(sig: string): FunctionTypeSpec {
   if (type.kind !== "function") {
     throw new Error(`Expected a function type, got "${type.kind}"`);
   }
-  if (type.return.kind != "qualified-name" || type.return.names.length != 1 || type.return.names[0] != "void")
+  if (type.return.kind != "type-name" || type.return.name != "void")
     throw new Error(`Constructors not allowed to specify return type, got "${type.kind}"`);
   return type;
 }
