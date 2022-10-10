@@ -48,6 +48,10 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     });
   }
 
+  isValid() {
+    return this.internal.isValid;
+  }
+
   /**
    * Set an element of the ordered collection by index
    * @param index The index

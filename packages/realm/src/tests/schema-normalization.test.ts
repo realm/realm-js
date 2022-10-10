@@ -18,7 +18,7 @@
 
 import { expect } from "chai";
 
-import { extractGeneric, normalizePropertySchema } from "../schema/normalize";
+import { extractGeneric, normalizeObjectSchema, normalizePropertySchema } from "../schema/normalize";
 
 describe("normalizePropertySchema", () => {
   it("transforms a string declaring a string", () => {
@@ -49,6 +49,22 @@ describe("normalizePropertySchema", () => {
     expect(result.type).equals("list");
     expect(result.objectType).equals("Person");
     expect(result.optional).equals(false); // Lists of objects may never be optional
+  });
+});
+
+describe("normalizeObjectSchema", () => {
+  it("transforms a list of", () => {
+    const result = normalizeObjectSchema({
+      properties: [
+        { name: "boolCol", type: "bool?" },
+        { name: "intCol", type: "int?" },
+        { name: "floatCol", type: "float?" },
+        { name: "doubleCol", type: "double?" },
+        { name: "stringCol", type: "string?" },
+        { name: "dateCol", type: "date?" },
+        { name: "dataCol", type: "data?" },
+      ],
+    });
   });
 });
 

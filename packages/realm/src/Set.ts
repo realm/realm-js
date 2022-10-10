@@ -30,6 +30,10 @@ export class Set<T = unknown> extends OrderedCollection<T> {
     super(realm, internal.asResults(), helpers);
   }
 
+  isValid() {
+    return this.internal.isValid;
+  }
+
   /**
    * Delete a value from the Set
    * @param {T} object Value to delete from the Set
