@@ -22,8 +22,14 @@ import { Collection } from "./Collection";
 import { unwind } from "./ranges";
 import { TypeHelpers } from "./types";
 import { getBaseTypeName } from "./schema";
-import { IllegalConstructorError } from "./errors";
-import type { Realm } from "./Realm";
+import { IllegalConstructorError, TypeAssertionError } from "./errors";
+import { Realm } from "./Realm";
+import { Object as RealmObject } from "./Object";
+import { getInternal } from "./internal";
+import { assert } from "./assert";
+import { ClassHelpers } from "./ClassHelpers";
+
+const DEFAULT_COLUMN_KEY = 0n as unknown as binding.ColKey;
 
 type PropertyType = string;
 export type SortDescriptor = string | [string, boolean];
@@ -85,7 +91,7 @@ const PROXY_HANDLER: ProxyHandler<OrderedCollection> = {
 };
 
 export abstract class OrderedCollection<T = unknown>
-  extends Collection<T, CollectionChangeCallback<T>>
+  extends Collection<number, T, T, CollectionChangeCallback<T>>
   implements ReadonlyArray<T>
 {
   /** @internal */
@@ -115,6 +121,13 @@ export abstract class OrderedCollection<T = unknown>
         }
       }, []);
     });
+    // Get the class helpers for later use, if available
+    const { objectType } = results;
+    if (typeof objectType === "string" && objectType !== "") {
+      this.classHelpers = this.realm.getClassHelpers(objectType);
+    } else {
+      this.classHelpers = null;
+    }
     // Make the internal properties non-enumerable
     Object.defineProperties(this, {
       realm: {
@@ -132,10 +145,17 @@ export abstract class OrderedCollection<T = unknown>
         configurable: false,
         writable: false,
       },
+      classHelpers: {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+      },
     });
     // Wrap in a proxy to trap ownKeys and get, enabling the spread operator
     return new Proxy(this, PROXY_HANDLER as ProxyHandler<this>);
   }
+
+  private classHelpers: ClassHelpers | null;
 
   /**
    * Get an element of the ordered collection by index
@@ -228,7 +248,12 @@ export abstract class OrderedCollection<T = unknown>
     return [...this].slice(start, end);
   }
   indexOf(searchElement: T, fromIndex?: number): number {
-    return [...this].indexOf(searchElement, fromIndex);
+    assert(typeof fromIndex === "undefined", "The second fromIndex argument is not yet supported");
+    if (searchElement instanceof RealmObject) {
+      return this.results.indexOfObj(getInternal(searchElement));
+    } else {
+      return this.results.indexOf(this.helpers.toBinding(searchElement));
+    }
   }
   lastIndexOf(searchElement: T, fromIndex?: number): number {
     return [...this].lastIndexOf(searchElement, fromIndex);
@@ -330,24 +355,68 @@ export abstract class OrderedCollection<T = unknown>
   }
 
   isValid(): boolean {
-    throw new Error("Method not implemented.");
+    throw new Error(`Calling isValid on a ${this.constructor.name} is not support`);
   }
 
   isEmpty(): boolean {
-    throw new Error("Method not implemented.");
+    return this.results.size() === 0;
   }
 
-  min(property?: string): number | Date | null {
-    throw new Error("Method not implemented.");
+  min(property?: string): number | Date | undefined {
+    const columnKey = this.getPropertyColumnKey(property);
+    const result = this.results.min(columnKey);
+    if (result instanceof Date || typeof result === "number" || typeof result === "undefined") {
+      return result;
+    } else if (typeof result === "bigint") {
+      return Number(result);
+    } else if (result instanceof binding.Float) {
+      return result.value;
+    } else if (result instanceof binding.Timestamp) {
+      return result.toDate();
+    } else {
+      throw new TypeAssertionError("Timestamp, number, bigint, Float or null", result, "result");
+    }
   }
-  max(property?: string): number | Date | null {
-    throw new Error("Method not implemented.");
+  max(property?: string): number | Date | undefined {
+    const columnKey = this.getPropertyColumnKey(property);
+    const result = this.results.max(columnKey);
+    if (result instanceof Date || typeof result === "number" || typeof result === "undefined") {
+      return result;
+    } else if (typeof result === "bigint") {
+      return Number(result);
+    } else if (result instanceof binding.Float) {
+      return result.value;
+    } else if (result instanceof binding.Timestamp) {
+      return result.toDate();
+    } else {
+      throw new TypeAssertionError("Timestamp, number, bigint, Float or undefined", result, "result");
+    }
   }
-  sum(property?: string): number | null {
-    throw new Error("Method not implemented.");
+  sum(property?: string): number {
+    const columnKey = this.getPropertyColumnKey(property);
+    const result = this.results.sum(columnKey);
+    if (typeof result === "number") {
+      return result;
+    } else if (typeof result === "bigint") {
+      return Number(result);
+    } else if (result instanceof binding.Float) {
+      return result.value;
+    } else {
+      throw new TypeAssertionError("number, bigint or Float", result, "result");
+    }
   }
-  avg(property?: string): number {
-    throw new Error("Method not implemented.");
+  avg(property?: string): number | undefined {
+    const columnKey = this.getPropertyColumnKey(property);
+    const result = this.results.average(columnKey);
+    if (typeof result === "number" || typeof result === "undefined") {
+      return result;
+    } else if (typeof result === "bigint") {
+      return Number(result);
+    } else if (result instanceof binding.Float) {
+      return result.value;
+    } else {
+      throw new TypeAssertionError("number, Float, bigint or undefined", result, "result");
+    }
   }
 
   /**
@@ -391,5 +460,16 @@ export abstract class OrderedCollection<T = unknown>
    */
   snapshot(): Results<T> {
     return new Results(this.realm, this.results.snapshot(), this.helpers);
+  }
+
+  private getPropertyColumnKey(name: string | undefined): binding.ColKey {
+    if (this.classHelpers) {
+      assert.string(name, "name");
+      return this.classHelpers.properties.get(name).columnKey;
+    } else if (name) {
+      throw new Error(`Cannot get property named '${name}' on a list of primitives`);
+    } else {
+      return DEFAULT_COLUMN_KEY;
+    }
   }
 }

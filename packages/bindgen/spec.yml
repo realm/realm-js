@@ -595,6 +595,10 @@ classes:
       get_type: PropertyType
     methods:
       size: () -> count_t
+      index_of:
+        - sig: '(value: Mixed) const -> count_t'
+        - sig: '(obj: Obj) const -> count_t'
+          suffix: 'obj'
       get: # NOTE: this is actually a template with a defaulted template param.
         - sig: '(index: count_t) -> Obj'
           suffix: 'obj'

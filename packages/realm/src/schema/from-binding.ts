@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { assert } from "../assert";
-import { Realm, PropertyType } from "../binding";
+import { Realm, PropertyType, TableType } from "../binding";
 
 // TODO: Update these once the binding expose proper types
 type BindingObjectSchema = Realm["schema"][0];
@@ -75,12 +75,14 @@ export function transformObjectSchema({
   computedProperties,
   persistedProperties,
   primaryKey,
+  tableType,
 }: BindingObjectSchema): CanonicalObjectSchema {
   const properties = [...computedProperties, ...persistedProperties];
   const result: CanonicalObjectSchema = {
     constructor: undefined,
     name,
     properties: Object.fromEntries(properties.map((property) => [property.name, transformPropertySchema(property)])),
+    embedded: tableType === TableType.Embedded,
   };
   // The primary key from the binding is an empty string when not set
   if (primaryKey) {
