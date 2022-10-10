@@ -43,6 +43,8 @@ import { Collection } from "./Collection";
 import { Dictionary } from "./Dictionary";
 import { Set as RealmSet } from "./Set";
 import { assert } from "./assert";
+import { ClassHelpers } from "./ClassHelpers";
+import { OrderedCollection } from "./OrderedCollection";
 
 // Using a set of weak refs to avoid prevention of garbage collection
 const RETURNED_REALMS = new Set<WeakRef<binding.Realm>>();
@@ -50,6 +52,7 @@ const RETURNED_REALMS = new Set<WeakRef<binding.Realm>>();
 export class Realm {
   public static Object = RealmObject;
   public static Collection = Collection;
+  public static OrderedCollection = OrderedCollection;
   public static Results = Results;
   public static List = List;
   public static Dictionary = Dictionary;
@@ -313,8 +316,9 @@ export class Realm {
         return results.getObj(index);
       },
       fromBinding: wrapObject,
-      toBinding() {
-        throw new Error("Cannot assign into Results");
+      toBinding(value: unknown) {
+        assert.instanceOf(value, RealmObject);
+        return getInternal(value);
       },
     });
   }
@@ -366,12 +370,20 @@ export class Realm {
   _updateSchema(): unknown {
     throw new Error("Not yet implemented");
   }
+
+  /**
+   * @internal
+   */
+  public getClassHelpers(name: string): ClassHelpers {
+    return this.classes.getHelpers(name);
+  }
 }
 
 // Declare the Realm namespace for backwards compatibility
 
 // We need this alias because of https://github.com/Swatinem/rollup-plugin-dts/issues/223
 type CollectionType<T> = Collection<T>;
+type OrderedCollectionType<T> = OrderedCollection<T>;
 type ResultsType<T> = Results<T>;
 type ListType<T> = List<T>;
 type DictionaryType<T> = Dictionary<T>;
@@ -385,6 +397,7 @@ type BSONType = typeof BSON;
 export namespace Realm {
   export type Object<T = DefaultObject> = RealmObject<T>;
   export type Collection<T = unknown> = CollectionType<T>;
+  export type OrderedCollection<T = unknown> = OrderedCollectionType<T>;
   export type Results<T = unknown> = ResultsType<T>;
   export type List<T = unknown> = ListType<T>;
   export type Dictionary<T = unknown> = DictionaryType<T>;

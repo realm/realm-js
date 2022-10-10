@@ -16,10 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { assert } from "../assert";
 import {
   ObjectSchema_Relaxed as BindingObjectSchema,
   Property_Relaxed as BindingProperty,
   PropertyType as BindingPropertyType,
+  TableType,
 } from "../binding";
 
 import { CanonicalObjectSchema, CanonicalObjectSchemaProperty, PropertyTypeName } from "./types";
@@ -44,6 +46,17 @@ export const TYPE_MAPPINGS: Record<PropertyTypeName, BindingPropertyType> = {
   object: BindingPropertyType.Object,
 };
 
+function deriveTableType(schema: CanonicalObjectSchema) {
+  if (schema.embedded) {
+    assert.boolean(schema.asymmetric, `'${schema.name}' cannot be both embedded and asymmetric`);
+    return TableType.Embedded;
+  } else if (schema.asymmetric) {
+    return TableType.TopLevelAsymmetric;
+  } else {
+    return TableType.TopLevel;
+  }
+}
+
 /** @internal */
 export function transformRealmSchema(schema: CanonicalObjectSchema[]): BindingObjectSchema[] {
   return schema.map(transformObjectSchema);
@@ -52,7 +65,6 @@ export function transformRealmSchema(schema: CanonicalObjectSchema[]): BindingOb
 /** @internal */
 export function transformObjectSchema(schema: CanonicalObjectSchema): BindingObjectSchema {
   // TODO: Enable declaring the alias of the object schema
-  // TODO: Enable declaring the table type (asymmetric / embedded)
   // TODO: Enable declaring computed properties
   const properties = Object.entries(schema.properties)
     .map(([name, property]) => transformPropertySchema(name, property))
@@ -65,6 +77,7 @@ export function transformObjectSchema(schema: CanonicalObjectSchema): BindingObj
     });
   const result: BindingObjectSchema = {
     name: schema.name,
+    tableType: deriveTableType(schema),
     persistedProperties: properties.filter(
       (p) => (p.type & ~BindingPropertyType.Flags) !== BindingPropertyType.LinkingObjects,
     ),
