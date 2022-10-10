@@ -321,22 +321,35 @@ exports.OptionalString = {
 
 exports.QueryObject = {
   name: "QueryObject",
-  properties: [
-    { name: "bool1", type: "bool" },
-    { name: "bool2", type: "bool" },
-    { name: "int1", type: "int" },
-    { name: "int2", type: "int" },
-    { name: "float1", type: "float" },
-    { name: "float2", type: "float" },
-    { name: "double1", type: "double" },
-    { name: "double2", type: "double" },
-    { name: "string1", type: "string" },
-    { name: "string2", type: "string" },
-  ],
+  properties: {
+    bool1: "bool",
+    bool2: "bool",
+    int1: "int",
+    int2: "int",
+    float1: "float",
+    float2: "float",
+    double1: "double",
+    double2: "double",
+    string1: "string",
+    string2: "string",
+  },
 };
 
 exports.NullQueryObject = {
   name: "NullQueryObject",
+  properties: {
+    bool1: "bool",
+    bool2: "bool",
+    int1: "int",
+    int2: "int",
+    float1: "float",
+    float2: "float",
+    double1: "double",
+    double2: "double",
+    string1: "string",
+    string2: "string",
+  },
+  /*
   properties: [
     { name: "bool1", type: "bool" },
     { name: "bool2", type: "bool" },
@@ -349,10 +362,21 @@ exports.NullQueryObject = {
     { name: "string1", type: "string" },
     { name: "string2", type: "string" },
   ],
+  */
 };
 
 exports.NullableBasicTypes = {
   name: "NullableBasicTypesObject",
+  properties: {
+    boolCol: "bool?",
+    intCol: "int?",
+    floatCol: "float?",
+    doubleCol: "double?",
+    stringCol: "string?",
+    dateCol: "date?",
+    dataCol: "data?",
+  },
+  /*
   properties: [
     { name: "boolCol", type: "bool?" },
     { name: "intCol", type: "int?" },
@@ -362,6 +386,7 @@ exports.NullableBasicTypes = {
     { name: "dateCol", type: "date?" },
     { name: "dataCol", type: "data?" },
   ],
+  */
 };
 
 exports.DateObject = {
