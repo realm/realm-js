@@ -32,7 +32,7 @@ class TypeParser extends CstParser {
       {
         ALT: () => {
           this.OPTION({ DEF: () => this.CONSUME(TOKEN_TYPES.Const) });
-          this.SUBRULE(this.qualifiedName);
+          this.SUBRULE(this.name);
           this.OPTION1({
             DEF: () => this.SUBRULE(this.templateInstance),
           });
@@ -42,11 +42,8 @@ class TypeParser extends CstParser {
     ]);
   });
 
-  qualifiedName = this.RULE("qualifiedName", () => {
-    this.AT_LEAST_ONE_SEP({
-      SEP: TOKEN_TYPES.DoubleColon,
-      DEF: () => this.CONSUME(TOKEN_TYPES.Identifier),
-    });
+  name = this.RULE("name", () => {
+    this.CONSUME(TOKEN_TYPES.Identifier);
   });
 
   typeModifiers = this.RULE("typeModifiers", () => {
