@@ -422,9 +422,9 @@ export function bindModel(spec: Spec): BoundSpec {
       return new Const(resolveTypes({ ...typeSpec, isConst: false }));
     }
 
-    const name = unqualify(typeSpec.names);
+    const name = typeSpec.name;
     switch (typeSpec.kind) {
-      case "qualified-name":
+      case "type-name":
         assert(name in out.types, `no such type: ${name}`);
         return out.types[name];
       case "template-instance":
@@ -454,11 +454,6 @@ export function bindModel(spec: Spec): BoundSpec {
         );
       }
     }
-  }
-
-  function unqualify(names: string[]) {
-    assert(names.length);
-    return names.join("::");
   }
 
   // Attach names to instences of Type in types
