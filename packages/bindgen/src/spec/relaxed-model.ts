@@ -16,23 +16,31 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { InterfaceSpec, ClassSpec, Spec, MixedInfo } from "./model";
+// IMPORTANT: This file must not have any imports!
+// If you really need to import something, you will need to update the cmake dependencies.
+// But try not to add any imports. Since this file is used to generate the json-schema,
+// it really should be self-contained.
 
-type ReplaceFields<Base, Replacements> = Omit<Base, keyof Replacements> & Replacements;
+export type RelaxedSpec = {
+  mixedInfo: MixedInfo; // Not optional
+  headers?: string[];
+  primitives?: string[];
+  opaqueTypes?: string[];
+  templates?: { [name: string]: number | "*" };
+  enums?: { [name: string]: RelaxedEnumSpec };
+  records?: { [name: string]: RelaxedRecordSpec };
+  classes?: { [name: string]: RelaxedClassSpec };
+  constants?: { [name: string]: RelaxedConstantSpec };
+  typeAliases?: { [name: string]: string };
+  keyTypes?: { [name: string]: string };
+  interfaces?: { [name: string]: RelaxedInterfaceSpec };
+};
 
-export type RelaxedSpec = ReplaceFields<
-  Partial<Spec>,
-  {
-    mixedInfo: MixedInfo; // Not optional
-    enums?: { [name: string]: RelaxedEnumSpec };
-    records?: { [name: string]: RelaxedRecordSpec };
-    classes?: { [name: string]: RelaxedClassSpec };
-    constants?: { [name: string]: RelaxedConstantSpec };
-    typeAliases?: { [name: string]: string };
-    keyTypes?: { [name: string]: string };
-    interfaces?: { [name: string]: RelaxedInterfaceSpec };
-  }
->;
+export type MixedInfo = {
+  dataTypes: { [dataType: string]: { getter: string; type: string } };
+  unusedDataTypes: string[];
+  extraCtors: string[];
+};
 
 export type RelaxedEnumSpec = {
   cppName?: string;
@@ -57,10 +65,11 @@ export type RelaxedFieldSpec =
       default?: unknown;
     };
 
-export type RelaxedClassSpec = Pick<Partial<ClassSpec>, "sharedPtrWrapped"> & {
+export type RelaxedClassSpec = {
   cppName?: string;
   iterable?: string;
   needsDeref?: boolean;
+  sharedPtrWrapped?: string;
   abstract?: boolean;
   base?: string;
   constructors?: { [name: string]: string };
@@ -69,8 +78,10 @@ export type RelaxedClassSpec = Pick<Partial<ClassSpec>, "sharedPtrWrapped"> & {
   methods?: { [name: string]: RelaxedMethodSpec | RelaxedMethodSpec[] };
 };
 
-export type RelaxedInterfaceSpec = Pick<Partial<InterfaceSpec>, "sharedPtrWrapped"> & {
+export type RelaxedInterfaceSpec = {
   cppName?: string;
+  base?: string;
+  sharedPtrWrapped?: string;
   staticMethods?: { [name: string]: RelaxedMethodSpec | RelaxedMethodSpec[] };
   methods?: { [name: string]: RelaxedMethodSpec | RelaxedMethodSpec[] };
 };

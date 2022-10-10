@@ -202,8 +202,8 @@ add_custom_command(
     MAIN_DEPENDENCY src/spec/relaxed-model.ts
     DEPENDS
         # Note: The json-schema generation task is extremely slow so we don't want to rerun it any time any TS file is modified.
-        # Instead we assume that it will only transitively import the listed files
-        src/spec/model.ts
+        # Instead we assume that it will only transitively import the listed files.
+        # (Right now there are no imports)
 )
 
 add_custom_command(

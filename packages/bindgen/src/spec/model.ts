@@ -16,22 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { RelaxedSpec } from "./relaxed-model";
+export type { MixedInfo } from "./relaxed-model";
+
 export type ValueType = string;
 
-export type Spec = {
-  headers: string[];
-  primitives: string[];
-  typeAliases: { [name: string]: TypeSpec };
-  templates: { [name: string]: number | "*" };
-  mixedInfo: MixedInfo;
-  enums: { [name: string]: EnumSpec };
-  constants: { [name: string]: ConstantSpec };
-  records: { [name: string]: RecordSpec };
-  opaqueTypes: string[];
-  classes: { [name: string]: ClassSpec };
-  interfaces: { [name: string]: InterfaceSpec };
-  keyTypes: { [name: string]: TypeSpec };
-};
+type ReplaceFields<Base, Replacements> = Omit<Base, keyof Replacements> & Replacements;
+
+export type Spec = ReplaceFields<
+  Required<RelaxedSpec>,
+  {
+    typeAliases: { [name: string]: TypeSpec };
+    enums: { [name: string]: EnumSpec };
+    constants: { [name: string]: ConstantSpec };
+    records: { [name: string]: RecordSpec };
+    classes: { [name: string]: ClassSpec };
+    interfaces: { [name: string]: InterfaceSpec };
+    keyTypes: { [name: string]: TypeSpec };
+  }
+>;
 
 export type EnumSpec = {
   cppName?: string;
@@ -118,10 +121,4 @@ export type FunctionTypeSpec = {
 export type ArgumentSpec = {
   name: string;
   type: TypeSpec;
-};
-
-export type MixedInfo = {
-  dataTypes: { [dataType: string]: { getter: string; type: string } };
-  unusedDataTypes: string[];
-  extraCtors: string[];
 };
