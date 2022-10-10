@@ -367,7 +367,7 @@ void RealmObjectClass<T>::get_table_key(ContextType ctx, ObjectType object, Argu
 
     const Obj& obj = realm_object->obj();
     auto table_key = obj.get_table()->get_key();
-    return_value.set(std::to_string(table_key.value));
+    return_value.set(table_key.value);
 }
 
 template <typename T>
