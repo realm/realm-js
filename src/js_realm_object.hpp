@@ -85,6 +85,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::js::RealmObject<T>> {
     static void linking_objects(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void linking_objects_count(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void get_object_key(ContextType, ObjectType, Arguments&, ReturnValue&);
+    static void get_table_key(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void get_object_id(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void is_same_object(ContextType, ObjectType, Arguments&, ReturnValue&);
     static void set_link(ContextType, ObjectType, Arguments&, ReturnValue&);
@@ -110,6 +111,7 @@ struct RealmObjectClass : ClassDefinition<T, realm::js::RealmObject<T>> {
         {"linkingObjectsCount", wrap<linking_objects_count>},
         {"_isSameObject", wrap<is_same_object>},
         {"_objectKey", wrap<get_object_key>},
+        {"_tableKey", wrap<get_table_key>},
         {"_setLink", wrap<set_link>},
         {"addListener", wrap<add_listener>},
         {"removeListener", wrap<remove_listener>},
@@ -350,6 +352,22 @@ void RealmObjectClass<T>::get_object_key(ContextType ctx, ObjectType object, Arg
     const Obj& obj = realm_object->obj();
     auto obj_key = obj.get_key();
     return_value.set(std::to_string(obj_key.value));
+}
+
+template <typename T>
+void RealmObjectClass<T>::get_table_key(ContextType ctx, ObjectType object, Arguments& args,
+                                         ReturnValue& return_value)
+{
+    args.validate_maximum(0);
+
+    auto realm_object = get_internal<T, RealmObjectClass<T>>(ctx, object);
+    if (!realm_object) {
+        throw std::runtime_error("Invalid 'this' object");
+    }
+
+    const Obj& obj = realm_object->obj();
+    auto table_key = obj.get_table()->get_key();
+    return_value.set(std::to_string(table_key.value));
 }
 
 template <typename T>

@@ -64,6 +64,7 @@ describe("Dictionary", () => {
       "addListener",
       "removeListener",
       "removeAllListeners",
+      "toJSON",
     ];
     for (const name of methodNames) {
       it(`exposes a method named '${name}'`, function (this: RealmContext) {
