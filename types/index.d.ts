@@ -296,9 +296,9 @@ declare namespace Realm {
         entries(): [string, any][];
 
         /**
-         * @returns An object for JSON serialization.
+         * @returns A plain object for JSON serialization.
          */
-        toJSON(): any;
+        toJSON(): Record<string, any>;
 
         /**
          * @returns boolean
@@ -383,6 +383,11 @@ declare namespace Realm {
         addListener(callback: DictionaryChangeCallback): void;
         removeListener(callback: DictionaryChangeCallback): void;
         removeAllListeners(): void;
+
+        /**
+         * @returns A plain object for JSON serialization.
+         */
+        toJSON(): Record<string, any>;
     }
 
     /**
@@ -394,9 +399,9 @@ declare namespace Realm {
         readonly optional: boolean;
 
         /**
-         * @returns An object for JSON serialization.
+         * @returns An array of plain objects for JSON serialization.
          */
-        toJSON(): Array<any>;
+        toJSON(): Array<Record<string, any>>;
 
         description(): string;
 
