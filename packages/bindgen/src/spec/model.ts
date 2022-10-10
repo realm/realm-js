@@ -96,16 +96,16 @@ export type TypeModifiersSpec = {
   isPointer: boolean;
 };
 
-export type TypeSpec = QualifiedNameSpec | TemplateInstanceSpec | FunctionTypeSpec;
+export type TypeSpec = TypeNameSpec | TemplateInstanceSpec | FunctionTypeSpec;
 
-export type QualifiedNameSpec = {
-  kind: "qualified-name";
-  names: string[];
+export type TypeNameSpec = {
+  kind: "type-name";
+  name: string;
 } & TypeModifiersSpec;
 
 export type TemplateInstanceSpec = {
   kind: "template-instance";
-  names: string[];
+  name: string;
   templateArguments: TypeSpec[];
 } & TypeModifiersSpec;
 

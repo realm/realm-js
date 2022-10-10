@@ -16,25 +16,29 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { CstNode } from "chevrotain";
 import {
   TypeSpec,
   FunctionTypeSpec,
   ArgumentSpec,
   TypeModifiersSpec,
-  QualifiedNameSpec,
+  TypeNameSpec,
   TemplateInstanceSpec,
 } from "./model";
 import { parse, parser } from "./type-parser";
 
 import { extend } from "../debug";
+import { strict as assert } from "assert";
 
 const debug = extend("type-visitor");
 
-function makeQualifiedName(partial: Partial<QualifiedNameSpec>): QualifiedNameSpec {
+function makeTypeName(name: string, partial: Partial<TypeNameSpec> = {}): TypeNameSpec {
+  assert(name);
   return {
-    kind: "qualified-name",
-    names: partial.names || [],
+    kind: "type-name",
+    name,
     isConst: !!partial.isConst,
     isPointer: !!partial.isPointer,
     isReference: !!partial.isReference,
@@ -49,18 +53,18 @@ function makeFunctionType(partial: Partial<FunctionTypeSpec>): FunctionTypeSpec 
     isConst: !!partial.isConst,
     isNoExcept: !!partial.isNoExcept,
     isOffThread: !!partial.isOffThread,
-    return: partial.return || makeQualifiedName({ names: ["void"] }),
+    return: partial.return || makeTypeName("void"),
   };
 }
 
-function makeTemplateInstance(partial: Partial<TemplateInstanceSpec>): TemplateInstanceSpec {
+function makeTemplateInstance(name: string, partial: Partial<TemplateInstanceSpec>): TemplateInstanceSpec {
   return {
     kind: "template-instance",
     isConst: !!partial.isConst,
     isPointer: !!partial.isPointer,
     isReference: !!partial.isReference,
     isRvalueReference: !!partial.isRvalueReference,
-    names: partial.names || [],
+    name,
     templateArguments: partial.templateArguments || [],
   };
 }
@@ -75,24 +79,24 @@ class CstToTypeSpecTransformer extends BaseCstVisitor {
 
   type(ctx: any): TypeSpec {
     debug("Visiting type %o", ctx);
-    const names = this.visit(ctx.qualifiedName);
+    const name = this.visit(ctx.name);
     if (ctx.templateInstance) {
-      return this.visit(ctx.templateInstance, names);
+      return this.visit(ctx.templateInstance, name);
     } else if (ctx.function) {
       return this.visit(ctx.function);
     } else {
       const modifiers = this.visit(ctx.typeModifiers);
-      return makeQualifiedName({
-        names,
+      return makeTypeName(name, {
         ...modifiers,
         isConst: ctx.Const ? true : !!modifiers.isConst,
       });
     }
   }
 
-  qualifiedName(ctx: any): string[] {
-    debug("Visiting qualifiedName %o", ctx);
-    return ctx.Identifier.map(({ image }: any) => image);
+  name(ctx: any): string[] {
+    debug("Visiting name %o", ctx);
+    assert.equal(ctx.Identifier.length, 1);
+    return ctx.Identifier[0].image;
   }
 
   function(ctx: any): FunctionTypeSpec {
@@ -100,7 +104,7 @@ class CstToTypeSpecTransformer extends BaseCstVisitor {
     return makeFunctionType({
       arguments: ctx.functionArgument ? ctx.functionArgument.map((arg: CstNode) => this.visit(arg)) : [],
       ...this.visit(ctx.functionModifiers),
-      return: ctx.ReturnType ? this.visit(ctx.ReturnType) : makeQualifiedName({ names: ["void"] }),
+      return: ctx.ReturnType ? this.visit(ctx.ReturnType) : makeTypeName("void"),
     });
   }
 
@@ -112,10 +116,9 @@ class CstToTypeSpecTransformer extends BaseCstVisitor {
     };
   }
 
-  templateInstance(ctx: any, names: string[]): TypeSpec {
+  templateInstance(ctx: any, name: string): TypeSpec {
     debug("Visiting templateInstance %o", ctx);
-    return makeTemplateInstance({
-      names,
+    return makeTemplateInstance(name, {
       templateArguments: ctx.type.map((t: CstNode) => this.visit(t)),
       ...this.visit(ctx.typeModifiers),
     });
