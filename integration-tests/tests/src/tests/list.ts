@@ -115,22 +115,15 @@ const ListSchema: Realm.ObjectSchema = {
 
 const NullableBasicTypesSchema: Realm.ObjectSchema = {
   name: "NullableBasicTypesObject",
-  properties: [
-    //@ts-expect-error TYPEBUG: should add the field "name" to our interface "ObjectSchemaProperty"
-    { name: "boolCol", type: "bool?" },
-    //@ts-expect-error TYPEBUG: should add the field "name" to our interface "ObjectSchemaProperty"
-    { name: "intCol", type: "int?" },
-    //@ts-expect-error TYPEBUG: should add the field "name" to our interface "ObjectSchemaProperty"
-    { name: "floatCol", type: "float?" },
-    //@ts-expect-error TYPEBUG: should add the field "name" to our interface "ObjectSchemaProperty"
-    { name: "doubleCol", type: "double?" },
-    //@ts-expect-error TYPEBUG: should add the field "name" to our interface "ObjectSchemaProperty"
-    { name: "stringCol", type: "string?" },
-    //@ts-expect-error TYPEBUG: should add the field "name" to our interface "ObjectSchemaProperty"
-    { name: "dateCol", type: "date?" },
-    //@ts-expect-error TYPEBUG: should add the field "name" to our interface "ObjectSchemaProperty"
-    { name: "dataCol", type: "data?" },
-  ],
+  properties: {
+    boolCol: "bool?",
+    intCol: "int?",
+    floatCol: "float?",
+    doubleCol: "double?",
+    stringCol: "string?",
+    dateCol: "date?",
+    dataCol: "data?",
+  },
 };
 
 const NullableBasicTypesListSchema: Realm.ObjectSchema = {
@@ -1746,7 +1739,7 @@ describe("Lists", () => {
       }
 
       expect(() => object.bool.min()).throws(Error, "Cannot min 'bool' array: operation not supported");
-      expect(() => object.int.min("foo")).throws(Error, "Invalid arguments: at most 0 expected, but 1 supplied");
+      expect(() => object.int.min("foo")).throws(Error, "Cannot get property named 'foo' on a list of primitives");
     });
     it("throws on unsupported aggregate operations", function (this: RealmContext) {
       const N = 5;
@@ -1808,14 +1801,14 @@ describe("Lists", () => {
         });
       });
 
-      expect(() => object.list.min("foo")).throws("Property 'foo' does not exist on object 'PersonObject'");
-      expect(() => object.list.max("foo")).throws("Property 'foo' does not exist on object 'PersonObject'");
-      expect(() => object.list.sum("foo")).throws("Property 'foo' does not exist on object 'PersonObject'");
-      expect(() => object.list.avg("foo")).throws("Property 'foo' does not exist on object 'PersonObject'");
-      expect(() => object.list.min()).throws("JS value must be of type 'string', got (undefined)");
-      expect(() => object.list.max()).throws("JS value must be of type 'string', got (undefined)");
-      expect(() => object.list.sum()).throws("JS value must be of type 'string', got (undefined)");
-      expect(() => object.list.avg()).throws("JS value must be of type 'string', got (undefined)");
+      expect(() => object.list.min("foo")).throws("Property 'foo' does not exist on 'PersonObject' objects");
+      expect(() => object.list.max("foo")).throws("Property 'foo' does not exist on 'PersonObject' objects");
+      expect(() => object.list.sum("foo")).throws("Property 'foo' does not exist on 'PersonObject' objects");
+      expect(() => object.list.avg("foo")).throws("Property 'foo' does not exist on 'PersonObject' objects");
+      expect(() => object.list.min()).throws("Expected 'name' to be a string, got undefined");
+      expect(() => object.list.max()).throws("Expected 'name' to be a string, got undefined");
+      expect(() => object.list.sum()).throws("Expected 'name' to be a string, got undefined");
+      expect(() => object.list.avg()).throws("Expected 'name' to be a string, got undefined");
     });
   });
   describe("complex list forms", () => {

@@ -79,10 +79,16 @@ export function normalizeObjectSchema(arg: RealmObjectConstructor | ObjectSchema
     schema.constructor = arg;
     return schema;
   } else {
+    // TODO: Determine if we still want to support this
+    if (Array.isArray(arg.properties)) {
+      throw new Error("Array of properties are no longer supported");
+    }
     return {
       constructor: undefined,
       name: arg.name,
       primaryKey: arg.primaryKey,
+      asymmetric: arg.asymmetric || false,
+      embedded: arg.embedded || false,
       properties: Object.fromEntries(
         Object.entries(arg.properties).map(([name, property]) => {
           const canonicalPropertySchema = normalizePropertySchema(name, property);
