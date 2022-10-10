@@ -17,9 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import * as binding from "./binding";
-import { Helpers } from "./binding";
 
-import { OrderedCollection, SortDescriptor, OrderedCollectionHelpers } from "./OrderedCollection";
+import { OrderedCollection, OrderedCollectionHelpers } from "./OrderedCollection";
 import { IllegalConstructorError } from "./errors";
 import type { Realm } from "./Realm";
 

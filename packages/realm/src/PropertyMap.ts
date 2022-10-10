@@ -30,12 +30,14 @@ class UninitializedPropertyMapError extends Error {
 
 /** @internal */
 export class PropertyMap {
+  private objectSchemaName: string | null = null;
   private initialized = false;
-  private mapping: Record<string, PropertyHelpers> = {};
+  private mapping: Record<string, PropertyHelpers | undefined> = {};
   private nameByColumnKey: Map<binding.ColKey, string> = new Map();
   private _names: string[] = [];
 
   public initialize(objectSchema: BindingObjectSchema, defaults: Record<string, unknown>, options: HelperOptions) {
+    this.objectSchemaName = objectSchema.alias || objectSchema.name;
     const properties = [...objectSchema.persistedProperties, ...objectSchema.computedProperties];
     this.mapping = Object.fromEntries(
       properties.map((property) => {
@@ -53,7 +55,11 @@ export class PropertyMap {
 
   public get = (property: string): PropertyHelpers => {
     if (this.initialized) {
-      return this.mapping[property];
+      const helpers = this.mapping[property];
+      if (!helpers) {
+        throw new Error(`Property '${property}' does not exist on '${this.objectSchemaName}' objects`);
+      }
+      return helpers;
     } else {
       throw new UninitializedPropertyMapError();
     }

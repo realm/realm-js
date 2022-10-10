@@ -72,6 +72,10 @@ class RealmObject<T = DefaultObject> {
     if (Array.isArray(values)) {
       throw new Error("Array values on object creation is no longer supported");
     }
+    assert(
+      helpers.objectSchema.tableType !== binding.TableType.Embedded,
+      "Creating embedded objects is not yet supported",
+    );
     // Create the underlying object
     const [obj, created] = RealmObject.createObj(realm, helpers, values, mode);
     const result = helpers.wrapObject(obj);
