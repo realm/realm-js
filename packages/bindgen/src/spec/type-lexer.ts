@@ -27,7 +27,7 @@ export const TOKEN_TYPES = {
   Const: createToken({ name: "Const", pattern: "const" }),
   OffThread: createToken({ name: "OffThread", pattern: "off_thread" }),
   NoExcept: createToken({ name: "NoExcept", pattern: "noexcept" }),
-  Identifier: createToken({ name: "Identifier", pattern: /[_a-zA-Z]+[_a-zA-Z0-9]*/ }),
+  Identifier: createToken({ name: "Identifier", pattern: /[_a-z]\w*(::[_a-z]\w*)*/i }),
   /*
   Operator: createToken({
     name: "Operator",
@@ -35,7 +35,6 @@ export const TOKEN_TYPES = {
       /[{}[\]?~;]|!=?|##?|%=?|&=|\*=|\+\+|\+=?|->\*|--|-=|\/=?|<<=|<=>?|<<|>>=?|>=|==?|\^=?|\|=|\|\|?|\.\.\.|\.\*|\./,
   }),
   */
-  DoubleColon: createToken({ name: "DoubleColon", pattern: "::" }),
   Colon: createToken({ name: "Colon", pattern: ":" }),
   RightArrow: createToken({ name: "RightArrow", pattern: "->" }),
   Minus: createToken({ name: "Minus", pattern: "-" }),
