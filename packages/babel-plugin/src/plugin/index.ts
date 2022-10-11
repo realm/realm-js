@@ -225,12 +225,32 @@ function getRealmTypeForClassProperty(path: NodePath<types.ClassProperty>): Real
   }
 }
 
+function isRealmDecoratorWithName(path: any, name: string): boolean {
+  return (
+    (types.isIdentifier(path) && path.name === name) ||
+    (types.isMemberExpression(path) &&
+      types.isIdentifier(path.object) &&
+      path.object.name === "Realm" &&
+      types.isIdentifier(path.property) &&
+      path.property.name === name)
+  );
+}
+
 function findDecoratorIdentifier(
   decoratorsPath: NodePath<types.Decorator>[],
   name: string,
 ): NodePath<types.Decorator> | undefined {
   return decoratorsPath.find(
-    (d) => d.node && types.isIdentifier(d.node.expression) && d.node.expression.name === name && isImportedFromRealm(d),
+    (d) =>
+      d.node &&
+      isRealmDecoratorWithName(d.node.expression, name) &&
+      // ((types.isIdentifier(d.node.expression) && d.node.expression.name === name) ||
+      //   (types.isMemberExpression(d.node.expression) &&
+      //     types.isIdentifier(d.node.expression.object) &&
+      //     d.node.expression.object.name === "Realm" &&
+      //     types.isIdentifier(d.node.expression.property) &&
+      //     d.node.expression.property.name === name)) &&
+      isImportedFromRealm(d),
   );
 }
 
@@ -242,8 +262,9 @@ function findDecoratorCall(
     (d) =>
       d.node &&
       types.isCallExpression(d.node.expression) &&
-      types.isIdentifier(d.node.expression.callee) &&
-      d.node.expression.callee.name === name &&
+      isRealmDecoratorWithName(d.node.expression.callee, name) &&
+      // types.isIdentifier(d.node.expression.callee) &&
+      // d.node.expression.callee.name === name &&
       isImportedFromRealm(d),
   );
 
