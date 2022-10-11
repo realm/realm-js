@@ -25,6 +25,16 @@ export function isImportedFromRealm(path: NodePath<types.Node>): boolean {
     return isImportedFromRealm(path.get("object"));
   } else if (path.isTSQualifiedName()) {
     return isImportedFromRealm(path.get("left"));
+  } else if (path.isDecorator() && types.isMemberExpression(path.get("expression"))) {
+    // Handle decorators with Realm namespace like `@Realm.index`
+    return isImportedFromRealm(path.get("expression"));
+  } else if (
+    path.isDecorator() &&
+    types.isCallExpression(path.get("expression")) &&
+    types.isMemberExpression(path.get("expression").get("callee"))
+  ) {
+    // Handle called decorators with Realm namespace like `@Realm.mapTo('xxx')`
+    return isImportedFromRealm((path.get("expression") as NodePath<types.CallExpression>).get("callee"));
   } else if (path.isIdentifier() || path.isDecorator()) {
     const node = path.isDecorator()
       ? types.isCallExpression(path.node.expression)

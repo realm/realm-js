@@ -363,6 +363,16 @@ describe("Babel plugin", () => {
       expect((parsedSchema?.properties.name as ObjectSchemaProperty).indexed).toEqual(true);
     });
 
+    it("handles `@index` decorators from the Realm import", () => {
+      const transformCode = transform({
+        source: `import Realm, { Types, BSON, List, Set, Dictionary, Mixed } from "realm";
+        export class Person extends Realm.Object { @Realm.index name: Realm.Types.String; }`,
+      });
+      const parsedSchema = extractSchema(transformCode);
+
+      expect((parsedSchema?.properties.name as ObjectSchemaProperty).indexed).toEqual(true);
+    });
+
     it("ignores `@index` decorators not imported from `realm`", () => {
       const transformCode = transform({
         source: `import Realm, { Types, BSON, List, Set, Dictionary, Mixed } from "realm";
@@ -381,6 +391,16 @@ describe("Babel plugin", () => {
 
     it("handles `@mapTo` decorators", () => {
       const transformCode = transformProperty(`@mapTo("rename") name: Realm.Types.String;`);
+      const parsedSchema = extractSchema(transformCode);
+
+      expect((parsedSchema?.properties.name as ObjectSchemaProperty).mapTo).toEqual("rename");
+    });
+
+    it("handles `@mapTo` decorators from the Realm import", () => {
+      const transformCode = transform({
+        source: `import Realm, { Types, BSON, List, Set, Dictionary, Mixed } from "realm";
+        export class Person extends Realm.Object { @Realm.mapTo('rename') name: Realm.Types.String; }`,
+      });
       const parsedSchema = extractSchema(transformCode);
 
       expect((parsedSchema?.properties.name as ObjectSchemaProperty).mapTo).toEqual("rename");
