@@ -141,66 +141,41 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
   // @ts-expect-error Collection is declaring types that doesn't match the index access
   [key: string]: T;
 
-  [Symbol.iterator](): IterableIterator<[string, T]> {
-    const { fromBinding } = this[HELPERS];
-    const snapshot = this[INTERNAL].snapshot();
-    const size = snapshot.size();
-    let i = 0;
-    return {
-      next() {
-        if (i < size) {
-          const [key, value] = snapshot.getDictionaryElement(i++);
-          return { value: [key, fromBinding(value) as T], done: false };
-        } else {
-          return { value: undefined, done: true };
-        }
-      },
-      [Symbol.iterator]() {
-        return this;
-      },
-    };
+  *[Symbol.iterator]() {
+    yield* this.entries();
   }
 
   // @ts-expect-error We're exposing methods in the users value namespace
-  keys(): IterableIterator<string> {
+  *keys() {
     const snapshot = this[INTERNAL].keys.snapshot();
     const size = snapshot.size();
-    let i = 0;
-    return {
-      next() {
-        if (i < size) {
-          const key = snapshot.getAny(i++);
-          assert.string(key);
-          return { value: key, done: false };
-        } else {
-          return { value: undefined, done: true };
-        }
-      },
-      [Symbol.iterator]() {
-        return this;
-      },
-    };
+    for (let i = 0; i < size; i++) {
+      const key = snapshot.getAny(i);
+      assert.string(key);
+      yield key;
+    }
   }
 
   // @ts-expect-error We're exposing methods in the users value namespace
-  values(): IterableIterator<T> {
+  *values() {
     const { fromBinding } = this[HELPERS];
     const snapshot = this[INTERNAL].values.snapshot();
     const size = snapshot.size();
-    let i = 0;
-    return {
-      next() {
-        if (i < size) {
-          const value = snapshot.getAny(i++);
-          return { value: fromBinding(value) as T, done: false };
-        } else {
-          return { value: undefined, done: true };
-        }
-      },
-      [Symbol.iterator]() {
-        return this;
-      },
-    };
+    for (let i = 0; i < size; i++) {
+      const value = snapshot.getAny(i);
+      yield fromBinding(value) as T;
+    }
+  }
+
+  // @ts-expect-error We're exposing methods in the users value namespace
+  *entries() {
+    const { fromBinding } = this[HELPERS];
+    const snapshot = this[INTERNAL].snapshot();
+    const size = snapshot.size();
+    for (let i = 0; i < size; i++) {
+      const [key, value] = snapshot.getDictionaryElement(i);
+      yield [key, fromBinding(value)] as [string, T];
+    }
   }
 
   // @ts-expect-error We're exposing methods in the users value namespace
