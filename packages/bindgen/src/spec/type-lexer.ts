@@ -24,10 +24,10 @@ export const TOKEN_TYPES = {
     pattern: /\s+/,
     group: Lexer.SKIPPED,
   }),
-  Const: createToken({ name: "Const", pattern: "const" }),
-  OffThread: createToken({ name: "OffThread", pattern: "off_thread" }),
-  NoExcept: createToken({ name: "NoExcept", pattern: "noexcept" }),
+
+  // Note: this also covers keywords.
   Identifier: createToken({ name: "Identifier", pattern: /[_a-z]\w*(::[_a-z]\w*)*/i }),
+
   /*
   Operator: createToken({
     name: "Operator",
