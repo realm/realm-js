@@ -52,14 +52,7 @@ const PROXY_HANDLER: ProxyHandler<Dictionary> = {
     if (typeof prop === "string") {
       const internal = target[INTERNAL];
       const toBinding = target[HELPERS].toBinding;
-      internal.insertAny(prop, toBinding(value));
-      /*
-      if (value instanceof RealmObject) {
-        internal.insertAny(prop, value[INTERNAL]);
-      } else {
-        internal.insertAny(prop, value);
-      }
-      */
+      internal.insertAny(prop, toBinding(value, undefined));
       return true;
     } else {
       return false;
@@ -195,7 +188,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
     const internal = this[INTERNAL];
     const toBinding = this[HELPERS].toBinding;
     for (const [key, value] of Object.entries(element)) {
-      internal.insertAny(key, toBinding(value));
+      internal.insertAny(key, toBinding(value, undefined));
     }
   }
 
