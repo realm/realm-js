@@ -11,6 +11,7 @@
 * `Realm#writeCopyTo()` doesn't support flexible sync, and an exception is thrown. ([realm/realm-core#5798](https://github.com/realm/realm-core/issues/5798) and , since v10.10.0)
 * Asymmetric object types/classes cannot be used with partition-based sync, and an exception is thrown. ([realm/realm-core#5691](https://github.com/realm/realm-core/issues/5691), since v10.19.0)
 * If you set a subscription on a link in flexible sync, the server would not know how to handle it. ([realm/realm-core#5409](https://github.com/realm/realm-core/issues/5409), since v10.10.1)
+* Fixed type declarations for aggregation methods (min, max, sum, avg) to reflect implementation. ([4994](https://github.com/realm/realm-js/issues/4994), since v2.0.0)
 
 ### Compatibility
 * React Native >= v0.64.0
