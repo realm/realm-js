@@ -2,13 +2,10 @@
   "name": "@realm/babel-plugin",
   "version": "0.1.0",
   "description": "Babel plugin making it easier to declare your Realm schema",
-  "main": "./dist/bundle.cjs.js",
-  "module": "./dist/bundle.es.js",
-  "react-native": "./dist/bundle.react-native.es.js",
-  "types": "./dist/bundle.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
-    "generate-types": "tsc --project tsconfig.types.json --declaration --emitDeclarationOnly --declarationDir types/generated",
-    "build": "npm run generate-types && rollup --config",
+    "build": "tsc",
     "test": "jest"
   },
   "keywords": [
@@ -22,9 +19,6 @@
   },
   "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^22.0.1",
-    "@rollup/plugin-node-resolve": "^13.3.0",
-    "@rollup/plugin-typescript": "^8.3.4",
     "@babel/plugin-proposal-decorators": "^7.17.9",
     "@babel/preset-typescript": "^7.16.7",
     "@types/jest": "^27.4.1",
@@ -32,8 +26,6 @@
     "jest": "^27.5.1",
     "ts-jest": "^27.1.4",
     "typescript": "^4.6.3",
-    "realm": "*",
-    "rollup": "^2.77.2",
-    "rollup-plugin-dts": "^4.2.2"
+    "realm": "*"
   }
 }
