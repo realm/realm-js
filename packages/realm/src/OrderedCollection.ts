@@ -177,44 +177,28 @@ export abstract class OrderedCollection<T = unknown>
     throw new Error(`Assigning into a ${this.constructor.name} is not support`);
   }
 
-  keys(): IterableIterator<number> {
+  *keys() {
     const size = this.results.size();
-    let index = 0;
-    return {
-      next(): IteratorResult<number, void> {
-        if (index < size) {
-          return { value: index++, done: false };
-        } else {
-          return { value: undefined, done: true };
-        }
-      },
-      [Symbol.iterator]() {
-        return this;
-      },
-    };
+    for (let i = 0; i < size; i++) {
+      yield i;
+    }
   }
 
-  values(): IterableIterator<T> {
+  *values() {
     const snapshot = this.results.snapshot();
-    const fromBinding = this.helpers.fromBinding;
-    const get = this.helpers.get;
-    function getter(index: number) {
-      return fromBinding(get(snapshot, index)) as T;
+    const { get, fromBinding } = this.helpers;
+    for (const i of this.keys()) {
+      yield fromBinding(get(snapshot, i)) as T;
     }
-    const keys = this.keys();
-    return {
-      next(): IteratorResult<T, void> {
-        const { done, value: index } = keys.next();
-        if (done) {
-          return { value: undefined, done };
-        } else {
-          return { value: getter(index), done };
-        }
-      },
-      [Symbol.iterator]() {
-        return this;
-      },
-    };
+  }
+
+  *entries() {
+    const { get, fromBinding } = this.helpers;
+    const snapshot = this.results.snapshot();
+    const size = snapshot.size();
+    for (let i = 0; i < size; i++) {
+      yield [i, fromBinding(get(snapshot, i))] as [number, T];
+    }
   }
 
   readonly [n: number]: T;
@@ -315,9 +299,6 @@ export abstract class OrderedCollection<T = unknown>
   }
   findIndex(predicate: (value: T, index: number, obj: readonly T[]) => unknown, thisArg?: any): number {
     return [...this].findIndex(predicate, thisArg);
-  }
-  entries(): IterableIterator<[number, T]> {
-    return [...this].entries();
   }
   // TODO: Implement support for RealmObjects, by comparing their #objectKey values
   includes(searchElement: T, fromIndex?: number): boolean {

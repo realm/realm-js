@@ -23,11 +23,20 @@ import type { Realm } from "./Realm";
 
 export class Set<T = unknown> extends OrderedCollection<T> {
   /** @internal */
-  constructor(realm: Realm, private internal: binding.Set, helpers: OrderedCollectionHelpers) {
+  private internal!: binding.Set;
+
+  /** @internal */
+  constructor(realm: Realm, internal: binding.Set, helpers: OrderedCollectionHelpers) {
     if (arguments.length === 0 || !(internal instanceof binding.Set)) {
       throw new IllegalConstructorError("Set");
     }
     super(realm, internal.asResults(), helpers);
+    Object.defineProperty(this, "internal", {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: internal,
+    });
   }
 
   isValid() {
