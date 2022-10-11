@@ -10,5 +10,6 @@
     "declaration": true,
     "types": ["jest"]
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts"],
+  "exclude": []
 }
