@@ -518,6 +518,7 @@ classes:
       to_string: () const -> std::string
       get_backlink_count: '() const -> count_t'
       get_backlink_view: '(src_table: TableRef, src_col_key: ColKey) -> TableView'
+      create_and_set_linked_object: '(column: ColKey) -> Obj'
 
   Transaction:
     sharedPtrWrapped: TransactionRef
