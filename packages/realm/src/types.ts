@@ -24,12 +24,12 @@ import { ClassHelpers } from "./ClassHelpers";
 import { TypeAssertionError } from "./errors";
 import { Collection } from "./Collection";
 import { getInternal } from "./internal";
-import { Object as RealmObject, UpdateMode } from "./Object";
+import { Object as RealmObject, ParentContext, UpdateMode } from "./Object";
 import type { Realm } from "./Realm";
 
 /** @internal */
 export type TypeHelpers<T = unknown> = {
-  toBinding(value: T): binding.MixedArg;
+  toBinding(value: T, parent: ParentContext | undefined): binding.MixedArg;
   fromBinding(value: unknown): T;
 };
 
@@ -52,9 +52,13 @@ function defaultFromBinding(value: unknown) {
 /**
  * Adds a branch to a function, which checks for the argument to be null, in which case it returns early.
  */
-function nullPassthrough<T, F extends (value: unknown) => unknown>(this: T, fn: F, enabled: boolean): F {
+function nullPassthrough<T, R extends any[], F extends (value: unknown, ...rest: R) => unknown>(
+  this: T,
+  fn: F,
+  enabled: boolean,
+): F {
   if (enabled) {
-    return ((value) => (value === null ? null : fn.call(this, value))) as F;
+    return ((value, ...rest) => (value === null ? null : fn.call(this, value, ...rest))) as F;
   } else {
     return fn;
   }
@@ -147,14 +151,19 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
     const helpers = getClassHelpers(objectType);
     const { wrapObject } = helpers;
     return {
-      toBinding: nullPassthrough((value) => {
+      toBinding: nullPassthrough((value, parent) => {
         if (value instanceof RealmObject) {
           assert.instanceOf(value, helpers.constructor);
           return getInternal(value);
         } else {
+          // TODO: Consider exposing a way for calling code to disable object creation
           assert.object(value, name);
+          assert.object(parent, "parent");
           // Some other object is assumed to be an unmanged object, that the user wants to create
-          const createdObject = RealmObject.create(realm, helpers, value, UpdateMode.Never);
+          const createdObject = RealmObject.create(realm, value, UpdateMode.Never, {
+            helpers,
+            parent,
+          });
           return getInternal(createdObject);
         }
       }, optional),

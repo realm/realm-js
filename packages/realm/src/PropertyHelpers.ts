@@ -32,7 +32,7 @@ import type { Realm } from "./Realm";
 type BindingObjectSchema = binding.Realm["schema"][0];
 type BindingPropertySchema = BindingObjectSchema["persistedProperties"][0];
 
-type PropertyContext = BindingPropertySchema & { default?: unknown };
+type PropertyContext = BindingPropertySchema & { embedded: boolean; default?: unknown };
 
 function getObj(results: binding.Results, index: number) {
   return results.getObj(index);
@@ -50,6 +50,7 @@ type PropertyOptions = {
   typeHelpers: TypeHelpers;
   columnKey: binding.ColKey;
   optional: boolean;
+  embedded: boolean;
 } & HelperOptions &
   binding.Property_Relaxed;
 
@@ -61,6 +62,7 @@ type PropertyAccessors = {
 export type PropertyHelpers = TypeHelpers &
   PropertyAccessors & {
     columnKey: binding.ColKey;
+    embedded: boolean;
     default?: unknown;
   };
 
@@ -77,8 +79,15 @@ const defaultSet =
   ({ realm, typeHelpers: { toBinding }, columnKey }: PropertyOptions) =>
   (obj: binding.Obj, value: unknown) => {
     assert.inTransaction(realm);
-    obj.setAny(columnKey, toBinding(value));
+    obj.setAny(columnKey, toBinding(value, { obj, columnKey }));
   };
+
+function embeddedSet({ typeHelpers: { toBinding }, columnKey }: PropertyOptions) {
+  return (obj: binding.Obj, value: unknown) => {
+    // Simply asking for the toBinding will create the object and link it to the parent in one operation
+    toBinding(value, { obj, columnKey });
+  };
+}
 
 type AccessorFactory = (options: PropertyOptions) => PropertyAccessors;
 
@@ -87,13 +96,14 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     const {
       columnKey,
       typeHelpers: { fromBinding },
+      embedded,
     } = options;
     assert(options.optional, "Objects are always nullable");
     return {
       get(this: PropertyHelpers, obj) {
         return obj.isNull(columnKey) ? null : fromBinding(obj.getLinkedObject(columnKey));
       },
-      set: defaultSet(options),
+      set: embedded ? embeddedSet(options) : defaultSet(options),
     };
   },
   [binding.PropertyType.LinkingObjects]() {
@@ -170,7 +180,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       return {
         get(obj: binding.Obj) {
           const internal = binding.List.make(realm.internal, obj, columnKey);
-          return new List(realm, internal, collectionHelpers);
+          return new List(realm, { obj, columnKey }, internal, collectionHelpers);
         },
         set(obj, values) {
           assert.inTransaction(realm);
@@ -182,7 +192,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
             let index = 0;
             for (const value of values) {
               try {
-                bindingValues.push(itemToBinding(value));
+                bindingValues.push(itemToBinding(value, { obj, columnKey }));
               } catch (err) {
                 if (err instanceof TypeAssertionError) {
                   err.rename(`${name}[${index}]`);
@@ -225,7 +235,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
         internal.removeAll();
         assert.object(value, "values");
         for (const [k, v] of Object.entries(value)) {
-          internal.insertAny(k, itemHelpers.toBinding(v));
+          internal.insertAny(k, itemHelpers.toBinding(v, { obj, columnKey }));
         }
       },
     };
@@ -256,7 +266,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
         internal.removeAll();
         assert.array(value, "values");
         for (const v of value) {
-          internal.insertAny(itemHelpers.toBinding(v));
+          internal.insertAny(itemHelpers.toBinding(v, { obj, columnKey }));
         }
       },
     };
@@ -264,13 +274,13 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
 };
 
 function getHelpers(type: binding.PropertyType, options: PropertyOptions): PropertyHelpers {
-  const { typeHelpers, columnKey } = options;
+  const { typeHelpers, columnKey, embedded } = options;
   const accessorFactory = ACCESSOR_FACTORIES[type];
   if (accessorFactory) {
     const accessors = accessorFactory(options);
-    return { ...accessors, ...typeHelpers, columnKey };
+    return { ...accessors, ...typeHelpers, columnKey, embedded };
   } else {
-    return { get: defaultGet(options), set: defaultSet(options), ...typeHelpers, columnKey };
+    return { get: defaultGet(options), set: defaultSet(options), ...typeHelpers, columnKey, embedded };
   }
 }
 

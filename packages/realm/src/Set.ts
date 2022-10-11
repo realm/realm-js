@@ -49,7 +49,7 @@ export class Set<T = unknown> extends OrderedCollection<T> {
    * @returns Boolean:  true if the value existed in the Set prior to deletion, false otherwise
    */
   delete(value: T): boolean {
-    const [, success] = this.internal.removeAny(this.helpers.toBinding(value));
+    const [, success] = this.internal.removeAny(this.helpers.toBinding(value, undefined));
     return success;
   }
 
@@ -59,7 +59,7 @@ export class Set<T = unknown> extends OrderedCollection<T> {
    * @returns The Realm.Set<T> itself, after adding the new value
    */
   add(value: T): this {
-    this.internal.insertAny(this.helpers.toBinding(value));
+    this.internal.insertAny(this.helpers.toBinding(value, undefined));
     return this;
   }
 
