@@ -106,7 +106,7 @@ export class ClassMap {
     Object.defineProperties(constructor.prototype, descriptors);
   }
 
-  constructor(realm: Realm, realmSchema: BindingObjectSchema[], schemaExtras: RealmSchemaExtra) {
+  constructor(realm: Realm, realmSchema: readonly BindingObjectSchema[], schemaExtras: RealmSchemaExtra) {
     this.mapping = Object.fromEntries(
       realmSchema.map((objectSchema) => {
         // Create the wrapping class first
