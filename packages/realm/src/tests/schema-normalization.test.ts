@@ -52,22 +52,6 @@ describe("normalizePropertySchema", () => {
   });
 });
 
-describe("normalizeObjectSchema", () => {
-  it("transforms a list of", () => {
-    const result = normalizeObjectSchema({
-      properties: [
-        { name: "boolCol", type: "bool?" },
-        { name: "intCol", type: "int?" },
-        { name: "floatCol", type: "float?" },
-        { name: "doubleCol", type: "double?" },
-        { name: "stringCol", type: "string?" },
-        { name: "dateCol", type: "date?" },
-        { name: "dataCol", type: "data?" },
-      ],
-    });
-  });
-});
-
 describe("extractGeneric", () => {
   it("pass through non-generic types", () => {
     const { typeBase, typeArgument } = extractGeneric("test");

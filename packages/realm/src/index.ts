@@ -16,16 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export type { Configuration } from "./Configuration";
 export { App } from "./App";
 export { Results } from "./Results";
 export { Object, UpdateMode } from "./Object";
 export { List } from "./List";
 export { Dictionary } from "./Dictionary";
 export { Set } from "./Set";
-export type { ObjectChangeSet, ObjectChangeCallback } from "./ObjectListeners";
-export { OrderedCollection, CollectionChangeSet, CollectionChangeCallback } from "./OrderedCollection";
+export { OrderedCollection } from "./OrderedCollection";
 export { Collection } from "./Collection";
+
+export type { Configuration } from "./Configuration";
+export type { ObjectChangeSet, ObjectChangeCallback } from "./ObjectListeners";
+export type { CollectionChangeSet, CollectionChangeCallback } from "./OrderedCollection";
 
 export * from "./schema/types";
 

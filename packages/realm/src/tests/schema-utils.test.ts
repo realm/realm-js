@@ -130,6 +130,7 @@ describe("schema-utils", () => {
         {
           constructor: undefined,
           name: "Person",
+          embedded: false,
           properties: {
             name: { name: "name", type: "string", optional: false, mapTo: "name", indexed: false },
             friends: {
