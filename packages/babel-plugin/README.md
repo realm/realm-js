@@ -147,7 +147,11 @@ export class Task extends Object<Task, "name" | "description"> {
 
 #### Supported types
 
-This plugin supports standard TypeScript types wherever possible, to make defining your model as natural as possible. Some Realm types do not have a direct TypeScript equivalent, or can have more nuance than TypeScript supports (e.g. `double`, `int` and `float` are all represented by `number` in TypeScript), so in these cases you should use the types provided by `Realm.Types` - you can also exclusively use types from `Realm.Types` if preferred. Some Realm types are already exported from the `Realm` namespace and are re-exported by `Realm.Types`, so you can use either variant.
+This plugin supports standard TypeScript types wherever possible, to make defining your model as natural as possible. Some Realm types do not have a direct TypeScript equivalent (e.g. `double`, `int` and `float` are all represented by `number` in TypeScript), so in these cases you should use the types provided by `Realm.Types`.
+
+As a rule, we recommend using TypeScript types where possible, and using `Realm.Types` where you cannot, but you can also exclusively use types from `Realm.Types` if preferred.
+
+Types which are provided by Realm (e.g. `Realm.List`) are exported from both the top-level `Realm` namespace, and from `Realm.Types` - you can use either variant in your models.
 
 The supported types are shown in the table below. See [the Realm documentation](https://www.mongodb.com/docs/realm/sdk/react-native/data-types/field-types/) and [SDK documentation](https://www.mongodb.com/docs/realm-sdks/js/latest/Realm.html#~PropertyType) for more details on each type.
 
@@ -159,14 +163,14 @@ The supported types are shown in the table below. See [the Realm documentation](
 | `Types.Float`                                | `float`           |                 |                         |                                                                                        |
 | `Types.Double`                               | `double`          | `number`        |                         | Double is the default number type                                                      |
 | `Types.Decimal128`                           | `decimal128`      |                 | `Realm.BSON.Decimal128` |                                                                                        |
-| `Types.ObjectId`                             | `objectId`        |                 | `Realm.BSON.UUID`       |                                                                                        |
-| `Types.UUID`                                 | `uuid`            |                 |                         |                                                                                        |
+| `Types.ObjectId`                             | `objectId`        |                 | `Realm.BSON.ObjectId`   |                                                                                        |
+| `Types.UUID`                                 | `uuid`            |                 | `Realm.BSON.UUID`       |                                                                                        |
 | `Types.Date`                                 | `date`            | `Date`          |                         |                                                                                        |
 | `Types.Data`                                 | `data`            | `ArrayBuffer`   |                         |                                                                                        |
 | `Types.List<T>`                              | `type[]`          |                 | `Realm.List<T>`         | `T` is the type of objects in the list                                                 |
 | `Types.Set<T>`                               | `type<>`          |                 | `Realm.Set<T>`          | `T` is the type of objects in the set                                                  |
 | `Types.Dictionary<T>`                        | `type{}`          |                 | `Realm.Dictionary<T>`   | `T` is the type of objects in the dictionary                                           |
-| `Types.Mixed`                                | `mixed`           | `unknown`       | `Realm.Mixed`           |                                                                                        |
+| `Types.Mixed`                                | `mixed`           |                 | `Realm.Mixed`           |                                                                                        |
 | <code>Types.LinkingObjects<T,&nbsp;N></code> | `linkingObjects`  |                 |                         | `T` is the type of objects, `N` is the property name of the relationship (as a string) |
 
 ### Specifying schema properties as `static`s
