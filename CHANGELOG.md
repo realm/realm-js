@@ -241,6 +241,7 @@ realm.write(() => {
     ```
 ### Enhancements
 * Small improvement to performance by caching JSI property String object [#4863](https://github.com/realm/realm-js/pull/4863)
+* Added new package `@realm/babel-plugin` to enable definining your Realm models using standard Typescript syntax [#4938](https://github.com/realm/realm-js/pull/4938)
 
 ### Compatibility
 * React Native >= v0.70.0
