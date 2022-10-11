@@ -18,11 +18,183 @@
 
 import { expect } from "chai";
 
-import { parse } from "../spec/type-parser";
+import { TypeSpec } from "../spec/model";
+import { parseTypeSpec } from "../spec/type-parser";
+
+const TESTS: [string, TypeSpec][] = [
+  [
+    "foo",
+    {
+      kind: "type-name",
+      name: "foo",
+    },
+  ],
+  [
+    "foo::bar",
+    {
+      kind: "type-name",
+      name: "foo::bar",
+    },
+  ],
+  [
+    "foo::bar<baz, qux::fred>",
+    {
+      kind: "template-instance",
+      name: "foo::bar",
+      templateArguments: [
+        {
+          kind: "type-name",
+          name: "baz",
+        },
+        {
+          kind: "type-name",
+          name: "qux::fred",
+        },
+      ],
+    },
+  ],
+  [
+    "()",
+    {
+      kind: "function",
+      args: [],
+      ret: {
+        kind: "type-name",
+        name: "void",
+      },
+      isConst: false,
+      isNoExcept: false,
+      isOffThread: false,
+    },
+  ],
+  [
+    "(n: int)",
+    {
+      kind: "function",
+      args: [
+        {
+          name: "n",
+          type: {
+            kind: "type-name",
+            name: "int",
+          },
+        },
+      ],
+      ret: {
+        kind: "type-name",
+        name: "void",
+      },
+      isConst: false,
+      isNoExcept: false,
+      isOffThread: false,
+    },
+  ],
+  [
+    "(a: (b: c) -> d) -> e",
+    {
+      kind: "function",
+      args: [
+        {
+          name: "a",
+          type: {
+            kind: "function",
+            args: [
+              {
+                name: "b",
+                type: {
+                  kind: "type-name",
+                  name: "c",
+                },
+              },
+            ],
+            isConst: false,
+            isNoExcept: false,
+            isOffThread: false,
+            ret: {
+              kind: "type-name",
+              name: "d",
+            },
+          },
+        },
+      ],
+      ret: {
+        kind: "type-name",
+        name: "e",
+      },
+      isConst: false,
+      isNoExcept: false,
+      isOffThread: false,
+    },
+  ],
+  [
+    "() const noexcept -> void",
+    {
+      kind: "function",
+      args: [],
+      ret: {
+        kind: "type-name",
+        name: "void",
+      },
+      isConst: true,
+      isNoExcept: true,
+      isOffThread: false,
+    },
+  ],
+  [
+    "foo const*&&",
+    {
+      kind: "rref",
+      type: {
+        kind: "pointer",
+        type: {
+          kind: "const",
+          type: {
+            kind: "type-name",
+            name: "foo",
+          },
+        },
+      },
+    },
+  ],
+  [
+    "const int&",
+    {
+      kind: "ref",
+      type: {
+        kind: "const",
+        type: {
+          kind: "type-name",
+          name: "int",
+        },
+      },
+    },
+  ],
+  [
+    "const std::vector<int>&",
+    {
+      kind: "ref",
+      type: {
+        kind: "const",
+        type: {
+          kind: "template-instance",
+          name: "std::vector",
+          templateArguments: [
+            {
+              kind: "type-name",
+              name: "int",
+            },
+          ],
+        },
+      },
+    },
+  ],
+];
 
 describe("type parser", () => {
-  it.skip("parses", () => {
-    const result = parse("foo");
-    expect(result).includes({ name: "type", children: { name: [{ children: {} }] } });
-  });
+  for (const [text, expectedResult] of TESTS) {
+    it(`parses "${text}"`, () => {
+      const result = parseTypeSpec(text);
+      expect(result).deep.equals(expectedResult);
+    });
+  }
 });

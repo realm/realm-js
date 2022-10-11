@@ -89,30 +89,28 @@ export type InterfaceSpec = {
   methods: { [name: string]: MethodSpec[] };
 };
 
-export type TypeModifiersSpec = {
-  isConst: boolean;
-  isReference: boolean;
-  isRvalueReference: boolean;
-  isPointer: boolean;
-};
+export type TypeSpec = TypeNameSpec | TemplateInstanceSpec | FunctionTypeSpec | TypeModifierSpec;
 
-export type TypeSpec = TypeNameSpec | TemplateInstanceSpec | FunctionTypeSpec;
+export type TypeModifierSpec = {
+  kind: "const" | "ref" | "rref" | "pointer";
+  type: TypeSpec;
+};
 
 export type TypeNameSpec = {
   kind: "type-name";
   name: string;
-} & TypeModifiersSpec;
+};
 
 export type TemplateInstanceSpec = {
   kind: "template-instance";
   name: string;
   templateArguments: TypeSpec[];
-} & TypeModifiersSpec;
+};
 
 export type FunctionTypeSpec = {
   kind: "function";
-  arguments: ArgumentSpec[];
-  return: TypeSpec;
+  args: ArgumentSpec[];
+  ret: TypeSpec;
   isConst: boolean;
   isNoExcept: boolean;
   isOffThread: boolean;

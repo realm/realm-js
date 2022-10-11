@@ -21,10 +21,9 @@ import { expect } from "chai";
 import { lexer } from "../spec/type-lexer";
 
 const TESTS = {
-  Identifier: ["foo", "foo_bar", "fooBar", "abc123"],
+  Identifier: ["foo", "foo_bar", "fooBar", "abc123", "std::vector"],
   LeftParentheses: ["("],
   RightParentheses: [")"],
-  DoubleColon: ["::"],
   Colon: [":"],
   LessThan: ["<"],
   GreaterThan: [">"],

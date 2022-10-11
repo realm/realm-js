@@ -12,7 +12,6 @@
     "start": "./realm-bindgen.ts",
     "test": "mocha",
     "generate:spec-schema": "typescript-json-schema src/spec/relaxed-model.ts RelaxedSpec --out generated/spec.schema.json --required",
-    "generate:type-parser-diagram": "tsm --no-warnings src/spec/type-parser-diagram.ts generated/type-parser.html",
     "compile:node": "cmake-js compile --debug"
   },
   "dependencies": {
