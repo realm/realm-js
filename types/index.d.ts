@@ -21,6 +21,7 @@
 
 
 /// <reference path="./app.d.ts"/>
+/// <reference path="./decorators.d.ts"/>
 /// <reference path="./types.d.ts"/>
 
 declare namespace Realm {
