@@ -225,13 +225,19 @@ function getRealmTypeForClassProperty(path: NodePath<types.ClassProperty>): Real
   }
 }
 
-function findDecoratorIdentifier(decoratorsPath: NodePath<types.Decorator>[], name: string) {
+function findDecoratorIdentifier(
+  decoratorsPath: NodePath<types.Decorator>[],
+  name: string,
+): NodePath<types.Decorator> | undefined {
   return decoratorsPath.find(
     (d) => d.node && types.isIdentifier(d.node.expression) && d.node.expression.name === name && isImportedFromRealm(d),
   );
 }
 
-function findDecoratorCall(decoratorsPath: NodePath<types.Decorator>[], name: string) {
+function findDecoratorCall(
+  decoratorsPath: NodePath<types.Decorator>[],
+  name: string,
+): { decoratorNode: NodePath<types.Decorator>; callExpression: types.CallExpression } | undefined {
   const node = decoratorsPath.find(
     (d) =>
       d.node &&
@@ -241,9 +247,11 @@ function findDecoratorCall(decoratorsPath: NodePath<types.Decorator>[], name: st
       isImportedFromRealm(d),
   );
 
-  if (!node) return null;
+  if (!node) return undefined;
 
-  return node.node.expression as types.CallExpression;
+  // Return both the node and the callExpression from here to avoid
+  // additional type checking requirements at the call site
+  return { decoratorNode: node, callExpression: node.node.expression as types.CallExpression };
 }
 
 function visitRealmClassProperty(path: NodePath<types.ClassProperty>) {
@@ -251,12 +259,22 @@ function visitRealmClassProperty(path: NodePath<types.ClassProperty>) {
   const valuePath = path.get("value");
   const decoratorsPath: NodePath<types.Decorator>[] = path.get("decorators");
 
-  const index = Boolean(findDecoratorIdentifier(decoratorsPath, "index"));
+  const indexDecorator = findDecoratorIdentifier(decoratorsPath, "index");
+  if (indexDecorator) {
+    indexDecorator;
+  }
+  const index = Boolean(indexDecorator);
+
   const mapToDecorator = findDecoratorCall(decoratorsPath, "mapTo");
   const mapTo =
-    mapToDecorator && types.isStringLiteral(mapToDecorator.arguments[0])
-      ? mapToDecorator.arguments[0].value
+    mapToDecorator && types.isStringLiteral(mapToDecorator.callExpression.arguments[0])
+      ? mapToDecorator.callExpression.arguments[0].value
       : undefined;
+
+  // Remove the decorators from the final source as they are only for schema annotation purposes.
+  // Decorator implementations will throw to prevent usage outside of the plugin.
+  if (indexDecorator) indexDecorator.remove();
+  if (mapToDecorator) mapToDecorator.decoratorNode.remove();
 
   if (keyPath.isIdentifier()) {
     const name = keyPath.node.name;
