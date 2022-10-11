@@ -221,17 +221,13 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
     }
   }
 
-  // /**
-  //  * Returns a plain object representation with possible circular references
-  //  * from the dictionary for JSON serialization.
-  //  * @returns A plain object
-  //  */
+  /**
+   * @returns A plain object for JSON serialization.
+   **/
   // @ts-expect-error We're exposing methods in the users value namespace
   toJSON(_?: string, cache = new JSONCacheMap()): DefaultObject {
     return Object.fromEntries(
-      Object.entries(this)
-        .filter(([k]) => k != "toJSON")
-        .map(([k, v]) => [k, v instanceof RealmObject ? v.toJSON(k, cache) : v]),
+      Object.entries(this).map(([k, v]) => [k, v instanceof RealmObject ? v.toJSON(k, cache) : v]),
     );
   }
 }

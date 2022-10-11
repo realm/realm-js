@@ -96,10 +96,14 @@ class RealmObject<T = DefaultObject> {
         const defaultValue = helpers.properties.get(property.name).default;
         if (typeof defaultValue !== "undefined") {
           result[property.name] = defaultValue;
-        } else if (created) {
-        throw new Error(`Missing value for property '${property.name}'`);
+        } else if (
+          !(property.type & binding.PropertyType.Collection) &&
+          !(property.type & binding.PropertyType.Nullable) &&
+          created
+        ) {
+          throw new Error(`Missing value for property '${property.name}'`);
+        }
       }
-    }
     }
     return result as RealmObject;
   }
@@ -215,10 +219,8 @@ class RealmObject<T = DefaultObject> {
   }
 
   /**
-   * Returns a plain object representation with possible circular references
-   * from the object for JSON serialization.
-   * @returns A plain object
-   */
+   * @returns A plain object for JSON serialization.
+   **/
   toJSON(_?: string, cache = new JSONCacheMap<T>()): DefaultObject {
     // Construct a reference-id of table-name & primaryKey if it exists, or fall back to objectId.
 

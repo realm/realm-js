@@ -18,7 +18,6 @@
 
 import { expect } from "chai";
 import Realm, { DefaultObject } from "realm";
-import { stringify, parse } from "@ungap/structured-clone/json";
 
 import { openRealmBefore } from "../hooks";
 
@@ -193,9 +192,6 @@ describe("toJSON functionality", () => {
           // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Cyclic_object_value
           expect(() => JSON.stringify(serializable)).throws(TypeError, /circular|cyclic/i);
         });
-        it("but works with circular JSON serialization frameworks", function (this: TestContext) {
-          expect(parse(stringify(this.birthdays))).deep.equals(this.birthdaysSerialized);
-        });
       });
     }
   });
@@ -213,8 +209,9 @@ describe("toJSON functionality", () => {
     it("handles a dictionary field referencing its parent", function (this: TestContext) {
       const serializable = this.birthdays.toJSON();
       // Check that the serializable object is the same as the first related object.
-      // @ts-expect-error We know this is a list
       expect(serializable).equals(serializable.dict.grandparent);
+      // And matches expected serialized object.
+      expect(serializable).deep.equals(this.birthdaysSerialized);
     });
   });
 });

@@ -178,11 +178,9 @@ export abstract class OrderedCollection<T = unknown>
     throw new Error(`Assigning into a ${this.constructor.name} is not support`);
   }
 
-   /**
-   * Returns a plain object representation with possible circular references
-   * from the ordered collection for JSON serialization.
-   * @returns A plain object
-   */
+  /**
+   * @returns An array of plain objects for JSON serialization.
+  **/
   toJSON(_?: string, cache = new JSONCacheMap()): Array<DefaultObject> {
     return this.map((item, index) => {
       if (item instanceof RealmObject) {
