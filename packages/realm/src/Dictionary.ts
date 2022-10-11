@@ -138,14 +138,14 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    */
   public [HELPERS]: TypeHelpers;
 
-  // @ts-expect-error Collection is declaring types that doesn't match the index access
+  // @ts-expect-error We're exposing methods in the end-users namespace of keys
   [key: string]: T;
 
   *[Symbol.iterator]() {
     yield* this.entries();
   }
 
-  // @ts-expect-error We're exposing methods in the users value namespace
+  // @ts-expect-error We're exposing methods in the end-users namespace of keys
   *keys() {
     const snapshot = this[INTERNAL].keys.snapshot();
     const size = snapshot.size();
@@ -156,7 +156,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
     }
   }
 
-  // @ts-expect-error We're exposing methods in the users value namespace
+  // @ts-expect-error We're exposing methods in the end-users namespace of keys
   *values() {
     const { fromBinding } = this[HELPERS];
     const snapshot = this[INTERNAL].values.snapshot();
@@ -167,7 +167,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
     }
   }
 
-  // @ts-expect-error We're exposing methods in the users value namespace
+  // @ts-expect-error We're exposing methods in the end-users namespace of keys
   *entries() {
     const { fromBinding } = this[HELPERS];
     const snapshot = this[INTERNAL].snapshot();
@@ -178,7 +178,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
     }
   }
 
-  // @ts-expect-error We're exposing methods in the users value namespace
+  // @ts-expect-error We're exposing methods in the end-users namespace of keys
   isValid() {
     return this[INTERNAL].isValid;
   }
@@ -187,7 +187,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * Adds given element to the dictionary
    * @returns The dictionary
    */
-  // @ts-expect-error We're exposing methods in the users value namespace
+  // @ts-expect-error We're exposing methods in the end-users namespace of keys
   set(element: { [key: string]: T }): this {
     const internal = this[INTERNAL];
     const toBinding = this[HELPERS].toBinding;
@@ -200,7 +200,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * Removes given element from the dictionary
    * @returns The dictionary
    */
-  // @ts-expect-error We're exposing methods in the users value namespace
+  // @ts-expect-error We're exposing methods in the end-users namespace of keys
   remove(key: string | string[]): this {
     const internal = this[INTERNAL];
     const keys = typeof key === "string" ? [key] : key;
