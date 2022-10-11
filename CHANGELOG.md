@@ -28,6 +28,7 @@ Based on Realm JS v10.21.1: See changelog below for details on enhancements and 
     ```
 ### Enhancements
 * Small improvement to performance by caching JSI property String object [#4863](https://github.com/realm/realm-js/pull/4863)
+* Added new package `@realm/babel-plugin` to enable definining your Realm models using standard Typescript syntax [#4938](https://github.com/realm/realm-js/pull/4938)
 
 ### Fixed
 * None

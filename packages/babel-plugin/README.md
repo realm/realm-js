@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The Realm Babel plugin enables you to define your Realm models using standard Typescript syntax - no need to define a separate schema.
+The Realm Babel plugin enables defining your Realm models using standard Typescript syntax - no need to define a separate schema.
 
 <table>
 <tr>
