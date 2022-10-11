@@ -22,6 +22,7 @@ import { assert } from "./assert";
 import * as binding from "./binding";
 import { ClassHelpers } from "./ClassHelpers";
 import { TypeAssertionError } from "./errors";
+import { Collection } from "./Collection";
 import { getInternal } from "./internal";
 import { Object as RealmObject, UpdateMode } from "./Object";
 import type { Realm } from "./Realm";
@@ -187,6 +188,8 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
           return binding.Timestamp.fromDate(value);
         } else if (value instanceof RealmObject) {
           return getInternal(value);
+        } else if (value instanceof Collection) {
+          throw new Error(`Using a ${value.constructor.name} as Mixed value, is not yet supported`);
         } else {
           return value as binding.Mixed;
         }
