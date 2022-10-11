@@ -24,7 +24,8 @@ export { List } from "./List";
 export { Dictionary } from "./Dictionary";
 export { Set } from "./Set";
 export type { ObjectChangeSet, ObjectChangeCallback } from "./ObjectListeners";
-export type { OrderedCollection, CollectionChangeSet, CollectionChangeCallback } from "./OrderedCollection";
+export { OrderedCollection, CollectionChangeSet, CollectionChangeCallback } from "./OrderedCollection";
+export { Collection } from "./Collection";
 
 export * from "./schema/types";
 
