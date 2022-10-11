@@ -400,39 +400,40 @@ export function bindModel(spec: Spec): BoundSpec {
   }
 
   function resolveTypes(typeSpec: TypeSpec): Type {
-    if (typeSpec.kind == "function") {
-      return new Func(
-        resolveTypes(typeSpec.return),
-        typeSpec.arguments.map((a) => new Arg(a.name, resolveTypes(a.type))),
-        typeSpec.isConst,
-        typeSpec.isNoExcept,
-        typeSpec.isOffThread,
-      );
-    }
-
-    // Note: order of these checks is very important!
-    // TODO do this during parse so we don't lose information
-    if (typeSpec.isReference) {
-      return new Ref(resolveTypes({ ...typeSpec, isReference: false }));
-    } else if (typeSpec.isRvalueReference) {
-      return new RRef(resolveTypes({ ...typeSpec, isRvalueReference: false }));
-    } else if (typeSpec.isPointer) {
-      return new Pointer(resolveTypes({ ...typeSpec, isPointer: false }));
-    } else if (typeSpec.isConst) {
-      return new Const(resolveTypes({ ...typeSpec, isConst: false }));
-    }
-
-    const name = typeSpec.name;
     switch (typeSpec.kind) {
-      case "type-name":
+      case "const":
+        return new Const(resolveTypes(typeSpec.type));
+      case "pointer":
+        return new Pointer(resolveTypes(typeSpec.type));
+      case "ref":
+        return new Ref(resolveTypes(typeSpec.type));
+      case "rref":
+        return new RRef(resolveTypes(typeSpec.type));
+
+      case "function": {
+        return new Func(
+          resolveTypes(typeSpec.ret),
+          typeSpec.args.map((a) => new Arg(a.name, resolveTypes(a.type))),
+          typeSpec.isConst,
+          typeSpec.isNoExcept,
+          typeSpec.isOffThread,
+        );
+      }
+
+      case "type-name": {
+        const name = typeSpec.name;
         assert(name in out.types, `no such type: ${name}`);
         return out.types[name];
-      case "template-instance":
+      }
+
+      case "template-instance": {
+        const name = typeSpec.name;
         assert(templates.has(name), `no such template: ${name}`);
         const argCount = templates.get(name);
         if (argCount != "*")
           assert.equal(typeSpec.templateArguments.length, argCount, `template ${name} takes ${argCount} args`);
         return new Template(name, typeSpec.templateArguments.map(resolveTypes));
+      }
     }
   }
 

@@ -489,9 +489,14 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
     case "Ref":
       return c(type.type, expr);
 
-    case "RRef":
+    case "RRef": {
       // For now, copying. TODO Consider moving instead, although we may want a marker in JS code.
-      return `REALM_DECAY_COPY(${c(type.type, expr)})`;
+      // Also, for now, only doing this if the child is a class, since A) that is where we need it,
+      // and B) other things may use lambdas which cause compile failures with our `auto(expr)`
+      // emulation until C++20.
+      const inner = c(type.type, expr);
+      return type.type.kind == "Class" ? `REALM_DECAY_COPY(${inner})` : inner;
+    }
 
     case "Template":
       // Most templates only take a single argument so do this here.

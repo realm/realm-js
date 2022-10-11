@@ -43,7 +43,7 @@ import {
   RelaxedRecordSpec,
   RelaxedSpec,
 } from "./spec/relaxed-model";
-import { parseTypeSpec } from "./spec/type-transformer";
+import { parseTypeSpec, parseMethodSpec } from "./spec/type-parser";
 
 export * from "./spec/model";
 
@@ -179,27 +179,15 @@ function normalizeMethodSpec(spec: RelaxedMethodSpec | RelaxedMethodSpec[]): Met
   const methods = Array.isArray(spec) ? spec : [spec];
   return methods
     .map((method) => (typeof method === "string" ? { sig: method } : method))
-    .map(({ cppName, suffix, sig }) => {
-      const type = parseTypeSpec(sig);
-      if (typeof type === "undefined") {
-        throw new Error(`Expected a function type, but failed to parse: ${sig}`);
-      } else if (type.kind === "function") {
-        return { cppName, suffix, sig: type };
-      } else {
-        throw new Error(`Expected a function type, got "${type.kind}"`);
-      }
+    .map(({ cppName, suffix, sig: sigText }) => {
+      const sig = parseMethodSpec(sigText);
+      return { cppName, suffix, sig };
     });
 }
 
 function normalizeConstructor(sig: string): FunctionTypeSpec {
-  const type = parseTypeSpec(sig);
-  if (typeof type === "undefined") {
-    throw new Error(`Expected a function type, but failed to parse: ${sig}`);
-  }
-  if (type.kind !== "function") {
-    throw new Error(`Expected a function type, got "${type.kind}"`);
-  }
-  if (type.return.kind != "type-name" || type.return.name != "void")
+  const type = parseMethodSpec(sig);
+  if (type.ret.kind != "type-name" || type.ret.name != "void")
     throw new Error(`Constructors not allowed to specify return type, got "${type.kind}"`);
   return type;
 }
