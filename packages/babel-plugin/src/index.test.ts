@@ -363,7 +363,7 @@ describe("Babel plugin", () => {
       expect((parsedSchema?.properties.name as ObjectSchemaProperty).indexed).toEqual(true);
     });
 
-    it("ignores `@index` decorators not imported from `@realm/react`", () => {
+    it("ignores `@index` decorators not imported from `@realm/babel-plugin`", () => {
       const transformCode = transform({
         source: `import Realm, { Types, BSON, List, Set, Dictionary, Mixed } from "realm";
         export class Person extends Realm.Object { @index name: Realm.Types.String; }`,
@@ -373,6 +373,12 @@ describe("Babel plugin", () => {
       expect((parsedSchema?.properties.name as ObjectSchemaProperty).indexed).toBeUndefined();
     });
 
+    it("removes `@index` decorators from the source", () => {
+      const transformCode = transformProperty(`@index name: Realm.Types.String;`);
+      // This is what Babel outputs for transformed decorators
+      expect(transformCode).not.toContain("_applyDecoratedDescriptor");
+    });
+
     it("handles `@mapTo` decorators", () => {
       const transformCode = transformProperty(`@mapTo("rename") name: Realm.Types.String;`);
       const parsedSchema = extractSchema(transformCode);
@@ -380,7 +386,7 @@ describe("Babel plugin", () => {
       expect((parsedSchema?.properties.name as ObjectSchemaProperty).mapTo).toEqual("rename");
     });
 
-    it("ignores `@mapTo` decorators not imported from `@realm/react`", () => {
+    it("ignores `@mapTo` decorators not imported from `@realm/babel-plugin`", () => {
       const transformCode = transform({
         source: `import Realm, { Types, BSON, List, Set, Dictionary, Mixed } from "realm";
         export class Person extends Realm.Object { @mapTo("rename") name: Realm.Types.String; }`,
@@ -388,6 +394,12 @@ describe("Babel plugin", () => {
       const parsedSchema = extractSchema(transformCode);
 
       expect((parsedSchema?.properties.name as ObjectSchemaProperty).mapTo).toBeUndefined();
+    });
+
+    it("removes `@mapTo` decorators from the source", () => {
+      const transformCode = transformProperty(`@mapTo("rename") name: Realm.Types.String;`);
+      // This is what Babel outputs for transformed decorators
+      expect(transformCode).not.toContain("_applyDecoratedDescriptor");
     });
 
     it("handles multiple decorators on a property", () => {
