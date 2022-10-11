@@ -180,7 +180,7 @@ export abstract class OrderedCollection<T = unknown>
 
   /**
    * @returns An array of plain objects for JSON serialization.
-  **/
+   **/
   toJSON(_?: string, cache = new JSONCacheMap()): Array<DefaultObject> {
     return this.map((item, index) => {
       if (item instanceof RealmObject) {
