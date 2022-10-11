@@ -21,10 +21,17 @@ import { OrderedCollection, OrderedCollectionHelpers } from "./OrderedCollection
 import { IllegalConstructorError } from "./errors";
 import type { Realm } from "./Realm";
 import { assert } from "./assert";
+import { ParentContext } from "./Object";
 
 type PartiallyWriteableArray<T> = Pick<Array<T>, "pop" | "push" | "shift" | "unshift" | "splice">;
 
 export class List<T = unknown> extends OrderedCollection<T> implements PartiallyWriteableArray<T> {
+  /**
+   * The parent object
+   * @internal
+   */
+  public parent!: ParentContext;
+
   /**
    * The representation in the binding.
    * @internal
@@ -32,13 +39,19 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
   public internal!: binding.List;
 
   /** @internal */
-  constructor(realm: Realm, internal: binding.List, helpers: OrderedCollectionHelpers) {
+  constructor(realm: Realm, parent: ParentContext, internal: binding.List, helpers: OrderedCollectionHelpers) {
     if (arguments.length === 0 || !(internal instanceof binding.List)) {
       throw new IllegalConstructorError("List");
     }
     super(realm, internal.asResults(), helpers);
     // TODO: Consider if this could be a simple assignment
     Object.defineProperties(this, {
+      parent: {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: parent,
+      },
       internal: {
         enumerable: false,
         configurable: false,
@@ -60,7 +73,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
    */
   public set(index: number, value: unknown) {
     assert.inTransaction(this.realm);
-    this.internal.setAny(index, this.helpers.toBinding(value));
+    this.internal.setAny(index, this.helpers.toBinding(value, this.parent));
   }
 
   get length(): number {
@@ -89,12 +102,13 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     assert.inTransaction(this.realm);
     const {
       internal,
+      parent,
       helpers: { toBinding },
     } = this;
     let i = internal.size;
     for (const item of items) {
       // Convert item to a mixedArg
-      internal.insertAny(i++, toBinding(item));
+      internal.insertAny(i++, toBinding(item, parent));
     }
     return internal.size;
   }
@@ -119,12 +133,13 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     assert.inTransaction(this.realm);
     const {
       internal,
+      parent,
       helpers: { toBinding },
     } = this;
     let i = 0;
     for (const item of items) {
       // Convert item to a mixedArg
-      internal.insertAny(i++, toBinding(item));
+      internal.insertAny(i++, toBinding(item, parent));
     }
     return internal.size;
   }
@@ -137,6 +152,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     assert.number(start, "start");
     const {
       internal,
+      parent,
       helpers: { fromBinding, toBinding },
     } = this;
     // If negative, it will begin that many elements from the end of the array.
@@ -164,7 +180,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     let i = start;
     for (const item of items) {
       // Convert item to a mixedArg
-      internal.insertAny(i++, toBinding(item));
+      internal.insertAny(i++, toBinding(item, parent));
     }
     return result;
   }

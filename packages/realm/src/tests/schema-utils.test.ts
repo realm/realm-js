@@ -129,6 +129,7 @@ describe("schema-utils", () => {
         },
         {
           constructor: undefined,
+          embedded: false,
           name: "Person",
           embedded: false,
           properties: {
