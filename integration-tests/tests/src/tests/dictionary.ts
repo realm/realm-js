@@ -149,6 +149,33 @@ describe("Dictionary", () => {
       });
     });
 
+    // This is currently not supported
+    it.skip("can store dictionary values using string keys", function (this: RealmContext) {
+      const item = this.realm.write(() => {
+        const item = this.realm.create<Item>("Item", {});
+        const item2 = this.realm.create<Item>("Item", {});
+        item2.dict.key1 = "Hello";
+        item.dict.key1 = item2.dict;
+        return item;
+      });
+      // @ts-expect-error We expect a dictionary inside dictionary
+      expect(item.dict.key1.dict.key1).equals("hello");
+    });
+
+    it("can store a reference to itself using string keys", function (this: RealmContext) {
+      const item = this.realm.write(() => {
+        const item = this.realm.create<Item>("Item", {});
+        item.dict.key1 = item;
+        return item;
+      });
+      const value = item.dict.key1;
+      if (value instanceof Realm.Object) {
+        expect(value._objectKey()).equals(item._objectKey());
+      } else {
+        throw new Error("Expected a Realm.Object");
+      }
+    });
+
     it("is spreadable", function (this: RealmContext) {
       const item = this.realm.write(() => this.realm.create<Item>("Item", { dict: { key1: "hi" } }));
       expect({ ...item.dict, key2: "hello" }).deep.equals({ key1: "hi", key2: "hello" });
