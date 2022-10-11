@@ -296,7 +296,7 @@ declare namespace Realm {
      * `T` should also be `Person` - this duplication is required due to how
      * TypeScript works)
      *
-     * @typeParam `RequiredProperties`  - The names of any properties of this
+     * @typeParam `RequiredProperties` - The names of any properties of this
      * class which are required when an instance is constructed with `new`. Any
      * properties not specified will be optional, and will default to a sensible
      * null value if no default is specified elsewhere.
