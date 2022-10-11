@@ -28,9 +28,9 @@ import { Object as RealmObject, UpdateMode } from "./Object";
 import type { Realm } from "./Realm";
 
 /** @internal */
-export type TypeHelpers = {
-  toBinding(value: unknown): binding.MixedArg;
-  fromBinding(value: unknown): unknown;
+export type TypeHelpers<T = unknown> = {
+  toBinding(value: T): binding.MixedArg;
+  fromBinding(value: unknown): T;
 };
 
 export type TypeOptions = {

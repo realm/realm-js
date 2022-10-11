@@ -19,7 +19,9 @@
 import { IllegalConstructorError } from "./errors";
 import { Listeners, CallbackRegistrator } from "./Listeners";
 
-export abstract class Collection<K = unknown, V = unknown, I = V, ChangeCallbackType = unknown> implements Iterable<I> {
+export abstract class Collection<KeyType = unknown, ValueType = unknown, T = ValueType, ChangeCallbackType = unknown>
+  implements Iterable<T>
+{
   /** @internal */
   private listeners: Listeners<ChangeCallbackType>;
 
@@ -39,9 +41,10 @@ export abstract class Collection<K = unknown, V = unknown, I = V, ChangeCallback
     });
   }
 
-  abstract [Symbol.iterator](): Iterator<I>;
-  abstract keys(): Iterator<K>;
-  abstract values(): Iterator<V>;
+  abstract keys(): Iterable<KeyType>;
+  abstract values(): Iterable<ValueType>;
+  abstract entries(): Iterable<[KeyType, ValueType]>;
+  abstract [Symbol.iterator](): Iterator<T>;
 
   addListener(callback: ChangeCallbackType): void {
     this.listeners.add(callback);
