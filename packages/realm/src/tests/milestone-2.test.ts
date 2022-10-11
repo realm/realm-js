@@ -39,6 +39,7 @@ describe("Milestone #2", () => {
         const expectedSchema: CanonicalObjectSchema[] = [
           {
             constructor: undefined,
+            embedded: false,
             name: "Person",
             primaryKey: "name",
             properties: {
