@@ -250,7 +250,7 @@ export class Realm {
     }
     this.internal.verifyOpen();
     const helpers = this.classes.getHelpers(type);
-    return RealmObject.create(this, helpers, values, mode);
+    return RealmObject.create(this, values, mode, { helpers });
   }
 
   delete(subject: RealmObject | RealmObject[] | List | Results): void {
@@ -285,7 +285,7 @@ export class Realm {
       throw new Error(`Expected a primary key on "${objectSchema.name}"`);
     }
     const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
-    const value = properties.get(objectSchema.primaryKey).toBinding(primaryKey);
+    const value = properties.get(objectSchema.primaryKey).toBinding(primaryKey, undefined);
     try {
       const obj = table.getObjectWithPrimaryKey(value);
       return wrapObject(obj) as T;
