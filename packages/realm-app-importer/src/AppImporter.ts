@@ -352,6 +352,12 @@ export class AppImporter {
                   // Schema is not valid in a rule request, but is included when exporting an app from realm
                   delete ruleConfig.schema;
                 }
+
+                const relationshipsConfig = ruleConfig.relationships || null;
+                if (relationshipsConfig) {
+                  // Relationships is not valid in a rule request, but is included when exporting an app from realm
+                  delete ruleConfig.relationships;
+                }
                 const rulesUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/services/${serviceId}/rules`;
                 const response = await fetch(rulesUrl, {
                   method: "POST",
@@ -362,7 +368,15 @@ export class AppImporter {
                   body: JSON.stringify(ruleConfig),
                 });
                 if (!response.ok) {
-                  console.warn("Could not create rule: ", ruleConfig, rulesUrl, response.statusText);
+                  const result = await response.json();
+                  console.warn(
+                    "Could not create rule: ",
+                    ruleConfig,
+                    rulesUrl,
+                    response.statusText,
+                    result.error,
+                    result.body,
+                  );
                 }
               }
             }
@@ -399,6 +413,14 @@ export class AppImporter {
         if (authConfig?.config?.authFunctionName) {
           const authFunctionId = remoteFunctions.find((func) => func.name === authConfig.config.authFunctionName)?._id;
           authConfig.config.authFunctionId = authFunctionId;
+        }
+
+        // Add the ID of the authFunction to the configuration
+        if (authConfig?.config?.confirmationFunctionName) {
+          const confirmationFunctionId = remoteFunctions.find(
+            (func) => func.name === authConfig.config.confirmationFunctionName,
+          )?._id;
+          authConfig.config.confirmationFunctionId = confirmationFunctionId;
         }
 
         const currentProvider = providers.find((provider) => provider.type === authConfig.type);

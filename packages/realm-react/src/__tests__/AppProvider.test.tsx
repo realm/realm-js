@@ -16,10 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import React, { useRef, useState } from "react";
-import { renderHook } from "@testing-library/react-hooks";
 import { AppProvider, useApp } from "../AppProvider";
 import { View, Text, Button } from "react-native";
-import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, waitFor, renderHook, act } from "@testing-library/react-native";
+
+jest.mock("react-native/Libraries/Animated/NativeAnimatedHelper");
 
 describe("AppProvider", () => {
   it("returns the configured app with useApp", async () => {
@@ -34,8 +35,7 @@ describe("AppProvider", () => {
   });
 
   it("throws useApp is used without having the AppProvider is rendered", () => {
-    const { result } = renderHook(() => useApp());
-    expect(() => result.current).toThrow();
+    expect(() => renderHook(() => useApp())).toThrow();
   });
 
   it("handle state changes to its configuration", async () => {

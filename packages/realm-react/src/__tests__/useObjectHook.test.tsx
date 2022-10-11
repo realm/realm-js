@@ -18,7 +18,7 @@
 
 import { useEffect, useState } from "react";
 import Realm from "realm";
-import { renderHook } from "@testing-library/react-hooks";
+import { renderHook } from "@testing-library/react-native";
 import { createUseObject } from "../useObject";
 
 const dogSchema: Realm.ObjectSchema = {

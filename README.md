@@ -12,10 +12,11 @@ This project hosts the JavaScript versions of [Realm](https://realm.io/). Curren
 * **Simple:** Data is directly [exposed as objects](https://docs.mongodb.com/realm/node/realms/) and [queryable by code](https://docs.mongodb.com/realm/node/query-engine/), removing the need for ORM's riddled with performance & maintenance issues.
 * **Modern:** Realm supports relationships, generics, and vectorization.
 * **Fast:** Realm is faster than even raw SQLite on common operations, while maintaining an extremely rich feature set.
+* **[Device Sync](https://www.mongodb.com/atlas/app-services/device-sync)**: Makes it simple to keep data in sync across users, devices, and your backend in real-time. [Get started](http://mongodb.com/realm/register?utm_medium=github_atlas_CTA&utm_source=realm_js_github) for free with a template application that includes a cloud backend and Sync.
 
 ## Getting Started
 
-Please see the detailed instructions in our docs to use [Realm JavaScript for Node.js](https://docs.mongodb.com/realm/sdk/node/) and [Realm JavaScript for React Native](https://docs.mongodb.com/realm/sdk/react-native/). Please notice that currently only Node.js version 10 or later (excluding 11) are supported.
+Please see the detailed instructions in our docs to use [Realm JavaScript for Node.js](https://docs.mongodb.com/realm/sdk/node/) and [Realm JavaScript for React Native](https://docs.mongodb.com/realm/sdk/react-native/). Please notice that currently only Node.js version 13 or later is supported. For React Native users, we have a [compatibility matrix](COMPATIBILITY.md) showing which versions are supported.
 
 ## Documentation
 

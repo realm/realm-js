@@ -9,6 +9,7 @@ This closes # ??? <!-- link to an existing issue -->
 <!-- Add your own todos here -->
 * [ ] 📝 Changelog entry
 * [ ] 📝 `Compatibility` label is updated or copied from previous entry
+* [ ] 📝 Update `COMPATIBILITY.md`
 * [ ] 🚦 Tests
 * [ ] 🔀 Executed flexible sync tests locally if modifying flexible sync
 * [ ] 📦 Updated internal package version in consuming `package.json`s (if updating internal packages)
