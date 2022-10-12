@@ -158,26 +158,24 @@ declare namespace Realm {
     type ClientResetBeforeCallback = (localRealm: Realm) => void;
     type ClientResetAfterCallback = (localRealm: Realm, remoteRealm: Realm) => void;
     type ClientResetAfterRecoveryCallback = (localRealm: Realm, remoteRealm: Realm, didRecover: ClientResetDidRecover) => void;
-
-    interface ClientResetManualConfiguration<ClientResetModeT = ClientResetMode.Manual> {
-      mode: ClientResetModeT;
+    interface ClientResetManualConfiguration {
+      mode: ClientResetMode.Manual;
       clientResetAfter?: ClientResetManualCallback;
     }
-
-    interface ClientResetDiscardLocalConfiguration<ClientResetModeT = ClientResetMode.DiscardLocal> {
-      mode: ClientResetModeT;
+    interface ClientResetDiscardLocalConfiguration {
+      mode: ClientResetMode.DiscardLocal;
       clientResetBefore?: ClientResetBeforeCallback;
       clientResetAfter?: ClientResetAfterCallback;
     }
 
-    interface ClientResetRecoveryConfiguration<ClientResetModeT = ClientResetMode.Recover> {
-      mode: ClientResetModeT;
+    // interface ClientResetRecoveryConfiguration<ClientResetModeT = ClientResetMode.Recover> {
+    interface ClientResetRecoveryConfiguration {
+      mode: ClientResetMode.Recover;
       clientResetBefore?: ClientResetBeforeCallback;
       clientResetAfter?: ClientResetAfterRecoveryCallback;
     }
-
-    interface ClientResetRecoveryOrDiscardConfiguration<ClientResetModeT = ClientResetMode.RecoverOrDiscard> {
-      mode: ClientResetModeT;
+    interface ClientResetRecoveryOrDiscardConfiguration {
+      mode: ClientResetMode.RecoverOrDiscard;
       clientResetBefore?: ClientResetBeforeCallback;
       clientResetAfter?: ClientResetAfterRecoveryCallback;
     }
