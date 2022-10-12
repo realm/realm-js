@@ -20,7 +20,10 @@ import * as binding from "./binding";
 import { Collection } from "./Collection";
 import { IllegalConstructorError } from "./errors";
 import { INTERNAL } from "./internal";
+import { DefaultObject } from "./schema";
+import { Object as RealmObject } from "./Object";
 import { TypeHelpers } from "./types";
+import { JSONCacheMap } from "./JSONCacheMap";
 
 const HELPERS = Symbol("Dictionary#helpers");
 
@@ -216,5 +219,15 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
       const keySuffix = missingKeys.length > 0 ? "s" : "";
       throw new Error(`Failed to remove missing key${keySuffix} from dictionary: ${keysSummary}`);
     }
+  }
+
+  /**
+   * @returns A plain object for JSON serialization.
+   **/
+  // @ts-expect-error We're exposing methods in the users value namespace
+  toJSON(_?: string, cache = new JSONCacheMap()): DefaultObject {
+    return Object.fromEntries(
+      Object.entries(this).map(([k, v]) => [k, v instanceof RealmObject ? v.toJSON(k, cache) : v]),
+    );
   }
 }
