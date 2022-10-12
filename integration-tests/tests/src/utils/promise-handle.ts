@@ -16,14 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-/* eslint-env node */
-/* global context */
-
-exports = async function (appId, userId) {
-  return (await deleteClientFile(`__realm_sync_${appId}`, userId)) || (await deleteClientFile(`__realm_sync`, userId));
+type ResolveType<T> = (value: T | PromiseLike<T>) => void;
+type RejectType = (reason?: any) => void;
+type PromiseHandle<T> = {
+  promise: Promise<T>;
+  resolve: ResolveType<T>;
+  reject: RejectType;
 };
 
-async function deleteClientFile(db, userId) {
-  const mongodb = context.services.get("mongodb");
-  return (await mongodb.db(db).collection("clientfiles").deleteMany({ ownerId: userId })).deletedCount > 0;
+export function createPromiseHandle<T = void>(): PromiseHandle<T> {
+  let resolve: ResolveType<T> | null = null;
+  let reject: RejectType | null = null;
+  const promise = new Promise<T>((arg0, arg1) => {
+    resolve = arg0;
+    reject = arg1;
+  });
+  if (!resolve || !reject) {
+    throw new Error("Expected promise executor to be called synchroniously");
+  }
+  return { promise, resolve, reject };
 }
