@@ -197,7 +197,7 @@ public:
 
     void operator()(SharedRealm before_realm, ThreadSafeReference after_realm_ref, bool did_recover)
     {
-        HANDLESCOPE(m_ctx)
+        HANDLESCOPE(m_ctx);
 
         SharedRealm after_realm =
             Realm::get_shared_realm(std::move(after_realm_ref), util::Scheduler::make_default());
@@ -250,8 +250,11 @@ private:
 template <typename T>
 class SyncSessionErrorBase {
 public:
-    virtual typename T::Function func() const {};
-    virtual void operator()(std::shared_ptr<SyncSession>, SyncError) {};
+    virtual typename T::Function func() const
+    {
+        return typename T::Function();
+    };
+    virtual void operator()(std::shared_ptr<SyncSession>, SyncError){};
 };
 
 template <typename T>
@@ -273,7 +276,7 @@ public:
         return m_client_reset_func;
     }
 
-    void operator()(std::shared_ptr<SyncSession> session, SyncError error) 
+    void operator()(std::shared_ptr<SyncSession> session, SyncError error)
     {
         HANDLESCOPE(m_ctx);
 
@@ -282,7 +285,7 @@ public:
                 create_object<T, SessionClass<T>>(m_ctx, new WeakSession(session)),
                 Value<T>::from_string(m_ctx, error.user_info[SyncError::c_recovery_file_path_key]),
             };
-            Function<T>::callback(m_ctx, m_client_reset_func, 2, arguments);            
+            Function<T>::callback(m_ctx, m_client_reset_func, 2, arguments);
         }
     }
 
@@ -292,9 +295,10 @@ private:
 };
 
 template <typename T>
-class SyncSessionErrorAndClientResetManualFunctor : SyncSessionErrorBase<T>{
+class SyncSessionErrorAndClientResetManualFunctor : SyncSessionErrorBase<T> {
 public:
-    SyncSessionErrorAndClientResetManualFunctor(typename T::Context ctx, typename T::Function error_func, typename T::Function client_reset_func)
+    SyncSessionErrorAndClientResetManualFunctor(typename T::Context ctx, typename T::Function error_func,
+                                                typename T::Function client_reset_func)
         : m_ctx(Context<T>::get_global_context(ctx))
         , m_func(ctx, error_func)
         , m_client_reset_func(ctx, client_reset_func)
@@ -332,7 +336,8 @@ public:
             Object<T>::set_property(m_ctx, error_object, "isFatal", Value<T>::from_boolean(m_ctx, error.is_fatal));
             Object<T>::set_property(m_ctx, error_object, "category",
                                     Value<T>::from_string(m_ctx, error.error_code.category().name()));
-            Object<T>::set_property(m_ctx, error_object, "code", Value<T>::from_number(m_ctx, error.error_code.value()));
+            Object<T>::set_property(m_ctx, error_object, "code",
+                                    Value<T>::from_number(m_ctx, error.error_code.value()));
 
             auto user_info = Object<T>::create_empty(m_ctx);
             for (auto& kvp : error.user_info) {
@@ -357,7 +362,7 @@ private:
 
 
 template <typename T>
-class SyncSessionErrorHandlerFunctor : SyncSessionErrorBase<T>{
+class SyncSessionErrorHandlerFunctor : SyncSessionErrorBase<T> {
 public:
     SyncSessionErrorHandlerFunctor(typename T::Context ctx, typename T::Function error_func)
         : m_ctx(Context<T>::get_global_context(ctx))
@@ -1077,9 +1082,9 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         //   a) the error handler will be initialized with the callback if it exists
         //   b) if the error handler is not specified, the callback will be wrap as an error handler
         //   c) if no callback and no error handler, an exception is thrown
-        // otherwise, the error handler is used as it is 
+        // otherwise, the error handler is used as it is
         ValueType error_func = Object::get_property(ctx, sync_config_object, "error");
-        
+
         ObjectType user_object = Object::validated_get_object(ctx, sync_config_object, "user");
         if (!(Object::template is_instance<UserClass<T>>(ctx, user_object))) {
             throw std::invalid_argument("Option 'user' is not a Realm.User object.");
@@ -1126,11 +1131,12 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
 
         // Client reset
         //
-        // i)    manual: 
-        //       a) if a callback is registered, no error handler registred, the callback will wrapped and will be called
-        //       b) if no callback is registered, the error handler is called with the proper error code and a client reset is initiated (old behavior)
-        //       c) if callback and error handler error handler are registered, the callback will be called
-        //       d) if no error handler nor callback is registered, an exception is throw
+        // i)    manual:
+        //       a) if a callback is registered, no error handler registred, the callback will wrapped and will be
+        //       called b) if no callback is registered, the error handler is called with the proper error code and a
+        //       client reset is initiated (old behavior) c) if callback and error handler error handler are
+        //       registered, the callback will be called d) if no error handler nor callback is registered, an
+        //       exception is throw
         // ii)   discardLocal: the sync client handles it but notifications are send before and after
         // iii)  recover:
         // iv)   recoverOrDiscard:
@@ -1163,7 +1169,8 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             ValueType client_reset_before_value = Object::get_property(ctx, client_reset_object, "clientResetBefore");
             if (!Value::is_undefined(ctx, client_reset_before_value)) {
                 if (config.sync_config->client_resync_mode == realm::ClientResyncMode::Manual) {
-                    throw std::invalid_argument("When clientReset.mode is 'manual', you cannot set 'clientReset.clientResetBefore'");
+                    throw std::invalid_argument(
+                        "When clientReset.mode is 'manual', you cannot set 'clientReset.clientResetBefore'");
                 }
                 client_reset_before_handler = util::EventLoopDispatcher<void(SharedRealm)>(
                     ClientResetBeforeFunctor<T>(ctx, Value::validated_to_function(ctx, client_reset_before_value)));
@@ -1177,22 +1184,22 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                 if (config.sync_config->client_resync_mode == realm::ClientResyncMode::Manual) {
                     if (!Value::is_undefined(ctx, error_func)) {
                         auto error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(
-                            SyncSessionErrorAndClientResetManualFunctor<T>(ctx, Value::validated_to_function(ctx, error_func), client_reset_after_callback));
+                            SyncSessionErrorAndClientResetManualFunctor<T>(
+                                ctx, Value::validated_to_function(ctx, error_func), client_reset_after_callback));
                         config.sync_config->error_handler = std::move(error_handler);
-
                     }
                     else {
                         auto error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(
                             SyncSessionClientResetManualFunctor<T>(ctx, client_reset_after_callback));
                         config.sync_config->error_handler = std::move(error_handler);
-
                     }
                 }
-                else {    
-                    client_reset_after_handler = util::EventLoopDispatcher<void(SharedRealm, ThreadSafeReference, bool)>(
-                        ClientResetAfterFunctor<T>(ctx, client_reset_after_callback,
-                                                   config.sync_config->client_resync_mode ==
-                                                       realm::ClientResyncMode::DiscardLocal));
+                else {
+                    client_reset_after_handler =
+                        util::EventLoopDispatcher<void(SharedRealm, ThreadSafeReference, bool)>(
+                            ClientResetAfterFunctor<T>(ctx, client_reset_after_callback,
+                                                       config.sync_config->client_resync_mode ==
+                                                           realm::ClientResyncMode::DiscardLocal));
                     config.sync_config->notify_after_client_reset = std::move(client_reset_after_handler);
 
                     if (!Value::is_undefined(ctx, error_func)) {
@@ -1204,7 +1211,8 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
             }
             else {
                 if (Value::is_undefined(ctx, error_func)) {
-                    throw std::invalid_argument("When clientReset.mode is 'manual', you need to specify 'error', 'clientResetAfter' or both");
+                    throw std::invalid_argument(
+                        "When clientReset.mode is 'manual', you need to specify 'error', 'clientResetAfter' or both");
                 }
                 auto error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(
                     SyncSessionErrorHandlerFunctor<T>(ctx, Value::validated_to_function(ctx, error_func)));
