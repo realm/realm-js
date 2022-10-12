@@ -667,6 +667,7 @@ classes:
       read_group: () -> Group&
       duplicate: () -> TransactionRef
 
+      update_schema: '(schema: std::vector<ObjectSchema>, version: uint64_t, migration_function: Nullable<std::function<(old_realm: SharedRealm, new_realm: SharedRealm, new_schema_handle: Schema&) -> void>>, initialization_function: Nullable<std::function<(realm: SharedRealm) -> void>>, in_transaction: bool) -> void'
       enable_wait_for_change: ()
       wait_for_change: () -> bool
       wait_for_change_release: ()
