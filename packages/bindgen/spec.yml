@@ -726,6 +726,7 @@ classes:
       get_parent_column_key: ColKey
       get_parent_object_key: ObjKey
       get_parent_table_key: TableKey
+      get_object_schema: const ObjectSchema&
       size: count_t
       is_valid: bool
       is_frozen: bool
@@ -755,6 +756,7 @@ classes:
       delete_at: '(ndx: count_t)'
       delete_all: '()'
       insert_any: '(list_ndx: count_t, value: Mixed)'
+      insert_embedded: '(ndx: count_t) -> Obj'
       set_any: '(list_ndx: count_t, value: Mixed)'
       filter: '(q: Query) const -> Results'
       freeze: '(frozen_realm: std::shared_ptr<Realm> const&) const -> List'
