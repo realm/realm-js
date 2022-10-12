@@ -21,12 +21,15 @@ import * as binding from "./binding";
 import { INTERNAL } from "./internal";
 import { Realm } from "./Realm";
 import { Results } from "./Results";
+import { OrderedCollection } from "./OrderedCollection";
 import { CanonicalObjectSchema, Constructor, DefaultObject, RealmObjectConstructor } from "./schema";
 import { ObjectChangeCallback, ObjectListeners } from "./ObjectListeners";
 import { INTERNAL_HELPERS, ClassHelpers } from "./ClassHelpers";
 import { RealmInsertionModel } from "./InsertionModel";
 import { assert } from "./assert";
 import { TypeAssertionError } from "./errors";
+import { JSONCacheMap } from "./JSONCacheMap";
+import { Dictionary } from "./Dictionary";
 
 export enum UpdateMode {
   Never = "never",
@@ -214,14 +217,37 @@ class RealmObject<T = DefaultObject> {
   entries(): [string, unknown][] {
     throw new Error("Not yet implemented");
   }
-  toJSON(): unknown {
-    // return { ...this };
+
+  /**
+   * @returns A plain object for JSON serialization.
+   **/
+  toJSON(_?: string, cache = new JSONCacheMap<T>()): DefaultObject {
+    // Construct a reference-id of table-name & primaryKey if it exists, or fall back to objectId.
+
+    // Check if current objectId has already processed, to keep object references the same.
+    const existing = cache.find(this);
+    if (existing) {
+      return existing;
+    }
+    const result: DefaultObject = {};
+    cache.add(this, result);
+    // Move all enumerable keys to result, triggering any specific toJSON implementation in the process.
     for (const key in this) {
       const value = this[key];
-      console.log({ key, value });
+      if (typeof value == "function") {
+        continue;
+      }
+      if (value instanceof RealmObject || value instanceof OrderedCollection || value instanceof Dictionary) {
+        // recursively trigger `toJSON` for Realm instances with the same cache.
+        result[key] = value.toJSON(key, cache);
+      } else {
+        // Other cases, including null and undefined.
+        result[key] = value;
+      }
     }
-    return { ...this };
+    return result;
   }
+
   isValid(): boolean {
     return this[INTERNAL] && this[INTERNAL].isValid;
   }

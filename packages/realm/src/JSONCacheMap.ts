@@ -16,22 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Realm } from "../index";
+import { INTERNAL } from "./internal";
+import { DefaultObject } from "./schema";
+import { Object as RealmObject } from "./Object";
 
-import { closeRealm, generateTempRealmPath, RealmContext } from "./utils";
-
-describe("Serializing", () => {
-  describe("an Object", () => {
-    after(closeRealm);
-    it("returns a plain object", function (this: RealmContext) {
-      this.realm = new Realm({
-        path: generateTempRealmPath(),
-        inMemory: true,
-        schema: [{ name: "Person", properties: { name: "string", age: "int", bestFriend: "Person" } }],
-      });
-      const alice = this.realm.write(() => this.realm.create("Person", { name: "Alice", age: 32 }));
-      const serialized = alice.toJSON();
-      console.log({ serialized });
-    });
-  });
-});
+////////////////////////////////////////////////////////////////////////////
+export class JSONCacheMap<T = unknown> extends Map<number, Map<string, DefaultObject>> {
+  add(object: RealmObject<T>, value: DefaultObject) {
+    const tableKey = object[INTERNAL].table.key;
+    let cachedMap = this.get(tableKey);
+    if (!cachedMap) {
+      cachedMap = new Map();
+      this.set(tableKey, cachedMap);
+    }
+    cachedMap.set(object._objectKey(), value);
+  }
+  find(object: RealmObject<T>) {
+    return this.get(object[INTERNAL].table.key)?.get(object._objectKey());
+  }
+}
