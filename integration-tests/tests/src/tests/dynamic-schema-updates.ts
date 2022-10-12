@@ -54,6 +54,7 @@ describe("realm._updateSchema", () => {
     const MyClassSchema = realm.schema.find((s) => s.name === "MyClass");
     expect(MyClassSchema).deep.equals({
       name: "MyClass",
+      constructor: undefined,
       asymmetric: false,
       embedded: false,
       properties: {
@@ -86,6 +87,7 @@ describe("realm._updateSchema", () => {
     const ModifiedDogSchema = realm.schema.find((s) => s.name === "Dog");
     expect(ModifiedDogSchema).deep.equals({
       name: "Dog",
+      constructor: undefined,
       asymmetric: false,
       embedded: false,
       properties: {
@@ -172,7 +174,7 @@ describe("realm._updateSchema", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (realm as any)._updateSchema();
       });
-    }).to.throw("Invalid arguments: 1 expected, but 0 supplied.");
+    }).to.throw("Expected 'schema' to be an array, got undefined");
   });
 
   it("throws if called with an unexpected type", () => {
@@ -182,6 +184,6 @@ describe("realm._updateSchema", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (realm as any)._updateSchema("w00t");
       });
-    }).to.throw("schema must be of type 'array', got (w00t)");
+    }).to.throw("Expected 'schema' to be an array, got a string");
   });
 });

@@ -83,6 +83,7 @@ export function transformObjectSchema({
     name,
     properties: Object.fromEntries(properties.map((property) => [property.name, transformPropertySchema(property)])),
     embedded: tableType === TableType.Embedded,
+    asymmetric: tableType === TableType.TopLevelAsymmetric,
   };
   // The primary key from the binding is an empty string when not set
   if (primaryKey) {
