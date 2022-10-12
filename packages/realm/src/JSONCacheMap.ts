@@ -21,8 +21,8 @@ import { DefaultObject } from "./schema";
 import { Object as RealmObject } from "./Object";
 
 ////////////////////////////////////////////////////////////////////////////
-export class JSONCacheMap<T = unknown> extends Map<number, Map<string, DefaultObject>> {
-  add(object: RealmObject<T>, value: DefaultObject) {
+export class JSONCacheMap extends Map<number, Map<string, DefaultObject>> {
+  add<T>(object: RealmObject<T>, value: DefaultObject) {
     const tableKey = object[INTERNAL].table.key;
     let cachedMap = this.get(tableKey);
     if (!cachedMap) {
@@ -31,7 +31,7 @@ export class JSONCacheMap<T = unknown> extends Map<number, Map<string, DefaultOb
     }
     cachedMap.set(object._objectKey(), value);
   }
-  find(object: RealmObject<T>) {
+  find<T>(object: RealmObject<T>) {
     return this.get(object[INTERNAL].table.key)?.get(object._objectKey());
   }
 }
