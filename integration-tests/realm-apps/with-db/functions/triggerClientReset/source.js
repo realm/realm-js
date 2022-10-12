@@ -3,10 +3,9 @@ exports = async function (appId, userId) {
 };
 
 async function deleteClientFile(db, userId) {
-  const mongodb = context.services.get("BackingDB");
-
+  const mongodb = context.services.get("mongodb");
   return (await mongodb.db(db)
   .collection("clientfiles")
-  .deleteOne({ ownerId: userId }))
+  .deleteMany({ ownerId: userId }))
   .deletedCount > 0;
 }

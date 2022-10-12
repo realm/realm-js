@@ -22,13 +22,15 @@ import Realm, { ClientResetDidRecover, ClientResetMode, SessionStopPolicy } from
 import { authenticateUserBefore, importAppBefore } from "../../hooks";
 import { Dog, DogSchema, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { expectClientResetError } from "../../utils/expect-sync-error";
+import { createPromiseHandle } from "../../utils/promise-handle";
 
 function getPartitionValue() {
   return new UUID().toHexString();
 }
 
 async function triggerClientReset(app: Realm.App, user: Realm.User): Promise<void> {
-  await user.functions.call("triggerClientReset", [app.id, user.id]);
+  const res = await user.functions.triggerClientReset(app.id, user.id);
+  console.log("GED", JSON.stringify(res));
 }
 
 async function waitServerSideClientResetDiscardLocalCallbacks(
@@ -39,43 +41,42 @@ async function waitServerSideClientResetDiscardLocalCallbacks(
   actionBefore: (realm: Realm) => void,
   actionAfter: (beforeRealm: Realm, afterRealm: Realm) => void,
 ): Promise<void> {
-  return new Promise((resolve) => {
-    let afterCalled = false;
-    let beforeCalled = false;
+  const resetHandle = createPromiseHandle();
+  let afterCalled = false;
+  let beforeCalled = false;
 
-    // Shallow copy the sync configuration to modifying the original
-    const modifiedConfig: Realm.Configuration = {
-      schema,
-      sync: {
-        user,
-        _sessionStopPolicy: SessionStopPolicy.Immediately,
-        partitionValue: getPartitionValue(),
-        clientReset: {
-          mode: ClientResetMode.DiscardLocal,
-          clientResetAfter: (before: Realm, after: Realm) => {
-            afterCalled = true;
-            actionAfter(before, after);
-            if (beforeCalled) {
-              resolve();
-            }
-          },
-          clientResetBefore: (realm: Realm) => {
-            beforeCalled = true;
-            actionBefore(realm);
-            if (afterCalled) {
-              resolve();
-            }
-          },
+  const realm = new Realm({
+    schema,
+    sync: {
+      user,
+      _sessionStopPolicy: SessionStopPolicy.Immediately,
+      partitionValue: getPartitionValue(),
+      clientReset: {
+        mode: ClientResetMode.DiscardLocal,
+        clientResetAfter: (before: Realm, after: Realm) => {
+          afterCalled = true;
+          actionAfter(before, after);
+          if (beforeCalled) {
+            resetHandle.resolve();
+          }
+        },
+        clientResetBefore: (realm: Realm) => {
+          beforeCalled = true;
+          actionBefore(realm);
+          if (afterCalled) {
+            resetHandle.resolve();
+          }
         },
       },
-    };
-
-    const realm = new Realm(modifiedConfig);
-    realm.write(() => {
-      realm.create(DogSchema.name, { _id: new ObjectId(), name: "Rex", age: 2 });
-    });
-    return triggerClientReset(app, user);
+    },
   });
+  realm.write(() => {
+    realm.create(DogSchema.name, { _id: new ObjectId(), name: "Rex", age: 2 });
+  });
+
+  await realm.syncSession?.uploadAllLocalChanges();
+  await triggerClientReset(app, user);
+  await resetHandle.promise;
 }
 
 async function waitSimulatedClientResetDiscardLocalCallbacks(
@@ -363,6 +364,7 @@ describe.skipIf(environment.missingServer, "client reset handling", function () 
     // (ii)  two callback will be called, while the sync error handler is not
     // (iii) after the reset, the Realm can be used as before
 
+    this.timeout(20 * 1000);
     const clientResetBefore = (realm: Realm) => {
       expect(realm.objects(DogSchema.name).length).to.equal(1);
     };
