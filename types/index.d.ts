@@ -296,9 +296,9 @@ declare namespace Realm {
         entries(): [string, any][];
 
         /**
-         * @returns An object for JSON serialization.
+         * @returns A plain object for JSON serialization.
          */
-        toJSON(): any;
+        toJSON(): Record<string, unknown>;
 
         /**
          * @returns boolean
@@ -336,13 +336,6 @@ declare namespace Realm {
          */
         getPropertyType(propertyName: string): string;
     }
-
-    /**
-     * JsonSerializationReplacer solves circular structures when serializing Realm entities
-     * @example JSON.stringify(realm.objects("Person"), Realm.JsonSerializationReplacer)
-     */
-    const JsonSerializationReplacer: (key: string, val: any) => any;
-
     /**
      * SortDescriptor
      * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Collection.html#~SortDescriptor }
@@ -390,6 +383,11 @@ declare namespace Realm {
         addListener(callback: DictionaryChangeCallback): void;
         removeListener(callback: DictionaryChangeCallback): void;
         removeAllListeners(): void;
+
+        /**
+         * @returns A plain object for JSON serialization.
+         */
+        toJSON(): Record<string, unknown>;
     }
 
     /**
@@ -401,9 +399,9 @@ declare namespace Realm {
         readonly optional: boolean;
 
         /**
-         * @returns An object for JSON serialization.
+         * @returns An array of plain objects for JSON serialization.
          */
-        toJSON(): Array<any>;
+        toJSON(): Array<Record<string, unknown>>;
 
         description(): string;
 
