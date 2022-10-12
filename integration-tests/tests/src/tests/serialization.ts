@@ -73,26 +73,22 @@ const EdgeCaseSchema = {
 
 interface TestSetup {
   // Realm instance being tested
-  subject: Realm.Object<any> | Realm.Results;
+  subject: Realm.Object | Realm.Results<Realm.Object>;
   // Type of the Realm instance
   type: typeof Realm.Object | typeof Realm.Results | typeof Realm.Dictionary;
   // Expected serialized plain object result
   serialized: DefaultObject;
 }
 
-const commonTests: Record<string, TestSetup> = {
-  //@ts-expect-error subject and serialized are set before tests run.
-  Object: { type: Realm.Object },
-  //@ts-expect-error subject and serialized are set before tests run.
-  Results: { type: Realm.Results },
-  //@ts-expect-error subject and serialized are set before tests run.
-  Dictionary: { type: Realm.Dictionary },
-};
+//  Describe common test types that will be run,
+//  must match this.commonTests that are defined in before().
+const commonTestsTypes = ["Object", "Results", "Dictionary"];
 
 describe("toJSON functionality", () => {
   type TestContext = {
+    commonTests: Record<string, TestSetup>;
     playlists: Realm.Results<Realm.Object> & IPlaylist[];
-    birthdays: Realm.Object<IBirthdays> & IBirthdays;
+    birthdays: Realm.Object & IBirthdays;
     p1Serialized: DefaultObject;
     resultsSerialized: DefaultObject;
     birthdaysSerialized: DefaultObject;
@@ -131,15 +127,9 @@ describe("toJSON functionality", () => {
       //@ts-expect-error Adding to related field to match
       p2Serialized.related.push(p1Serialized);
 
-      // Use p1 to test Object implementations
-      commonTests.Object.subject = p1;
-      commonTests.Object.serialized = p1Serialized;
-
       // Use playlist to test Result implementations
       this.playlists = this.realm.objects(PlaylistSchema.name).sorted("title");
       this.playlistsSerialized = p1Serialized.related;
-      commonTests.Results.subject = this.playlists;
-      commonTests.Results.serialized = this.playlistsSerialized;
 
       this.birthdaysSerialized = {
         dict: {
@@ -150,27 +140,40 @@ describe("toJSON functionality", () => {
       // Dictionary object test
       this.birthdays = this.realm.create<IBirthdays>("Birthdays", this.birthdaysSerialized);
 
-      // See #4980.
-      // Setting dictionary to other dictionaries (or itself) is currently error-prone.
-      // this.birthdays.dict.parent = this.birthdays.dict;
-
       this.birthdays.dict.grandparent = this.birthdays;
       this.birthdaysSerialized.dict.grandparent = this.birthdaysSerialized;
 
-      commonTests.Dictionary.subject = this.birthdays.dict;
-      commonTests.Dictionary.serialized = this.birthdaysSerialized.dict;
+      // Define the structures for the common test suite.
+      this.commonTests = {
+        Object: {
+          type: Realm.Object,
+          subject: p1,
+          serialized: p1Serialized,
+        },
+        Results: {
+          type: Realm.Results,
+          subject: this.playlists,
+          serialized: this.playlistsSerialized,
+        },
+        Dictionary: {
+          type: Realm.Dictionary,
+          subject: this.birthdays.dict,
+          serialized: this.birthdaysSerialized.dict,
+        },
+      };
     });
   });
   describe(`common tests`, () => {
-    for (const name in commonTests) {
-      const test = commonTests[name];
+    for (const name of commonTestsTypes) {
       describe(`with Realm.${name}`, () => {
         it("implements toJSON", function (this: TestContext) {
+          const test = this.commonTests[name];
           expect(test.subject).instanceOf(test.type);
 
           expect(typeof test.subject.toJSON).equals("function");
         });
         it("toJSON returns a plain object or array", function (this: TestContext) {
+          const test = this.commonTests[name];
           const serializable = test.subject.toJSON();
 
           // Check that serializable object is not a Realm entity.
@@ -182,11 +185,13 @@ describe("toJSON functionality", () => {
           else expect(Object.getPrototypeOf(serializable)).equals(Object.prototype);
         });
         it("toJSON matches expected structure", function (this: TestContext) {
+          const test = this.commonTests[name];
           const serializable = test.subject.toJSON();
           // Ensure the object is deeply equal to the expected serialized object.
           expect(serializable).deep.equals(test.serialized);
         });
         it("throws correct error on serialization", function (this: TestContext) {
+          const test = this.commonTests[name];
           const serializable = test.subject.toJSON();
           // Check that we get a circular structure error.
           // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Cyclic_object_value
@@ -209,6 +214,7 @@ describe("toJSON functionality", () => {
     it("handles a dictionary field referencing its parent", function (this: TestContext) {
       const serializable = this.birthdays.toJSON();
       // Check that the serializable object is the same as the first related object.
+      // @ts-expect-error We know the field is a dict.
       expect(serializable).equals(serializable.dict.grandparent);
       // And matches expected serialized object.
       expect(serializable).deep.equals(this.birthdaysSerialized);
