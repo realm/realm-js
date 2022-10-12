@@ -27,7 +27,6 @@ import { ObjectChangeCallback, ObjectListeners } from "./ObjectListeners";
 import { INTERNAL_HELPERS, ClassHelpers } from "./ClassHelpers";
 import { RealmInsertionModel } from "./InsertionModel";
 import { assert } from "./assert";
-import { TypeAssertionError } from "./errors";
 import { JSONCacheMap } from "./JSONCacheMap";
 import { Dictionary } from "./Dictionary";
 
@@ -36,6 +35,14 @@ export enum UpdateMode {
   Modified = "modified",
   All = "all",
 }
+
+/** @internal */
+export type ObjCreator = () => [binding.Obj, boolean];
+
+type CreationContext = {
+  helpers: ClassHelpers;
+  createObj?: ObjCreator;
+};
 
 const INTERNAL_LISTENERS = Symbol("Realm.Object#listeners");
 const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true, writable: true };
@@ -67,25 +74,31 @@ class RealmObject<T = DefaultObject> {
    */
   public static create(
     realm: Realm,
-    helpers: ClassHelpers,
     values: Record<string, unknown>,
     mode: UpdateMode,
+    context: CreationContext,
   ): RealmObject {
     assert.inTransaction(realm);
     if (Array.isArray(values)) {
       throw new Error("Array values on object creation is no longer supported");
     }
-    assert(
-      helpers.objectSchema.tableType !== binding.TableType.Embedded,
-      "Creating embedded objects is not yet supported",
-    );
+    const {
+      helpers: {
+        properties,
+        wrapObject,
+        objectSchema: { persistedProperties },
+      },
+      createObj,
+    } = context;
+
     // Create the underlying object
-    const [obj, created] = RealmObject.createObj(realm, helpers, values, mode);
-    const result = helpers.wrapObject(obj);
+    const [obj, created] = createObj ? createObj() : this.createObj(realm, values, mode, context);
+    const result = wrapObject(obj);
     assert(result);
     // Persist any values provided
     // TODO: Consider using the property helpers directly to improve performance
-    for (const property of helpers.objectSchema.persistedProperties) {
+    for (const property of persistedProperties) {
+      const { default: defaultValue } = properties.get(property.name);
       if (property.isPrimary) {
         continue; // Skip setting this, as we already provided it on object creation
       }
@@ -93,7 +106,6 @@ class RealmObject<T = DefaultObject> {
       if (typeof propertyValue !== "undefined" && propertyValue !== null) {
         result[property.name] = propertyValue;
       } else {
-        const defaultValue = helpers.properties.get(property.name).default;
         if (typeof defaultValue !== "undefined") {
           result[property.name] = defaultValue;
         } else if (
@@ -114,14 +126,16 @@ class RealmObject<T = DefaultObject> {
    */
   public static createObj(
     realm: Realm,
-    helpers: ClassHelpers,
     values: DefaultObject,
     mode: UpdateMode,
+    context: CreationContext,
   ): [binding.Obj, boolean] {
     const {
-      objectSchema: { name, tableKey, primaryKey },
-      properties,
-    } = helpers;
+      helpers: {
+        objectSchema: { name, tableKey, primaryKey },
+        properties,
+      },
+    } = context;
 
     // Create the underlying object
     const table = binding.Helpers.getTable(realm.internal, tableKey);
@@ -133,6 +147,7 @@ class RealmObject<T = DefaultObject> {
         typeof primaryKeyValue !== "undefined" && primaryKeyValue !== null
           ? primaryKeyValue
           : primaryKeyHelpers.default,
+        undefined,
       );
       const result = binding.Helpers.getOrCreateObjectWithPrimaryKey(table, pk);
       const [, created] = result;

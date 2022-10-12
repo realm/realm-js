@@ -41,7 +41,10 @@ export class PropertyMap {
     const properties = [...objectSchema.persistedProperties, ...objectSchema.computedProperties];
     this.mapping = Object.fromEntries(
       properties.map((property) => {
-        const helpers = createHelpers(property, options);
+        const embedded = property.objectType
+          ? options.getClassHelpers(property.objectType).objectSchema.tableType === binding.TableType.Embedded
+          : false;
+        const helpers = createHelpers({ ...property, embedded }, options);
         // Allow users to override the default value of properties
         const defaultValue = defaults[property.name];
         helpers.default = typeof defaultValue !== "undefined" ? defaultValue : helpers.default;

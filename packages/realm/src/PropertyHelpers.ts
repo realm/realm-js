@@ -32,7 +32,7 @@ import type { Realm } from "./Realm";
 type BindingObjectSchema = binding.Realm["schema"][0];
 type BindingPropertySchema = BindingObjectSchema["persistedProperties"][0];
 
-type PropertyContext = BindingPropertySchema & { default?: unknown };
+type PropertyContext = BindingPropertySchema & { embedded: boolean; default?: unknown };
 
 function getObj(results: binding.Results, index: number) {
   return results.getObj(index);
@@ -50,6 +50,7 @@ type PropertyOptions = {
   typeHelpers: TypeHelpers;
   columnKey: binding.ColKey;
   optional: boolean;
+  embedded: boolean;
 } & HelperOptions &
   binding.Property_Relaxed;
 
@@ -61,6 +62,7 @@ type PropertyAccessors = {
 export type PropertyHelpers = TypeHelpers &
   PropertyAccessors & {
     columnKey: binding.ColKey;
+    embedded: boolean;
     default?: unknown;
   };
 
@@ -80,6 +82,14 @@ const defaultSet =
     obj.setAny(columnKey, toBinding(value));
   };
 
+function embeddedSet({ typeHelpers: { toBinding }, columnKey }: PropertyOptions) {
+  return (obj: binding.Obj, value: unknown) => {
+    // Asking for the toBinding will create the object and link it to the parent in one operation
+    // no need to actually set the value on the `obj`
+    toBinding(value, () => [obj.createAndSetLinkedObject(columnKey), true]);
+  };
+}
+
 type AccessorFactory = (options: PropertyOptions) => PropertyAccessors;
 
 const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>> = {
@@ -87,13 +97,14 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     const {
       columnKey,
       typeHelpers: { fromBinding },
+      embedded,
     } = options;
     assert(options.optional, "Objects are always nullable");
     return {
       get(this: PropertyHelpers, obj) {
         return obj.isNull(columnKey) ? null : fromBinding(obj.getLinkedObject(columnKey));
       },
-      set: defaultSet(options),
+      set: embedded ? embeddedSet(options) : defaultSet(options),
     };
   },
   [binding.PropertyType.LinkingObjects]() {
@@ -112,6 +123,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     name,
     columnKey,
     objectType,
+    embedded,
     linkOriginPropertyName,
     getClassHelpers,
     optional,
@@ -177,12 +189,21 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
           // Implements https://github.com/realm/realm-core/blob/v12.0.0/src/realm/object-store/list.hpp#L258-L286
           assert.iterable(values);
           const bindingValues = [];
+          const internal = binding.List.make(realm.internal, obj, columnKey);
+
+          // In case of embedded objects, they're added as they're transformed
+          // So we need to ensure an empty list before
+          if (embedded) {
+            internal.removeAll();
+          }
           // Transform all values to mixed before inserting into the list
           {
             let index = 0;
             for (const value of values) {
               try {
-                bindingValues.push(itemToBinding(value));
+                bindingValues.push(
+                  itemToBinding(value, embedded ? () => [internal.insertEmbedded(index), true] : undefined),
+                );
               } catch (err) {
                 if (err instanceof TypeAssertionError) {
                   err.rename(`${name}[${index}]`);
@@ -192,9 +213,8 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
               index++;
             }
           }
-          // Move values into the internal list
-          {
-            const internal = binding.List.make(realm.internal, obj, columnKey);
+          // Move values into the internal list - embedded objects are added as they're transformed
+          if (!embedded) {
             internal.removeAll();
             let index = 0;
             for (const value of bindingValues) {
@@ -264,13 +284,13 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
 };
 
 function getHelpers(type: binding.PropertyType, options: PropertyOptions): PropertyHelpers {
-  const { typeHelpers, columnKey } = options;
+  const { typeHelpers, columnKey, embedded } = options;
   const accessorFactory = ACCESSOR_FACTORIES[type];
   if (accessorFactory) {
     const accessors = accessorFactory(options);
-    return { ...accessors, ...typeHelpers, columnKey };
+    return { ...accessors, ...typeHelpers, columnKey, embedded };
   } else {
-    return { get: defaultGet(options), set: defaultSet(options), ...typeHelpers, columnKey };
+    return { get: defaultGet(options), set: defaultSet(options), ...typeHelpers, columnKey, embedded };
   }
 }
 

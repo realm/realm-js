@@ -98,7 +98,7 @@ export abstract class OrderedCollection<T = unknown>
   /** @internal */
   constructor(
     /** @internal */ protected realm: Realm,
-    /** @internal */ private results: binding.Results,
+    /** @internal */ protected results: binding.Results,
     /** @internal */ protected helpers: OrderedCollectionHelpers,
   ) {
     if (arguments.length === 0) {
@@ -247,10 +247,11 @@ export abstract class OrderedCollection<T = unknown>
   }
   indexOf(searchElement: T, fromIndex?: number): number {
     assert(typeof fromIndex === "undefined", "The second fromIndex argument is not yet supported");
-    if (searchElement instanceof RealmObject) {
+    if (this.type === "object") {
+      assert.instanceOf(searchElement, RealmObject);
       return this.results.indexOfObj(getInternal(searchElement));
     } else {
-      return this.results.indexOf(this.helpers.toBinding(searchElement));
+      return this.results.indexOf(this.helpers.toBinding(searchElement, undefined));
     }
   }
   lastIndexOf(searchElement: T, fromIndex?: number): number {
