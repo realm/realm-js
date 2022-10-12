@@ -130,8 +130,8 @@ describe("schema-utils", () => {
         {
           constructor: undefined,
           embedded: false,
+          asymmetric: false,
           name: "Person",
-          embedded: false,
           properties: {
             name: { name: "name", type: "string", optional: false, mapTo: "name", indexed: false },
             friends: {

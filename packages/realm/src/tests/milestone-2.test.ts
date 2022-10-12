@@ -40,6 +40,7 @@ describe("Milestone #2", () => {
           {
             constructor: undefined,
             embedded: false,
+            asymmetric: false,
             name: "Person",
             primaryKey: "name",
             properties: {
