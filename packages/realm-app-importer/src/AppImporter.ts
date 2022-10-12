@@ -302,6 +302,35 @@ export class AppImporter {
     }
   }
 
+  private async configureValuesFromAppPath(appPath: string, appId: string, groupId: string) {
+    const valuesDir = path.join(appPath, "values");
+
+    if (fs.existsSync(valuesDir)) {
+      console.log("Applying values...");
+      const valuesDirs = fs.readdirSync(valuesDir);
+      for (const valueFile of valuesDirs) {
+        const configPath = path.join(valuesDir, valueFile);
+        const config = this.loadJson(configPath);
+
+        console.log("creating new value: ", config);
+        const url = `${this.apiUrl}/groups/${groupId}/apps/${appId}/values`;
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify(config),
+        });
+        if (!response.ok) {
+          const json = await response.json();
+          const error = json.error || "No error message";
+          console.error("Failed to apply function: ", { config, url, error });
+        }
+      }
+    }
+  }
+
   private async configureServiceFromAppPath(appPath: string, appId: string, groupId: string) {
     const servicesDir = path.join(appPath, "services");
     if (fs.existsSync(servicesDir)) {
@@ -457,8 +486,8 @@ export class AppImporter {
   }
 
   private async getFunctions(appId: string, groupId: string): Promise<RemoteFunction[]> {
-    const functionsUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/functions`;
-    const response = await fetch(functionsUrl, {
+    const url = `${this.apiUrl}/groups/${groupId}/apps/${appId}/functions`;
+    const response = await fetch(url, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${this.accessToken}`,
@@ -467,7 +496,7 @@ export class AppImporter {
     });
     const result = await response.json();
     if (!response.ok) {
-      console.error("Could not retrieve functions: ", functionsUrl, result.error);
+      console.error("Could not retrieve functions: ", url, result.error);
     }
     return result;
   }
@@ -479,25 +508,27 @@ export class AppImporter {
       console.log("Applying functions...");
       const functionDirs = fs.readdirSync(functionsDir);
       for (const functionDir of functionDirs) {
-        const functionConfigPath = path.join(functionsDir, functionDir, "config.json");
-        const functionConfig = this.loadJson(functionConfigPath);
-        const functionSourcePath = path.join(functionsDir, functionDir, "source.js");
-        const functionSource = fs.readFileSync(functionSourcePath, "utf8");
+        const configPath = path.join(functionsDir, functionDir, "config.json");
+        const config = this.loadJson(configPath);
+        const sourcePath = path.join(functionsDir, functionDir, "source.js");
+        const source = fs.readFileSync(sourcePath, "utf8");
 
-        delete functionConfig.id;
+        delete config.id;
 
-        console.log("creating new function provider: ", functionConfig);
-        const functionsUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/functions`;
-        const response = await fetch(functionsUrl, {
+        console.log("creating new function provider: ", config);
+        const url = `${this.apiUrl}/groups/${groupId}/apps/${appId}/functions`;
+        const response = await fetch(url, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${this.accessToken}`,
             "content-type": "application/json",
           },
-          body: JSON.stringify({ ...functionConfig, source: functionSource }),
+          body: JSON.stringify({ ...config, source: source }),
         });
         if (!response.ok) {
-          console.error("Could create apply function: ", functionConfig, functionsUrl);
+          const json = await response.json();
+          const error = json.error || "No error message";
+          console.error("Failed to apply function: ", { config, url, error });
         }
       }
     }
@@ -530,6 +561,8 @@ export class AppImporter {
         return this.createSecret(groupId, appId, name, value);
       }),
     );
+
+    await this.configureValuesFromAppPath(appPath, appId, groupId);
 
     await this.configureServiceFromAppPath(appPath, appId, groupId);
 
