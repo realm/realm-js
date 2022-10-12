@@ -64,6 +64,7 @@ export type PropertyHelpers = TypeHelpers &
     columnKey: binding.ColKey;
     embedded: boolean;
     default?: unknown;
+    objectType?: string;
   };
 
 const defaultGet = ({ typeHelpers: { fromBinding }, columnKey, optional }: PropertyOptions) =>
@@ -284,13 +285,13 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
 };
 
 function getHelpers(type: binding.PropertyType, options: PropertyOptions): PropertyHelpers {
-  const { typeHelpers, columnKey, embedded } = options;
+  const { typeHelpers, columnKey, embedded, objectType } = options;
   const accessorFactory = ACCESSOR_FACTORIES[type];
   if (accessorFactory) {
     const accessors = accessorFactory(options);
-    return { ...accessors, ...typeHelpers, columnKey, embedded };
+    return { ...accessors, ...typeHelpers, columnKey, embedded, objectType };
   } else {
-    return { get: defaultGet(options), set: defaultSet(options), ...typeHelpers, columnKey, embedded };
+    return { get: defaultGet(options), set: defaultSet(options), ...typeHelpers, columnKey, embedded, objectType };
   }
 }
 

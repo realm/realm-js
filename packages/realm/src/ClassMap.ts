@@ -21,20 +21,13 @@ import * as binding from "./binding";
 import { PropertyMap } from "./PropertyMap";
 import type { Realm } from "./Realm";
 import { Object as RealmObject } from "./Object";
-import { Constructor, RealmObjectConstructor } from "./schema";
+import { CanonicalRealmSchema, Constructor, RealmObjectConstructor } from "./schema";
 import { getInternal } from "./internal";
 import { getHelpers, setHelpers } from "./ClassHelpers";
 import { assert } from "./assert";
 import { TableKey } from "./binding";
 
 type BindingObjectSchema = binding.Realm["schema"][0];
-
-export type RealmSchemaExtra = Record<string, ObjectSchemaExtra | undefined>;
-
-export type ObjectSchemaExtra = {
-  constructor?: RealmObjectConstructor;
-  defaults: Record<string, unknown>;
-};
 
 /**
  * @internal
@@ -106,17 +99,20 @@ export class ClassMap {
     Object.defineProperties(constructor.prototype, descriptors);
   }
 
-  constructor(realm: Realm, realmSchema: readonly BindingObjectSchema[], schemaExtras: RealmSchemaExtra) {
+  constructor(realm: Realm, realmSchema: readonly BindingObjectSchema[], canonicalRealmSchema: CanonicalRealmSchema) {
     this.mapping = Object.fromEntries(
-      realmSchema.map((objectSchema) => {
+      realmSchema.map((objectSchema, index) => {
+        const canonicalObjectSchema = canonicalRealmSchema[index];
+        assert.object(canonicalObjectSchema);
         // Create the wrapping class first
-        const constructor = ClassMap.createClass(objectSchema, schemaExtras[objectSchema.name]?.constructor);
+        const constructor = ClassMap.createClass(objectSchema, canonicalObjectSchema.constructor);
         // Create property getters and setters
         const properties = new PropertyMap();
         // Setting the helpers on the class
         setHelpers(constructor, {
           constructor,
           objectSchema,
+          canonicalObjectSchema,
           properties,
           wrapObject(obj) {
             if (obj.isValid) {
@@ -132,12 +128,18 @@ export class ClassMap {
 
     this.nameByTableKey = Object.fromEntries(realmSchema.map(({ name, tableKey }) => [tableKey, name]));
 
-    for (const objectSchema of realmSchema) {
+    for (const [index, objectSchema] of realmSchema.entries()) {
+      const canonicalObjectSchema = canonicalRealmSchema[index];
+      const defaults = Object.fromEntries(
+        Object.entries(canonicalObjectSchema.properties).map(([name, property]) => {
+          return [name, property.default];
+        }),
+      );
       const constructor = this.mapping[objectSchema.name];
       // Get the uninitialized property map
       const { properties } = getHelpers(constructor as typeof RealmObject);
       // Initialize the property map, now that all classes have helpers set
-      properties.initialize(objectSchema, schemaExtras[objectSchema.name]?.defaults || {}, {
+      properties.initialize(objectSchema, defaults, {
         realm,
         getClassHelpers: (name: string) => this.getHelpers(name),
       });

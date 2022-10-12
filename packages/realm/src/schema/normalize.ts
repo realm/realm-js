@@ -67,7 +67,9 @@ function removeUndefinedValues<T extends Record<string, unknown>>(obj: T): T {
   return Object.fromEntries(Object.entries(obj).filter(([, v]) => typeof v !== "undefined")) as T;
 }
 
-export function normalizeRealmSchema(schema: (RealmObjectConstructor | ObjectSchema)[]): CanonicalObjectSchema[] {
+export function normalizeRealmSchema(
+  schema: Readonly<(RealmObjectConstructor | ObjectSchema)[]>,
+): CanonicalObjectSchema[] {
   return schema.map(normalizeObjectSchema);
 }
 
