@@ -59,7 +59,9 @@ export function getDefaultReplacements(name: string): TemplateReplacements {
     const appName = `${name}-${mongodbClusterName}`;
     const appNameReplacement = { "config.json": { name: appName } };
 
-    if (name === "with-db") {
+    if (name === "with-db" || name === "with-db-flx") {
+      // Generate a unique database name to limit crosstalk between runs
+      const databaseName = `test-database-${new BSON.ObjectID().toHexString()}`;
       return {
         ...appNameReplacement,
         "services/mongodb/config.json": {
@@ -68,23 +70,8 @@ export function getDefaultReplacements(name: string): TemplateReplacements {
             clusterName: mongodbClusterName,
             readPreference: "primary",
             wireProtocolEnabled: false,
-            sync: {
-              database_name: `test-database-${new BSON.ObjectID().toHexString()}`,
-            },
-          },
-        },
-      };
-    } else if (name === "with-db-flx") {
-      return {
-        ...appNameReplacement,
-        "services/mongodb/config.json": {
-          type: "mongodb-atlas",
-          config: {
-            clusterName: mongodbClusterName,
-            readPreference: "primary",
-            wireProtocolEnabled: false,
-            flexible_sync: {
-              database_name: `test-database-${new BSON.ObjectID().toHexString()}`,
+            [name === "with-db" ? "sync" : "flexible_sync"]: {
+              database_name: databaseName,
             },
           },
         },
