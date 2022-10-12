@@ -82,9 +82,11 @@ Based on Realm JS v10.21.1: See changelog below for details on enhancements and 
   ```
   * A typo was fixed in the `SubscriptionsState` enum, in which `SubscriptionsState.Superseded` now returns `superseded` in place of `Superseded`
 * `"discardLocal"` is now the default client reset mode. ([#4382](https://github.com/realm/realm-js/issues/4382))
+* Removed `Realm.JsonSerializationReplacer`. Use circular JSON serialization libraries such as [@ungap/structured-clone](https://www.npmjs.com/package/@ungap/structured-clone) and [flatted](https://www.npmjs.com/package/flatted) for stringifying Realm entities that have circular structures. The Realm entities' `toJSON` method returns plain objects and arrays (with circular references if applicable) which makes them compatible with any serialization library that supports stringifying plain JavaScript types. ([#4997](https://github.com/realm/realm-js/pull/4997))
 
 ### Enhancements
 * Small improvement to performance by caching JSI property String object [#4863](https://github.com/realm/realm-js/pull/4863)
+* Small improvement to performance for `toJSON` which should make it useful for cases where a plain representations of Realm entities are needed, e.g. when inspecting them for debugging purposes through `console.log(realmObj.toJSON())`. ([#4997](https://github.com/realm/realm-js/pull/4997)) 
 
 ### Fixed
 * None
