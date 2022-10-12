@@ -38,7 +38,7 @@ import { Configuration } from "./Configuration";
 import { ClassMap, RealmSchemaExtra } from "./ClassMap";
 import { List } from "./List";
 import { App } from "./App";
-import { validateConfiguration } from "./validation/configuration";
+import { validateConfiguration, validateRealmSchema } from "./validation/configuration";
 import { Collection } from "./Collection";
 import { Dictionary } from "./Dictionary";
 import { Set as RealmSet } from "./Set";
@@ -368,8 +368,9 @@ export class Realm {
   }
 
   _updateSchema(schema: Realm.ObjectSchema[]): void {
-    const normalizedSchema = schema && normalizeRealmSchema(schema);
-    const bindingSchema = normalizedSchema && toBindingSchema(normalizedSchema);
+    validateRealmSchema(schema);
+    const normalizedSchema = normalizeRealmSchema(schema);
+    const bindingSchema = toBindingSchema(normalizedSchema);
     if (!this.isInTransaction) {
       throw new Error("Can only create object schema within a transaction.");
     }
