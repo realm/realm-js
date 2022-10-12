@@ -24,12 +24,12 @@ import { ClassHelpers } from "./ClassHelpers";
 import { TypeAssertionError } from "./errors";
 import { Collection } from "./Collection";
 import { getInternal } from "./internal";
-import { Object as RealmObject, ParentContext, UpdateMode } from "./Object";
+import { Object as RealmObject, ObjCreator, UpdateMode } from "./Object";
 import type { Realm } from "./Realm";
 
 /** @internal */
 export type TypeHelpers<T = unknown> = {
-  toBinding(value: T, parent: ParentContext | undefined): binding.MixedArg;
+  toBinding(value: T, createObj?: ObjCreator): binding.MixedArg;
   fromBinding(value: unknown): T;
 };
 
@@ -151,18 +151,17 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
     const helpers = getClassHelpers(objectType);
     const { wrapObject } = helpers;
     return {
-      toBinding: nullPassthrough((value, parent) => {
+      toBinding: nullPassthrough((value, createObj) => {
         if (value instanceof RealmObject) {
           assert.instanceOf(value, helpers.constructor);
           return getInternal(value);
         } else {
           // TODO: Consider exposing a way for calling code to disable object creation
           assert.object(value, name);
-          assert.object(parent, "parent");
           // Some other object is assumed to be an unmanged object, that the user wants to create
           const createdObject = RealmObject.create(realm, value, UpdateMode.Never, {
             helpers,
-            parent,
+            createObj,
           });
           return getInternal(createdObject);
         }

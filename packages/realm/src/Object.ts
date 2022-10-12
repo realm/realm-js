@@ -34,11 +34,11 @@ export enum UpdateMode {
 }
 
 /** @internal */
-export type ParentContext = { obj: binding.Obj; columnKey: binding.ColKey };
+export type ObjCreator = () => [binding.Obj, boolean];
 
 type CreationContext = {
   helpers: ClassHelpers;
-  parent?: ParentContext;
+  createObj?: ObjCreator;
 };
 
 const INTERNAL_LISTENERS = Symbol("Realm.Object#listeners");
@@ -85,10 +85,11 @@ class RealmObject<T = DefaultObject> {
         wrapObject,
         objectSchema: { persistedProperties },
       },
+      createObj,
     } = context;
 
     // Create the underlying object
-    const [obj, created] = RealmObject.createObj(realm, values, mode, context);
+    const [obj, created] = createObj ? createObj() : this.createObj(realm, values, mode, context);
     const result = wrapObject(obj);
     assert(result);
     // Persist any values provided
@@ -127,9 +128,8 @@ class RealmObject<T = DefaultObject> {
     context: CreationContext,
   ): [binding.Obj, boolean] {
     const {
-      parent,
       helpers: {
-        objectSchema: { name, tableKey, primaryKey, tableType },
+        objectSchema: { name, tableKey, primaryKey },
         properties,
       },
     } = context;
@@ -155,10 +155,6 @@ class RealmObject<T = DefaultObject> {
       }
       return result;
     } else {
-      if (tableType === binding.TableType.Embedded) {
-        assert(parent, "Embedded objects cannot be created directly.");
-        return [parent.obj.createAndSetLinkedObject(parent.columnKey), true];
-      }
       return [table.createObject(), true];
     }
   }
