@@ -367,8 +367,14 @@ export class Realm {
     throw new Error("Not yet implemented");
   }
 
-  _updateSchema(): unknown {
-    throw new Error("Not yet implemented");
+  _updateSchema(schema: Realm.ObjectSchema[]): void {
+    const normalizedSchema = schema && normalizeRealmSchema(schema);
+    const bindingSchema = normalizedSchema && toBindingSchema(normalizedSchema);
+    if (!this.isInTransaction) {
+      throw new Error("Can only create object schema within a transaction.");
+    }
+    this.internal.updateSchema(bindingSchema, this.internal.schemaVersion + 1n, null, null, true);
+    this.classes = new ClassMap(this, this.internal.schema, this.schemaExtras);
   }
 
   /**
