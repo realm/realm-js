@@ -298,7 +298,7 @@ declare namespace Realm {
         /**
          * @returns A plain object for JSON serialization.
          */
-        toJSON(): Record<string, any>;
+        toJSON(): Record<string, unknown>;
 
         /**
          * @returns boolean
@@ -387,7 +387,7 @@ declare namespace Realm {
         /**
          * @returns A plain object for JSON serialization.
          */
-        toJSON(): Record<string, any>;
+        toJSON(): Record<string, unknown>;
     }
 
     /**
@@ -401,7 +401,7 @@ declare namespace Realm {
         /**
          * @returns An array of plain objects for JSON serialization.
          */
-        toJSON(): Array<Record<string, any>>;
+        toJSON(): Array<Record<string, unknown>>;
 
         description(): string;
 
