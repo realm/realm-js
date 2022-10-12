@@ -19,6 +19,8 @@
 import { expect } from "chai";
 import Realm from "realm";
 
+type DefaultObject = Record<string, unknown>;
+
 import { openRealmBefore } from "../hooks";
 
 const PlaylistSchema: Realm.ObjectSchema = {
@@ -77,7 +79,7 @@ interface TestSetup {
   // Type of the Realm instance
   type: typeof Realm.Object | typeof Realm.Results | typeof Realm.Dictionary;
   // Expected serialized plain object result
-  serialized: Record<string, any>;
+  serialized: DefaultObject;
 }
 
 //  Describe common test types that will be run,
@@ -89,9 +91,9 @@ describe("toJSON functionality", () => {
     commonTests: Record<string, TestSetup>;
     playlists: Realm.Results<Realm.Object> & IPlaylist[];
     birthdays: Realm.Object & IBirthdays;
-    p1Serialized: Record<string, any>;
-    resultsSerialized: Record<string, any>;
-    birthdaysSerialized: Record<string, any>;
+    p1Serialized: DefaultObject;
+    resultsSerialized: DefaultObject;
+    birthdaysSerialized: DefaultObject;
   } & RealmContext;
   openRealmBefore({
     inMemory: true,
