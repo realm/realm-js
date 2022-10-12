@@ -144,7 +144,7 @@ describe("toJSON functionality", () => {
       this.birthdaysSerialized.dict.grandparent = this.birthdaysSerialized;
 
       // Define the structures for the common test suite.
-      this.this.commonTests = {
+      this.commonTests = {
         Object: {
           type: Realm.Object,
           subject: p1,
@@ -164,7 +164,7 @@ describe("toJSON functionality", () => {
     });
   });
   describe(`common tests`, () => {
-    for (const name in commonTestsTypes) {
+    for (const name of commonTestsTypes) {
       describe(`with Realm.${name}`, () => {
         it("implements toJSON", function (this: TestContext) {
           const test = this.commonTests[name];
