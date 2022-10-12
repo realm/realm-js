@@ -20,7 +20,7 @@ import * as binding from "./binding";
 
 import type { PropertyMap } from "./PropertyMap";
 import type { Object as RealmObject } from "./Object";
-import { DefaultObject, RealmObjectConstructor } from ".";
+import { CanonicalObjectSchema, DefaultObject, RealmObjectConstructor } from ".";
 
 type BindingObjectSchema = binding.Realm["schema"][0];
 
@@ -37,6 +37,7 @@ export type ClassHelpers = {
   objectSchema: BindingObjectSchema;
   properties: PropertyMap;
   wrapObject: ObjectWrapper;
+  canonicalObjectSchema: CanonicalObjectSchema;
 };
 
 export function setHelpers(constructor: RealmObjectConstructor, value: ClassHelpers): void {
