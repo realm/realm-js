@@ -21,17 +21,10 @@ import { OrderedCollection, OrderedCollectionHelpers } from "./OrderedCollection
 import { IllegalConstructorError } from "./errors";
 import type { Realm } from "./Realm";
 import { assert } from "./assert";
-import { ParentContext } from "./Object";
 
 type PartiallyWriteableArray<T> = Pick<Array<T>, "pop" | "push" | "shift" | "unshift" | "splice">;
 
 export class List<T = unknown> extends OrderedCollection<T> implements PartiallyWriteableArray<T> {
-  /**
-   * The parent object
-   * @internal
-   */
-  public parent!: ParentContext;
-
   /**
    * The representation in the binding.
    * @internal
@@ -39,24 +32,32 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
   public internal!: binding.List;
 
   /** @internal */
-  constructor(realm: Realm, parent: ParentContext, internal: binding.List, helpers: OrderedCollectionHelpers) {
+  private isEmbedded!: boolean;
+
+  /** @internal */
+  constructor(realm: Realm, internal: binding.List, helpers: OrderedCollectionHelpers) {
     if (arguments.length === 0 || !(internal instanceof binding.List)) {
       throw new IllegalConstructorError("List");
     }
     super(realm, internal.asResults(), helpers);
-    // TODO: Consider if this could be a simple assignment
+
+    // Getting the `objectSchema` off the internal will throw if base type isn't object
+    const baseType = this.results.type & ~binding.PropertyType.Flags;
+    const isEmbedded =
+      baseType === binding.PropertyType.Object && internal.objectSchema.tableType === binding.TableType.Embedded;
+
     Object.defineProperties(this, {
-      parent: {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-        value: parent,
-      },
       internal: {
         enumerable: false,
         configurable: false,
         writable: false,
         value: internal,
+      },
+      isEmbedded: {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: isEmbedded,
       },
     });
   }
@@ -72,8 +73,15 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
    * @internal
    */
   public set(index: number, value: unknown) {
-    assert.inTransaction(this.realm);
-    this.internal.setAny(index, this.helpers.toBinding(value, this.parent));
+    const {
+      realm,
+      internal,
+      isEmbedded,
+      helpers: { toBinding },
+    } = this;
+    assert.inTransaction(realm);
+    // TODO: Consider a more performant way to determine if the list is embedded
+    internal.setAny(index, toBinding(value, isEmbedded ? () => [internal.insertEmbedded(index), true] : undefined));
   }
 
   get length(): number {
@@ -101,14 +109,19 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
   push(...items: T[]): number {
     assert.inTransaction(this.realm);
     const {
+      isEmbedded,
       internal,
-      parent,
       helpers: { toBinding },
     } = this;
-    let i = internal.size;
-    for (const item of items) {
-      // Convert item to a mixedArg
-      internal.insertAny(i++, toBinding(item, parent));
+    const start = internal.size;
+    for (const [offset, item] of items.entries()) {
+      const index = start + offset;
+      if (isEmbedded) {
+        // Simply transforming to binding will insert the embedded object
+        toBinding(item, () => [internal.insertEmbedded(index), true]);
+      } else {
+        internal.insertAny(index, toBinding(item));
+      }
     }
     return internal.size;
   }
@@ -132,14 +145,17 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
   unshift(...items: T[]): number {
     assert.inTransaction(this.realm);
     const {
+      isEmbedded,
       internal,
-      parent,
       helpers: { toBinding },
     } = this;
-    let i = 0;
-    for (const item of items) {
-      // Convert item to a mixedArg
-      internal.insertAny(i++, toBinding(item, parent));
+    for (const [index, item] of items.entries()) {
+      if (isEmbedded) {
+        // Simply transforming to binding will insert the embedded object
+        toBinding(item, () => [internal.insertEmbedded(index), true]);
+      } else {
+        internal.insertAny(index, toBinding(item));
+      }
     }
     return internal.size;
   }
@@ -151,8 +167,8 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     assert.inTransaction(this.realm);
     assert.number(start, "start");
     const {
+      isEmbedded,
       internal,
-      parent,
       helpers: { fromBinding, toBinding },
     } = this;
     // If negative, it will begin that many elements from the end of the array.
@@ -177,10 +193,14 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
       internal.remove(i);
     }
     // Insert any new elements
-    let i = start;
-    for (const item of items) {
-      // Convert item to a mixedArg
-      internal.insertAny(i++, toBinding(item, parent));
+    for (const [offset, item] of items.entries()) {
+      const index = start + offset;
+      if (isEmbedded) {
+        // Simply transforming to binding will insert the embedded object
+        toBinding(item, () => [internal.insertEmbedded(index), true]);
+      } else {
+        internal.insertAny(index, toBinding(item));
+      }
     }
     return result;
   }
