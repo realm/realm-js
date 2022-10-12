@@ -19,7 +19,7 @@
 import * as binding from "./binding";
 import { BSON } from "./bson";
 
-import { INTERNAL, getInternal } from "./internal";
+import { getInternal } from "./internal";
 import {
   fromBindingSchema,
   toBindingSchema,
@@ -28,6 +28,7 @@ import {
   normalizeRealmSchema,
   ObjectSchema,
   Constructor,
+  RealmObjectConstructor,
 } from "./schema";
 import { fs } from "./platform";
 
@@ -35,7 +36,7 @@ import { Object as RealmObject, UpdateMode } from "./Object";
 import { Results } from "./Results";
 import { RealmInsertionModel } from "./InsertionModel";
 import { Configuration } from "./Configuration";
-import { ClassMap, RealmSchemaExtra } from "./ClassMap";
+import { ClassMap } from "./ClassMap";
 import { List } from "./List";
 import { App } from "./App";
 import { validateConfiguration, validateRealmSchema } from "./validation/configuration";
@@ -45,6 +46,13 @@ import { Set as RealmSet } from "./Set";
 import { assert } from "./assert";
 import { ClassHelpers } from "./ClassHelpers";
 import { OrderedCollection } from "./OrderedCollection";
+
+type RealmSchemaExtra = Record<string, ObjectSchemaExtra | undefined>;
+
+type ObjectSchemaExtra = {
+  constructor?: RealmObjectConstructor;
+  defaults: Record<string, unknown>;
+};
 
 // Using a set of weak refs to avoid prevention of garbage collection
 const RETURNED_REALMS = new Set<WeakRef<binding.Realm>>();
@@ -176,7 +184,7 @@ export class Realm {
     });
 
     RETURNED_REALMS.add(new WeakRef(internal));
-    this.classes = new ClassMap(this, internal.schema, this.schemaExtras);
+    this.classes = new ClassMap(this, internal.schema, this.schema);
   }
 
   get empty(): boolean {
@@ -193,9 +201,19 @@ export class Realm {
     throw new Error("Not yet implemented");
   }
 
-  // TODO: Stitch in the defaults and constructors stored in this.schemaExtras
   get schema(): CanonicalObjectSchema[] {
-    return fromBindingSchema(this.internal.schema);
+    const schemas = fromBindingSchema(this.internal.schema);
+    // Stitch in the constructors and defaults stored in this.schemaExtras
+    for (const objectSchema of schemas) {
+      const extras = this.schemaExtras[objectSchema.name];
+      if (extras) {
+        objectSchema.constructor = extras.constructor;
+        for (const property of Object.values(objectSchema.properties)) {
+          property.default = extras.defaults[property.name];
+        }
+      }
+    }
+    return schemas;
   }
 
   get schemaVersion(): number {
@@ -375,14 +393,14 @@ export class Realm {
       throw new Error("Can only create object schema within a transaction.");
     }
     this.internal.updateSchema(bindingSchema, this.internal.schemaVersion + 1n, null, null, true);
-    this.classes = new ClassMap(this, this.internal.schema, this.schemaExtras);
+    this.classes = new ClassMap(this, this.internal.schema, this.schema);
   }
 
   /**
    * @internal
    */
-  public getClassHelpers(name: string): ClassHelpers {
-    return this.classes.getHelpers(name);
+  public getClassHelpers<T extends RealmObject>(arg: string | T | Constructor<T>): ClassHelpers {
+    return this.classes.getHelpers(arg);
   }
 }
 
