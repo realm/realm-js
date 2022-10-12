@@ -29,8 +29,7 @@ function getPartitionValue() {
 }
 
 async function triggerClientReset(app: Realm.App, user: Realm.User): Promise<void> {
-  const res = await user.functions.triggerClientReset(app.id, user.id);
-  console.log("GED", JSON.stringify(res));
+  await user.functions.triggerClientReset(app.id, user.id);
 }
 
 async function waitServerSideClientResetDiscardLocalCallbacks(
@@ -89,7 +88,6 @@ async function waitSimulatedClientResetDiscardLocalCallbacks(
     let afterCalled = false;
     let beforeCalled = false;
 
-    // Shallow copy the sync configuration to modifying the original
     const modifiedConfig: Realm.Configuration = {
       schema,
       sync: {
@@ -138,7 +136,6 @@ async function waitSimulatedClientResetRecoverCallbacks(
     let afterCalled = false;
     let beforeCalled = false;
 
-    // Shallow copy the sync configuration to modifying the original
     const modifiedConfig: Realm.Configuration = {
       schema,
       sync: {
@@ -364,7 +361,7 @@ describe.skipIf(environment.missingServer, "client reset handling", function () 
     // (ii)  two callback will be called, while the sync error handler is not
     // (iii) after the reset, the Realm can be used as before
 
-    this.timeout(20 * 1000);
+    this.timeout(50 * 1000); // insanely long time
     const clientResetBefore = (realm: Realm) => {
       expect(realm.objects(DogSchema.name).length).to.equal(1);
     };
