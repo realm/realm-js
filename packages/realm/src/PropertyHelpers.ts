@@ -79,13 +79,14 @@ const defaultSet =
   ({ realm, typeHelpers: { toBinding }, columnKey }: PropertyOptions) =>
   (obj: binding.Obj, value: unknown) => {
     assert.inTransaction(realm);
-    obj.setAny(columnKey, toBinding(value, { obj, columnKey }));
+    obj.setAny(columnKey, toBinding(value));
   };
 
 function embeddedSet({ typeHelpers: { toBinding }, columnKey }: PropertyOptions) {
   return (obj: binding.Obj, value: unknown) => {
-    // Simply asking for the toBinding will create the object and link it to the parent in one operation
-    toBinding(value, { obj, columnKey });
+    // Asking for the toBinding will create the object and link it to the parent in one operation
+    // no need to actually set the value on the `obj`
+    toBinding(value, () => [obj.createAndSetLinkedObject(columnKey), true]);
   };
 }
 
@@ -122,6 +123,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     name,
     columnKey,
     objectType,
+    embedded,
     linkOriginPropertyName,
     getClassHelpers,
     optional,
@@ -180,19 +182,28 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       return {
         get(obj: binding.Obj) {
           const internal = binding.List.make(realm.internal, obj, columnKey);
-          return new List(realm, { obj, columnKey }, internal, collectionHelpers);
+          return new List(realm, internal, collectionHelpers);
         },
         set(obj, values) {
           assert.inTransaction(realm);
           // Implements https://github.com/realm/realm-core/blob/v12.0.0/src/realm/object-store/list.hpp#L258-L286
           assert.iterable(values);
           const bindingValues = [];
+          const internal = binding.List.make(realm.internal, obj, columnKey);
+
+          // In case of embedded objects, they're added as they're transformed
+          // So we need to ensure an empty list before
+          if (embedded) {
+            internal.removeAll();
+          }
           // Transform all values to mixed before inserting into the list
           {
             let index = 0;
             for (const value of values) {
               try {
-                bindingValues.push(itemToBinding(value, { obj, columnKey }));
+                bindingValues.push(
+                  itemToBinding(value, embedded ? () => [internal.insertEmbedded(index), true] : undefined),
+                );
               } catch (err) {
                 if (err instanceof TypeAssertionError) {
                   err.rename(`${name}[${index}]`);
@@ -202,9 +213,8 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
               index++;
             }
           }
-          // Move values into the internal list
-          {
-            const internal = binding.List.make(realm.internal, obj, columnKey);
+          // Move values into the internal list - embedded objects are added as they're transformed
+          if (!embedded) {
             internal.removeAll();
             let index = 0;
             for (const value of bindingValues) {
@@ -235,7 +245,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
         internal.removeAll();
         assert.object(value, "values");
         for (const [k, v] of Object.entries(value)) {
-          internal.insertAny(k, itemHelpers.toBinding(v, { obj, columnKey }));
+          internal.insertAny(k, itemHelpers.toBinding(v));
         }
       },
     };
@@ -266,7 +276,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
         internal.removeAll();
         assert.array(value, "values");
         for (const v of value) {
-          internal.insertAny(itemHelpers.toBinding(v, { obj, columnKey }));
+          internal.insertAny(itemHelpers.toBinding(v));
         }
       },
     };
