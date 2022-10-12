@@ -32,7 +32,7 @@ describe("realm._updateSchema", () => {
       schema: oldSchema,
     });
   });
-  after(closeRealm);
+  afterEach(closeRealm);
 
   it("can add new schema classes", function (this: RealmContext) {
     this.realm.write(() => {
@@ -41,11 +41,6 @@ describe("realm._updateSchema", () => {
     });
   });
   it("can only be called in a transaction", function (this: RealmContext) {
-    this.realm = new Realm({
-      path: generateTempRealmPath(),
-      inMemory: true,
-      schema: [{ name: "Person", properties: { name: "string", age: "int" } }],
-    });
     expect(() => this.realm._updateSchema(newSchema)).throw("Can only create object schema within a transaction.");
   });
 });
