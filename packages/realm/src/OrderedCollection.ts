@@ -21,13 +21,14 @@ import { Results } from "./Results";
 import { Collection } from "./Collection";
 import { unwind } from "./ranges";
 import { TypeHelpers } from "./types";
-import { getBaseTypeName } from "./schema";
 import { IllegalConstructorError, TypeAssertionError } from "./errors";
 import { Realm } from "./Realm";
-import { Object as RealmObject } from "./Object";
 import { getInternal } from "./internal";
 import { assert } from "./assert";
 import { ClassHelpers } from "./ClassHelpers";
+import { JSONCacheMap } from "./JSONCacheMap";
+import { Object as RealmObject } from "./Object";
+import { DefaultObject, getBaseTypeName } from "./schema";
 
 const DEFAULT_COLUMN_KEY = 0n as unknown as binding.ColKey;
 
@@ -177,6 +178,19 @@ export abstract class OrderedCollection<T = unknown>
     throw new Error(`Assigning into a ${this.constructor.name} is not support`);
   }
 
+  /**
+   * @returns An array of plain objects for JSON serialization.
+   **/
+  toJSON(_?: string, cache = new JSONCacheMap()): Array<DefaultObject> {
+    return this.map((item, index) => {
+      if (item instanceof RealmObject) {
+        return item.toJSON(index.toString(), cache);
+      } else {
+        return item as DefaultObject;
+      }
+    });
+  }
+
   *keys() {
     const size = this.results.size();
     for (let i = 0; i < size; i++) {
@@ -323,13 +337,6 @@ export abstract class OrderedCollection<T = unknown>
   }
 
   // Other methods
-
-  /**
-   * @returns An object for JSON serialization.
-   */
-  toJSON(): Array<unknown> {
-    throw new Error("Method not implemented.");
-  }
 
   description(): string {
     throw new Error("Method not implemented.");
