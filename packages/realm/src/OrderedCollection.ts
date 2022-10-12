@@ -98,7 +98,7 @@ export abstract class OrderedCollection<T = unknown>
   /** @internal */
   constructor(
     /** @internal */ protected realm: Realm,
-    /** @internal */ private results: binding.Results,
+    /** @internal */ protected results: binding.Results,
     /** @internal */ protected helpers: OrderedCollectionHelpers,
   ) {
     if (arguments.length === 0) {
