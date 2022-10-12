@@ -42,6 +42,8 @@ export type PropertyTypeName =
 
 export type PropertyType = string | PropertyTypeName;
 
+export type CanonicalRealmSchema = CanonicalObjectSchema[];
+
 /**
  * The canonical representation of the schema of a specific type of object.
  */

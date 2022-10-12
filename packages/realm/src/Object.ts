@@ -236,7 +236,7 @@ class RealmObject<T = DefaultObject> {
   /**
    * @returns A plain object for JSON serialization.
    **/
-  toJSON(_?: string, cache = new JSONCacheMap<T>()): DefaultObject {
+  toJSON(_?: string, cache = new JSONCacheMap()): DefaultObject {
     // Construct a reference-id of table-name & primaryKey if it exists, or fall back to objectId.
 
     // Check if current objectId has already processed, to keep object references the same.
@@ -267,13 +267,29 @@ class RealmObject<T = DefaultObject> {
     return this[INTERNAL] && this[INTERNAL].isValid;
   }
   objectSchema(): CanonicalObjectSchema<T> {
-    throw new Error("Not yet implemented");
+    const classHelpers = this.realm.getClassHelpers<RealmObject>(this as RealmObject<unknown>);
+    throw new Error("This is now removed!");
   }
-  linkingObjects<T>(): Results<T> {
-    throw new Error("Not yet implemented");
+
+  linkingObjects<T>(objectType: string, propertyName: string): Results<T> {
+    const {
+      objectSchema: { tableKey },
+      properties,
+    } = this.realm.getClassHelpers(objectType);
+    const tableRef = binding.Helpers.getTable(this.realm.internal, tableKey);
+    const property = properties.get(propertyName);
+    if (objectType !== property.objectType) {
+      throw new TypeError(`'${objectType}#${propertyName}' is not a relationship to '${this.objectSchema.name}'`);
+    }
+    // Create the Result for the backlink view
+    const { columnKey, fromBinding, toBinding } = property;
+    const tableView = this[INTERNAL].getBacklinkView(tableRef, columnKey);
+    const results = binding.Results.fromTableView(this.realm.internal, tableView);
+    return new Results(this.realm, results, { fromBinding, toBinding, get: (results, index) => results.getObj(index) });
   }
+
   linkingObjectsCount(): number {
-    throw new Error("Not yet implemented");
+    return this.linkingObjectsCount();
   }
 
   /**
