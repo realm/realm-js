@@ -39,6 +39,7 @@ export type TypeOptions = {
   name: string;
   optional: boolean;
   objectType: string | undefined;
+  objectSchemaName: string | undefined;
   getClassHelpers(nameOrTableKey: string | binding.TableKey): ClassHelpers;
 };
 
@@ -248,9 +249,9 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
       fromBinding: defaultFromBinding,
     };
   },
-  [binding.PropertyType.Array]({ realm, getClassHelpers, name, objectType }) {
-    assert.string(objectType);
-    const classHelpers = getClassHelpers(objectType);
+  [binding.PropertyType.Array]({ realm, getClassHelpers, name, objectSchemaName }) {
+    assert.string(objectSchemaName, "objectSchemaName");
+    const classHelpers = getClassHelpers(objectSchemaName);
     return {
       fromBinding(value: unknown) {
         assert.instanceOf(value, binding.List);

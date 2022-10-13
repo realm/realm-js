@@ -37,14 +37,15 @@ export class PropertyMap {
   private _names: string[] = [];
 
   public initialize(objectSchema: BindingObjectSchema, defaults: Record<string, unknown>, options: HelperOptions) {
-    this.objectSchemaName = objectSchema.alias || objectSchema.name;
-    const properties = [...objectSchema.persistedProperties, ...objectSchema.computedProperties];
+    const { name: objectSchemaName, persistedProperties, computedProperties } = objectSchema;
+    this.objectSchemaName = objectSchemaName;
+    const properties = [...persistedProperties, ...computedProperties];
     this.mapping = Object.fromEntries(
       properties.map((property) => {
         const embedded = property.objectType
           ? options.getClassHelpers(property.objectType).objectSchema.tableType === binding.TableType.Embedded
           : false;
-        const helpers = createHelpers({ ...property, embedded }, options);
+        const helpers = createHelpers({ ...property, embedded, objectSchemaName }, options);
         // Allow users to override the default value of properties
         const defaultValue = defaults[property.name];
         helpers.default = typeof defaultValue !== "undefined" ? defaultValue : helpers.default;
