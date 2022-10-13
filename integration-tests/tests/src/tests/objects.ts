@@ -29,38 +29,8 @@ import jsrsasign from "jsrsasign";
 import { select } from "../utils/select";
 
 const RANDOM_DATA = new Uint8Array([
-  0xd8,
-  0x21,
-  0xd6,
-  0xe8,
-  0x00,
-  0x57,
-  0xbc,
-  0xb2,
-  0x6a,
-  0x15,
-  0x77,
-  0x30,
-  0xac,
-  0x77,
-  0x96,
-  0xd9,
-  0x67,
-  0x1e,
-  0x40,
-  0xa7,
-  0x6d,
-  0x52,
-  0x83,
-  0xda,
-  0x07,
-  0x29,
-  0x9c,
-  0x70,
-  0x38,
-  0x48,
-  0x4e,
-  0xff,
+  0xd8, 0x21, 0xd6, 0xe8, 0x00, 0x57, 0xbc, 0xb2, 0x6a, 0x15, 0x77, 0x30, 0xac, 0x77, 0x96, 0xd9, 0x67, 0x1e, 0x40,
+  0xa7, 0x6d, 0x52, 0x83, 0xda, 0x07, 0x29, 0x9c, 0x70, 0x38, 0x48, 0x4e, 0xff,
 ]);
 
 const allTypesValues = {
@@ -1073,70 +1043,6 @@ describe("Objectstest", () => {
       expect(function () {
         object.doubleCol;
       }).throws;
-    });
-  });
-
-  describe("object conversion", () => {
-    openRealmBeforeEach({ schema: [TestObjectSchema] });
-    it("works", function (this: Mocha.Context & RealmContext) {
-      //@ts-expect-error TYPEBUG: __to_object does not exist on realm.
-      expect(this.realm.__to_object("This is a string")).instanceOf(
-        String,
-        "__to_object(string) should return String Object",
-      );
-      //@ts-expect-error TYPEBUG: __to_object does not exist on realm.
-      expect(this.realm.__to_object("Foo") == String("Foo")).to.be.true;
-      //@ts-expect-error TYPEBUG: __to_object does not exist on realm.
-      expect(this.realm.__to_object(12345)).instanceOf(Number);
-      //@ts-expect-error TYPEBUG: __to_object does not exist on realm.
-      expect(this.realm.__to_object(12345) == Number(12345)).to.be.true;
-      //@ts-expect-error TYPEBUG: __to_object does not exist on realm.
-      expect(this.realm.__to_object(false)).instanceOf(Boolean);
-      //@ts-expect-error TYPEBUG: __to_object does not exist on realm.
-      expect(this.realm.__to_object(false) == Boolean(false)).to.be.true;
-      //@ts-expect-error TYPEBUG: __to_object does not exist on realm.
-      expect(this.realm.__to_object(new Date())).instanceOf(Date);
-
-      expect(() => {
-        //@ts-expect-error TYPEBUG: __to_object does not exist on realm.
-        this.realm.__to_object(null);
-      }).throws(select({ reactNative: "TypeError", default: "Cannot convert undefined or null to object" }));
-
-      expect(() => {
-        //@ts-expect-error TYPEBUG: __to_object does not exist on realm.
-        this.realm.__to_object(undefined);
-      }).throws(select({ reactNative: "TypeError", default: "Cannot convert undefined or null to object" }));
-    });
-  });
-
-  describe("boolean conversion", () => {
-    openRealmBeforeEach({ schema: [TestObjectSchema] });
-    it("converts to expected value", function (this: Mocha.Context & RealmContext) {
-      //@ts-expect-error TYPEBUG: __to_object does not exist on realm.
-      expect(this.realm.__to_boolean("")).equals(false, '__to_boolean("") should return false');
-      //@ts-expect-error TYPEBUG: __to_object does not exist on realm.
-      expect(this.realm.__to_boolean(0)).equals(false, "__to_boolean(0) should return false");
-      //@ts-expect-error TYPEBUG: __to_object does not exist on realm.
-      expect(this.realm.__to_boolean(-0)).equals(false, "__to_boolean(-0) should return false");
-      //@ts-expect-error TYPEBUG: __to_object does not exist on realm.
-      expect(this.realm.__to_boolean(null)).equals(false, "__to_boolean(null) should return false");
-      //@ts-expect-error TYPEBUG: __to_object does not exist on realm.
-      expect(this.realm.__to_boolean(false)).equals(false, "__to_boolean(false) should return false");
-      //@ts-expect-error TYPEBUG: __to_object does not exist on realm.
-      expect(this.realm.__to_boolean(NaN)).equals(false, "__to_boolean(NaN) should return false");
-      //@ts-expect-error TYPEBUG: __to_object does not exist on realm.
-      expect(this.realm.__to_boolean(undefined)).equals(false, "__to_boolean(undefined) should return false");
-
-      //@ts-expect-error TYPEBUG: __to_object does not exist on realm.
-      expect(this.realm.__to_boolean("false")).equals(true, '__to_boolean("false") should return true');
-      //@ts-expect-error TYPEBUG: __to_object does not exist on realm.
-      expect(this.realm.__to_boolean(1)).equals(true, "__to_boolean(1) should return true");
-      //@ts-expect-error TYPEBUG: __to_object does not exist on realm.
-      expect(this.realm.__to_boolean(-1)).equals(true, "__to_boolean(-1) should return true");
-      //@ts-expect-error TYPEBUG: __to_object does not exist on realm.
-      expect(this.realm.__to_boolean([])).equals(true, "__to_boolean([]) should return true");
-      //@ts-expect-error TYPEBUG: __to_object does not exist on realm.
-      expect(this.realm.__to_boolean(Object())).equals(true, "__to_boolean(Object()) should return true");
     });
   });
 
