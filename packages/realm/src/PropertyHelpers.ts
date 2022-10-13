@@ -32,7 +32,7 @@ import type { Realm } from "./Realm";
 type BindingObjectSchema = binding.Realm["schema"][0];
 type BindingPropertySchema = BindingObjectSchema["persistedProperties"][0];
 
-type PropertyContext = BindingPropertySchema & { embedded: boolean; default?: unknown };
+type PropertyContext = BindingPropertySchema & { objectSchemaName: string; embedded: boolean; default?: unknown };
 
 function getObj(results: binding.Results, index: number) {
   return results.getObj(index);
@@ -134,13 +134,13 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     const realmInternal = realm.internal;
     const itemType = type & ~binding.PropertyType.Flags;
 
-    console.log("creating Array prop helpers", { name, objectType });
     const itemHelpers = getTypeHelpers(itemType, {
       realm,
       name: `element of ${name}`,
       optional,
       getClassHelpers,
       objectType,
+      objectSchemaName: undefined,
     });
 
     // Properties of items are only available on lists of objects
@@ -231,6 +231,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       getClassHelpers,
       objectType,
       optional,
+      objectSchemaName: undefined,
     });
     return {
       get(obj) {
@@ -256,6 +257,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       getClassHelpers,
       objectType,
       optional,
+      objectSchemaName: undefined,
     });
     assert.string(objectType);
     const collectionHelpers: OrderedCollectionHelpers = {
@@ -299,6 +301,7 @@ export function createHelpers(property: PropertyContext, options: HelperOptions)
     name: property.name,
     getClassHelpers: options.getClassHelpers,
     objectType: property.objectType,
+    objectSchemaName: property.objectSchemaName,
     optional: !!(property.type & binding.PropertyType.Nullable),
   };
   if (collectionType) {
