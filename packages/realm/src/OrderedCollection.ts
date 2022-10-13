@@ -28,7 +28,7 @@ import { assert } from "./assert";
 import { ClassHelpers } from "./ClassHelpers";
 import { JSONCacheMap } from "./JSONCacheMap";
 import { Object as RealmObject } from "./Object";
-import { DefaultObject, getBaseTypeName } from "./schema";
+import { DefaultObject, getTypeName } from "./schema";
 
 const DEFAULT_COLUMN_KEY = 0n as unknown as binding.ColKey;
 
@@ -222,7 +222,7 @@ export abstract class OrderedCollection<T = unknown>
   }
 
   get type(): PropertyType {
-    return getBaseTypeName(this.results.type);
+    return getTypeName(this.results.type & ~binding.PropertyType.Flags, undefined);
   }
   get optional(): boolean {
     return !!(this.results.type & binding.PropertyType.Nullable);
