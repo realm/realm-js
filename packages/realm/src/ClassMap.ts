@@ -33,7 +33,7 @@ type BindingObjectSchema = binding.Realm["schema"][0];
  * @internal
  */
 export class ClassMap {
-  private mapping: Record<string, RealmObjectConstructor>;
+  private mapping: Record<string, Constructor<unknown>>;
   private nameByTableKey: Record<TableKey, string>;
 
   private static createNamedConstructor<T extends Constructor>(name: string): T {
@@ -148,7 +148,7 @@ export class ClassMap {
     }
   }
 
-  public get<T extends Realm.Object>(arg: string | RealmObject | Constructor<T> | binding.TableKey): Constructor<T> {
+  public get<T>(arg: string | RealmObject<T> | Constructor<RealmObject<T>> | binding.TableKey): Constructor<T> {
     if (typeof arg === "string") {
       const constructor = this.mapping[arg];
       if (!constructor) {
@@ -171,7 +171,7 @@ export class ClassMap {
     }
   }
 
-  public getHelpers<T extends Realm.Object>(arg: string | RealmObject | Constructor<T>) {
+  public getHelpers<T>(arg: string | RealmObject<T> | Constructor<RealmObject<T>>) {
     const constructor = this.get(arg);
     return getHelpers(constructor as unknown as typeof RealmObject);
   }
