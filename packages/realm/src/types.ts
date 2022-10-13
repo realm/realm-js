@@ -28,6 +28,21 @@ import { Object as RealmObject, ObjCreator, UpdateMode } from "./Object";
 import type { Realm } from "./Realm";
 import { List } from "./List";
 
+const TYPED_ARRAY_CONSTRUCTORS = new Set([
+  DataView,
+  Int8Array,
+  Uint8Array,
+  Uint8ClampedArray,
+  Int16Array,
+  Uint16Array,
+  Int32Array,
+  Uint32Array,
+  Float32Array,
+  Float64Array,
+  BigInt64Array,
+  BigUint64Array,
+]);
+
 /** @internal */
 export type TypeHelpers<T = unknown> = {
   toBinding(value: T, createObj?: ObjCreator): binding.MixedArg;
@@ -60,7 +75,8 @@ function nullPassthrough<T, R extends any[], F extends (value: unknown, ...rest:
   enabled: boolean,
 ): F {
   if (enabled) {
-    return ((value, ...rest) => (value === null ? null : fn.call(this, value, ...rest))) as F;
+    return ((value, ...rest) =>
+      typeof value === "undefined" || value === null ? null : fn.call(this, value, ...rest)) as F;
   } else {
     return fn;
   }
@@ -69,17 +85,15 @@ function nullPassthrough<T, R extends any[], F extends (value: unknown, ...rest:
 const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => TypeHelpers> = {
   [binding.PropertyType.Int]({ optional }) {
     return {
-      toBinding(value) {
-        if (value === null && optional) {
-          return null;
-        } else if (typeof value === "number") {
+      toBinding: nullPassthrough((value) => {
+        if (typeof value === "number") {
           return BigInt(value);
         } else if (typeof value === "bigint") {
           return value;
         } else {
           throw new TypeAssertionError("a number or bigint", value);
         }
-      },
+      }, optional),
       // TODO: Support returning bigints to end-users
       fromBinding: nullPassthrough((value) => Number(value), optional),
     };
@@ -105,12 +119,13 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
   [binding.PropertyType.Data]({ optional }) {
     return {
       toBinding: nullPassthrough((value) => {
-        if (value instanceof Uint8Array) {
-          return value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength);
-        } else {
-          assert.instanceOf(value, ArrayBuffer);
-          return value;
+        for (const TypedArray of TYPED_ARRAY_CONSTRUCTORS) {
+          if (value instanceof TypedArray) {
+            return value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength);
+          }
         }
+        assert.instanceOf(value, ArrayBuffer);
+        return value;
       }, optional),
       fromBinding: defaultFromBinding,
     };
@@ -118,8 +133,13 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
   [binding.PropertyType.Date]({ optional }) {
     return {
       toBinding: nullPassthrough((value) => {
-        assert.instanceOf(value, Date);
-        return binding.Timestamp.fromDate(value);
+        if (typeof value === "string") {
+          // TODO: Consider deprecating this undocumented type coercion
+          return binding.Timestamp.fromDate(new Date(value));
+        } else {
+          assert.instanceOf(value, Date);
+          return binding.Timestamp.fromDate(value);
+        }
       }, optional),
       fromBinding: nullPassthrough((value) => {
         assert.instanceOf(value, binding.Timestamp);
@@ -154,8 +174,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
     const { wrapObject } = helpers;
     return {
       toBinding: nullPassthrough((value, createObj) => {
-        if (value instanceof RealmObject) {
-          assert.instanceOf(value, helpers.constructor);
+        if (value instanceof helpers.constructor) {
           return getInternal(value);
         } else {
           // TODO: Consider exposing a way for calling code to disable object creation

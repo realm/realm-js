@@ -32,7 +32,12 @@ import type { Realm } from "./Realm";
 type BindingObjectSchema = binding.Realm["schema"][0];
 type BindingPropertySchema = BindingObjectSchema["persistedProperties"][0];
 
-type PropertyContext = BindingPropertySchema & { objectSchemaName: string; embedded: boolean; default?: unknown };
+type PropertyContext = BindingPropertySchema & {
+  type: binding.PropertyType;
+  objectSchemaName: string;
+  embedded: boolean;
+  default?: unknown;
+};
 
 function getObj(results: binding.Results, index: number) {
   return results.getObj(index);
@@ -62,6 +67,7 @@ type PropertyAccessors = {
 
 export type PropertyHelpers = TypeHelpers &
   PropertyAccessors & {
+    type: binding.PropertyType;
     columnKey: binding.ColKey;
     embedded: boolean;
     default?: unknown;
@@ -288,9 +294,17 @@ function getHelpers(type: binding.PropertyType, options: PropertyOptions): Prope
   const accessorFactory = ACCESSOR_FACTORIES[type];
   if (accessorFactory) {
     const accessors = accessorFactory(options);
-    return { ...accessors, ...typeHelpers, columnKey, embedded, objectType };
+    return { ...accessors, ...typeHelpers, type: options.type, columnKey, embedded, objectType };
   } else {
-    return { get: defaultGet(options), set: defaultSet(options), ...typeHelpers, columnKey, embedded, objectType };
+    return {
+      get: defaultGet(options),
+      set: defaultSet(options),
+      ...typeHelpers,
+      type: options.type,
+      columnKey,
+      embedded,
+      objectType,
+    };
   }
 }
 

@@ -53,13 +53,26 @@ const TYPE_MAPPINGS: Record<PropertyType, PropertyTypeName | null> = {
  * Get the string representation of a property type's base type (not including flags)
  * @internal
  */
-export function getBaseTypeName(type: PropertyType): PropertyTypeName {
+export function getTypeName(type: PropertyType, objectType: string | undefined): string {
   const baseType = type & ~PropertyType.Flags;
-  const result = TYPE_MAPPINGS[baseType as PropertyType];
-  if (!result) {
-    throw new Error(`Unexpected type ${type}`);
+  if (type & PropertyType.Array) {
+    if (baseType === PropertyType.Object) {
+      return `list<${objectType}>`;
+    } else {
+      return `list<${getTypeName(baseType, objectType)}>`;
+    }
+  } else if (type & PropertyType.Set) {
+    return `set<${getTypeName(baseType, objectType)}>`;
+  } else if (type & PropertyType.Dictionary) {
+    return `dictionary<${getTypeName(baseType, objectType)}>`;
+  } else if (baseType === PropertyType.Object && objectType) {
+    assert.string(objectType, "objectType");
+    return `<${objectType}>`;
+  } else {
+    const result = TYPE_MAPPINGS[baseType as PropertyType];
+    assert(result, `Unexpected type ${type}`);
+    return result;
   }
-  return result;
 }
 
 const COLLECTION_TYPES = [PropertyType.Array, PropertyType.Set, PropertyType.Dictionary];

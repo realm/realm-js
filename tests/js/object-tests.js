@@ -406,6 +406,8 @@ module.exports = {
     });
   },
 
+  // The following two tests has been disabled since they're testing a unit which doesn't have an equivalent in the new SDK
+  /*
   testObjectConversion: function () {
     const realm = new Realm({ schema: [schemas.TestObject] });
     TestCase.assertInstanceOf(
@@ -462,6 +464,7 @@ module.exports = {
 
     realm.close();
   },
+  */
 
   testObjectSchema: function () {
     const realm = new Realm({ schema: [schemas.TestObject] });
@@ -526,6 +529,8 @@ module.exports = {
     realm.close();
   },
 
+  // Disabled since they're testing an undocumented internal API
+  /*
   testSetLink: function () {
     const schema = [
       {
@@ -607,6 +612,7 @@ module.exports = {
       TestCase.assertEqual(obj.stringLink, null);
     });
   },
+  */
 
   testNotification: async function () {
     const realm = new Realm({ schema: [schemas.StringOnly] });
@@ -763,7 +769,7 @@ module.exports = {
     const realm = new Realm({
       schema: [schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes, MixedSchema],
     });
-    let obj, mixedNull, mixedInt, mixedString, mixedFloat, mixedBool;
+    let obj, mixedNull, mixedInt, mixedString, mixedFloat, mixedBool, mixedData, mixedDate, mixedLink;
 
     realm.write(() => {
       obj = realm.create(schemas.AllTypes.name, allTypesValues);
@@ -772,6 +778,9 @@ module.exports = {
       mixedString = realm.create(MixedSchema.name, { key: "two", value: "two" });
       mixedFloat = realm.create(MixedSchema.name, { key: "three", value: 3.0 });
       mixedBool = realm.create(MixedSchema.name, { key: "five", value: true });
+      mixedData = realm.create(MixedSchema.name, { key: "six", value: new ArrayBuffer(10) });
+      mixedDate = realm.create(MixedSchema.name, { key: "seven", value: new Date() });
+      mixedLink = realm.create(MixedSchema.name, { key: "eight", value: realm.create("TestObject", { doubleCol: 0 }) });
     });
 
     TestCase.assertEqual(obj.getPropertyType("boolCol"), "bool");
@@ -782,19 +791,22 @@ module.exports = {
     TestCase.assertEqual(obj.getPropertyType("dataCol"), "data");
     TestCase.assertEqual(obj.getPropertyType("objectCol"), "<TestObject>");
 
-    TestCase.assertEqual(obj.getPropertyType("boolArrayCol"), "array<bool>");
-    TestCase.assertEqual(obj.getPropertyType("floatArrayCol"), "array<float>");
-    TestCase.assertEqual(obj.getPropertyType("doubleArrayCol"), "array<double>");
-    TestCase.assertEqual(obj.getPropertyType("stringArrayCol"), "array<string>");
-    TestCase.assertEqual(obj.getPropertyType("dateArrayCol"), "array<date>");
-    TestCase.assertEqual(obj.getPropertyType("dataArrayCol"), "array<data>");
-    TestCase.assertEqual(obj.getPropertyType("objectArrayCol"), "array<TestObject>");
+    TestCase.assertEqual(obj.getPropertyType("boolArrayCol"), "list<bool>");
+    TestCase.assertEqual(obj.getPropertyType("floatArrayCol"), "list<float>");
+    TestCase.assertEqual(obj.getPropertyType("doubleArrayCol"), "list<double>");
+    TestCase.assertEqual(obj.getPropertyType("stringArrayCol"), "list<string>");
+    TestCase.assertEqual(obj.getPropertyType("dateArrayCol"), "list<date>");
+    TestCase.assertEqual(obj.getPropertyType("dataArrayCol"), "list<data>");
+    TestCase.assertEqual(obj.getPropertyType("objectArrayCol"), "list<TestObject>");
 
     TestCase.assertEqual(mixedNull.getPropertyType("value"), "null");
     TestCase.assertEqual(mixedInt.getPropertyType("value"), "double"); // see comment above
     TestCase.assertEqual(mixedString.getPropertyType("value"), "string");
     TestCase.assertEqual(mixedFloat.getPropertyType("value"), "double");
     TestCase.assertEqual(mixedBool.getPropertyType("value"), "bool");
+    TestCase.assertEqual(mixedData.getPropertyType("value"), "data");
+    TestCase.assertEqual(mixedDate.getPropertyType("value"), "date");
+    TestCase.assertEqual(mixedLink.getPropertyType("value"), "<TestObject>");
     [mixedNull, mixedInt, mixedFloat, mixedString, mixedBool].forEach((mixed) => {
       TestCase.assertEqual(mixed.getPropertyType("key"), "string", `${mixed.key}`);
     });
@@ -802,6 +814,6 @@ module.exports = {
     // property that does not exist
     TestCase.assertThrowsContaining(() => {
       obj.getPropertyType("foo");
-    }, "No such property: foo");
+    }, "Property 'foo' does not exist on 'AllTypesObject' objects");
   },
 };
