@@ -653,10 +653,7 @@ describe("Lists", () => {
         //@ts-expect-error can not pass object with invalid properties to list.
         expect(() => (array[0] = { foo: "bar" })).throws(Error, "Missing value for property 'doubleCol'");
         //@ts-expect-error can not assign an invalid object type to list.
-        expect(() => (array[0] = prim)).throws(
-          Error,
-          "Expected 'value' to be an instance of TestObject, got an instance of PrimitiveArrays",
-        );
+        expect(() => (array[0] = prim)).throws(Error, "Missing value for property 'doubleCol'");
         //@ts-expect-error can not assign an array to a list of objects.
         expect(() => (array[0] = array)).throws(Error, "Missing value for property 'doubleCol'");
         expect(() => (array[2] = { doubleCol: 1 })).throws(Error, "Requested index 2 greater than max 1");
@@ -735,14 +732,9 @@ describe("Lists", () => {
         //@ts-expect-error null is not assignable to TestObject.
         expect(() => (obj.arrayCol = [null])).throws("Expected 'arrayCol[0]' to be an object, got null");
         //@ts-expect-error Person is not assignable to TestObject.
-        expect(() => (obj.arrayCol = [person])).throws(
-          "Expected 'arrayCol[0]' to be an instance of TestObject, got an instance of PersonObject",
-        );
+        expect(() => (obj.arrayCol = [person])).throws("Missing value for property 'doubleCol'");
         //@ts-expect-error PersonList is not assignable to TestObjectList.
-        expect(() => (obj.arrayCol = personList)).throws(
-          Error,
-          "Expected 'arrayCol[0]' to be an instance of TestObject, got an instance of PersonObject",
-        );
+        expect(() => (obj.arrayCol = personList)).throws("Missing value for property 'doubleCol'");
         //@ts-expect-error TYPEBUG: type missmatch, forcecasting shouldn't be done
         obj.arrayCol = [this.realm.create<ITestObjectSchema>(TestObjectSchema.name, { doubleCol: 1.0 })];
         expect(obj.arrayCol[0].doubleCol).equals(1.0);
