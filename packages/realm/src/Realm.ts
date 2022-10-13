@@ -399,8 +399,8 @@ export class Realm {
   /**
    * @internal
    */
-  public getClassHelpers<T extends RealmObject>(arg: string | T | Constructor<T>): ClassHelpers {
-    return this.classes.getHelpers(arg);
+  public getClassHelpers<T>(arg: string | RealmObject<T> | Constructor<RealmObject<T>>): ClassHelpers {
+    return this.classes.getHelpers<T>(arg);
   }
 }
 
