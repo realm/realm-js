@@ -26,6 +26,7 @@ import { Collection } from "./Collection";
 import { getInternal } from "./internal";
 import { Object as RealmObject, ObjCreator, UpdateMode } from "./Object";
 import type { Realm } from "./Realm";
+import { List } from "./List";
 
 /** @internal */
 export type TypeHelpers<T = unknown> = {
@@ -247,10 +248,16 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
       fromBinding: defaultFromBinding,
     };
   },
-  [binding.PropertyType.Array]() {
+  [binding.PropertyType.Array]({ realm, getClassHelpers, name, objectType }) {
+    assert.string(objectType);
+    const classHelpers = getClassHelpers(objectType);
     return {
-      fromBinding() {
-        throw new Error("Not supported");
+      fromBinding(value: unknown) {
+        assert.instanceOf(value, binding.List);
+        const propertyHelpers = classHelpers.properties.get(name);
+        const collectionHelpers = propertyHelpers.collectionHelpers;
+        assert.object(collectionHelpers);
+        return new List(realm, value, collectionHelpers);
       },
       toBinding() {
         throw new Error("Not supported");
