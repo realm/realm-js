@@ -289,7 +289,7 @@ class RealmObject<T = DefaultObject> {
   }
 
   linkingObjectsCount(): number {
-    return this.linkingObjectsCount();
+    return this[INTERNAL].getBacklinkCount();
   }
 
   /**
