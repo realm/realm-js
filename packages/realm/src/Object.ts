@@ -267,8 +267,7 @@ class RealmObject<T = DefaultObject> {
     return this[INTERNAL] && this[INTERNAL].isValid;
   }
   objectSchema(): CanonicalObjectSchema<T> {
-    const classHelpers = this.realm.getClassHelpers<RealmObject>(this as RealmObject<unknown>);
-    throw new Error("This is now removed!");
+    return this.realm.getClassHelpers(this).canonicalObjectSchema as CanonicalObjectSchema<T>;
   }
 
   linkingObjects<T>(objectType: string, propertyName: string): Results<T> {
@@ -282,10 +281,11 @@ class RealmObject<T = DefaultObject> {
       throw new TypeError(`'${objectType}#${propertyName}' is not a relationship to '${this.objectSchema.name}'`);
     }
     // Create the Result for the backlink view
-    const { columnKey, fromBinding, toBinding } = property;
+    const { columnKey, collectionHelpers } = property;
+    assert(collectionHelpers, "collection helpers");
     const tableView = this[INTERNAL].getBacklinkView(tableRef, columnKey);
     const results = binding.Results.fromTableView(this.realm.internal, tableView);
-    return new Results(this.realm, results, { fromBinding, toBinding, get: (results, index) => results.getObj(index) });
+    return new Results(this.realm, results, collectionHelpers);
   }
 
   linkingObjectsCount(): number {
