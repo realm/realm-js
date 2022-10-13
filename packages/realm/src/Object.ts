@@ -22,13 +22,14 @@ import { INTERNAL } from "./internal";
 import { Realm } from "./Realm";
 import { Results } from "./Results";
 import { OrderedCollection } from "./OrderedCollection";
-import { CanonicalObjectSchema, Constructor, DefaultObject, RealmObjectConstructor } from "./schema";
+import { CanonicalObjectSchema, Constructor, DefaultObject, getTypeName, RealmObjectConstructor } from "./schema";
 import { ObjectChangeCallback, ObjectListeners } from "./ObjectListeners";
 import { INTERNAL_HELPERS, ClassHelpers } from "./ClassHelpers";
 import { RealmInsertionModel } from "./InsertionModel";
 import { assert } from "./assert";
 import { JSONCacheMap } from "./JSONCacheMap";
 import { Dictionary } from "./Dictionary";
+import { TypeAssertionError } from "./errors";
 
 export enum UpdateMode {
   Never = "never",
@@ -316,8 +317,41 @@ class RealmObject<T = DefaultObject> {
   removeAllListeners(): void {
     this[INTERNAL_LISTENERS].removeAllListeners();
   }
-  getPropertyType(): string {
-    throw new Error("Not yet implemented");
+  getPropertyType(propertyName: string): string {
+    const { properties } = this.realm.getClassHelpers(this);
+    const { type, objectType, columnKey } = properties.get(propertyName);
+    const typeName = getTypeName(type, objectType);
+    if (typeName === "mixed") {
+      // This requires actually getting the object and inferring its type
+      const value = this[INTERNAL].getAny(columnKey);
+      if (value === null) {
+        return "null";
+      } else if (value instanceof BigInt) {
+        return "int";
+      } else if (value instanceof binding.Float) {
+        return "float";
+      } else if (value instanceof binding.Timestamp) {
+        return "date";
+      } else if (value instanceof binding.Obj) {
+        const { objectSchema } = this.realm.getClassHelpers(value.table.key);
+        return `<${objectSchema.name}>`;
+      } else if (value instanceof binding.ObjLink) {
+        const { objectSchema } = this.realm.getClassHelpers(value.tableKey);
+        return `<${objectSchema.name}>`;
+      } else if (value instanceof ArrayBuffer) {
+        return "data";
+      } else if (typeof value === "number") {
+        return "double";
+      } else if (typeof value === "string") {
+        return "string";
+      } else if (typeof value === "boolean") {
+        return "bool";
+      } else {
+        throw new TypeAssertionError("some other type", value, "value");
+      }
+    } else {
+      return typeName;
+    }
   }
 }
 

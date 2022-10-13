@@ -148,7 +148,7 @@ export class ClassMap {
     }
   }
 
-  public get<T>(arg: string | RealmObject<T> | Constructor<RealmObject<T>> | binding.TableKey): Constructor<T> {
+  public get<T>(arg: string | binding.TableKey | RealmObject<T> | Constructor<RealmObject<T>>): Constructor<T> {
     if (typeof arg === "string") {
       const constructor = this.mapping[arg];
       if (!constructor) {
@@ -171,7 +171,7 @@ export class ClassMap {
     }
   }
 
-  public getHelpers<T>(arg: string | RealmObject<T> | Constructor<RealmObject<T>>) {
+  public getHelpers<T>(arg: string | binding.TableKey | RealmObject<T> | Constructor<RealmObject<T>>) {
     const constructor = this.get(arg);
     return getHelpers(constructor as unknown as typeof RealmObject);
   }

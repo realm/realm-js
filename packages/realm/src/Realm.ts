@@ -399,7 +399,9 @@ export class Realm {
   /**
    * @internal
    */
-  public getClassHelpers<T>(arg: string | RealmObject<T> | Constructor<RealmObject<T>>): ClassHelpers {
+  public getClassHelpers<T>(
+    arg: string | binding.TableKey | RealmObject<T> | Constructor<RealmObject<T>>,
+  ): ClassHelpers {
     return this.classes.getHelpers<T>(arg);
   }
 }

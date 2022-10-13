@@ -270,10 +270,7 @@ module.exports = {
       TestCase.assertThrowsContaining(() => (array[0] = null), "null");
       TestCase.assertThrowsContaining(() => (array[0] = {}), "Missing value for property 'doubleCol'");
       TestCase.assertThrowsContaining(() => (array[0] = { foo: "bar" }), "Missing value for property 'doubleCol'");
-      TestCase.assertThrowsContaining(
-        () => (array[0] = prim),
-        "Expected value to be an instance of TestObject, got an instance of PrimitiveArrays",
-      );
+      TestCase.assertThrowsContaining(() => (array[0] = prim), "Missing value for property 'doubleCol'");
       TestCase.assertThrowsContaining(() => (array[0] = array), "Missing value for property 'doubleCol'");
       TestCase.assertThrowsContaining(() => (array[2] = { doubleCol: 1 }), "Requested index 2 greater than max 1");
       TestCase.assertThrowsContaining(() => (array[-1] = { doubleCol: 1 }), "Index -1 cannot be less than zero.");
@@ -357,14 +354,8 @@ module.exports = {
         () => (obj.arrayCol = [null]),
         "Expected 'arrayCol[0]' to be an object, got null",
       );
-      TestCase.assertThrowsContaining(
-        () => (obj.arrayCol = [person]),
-        "Expected 'arrayCol[0]' to be an instance of TestObject, got an instance of PersonObject",
-      );
-      TestCase.assertThrowsContaining(
-        () => (obj.arrayCol = personList),
-        "Expected 'arrayCol[0]' to be an instance of TestObject, got an instance of PersonObject",
-      );
+      TestCase.assertThrowsContaining(() => (obj.arrayCol = [person]), "Missing value for property 'doubleCol'");
+      TestCase.assertThrowsContaining(() => (obj.arrayCol = personList), "Missing value for property 'doubleCol'");
       obj.arrayCol = [realm.create("TestObject", { doubleCol: 1.0 })];
       TestCase.assertEqual(obj.arrayCol[0].doubleCol, 1.0);
       obj.arrayCol = obj.arrayCol; // eslint-disable-line no-self-assign
