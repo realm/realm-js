@@ -107,7 +107,7 @@ export abstract class OrderedCollection<T = unknown>
     super((callback) => {
       return this.results.addNotificationCallback((changes) => {
         try {
-          callback(this, {
+          callback(proxied, {
             deletions: unwind(changes.deletions),
             insertions: unwind(changes.insertions),
             oldModifications: unwind(changes.modifications),
@@ -122,6 +122,8 @@ export abstract class OrderedCollection<T = unknown>
         }
       }, []);
     });
+    // Wrap in a proxy to trap ownKeys and get, enabling the spread operator
+    const proxied = new Proxy(this, PROXY_HANDLER as ProxyHandler<this>);
     // Get the class helpers for later use, if available
     const { objectType } = results;
     if (typeof objectType === "string" && objectType !== "") {
@@ -152,8 +154,7 @@ export abstract class OrderedCollection<T = unknown>
         writable: false,
       },
     });
-    // Wrap in a proxy to trap ownKeys and get, enabling the spread operator
-    return new Proxy(this, PROXY_HANDLER as ProxyHandler<this>);
+    return proxied;
   }
 
   private classHelpers: ClassHelpers | null;

@@ -467,6 +467,8 @@ classes:
       set_binding_context: '(r: SharedRealm, methods: BindingContext)'
       get_or_create_object_with_primary_key: '(t: TableRef, pk: Mixed) -> std::pair<Obj, bool>'
       make_network_transport: '(runRequest: (request: Request&&, callback: util::UniqueFunction<(response: Response&&)>&&) off_thread) -> std::shared_ptr<GenericNetworkTransport>'
+      delete_data_for_object: '(realm: SharedRealm, object_type: StringData)'
+      is_empty_realm: '(realm: SharedRealm) -> bool'
 
   ConstTableRef:
     needsDeref: true
@@ -480,9 +482,9 @@ classes:
       get_column_type: '(column: ColKey) const -> DataType'
       get_link_target: '(column: ColKey) const -> ConstTableRef'
       get_object: '(key: ObjKey) const -> Obj'
-      get_object_with_primary_key: '(pk: Mixed) const -> Obj'
       try_get_object: '(key: ObjKey) const -> Obj'
       query: '(query_string: std::string, args: std::vector<Mixed>, mapping: KeyPathMapping) const -> Query'
+      find_primary_key: '(pk: Mixed) -> ObjKey'
 
   TableRef:
     base: ConstTableRef
@@ -679,6 +681,7 @@ classes:
       invalidate: ()
       compact: () -> bool
       write_copy: () -> OwnedBinaryData
+      convert: '(config: RealmConfig)'
 
       verify_thread: () const
       verify_in_write: () const
