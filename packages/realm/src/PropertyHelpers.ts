@@ -77,9 +77,11 @@ export type PropertyHelpers = TypeHelpers &
 const defaultGet = ({ typeHelpers: { fromBinding }, columnKey, optional }: PropertyOptions) =>
   optional
     ? (obj: binding.Obj) => {
+        assert.isValid(obj);
         return obj.isNull(columnKey) ? null : fromBinding(obj.getAny(columnKey));
       }
     : (obj: binding.Obj) => {
+        assert.isValid(obj);
         return fromBinding(obj.getAny(columnKey));
       };
 

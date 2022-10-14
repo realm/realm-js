@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import * as binding from "./binding";
 import { AssertionError, TypeAssertionError } from "./errors";
 import { DefaultObject } from "./schema";
 import type { Realm } from "./Realm";
@@ -136,7 +137,16 @@ assert.open = (realm: Realm) => {
   assert(!realm.isClosed, "Cannot access realm that has been closed.");
 };
 
-assert.inTransaction = (realm: Realm) => {
+assert.inTransaction = (realm: Realm, message = "Cannot modify managed objects outside of a write transaction.") => {
   assert.open(realm);
-  assert(realm.isInTransaction, "Cannot modify managed objects outside of a write transaction.");
+  assert(realm.isInTransaction, message);
+};
+
+assert.outTransaction = (realm: Realm, message = "Expected realm to be outside of a write transaction") => {
+  assert.open(realm);
+  assert(!realm.isInTransaction, message);
+};
+
+assert.isValid = (obj: binding.Obj, message = "Accessing object which has been invalidated or deleted") => {
+  assert(obj.isValid, message);
 };
