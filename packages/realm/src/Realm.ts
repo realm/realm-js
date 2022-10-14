@@ -29,6 +29,7 @@ import {
   ObjectSchema,
   Constructor,
   RealmObjectConstructor,
+  CanonicalRealmSchema,
 } from "./schema";
 import { fs } from "./platform";
 
@@ -167,14 +168,13 @@ export class Realm {
     const result: Record<string, unknown> = {};
 
     for (const [key, property] of Object.entries(normalizedSchema.properties)) {
-      // if optional is set, it wil take precedence over any `?` set on the type parameter
-      if (property.optional) {
-        continue;
-      }
-
       // If a default value is explicitly set, always set the property
       if (typeof property.default !== "undefined") {
         result[key] = property.default;
+        continue;
+      }
+      // if optional is set, it wil take precedence over any `?` set on the type parameter
+      if (property.optional) {
         continue;
       }
 
@@ -238,30 +238,14 @@ export class Realm {
     );
   }
 
-  /**
-   * The Realms's representation in the binding.
-   * @internal
-   */
-  public internal!: binding.Realm;
-
-  private schemaExtras: RealmSchemaExtra;
-  private classes: ClassMap;
-
-  constructor();
-  constructor(path: string);
-  constructor(config: Configuration);
-  constructor(arg: Configuration | string = {}) {
-    const config = typeof arg === "string" ? { path: arg } : arg;
-    validateConfiguration(config);
-
-    const normalizedSchema = config.schema && normalizeRealmSchema(config.schema);
-    const bindingSchema = normalizedSchema && toBindingSchema(normalizedSchema);
-    this.schemaExtras = Realm.extractSchemaExtras(normalizedSchema || []);
-
-    const { fifoFilesFallbackPath, shouldCompactOnLaunch, inMemory, readOnly } = config;
-
+  private static transformConfig(
+    config: Configuration,
+    normalizedSchema: CanonicalRealmSchema | undefined,
+  ): binding.RealmConfig_Relaxed {
     const path = Realm.determinePath(config);
-    const internal = binding.Realm.getSharedRealm({
+    const { fifoFilesFallbackPath, shouldCompactOnLaunch, inMemory, readOnly } = config;
+    const bindingSchema = normalizedSchema && toBindingSchema(normalizedSchema);
+    return {
       path,
       fifoFilesFallbackPath,
       schema: bindingSchema,
@@ -277,7 +261,29 @@ export class Realm {
             return shouldCompactOnLaunch(Number(totalBytes), Number(usedBytes));
           }
         : undefined,
-    });
+    };
+  }
+
+  /**
+   * The Realms's representation in the binding.
+   * @internal
+   */
+  public internal!: binding.Realm;
+
+  private schemaExtras: RealmSchemaExtra;
+  private classes: ClassMap;
+
+  constructor();
+  constructor(path: string);
+  constructor(config: Configuration);
+  constructor(arg: Configuration | string = {}) {
+    const config = typeof arg === "string" ? { path: arg } : arg;
+    validateConfiguration(config);
+    const normalizedSchema = config.schema && normalizeRealmSchema(config.schema);
+    this.schemaExtras = Realm.extractSchemaExtras(normalizedSchema || []);
+
+    const internalConfig = Realm.transformConfig(config, normalizedSchema);
+    const internal = binding.Realm.getSharedRealm(internalConfig);
 
     Object.defineProperties(this, {
       classes: {
@@ -298,8 +304,7 @@ export class Realm {
   }
 
   get empty(): boolean {
-    // ObjectStore::is_empty(realm->read_group())
-    throw new Error("Not yet implemented");
+    return binding.Helpers.isEmptyRealm(this.internal);
   }
 
   get path(): string {
@@ -362,19 +367,25 @@ export class Realm {
   create<T = DefaultObject>(
     type: string,
     values: Partial<T> | Partial<RealmInsertionModel<T>>,
-    mode: UpdateMode.All | UpdateMode.Modified,
+    mode: UpdateMode.All | UpdateMode.Modified | boolean,
   ): RealmObject<T> & T;
   create<T extends RealmObject>(type: Constructor<T>, values: RealmInsertionModel<T>, mode?: UpdateMode.Never): T;
   create<T extends RealmObject>(
     type: Constructor<T>,
     values: Partial<T> | Partial<RealmInsertionModel<T>>,
-    mode: UpdateMode.All | UpdateMode.Modified,
+    mode: UpdateMode.All | UpdateMode.Modified | boolean,
   ): T;
   create<T extends RealmObject>(
     type: string | Constructor<T>,
     values: DefaultObject,
-    mode: UpdateMode = UpdateMode.Never,
+    mode: UpdateMode | boolean = UpdateMode.Never,
   ) {
+    // Supporting a boolean overload for mode
+    if (mode === true) {
+      mode = UpdateMode.All;
+    } else if (mode === false) {
+      mode = UpdateMode.Never;
+    }
     // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1260-L1321
     if (values instanceof RealmObject && !getInternal(values)) {
       throw new Error("Cannot create an object from a detached Realm.Object instance");
@@ -388,41 +399,65 @@ export class Realm {
   }
 
   delete(subject: RealmObject | RealmObject[] | List | Results): void {
+    assert.inTransaction(this, "Can only delete objects within a transaction.");
+    assert.object(subject, "subject");
     if (subject instanceof RealmObject) {
       const { objectSchema } = this.classes.getHelpers(subject);
       const obj = getInternal(subject);
+      assert.isValid(
+        obj,
+        "Object is invalid. Either it has been previously deleted or the Realm it belongs to has been closed.",
+      );
       const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
       table.removeObject(obj.key);
+    } else if (Array.isArray(subject) || Symbol.iterator in subject) {
+      // TODO: Optimize this to not get the helper on every iteration
+      for (const object of subject) {
+        assert.instanceOf(object, RealmObject);
+        const { objectSchema } = this.classes.getHelpers(object);
+        const obj = getInternal(object);
+        const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
+        table.removeObject(obj.key);
+      }
     } else {
       throw new Error("Not yet implemented");
     }
   }
 
-  deleteModel(): void {
-    throw new Error("Not yet implemented");
+  deleteModel(name: string): void {
+    assert.inTransaction(this, "Can only delete objects within a transaction.");
+    binding.Helpers.deleteDataForObject(this.internal, name);
+    const newSchema = this.internal.schema.filter((objectSchema) => objectSchema.name !== name);
+    this.internal.updateSchema(newSchema, this.internal.schemaVersion + 1n, null, null, true);
   }
 
   deleteAll(): void {
-    assert.inTransaction(this);
+    assert.inTransaction(this, "Can only delete objects within a transaction.");
     for (const objectSchema of this.internal.schema) {
       const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
       table.clear();
     }
   }
 
-  objectForPrimaryKey<T>(type: string, primaryKey: T[keyof T]): RealmObject<T> & T;
-  objectForPrimaryKey<T extends RealmObject>(type: Constructor<T>, primaryKey: T[keyof T]): T;
-  objectForPrimaryKey<T extends RealmObject>(type: string | Constructor<T>, primaryKey: string[]): T {
+  objectForPrimaryKey<T>(type: string, primaryKey: T[keyof T]): (RealmObject<T> & T) | undefined;
+  objectForPrimaryKey<T extends RealmObject>(type: Constructor<T>, primaryKey: T[keyof T]): T | undefined;
+  objectForPrimaryKey<T extends RealmObject>(type: string | Constructor<T>, primaryKey: string[]): T | undefined {
     // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1240-L1258
     const { objectSchema, properties, wrapObject } = this.classes.getHelpers(type);
     if (!objectSchema.primaryKey) {
-      throw new Error(`Expected a primary key on "${objectSchema.name}"`);
+      throw new Error(`Expected a primary key on '${objectSchema.name}'`);
     }
     const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
     const value = properties.get(objectSchema.primaryKey).toBinding(primaryKey, undefined);
     try {
-      const obj = table.getObjectWithPrimaryKey(value);
-      return wrapObject(obj) as T;
+      const objKey = table.findPrimaryKey(value);
+      assert.bigInt(objKey); // This is an assumption we might not be able to make
+      if (objKey === -1n) {
+        return undefined;
+      } else {
+        const obj = table.getObject(objKey);
+        return wrapObject(obj) as T;
+      }
     } catch (err) {
       // TODO: Match on something else than the error message, when exposed by the binding
       if (err instanceof Error && err.message.startsWith("No object with key")) {
@@ -458,14 +493,17 @@ export class Realm {
   }
 
   addListener(): unknown {
+    assert.open(this);
     throw new Error("Not yet implemented");
   }
 
   removeListener(): unknown {
+    assert.open(this);
     throw new Error("Not yet implemented");
   }
 
   removeAllListeners(): unknown {
+    assert.open(this);
     throw new Error("Not yet implemented");
   }
 
@@ -498,8 +536,23 @@ export class Realm {
     throw new Error("Not yet implemented");
   }
 
-  writeCopyTo(): unknown {
-    throw new Error("Not yet implemented");
+  /**
+   * Writes a compacted copy of the Realm with the given configuration.
+   *
+   * The destination file cannot already exist.
+   * All conversions between synced and non-synced Realms are supported, and will be
+   * performed according to the `config` parameter, which describes the desired output.
+   *
+   * Note that if this method is called from within a write transaction, the current data is written,
+   * not the data from the point when the previous write transaction was committed.
+   * @param config Realm configuration that describes the output realm.
+   */
+  writeCopyTo(config: Configuration) {
+    assert.outTransaction(this, "Can only convert Realms outside a transaction.");
+    validateConfiguration(config);
+    const normalizedSchema = config.schema && normalizeRealmSchema(config.schema);
+    const internalConfig = Realm.transformConfig(config, normalizedSchema);
+    this.internal.convert(internalConfig);
   }
 
   _updateSchema(schema: Realm.ObjectSchema[]): void {

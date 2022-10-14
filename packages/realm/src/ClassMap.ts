@@ -156,13 +156,22 @@ export class ClassMap {
       }
       return constructor as Constructor<T>;
     } else if (arg instanceof RealmObject) {
-      return this.get(arg.constructor.name);
+      const result = this.get(arg.constructor.name);
+      assert(
+        result === arg.constructor || Object.getPrototypeOf(result) === arg.constructor,
+        "Constructor was not registered in the schema for this Realm",
+      );
+      return result as Constructor<T>;
     } else if (typeof arg === "function") {
       assert.extends(arg, RealmObject);
       assert.object(arg.schema, "schema static");
       assert.string(arg.schema.name, "name");
-      return this.get(arg.schema.name);
-      // return this.get(arg.name);
+      const result = this.get(arg.schema.name);
+      assert(
+        result === arg || Object.getPrototypeOf(result) === arg,
+        "Constructor was not registered in the schema for this Realm",
+      );
+      return result as Constructor<T>;
     } else if (arg in this.nameByTableKey) {
       const name = this.nameByTableKey[arg];
       return this.get(name);

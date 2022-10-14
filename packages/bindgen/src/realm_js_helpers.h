@@ -1,3 +1,4 @@
+#include "realm/object-store/object_store.hpp"
 #include <condition_variable>
 #include <exception>
 #include <iostream>
@@ -140,6 +141,15 @@ struct Helpers {
             std::decay_t<F> runRequest;
         };
         return std::make_shared<Impl>(FWD(runRequest));
+    }
+
+    static void delete_data_for_object(const SharedRealm& realm, StringData object_type) {
+        auto &group = realm->read_group();
+        ObjectStore::delete_data_for_object(group, object_type);
+    }
+
+    static bool is_empty_realm(const SharedRealm& realm) {
+        return ObjectStore::is_empty(realm->read_group());
     }
 };
 
