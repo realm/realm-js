@@ -1135,8 +1135,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         //       a) if a callback is registered, no error handler registred, the callback will wrapped and will be
         //       called b) if no callback is registered, the error handler is called with the proper error code and a
         //       client reset is initiated (old behavior) c) if callback and error handler error handler are
-        //       registered, the callback will be called d) if no error handler nor callback is registered, an
-        //       exception is throw
+        //       registered, the callback will be called
         // ii)   discardLocal: the sync client handles it but notifications are send before and after
         // iii)  recover:
         // iv)   recoverOrDiscard:
@@ -1210,16 +1209,20 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                 }
             }
             else {
-                if (Value::is_undefined(ctx, error_func)) {
-                    throw std::invalid_argument(
-                        "When clientReset.mode is 'manual', you need to specify 'error', 'clientResetAfter' or both");
+                if (!Value::is_undefined(ctx, error_func)) {
+                    auto error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(
+                        SyncSessionErrorHandlerFunctor<T>(ctx, Value::validated_to_function(ctx, error_func)));
+                    config.sync_config->error_handler = std::move(error_handler);
                 }
+            }
+        }
+        else {
+            if (!Value::is_undefined(ctx, error_func)) {
                 auto error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(
                     SyncSessionErrorHandlerFunctor<T>(ctx, Value::validated_to_function(ctx, error_func)));
                 config.sync_config->error_handler = std::move(error_handler);
             }
         }
-
 
         // Custom HTTP headers
         ValueType sync_custom_http_headers_value = Object::get_property(ctx, sync_config_object, "customHttpHeaders");

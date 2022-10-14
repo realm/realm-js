@@ -361,7 +361,7 @@ module.exports = {
     const credentials = Realm.Credentials.anonymous();
     return app.logIn(credentials).then((user) => {
       return new Promise((resolve, _reject) => {
-        const config = getSyncConfiguration(user, partition);
+        let config = getSyncConfiguration(user, partition);
         config.sync.error = (_, error) => {
           try {
             TestCase.assertEqual(error.message, "simulated error");
@@ -370,6 +370,9 @@ module.exports = {
           } catch (e) {
             _reject(e);
           }
+        };
+        config.sync.clientReset = {
+          mode: "manual",
         };
         const realm = new Realm(config);
         const session = realm.syncSession;
@@ -1161,6 +1164,9 @@ module.exports = {
         user: user3,
         partitionValue: otherPartition,
         _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
+        clientReset: {
+          mode: "manual",
+        },
       },
       schema: [schemas.PersonForSync, schemas.DogForSync],
       path: realm3Path,
@@ -1208,7 +1214,7 @@ module.exports = {
 
         13)  synced, unencrypted Realm -> synced, unencrypted Realm
         14)  synced, unencrypted Realm -> synced, encrypted Realm
-        15)  synced, encrypted Realm -> synced, unencrypted Realm
+        15)  synced, encrypted Realm -> synced, unencrypted Relam
         16)  synced, encrypted Realm -> synced, encrypted Realm
     */
 
