@@ -411,10 +411,10 @@ declare namespace Realm {
          */
         isEmpty(): boolean;
 
-        min(property?: string): number | Date | null;
-        max(property?: string): number | Date | null;
-        sum(property?: string): number | null;
-        avg(property?: string): number;
+        min(property?: string): number | Date | undefined;
+        max(property?: string): number | Date | undefined;
+        avg(property?: string): number | undefined;
+        sum(property?: string): number;
 
         /**
          * @param  {string} query
