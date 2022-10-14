@@ -104,8 +104,10 @@ class RealmObject<T = DefaultObject> {
         continue; // Skip setting this, as we already provided it on object creation
       }
       const propertyValue = values[property.name];
-      if (typeof propertyValue !== "undefined" && propertyValue !== null) {
-        result[property.name] = propertyValue;
+      if (typeof propertyValue !== "undefined") {
+        if (mode !== UpdateMode.Modified || result[property.name] !== propertyValue) {
+          result[property.name] = propertyValue;
+        }
       } else {
         if (typeof defaultValue !== "undefined") {
           result[property.name] = defaultValue;

@@ -823,7 +823,7 @@ module.exports = {
       );
     });
     [objects, changes] = await new Promise((r) => (resolve = r));
-    TestCase.assertEqual(changes.modifications.length, 1);
+    TestCase.assertEqual(changes.oldModifications.length, 1);
     TestCase.assertEqual(objects[0].boolCol, true);
 
     realm.write(() => {
@@ -848,8 +848,8 @@ module.exports = {
       );
     });
     [objects, changes] = await new Promise((r) => (resolve = r));
-    TestCase.assertEqual(changes.modifications.length, 1);
-    TestCase.assertEqual(changes.modifications[0], 1);
+    TestCase.assertEqual(changes.oldModifications.length, 1);
+    TestCase.assertEqual(changes.oldModifications[0], 1);
 
     realm.write(() => {
       // Update object with no change in value and no diffed update.
@@ -864,8 +864,8 @@ module.exports = {
       );
     });
     [objects, changes] = await new Promise((r) => (resolve = r));
-    TestCase.assertEqual(changes.modifications.length, 1);
-    TestCase.assertEqual(changes.modifications[0], 0);
+    TestCase.assertEqual(changes.oldModifications.length, 1);
+    TestCase.assertEqual(changes.oldModifications[0], 0);
     TestCase.assertEqual(objects[0].boolCol, true);
   },
 
@@ -953,7 +953,7 @@ module.exports = {
 
       TestCase.assertThrowsContaining(
         () => realm.create("AllPrimaryTypesObject", values),
-        "Attempting to create an object of type 'AllPrimaryTypesObject' with an existing primary key value ''0''.",
+        "Attempting to create an object of type 'AllPrimaryTypesObject' with an existing primary key value '0'.",
       );
 
       const obj1 = realm.create(
@@ -1155,13 +1155,22 @@ module.exports = {
       },
     };
     Object.setPrototypeOf(CustomObject, Realm.Object);
+    Object.setPrototypeOf(CustomObject.prototype, Realm.Object.prototype);
 
     function InvalidObject() {
       return {};
     }
+
     TestCase.assertThrowsContaining(
       () => new Realm({ schema: [InvalidObject] }),
-      "Realm object constructor must have a 'schema' property.",
+      "Class 'InvalidObject' must extend Realm.Object",
+    );
+
+    Object.setPrototypeOf(InvalidObject, Realm.Object);
+    Object.setPrototypeOf(InvalidObject.prototype, Realm.Object.prototype);
+    TestCase.assertThrowsContaining(
+      () => new Realm({ schema: [InvalidObject] }),
+      "Expected 'schema static' to be an object, got undefined",
     );
 
     InvalidObject.schema = {
@@ -1176,13 +1185,14 @@ module.exports = {
     realm.write(() => {
       let object = realm.create("CustomObject", { intCol: 1 });
       TestCase.assertTrue(object instanceof CustomObject);
-      TestCase.assertTrue(Object.getPrototypeOf(object) == CustomObject.prototype);
+      // We're now injecting a class
+      // TestCase.assertTrue(Object.getPrototypeOf(object) == CustomObject.prototype);
       TestCase.assertEqual(customCreated, 0);
 
       // Should be able to create object by passing in constructor.
       object = realm.create(CustomObject, { intCol: 2 });
       TestCase.assertTrue(object instanceof CustomObject);
-      TestCase.assertTrue(Object.getPrototypeOf(object) == CustomObject.prototype);
+      // TestCase.assertTrue(Object.getPrototypeOf(object) == CustomObject.prototype);
       TestCase.assertEqual(customCreated, 0);
     });
 
@@ -1192,6 +1202,8 @@ module.exports = {
 
     // Only the original constructor should be valid.
     function InvalidCustomObject() {}
+    Object.setPrototypeOf(InvalidCustomObject, Realm.Object);
+    Object.setPrototypeOf(InvalidCustomObject.prototype, Realm.Object.prototype);
     InvalidCustomObject.schema = CustomObject.schema;
 
     TestCase.assertThrowsContaining(() => {
@@ -1217,6 +1229,7 @@ module.exports = {
       },
     };
     Object.setPrototypeOf(CustomObject, Realm.Object);
+    Object.setPrototypeOf(CustomObject.prototype, Realm.Object.prototype);
 
     let realm = new Realm({ schema: [CustomObject] });
     realm.write(() => {
@@ -1227,6 +1240,7 @@ module.exports = {
     function NewCustomObject() {}
     NewCustomObject.schema = CustomObject.schema;
     Object.setPrototypeOf(NewCustomObject, Realm.Object);
+    Object.setPrototypeOf(NewCustomObject.prototype, Realm.Object.prototype);
 
     realm = new Realm({ schema: [NewCustomObject] });
     realm.write(() => {
@@ -1248,7 +1262,7 @@ module.exports = {
     TestCase.assertThrowsContaining(() => realm.delete(objects[0]), "Can only delete objects within a transaction.");
 
     realm.write(() => {
-      TestCase.assertThrowsContaining(() => realm.delete(), "object must be of type 'object', got (undefined)");
+      TestCase.assertThrowsContaining(() => realm.delete(), "Expected 'subject' to be an object, got undefined");
 
       realm.delete(objects[0]);
       TestCase.assertEqual(objects.length, 9, "wrong object count");
@@ -1337,16 +1351,32 @@ module.exports = {
     function InvalidPerson() {}
     InvalidPerson.schema = schemas.PersonObject.schema;
 
-    TestCase.assertThrowsContaining(() => realm.objects(), "objectType must be of type 'string', got (undefined)");
-    TestCase.assertThrowsContaining(() => realm.objects([]), "objectType must be of type 'string', got ()");
+    TestCase.assertThrowsContaining(() => realm.objects(), "Expected an object schema name, object instance or class");
+    TestCase.assertThrowsContaining(
+      () => realm.objects([]),
+      "Expected an object schema name, object instance or class",
+    );
     TestCase.assertThrowsContaining(
       () => realm.objects("InvalidClass"),
       "Object type 'InvalidClass' not found in schema.",
     );
+
+    // The new SDK doesn't throw when methods are called with more arguments than expected
+    /*
     TestCase.assertThrowsContaining(
       () => realm.objects("PersonObject", "truepredicate"),
       "Invalid arguments: at most 1 expected, but 2 supplied.",
     );
+    */
+
+    TestCase.assertThrowsContaining(
+      () => realm.objects(InvalidPerson),
+      "Expected value to be a class extending Realm.Object, got a function or class named InvalidPerson",
+    );
+
+    Object.setPrototypeOf(InvalidPerson, Realm.Object);
+    Object.setPrototypeOf(InvalidPerson.prototype, Realm.Object.prototype);
+
     TestCase.assertThrowsContaining(
       () => realm.objects(InvalidPerson),
       "Constructor was not registered in the schema for this Realm",
@@ -1362,7 +1392,7 @@ module.exports = {
 
     TestCase.assertThrowsContaining(
       () => console.log("Name: ", person.name),
-      "Accessing object of type PersonObject which has been invalidated or deleted",
+      "Accessing object which has been invalidated or deleted",
     );
 
     TestCase.assertThrowsContaining(() => realm.objects("PersonObject"), "Cannot access realm that has been closed");
@@ -1409,15 +1439,15 @@ module.exports = {
 
     TestCase.assertThrowsContaining(
       () => realm.objectForPrimaryKey("TestObject", 0),
-      "'TestObject' does not have a primary key defined",
+      "Expected a primary key on 'TestObject'",
     );
     TestCase.assertThrowsContaining(
       () => realm.objectForPrimaryKey(),
-      "objectType must be of type 'string', got (undefined)",
+      "Expected an object schema name, object instance or class",
     );
     TestCase.assertThrowsContaining(
       () => realm.objectForPrimaryKey("IntPrimaryObject"),
-      "Invalid null value for non-nullable primary key.",
+      "Expected value to be a number or bigint, got undefined",
     );
     TestCase.assertThrowsContaining(
       () => realm.objectForPrimaryKey("InvalidClass", 0),
@@ -1426,7 +1456,7 @@ module.exports = {
 
     TestCase.assertThrowsContaining(
       () => realm.objectForPrimaryKey("IntPrimaryObject", { foo: "bar" }),
-      "Property must be of type 'number', got ([object Object])",
+      "Expected value to be a number or bigint, got an object",
     );
   },
 
@@ -2038,6 +2068,52 @@ module.exports = {
     TestCase.assertEqual(managedObj.objectCol.doubleCol, 1);
     TestCase.assertEqual(managedObj.nullObjectCol, null);
     TestCase.assertEqual(managedObj.arrayCol[0].doubleCol, 2);
+
+    realm.close();
+  },
+
+  testWriteCopyTo: function () {
+    const realm = new Realm({
+      schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes],
+    });
+
+    realm.write(() => {
+      realm.create("TestObject", { doubleCol: 1 });
+    });
+    TestCase.assertEqual(1, realm.objects("TestObject").length);
+
+    TestCase.assertThrowsContaining(() => {
+      realm.writeCopyTo();
+    }, "Expected value to be an object, got undefined");
+
+    TestCase.assertThrowsContaining(() => {
+      realm.writeCopyTo(34);
+    }, "Expected value to be an object, got a number");
+
+    // make sure that copies are in the same directory as the original file
+    // that is important for running tests on mobile devices,
+    // so we don't have issues with permissisons
+    const copyName = realm.path + ".copy.realm";
+
+    const copyConfig = { path: copyName };
+    realm.writeCopyTo(copyConfig);
+
+    const realmCopy = new Realm(copyConfig);
+    TestCase.assertEqual(1, realmCopy.objects("TestObject").length);
+    realmCopy.close();
+
+    const encryptedCopyName = realm.path + ".copy-encrypted.realm";
+
+    var encryptionKey = new Int8Array(64);
+    for (let i = 0; i < 64; i++) {
+      encryptionKey[i] = 1;
+    }
+    realm.writeCopyTo({ path: encryptedCopyName, encryptionKey });
+
+    const encryptedCopyConfig = { path: encryptedCopyName, encryptionKey: encryptionKey };
+    const encryptedRealmCopy = new Realm(encryptedCopyConfig);
+    TestCase.assertEqual(1, encryptedRealmCopy.objects("TestObject").length);
+    encryptedRealmCopy.close();
 
     realm.close();
   },
