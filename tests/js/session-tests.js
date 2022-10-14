@@ -377,7 +377,6 @@ module.exports = {
         const realm = new Realm(config);
         const session = realm.syncSession;
 
-        TestCase.assertEqual(session.config.error, config.sync.error);
         session._simulateError(123, "simulated error", "realm::sync::ProtocolError", false);
       });
     });

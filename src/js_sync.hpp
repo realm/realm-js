@@ -250,7 +250,7 @@ private:
 template <typename T>
 class SyncSessionErrorBase {
 public:
-    virtual typename T::Function func() const
+    virtual typename T::Function func()
     {
         return typename T::Function();
     };
@@ -557,13 +557,6 @@ void SessionClass<T>::get_config(ContextType ctx, ObjectType object, ReturnValue
                                  Value::from_string(ctx, String::from_bson(partition_value_bson)));
         }
 
-        auto conf = session->config();
-        if (auto dispatcher =
-                conf.error_handler.template target<util::EventLoopDispatcher<SyncSessionErrorHandler>>()) {
-            if (auto handler = dispatcher->func().template target<SyncSessionErrorBase<T>>()) {
-                Object::set_property(ctx, config, "error", handler->func());
-            }
-        }
         if (!session->config().custom_http_headers.empty()) {
             ObjectType custom_http_headers_object = Object::create_empty(ctx);
             for (auto it = session->config().custom_http_headers.begin();
