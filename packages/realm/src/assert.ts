@@ -65,6 +65,12 @@ assert.bigInt = (value: unknown, name?: string): asserts value is bigint => {
   }
 };
 
+assert.numberOrBigInt = (value: unknown, name?: string): asserts value is number => {
+  if (typeof value !== "number" && typeof value !== "bigint") {
+    throw new TypeAssertionError("a number or bigint", value, name);
+  }
+};
+
 /* eslint-disable-next-line @typescript-eslint/ban-types */
 assert.function = (value: unknown, name?: string): asserts value is (...args: unknown[]) => unknown => {
   if (typeof value !== "function") {

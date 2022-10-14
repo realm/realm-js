@@ -46,6 +46,9 @@ fs.inject({
   readDirectory(path) {
     return readdirSync(path, { encoding: "utf8", withFileTypes: true });
   },
+  exists(path) {
+    return existsSync(path);
+  },
 });
 
 const HTTP_METHOD: Record<binding.HttpMethod, string> = {

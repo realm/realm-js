@@ -114,29 +114,30 @@ export function normalizePropertySchema(
   if (typeof schema === "string") {
     return normalizePropertySchema(name, normalizePropertyType(schema));
   } else {
-    // Type casting, since it is expected that normalizePropertyType moves an object linked type into `objectType`
-    const normalizedType = normalizePropertyType(schema.type) as ObjectSchemaProperty & { type: PropertyTypeName };
-    // Default object type of dictionary and set to mixed
-    if ((normalizedType.type === "dictionary" || normalizedType.type === "set") && !normalizedType.objectType) {
-      normalizedType.objectType = "mixed";
-      if (normalizedType.optional === false) {
-        throw new Error("Mixed values should be declared as optional");
-      }
-      normalizedType.optional = true;
+    const { type, ...rest } = schema;
+    const propertySchemaFromType = normalizePropertyType(type, typeof rest.objectType !== "string");
+    // Type casting, since it is expected that `normalizePropertyType` moves an object linked type into `objectType`
+    const mergedSchema = {
+      ...removeUndefinedValues(propertySchemaFromType),
+      ...removeUndefinedValues(rest as Omit<ObjectSchemaProperty, "name">),
+    } as ObjectSchemaProperty & { type: PropertyTypeName };
+    if (mergedSchema.type === "mixed" || mergedSchema.objectType === "mixed") {
+      assert(mergedSchema.optional !== false, "Mixed values should be declared as optional");
     }
-    return {
+    const result: CanonicalObjectSchemaProperty = {
       indexed: false,
       optional: false,
       mapTo: name, // TODO: Make this optional?
-      ...removeUndefinedValues(schema),
-      ...removeUndefinedValues(normalizedType),
+      ...mergedSchema,
       name,
     };
+    return result;
   }
 }
 
-export function normalizePropertyType(type: string): ObjectSchemaProperty {
+export function normalizePropertyType(type: string, allowObjectType = true): ObjectSchemaProperty {
   if (type.endsWith("[]")) {
+    assert(allowObjectType, "Expected no 'objectType' in property schema, when using '[]' shorthand");
     const item = normalizePropertyType(type.substring(0, type.length - 2));
     assert(item.type === "object" || !item.objectType, `Unexpected nested object type ${item.objectType}`);
     return {
@@ -145,24 +146,24 @@ export function normalizePropertyType(type: string): ObjectSchemaProperty {
       optional: item.type === "object" ? false : item.optional,
     };
   } else if (type.endsWith("<>")) {
+    assert(allowObjectType, "Expected no 'objectType' in property schema, when using '<>' shorthand");
     const itemType = type.substring(0, type.length - 2);
     // Item type defaults to mixed
     const item: ObjectSchemaProperty = itemType ? normalizePropertyType(itemType) : { type: "mixed" };
-    assert(!item.objectType, `Unexpected nested object type ${item.objectType}`);
     return {
       type: "set",
-      objectType: item.type,
-      optional: item.optional,
+      objectType: item.type === "object" ? item.objectType : item.type,
+      optional: item.type === "object" ? true : item.optional,
     };
   } else if (type.endsWith("{}")) {
+    assert(allowObjectType, "Expected no 'objectType' in property schema, when using '{}' shorthand");
     const itemType = type.substring(0, type.length - 2);
     // Item type defaults to mixed
-    const item: ObjectSchemaProperty = itemType ? normalizePropertyType(itemType) : { type: "mixed" };
-    assert(!item.objectType, `Unexpected nested object type ${item.objectType}`);
+    const item: ObjectSchemaProperty = itemType ? normalizePropertyType(itemType) : { type: "mixed", optional: true };
     return {
       type: "dictionary",
-      objectType: item.type,
-      optional: item.optional,
+      objectType: item.type === "object" ? item.objectType : item.type,
+      optional: item.type === "object" ? true : item.optional,
     };
   } else if (type.endsWith("?")) {
     return {
@@ -170,8 +171,14 @@ export function normalizePropertyType(type: string): ObjectSchemaProperty {
       type: type.substring(0, type.length - 1),
     };
   } else if (type in TYPE_MAPPINGS) {
-    // This type is directly mappable, so it can't be the name a user defined object schema.
-    return { type };
+    if (type === "dictionary") {
+      return { type, objectType: "mixed", optional: true };
+    } else if (type === "set") {
+      return { type, objectType: "mixed", optional: true };
+    } else {
+      // This type is directly mappable, so it can't be the name a user defined object schema.
+      return { type };
+    }
   } else {
     return { type: "object", objectType: type, optional: true };
   }

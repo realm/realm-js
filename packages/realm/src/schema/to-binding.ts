@@ -125,7 +125,9 @@ export function transformPropertyType(schema: CanonicalObjectSchemaProperty): Bi
     } else {
       type |= BindingPropertyType.Object;
       // Implicitly nullable - will throw if sat
-      isNullable = false;
+      if (!(type & BindingPropertyType.Dictionary)) {
+        isNullable = false;
+      }
     }
   }
   if (schema.type === "object" || schema.type === "mixed") {
