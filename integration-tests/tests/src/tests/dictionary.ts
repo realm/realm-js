@@ -435,7 +435,7 @@ describe("Dictionary", () => {
     badValues: {
       key1: "this is a string",
     },
-    expectedError: "Property must be of type 'number'",
+    expectedError: "Expected value to be a number or bigint, got a string",
   });
 
   describeTypedSuite({
@@ -447,7 +447,7 @@ describe("Dictionary", () => {
     badValues: {
       key1: false,
     },
-    expectedError: "Property must be of type 'string'",
+    expectedError: "Expected value to be a string, got a boolean",
   });
 
   describeTypedSuite({
@@ -459,7 +459,7 @@ describe("Dictionary", () => {
     badValues: {
       key1: 1234,
     },
-    expectedError: "Property must be of type 'boolean'",
+    expectedError: "Expected value to be a boolean, got a number",
   });
 
   describeTypedSuite({
@@ -471,7 +471,7 @@ describe("Dictionary", () => {
     badValues: {
       key1: "unexpected string",
     },
-    expectedError: "JS value must be of type 'object'",
+    expectedError: "Expected 'value in dict' to be an object, got a string",
   });
 
   describe("Dictionary queries", () => {

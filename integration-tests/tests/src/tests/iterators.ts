@@ -51,6 +51,7 @@ const PERSON_SCHEMA: Realm.ObjectSchema = {
     },
     friendsByName: {
       type: "dictionary",
+      // objectType: "mixed",
       objectType: "Person",
     },
   },

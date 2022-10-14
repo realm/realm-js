@@ -204,12 +204,13 @@ describe("Realm#constructor", () => {
     it("has the same schema as before", () => {
       // Open the Realm with a schema
       const realm = new Realm({ schema: [PersonSchema, DogSchema] });
+      const schemaBefore = realm.schema;
       realm.close();
       // Re-open it without a schema
       const reopenedRealm = new Realm();
       // Expect the schemas to match
       expect(reopenedRealm.schema.length).to.equal(2);
-      expect(reopenedRealm.schema).deep.equals(realm.schema);
+      expect(reopenedRealm.schema).deep.equals(schemaBefore);
     });
   });
 
@@ -268,10 +269,7 @@ describe("Realm#constructor", () => {
     }
 
     it("fails when asking for a list of lists", () => {
-      expectInvalidProperty(
-        { type: "list[]", objectType: "InvalidObject" },
-        "List property 'InvalidObject#bad' cannot have list elements",
-      );
+      expectInvalidProperty({ type: "list[]" }, "List property 'InvalidObject#bad' cannot have list elements");
     });
 
     it("fails when asking for an optional list", () => {
@@ -318,20 +316,22 @@ describe("Realm#constructor", () => {
       );
     });
 
-    it("allows list of objects with objectType defined", () => {
-      new Realm({
-        schema: [
-          {
-            name: "SomeObject",
-            properties: {
-              myObjects: {
-                objectType: "SomeObject",
-                type: "object[]",
+    it("doesn't allow list of objects with objectType defined", () => {
+      expect(() => {
+        new Realm({
+          schema: [
+            {
+              name: "SomeObject",
+              properties: {
+                myObjects: {
+                  objectType: "SomeObject",
+                  type: "object[]",
+                },
               },
             },
-          },
-        ],
-      });
+          ],
+        });
+      }).throws("Expected no 'objectType' in property schema, when using '[]' shorthand");
     });
   });
 
