@@ -633,6 +633,7 @@ classes:
         #   sig: '(thread: ThreadSafeReference, scheduler: std::shared_ptr<Scheduler>) -> SharedRealm'
       get_synchronized_realm: '(config: RealmConfig) -> SharedAsyncOpenTask'
       #make_shared_realm: '(config: Realm::Config, version: util::Optional<VersionID>, coordinator: std::shared_ptr<_impl::RealmCoordinator>) -> SharedRealm'
+      get_schema_version: '(config: const RealmConfig&) const -> uint64_t'
 
     properties:
       config: const RealmConfig&

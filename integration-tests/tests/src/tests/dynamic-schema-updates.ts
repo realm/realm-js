@@ -64,6 +64,7 @@ describe("realm._updateSchema", () => {
           name: "myField",
           optional: false,
           type: "string",
+          default: undefined,
         },
       },
     });
@@ -97,6 +98,7 @@ describe("realm._updateSchema", () => {
           name: "age",
           optional: false,
           type: "int",
+          default: undefined,
         },
         friends: {
           indexed: false,
@@ -105,6 +107,7 @@ describe("realm._updateSchema", () => {
           objectType: "Dog",
           optional: false,
           type: "list",
+          default: undefined,
         },
         name: {
           indexed: false,
@@ -112,6 +115,7 @@ describe("realm._updateSchema", () => {
           name: "name",
           optional: false,
           type: "string",
+          default: undefined,
         },
         owner: {
           indexed: false,
@@ -120,6 +124,7 @@ describe("realm._updateSchema", () => {
           objectType: "Person",
           optional: true,
           type: "object",
+          default: undefined,
         },
       },
     });

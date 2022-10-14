@@ -39,23 +39,27 @@ import { Configuration } from "./Configuration";
 import { ClassMap } from "./ClassMap";
 import { List } from "./List";
 import { App } from "./App";
-import { validateConfiguration, validateRealmSchema } from "./validation/configuration";
+import { validateConfiguration, validateObjectSchema, validateRealmSchema } from "./validation/configuration";
 import { Collection } from "./Collection";
 import { Dictionary } from "./Dictionary";
 import { Set as RealmSet } from "./Set";
 import { assert } from "./assert";
 import { ClassHelpers } from "./ClassHelpers";
 import { OrderedCollection } from "./OrderedCollection";
+import { SchemaMode } from "./binding";
+import { normalizeObjectSchema } from "./schema/normalize";
 
 type RealmSchemaExtra = Record<string, ObjectSchemaExtra | undefined>;
 
 type ObjectSchemaExtra = {
   constructor?: RealmObjectConstructor;
   defaults: Record<string, unknown>;
+  // objectTypes: Record<string, unknown>;
 };
 
 // Using a set of weak refs to avoid prevention of garbage collection
 const RETURNED_REALMS = new Set<WeakRef<binding.Realm>>();
+const NOT_VERSIONED = 18446744073709551615n;
 
 export class Realm {
   public static Object = RealmObject;
@@ -70,7 +74,13 @@ export class Realm {
   public static BSON = BSON;
 
   public static get defaultPath() {
-    return Realm.normalizePath("default.realm");
+    // We can't simply initialize a `public static defaultPath = Realm.normalizePath("default.realm")`
+    // since the platform utils aren't injected when this class is created.
+    return Realm.defaultPathOverride || Realm.normalizePath("default.realm");
+  }
+
+  public static set defaultPath(path: string) {
+    Realm.defaultPathOverride = path;
   }
 
   public static clearTestState(): void {
@@ -106,6 +116,98 @@ export class Realm {
     fs.removeFile(path + ".note");
     fs.removeDirectory(path + ".management");
   }
+
+  public static exists(arg: Configuration | string = {}): boolean {
+    const config = typeof arg === "string" ? { path: arg } : arg;
+    validateConfiguration(config);
+    const path = Realm.determinePath(config);
+    return fs.exists(path);
+  }
+
+  public static async open(arg: Configuration | string = {}) {
+    const config = typeof arg === "string" ? { path: arg } : arg;
+    validateConfiguration(config);
+    if (!config.sync) {
+      return new Realm(config);
+    }
+    throw new Error("Not yet supported");
+  }
+
+  /**
+   * Get the current schema version of the Realm at the given path.
+   * @param  {string} path
+   * @param  {any} encryptionKey?
+   * @returns number
+   */
+  public static schemaVersion(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): number {
+    const config: Configuration = { path };
+    if (encryptionKey) {
+      throw new Error("Not yet supported");
+    }
+    const absolutePath = Realm.determinePath(config);
+    const schemaVersion = binding.Realm.getSchemaVersion({ path: absolutePath });
+    if (schemaVersion === NOT_VERSIONED) {
+      return -1;
+    } else {
+      return Number(schemaVersion);
+    }
+  }
+
+  /**
+   * Creates a template object for a Realm model class where all optional fields are undefined
+   * and all required fields have the default value for the given data type, either the value
+   * set by the default property in the schema or the default value for the datatype if the schema
+   * doesn't specify one, i.e. 0, false and "".
+   *
+   * @param {Realm.ObjectSchema} objectSchema Schema describing the object that should be created.
+   */
+  public static createTemplateObject<T extends Record<string, unknown>>(objectSchema: Realm.ObjectSchema): T {
+    validateObjectSchema(objectSchema);
+    const normalizedSchema = normalizeObjectSchema(objectSchema);
+    const result: Record<string, unknown> = {};
+
+    for (const [key, property] of Object.entries(normalizedSchema.properties)) {
+      // if optional is set, it wil take precedence over any `?` set on the type parameter
+      if (property.optional) {
+        continue;
+      }
+
+      // If a default value is explicitly set, always set the property
+      if (typeof property.default !== "undefined") {
+        result[key] = property.default;
+        continue;
+      }
+
+      // Set the default value for all required primitive types.
+      // Lists are always treated as empty if not specified and references to objects are always optional
+      switch (property.type) {
+        case "bool":
+          result[key] = false;
+          break;
+        case "int":
+          result[key] = 0;
+          break;
+        case "float":
+          result[key] = 0.0;
+          break;
+        case "double":
+          result[key] = 0.0;
+          break;
+        case "string":
+          result[key] = "";
+          break;
+        case "data":
+          result[key] = new ArrayBuffer(0);
+          break;
+        case "date":
+          result[key] = new Date(0);
+          break;
+      }
+    }
+    return result as T;
+  }
+
+  private static defaultPathOverride?: string;
 
   private static normalizePath(path: string | undefined): string {
     if (typeof path === "undefined") {
@@ -156,16 +258,24 @@ export class Realm {
     const bindingSchema = normalizedSchema && toBindingSchema(normalizedSchema);
     this.schemaExtras = Realm.extractSchemaExtras(normalizedSchema || []);
 
+    const { fifoFilesFallbackPath, shouldCompactOnLaunch, inMemory, readOnly } = config;
+
     const path = Realm.determinePath(config);
     const internal = binding.Realm.getSharedRealm({
       path,
-      fifoFilesFallbackPath: config.fifoFilesFallbackPath,
+      fifoFilesFallbackPath,
       schema: bindingSchema,
-      inMemory: config.inMemory === true,
+      inMemory: inMemory === true,
+      schemaMode: readOnly === true ? SchemaMode.Immutable : undefined,
       schemaVersion: config.schema
         ? typeof config.schemaVersion === "number"
           ? BigInt(config.schemaVersion)
           : 0n
+        : undefined,
+      shouldCompactOnLaunchFunction: shouldCompactOnLaunch
+        ? (totalBytes, usedBytes) => {
+            return shouldCompactOnLaunch(Number(totalBytes), Number(usedBytes));
+          }
         : undefined,
     });
 
@@ -197,8 +307,11 @@ export class Realm {
   }
 
   get readOnly(): boolean {
-    // schema_mode == SchemaMode::Immutable
-    throw new Error("Not yet implemented");
+    return this.internal.config.schemaMode === binding.SchemaMode.Immutable;
+  }
+
+  get inMemory(): boolean {
+    return this.internal.config.inMemory;
   }
 
   get schema(): CanonicalObjectSchema[] {
@@ -208,9 +321,9 @@ export class Realm {
       const extras = this.schemaExtras[objectSchema.name];
       if (extras) {
         objectSchema.constructor = extras.constructor;
-        for (const property of Object.values(objectSchema.properties)) {
-          property.default = extras.defaults[property.name];
-        }
+      }
+      for (const property of Object.values(objectSchema.properties)) {
+        property.default = extras ? extras.defaults[property.name] : undefined;
       }
     }
     return schemas;
@@ -265,6 +378,9 @@ export class Realm {
     // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1260-L1321
     if (values instanceof RealmObject && !getInternal(values)) {
       throw new Error("Cannot create an object from a detached Realm.Object instance");
+    }
+    if (!Object.values(UpdateMode).includes(mode)) {
+      throw new Error("Unsupported 'updateMode'. Only 'never', 'modified' or 'all' is supported.");
     }
     this.internal.verifyOpen();
     const helpers = this.classes.getHelpers(type);
@@ -354,15 +470,16 @@ export class Realm {
   }
 
   write<T>(callback: () => T): T {
+    let result = undefined;
+    this.internal.beginTransaction();
     try {
-      this.internal.beginTransaction();
-      const result = callback();
-      this.internal.commitTransaction();
-      return result;
+      result = callback();
     } catch (err) {
       this.internal.cancelTransaction();
       throw err;
     }
+    this.internal.commitTransaction();
+    return result;
   }
 
   beginTransaction(): void {

@@ -207,10 +207,13 @@ module.exports = {
 
   testRealmConstructorPath: function () {
     TestCase.assertThrows(() => new Realm("")); // the message for this error is platform-specific
+    // Skipping this test as we're not validating extra arguments anymore
+    /*
     TestCase.assertThrowsContaining(
       () => new Realm("test1.realm", "invalidArgument"),
       "Invalid arguments when constructing 'Realm'",
     );
+    */
 
     const defaultRealm = new Realm({ schema: [] });
     TestCase.assertEqual(defaultRealm.path, Realm.defaultPath);
@@ -303,7 +306,7 @@ module.exports = {
   testRealmConstructorDynamicSchema: function () {
     let realm = new Realm({ schema: [schemas.TestObject] });
     realm.write(() => {
-      realm.create("TestObject", [1]);
+      realm.create("TestObject", { doubleCol: 1 });
     });
     realm.close();
 
@@ -314,22 +317,22 @@ module.exports = {
   },
 
   testRealmConstructorSchemaValidation: function () {
-    TestCase.assertThrowsContaining(() => new Realm({ schema: schemas.AllTypes }), "must be of type 'array', got");
+    TestCase.assertThrowsContaining(
+      () => new Realm({ schema: schemas.AllTypes }),
+      "Expected 'schema' to be an array, got an object",
+    );
     TestCase.assertThrowsContaining(
       () => new Realm({ schema: ["SomeType"] }),
-      "Failed to read ObjectSchema: JS value must be of type 'object', got (SomeType)",
+      "Expected 'object schema' to be an object, got a string",
     );
-    TestCase.assertThrowsContaining(
-      () => new Realm({ schema: [{}] }),
-      "Failed to read ObjectSchema: name must be of type 'string', got (undefined)",
-    );
+    TestCase.assertThrowsContaining(() => new Realm({ schema: [{}] }), "Expected 'name' to be a string, got undefined");
     TestCase.assertThrowsContaining(
       () => new Realm({ schema: [{ name: "SomeObject" }] }),
-      "Failed to read ObjectSchema: properties must be of type 'object', got (undefined)",
+      "Expected 'properties' to be an object, got undefined",
     );
     TestCase.assertThrowsContaining(
       () => new Realm({ schema: [{ properties: { intCol: "int" } }] }),
-      "Failed to read ObjectSchema: name must be of type 'string', got (undefined)",
+      "Expected 'name' to be a string, got undefined",
     );
 
     function assertPropertyInvalid(prop, message) {
@@ -344,13 +347,13 @@ module.exports = {
 
     assertPropertyInvalid(
       { type: "list[]", objectType: "InvalidObject" },
-      "List property 'InvalidObject.bad' must have a non-list value type",
+      "Expected no 'objectType' in property schema, when using '[]' shorthand",
     );
     assertPropertyInvalid(
       { type: "list?", objectType: "InvalidObject" },
-      "List property 'InvalidObject.bad' cannot be optional",
+      "List property 'InvalidObject#bad' of 'InvalidObject' elements, cannot be optional",
     );
-    assertPropertyInvalid("", "Property 'InvalidObject.bad' must have a non-empty type");
+    assertPropertyInvalid("", "Property 'InvalidObject#bad' cannot have an empty object type");
     assertPropertyInvalid(
       { type: "linkingObjects", objectType: "InvalidObject", property: "nosuchproperty" },
       "Property 'InvalidObject.nosuchproperty' declared as origin of linking objects property 'InvalidObject.bad' does not exist",
@@ -381,26 +384,28 @@ module.exports = {
       });
     }, "Property 'InvalidObject.link' declared as origin of linking objects property 'InvalidObject.linkingObjects' links to type 'IntObject'");
 
-    {
-      new Realm({
-        schema: [
-          {
-            name: "Object",
-            properties: {
-              // weird but valid
-              objectList: { type: "object[]", objectType: "Object" },
+    TestCase.assertThrowsContaining(() => {
+      {
+        new Realm({
+          schema: [
+            {
+              name: "Object",
+              properties: {
+                // weird but valid
+                objectList: { type: "object[]", objectType: "Object" },
+              },
             },
-          },
-        ],
-      });
-    }
+          ],
+        });
+      }
+    }, "Expected no 'objectType' in property schema, when using '[]' shorthand");
   },
 
   testRealmConstructorInMemory: function () {
     // open in-memory realm instance
     const realm1 = new Realm({ inMemory: true, schema: [schemas.TestObject] });
     realm1.write(() => {
-      realm1.create("TestObject", [1]);
+      realm1.create("TestObject", { doubleCol: 1 });
     });
     TestCase.assertEqual(realm1.isInMemory, true);
 
@@ -428,7 +433,7 @@ module.exports = {
   testRealmConstructorReadOnly: function () {
     let realm = new Realm({ schema: [schemas.TestObject] });
     realm.write(() => {
-      realm.create("TestObject", [1]);
+      realm.create("TestObject", { doubleCol: 1 });
     });
     TestCase.assertEqual(realm.isReadOnly, false);
     realm.close();
@@ -488,7 +493,7 @@ module.exports = {
   testRealmOpen: function () {
     let realm = new Realm({ schema: [schemas.TestObject], schemaVersion: 1 });
     realm.write(() => {
-      realm.create("TestObject", [1]);
+      realm.create("TestObject", { doubleCol: 1 });
     });
     realm.close();
 
@@ -516,7 +521,7 @@ module.exports = {
   testRealmOpenNoConfig: function () {
     let realm = new Realm({ schema: [schemas.TestObject], schemaVersion: 1 });
     realm.write(() => {
-      realm.create("TestObject", [1]);
+      realm.create("TestObject", { doubleCol: 1 });
     });
     realm.close();
 

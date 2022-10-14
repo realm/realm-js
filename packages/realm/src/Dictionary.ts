@@ -166,10 +166,13 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
   // @ts-expect-error We're exposing methods in the end-users namespace of keys
   *entries() {
     const { fromBinding } = this[HELPERS];
-    const snapshot = this[INTERNAL].snapshot();
-    const size = snapshot.size();
+    const keys = this[INTERNAL].keys.snapshot();
+    const values = this[INTERNAL].values.snapshot();
+    const size = keys.size();
+    assert(size === values.size(), "Expected keys and values to equal in size");
     for (let i = 0; i < size; i++) {
-      const [key, value] = snapshot.getDictionaryElement(i);
+      const key = keys.getAny(i);
+      const value = values.getAny(i);
       yield [key, fromBinding(value)] as [string, T];
     }
   }
