@@ -735,7 +735,7 @@ describe("Dictionary", () => {
             dict1: { children1: { num: 2 }, children2: { num: 3 } },
             dict2: { children1: { num: 4 }, children2: { num: 5 } },
           });
-        }).throws(Error, "Only Realm instances are supported.");
+        }).throws("Unable to convert an object with ctor 'Object' to a Mixed");
       });
     });
   });
