@@ -16,8 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { IllegalConstructorError } from "./errors";
-import { Listeners, CallbackRegistrator } from "./Listeners";
+import { IllegalConstructorError, Listeners, CallbackRegistrator } from "./internal";
 
 export abstract class Collection<KeyType = unknown, ValueType = unknown, T = ValueType, ChangeCallbackType = unknown>
   implements Iterable<T>

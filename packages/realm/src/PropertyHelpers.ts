@@ -16,18 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as binding from "./binding";
-import { assert } from "./assert";
-
-import { List } from "./List";
-import { OrderedCollectionHelpers } from "./OrderedCollection";
-import { ClassHelpers } from "./ClassHelpers";
-import { Results } from "./Results";
-import { Dictionary } from "./Dictionary";
-import { Set } from "./Set";
-import { TypeHelpers, getHelpers as getTypeHelpers, TypeOptions } from "./types";
-import { TypeAssertionError } from "./errors";
-import type { Realm } from "./Realm";
+import {
+  binding,
+  assert,
+  Realm,
+  OrderedCollectionHelpers,
+  ClassHelpers,
+  Results,
+  Dictionary,
+  RealmSet,
+  TypeHelpers,
+  getTypeHelpers,
+  TypeOptions,
+  TypeAssertionError,
+} from "./internal";
 
 type BindingObjectSchema = binding.Realm["schema"][0];
 type BindingPropertySchema = BindingObjectSchema["persistedProperties"][0];
@@ -276,7 +278,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     return {
       get(obj) {
         const internal = binding.Set.make(realm.internal, obj, columnKey);
-        return new Set(realm, internal, collectionHelpers);
+        return new RealmSet(realm, internal, collectionHelpers);
       },
       set(obj, value) {
         const internal = binding.Set.make(realm.internal, obj, columnKey);
@@ -291,7 +293,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
   },
 };
 
-function getHelpers(type: binding.PropertyType, options: PropertyOptions): PropertyHelpers {
+function getPropertyHelpers(type: binding.PropertyType, options: PropertyOptions): PropertyHelpers {
   const { typeHelpers, columnKey, embedded, objectType } = options;
   const accessorFactory = ACCESSOR_FACTORIES[type];
   if (accessorFactory) {
@@ -310,7 +312,7 @@ function getHelpers(type: binding.PropertyType, options: PropertyOptions): Prope
   }
 }
 
-export function createHelpers(property: PropertyContext, options: HelperOptions): PropertyHelpers {
+export function createPropertyHelpers(property: PropertyContext, options: HelperOptions): PropertyHelpers {
   const collectionType = property.type & binding.PropertyType.Collection;
   const typeOptions: TypeOptions = {
     realm: options.realm,
@@ -321,7 +323,7 @@ export function createHelpers(property: PropertyContext, options: HelperOptions)
     optional: !!(property.type & binding.PropertyType.Nullable),
   };
   if (collectionType) {
-    return getHelpers(collectionType, {
+    return getPropertyHelpers(collectionType, {
       ...property,
       ...options,
       ...typeOptions,
@@ -329,7 +331,7 @@ export function createHelpers(property: PropertyContext, options: HelperOptions)
     });
   } else {
     const baseType = property.type & ~binding.PropertyType.Flags;
-    return getHelpers(baseType, {
+    return getPropertyHelpers(baseType, {
       ...property,
       ...options,
       ...typeOptions,

@@ -16,10 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import commonjs from "@rollup/plugin-commonjs";
 import typescript from "@rollup/plugin-typescript";
 import replace from "@rollup/plugin-replace";
-import nodeResolve from "@rollup/plugin-node-resolve";
 import dts from "rollup-plugin-dts";
 
 import pkg from "./package.json";
@@ -32,17 +30,15 @@ export default [
       format: "cjs",
     },
     plugins: [
-      commonjs(),
-      typescript({
-        tsconfig: "src/node/tsconfig.json",
-      }),
-      nodeResolve(),
       replace({
         preventAssignment: true,
         delimiters: ["", ""],
         values: {
           '"./realm.node"': '"../generated/ts/realm.node"',
         },
+      }),
+      typescript({
+        tsconfig: "src/node/tsconfig.json",
       }),
     ],
     external: ["node:module", "node:fs", "undici", "bson"],
