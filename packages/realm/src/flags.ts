@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export * from "./schema/from-binding";
-export * from "./schema/to-binding";
-export * from "./schema/normalize";
-export * from "./schema/types";
+export const flags = {
+  ALLOW_VALUES_ARRAYS: false,
+};
