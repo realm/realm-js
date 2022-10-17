@@ -144,9 +144,10 @@ declare namespace Realm {
 
     enum ClientResetMode {
         Manual = 'manual',
-        DiscardLocal = 'discardLocal',
-        Recover = 'recover',
-        RecoverOrDiscard = 'recoverOrDiscard'
+        DiscardLocal = 'discardLocal', // for backward compatibility
+        DiscardUnsyncedChanges = 'discardUnsyncedChanges',
+        RecoverUnsyncedChanges = 'recoverUnsyncedChanges',
+        RecoverOrDiscardUnsyncedChanges = 'recoverOrDiscardUnsyncedChanges'
     }
 
     enum ClientResetDidRecover {
@@ -162,25 +163,25 @@ declare namespace Realm {
       mode: ClientResetMode.Manual;
       clientResetAfter?: ClientResetManualCallback;
     }
-    interface ClientResetDiscardLocalConfiguration {
-      mode: ClientResetMode.DiscardLocal;
+    interface ClientResetDiscardUnsyncedChangesConfiguration {
+      mode: ClientResetMode.DiscardLocal | ClientResetMode.DiscardUnsyncedChanges;
       clientResetBefore?: ClientResetBeforeCallback;
       clientResetAfter?: ClientResetAfterCallback;
     }
 
     // interface ClientResetRecoveryConfiguration<ClientResetModeT = ClientResetMode.Recover> {
     interface ClientResetRecoveryConfiguration {
-      mode: ClientResetMode.Recover;
+      mode: ClientResetMode.RecoverUnsyncedChanges;
       clientResetBefore?: ClientResetBeforeCallback;
       clientResetAfter?: ClientResetAfterRecoveryCallback;
     }
     interface ClientResetRecoveryOrDiscardConfiguration {
-      mode: ClientResetMode.RecoverOrDiscard;
+      mode: ClientResetMode.RecoverOrDiscardUnsyncedChanges;
       clientResetBefore?: ClientResetBeforeCallback;
       clientResetAfter?: ClientResetAfterRecoveryCallback;
     }
 
-    type ClientResetConfiguration = ClientResetManualConfiguration | ClientResetDiscardLocalConfiguration | ClientResetRecoveryConfiguration | ClientResetRecoveryOrDiscardConfiguration;
+    type ClientResetConfiguration = ClientResetManualConfiguration | ClientResetDiscardUnsyncedChangesConfiguration | ClientResetRecoveryConfiguration | ClientResetRecoveryOrDiscardConfiguration;
 
     interface BaseSyncConfiguration{
         user: User;

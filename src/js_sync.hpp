@@ -1129,11 +1129,11 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         //       called b) if no callback is registered, the error handler is called with the proper error code and a
         //       client reset is initiated (old behavior) c) if callback and error handler error handler are
         //       registered, the callback will be called
-        // ii)   discardLocal: the sync client handles it but notifications are send before and after
-        // iii)  recover:
-        // iv)   recoverOrDiscard:
+        // ii)   discardUnsyncedChanges: the sync client handles it but notifications are send before and after
+        // iii)  recoverUnsyncedChanges: as above
+        // iv)   recoverOrDiscardUnsyncedChanges: as above
         //
-        // The default setting is recoverOrDiscard
+        // The default setting is recoverOrDiscardUnsyncedChanges
 
         config.sync_config->client_resync_mode = realm::ClientResyncMode::RecoverOrDiscard;
         ValueType client_reset_value = Object::get_property(ctx, sync_config_object, "clientReset");
@@ -1144,14 +1144,16 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                 std::string client_reset_mode = Value::validated_to_string(ctx, client_reset_mode_value, "mode");
                 static std::unordered_map<std::string, realm::ClientResyncMode> const client_reset_mode_map = {
                     {"manual", realm::ClientResyncMode::Manual},
-                    {"discardLocal", realm::ClientResyncMode::DiscardLocal},
-                    {"recover", realm::ClientResyncMode::Recover},
-                    {"recoverOrDiscard", realm::ClientResyncMode::RecoverOrDiscard}};
+                    {"discardLocal", realm::ClientResyncMode::DiscardLocal}, // for backward compatibility
+                    {"discardUnsyncedChanges", realm::ClientResyncMode::DiscardLocal},
+                    {"recoverUnsyncedChanges", realm::ClientResyncMode::Recover},
+                    {"recoverOrDiscardUnsyncedChanges", realm::ClientResyncMode::RecoverOrDiscard}};
                 auto it = client_reset_mode_map.find(client_reset_mode);
                 if (it == client_reset_mode_map.end()) {
                     throw std::invalid_argument(
                         util::format("Unknown argument '%1' for clientReset.mode. Expected "
-                                     "'manual', 'discardLocal', 'recover', or 'recoverOrDiscard'",
+                                     "'manual', 'discardUnsyncedChanges', 'recoverUnsyncedChanges', or "
+                                     "'recoverOrDiscardUnsyncedChanges'",
                                      client_reset_mode));
                 }
                 config.sync_config->client_resync_mode = it->second;

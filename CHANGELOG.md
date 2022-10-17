@@ -1,8 +1,8 @@
 ## vNext (TBD)
-
 ### Enhancements
 * Improve performance of client reset with automatic recovery and converting top-level tables into embedded tables. ([realm/realm-core#5897](https://github.com/realm/realm-core/pull/5897))
 * If a sync client sends a message larger than 16 MB, the sync server will request a client reset. ([realm/realm-core#5209](https://github.com/realm/realm-core/issues/5209))
+* Add two new modes to client reset: `RecoverUnsyncedChanges` and `RecoverOrDiscardUnsyncedChanges`. The two modes will recover local/unsynced changes with changes from the server if possible. If not possible, `RecoverOrDiscardUnsyncedChanges` will remove the local Realm file and download a fresh file from the server. The mode `DiscardLocal` is duplicated as `DiscardUnsyncedChanges`, and `DiscardLocal` is be removed in a future version. ([#4135](https://github.com/realm/realm-js/issues/4135))
 
 ### Fixed
 * Fixed a use-after-free if the last external reference to an encrypted Realm was closed between when a client reset error was received and when the download of the new Realm began. ([realm/realm-core#5949](https://github.com/realm/realm-core/pull/5949), since v10.20.0)

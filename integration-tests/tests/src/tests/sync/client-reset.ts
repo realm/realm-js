@@ -48,7 +48,7 @@ async function triggerClientReset(app: Realm.App, user: Realm.User): Promise<voi
   await user.functions.triggerClientReset(app.id, user.id);
 }
 
-async function waitServerSideClientResetDiscardLocalCallbacks(
+async function waitServerSideClientResetDiscardUnsyncedChangesCallbacks(
   useFlexibleSync: boolean,
   schema: Realm.ObjectSchema[],
   app: Realm.App,
@@ -67,7 +67,7 @@ async function waitServerSideClientResetDiscardLocalCallbacks(
       _sessionStopPolicy: SessionStopPolicy.Immediately,
       ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
       clientReset: {
-        mode: ClientResetMode.DiscardLocal,
+        mode: ClientResetMode.DiscardUnsyncedChanges,
         clientResetAfter: (before: Realm, after: Realm) => {
           afterCalled = true;
           actionAfter(before, after);
@@ -116,7 +116,7 @@ async function waitServerSideClientResetRecoveryCallbacks(
       _sessionStopPolicy: SessionStopPolicy.Immediately,
       ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
       clientReset: {
-        mode: ClientResetMode.Recover,
+        mode: ClientResetMode.RecoverUnsyncedChanges,
         clientResetAfter: (before: Realm, after: Realm, didRecover: ClientResetDidRecover) => {
           afterCalled = true;
           actionAfter(before, after, didRecover);
@@ -146,7 +146,7 @@ async function waitServerSideClientResetRecoveryCallbacks(
   await resetHandle.promise;
 }
 
-async function waitSimulatedClientResetDiscardLocalCallbacks(
+async function waitSimulatedClientResetDiscardUnsyncedChangesCallbacks(
   useFlexibleSync: boolean,
   schema: Realm.ObjectSchema[],
   user: Realm.User,
@@ -164,7 +164,7 @@ async function waitSimulatedClientResetDiscardLocalCallbacks(
         _sessionStopPolicy: SessionStopPolicy.Immediately,
         ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
         clientReset: {
-          mode: ClientResetMode.DiscardLocal,
+          mode: ClientResetMode.DiscardUnsyncedChanges,
           clientResetAfter: (before: Realm, after: Realm) => {
             afterCalled = true;
             actionAfter(before, after);
@@ -216,7 +216,7 @@ async function waitSimulatedClientResetRecoverCallbacks(
         _sessionStopPolicy: SessionStopPolicy.Immediately,
         ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
         clientReset: {
-          mode: ClientResetMode.Recover,
+          mode: ClientResetMode.RecoverUnsyncedChanges,
           clientResetAfter: (before: Realm, after: Realm, recover: Realm.ClientResetDidRecover) => {
             afterCalled = true;
             actionAfter(before, after, recover);
@@ -419,7 +419,7 @@ function getSchema(useFlexibleSync: boolean) {
                 resolve();
               },
               clientReset: {
-                mode: ClientResetMode.DiscardLocal,
+                mode: ClientResetMode.DiscardUnsyncedChanges,
                 clientResetBefore: () => {
                   reject();
                 },
@@ -444,7 +444,7 @@ function getSchema(useFlexibleSync: boolean) {
       it(`handles discard local client reset with ${getPartialTestTitle(
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
-        // (i)   using a client reset in "DiscardLocal" mode, a fresh copy
+        // (i)   using a client reset in "DiscardUnsyncedChanges" mode, a fresh copy
         //       of the Realm will be downloaded (resync)
         // (ii)  two callback will be called, while the sync error handler is not
         // (iii) after the reset, the Realm can be used as before
@@ -457,7 +457,7 @@ function getSchema(useFlexibleSync: boolean) {
           expect(afterRealm.objects(DogSchema.name).length).to.equal(1);
         };
 
-        await waitSimulatedClientResetDiscardLocalCallbacks(
+        await waitSimulatedClientResetDiscardUnsyncedChangesCallbacks(
           useFlexibleSync,
           getSchema(useFlexibleSync),
           this.user,
@@ -491,7 +491,7 @@ function getSchema(useFlexibleSync: boolean) {
       it(`handles discard local client reset with ${getPartialTestTitle(
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
-        // (i)   using a client reset in "DiscardLocal" mode, a fresh copy
+        // (i)   using a client reset in "DiscardUnsyncedChanges" mode, a fresh copy
         //       of the Realm will be downloaded (resync)
         // (ii)  two callback will be called, while the sync error handler is not
         // (iii) after the reset, the Realm can be used as before
@@ -504,7 +504,7 @@ function getSchema(useFlexibleSync: boolean) {
           expect(afterRealm.objects(DogSchema.name).length).to.equal(1);
         };
 
-        await waitServerSideClientResetDiscardLocalCallbacks(
+        await waitServerSideClientResetDiscardUnsyncedChangesCallbacks(
           useFlexibleSync,
           getSchema(useFlexibleSync),
           this.app,

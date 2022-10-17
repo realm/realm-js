@@ -37,7 +37,7 @@
 /**
  * This describes the options to configure client reset.
  * @typedef {Object} Realm.App.Sync~ClientResetConfiguration
- * @property {string} mode - Either "manual" (deprecated, see also `Realm.App.Sync.initiateClientReset()`), "discardLocal" (download a fresh copy from the server), "recover" (merged remote and local changes), or "recoverOrDiscard" (download a fresh copy from the server is recovery is not possible)
+ * @property {string} mode - Either "manual" (deprecated, see also `Realm.App.Sync.initiateClientReset()`), "discardUnsyncedChanges" (download a fresh copy from the server), "recoverUnsyncedChanges" (merged remote and local, unsynced changes), or "recoverOrDiscardUnsyncedChanges" (download a fresh copy from the server if recovery of unsynced changes is not possible)
  * @property {callback(realm)|null} [clientResetBefore] - called before sync initiates a client reset.
  * @property {callback(beforeRealm, afterRealm)|null} [clientResetAfter] - called after client reset has been executed; `beforeRealm` and `afterRealm` are instances of the Realm before and after the client reset.
  * @since {10.11.0}
