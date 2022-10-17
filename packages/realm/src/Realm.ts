@@ -19,7 +19,7 @@
 import {
   BSON,
   binding,
-  fromBindingSchema,
+  fromBindingRealmSchema,
   toBindingSchema,
   CanonicalObjectSchema,
   DefaultObject,
@@ -48,6 +48,7 @@ import {
   assert,
   ClassHelpers,
   normalizeObjectSchema,
+  toArrayBuffer,
 } from "./internal";
 
 type RealmSchemaExtra = Record<string, ObjectSchemaExtra | undefined>;
@@ -134,11 +135,11 @@ export class Realm {
    */
   public static schemaVersion(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): number {
     const config: Configuration = { path };
-    if (encryptionKey) {
-      throw new Error("Not yet supported");
-    }
     const absolutePath = Realm.determinePath(config);
-    const schemaVersion = binding.Realm.getSchemaVersion({ path: absolutePath });
+    const schemaVersion = binding.Realm.getSchemaVersion({
+      path: absolutePath,
+      encryptionKey: Realm.determineEncryptionKey(encryptionKey),
+    });
     if (schemaVersion === NOT_VERSIONED) {
       return -1;
     } else {
@@ -203,8 +204,6 @@ export class Realm {
     fs.copyBundledRealmFiles();
   }
 
-  private static defaultPathOverride?: string;
-
   private static normalizePath(path: string | undefined): string {
     if (typeof path === "undefined") {
       return Realm.defaultPath;
@@ -219,6 +218,14 @@ export class Realm {
 
   private static determinePath(config: Configuration): string {
     return Realm.normalizePath(config.path);
+  }
+
+  private static determineEncryptionKey(encryptionKey: Configuration["encryptionKey"]): ArrayBuffer | undefined {
+    if (typeof encryptionKey === "undefined") {
+      return encryptionKey;
+    } else {
+      return toArrayBuffer(encryptionKey);
+    }
   }
 
   private static extractSchemaExtras(schemas: CanonicalObjectSchema[]): RealmSchemaExtra {
@@ -258,6 +265,7 @@ export class Realm {
           }
         : undefined,
       disableFormatUpgrade: config.disableFormatUpgrade,
+      encryptionKey: Realm.determineEncryptionKey(config.encryptionKey),
     };
   }
 
@@ -332,7 +340,7 @@ export class Realm {
   }
 
   get schema(): CanonicalObjectSchema[] {
-    const schemas = fromBindingSchema(this.internal.schema);
+    const schemas = fromBindingRealmSchema(this.internal.schema);
     // Stitch in the constructors and defaults stored in this.schemaExtras
     for (const objectSchema of schemas) {
       const extras = this.schemaExtras[objectSchema.name];
