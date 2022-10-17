@@ -16,12 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as binding from "./binding";
-import { IllegalConstructorError } from "./errors";
-import { OrderedCollection, OrderedCollectionHelpers } from "./OrderedCollection";
-import type { Realm } from "./Realm";
+import { binding, IllegalConstructorError, OrderedCollection, OrderedCollectionHelpers, Realm } from "./internal";
 
-export class Set<T = unknown> extends OrderedCollection<T> {
+export class RealmSet<T = unknown> extends OrderedCollection<T> {
   /** @internal */
   private internal!: binding.Set;
 

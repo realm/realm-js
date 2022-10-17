@@ -16,11 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { INTERNAL } from "./internal";
-import { DefaultObject } from "./schema";
-import { Object as RealmObject } from "./Object";
+import { INTERNAL, DefaultObject, RealmObject } from "./internal";
 
-////////////////////////////////////////////////////////////////////////////
+/** @internal */
 export class JSONCacheMap extends Map<number, Map<string, DefaultObject>> {
   add<T>(object: RealmObject<T>, value: DefaultObject) {
     const tableKey = object[INTERNAL].table.key;

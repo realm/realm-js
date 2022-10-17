@@ -634,7 +634,7 @@ describe("Realmtest", () => {
             //@ts-expect-error assigning string to int
             p1.age = "Ten";
           });
-        }).throws("PersonObject.age must be of type 'number', got 'string' ('Ten')");
+        }).throws("Expected value to be a number, got a string");
       });
     });
 
@@ -660,7 +660,7 @@ describe("Realmtest", () => {
           this.realm.write(() => {
             this.realm.create(PersonObject.schema.name, { name: "Ari", age: "Ten" });
           });
-        }).throws("PersonObject.age must be of type 'number', got 'string' ('Ten')");
+        }).throws("Expected value to be a number, got a string");
       });
 
       it("create only works within transaction", function (this: RealmContext) {
