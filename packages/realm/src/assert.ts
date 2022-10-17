@@ -147,3 +147,7 @@ assert.outTransaction = (realm: Realm, message = "Expected realm to be outside o
 assert.isValid = (obj: binding.Obj, message = "Accessing object which has been invalidated or deleted") => {
   assert(obj.isValid, message);
 };
+
+assert.isSameRealm = (realm1: binding.Realm, realm2: binding.Realm, message = "Expected the Realms to be the same") => {
+  assert(binding.Helpers.isSameRealm(realm1, realm2), message);
+};
