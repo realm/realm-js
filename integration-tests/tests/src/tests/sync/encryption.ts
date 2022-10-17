@@ -74,10 +74,6 @@ describe("Encryption", () => {
       expect(Realm.schemaVersion("encrypted.realm", encryptionKey)).equals(3);
 
       expect(function () {
-        //@ts-expect-error test invalid number of input to schemaversion
-        Realm.schemaVersion("encrypted.realm", encryptionKey, "extra");
-      }).throws;
-      expect(function () {
         //@ts-expect-error test invalid encryptionkey as input to schemaversion
         Realm.schemaVersion("encrypted.realm", "asdf");
       }).throws;

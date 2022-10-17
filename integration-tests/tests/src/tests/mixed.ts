@@ -160,7 +160,7 @@ describe("Mixed", () => {
     it("wrong type throws", function (this: RealmContext) {
       expect(() => {
         this.realm.write(() => this.realm.create(SingleSchema.name, { a: Object.create({}) }));
-      }).throws(Error, "Only Realm instances are supported.");
+      }).throws(Error, "Unable to convert an object with ctor 'Object' to a Mixed");
     });
   });
 
