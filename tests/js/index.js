@@ -46,7 +46,7 @@ var TESTS = {
   EncryptionTests: require("./encryption-tests"),
   AliasTests: require("./alias-tests"),
   MixedTests: require("./mixed-tests"),
-  DictionaryTest: require("./dictionary-tests"),
+  DictionaryTests: require("./dictionary-tests"),
   // Garbagecollectiontests: require('./garbage-collection'),
   ArrayBuffer: require("./array-buffer-tests"),
   SetTests: require("./set-tests"),

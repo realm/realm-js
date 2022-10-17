@@ -164,11 +164,11 @@ module.exports = {
 
     TestCase.assertThrowsContaining(
       () => realm.write(() => realm.create(DictIntSchema.name, { a: { c: "error" } })),
-      "Property must be of type 'number', got (error)",
+      "Expected 'a[\"c\"]' to be a number or bigint, got a string",
     );
     TestCase.assertThrowsContaining(
       () => realm.write(() => (data.a = "cc")),
-      "Dictionary.a must be of type 'number{}', got 'string' ('cc')",
+      "Expected 'values of a' to be an object, got a string",
     );
 
     realm.close();
@@ -275,7 +275,8 @@ module.exports = {
     TestCase.assertEqual(y, 2, "Should be an equals to: [1,3,2]");
     TestCase.assertEqual(z, 3, "Should be an equals to: [1,3,2]");
 
-    TestCase.assertEqual(point[Symbol.for("x")], 1, "Should work with symbols");
+    // The new SDK doesn't support this pattern of accessing dictionary values
+    // TestCase.assertEqual(point[Symbol.for("x")], 1, "Should work with symbols");
 
     realm.close();
   },
@@ -747,7 +748,7 @@ module.exports = {
       realm.write(() => {
         realm.create(DictSchema.name, { a: { x: {} } });
       });
-    }, "Only Realm instances are supported.");
+    }, "Unable to convert an object with ctor 'Object' to a Mixed");
     realm.write(() => realm.create(DictSchema.name, { a: { x: null } }));
     let data = realm.objects(DictSchema.name)[0].a;
     TestCase.assertEqual(data.x, null, "Should be an equals to mutable.x = null");

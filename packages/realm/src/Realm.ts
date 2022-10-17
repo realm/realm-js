@@ -74,15 +74,7 @@ export class Realm {
   public static UpdateMode = UpdateMode;
   public static BSON = BSON;
 
-  public static get defaultPath() {
-    // We can't simply initialize a `public static defaultPath = Realm.normalizePath("default.realm")`
-    // since the platform utils aren't injected when this class is created.
-    return Realm.defaultPathOverride || Realm.normalizePath("default.realm");
-  }
-
-  public static set defaultPath(path: string) {
-    Realm.defaultPathOverride = path;
-  }
+  public static defaultPath = Realm.normalizePath("default.realm");
 
   public static clearTestState(): void {
     // Close any realms not already closed
