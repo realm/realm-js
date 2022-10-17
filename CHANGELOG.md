@@ -8,7 +8,7 @@
 
 ### Fixed
 * If a case insensitive query searched for a string including an 4-byte UTF8 character, the program would crash. ([realm/realm-core#5825](https://github.com/realm/realm-core/issues/5825), since v1.0.0)
-* `Realm#writeCopyTo()` doesn't support flexible sync, and an exception is thrown. ([realm/realm-core#5798](https://github.com/realm/realm-core/issues/5798) and , since v10.10.0)
+* `Realm#writeCopyTo()` doesn't support flexible sync, and an exception is thrown. ([realm/realm-core#5798](https://github.com/realm/realm-core/issues/5798), since v10.10.0)
 * Asymmetric object types/classes cannot be used with partition-based sync, and an exception is thrown. ([realm/realm-core#5691](https://github.com/realm/realm-core/issues/5691), since v10.19.0)
 * If you set a subscription on a link in flexible sync, the server would not know how to handle it. ([realm/realm-core#5409](https://github.com/realm/realm-core/issues/5409), since v10.10.1)
 * Fixed type declarations for aggregation methods (min, max, sum, avg) to reflect implementation. ([4994](https://github.com/realm/realm-js/issues/4994), since v2.0.0)
