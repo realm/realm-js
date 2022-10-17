@@ -16,11 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as binding from "./binding";
-import { OrderedCollection, OrderedCollectionHelpers } from "./OrderedCollection";
-import { IllegalConstructorError } from "./errors";
-import type { Realm } from "./Realm";
-import { assert } from "./assert";
+import {
+  assert,
+  binding,
+  OrderedCollection,
+  OrderedCollectionHelpers,
+  IllegalConstructorError,
+  Realm,
+} from "./internal";
 
 type PartiallyWriteableArray<T> = Pick<Array<T>, "pop" | "push" | "shift" | "unshift" | "splice">;
 

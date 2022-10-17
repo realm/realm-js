@@ -26,7 +26,8 @@ import {
   PropertyTypeName,
   RealmObjectConstructor,
 } from "./types";
-import { Object as RealmObject } from "../Object";
+import { Realm } from "../Realm";
+import { RealmObject } from "../internal";
 
 export const PRIMITIVE_TYPES = new Set<PropertyTypeName>([
   "bool",

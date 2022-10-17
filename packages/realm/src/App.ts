@@ -16,8 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as binding from "./binding";
-import { fs } from "./platform";
+import { binding, fs } from "./internal";
 
 export type AppConfiguration = {
   id: string;
