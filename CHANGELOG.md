@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 10.22.0 (2022-10-17)
 
 ### Enhancements
 * Prioritize integration of local changes over remote changes. This shortens the time users may have to wait when committing local changes. Stop storing downloaded changesets in history. ([realm/realm-core#5844](https://github.com/realm/realm-core/pull/5844))
