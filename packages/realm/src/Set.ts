@@ -18,7 +18,7 @@
 
 import { binding, IllegalConstructorError, OrderedCollection, OrderedCollectionHelpers, Realm } from "./internal";
 
-export class RealmSet<T = unknown> extends OrderedCollection<T> {
+export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
   /** @internal */
   private internal!: binding.Set;
 
@@ -34,6 +34,10 @@ export class RealmSet<T = unknown> extends OrderedCollection<T> {
       writable: false,
       value: internal,
     });
+  }
+
+  get size(): number {
+    return this.length;
   }
 
   isValid() {
@@ -74,5 +78,11 @@ export class RealmSet<T = unknown> extends OrderedCollection<T> {
    */
   has(value: T): boolean {
     return this.includes(value);
+  }
+
+  *entries() {
+    for (const value of this.values()) {
+      yield [value, value] as [T, T];
+    }
   }
 }

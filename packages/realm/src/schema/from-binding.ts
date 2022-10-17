@@ -16,16 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { assert } from "../assert";
-import { Realm, PropertyType, TableType } from "../binding";
+import { PropertyType, TableType } from "../binding";
+import { assert, binding } from "../internal";
 
 // TODO: Update these once the binding expose proper types
-type BindingObjectSchema = Realm["schema"][0];
-type BindingProperty = Realm["schema"][0]["persistedProperties"][0];
+type BindingObjectSchema = binding.Realm["schema"][0];
+type BindingProperty = binding.Realm["schema"][0]["persistedProperties"][0];
 
 import { CanonicalObjectSchema, CanonicalObjectSchemaProperty, PropertyTypeName } from "./types";
 
-const TYPE_MAPPINGS: Record<PropertyType, PropertyTypeName | null> = {
+const TYPE_MAPPINGS: Record<binding.PropertyType, PropertyTypeName | null> = {
   [PropertyType.Int]: "int",
   [PropertyType.Bool]: "bool",
   [PropertyType.String]: "string",
@@ -83,7 +83,7 @@ const COLLECTION_TYPES = [PropertyType.Array, PropertyType.Set, PropertyType.Dic
  * @returns The object schema, as represented by the SDK.
  * @internal
  */
-export function transformObjectSchema({
+export function fromBindingObjectSchema({
   name,
   computedProperties,
   persistedProperties,
@@ -94,7 +94,7 @@ export function transformObjectSchema({
   const result: CanonicalObjectSchema = {
     constructor: undefined,
     name,
-    properties: Object.fromEntries(properties.map((property) => [property.name, transformPropertySchema(property)])),
+    properties: Object.fromEntries(properties.map((property) => [property.name, fromBindingPropertySchema(property)])),
     embedded: tableType === TableType.Embedded,
     asymmetric: tableType === TableType.TopLevelAsymmetric,
   };
@@ -111,13 +111,13 @@ export function transformObjectSchema({
  * @returns The property schema, as represented by the SDK.
  * @internal
  */
-export function transformPropertySchema(propertySchema: BindingProperty): CanonicalObjectSchemaProperty {
+export function fromBindingPropertySchema(propertySchema: BindingProperty): CanonicalObjectSchemaProperty {
   const { name, isIndexed, publicName } = propertySchema;
   const result = {
     name,
     indexed: isIndexed,
     mapTo: publicName ? publicName : name,
-    ...transformPropertyTypeName(propertySchema),
+    ...fromBindingPropertyTypeName(propertySchema),
   };
   return result;
 }
@@ -127,14 +127,14 @@ export function transformPropertySchema(propertySchema: BindingProperty): Canoni
  * @param propertySchema The property schema, as represented by the binding.
  * @returns A partial property schema, as represented by the SDK.
  */
-function transformPropertyTypeName(
+function fromBindingPropertyTypeName(
   propertySchema: BindingProperty,
 ): Pick<CanonicalObjectSchemaProperty, "type" | "optional" | "objectType" | "property"> {
   const { type, objectType, linkOriginPropertyName } = propertySchema;
   const itemType = type & ~PropertyType.Collection;
 
   if (type & PropertyType.Nullable) {
-    const item = transformPropertyTypeName({ ...propertySchema, type: type & ~PropertyType.Nullable });
+    const item = fromBindingPropertyTypeName({ ...propertySchema, type: type & ~PropertyType.Nullable });
     return { ...item, optional: true };
   }
 
@@ -151,7 +151,7 @@ function transformPropertyTypeName(
 
   for (const collectionType of COLLECTION_TYPES) {
     if (type & collectionType) {
-      const item = transformPropertyTypeName({ ...propertySchema, type: itemType });
+      const item = fromBindingPropertyTypeName({ ...propertySchema, type: itemType });
       return {
         type: TYPE_MAPPINGS[collectionType] as PropertyTypeName,
         objectType: item.type === "object" ? item.objectType : item.type,
@@ -182,6 +182,6 @@ function transformPropertyTypeName(
 }
 
 /** @internal */
-export function transformRealmSchema(schema: Readonly<BindingObjectSchema[]>): CanonicalObjectSchema[] {
-  return schema.map(transformObjectSchema);
+export function fromBindingRealmSchema(schema: Readonly<BindingObjectSchema[]>): CanonicalObjectSchema[] {
+  return schema.map(fromBindingObjectSchema);
 }
