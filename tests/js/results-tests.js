@@ -288,42 +288,42 @@ module.exports = {
     }
 
     realm.write(function () {
-      realm.create("BasicTypesObject", [
-        false,
-        0,
-        0,
-        0,
-        "0",
-        new Date(0),
-        new ArrayBuffer(1),
-        decimals[0],
-        oids[0],
-        uuids[0],
-      ]);
-      realm.create("BasicTypesObject", [
-        true,
-        2,
-        2,
-        2,
-        "2",
-        new Date(2),
-        new ArrayBuffer(1),
-        decimals[2],
-        oids[2],
-        uuids[2],
-      ]);
-      realm.create("BasicTypesObject", [
-        false,
-        1,
-        1,
-        1,
-        "1",
-        new Date(1),
-        new ArrayBuffer(1),
-        decimals[1],
-        oids[1],
-        uuids[1],
-      ]);
+      realm.create("BasicTypesObject", {
+        boolCol: false,
+        intCol: 0,
+        floatCol: 0,
+        doubleCol: 0,
+        stringCol: "0",
+        dateCol: new Date(0),
+        dataCol: new ArrayBuffer(1),
+        decimal128Col: decimals[0],
+        objectIdCol: oids[0],
+        uuidCol: uuids[0],
+      });
+      realm.create("BasicTypesObject", {
+        boolCol: true,
+        intCol: 2,
+        floatCol: 2,
+        doubleCol: 2,
+        stringCol: "2",
+        dateCol: new Date(2),
+        dataCol: new ArrayBuffer(1),
+        decimal128Col: decimals[2],
+        objectIdCol: oids[2],
+        uuidCol: uuids[2],
+      });
+      realm.create("BasicTypesObject", {
+        boolCol: false,
+        intCol: 1,
+        floatCol: 1,
+        doubleCol: 1,
+        stringCol: "1",
+        dateCol: new Date(1),
+        dataCol: new ArrayBuffer(1),
+        decimal128Col: decimals[1],
+        objectIdCol: oids[1],
+        uuidCol: uuids[1],
+      });
     });
 
     var numberProps = ["intCol", "floatCol", "doubleCol", "stringCol"];
@@ -388,7 +388,7 @@ module.exports = {
     let realm = new Realm({ schema: [schemas.TestObject] });
     realm.write(function () {
       for (var i = 10; i > 0; i--) {
-        realm.create("TestObject", [i]);
+        realm.create("TestObject", { doubleCol: i });
       }
     });
 
@@ -547,14 +547,12 @@ module.exports = {
       if (firstCall) {
         TestCase.assertEqual(testObjects.length, 3);
         TestCase.assertEqual(changes.insertions.length, 0);
-        TestCase.assertEqual(changes.modifications.length, 0);
         TestCase.assertEqual(changes.newModifications.length, 0);
         TestCase.assertEqual(changes.oldModifications.length, 0);
         firstCall = false;
       } else {
         TestCase.assertEqual(testObjects.length, 4);
         TestCase.assertEqual(changes.insertions.length, 1);
-        TestCase.assertEqual(changes.modifications.length, 1);
         TestCase.assertEqual(changes.newModifications.length, 1);
         TestCase.assertEqual(changes.oldModifications.length, 1);
       }
@@ -962,7 +960,7 @@ module.exports = {
     var realm = new Realm({ schema: [schemas.TestObject] });
     realm.write(function () {
       for (var i = 10; i > 0; i--) {
-        realm.create("TestObject", [i]);
+        realm.create("TestObject", { doubleCol: i });
       }
     });
 

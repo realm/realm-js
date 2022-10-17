@@ -209,9 +209,11 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
             let index = 0;
             for (const value of values) {
               try {
-                bindingValues.push(
-                  itemToBinding(value, embedded ? () => [internal.insertEmbedded(index), true] : undefined),
-                );
+                if (embedded) {
+                  itemToBinding(value, () => [internal.insertEmbedded(index), true]);
+                } else {
+                  bindingValues.push(itemToBinding(value, undefined));
+                }
               } catch (err) {
                 if (err instanceof TypeAssertionError) {
                   err.rename(`${name}[${index}]`);
@@ -233,7 +235,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       };
     }
   },
-  [binding.PropertyType.Dictionary]({ columnKey, realm, name, type, optional, objectType, getClassHelpers }) {
+  [binding.PropertyType.Dictionary]({ columnKey, realm, name, type, optional, objectType, getClassHelpers, embedded }) {
     const itemType = type & ~binding.PropertyType.Flags;
     const itemHelpers = getTypeHelpers(itemType, {
       realm,
@@ -252,9 +254,20 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
         const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
         // Clear the dictionary before adding new values
         internal.removeAll();
-        assert.object(value, "values");
+        assert.object(value, `values of ${name}`);
         for (const [k, v] of Object.entries(value)) {
-          internal.insertAny(k, itemHelpers.toBinding(v));
+          try {
+            if (embedded) {
+              itemHelpers.toBinding(v, () => [internal.insertEmbedded(k), true]);
+            } else {
+              internal.insertAny(k, itemHelpers.toBinding(v, undefined));
+            }
+          } catch (err) {
+            if (err instanceof TypeAssertionError) {
+              err.rename(`${name}["${k}"]`);
+            }
+            throw err;
+          }
         }
       },
     };

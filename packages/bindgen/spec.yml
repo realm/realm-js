@@ -472,6 +472,7 @@ classes:
       make_network_transport: '(runRequest: (request: Request&&, callback: util::UniqueFunction<(response: Response&&)>&&) off_thread) -> std::shared_ptr<GenericNetworkTransport>'
       delete_data_for_object: '(realm: SharedRealm, object_type: StringData)'
       is_empty_realm: '(realm: SharedRealm) -> bool'
+      is_same_realm: '(r1: SharedRealm, r2: SharedRealm) -> bool'
 
   ConstTableRef:
     needsDeref: true
@@ -845,6 +846,7 @@ classes:
       freeze: '(frozen_realm: std::shared_ptr<Realm> const&) const -> Dictionary'
       add_key_based_notification_callback: '(cb: (changes: DictionaryChangeSet), keyPaths: KeyPathArray) -> NotificationToken'
       insert_any: '(key: StringData, value: Mixed) -> std::pair<count_t, bool>'
+      insert_embedded: '(key: StringData) -> Obj'
       try_get_any: '(key: StringData) const -> util::Optional<Mixed>'
       remove_all: '()'
       try_erase: '(key: StringData) -> bool'
