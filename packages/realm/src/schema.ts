@@ -18,5 +18,5 @@
 
 export { transformRealmSchema as fromBindingSchema, getTypeName } from "./schema/from-binding";
 export { transformRealmSchema as toBindingSchema } from "./schema/to-binding";
-export { normalizeRealmSchema } from "./schema/normalize";
+export * from "./schema/normalize";
 export * from "./schema/types";

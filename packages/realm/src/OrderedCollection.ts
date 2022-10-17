@@ -16,19 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as binding from "./binding";
-import { Results } from "./Results";
-import { Collection } from "./Collection";
-import { unwind } from "./ranges";
-import { TypeHelpers } from "./types";
-import { IllegalConstructorError, TypeAssertionError } from "./errors";
-import { Realm } from "./Realm";
-import { getInternal } from "./internal";
-import { assert } from "./assert";
-import { ClassHelpers } from "./ClassHelpers";
-import { JSONCacheMap } from "./JSONCacheMap";
-import { Object as RealmObject } from "./Object";
-import { DefaultObject, getTypeName } from "./schema";
+import {
+  binding,
+  Results,
+  Collection,
+  unwind,
+  TypeHelpers,
+  IllegalConstructorError,
+  TypeAssertionError,
+  Realm,
+  assert,
+  ClassHelpers,
+  JSONCacheMap,
+  INTERNAL,
+  RealmObject,
+  DefaultObject,
+  getTypeName,
+} from "./internal";
 
 const DEFAULT_COLUMN_KEY = 0n as unknown as binding.ColKey;
 
@@ -182,6 +186,10 @@ export abstract class OrderedCollection<T = unknown>
   /**
    * @returns An array of plain objects for JSON serialization.
    **/
+  toJSON(_?: string, cache?: unknown): Array<DefaultObject>;
+  /**
+   * @internal
+   */
   toJSON(_?: string, cache = new JSONCacheMap()): Array<DefaultObject> {
     return this.map((item, index) => {
       if (item instanceof RealmObject) {
@@ -250,7 +258,7 @@ export abstract class OrderedCollection<T = unknown>
     assert(typeof fromIndex === "undefined", "The second fromIndex argument is not yet supported");
     if (this.type === "object") {
       assert.instanceOf(searchElement, RealmObject);
-      return this.results.indexOfObj(getInternal(searchElement));
+      return this.results.indexOfObj(searchElement[INTERNAL]);
     } else {
       return this.results.indexOf(this.helpers.toBinding(searchElement, undefined));
     }
@@ -418,6 +426,7 @@ export abstract class OrderedCollection<T = unknown>
     const { results: parent, realm, helpers } = this;
     const kpMapping = binding.Helpers.getKeypathMapping(realm.internal);
     // TODO: Perform a mapping of the arguments
+    // const bindingArgs = args.map((arg) => mixedToBinding(arg));
     const query = parent.query.table.query(queryString, args, kpMapping);
     const results = parent.filter(query);
     return new Results(realm, results, helpers);

@@ -21,7 +21,7 @@ import { isAbsolute, join } from "node:path";
 import http from "node:http";
 
 import { assert } from "../assert";
-import * as binding from "../binding";
+import { binding } from "../internal";
 import * as fs from "../platform/file-system";
 import * as network from "../platform/network";
 
@@ -48,6 +48,9 @@ fs.inject({
   },
   exists(path) {
     return existsSync(path);
+  },
+  copyBundledRealmFiles() {
+    throw new Error("Realm for Node does not support this method.");
   },
 });
 

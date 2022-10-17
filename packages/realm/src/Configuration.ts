@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { ObjectSchema, RealmObjectConstructor } from "./schema";
+import { ObjectSchema, RealmObjectConstructor, assert, DefaultObject, RealmObject } from "./internal";
 
 // export type Configuration = ConfigurationWithSync | ConfigurationWithoutSync;
 export type Configuration = BaseConfiguration;
@@ -30,6 +30,8 @@ type BaseConfiguration = {
   fifoFilesFallbackPath?: string;
   sync?: unknown;
   shouldCompactOnLaunch?: (totalBytes: number, usedBytes: number) => boolean;
+  deleteRealmIfMigrationNeeded?: boolean;
+  disableFormatUpgrade?: boolean;
 };
 
 // type ConfigurationWithSync = BaseConfiguration & {
@@ -174,3 +176,50 @@ type BaseConfiguration = {
 //   deleteRealmIfMigrationNeeded?: boolean;
 //   disableFormatUpgrade?: boolean;
 // };
+
+export function validateConfiguration(arg: unknown): asserts arg is Configuration {
+  assert.object(arg);
+  const { path, schema } = arg;
+  if (typeof path === "string") {
+    assert(path.length > 0, "Expected a non-empty path or none at all");
+  }
+  if (schema) {
+    validateRealmSchema(schema);
+  }
+}
+
+export function validateRealmSchema(schema: unknown): asserts schema is Configuration["schema"][] {
+  assert.array(schema, "schema");
+  schema.forEach(validateObjectSchema);
+  // TODO: Assert that backlinks point to object schemas that are actually declared
+}
+
+export function validateObjectSchema(arg: unknown): asserts arg is ObjectSchema {
+  if (typeof arg === "function") {
+    // Class based model
+    const clazz = arg as unknown as DefaultObject;
+    // We assert this later, but want a custom error message
+    if (!(arg.prototype instanceof RealmObject)) {
+      const schemaName = clazz.schema && (clazz.schema as DefaultObject).name;
+      if (typeof schemaName === "string" && schemaName != arg.name) {
+        throw new TypeError(`Class '${arg.name}' (declaring '${schemaName}' schema) must extend Realm.Object`);
+      } else {
+        throw new TypeError(`Class '${arg.name}' must extend Realm.Object`);
+      }
+    }
+    assert.object(clazz.schema, "schema static");
+    validateObjectSchema(clazz.schema);
+  } else {
+    assert.object(arg, "object schema");
+    const { name, properties, asymmetric, embedded } = arg;
+    assert.string(name, "name");
+    assert.object(properties, "properties");
+    if (typeof asymmetric !== "undefined") {
+      assert.boolean(asymmetric);
+    }
+    if (typeof embedded !== "undefined") {
+      assert.boolean(embedded);
+    }
+    assert(!asymmetric || !embedded, `Cannot be both asymmetric and embedded`);
+  }
+}

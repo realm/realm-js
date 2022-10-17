@@ -16,11 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as binding from "./binding";
-import { BSON } from "./bson";
-
-import { getInternal } from "./internal";
 import {
+  BSON,
+  binding,
   fromBindingSchema,
   toBindingSchema,
   CanonicalObjectSchema,
@@ -30,25 +28,27 @@ import {
   Constructor,
   RealmObjectConstructor,
   CanonicalRealmSchema,
-} from "./schema";
-import { fs } from "./platform";
-
-import { Object as RealmObject, UpdateMode } from "./Object";
-import { Results } from "./Results";
-import { RealmInsertionModel } from "./InsertionModel";
-import { Configuration } from "./Configuration";
-import { ClassMap } from "./ClassMap";
-import { List } from "./List";
-import { App } from "./App";
-import { validateConfiguration, validateObjectSchema, validateRealmSchema } from "./validation/configuration";
-import { Collection } from "./Collection";
-import { Dictionary } from "./Dictionary";
-import { Set as RealmSet } from "./Set";
-import { assert } from "./assert";
-import { ClassHelpers } from "./ClassHelpers";
-import { OrderedCollection } from "./OrderedCollection";
-import { SchemaMode } from "./binding";
-import { normalizeObjectSchema } from "./schema/normalize";
+  fs,
+  Collection,
+  OrderedCollection,
+  Results,
+  List,
+  Dictionary,
+  RealmSet,
+  INTERNAL,
+  RealmObject,
+  UpdateMode,
+  RealmInsertionModel,
+  Configuration,
+  ClassMap,
+  App,
+  validateConfiguration,
+  validateObjectSchema,
+  validateRealmSchema,
+  assert,
+  ClassHelpers,
+  normalizeObjectSchema,
+} from "./internal";
 
 type RealmSchemaExtra = Record<string, ObjectSchemaExtra | undefined>;
 
@@ -207,6 +207,10 @@ export class Realm {
     return result as T;
   }
 
+  public static copyBundledRealmFiles() {
+    fs.copyBundledRealmFiles();
+  }
+
   private static defaultPathOverride?: string;
 
   private static normalizePath(path: string | undefined): string {
@@ -243,14 +247,14 @@ export class Realm {
     normalizedSchema: CanonicalRealmSchema | undefined,
   ): binding.RealmConfig_Relaxed {
     const path = Realm.determinePath(config);
-    const { fifoFilesFallbackPath, shouldCompactOnLaunch, inMemory, readOnly } = config;
+    const { fifoFilesFallbackPath, shouldCompactOnLaunch, inMemory } = config;
     const bindingSchema = normalizedSchema && toBindingSchema(normalizedSchema);
     return {
       path,
       fifoFilesFallbackPath,
       schema: bindingSchema,
       inMemory: inMemory === true,
-      schemaMode: readOnly === true ? SchemaMode.Immutable : undefined,
+      schemaMode: Realm.determineSchemaMode(config),
       schemaVersion: config.schema
         ? typeof config.schemaVersion === "number"
           ? BigInt(config.schemaVersion)
@@ -261,7 +265,23 @@ export class Realm {
             return shouldCompactOnLaunch(Number(totalBytes), Number(usedBytes));
           }
         : undefined,
+      disableFormatUpgrade: config.disableFormatUpgrade,
     };
+  }
+
+  private static determineSchemaMode(config: Configuration): binding.SchemaMode | undefined {
+    const { readOnly, deleteRealmIfMigrationNeeded } = config;
+    assert(
+      !readOnly || !deleteRealmIfMigrationNeeded,
+      "Cannot set 'deleteRealmIfMigrationNeeded' when 'readOnly' is set.",
+    );
+    if (readOnly) {
+      return binding.SchemaMode.Immutable;
+    } else if (deleteRealmIfMigrationNeeded) {
+      return binding.SchemaMode.ResetFile;
+    } else {
+      return undefined;
+    }
   }
 
   /**
@@ -387,7 +407,7 @@ export class Realm {
       mode = UpdateMode.Never;
     }
     // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1260-L1321
-    if (values instanceof RealmObject && !getInternal(values)) {
+    if (values instanceof RealmObject && !values[INTERNAL]) {
       throw new Error("Cannot create an object from a detached Realm.Object instance");
     }
     if (!Object.values(UpdateMode).includes(mode)) {
@@ -403,7 +423,7 @@ export class Realm {
     assert.object(subject, "subject");
     if (subject instanceof RealmObject) {
       const { objectSchema } = this.classes.getHelpers(subject);
-      const obj = getInternal(subject);
+      const obj = subject[INTERNAL];
       assert.isValid(
         obj,
         "Object is invalid. Either it has been previously deleted or the Realm it belongs to has been closed.",
@@ -415,9 +435,8 @@ export class Realm {
       for (const object of subject) {
         assert.instanceOf(object, RealmObject);
         const { objectSchema } = this.classes.getHelpers(object);
-        const obj = getInternal(object);
         const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
-        table.removeObject(obj.key);
+        table.removeObject(object[INTERNAL].key);
       }
     } else {
       throw new Error("Not yet implemented");
@@ -487,7 +506,7 @@ export class Realm {
       fromBinding: wrapObject,
       toBinding(value: unknown) {
         assert.instanceOf(value, RealmObject);
-        return getInternal(value);
+        return value[INTERNAL];
       },
     });
   }
@@ -533,7 +552,8 @@ export class Realm {
   }
 
   compact(): boolean {
-    throw new Error("Not yet implemented");
+    assert.outTransaction(this, "Cannot compact a Realm within a transaction.");
+    return this.internal.compact();
   }
 
   /**

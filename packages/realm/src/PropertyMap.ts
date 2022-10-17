@@ -16,9 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as binding from "./binding";
-
-import { createHelpers, HelperOptions, PropertyHelpers } from "./PropertyHelpers";
+import { binding, createPropertyHelpers, HelperOptions, PropertyHelpers } from "./internal";
 
 type BindingObjectSchema = binding.Realm["schema"][0];
 
@@ -45,7 +43,7 @@ export class PropertyMap {
         const embedded = property.objectType
           ? options.getClassHelpers(property.objectType).objectSchema.tableType === binding.TableType.Embedded
           : false;
-        const helpers = createHelpers({ ...property, embedded, objectSchemaName }, options);
+        const helpers = createPropertyHelpers({ ...property, embedded, objectSchemaName }, options);
         // Allow users to override the default value of properties
         const defaultValue = defaults[property.name];
         helpers.default = typeof defaultValue !== "undefined" ? defaultValue : helpers.default;

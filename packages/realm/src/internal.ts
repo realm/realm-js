@@ -16,14 +16,49 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export const INTERNAL = Symbol("Realm#internal");
+// Following [the internal module pattern](https://medium.com/visual-development/how-to-fix-nasty-circular-dependency-issues-once-and-for-all-in-javascript-typescript-a04c987cf0de)
 
-type WithInternal<T> = { [INTERNAL]: T };
+/** @internal */
+export * from "./platform";
 
-export function getInternal<T>(obj: WithInternal<T>): T {
-  return obj[INTERNAL];
-}
+/** @internal */
+export * as binding from "./binding";
+export * from "./bson";
+export * from "./errors";
+/** @internal */
+export * from "./assert";
+/** @internal */
+export * from "./ranges";
+/** @internal */
+export * from "./Listeners";
+/** @internal */
+export * from "./JSONCacheMap";
 
-export function setInternal<T>(obj: WithInternal<T>, internal: T) {
-  Object.defineProperty(obj, INTERNAL, { value: internal, writable: false, configurable: false, enumerable: false });
-}
+/** @internal */
+export * from "./PropertyHelpers";
+/** @internal */
+export * from "./PropertyMap";
+/** @internal */
+export * from "./ClassHelpers";
+/** @internal */
+export * from "./ClassMap";
+/** @internal */
+export * from "./types";
+
+export * from "./Object";
+export * from "./ObjectListeners";
+
+export * from "./Collection";
+export * from "./OrderedCollection";
+export * from "./Results";
+export * from "./List";
+export * from "./Set";
+export * from "./Dictionary";
+
+export * from "./App";
+
+export * from "./Realm";
+export * from "./Configuration";
+
+export * from "./InsertionModel";
+export * from "./schema";

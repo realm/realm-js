@@ -16,16 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as binding from "./binding";
-
-import { PropertyMap } from "./PropertyMap";
-import type { Realm } from "./Realm";
-import { Object as RealmObject } from "./Object";
-import { CanonicalRealmSchema, Constructor, RealmObjectConstructor } from "./schema";
-import { getInternal } from "./internal";
-import { getHelpers, setHelpers } from "./ClassHelpers";
-import { assert } from "./assert";
-import { TableKey } from "./binding";
+import {
+  binding,
+  PropertyMap,
+  Realm,
+  INTERNAL,
+  RealmObject,
+  CanonicalRealmSchema,
+  Constructor,
+  RealmObjectConstructor,
+  getClassHelpers,
+  setClassHelpers,
+  assert,
+} from "./internal";
 
 type BindingObjectSchema = binding.Realm["schema"][0];
 
@@ -34,7 +37,7 @@ type BindingObjectSchema = binding.Realm["schema"][0];
  */
 export class ClassMap {
   private mapping: Record<string, Constructor<unknown>>;
-  private nameByTableKey: Record<TableKey, string>;
+  private nameByTableKey: Record<binding.TableKey, string>;
 
   private static createNamedConstructor<T extends Constructor>(name: string): T {
     const obj = {
@@ -76,10 +79,10 @@ export class ClassMap {
           {
             enumerable: true,
             get(this: RealmObject) {
-              return get(getInternal(this));
+              return get(this[INTERNAL]);
             },
             set(this: RealmObject, value: unknown) {
-              set(getInternal(this), value);
+              set(this[INTERNAL], value);
             },
           },
         ];
@@ -109,7 +112,7 @@ export class ClassMap {
         // Create property getters and setters
         const properties = new PropertyMap();
         // Setting the helpers on the class
-        setHelpers(constructor, {
+        setClassHelpers(constructor, {
           constructor,
           objectSchema,
           canonicalObjectSchema,
@@ -137,7 +140,7 @@ export class ClassMap {
       );
       const constructor = this.mapping[objectSchema.name];
       // Get the uninitialized property map
-      const { properties } = getHelpers(constructor as typeof RealmObject);
+      const { properties } = getClassHelpers(constructor as typeof RealmObject);
       // Initialize the property map, now that all classes have helpers set
       properties.initialize(objectSchema, defaults, {
         realm,
@@ -182,6 +185,6 @@ export class ClassMap {
 
   public getHelpers<T>(arg: string | binding.TableKey | RealmObject<T> | Constructor<RealmObject<T>>) {
     const constructor = this.get(arg);
-    return getHelpers(constructor as unknown as typeof RealmObject);
+    return getClassHelpers(constructor as unknown as typeof RealmObject);
   }
 }

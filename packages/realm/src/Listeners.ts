@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { NotificationToken } from "./binding";
+import { binding } from "./internal";
 
 /** @internal */
-export type CallbackRegistrator<T> = (callback: T) => NotificationToken;
+export type CallbackRegistrator<T> = (callback: T) => binding.NotificationToken;
 
 /** @internal */
 export class Listeners<CallbackType> {
@@ -27,7 +27,7 @@ export class Listeners<CallbackType> {
   /**
    * Mapping of registered listener callbacks onto the their token in the bindings ObjectNotifier.
    */
-  private listeners = new Map<CallbackType, NotificationToken>();
+  private listeners = new Map<CallbackType, binding.NotificationToken>();
 
   add(callback: CallbackType): void {
     if (this.listeners.has(callback)) {

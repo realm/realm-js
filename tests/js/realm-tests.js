@@ -1632,7 +1632,7 @@ module.exports = {
         const p1 = realm.create("PersonObject", { name: "Ari", age: 10 });
         p1.age = "Ten";
       });
-    }, "PersonObject.age must be of type 'number', got 'string' ('Ten')");
+    }, "Expected value to be a number, got a string");
   },
 
   testErrorMessageFromInvalidCreate: function () {
@@ -1642,7 +1642,7 @@ module.exports = {
       realm.write(() => {
         realm.create("PersonObject", { name: "Ari", age: "Ten" });
       });
-    }, "PersonObject.age must be of type 'number', got 'string' ('Ten')");
+    }, "Expected value to be a number, got a string");
   },
 
   testValidTypesForListProperties: function () {
@@ -1847,7 +1847,7 @@ module.exports = {
     var realm = new Realm({ schema: schema });
 
     realm.write(function () {
-      realm.create("TestObject", ["stringValue", 1]);
+      realm.create("TestObject", { prop0: "stringValue", prop1: 1 });
     });
 
     realm.close();
@@ -1859,7 +1859,7 @@ module.exports = {
 
     // create a new object
     realm.write(function () {
-      realm.create("TestObject", ["stringValue", 1]);
+      realm.create("TestObject", { prop0: "stringValue", prop1: 1 });
     });
 
     realm.close();
