@@ -15,16 +15,18 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import { assert } from "./assert";
-import * as binding from "./binding";
-import { Collection } from "./Collection";
-import { IllegalConstructorError } from "./errors";
-import { INTERNAL } from "./internal";
-import { DefaultObject } from "./schema";
-import { Object as RealmObject } from "./Object";
-import { TypeHelpers } from "./types";
-import { JSONCacheMap } from "./JSONCacheMap";
+import {
+  assert,
+  binding,
+  Collection,
+  IllegalConstructorError,
+  DefaultObject,
+  RealmObject,
+  TypeHelpers,
+  JSONCacheMap,
+} from "./internal";
 
+const INTERNAL = Symbol("Dictionary#internal");
 const HELPERS = Symbol("Dictionary#helpers");
 
 // TODO: Implement this
@@ -221,6 +223,8 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * @returns A plain object for JSON serialization.
    **/
   // @ts-expect-error We're exposing methods in the users value namespace
+  toJSON(_?: string, cache?: unknown): DefaultObject;
+  /** @internal */
   toJSON(_?: string, cache = new JSONCacheMap()): DefaultObject {
     return Object.fromEntries(
       Object.entries(this).map(([k, v]) => [k, v instanceof RealmObject ? v.toJSON(k, cache) : v]),

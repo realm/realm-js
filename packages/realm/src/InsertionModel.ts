@@ -16,10 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Dictionary } from "./Dictionary";
-import { List } from "./List";
-import { Object as RealmObject } from "./Object";
-import { Collection } from "./Collection";
+import { Dictionary, List, RealmObject, Collection } from "./internal";
 
 type ExtractPropertyNamesOfType<T, PropType> = {
   [K in keyof T]: T[K] extends PropType ? K : never;

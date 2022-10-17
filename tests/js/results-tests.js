@@ -67,7 +67,8 @@ module.exports = {
     TestCase.assertEqual(people[1].age, 2);
     TestCase.assertEqual(people[2], undefined);
     TestCase.assertEqual(people[-1], undefined);
-    TestCase.assertTrue(Object.getPrototypeOf(people[0]) === schemas.PersonObject.prototype);
+    // We're now injecting a class
+    // TestCase.assertTrue(Object.getPrototypeOf(people[0]) === schemas.PersonObject.prototype);
     TestCase.assertTrue(people[0] instanceof schemas.PersonObject);
   },
 
@@ -88,9 +89,11 @@ module.exports = {
     TestCase.assertThrows(function () {
       objects[1] = { doubleCol: 0 };
     });
-    TestCase.assertThrows(function () {
-      objects.length = 0;
-    });
+
+    // We no longer throw when setting a readonly property
+    // TestCase.assertThrows(function () {
+    //   objects.length = 0;
+    // });
   },
 
   testResultsInvalidProperty: function () {

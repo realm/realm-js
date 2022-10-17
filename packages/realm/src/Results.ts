@@ -16,11 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as binding from "./binding";
-
-import { OrderedCollection, OrderedCollectionHelpers } from "./OrderedCollection";
-import { IllegalConstructorError } from "./errors";
-import type { Realm } from "./Realm";
+import { binding, OrderedCollection, OrderedCollectionHelpers, IllegalConstructorError, Realm } from "./internal";
 
 export class Results<T = unknown> extends OrderedCollection<T> {
   /**

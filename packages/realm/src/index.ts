@@ -16,24 +16,28 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export { App } from "./App";
-export { Results } from "./Results";
-export { Object, UpdateMode } from "./Object";
-export { List } from "./List";
-export { Dictionary } from "./Dictionary";
-export { Set } from "./Set";
-export { OrderedCollection } from "./OrderedCollection";
-export { Collection } from "./Collection";
+export {
+  Realm,
+  App,
+  BSON,
+  Results,
+  RealmObject as Object,
+  UpdateMode,
+  List,
+  Dictionary,
+  RealmSet as Set,
+  OrderedCollection,
+  Collection,
+} from "./internal";
 
-export type { Configuration } from "./Configuration";
-export type { ObjectChangeSet, ObjectChangeCallback } from "./ObjectListeners";
-export type { CollectionChangeSet, CollectionChangeCallback } from "./OrderedCollection";
-
-export * from "./schema/types";
-
-export { BSON } from "./bson";
+export type {
+  Configuration,
+  ObjectChangeSet,
+  ObjectChangeCallback,
+  CollectionChangeSet,
+  CollectionChangeCallback,
+} from "./internal";
 
 // Exporting default for backwards compatibility
-import { Realm } from "./Realm";
+import { Realm } from "./internal";
 export default Realm;
-export { Realm };

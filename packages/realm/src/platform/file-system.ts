@@ -24,6 +24,7 @@ type FileSystemType = {
   getDefaultDirectoryPath(): string;
   readDirectory(path: string): Dirent[];
   exists(path: string): boolean;
+  copyBundledRealmFiles(): void;
 };
 
 export type Dirent = {
@@ -52,6 +53,9 @@ export const fs: FileSystemType = {
     throw new Error("Not supported on this playform");
   },
   exists() {
+    throw new Error("Not supported on this playform");
+  },
+  copyBundledRealmFiles() {
     throw new Error("Not supported on this playform");
   },
 };

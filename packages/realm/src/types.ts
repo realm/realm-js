@@ -16,17 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Decimal128, ObjectId, UUID } from "bson";
-
-import { assert } from "./assert";
-import * as binding from "./binding";
-import { ClassHelpers } from "./ClassHelpers";
-import { TypeAssertionError } from "./errors";
-import { Collection } from "./Collection";
-import { getInternal } from "./internal";
-import { Object as RealmObject, ObjCreator, UpdateMode } from "./Object";
-import type { Realm } from "./Realm";
-import { List } from "./List";
+import {
+  BSON,
+  assert,
+  binding,
+  ClassHelpers,
+  TypeAssertionError,
+  Collection,
+  RealmObject,
+  ObjCreator,
+  UpdateMode,
+  INTERNAL,
+  Realm,
+  List,
+} from "./internal";
 
 const TYPED_ARRAY_CONSTRUCTORS = new Set([
   DataView,
@@ -57,6 +60,18 @@ export type TypeOptions = {
   objectSchemaName: string | undefined;
   getClassHelpers(nameOrTableKey: string | binding.TableKey): ClassHelpers;
 };
+
+export function mixedToBinding(value: unknown): binding.MixedArg {
+  if (value instanceof Date) {
+    return binding.Timestamp.fromDate(value);
+  } else if (value instanceof RealmObject) {
+    return value[INTERNAL];
+  } else if (value instanceof Collection) {
+    throw new Error(`Using a ${value.constructor.name} as Mixed value, is not yet supported`);
+  } else {
+    return value as binding.Mixed;
+  }
+}
 
 function defaultToBinding(value: unknown): binding.MixedArg {
   return value as binding.MixedArg;
@@ -175,7 +190,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
     return {
       toBinding: nullPassthrough((value, createObj) => {
         if (value instanceof helpers.constructor) {
-          return getInternal(value);
+          return value[INTERNAL];
         } else {
           // TODO: Consider exposing a way for calling code to disable object creation
           assert.object(value, name);
@@ -184,7 +199,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
             helpers,
             createObj,
           });
-          return getInternal(createdObject);
+          return createdObject[INTERNAL];
         }
       }, optional),
       fromBinding: nullPassthrough((value) => {
@@ -212,17 +227,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
   },
   [binding.PropertyType.Mixed]({ realm, getClassHelpers }) {
     return {
-      toBinding(value) {
-        if (value instanceof Date) {
-          return binding.Timestamp.fromDate(value);
-        } else if (value instanceof RealmObject) {
-          return getInternal(value);
-        } else if (value instanceof Collection) {
-          throw new Error(`Using a ${value.constructor.name} as Mixed value, is not yet supported`);
-        } else {
-          return value as binding.Mixed;
-        }
-      },
+      toBinding: mixedToBinding,
       fromBinding(value) {
         if (typeof value === "bigint") {
           return Number(value);
@@ -244,7 +249,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
   [binding.PropertyType.ObjectId]({ optional }) {
     return {
       toBinding: nullPassthrough((value) => {
-        assert.instanceOf(value, ObjectId);
+        assert.instanceOf(value, BSON.ObjectId);
         return value;
       }, optional),
       fromBinding: defaultFromBinding,
@@ -253,7 +258,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
   [binding.PropertyType.Decimal]({ optional }) {
     return {
       toBinding: nullPassthrough((value) => {
-        assert.instanceOf(value, Decimal128);
+        assert.instanceOf(value, BSON.Decimal128);
         return value;
       }, optional),
       fromBinding: defaultFromBinding,
@@ -262,7 +267,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
   [binding.PropertyType.UUID]({ optional }) {
     return {
       toBinding: nullPassthrough((value) => {
-        assert.instanceOf(value, UUID);
+        assert.instanceOf(value, BSON.UUID);
         return value;
       }, optional),
       fromBinding: defaultFromBinding,
@@ -315,7 +320,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
   },
 };
 
-export function getHelpers(type: binding.PropertyType, options: TypeOptions): TypeHelpers {
+export function getTypeHelpers(type: binding.PropertyType, options: TypeOptions): TypeHelpers {
   const helpers = TYPES_MAPPING[type];
   assert(helpers, `Unexpected type ${type}`);
   return helpers(options);

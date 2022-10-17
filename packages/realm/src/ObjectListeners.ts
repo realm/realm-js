@@ -16,14 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as binding from "./binding";
-import { NotificationToken } from "./binding";
-import { getHelpers } from "./ClassHelpers";
-
-import { getInternal } from "./internal";
-import { Listeners } from "./Listeners";
-import type { Object as RealmObject } from "./Object";
-import type { PropertyMap } from "./PropertyMap";
+import { binding, getClassHelpers, Listeners, INTERNAL, RealmObject, PropertyMap } from "./internal";
 
 export type ObjectChangeSet<T> = { deleted: boolean; changedProperties: (keyof T)[] };
 export type ObjectChangeCallback<T> = (object: RealmObject<T> & T, changes: ObjectChangeSet<T>) => void;
@@ -36,7 +29,7 @@ export class ObjectListeners<T> {
   private internal!: binding.ObjectNotifier | null;
 
   constructor(private realm: binding.Realm, private object: RealmObject<T> & T) {
-    this.properties = getHelpers(this.object.constructor as typeof RealmObject).properties;
+    this.properties = getClassHelpers(this.object.constructor as typeof RealmObject).properties;
   }
 
   private properties: PropertyMap;
@@ -57,7 +50,7 @@ export class ObjectListeners<T> {
       }
     }, []);
     // Get an actual NotificationToken for the bigint value
-    return NotificationToken.forObject(this.notifier, token);
+    return binding.NotificationToken.forObject(this.notifier, token);
   });
 
   /**
@@ -68,7 +61,7 @@ export class ObjectListeners<T> {
     if (notifier) {
       return notifier;
     } else {
-      notifier = binding.Helpers.makeObjectNotifier(this.realm, getInternal(this.object));
+      notifier = binding.Helpers.makeObjectNotifier(this.realm, this.object[INTERNAL]);
       this.internal = notifier;
       return notifier;
     }

@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as binding from "../binding";
+import { binding } from "../internal";
 
 export type Request = binding.Request_Relaxed;
 export type Response = binding.Response;
