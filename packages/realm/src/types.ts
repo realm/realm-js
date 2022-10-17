@@ -61,10 +61,12 @@ export type TypeOptions = {
   getClassHelpers(nameOrTableKey: string | binding.TableKey): ClassHelpers;
 };
 
-export function mixedToBinding(value: unknown): binding.MixedArg {
+export function mixedToBinding(realm: binding.Realm, value: unknown): binding.MixedArg {
   if (value instanceof Date) {
     return binding.Timestamp.fromDate(value);
   } else if (value instanceof RealmObject) {
+    const otherRealm = value.realm.internal;
+    assert.isSameRealm(realm, otherRealm, "Realm object is from another Realm");
     return value[INTERNAL];
   } else if (value instanceof Collection) {
     throw new Error(`Using a ${value.constructor.name} as Mixed value, is not yet supported`);
@@ -227,7 +229,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
   },
   [binding.PropertyType.Mixed]({ realm, getClassHelpers }) {
     return {
-      toBinding: mixedToBinding,
+      toBinding: mixedToBinding.bind(null, realm.internal),
       fromBinding(value) {
         if (typeof value === "bigint") {
           return Number(value);

@@ -16,7 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding, OrderedCollection, OrderedCollectionHelpers, IllegalConstructorError, Realm } from "./internal";
+import {
+  binding,
+  OrderedCollection,
+  OrderedCollectionHelpers,
+  IllegalConstructorError,
+  Realm,
+  assert,
+} from "./internal";
 
 export class Results<T = unknown> extends OrderedCollection<T> {
   /**
@@ -63,8 +70,22 @@ export class Results<T = unknown> extends OrderedCollection<T> {
    * @param  {any} value
    * @returns void
    */
-  update(property: string, value: any): void {
-    throw new Error("Not yet implemented");
+  update(propertyName: keyof T, value: T[typeof propertyName]): void {
+    const {
+      classHelpers,
+      helpers: { get },
+    } = this;
+    assert.string(propertyName);
+    assert(this.type === "object" && classHelpers, "Expected a result of Objects");
+    const { set } = classHelpers.properties.get(propertyName);
+
+    const snapshot = this.results.snapshot();
+    const size = snapshot.size();
+    for (let i = 0; i < size; i++) {
+      const obj = get(snapshot, i);
+      assert.instanceOf(obj, binding.Obj);
+      set(obj, value);
+    }
   }
 
   isValid(): boolean {

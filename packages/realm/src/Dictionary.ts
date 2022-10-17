@@ -61,9 +61,12 @@ const PROXY_HANDLER: ProxyHandler<Dictionary> = {
     }
   },
   deleteProperty(target, prop) {
+    // We're intentionally not checking !Reflect.has(target, prop) below to allow deletes to propagage for any key
     if (typeof prop === "string") {
       const internal = target[INTERNAL];
-      return internal.tryErase(prop);
+      internal.tryErase(prop);
+      // We consider any key without a value as "deleteable", the same way `const foo = {}; delete foo.bar;` returns true
+      return true;
     } else {
       return false;
     }
@@ -107,9 +110,34 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
     if (arguments.length === 0 || !(internal instanceof binding.Dictionary)) {
       throw new IllegalConstructorError("Dictionary");
     }
-    super(() => {
-      throw new Error("Not yet implemented!");
+    super((callback) => {
+      return this[INTERNAL].addKeyBasedNotificationCallback(({ deletions, insertions, modifications }) => {
+        try {
+          callback(proxied, {
+            deletions: deletions.map((value) => {
+              assert.string(value);
+              return value;
+            }),
+            insertions: insertions.map((value) => {
+              assert.string(value);
+              return value;
+            }),
+            modifications: modifications.map((value) => {
+              assert.string(value);
+              return value;
+            }),
+          });
+        } catch (err) {
+          // Scheduling a throw on the event loop,
+          // since throwing synchroniously here would result in an abort in the calling C++
+          setImmediate(() => {
+            throw err;
+          });
+        }
+      }, []);
     });
+
+    const proxied = new Proxy(this, PROXY_HANDLER) as Dictionary<T>;
 
     Object.defineProperties(this, {
       [INTERNAL]: {
@@ -122,7 +150,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
 
     this[HELPERS] = helpers;
 
-    return new Proxy(this, PROXY_HANDLER) as Dictionary<T>;
+    return proxied;
   }
 
   /**
@@ -198,24 +226,16 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
   }
 
   /**
-   * Removes given element from the dictionary
+   * Removes elements from the dictionary, with the keys provided.
+   * This does not throw if the keys are already missing from the dictionary.
    * @returns The dictionary
    */
   // @ts-expect-error We're exposing methods in the end-users namespace of keys
   remove(key: string | string[]): this {
     const internal = this[INTERNAL];
     const keys = typeof key === "string" ? [key] : key;
-    const missingKeys: string[] = [];
     for (const k of keys) {
-      const success = internal.tryErase(k);
-      if (!success) {
-        missingKeys.push(k);
-      }
-    }
-    if (missingKeys.length > 0) {
-      const keysSummary = missingKeys.map((k) => `'${k}'`).join(", ");
-      const keySuffix = missingKeys.length > 0 ? "s" : "";
-      throw new Error(`Failed to remove missing key${keySuffix} from dictionary: ${keysSummary}`);
+      internal.tryErase(k);
     }
   }
 
