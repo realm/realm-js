@@ -16,15 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { assert } from "../assert";
 import {
   ObjectSchema_Relaxed as BindingObjectSchema,
   Property_Relaxed as BindingProperty,
   PropertyType as BindingPropertyType,
   TableType,
 } from "../binding";
-
-import { CanonicalObjectSchema, CanonicalObjectSchemaProperty, PropertyTypeName } from "./types";
+import { assert, CanonicalObjectSchema, CanonicalObjectSchemaProperty, PropertyTypeName } from "../internal";
 
 /** @internal */
 export const TYPE_MAPPINGS: Record<PropertyTypeName, BindingPropertyType> = {
@@ -58,16 +56,16 @@ function deriveTableType(schema: CanonicalObjectSchema) {
 }
 
 /** @internal */
-export function transformRealmSchema(schema: CanonicalObjectSchema[]): BindingObjectSchema[] {
-  return schema.map(transformObjectSchema);
+export function toBindingSchema(schema: CanonicalObjectSchema[]): BindingObjectSchema[] {
+  return schema.map(toBindingObjectSchema);
 }
 
 /** @internal */
-export function transformObjectSchema(schema: CanonicalObjectSchema): BindingObjectSchema {
+export function toBindingObjectSchema(schema: CanonicalObjectSchema): BindingObjectSchema {
   // TODO: Enable declaring the alias of the object schema
   // TODO: Enable declaring computed properties
   const properties = Object.entries(schema.properties)
-    .map(([name, property]) => transformPropertySchema(name, property))
+    .map(([name, property]) => toBindingPropertySchema(name, property))
     .map((property) => {
       // Ensure the primary property is marked accordingly
       if (property.name === schema.primaryKey) {
@@ -93,14 +91,14 @@ export function transformObjectSchema(schema: CanonicalObjectSchema): BindingObj
 }
 
 /** @internal */
-export function transformPropertySchema(name: string, schema: CanonicalObjectSchemaProperty): BindingProperty {
+export function toBindingPropertySchema(name: string, schema: CanonicalObjectSchemaProperty): BindingProperty {
   if (name !== schema.name) {
     // TODO: Consider if this API should be used to support declaring an alias?
     throw new Error("The key of a property must match its name property");
   }
   const result: BindingProperty = {
     name,
-    type: transformPropertyType(schema),
+    type: toBindingPropertyType(schema),
     isIndexed: schema.indexed,
     publicName: name !== schema.mapTo ? schema.mapTo : undefined,
     objectType: schema.objectType && schema.objectType in TYPE_MAPPINGS ? undefined : schema.objectType,
@@ -110,7 +108,7 @@ export function transformPropertySchema(name: string, schema: CanonicalObjectSch
 }
 
 /** @internal */
-export function transformPropertyType(schema: CanonicalObjectSchemaProperty): BindingPropertyType {
+export function toBindingPropertyType(schema: CanonicalObjectSchemaProperty): BindingPropertyType {
   let type = TYPE_MAPPINGS[schema.type];
   let isNullable = schema.optional;
   if (type === BindingPropertyType.LinkingObjects) {

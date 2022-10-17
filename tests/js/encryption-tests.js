@@ -70,9 +70,10 @@ module.exports = {
     TestCase.assertEqual(realm.schemaVersion, 3);
     TestCase.assertEqual(Realm.schemaVersion("encrypted.realm", encryptionKey), 3);
 
-    TestCase.assertThrows(function () {
-      Realm.schemaVersion("encrypted.realm", encryptionKey, "extra");
-    });
+    // The new SDK doesn't check argument count anymore
+    // TestCase.assertThrows(function () {
+    //   Realm.schemaVersion("encrypted.realm", encryptionKey, "extra");
+    // });
     TestCase.assertThrows(function () {
       Realm.schemaVersion("encrypted.realm", "asdf");
     });

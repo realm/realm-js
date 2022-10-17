@@ -16,18 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { assert } from "../assert";
-import { TYPE_MAPPINGS } from "./to-binding";
 import {
+  assert,
+  flags,
+  TYPE_MAPPINGS,
   CanonicalObjectSchema,
   CanonicalObjectSchemaProperty,
   ObjectSchema,
   ObjectSchemaProperty,
   PropertyTypeName,
   RealmObjectConstructor,
-} from "./types";
-import { Realm } from "../Realm";
-import { RealmObject } from "../internal";
+  RealmObject,
+} from "../internal";
 
 export const PRIMITIVE_TYPES = new Set<PropertyTypeName>([
   "bool",
@@ -84,7 +84,14 @@ export function normalizeObjectSchema(arg: RealmObjectConstructor | ObjectSchema
   } else {
     // TODO: Determine if we still want to support this
     if (Array.isArray(arg.properties)) {
-      throw new Error("Array of properties are no longer supported");
+      if (flags.ALLOW_VALUES_ARRAYS) {
+        return normalizeObjectSchema({
+          ...arg,
+          properties: Object.fromEntries(arg.properties.map(({ name, ...rest }) => [name, rest])),
+        });
+      } else {
+        throw new Error("Array of properties are no longer supported");
+      }
     }
     return {
       constructor: undefined,

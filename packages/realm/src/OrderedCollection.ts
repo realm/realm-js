@@ -46,7 +46,10 @@ export type CollectionChangeSet = {
   newModifications: number[];
   oldModifications: number[];
 };
-export type CollectionChangeCallback<T> = (collection: OrderedCollection<T>, changes: CollectionChangeSet) => void;
+export type CollectionChangeCallback<T = unknown, EntryType extends [unknown, unknown] = [unknown, unknown]> = (
+  collection: OrderedCollection<T, EntryType>,
+  changes: CollectionChangeSet,
+) => void;
 
 /** @internal */
 export type OrderedCollectionHelpers = TypeHelpers & {
@@ -96,9 +99,9 @@ const PROXY_HANDLER: ProxyHandler<OrderedCollection> = {
   },
 };
 
-export abstract class OrderedCollection<T = unknown>
-  extends Collection<number, T, T, CollectionChangeCallback<T>>
-  implements ReadonlyArray<T>
+export abstract class OrderedCollection<T = unknown, EntryType extends [unknown, unknown] = [number, T]>
+  extends Collection<number, T, EntryType, T, CollectionChangeCallback<T, EntryType>>
+  implements Omit<ReadonlyArray<T>, "entries">
 {
   /** @internal */
   constructor(
@@ -229,7 +232,7 @@ export abstract class OrderedCollection<T = unknown>
     const snapshot = this.results.snapshot();
     const size = snapshot.size();
     for (let i = 0; i < size; i++) {
-      yield [i, fromBinding(get(snapshot, i))] as [number, T];
+      yield [i, fromBinding(get(snapshot, i))] as EntryType;
     }
   }
 
@@ -335,7 +338,7 @@ export abstract class OrderedCollection<T = unknown>
   }
   // TODO: Implement support for RealmObjects, by comparing their #objectKey values
   includes(searchElement: T, fromIndex?: number): boolean {
-    return [...this].includes(searchElement, fromIndex);
+    return this.indexOf(searchElement, fromIndex) !== -1;
   }
   flatMap<U, This = undefined>(
     callback: (this: This, value: T, index: number, array: T[]) => U | readonly U[],
@@ -436,7 +439,7 @@ export abstract class OrderedCollection<T = unknown>
     const kpMapping = binding.Helpers.getKeypathMapping(realm.internal);
     const bindingArgs = args.map((arg) => this.mixedToBinding(arg));
     const query = parent.query.table.query(queryString, bindingArgs, kpMapping);
-    const results = parent.filter(query);
+    const results = binding.Helpers.resultsFromQuery(realm.internal, query);
     return new Results(realm, results, helpers);
   }
 
