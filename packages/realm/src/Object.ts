@@ -16,20 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as binding from "./binding";
-
-import { INTERNAL } from "./internal";
-import { Realm } from "./Realm";
-import { Results } from "./Results";
-import { OrderedCollection } from "./OrderedCollection";
-import { CanonicalObjectSchema, Constructor, DefaultObject, getTypeName, RealmObjectConstructor } from "./schema";
-import { ObjectChangeCallback, ObjectListeners } from "./ObjectListeners";
-import { INTERNAL_HELPERS, ClassHelpers } from "./ClassHelpers";
-import { RealmInsertionModel } from "./InsertionModel";
-import { assert } from "./assert";
-import { JSONCacheMap } from "./JSONCacheMap";
-import { Dictionary } from "./Dictionary";
-import { TypeAssertionError } from "./errors";
+import {
+  binding,
+  Realm,
+  Results,
+  CanonicalObjectSchema,
+  Constructor,
+  DefaultObject,
+  getTypeName,
+  RealmObjectConstructor,
+  ObjectChangeCallback,
+  ObjectListeners,
+  ClassHelpers,
+  RealmInsertionModel,
+  assert,
+  JSONCacheMap,
+  TypeAssertionError,
+} from "./internal";
 
 export enum UpdateMode {
   Never = "never",
@@ -45,7 +48,9 @@ type CreationContext = {
   createObj?: ObjCreator;
 };
 
-const INTERNAL_LISTENERS = Symbol("Realm.Object#listeners");
+export const INTERNAL = Symbol("Object#internal");
+const INTERNAL_LISTENERS = Symbol("Object#listeners");
+export const INTERNAL_HELPERS = Symbol("Object.helpers");
 const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true, writable: true };
 
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -62,7 +67,7 @@ const PROXY_HANDLER: ProxyHandler<RealmObject<any>> = {
   },
 };
 
-class RealmObject<T = DefaultObject> {
+export class RealmObject<T = DefaultObject> {
   /**
    * @internal
    * This property is stored on the per class prototype when transforming the schema.
@@ -239,6 +244,8 @@ class RealmObject<T = DefaultObject> {
   /**
    * @returns A plain object for JSON serialization.
    **/
+  toJSON(_?: string, cache?: unknown): DefaultObject;
+  /** @internal */
   toJSON(_?: string, cache = new JSONCacheMap()): DefaultObject {
     // Construct a reference-id of table-name & primaryKey if it exists, or fall back to objectId.
 
@@ -255,7 +262,11 @@ class RealmObject<T = DefaultObject> {
       if (typeof value == "function") {
         continue;
       }
-      if (value instanceof RealmObject || value instanceof OrderedCollection || value instanceof Dictionary) {
+      if (
+        value instanceof Realm.Object ||
+        value instanceof Realm.OrderedCollection ||
+        value instanceof Realm.Dictionary
+      ) {
         // recursively trigger `toJSON` for Realm instances with the same cache.
         result[key] = value.toJSON(key, cache);
       } else {
@@ -288,7 +299,7 @@ class RealmObject<T = DefaultObject> {
     assert(collectionHelpers, "collection helpers");
     const tableView = this[INTERNAL].getBacklinkView(tableRef, columnKey);
     const results = binding.Results.fromTableView(this.realm.internal, tableView);
-    return new Results(this.realm, results, collectionHelpers);
+    return new Realm.Results(this.realm, results, collectionHelpers);
   }
 
   linkingObjectsCount(): number {
@@ -359,5 +370,3 @@ class RealmObject<T = DefaultObject> {
 
 //  We like to refer to this as "Realm.Object"
 Object.defineProperty(RealmObject, "name", { value: "Realm.Object" });
-
-export { RealmObject as Object };

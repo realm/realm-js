@@ -319,6 +319,9 @@ records:
       schema_mode:
         type: SchemaMode
         default: SchemaMode::Automatic
+      disable_format_upgrade:
+        type: bool
+        default: false
       sync_config: Nullable<std::shared_ptr<SyncConfig>>
       # Unclear if migration_function and initialization_function should be marked as off_thread.
       # Existing JS sdk treats them as not.
