@@ -100,7 +100,7 @@ const PROXY_HANDLER: ProxyHandler<Dictionary> = {
 /**
  * TODO: Make this extends Collection<T> (once that doesn't have a nummeric index accessor)
  */
-export class Dictionary<T = unknown> extends Collection<string, T, [string, T], DictionaryChangeCallback> {
+export class Dictionary<T = unknown> extends Collection<string, T, [string, T], [string, T], DictionaryChangeCallback> {
   /**
    * Create a `Results` wrapping a set of query `Results` from the binding.
    * @internal

@@ -18,6 +18,11 @@
 
 console.log("Loading Realm Integration Tests");
 
+import { flags } from "realm";
+
+// TODO: Refactor tests to disable this
+flags.ALLOW_VALUES_ARRAYS = true;
+
 /**
  * Use the `longTimeout` context variable to override this.
  */

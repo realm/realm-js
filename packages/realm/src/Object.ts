@@ -32,6 +32,7 @@ import {
   assert,
   JSONCacheMap,
   TypeAssertionError,
+  flags,
 } from "./internal";
 
 export enum UpdateMode {
@@ -74,6 +75,8 @@ export class RealmObject<T = DefaultObject> {
    */
   public static [INTERNAL_HELPERS]: ClassHelpers;
 
+  public static allowValuesArrays = false;
+
   /**
    * @internal
    * Create an object in the database and set values on it
@@ -86,7 +89,22 @@ export class RealmObject<T = DefaultObject> {
   ): RealmObject {
     assert.inTransaction(realm);
     if (Array.isArray(values)) {
-      throw new Error("Array values on object creation is no longer supported");
+      if (flags.ALLOW_VALUES_ARRAYS) {
+        const { persistedProperties } = context.helpers.objectSchema;
+        return RealmObject.create(
+          realm,
+          Object.fromEntries(
+            values.map((value, index) => {
+              const property = persistedProperties[index];
+              return [property.name, value];
+            }),
+          ),
+          mode,
+          context,
+        );
+      } else {
+        throw new Error("Array values on object creation is no longer supported");
+      }
     }
     const {
       helpers: {
