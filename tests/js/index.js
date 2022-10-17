@@ -16,8 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-const { Realm } = require("realm");
+const { Realm, flags } = require("realm");
 const BSON = require("bson");
+
+flags.ALLOW_VALUES_ARRAYS = true;
 
 if (typeof Realm.App !== "undefined" && Realm.App !== null) {
   global.WARNING = "global is not available in React Native. Use it only in tests";

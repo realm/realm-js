@@ -168,7 +168,7 @@ module.exports = {
 
     TestCase.assertThrowsContaining(
       () => realm.write(() => realm.create(SingleSchema.name, { a: Object.create({}) })),
-      "Only Realm instances are supported.",
+      "Unable to convert an object with ctor 'Object' to a Mixed",
     );
   },
 

@@ -46,6 +46,16 @@ const TYPED_ARRAY_CONSTRUCTORS = new Set([
   BigUint64Array,
 ]);
 
+export function toArrayBuffer(value: unknown) {
+  for (const TypedArray of TYPED_ARRAY_CONSTRUCTORS) {
+    if (value instanceof TypedArray) {
+      return value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength);
+    }
+  }
+  assert.instanceOf(value, ArrayBuffer);
+  return value;
+}
+
 /** @internal */
 export type TypeHelpers<T = unknown> = {
   toBinding(value: T, createObj?: ObjCreator): binding.MixedArg;
@@ -61,8 +71,13 @@ export type TypeOptions = {
   getClassHelpers(nameOrTableKey: string | binding.TableKey): ClassHelpers;
 };
 
+// TODO: Consider testing for expected object instance types and throw something simular to the legacy SDK:
+// "Only Realm instances are supported." (which should probably have been "Realm.Object")
+// instead of relying on the binding to throw.
 export function mixedToBinding(realm: binding.Realm, value: unknown): binding.MixedArg {
-  if (value instanceof Date) {
+  if (typeof value === "undefined") {
+    return null;
+  } else if (value instanceof Date) {
     return binding.Timestamp.fromDate(value);
   } else if (value instanceof RealmObject) {
     const otherRealm = value.realm.internal;
@@ -70,6 +85,8 @@ export function mixedToBinding(realm: binding.Realm, value: unknown): binding.Mi
     return value[INTERNAL];
   } else if (value instanceof Collection) {
     throw new Error(`Using a ${value.constructor.name} as Mixed value, is not yet supported`);
+  } else if (Array.isArray(value)) {
+    throw new TypeError("A mixed property cannot contain an array of values.");
   } else {
     return value as binding.Mixed;
   }
@@ -136,13 +153,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
   [binding.PropertyType.Data]({ optional }) {
     return {
       toBinding: nullPassthrough((value) => {
-        for (const TypedArray of TYPED_ARRAY_CONSTRUCTORS) {
-          if (value instanceof TypedArray) {
-            return value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength);
-          }
-        }
-        assert.instanceOf(value, ArrayBuffer);
-        return value;
+        return toArrayBuffer(value);
       }, optional),
       fromBinding: defaultFromBinding,
     };

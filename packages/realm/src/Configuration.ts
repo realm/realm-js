@@ -32,6 +32,7 @@ type BaseConfiguration = {
   shouldCompactOnLaunch?: (totalBytes: number, usedBytes: number) => boolean;
   deleteRealmIfMigrationNeeded?: boolean;
   disableFormatUpgrade?: boolean;
+  encryptionKey?: ArrayBuffer | ArrayBufferView | Int8Array;
 };
 
 // type ConfigurationWithSync = BaseConfiguration & {

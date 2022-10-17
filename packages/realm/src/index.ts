@@ -28,6 +28,7 @@ export {
   RealmSet as Set,
   OrderedCollection,
   Collection,
+  flags,
 } from "./internal";
 
 export type {
