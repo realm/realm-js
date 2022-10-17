@@ -32,6 +32,7 @@ import {
   RealmObject,
   DefaultObject,
   getTypeName,
+  mixedToBinding,
 } from "./internal";
 
 const DEFAULT_COLUMN_KEY = 0n as unknown as binding.ColKey;
@@ -135,6 +136,7 @@ export abstract class OrderedCollection<T = unknown>
     } else {
       this.classHelpers = null;
     }
+    this.mixedToBinding = mixedToBinding.bind(undefined, realm.internal);
     // Make the internal properties non-enumerable
     Object.defineProperties(this, {
       realm: {
@@ -157,11 +159,18 @@ export abstract class OrderedCollection<T = unknown>
         configurable: false,
         writable: false,
       },
+      mixedToBinding: {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+      },
     });
     return proxied;
   }
 
-  private classHelpers: ClassHelpers | null;
+  /** @internal */
+  protected classHelpers: ClassHelpers | null;
+  private mixedToBinding: (value: unknown) => binding.MixedArg;
 
   /**
    * Get an element of the ordered collection by index
@@ -425,9 +434,8 @@ export abstract class OrderedCollection<T = unknown>
   filtered(queryString: string, ...args: any[]): Results<T> {
     const { results: parent, realm, helpers } = this;
     const kpMapping = binding.Helpers.getKeypathMapping(realm.internal);
-    // TODO: Perform a mapping of the arguments
-    // const bindingArgs = args.map((arg) => mixedToBinding(arg));
-    const query = parent.query.table.query(queryString, args, kpMapping);
+    const bindingArgs = args.map((arg) => this.mixedToBinding(arg));
+    const query = parent.query.table.query(queryString, bindingArgs, kpMapping);
     const results = parent.filter(query);
     return new Results(realm, results, helpers);
   }
@@ -437,6 +445,7 @@ export abstract class OrderedCollection<T = unknown>
   sorted(descriptor: string, reverse?: boolean): Results<T>;
   sorted(arg0: boolean | SortDescriptor[] | string = "self", arg1?: boolean): Results<T> {
     if (Array.isArray(arg0)) {
+      assert(typeof arg1 === "undefined", "Second argument is not allowed if passed an array of sort descriptors");
       const { results: parent, realm, helpers } = this;
       // Map optional "reversed" to "accending" (expected by the binding)
       const descriptors = arg0.map<[string, boolean]>((arg) =>
