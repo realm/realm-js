@@ -43,7 +43,7 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Bootstrap @realm/react
-        run: npx lerna bootstrap --scope=@realm/react
+        run: npx lerna bootstrap --scope=@realm/react --include-dependencies
 
       - name: Build realm react
         working-directory: packages/realm-react
