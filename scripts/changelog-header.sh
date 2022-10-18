@@ -14,10 +14,9 @@ CHANGELOG=$(cat <<EOF
 * None
 
 ### Compatibility
-* React Native >= v0.64.0
+* React Native >= v0.70.0
 * Atlas App Services.
 * Realm Studio v12.0.0.
-* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
