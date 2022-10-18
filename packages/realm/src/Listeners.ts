@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { binding } from "./internal";
+import { Realm } from "./Realm";
 
 /** @internal */
 export type CallbackRegistrator<T> = (callback: T) => binding.NotificationToken;
@@ -51,6 +52,42 @@ export class Listeners<CallbackType> {
     for (const [, token] of this.listeners) {
       token.unregister();
     }
+    this.listeners.clear();
+  }
+}
+
+/** @internal */
+type BindingListenerCallback = (r: Realm, name: string) => void;
+/** @internal */
+export class BindingListeners {
+  /**
+   * Keeps tracked of registered listener callbacks for Realm class notifications.
+   */
+  constructor(private name: string) {}
+  private listeners = new Set<BindingListenerCallback>();
+
+  // Combined callback which runs all listener callbacks in one call.
+  callback(realm: Realm): void {
+    for (const callback of this.listeners) {
+      callback(realm, this.name);
+    }
+  }
+
+  add(callback: BindingListenerCallback): void {
+    if (this.listeners.has(callback)) {
+      // No need to add a listener twice
+      return;
+    }
+    // Store the listener.
+    this.listeners.add(callback);
+  }
+
+  remove(callback: BindingListenerCallback): void {
+    // TODO: consider whether bool of delete is useful or not.
+    this.listeners.delete(callback);
+  }
+
+  removeAll(): void {
     this.listeners.clear();
   }
 }

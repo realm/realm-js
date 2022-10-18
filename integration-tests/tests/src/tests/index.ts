@@ -27,6 +27,7 @@ import "./class-models";
 import "./serialization";
 import "./iterators";
 import "./dynamic-schema-updates";
+import "./listeners";
 import "./bson";
 import "./dictionary";
 import "./set";

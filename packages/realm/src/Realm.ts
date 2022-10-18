@@ -50,6 +50,8 @@ import {
   normalizeObjectSchema,
   toArrayBuffer,
 } from "./internal";
+import { Helpers } from "./binding";
+import { BindingListeners } from "./Listeners";
 
 type RealmSchemaExtra = Record<string, ObjectSchemaExtra | undefined>;
 
@@ -292,6 +294,9 @@ export class Realm {
 
   private schemaExtras: RealmSchemaExtra;
   private classes: ClassMap;
+  private changeListeners = new BindingListeners("change");
+  private beforeNotifyListeners = new BindingListeners("beforenotify");
+  private schemaListeners = new BindingListeners("schema");
 
   constructor();
   constructor(path: string);
@@ -319,6 +324,20 @@ export class Realm {
       },
     });
 
+    binding.Helpers.setBindingContext(this.internal, {
+      didChange: (r: binding.Realm) => {
+        r.verifyOpen();
+        this.changeListeners.callback(this);
+      },
+      schemaDidChange: (r: binding.Realm) => {
+        r.verifyOpen();
+        this.schemaListeners.callback(this);
+      },
+      beforeNotify: (r: binding.Realm) => {
+        r.verifyOpen();
+        this.beforeNotifyListeners.callback(this);
+      },
+    });
     RETURNED_REALMS.add(new WeakRef(internal));
     this.classes = new ClassMap(this, internal.schema, this.schema);
   }
@@ -511,9 +530,17 @@ export class Realm {
     });
   }
 
-  addListener(): unknown {
+  addListener(name: string, callback: (r: Realm, name: string) => void): void {
     assert.open(this);
-    throw new Error("Not yet implemented");
+    if (name === "change") {
+      this.changeListeners.add(callback);
+    } else if (name === "schema") {
+      this.schemaListeners.add(callback);
+    } else if (name === "beforenotify") {
+      this.beforeNotifyListeners.add(callback);
+    } else {
+      throw new Error(`Unknown event name '${name}': only 'change', 'schema' and 'beforenotify' are supported.`);
+    }
   }
 
   removeListener(): unknown {
