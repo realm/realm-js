@@ -1,10 +1,32 @@
-?.?.? Release notes (2020-??-??)
+2.0.0 Release notes (2022-10-18)
 =============================================================
 
 ### Breaking Changes
-* Removal of deprecated functions, which should be replaced with `Realm.Credentials#apiKey`:
-   * `Realm.Credentials#serverApiKey`
-   * `Realm.Credentials#userApiKey`
+
+  * `Realm.Credentials#google` with `authCode` parameter (use `authObject`)
+  * The following should be replaced with `Realm.Credentials#apiKey`:
+    * `Realm.Credentials#serverApiKey`
+    * `Realm.Credentials#userApiKey`
+  * The overload of `Realm.Auth.EmailPasswordAuth` methods, taking positional arguments instead of object arguments:
+    * `registerUser`
+    * `confirmUser`
+    * `resendConfirmationEmail`
+    * `retryCustomConfirmation`
+    * `resetPassword`
+    * `sendResetPasswordEmail`
+    * `callResetPasswordFunction`
+
+Now the only supported call signature of `Realm.Auth.EmailPasswordAuth` methods is using a single object argument:
+
+```typescript
+registerUser({ email, password });
+confirmUser({ token, tokenId });
+resendConfirmationEmail({ email });
+retryCustomConfirmation({ email });
+resetPassword({ token, tokenId, password });
+sendResetPasswordEmail({ email });
+callResetPasswordFunction({ email, password }, ...args);
+```
 
 ### Enhancements
 * None
