@@ -2,6 +2,7 @@
 
 ### Enhancements
 * Add support for using functions as default property values, in order to allow dynamic defaults [#5001](https://github.com/realm/realm-js/pull/5001), [#2393](https://github.com/realm/realm-js/issues/2393)
+* All fields of a `Realm.Object` treated as optional by TypeScript when constructing a new class-based model, unless specified in the second type parameter [#5000](https://github.com/realm/realm-js/pull/5000)
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
@@ -241,7 +242,6 @@ realm.write(() => {
     ```
 ### Enhancements
 * Small improvement to performance by caching JSI property String object [#4863](https://github.com/realm/realm-js/pull/4863)
-* All fields of a `Realm.Object` treated as optional by TypeScript when constructing a new class-based model, unless specified in the second type parameter [#5000](https://github.com/realm/realm-js/pull/5000)
 
 ### Compatibility
 * React Native >= v0.70.0
