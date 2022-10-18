@@ -85,7 +85,7 @@ module.exports = {
     const realm = getRealm();
     realm.beginTransaction();
 
-    // Creating objects most use the alias
+    // Creating objects must use the alias
     realm.create("ObjectA", {
       otherName: "Foo",
       age: 42,
