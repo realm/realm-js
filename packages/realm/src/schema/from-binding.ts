@@ -94,7 +94,9 @@ export function fromBindingObjectSchema({
   const result: CanonicalObjectSchema = {
     constructor: undefined,
     name,
-    properties: Object.fromEntries(properties.map((property) => [property.name, fromBindingPropertySchema(property)])),
+    properties: Object.fromEntries(
+      properties.map((property) => [property.publicName || property.name, fromBindingPropertySchema(property)]),
+    ),
     embedded: tableType === TableType.Embedded,
     asymmetric: tableType === TableType.TopLevelAsymmetric,
   };
@@ -113,12 +115,15 @@ export function fromBindingObjectSchema({
  */
 export function fromBindingPropertySchema(propertySchema: BindingProperty): CanonicalObjectSchemaProperty {
   const { name, isIndexed, publicName } = propertySchema;
-  const result = {
+  const result: CanonicalObjectSchemaProperty = {
     name,
     indexed: isIndexed,
-    mapTo: publicName ? publicName : name,
+    mapTo: name,
     ...fromBindingPropertyTypeName(propertySchema),
   };
+  if (publicName) {
+    result.name = publicName;
+  }
   return result;
 }
 

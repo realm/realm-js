@@ -19,8 +19,8 @@
 import { inspect } from "util";
 import { expect } from "chai";
 
-import { transformPropertySchema as fromBindingPropertySchema } from "../schema/from-binding";
-import { transformPropertySchema as toBindingPropertySchema } from "../schema/to-binding";
+import { fromBindingPropertySchema } from "../schema/from-binding";
+import { toBindingPropertySchema } from "../schema/to-binding";
 import { normalizePropertySchema } from "../schema/normalize";
 import { ObjectSchemaProperty } from "../schema";
 
