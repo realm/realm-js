@@ -39,6 +39,12 @@ The following deprecated methods have been removed:
     * `Realm.Credentials#userApiKey`
   * The overload of `Realm.Auth.EmailPasswordAuth` methods, taking positional arguments instead of object arguments:
     * `registerUser`
+    * `confirmUser`
+    * `resendConfirmationEmail`
+    * `retryCustomConfirmation`
+    * `resetPassword`
+    * `sendResetPasswordEmail`
+    * `callResetPasswordFunction`
   * Removed `Realm.JsonSerializationReplacer`. Use circular JSON serialization libraries such as [@ungap/structured-clone](https://www.npmjs.com/package/@ungap/structured-clone) and [flatted](https://www.npmjs.com/package/flatted) for stringifying Realm entities that have circular structures. The Realm entities' `toJSON` method returns plain objects and arrays (with circular references if applicable) which makes them compatible with any serialization library that supports stringifying plain JavaScript types. ([#4997](https://github.com/realm/realm-js/pull/4997))
 
 Now the only supported call signature of `Realm.Auth.EmailPasswordAuth` methods is using a single object argument:
