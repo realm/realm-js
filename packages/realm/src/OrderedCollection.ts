@@ -438,8 +438,8 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     const { results: parent, realm, helpers } = this;
     const kpMapping = binding.Helpers.getKeypathMapping(realm.internal);
     const bindingArgs = args.map((arg) => this.mixedToBinding(arg));
-    const query = parent.query.table.query(queryString, bindingArgs, kpMapping);
-    const results = binding.Helpers.resultsFromQuery(realm.internal, query);
+    const newQuery = parent.query.table.query(queryString, bindingArgs, kpMapping);
+    const results = binding.Helpers.resultsAppendQuery(parent, newQuery);
     return new Results(realm, results, helpers);
   }
 
