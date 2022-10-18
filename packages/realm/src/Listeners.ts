@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { ObjectSchema } from "./binding";
 import { binding } from "./internal";
 import { Realm } from "./Realm";
 
@@ -57,7 +58,7 @@ export class Listeners<CallbackType> {
 }
 
 /** @internal */
-type BindingListenerCallback = (r: Realm, name: string) => void;
+type BindingListenerCallback = (r: Realm, name: string, schema?: Realm.ObjectSchema[]) => void;
 /** @internal */
 export class BindingListeners {
   /**
@@ -68,8 +69,12 @@ export class BindingListeners {
 
   // Combined callback which runs all listener callbacks in one call.
   callback(realm: Realm): void {
+    let schema: Realm.ObjectSchema[] | undefined;
+    if (this.name === "schema") {
+      schema = realm.schema;
+    }
     for (const callback of this.listeners) {
-      callback(realm, this.name);
+      callback(realm, this.name, schema);
     }
   }
 

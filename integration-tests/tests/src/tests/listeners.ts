@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { expect } from "chai";
 import Realm from "realm";
 import { openRealmBeforeEach } from "../hooks";
 
@@ -26,91 +27,147 @@ describe("Realm Listeners", () => {
     Realm.clearTestState();
   });
   openRealmBeforeEach({ inMemory: true, schema: [PersonSchema, DogSchema] });
-  it("should work for changes", function (this: RealmContext, done) {
-    this.realm.addListener("change", () => {
-      done();
-    });
 
-    this.realm.write(() => {
-      this.realm.create("Person", { age: 3, name: "Bob" });
-    });
-  });
-  it("should work for beforenotify", function (this: RealmContext, done) {
-    // Fires once when listener gets added
-    this.realm.addListener("beforenotify", () => {
-      done();
-    });
-  });
-  it("work for schema changes", function (this: RealmContext, done) {
-    this.realm.addListener("schema", () => {
-      done();
-    });
+  describe("addListener", () => {
+    it("should work for change", function (this: RealmContext, done) {
+      this.realm.addListener("change", (realm, name, schema) => {
+        expect(name).to.equal("change");
+        expect(realm).to.equal(this.realm);
+        expect(schema).to.equal(undefined);
+        done();
+      });
 
-    this.realm.write(() => {
-      this.realm._updateSchema([...this.realm.schema, { name: "MyClass", properties: { myField: "string" } }]);
+      this.realm.write(() => {
+        this.realm.create("Person", { age: 3, name: "Bob" });
+      });
     });
-  });
-  it("should not call change and schema for no reason", function (this: RealmContext, done) {
-    this.realm.addListener("change", () => {
-      done("should not run");
-    });
-    this.realm.addListener("schema", () => {
-      done("should not run");
-    });
-    done();
-  });
-  it("should work with multiple listeners of same type", function (this: RealmContext, done) {
-    let firstListenerRuns = 0;
-    let secondListenerRuns = 0;
-    this.realm.addListener("change", () => {
-      firstListenerRuns += 1;
-    });
-    this.realm.addListener("change", () => {
-      secondListenerRuns += 1;
-    });
-    this.realm.addListener("change", () => {
-      if (firstListenerRuns === 1 && secondListenerRuns === 1) {
-        // After first write, continue
-        return;
-      } else if (firstListenerRuns === 2 && secondListenerRuns === 2) {
-        // After both write, this should be expected state.
+    it("should work for beforenotify", function (this: RealmContext, done) {
+      this.realm.addListener("beforenotify", (realm, name, schema) => {
+        expect(name).to.equal("beforenotify");
+        expect(realm).to.equal(this.realm);
+        expect(schema).to.equal(undefined);
         done();
-      } else {
-        done(Error("did not run other listeners correctly"));
-      }
+      });
+      this.realm.write(() => {
+        this.realm.create("Person", { age: 3, name: "Bob" });
+      });
     });
-    this.realm.write(() => {
-      this.realm.create("Person", { age: 3, name: "Bob" });
+    it("should work for schema", function (this: RealmContext, done) {
+      this.realm.addListener("schema", (realm, name, schema) => {
+        expect(name).to.equal("schema");
+        expect(realm).to.equal(this.realm);
+        expect(schema).to.deep.equal(this.realm.schema);
+        done();
+      });
+
+      this.realm.write(() => {
+        this.realm._updateSchema([...this.realm.schema, { name: "MyClass", properties: { myField: "string" } }]);
+      });
     });
-    this.realm.write(() => {
-      this.realm.create("Person", { age: 3, name: "Tom" });
+    it("should not call change and schema for no reason", function (this: RealmContext, done) {
+      this.realm.addListener("change", () => {
+        done("should not run");
+      });
+      this.realm.addListener("schema", () => {
+        done("should not run");
+      });
+      done();
+    });
+    it("should work with multiple listeners of same type", function (this: RealmContext, done) {
+      let firstListenerRuns = 0;
+      let secondListenerRuns = 0;
+      this.realm.addListener("change", () => {
+        firstListenerRuns += 1;
+      });
+      this.realm.addListener("change", () => {
+        secondListenerRuns += 1;
+      });
+      this.realm.addListener("change", () => {
+        if (firstListenerRuns === 1 && secondListenerRuns === 1) {
+          // After first write, continue
+          return;
+        } else if (firstListenerRuns === 2 && secondListenerRuns === 2) {
+          // After both write, this should be expected state.
+          done();
+        } else {
+          done(Error("did not run other listeners correctly"));
+        }
+      });
+      this.realm.write(() => {
+        this.realm.create("Person", { age: 3, name: "Bob" });
+      });
+      this.realm.write(() => {
+        this.realm.create("Person", { age: 3, name: "Tom" });
+      });
+    });
+    it("should work with multiple listeners of different types", function (this: RealmContext, done) {
+      let changeListenerRuns = 0;
+      let schemaListenerRuns = 0;
+      this.realm.addListener("change", () => {
+        changeListenerRuns += 1;
+      });
+      this.realm.addListener("beforenotify", () => {
+        changeListenerRuns += 1;
+      });
+      this.realm.addListener("schema", () => {
+        schemaListenerRuns += 1;
+      });
+      this.realm.addListener("change", () => {
+        if (changeListenerRuns === 1 && schemaListenerRuns === 1) {
+          // After schema change, continue (schema changes will call "change" listener as well).
+          return;
+        } else if (changeListenerRuns === 2 && schemaListenerRuns === 1) {
+          // After both writes, this should be expected state.
+          done();
+        } else {
+          done(Error("did not run other listeners correctly"));
+        }
+      });
+      this.realm.write(() => {
+        this.realm._updateSchema([...this.realm.schema, { name: "MyClass", properties: { myField: "string" } }]);
+      });
+      this.realm.write(() => {
+        this.realm.create("Person", { age: 3, name: "Bob" });
+      });
     });
   });
-  it("should work with multiple listeners of different types", function (this: RealmContext, done) {
-    let firstListenerRuns = 0;
-    let secondListenerRuns = 0;
-    this.realm.addListener("change", () => {
-      firstListenerRuns += 1;
-    });
-    this.realm.addListener("schema", () => {
-      secondListenerRuns += 1;
-    });
-    this.realm.addListener("change", () => {
-      if (firstListenerRuns === 1 && secondListenerRuns === 1) {
-        // After first write, continue (schema changes will call "change" listeners as well).
-        return;
-      } else if (firstListenerRuns === 2 && secondListenerRuns === 1) {
-        // After both write, this should be expected state.
+  describe("removeListener", () => {
+    it("should not fire removed listener", function (this: RealmContext, done) {
+      const test = () => {
+        // done will error if ran more than once
         done();
-      } else {
-        done(Error("did not run other listeners correctly"));
-      }
+      };
+      this.realm.addListener("change", test);
+
+      this.realm.write(() => {
+        this.realm.create("Person", { age: 3, name: "Bob" });
+      });
+      this.realm.removeListener("change", test);
+      this.realm.write(() => {
+        this.realm.create("Person", { age: 3, name: "Tom" });
+      });
     });
-    this.realm.write(() => {
-      this.realm._updateSchema([...this.realm.schema, { name: "MyClass", properties: { myField: "string" } }]);
-    });
-    this.realm.write(() => {
-      this.realm.create("Person", { age: 3, name: "Bob" });
+  });
+  describe("removeAllListeners", () => {
+    it("should not fire removed listeners", function (this: RealmContext, done) {
+      const test = () => {
+        // done will error if ran more than once
+        done();
+      };
+      this.realm.addListener("change", test);
+      this.realm.addListener("schema", test);
+
+      this.realm.write(() => {
+        this.realm.create("Person", { age: 3, name: "Tom" });
+      });
+
+      this.realm.removeAllListeners();
+      this.realm.write(() => {
+        this.realm.create("Person", { age: 3, name: "Tom" });
+      });
+      this.realm.write(() => {
+        this.realm._updateSchema([...this.realm.schema, { name: "MyClass", properties: { myField: "string" } }]);
+      });
     });
   });
 });
