@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 0.4.0 (2022-10-18)
 
 ### Enhancements
 * Added a [contribution guide](https://github.com/realm/realm-js/blob/master/packages/realm-react/CONTRIBUTING.md) to assist in contributions from the community.
