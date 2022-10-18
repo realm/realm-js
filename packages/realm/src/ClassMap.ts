@@ -73,9 +73,10 @@ export class ClassMap {
     // Build a map of property descriptors from the properties declared in the schema
     const descriptors: PropertyDescriptorMap = Object.fromEntries(
       properties.map((property) => {
-        const { get, set } = propertyMap.get(property.name);
+        const propertyName = property.publicName || property.name;
+        const { get, set } = propertyMap.get(propertyName);
         return [
-          property.name,
+          propertyName,
           {
             enumerable: true,
             get(this: RealmObject) {

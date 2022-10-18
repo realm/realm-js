@@ -135,7 +135,7 @@ export function normalizePropertySchema(
     const result: CanonicalObjectSchemaProperty = {
       indexed: false,
       optional: false,
-      mapTo: name, // TODO: Make this optional?
+      mapTo: name,
       ...mergedSchema,
       name,
     };
