@@ -8,8 +8,12 @@
     "strict": true,
     "module": "CommonJS",
     "declaration": true,
-    "types": ["jest"]
+    "types": [
+      "jest",
+      "@babel/core"
+    ]
   },
-  "include": ["src/**/*.ts"],
-  "exclude": []
+  "include": [
+    "src/**/*.ts"
+  ]
 }

@@ -23,6 +23,9 @@ jobs:
       - run: npm ci --ignore-scripts
       # Bootstrap lerna sub-packages
       - run: npx lerna bootstrap --scope @realm/babel-plugin --include-dependencies
+      # Build the package
+      - run: npm run build
+        working-directory: packages/babel-plugin
       # Test the package
       - run: npm test
         working-directory: packages/babel-plugin
