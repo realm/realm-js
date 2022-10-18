@@ -1,78 +1,154 @@
-## vNext (TBD)
+## 11.0.0 (2022-10-18)
 
 ### Notes
 Based on Realm JS v10.22.0: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.19.5).
 
 ### Breaking changes
-* The following deprecated methods have been removed:
-    * `Realm#automaticSyncConfiguration`
-    * `Realm.Credentials#google` with `authCode` parameter (use `authObject`)
-* `Realm#writeCopyTo` now only accepts an output Realm configuration as a parameter.
-* Following callbacks were renamed:
-    * `Realm.Config#migration` -> `Realm.Config#onMigration`
-        ``` typescript
-        // before
-        Realm.open({migration:() => {}})
-        // after
-        Realm.open({onMigration:() => {}})
-        ```
-    * `Realm.Config#shouldCompactOnLaunch` -> `Realm.Config#shouldCompact`
-    * `Realm.App.Sync~SyncConfiguration.error` -> `Realm.App.Sync~SyncConfiguration.onError`
-    * `Realm.App.Sync~SyncConfiguration.clientReset.clientResetBefore` -> `Realm.App.Sync~SyncConfiguration.clientReset.onBefore`
-    * `Realm.App.Sync~SyncConfiguration.clientReset.clientResetAfter` -> `Realm.App.Sync~SyncConfiguration.clientReset.onAfter`
-    * `Realm.App.Sync~SyncConfiguration.ssl.validateCallback` -> `Realm.App.Sync~SyncConfiguration.ssl.validateCertificates`
-        ``` typescript
-        // before
-        Realm.open({
-          sync: {
-            shouldCompactOnLaunch: /**/
-            error: /**/
-            clientReset: {
-              clientResetBefore: /**/
-              clientResetAfter: /**/
-            }
-            ssl:{
-              validateCallback: /**/
-            }
-          }
-        })
-        // after
-        Realm.open({
-          sync: {
-            shouldCompact: /**/
-            onError: /**/
-            clientReset: {
-              onBefore: /**/
-              onAfter: /**/
-            }
-            ssl:{
-              validateCertificates: /**/
-            }
-          }
-        })
-        ```
-* Removal of deprecated functions, which should be replaced with `Realm.Credentials#apiKey`:
+
+#### Removed APIs
+
+* Removed all code related to the legacy Chrome Debugger. Please use [Flipper](https://fbflipper.com/) as debugger.
+
+The following deprecated methods have been removed:
+
+  * `Realm#automaticSyncConfiguration`
+  * `Realm.Credentials#google` with `authCode` parameter (use `authObject`)
+  * The following should be replaced with `Realm.Credentials#apiKey`:
     * `Realm.Credentials#serverApiKey`
     * `Realm.Credentials#userApiKey`
-* When no object is found calling `Realm#objectForPrimaryKey`, `null` is returned instead of `undefined`
-* Replaced `Realm#empty` with `Realm#isEmpty`
-* Replaced `Realm#readOnly` with `Realm#isReadOnly`
-* Removed `Object#_objectId`, which is now replaced by `Object#_objectKey`
-* Replace string unions with enums where it makes sense.
-  * Following functions and properties will be effected by this change:
-  ```typescript
-  Realm.App.Sync.Session.State : SessionState
-  Realm.App.Sync.Session.addProgressNotification(direction: ProgressDirection, mode: ProgressMode, progressCallback: ProgressNotificationCallback): void;
-  ```
-  * A typo was fixed in the `SubscriptionsState` enum, in which `SubscriptionsState.Superseded` now returns `superseded` in place of `Superseded`
-* `"discardLocal"` is now the default client reset mode. ([#4382](https://github.com/realm/realm-js/issues/4382))
-* Removed `Realm.JsonSerializationReplacer`. Use circular JSON serialization libraries such as [@ungap/structured-clone](https://www.npmjs.com/package/@ungap/structured-clone) and [flatted](https://www.npmjs.com/package/flatted) for stringifying Realm entities that have circular structures. The Realm entities' `toJSON` method returns plain objects and arrays (with circular references if applicable) which makes them compatible with any serialization library that supports stringifying plain JavaScript types. ([#4997](https://github.com/realm/realm-js/pull/4997))
+  * The overload of `Realm.Auth.EmailPasswordAuth` methods, taking positional arguments instead of object arguments:
+    * `registerUser`
+  * Removed `Realm.JsonSerializationReplacer`. Use circular JSON serialization libraries such as [@ungap/structured-clone](https://www.npmjs.com/package/@ungap/structured-clone) and [flatted](https://www.npmjs.com/package/flatted) for stringifying Realm entities that have circular structures. The Realm entities' `toJSON` method returns plain objects and arrays (with circular references if applicable) which makes them compatible with any serialization library that supports stringifying plain JavaScript types. ([#4997](https://github.com/realm/realm-js/pull/4997))
+
+Now the only supported call signature of `Realm.Auth.EmailPasswordAuth` methods is using a single object argument:
+
+```typescript
+registerUser({ email, password });
+confirmUser({ token, tokenId });
+resendConfirmationEmail({ email });
+retryCustomConfirmation({ email });
+resetPassword({ token, tokenId, password });
+sendResetPasswordEmail({ email });
+callResetPasswordFunction({ email, password }, ...args);
+```
+
+#### Renamed APIs
+
+* Renamed the `RealmInsertionModel<T>` type to `Unmanaged<T>` to simplify and highlight its usage.
+
+The following APIs have been renamed on the `Realm`:
+
+| Before | After |
+| ------ | ----- |
+| `empty` | `isEmpty` |
+| `readOnly` | `isReadOnly` |
+
+The following APIs have been renamed on the `Realm.Config`:
+
+| Before | After |
+| ------ | ----- |
+| `migration` | `onMigration` |
+| `shouldCompactOnLaunch` | `shouldCompact` |
+
+The following APIs have been renamed on the `Realm.SyncConfiguration`:
+
+| Before | After |
+| ------ | ----- |
+| `error` | `onError`|
+| `clientReset.clientResetBefore` | `clientReset.onBefore` |
+| `clientReset.clientResetAfter` | `clientReset.onAfter` |
+| `ssl.validateCallback` | `ssl.validateCertificates` |
+
+* A typo was fixed in the `SubscriptionsState` enum, in which `SubscriptionsState.Superseded` now returns `superseded` in place of `Superseded`
+
+Here are examples of the use of the APIs after they've been renamed:
+
+``` typescript
+// before
+Realm.open({ migration:() => {} })
+// after
+Realm.open({ onMigration:() => {} })
+```
+
+``` typescript
+// before
+Realm.open({
+  sync: {
+    shouldCompactOnLaunch: /* ... */
+    error: /* ... */
+    clientReset: {
+      clientResetBefore: /* ... */
+      clientResetAfter: /* ... */
+    }
+    ssl:{
+      validateCallback: /* ... */
+    }
+  }
+})
+// after
+Realm.open({
+  sync: {
+    shouldCompact: /* ... */
+    onError: /* ... */
+    clientReset: {
+      onBefore: /* ... */
+      onAfter: /* ... */
+    }
+    ssl:{
+      validateCertificates: /* ... */
+    }
+  }
+})
+```
+
+#### Changed APIs
+
+ * Model classes passed as schema to the `Realm` constructor must now extend `Realm.Object` and will no longer have their constructors called when pulling an object of that type from the database. Existing classes already extending `Realm.Object` now need to call the `super` constructor passing two arguments:
+  - `realm`: The Realm to create the object in.
+  - `values`: Values to pass to the `realm.create` call when creating the object in the database.
+ * `Realm#writeCopyTo` now only accepts an output Realm configuration as a parameter.
+ * When no object is found calling `Realm#objectForPrimaryKey`, `null` is returned instead of `undefined`,
+ * Removed `Object#_objectId`, which is now replaced by `Object#_objectKey`
+ * Unified the call signature of `User#callFunction` ([#3733](https://github.com/realm/realm-js/issues/3733))
+ * Replaced string unions with enums where it made sense:
+  * `Realm.App.Sync.Session#state` is now `SessionState`.
+  * `Realm.App.Sync.Session#addProgressNotification` now takes `(direction: ProgressDirection, mode: ProgressMode, progressCallback: ProgressNotificationCallback)`.
+ * `"discardLocal"` is now the default client reset mode. ([#4382](https://github.com/realm/realm-js/issues/4382))
+
+This is an example of calling a function with the new signature of `callFunction`:
+
+```typescript
+user.callFunction("sum", 1, 2, 3); // Valid
+user.callFunction("sum", [1, 2, 3]); // Invalid
+user.functions.sum(1, 2, 3); // Still the recommended
+```
 
 ### Enhancements
-* Small improvement to performance for `toJSON` which should make it useful for cases where a plain representations of Realm entities are needed, e.g. when inspecting them for debugging purposes through `console.log(realmObj.toJSON())`. ([#4997](https://github.com/realm/realm-js/pull/4997)) 
+* Adding support for Hermes on iOS & Android.
+* Class-based models (i.e. user defined classes extending `Realm.Object` and passed through the `schema` when opening a Realm), will now create object when their constructor is called.
+* Small improvement to performance by caching JSI property String object [#4863](https://github.com/realm/realm-js/pull/4863)
+* Small improvement to performance for `toJSON` which should make it useful for cases where a plain representations of Realm entities are needed, e.g. when inspecting them for debugging purposes through `console.log(realmObj.toJSON())`. ([#4997](https://github.com/realm/realm-js/pull/4997))
+* Catching missing libjsi.so when loading the librealm.so and rethrowing a more meaningful error, instructing users to upgrade their version of React Native.
 
-### Fixed
-* None
+Example of declaring a class-based model in TypeScript:
+
+```typescript
+class Person extends Realm.Object<Person> {
+  name!: string;
+
+  static schema = {
+    name: "Person",
+    properties: { name: "string" },
+  };
+}
+
+const realm = new Realm({ schema: [Person] });
+realm.write(() => {
+  const alice = new Person(realm, { name: "Alice" });
+  // A Person { name: "Alice" } is now persisted in the database
+  console.log("Hello " + alice.name);
+});
+```
 
 ### Compatibility
 * React Native >= v0.64.0
@@ -82,6 +158,8 @@ Based on Realm JS v10.22.0: See changelog below for details on enhancements and 
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
+
+* Building from source from a package downloaded via NPM is no longer supported, since we removed `src` and `vendor` from the NPM bundle, to reduce size blow-up caused by files recently added to the sub-module. This will force end-users to checkout the Git repository from GitHub when building from source. ([#4060](https://github.com/realm/realm-js/issues/4060))
 * Renamed the following internal packages:
    * `@realm.io/common` -> `@realm/common`
    * `realm-network-transport` -> `@realm/network-transport`
@@ -90,7 +168,6 @@ Based on Realm JS v10.22.0: See changelog below for details on enhancements and 
    * `realm-electron-tests` -> `@realm/electron-tests`
    * `realm-node-tests` -> `@realm/node-tests`
    * `realm-react-native-tests` -> `@realm/react-native-tests`
-
 
 ## 10.22.0 (2022-10-17)
 
