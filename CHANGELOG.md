@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 11.0.0 (2022-10-18)
 
 ### Notes
 Based on Realm JS v10.22.0: See changelog below for details on enhancements and fixes introduced between this and the previous pre release (which was based on Realm JS v10.19.5).
@@ -70,9 +70,6 @@ Based on Realm JS v10.22.0: See changelog below for details on enhancements and 
 
 ### Enhancements
 * Small improvement to performance for `toJSON` which should make it useful for cases where a plain representations of Realm entities are needed, e.g. when inspecting them for debugging purposes through `console.log(realmObj.toJSON())`. ([#4997](https://github.com/realm/realm-js/pull/4997)) 
-
-### Fixed
-* None
 
 ### Compatibility
 * React Native >= v0.64.0
