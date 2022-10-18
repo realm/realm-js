@@ -46,22 +46,22 @@ jobs:
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1
         with:
-          key: babel-plugin
+          key: ${{ runner.os }}-linux-x64
+          max-size: '2.0G'
 
       - name: Prepend ccache executables to the PATH
         run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
 
       - name: Install realm node dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Bootstrap @realm/babel-plugin
         run: npx lerna bootstrap --scope @realm/babel-plugin --include-dependencies
-        env:
-          npm_config_realm_local_prebuilds: ${{ github.workspace }}/prebuilds
+
       - name: Build realm react
         working-directory: packages/babel-plugin
         run: npm run build
 
       - name: Run tests
         working-directory: packages/babel-plugin
-        run: npm run test
+        run: npm test
