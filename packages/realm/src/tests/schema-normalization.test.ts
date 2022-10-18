@@ -18,7 +18,7 @@
 
 import { expect } from "chai";
 
-import { extractGeneric, normalizeObjectSchema, normalizePropertySchema } from "../schema/normalize";
+import { extractGeneric, normalizePropertySchema } from "../schema/normalize";
 
 describe("normalizePropertySchema", () => {
   it("transforms a string declaring a string", () => {

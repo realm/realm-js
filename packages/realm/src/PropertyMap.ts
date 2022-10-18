@@ -40,14 +40,15 @@ export class PropertyMap {
     const properties = [...persistedProperties, ...computedProperties];
     this.mapping = Object.fromEntries(
       properties.map((property) => {
+        const propertyName = property.publicName || property.name;
         const embedded = property.objectType
           ? options.getClassHelpers(property.objectType).objectSchema.tableType === binding.TableType.Embedded
           : false;
         const helpers = createPropertyHelpers({ ...property, embedded, objectSchemaName }, options);
         // Allow users to override the default value of properties
-        const defaultValue = defaults[property.name];
+        const defaultValue = defaults[propertyName];
         helpers.default = typeof defaultValue !== "undefined" ? defaultValue : helpers.default;
-        return [property.name, helpers];
+        return [propertyName, helpers];
       }),
     );
     this.nameByColumnKey = new Map(properties.map((p) => [p.columnKey, p.publicName || p.name]));

@@ -96,7 +96,8 @@ export class RealmObject<T = DefaultObject> {
           Object.fromEntries(
             values.map((value, index) => {
               const property = persistedProperties[index];
-              return [property.name, value];
+              const propertyName = property.publicName || property.name;
+              return [propertyName, value];
             }),
           ),
           mode,
@@ -122,24 +123,25 @@ export class RealmObject<T = DefaultObject> {
     // Persist any values provided
     // TODO: Consider using the property helpers directly to improve performance
     for (const property of persistedProperties) {
-      const { default: defaultValue } = properties.get(property.name);
+      const propertyName = property.publicName || property.name;
+      const { default: defaultValue } = properties.get(propertyName);
       if (property.isPrimary) {
         continue; // Skip setting this, as we already provided it on object creation
       }
-      const propertyValue = values[property.name];
+      const propertyValue = values[propertyName];
       if (typeof propertyValue !== "undefined") {
-        if (mode !== UpdateMode.Modified || result[property.name] !== propertyValue) {
-          result[property.name] = propertyValue;
+        if (mode !== UpdateMode.Modified || result[propertyName] !== propertyValue) {
+          result[propertyName] = propertyValue;
         }
       } else {
         if (typeof defaultValue !== "undefined") {
-          result[property.name] = defaultValue;
+          result[propertyName] = defaultValue;
         } else if (
           !(property.type & binding.PropertyType.Collection) &&
           !(property.type & binding.PropertyType.Nullable) &&
           created
         ) {
-          throw new Error(`Missing value for property '${property.name}'`);
+          throw new Error(`Missing value for property '${propertyName}'`);
         }
       }
     }

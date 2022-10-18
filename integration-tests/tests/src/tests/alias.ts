@@ -81,7 +81,7 @@ describe("Aliasing property names using mapTo", () => {
   it("supports creating objects", function (this: Mocha.Context & RealmContext) {
     const { realm } = this;
     realm.write(() => {
-      // Creating objects most use the alias
+      // Creating objects must use the alias
       realm.create("ObjectA", {
         otherName: "Foo",
         age: 42,
