@@ -182,6 +182,17 @@
         },
         {
             "type": "node",
+            "name": "Node Babel Plugin Tests",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "disableOptimisticBPs": true,
+            "cwd": "${workspaceFolder}/packages/babel-plugin",
+            "runtimeExecutable": "npm",
+            "args": ["run", "test", "--", "--runInBand", "--watchAll=false", "--testNamePattern=${input:testNamePattern}"]
+        },
+        {
+            "type": "node",
             "request": "launch",
             "name": "Debug Current JS file",
             "program": "${relativeFile}",

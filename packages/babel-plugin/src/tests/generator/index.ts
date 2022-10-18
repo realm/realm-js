@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2021 Realm Inc.
+// Copyright 2022 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,25 +16,5 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import chaiAsPromised from "chai-as-promised";
-import chai from "chai";
-
-chai.use(chaiAsPromised);
-
-import "./realm-constructor";
-import "./objects";
-import "./class-models";
-import "./serialization";
-import "./iterators";
-import "./queries";
-import "./dynamic-schema-updates";
-import "./bson";
-import "./dictionary";
-import "./credentials/anonymous";
-import "./sync/mixed";
-import "./sync/flexible";
-import "./sync/asymmetric";
-import "./sync/sync-as-local";
-import "./transaction";
-import "./schema";
-import "./types";
+export { describeProperty } from "./suite";
+export { extractSchema } from "./transform";
