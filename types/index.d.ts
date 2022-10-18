@@ -278,14 +278,36 @@ declare namespace Realm {
     type ObjectChangeCallback<T> = (object: T, changes: ObjectChangeSet<T>) => void;
 
     /**
-     * Object
-     * @see { @link https://realm.io/docs/javascript/latest/api/Realm.Object.html }
+     * Base class for a Realm Object.
+     * @see
+     * {@link https://realm.io/docs/javascript/latest/api/Realm.Object.html}
+     *
+     * @example
+     * To define a class `Person` which requires the `name` and `age` properties to be
+     * specified when it is being constructed, using the Realm Babel plugin to allow
+     * Typescript-only model definitions (otherwise it would require a `static` schema):
+     * ```
+     * class Person extends Realm.Object<Person, "name" | "age"> {
+     *   _id = new Realm.Types.ObjectId();
+     *   name: string;
+     *   age: Realm.Types.Int;
+     * }
+     * ```
+     *
+     * @typeParam `T` - The type of this class (e.g. if your class is `Person`,
+     * `T` should also be `Person` - this duplication is required due to how
+     * TypeScript works)
+     *
+     * @typeParam `RequiredProperties` - The names of any properties of this
+     * class which are required when an instance is constructed with `new`. Any
+     * properties not specified will be optional, and will default to a sensible
+     * null value if no default is specified elsewhere.
      */
-    abstract class Object<T = unknown> {
+    abstract class Object<T = unknown, RequiredProperties extends keyof OmittedRealmTypes<T> = never> {
         /**
          * Creates a new object in the database.
          */
-        constructor(realm: Realm, values: Unmanaged<T>);
+        constructor(realm: Realm, values: Unmanaged<T, RequiredProperties>);
 
         /**
          * @returns An array of the names of the object's properties.
@@ -1053,6 +1075,16 @@ type OmittedRealmTypes<T> = Omit<T,
     ExtractPropertyNamesOfType<T, Realm.Dictionary>
 >;
 
+/** Make all fields optional except those specified in K */
+type OptionalExcept<T, K extends keyof T> = Partial<T> & Pick<T, K>;
+
+/**
+ * Omits all properties of a model which are not defined by the schema,
+ * making all properties optional except those specified in RequiredProperties.
+ */
+type OmittedRealmTypesWithRequired<T, RequiredProperties extends keyof OmittedRealmTypes<T>> =
+    OptionalExcept<OmittedRealmTypes<T>, RequiredProperties>;
+
 /** Remaps realm types to "simpler" types (arrays and objects) */
 type RemappedRealmTypes<T> =
     RealmListsRemappedModelPart<T> &
@@ -1060,9 +1092,12 @@ type RemappedRealmTypes<T> =
 
 /**
  * Joins T stripped of all keys which value extends Realm.Collection and all inherited from Realm.Object,
- * with only the keys which value extends Realm.List, remapped as Arrays.
+ * with only the keys which value extends Realm.List, remapped as Arrays. All properties are optional
+ * except those specified in RequiredProperties.
  */
-type Unmanaged<T> = OmittedRealmTypes<T> & RemappedRealmTypes<T>;
+type Unmanaged<T, RequiredProperties extends keyof OmittedRealmTypes<T> = never> =
+    OmittedRealmTypesWithRequired<T, RequiredProperties> & RemappedRealmTypes<T>;
+
 declare class Realm {
     static defaultPath: string;
 
