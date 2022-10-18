@@ -22,7 +22,7 @@ jobs:
       # Install the root package (--ignore-scripts to avoid downloading or building the native module)
       - run: npm ci --ignore-scripts
       # Bootstrap lerna sub-packages
-      - run: npx lerna bootstrap
+      - run: npx lerna bootstrap --scope @realm/babel-plugin --include-dependencies
       # Test the package
       - run: npm test
         working-directory: packages/babel-plugin
