@@ -13,7 +13,7 @@ Setting up Realm in a React Native application has historically been complex. Re
 Documentation for `@realm/react` and Realm can be found at [docs.mongodb.org](https://www.mongodb.com/docs/realm/sdk/react-native/use-realm-react/).
 ## Installation
 
-This library requires `react-native` >= 0.59 and `realm` >= 10
+This library requires `react-native` >= 0.59 and `realm` >= 11
 
 npm:
 

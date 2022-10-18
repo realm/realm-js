@@ -8,6 +8,7 @@
 * None
 
 ### Compatibility
+* React JS v11.0.0
 * React Native >= v0.64.0
 * Atlas App Services.
 * Realm Studio v12.0.0.
@@ -22,6 +23,19 @@
 	* @testing-library/react-native v11.2.0
 	* @testing-library/jest-native v4.0.13
 * Refactor tests to use updated `testing-library`
+
+## 0.4.0-rc.0 (2022-09-14)
+
+### Fixed
+* Fix realm collection and object typing to reflect changes to Class Based Models introduced in Realm `11.0.0` ([#4905](https://github.com/realm/realm-js/issues/4905))
+
+### Internal
+* Upgrade dev dependency of React Native to 0.70.0 and any relevant packages effected by this upgrade
+* Migrate tests away from `@testing-library/react-hooks` which is now part of `@testing-library/react-native`
+
+### Compatibility
+* Realm >= v0.11.0
+
 ## 0.3.2 (2022-07-14)
 ### Fixed
 * Fix peer dependency for Realm in package.json to support `-rc` branches of Realm ([#4621](https://github.com/realm/realm-js/issues/4621))
