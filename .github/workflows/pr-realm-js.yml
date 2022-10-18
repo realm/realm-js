@@ -10,7 +10,6 @@ jobs:
     name: Build for ${{ matrix.variant.os }} ${{ matrix.variant.arch }}
     runs-on: ${{ matrix.variant.runner }}
     env:
-      npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
       REALM_DISABLE_ANALYTICS: 1
       NDK_VERSION: 21.0.6113669
     strategy:
@@ -39,9 +38,6 @@ jobs:
           node-version: '16'
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
-
-      - name: Setup NPM version
-        run: npm install -g npm@8
 
       - name: Get NPM cache directory
         id: npm-cache-dir
@@ -138,7 +134,7 @@ jobs:
         run: npm run prebuild:node -- --arch=${{matrix.variant.arch}}
 
       # build the c++ library for IOS
-      - name: Build IOS
+      - name: Build iOS
         if: ${{ (matrix.variant.os == 'ios') }}
         run: npm run prebuild:ios
 
@@ -148,10 +144,6 @@ jobs:
         run: npm run prebuild:android -- --arch=${{matrix.variant.arch}}
         env:
           ANDROID_NDK: ${{ env.ANDROID_SDK_ROOT }}/ndk/${{ env.NDK_VERSION }}
-
-      - name: Install the node dependencies in the test folder
-        working-directory: ./tests
-        run: npm ci --ignore-scripts
 
       - name: Upload prebuild artifact
         uses: actions/upload-artifact@v2
@@ -220,9 +212,6 @@ jobs:
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      - name: Setup NPM version
-        run: npm install -g npm@8
-
       - name: Get NPM cache directory
         id: npm-cache-dir
         run: echo "::set-output name=dir::$(npm config get cache)"
@@ -266,8 +255,15 @@ jobs:
         with:
           name: realm-js-prebuilds
 
-      - name: Install prebuilds
-        run: npm ci
+      - name: Install dependencies
+        # Ignoring scripts to prevent building if a prebuild is missing
+        run: npm ci --ignore-scripts
+
+      - name: Install prebuild
+        if: ${{ matrix.variant.environment == 'node' || matrix.variant.environment == 'electron' }}
+        run: npx prebuild-install --tag-prefix= -r napi
+        env:
+          npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
 
       - name: Bootstrap lerna sub-packages
         run: npx lerna bootstrap --scope realm-${{ matrix.variant.environment }}-tests --include-dependencies
