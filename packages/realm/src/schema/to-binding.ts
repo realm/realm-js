@@ -100,10 +100,13 @@ export function toBindingPropertySchema(name: string, schema: CanonicalObjectSch
     name,
     type: toBindingPropertyType(schema),
     isIndexed: schema.indexed,
-    publicName: name !== schema.mapTo ? schema.mapTo : undefined,
     objectType: schema.objectType && schema.objectType in TYPE_MAPPINGS ? undefined : schema.objectType,
     linkOriginPropertyName: schema.property,
   };
+  if (schema.mapTo && schema.mapTo !== schema.name) {
+    result.publicName = result.name;
+    result.name = schema.mapTo;
+  }
   return result;
 }
 
