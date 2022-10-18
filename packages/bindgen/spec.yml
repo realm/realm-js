@@ -473,6 +473,8 @@ classes:
       delete_data_for_object: '(realm: SharedRealm, object_type: StringData)'
       is_empty_realm: '(realm: SharedRealm) -> bool'
       is_same_realm: '(r1: SharedRealm, r2: SharedRealm) -> bool'
+      # This is needed because Query#and_query doesn't append ordering
+      results_append_query: '(results: Results, query: Query) -> Results'
 
   ConstTableRef:
     needsDeref: true

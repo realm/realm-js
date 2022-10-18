@@ -1,4 +1,5 @@
 #include "realm/object-store/object_store.hpp"
+#include "realm/query.hpp"
 #include <condition_variable>
 #include <exception>
 #include <iostream>
@@ -51,6 +52,16 @@ struct Helpers {
     {
         auto ordering = q.get_ordering();
         return Results(realm, std::move(q), ordering ? *ordering : DescriptorOrdering());
+    }
+    static Results results_append_query(Results results, Query query)
+    {
+        Query query_copy{query};
+        auto ordering = query_copy.get_ordering();
+        if (ordering) {
+            return results.filter(std::move(query_copy)).apply_ordering(std::move(*ordering));
+        } else {
+            return results.filter(std::move(query_copy));
+        }
     }
     static std::shared_ptr<_impl::ObjectNotifier> make_object_notifier(const SharedRealm& realm, const Obj& obj)
     {
