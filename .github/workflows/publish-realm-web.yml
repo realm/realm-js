@@ -23,7 +23,8 @@ jobs:
       - run: npm ci --ignore-scripts
       # Bootstrap lerna sub-packages
       - run: npx lerna bootstrap --scope realm-web --include-dependencies --include-dependents
-      # Test the package
+      - run: npm run build
+        working-directory: packages/realm-web
       - run: npm test
         working-directory: packages/realm-web
       # Login with the Docker CLI to enable the integration test harness to pull the mongodb-realm-test-server
