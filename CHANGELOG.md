@@ -124,7 +124,31 @@ user.functions.sum(1, 2, 3); // Still the recommended
 ```
 
 ### Enhancements
-* Small improvement to performance for `toJSON` which should make it useful for cases where a plain representations of Realm entities are needed, e.g. when inspecting them for debugging purposes through `console.log(realmObj.toJSON())`. ([#4997](https://github.com/realm/realm-js/pull/4997)) 
+* Adding support for Hermes on iOS & Android.
+* Class-based models (i.e. user defined classes extending `Realm.Object` and passed through the `schema` when opening a Realm), will now create object when their constructor is called.
+* Small improvement to performance by caching JSI property String object [#4863](https://github.com/realm/realm-js/pull/4863)
+* Small improvement to performance for `toJSON` which should make it useful for cases where a plain representations of Realm entities are needed, e.g. when inspecting them for debugging purposes through `console.log(realmObj.toJSON())`. ([#4997](https://github.com/realm/realm-js/pull/4997))
+* Catching missing libjsi.so when loading the librealm.so and rethrowing a more meaningful error, instructing users to upgrade their version of React Native.
+
+Example of declaring a class-based model in TypeScript:
+
+```typescript
+class Person extends Realm.Object<Person> {
+  name!: string;
+
+  static schema = {
+    name: "Person",
+    properties: { name: "string" },
+  };
+}
+
+const realm = new Realm({ schema: [Person] });
+realm.write(() => {
+  const alice = new Person(realm, { name: "Alice" });
+  // A Person { name: "Alice" } is now persisted in the database
+  console.log("Hello " + alice.name);
+});
+```
 
 ### Compatibility
 * React Native >= v0.64.0
