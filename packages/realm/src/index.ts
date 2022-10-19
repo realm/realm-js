@@ -37,6 +37,7 @@ export type {
   ObjectChangeCallback,
   CollectionChangeSet,
   CollectionChangeCallback,
+  RealmListenerCallback,
 } from "./internal";
 
 // Exporting default for backwards compatibility

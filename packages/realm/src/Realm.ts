@@ -49,10 +49,10 @@ import {
   ClassHelpers,
   normalizeObjectSchema,
   toArrayBuffer,
+  RealmListeners,
+  RealmListenerCallback,
 } from "./internal";
-import { BindingListeners } from "./Listeners";
 
-type RealmListenerCallback = (r: Realm, name: string, schema?: Realm.ObjectSchema[]) => void;
 type RealmSchemaExtra = Record<string, ObjectSchemaExtra | undefined>;
 
 type ObjectSchemaExtra = {
@@ -294,9 +294,9 @@ export class Realm {
 
   private schemaExtras: RealmSchemaExtra;
   private classes: ClassMap;
-  private changeListeners = new BindingListeners("change");
-  private beforeNotifyListeners = new BindingListeners("beforenotify");
-  private schemaListeners = new BindingListeners("schema");
+  private changeListeners = new RealmListeners(this, "change");
+  private beforeNotifyListeners = new RealmListeners(this, "beforenotify");
+  private schemaListeners = new RealmListeners(this, "schema");
 
   constructor();
   constructor(path: string);
@@ -327,15 +327,15 @@ export class Realm {
     binding.Helpers.setBindingContext(this.internal, {
       didChange: (r: binding.Realm) => {
         r.verifyOpen();
-        this.changeListeners.callback(this);
+        this.changeListeners.callback();
       },
       schemaDidChange: (r: binding.Realm) => {
         r.verifyOpen();
-        this.schemaListeners.callback(this);
+        this.schemaListeners.callback();
       },
       beforeNotify: (r: binding.Realm) => {
         r.verifyOpen();
-        this.beforeNotifyListeners.callback(this);
+        this.beforeNotifyListeners.callback();
       },
     });
     RETURNED_REALMS.add(new WeakRef(internal));
