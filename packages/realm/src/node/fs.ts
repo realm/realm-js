@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { unlinkSync, rmSync, readdirSync, existsSync } from "node:fs";
+import { existsSync, readdirSync, rmSync, unlinkSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
 
 import { inject } from "../platform/file-system";

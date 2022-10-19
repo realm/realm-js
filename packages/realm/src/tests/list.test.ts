@@ -18,7 +18,7 @@
 
 import { Realm } from "../index";
 
-import { closeRealm, generateTempRealmPath, RealmContext } from "./utils";
+import { RealmContext, closeRealm, generateTempRealmPath } from "./utils";
 
 describe("List", () => {
   beforeEach(function (this: RealmContext) {

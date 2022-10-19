@@ -18,17 +18,17 @@
 
 import {
   BSON,
+  ClassHelpers,
+  Collection,
+  INTERNAL,
+  List,
+  ObjCreator,
+  Realm,
+  RealmObject,
+  TypeAssertionError,
+  UpdateMode,
   assert,
   binding,
-  ClassHelpers,
-  TypeAssertionError,
-  Collection,
-  RealmObject,
-  ObjCreator,
-  UpdateMode,
-  INTERNAL,
-  Realm,
-  List,
 } from "./internal";
 
 const TYPED_ARRAY_CONSTRUCTORS = new Set([

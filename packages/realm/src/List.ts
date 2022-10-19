@@ -17,12 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
-  assert,
-  binding,
+  IllegalConstructorError,
   OrderedCollection,
   OrderedCollectionHelpers,
-  IllegalConstructorError,
   Realm,
+  assert,
+  binding,
 } from "./internal";
 
 type PartiallyWriteableArray<T> = Pick<Array<T>, "pop" | "push" | "shift" | "unshift" | "splice">;

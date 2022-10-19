@@ -17,13 +17,13 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
-  binding,
-  PropertyMap,
-  RealmObject,
   CanonicalObjectSchema,
   DefaultObject,
-  RealmObjectConstructor,
   INTERNAL_HELPERS,
+  PropertyMap,
+  RealmObject,
+  RealmObjectConstructor,
+  binding,
 } from "./internal";
 
 type BindingObjectSchema = binding.Realm["schema"][0];
