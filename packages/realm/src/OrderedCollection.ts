@@ -17,22 +17,22 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
-  binding,
-  Results,
-  Collection,
-  unwind,
-  TypeHelpers,
-  IllegalConstructorError,
-  TypeAssertionError,
-  Realm,
-  assert,
   ClassHelpers,
-  JSONCacheMap,
-  INTERNAL,
-  RealmObject,
+  Collection,
   DefaultObject,
+  INTERNAL,
+  IllegalConstructorError,
+  JSONCacheMap,
+  Realm,
+  RealmObject,
+  Results,
+  TypeAssertionError,
+  TypeHelpers,
+  assert,
+  binding,
   getTypeName,
   mixedToBinding,
+  unwind,
 } from "./internal";
 
 const DEFAULT_COLUMN_KEY = 0n as unknown as binding.ColKey;

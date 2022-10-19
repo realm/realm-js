@@ -17,12 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
-  binding,
+  IllegalConstructorError,
   OrderedCollection,
   OrderedCollectionHelpers,
-  IllegalConstructorError,
   Realm,
   assert,
+  binding,
 } from "./internal";
 
 export class Results<T = unknown> extends OrderedCollection<T> {

@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding, getClassHelpers, Listeners, INTERNAL, RealmObject, PropertyMap } from "./internal";
+import { INTERNAL, Listeners, PropertyMap, RealmObject, binding, getClassHelpers } from "./internal";
 
 export type ObjectChangeSet<T> = { deleted: boolean; changedProperties: (keyof T)[] };
 export type ObjectChangeCallback<T> = (object: RealmObject<T> & T, changes: ObjectChangeSet<T>) => void;
