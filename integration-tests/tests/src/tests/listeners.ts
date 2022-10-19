@@ -106,10 +106,6 @@ describe("Realm Listeners", () => {
       this.realm.addListener("change", () => {
         changeListenerRuns += 1;
       });
-      this.realm.addListener("beforenotify", () => {
-        changeListenerRuns = 0;
-        console.log("ran");
-      });
       this.realm.addListener("schema", () => {
         schemaListenerRuns += 1;
       });
