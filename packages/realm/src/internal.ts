@@ -59,6 +59,7 @@ export * from "./Dictionary";
 export * from "./App";
 
 export * from "./Realm";
+export * from "./RealmListeners";
 export * from "./Configuration";
 
 export * from "./InsertionModel";
