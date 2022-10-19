@@ -37,17 +37,6 @@ function eventFromName(name: RealmEventName): RealmEvent {
       return RealmEvent.BeforeNotify;
   }
 }
-function nameFromEvent(event: RealmEvent): RealmEventName {
-  switch (event) {
-    case RealmEvent.Change:
-      return "change";
-    case RealmEvent.Schema:
-      return "schema";
-    case RealmEvent.BeforeNotify:
-      return "beforenotify";
-  }
-}
-
 ////////////////////////////////////////////////////////////////////////////
 /** @internal */
 export class RealmListeners {
@@ -66,9 +55,8 @@ export class RealmListeners {
     if (this.eventType === RealmEvent.Schema) {
       schema = this.realm.schema;
     }
-    const name = nameFromEvent(this.eventType);
     for (const callback of this.listeners) {
-      callback(this.realm, name, schema);
+      callback(this.realm, this.eventType, schema);
     }
   }
 
@@ -82,7 +70,6 @@ export class RealmListeners {
   }
 
   remove(callback: RealmListenerCallback): void {
-    // TODO: consider whether bool of delete is useful or not.
     this.listeners.delete(callback);
   }
 

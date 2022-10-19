@@ -107,7 +107,8 @@ describe("Realm Listeners", () => {
         changeListenerRuns += 1;
       });
       this.realm.addListener("beforenotify", () => {
-        changeListenerRuns += 1;
+        changeListenerRuns = 0;
+        console.log("ran");
       });
       this.realm.addListener("schema", () => {
         schemaListenerRuns += 1;
