@@ -22,7 +22,6 @@ import {
   CanonicalObjectSchema,
   CanonicalRealmSchema,
   ClassHelpers,
-  ClassHelpers,
   ClassMap,
   Collection,
   Configuration,
@@ -249,6 +248,7 @@ export class Realm {
   private static transformConfig(
     config: Configuration,
     normalizedSchema: CanonicalRealmSchema | undefined,
+    schemaExtras: RealmSchemaExtra = {},
   ): binding.RealmConfig_Relaxed {
     const path = Realm.determinePath(config);
     const { fifoFilesFallbackPath, shouldCompactOnLaunch, inMemory } = config;
@@ -264,6 +264,7 @@ export class Realm {
           ? BigInt(config.schemaVersion)
           : 0n
         : undefined,
+      migrationFunction: config.migration ? Realm.wrapMigration(schemaExtras, config.migration) : undefined,
       shouldCompactOnLaunchFunction: shouldCompactOnLaunch
         ? (totalBytes, usedBytes) => {
             return shouldCompactOnLaunch(Number(totalBytes), Number(usedBytes));
@@ -275,10 +276,14 @@ export class Realm {
   }
 
   private static determineSchemaMode(config: Configuration): binding.SchemaMode | undefined {
-    const { readOnly, deleteRealmIfMigrationNeeded } = config;
+    const { readOnly, deleteRealmIfMigrationNeeded, migration } = config;
     assert(
       !readOnly || !deleteRealmIfMigrationNeeded,
       "Cannot set 'deleteRealmIfMigrationNeeded' when 'readOnly' is set.",
+    );
+    assert(
+      !migration || !deleteRealmIfMigrationNeeded,
+      "Cannot set 'deleteRealmIfMigrationNeeded' when 'migration' is set.",
     );
     if (readOnly) {
       return binding.SchemaMode.Immutable;
@@ -289,13 +294,27 @@ export class Realm {
     }
   }
 
+  private static wrapMigration(
+    schemaExtras: RealmSchemaExtra,
+    migration: MigrationCallback,
+  ): binding.RealmConfig_Relaxed["migrationFunction"] {
+    return (oldRealmInternal: binding.Realm, newRealmInternal: binding.Realm) => {
+      try {
+        const oldRealm = new Realm(oldRealmInternal, schemaExtras);
+        const newRealm = new Realm(newRealmInternal, schemaExtras);
+        migration(oldRealm, newRealm);
+      } finally {
+        oldRealmInternal.close();
+      }
+    };
+  }
+
   /**
    * The Realms's representation in the binding.
    * @internal
    */
-  public internal!: binding.Realm;
-
-  private schemaExtras: RealmSchemaExtra;
+  public readonly internal: binding.Realm;
+  private schemaExtras: RealmSchemaExtra = {};
   private classes: ClassMap;
   private changeListeners = new RealmListeners(this, "change");
   private beforeNotifyListeners = new RealmListeners(this, "beforenotify");
@@ -304,14 +323,20 @@ export class Realm {
   constructor();
   constructor(path: string);
   constructor(config: Configuration);
-  constructor(arg: Configuration | string = {}) {
-    const config = typeof arg === "string" ? { path: arg } : arg;
-    validateConfiguration(config);
-    const normalizedSchema = config.schema && normalizeRealmSchema(config.schema);
-    this.schemaExtras = Realm.extractSchemaExtras(normalizedSchema || []);
-
-    const internalConfig = Realm.transformConfig(config, normalizedSchema);
-    const internal = binding.Realm.getSharedRealm(internalConfig);
+  /** @internal */
+  constructor(internal: binding.Realm, schemaExtras?: RealmSchemaExtra);
+  constructor(arg: Configuration | binding.Realm | string = {}, schemaExtras = {}) {
+    if (arg instanceof binding.Realm) {
+      this.schemaExtras = schemaExtras;
+      this.internal = arg;
+    } else {
+      const config = typeof arg === "string" ? { path: arg } : arg;
+      validateConfiguration(config);
+      const normalizedSchema = config.schema && normalizeRealmSchema(config.schema);
+      this.schemaExtras = Realm.extractSchemaExtras(normalizedSchema || []);
+      const internalConfig = Realm.transformConfig(config, normalizedSchema, this.schemaExtras);
+      this.internal = binding.Realm.getSharedRealm(internalConfig);
+    }
 
     Object.defineProperties(this, {
       classes: {
@@ -323,7 +348,6 @@ export class Realm {
         enumerable: false,
         configurable: false,
         writable: false,
-        value: internal,
       },
     });
 
@@ -341,8 +365,8 @@ export class Realm {
         this.beforeNotifyListeners.callback();
       },
     });
-    RETURNED_REALMS.add(new WeakRef(internal));
-    this.classes = new ClassMap(this, internal.schema, this.schema);
+    RETURNED_REALMS.add(new WeakRef(this.internal));
+    this.classes = new ClassMap(this, this.internal.schema, this.schema);
   }
 
   get empty(): boolean {
@@ -468,8 +492,10 @@ export class Realm {
   deleteModel(name: string): void {
     assert.inTransaction(this, "Can only delete objects within a transaction.");
     binding.Helpers.deleteDataForObject(this.internal, name);
-    const newSchema = this.internal.schema.filter((objectSchema) => objectSchema.name !== name);
-    this.internal.updateSchema(newSchema, this.internal.schemaVersion + 1n, null, null, true);
+    if (!this.internal.isInMigration) {
+      const newSchema = this.internal.schema.filter((objectSchema) => objectSchema.name !== name);
+      this.internal.updateSchema(newSchema, this.internal.schemaVersion + 1n, null, null, true);
+    }
   }
 
   deleteAll(): void {
