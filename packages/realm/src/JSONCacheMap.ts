@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { INTERNAL, DefaultObject, RealmObject } from "./internal";
+import { DefaultObject, INTERNAL, RealmObject } from "./internal";
 
 /** @internal */
 export class JSONCacheMap extends Map<number, Map<string, DefaultObject>> {

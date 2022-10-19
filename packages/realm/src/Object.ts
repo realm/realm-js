@@ -17,22 +17,22 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
-  binding,
-  Realm,
-  Results,
   CanonicalObjectSchema,
+  ClassHelpers,
   Constructor,
   DefaultObject,
-  getTypeName,
-  RealmObjectConstructor,
+  JSONCacheMap,
   ObjectChangeCallback,
   ObjectListeners,
-  ClassHelpers,
+  Realm,
   RealmInsertionModel,
-  assert,
-  JSONCacheMap,
+  RealmObjectConstructor,
+  Results,
   TypeAssertionError,
+  assert,
+  binding,
   flags,
+  getTypeName,
 } from "./internal";
 
 export enum UpdateMode {
