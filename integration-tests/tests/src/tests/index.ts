@@ -28,6 +28,7 @@ import "./serialization";
 import "./iterators";
 import "./queries";
 import "./dynamic-schema-updates";
+import "./listeners";
 import "./bson";
 import "./dictionary";
 import "./set";

@@ -93,7 +93,7 @@ function createCollectionChangeTest(config, createCollection, messages, expected
           var notificationCount = increment();
           TestCase.assertArraysEqual(changes.insertions, expected[notificationCount][0]);
           TestCase.assertArraysEqual(changes.deletions, expected[notificationCount][1]);
-          TestCase.assertArraysEqual(changes.modifications, expected[notificationCount][2]);
+          TestCase.assertArraysEqual(changes.oldModifications, expected[notificationCount][2]);
         } catch (e) {
           reject(e);
           cleanup();

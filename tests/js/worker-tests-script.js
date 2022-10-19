@@ -37,7 +37,8 @@ function trySetElectronVersion() {
 // // Ensure node-pre-gyp uses the correct binary
 trySetElectronVersion();
 
-const Realm = require(process.argv[2]);
+const { Realm, flags } = require(process.argv[2]);
+flags.ALLOW_VALUES_ARRAYS = true;
 Realm.defaultPath = process.argv[3];
 
 process.on("message", (message) => {
