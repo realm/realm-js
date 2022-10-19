@@ -22,7 +22,7 @@ import {
   PropertyType as BindingPropertyType,
   TableType,
 } from "../binding";
-import { assert, CanonicalObjectSchema, CanonicalObjectSchemaProperty, PropertyTypeName } from "../internal";
+import { CanonicalObjectSchema, CanonicalObjectSchemaProperty, PropertyTypeName, assert } from "../internal";
 
 /** @internal */
 export const TYPE_MAPPINGS: Record<PropertyTypeName, BindingPropertyType> = {

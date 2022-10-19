@@ -17,17 +17,17 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
-  binding,
-  PropertyMap,
-  Realm,
-  INTERNAL,
-  RealmObject,
   CanonicalRealmSchema,
   Constructor,
+  INTERNAL,
+  PropertyMap,
+  Realm,
+  RealmObject,
   RealmObjectConstructor,
+  assert,
+  binding,
   getClassHelpers,
   setClassHelpers,
-  assert,
 } from "./internal";
 
 type BindingObjectSchema = binding.Realm["schema"][0];

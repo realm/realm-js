@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding, AssertionError, TypeAssertionError, DefaultObject, Realm } from "./internal";
+import { AssertionError, DefaultObject, Realm, TypeAssertionError, binding } from "./internal";
 
 export function assert(value: unknown, err?: string | Error): asserts value {
   if (!value) {
