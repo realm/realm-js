@@ -49,6 +49,9 @@ import {
   ClassHelpers,
   normalizeObjectSchema,
   toArrayBuffer,
+  RealmListeners,
+  RealmEventName,
+  RealmListenerCallback,
 } from "./internal";
 
 type RealmSchemaExtra = Record<string, ObjectSchemaExtra | undefined>;
@@ -292,6 +295,9 @@ export class Realm {
 
   private schemaExtras: RealmSchemaExtra;
   private classes: ClassMap;
+  private changeListeners = new RealmListeners(this, "change");
+  private beforeNotifyListeners = new RealmListeners(this, "beforenotify");
+  private schemaListeners = new RealmListeners(this, "schema");
 
   constructor();
   constructor(path: string);
@@ -319,6 +325,20 @@ export class Realm {
       },
     });
 
+    binding.Helpers.setBindingContext(this.internal, {
+      didChange: (r: binding.Realm) => {
+        r.verifyOpen();
+        this.changeListeners.callback();
+      },
+      schemaDidChange: (r: binding.Realm) => {
+        r.verifyOpen();
+        this.schemaListeners.callback();
+      },
+      beforeNotify: (r: binding.Realm) => {
+        r.verifyOpen();
+        this.beforeNotifyListeners.callback();
+      },
+    });
     RETURNED_REALMS.add(new WeakRef(internal));
     this.classes = new ClassMap(this, internal.schema, this.schema);
   }
@@ -511,19 +531,44 @@ export class Realm {
     });
   }
 
-  addListener(): unknown {
+  addListener(eventName: RealmEventName, callback: RealmListenerCallback): void {
     assert.open(this);
-    throw new Error("Not yet implemented");
+    if (eventName === "change") {
+      this.changeListeners.add(callback);
+    } else if (eventName === "schema") {
+      this.schemaListeners.add(callback);
+    } else if (eventName === "beforenotify") {
+      this.beforeNotifyListeners.add(callback);
+    } else {
+      throw new Error(`Unknown event name '${eventName}': only 'change', 'schema' and 'beforenotify' are supported.`);
+    }
+  }
+  removeListener(eventName: RealmEventName, callback: RealmListenerCallback): void {
+    assert.open(this);
+    if (eventName === "change") {
+      this.changeListeners.remove(callback);
+    } else if (eventName === "schema") {
+      this.schemaListeners.remove(callback);
+    } else if (eventName === "beforenotify") {
+      this.beforeNotifyListeners.remove(callback);
+    } else {
+      throw new Error(`Unknown event name '${eventName}': only 'change', 'schema' and 'beforenotify' are supported.`);
+    }
   }
 
-  removeListener(): unknown {
+  removeAllListeners(eventName?: RealmEventName): void {
     assert.open(this);
-    throw new Error("Not yet implemented");
-  }
-
-  removeAllListeners(): unknown {
-    assert.open(this);
-    throw new Error("Not yet implemented");
+    if (eventName === "change") {
+      this.changeListeners.removeAll();
+    } else if (eventName === "schema") {
+      this.schemaListeners.removeAll();
+    } else if (eventName === "beforenotify") {
+      this.beforeNotifyListeners.removeAll();
+    } else {
+      this.changeListeners.removeAll();
+      this.schemaListeners.removeAll();
+      this.beforeNotifyListeners.removeAll();
+    }
   }
 
   write<T>(callback: () => T): T {
