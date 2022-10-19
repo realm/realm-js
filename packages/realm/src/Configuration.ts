@@ -185,7 +185,10 @@ type BaseConfiguration = {
 
 export function validateConfiguration(arg: unknown): asserts arg is Configuration {
   assert.object(arg);
-  const { path, schema } = arg;
+  const { path, schema, migration } = arg;
+  if (typeof migration !== "undefined") {
+    assert.function(migration, "migration");
+  }
   if (typeof path === "string") {
     assert(path.length > 0, "Expected a non-empty path or none at all");
   }
