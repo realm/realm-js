@@ -16,9 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { ObjectSchema } from "./binding";
 import { binding } from "./internal";
-import { Realm } from "./Realm";
 
 /** @internal */
 export type CallbackRegistrator<T> = (callback: T) => binding.NotificationToken;

@@ -50,6 +50,7 @@ import {
   normalizeObjectSchema,
   toArrayBuffer,
   RealmListeners,
+  RealmEventName,
   RealmListenerCallback,
 } from "./internal";
 
@@ -530,38 +531,38 @@ export class Realm {
     });
   }
 
-  addListener(name: string, callback: RealmListenerCallback): void {
+  addListener(eventName: RealmEventName, callback: RealmListenerCallback): void {
     assert.open(this);
-    if (name === "change") {
+    if (eventName === "change") {
       this.changeListeners.add(callback);
-    } else if (name === "schema") {
+    } else if (eventName === "schema") {
       this.schemaListeners.add(callback);
-    } else if (name === "beforenotify") {
+    } else if (eventName === "beforenotify") {
       this.beforeNotifyListeners.add(callback);
     } else {
-      throw new Error(`Unknown event name '${name}': only 'change', 'schema' and 'beforenotify' are supported.`);
+      throw new Error(`Unknown event name '${eventName}': only 'change', 'schema' and 'beforenotify' are supported.`);
     }
   }
-  removeListener(name: string, callback: RealmListenerCallback): void {
+  removeListener(eventName: RealmEventName, callback: RealmListenerCallback): void {
     assert.open(this);
-    if (name === "change") {
+    if (eventName === "change") {
       this.changeListeners.remove(callback);
-    } else if (name === "schema") {
+    } else if (eventName === "schema") {
       this.schemaListeners.remove(callback);
-    } else if (name === "beforenotify") {
+    } else if (eventName === "beforenotify") {
       this.beforeNotifyListeners.remove(callback);
     } else {
-      throw new Error(`Unknown event name '${name}': only 'change', 'schema' and 'beforenotify' are supported.`);
+      throw new Error(`Unknown event name '${eventName}': only 'change', 'schema' and 'beforenotify' are supported.`);
     }
   }
 
-  removeAllListeners(name?: string): void {
+  removeAllListeners(eventName?: RealmEventName): void {
     assert.open(this);
-    if (name === "change") {
+    if (eventName === "change") {
       this.changeListeners.removeAll();
-    } else if (name === "schema") {
+    } else if (eventName === "schema") {
       this.schemaListeners.removeAll();
-    } else if (name === "beforenotify") {
+    } else if (eventName === "beforenotify") {
       this.beforeNotifyListeners.removeAll();
     } else {
       this.changeListeners.removeAll();

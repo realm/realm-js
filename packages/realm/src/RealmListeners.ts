@@ -18,7 +18,35 @@
 
 import { Realm } from "./internal";
 
-export type RealmListenerCallback = (r: Realm, name: string, schema?: Realm.ObjectSchema[]) => void;
+export type RealmEventName = "change" | "schema" | "beforenotify";
+enum RealmEvent {
+  Change = "change",
+  Schema = "schema",
+  BeforeNotify = "beforenotify",
+}
+export type RealmListenerCallback = (r: Realm, name: RealmEventName, schema?: Realm.ObjectSchema[]) => void;
+
+// Temporary functions to work between event names and corresponding enums.
+function eventFromName(name: RealmEventName): RealmEvent {
+  switch (name) {
+    case "change":
+      return RealmEvent.Change;
+    case "schema":
+      return RealmEvent.Schema;
+    case "beforenotify":
+      return RealmEvent.BeforeNotify;
+  }
+}
+function nameFromEvent(event: RealmEvent): RealmEventName {
+  switch (event) {
+    case RealmEvent.Change:
+      return "change";
+    case RealmEvent.Schema:
+      return "schema";
+    case RealmEvent.BeforeNotify:
+      return "beforenotify";
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////
 /** @internal */
@@ -26,17 +54,21 @@ export class RealmListeners {
   /**
    * Keeps tracked of registered listener callbacks for Realm class notifications.
    */
-  constructor(private realm: Realm, private name: string) {}
+  private eventType: RealmEvent;
+  constructor(private realm: Realm, name: RealmEventName) {
+    this.eventType = eventFromName(name);
+  }
   private listeners = new Set<RealmListenerCallback>();
 
   // Combined callback which runs all listener callbacks in one call.
   callback(): void {
     let schema: Realm.ObjectSchema[] | undefined;
-    if (this.name === "schema") {
+    if (this.eventType === RealmEvent.Schema) {
       schema = this.realm.schema;
     }
+    const name = nameFromEvent(this.eventType);
     for (const callback of this.listeners) {
-      callback(this.realm, this.name, schema);
+      callback(this.realm, name, schema);
     }
   }
 
