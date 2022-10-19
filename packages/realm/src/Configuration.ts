@@ -16,10 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { ObjectSchema, RealmObjectConstructor, assert, DefaultObject, RealmObject } from "./internal";
+import { DefaultObject, ObjectSchema, Realm, RealmObject, RealmObjectConstructor, assert } from "./internal";
 
 // export type Configuration = ConfigurationWithSync | ConfigurationWithoutSync;
 export type Configuration = BaseConfiguration;
+/**
+ * A function which can be called to migrate a Realm from one version of the schema to another.
+ */
+export type MigrationCallback = (oldRealm: Realm, newRealm: Realm) => void;
 
 type BaseConfiguration = {
   path?: string;
@@ -33,6 +37,7 @@ type BaseConfiguration = {
   deleteRealmIfMigrationNeeded?: boolean;
   disableFormatUpgrade?: boolean;
   encryptionKey?: ArrayBuffer | ArrayBufferView | Int8Array;
+  migration?: MigrationCallback;
 };
 
 // type ConfigurationWithSync = BaseConfiguration & {

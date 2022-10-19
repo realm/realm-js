@@ -16,14 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { expect, assert } from "chai";
+import { assert, expect } from "chai";
 import path from "path";
 import fs from "fs";
 
 import { Realm } from "../index";
 import { Results } from "../Results";
 import { CanonicalObjectSchema } from "../schema";
-import { closeRealm, generateRandomInteger, generateTempRealmPath, RealmContext, REALMS_DIR } from "./utils";
+import { REALMS_DIR, RealmContext, closeRealm, generateRandomInteger, generateTempRealmPath } from "./utils";
 
 type Person = { name: string };
 type PersonWithFriend = { name: string; bestFriend: Person | null };

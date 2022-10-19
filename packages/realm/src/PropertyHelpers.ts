@@ -17,18 +17,18 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
-  binding,
-  assert,
-  Realm,
-  OrderedCollectionHelpers,
   ClassHelpers,
-  Results,
   Dictionary,
+  OrderedCollectionHelpers,
+  Realm,
   RealmSet,
-  TypeHelpers,
-  getTypeHelpers,
-  TypeOptions,
+  Results,
   TypeAssertionError,
+  TypeHelpers,
+  TypeOptions,
+  assert,
+  binding,
+  getTypeHelpers,
 } from "./internal";
 
 type BindingObjectSchema = binding.Realm["schema"][0];

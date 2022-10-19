@@ -18,8 +18,8 @@
 
 import { expect } from "chai";
 
-import { Realm, ObjectChangeSet, Results, CollectionChangeSet } from "../index";
-import { closeRealm, generateTempRealmPath, RealmContext } from "./utils";
+import { CollectionChangeSet, ObjectChangeSet, Realm, Results } from "../index";
+import { RealmContext, closeRealm, generateTempRealmPath } from "./utils";
 
 describe("Milestone #3", () => {
   describe("Register a listener on an object and get notified of changes", () => {

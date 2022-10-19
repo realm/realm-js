@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding, IllegalConstructorError, OrderedCollection, OrderedCollectionHelpers, Realm } from "./internal";
+import { IllegalConstructorError, OrderedCollection, OrderedCollectionHelpers, Realm, binding } from "./internal";
 
 export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
   /** @internal */

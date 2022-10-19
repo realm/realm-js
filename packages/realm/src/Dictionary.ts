@@ -16,14 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import {
-  assert,
-  binding,
   Collection,
-  IllegalConstructorError,
   DefaultObject,
+  IllegalConstructorError,
+  JSONCacheMap,
   RealmObject,
   TypeHelpers,
-  JSONCacheMap,
+  assert,
+  binding,
 } from "./internal";
 
 const INTERNAL = Symbol("Dictionary#internal");

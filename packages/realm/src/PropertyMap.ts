@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding, createPropertyHelpers, HelperOptions, PropertyHelpers } from "./internal";
+import { HelperOptions, PropertyHelpers, binding, createPropertyHelpers } from "./internal";
 
 type BindingObjectSchema = binding.Realm["schema"][0];
 

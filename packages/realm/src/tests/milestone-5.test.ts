@@ -18,11 +18,11 @@
 
 import { expect } from "chai";
 import { inspect } from "node:util";
-import { ObjectId, UUID, Decimal128 } from "bson";
+import { Decimal128, ObjectId, UUID } from "bson";
 
-import { Realm, Object as RealmObject, List } from "../index";
-import { PropertyTypeName, ObjectSchemaProperty } from "../schema";
-import { closeRealm, generateTempRealmPath, RealmContext } from "./utils";
+import { List, Realm, Object as RealmObject } from "../index";
+import { ObjectSchemaProperty, PropertyTypeName } from "../schema";
+import { RealmContext, closeRealm, generateTempRealmPath } from "./utils";
 
 type ValueFunction<T = unknown> = (realm: Realm) => T;
 type TestFunction<T = unknown> = (result: unknown, input: T) => boolean;

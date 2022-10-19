@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { IllegalConstructorError, Listeners, CallbackRegistrator } from "./internal";
+import { CallbackRegistrator, IllegalConstructorError, Listeners } from "./internal";
 
 export abstract class Collection<
   KeyType = unknown,

@@ -17,16 +17,16 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
-  assert,
-  flags,
-  TYPE_MAPPINGS,
   CanonicalObjectSchema,
   CanonicalObjectSchemaProperty,
   ObjectSchema,
   ObjectSchemaProperty,
   PropertyTypeName,
-  RealmObjectConstructor,
   RealmObject,
+  RealmObjectConstructor,
+  TYPE_MAPPINGS,
+  assert,
+  flags,
 } from "../internal";
 
 export const PRIMITIVE_TYPES = new Set<PropertyTypeName>([

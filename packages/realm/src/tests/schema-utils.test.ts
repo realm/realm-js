@@ -16,12 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Realm, PropertyType, TableType, ColKey, TableKey } from "../binding";
+import { ColKey, PropertyType, Realm, TableKey, TableType } from "../binding";
 import { expect } from "chai";
 import { inspect } from "util";
 
 import { CanonicalObjectSchema, CanonicalObjectSchemaProperty } from "../schema";
-import { fromBindingPropertySchema, fromBindingObjectSchema } from "../schema/from-binding";
+import { fromBindingObjectSchema, fromBindingPropertySchema } from "../schema/from-binding";
 
 // TODO: Update these once the binding expose proper types
 type BindingObjectSchema = Realm["schema"][0];

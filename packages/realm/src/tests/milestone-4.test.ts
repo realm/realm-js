@@ -19,7 +19,7 @@
 import { expect } from "chai";
 
 import { Realm } from "../index";
-import { closeRealm, generateTempRealmPath, RealmContext } from "./utils";
+import { RealmContext, closeRealm, generateTempRealmPath } from "./utils";
 
 type Person = { name: string; age: number; bestFriend: Person | null };
 
