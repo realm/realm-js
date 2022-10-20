@@ -19,14 +19,14 @@ convert() {
   # Strip types from every .ts* file (except those in node_modules) and write the output
   # to the corresponding file in react-native-template-realm-js, with the extension changed
   # to ".js" (regardless of whether the original was ".tsx" or ".ts")
-  for i in ${find . -path ./node_modules -prune -o -name "*.ts*" -print}; do npx detype $i $2/${i/\.ts*/\.js} ; done
+  for i in $(find . -path ./node_modules -prune -o -name "*.ts*" -print); do npx detype $i $2/${i/\.ts*/\.js} ; done
 
   # Move the Babel config back
   mv babel.config.js.ignore babel.config.js
 
   # Any files with a "._js_version" should replace their automatically converted TS versions.
   # This allows us to have a specific JS version of any file, e.g. models which don't use the Babel plugin.
-  for i in ${find . -path ./node_modules -prune -o -name "*._js_version" -print}; do mv $i $2/${i/\._js_version/\.js} ; done
+  for i in $(find . -path ./node_modules -prune -o -name "*._js_version" -print); do mv $i $2/${i/\._js_version*/\.js} ; done
 
   popd
 }
