@@ -23,7 +23,7 @@ const isNodeProcess = typeof process === "object" && process + "" === "[object p
 
 const fs = require("fs");
 const path = require("path");
-const Realm = require("realm");
+const { Realm } = require("realm");
 
 // Setup a Realm logger
 const RealmLogging = require("./helpers/realm-logging");
