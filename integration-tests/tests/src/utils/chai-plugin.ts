@@ -32,12 +32,12 @@ function getPrimaryKeyValue(arg: RealmObject & Record<string, unknown>) {
   }
 }
 
-function toPrimaryKeyValues(obj: unknown) {
+function toPrimaryKeyValues(obj: unknown): unknown {
   if (isRealmObject(obj)) {
     return getPrimaryKeyValue(obj);
   } else if (Array.isArray(obj)) {
     return obj.map((item) => {
-      return isRealmObject(item) ? getPrimaryKeyValue(item) : item;
+      return toPrimaryKeyValues(item);
     });
   } else if (obj instanceof Collection) {
     return [...obj].map((item) => {
