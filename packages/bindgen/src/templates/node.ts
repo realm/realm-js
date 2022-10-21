@@ -767,6 +767,19 @@ class NodeCppDecls extends CppDecls {
           }),
         );
       }
+      if (cls.sharedPtrWrapped) {
+        this.free_funcs.push(
+          this.addon.addFunc(cls.resetSharedPtrMethodId(), {
+            body: `
+              if (info.Length() != 1)
+                  throw Napi::TypeError::New(${env}, "expected 0 arguments");
+              ${selfCheck(false)}
+              ${casted("info[0]")}->reset();
+              return ${env}.Undefined();
+            `,
+          }),
+        );
+      }
 
       const refType = cls.sharedPtrWrapped ? `const ${derivedType}&` : `${derivedType}&`;
       const kind = cls.sharedPtrWrapped ? "SHARED" : "CLASS";
