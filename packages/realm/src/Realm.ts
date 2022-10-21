@@ -699,7 +699,7 @@ export class Realm {
    * @param type The type of Realm object to search for.
    * @param primaryKey The primary key value of the object to search for.
    * @throws {Error} If type passed into this method is invalid or if the object type did
-   *   not have a `primaryKey` specified in its {@link ObjectSchema}.
+   *   not have a `primaryKey` specified in its ***ObjectSchema***.
    * @returns A Realm.Object or undefined if no object is found.
    * @since 0.14.0
    */
@@ -887,8 +887,8 @@ export class Realm {
    *   throw e;
    * }
    * @throws {Error} If already in write transaction
-   * @see {@link Realm.cancelTransaction}
-   * @see {@link Realm.commitTransaction}
+   * @see ***cancelTransaction()***
+   * @see ***commitTransaction()***
    */
   beginTransaction(): void {
     this.internal.beginTransaction();
@@ -897,7 +897,7 @@ export class Realm {
   /**
    * Commit a write transaction.
    *
-   * @see {@link Realm.beginTransaction}
+   * @see ***beginTransaction()***
    */
   commitTransaction(): void {
     this.internal.commitTransaction();
@@ -906,7 +906,7 @@ export class Realm {
   /**
    * Cancel a write transaction.
    *
-   * @see {@link Realm.beginTransaction}
+   * @see ***beginTransaction()***
    */
   cancelTransaction(): void {
     this.internal.cancelTransaction();

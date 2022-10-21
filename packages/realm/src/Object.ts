@@ -261,7 +261,10 @@ export class RealmObject<T = DefaultObject> {
   }
 
   /**
-   * @returns A plain object for JSON serialization.
+   * The plain object representation of this object for JSON serialization.
+   * Use circular JSON serialization libraries such as {@link https://www.npmjs.com/package/@ungap/structured-clone @ungap/structured-clone}
+   * and {@link https://www.npmjs.com/package/flatted flatted} for stringifying Realm entities that have circular structures.
+   * @returns An plain object.
    **/
   toJSON(_?: string, cache?: unknown): DefaultObject;
   /** @internal */
