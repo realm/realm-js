@@ -21,7 +21,7 @@ import { TemplateContext } from "../context";
 import { CppVar, CppFunc, CppFuncProps, CppCtor, CppMethod, CppClass, CppDecls } from "../cpp";
 import { bindModel, BoundSpec, Class, InstanceMethod, StaticMethod, Property, Type, Primitive } from "../bound-model";
 
-import "../js-passes";
+import { doJsPasses } from "../js-passes";
 
 // Code assumes this is a unique name that is always in scope to refer to the Napi::Env.
 // Callbacks need to ensure this is in scope. Functions taking Env arguments must use this name.
@@ -767,19 +767,6 @@ class NodeCppDecls extends CppDecls {
           }),
         );
       }
-      if (cls.sharedPtrWrapped) {
-        this.free_funcs.push(
-          this.addon.addFunc(cls.resetSharedPtrMethodId(), {
-            body: `
-              if (info.Length() != 1)
-                  throw Napi::TypeError::New(${env}, "expected 0 arguments");
-              ${selfCheck(false)}
-              ${casted("info[0]")}->reset();
-              return ${env}.Undefined();
-            `,
-          }),
-        );
-      }
 
       const refType = cls.sharedPtrWrapped ? `const ${derivedType}&` : `${derivedType}&`;
       const kind = cls.sharedPtrWrapped ? "SHARED" : "CLASS";
@@ -922,7 +909,7 @@ export function generate({ spec, file: makeFile }: TemplateContext): void {
       namespace {
     `);
 
-  new NodeCppDecls(bindModel(spec)).outputDefsTo(out);
+  new NodeCppDecls(doJsPasses(bindModel(spec))).outputDefsTo(out);
 
   out(`
         } // namespace
