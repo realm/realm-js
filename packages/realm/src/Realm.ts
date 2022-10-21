@@ -255,6 +255,7 @@ export class Realm {
     const bindingSchema = normalizedSchema && toBindingSchema(normalizedSchema);
     return {
       path,
+      cache: true,
       fifoFilesFallbackPath,
       schema: bindingSchema,
       inMemory: inMemory === true,
@@ -305,6 +306,8 @@ export class Realm {
         migration(oldRealm, newRealm);
       } finally {
         oldRealmInternal.close();
+        oldRealmInternal.$resetSharedPtr();
+        newRealmInternal.$resetSharedPtr();
       }
     };
   }
@@ -336,6 +339,22 @@ export class Realm {
       this.schemaExtras = Realm.extractSchemaExtras(normalizedSchema || []);
       const internalConfig = Realm.transformConfig(config, normalizedSchema, this.schemaExtras);
       this.internal = binding.Realm.getSharedRealm(internalConfig);
+
+      binding.Helpers.setBindingContext(this.internal, {
+        didChange: (r: binding.Realm) => {
+          r.verifyOpen();
+          this.changeListeners.callback();
+        },
+        schemaDidChange: (r: binding.Realm) => {
+          r.verifyOpen();
+          this.schemaListeners.callback();
+        },
+        beforeNotify: (r: binding.Realm) => {
+          r.verifyOpen();
+          this.beforeNotifyListeners.callback();
+        },
+      });
+      RETURNED_REALMS.add(new WeakRef(this.internal));
     }
 
     Object.defineProperties(this, {
@@ -351,21 +370,6 @@ export class Realm {
       },
     });
 
-    binding.Helpers.setBindingContext(this.internal, {
-      didChange: (r: binding.Realm) => {
-        r.verifyOpen();
-        this.changeListeners.callback();
-      },
-      schemaDidChange: (r: binding.Realm) => {
-        r.verifyOpen();
-        this.schemaListeners.callback();
-      },
-      beforeNotify: (r: binding.Realm) => {
-        r.verifyOpen();
-        this.beforeNotifyListeners.callback();
-      },
-    });
-    RETURNED_REALMS.add(new WeakRef(this.internal));
     this.classes = new ClassMap(this, this.internal.schema, this.schema);
   }
 

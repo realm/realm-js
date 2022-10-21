@@ -302,6 +302,9 @@ records:
   RealmConfig:
     fields:
       path: std::string
+      cache:
+        type: bool
+        default: false
       # realm_data: BinaryData
       encryption_key:
         type: EncryptionKey
