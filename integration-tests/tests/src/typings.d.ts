@@ -78,6 +78,14 @@ type BenchmarkContext = {
   result: BenchmarkResult;
 } & Mocha.Context;
 
+// Added by the "utils/chai-plugin.ts"
+declare namespace Chai {
+  interface Assertion {
+    primaryKey: Assertion;
+    primaryKeys: Assertion;
+  }
+}
+
 interface Console {
   error(message?: unknown, ...optionalParams: unknown[]): void;
   log(message?: unknown, ...optionalParams: unknown[]): void;
