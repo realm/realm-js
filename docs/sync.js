@@ -38,8 +38,10 @@
  * This describes the options to configure client reset.
  * @typedef {Object} Realm.App.Sync~ClientResetConfiguration
  * @property {string} mode - Either "manual" (deprecated, see also `Realm.App.Sync.initiateClientReset()`), "discardUnsyncedChanges" (download a fresh copy from the server), "recoverUnsyncedChanges" (merged remote and local, unsynced changes), or "recoverOrDiscardUnsyncedChanges" (download a fresh copy from the server if recovery of unsynced changes is not possible)
- * @property {callback(realm)|null} [clientResetBefore] - called before sync initiates a client reset.
- * @property {callback(beforeRealm, afterRealm)|null} [clientResetAfter] - called after client reset has been executed; `beforeRealm` and `afterRealm` are instances of the Realm before and after the client reset.
+ * @property {callback(realm)|null} [onBefore] - called before sync initiates a client reset (only for "discardUnsyncedChanges", "recoverUnsyncedChanges" or "recoverOrDiscardUnsyncedChanges" modes).
+ * @property {callback(beforeRealm, afterRealm)|null} [onAfter] - called after client reset has been executed; `beforeRealm` and `afterRealm` are instances of the Realm before and after the client reset (only for "discardUnsyncedChanges", "recoverUnsyncedChanges" or "recoverOrDiscardUnsyncedChanges" modes).
+ * @property {callback(session, path)|null} [onFallback] - called if recovery or discard fail (only for "recoverUnsyncedChanges" or "recoverOrDiscardUnsyncedChanges" modes).
+ * @property {callback(session, path)|null} [onManual] - perform manual client reset - see also `Realm.App.Sync.initiateClientReset()` (only "manual" mode).
  * @since {10.11.0}
  */
 

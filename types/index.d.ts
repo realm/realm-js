@@ -150,35 +150,31 @@ declare namespace Realm {
         RecoverOrDiscardUnsyncedChanges = 'recoverOrDiscardUnsyncedChanges'
     }
 
-    enum ClientResetDidRecover {
-      Yes = 'yes',
-      No = 'no'
-    }
-
-    type ClientResetManualCallback = (session: Realm.App.Sync.Session, path: string) => void;
+    type ClientResetFallbackCallback = (session: Realm.App.Sync.Session, path: string) => void;
     type ClientResetBeforeCallback = (localRealm: Realm) => void;
     type ClientResetAfterCallback = (localRealm: Realm, remoteRealm: Realm) => void;
-    type ClientResetAfterRecoveryCallback = (localRealm: Realm, remoteRealm: Realm, didRecover: ClientResetDidRecover) => void;
     interface ClientResetManualConfiguration {
       mode: ClientResetMode.Manual;
-      clientResetAfter?: ClientResetManualCallback;
+      onManual?: ClientResetFallbackCallback;
     }
     interface ClientResetDiscardUnsyncedChangesConfiguration {
       mode: ClientResetMode.DiscardLocal | ClientResetMode.DiscardUnsyncedChanges;
-      clientResetBefore?: ClientResetBeforeCallback;
-      clientResetAfter?: ClientResetAfterCallback;
+      onBefore?: ClientResetBeforeCallback;
+      onAfter?: ClientResetAfterCallback;
     }
 
-    // interface ClientResetRecoveryConfiguration<ClientResetModeT = ClientResetMode.Recover> {
     interface ClientResetRecoveryConfiguration {
       mode: ClientResetMode.RecoverUnsyncedChanges;
-      clientResetBefore?: ClientResetBeforeCallback;
-      clientResetAfter?: ClientResetAfterRecoveryCallback;
+      onBefore?: ClientResetBeforeCallback;
+      onAfter?: ClientResetAfterCallback;
+      onFallback?: ClientResetFallbackCallback;
     }
     interface ClientResetRecoveryOrDiscardConfiguration {
       mode: ClientResetMode.RecoverOrDiscardUnsyncedChanges;
-      clientResetBefore?: ClientResetBeforeCallback;
-      clientResetAfter?: ClientResetAfterRecoveryCallback;
+      onBefore?: ClientResetBeforeCallback;
+      onRecovery: ClientResetAfterCallback;
+      onDiscard: ClientResetAfterCallback;
+      onFallback?: ClientResetFallbackCallback;
     }
 
     type ClientResetConfiguration = ClientResetManualConfiguration | ClientResetDiscardUnsyncedChangesConfiguration | ClientResetRecoveryConfiguration | ClientResetRecoveryOrDiscardConfiguration;

@@ -183,10 +183,9 @@ private:
 template <typename T>
 class ClientResetAfterFunctor {
 public:
-    ClientResetAfterFunctor(typename T::Context ctx, typename T::Function after_func, bool ignore_recover)
+    ClientResetAfterFunctor(typename T::Context ctx, typename T::Function after_func)
         : m_ctx(Context<T>::get_global_context(ctx))
         , m_func(ctx, after_func)
-        , m_ignore_recover(ignore_recover)
     {
     }
 
@@ -198,23 +197,62 @@ public:
     void operator()(SharedRealm before_realm, ThreadSafeReference after_realm_ref, bool did_recover)
     {
         HANDLESCOPE(m_ctx);
+        typename T::Value arguments[2];
 
         SharedRealm after_realm =
             Realm::get_shared_realm(std::move(after_realm_ref), util::Scheduler::make_default());
 
-        typename T::Value arguments[3];
         arguments[0] = create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(before_realm));
         arguments[1] = create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(after_realm));
-        if (!m_ignore_recover) {
-            arguments[2] = Value<T>::from_string(m_ctx, did_recover ? "yes" : "no");
-        }
-        Function<T>::callback(m_ctx, m_func, m_ignore_recover ? 2 : 3, arguments);
+        Function<T>::callback(m_ctx, m_func, 2, arguments);
     }
 
 private:
     const Protected<typename T::GlobalContext> m_ctx;
     const Protected<typename T::Function> m_func;
-    const bool m_ignore_recover;
+};
+
+
+template <typename T>
+class ClientResetAfterRecoveryOrDiscardFunctor {
+public:
+    ClientResetAfterRecoveryOrDiscardFunctor(typename T::Context ctx, typename T::Function after_func, typename T::Function discard_func)
+        : m_ctx(Context<T>::get_global_context(ctx))
+        , m_func(ctx, after_func)
+        , m_discard_func(ctx, discard_func)
+    {
+    }
+
+    typename T::Function func() const
+    {
+        return m_func;
+    }
+
+    void operator()(SharedRealm before_realm, ThreadSafeReference after_realm_ref, bool did_recover)
+    {
+        HANDLESCOPE(m_ctx);
+        typename T::Value arguments[2];
+
+        SharedRealm after_realm =
+            Realm::get_shared_realm(std::move(after_realm_ref), util::Scheduler::make_default());
+
+        
+        if (did_recover) {
+            arguments[0] = create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(before_realm));
+            arguments[1] = create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(after_realm));
+            Function<T>::callback(m_ctx, m_func, 2, arguments);
+        }
+        else {
+            arguments[0] = create_object<T, SessionClass<T>>(m_ctx, new WeakSession(before_realm->sync_session()))  ;
+            arguments[1] = Value<T>::from_string(m_ctx, before_realm->config().path);
+            Function<T>::callback(m_ctx, m_discard_func, 2, arguments);
+        }
+    }
+
+private:
+    const Protected<typename T::GlobalContext> m_ctx;
+    const Protected<typename T::Function> m_func;
+    const Protected<typename T::Function> m_discard_func;
 };
 
 template <typename T>
@@ -1159,59 +1197,137 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                 config.sync_config->client_resync_mode = it->second;
             }
 
-            std::function<void(SharedRealm)> client_reset_before_handler;
-            ValueType client_reset_before_value = Object::get_property(ctx, client_reset_object, "clientResetBefore");
-            if (!Value::is_undefined(ctx, client_reset_before_value)) {
-                if (config.sync_config->client_resync_mode == realm::ClientResyncMode::Manual) {
-                    throw std::invalid_argument(
-                        "When clientReset.mode is 'manual', you cannot set 'clientReset.clientResetBefore'");
-                }
-                client_reset_before_handler = util::EventLoopDispatcher<void(SharedRealm)>(
-                    ClientResetBeforeFunctor<T>(ctx, Value::validated_to_function(ctx, client_reset_before_value)));
-            }
-            config.sync_config->notify_before_client_reset = std::move(client_reset_before_handler);
-
-            std::function<void(SharedRealm, ThreadSafeReference, bool)> client_reset_after_handler;
-            ValueType client_reset_after_value = Object::get_property(ctx, client_reset_object, "clientResetAfter");
-            if (!Value::is_undefined(ctx, client_reset_after_value)) {
-                auto client_reset_after_callback = Value::validated_to_function(ctx, client_reset_after_value);
-                if (config.sync_config->client_resync_mode == realm::ClientResyncMode::Manual) {
-                    if (!Value::is_undefined(ctx, error_func)) {
-                        auto error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(
-                            SyncSessionErrorAndClientResetManualFunctor<T>(
-                                ctx, Value::validated_to_function(ctx, error_func), client_reset_after_callback));
-                        config.sync_config->error_handler = std::move(error_handler);
+            switch (config.sync_config->client_resync_mode) {
+                case realm::ClientResyncMode::Manual: {
+                    ValueType client_reset_after_value = Object::get_property(ctx, client_reset_object, "onManual");
+                    if (!Value::is_undefined(ctx, client_reset_after_value)) {
+                        auto client_reset_after_callback = Value::validated_to_function(ctx, client_reset_after_value);
+                        if (!Value::is_undefined(ctx, error_func)) {
+                            auto error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(
+                                SyncSessionErrorAndClientResetManualFunctor<T>(
+                                    ctx, Value::validated_to_function(ctx, error_func), client_reset_after_callback));
+                            config.sync_config->error_handler = std::move(error_handler);
+                        }
+                        else {
+                            auto error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(
+                                SyncSessionClientResetManualFunctor<T>(ctx, client_reset_after_callback));
+                            config.sync_config->error_handler = std::move(error_handler);
+                        }
                     }
                     else {
-                        auto error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(
-                            SyncSessionClientResetManualFunctor<T>(ctx, client_reset_after_callback));
-                        config.sync_config->error_handler = std::move(error_handler);
+                        if (!Value::is_undefined(ctx, error_func)) {
+                            auto error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(
+                                SyncSessionErrorHandlerFunctor<T>(ctx, Value::validated_to_function(ctx, error_func)));
+                            config.sync_config->error_handler = std::move(error_handler);
+                        }
+                        else {
+                            throw std::invalid_argument("For clientReset: 'manual', it is require to set either 'error', 'clientReset.onManual' or both");
+                        }
                     }
+                    break;
                 }
-                else {
-                    client_reset_after_handler =
-                        util::EventLoopDispatcher<void(SharedRealm, ThreadSafeReference, bool)>(
-                            ClientResetAfterFunctor<T>(ctx, client_reset_after_callback,
-                                                       config.sync_config->client_resync_mode ==
-                                                           realm::ClientResyncMode::DiscardLocal));
-                    config.sync_config->notify_after_client_reset = std::move(client_reset_after_handler);
+
+                case realm::ClientResyncMode::DiscardLocal: {
+                    ValueType client_reset_after_value = Object::get_property(ctx, client_reset_object, "onAfter");
+                    if (!Value::is_undefined(ctx, client_reset_after_value)) {
+                        auto client_reset_after_callback = Value::validated_to_function(ctx, client_reset_after_value);
+                        auto client_reset_after_handler = util::EventLoopDispatcher<void(SharedRealm, ThreadSafeReference, bool)>(
+                            ClientResetAfterFunctor<T>(ctx, client_reset_after_callback));
+                        config.sync_config->notify_after_client_reset = std::move(client_reset_after_handler);
+                    }
+
+                    ValueType client_reset_before_value = Object::get_property(ctx, client_reset_object, "onBefore");
+                    if (!Value::is_undefined(ctx, client_reset_before_value)) {
+                        auto client_reset_before_callback = Value::validated_to_function(ctx, client_reset_before_value);
+                        auto client_reset_before_handler = util::EventLoopDispatcher<void(SharedRealm)>(
+                            ClientResetBeforeFunctor<T>(ctx, client_reset_before_callback));
+                        config.sync_config->notify_before_client_reset = std::move(client_reset_before_handler);
+                    }
 
                     if (!Value::is_undefined(ctx, error_func)) {
                         auto error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(
                             SyncSessionErrorHandlerFunctor<T>(ctx, Value::validated_to_function(ctx, error_func)));
                         config.sync_config->error_handler = std::move(error_handler);
                     }
+                    break;
                 }
-            }
-            else {
-                if (!Value::is_undefined(ctx, error_func)) {
-                    auto error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(
-                        SyncSessionErrorHandlerFunctor<T>(ctx, Value::validated_to_function(ctx, error_func)));
-                    config.sync_config->error_handler = std::move(error_handler);
+
+                case realm::ClientResyncMode::Recover: {
+                    ValueType client_reset_after_value = Object::get_property(ctx, client_reset_object, "onAfter");
+                    if (!Value::is_undefined(ctx, client_reset_after_value)) {
+                        auto client_reset_after_callback = Value::validated_to_function(ctx, client_reset_after_value);
+                        auto client_reset_after_handler = util::EventLoopDispatcher<void(SharedRealm, ThreadSafeReference, bool)>(
+                            ClientResetAfterFunctor<T>(ctx, client_reset_after_callback));
+                        config.sync_config->notify_after_client_reset = std::move(client_reset_after_handler);
+                    }
+
+                    ValueType client_reset_before_value = Object::get_property(ctx, client_reset_object, "onBefore");
+                    if (!Value::is_undefined(ctx, client_reset_before_value)) {
+                        auto client_reset_before_handler = util::EventLoopDispatcher<void(SharedRealm)>(
+                            ClientResetBeforeFunctor<T>(ctx, Value::validated_to_function(ctx, client_reset_before_value)));
+                        config.sync_config->notify_before_client_reset = std::move(client_reset_before_handler);
+                    }
+
+                    if (!Value::is_undefined(ctx, error_func)) {
+                        auto error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(
+                            SyncSessionErrorHandlerFunctor<T>(ctx, Value::validated_to_function(ctx, error_func)));
+                        config.sync_config->error_handler = std::move(error_handler);
+                    }
+                    break;
+                } 
+
+                case realm::ClientResyncMode::RecoverOrDiscard: {
+                    FunctionType client_reset_recovery_callback;
+                    FunctionType client_reset_discard_callback;
+
+                    ValueType client_reset_after_value = Object::get_property(ctx, client_reset_object, "onDiscard");
+                    if (!Value::is_undefined(ctx, client_reset_after_value)) {
+                        client_reset_discard_callback = Value::validated_to_function(ctx, client_reset_after_value);
+                    }
+                    else {
+                        throw std::invalid_argument("'onDiscard' is required");
+                    }
+
+                    ValueType client_reset_recovery_value = Object::get_property(ctx, client_reset_object, "onRecovery");
+                    if (!Value::is_undefined(ctx, client_reset_after_value)) {
+                        client_reset_recovery_callback = Value::validated_to_function(ctx, client_reset_recovery_value);
+                    }
+                    else {
+                        throw std::invalid_argument("'onRecovery' is required");
+                    }
+
+                    auto client_reset_after_handler = util::EventLoopDispatcher<void(SharedRealm, ThreadSafeReference, bool)>(
+                        ClientResetAfterRecoveryOrDiscardFunctor<T>(ctx, client_reset_recovery_callback, client_reset_discard_callback));
+                    config.sync_config->notify_after_client_reset = std::move(client_reset_after_handler);
+
+                    ValueType client_reset_before_value = Object::get_property(ctx, client_reset_object, "onBefore");
+                    if (!Value::is_undefined(ctx, client_reset_before_value)) {
+                        auto client_reset_before_handler = util::EventLoopDispatcher<void(SharedRealm)>(
+                            ClientResetBeforeFunctor<T>(ctx, Value::validated_to_function(ctx, client_reset_before_value)));
+                        config.sync_config->notify_before_client_reset = std::move(client_reset_before_handler);
+                    }
+
+                    ValueType client_reset_fallback_value = Object::get_property(ctx, client_reset_object, "onFallback");
+                    if (!Value::is_undefined(ctx, client_reset_fallback_value)) {
+                        auto client_reset_fallback_callback = Value::validated_to_function(ctx, client_reset_fallback_value);
+                        if (!Value::is_undefined(ctx, error_func)) {
+                            auto error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(
+                                SyncSessionErrorAndClientResetManualFunctor<T>(
+                                    ctx, Value::validated_to_function(ctx, error_func), client_reset_fallback_callback));
+                            config.sync_config->error_handler = std::move(error_handler);
+                        }
+                        else {
+                            auto error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(
+                                SyncSessionClientResetManualFunctor<T>(ctx, client_reset_fallback_callback));
+                            config.sync_config->error_handler = std::move(error_handler);
+                        }
+                    }
+                    break;
                 }
             }
         }
         else {
+            // if sync.clientReset is not defined, use the error function
             if (!Value::is_undefined(ctx, error_func)) {
                 auto error_handler = util::EventLoopDispatcher<SyncSessionErrorHandler>(
                     SyncSessionErrorHandlerFunctor<T>(ctx, Value::validated_to_function(ctx, error_func)));

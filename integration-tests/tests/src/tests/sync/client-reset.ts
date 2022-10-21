@@ -18,7 +18,7 @@
 
 import { ObjectId, UUID } from "bson";
 import { expect } from "chai";
-import Realm, { ClientResetDidRecover, ClientResetMode, SessionStopPolicy } from "realm";
+import Realm, { ClientResetMode, SessionStopPolicy } from "realm";
 import { authenticateUserBefore, importAppBefore } from "../../hooks";
 import { DogSchema, IPerson, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { expectClientResetError } from "../../utils/expect-sync-error";
@@ -68,14 +68,14 @@ async function waitServerSideClientResetDiscardUnsyncedChangesCallbacks(
       ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
       clientReset: {
         mode: ClientResetMode.DiscardUnsyncedChanges,
-        clientResetAfter: (before: Realm, after: Realm) => {
+        onAfter: (before: Realm, after: Realm) => {
           afterCalled = true;
           actionAfter(before, after);
           if (beforeCalled) {
             resetHandle.resolve();
           }
         },
-        clientResetBefore: (realm: Realm) => {
+        onBefore: (realm: Realm) => {
           beforeCalled = true;
           actionBefore(realm);
           if (afterCalled) {
@@ -103,7 +103,7 @@ async function waitServerSideClientResetRecoveryCallbacks(
   app: Realm.App,
   user: Realm.User,
   actionBefore: (realm: Realm) => void,
-  actionAfter: (beforeRealm: Realm, afterRealm: Realm, didRecover: ClientResetDidRecover) => void,
+  actionAfter: (beforeRealm: Realm, afterRealm: Realm) => void,
 ): Promise<void> {
   const resetHandle = createPromiseHandle();
   let afterCalled = false;
@@ -117,14 +117,14 @@ async function waitServerSideClientResetRecoveryCallbacks(
       ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
       clientReset: {
         mode: ClientResetMode.RecoverUnsyncedChanges,
-        clientResetAfter: (before: Realm, after: Realm, didRecover: ClientResetDidRecover) => {
+        onAfter: (before: Realm, after: Realm) => {
           afterCalled = true;
-          actionAfter(before, after, didRecover);
+          actionAfter(before, after);
           if (beforeCalled) {
             resetHandle.resolve();
           }
         },
-        clientResetBefore: (realm: Realm) => {
+        onBefore: (realm: Realm) => {
           beforeCalled = true;
           actionBefore(realm);
           if (afterCalled) {
@@ -165,14 +165,14 @@ async function waitSimulatedClientResetDiscardUnsyncedChangesCallbacks(
         ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
         clientReset: {
           mode: ClientResetMode.DiscardUnsyncedChanges,
-          clientResetAfter: (before: Realm, after: Realm) => {
+          onAfter: (before: Realm, after: Realm) => {
             afterCalled = true;
             actionAfter(before, after);
             if (beforeCalled) {
               resolve();
             }
           },
-          clientResetBefore: (realm: Realm) => {
+          onBefore: (realm: Realm) => {
             beforeCalled = true;
             actionBefore(realm);
             if (afterCalled) {
@@ -203,7 +203,7 @@ async function waitSimulatedClientResetRecoverCallbacks(
   schema: Realm.ObjectSchema[],
   user: Realm.User,
   actionBefore: (realm: Realm) => void,
-  actionAfter: (beforeRealm: Realm, afterRealm: Realm, didRecover: Realm.ClientResetDidRecover) => void,
+  actionAfter: (beforeRealm: Realm, afterRealm: Realm) => void,
 ): Promise<void> {
   return new Promise((resolve) => {
     let afterCalled = false;
@@ -217,14 +217,14 @@ async function waitSimulatedClientResetRecoverCallbacks(
         ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
         clientReset: {
           mode: ClientResetMode.RecoverUnsyncedChanges,
-          clientResetAfter: (before: Realm, after: Realm, recover: Realm.ClientResetDidRecover) => {
+          onAfter: (before: Realm, after: Realm) => {
             afterCalled = true;
-            actionAfter(before, after, recover);
+            actionAfter(before, after);
             if (beforeCalled) {
               resolve();
             }
           },
-          clientResetBefore: (realm: Realm) => {
+          onBefore: (realm: Realm) => {
             beforeCalled = true;
             actionBefore(realm);
             if (afterCalled) {
@@ -349,7 +349,7 @@ function getSchema(useFlexibleSync: boolean) {
               user: this.user,
               clientReset: {
                 mode: ClientResetMode.Manual,
-                clientResetAfter: (session, path) => {
+                onManual: (session, path) => {
                   expect(session).to.be.not.null;
                   expect(path).to.not.empty;
                   resolve();
@@ -385,7 +385,7 @@ function getSchema(useFlexibleSync: boolean) {
               },
               clientReset: {
                 mode: ClientResetMode.Manual,
-                clientResetAfter: (session, path) => {
+                onManual: (session, path) => {
                   expect(session).to.be.not.null;
                   expect(path).to.not.empty;
                   resolve();
@@ -420,10 +420,10 @@ function getSchema(useFlexibleSync: boolean) {
               },
               clientReset: {
                 mode: ClientResetMode.DiscardUnsyncedChanges,
-                clientResetBefore: () => {
+                onBefore: () => {
                   reject();
                 },
-                clientResetAfter: () => {
+                onAfter: () => {
                   reject();
                 },
               },
@@ -472,9 +472,7 @@ function getSchema(useFlexibleSync: boolean) {
         const clientResetBefore = (realm: Realm): void => {
           expect(realm.objects(DogSchema.name).length).to.equal(1);
         };
-        const clientResetAfter = (beforeRealm: Realm, afterRealm: Realm, didRecover: ClientResetDidRecover) => {
-          // FIXME: the assert should be: expect(didRecover).to.be(ClientResetDidRecover.Yes);
-          expect(didRecover).to.equal("yes");
+        const clientResetAfter = (beforeRealm: Realm, afterRealm: Realm) => {
           expect(beforeRealm.objects(DogSchema.name).length).to.equal(1);
           expect(afterRealm.objects(DogSchema.name).length).to.equal(1);
         };
@@ -514,7 +512,7 @@ function getSchema(useFlexibleSync: boolean) {
         );
       });
 
-      it.only(`handles recovery client reset with ${getPartialTestTitle(
+      it(`handles recovery client reset with ${getPartialTestTitle(
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
         // (i)   using a client reset in "Recovery" mode, a fresh copy
@@ -525,9 +523,7 @@ function getSchema(useFlexibleSync: boolean) {
         const clientResetBefore = (realm: Realm) => {
           expect(realm.objects(DogSchema.name).length).to.equal(1);
         };
-        const clientResetAfter = (beforeRealm: Realm, afterRealm: Realm, didRecover: ClientResetDidRecover) => {
-          // FIXME: the assert should be: expect(didRecover).to.be(ClientResetDidRecover.Yes);
-          expect(didRecover).to.equal("yes");
+        const clientResetAfter = (beforeRealm: Realm, afterRealm: Realm) => {
           expect(beforeRealm.objects(DogSchema.name).length).to.equal(1);
           expect(afterRealm.objects(DogSchema.name).length).to.equal(1);
         };
