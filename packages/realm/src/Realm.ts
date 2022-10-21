@@ -125,7 +125,7 @@ export class Realm {
   /**
    * Delete the Realm file for the given configuration.
    * @param config The configuration for the Realm
-   * @throws If anything in the provided `config` is invalid.
+   * @throws {Error} If anything in the provided `config` is invalid.
    */
   public static deleteFile(config: Configuration): void {
     const path = Realm.determinePath(config);
@@ -138,7 +138,7 @@ export class Realm {
   /**
    * Checks if the Realm already exists on disk.
    * @param arg The configuration for the Realm or the path to it.
-   * @throws If anything in the provided `config` is invalid.
+   * @throws {Error} If anything in the provided `config` is invalid.
    * @returns `true` if the Realm exists on the device, `false` if not.
    */
   public static exists(arg: Configuration | string = {}): boolean {
@@ -155,7 +155,7 @@ export class Realm {
    * thrown if `config.schema` is not defined.
    * @param arg The configuration for the Realm or the path to it.
    * @returns A promise that will be resolved with the Realm instance when it's available.
-   * @throws If anything in the provided `config` is invalid.
+   * @throws {Error} If anything in the provided `config` is invalid.
    */
   public static open(arg: Configuration | string = {}): ProgressRealmPromise {
     const config = typeof arg === "string" ? { path: arg } : arg;
@@ -164,11 +164,11 @@ export class Realm {
 
   /**
    * Get the current schema version of the Realm at the given path.
-   * @param path - The path to the file where the
+   * @param path The path to the file where the
    *   Realm database is stored.
-   * @param encryptionKey - Required only when
+   * @param encryptionKey Required only when
    *   accessing encrypted Realms.
-   * @throws If passing an invalid or non-matching encryption key.
+   * @throws {Error} If passing an invalid or non-matching encryption key.
    * @returns version of the schema, or `-1` if no Realm exists at `path`.
    */
   public static schemaVersion(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): number {
@@ -191,7 +191,7 @@ export class Realm {
    * set by the default property in the schema or the default value for the datatype if the schema
    * doesn't specify one, i.e. 0, false and "".
    *
-   * @param {Realm.ObjectSchema} objectSchema Schema describing the object that should be created.
+   * @param objectSchema Schema describing the object that should be created.
    */
   public static createTemplateObject<T extends Record<string, unknown>>(objectSchema: Realm.ObjectSchema): T {
     validateObjectSchema(objectSchema);
@@ -261,7 +261,7 @@ export class Realm {
    *
    * This is only implemented for React Native.
    *
-   * @throws If an I/O error occured or method is not implemented.
+   * @throws {Error} If an I/O error occured or method is not implemented.
    */
   public static copyBundledRealmFiles() {
     fs.copyBundledRealmFiles();
@@ -401,14 +401,14 @@ export class Realm {
   constructor();
   /**
    * Create a new `Realm` instance from the provided `path`.
-   * @param path - Required when first creating the Realm.
-   * @throws If anything in the provided `config` is invalid.
-   * @throws When an incompatible synced Realm is opened
+   * @param path Required when first creating the Realm.
+   * @throws {Error} If anything in the provided `config` is invalid.
+   * @throws {Error} When an incompatible synced Realm is opened
    */
   constructor(path: string);
   /**
    * Create a new `Realm` instance using the provided `config`. If a Realm does not yet exist
-   * at `config.path` (or {@link Realm.defaultPath} if not provided), then this constructor
+   * at `config.path` (or ***defaultPath*** if not provided), then this constructor
    * will create it with the provided `config.schema` (which is _required_ in this case).
    * Otherwise, the instance will access the existing Realm from the file at that path.
    * In this case, `config.schema` is _optional_ or not have changed, unless
@@ -416,9 +416,9 @@ export class Realm {
    * migrated to use the new schema.
    * In the case of query-based sync, `config.schema` is required. An exception will be
    * thrown if `config.schema` is not defined.
-   * @param config - Required when first creating the Realm.
-   * @throws If anything in the provided `config` is invalid.
-   * @throws When an incompatible synced Realm is opened
+   * @param config Required when first creating the Realm.
+   * @throws {Error} If anything in the provided `config` is invalid.
+   * @throws {Error} When an incompatible synced Realm is opened
    */
   constructor(config: Configuration);
   /** @internal */
@@ -505,7 +505,7 @@ export class Realm {
 
   /**
    * A normalized representation of the schema provided in the
-   * {@link Configuration Configuration} when this Realm was constructed.
+   * ***Configuration*** when this Realm was constructed.
    * @readonly
    * @since 0.12.0
    */
@@ -570,7 +570,7 @@ export class Realm {
 
   /**
    * The latest set of flexible sync subscriptions.
-   * @throws If flexible sync is not enabled for this app
+   * @throws {Error} If flexible sync is not enabled for this app
    */
   get subscriptions(): any {
     throw new Error("Not yet implemented");
@@ -592,10 +592,10 @@ export class Realm {
   /**
    * Create a new Realm object of the given type and with the specified properties. For object schemas annotated
    * as asymmetric, no object is returned. The API for asymmetric object schema is subject to changes in the future.
-   * @param type - The type of Realm object to create.
-   * @param values - Property values for all required properties without a
+   * @param type The type of Realm object to create.
+   * @param values Property values for all required properties without a
    *   default value.
-   * @param mode - Optional update mode. It can be one of the following values
+   * @param mode Optional update mode. It can be one of the following values
    *     - UpdateMode.Never: Objects are only created. If an existing object exists, an exception is thrown. This is the
    *       default value.
    *     - UpdateMode.All: If an existing object is found, all properties provided will be updated, any other properties will
@@ -671,8 +671,8 @@ export class Realm {
 
   /**
    * Deletes a Realm model, including all of its objects.
-   * If called outside a migration function, {@link Realm.schema schema} and {@link Realm.schemaVersion schemaVersion} are updated.
-   * @param name - The model name
+   * If called outside a migration function, ***schema*** and ***schemaVersion*** are updated.
+   * @param name The model name
    */
   deleteModel(name: string): void {
     assert.inTransaction(this, "Can only delete objects within a transaction.");
@@ -696,9 +696,9 @@ export class Realm {
 
   /**
    * Searches for a Realm object by its primary key.
-   * @param type - The type of Realm object to search for.
-   * @param primaryKey - The primary key value of the object to search for.
-   * @throws If type passed into this method is invalid or if the object type did
+   * @param type The type of Realm object to search for.
+   * @param primaryKey The primary key value of the object to search for.
+   * @throws {Error} If type passed into this method is invalid or if the object type did
    *   not have a `primaryKey` specified in its {@link ObjectSchema}.
    * @returns A Realm.Object or undefined if no object is found.
    * @since 0.14.0
@@ -734,8 +734,8 @@ export class Realm {
 
   /**
    * Returns all objects of the given `type` in the Realm.
-   * @param type - The type of Realm objects to retrieve.
-   * @throws If type passed into this method is invalid or if the type is marked embedded or asymmetric.
+   * @param type The type of Realm objects to retrieve.
+   * @throws {Error} If type passed into this method is invalid or if the type is marked embedded or asymmetric.
    * @returns Realm.Results that will live-update as objects are created and destroyed.
    */
   /**
@@ -786,12 +786,12 @@ export class Realm {
 
   /**
    * Add a listener `callback` for the specified event `name`.
-   * @param eventName - The name of event that should cause the callback to be called.
+   * @param eventName The name of event that should cause the callback to be called.
    *   DISCUSS: why does it say _Currently, only the "change" and "schema" events are supported_.
-   * @param callback - Function to be called when a change event occurs.
+   * @param callback Function to be called when a change event occurs.
    *   Each callback will only be called once per event, regardless of the number of times
    *   it was added.
-   * @throws If an invalid event `name` is supplied, or if `callback` is not a function.
+   * @throws {Error} If an invalid event `name` is supplied, or if `callback` is not a function.
    */
   addListener(eventName: RealmEventName, callback: RealmListenerCallback): void {
     assert.open(this);
@@ -808,10 +808,10 @@ export class Realm {
 
   /**
    * Remove the listener `callback` for the specfied event `name`.
-   * @param eventName - The event name.
-   * @param callback - Function that was previously added as a
-   *   listener for this event through the {@link Realm.addListener} method.
-   * @throws If an invalid event `name` is supplied, or if `callback` is not a function.
+   * @param eventName The event name.
+   * @param callback Function that was previously added as a
+   *   listener for this event through the ***addListener*** method.
+   * @throws {Error} If an invalid event `name` is supplied, or if `callback` is not a function.
    */
   removeListener(eventName: RealmEventName, callback: RealmListenerCallback): void {
     assert.open(this);
@@ -828,8 +828,8 @@ export class Realm {
 
   /**
    * Remove all event listeners (restricted to the event `name`, if provided).
-   * @param eventName - The name of the event whose listeners should be removed.
-   * @throws When invalid event `name` is supplied
+   * @param eventName The name of the event whose listeners should be removed.
+   * @throws {Error} When invalid event `name` is supplied
    */
   removeAllListeners(eventName?: RealmEventName): void {
     assert.open(this);
@@ -849,9 +849,9 @@ export class Realm {
   /**
    * Synchronously call the provided `callback` inside a write transaction. If an exception happens inside a transaction,
    * you’ll lose the changes in that transaction, but the Realm itself won’t be affected (or corrupted).
-   * More precisely, {@link Realm.beginTransaction} and {@link Realm.commitTransaction} will be called
-   * automatically. If any exception is thrown during the transaction {@link Realm.cancelTransaction} will
-   * be called instead of {@link Realm.commitTransaction} and the exception will be re-thrown to the caller of `write()`.
+   * More precisely, ***beginTransaction*** and ***commitTransaction*** will be called
+   * automatically. If any exception is thrown during the transaction ***cancelTransaction*** will
+   * be called instead of ***commitTransaction*** and the exception will be re-thrown to the caller of `write()`.
    *
    * Nested transactions (calling `write()` within `write()`) is not possible.
    * @returns Returned value from the callback.
@@ -886,7 +886,7 @@ export class Realm {
    *   realm.cancelTransaction();
    *   throw e;
    * }
-   * @throws {Error} When already in write transaction
+   * @throws {Error} If already in write transaction
    * @see {@link Realm.cancelTransaction}
    * @see {@link Realm.commitTransaction}
    */
