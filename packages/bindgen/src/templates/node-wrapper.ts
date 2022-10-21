@@ -115,7 +115,11 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
     if (cls.sharedPtrWrapped) {
       const native = `_native_${cls.resetSharedPtrMethodId()}`;
       js(`const ${native} = nativeModule.${cls.resetSharedPtrMethodId()};`);
-      body += `\n${cls.resetSharedPtrMethodName()}() { return ${native}(this[${symb}]); }`;
+      body += `\n${cls.resetSharedPtrMethodName()}() {
+        const ptr = this[${symb}];
+        this[${symb}] = null;
+        ${native}(ptr);
+      }`;
     }
 
     js(`export class ${cls.jsName} ${cls.base ? `extends ${cls.base.jsName}` : ""} { ${body} }`);
