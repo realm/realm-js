@@ -18,10 +18,10 @@
 import { bindModel, Property } from "../bound-model";
 import { TemplateContext } from "../context";
 
-import "../js-passes";
+import { doJsPasses } from "../js-passes";
 
 export function generate({ spec: rawSpec, file }: TemplateContext): void {
-  const spec = bindModel(rawSpec);
+  const spec = doJsPasses(bindModel(rawSpec));
 
   const js = file("native.mjs", "eslint");
   js("// This file is generated: Update the spec instead of editing this file directly");
@@ -111,15 +111,6 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
       const native = `_native_${cls.iteratorMethodId()}`;
       js(`const ${native} = nativeModule.${cls.iteratorMethodId()};`);
       body += `\n[Symbol.iterator]() { return ${native}(this[${symb}]); }`;
-    }
-    if (cls.sharedPtrWrapped) {
-      const native = `_native_${cls.resetSharedPtrMethodId()}`;
-      js(`const ${native} = nativeModule.${cls.resetSharedPtrMethodId()};`);
-      body += `\n${cls.resetSharedPtrMethodName()}() {
-        const ptr = this[${symb}];
-        this[${symb}] = null;
-        ${native}(ptr);
-      }`;
     }
 
     js(`export class ${cls.jsName} ${cls.base ? `extends ${cls.base.jsName}` : ""} { ${body} }`);

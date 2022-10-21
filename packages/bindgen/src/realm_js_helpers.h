@@ -161,10 +161,6 @@ struct Helpers {
     static bool is_empty_realm(const SharedRealm& realm) {
         return ObjectStore::is_empty(realm->read_group());
     }
-
-    static bool is_same_realm(const SharedRealm& realm1, const SharedRealm& realm2) {
-        return realm1 == realm2;
-    }
 };
 
 struct ObjectChangeSet {
