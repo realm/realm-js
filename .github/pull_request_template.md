@@ -20,4 +20,3 @@ This closes # ??? <!-- link to an existing issue -->
 *If this PR adds or changes public API's:*
 * [ ] typescript definitions file is updated
 * [ ] jsdoc files updated
-* [ ] Chrome debug API is updated if API is available on React Native
