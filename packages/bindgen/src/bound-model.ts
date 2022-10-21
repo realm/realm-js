@@ -113,7 +113,7 @@ export class Arg {
   }
 }
 
-class Func extends TypeBase {
+export class Func extends TypeBase {
   readonly kind = "Func";
 
   constructor(
@@ -185,6 +185,8 @@ class Template extends TypeBase {
   }
 }
 
+export type MethodCallSig = ({ self }: { self: string }, ...args: string[]) => string;
+
 export abstract class Method {
   isConstructor = false;
   abstract isStatic: boolean;
@@ -203,7 +205,9 @@ export abstract class Method {
     return `${this.on.name}_${this.unique_name}`;
   }
 
-  abstract call({ self }: { self: string }, ...args: string[]): string;
+  // This is basically `abstract call: MethodCallSig`, but I can't write that due to
+  // https://github.com/microsoft/TypeScript/issues/51261.
+  abstract call(...args: Parameters<MethodCallSig>): ReturnType<MethodCallSig>;
 }
 
 export class InstanceMethod extends Method {
