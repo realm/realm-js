@@ -36,6 +36,8 @@ declare module "./bound-model" {
   }
   interface Class {
     iteratorMethodId(): string;
+    resetSharedPtrMethodName(): string;
+    resetSharedPtrMethodId(): string;
   }
 }
 
@@ -68,4 +70,13 @@ Object.defineProperty(NamedType.prototype, "jsName", {
 Class.prototype.iteratorMethodId = function () {
   assert(this.iterable);
   return `${this.name}_Symbol_iterator`;
+};
+
+Class.prototype.resetSharedPtrMethodName = function () {
+  assert(this.sharedPtrWrapped);
+  return "$resetSharedPtr";
+};
+Class.prototype.resetSharedPtrMethodId = function () {
+  assert(this.sharedPtrWrapped);
+  return `${this.name}_reset_shared_ptr`;
 };

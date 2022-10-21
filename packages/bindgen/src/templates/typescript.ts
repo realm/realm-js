@@ -219,6 +219,9 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
     if (cls.iterable) {
       out(`[Symbol.iterator](): Iterator<${generateType(spec, cls.iterable, Kind.Ret)}>;`);
     }
+    if (cls.sharedPtrWrapped) {
+      out(`${cls.resetSharedPtrMethodName()}(): asserts this is never`);
+    }
     out(`}`);
   }
 }
