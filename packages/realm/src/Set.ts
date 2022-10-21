@@ -60,7 +60,7 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
 
   /**
    * Checks if this set has not been deleted and is part of a valid Realm.
-   * @returns True if the set can be safely accessed, false otherwise.
+   * @returns `true` if the set can be safely accessed, `false` if not.
    */
   isValid() {
     return this.internal.isValid;
@@ -70,7 +70,7 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
    * Delete a value from the Set
    * @param value Value to delete from the Set
    * @throws {Error} If not inside a write transaction.
-   * @returns True if the value existed in the Set prior to deletion, false otherwise
+   * @returns `true` if the value existed in the Set prior to deletion, `false` if not.
    */
   delete(value: T): boolean {
     const [, success] = this.internal.removeAny(this.helpers.toBinding(value, undefined));
@@ -104,7 +104,7 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
    * @throws {TypeError} If a `value` is not of a type which can be stored in
    *   the Set, or if an object being added to the Set does not match the
    *   **object schema** for the Set.
-   * @returns True if the value exists in the Set, false otherwise
+   * @returns `true` if the value exists in the Set, `false` if not.
    */
   has(value: T): boolean {
     return this.includes(value);

@@ -104,7 +104,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
   /**
    * Remove the **last** value from the list and return it.
    * @throws {Error} If not inside a write transaction.
-   * @returns the last value or undefined if the list is empty.
+   * @returns The last value or undefined if the list is empty.
    */
   pop(): T | undefined {
     assert.inTransaction(this.realm);
@@ -129,7 +129,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
    *   ***Realm.ObjectSchema*** for the list.
    *
    * @throws {Error} If not inside a write transaction.
-   * @returns {number} equal to the new length of
+   * @returns A number equal to the new length of
    *          the list after adding the values.
    */
   push(...items: T[]): number {
@@ -178,7 +178,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
    *   the list, or if an object being added to the list does not match the
    *   ***ObjectSchema*** for the list.
    * @throws {Error} If not inside a write transaction.
-   * @returns {number} equal to the new ***length*** of
+   * @returns The new ***length*** of
    *          the list after adding the values.
    */
   unshift(...items: T[]): number {

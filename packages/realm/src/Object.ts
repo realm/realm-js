@@ -264,7 +264,7 @@ export class RealmObject<T = DefaultObject> {
    * The plain object representation of this object for JSON serialization.
    * Use circular JSON serialization libraries such as {@link https://www.npmjs.com/package/@ungap/structured-clone @ungap/structured-clone}
    * and {@link https://www.npmjs.com/package/flatted flatted} for stringifying Realm entities that have circular structures.
-   * @returns An plain object.
+   * @returns A plain object.
    **/
   toJSON(_?: string, cache?: unknown): DefaultObject;
   /** @internal */
@@ -301,7 +301,7 @@ export class RealmObject<T = DefaultObject> {
 
   /**
    * Checks if this object has not been deleted and is part of a valid Realm.
-   * @returns True if the object can be safely accessed, false otherwise.
+   * @returns `true` if the object can be safely accessed, `false` if not.
    * @since 0.12.0
    */
   isValid(): boolean {
@@ -376,7 +376,6 @@ export class RealmObject<T = DefaultObject> {
    *       if the object has been deleted. `changesProperties` is an array of properties that have changed
    *       their value.
    * @throws {Error} If `callback` is not a function.
-   * @since 2.23.0
    * @example
    * wine.addListener((obj, changes) => {
    *  // obj === wine
@@ -386,6 +385,7 @@ export class RealmObject<T = DefaultObject> {
    *      console.log(` ${prop}`);
    *   });
    * })
+   * @since 2.23.0
    */
   addListener(callback: ObjectChangeCallback<T>): void {
     this[INTERNAL_LISTENERS].addListener(callback);
@@ -411,8 +411,8 @@ export class RealmObject<T = DefaultObject> {
   /**
    * Get underlying type of a property value.
    * @param propertyName The name of the property to retrieve the type of.
-   * @returns Underlying type of the property value.
    * @throws {Error} If property does not exist.
+   * @returns Underlying type of the property value.
    * @since 10.8.0
    */
   getPropertyType(propertyName: string): string {

@@ -97,11 +97,11 @@ export abstract class Collection<
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/iterator Symbol.iterator}
    *   and the {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#iterable iterable protocol}
    * @returns Iterable of each value in the collection
-   * @since 0.11.0
    * @example
    * for (let object of collection) {
    *   // do something with each object
    * }
+   * @since 0.11.0
    */
   abstract [Symbol.iterator](): Iterator<T>;
 

@@ -375,7 +375,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
 
   /**
    * Checks if this collection has not been deleted and is part of a valid Realm.
-   * @returns True if the collection can be safely accessed, false otherwise.
+   * @returns `true` if the collection can be safely accessed, `false` if not.
    * @since 0.14.0
    */
   isValid(): boolean {
@@ -384,7 +384,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
 
   /**
    * Checks if this collection is empty.
-   * @returns True if the collection is empty, false otherwise
+   * @returns `true` if the collection is empty, `false` if not.
    * @since 2.7.0
    */
   isEmpty(): boolean {

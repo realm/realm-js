@@ -169,7 +169,7 @@ export class Realm {
    * @param encryptionKey Required only when
    *   accessing encrypted Realms.
    * @throws {Error} If passing an invalid or non-matching encryption key.
-   * @returns version of the schema, or `-1` if no Realm exists at `path`.
+   * @returns Version of the schema, or `-1` if no Realm exists at `path`.
    */
   public static schemaVersion(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): number {
     const config: Configuration = { path };
@@ -876,6 +876,9 @@ export class Realm {
    * If you don't handle errors, your data might become inconsistent. Error handling
    * will often involve canceling the transaction.
    *
+   * @throws {Error} If already in write transaction
+   * @see ***cancelTransaction()***
+   * @see ***commitTransaction()***
    * @example
    * realm.beginTransaction();
    * try {
@@ -886,9 +889,6 @@ export class Realm {
    *   realm.cancelTransaction();
    *   throw e;
    * }
-   * @throws {Error} If already in write transaction
-   * @see ***cancelTransaction()***
-   * @see ***commitTransaction()***
    */
   beginTransaction(): void {
     this.internal.beginTransaction();
@@ -926,7 +926,7 @@ export class Realm {
    * Be warned that resource requirements for compaction is proportional to the amount of live data in
    * the database. Compaction works by writing the database contents to a temporary database file and
    * then replacing the database with the temporary one.
-   * @returns true if compaction succeeds.
+   * @returns `true` if compaction succeeds, `false` if not.
    */
   compact(): boolean {
     assert.outTransaction(this, "Cannot compact a Realm within a transaction.");
