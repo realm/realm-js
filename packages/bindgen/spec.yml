@@ -468,6 +468,8 @@ classes:
           suffix: by_name
       get_keypath_mapping: '(r: SharedRealm) -> KeyPathMapping'
       results_from_query: '(r: SharedRealm, q: Query) -> Results'
+      # This is needed because Query::and_query doesn't append ordering
+      results_append_query: '(results: Results, query: Query) -> Results'
       make_object_notifier: '(r: SharedRealm, o: Obj) -> SharedObjectNotifier'
       has_binding_context: '(r: Realm) -> bool'
       set_binding_context: '(r: SharedRealm, methods: BindingContext)'
@@ -476,8 +478,6 @@ classes:
       delete_data_for_object: '(realm: SharedRealm, object_type: StringData)'
       is_empty_realm: '(realm: SharedRealm) -> bool'
       is_same_realm: '(r1: SharedRealm, r2: SharedRealm) -> bool'
-      # This is needed because Query#and_query doesn't append ordering
-      results_append_query: '(results: Results, query: Query) -> Results'
 
   ConstTableRef:
     needsDeref: true

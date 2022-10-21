@@ -16,13 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Realm from "realm";
+import { Realm, Configuration, SyncConfiguration, User, BSON } from "realm";
 
 // Either the sync property is left out (local Realm)
-export type LocalConfiguration = Omit<Realm.Configuration, "sync"> & { sync?: never };
+export type LocalConfiguration = Omit<Configuration, "sync"> & { sync?: never };
 // Or the sync parameter is present
-export type SyncedConfiguration = Omit<Realm.Configuration, "sync"> & {
-  sync?: Partial<Realm.SyncConfiguration>;
+export type SyncedConfiguration = Omit<Configuration, "sync"> & {
+  sync?: Partial<SyncConfiguration>;
 };
 export type OpenRealmConfiguration = LocalConfiguration | SyncedConfiguration;
 
@@ -36,9 +36,9 @@ export type OpenRealmConfiguration = LocalConfiguration | SyncedConfiguration;
  */
 export async function openRealm(
   partialConfig: LocalConfiguration | SyncedConfiguration = {},
-  user: Realm.User,
-): Promise<{ config: Realm.Configuration; realm: Realm }> {
-  const nonce = new Realm.BSON.ObjectId().toHexString();
+  user: User,
+): Promise<{ config: Configuration; realm: Realm }> {
+  const nonce = new BSON.ObjectId().toHexString();
   const path = `temp-${nonce}.realm`;
 
   if (!partialConfig.sync) {
@@ -55,7 +55,7 @@ export async function openRealm(
         _sessionStopPolicy: "immediately",
         ...partialConfig.sync,
       },
-    } as Realm.Configuration;
+    } as Configuration;
     const realm = await Realm.open(config);
 
     // Upload the schema, ensuring a valid connection. uploadAllLocalChanges

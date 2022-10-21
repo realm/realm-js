@@ -35,6 +35,10 @@ import { testSkipIf, suiteSkipIf } from "./utils/skip-if";
 global.describe.skipIf = suiteSkipIf;
 global.it.skipIf = testSkipIf;
 
+import { chaiRealmObjects } from "./utils/chai-plugin";
+import chai from "chai";
+chai.use(chaiRealmObjects);
+
 afterEach(() => {
   // Trigger garbage collection after every test, if exposed by the environment.
   if (typeof global.gc === "function") {
@@ -46,6 +50,7 @@ afterEach(() => {
 
 describe("Test Harness", () => {
   require("./utils/import-app.test");
+  require("./utils/chai-plugin.test");
 });
 
 // Simplify once https://github.com/kraenhansen/mocha-remote/issues/58 gets solved

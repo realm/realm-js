@@ -319,7 +319,7 @@ describe("Dictionary", () => {
     badValues: {
       key1: "this is a string",
     },
-    expectedError: "Expected value to be a number or bigint, got a string",
+    expectedError: "Expected 'dict[\"key1\"]' to be a number or bigint, got a string",
   });
 
   describeTypedSuite({
@@ -331,7 +331,7 @@ describe("Dictionary", () => {
     badValues: {
       key1: false,
     },
-    expectedError: "Expected value to be a string, got a boolean",
+    expectedError: "Expected 'dict[\"key1\"]' to be a string, got a boolean",
   });
 
   describeTypedSuite({
@@ -343,7 +343,7 @@ describe("Dictionary", () => {
     badValues: {
       key1: 1234,
     },
-    expectedError: "Expected value to be a boolean, got a number",
+    expectedError: "Expected 'dict[\"key1\"]' to be a boolean, got a number",
   });
 
   describeTypedSuite({
@@ -355,6 +355,6 @@ describe("Dictionary", () => {
     badValues: {
       key1: "unexpected string",
     },
-    expectedError: "Expected 'value in dict' to be an object, got a string",
+    expectedError: "Expected 'dict[\"key1\"]' to be an object, got a string",
   });
 });

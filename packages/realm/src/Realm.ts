@@ -510,7 +510,7 @@ export class Realm {
     }
   }
 
-  objectForPrimaryKey<T>(type: string, primaryKey: T[keyof T]): (RealmObject<T> & T) | undefined;
+  objectForPrimaryKey<T = DefaultObject>(type: string, primaryKey: T[keyof T]): (RealmObject<T> & T) | undefined;
   objectForPrimaryKey<T extends RealmObject>(type: Constructor<T>, primaryKey: T[keyof T]): T | undefined;
   objectForPrimaryKey<T extends RealmObject>(type: string | Constructor<T>, primaryKey: string[]): T | undefined {
     // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1240-L1258

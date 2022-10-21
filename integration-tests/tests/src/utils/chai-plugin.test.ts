@@ -52,5 +52,10 @@ describe("Realm Chai plugin", () => {
       const persons = this.realm.objects("Person");
       expect(persons).primaryKeys.deep.equals(["Alice"]);
     });
+
+    it("transforms to primary key values for arrays of arrays of objects", function (this: RealmContext) {
+      const alice = this.realm.objectForPrimaryKey("Person", "Alice");
+      expect([[alice]]).primaryKeys.deep.equals([["Alice"]]);
+    });
   });
 });

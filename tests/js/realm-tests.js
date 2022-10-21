@@ -1599,30 +1599,29 @@ module.exports = {
     }
   },
 
-  // FIXME: reenable this test!
-  /*    testCopyBundledRealmFiles: function() {
-        let config = {path: 'realm-bundle.realm', schema: [schemas.DateObject]};
-        if (Realm.exists(config)) {
-            Realm.deleteFile(config);
-        }
-        Realm.copyBundledRealmFiles();
-        TestCase.assertTrue(Realm.exists(config));
+  testCopyBundledRealmFiles: function () {
+    let config = { path: "realm-bundle.realm", schema: [schemas.DateObject] };
+    if (Realm.exists(config)) {
+      Realm.deleteFile(config);
+    }
+    Realm.copyBundledRealmFiles();
+    TestCase.assertTrue(Realm.exists(config));
 
-        let realm = new Realm(config);
-        TestCase.assertEqual(realm.objects('Date').length, 2);
-        TestCase.assertEqual(realm.objects('Date')[0].currentDate.getTime(), 1462500087955);
+    let realm = new Realm(config);
+    TestCase.assertEqual(realm.objects("Date").length, 2);
+    TestCase.assertEqual(realm.objects("Date")[0].currentDate.getTime(), 1462500087955);
 
-        const newDate = new Date(1);
-        realm.write(() => {
-            realm.objects('Date')[0].currentDate = newDate;
-        });
-        realm.close();
+    const newDate = new Date(1);
+    realm.write(() => {
+      realm.objects("Date")[0].currentDate = newDate;
+    });
+    realm.close();
 
-        // copy should not overwrite existing files
-        Realm.copyBundledRealmFiles();
-        realm = new Realm(config);
-        TestCase.assertEqual(realm.objects('Date')[0].currentDate.getTime(), 1);
-    },*/
+    // copy should not overwrite existing files
+    Realm.copyBundledRealmFiles();
+    realm = new Realm(config);
+    TestCase.assertEqual(realm.objects("Date")[0].currentDate.getTime(), 1);
+  },
 
   testErrorMessageFromInvalidWrite: function () {
     const realm = new Realm({ schema: [schemas.PersonObject] });
