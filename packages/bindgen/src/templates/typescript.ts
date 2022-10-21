@@ -20,7 +20,7 @@ import { TemplateContext } from "../context";
 import { Arg, bindModel, BoundSpec, NamedType, Property, Type } from "../bound-model";
 import { strict as assert } from "assert";
 
-import "../js-passes";
+import { doJsPasses } from "../js-passes";
 
 const PRIMITIVES_MAPPING: Record<string, string> = {
   void: "void",
@@ -135,7 +135,7 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
     );
   }
 
-  const spec = bindModel(rawSpec);
+  const spec = doJsPasses(bindModel(rawSpec));
 
   const coreOut = file("core.ts", "eslint", "typescript-checker");
   coreOut("// This file is generated: Update the spec instead of editing this file directly");
@@ -206,21 +206,22 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
         continue;
       }
       const transformedSig = meth.sig.asyncTransformOrSelf();
+      const ret =
+        meth.jsName == "$resetSharedPtr" // Special case to simulate destructive semantics.
+          ? "asserts this is never"
+          : generateType(spec, transformedSig.ret, Kind.Ret);
       out(
         meth.isStatic ? "static" : "",
         meth.jsName,
         "(",
         generateArguments(spec, transformedSig.args),
         "):",
-        generateType(spec, transformedSig.ret, Kind.Ret),
+        ret,
         ";",
       );
     }
     if (cls.iterable) {
       out(`[Symbol.iterator](): Iterator<${generateType(spec, cls.iterable, Kind.Ret)}>;`);
-    }
-    if (cls.sharedPtrWrapped) {
-      out(`${cls.resetSharedPtrMethodName()}(): asserts this is never`);
     }
     out(`}`);
   }

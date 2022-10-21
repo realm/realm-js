@@ -15,11 +15,76 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import { Class, Field, Method, NamedType, Property } from "./bound-model";
+import {
+  BoundSpec,
+  Class,
+  Field,
+  InstanceMethod,
+  Method,
+  NamedType,
+  Property,
+  Type,
+  Func,
+  MethodCallSig,
+} from "./bound-model";
 import { camelCase, pascalCase } from "change-case";
 import { strict as assert } from "assert";
 
-// Any js-specific data needed on the bound model will live in this file.
+export function doJsPasses(spec: BoundSpec) {
+  addSharedPtrMethods(spec);
+  return spec;
+}
+
+function addSharedPtrMethods(spec: BoundSpec) {
+  for (const cls of spec.classes) {
+    if (cls.sharedPtrWrapped && !cls.base) {
+      cls.methods.push(
+        new CustomProperty( //
+          cls,
+          "$addr",
+          spec.types.int64_t,
+          ({ self }) => `reinterpret_cast<int64_t>(&${self})`,
+        ),
+      );
+
+      cls.methods.push(
+        new CustomInstanceMethod(
+          cls,
+          "$resetSharedPtr",
+          new Func(spec.types.void, [], /*const*/ true, /*noexcept*/ true, /*offthread*/ false),
+          ({ self }) => {
+            // self is the pointee, but we want the shared_ptr itself.
+            assert(self.includes("**"));
+            return `${self.replace("**", "*")}.reset()`;
+          },
+        ),
+      );
+    }
+  }
+}
+
+class CustomProperty extends Property {
+  constructor(on: Class, public readonly name: string, type: Type, public call: MethodCallSig) {
+    assert(name.startsWith("$"));
+    super(on, "DOLLAR_" + name.slice(1), type);
+  }
+
+  get jsName() {
+    return this.name;
+  }
+}
+
+class CustomInstanceMethod extends InstanceMethod {
+  constructor(on: Class, public name: string, sig: Func, public call: MethodCallSig) {
+    assert(name.startsWith("$"));
+    const unique_name = "DOLLAR_" + name.slice(1);
+    super(on, name, unique_name, unique_name, sig);
+  }
+
+  get jsName() {
+    return this.name;
+  }
+}
 
 declare module "./bound-model" {
   interface Property {
@@ -36,8 +101,6 @@ declare module "./bound-model" {
   }
   interface Class {
     iteratorMethodId(): string;
-    resetSharedPtrMethodName(): string;
-    resetSharedPtrMethodId(): string;
   }
 }
 
@@ -70,13 +133,4 @@ Object.defineProperty(NamedType.prototype, "jsName", {
 Class.prototype.iteratorMethodId = function () {
   assert(this.iterable);
   return `${this.name}_Symbol_iterator`;
-};
-
-Class.prototype.resetSharedPtrMethodName = function () {
-  assert(this.sharedPtrWrapped);
-  return "$resetSharedPtr";
-};
-Class.prototype.resetSharedPtrMethodId = function () {
-  assert(this.sharedPtrWrapped);
-  return `${this.name}_reset_shared_ptr`;
 };

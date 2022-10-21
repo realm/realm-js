@@ -149,5 +149,5 @@ assert.isValid = (obj: binding.Obj, message = "Accessing object which has been i
 };
 
 assert.isSameRealm = (realm1: binding.Realm, realm2: binding.Realm, message = "Expected the Realms to be the same") => {
-  assert(binding.Helpers.isSameRealm(realm1, realm2), message);
+  assert(realm1.$addr == realm2.$addr, message);
 };
