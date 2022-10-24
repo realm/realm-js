@@ -45,25 +45,27 @@ declare class Person {
   const object: lib.Object = realm.objectForPrimaryKey("Person", "alice");
 }
 
-// Realm.Object
-
 {
   const object: Realm.Object<Person> = null as unknown as lib.Object<Person>;
 }
-
-// Realm.Result
 
 {
   const results: Realm.Results<Person> = null as unknown as lib.Results<Person>;
 }
 
-// List
 {
   const list: Realm.List<Person> = null as unknown as lib.List<Person>;
 }
 
-// Dictionary
 {
   type T = { foo: string; bar: number };
   const dict: Realm.Dictionary<Person> = null as unknown as lib.Dictionary<Person>;
+}
+
+{
+  const app: Realm.App = null as unknown as lib.App;
+}
+
+{
+  const user: Realm.User = null as unknown as lib.User;
 }
