@@ -5,8 +5,6 @@
 // If you are not using TypeScript and `@realm/babel-plugin`, you instead need
 // to defining a schema on the class - see `Task.js` in the Realm example app
 // for an example of this.
-//
-// The template project generator will copy and rename the appropriate version.
 
 import {Realm} from '@realm/react';
 

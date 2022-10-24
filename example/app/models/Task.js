@@ -5,8 +5,6 @@
 // which allows you to define your models using TypeScript syntax.
 //
 // See `Task.ts` in the Realm example app for an example of using the plugin.
-//
-// The template project generator will copy and rename the appropriate version.
 
 import {Realm} from '@realm/react';
 
@@ -28,4 +26,3 @@ export class Task extends Realm.Object {
     },
   };
 }
-
