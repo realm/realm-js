@@ -139,7 +139,7 @@ inline JsiObj ObjectCreate(JsiEnv env, const fbjsi::Object& proto)
         s_object_create = (*s_object).getPropertyAsFunction(env, "create");
     }
 
-    return env(s_object_create->callWithThis(env, *s_object, proto)).asObject();
+    return env(s_object_create->call(env, proto)).asObject();
 }
 
 inline void defineProperty(JsiEnv env, const fbjsi::Object& target, StringData name, const fbjsi::Object& descriptor)
