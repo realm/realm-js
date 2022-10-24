@@ -139,7 +139,7 @@ inline JsiObj ObjectCreate(JsiEnv env, const fbjsi::Object& proto)
         s_object_create = (*s_object).getPropertyAsFunction(env, "create");
     }
 
-    return env((*s_object_create).callWithThis(env, *s_object, proto)).asObject();
+    return env(s_object_create->callWithThis(env, *s_object, proto)).asObject();
 }
 
 inline void defineProperty(JsiEnv env, const fbjsi::Object& target, StringData name, const fbjsi::Object& descriptor)
@@ -261,7 +261,7 @@ public:
     // Cache various objects we fetch from the runtime which are hot paths
     // during object creation
     inline static std::optional<fbjsi::Object> s_proto;
-    inline static std::optional<fbjsi::Value> s_wrapper;
+    inline static std::optional<fbjsi::Function> s_wrapper;
 
     /**
      * @brief callback for invalid access to index setters
@@ -415,8 +415,8 @@ public:
             // XXX Do we want to trap things like ownKeys() and getOwnPropertyDescriptors() to support for...in?
             auto [getter, setter] = s_type.index_accessor;
             auto desc = fbjsi::Object(env);
-            desc.setProperty(
-                env, "value",
+
+            s_wrapper =
                 globalType(env, "Function")
                     .call(env, "getter", "setter", R"(
                         const integerPattern = /^-?\d+$/;
@@ -474,7 +474,9 @@ public:
                     .call(env, funcVal(env, "getter", 0, getter),
                           funcVal(env, "setter", 1, setter ? setter : ObjectWrap::readonly_index_setter_callback))
                     .asObject(env)
-                    .asFunction(env));
+                    .asFunction(env);
+
+            desc.setProperty(env, "value", *s_wrapper);
             defineProperty(env, *s_ctor, "_proxyWrapper", desc);
         }
 
@@ -491,12 +493,8 @@ public:
 
         set_internal(env, obj, ptr);
 
-        if (REALM_UNLIKELY(!s_wrapper)) {
-            s_wrapper = (*s_ctor)->getProperty(env, "_proxyWrapper");
-        }
-
-        if (!(*s_wrapper).isUndefined()) {
-            obj = env((*s_wrapper).asObject(env).asFunction(env).call(env, std::move(obj.get()))).asObject();
+        if (s_wrapper) {
+            obj = env((*s_wrapper).call(env, std::move(obj.get()))).asObject();
         }
 
         return obj;
