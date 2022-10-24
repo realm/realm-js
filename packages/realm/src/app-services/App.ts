@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding, fs } from "./internal";
+import { Credentials, User, binding, createNetworkTransport, fs } from "../internal";
 
 export type AppConfiguration = {
   id: string;
@@ -28,7 +28,14 @@ export class App {
   private static PLATFORM_VERSION = "0.0.0";
   private static SDK_VERSION = "0.0.0";
 
+  /** @internal */
   private internal: binding.App;
+
+  public static Sync = {
+    setLogLevel() {
+      /* no-op */
+    },
+  };
 
   constructor(id: string);
   constructor(config: AppConfiguration);
@@ -40,7 +47,7 @@ export class App {
         platform: App.PLATFORM,
         platformVersion: App.PLATFORM_VERSION,
         sdkVersion: App.SDK_VERSION,
-        transport: this.createNetworkTransport(),
+        transport: createNetworkTransport(),
         baseUrl,
       },
       {
@@ -53,7 +60,8 @@ export class App {
     return this.internal.config.appId;
   }
 
-  private createNetworkTransport(): binding.GenericNetworkTransport {
-    throw new Error("Not yet implemented");
+  public async logIn(credentials: Credentials) {
+    const userInternal = await this.internal.logInWithCredentials(credentials.internal);
+    return new User(userInternal);
   }
 }

@@ -16,33 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export {
-  App,
-  BSON,
-  Collection,
-  Credentials,
-  Dictionary,
-  List,
-  OrderedCollection,
-  Realm,
-  RealmObject as Object,
-  RealmSet as Set,
-  Results,
-  UpdateMode,
-  User,
-  flags,
-} from "./internal";
+import { binding } from "../internal";
 
-export type {
-  CollectionChangeCallback,
-  CollectionChangeSet,
-  Configuration,
-  ObjectChangeCallback,
-  ObjectChangeSet,
-  RealmEventName,
-  RealmListenerCallback,
-} from "./internal";
+export class User {
+  /** @internal */
+  public internal: binding.SyncUser;
 
-// Exporting default for backwards compatibility
-import { Realm } from "./internal";
-export default Realm;
+  /** @internal */
+  constructor(internal: binding.SyncUser) {
+    this.internal = internal;
+  }
+}
