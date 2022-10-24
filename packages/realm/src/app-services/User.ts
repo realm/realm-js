@@ -28,6 +28,8 @@ import {
   isProviderType,
 } from "../internal";
 
+const cache = new WeakMap<binding.SyncUser, User>();
+
 export type UserChangeCallback = () => void;
 
 /**
@@ -67,6 +69,18 @@ export class User<
 
   /** @internal */
   public internal: binding.SyncUser;
+
+  /** @internal */
+  public static get(app: App, internal: binding.SyncUser) {
+    const result = cache.get(internal);
+    if (result) {
+      return result;
+    } else {
+      const result = new User(app, internal);
+      cache.set(internal, result);
+      return result;
+    }
+  }
 
   /** @internal */
   constructor(app: App, internal: binding.SyncUser) {
