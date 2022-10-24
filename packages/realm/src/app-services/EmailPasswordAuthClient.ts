@@ -18,34 +18,40 @@
 
 import { binding } from "../internal";
 
-/**
- * Types of an authentication provider.
- */
-export enum ProviderType {
-  AnonUser = "anon-user",
-  ApiKey = "api-key",
-  LocalUserPass = "local-userpass",
-  CustomFunction = "custom-function",
-  CustomToken = "custom-token",
-  OAuth2Google = "oauth2-google",
-  OAuth2Facebook = "oauth2-facebook",
-  OAuth2Apple = "oauth2-apple",
-}
-
-export function isProviderType(arg: string): arg is ProviderType {
-  return Object.values(ProviderType).includes(arg as ProviderType);
-}
-
-export class Credentials {
+export class EmailPasswordAuthClient {
   /** @internal */
-  public internal: binding.AppCredentials;
+  public internal: binding.UsernamePasswordProviderClient;
 
   /** @internal */
-  private constructor(internal: binding.AppCredentials) {
+  constructor(internal: binding.UsernamePasswordProviderClient) {
     this.internal = internal;
   }
 
-  static anonymous(reuse = true): Credentials {
-    return new Credentials(binding.AppCredentials.anonymous(reuse));
+  public async registerUser() {
+    throw new Error("Not yet implemented");
+  }
+
+  public async confirmUser() {
+    throw new Error("Not yet implemented");
+  }
+
+  public async resendConfirmationEmail() {
+    throw new Error("Not yet implemented");
+  }
+
+  public async retryCustomConfirmation() {
+    throw new Error("Not yet implemented");
+  }
+
+  public async resetPassword() {
+    throw new Error("Not yet implemented");
+  }
+
+  public async sendResetPasswordEmail() {
+    throw new Error("Not yet implemented");
+  }
+
+  public async callResetPasswordFunction() {
+    throw new Error("Not yet implemented");
   }
 }
