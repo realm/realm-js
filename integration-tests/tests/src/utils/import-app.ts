@@ -52,6 +52,10 @@ function getCredentials(): Credentials {
   };
 }
 
+function isErrorResponse(arg: unknown): arg is ErrorResponse {
+  return typeof arg === "object" && arg !== null && "message" in arg;
+}
+
 export function getDefaultReplacements(name: string): TemplateReplacements {
   // When running on CI we connect through mongodb-atlas instead of local-mongodb
   const { mongodbClusterName } = environment;
@@ -129,9 +133,14 @@ export async function deleteApp(clientAppId: string): Promise<void> {
 
   if (appImporterIsRemote) {
     // This might take some time, so we just send it and forget it
-    fetch(`${appImporterUrl}/app/${clientAppId}`, {
+    const response = await fetch(`${appImporterUrl}/app/${clientAppId}`, {
       method: "DELETE",
     });
+    if (!response.ok) {
+      const json = await response.json();
+      const message = isErrorResponse(json) ? json.message : "No error message";
+      throw new Error(`Failed to delete app with client ID '${clientAppId}': ${message}`);
+    }
   } else {
     const appsDirectoryPath = "./realm-apps";
     const realmConfigPath = "./realm-config";

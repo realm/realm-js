@@ -15,6 +15,9 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+
+import { Realm } from "realm";
+
 import { deleteApp, importApp, TemplateReplacements } from "../utils/import-app";
 
 const REALM_LOG_LEVELS = ["all", "trace", "debug", "detail", "info", "warn", "error", "fatal", "off"];
