@@ -24,9 +24,9 @@ convert() {
   # Move the Babel config back
   mv babel.config.js.ignore babel.config.js
 
-  # Any files with a "._js_version" should replace their automatically converted TS versions.
+  # Any files with a ".js" version should replace their automatically converted TS versions.
   # This allows us to have a specific JS version of any file, e.g. models which don't use the Babel plugin.
-  for i in $(find . -path ./node_modules -prune -o -name "*._js_version" -print); do mv $i $2/${i/\._js_version*/\.js} ; done
+  for i in $(find app -path ./node_modules -prune -o -name "*.js" -print); do mv $i $2/$i ; done
 
   popd
 }
