@@ -28,6 +28,7 @@ export default [
     output: {
       file: pkg.main,
       format: "cjs",
+      sourcemap: true,
     },
     plugins: [
       replace({
