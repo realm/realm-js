@@ -16,33 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export {
-  App,
-  BSON,
-  Collection,
-  Credentials,
-  Dictionary,
-  List,
-  OrderedCollection,
-  Realm,
-  RealmObject as Object,
-  RealmSet as Set,
-  Results,
-  UpdateMode,
-  User,
-  flags,
-} from "./internal";
+import { binding, network } from "../internal";
 
-export type {
-  CollectionChangeCallback,
-  CollectionChangeSet,
-  Configuration,
-  ObjectChangeCallback,
-  ObjectChangeSet,
-  RealmEventName,
-  RealmListenerCallback,
-} from "./internal";
-
-// Exporting default for backwards compatibility
-import { Realm } from "./internal";
-export default Realm;
+/** @internal */
+export function createNetworkTransport() {
+  return binding.Helpers.makeNetworkTransport((request, callback) => {
+    network.fetch(request).then(callback);
+  });
+}
