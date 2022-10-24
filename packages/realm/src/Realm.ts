@@ -41,6 +41,7 @@ import {
   RealmObjectConstructor,
   RealmSet,
   Results,
+  SyncSession,
   UpdateMode,
   assert,
   binding,
@@ -418,8 +419,8 @@ export class Realm {
     return this.internal.isClosed;
   }
 
-  get syncSession(): any {
-    throw new Error("Not yet implemented");
+  get syncSession(): SyncSession {
+    return SyncSession.get(this.internal.syncSession);
   }
 
   get subscriptions(): any {
