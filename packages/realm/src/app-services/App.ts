@@ -98,13 +98,11 @@ export class App {
   }
 
   public get currentUser(): User {
-    // TODO: Get this.internal.currentUser but return cached instances of the SDK's User to preserve object equality
-    throw new Error("Not yet implemented");
+    return User.get(this, this.internal.currentUser);
   }
 
   public get allUsers(): User[] {
-    // TODO: Iterate this.internal.allUsers but return cached instances of the SDK's User to preserve object equality
-    throw new Error("Not yet implemented");
+    return this.internal.allUsers.map((user) => User.get(this, user));
   }
 
   public switchUser(): unknown {
