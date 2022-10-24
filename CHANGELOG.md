@@ -1,11 +1,10 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Improve performance of client reset with automatic recovery and converting top-level tables into embedded tables. ([realm/realm-core#5897](https://github.com/realm/realm-core/pull/5897))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fix a use-after-free if the last external reference to an encrypted Realm was closed between when a client reset error was received and when the download of the new Realm began. ([realm/realm-core#5949](https://github.com/realm/realm-core/pull/5949), since v10.20.0)
 
 ### Compatibility
 * React Native >= v0.64.0
@@ -15,9 +14,7 @@
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v12.9.0 to v12.10.0.
 
 ## 10.22.0 (2022-10-17)
 
@@ -73,7 +70,7 @@
 * Fixed an exception `fcntl() with F_BARRIERFSYNC failed: Inappropriate ioctl for device` when running with MacOS on an exFAT drive. ([realm/realm-core#5789](https://github.com/realm/realm-core/issues/5789), since v10.18.0)
 * Syncing of a Decimal128 with big significand could result in a crash. ([realm/realm-core#5728](https://github.com/realm/realm-core/issues/5728), since v10.0.0)
 * `discardLocal` client reset mode will now wait for flexible sync Realms to be fully synchronized before beginning recovery operations. ([realm/realm-core#5705](https://github.com/realm/realm-core/issues/5705), since v10.11.0)
-  
+
 ### Compatibility
 * React Native >= v0.64.0
 * MongoDB Realm Cloud.
