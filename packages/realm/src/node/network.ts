@@ -57,18 +57,23 @@ network.inject({
           headers: request.headers,
         },
         (res) => {
+          let body = "";
           res.setEncoding("utf8");
-          const body = res.read();
-          assert.string(body, "body");
-          const { headers, statusCode } = res;
-          assert.number(statusCode, "response status code");
-          assert.object(headers, "headers");
-          resolve({
-            body,
-            headers: flattenHeaders(headers),
-            httpStatusCode: statusCode,
-            // TODO: Determine if we want to set this differently
-            customStatusCode: 0,
+          res.on("data", (chunk) => {
+            assert.string(chunk, "chunk");
+            body += chunk;
+          });
+          res.once("end", () => {
+            const { headers, statusCode } = res;
+            assert.number(statusCode, "response status code");
+            assert.object(headers, "headers");
+            resolve({
+              body,
+              headers: flattenHeaders(headers),
+              httpStatusCode: statusCode,
+              // TODO: Determine if we want to set this differently
+              customStatusCode: 0,
+            });
           });
         },
       );
