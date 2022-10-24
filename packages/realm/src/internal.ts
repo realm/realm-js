@@ -60,6 +60,10 @@ export * from "./app-services/App";
 export * from "./app-services/Credentials";
 export * from "./app-services/User";
 export * from "./app-services/NetworkTransport";
+export * from "./app-services/ApiKeyAuthClient";
+export * from "./app-services/EmailPasswordAuthClient";
+export * from "./app-services/FunctionsFactory";
+export * from "./app-services/UserProfile";
 
 export * from "./Realm";
 export * from "./RealmListeners";
