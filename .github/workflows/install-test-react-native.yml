@@ -28,7 +28,7 @@ defaults:
 jobs:
   install:
     name: Installing Realm → React Native (using Xcode v${{matrix.xcode}}, node v${{ matrix.node }}, npm v${{ matrix.npm }})
-    runs-on: macos-latest
+    runs-on: macos-11
     strategy:
       fail-fast: false
       matrix:
