@@ -1165,6 +1165,7 @@ module.exports = {
         _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
         clientReset: {
           mode: "manual",
+          onManual: () => console.log("error"),
         },
       },
       schema: [schemas.PersonForSync, schemas.DogForSync],
