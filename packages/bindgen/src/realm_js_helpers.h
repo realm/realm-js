@@ -143,7 +143,7 @@ struct Helpers {
                 : runRequest(FWD(runRequest))
             {
             }
-            void send_request_to_server(app::Request&& request,
+            void send_request_to_server(const app::Request& request,
                                         util::UniqueFunction<void(const app::Response&)>&& completionBlock) override
             {
                 runRequest(std::move(request), std::move(completionBlock));
