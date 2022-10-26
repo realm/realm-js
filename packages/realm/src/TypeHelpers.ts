@@ -46,8 +46,8 @@ const TYPED_ARRAY_CONSTRUCTORS = new Set([
   BigUint64Array,
 ]);
 
-export function toArrayBuffer(value: unknown) {
-  if (typeof value === "string") {
+export function toArrayBuffer(value: unknown, stringToBase64 = true) {
+  if (typeof value === "string" && stringToBase64) {
     return binding.Helpers.base64Decode(value);
   }
   for (const TypedArray of TYPED_ARRAY_CONSTRUCTORS) {

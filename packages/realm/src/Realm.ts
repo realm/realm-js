@@ -232,7 +232,7 @@ export class Realm {
     if (typeof encryptionKey === "undefined") {
       return encryptionKey;
     } else {
-      return toArrayBuffer(encryptionKey);
+      return toArrayBuffer(encryptionKey, false);
     }
   }
 
@@ -255,7 +255,7 @@ export class Realm {
     schemaExtras: RealmSchemaExtra = {},
   ): binding.RealmConfig_Relaxed {
     const path = Realm.determinePath(config);
-    const { fifoFilesFallbackPath, shouldCompactOnLaunch, inMemory } = config;
+    const { fifoFilesFallbackPath, shouldCompact, inMemory } = config;
     const bindingSchema = normalizedSchema && toBindingSchema(normalizedSchema);
     return {
       path,
@@ -269,10 +269,10 @@ export class Realm {
           ? BigInt(config.schemaVersion)
           : 0n
         : undefined,
-      migrationFunction: config.migration ? Realm.wrapMigration(schemaExtras, config.migration) : undefined,
-      shouldCompactOnLaunchFunction: shouldCompactOnLaunch
+      migrationFunction: config.onMigration ? Realm.wrapMigration(schemaExtras, config.onMigration) : undefined,
+      shouldCompactOnLaunchFunction: shouldCompact
         ? (totalBytes, usedBytes) => {
-            return shouldCompactOnLaunch(Number(totalBytes), Number(usedBytes));
+            return shouldCompact(Number(totalBytes), Number(usedBytes));
           }
         : undefined,
       disableFormatUpgrade: config.disableFormatUpgrade,
@@ -281,14 +281,14 @@ export class Realm {
   }
 
   private static determineSchemaMode(config: Configuration): binding.SchemaMode | undefined {
-    const { readOnly, deleteRealmIfMigrationNeeded, migration } = config;
+    const { readOnly, deleteRealmIfMigrationNeeded, onMigration } = config;
     assert(
       !readOnly || !deleteRealmIfMigrationNeeded,
       "Cannot set 'deleteRealmIfMigrationNeeded' when 'readOnly' is set.",
     );
     assert(
-      !migration || !deleteRealmIfMigrationNeeded,
-      "Cannot set 'deleteRealmIfMigrationNeeded' when 'migration' is set.",
+      !onMigration || !deleteRealmIfMigrationNeeded,
+      "Cannot set 'deleteRealmIfMigrationNeeded' when 'onMigration' is set.",
     );
     if (readOnly) {
       return binding.SchemaMode.Immutable;
@@ -301,13 +301,13 @@ export class Realm {
 
   private static wrapMigration(
     schemaExtras: RealmSchemaExtra,
-    migration: MigrationCallback,
+    onMigration: MigrationCallback,
   ): binding.RealmConfig_Relaxed["migrationFunction"] {
     return (oldRealmInternal: binding.Realm, newRealmInternal: binding.Realm) => {
       try {
         const oldRealm = new Realm(oldRealmInternal, schemaExtras);
         const newRealm = new Realm(newRealmInternal, schemaExtras);
-        migration(oldRealm, newRealm);
+        onMigration(oldRealm, newRealm);
       } finally {
         oldRealmInternal.close();
         oldRealmInternal.$resetSharedPtr();
@@ -377,7 +377,7 @@ export class Realm {
     this.classes = new ClassMap(this, this.internal.schema, this.schema);
   }
 
-  get empty(): boolean {
+  get isEmpty(): boolean {
     return binding.Helpers.isEmptyRealm(this.internal);
   }
 
@@ -385,11 +385,11 @@ export class Realm {
     return this.internal.config.path;
   }
 
-  get readOnly(): boolean {
+  get isReadOnly(): boolean {
     return this.internal.config.schemaMode === binding.SchemaMode.Immutable;
   }
 
-  get inMemory(): boolean {
+  get isInMemory(): boolean {
     return this.internal.config.inMemory;
   }
 
@@ -514,9 +514,9 @@ export class Realm {
     }
   }
 
-  objectForPrimaryKey<T = DefaultObject>(type: string, primaryKey: T[keyof T]): (RealmObject<T> & T) | undefined;
-  objectForPrimaryKey<T extends RealmObject>(type: Constructor<T>, primaryKey: T[keyof T]): T | undefined;
-  objectForPrimaryKey<T extends RealmObject>(type: string | Constructor<T>, primaryKey: unknown): T | undefined {
+  objectForPrimaryKey<T = DefaultObject>(type: string, primaryKey: T[keyof T]): (RealmObject<T> & T) | null;
+  objectForPrimaryKey<T extends RealmObject>(type: Constructor<T>, primaryKey: T[keyof T]): T | null;
+  objectForPrimaryKey<T extends RealmObject>(type: string | Constructor<T>, primaryKey: unknown): T | null {
     // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1240-L1258
     const { objectSchema, properties, wrapObject } = this.classes.getHelpers(type);
     if (!objectSchema.primaryKey) {
@@ -528,7 +528,7 @@ export class Realm {
       const objKey = table.findPrimaryKey(value);
       // This relies on the JS represenation of an ObjKey being a bigint
       if (binding.isEmptyObjKey(objKey)) {
-        return undefined;
+        return null;
       } else {
         const obj = table.getObject(objKey);
         return wrapObject(obj) as T;
