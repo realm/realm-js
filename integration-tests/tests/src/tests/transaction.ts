@@ -57,7 +57,7 @@ describe("Realm transactions", () => {
           age: "five", // wrong type
         });
         realm.commitTransaction(); // We don't expect this to be called
-      }).throws("Person.age must be of type 'number', got 'string' ('five')");
+      }).throws("Expected value to be a number or bigint, got a string");
 
       // TODO: Fix 👇 ... its a bit surprising that an object gets created at all
       expect(persons.length).equals(1);
