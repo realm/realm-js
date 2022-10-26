@@ -56,6 +56,8 @@ export * from "./List";
 export * from "./Set";
 export * from "./Dictionary";
 
+export * from "./Types";
+
 export * from "./app-services/App";
 export * from "./app-services/Credentials";
 export * from "./app-services/User";
