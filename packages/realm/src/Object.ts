@@ -135,7 +135,7 @@ export class RealmObject<T = DefaultObject> {
         }
       } else {
         if (typeof defaultValue !== "undefined") {
-          result[propertyName] = defaultValue;
+          result[propertyName] = typeof defaultValue === "function" ? defaultValue() : defaultValue;
         } else if (
           !(property.type & binding.PropertyType.Collection) &&
           !(property.type & binding.PropertyType.Nullable) &&
