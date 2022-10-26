@@ -47,6 +47,9 @@ const TYPED_ARRAY_CONSTRUCTORS = new Set([
 ]);
 
 export function toArrayBuffer(value: unknown) {
+  if (typeof value === "string") {
+    return binding.Helpers.base64Decode(value);
+  }
   for (const TypedArray of TYPED_ARRAY_CONSTRUCTORS) {
     if (value instanceof TypedArray) {
       return value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength);
