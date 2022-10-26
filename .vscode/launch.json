@@ -163,8 +163,7 @@
                 "--grep",
                 "${input:integrationTestFilter}"
             ],
-            "cwd": "${workspaceFolder}/integration-tests/tests",
-            "preLaunchTask": "Build Node Tests"
+            "cwd": "${workspaceFolder}/integration-tests/tests"
         },
         {
             "type": "lldb",
