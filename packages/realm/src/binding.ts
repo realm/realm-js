@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { IndexSet, Timestamp } from "../generated/ts/native.mjs";
+import { IndexSet, ObjKey, Timestamp } from "../generated/ts/native.mjs";
 
 /** @internal */
 export * from "../generated/ts/native.mjs"; // core types are transitively exported.
@@ -51,3 +51,21 @@ Timestamp.fromDate = (d: Date) =>
 Timestamp.prototype.toDate = function () {
   return new Date(Number(this.seconds) * 1000 + this.nanoseconds / 1000_000);
 };
+
+export class InvalidObjKey extends TypeError {
+  constructor(input: string) {
+    super(`Cannot convert '${input}' to an ObjKey`);
+  }
+}
+
+export function stringToObjKey(input: string): ObjKey {
+  try {
+    return BigInt(input) as unknown as ObjKey;
+  } catch {
+    throw new InvalidObjKey(input);
+  }
+}
+
+export function isEmptyObjKey(objKey: ObjKey) {
+  return (objKey as unknown as bigint) === -1n;
+}
