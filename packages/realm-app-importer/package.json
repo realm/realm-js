@@ -48,7 +48,7 @@
     "glob": "^7.1.6",
     "node-fetch": "^2.6.0",
     "@realm/network-transport": "*",
-    "yargs": "^16.2.0"
+    "yargs": "^17.6.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^22.0.1",
@@ -57,9 +57,9 @@
     "@types/body-parser": "^1.19.0",
     "@types/fs-extra": "^8.1.0",
     "@types/glob": "^7.1.3",
-    "@types/node": "^16",
+    "@types/node": "^18.14.2",
     "@types/node-fetch": "^2.5.5",
-    "@types/yargs": "^15.0.4",
+    "@types/yargs": "^17.0.13",
     "rollup": "^2.77.2",
     "rollup-plugin-dts": "^4.2.2"
   }
