@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { ObjKey } from "./binding";
 import {
   App,
   BSON,
@@ -515,7 +516,7 @@ export class Realm {
 
   objectForPrimaryKey<T = DefaultObject>(type: string, primaryKey: T[keyof T]): (RealmObject<T> & T) | undefined;
   objectForPrimaryKey<T extends RealmObject>(type: Constructor<T>, primaryKey: T[keyof T]): T | undefined;
-  objectForPrimaryKey<T extends RealmObject>(type: string | Constructor<T>, primaryKey: string[]): T | undefined {
+  objectForPrimaryKey<T extends RealmObject>(type: string | Constructor<T>, primaryKey: unknown): T | undefined {
     // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1240-L1258
     const { objectSchema, properties, wrapObject } = this.classes.getHelpers(type);
     if (!objectSchema.primaryKey) {
@@ -525,8 +526,8 @@ export class Realm {
     const value = properties.get(objectSchema.primaryKey).toBinding(primaryKey, undefined);
     try {
       const objKey = table.findPrimaryKey(value);
-      assert.bigInt(objKey); // This is an assumption we might not be able to make
-      if (objKey === -1n) {
+      // This relies on the JS represenation of an ObjKey being a bigint
+      if (binding.isEmptyObjKey(objKey)) {
         return undefined;
       } else {
         const obj = table.getObject(objKey);
@@ -536,6 +537,28 @@ export class Realm {
       // TODO: Match on something else than the error message, when exposed by the binding
       if (err instanceof Error && err.message.startsWith("No object with key")) {
         throw new Error(`No '${objectSchema.name}' with key '${primaryKey}'`);
+      } else {
+        throw err;
+      }
+    }
+  }
+
+  /**
+   * @internal
+   */
+  _objectForObjectKey<T = DefaultObject>(type: string, objectKey: string): (RealmObject<T> & T) | undefined;
+  _objectForObjectKey<T extends RealmObject>(type: Constructor<T>, objectKey: string): T | undefined;
+  _objectForObjectKey<T extends RealmObject>(type: string | Constructor<T>, objectKey: string): T | undefined {
+    const { objectSchema, wrapObject } = this.classes.getHelpers(type);
+    const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
+    try {
+      const objKey = binding.stringToObjKey(objectKey);
+      const obj = table.tryGetObject(objKey);
+      const result = wrapObject(obj) as T;
+      return result === null ? undefined : result;
+    } catch (err) {
+      if (err instanceof binding.InvalidObjKey) {
+        return undefined;
       } else {
         throw err;
       }
