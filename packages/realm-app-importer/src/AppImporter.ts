@@ -31,6 +31,20 @@ export type TemplateReplacements = Record<string, Record<string, unknown>>;
 
 /* eslint-disable no-console */
 
+type App = {
+  _id: string;
+  client_app_id: string;
+  name: string;
+  location: string;
+  deployment_model: string;
+  domain_id: string;
+  group_id: string;
+  last_used: number;
+  last_modified: number;
+  product: string;
+  environment: string;
+};
+
 type LoginResponse = {
   access_token: string;
   refresh_token: string;
@@ -71,6 +85,10 @@ type RemoteFunction = {
   last_modified: number;
 };
 
+type Service = {
+  _id: string;
+};
+
 function isString(value: unknown): value is string {
   return typeof value === "string";
 }
@@ -89,6 +107,14 @@ function isAppResponse(json: unknown): json is App {
 
 function isAppsResponse(json: unknown): json is App[] {
   return Array.isArray(json) && json.every(isAppResponse);
+}
+
+function isServiceResponse(json: unknown): json is Service {
+  if (isObject(json)) {
+    return typeof json._id === "string";
+  } else {
+    return false;
+  }
 }
 
 function isLoginResponse(json: unknown): json is LoginResponse {
@@ -115,6 +141,24 @@ function isProfileResponse(json: unknown): json is ProfileResponse {
   }
 }
 
+function isRemoteFunctionsResponse(json: unknown): json is RemoteFunction[] {
+  if (Array.isArray(json)) {
+    return json.every((item) => typeof item._id === "string" && typeof item.name === "string");
+  } else {
+    return false;
+  }
+}
+
+function isAuthProvidersResponse(json: unknown): json is AuthProvider[] {
+  if (Array.isArray(json)) {
+    return json.every(
+      (item) => typeof item._id === "string" && typeof item.name === "string" && typeof item.type === "string",
+    );
+  } else {
+    return false;
+  }
+}
+
 export interface AppImporterOptions {
   baseUrl: string;
   credentials: Credentials;
@@ -122,20 +166,6 @@ export interface AppImporterOptions {
   appsDirectoryPath: string;
   cleanUp?: boolean;
 }
-
-type App = {
-  _id: string;
-  client_app_id: string;
-  name: string;
-  location: string;
-  deployment_model: string;
-  domain_id: string;
-  group_id: string;
-  last_used: number;
-  last_modified: number;
-  product: string;
-  environment: string;
-};
 
 export class AppImporter {
   private readonly baseUrl: string;
@@ -333,7 +363,7 @@ export class AppImporter {
         });
         if (!response.ok) {
           const json = await response.json();
-          const error = json.error || "No error message";
+          const error = isErrorResponse(json) ? json.error : "No error message";
           console.error("Failed to apply function: ", { config, url, error });
         }
       }
@@ -371,6 +401,9 @@ export class AppImporter {
             }
             const rulesDir = path.join(servicesDir, serviceDir, "rules");
             const responseJson = await response.json();
+            if (!isServiceResponse(responseJson)) {
+              throw new Error("Expected a service response");
+            }
             const serviceId = responseJson._id;
             // rules must be applied after the service is created
             if (fs.existsSync(rulesDir)) {
@@ -378,38 +411,36 @@ export class AppImporter {
               const ruleFiles = fs.readdirSync(rulesDir);
               for (const ruleFile of ruleFiles) {
                 const ruleFilePath = path.join(rulesDir, ruleFile);
-                const ruleConfig = this.loadJson(ruleFilePath);
-                const schemaConfig = ruleConfig.schema || null;
+                const config = this.loadJson(ruleFilePath);
+                const schemaConfig = config.schema || null;
                 if (schemaConfig) {
                   // Schema is not valid in a rule request, but is included when exporting an app from realm
-                  delete ruleConfig.schema;
+                  delete config.schema;
                 }
 
-                const relationshipsConfig = ruleConfig.relationships || null;
+                const relationshipsConfig = config.relationships || null;
                 if (relationshipsConfig) {
                   // Relationships is not valid in a rule request, but is included when exporting an app from realm
-                  delete ruleConfig.relationships;
+                  delete config.relationships;
                 }
-                const rulesUrl =
+                const url =
                   config.type === "mongodb" || config.type === "mongodb-atlas"
                     ? `${this.apiUrl}/groups/${groupId}/apps/${appId}/services/${serviceId}/default_rule`
                     : `${this.apiUrl}/groups/${groupId}/apps/${appId}/services/${serviceId}/rules`;
 
-                const response = await fetch(rulesUrl, {
+                const response = await fetch(url, {
                   method: "POST",
                   headers: {
                     Authorization: `Bearer ${this.accessToken}`,
                     "content-type": "application/json",
                   },
-                  body: JSON.stringify(ruleConfig),
+                  body: JSON.stringify(config),
                 });
                 if (!response.ok) {
-                  const { error, body } = await response.json();
-                  const { statusText } = response;
-                  const configStr = JSON.stringify(ruleConfig);
-                  throw new Error(
-                    `"Could not create rule: ", ${configStr}, ${rulesUrl}, ${statusText}, ${error}, ${body}`,
-                  );
+                  const json = await response.json();
+                  const error = isErrorResponse(json) ? json.error : "No error message";
+                  const configStr = JSON.stringify(config);
+                  throw new Error(`Could not create rule: ${error} - ${configStr}`);
                 }
               }
             }
@@ -431,58 +462,60 @@ export class AppImporter {
       const providers = await this.getAuthProviders(appId, groupId);
       for (const authFileName of authFileNames) {
         const authFilePath = path.join(authProviderDir, authFileName);
-        const authConfig = this.loadJson(authFilePath);
+        const config = this.loadJson(authFilePath);
 
-        console.log("Applying ", authConfig.name);
+        console.log("Applying ", config.name);
 
         // Add the ID of the resetFunction to the configuration
-        if (authConfig?.config?.resetFunctionName) {
-          const resetFunctionId = remoteFunctions.find((func) => func.name === authConfig.config.resetFunctionName)
-            ?._id;
-          authConfig.config.resetFunctionId = resetFunctionId;
+        if (config?.config?.resetFunctionName) {
+          const resetFunctionId = remoteFunctions.find((func) => func.name === config.config.resetFunctionName)?._id;
+          config.config.resetFunctionId = resetFunctionId;
         }
 
         // Add the ID of the authFunction to the configuration
-        if (authConfig?.config?.authFunctionName) {
-          const authFunctionId = remoteFunctions.find((func) => func.name === authConfig.config.authFunctionName)?._id;
-          authConfig.config.authFunctionId = authFunctionId;
+        if (config?.config?.authFunctionName) {
+          const authFunctionId = remoteFunctions.find((func) => func.name === config.config.authFunctionName)?._id;
+          config.config.authFunctionId = authFunctionId;
         }
 
         // Add the ID of the authFunction to the configuration
-        if (authConfig?.config?.confirmationFunctionName) {
+        if (config?.config?.confirmationFunctionName) {
           const confirmationFunctionId = remoteFunctions.find(
-            (func) => func.name === authConfig.config.confirmationFunctionName,
+            (func) => func.name === config.config.confirmationFunctionName,
           )?._id;
-          authConfig.config.confirmationFunctionId = confirmationFunctionId;
+          config.config.confirmationFunctionId = confirmationFunctionId;
         }
 
-        const currentProvider = providers.find((provider) => provider.type === authConfig.type);
+        const currentProvider = providers.find((provider) => provider.type === config.type);
         if (currentProvider) {
-          const authUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/auth_providers/${currentProvider._id}`;
-          const response = await fetch(authUrl, {
+          const url = `${this.apiUrl}/groups/${groupId}/apps/${appId}/auth_providers/${currentProvider._id}`;
+          const response = await fetch(url, {
             method: "PATCH",
             headers: {
               Authorization: `Bearer ${this.accessToken}`,
               "content-type": "application/json",
             },
-            body: JSON.stringify({ ...authConfig, _id: currentProvider._id }),
+            body: JSON.stringify({ ...config, _id: currentProvider._id }),
           });
           if (!response.ok) {
-            console.error("Could not patch auth_provider: ", authConfig, authUrl);
+            const json = await response.json();
+            const error = isErrorResponse(json) ? json.error : "No error message";
+            console.error("Failed to apply auth_provider: ", { config, url, error });
           }
         } else {
-          const authUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/auth_providers`;
-          const response = await fetch(authUrl, {
+          const url = `${this.apiUrl}/groups/${groupId}/apps/${appId}/auth_providers`;
+          const response = await fetch(url, {
             method: "POST",
             headers: {
               Authorization: `Bearer ${this.accessToken}`,
               "content-type": "application/json",
             },
-            body: JSON.stringify(authConfig),
+            body: JSON.stringify(config),
           });
-          const result = await response.json();
           if (!response.ok) {
-            console.error("Could not apply auth_provider: ", authConfig, authUrl, result.error);
+            const json = await response.json();
+            const error = isErrorResponse(json) ? json.error : "No error message";
+            console.error("Failed to apply auth_provider: ", { config, url, error });
           }
         }
       }
@@ -500,9 +533,15 @@ export class AppImporter {
     });
     const result = await response.json();
     if (!response.ok) {
-      console.error("Could not retrieve functions: ", url, result.error);
+      const json = await response.json();
+      const error = isErrorResponse(json) ? json.error : "No error message";
+      console.error("Failed to retrieve functions: ", { url, error });
     }
-    return result;
+    if (isRemoteFunctionsResponse(result)) {
+      return result;
+    } else {
+      throw new Error(`Unexpected response body: ${JSON.stringify(result)}`);
+    }
   }
 
   private async configureFunctionsFromAppPath(appPath: string, appId: string, groupId: string) {
@@ -531,7 +570,7 @@ export class AppImporter {
         });
         if (!response.ok) {
           const json = await response.json();
-          const error = json.error || "No error message";
+          const error = isErrorResponse(json) ? json.error : "No error message";
           console.error("Failed to apply function: ", { config, url, error });
         }
       }
@@ -539,8 +578,8 @@ export class AppImporter {
   }
 
   private async getAuthProviders(appId: string, groupId: string): Promise<AuthProvider[]> {
-    const authUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/auth_providers`;
-    const response = await fetch(authUrl, {
+    const url = `${this.apiUrl}/groups/${groupId}/apps/${appId}/auth_providers`;
+    const response = await fetch(url, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${this.accessToken}`,
@@ -549,9 +588,15 @@ export class AppImporter {
     });
     const result = await response.json();
     if (!response.ok) {
-      console.error("Could not retrieve auth_providers: ", authUrl, result.error);
+      const json = await response.json();
+      const error = isErrorResponse(json) ? json.error : "No error message";
+      console.error("Failed to retrieve auth_providers: ", { url, error });
     }
-    return result;
+    if (isAuthProvidersResponse(result)) {
+      return result;
+    } else {
+      throw new Error(`Unexpected response body: ${JSON.stringify(result)}`);
+    }
   }
 
   private async applyAppConfiguration(appPath: string, appId: string, groupId: string, syncConfig?: SyncConfig) {

@@ -121,7 +121,7 @@
   "devDependencies": {
     "@babel/runtime": "^7.16.3",
     "@react-native-community/eslint-config": "^3.0.0",
-    "@types/node": "^17.0.43",
+    "@types/node": "^18.14.2",
     "@typescript-eslint/eslint-plugin": "^5.28.0",
     "@typescript-eslint/parser": "^5.28.0",
     "babel-eslint": "^8.2.6",
