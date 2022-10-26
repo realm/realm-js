@@ -130,6 +130,9 @@
             "request": "launch",
             "name": "LLDB Debug Integration Tests",
             "program": "node",
+            "env": {
+                "CONTEXT": "appTemplatesPath=../realm-apps"
+            },
             "args": [
                 "--expose_gc",
                 "node_modules/mocha/bin/mocha",
@@ -143,8 +146,7 @@
                 "--grep",
                 "${input:integrationTestFilter}"
             ],
-            "cwd": "${workspaceFolder}/integration-tests/tests",
-            "preLaunchTask": "Build Node Tests"
+            "cwd": "${workspaceFolder}/integration-tests/tests"
         },
         {
             "type": "lldb",

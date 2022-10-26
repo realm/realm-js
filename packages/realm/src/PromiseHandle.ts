@@ -16,20 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { User } from "../internal";
+import { assert } from "./internal";
 
-export type BaseSyncConfiguration = {
-  user: User;
-};
+type ResolveType<T> = (value: T | PromiseLike<T>) => void;
+type RejectType<T = unknown> = (reason?: T) => void;
 
-export type FlexibleSyncConfiguration = BaseSyncConfiguration & {
-  flexible: true;
-  partitionValue?: never;
-};
+export class PromiseHandle<T> {
+  resolve!: ResolveType<T>;
+  reject!: RejectType;
+  promise: Promise<T>;
 
-export type PartitionSyncConfiguration = BaseSyncConfiguration & {
-  flexible?: never;
-  partitionValue: unknown;
-};
-
-export type SyncConfiguration = FlexibleSyncConfiguration | PartitionSyncConfiguration;
+  constructor() {
+    this.promise = new Promise<T>((arg0, arg1) => {
+      this.resolve = arg0;
+      this.reject = arg1;
+    });
+    assert(this.resolve, "Expected promise executor to be called synchroniously");
+    assert(this.reject, "Expected promise executor to be called synchroniously");
+  }
+}
