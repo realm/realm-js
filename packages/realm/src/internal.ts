@@ -44,7 +44,7 @@ export * from "./ClassHelpers";
 /** @internal */
 export * from "./ClassMap";
 /** @internal */
-export * from "./types";
+export * from "./TypeHelpers";
 
 export * from "./Object";
 export * from "./ObjectListeners";
