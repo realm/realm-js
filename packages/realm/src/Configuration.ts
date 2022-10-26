@@ -16,7 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { DefaultObject, ObjectSchema, Realm, RealmObject, RealmObjectConstructor, assert } from "./internal";
+import {
+  DefaultObject,
+  ObjectSchema,
+  Realm,
+  RealmObject,
+  RealmObjectConstructor,
+  SyncConfiguration,
+  assert,
+} from "./internal";
 
 // export type Configuration = ConfigurationWithSync | ConfigurationWithoutSync;
 export type Configuration = BaseConfiguration;
@@ -32,7 +40,7 @@ type BaseConfiguration = {
   inMemory?: boolean;
   readOnly?: boolean;
   fifoFilesFallbackPath?: string;
-  sync?: unknown;
+  sync?: SyncConfiguration;
   shouldCompact?: (totalBytes: number, usedBytes: number) => boolean;
   deleteRealmIfMigrationNeeded?: boolean;
   disableFormatUpgrade?: boolean;
