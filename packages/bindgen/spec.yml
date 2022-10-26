@@ -477,6 +477,7 @@ classes:
       make_network_transport: '(runRequest: (request: const Request&, callback: util::UniqueFunction<(response: Response&&)>&&) off_thread) -> std::shared_ptr<GenericNetworkTransport>'
       delete_data_for_object: '(realm: SharedRealm, object_type: StringData)'
       is_empty_realm: '(realm: SharedRealm) -> bool'
+      base64_decode: '(input: StringData) -> BinaryData'
 
   ConstTableRef:
     needsDeref: true
