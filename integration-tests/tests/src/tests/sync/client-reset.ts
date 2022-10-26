@@ -282,7 +282,7 @@ function getSchema(useFlexibleSync: boolean) {
     environment.missingServer,
     `client reset handling (${getPartialTestTitle(useFlexibleSync)} sync)`,
     function () {
-      this.timeout(50 * 1000); // client reset with flexible sync can take quite some time
+      this.timeout(100 * 1000); // client reset with flexible sync can take quite some time
       importAppBefore(useFlexibleSync ? "with-db-flx" : "with-db");
       authenticateUserBefore();
 
