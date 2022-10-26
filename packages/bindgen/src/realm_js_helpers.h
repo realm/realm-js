@@ -1,5 +1,7 @@
+#include "realm/binary_data.hpp"
 #include "realm/object-store/object_store.hpp"
 #include "realm/query.hpp"
+#include "realm/util/base64.hpp"
 #include <condition_variable>
 #include <exception>
 #include <iostream>
@@ -160,6 +162,18 @@ struct Helpers {
 
     static bool is_empty_realm(const SharedRealm& realm) {
         return ObjectStore::is_empty(realm->read_group());
+    }
+
+    static OwnedBinaryData base64_decode(StringData input) {
+        size_t max_size = util::base64_decoded_size(input.size());
+        std::unique_ptr<char[]> data(new char[max_size]);
+        if (auto size = util::base64_decode(input, data.get(), max_size)) {
+            OwnedBinaryData result(std::move(data), *size);
+            return result;
+        }
+        else {
+            throw std::runtime_error("Attempting to decode binary data from a string that is not valid base64");
+        }
     }
 };
 
