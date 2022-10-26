@@ -19,7 +19,18 @@ import { strict as assert } from "assert";
 
 import { TemplateContext } from "../context";
 import { CppVar, CppFunc, CppFuncProps, CppCtor, CppMethod, CppClass, CppDecls } from "../cpp";
-import { bindModel, BoundSpec, Class, InstanceMethod, StaticMethod, Property, Type, Primitive, Pointer } from "../bound-model";
+import {
+  bindModel,
+  BoundSpec,
+  Class,
+  InstanceMethod,
+  StaticMethod,
+  Property,
+  Type,
+  Primitive,
+  Pointer,
+  Template,
+} from "../bound-model";
 
 import { doJsPasses } from "../js-passes";
 
@@ -217,6 +228,7 @@ function toCpp(type: Type): string {
         EJson: "std::string",
         EJsonObj: "std::string",
         EJsonArray: "std::string",
+        QueryArg: "mpark::variant<Mixed, std::vector<Mixed>>",
       };
       return primitiveMap[type.name] ?? type.name;
 
@@ -272,8 +284,12 @@ function convertPrimToNode(addon: NodeAddon, type: string, expr: string): string
                 memcpy(arr.Data(), bd.data(), bd.size());
                 return arr;
             }(${expr}))`;
+
     case "Mixed":
       return `NODE_FROM_Mixed(${env}, ${expr})`;
+    case "QueryArg":
+      // We _could_ support this, but no reason to.
+      throw Error("QueryArg should only be used for conversion to C++");
 
     case "ObjectId":
     case "UUID":
@@ -355,6 +371,17 @@ function convertPrimFromNode(addon: NodeAddon, type: string, expr: string): stri
 
     case "Mixed":
       return `NODE_TO_Mixed(${env}, ${expr})`;
+    case "QueryArg": {
+      const mixed = new Primitive("Mixed");
+      return `
+        ([&] (const Napi::Value& v) -> ${toCpp(new Primitive(type))} {
+            if (v.IsArray()) {
+                return ${convertFromNode(addon, new Template("std::vector", [mixed]), "v")};
+            } else {
+                return ${convertFromNode(addon, mixed, "v")};
+            }
+        })(${expr})`;
+    }
 
     case "UUID":
     case "Decimal128":
