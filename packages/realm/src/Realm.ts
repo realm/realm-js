@@ -16,12 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { ObjKey } from "./binding";
 import {
   App,
   BSON,
   CanonicalObjectSchema,
-  CanonicalRealmSchema,
   ClassHelpers,
   ClassMap,
   Collection,
@@ -34,6 +32,7 @@ import {
   MigrationCallback,
   ObjectSchema,
   OrderedCollection,
+  ProgressRealmPromise,
   RealmEventName,
   RealmInsertionModel,
   RealmListenerCallback,
@@ -42,6 +41,7 @@ import {
   RealmObjectConstructor,
   RealmSet,
   Results,
+  SyncConfiguration,
   SyncSession,
   Types,
   UpdateMode,
@@ -57,6 +57,8 @@ import {
   validateObjectSchema,
   validateRealmSchema,
 } from "./internal";
+
+import { EJSON } from "bson";
 
 type RealmSchemaExtra = Record<string, ObjectSchemaExtra | undefined>;
 
@@ -126,13 +128,10 @@ export class Realm {
     return fs.exists(path);
   }
 
-  public static async open(arg: Configuration | string = {}) {
+  public static open(arg: Configuration | string = {}): ProgressRealmPromise {
     const config = typeof arg === "string" ? { path: arg } : arg;
     validateConfiguration(config);
-    if (!config.sync) {
-      return new Realm(config);
-    }
-    throw new Error("Not yet supported");
+    return new ProgressRealmPromise(config);
   }
 
   /**
@@ -249,34 +248,50 @@ export class Realm {
     );
   }
 
-  private static transformConfig(
-    config: Configuration,
-    normalizedSchema: CanonicalRealmSchema | undefined,
-    schemaExtras: RealmSchemaExtra = {},
-  ): binding.RealmConfig_Relaxed {
+  /** @internal */
+  public static transformConfig(config: Configuration): {
+    schemaExtras: RealmSchemaExtra;
+    bindingConfig: binding.RealmConfig_Relaxed;
+  } {
+    const normalizedSchema = config.schema && normalizeRealmSchema(config.schema);
+    const schemaExtras = Realm.extractSchemaExtras(normalizedSchema || []);
     const path = Realm.determinePath(config);
     const { fifoFilesFallbackPath, shouldCompact, inMemory } = config;
     const bindingSchema = normalizedSchema && toBindingSchema(normalizedSchema);
     return {
-      path,
-      cache: true,
-      fifoFilesFallbackPath,
-      schema: bindingSchema,
-      inMemory: inMemory === true,
-      schemaMode: Realm.determineSchemaMode(config),
-      schemaVersion: config.schema
-        ? typeof config.schemaVersion === "number"
-          ? BigInt(config.schemaVersion)
-          : 0n
-        : undefined,
-      migrationFunction: config.onMigration ? Realm.wrapMigration(schemaExtras, config.onMigration) : undefined,
-      shouldCompactOnLaunchFunction: shouldCompact
-        ? (totalBytes, usedBytes) => {
-            return shouldCompact(Number(totalBytes), Number(usedBytes));
-          }
-        : undefined,
-      disableFormatUpgrade: config.disableFormatUpgrade,
-      encryptionKey: Realm.determineEncryptionKey(config.encryptionKey),
+      schemaExtras,
+      bindingConfig: {
+        path,
+        cache: true,
+        fifoFilesFallbackPath,
+        schema: bindingSchema,
+        inMemory: inMemory === true,
+        schemaMode: Realm.determineSchemaMode(config),
+        schemaVersion: config.schema
+          ? typeof config.schemaVersion === "number"
+            ? BigInt(config.schemaVersion)
+            : 0n
+          : undefined,
+        migrationFunction: config.onMigration ? Realm.wrapMigration(schemaExtras, config.onMigration) : undefined,
+        shouldCompactOnLaunchFunction: shouldCompact
+          ? (totalBytes, usedBytes) => {
+              return shouldCompact(Number(totalBytes), Number(usedBytes));
+            }
+          : undefined,
+        disableFormatUpgrade: config.disableFormatUpgrade,
+        encryptionKey: Realm.determineEncryptionKey(config.encryptionKey),
+        syncConfig: config.sync ? Realm.transformSyncConfig(config.sync) : undefined,
+      },
+    };
+  }
+
+  private static transformSyncConfig(config: SyncConfiguration): binding.SyncConfig_Relaxed {
+    if (config.flexible) {
+      throw new Error("Flexible sync has not been implemented yet");
+    }
+    return {
+      user: config.user.internal,
+      partitionValue: EJSON.stringify(config.partitionValue as EJSON.SerializableTypes),
     };
   }
 
@@ -339,10 +354,9 @@ export class Realm {
     } else {
       const config = typeof arg === "string" ? { path: arg } : arg;
       validateConfiguration(config);
-      const normalizedSchema = config.schema && normalizeRealmSchema(config.schema);
-      this.schemaExtras = Realm.extractSchemaExtras(normalizedSchema || []);
-      const internalConfig = Realm.transformConfig(config, normalizedSchema, this.schemaExtras);
-      this.internal = binding.Realm.getSharedRealm(internalConfig);
+      const { bindingConfig, schemaExtras } = Realm.transformConfig(config);
+      this.schemaExtras = schemaExtras;
+      this.internal = binding.Realm.getSharedRealm(bindingConfig);
 
       binding.Helpers.setBindingContext(this.internal, {
         didChange: (r: binding.Realm) => {
@@ -673,9 +687,8 @@ export class Realm {
   writeCopyTo(config: Configuration) {
     assert.outTransaction(this, "Can only convert Realms outside a transaction.");
     validateConfiguration(config);
-    const normalizedSchema = config.schema && normalizeRealmSchema(config.schema);
-    const internalConfig = Realm.transformConfig(config, normalizedSchema);
-    this.internal.convert(internalConfig);
+    const { bindingConfig } = Realm.transformConfig(config);
+    this.internal.convert(bindingConfig);
   }
 
   _updateSchema(schema: Realm.ObjectSchema[]): void {
