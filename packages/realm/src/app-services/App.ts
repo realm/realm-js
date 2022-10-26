@@ -47,6 +47,8 @@ function getBindingLogLevel(arg: LogLevel): binding.LoggerLevel {
   return level as number as binding.LoggerLevel;
 }
 
+export type Logger = (level: NumericLogLevel, message: string) => void;
+
 export class App {
   private static PLATFORM = "Unknown";
   private static PLATFORM_VERSION = "0.0.0";
@@ -57,6 +59,9 @@ export class App {
     setLogLevel(app: App, level: LogLevel) {
       const numericLevel = getBindingLogLevel(level);
       app.internal.syncManager.setLogLevel(numericLevel);
+    },
+    setLogger(app: App, level: Logger) {
+      // TODO: Call the sync manager ...
     },
   };
 
