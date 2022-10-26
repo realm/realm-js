@@ -157,7 +157,7 @@ for (const obj of table) {
 
 console.log("---");
 const kpMapping = Helpers.getKeypathMapping(realm);
-const query = table.query("num = $0", [9876n], kpMapping);
+const query = table.query("num = $0", [[9876n]], kpMapping);
 console.log(query.count());
 const results = Helpers.resultsFromQuery(realm, query);
 {
