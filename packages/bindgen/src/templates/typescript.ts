@@ -47,6 +47,7 @@ const PRIMITIVES_MAPPING: Record<string, string> = {
   EJsonObj: "Record<string, EJson>",
   "bson::BsonDocument": "Record<string, EJson>",
   "bson::BsonArray": "EJson[]",
+  QueryArg: "(MixedArg | MixedArg[])",
 };
 
 // Be Careful! These need to apply to the *whole* type, so arg[] would be problematic if arg is A|B.
