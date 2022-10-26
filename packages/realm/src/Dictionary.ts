@@ -241,7 +241,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
 
   /**
    * @returns A plain object for JSON serialization.
-   **/
+   */
   // @ts-expect-error We're exposing methods in the users value namespace
   toJSON(_?: string, cache?: unknown): DefaultObject;
   /** @internal */
