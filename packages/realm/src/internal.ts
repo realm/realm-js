@@ -34,6 +34,8 @@ export * from "./ranges";
 export * from "./Listeners";
 /** @internal */
 export * from "./JSONCacheMap";
+/** @internal */
+export * from "./PromiseHandle";
 
 /** @internal */
 export * from "./PropertyHelpers";
@@ -58,6 +60,7 @@ export * from "./Dictionary";
 
 export * from "./Types";
 
+export * from "./app-services/SyncConfiguration";
 export * from "./app-services/App";
 export * from "./app-services/Credentials";
 export * from "./app-services/User";
@@ -71,6 +74,7 @@ export * from "./app-services/UserProfile";
 export * from "./Realm";
 export * from "./RealmListeners";
 export * from "./Configuration";
+export * from "./ProgressRealmPromise";
 
 export * from "./InsertionModel";
 export * from "./schema";
