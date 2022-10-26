@@ -16,6 +16,7 @@
 *.realm.fresh.lock
 *.realm.note
 *.management/
+*.realm.backup-log
 
 vendor/realm-*
 !vendor/realm-core
