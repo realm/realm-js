@@ -42,6 +42,7 @@ import {
   RealmSet,
   Results,
   SyncSession,
+  Types,
   UpdateMode,
   assert,
   binding,
@@ -79,6 +80,7 @@ export class Realm {
   public static App = App;
   public static UpdateMode = UpdateMode;
   public static BSON = BSON;
+  public static Types = Types;
 
   public static defaultPath = Realm.normalizePath("default.realm");
 
@@ -687,6 +689,7 @@ type AppType = App;
 type UpdateModeType = UpdateMode;
 type ObjectSchemaType = ObjectSchema;
 type BSONType = typeof BSON;
+type TypesType = typeof Types;
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Realm {
@@ -701,10 +704,6 @@ export namespace Realm {
   export type UpdateMode = UpdateModeType;
   export type ObjectSchema = ObjectSchemaType;
   export type Mixed = unknown;
-  // eslint-disable-next-line @typescript-eslint/no-namespace
-  export namespace BSON {
-    export type ObjectId = InstanceType<BSONType["ObjectId"]>;
-    export type Decimal128 = InstanceType<BSONType["Decimal128"]>;
-    export type UUID = InstanceType<BSONType["UUID"]>;
-  }
+  export type BSON = BSONType;
+  export type Types = TypesType;
 }
