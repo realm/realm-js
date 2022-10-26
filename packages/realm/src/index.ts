@@ -30,6 +30,7 @@ export {
   Results,
   UpdateMode,
   User,
+  Types,
   flags,
 } from "./internal";
 
