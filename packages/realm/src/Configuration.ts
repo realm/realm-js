@@ -33,11 +33,11 @@ type BaseConfiguration = {
   readOnly?: boolean;
   fifoFilesFallbackPath?: string;
   sync?: unknown;
-  shouldCompactOnLaunch?: (totalBytes: number, usedBytes: number) => boolean;
+  shouldCompact?: (totalBytes: number, usedBytes: number) => boolean;
   deleteRealmIfMigrationNeeded?: boolean;
   disableFormatUpgrade?: boolean;
   encryptionKey?: ArrayBuffer | ArrayBufferView | Int8Array;
-  migration?: MigrationCallback;
+  onMigration?: MigrationCallback;
 };
 
 // type ConfigurationWithSync = BaseConfiguration & {
