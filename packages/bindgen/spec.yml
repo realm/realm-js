@@ -47,6 +47,7 @@ primitives:
   - AppError
   - std::exception_ptr
   - std::error_code
+  - QueryArg # variant<Mixed, vector<Mixed>> (don't want to support arbitrary variants as a template, because we need logic to distinguish the cases)
 
   # These are all strings in C++, but parsed/serialized EJSON in the binding.
   - EJson
@@ -573,7 +574,7 @@ classes:
       get_link_target: '(column: ColKey) const -> ConstTableRef'
       get_object: '(key: ObjKey) const -> Obj'
       try_get_object: '(key: ObjKey) const -> Obj'
-      query: '(query_string: std::string, args: std::vector<Mixed>, mapping: KeyPathMapping) const -> Query'
+      query: '(query_string: std::string, args: std::vector<QueryArg>, mapping: KeyPathMapping) const -> Query'
       find_primary_key: '(pk: Mixed) -> ObjKey'
 
   TableRef:
