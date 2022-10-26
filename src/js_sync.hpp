@@ -187,6 +187,11 @@ public:
         : m_ctx(Context<T>::get_global_context(ctx))
         , m_func(ctx, after_func)
     {
+#if defined(REALM_PLATFORM_NODE)
+        // Suppressing destruct prevents a crash when closing an Electron app with a
+        // custom client reset handler: https://github.com/realm/realm-js/issues/4150
+        m_func.SuppressDestruct();
+#endif
     }
 
     typename T::Function func() const
@@ -209,7 +214,7 @@ public:
 
 private:
     const Protected<typename T::GlobalContext> m_ctx;
-    const Protected<typename T::Function> m_func;
+    Protected<typename T::Function> m_func;
 };
 
 
@@ -222,6 +227,12 @@ public:
         , m_func(ctx, after_func)
         , m_discard_func(ctx, discard_func)
     {
+#if defined(REALM_PLATFORM_NODE)
+        // Suppressing destruct prevents a crash when closing an Electron app with a
+        // custom client reset handlers: https://github.com/realm/realm-js/issues/4150
+        m_func.SuppressDestruct();
+        m_discard_func.SuppressDestruct();
+#endif
     }
 
     typename T::Function func() const
@@ -252,8 +263,8 @@ public:
 
 private:
     const Protected<typename T::GlobalContext> m_ctx;
-    const Protected<typename T::Function> m_func;
-    const Protected<typename T::Function> m_discard_func;
+    Protected<typename T::Function> m_func;
+    Protected<typename T::Function> m_discard_func;
 };
 
 template <typename T>
@@ -263,6 +274,11 @@ public:
         : m_ctx(Context<T>::get_global_context(ctx))
         , m_func(ctx, before_func)
     {
+#if defined(REALM_PLATFORM_NODE)
+        // Suppressing destruct prevents a crash when closing an Electron app with a
+        // custom client reset handler: https://github.com/realm/realm-js/issues/4150
+        m_func.SuppressDestruct();
+#endif
     }
 
     typename T::Function func() const
@@ -283,7 +299,7 @@ public:
 
 private:
     const Protected<typename T::GlobalContext> m_ctx;
-    const Protected<typename T::Function> m_func;
+    Protected<typename T::Function> m_func;
 };
 
 template <typename T>
@@ -305,7 +321,7 @@ public:
     {
 #if defined(REALM_PLATFORM_NODE)
         // Suppressing destruct prevents a crash when closing an Electron app with a
-        // custom sync error handler: https://github.com/realm/realm-js/issues/4150
+        // custom client reset handler handler: https://github.com/realm/realm-js/issues/4150
         m_client_reset_func.SuppressDestruct();
 #endif
     }
