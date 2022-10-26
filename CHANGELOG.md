@@ -3,10 +3,13 @@
 ### Enhancements
 * Add support for using functions as default property values, in order to allow dynamic defaults [#5001](https://github.com/realm/realm-js/pull/5001), [#2393](https://github.com/realm/realm-js/issues/2393)
 * All fields of a `Realm.Object` treated as optional by TypeScript when constructing a new class-based model, unless specified in the second type parameter [#5000](https://github.com/realm/realm-js/pull/5000)
+* Improve performance of client reset with automatic recovery and converting top-level tables into embedded tables. ([realm/realm-core#5897](https://github.com/realm/realm-core/pull/5897))
+* If a sync client sends a message larger than 16 MB, the sync server will request a client reset. ([realm/realm-core#5209](https://github.com/realm/realm-core/issues/5209))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fixed a use-after-free if the last external reference to an encrypted Realm was closed between when a client reset error was received and when the download of the new Realm began. ([realm/realm-core#5949](https://github.com/realm/realm-core/pull/5949), since v10.20.0)
+* Opening an unencrypted file with an encryption key would sometimes report a misleading error message that indicated that the problem was something other than a decryption failure. ([realm/realm-core#5915](https://github.com/realm/realm-core/pull/5915), since v1.0.0)
+* Fixed a rare deadlock which could occur when closing a synchronized Realm immediately after committing a write transaction when the sync worker thread has also just finished processing a changeset from the sync server. ([realm/realm-core#5948](https://github.com/realm/realm-core/pull/5948))
 
 ### Compatibility
 * React Native >= v0.70.0
@@ -15,9 +18,7 @@
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v12.9.0 to v12.11.0.
 
 ## 11.0.0 (2022-10-18)
 
