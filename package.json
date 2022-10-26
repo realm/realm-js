@@ -113,6 +113,7 @@
   "workspaces": [
     "packages/bindgen",
     "packages/realm",
+    "packages/realm-app-importer",
     "integration-tests/tests"
   ],
   "devDependencies": {

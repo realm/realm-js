@@ -10,7 +10,8 @@
 			"yargs"
 		],
 		"lib": [
-			"es2019"
+			"es2019",
+			"dom"
 		]
 	},
 	"include": [
