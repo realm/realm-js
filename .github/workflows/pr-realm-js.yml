@@ -1,4 +1,4 @@
-name: pr-realm-js
+name: Pull request build and test
 on:
   push:
     branches:
@@ -9,6 +9,8 @@ jobs:
   build:
     name: Build for ${{ matrix.variant.os }} ${{ matrix.variant.arch }}
     runs-on: ${{ matrix.variant.runner }}
+    # if container is not set for a variant, this is a noop
+    container: ${{ matrix.variant.container }}
     env:
       REALM_DISABLE_ANALYTICS: 1
       NDK_VERSION: 21.0.6113669
@@ -16,7 +18,8 @@ jobs:
       fail-fast: false
       matrix:
         variant:
-          - { os: linux, runner: ubuntu-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
+          - { os: linux, runner: ubuntu-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true, container: "ghcr.io/${{ github.repository }}/linux-x64:master" }
+          - { os: linux, runner: ubuntu-latest, arch: arm64, artifact-path: prebuilds, container: "ghcr.io/${{ github.repository }}/linux-arm:master" }
           - { os: windows, runner: windows-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
           - { os: windows, runner: windows-2019, arch: ia32, artifact-path: prebuilds }
           - { os: android, runner: ubuntu-latest, arch: x86_64, artifact-path: react-native/android/src/main/jniLibs }
@@ -87,7 +90,7 @@ jobs:
       # On linux, electron requires a connected display.  We fake this by giving it a headless environment using xvfb
       # Relevant issue: https://github.com/juliangruber/browser-run/issues/147
       - name: Linux Environment setup
-        if: ${{ (matrix.variant.runner == 'ubuntu-latest') }}
+        if: ${{ (matrix.variant.runner == 'ubuntu-latest') && (matrix.variant.container == '') }}
         run: sudo apt-get install ccache ninja-build
 
       - name: Setup Java
@@ -120,9 +123,7 @@ jobs:
 
       - name: Configure ccache
         if: ${{ runner.os != 'Windows' }}
-        run: |
-          ccache --set-config="compiler_check=content"
-          ccache --show-config
+        run: ccache --set-config="compiler_check=content"
 
       - name: Install dependencies
         # Ignoring scripts to prevent a prebuilt from getting fetched / built
