@@ -425,8 +425,9 @@ export class Realm {
     return this.internal.isClosed;
   }
 
-  get syncSession(): SyncSession {
-    return SyncSession.get(this.internal.syncSession);
+  get syncSession(): SyncSession | null {
+    const { syncSession } = this.internal;
+    return syncSession ? SyncSession.get(syncSession) : null;
   }
 
   get subscriptions(): any {
