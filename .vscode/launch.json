@@ -135,7 +135,7 @@
             },
             "args": [
                 "--expose_gc",
-                "node_modules/mocha/bin/mocha",
+                "node_modules/mocha/lib/cli/cli.js",
                 "--require",
                 "ts-node/register/transpile-only",
                 "--require",
