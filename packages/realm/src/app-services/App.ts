@@ -102,8 +102,9 @@ export class App {
     return new EmailPasswordAuthClient(internal);
   }
 
-  public get currentUser(): User {
-    return User.get(this, this.internal.currentUser);
+  public get currentUser(): User | null {
+    const currentUser = this.internal.currentUser;
+    return currentUser ? User.get(this, currentUser) : null;
   }
 
   public get allUsers(): User[] {
