@@ -25,6 +25,7 @@ import {
   Collection,
   Configuration,
   Constructor,
+  Credentials,
   DefaultObject,
   Dictionary,
   INTERNAL,
@@ -41,7 +42,6 @@ import {
   RealmObjectConstructor,
   RealmSet,
   Results,
-  SyncConfiguration,
   SyncSession,
   Types,
   UpdateMode,
@@ -83,6 +83,7 @@ export class Realm {
   public static UpdateMode = UpdateMode;
   public static BSON = BSON;
   public static Types = Types;
+  public static Credentials = Credentials;
 
   public static defaultPath = Realm.normalizePath("default.realm");
 
@@ -129,7 +130,6 @@ export class Realm {
 
   public static open(arg: Configuration | string = {}): ProgressRealmPromise {
     const config = typeof arg === "string" ? { path: arg } : arg;
-    validateConfiguration(config);
     return new ProgressRealmPromise(config);
   }
 
@@ -348,15 +348,15 @@ export class Realm {
       this.internal = binding.Realm.getSharedRealm(bindingConfig);
 
       binding.Helpers.setBindingContext(this.internal, {
-        didChange: (r: binding.Realm) => {
+        didChange: (r) => {
           r.verifyOpen();
           this.changeListeners.callback();
         },
-        schemaDidChange: (r: binding.Realm) => {
+        schemaDidChange: (r) => {
           r.verifyOpen();
           this.schemaListeners.callback();
         },
-        beforeNotify: (r: binding.Realm) => {
+        beforeNotify: (r) => {
           r.verifyOpen();
           this.beforeNotifyListeners.callback();
         },
@@ -716,6 +716,7 @@ type UpdateModeType = UpdateMode;
 type ObjectSchemaType = ObjectSchema;
 type BSONType = typeof BSON;
 type TypesType = typeof Types;
+type CredentialsType = typeof Credentials;
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Realm {
@@ -732,4 +733,5 @@ export namespace Realm {
   export type Mixed = unknown;
   export type BSON = BSONType;
   export type Types = TypesType;
+  export type Credentials = CredentialsType;
 }

@@ -21,13 +21,14 @@ import { assert } from "./internal";
 type ResolveType<T> = (value: T | PromiseLike<T>) => void;
 type RejectType<T = unknown> = (reason?: T) => void;
 
-export class PromiseHandle<T> {
+export class PromiseHandle<T> extends Promise<T> {
+  /** @internal */
   resolve!: ResolveType<T>;
+  /** @internal */
   reject!: RejectType;
-  promise: Promise<T>;
 
   constructor() {
-    this.promise = new Promise<T>((arg0, arg1) => {
+    super((arg0, arg1) => {
       this.resolve = arg0;
       this.reject = arg1;
     });
