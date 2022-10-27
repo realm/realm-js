@@ -46,7 +46,11 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
           if (error) {
             reject(error);
           } else if (cbargs.length == 2) {
-            resolve(cbargs[0]);
+            const result = cbargs[0];
+            if (result === null || result === undefined) {
+              throw new Error("Unexpected null or undefined successful result");
+            }
+            resolve(result);
           } else {
             resolve();
           }
