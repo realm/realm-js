@@ -667,7 +667,7 @@ classes:
 
       audit_context: AuditInterface*
 
-      sync_session: SharedSyncSession
+      sync_session: Nullable<SharedSyncSession>
       get_latest_subscription_set: SyncSubscriptionSet
       get_active_subscription_set: SyncSubscriptionSet
 
@@ -919,7 +919,7 @@ classes:
     properties:
       config: const AppConfig&
       base_url: const std::string&
-      current_user: SharedSyncUser
+      current_user: Nullable<SharedSyncUser>
       all_users: std::vector<SharedSyncUser>
       sync_manager: SharedSyncManager
     staticMethods:
@@ -930,13 +930,13 @@ classes:
       close_all_sync_sessions: ()
 
     methods:
-      log_in_with_credentials: '(credentials: AppCredentials, cb: AsyncCallback<(user: const SharedSyncUser&, err: util::Optional<AppError>)>&&)'
+      log_in_with_credentials: '(credentials: AppCredentials, cb: AsyncCallback<(user: const Nullable<SharedSyncUser>&, err: util::Optional<AppError>)>&&)'
       log_out:
         - '(cb: AsyncCallback<(err: util::Optional<AppError>)>&&)'
         - sig: '(user: SharedSyncUser, cb: AsyncCallback<(err: util::Optional<AppError>)>&&)'
           suffix: user
       refresh_custom_data: '(user: SharedSyncUser, cb: AsyncCallback<(err: util::Optional<AppError>)>&&)'
-      link_user: '(user: SharedSyncUser, credentials: const AppCredentials&, cb: AsyncCallback<(user: const SharedSyncUser&, err: util::Optional<AppError>)>&&)'
+      link_user: '(user: SharedSyncUser, credentials: const AppCredentials&, cb: AsyncCallback<(user: const Nullable<SharedSyncUser>&, err: util::Optional<AppError>)>&&)'
       switch_user: '(user: SharedSyncUser)'
       remove_user: '(user: SharedSyncUser, cb: AsyncCallback<(err: util::Optional<AppError>)>&&)'
       delete_user: '(user: SharedSyncUser, cb: AsyncCallback<(err: util::Optional<AppError>)>&&)'
