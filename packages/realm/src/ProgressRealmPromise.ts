@@ -16,49 +16,69 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Configuration, PromiseHandle, Realm, assert, binding } from "./internal";
+import { Configuration, Realm, binding, validateConfiguration } from "./internal";
 
-export class ProgressRealmPromise implements Promise<Realm> {
+export type ProgressNotificationCallback = (transferred: number, transferable: number) => void;
+
+export class ProgressRealmPromise extends Promise<Realm> {
   private task: binding.AsyncOpenTask | null = null;
   /** @internal */
-  private handle: PromiseHandle<Realm>;
+  private listeners = new Set<ProgressNotificationCallback>();
 
   /** @internal */
   constructor(config: Configuration) {
-    if (config.sync) {
-      const { bindingConfig } = Realm.transformConfig(config);
-      this.task = binding.Realm.getSynchronizedRealm(bindingConfig);
-      this.handle = new PromiseHandle();
-      this.task.start((realmInternal) => {
-        try {
+    super((resolve, reject) => {
+      try {
+        validateConfiguration(config);
+        if (!config.sync) {
           const realm = new Realm(config);
-          assert(
-            realm.internal.$addr === (realmInternal as binding.Realm).$addr,
-            "Expected the thread safe reference to pointing to the same Realm",
-          );
-          this.handle.resolve(realm);
-        } catch (err) {
-          this.handle.reject(err);
+          resolve(realm);
         }
-      });
-    } else {
-      this.handle = new PromiseHandle();
-      const realm = new Realm(config);
-      this.handle.resolve(realm);
+        const { bindingConfig } = Realm.transformConfig(config);
+        this.task = binding.Realm.getSynchronizedRealm(bindingConfig);
+        this.task.start((ref, err) => {
+          // This callback is passed a `ThreadSafeReference` which can (except not easily) be resolved to a Realm
+          // We could consider comparing that to the Realm we create below,
+          // since the coordinator should ensure they're pointing to the same underlying Realm.
+          if (err) {
+            reject(err);
+          }
+          try {
+            const realm = new Realm(config);
+            resolve(realm);
+          } catch (err) {
+            reject(err);
+          }
+        });
+        // TODO: Consider storing the token returned here to unregister when the task gets cancelled,
+        // if for some reason, that doesn't happen internally
+        this.task.registerDownloadProgressNotifier(this.emitProgress);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+
+  cancel(): void {
+    this.task?.cancel();
+    // Clearing all listeners to avoid accidental progress notifications
+    this.listeners.clear();
+  }
+
+  progress(callback: ProgressNotificationCallback): this {
+    this.listeners.add(callback);
+    return this;
+  }
+
+  private emitProgress = (transferredArg: bigint, transferableArg: bigint) => {
+    const transferred = Number(transferredArg);
+    const transferable = Number(transferableArg);
+    for (const listener of this.listeners) {
+      listener(transferred, transferable);
     }
-  }
+  };
 
-  get then() {
-    return this.handle.promise.then.bind(this.handle.promise);
+  static get [Symbol.species]() {
+    return Promise;
   }
-
-  get catch() {
-    return this.handle.promise.catch.bind(this.handle.promise);
-  }
-
-  get finally() {
-    return this.handle.promise.finally.bind(this.handle.promise);
-  }
-
-  [Symbol.toStringTag] = ProgressRealmPromise.name;
 }

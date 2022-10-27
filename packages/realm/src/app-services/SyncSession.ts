@@ -18,22 +18,14 @@
 
 import { binding } from "../internal";
 
-const cache = new WeakMap<binding.SyncSession, SyncSession>();
-
 export class SyncSession {
   /** @internal */
   public internal: binding.SyncSession;
 
   /** @internal */
   public static get(internal: binding.SyncSession) {
-    const result = cache.get(internal);
-    if (result) {
-      return result;
-    } else {
-      const result = new SyncSession(internal);
-      cache.set(internal, result);
-      return result;
-    }
+    // TODO: Use a WeakRef to memoize the SDK object
+    return new SyncSession(internal);
   }
 
   /** @internal */
@@ -58,8 +50,29 @@ export class SyncSession {
 
   resume(): void;
   pause(): void;
-
-  downloadAllServerChanges(timeoutMs?: number): Promise<void>;
-  uploadAllLocalChanges(timeoutMs?: number): Promise<void>;
   */
+
+  async downloadAllServerChanges(timeoutMs?: number) {
+    return new Promise<void>((resolve, reject) => {
+      this.internal.waitForDownloadCompletion((err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
+  }
+
+  async uploadAllLocalChanges(timeoutMs?: number) {
+    return new Promise<void>((resolve, reject) => {
+      this.internal.waitForUploadCompletion((err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
+  }
 }
