@@ -154,7 +154,7 @@ export class Func extends TypeBase {
     let res: Type = voidType;
     if (cb.args.length == 2) {
       res = cb.args[0].type.removeConstRef();
-      if (res.isOptional()) {
+      if (res.isOptional() || res.isTemplate("Nullable")) {
         res = res.args[0];
       }
     }
