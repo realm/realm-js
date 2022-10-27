@@ -784,6 +784,10 @@ class NodeCppDecls extends CppDecls {
         }),
       );
 
+      const nullCheck = cls.sharedPtrWrapped
+        ? 'REALM_ASSERT(bool(val) && "Must mark nullable pointers with Nullable<> in spec");'
+        : "";
+
       if (!cls.abstract) {
         this.free_funcs.push(
           new CppFunc(
@@ -795,6 +799,7 @@ class NodeCppDecls extends CppDecls {
               // Note: the External::New constructor taking a finalizer does an extra heap allocation for the finalizer.
               // We can look into bypassing that if it is a problem.
               body: `
+                ${nullCheck}
                 return ${this.addon.accessCtor(cls)}.New({Napi::External<${baseType}>::New(
                   ${env},
                   new auto(std::move(val)),
