@@ -16,7 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { User } from "../internal";
+import { EJSON } from "bson";
+
+import { User, binding } from "../internal";
 
 export type BaseSyncConfiguration = {
   user: User;
@@ -33,3 +35,14 @@ export type PartitionSyncConfiguration = BaseSyncConfiguration & {
 };
 
 export type SyncConfiguration = FlexibleSyncConfiguration | PartitionSyncConfiguration;
+
+/** @internal */
+export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConfig_Relaxed {
+  if (config.flexible) {
+    throw new Error("Flexible sync has not been implemented yet");
+  }
+  return {
+    user: config.user.internal,
+    partitionValue: EJSON.stringify(config.partitionValue as EJSON.SerializableTypes),
+  };
+}

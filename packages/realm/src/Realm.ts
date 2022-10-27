@@ -53,12 +53,11 @@ import {
   normalizeRealmSchema,
   toArrayBuffer,
   toBindingSchema,
+  toBindingSyncConfig,
   validateConfiguration,
   validateObjectSchema,
   validateRealmSchema,
 } from "./internal";
-
-import { EJSON } from "bson";
 
 type RealmSchemaExtra = Record<string, ObjectSchemaExtra | undefined>;
 
@@ -280,18 +279,8 @@ export class Realm {
           : undefined,
         disableFormatUpgrade: config.disableFormatUpgrade,
         encryptionKey: Realm.determineEncryptionKey(config.encryptionKey),
-        syncConfig: config.sync ? Realm.transformSyncConfig(config.sync) : undefined,
+        syncConfig: config.sync ? toBindingSyncConfig(config.sync) : undefined,
       },
-    };
-  }
-
-  private static transformSyncConfig(config: SyncConfiguration): binding.SyncConfig_Relaxed {
-    if (config.flexible) {
-      throw new Error("Flexible sync has not been implemented yet");
-    }
-    return {
-      user: config.user.internal,
-      partitionValue: EJSON.stringify(config.partitionValue as EJSON.SerializableTypes),
     };
   }
 
