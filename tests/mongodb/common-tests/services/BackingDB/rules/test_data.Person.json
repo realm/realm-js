@@ -1,7 +1,6 @@
 {
     "collection": "Person",
     "database": "test_data",
-    "id": "6079296ee2cbbda01842813d",
     "relationships": {
         "dogs": {
             "ref": "#/relationship/BackingDB/test_data/Dog",
