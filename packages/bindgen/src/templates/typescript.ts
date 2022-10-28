@@ -39,7 +39,7 @@ const PRIMITIVES_MAPPING: Record<string, string> = {
   ObjectId: "ObjectId",
   UUID: "UUID",
   Decimal128: "Decimal128",
-  AppError: "(Error & {code: number})",
+  AppError: "AppError",
   "std::exception_ptr": "Error",
   "std::error_code": "CppErrorCode",
 };
@@ -163,7 +163,8 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
   out('export * from "./core";');
 
   out("// Utilities");
-  out("type CppErrorCode = {code: number, message: string, category: string};");
+  out("export type AppError = Error & {code: number};");
+  out("export type CppErrorCode = Error & {code: number, category: string};");
 
   out("// Mixed types");
   out(generateMixedTypes(spec));
