@@ -16,26 +16,34 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-declare type Timer = number;
+import { TimeoutError } from "./errors";
 
-declare function setImmediate<Args extends unknown[]>(callback: (...args: Args) => void, ...args: Args): Timer;
-declare function clearImmediate(timer: Timer): void;
-declare function setTimeout<Args extends unknown[]>(
-  callback: (...args: Args) => void,
-  delay?: number,
-  ...args: Args
-): Timer;
-declare function clearTimeout(timer: Timer): void;
+export type TimeoutPromiseOptions = {
+  ms: number;
+  message?: string;
+};
 
-declare interface Console {
-  log(...args: unknown[]): void;
-}
+export class TimeoutPromise<T> extends Promise<T> {
+  private timer: Timer | undefined;
 
-declare const console: Console;
+  constructor(inner: Promise<T>, ms?: number, message = `Waited ${ms}ms`) {
+    super((resolve, reject) => {
+      if (typeof ms === "number") {
+        this.timer = setTimeout(() => {
+          const err = new TimeoutError(message);
+          reject(err);
+        }, ms);
+      }
+      inner.then(resolve, reject).finally(() => {
+        this.cancel();
+      });
+    });
+  }
 
-/**
- * We don't wont our cross platform SDK to rely on a Node.js type, so we're declaring it ourselves.
- */
-declare module "buffer" {
-  type Buffer = Uint8Array;
+  cancel() {
+    if (this.timer !== undefined) {
+      clearTimeout(this.timer);
+      delete this.timer;
+    }
+  }
 }
