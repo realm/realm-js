@@ -403,7 +403,7 @@ records:
         type: MetadataMode
         default: MetadataMode::Encryption
       custom_encryption_key: util::Optional<EncryptionKey>
-      # logger_factory: (level: LoggerLevel) -> std::unique_ptr<util::Logger>
+      logger_factory: Nullable<LoggerFactory>
       log_level:
         type: LoggerLevel
         default: LoggerLevel::info
@@ -478,6 +478,7 @@ classes:
       delete_data_for_object: '(realm: SharedRealm, object_type: StringData)'
       is_empty_realm: '(realm: SharedRealm) -> bool'
       base64_decode: '(input: StringData) -> BinaryData'
+      make_logger_factory: '(log: (level: LoggerLevel, message: const std::string&) off_thread)'
 
   ConstTableRef:
     needsDeref: true
@@ -952,6 +953,15 @@ classes:
   UserAPIKeyProviderClient:
     cppName: app::App::UserAPIKeyProviderClient
 
+  # See Helpers::make_loger_factory to construct one.
+  # Using an opaque class here rather than exposing the factory to avoid having to
+  # involve the SDK in the construction of the logger. For JS at least, that would
+  # require hopping to the JS thread and back, blocking until it completes. Instead,
+  # we just let the C++ code handle it. Hopefully we can change the API here because
+  # it is weird that we need a factory here, rather than passing a Logger instance.
+  LoggerFactory:
+    cppName: std::function<std::unique_ptr<util::Logger>(util::Logger::Level)>
+
   SyncManager:
     sharedPtrWrapped: SharedSyncManager
     properties:
@@ -961,7 +971,7 @@ classes:
       immediately_run_file_actions: '(original_name: std::string)'
       enable_session_multiplexing: ()
       set_log_level: '(level: LoggerLevel)'
-      #set_logger_factory: '(factory: (level: LoggerLevel) -> std::unique_ptr<util::Logger>)'
+      set_logger_factory: '(factory: LoggerFactory)'
       set_user_agent: '(user_agent: std::string)'
       set_timeouts: '(timeouts: SyncClientTimeouts)'
       reconnect: ()

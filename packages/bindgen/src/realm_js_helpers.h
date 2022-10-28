@@ -2,6 +2,7 @@
 #include "realm/object-store/object_store.hpp"
 #include "realm/query.hpp"
 #include "realm/util/base64.hpp"
+#include "realm/util/logger.hpp"
 #include <condition_variable>
 #include <exception>
 #include <iostream>
@@ -174,6 +175,32 @@ struct Helpers {
         else {
             throw std::runtime_error("Attempting to decode binary data from a string that is not valid base64");
         }
+    }
+
+    using LoggerFactory = std::function<std::unique_ptr<util::Logger>(util::Logger::Level)>;
+    using LogCallback = std::function<void(util::Logger::Level, const std::string& message)>;
+    static LoggerFactory make_logger_factory(LogCallback&& logger)
+    {
+        class MyLogger final : public util::RootLogger {
+        public:
+            MyLogger(const LogCallback& log)
+                : m_log(log)
+            {
+            }
+
+        private:
+            void do_log(Level level, const std::string& message) final
+            {
+                m_log(level, message);
+            }
+            LogCallback m_log;
+        };
+
+        return [logger = std::move(logger)](util::Logger::Level level) {
+            auto out = std::make_unique<MyLogger>(logger);
+            out->set_level_threshold(level);
+            return out;
+        };
     }
 };
 
