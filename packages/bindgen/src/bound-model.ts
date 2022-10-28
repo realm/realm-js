@@ -157,8 +157,12 @@ export class Func extends TypeBase {
     assert([1, 2].includes(cb.args.length));
     const lastCbArgType = cb.args[cb.args.length - 1].type;
     assert(
-      lastCbArgType.isOptional("AppError") || lastCbArgType.isNullable("std::error_code"),
-      `Last arg to AsyncCallback must be either optional<AppError> or Nullable<std::error_code>, but got ${lastCbArgType}`,
+      lastCbArgType.isOptional("AppError") ||
+        lastCbArgType.isNullable("std::error_code") ||
+        lastCbArgType.isNullable("std::exception_ptr"),
+      "Last arg to AsyncCallback must be one of " +
+        "optional<AppError>, Nullable<std::exception_ptr>, or Nullable<std::error_code>, " +
+        `but got ${lastCbArgType}`,
     );
     let res: Type = voidType;
     if (cb.args.length == 2) {
