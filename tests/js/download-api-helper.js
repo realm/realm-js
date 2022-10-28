@@ -97,11 +97,14 @@ let app = new Realm.App(appConfig);
 app
   .logIn(credentials)
   .catch((error) => {
-    const loginError = JSON.stringify(error);
-    console.error(`download-api-helper failed:\n User login error:\n${loginError}`);
+    console.error(`download-api-helper failed:\n User login error:\n${error}`);
     process.exit(-2);
   })
   .then((user) => createObjects(user))
+  .catch((error) => {
+    console.error(`download-api-helper failed:\n Create object error:\n${error}`);
+    process.exit(-3);
+  })
   .then((realm) => {
     realm.close();
     process.exit(0);
