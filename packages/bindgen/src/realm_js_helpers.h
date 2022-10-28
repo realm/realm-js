@@ -246,9 +246,8 @@ inline Napi::Function bindFunc(Napi::Function func, Napi::Object self, Args... a
 REALM_NOINLINE inline Napi::Object toNodeErrorCode(Napi::Env& env, const std::error_code& e) noexcept
 {
     REALM_ASSERT_RELEASE(e);
-    auto out = Napi::Object::New(env);
+    auto out = Napi::Error::New(env, e.message()).Value();
     out.Set("code", e.value());
-    out.Set("message", e.message());
     out.Set("category", e.category().name());
     return out;
 }

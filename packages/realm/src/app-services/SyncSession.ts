@@ -52,27 +52,11 @@ export class SyncSession {
   pause(): void;
   */
 
-  async downloadAllServerChanges(timeoutMs?: number) {
-    return new Promise<void>((resolve, reject) => {
-      this.internal.waitForDownloadCompletion((err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-    });
+  downloadAllServerChanges(timeoutMs?: number) {
+    return this.internal.waitForDownloadCompletion();
   }
 
-  async uploadAllLocalChanges(timeoutMs?: number) {
-    return new Promise<void>((resolve, reject) => {
-      this.internal.waitForUploadCompletion((err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-    });
+  uploadAllLocalChanges(timeoutMs?: number) {
+    return this.internal.waitForUploadCompletion();
   }
 }

@@ -33,6 +33,12 @@ abstract class TypeBase {
     return this.isTemplate("util::Optional") && (!type || ("name" in this.args[0] && this.args[0].name == type));
   }
 
+  isNullable(): this is Template & { name: "Nullable" };
+  isNullable(type: string): boolean;
+  isNullable(type?: string): boolean {
+    return this.isTemplate("Nullable") && (!type || ("name" in this.args[0] && this.args[0].name == type));
+  }
+
   isTemplate(): this is Template;
   isTemplate<Name extends string>(type: Name): this is Template & { name: Name };
   isTemplate(type?: string): boolean {
@@ -149,12 +155,15 @@ export class Func extends TypeBase {
     // Callback arguments are either (error?) or (result?, error?).
     // In the latter case, result is the "real" return value from the async op.
     assert([1, 2].includes(cb.args.length));
-    const lastCbArg = cb.args[cb.args.length - 1];
-    assert.deepEqual(lastCbArg.type, new Template("util::Optional", [new Primitive("AppError")]));
+    const lastCbArgType = cb.args[cb.args.length - 1].type;
+    assert(
+      lastCbArgType.isOptional("AppError") || lastCbArgType.isNullable("std::error_code"),
+      `Last arg to AsyncCallback must be either optional<AppError> or Nullable<std::error_code>, but got ${lastCbArgType}`,
+    );
     let res: Type = voidType;
     if (cb.args.length == 2) {
       res = cb.args[0].type.removeConstRef();
-      if (res.isOptional() || res.isTemplate("Nullable")) {
+      if (res.isOptional() || res.isNullable()) {
         res = res.args[0];
       }
     }

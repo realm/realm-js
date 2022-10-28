@@ -986,8 +986,8 @@ classes:
       config: SyncConfig
       full_realm_url: util::Optional<std::string>
     methods:
-      wait_for_upload_completion: '(callback: (err: Nullable<std::error_code>) off_thread)'
-      wait_for_download_completion: '(callback: (err: Nullable<std::error_code>) off_thread)'
+      wait_for_upload_completion: '(callback: AsyncCallback<(err: Nullable<std::error_code>) off_thread>)'
+      wait_for_download_completion: '(callback: AsyncCallback<(err: Nullable<std::error_code>) off_thread>)'
       register_progress_notifier: '(callback: (transferred_bytes: uint64_t, transferrable_bytes: uint64_t) off_thread, direction: ProgressDirection, is_streaming: bool) -> uint64_t'
       unregister_progress_notifier: '(token: uint64_t)'
       register_connection_change_callback: '(callback: (old_state: SyncSessionConnectionState, new_state: SyncSessionConnectionState) off_thread) -> uint64_t'
