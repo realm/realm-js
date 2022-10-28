@@ -23,6 +23,7 @@ import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "..
 
 describe.skipIf(environment.missingServer, "Asymmetric sync", function () {
   describe("Configuration and schema", function () {
+    this.timeout(20 * 1000);
     const PersonSchema: Realm.ObjectSchema = {
       name: "Person",
       asymmetric: true,
