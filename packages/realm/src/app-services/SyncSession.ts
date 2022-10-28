@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../internal";
+import { TimeoutPromise, binding } from "../internal";
 
 export class SyncSession {
   /** @internal */
@@ -53,10 +53,18 @@ export class SyncSession {
   */
 
   downloadAllServerChanges(timeoutMs?: number) {
-    return this.internal.waitForDownloadCompletion();
+    return new TimeoutPromise(
+      this.internal.waitForDownloadCompletion(),
+      timeoutMs,
+      `Downloading changes did not complete in ${timeoutMs} ms.`,
+    );
   }
 
   uploadAllLocalChanges(timeoutMs?: number) {
-    return this.internal.waitForUploadCompletion();
+    return new TimeoutPromise(
+      this.internal.waitForUploadCompletion(),
+      timeoutMs,
+      `Uploading changes did not complete in ${timeoutMs} ms.`,
+    );
   }
 }

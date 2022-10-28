@@ -66,3 +66,9 @@ export class IllegalConstructorError extends Error {
     super(`Illegal constructor: ${type} objects are read from managed objects only.`);
   }
 }
+
+export class TimeoutError extends Error {
+  constructor(message: string) {
+    super(`Timed out: ${message}`);
+  }
+}
