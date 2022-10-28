@@ -16,24 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Configuration, Realm, binding, validateConfiguration } from "./internal";
+import { Configuration, PromiseHandle, Realm, binding, validateConfiguration } from "./internal";
 
 export type ProgressNotificationCallback = (transferred: number, transferable: number) => void;
 
-export class ProgressRealmPromise extends Promise<Realm> {
+export class ProgressRealmPromise implements Promise<Realm> {
+  /** @internal */
   private task: binding.AsyncOpenTask | null = null;
   /** @internal */
   private listeners = new Set<ProgressNotificationCallback>();
+  /** @internal */
+  private handle = new PromiseHandle<Realm>();
 
   /** @internal */
   constructor(config: Configuration) {
-    super((resolve, reject) => {
-      try {
-        validateConfiguration(config);
-        if (!config.sync) {
-          const realm = new Realm(config);
-          resolve(realm);
-        }
+    try {
+      validateConfiguration(config);
+      if (config.sync) {
         const { bindingConfig } = Realm.transformConfig(config);
         this.task = binding.Realm.getSynchronizedRealm(bindingConfig);
         this.task.start((ref, err) => {
@@ -41,22 +40,25 @@ export class ProgressRealmPromise extends Promise<Realm> {
           // We could consider comparing that to the Realm we create below,
           // since the coordinator should ensure they're pointing to the same underlying Realm.
           if (err) {
-            reject(err);
+            this.handle.reject(err);
           }
           try {
             const realm = new Realm(config);
-            resolve(realm);
+            this.handle.resolve(realm);
           } catch (err) {
-            reject(err);
+            this.handle.reject(err);
           }
         });
         // TODO: Consider storing the token returned here to unregister when the task gets cancelled,
         // if for some reason, that doesn't happen internally
         this.task.registerDownloadProgressNotifier(this.emitProgress);
-      } catch (err) {
-        reject(err);
+      } else {
+        const realm = new Realm(config);
+        this.handle.resolve(realm);
       }
-    });
+    } catch (err) {
+      this.handle.reject(err);
+    }
   }
 
   cancel(): void {
@@ -70,6 +72,10 @@ export class ProgressRealmPromise extends Promise<Realm> {
     return this;
   }
 
+  then = this.handle.promise.then.bind(this.handle.promise);
+  catch = this.handle.promise.catch.bind(this.handle.promise);
+  finally = this.handle.promise.finally.bind(this.handle.promise);
+
   private emitProgress = (transferredArg: bigint, transferableArg: bigint) => {
     const transferred = Number(transferredArg);
     const transferable = Number(transferableArg);
@@ -80,5 +86,9 @@ export class ProgressRealmPromise extends Promise<Realm> {
 
   static get [Symbol.species]() {
     return Promise;
+  }
+
+  get [Symbol.toStringTag]() {
+    return ProgressRealmPromise.name;
   }
 }
