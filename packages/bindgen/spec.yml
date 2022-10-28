@@ -26,7 +26,7 @@ primitives:
   - int32_t
   - int64_t
   - uint64_t
-  - count_t # size_t but only used for counts (so never > 2**52)
+  - count_t # size_t but only used for counts (so never > 2**52, which when doubles stop having full precision)
   - double
   - float
   - bool
