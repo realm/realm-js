@@ -31,6 +31,7 @@ const Utils = require("./test-utils");
 let schemas = require("./schemas");
 const AppConfig = require("./support/testConfig");
 const { resolve } = require("path");
+const { execFileSync } = require("child_process");
 
 const REALM_MODULE_PATH = require.resolve("realm");
 
@@ -99,7 +100,7 @@ function runOutOfProcess() {
   debug(`runOutOfProcess : ${args.join(" ")}`);
   return new Promise((resolve, reject) => {
     try {
-      execFile(process.execPath, args, { cwd: tmpDir.name }, (error, stdout, stderr) => {
+      execFileSync(process.execPath, args, { cwd: tmpDir.name }, (error, stdout, stderr) => {
         if (error) {
           console.error("runOutOfProcess failed\n", error, stdout, stderr);
           reject(new Error(`Running ${args[0]} failed. error: ${error}`));
@@ -165,11 +166,9 @@ module.exports = {
       inMemory: true,
     };
 
-    return new Promise((resolve, reject) => {
-      return Realm.open(config)
-        .then((_) => reject())
-        .catch((_) => resolve());
-    });
+    await TestCase.assertThrowsAsyncContaining(async () => {
+      await Realm.open(config);
+    }, "Expected 'user' to be an instance of User, got undefined");
   },
 
   async testRealmInvalidSyncConfiguration2() {
@@ -177,17 +176,15 @@ module.exports = {
     let credentials = Realm.Credentials.anonymous();
     let app = new Realm.App(appConfig);
 
-    return new Promise((resolve, reject) => {
-      return app.logIn(credentials).then((user) => {
-        let config = getSyncConfiguration(user, partition);
-        config.onMigration = (_) => {
-          /* empty function */
-        };
-        return Realm.open(config)
-          .then((_) => reject())
-          .catch((_) => resolve());
-      });
-    });
+    const user = await app.logIn(credentials);
+
+    let config = getSyncConfiguration(user, partition);
+    config.onMigration = (_) => {
+      // Migration functions and sync are mutually exclusive.
+    };
+    await TestCase.assertThrowsAsyncContaining(async () => {
+      await Realm.open(config);
+    }, "Options 'onMigration' and 'sync' are mutually exclusive");
   },
 
   async testRealmInvalidSyncUser() {
@@ -198,9 +195,9 @@ module.exports = {
     let user = app.logIn(credentials);
     let config = getSyncConfiguration(user, partition);
     config.sync.user = { username: "John Doe" }; // this is an invalid user object
-    TestCase.assertThrowsAsyncContaining(async () => {
+    await TestCase.assertThrowsAsyncContaining(async () => {
       await Realm.open(config);
-    }, "Option 'user' is not a Realm.User object.");
+    }, "Expected 'user' to be an instance of User, got an object");
   },
 
   testRealmOpen() {
@@ -1190,7 +1187,7 @@ module.exports = {
     };
 
     let realm3;
-    TestCase.assertThrowsAsyncContaining(async () => {
+    await TestCase.assertThrowsAsyncContaining(async () => {
       realm3 = await Realm.open(config3);
     }, "Bad server version");
 
