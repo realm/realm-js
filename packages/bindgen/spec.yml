@@ -971,7 +971,7 @@ classes:
   AsyncOpenTask:
     sharedPtrWrapped: SharedAsyncOpenTask
     methods:
-      start: '(callback: (realm: Nullable<ThreadSafeReference>, error: Nullable<std::exception_ptr>) off_thread)'
+      start: '(callback: AsyncCallback<(realm: Nullable<ThreadSafeReference>, error: Nullable<std::exception_ptr>) off_thread>)'
       cancel: ()
       register_download_progress_notifier: '(callback: (transferred_bytes: uint64_t, transferrable_bytes: uint64_t) off_thread) -> uint64_t'
       unregister_download_progress_notifier: '(token: uint64_t)'
