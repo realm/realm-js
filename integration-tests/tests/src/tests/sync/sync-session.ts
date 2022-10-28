@@ -172,7 +172,7 @@ describe("SessionTest", () => {
         return Realm.open(config)
           .then(() => reject("opened realm with invalid configuration"))
           .catch((error) => {
-            expect(error.message).contains("Options 'onMigration' and 'sync' are mutual exclusive.");
+            expect(error.message).contains("Options 'onMigration' and 'sync' are mutually exclusive");
             resolve();
           });
       });
@@ -187,7 +187,7 @@ describe("SessionTest", () => {
       try {
         await Realm.open(config);
       } catch (e: any) {
-        expect(e.message).contains("Option 'user' is not a Realm.User object.");
+        expect(e.message).contains("Expected 'user' to be an instance of User, got an object");
       }
     });
   });
