@@ -35,8 +35,6 @@ export * from "./Listeners";
 /** @internal */
 export * from "./JSONCacheMap";
 /** @internal */
-export * from "./PromiseHandle";
-/** @internal */
 export * from "./TimeoutPromise";
 
 /** @internal */
@@ -49,6 +47,8 @@ export * from "./ClassHelpers";
 export * from "./ClassMap";
 /** @internal */
 export * from "./TypeHelpers";
+
+export * from "./PromiseHandle";
 
 export * from "./Object";
 export * from "./ObjectListeners";

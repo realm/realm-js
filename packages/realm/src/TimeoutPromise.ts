@@ -46,4 +46,8 @@ export class TimeoutPromise<T> extends Promise<T> {
       delete this.timer;
     }
   }
+
+  static get [Symbol.species]() {
+    return Promise;
+  }
 }

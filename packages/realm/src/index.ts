@@ -24,6 +24,7 @@ export {
   Dictionary,
   List,
   OrderedCollection,
+  ProgressRealmPromise,
   Realm,
   RealmObject as Object,
   RealmSet as Set,
