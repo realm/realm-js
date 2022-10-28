@@ -16,14 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+const fs = require("fs");
+const path = require("path");
+
 // If the docker instance has imported this stitch config, it will have written the app id
 // back into the config file, so we can read it out again here.
-
-// Prevent React Native packager from seeing modules required with this
-const require_method = require;
-function nodeRequire(module) {
-  return require_method(module);
-}
 
 function makeAppConfig(appId) {
   const baseUrlHostname = process.env.MONGODB_REALM_ENDPOINT
@@ -45,42 +42,29 @@ function makeAppConfig(appId) {
   };
 }
 
-function getConfigPath(testName) {
-  let pathToJson = `../../mongodb/${testName}/config.json`;
-  const isNodeProcess = typeof process === "object" && process + "" === "[object process]";
+const IMPORTED_APPS_PATH = path.resolve(__dirname, "../../imported-apps.json");
+if (!fs.existsSync(IMPORTED_APPS_PATH)) {
+  throw new Error("Run the 'import-apps' npm script first");
+}
+const IMPORTED_APPS = require(IMPORTED_APPS_PATH);
 
-  if (isNodeProcess && process.env.ELECTRON_TESTS_REALM_MODULE_PATH) {
-    const path = nodeRequire("path");
-    console.log("ELECTRON_TESTS_REALM_MODULE_PATH " + process.env.ELECTRON_TESTS_REALM_MODULE_PATH);
-    pathToJson = path.resolve(process.env.ELECTRON_TESTS_REALM_MODULE_PATH, `../${pathToJson}`);
+function getAppId(name) {
+  const app = IMPORTED_APPS.find(({ appName }) => name === appName);
+  if (!app) {
+    throw new Error(`An app named "${name}" was never imported`);
   }
-  return pathToJson;
+  return app.appId;
 }
 
-const pathToStitchJson = getConfigPath("common-tests");
-const integrationTestsAppId = nodeRequire(pathToStitchJson).app_id;
-const integrationAppConfig = makeAppConfig(integrationTestsAppId);
-
-const pathToPvIntJSON = getConfigPath("pv-int-tests");
-const pvIntTestsAppId = nodeRequire(pathToPvIntJSON).app_id;
-const pvIntAppConfig = makeAppConfig(pvIntTestsAppId);
-
-const pathToPvStringJSON = getConfigPath("pv-string-tests");
-const pvStringTestsAppId = nodeRequire(pathToPvStringJSON).app_id;
-const pvStringAppConfig = makeAppConfig(pvStringTestsAppId);
-
-const pathToPvUuidJSON = getConfigPath("pv-uuid-tests");
-const pvUuidTestsAppId = nodeRequire(pathToPvUuidJSON).app_id;
-const pvUuidAppConfig = makeAppConfig(pvUuidTestsAppId);
-
-const pathToPvObjectidJSON = getConfigPath("pv-objectid-tests");
-const pvObjectidTestsAppId = nodeRequire(pathToPvObjectidJSON).app_id;
-const pvObjectidAppConfig = makeAppConfig(pvObjectidTestsAppId);
+function makeAppConfigFromName(name) {
+  const id = getAppId(name);
+  return makeAppConfig(id);
+}
 
 module.exports = {
-  integrationAppConfig,
-  pvIntAppConfig,
-  pvStringAppConfig,
-  pvUuidAppConfig,
-  pvObjectidAppConfig,
+  integrationAppConfig: makeAppConfigFromName("common-tests"),
+  pvIntAppConfig: makeAppConfigFromName("pv-int-tests"),
+  pvStringAppConfig: makeAppConfigFromName("pv-string-tests"),
+  pvUuidAppConfig: makeAppConfigFromName("pv-uuid-tests"),
+  pvObjectidAppConfig: makeAppConfigFromName("pv-objectid-tests"),
 };

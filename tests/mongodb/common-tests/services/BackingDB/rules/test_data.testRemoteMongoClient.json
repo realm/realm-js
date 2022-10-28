@@ -1,7 +1,6 @@
 {
     "collection": "testRemoteMongoClient",
     "database": "test_data",
-    "id": "6079296ee2cbbda018428140",
     "roles": [
         {
             "name": "default",

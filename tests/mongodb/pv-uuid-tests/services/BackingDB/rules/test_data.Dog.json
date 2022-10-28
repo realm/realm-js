@@ -1,7 +1,6 @@
 {
     "collection": "Dog",
     "database": "test_data",
-    "id": "606da416b1969d14a3b5ff85",
     "roles": [
         {
             "name": "default",

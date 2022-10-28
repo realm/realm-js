@@ -22,21 +22,21 @@ import fs from "fs";
 import http from "http";
 import chalk from "chalk";
 
-import { AppImporter } from "./AppImporter";
+import { AppImporter, ImportedApp } from "./AppImporter";
 import { Credentials } from "./sharedTypes";
 import { AppImportServer } from "./AppImportServer";
 
 /* eslint-disable no-console */
 
-function saveAppId(appId: string, filePath: string): void {
-  console.log(`Saving app id in "${filePath}"`);
-  fs.writeFileSync(filePath, appId, "utf8");
+function saveAppIds(apps: ImportedApp[], filePath: string): void {
+  console.log(`Saving app ids in "${filePath}"`);
+  fs.writeFileSync(filePath, JSON.stringify(apps, undefined, 2), "utf8");
 }
 
-function serveAppId(appId: string, port: number, hostname = "0.0.0.0"): void {
+function serveAppIds(apps: ImportedApp[], port: number, hostname = "0.0.0.0"): void {
   const server = http.createServer((req, res) => {
-    res.setHeader("content-type", "text/plain");
-    res.end(appId, "utf8");
+    res.setHeader("content-type", "application/json");
+    res.end(JSON.stringify(apps, undefined, 2), "utf8");
   });
   // Listen for connections
   server.listen(port, hostname, () => {
@@ -180,11 +180,11 @@ yargs
         .option("app-id-path", {
           type: "string",
           coerce: path.resolve,
-          description: "Saves the app id to a file at this path",
+          description: "Saves the app id(s) to a file at this path",
         })
         .option("app-id-port", {
           type: "number",
-          description: "Starts up an HTTP server and serves the app id",
+          description: "Starts up an HTTP server and serves the app id(s)",
         }),
     ({
       "template-path": templatePath,
@@ -210,12 +210,75 @@ yargs
       });
       // Perform the import
       importer.importApp(templatePath).then(
-        ({ appId }) => {
+        (app) => {
           if (appIdPath) {
-            saveAppId(appId, appIdPath);
+            saveAppIds([app], appIdPath);
           }
           if (appIdPort) {
-            serveAppId(appId, appIdPort);
+            serveAppIds([app], appIdPort);
+          } else {
+            console.log("All done ...");
+            process.exit(0);
+          }
+        },
+        (err: Error) => {
+          console.error(err.stack);
+          process.exit(1);
+        },
+      );
+    },
+  )
+  .command(
+    ["import <template-path..>", "$0"],
+    "Import a Realm App(s)",
+    (args) =>
+      args
+        .positional("template-path", {
+          type: "string",
+          array: true,
+          demandOption: true,
+          coerce: (values: string[]) => values.map((p) => path.resolve(p)),
+          description: "Path of the application directory to import",
+        })
+        .option("app-id-path", {
+          type: "string",
+          coerce: path.resolve,
+          description: "Saves the app id to a file at this path",
+        })
+        .option("app-id-port", {
+          type: "number",
+          description: "Starts up an HTTP server and serves the app id",
+        }),
+    ({
+      "template-path": templatePaths,
+      "base-url": baseUrl,
+      username,
+      password,
+      "public-api-key": publicKey,
+      "private-api-key": privateKey,
+      config: realmConfigPath,
+      "apps-directory-path": appsDirectoryPath,
+      "app-id-path": appIdPath,
+      "app-id-port": appIdPort,
+      "clean-up": cleanUp,
+    }) => {
+      const credentials = getCredentials({ username, password, publicKey, privateKey });
+      console.log(`Importing into "${baseUrl}" (using ${credentials.kind} credentials)`);
+      const importer = new AppImporter({
+        baseUrl,
+        credentials,
+        realmConfigPath,
+        appsDirectoryPath,
+        cleanUp,
+      });
+      // Perform the import
+      importer.importApps(templatePaths).then(
+        (apps) => {
+          if (appIdPath) {
+            saveAppIds(apps, appIdPath);
+          }
+          if (appIdPort) {
+            serveAppIds(apps, appIdPort);
           } else {
             console.log("All done ...");
             process.exit(0);
@@ -237,7 +300,7 @@ yargs
           type: "string",
           array: true,
           demandOption: true,
-          coerce: (values) => values.map((p: string) => path.resolve(p)),
+          coerce: (values: string[]) => values.map((p) => path.resolve(p)),
           description: "Path of the application directory (or a directory of these) to import",
         })
         .option("hostname", {

@@ -1,7 +1,6 @@
 {
     "collection": "MixedObject",
     "database": "test_data",
-    "id": "6079296ee2cbbda01842813c",
     "roles": [
         {
             "name": "default",

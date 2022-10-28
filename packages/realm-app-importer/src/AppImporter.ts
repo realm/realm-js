@@ -29,6 +29,8 @@ import { Credentials } from "./sharedTypes";
  */
 export type TemplateReplacements = Record<string, Record<string, unknown>>;
 
+export type ImportedApp = { appName: string; appId: string };
+
 /* eslint-disable no-console */
 
 type App = {
@@ -197,7 +199,7 @@ export class AppImporter {
    * @param replacements An object with file globs as keys and a replacement object as values. Allows for just-in-time replacements of configuration parameters.
    * @returns A promise of an object containing the app id.
    */
-  public async importApp(appTemplatePath: string, replacements: TemplateReplacements = {}): Promise<{ appId: string }> {
+  public async importApp(appTemplatePath: string, replacements: TemplateReplacements = {}): Promise<ImportedApp> {
     const { name: appName, security } = this.loadAppConfigJson(appTemplatePath);
 
     await this.logIn();
@@ -228,7 +230,16 @@ export class AppImporter {
       console.log(`${this.baseUrl}/groups/${groupId}/apps/${app._id}/dashboard`);
     }
 
-    return { appId };
+    return { appName, appId };
+  }
+
+  public async importApps(templatePaths: string[]): Promise<ImportedApp[]> {
+    const apps: ImportedApp[] = [];
+    for (const templatePath of templatePaths) {
+      const app = await this.importApp(templatePath);
+      apps.push(app);
+    }
+    return apps;
   }
 
   public async deleteApp(clientAppId: string): Promise<void> {

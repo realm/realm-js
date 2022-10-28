@@ -1,5 +1,4 @@
 {
-    "id": "606da40bb1969d14a3b5fef4",
     "name": "BackingDB",
     "type": "mongodb",
     "config": {
