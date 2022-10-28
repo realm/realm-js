@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-declare type Timer = number;
+declare type Timer = unknown;
 
 declare function setImmediate<Args extends unknown[]>(callback: (...args: Args) => void, ...args: Args): Timer;
 declare function clearImmediate(timer: Timer): void;

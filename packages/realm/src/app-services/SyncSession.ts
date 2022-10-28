@@ -52,7 +52,7 @@ export class SyncSession {
   pause(): void;
   */
 
-  downloadAllServerChanges(timeoutMs?: number) {
+  downloadAllServerChanges(timeoutMs?: number): Promise<void> {
     return new TimeoutPromise(
       this.internal.waitForDownloadCompletion(),
       timeoutMs,
@@ -60,7 +60,7 @@ export class SyncSession {
     );
   }
 
-  uploadAllLocalChanges(timeoutMs?: number) {
+  uploadAllLocalChanges(timeoutMs?: number): Promise<void> {
     return new TimeoutPromise(
       this.internal.waitForUploadCompletion(),
       timeoutMs,
