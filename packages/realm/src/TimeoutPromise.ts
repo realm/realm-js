@@ -17,26 +17,26 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { TimeoutError } from "./errors";
+import { PromiseHandle } from "./PromiseHandle";
 
 export type TimeoutPromiseOptions = {
   ms: number;
   message?: string;
 };
 
-export class TimeoutPromise<T> extends Promise<T> {
+export class TimeoutPromise<T> implements Promise<T> {
   private timer: Timer | undefined;
+  private handle = new PromiseHandle<T>();
 
   constructor(inner: Promise<T>, ms?: number, message = `Waited ${ms}ms`) {
-    super((resolve, reject) => {
-      if (typeof ms === "number") {
-        this.timer = setTimeout(() => {
-          const err = new TimeoutError(message);
-          reject(err);
-        }, ms);
-      }
-      inner.then(resolve, reject).finally(() => {
-        this.cancel();
-      });
+    if (typeof ms === "number") {
+      this.timer = setTimeout(() => {
+        const err = new TimeoutError(message);
+        this.handle.reject(err);
+      }, ms);
+    }
+    inner.then(this.handle.resolve, this.handle.reject).finally(() => {
+      this.cancel();
     });
   }
 
@@ -47,7 +47,11 @@ export class TimeoutPromise<T> extends Promise<T> {
     }
   }
 
-  static get [Symbol.species]() {
-    return Promise;
+  then = this.handle.promise.then.bind(this.handle.promise);
+  catch = this.handle.promise.catch.bind(this.handle.promise);
+  finally = this.handle.promise.finally.bind(this.handle.promise);
+
+  get [Symbol.toStringTag]() {
+    return TimeoutPromise.name;
   }
 }

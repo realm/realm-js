@@ -28,7 +28,9 @@ export class PromiseHandle<T> {
 
   constructor() {
     this.promise = new Promise<T>((arg0, arg1) => {
-      this.resolve = arg0;
+      this.resolve = (arg) => {
+        arg0(arg);
+      };
       this.reject = arg1;
     });
     assert(this.resolve, "Expected promise executor to be called synchroniously");
