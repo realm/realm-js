@@ -35,20 +35,15 @@ export class ProgressRealmPromise implements Promise<Realm> {
       if (config.sync) {
         const { bindingConfig } = Realm.transformConfig(config);
         this.task = binding.Realm.getSynchronizedRealm(bindingConfig);
-        this.task.start((ref, err) => {
-          // This callback is passed a `ThreadSafeReference` which can (except not easily) be resolved to a Realm
-          // We could consider comparing that to the Realm we create below,
-          // since the coordinator should ensure they're pointing to the same underlying Realm.
-          if (err) {
-            this.handle.reject(err);
-          }
-          try {
-            const realm = new Realm(config);
-            this.handle.resolve(realm);
-          } catch (err) {
-            this.handle.reject(err);
-          }
-        });
+        this.task
+          .start()
+          .then(() => {
+            // This callback is passed a `ThreadSafeReference` which can (except not easily) be resolved to a Realm
+            // We could consider comparing that to the Realm we create below,
+            // since the coordinator should ensure they're pointing to the same underlying Realm.
+            return new Realm(config);
+          })
+          .then(this.handle.resolve, this.handle.reject);
         // TODO: Consider storing the token returned here to unregister when the task gets cancelled,
         // if for some reason, that doesn't happen internally
         this.task.registerDownloadProgressNotifier(this.emitProgress);
@@ -83,10 +78,6 @@ export class ProgressRealmPromise implements Promise<Realm> {
       listener(transferred, transferable);
     }
   };
-
-  static get [Symbol.species]() {
-    return Promise;
-  }
 
   get [Symbol.toStringTag]() {
     return ProgressRealmPromise.name;
