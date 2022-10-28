@@ -39,7 +39,7 @@ function trySetElectronVersion() {
 // Ensure node-pre-gyp uses the correct binary
 trySetElectronVersion();
 
-const Realm = require(realmModule);
+const { Realm } = require(realmModule);
 const { ObjectId } = Realm.BSON;
 
 function createObjects(user) {

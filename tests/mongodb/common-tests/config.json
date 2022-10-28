@@ -1,7 +1,6 @@
 {
-    "app_id": "auth-integration-tests-kgyom",
     "config_version": 20200603,
-    "name": "auth-integration-tests",
+    "name": "common-tests",
     "location": "US-VA",
     "deployment_model": "GLOBAL",
     "security": {},

@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
+    "@realm/app-importer": "*",
     "@types/jasmine": "^3.6.2",
     "debug": "^4.3.1",
     "es6-promise": "^3.2.1",
@@ -26,6 +27,7 @@
   "scripts": {
     "check-typescript": "tsc --types --noEmit --alwaysStrict ./../types/index.d.ts --lib es2018",
     "js-tests": "node --expose_gc node_modules/jasmine/bin/jasmine.js spec/unit_tests.js --filter=.",
-    "test": "npm run check-typescript && npm run js-tests"
+    "test": "npm run check-typescript && npm run js-tests",
+    "import-apps": "realm-app-importer import mongodb/* --app-id-path imported-apps.json"
   }
 }

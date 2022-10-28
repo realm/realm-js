@@ -1,7 +1,6 @@
 {
     "collection": "Dictionary",
     "database": "test_data",
-    "id": "60edbc15af652697ed7940f6",
     "roles": [
         {
             "name": "default",
