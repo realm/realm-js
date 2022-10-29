@@ -223,7 +223,14 @@ export class Realm {
   }
 
   private static determinePath(config: Configuration): string {
+    if (config.sync) {
+      // TODO: Determine if it's okay to get the syncManager through the app instead of the user:
+      // return user->m_user->sync_manager()->path_for_realm(*(config.sync_config));
+      const bindingSyncConfig = toBindingSyncConfig(config.sync);
+      return config.sync.user.app.internal.syncManager.pathForRealm(bindingSyncConfig);
+    } else {
     return Realm.normalizePath(config.path);
+  }
   }
 
   private static determineEncryptionKey(encryptionKey: Configuration["encryptionKey"]): ArrayBuffer | undefined {
