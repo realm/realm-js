@@ -67,4 +67,9 @@ export class SyncSession {
       `Uploading changes did not complete in ${timeoutMs} ms.`,
     );
   }
+
+  /** @internal */
+  _simulateError(code: number, message: string, type: string, isFatal: boolean) {
+    binding.Helpers.simulateSyncError(this.internal, code, message, type, isFatal);
+  }
 }
