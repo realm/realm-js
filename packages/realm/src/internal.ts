@@ -19,6 +19,9 @@
 // Following [the internal module pattern](https://medium.com/visual-development/how-to-fix-nasty-circular-dependency-issues-once-and-for-all-in-javascript-typescript-a04c987cf0de)
 
 /** @internal */
+export * from "./debug";
+
+/** @internal */
 export * from "./platform";
 
 /** @internal */
@@ -63,7 +66,6 @@ export * from "./Dictionary";
 export * from "./Types";
 
 export * from "./app-services/SyncConfiguration";
-export * from "./app-services/App";
 export * from "./app-services/Credentials";
 export * from "./app-services/User";
 export * from "./app-services/NetworkTransport";
@@ -72,6 +74,7 @@ export * from "./app-services/ApiKeyAuthClient";
 export * from "./app-services/EmailPasswordAuthClient";
 export * from "./app-services/FunctionsFactory";
 export * from "./app-services/UserProfile";
+export * from "./app-services/App";
 
 export * from "./Realm";
 export * from "./RealmListeners";
