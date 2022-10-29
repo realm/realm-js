@@ -20,6 +20,7 @@ import {
   Configuration,
   OpenRealmBehaviorType,
   OpenRealmTimeOutBehavior,
+  ProgressNotificationCallback,
   PromiseHandle,
   Realm,
   TimeoutError,
@@ -28,8 +29,6 @@ import {
   binding,
   validateConfiguration,
 } from "./internal";
-
-export type ProgressNotificationCallback = (transferred: number, transferable: number) => void;
 
 type OpenBehaviour = {
   openBehaviour: OpenRealmBehaviorType;

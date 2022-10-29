@@ -16,25 +16,31 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "./internal";
+/** @internal */
+export type CallbackRegistrator<CallbackType, TokenType, Args extends unknown[] = []> = (
+  callback: CallbackType,
+  ...args: Args
+) => TokenType;
+/** @internal */
+export type CallbackUnregistrator<TokenType> = (token: TokenType) => void;
 
 /** @internal */
-export type CallbackRegistrator<T> = (callback: T) => binding.NotificationToken;
-
-/** @internal */
-export class Listeners<CallbackType> {
-  constructor(private registerCallback: CallbackRegistrator<CallbackType>) {}
+export class Listeners<CallbackType, TokenType, Args extends unknown[] = []> {
+  constructor(
+    private registerCallback: CallbackRegistrator<CallbackType, TokenType, Args>,
+    private unregisterCallback: CallbackUnregistrator<TokenType>,
+  ) {}
   /**
    * Mapping of registered listener callbacks onto the their token in the bindings ObjectNotifier.
    */
-  private listeners = new Map<CallbackType, binding.NotificationToken>();
+  private listeners = new Map<CallbackType, TokenType>();
 
-  add(callback: CallbackType): void {
+  add(callback: CallbackType, ...args: Args): void {
     if (this.listeners.has(callback)) {
       // No need to add a listener twice
       return;
     }
-    const token = this.registerCallback(callback);
+    const token = this.registerCallback(callback, ...args);
     // Store the notification token by the callback to enable later removal.
     this.listeners.set(callback, token);
   }
@@ -42,14 +48,14 @@ export class Listeners<CallbackType> {
   remove(callback: CallbackType): void {
     const token = this.listeners.get(callback);
     if (typeof token !== "undefined") {
-      token.unregister();
+      this.unregisterCallback(token);
       this.listeners.delete(callback);
     }
   }
 
   removeAll(): void {
     for (const [, token] of this.listeners) {
-      token.unregister();
+      this.unregisterCallback(token);
     }
     this.listeners.clear();
   }
