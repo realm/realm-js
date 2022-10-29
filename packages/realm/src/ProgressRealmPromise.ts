@@ -16,9 +16,45 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Configuration, PromiseHandle, Realm, binding, validateConfiguration } from "./internal";
+import {
+  Configuration,
+  OpenRealmBehaviorType,
+  OpenRealmTimeOutBehavior,
+  PromiseHandle,
+  Realm,
+  TimeoutError,
+  TimeoutPromise,
+  assert,
+  binding,
+  validateConfiguration,
+} from "./internal";
 
 export type ProgressNotificationCallback = (transferred: number, transferable: number) => void;
+
+type OpenBehaviour = {
+  openBehaviour: OpenRealmBehaviorType;
+  timeOut?: number;
+  timeOutBehavior?: OpenRealmTimeOutBehavior;
+};
+
+function determineBehaviour(config: Configuration): OpenBehaviour {
+  const { sync } = config;
+  if (!sync) {
+    return { openBehaviour: OpenRealmBehaviorType.OpenImmediately };
+  } else {
+    const configProperty = Realm.exists(config) ? "existingRealmFileBehavior" : "newRealmFileBehavior";
+    const configBehaviour = sync[configProperty];
+    if (configBehaviour) {
+      const { type, timeOut, timeOutBehavior } = configBehaviour;
+      if (typeof timeOut !== "undefined") {
+        assert.number(timeOut, "timeOut");
+      }
+      return { openBehaviour: type, timeOut, timeOutBehavior };
+    } else {
+      return { openBehaviour: OpenRealmBehaviorType.DownloadBeforeOpen }; // Default is downloadBeforeOpen
+    }
+  }
+}
 
 export class ProgressRealmPromise implements Promise<Realm> {
   /** @internal */
@@ -27,29 +63,70 @@ export class ProgressRealmPromise implements Promise<Realm> {
   private listeners = new Set<ProgressNotificationCallback>();
   /** @internal */
   private handle = new PromiseHandle<Realm>();
+  /** @internal */
+  private timeoutPromise: TimeoutPromise<Realm> | null = null;
 
   /** @internal */
   constructor(config: Configuration) {
     try {
       validateConfiguration(config);
-      if (config.sync) {
+      const { openBehaviour, timeOut, timeOutBehavior } = determineBehaviour(config);
+      if (openBehaviour === OpenRealmBehaviorType.OpenImmediately) {
+        const realm = new Realm(config);
+        this.handle.resolve(realm);
+      } else if (openBehaviour === OpenRealmBehaviorType.DownloadBeforeOpen) {
         const { bindingConfig } = Realm.transformConfig(config);
         this.task = binding.Realm.getSynchronizedRealm(bindingConfig);
         this.task
           .start()
-          .then(() => {
+          .then(async () => {
             // This callback is passed a `ThreadSafeReference` which can (except not easily) be resolved to a Realm
             // We could consider comparing that to the Realm we create below,
             // since the coordinator should ensure they're pointing to the same underlying Realm.
-            return new Realm(config);
+            const realm = new Realm(config);
+
+            const initialSubscriptions = config.sync && config.sync.flexible ? config.sync.initialSubscriptions : false;
+            const realmExists = Realm.exists(config);
+            if (!initialSubscriptions || (!initialSubscriptions.rerunOnOpen && realmExists)) {
+              return realm;
+            }
+            // TODO: Implement this once flexible sync gets implemented
+            // await realm.subscriptions.waitForSynchronization();
+            // TODO: Consider implementing adding the subscriptions here as well
+            throw new Error("'initialSubscriptions' is not yet supported");
+            return realm;
           })
           .then(this.handle.resolve, this.handle.reject);
         // TODO: Consider storing the token returned here to unregister when the task gets cancelled,
         // if for some reason, that doesn't happen internally
         this.task.registerDownloadProgressNotifier(this.emitProgress);
+        if (typeof timeOut === "number") {
+          this.timeoutPromise = new TimeoutPromise(
+            this.handle.promise, // Ensures the timeout gets cancelled when the realm opens
+            timeOut,
+            `Realm could not be downloaded in the allocated time: ${timeOut} ms.`,
+          );
+          if (timeOutBehavior === OpenRealmTimeOutBehavior.ThrowException) {
+            // Make failing the timeout, reject the promise
+            this.timeoutPromise.catch(this.handle.reject);
+          } else if (timeOutBehavior === OpenRealmTimeOutBehavior.OpenLocalRealm) {
+            // Make failing the timeout, resolve the promise
+            this.timeoutPromise.catch((err) => {
+              if (err instanceof TimeoutError) {
+                const realm = new Realm(config);
+                this.handle.resolve(realm);
+              } else {
+                this.handle.reject(err);
+              }
+            });
+          } else {
+            throw new Error(
+              `Invalid 'timeOutBehavior': '${timeOutBehavior}'. Only 'throwException' and 'openLocalRealm' is allowed.`,
+            );
+          }
+        }
       } else {
-        const realm = new Realm(config);
-        this.handle.resolve(realm);
+        throw new Error(`Unexpected open behaviour '${openBehaviour}'`);
       }
     } catch (err) {
       this.handle.reject(err);
@@ -58,6 +135,7 @@ export class ProgressRealmPromise implements Promise<Realm> {
 
   cancel(): void {
     this.task?.cancel();
+    this.timeoutPromise?.cancel();
     // Clearing all listeners to avoid accidental progress notifications
     this.listeners.clear();
   }

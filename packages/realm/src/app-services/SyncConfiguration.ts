@@ -18,20 +18,56 @@
 
 import { EJSON } from "bson";
 
-import { User, assert, binding } from "../internal";
+import { Realm, User, assert, binding } from "../internal";
+
+export enum OpenRealmBehaviorType {
+  DownloadBeforeOpen = "downloadBeforeOpen",
+  OpenImmediately = "openImmediately",
+}
+
+export enum OpenRealmTimeOutBehavior {
+  OpenLocalRealm = "openLocalRealm",
+  ThrowException = "throwException",
+}
+
+export type OpenRealmBehaviorConfiguration = {
+  type: OpenRealmBehaviorType;
+  timeOut?: number;
+  timeOutBehavior?: OpenRealmTimeOutBehavior;
+};
 
 export type BaseSyncConfiguration = {
   user: User;
+  newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
+  existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
 };
+
+// TODO: Delete once the flexible sync API gets implemented
+type MutableSubscriptionSet = unknown;
 
 export type FlexibleSyncConfiguration = BaseSyncConfiguration & {
   flexible: true;
   partitionValue?: never;
+  initialSubscriptions?: {
+    /**
+     * Callback called with the {@link Realm} instance to allow you to setup the
+     * initial set of subscriptions by calling `realm.subscriptions.update`.
+     * See {@link Realm.App.Sync.SubscriptionSet.update} for more information.
+     */
+    update: (subs: MutableSubscriptionSet, realm: Realm) => void;
+    /**
+     * If `true`, the {@link update} callback will be rerun every time the Realm is
+     * opened (e.g. every time a user opens your app), otherwise (by default) it
+     * will only be run if the Realm does not yet exist.
+     */
+    rerunOnOpen?: boolean;
+  };
 };
 
 export type PartitionSyncConfiguration = BaseSyncConfiguration & {
   flexible?: never;
   partitionValue: unknown;
+  initialSubscriptions?: never;
 };
 
 export type SyncConfiguration = FlexibleSyncConfiguration | PartitionSyncConfiguration;

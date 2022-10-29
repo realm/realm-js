@@ -24,7 +24,7 @@ export type TimeoutPromiseOptions = {
   message?: string;
 };
 
-export class TimeoutPromise<T> implements Promise<T> {
+export class TimeoutPromise<T = unknown> implements Promise<T> {
   private timer: Timer | undefined;
   private handle = new PromiseHandle<T>();
 
