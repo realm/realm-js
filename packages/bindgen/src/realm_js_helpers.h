@@ -1,8 +1,12 @@
 #include "realm/binary_data.hpp"
 #include "realm/object-store/object_store.hpp"
+#include "realm/object-store/sync/sync_session.hpp"
 #include "realm/query.hpp"
+#include "realm/sync/client_base.hpp"
+#include "realm/sync/protocol.hpp"
 #include "realm/util/base64.hpp"
 #include "realm/util/logger.hpp"
+#include "realm/util/to_string.hpp"
 #include <condition_variable>
 #include <exception>
 #include <iostream>
@@ -22,6 +26,7 @@
 #include <realm/object-store/sync/generic_network_transport.hpp>
 #include <realm/object-store/util/event_loop_dispatcher.hpp>
 #include <realm/util/functional.hpp>
+#include <system_error>
 #include <type_traits>
 #include <utility>
 
@@ -201,6 +206,15 @@ struct Helpers {
             out->set_level_threshold(level);
             return out;
         };
+    }
+
+    static void simulate_sync_error(SyncSession &session, int code, StringData message, StringData type, bool is_fatal) {
+        std::error_code error_code(code, type == "realm::sync::ProtocolError"
+                                                 ? realm::sync::protocol_error_category()
+                                                 : realm::sync::client_error_category());
+        SyncError error {error_code, message, is_fatal};
+        error.server_requests_action = code == 211 ? sync::ProtocolErrorInfo::Action::ClientReset : sync::ProtocolErrorInfo::Action::Warning;
+        SyncSession::OnlyForTesting::handle_error(session, error);
     }
 };
 
