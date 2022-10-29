@@ -16,7 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Credentials, EmailPasswordAuthClient, User, assert, binding, createNetworkTransport, fs } from "../internal";
+import {
+  Credentials,
+  EmailPasswordAuthClient,
+  PartitionValue,
+  SyncSession,
+  User,
+  assert,
+  binding,
+  createNetworkTransport,
+  fs,
+} from "../internal";
 
 export type AppConfiguration = {
   id: string;
@@ -49,6 +59,9 @@ function getBindingLogLevel(arg: LogLevel): binding.LoggerLevel {
 
 export type Logger = (level: NumericLogLevel, message: string) => void;
 
+// TODO: Ensure this doesn't leak
+const appByUserId = new Map<string, App>();
+
 export class App {
   private static PLATFORM = "Unknown";
   private static PLATFORM_VERSION = "0.0.0";
@@ -56,6 +69,7 @@ export class App {
 
   // TODO: Expose this as a method off App
   public static Sync = {
+    Session: SyncSession,
     setLogLevel(app: App, level: LogLevel) {
       const numericLevel = getBindingLogLevel(level);
       app.internal.syncManager.setLogLevel(numericLevel);
@@ -63,7 +77,38 @@ export class App {
     setLogger(app: App, level: Logger) {
       // TODO: Call the sync manager ...
     },
+    getAllSyncSessions(user: User): SyncSession[] {
+      throw new Error("Not yet implemented");
+    },
+    getSyncSession(user: User, partitionValue: PartitionValue): SyncSession {
+      throw new Error("Not yet implemented");
+    },
+    setUserAgent(app: App, userAgent: string) {
+      throw new Error("Not yet implemented");
+    },
+    enableSessionMultiplexing(app: App) {
+      throw new Error("Not yet implemented");
+    },
+    initiateClientReset(app: App, path: string) {
+      throw new Error("Not yet implemented");
+    },
+    /** @internal */
+    _hasExistingSessions(app: App) {
+      throw new Error("Not yet implemented");
+    },
+    reconnect(app: App) {
+      throw new Error("Not yet implemented");
+    },
   };
+
+  /** @internal */
+  public static get(userInternal: binding.SyncUser) {
+    const app = appByUserId.get(userInternal.identity);
+    if (!app) {
+      throw new Error(`Cannot determine which app is associated with user (id = ${userInternal.identity})`);
+    }
+    return app;
+  }
 
   /** @internal */
   public internal: binding.App;
@@ -93,7 +138,8 @@ export class App {
 
   public async logIn(credentials: Credentials) {
     const userInternal = await this.internal.logInWithCredentials(credentials.internal);
-    return new User(this, userInternal);
+    appByUserId.set(userInternal.identity, this);
+    return new User(userInternal, this);
   }
 
   public get emailPasswordAuth(): EmailPasswordAuthClient {
@@ -104,11 +150,11 @@ export class App {
 
   public get currentUser(): User | null {
     const currentUser = this.internal.currentUser;
-    return currentUser ? User.get(this, currentUser) : null;
+    return currentUser ? User.get(currentUser) : null;
   }
 
   public get allUsers(): User[] {
-    return this.internal.allUsers.map((user) => User.get(this, user));
+    return this.internal.allUsers.map((user) => User.get(user));
   }
 
   public switchUser(): unknown {
