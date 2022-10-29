@@ -996,6 +996,7 @@ classes:
       set_timeouts: '(timeouts: SyncClientTimeouts)'
       reconnect: ()
       wait_for_sessions_to_terminate: ()
+      path_for_realm: '(config: SyncConfig) -> StringData'
 
   ThreadSafeReference: {}
   AsyncOpenTask:
