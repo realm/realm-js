@@ -18,7 +18,9 @@
 
 import { EJSON } from "bson";
 
-import { Realm, User, assert, binding } from "../internal";
+import { App, BSON, Realm, SyncSession, User, assert, binding } from "../internal";
+
+export type PartitionValue = string | number | BSON.ObjectId | BSON.UUID | null;
 
 export enum OpenRealmBehaviorType {
   DownloadBeforeOpen = "downloadBeforeOpen",
@@ -36,10 +38,21 @@ export type OpenRealmBehaviorConfiguration = {
   timeOutBehavior?: OpenRealmTimeOutBehavior;
 };
 
+export type SyncError = {
+  name: string;
+  message: string;
+  isFatal: boolean;
+  category?: string;
+  code: number;
+};
+
+export type ErrorCallback = (session: SyncSession, error: SyncError) => void;
+
 export type BaseSyncConfiguration = {
   user: User;
   newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
   existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
+  onError?: ErrorCallback;
 };
 
 // TODO: Delete once the flexible sync API gets implemented
@@ -66,20 +79,44 @@ export type FlexibleSyncConfiguration = BaseSyncConfiguration & {
 
 export type PartitionSyncConfiguration = BaseSyncConfiguration & {
   flexible?: never;
-  partitionValue: unknown;
+  partitionValue: PartitionValue;
   initialSubscriptions?: never;
 };
 
 export type SyncConfiguration = FlexibleSyncConfiguration | PartitionSyncConfiguration;
+
+/*
+function fromBindingSyncError(error: binding.SyncError): SyncError {
+  return {
+    name: error.errorCode.name,
+    code: error.errorCode.code,
+    category: error.errorCode.category,
+    message: error.message, // or error.errorCode.message
+    isFatal: error.isFatal,
+  };
+}
+*/
 
 /** @internal */
 export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConfig_Relaxed {
   if (config.flexible) {
     throw new Error("Flexible sync has not been implemented yet");
   }
-  assert.instanceOf(config.user, User, "user");
+  const { user, onError } = config;
+  assert.instanceOf(user, User, "user");
+  const partitionValue = EJSON.stringify(config.partitionValue as EJSON.SerializableTypes);
   return {
     user: config.user.internal,
-    partitionValue: EJSON.stringify(config.partitionValue as EJSON.SerializableTypes),
+    partitionValue,
+    /*
+    errorHandler: onError
+      ? (_sessionInternal, bindingError) => {
+          // TODO: Convert binding's session to SDK session, possibly via user
+          const session = App.Sync.getSyncSession(user, partitionValue);
+          const error = fromBindingSyncError(bindingError);
+          onError(session, error);
+        }
+      : undefined,
+    */
   };
 }

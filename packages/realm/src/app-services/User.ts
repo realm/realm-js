@@ -69,15 +69,15 @@ export class User<
   public internal: binding.SyncUser;
 
   /** @internal */
-  public static get(app: App, internal: binding.SyncUser) {
+  public static get(internal: binding.SyncUser) {
     // TODO: Use a WeakRef to memoize the SDK object
-    return new User(app, internal);
+    return new User(internal, App.get(internal));
   }
 
   /** @internal */
-  constructor(app: App, internal: binding.SyncUser) {
-    this.app = app;
+  constructor(internal: binding.SyncUser, app: App) {
     this.internal = internal;
+    this.app = app;
   }
 
   /**

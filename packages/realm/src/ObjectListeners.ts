@@ -34,24 +34,27 @@ export class ObjectListeners<T> {
 
   private properties: PropertyMap;
 
-  private listeners = new Listeners<ObjectChangeCallback<T>>((callback) => {
-    const token = this.notifier.addCallback((changes) => {
-      try {
-        callback(this.object, {
-          deleted: changes.isDeleted,
-          changedProperties: changes.changedColumns.map(this.properties.getName),
-        });
-      } catch (err) {
-        // Scheduling a throw on the event loop,
-        // since throwing synchroniously here would result in an abort in the calling C++
-        setImmediate(() => {
-          throw err;
-        });
-      }
-    }, []);
-    // Get an actual NotificationToken for the bigint value
-    return binding.NotificationToken.forObject(this.notifier, token);
-  });
+  private listeners = new Listeners<ObjectChangeCallback<T>, binding.NotificationToken>(
+    (callback) => {
+      const token = this.notifier.addCallback((changes) => {
+        try {
+          callback(this.object, {
+            deleted: changes.isDeleted,
+            changedProperties: changes.changedColumns.map(this.properties.getName),
+          });
+        } catch (err) {
+          // Scheduling a throw on the event loop,
+          // since throwing synchroniously here would result in an abort in the calling C++
+          setImmediate(() => {
+            throw err;
+          });
+        }
+      }, []);
+      // Get an actual NotificationToken for the bigint value
+      return binding.NotificationToken.forObject(this.notifier, token);
+    },
+    (token) => token.unregister(),
+  );
 
   /**
    * A momoized, lacyly created object notifier.

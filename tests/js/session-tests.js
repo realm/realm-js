@@ -100,7 +100,7 @@ function runOutOfProcess() {
   debug(`runOutOfProcess : ${args.join(" ")}`);
   return new Promise((resolve, reject) => {
     try {
-      execFileSync(process.execPath, args, { cwd: tmpDir.name }, (error, stdout, stderr) => {
+      execFile(process.execPath, args, { cwd: tmpDir.name }, (error, stdout, stderr) => {
         if (error) {
           console.error("runOutOfProcess failed\n", error, stdout, stderr);
           reject(new Error(`Running ${args[0]} failed. error: ${error}`));
@@ -200,7 +200,7 @@ module.exports = {
     }, "Expected 'user' to be an instance of User, got an object");
   },
 
-  testRealmOpen() {
+  async testRealmOpen() {
     if (!isNodeProcess) {
       return;
     }
@@ -208,41 +208,38 @@ module.exports = {
     const partition = Utils.genPartition();
     const expectedObjectsCount = 3;
 
-    let user, config;
     let credentials = Realm.Credentials.anonymous();
     let app = new Realm.App(appConfig);
-    return runOutOfProcess(
+
+    await runOutOfProcess(
       __dirname + "/download-api-helper.js",
       appConfig.id,
       appConfig.baseUrl,
       partition,
       REALM_MODULE_PATH,
-    )
-      .then(() => {
-        return app.logIn(credentials);
-      })
-      .then((u) => {
-        user = u;
-        config = getSyncConfiguration(u, partition);
-        return Realm.open(config);
-      })
-      .then((realm) => {
-        let actualObjectsCount = realm.objects("Dog").length;
-        TestCase.assertEqual(
-          actualObjectsCount,
-          expectedObjectsCount,
-          "Synced realm does not contain the expected objects count",
-        );
+    );
 
-        const session = realm.syncSession;
-        TestCase.assertInstanceOf(session, Realm.App.Sync.Session);
-        TestCase.assertEqual(session.user.id, user.id);
-        TestCase.assertEqual(session.config.url, config.sync.url);
-        TestCase.assertEqual(session.config.partitionValue, config.sync.partitionValue);
-        TestCase.assertEqual(session.config.user.id, config.sync.user.id);
-        TestCase.assertEqual(session.state, "active");
-        return user.logOut();
-      });
+    const user = await app.logIn(credentials);
+
+    const config = getSyncConfiguration(user, partition);
+    const realm = await Realm.open(config);
+
+    let actualObjectsCount = realm.objects("Dog").length;
+    TestCase.assertEqual(
+      actualObjectsCount,
+      expectedObjectsCount,
+      "Synced realm does not contain the expected objects count",
+    );
+
+    const session = realm.syncSession;
+    TestCase.assertInstanceOf(session, Realm.App.Sync.Session);
+    TestCase.assertEqual(session.user.id, user.id);
+    TestCase.assertEqual(session.config.url, config.sync.url);
+    TestCase.assertEqual(session.config.partitionValue, config.sync.partitionValue);
+    TestCase.assertEqual(session.config.user.id, config.sync.user.id);
+    TestCase.assertEqual(session.state, "active");
+
+    await user.logOut();
   },
 
   async testRealmOpenWithDestructiveSchemaUpdate() {

@@ -229,8 +229,8 @@ export class Realm {
       const bindingSyncConfig = toBindingSyncConfig(config.sync);
       return config.sync.user.app.internal.syncManager.pathForRealm(bindingSyncConfig);
     } else {
-    return Realm.normalizePath(config.path);
-  }
+      return Realm.normalizePath(config.path);
+    }
   }
 
   private static determineEncryptionKey(encryptionKey: Configuration["encryptionKey"]): ArrayBuffer | undefined {
@@ -292,7 +292,7 @@ export class Realm {
   }
 
   private static determineSchemaMode(config: Configuration): binding.SchemaMode | undefined {
-    const { readOnly, deleteRealmIfMigrationNeeded, onMigration } = config;
+    const { readOnly, deleteRealmIfMigrationNeeded, onMigration, sync } = config;
     assert(
       !readOnly || !deleteRealmIfMigrationNeeded,
       "Cannot set 'deleteRealmIfMigrationNeeded' when 'readOnly' is set.",
@@ -305,6 +305,8 @@ export class Realm {
       return binding.SchemaMode.Immutable;
     } else if (deleteRealmIfMigrationNeeded) {
       return binding.SchemaMode.ResetFile;
+    } else if (sync) {
+      return binding.SchemaMode.AdditiveExplicit;
     } else {
       return undefined;
     }
@@ -332,6 +334,7 @@ export class Realm {
    * @internal
    */
   public readonly internal: binding.Realm;
+  public readonly syncSession: SyncSession | null = null;
   private schemaExtras: RealmSchemaExtra = {};
   private classes: ClassMap;
   private changeListeners = new RealmListeners(this, "change");
@@ -369,6 +372,14 @@ export class Realm {
         },
       });
       RETURNED_REALMS.add(new WeakRef(this.internal));
+
+      if (config.sync) {
+        // TODO: Determine if it's okay to get this directly off the internal and only once,
+        // instead of through the internal.config.syncConfig.user.syncManager.get_existing_active_session as the legacy SDK did
+        const { syncSession } = this.internal;
+        assert(syncSession, "Expected a sync session");
+        this.syncSession = new SyncSession(syncSession, config.sync);
+      }
     }
 
     Object.defineProperties(this, {
@@ -432,11 +443,6 @@ export class Realm {
     return this.internal.isClosed;
   }
 
-  get syncSession(): SyncSession | null {
-    const { syncSession } = this.internal;
-    return syncSession ? SyncSession.get(syncSession) : null;
-  }
-
   get subscriptions(): any {
     throw new Error("Not yet implemented");
   }
@@ -445,7 +451,6 @@ export class Realm {
     this.internal.close();
   }
 
-  // TODO: Fully support update mode
   // TODO: Support embedded objects and asymmetric sync
   // TODO: Rollback by deleting the object if any property assignment fails (fixing #2638)
   create<T = DefaultObject>(type: string, values: RealmInsertionModel<T>, mode?: UpdateMode.Never): RealmObject<T> & T;

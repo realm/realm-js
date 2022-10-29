@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { CallbackRegistrator, IllegalConstructorError, Listeners } from "./internal";
+import { CallbackRegistrator, IllegalConstructorError, Listeners, binding } from "./internal";
 
 export abstract class Collection<
   KeyType = unknown,
@@ -27,14 +27,16 @@ export abstract class Collection<
 > implements Iterable<T>
 {
   /** @internal */
-  private listeners: Listeners<ChangeCallbackType>;
+  private listeners: Listeners<ChangeCallbackType, binding.NotificationToken>;
 
   /** @internal */
-  constructor(registerCallback: CallbackRegistrator<ChangeCallbackType>) {
+  constructor(registerCallback: CallbackRegistrator<ChangeCallbackType, binding.NotificationToken>) {
     if (arguments.length === 0) {
       throw new IllegalConstructorError("Collection");
     }
-    this.listeners = new Listeners<ChangeCallbackType>(registerCallback);
+    this.listeners = new Listeners<ChangeCallbackType, binding.NotificationToken>(registerCallback, (token) =>
+      token.unregister(),
+    );
     // Make the internal properties non-enumerable
     Object.defineProperties(this, {
       listeners: {
