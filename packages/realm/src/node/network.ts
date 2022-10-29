@@ -19,14 +19,16 @@ import http from "node:http";
 
 import * as network from "../platform/network";
 
-import { assert, binding } from "../internal";
+import { assert, binding, extendDebug } from "../internal";
+
+const debug = extendDebug("network");
 
 const HTTP_METHOD: Record<binding.HttpMethod, string> = {
   [binding.HttpMethod.get]: "get",
   [binding.HttpMethod.post]: "post",
   [binding.HttpMethod.put]: "put",
   [binding.HttpMethod.patch]: "patch",
-  [binding.HttpMethod.del]: "del",
+  [binding.HttpMethod.del]: "delete",
 };
 
 function flattenHeaders(headers: http.IncomingHttpHeaders) {
@@ -48,38 +50,40 @@ function flattenHeaders(headers: http.IncomingHttpHeaders) {
 
 network.inject({
   async fetch(request): Promise<network.Response> {
+    const options: http.RequestOptions = {
+      method: HTTP_METHOD[request.method],
+      timeout: Number(request.timeoutMs),
+      headers: request.headers,
+    };
+    debug("requesting", { url: request.url, body: request.body, usesRefreshToken: request.usesRefreshToken, options });
     return new Promise((resolve) => {
-      const req = http.request(
-        request.url,
-        {
-          method: HTTP_METHOD[request.method],
-          timeout: Number(request.timeoutMs),
-          headers: request.headers,
-        },
-        (res) => {
-          let body = "";
-          res.setEncoding("utf8");
-          res.on("data", (chunk) => {
-            assert.string(chunk, "chunk");
-            body += chunk;
+      const req = http.request(request.url, options, (res) => {
+        debug("responded", {
+          statusCode: res.statusCode,
+          statusMessage: res.statusMessage,
+          headers: res.headers,
+        });
+        let body = "";
+        res.setEncoding("utf8");
+        res.on("data", (chunk) => {
+          assert.string(chunk, "chunk");
+          body += chunk;
+        });
+        res.once("end", () => {
+          const { headers, statusCode } = res;
+          assert.number(statusCode, "response status code");
+          assert.object(headers, "headers");
+          resolve({
+            body,
+            headers: flattenHeaders(headers),
+            httpStatusCode: statusCode,
+            // TODO: Determine if we want to set this differently
+            customStatusCode: 0,
           });
-          res.once("end", () => {
-            const { headers, statusCode } = res;
-            assert.number(statusCode, "response status code");
-            assert.object(headers, "headers");
-            resolve({
-              body,
-              headers: flattenHeaders(headers),
-              httpStatusCode: statusCode,
-              // TODO: Determine if we want to set this differently
-              customStatusCode: 0,
-            });
-          });
-        },
-      );
+        });
+      });
       // Write the request body
-      req.write(request.body, "utf8");
-      req.end();
+      req.end(request.body, "utf8");
     });
   },
 });

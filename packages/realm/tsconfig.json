@@ -11,7 +11,9 @@
       "ES2022"
     ],
     "types": [
-      "bson"
+      "bson",
+      "debug",
+      "ms" // debug dependency
     ]
   },
   "include": [

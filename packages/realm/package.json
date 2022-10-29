@@ -12,7 +12,8 @@
     "build:types": "tsc --project tsconfig.types.json"
   },
   "dependencies": {
-    "@realm/bindgen": "^0.1.0"
+    "@realm/bindgen": "^0.1.0",
+    "debug": "^4.3.4"
   },
   "peerDependencies": {
     "bson": "^4"
