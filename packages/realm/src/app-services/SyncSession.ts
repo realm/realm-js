@@ -16,7 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Listeners, SyncConfiguration, TimeoutPromise, User, binding } from "../internal";
+import {
+  ErrorCallback,
+  Listeners,
+  SyncConfiguration,
+  TimeoutPromise,
+  User,
+  binding,
+  fromBindingSyncError,
+} from "../internal";
 
 export enum ProgressDirection {
   Download = "download",
@@ -73,6 +81,17 @@ function fromBindingSessionState(state: binding.SyncSessionState) {
   } else {
     return SessionState.Active;
   }
+}
+
+/** @internal */
+export function toBindingErrorHandler(onError: ErrorCallback, config: SyncConfiguration) {
+  return (sessionInternal: binding.SyncSession, bindingError: binding.SyncError) => {
+    // TODO: Return some cached sync session, instead of creating a new wrapper on every error
+    // const session = App.Sync.getSyncSession(user, partitionValue);
+    const session = new SyncSession(sessionInternal, config);
+    const error = fromBindingSyncError(bindingError);
+    onError(session, error);
+  };
 }
 
 export class SyncSession {

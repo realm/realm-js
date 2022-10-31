@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { Configuration, binding } from "./internal";
+
 export class AssertionError extends Error {
   constructor(message = "Assertion failed!") {
     super(message);
@@ -70,5 +72,47 @@ export class IllegalConstructorError extends Error {
 export class TimeoutError extends Error {
   constructor(message: string) {
     super(`Timed out: ${message}`);
+  }
+}
+
+/** @internal */
+export function fromBindingSyncError(error: binding.SyncError) {
+  if (error.isClientResetRequested) {
+    return new ClientResetError(error);
+  } else {
+    return new SyncError(error);
+  }
+}
+
+export class SyncError extends Error {
+  public name = "Error";
+  public code: number;
+  public category: string;
+  public isFatal: boolean;
+
+  /** @internal */
+  constructor(error: binding.SyncError) {
+    super(error.message);
+    const { errorCode } = error;
+    this.code = errorCode.code;
+    this.category = errorCode.category;
+    this.isFatal = error.isFatal;
+  }
+}
+
+const ORIGINAL_FILE_PATH_KEY = "ORIGINAL_FILE_PATH";
+const RECOVERY_FILE_PATH_KEY = "RECOVERY_FILE_PATH";
+
+export class ClientResetError extends SyncError {
+  public name = "ClientReset";
+  public config: Configuration;
+
+  /** @internal */
+  constructor(error: binding.SyncError) {
+    super(error);
+    this.config = {
+      path: error.userInfo[RECOVERY_FILE_PATH_KEY],
+      readOnly: true,
+    };
   }
 }

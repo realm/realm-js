@@ -228,6 +228,17 @@ enums:
       - Disconnected
       - Connecting
       - Connected
+  SyncErrorAction:
+    cppName: sync::ProtocolErrorInfo::Action
+    values:
+      - NoAction
+      - ProtocolViolation
+      - ApplicationBug
+      - Warning
+      - Transient
+      - DeleteRealm
+      - ClientReset
+      - ClientResetNoRecovery
   ProgressDirection:
     cppName: SyncSession::ProgressDirection
     values:
@@ -436,6 +447,9 @@ records:
      is_client_reset_requested:
        type: bool
        cppName: is_client_reset_requested()
+     server_requests_action:
+       type: SyncErrorAction
+       default: NoAction
      # server_requests_action:
      #   type: sync::ProtocolErrorInfo::Action
      #   default: sync::ProtocolErrorInfo::Action::NoAction
