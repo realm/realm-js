@@ -235,7 +235,7 @@ describe.skipIf(environment.missingServer, "mixed", () => {
     describeTypes(false);
   });
 
-    describe.skipIf(environment.skipFlexibleSync, "flexible sync roundtrip", function () {
+  describe.skipIf(environment.skipFlexibleSync, "flexible sync roundtrip", function () {
     this.timeout(25 * 1000);
     importAppBefore("with-db-flx");
     describeTypes(true);
