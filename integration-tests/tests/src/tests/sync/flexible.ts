@@ -1627,7 +1627,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       });
     });
 
-    describe("client reset handling", function () {
+    describe("client reset handling for flexible sync", function () {
       it("handles manual client resets with flexible sync enabled", async function (this: RealmContext) {
         await expectClientResetError(
           {
