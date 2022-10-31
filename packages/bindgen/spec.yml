@@ -341,7 +341,7 @@ records:
       flx_sync_requested:
         type: bool
         default: false
-      # error_handler: 'Nullable<std::function<(session: SharedSyncSession, error: SyncError) -> void>>'
+      error_handler: 'Nullable<std::function<(session: SharedSyncSession, error: SyncError) -> void>>'
 
   ObjectChangeSet:
     fields:
@@ -422,22 +422,21 @@ records:
         type: SyncClientTimeouts
         default: {}
 
-  # SyncError:
-  #  cppName: Helpers::BindingContextMethods
-  #  fields:
-  #    error_code: std::error_code
-  #    is_fatal: bool
-  #    message: StringData
-  #    simple_message: StringData
-  #    logURL: StringData
-  #    # user_info: std::unordered_map<StringData, StringData>
-  #    is_unrecognized_by_client:
-  #      type: bool
-  #      default: false
-  #    # server_requests_action:
-  #    #   type: sync::ProtocolErrorInfo::Action
-  #    #   default: sync::ProtocolErrorInfo::Action::NoAction
-  #    # compensating_writes_info: std::vector<sync::CompensatingWriteErrorInfo>
+  SyncError:
+   fields:
+     error_code: std::error_code
+     is_fatal: bool
+     message: StringData
+     simple_message: StringData
+     logURL: StringData
+     # user_info: std::unordered_map<StringData, StringData>
+     is_unrecognized_by_client:
+       type: bool
+       default: false
+     # server_requests_action:
+     #   type: sync::ProtocolErrorInfo::Action
+     #   default: sync::ProtocolErrorInfo::Action::NoAction
+     # compensating_writes_info: std::vector<sync::CompensatingWriteErrorInfo>
 
 
   Request:
