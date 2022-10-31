@@ -98,7 +98,9 @@ export class App {
       throw new Error("Not yet implemented");
     },
     initiateClientReset(app: App, path: string) {
-      throw new Error("Not yet implemented");
+      const success = app.internal.syncManager.immediatelyRunFileActions(path);
+      // TODO: Consider a better error message
+      assert(success, `Realm was not configured correctly. Client Reset could not be run for Realm at: ${path}`);
     },
     /** @internal */
     _hasExistingSessions(app: App) {

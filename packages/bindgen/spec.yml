@@ -1004,7 +1004,7 @@ classes:
       log_level: LoggerLevel
       has_existing_sessions: bool
     methods:
-      immediately_run_file_actions: '(original_name: std::string)'
+      immediately_run_file_actions: '(original_name: std::string) -> bool'
       enable_session_multiplexing: ()
       set_log_level: '(level: LoggerLevel)'
       set_logger_factory: '(factory: LoggerFactory)'
