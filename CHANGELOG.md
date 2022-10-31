@@ -1,4 +1,4 @@
-## 10.23.0 (2022-10-31)
+## vNext (TBD)
 ### Enhancements
 * Improve performance of client reset with automatic recovery and converting top-level tables into embedded tables. ([realm/realm-core#5897](https://github.com/realm/realm-core/pull/5897))
 * If a sync client sends a message larger than 16 MB, the sync server will request a client reset. ([realm/realm-core#5209](https://github.com/realm/realm-core/issues/5209))
