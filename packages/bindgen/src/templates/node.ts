@@ -531,7 +531,8 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
               return std::make_${suffix}(${type.args.map((arg, i) => c(arg, `arr[${i}u]`))});
           }((${expr}).As<Napi::Array>())`;
         case "std::map":
-          // For know, can only convert string-keyed maps to C++.
+        case "std::unordered_map":
+          // For now, can only convert string-keyed maps to C++.
           // We could also support numbers pretty easily. Anything else will be problematic.
           // Consider list-of-pairs for keys that aren't strings or numbers.
           assert.deepEqual(type.args[0], new Primitive("std::string"));
