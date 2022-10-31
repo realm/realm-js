@@ -177,9 +177,18 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
   out("// Records");
   for (const rec of spec.records) {
     for (const kind of [Kind.Ret, Kind.Arg]) {
+      // Skip function fields when converting records from C++ to JS.
+      const fields = kind == Kind.Arg ? rec.fields : rec.fields.filter((field) => !field.type.isFunction());
+
+      if (fields.length == 0) {
+        // ESLint complains if we use {} as a type, which would otherwise happen in this case.
+        out(`export type ${rec.jsName}${suffix(kind)} = Record<string, never>;`);
+        continue;
+      }
+
       // TODO consider making the Arg version just alias the Ret version if the bodies are the same.
       out(`export type ${rec.jsName}${suffix(kind)} = {`);
-      for (const field of rec.fields) {
+      for (const field of fields) {
         // For Optional<T> fields, the field will always be there in Ret mode, but it may be undefined.
         // This is handled by Optional<T> becoming `undefined | T`.
         const optField = !field.required && kind == Kind.Arg;

@@ -649,6 +649,7 @@ class NodeCppDecls extends CppDecls {
               body: `
                     auto out = Napi::Object::New(${env});
                     ${struct.fields
+                      .filter((field) => !field.type.isFunction())
                       .map(
                         (field) =>
                           `out.Set("${field.jsName}", ${convertToNode(this.addon, field.type, `in.${field.name}`)});`,
