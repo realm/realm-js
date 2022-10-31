@@ -85,7 +85,6 @@ export type PartitionSyncConfiguration = BaseSyncConfiguration & {
 
 export type SyncConfiguration = FlexibleSyncConfiguration | PartitionSyncConfiguration;
 
-/*
 function fromBindingSyncError(error: binding.SyncError): SyncError {
   return {
     name: error.errorCode.name,
@@ -95,7 +94,6 @@ function fromBindingSyncError(error: binding.SyncError): SyncError {
     isFatal: error.isFatal,
   };
 }
-*/
 
 /** @internal */
 export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConfig_Relaxed {
@@ -108,15 +106,14 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
   return {
     user: config.user.internal,
     partitionValue,
-    /*
     errorHandler: onError
-      ? (_sessionInternal, bindingError) => {
-          // TODO: Convert binding's session to SDK session, possibly via user
-          const session = App.Sync.getSyncSession(user, partitionValue);
+      ? (sessionInternal, bindingError) => {
+          // TODO: Return some cached sync session, instead of creating a new wrapper on every error
+          // const session = App.Sync.getSyncSession(user, partitionValue);
+          const session = new SyncSession(sessionInternal, config);
           const error = fromBindingSyncError(bindingError);
           onError(session, error);
         }
       : undefined,
-    */
   };
 }
