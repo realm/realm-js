@@ -653,7 +653,11 @@ class NodeCppDecls extends CppDecls {
                       .filter((field) => !field.type.isFunction())
                       .map(
                         (field) =>
-                          `out.Set("${field.jsName}", ${convertToNode(this.addon, field.type, `in.${field.name}`)});`,
+                          `out.Set("${field.jsName}", ${convertToNode(
+                            this.addon,
+                            field.type,
+                            `in.${field.cppName}`,
+                          )});`,
                       )
                       .join("\n")}
                     return out;
@@ -667,6 +671,14 @@ class NodeCppDecls extends CppDecls {
 
       struct.fromNode = () => {
         if (!fromNode) {
+          for (const field of struct.fields) {
+            if (field.cppName && field.cppName.endsWith(")")) {
+              // If this fires, we should consider a way to mark these fields as only being for one-way conversion.
+              throw new Error(
+                `Attempting JS->C++ conversion of ${struct.name}::${field.name} which looks like it may be a method`,
+              );
+            }
+          }
           fromNode = new CppFunc(
             `STRUCT_FROM_NODE_${struct.name}`,
             struct.cppName,
@@ -686,9 +698,9 @@ class NodeCppDecls extends CppDecls {
                             // Make functions on structs behave like bound methods.
                             if (field.IsFunction())
                                 field = bindFunc(field.As<Napi::Function>(), obj);
-                            out.${field.name} = ${convertFromNode(this.addon, field.type, "field")};
+                            out.${field.cppName} = ${convertFromNode(this.addon, field.type, "field")};
                         } else if constexpr (${field.required ? "true" : "false"}) {
-                            throw Napi::TypeError::New(${env}, "${struct.name}::${field.jsName} is required");
+                            throw Napi::TypeError::New(${env}, "${struct.jsName}::${field.jsName} is required");
                         }
                     }`,
                   )

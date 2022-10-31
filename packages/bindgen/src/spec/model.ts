@@ -60,6 +60,7 @@ export type RecordSpec = {
 export type FieldSpec = {
   type: TypeSpec;
   default?: ValueType;
+  cppName?: string;
 };
 
 export type MethodSpec = {

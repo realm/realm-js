@@ -433,6 +433,9 @@ records:
      is_unrecognized_by_client:
        type: bool
        default: false
+     is_client_reset_requested:
+       type: bool
+       cppName: is_client_reset_requested()
      # server_requests_action:
      #   type: sync::ProtocolErrorInfo::Action
      #   default: sync::ProtocolErrorInfo::Action::NoAction
