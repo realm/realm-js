@@ -55,6 +55,13 @@ abstract class TypeBase {
     return this.isPrimitive("void");
   }
 
+  // This is primarily intended to be used to detect function object fields in records,
+  // since they only need to be converted to C++ not from it.
+  // TODO: consider better names for this function.
+  isFunction() {
+    return false;
+  }
+
   removeConstRef(this: Type): Exclude<Type, Const | Ref | RRef> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     let self = this;
@@ -65,44 +72,42 @@ abstract class TypeBase {
   }
 }
 
-class Const extends TypeBase {
-  readonly kind = "Const";
+abstract class WrapperType extends TypeBase {
   constructor(public type: Type) {
     super();
   }
+
+  isFunction(): boolean {
+    return this.type.isFunction();
+  }
+}
+
+class Const extends WrapperType {
+  readonly kind = "Const";
 
   toString() {
     return `${this.type} const`;
   }
 }
 
-class Pointer extends TypeBase {
+class Pointer extends WrapperType {
   readonly kind = "Pointer";
-  constructor(public type: Type) {
-    super();
-  }
 
   toString() {
     return `${this.type}*`;
   }
 }
 
-class Ref extends TypeBase {
+class Ref extends WrapperType {
   readonly kind = "Ref";
-  constructor(public type: Type) {
-    super();
-  }
 
   toString() {
     return `${this.type}&`;
   }
 }
 
-class RRef extends TypeBase {
+class RRef extends WrapperType {
   readonly kind = "RRef";
-  constructor(public type: Type) {
-    super();
-  }
 
   toString() {
     return `${this.type}&&`;
@@ -135,6 +140,10 @@ export class Func extends TypeBase {
   toString() {
     const args = this.args.map((a) => a.toString()).join(", ");
     return `(${args})${this.isConst ? " const" : ""}${this.noexcept ? " noexcept" : ""} -> ${this.ret}`;
+  }
+
+  isFunction(): boolean {
+    return true;
   }
 
   // For functions that take a final AsyncCallback argument, transforms into a
@@ -195,6 +204,12 @@ class Template extends TypeBase {
 
   toString() {
     return `${this.name}<${this.args.join(", ")}>`;
+  }
+
+  isFunction(): boolean {
+    // This isn't 100% accurate, since eg vector<someFunc> isn't really a function.
+    // However, for the purposes of this method, it would still be correct to treat it as such.
+    return this.args.some((arg) => arg.isFunction());
   }
 }
 
