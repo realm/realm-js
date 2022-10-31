@@ -163,7 +163,7 @@ function normalizeFieldSpec(spec: RelaxedFieldSpec): FieldSpec {
   if (typeof spec === "string") {
     return { type: normalizeTypeSpec(spec) };
   } else {
-    return { type: normalizeTypeSpec(spec.type), default: normalizeValueType(spec.default) };
+    return { type: normalizeTypeSpec(spec.type), default: normalizeValueType(spec.default), cppName: spec.cppName };
   }
 }
 
