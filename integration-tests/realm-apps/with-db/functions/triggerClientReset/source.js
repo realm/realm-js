@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2021 Realm Inc.
+// Copyright 2022 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,26 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import chaiAsPromised from "chai-as-promised";
-import chai from "chai";
+/* eslint-env node */
+/* global context */
 
-chai.use(chaiAsPromised);
+exports = async function (appId, userId) {
+  return (await deleteClientFile(`__realm_sync_${appId}`, userId)) || (await deleteClientFile(`__realm_sync`, userId));
+};
 
-import "./realm-constructor";
-import "./objects";
-import "./class-models";
-import "./serialization";
-import "./iterators";
-import "./queries";
-import "./dynamic-schema-updates";
-import "./bson";
-import "./dictionary";
-import "./credentials/anonymous";
-import "./sync/mixed";
-import "./sync/flexible";
-import "./sync/asymmetric";
-import "./sync/sync-as-local";
-import "./transaction";
-import "./schema";
-import "./types";
-import "./sync/client-reset";
+async function deleteClientFile(db, userId) {
+  const mongodb = context.services.get("mongodb");
+  return (await mongodb.db(db).collection("clientfiles").deleteMany({ ownerId: userId })).deletedCount > 0;
+}

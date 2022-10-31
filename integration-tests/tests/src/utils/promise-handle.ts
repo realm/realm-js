@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2021 Realm Inc.
+// Copyright 2022 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,26 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import chaiAsPromised from "chai-as-promised";
-import chai from "chai";
+type ResolveType<T> = (value: T | PromiseLike<T>) => void;
+type RejectType = (reason?: any) => void;
+type PromiseHandle<T> = {
+  promise: Promise<T>;
+  resolve: ResolveType<T>;
+  reject: RejectType;
+};
 
-chai.use(chaiAsPromised);
-
-import "./realm-constructor";
-import "./objects";
-import "./class-models";
-import "./serialization";
-import "./iterators";
-import "./queries";
-import "./dynamic-schema-updates";
-import "./bson";
-import "./dictionary";
-import "./credentials/anonymous";
-import "./sync/mixed";
-import "./sync/flexible";
-import "./sync/asymmetric";
-import "./sync/sync-as-local";
-import "./transaction";
-import "./schema";
-import "./types";
-import "./sync/client-reset";
+export function createPromiseHandle<T = void>(): PromiseHandle<T> {
+  let resolve: ResolveType<T> | null = null;
+  let reject: RejectType | null = null;
+  const promise = new Promise<T>((arg0, arg1) => {
+    resolve = arg0;
+    reject = arg1;
+  });
+  if (!resolve || !reject) {
+    throw new Error("Expected promise executor to be called synchroniously");
+  }
+  return { promise, resolve, reject };
+}

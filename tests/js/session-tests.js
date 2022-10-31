@@ -371,10 +371,11 @@ module.exports = {
             _reject(e);
           }
         };
+        config.sync.clientReset = {
+          mode: "manual",
+        };
         const realm = new Realm(config);
         const session = realm.syncSession;
-
-        TestCase.assertEqual(session.config.onError, config.sync.onError);
         session._simulateError(123, "simulated error", "realm::sync::ProtocolError", false);
       });
     });
@@ -554,133 +555,6 @@ module.exports = {
     const realm = await Realm.open(config);
     await promisedLog;
     realm.close();
-  },
-
-  testClientReset() {
-    // FIXME: try to enable for React Native
-    if (!platformSupported) {
-      return;
-    }
-
-    const partition = Utils.genPartition();
-    let creds = Realm.Credentials.anonymous();
-    let app = new Realm.App(appConfig);
-    return app.logIn(creds).then((user) => {
-      return new Promise((resolve, _reject) => {
-        let realm;
-        const config = getSyncConfiguration(user, partition);
-        config.sync.onError = (sender, error) => {
-          try {
-            console.log(JSON.stringify(error));
-            TestCase.assertEqual(error.name, "ClientReset");
-            TestCase.assertEqual(error.message, "Simulate Client Reset");
-            TestCase.assertEqual(error.code, 211); // 211 -> diverging histories
-            const path = realm.path;
-            realm.close();
-            Realm.App.Sync.initiateClientReset(app, path);
-            // open Realm with error.config, and copy required objects a Realm at `path`
-            resolve();
-          } catch (e) {
-            _reject(e);
-          }
-        };
-        config.sync.clientReset = {
-          mode: "manual",
-        };
-        realm = new Realm(config);
-        const session = realm.syncSession;
-
-        TestCase.assertEqual(session.config.onError, config.sync.onError);
-        session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false); // 211 -> diverging histories
-      });
-    });
-  },
-
-  testClientResetDiscardLocalFailed() {
-    if (!platformSupported) {
-      return;
-    }
-
-    // if client reset fails, the error handler is called
-    // and the two before/after handlers are not called
-    // we simulate the failure by error code 132
-    const partition = Utils.genPartition();
-    let creds = Realm.Credentials.anonymous();
-    let app = new Realm.App(appConfig);
-    return new Promise((resolve, reject) => {
-      return app.logIn(creds).then((user) => {
-        const config = getSyncConfiguration(user, partition);
-        config.sync.clientReset = {
-          mode: "discardLocal",
-          onBefore: (realm) => {
-            console.log("XXXXXXXXXXXXXXXx this happen?");
-            reject("clientResetBefore");
-          },
-          onAfter: (beforeRealm, afterRealm) => {
-            console.log("YYYYYYYYYYYYYYy or this?");
-            reject("clientResetAfter");
-          },
-        };
-        config.sync.onError = (sender, error) => {
-          resolve();
-        };
-
-        Realm.open(config).then((r) => {
-          r.syncSession._simulateError(132, "Simulate Client Reset", "realm::sync::ProtocolError", true); // 132 -> automatic client reset failed
-        });
-      });
-    });
-  },
-
-  testClientResetDiscardLocal() {
-    if (!platformSupported) {
-      return;
-    }
-
-    // (i)   using a client reset in "DiscardLocal" mode, a fresh copy
-    //       of the Realm will be downloaded (resync)
-    // (ii)  two callback will be called, while the sync error handler is not
-    // (iii) after the reset, the Realm can be used as before
-
-    let beforeCalled = false;
-    let afterCalled = false;
-
-    const partition = Utils.genPartition();
-    let creds = Realm.Credentials.anonymous();
-    let app = new Realm.App(appConfig);
-    return new Promise((resolve, reject) => {
-      return app.logIn(creds).then((user) => {
-        const config = getSyncConfiguration(user, partition);
-        config.sync.clientReset = {
-          mode: "discardLocal",
-          onBefore: (realm) => {
-            beforeCalled = true;
-            TestCase.assertEqual(realm.objects("Dog").length, 1, "local");
-          },
-          onAfter: (beforeRealm, afterRealm) => {
-            afterCalled = true;
-            TestCase.assertEqual(beforeRealm.objects("Dog").length, 1, "local");
-            TestCase.assertEqual(afterRealm.objects("Dog").length, 1, "after");
-          },
-        };
-        config.sync.onError = (sender, error) => {
-          reject(`error: ${JSON.stringify(error)}`);
-        };
-
-        Realm.open(config).then((r) => {
-          r.write(() => {
-            r.create("Dog", { _id: new ObjectId(), name: "Lassy" });
-          });
-          r.syncSession._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false);
-          setTimeout(() => {
-            TestCase.assertTrue(beforeCalled, "before");
-            TestCase.assertTrue(afterCalled, "after");
-            TestCase.assertEqual(r.objects("Dog").length, 1);
-            resolve();
-          }, 1000);
-        });
-      });
-    });
   },
 
   testAddConnectionNotification() {
@@ -1308,6 +1182,7 @@ module.exports = {
         _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
         clientReset: {
           mode: "manual",
+          onManual: () => console.log("error"),
         },
       },
       schema: [schemas.PersonForSync, schemas.DogForSync],
@@ -1356,7 +1231,7 @@ module.exports = {
 
         13)  synced, unencrypted Realm -> synced, unencrypted Realm
         14)  synced, unencrypted Realm -> synced, encrypted Realm
-        15)  synced, encrypted Realm -> synced, unencrypted Realm
+        15)  synced, encrypted Realm -> synced, unencrypted Relam
         16)  synced, encrypted Realm -> synced, encrypted Realm
     */
 
