@@ -304,7 +304,7 @@ function getSchema(useFlexibleSync: boolean) {
         expect(() => new Realm(config)).throws();
       });
 
-      it(`handles manual client resets with ${getPartialTestTitle(
+      it(`handles manual simulated client resets with ${getPartialTestTitle(
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
         await expectClientResetError(
@@ -337,7 +337,7 @@ function getSchema(useFlexibleSync: boolean) {
         );
       });
 
-      it(`handles manual resets by callback with ${getPartialTestTitle(
+      it(`handles manual simulated client resets by callback with ${getPartialTestTitle(
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
         return new Promise((resolve, _) => {
@@ -369,7 +369,7 @@ function getSchema(useFlexibleSync: boolean) {
         });
       });
 
-      it(`handles manual resets by callback from error handler with ${getPartialTestTitle(
+      it(`handles manual simulated client resets by callback from error handler with ${getPartialTestTitle(
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
         return new Promise((resolve, reject) => {
@@ -441,7 +441,7 @@ function getSchema(useFlexibleSync: boolean) {
         });
       });
 
-      it(`handles discard local client reset with ${getPartialTestTitle(
+      it(`handles discard local simulated client reset with ${getPartialTestTitle(
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
         // (i)   using a client reset in "DiscardUnsyncedChanges" mode, a fresh copy
@@ -486,7 +486,7 @@ function getSchema(useFlexibleSync: boolean) {
         );
       });
 
-      it(`handles discard local client reset with ${getPartialTestTitle(
+      it.skip(`handles discard local client reset with ${getPartialTestTitle(
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
         // (i)   using a client reset in "DiscardUnsyncedChanges" mode, a fresh copy
@@ -512,7 +512,7 @@ function getSchema(useFlexibleSync: boolean) {
         );
       });
 
-      it(`handles recovery client reset with ${getPartialTestTitle(
+      it.skip(`handles recovery client reset with ${getPartialTestTitle(
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
         // (i)   using a client reset in "Recovery" mode, a fresh copy
