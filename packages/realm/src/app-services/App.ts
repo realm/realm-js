@@ -36,18 +36,18 @@ export type AppConfiguration = {
 export type LogLevel = "all" | "trace" | "debug" | "detail" | "info" | "warn" | "error" | "fatal" | "off";
 
 export enum NumericLogLevel {
-  All,
-  Trace,
-  Debug,
-  Detail,
-  Info,
-  Warn,
-  Error,
-  Fatal,
-  Off,
+  All = 0,
+  Trace = 1,
+  Debug = 2,
+  Detail = 3,
+  Info = 4,
+  Warn = 5,
+  Error = 6,
+  Fatal = 7,
+  Off = 8,
 }
 
-function getBindingLogLevel(arg: LogLevel): binding.LoggerLevel {
+function toBindingLoggerLevel(arg: LogLevel): binding.LoggerLevel {
   const result = Object.entries(NumericLogLevel).find(([name]) => {
     return name.toLowerCase() === arg;
   });
@@ -55,6 +55,11 @@ function getBindingLogLevel(arg: LogLevel): binding.LoggerLevel {
   const [, level] = result;
   assert.number(level, "Expected a numeric level");
   return level as number as binding.LoggerLevel;
+}
+
+function fromBindingLoggerLevel(arg: binding.LoggerLevel): NumericLogLevel {
+  // For now, these map 1-to-1
+  return arg as unknown as NumericLogLevel;
 }
 
 export type Logger = (level: NumericLogLevel, message: string) => void;
@@ -71,11 +76,14 @@ export class App {
   public static Sync = {
     Session: SyncSession,
     setLogLevel(app: App, level: LogLevel) {
-      const numericLevel = getBindingLogLevel(level);
+      const numericLevel = toBindingLoggerLevel(level);
       app.internal.syncManager.setLogLevel(numericLevel);
     },
-    setLogger(app: App, level: Logger) {
-      // TODO: Call the sync manager ...
+    setLogger(app: App, logger: Logger) {
+      const factory = binding.Helpers.makeLoggerFactory((level, message) => {
+        logger(fromBindingLoggerLevel(level), message);
+      });
+      app.internal.syncManager.setLoggerFactory(factory);
     },
     getAllSyncSessions(user: User): SyncSession[] {
       throw new Error("Not yet implemented");
