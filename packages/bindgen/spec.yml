@@ -59,7 +59,7 @@ templates: # value tells you how many arguments it takes ('*' means any number)
   std::shared_ptr: 1
   std::pair: 2
   std::tuple: '*'
-  # std::unordered_map: 2
+  std::unordered_map: 2
   std::map: 2
   util::UniqueFunction: 1
   std::function: 1
@@ -429,7 +429,7 @@ records:
      message: StringData
      simple_message: StringData
      logURL: StringData
-     # user_info: std::unordered_map<StringData, StringData>
+     user_info: std::unordered_map<StringData, StringData>
      is_unrecognized_by_client:
        type: bool
        default: false

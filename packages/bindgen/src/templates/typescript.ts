@@ -52,6 +52,7 @@ const TEMPLATE_MAPPING: Record<string, (...args: string[]) => string> = {
   "std::pair": (a, b) => `[${a}, ${b}]`,
   "std::tuple": (...args) => `[${args}]`,
   "std::map": (k, v) => `Record<${k}, ${v}>`,
+  "std::unordered_map": (k, v) => `Record<${k}, ${v}>`,
   "util::UniqueFunction": (f) => f,
   "std::function": (f) => f,
   AsyncResult: (t) => `Promise<${t}>`,
