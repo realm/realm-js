@@ -18,7 +18,17 @@
 
 import { EJSON } from "bson";
 
-import { App, BSON, Realm, SyncSession, User, assert, binding } from "../internal";
+import {
+  BSON,
+  ClientResetError,
+  Realm,
+  SyncError,
+  SyncSession,
+  User,
+  assert,
+  binding,
+  toBindingErrorHandler,
+} from "../internal";
 
 export type PartitionValue = string | number | BSON.ObjectId | BSON.UUID | null;
 
@@ -38,15 +48,7 @@ export type OpenRealmBehaviorConfiguration = {
   timeOutBehavior?: OpenRealmTimeOutBehavior;
 };
 
-export type SyncError = {
-  name: string;
-  message: string;
-  isFatal: boolean;
-  category?: string;
-  code: number;
-};
-
-export type ErrorCallback = (session: SyncSession, error: SyncError) => void;
+export type ErrorCallback = (session: SyncSession, error: SyncError | ClientResetError) => void;
 
 export type BaseSyncConfiguration = {
   user: User;
@@ -85,16 +87,6 @@ export type PartitionSyncConfiguration = BaseSyncConfiguration & {
 
 export type SyncConfiguration = FlexibleSyncConfiguration | PartitionSyncConfiguration;
 
-function fromBindingSyncError(error: binding.SyncError): SyncError {
-  return {
-    name: error.errorCode.name,
-    code: error.errorCode.code,
-    category: error.errorCode.category,
-    message: error.message, // or error.errorCode.message
-    isFatal: error.isFatal,
-  };
-}
-
 /** @internal */
 export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConfig_Relaxed {
   if (config.flexible) {
@@ -106,14 +98,6 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
   return {
     user: config.user.internal,
     partitionValue,
-    errorHandler: onError
-      ? (sessionInternal, bindingError) => {
-          // TODO: Return some cached sync session, instead of creating a new wrapper on every error
-          // const session = App.Sync.getSyncSession(user, partitionValue);
-          const session = new SyncSession(sessionInternal, config);
-          const error = fromBindingSyncError(bindingError);
-          onError(session, error);
-        }
-      : undefined,
+    errorHandler: onError ? toBindingErrorHandler(onError, config) : undefined,
   };
 }
