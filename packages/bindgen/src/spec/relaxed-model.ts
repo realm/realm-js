@@ -63,6 +63,7 @@ export type RelaxedFieldSpec =
   | {
       type: string;
       default?: unknown;
+      cppName?: string;
     };
 
 export type RelaxedClassSpec = {
