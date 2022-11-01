@@ -44,12 +44,12 @@ module.exports = {
 
   testNewAppFromUndefined() {
     const error = TestCase.assertThrows(() => new Realm.App());
-    TestCase.assertEqual(error.message, "Invalid arguments: 1 expected, but 0 supplied.");
+    TestCase.assertEqual(error.message, "Expected 'config' to be an object, got undefined");
   },
 
   testNewAppFromOther() {
     const error = TestCase.assertThrows(() => new Realm.App(1234));
-    TestCase.assertEqual(error.message, "Expected either a configuration object or an app id string.");
+    TestCase.assertEqual(error.message, "Expected 'config' to be an object, got a number");
   },
 
   testInvalidServer() {
