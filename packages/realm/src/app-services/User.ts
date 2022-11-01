@@ -175,7 +175,7 @@ export class User<
   get apiKeys(): ApiKeyAuthClient {
     // TODO: Add memoization
     const internal = this.app.internal.userApiKeyProviderClient();
-    return new ApiKeyAuthClient(this, internal);
+    return new ApiKeyAuthClient(this.internal, internal);
   }
 
   /**

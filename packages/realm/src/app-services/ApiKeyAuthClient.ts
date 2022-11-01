@@ -16,7 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { User, binding } from "../internal";
+import { SyncUser } from "../binding";
+import { User, binding, Realm } from "../internal";
 
 /**
  * The representation of an API-key stored in the service.
@@ -30,7 +31,7 @@ export type ApiKey = {
   /**
    * The secret part of the key.
    */
-  key: string;
+  key?: string;
 
   /**
    * A name for the key.
@@ -48,12 +49,12 @@ export type ApiKey = {
  */
 export class ApiKeyAuthClient {
   /** @internal */
-  private user: binding.UserApiKeyProviderClient;
+  private user: binding.SyncUser;
   /** @internal */
   private internal: binding.UserApiKeyProviderClient;
 
   /** @internal */
-  constructor(user: User<unknown, unknown, unknown>, internal: binding.UserApiKeyProviderClient) {
+  constructor(user: binding.SyncUser, internal: binding.UserApiKeyProviderClient) {
     this.user = user;
     this.internal = internal;
   }
@@ -64,7 +65,9 @@ export class ApiKeyAuthClient {
    * @param name the name of the API key to be created.
    */
   async create(name: string): Promise<ApiKey> {
-    throw new Error("Not yet implemented");
+    return this.internal.createApiKey(name, this.user).then(({ id, key, name, disabled }) => {
+      return { _id: id.toHexString(), key, name, disabled };
+    });
   }
 
   /**
@@ -73,14 +76,18 @@ export class ApiKeyAuthClient {
    * @param keyId the id of the API key to fetch.
    */
   async fetch(keyId: string): Promise<ApiKey> {
-    throw new Error("Not yet implemented");
+    return this.internal.fetchApiKey(new Realm.BSON.ObjectId(keyId), this.user).then(({ id, key, name, disabled }) => {
+      return { _id: id.toHexString(), key, name, disabled };
+    });
   }
 
   /**
    * Fetches the API keys associated with the current user.
    */
   async fetchAll(): Promise<ApiKey[]> {
-    throw new Error("Not yet implemented");
+    return (await this.internal.fetchApiKeys(this.user)).map(({ id, key, name, disabled }) => {
+      return { _id: id.toHexString(), key, name, disabled };
+    });
   }
 
   /**
@@ -89,7 +96,7 @@ export class ApiKeyAuthClient {
    * @param keyId the id of the API key to delete
    */
   async delete(keyId: string) {
-    throw new Error("Not yet implemented");
+    this.internal.deleteApiKey(new Realm.BSON.ObjectId(keyId), this.user);
   }
 
   /**
@@ -98,7 +105,7 @@ export class ApiKeyAuthClient {
    * @param keyId the id of the API key to enable
    */
   async enable(keyId: string) {
-    throw new Error("Not yet implemented");
+    this.internal.enableApiKey(new Realm.BSON.ObjectId(keyId), this.user);
   }
 
   /**
@@ -107,6 +114,6 @@ export class ApiKeyAuthClient {
    * @param keyId the id of the API key to disable
    */
   async disable(keyId: string) {
-    throw new Error("Not yet implemented");
+    this.internal.disableApiKey(new Realm.BSON.ObjectId(keyId), this.user);
   }
 }
