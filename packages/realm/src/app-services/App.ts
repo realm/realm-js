@@ -19,8 +19,8 @@
 import {
   Credentials,
   EmailPasswordAuthClient,
-  PartitionValue,
-  SyncSession,
+  Listeners,
+  Sync,
   User,
   assert,
   binding,
@@ -39,9 +39,15 @@ export type AppChangeCallback = () => void;
 const appByUserId = new Map<string, App>();
 
 export class App {
-  private static PLATFORM = "Unknown";
-  private static PLATFORM_VERSION = "0.0.0";
-  private static SDK_VERSION = "0.0.0";
+  // TODO: Ensure these are injected by the platform
+  /** @internal */
+  public static PLATFORM_CONTEXT = "unknown-context";
+  /** @internal */
+  public static PLATFORM_OS = "unknown-os";
+  /** @internal */
+  public static PLATFORM_VERSION = "0.0.0";
+  /** @internal */
+  public static SDK_VERSION = "0.0.0";
 
   public static Sync = Sync;
 
@@ -57,6 +63,7 @@ export class App {
   /** @internal */
   public internal: binding.App;
 
+  public userAgent = `RealmJS/${App.SDK_VERSION} (${App.PLATFORM_CONTEXT}, ${App.PLATFORM_OS}, v${App.PLATFORM_VERSION})`;
 
   private listeners = new Listeners<AppChangeCallback, unknown>(
     () => {
@@ -70,18 +77,23 @@ export class App {
   constructor(id: string);
   constructor(config: AppConfiguration);
   constructor(configOrId: AppConfiguration | string) {
-    const { id, baseUrl }: AppConfiguration = typeof configOrId === "string" ? { id: configOrId } : configOrId;
+    const config: AppConfiguration = typeof configOrId === "string" ? { id: configOrId } : configOrId;
+    assert.object(config, "config");
+    const { id, baseUrl } = config;
+    // TODO: This used getSharedApp in the legacy SDK, but it's failing AppTests
     this.internal = binding.App.getUncachedApp(
       {
         appId: id,
-        platform: App.PLATFORM,
+        platform: App.PLATFORM_OS,
         platformVersion: App.PLATFORM_VERSION,
-        sdkVersion: App.SDK_VERSION,
+        sdkVersion: App.SDK_VERSION, // Used to be "RealmJS/" + SDK_VERSION
         transport: createNetworkTransport(),
         baseUrl,
       },
       {
         baseFilePath: fs.getDefaultDirectoryPath(),
+        metadataMode: binding.MetadataMode.NoEncryption,
+        userAgentBindingInfo: this.userAgent,
       },
     );
   }
