@@ -339,6 +339,8 @@ export class Realm {
    * @internal
    */
   public readonly internal: binding.Realm;
+  public syncSession: SyncSession | null = null;
+
   private schemaExtras: RealmSchemaExtra = {};
   private classes: ClassMap;
   private changeListeners = new RealmListeners(this, "change");
@@ -393,6 +395,24 @@ export class Realm {
     });
 
     this.classes = new ClassMap(this, this.internal.schema, this.schema);
+    if (this.internal.config.syncConfig) {
+      // TODO: Determine if it's okay to get this (once) directly off the internal
+      // instead of through the internal.config.syncConfig.user.syncManager.get_existing_active_session as the legacy SDK did
+      // We need to do this to make sure we have a single SDK object to make the listener patterns work as intended.
+      /*
+      const { syncConfig, path } = this.internal.config;
+      if (syncConfig) {
+        const session = syncConfig.user.syncManager.getExistingActiveSession(path);
+        if (session) {
+          return new SyncSession(session);
+        }
+      }
+      */
+      const { syncSession } = this.internal;
+      if (syncSession) {
+        this.syncSession = new SyncSession(syncSession);
+      }
+    }
   }
 
   get isEmpty(): boolean {
@@ -440,20 +460,14 @@ export class Realm {
     return this.internal.isClosed;
   }
 
-  get syncSession(): SyncSession | null {
-    // TODO: Determine if it's okay to get this directly off the internal
-    // instead of through the internal.config.syncConfig.user.syncManager.get_existing_active_session as the legacy SDK did
-    const { syncSession } = this.internal;
-    assert(syncSession, "Expected a sync session");
-    return new SyncSession(syncSession);
-  }
-
   get subscriptions(): any {
     throw new Error("Not yet implemented");
   }
 
   close(): void {
     this.internal.close();
+    // this.syncSession?.internal.close(); // Won't be good if session multiplexing is enabled
+    // this.syncSession?.internal.$resetSharedPtr();
   }
 
   // TODO: Support embedded objects and asymmetric sync
