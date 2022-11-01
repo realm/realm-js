@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { EJSON } from "bson";
 import {
   App,
   OpenRealmBehaviorConfiguration,
@@ -29,6 +28,8 @@ import {
   binding,
   toBindingSyncConfig,
 } from "../internal";
+
+import * as internal from "../internal";
 
 export type LogLevel = "all" | "trace" | "debug" | "detail" | "info" | "warn" | "error" | "fatal" | "off";
 
@@ -64,6 +65,7 @@ function fromBindingLoggerLevel(arg: binding.LoggerLevel): NumericLogLevel {
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Sync {
   export const Session = SyncSession;
+  export const ConnectionState = internal.ConnectionState;
   export function setLogLevel(app: App, level: LogLevel) {
     const numericLevel = toBindingLoggerLevel(level);
     app.internal.syncManager.setLogLevel(numericLevel);
