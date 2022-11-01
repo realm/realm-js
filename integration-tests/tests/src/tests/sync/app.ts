@@ -93,12 +93,12 @@ describe("App", () => {
 
     it("throws on undefined app", function () {
       //@ts-expect-error creating an app without a config should fail
-      expect(() => new Realm.App()).throws(Error, "Invalid arguments: 1 expected, but 0 supplied.");
+      expect(() => new Realm.App()).throws("Expected 'config' to be an object, got undefined");
     });
 
     it("throws on invalid input", function () {
       //@ts-expect-error creating an app with an invalid config should fail
-      expect(() => new Realm.App(1234)).throws(Error, "Expected either a configuration object or an app id string.");
+      expect(() => new Realm.App(1234)).throws("Expected 'config' to be an object, got a number");
     });
 
     it("logging in throws on invalid baseURL", async function () {
