@@ -16,9 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { EJSON } from "bson";
 import {
+  App,
   ErrorCallback,
   Listeners,
+  PartitionValue,
+  SessionStopPolicy,
   SyncConfiguration,
   TimeoutPromise,
   User,
@@ -84,11 +88,11 @@ function fromBindingSessionState(state: binding.SyncSessionState) {
 }
 
 /** @internal */
-export function toBindingErrorHandler(onError: ErrorCallback, config: SyncConfiguration) {
+export function toBindingErrorHandler(onError: ErrorCallback) {
   return (sessionInternal: binding.SyncSession, bindingError: binding.SyncError) => {
     // TODO: Return some cached sync session, instead of creating a new wrapper on every error
     // const session = App.Sync.getSyncSession(user, partitionValue);
-    const session = new SyncSession(sessionInternal, config);
+    const session = new SyncSession(sessionInternal);
     const error = fromBindingSyncError(bindingError);
     onError(session, error);
   };
@@ -132,8 +136,19 @@ export class SyncSession {
   );
 
   /** @internal */
-  constructor(internal: binding.SyncSession, public readonly config: SyncConfiguration) {
+  constructor(internal: binding.SyncSession) {
     this.internal = internal;
+  }
+
+  // TODO: Return the `error_handler` and `custom_http_headers`
+  get config(): SyncConfiguration {
+    const user = new User(this.internal.user, {} as unknown as App);
+    const { partitionValue, flxSyncRequested } = this.internal.config;
+    if (flxSyncRequested) {
+      return { user, flexible: true };
+    } else {
+      return { user, partitionValue: EJSON.parse(partitionValue) as PartitionValue };
+    }
   }
 
   get state(): SessionState {
