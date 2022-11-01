@@ -215,6 +215,11 @@ enums:
       - patch
       - put
       - del
+  SyncSessionStopPolicy:
+    values:
+      - Immediately
+      - LiveIndefinitely
+      - AfterChangesUploaded
   SyncSessionState:
     cppName: SyncSession::State
     values:
@@ -349,6 +354,9 @@ records:
       partition_value:
         type: std::string
         default: ""
+      stop_policy:
+        type: SyncSessionStopPolicy
+        default: AfterChangesUploaded
       flx_sync_requested:
         type: bool
         default: false
@@ -946,8 +954,10 @@ classes:
       # identities: std::vector<SyncUserIdentity> # TODO
       custom_data: util::Optional<BsonDocument>
       # state: SyncUserState # TODO this shouldn't be a 64-bit enum
+      sync_manager: SharedSyncManager
     methods:
       log_out: ()
+      session_for_on_disk_path: '(path: StringData) -> Nullable<SharedSyncSession>'
       # TODO update methods?
 
   App:

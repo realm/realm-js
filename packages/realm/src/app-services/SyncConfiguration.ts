@@ -28,6 +28,7 @@ import {
   assert,
   binding,
   toBindingErrorHandler,
+  toBindingStopPolicy,
 } from "../internal";
 
 export type PartitionValue = string | number | BSON.ObjectId | BSON.UUID | null;
@@ -50,11 +51,19 @@ export type OpenRealmBehaviorConfiguration = {
 
 export type ErrorCallback = (session: SyncSession, error: SyncError | ClientResetError) => void;
 
+export enum SessionStopPolicy {
+  AfterUpload = "after-upload",
+  Immediately = "immediately",
+  Never = "never",
+}
+
 export type BaseSyncConfiguration = {
   user: User;
   newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
   existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
   onError?: ErrorCallback;
+  /** @internal */
+  _sessionStopPolicy?: SessionStopPolicy; // TODO: Why is this _ prefixed?
 };
 
 // TODO: Delete once the flexible sync API gets implemented
@@ -92,12 +101,15 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
   if (config.flexible) {
     throw new Error("Flexible sync has not been implemented yet");
   }
-  const { user, onError } = config;
+  const { user, onError, _sessionStopPolicy } = config;
   assert.instanceOf(user, User, "user");
   const partitionValue = EJSON.stringify(config.partitionValue as EJSON.SerializableTypes);
   return {
     user: config.user.internal,
     partitionValue,
-    errorHandler: onError ? toBindingErrorHandler(onError, config) : undefined,
+    errorHandler: onError ? toBindingErrorHandler(onError) : undefined,
+    stopPolicy: _sessionStopPolicy
+      ? toBindingStopPolicy(_sessionStopPolicy)
+      : binding.SyncSessionStopPolicy.AfterChangesUploaded,
   };
 }
