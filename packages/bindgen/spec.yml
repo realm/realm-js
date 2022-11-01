@@ -351,7 +351,7 @@ records:
       sync_config: Nullable<std::shared_ptr<SyncConfig>>
       # Unclear if migration_function and initialization_function should be marked as off_thread.
       # Existing JS sdk treats them as not.
-      migration_function: 'Nullable<std::function<(old_realm: SharedRealm, new_realm: SharedRealm, new_schema_handle: Schema&) -> void>>'
+      migration_function: 'Nullable<std::function<(old_realm: SharedRealm, new_realm: SharedRealm, new_schema_handle: IgnoreArgument<Schema&>) -> void>>'
       initialization_function: 'Nullable<std::function<(realm: SharedRealm) -> void>>'
       should_compact_on_launch_function: 'Nullable<std::function<(total_bytes: uint64_t, used_bytes: uint64_t) off_thread -> bool>>'
 
@@ -732,7 +732,7 @@ classes:
       read_group: () -> Group&
       duplicate: () -> TransactionRef
 
-      update_schema: '(schema: std::vector<ObjectSchema>, version: uint64_t, migration_function: Nullable<std::function<(old_realm: SharedRealm, new_realm: SharedRealm, new_schema_handle: Schema&) -> void>>, initialization_function: Nullable<std::function<(realm: SharedRealm) -> void>>, in_transaction: bool) -> void'
+      update_schema: '(schema: std::vector<ObjectSchema>, version: uint64_t, migration_function: Nullable<std::function<(old_realm: SharedRealm, new_realm: SharedRealm, new_schema_handle: IgnoreArgument<Schema&>) -> void>>, initialization_function: Nullable<std::function<(realm: SharedRealm) -> void>>, in_transaction: bool) -> void'
       enable_wait_for_change: ()
       wait_for_change: () -> bool
       wait_for_change_release: ()
