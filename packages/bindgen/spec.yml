@@ -67,6 +67,7 @@ templates: # value tells you how many arguments it takes ('*' means any number)
                    # Recommended to convert to Future/Promise/Task in bound language.
   AsyncResult: 1 # Synthetic type. Not used in spec, but created by utilities.
   Nullable: 1 # By default most types in the spec are assumed to be non-null. This marks those that are nullable.
+  IgnoreArgument: 1
 
 mixedInfo:
   dataTypes:
@@ -968,7 +969,7 @@ classes:
     methods:
       log_out: ()
       session_for_on_disk_path: '(path: StringData) -> Nullable<SharedSyncSession>'
-      subscribe: '(observer: (_: const SyncUser&)) -> SyncUserSubscriptionToken'
+      subscribe: '(observer: (user: IgnoreArgument<const SyncUser&>)) -> SyncUserSubscriptionToken'
       unsubscribe: '(token: SyncUserSubscriptionToken)'
       # TODO update methods?
 
@@ -1009,7 +1010,7 @@ classes:
       userAPIKeyProviderClient:
         - sig: () -> UserAPIKeyProviderClient
           cppName: provider_client<app::App::UserAPIKeyProviderClient>
-      subscribe: '(observer: (_: const App&)) -> AppSubscriptionToken'
+      subscribe: '(observer: (app: IgnoreArgument<const App&>)) -> AppSubscriptionToken'
       unsubscribe: '(token: AppSubscriptionToken)'
 
   UsernamePasswordProviderClient:

@@ -57,6 +57,7 @@ const TEMPLATE_MAPPING: Record<string, (...args: string[]) => string> = {
   "std::function": (f) => f,
   AsyncResult: (t) => `Promise<${t}>`,
   AsyncCallback: (sig) => assert.fail(`async transform not applied to function taking AsyncCallback<${sig}>`),
+  IgnoreArgument: () => assert.fail("Attempting to use an IgnoreArgument<>"),
 };
 
 const enum Kind {
@@ -99,9 +100,7 @@ function generateType(spec: BoundSpec, type: Type, kind: Kind): string {
       const Arg = kind == Kind.Arg ? Kind.Ret : Kind.Arg;
       const Ret = kind == Kind.Arg ? Kind.Arg : Kind.Ret;
 
-      const args = type.args
-        .filter((arg) => arg.name != "_")
-        .map((arg) => arg.name + ": " + generateType(spec, arg.type, Arg));
+      const args = type.argsSkippingIgnored().map((arg) => arg.name + ": " + generateType(spec, arg.type, Arg));
       return `((${args.join(", ")}) => ${generateType(spec, type.ret, Ret)})`;
   }
 }
