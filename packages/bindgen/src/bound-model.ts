@@ -116,7 +116,7 @@ class RRef extends WrapperType {
 
 export class Arg {
   constructor(public name: string, public type: Type) {
-    assert(!name.startsWith("_"), `argument "${name}" starts with a '_', but that is reserved`);
+    assert(!name.startsWith("_") || name == "_", `argument "${name}" starts with a '_', but that is reserved`);
   }
 
   toString() {
