@@ -308,10 +308,7 @@ private:
 template <typename T>
 class SyncSessionErrorBase {
 public:
-    virtual typename T::Function func();
-    // {
-    //     return typename T::Function();
-    // };
+    virtual typename T::Function func() = 0;
     virtual void operator()(std::shared_ptr<SyncSession>, SyncError){};
 };
 
