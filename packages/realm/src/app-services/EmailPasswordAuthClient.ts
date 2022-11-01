@@ -52,6 +52,6 @@ export class EmailPasswordAuthClient {
   }
 
   public async callResetPasswordFunction(credentials: { email: string; password: string }, ...args: unknown[]) {
-    throw new Error("Not yet implemented");
+    throw new Error("Not yet implemented, need BSONArray");
   }
 }

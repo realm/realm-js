@@ -364,6 +364,19 @@ records:
       provider_type: 
         type: std::string
 
+  UserAPIKey:
+    cppName: app::App::UserAPIKey
+    fields:
+      id:
+        type: ObjectId
+      key:
+        type: util::Optional<std::string>
+      name:
+        type: std::string
+      disabled:
+        type: bool
+
+
   SyncConfig:
     fields:
       user: SharedSyncUser
@@ -1034,6 +1047,13 @@ classes:
       send_reset_password_email: '(email: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
   UserAPIKeyProviderClient:
     cppName: app::App::UserAPIKeyProviderClient
+    methods:
+      create_api_key: '(name: const std::string&, user: SharedSyncUser, completion: AsyncCallback<(apiKey: UserAPIKey&&, err: util::Optional<AppError>)>&&)'
+      fetch_api_key: '(id: ObjectId&, user: const SharedSyncUser, completion: AsyncCallback<(apiKey: UserAPIKey&&, err: util::Optional<AppError>)>&&)'
+      fetch_api_keys: '(user: const SharedSyncUser, completion: AsyncCallback<(apiKeys: std::vector<UserAPIKey>&&, err: util::Optional<AppError>)>&&)'
+      delete_api_key: '(id: ObjectId&, user: const SharedSyncUser, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      enable_api_key: '(id: ObjectId&, user: const SharedSyncUser, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      disable_api_key: '(id: ObjectId&, user: const SharedSyncUser, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
 
   # See Helpers::make_loger_factory to construct one.
   # Using an opaque class here rather than exposing the factory to avoid having to
