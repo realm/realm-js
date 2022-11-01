@@ -45,8 +45,10 @@ import {
   SyncSession,
   Types,
   UpdateMode,
+  User,
   assert,
   binding,
+  extendDebug,
   fromBindingRealmSchema,
   fs,
   normalizeObjectSchema,
@@ -58,6 +60,8 @@ import {
   validateObjectSchema,
   validateRealmSchema,
 } from "./internal";
+
+const debug = extendDebug("Realm");
 
 type RealmSchemaExtra = Record<string, ObjectSchemaExtra | undefined>;
 
@@ -83,6 +87,7 @@ export class Realm {
   public static UpdateMode = UpdateMode;
   public static BSON = BSON;
   public static Types = Types;
+  public static User = User;
   public static Credentials = Credentials;
 
   public static defaultPath = Realm.normalizePath("default.realm");
@@ -334,7 +339,6 @@ export class Realm {
    * @internal
    */
   public readonly internal: binding.Realm;
-  public readonly syncSession: SyncSession | null = null;
   private schemaExtras: RealmSchemaExtra = {};
   private classes: ClassMap;
   private changeListeners = new RealmListeners(this, "change");
@@ -354,6 +358,7 @@ export class Realm {
       const config = typeof arg === "string" ? { path: arg } : arg;
       validateConfiguration(config);
       const { bindingConfig, schemaExtras } = Realm.transformConfig(config);
+      debug("open", bindingConfig);
       this.schemaExtras = schemaExtras;
       this.internal = binding.Realm.getSharedRealm(bindingConfig);
 
@@ -372,14 +377,6 @@ export class Realm {
         },
       });
       RETURNED_REALMS.add(new WeakRef(this.internal));
-
-      if (config.sync) {
-        // TODO: Determine if it's okay to get this directly off the internal and only once,
-        // instead of through the internal.config.syncConfig.user.syncManager.get_existing_active_session as the legacy SDK did
-        const { syncSession } = this.internal;
-        assert(syncSession, "Expected a sync session");
-        this.syncSession = new SyncSession(syncSession, config.sync);
-      }
     }
 
     Object.defineProperties(this, {
@@ -441,6 +438,14 @@ export class Realm {
   get isClosed(): boolean {
     // TODO: Consider keeping a local state in JS for this
     return this.internal.isClosed;
+  }
+
+  get syncSession(): SyncSession | null {
+    // TODO: Determine if it's okay to get this directly off the internal
+    // instead of through the internal.config.syncConfig.user.syncManager.get_existing_active_session as the legacy SDK did
+    const { syncSession } = this.internal;
+    assert(syncSession, "Expected a sync session");
+    return new SyncSession(syncSession);
   }
 
   get subscriptions(): any {
@@ -728,6 +733,7 @@ type UpdateModeType = UpdateMode;
 type ObjectSchemaType = ObjectSchema;
 type BSONType = typeof BSON;
 type TypesType = typeof Types;
+type UserType = typeof User;
 type CredentialsType = typeof Credentials;
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -745,5 +751,6 @@ export namespace Realm {
   export type Mixed = unknown;
   export type BSON = BSONType;
   export type Types = TypesType;
+  export type User = UserType;
   export type Credentials = CredentialsType;
 }
