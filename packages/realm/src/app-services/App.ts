@@ -33,36 +33,7 @@ export type AppConfiguration = {
   baseUrl?: string;
 };
 
-export type LogLevel = "all" | "trace" | "debug" | "detail" | "info" | "warn" | "error" | "fatal" | "off";
-
-export enum NumericLogLevel {
-  All = 0,
-  Trace = 1,
-  Debug = 2,
-  Detail = 3,
-  Info = 4,
-  Warn = 5,
-  Error = 6,
-  Fatal = 7,
-  Off = 8,
-}
-
-function toBindingLoggerLevel(arg: LogLevel): binding.LoggerLevel {
-  const result = Object.entries(NumericLogLevel).find(([name]) => {
-    return name.toLowerCase() === arg;
-  });
-  assert(result, `Unexpected log level: ${arg}`);
-  const [, level] = result;
-  assert.number(level, "Expected a numeric level");
-  return level as number as binding.LoggerLevel;
-}
-
-function fromBindingLoggerLevel(arg: binding.LoggerLevel): NumericLogLevel {
-  // For now, these map 1-to-1
-  return arg as unknown as NumericLogLevel;
-}
-
-export type Logger = (level: NumericLogLevel, message: string) => void;
+export type AppChangeCallback = () => void;
 
 // TODO: Ensure this doesn't leak
 const appByUserId = new Map<string, App>();
@@ -72,44 +43,7 @@ export class App {
   private static PLATFORM_VERSION = "0.0.0";
   private static SDK_VERSION = "0.0.0";
 
-  // TODO: Expose this as a method off App
-  public static Sync = {
-    Session: SyncSession,
-    setLogLevel(app: App, level: LogLevel) {
-      const numericLevel = toBindingLoggerLevel(level);
-      app.internal.syncManager.setLogLevel(numericLevel);
-    },
-    setLogger(app: App, logger: Logger) {
-      const factory = binding.Helpers.makeLoggerFactory((level, message) => {
-        logger(fromBindingLoggerLevel(level), message);
-      });
-      app.internal.syncManager.setLoggerFactory(factory);
-    },
-    getAllSyncSessions(user: User): SyncSession[] {
-      throw new Error("Not yet implemented");
-    },
-    getSyncSession(user: User, partitionValue: PartitionValue): SyncSession {
-      throw new Error("Not yet implemented");
-    },
-    setUserAgent(app: App, userAgent: string) {
-      throw new Error("Not yet implemented");
-    },
-    enableSessionMultiplexing(app: App) {
-      throw new Error("Not yet implemented");
-    },
-    initiateClientReset(app: App, path: string) {
-      const success = app.internal.syncManager.immediatelyRunFileActions(path);
-      // TODO: Consider a better error message
-      assert(success, `Realm was not configured correctly. Client Reset could not be run for Realm at: ${path}`);
-    },
-    /** @internal */
-    _hasExistingSessions(app: App) {
-      throw new Error("Not yet implemented");
-    },
-    reconnect(app: App) {
-      throw new Error("Not yet implemented");
-    },
-  };
+  public static Sync = Sync;
 
   /** @internal */
   public static get(userInternal: binding.SyncUser) {
