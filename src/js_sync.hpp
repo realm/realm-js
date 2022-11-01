@@ -202,13 +202,13 @@ public:
     void operator()(SharedRealm before_realm, ThreadSafeReference after_realm_ref, bool did_recover)
     {
         HANDLESCOPE(m_ctx);
-        typename T::Value arguments[2];
 
         SharedRealm after_realm =
             Realm::get_shared_realm(std::move(after_realm_ref), util::Scheduler::make_default());
-
-        arguments[0] = create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(before_realm));
-        arguments[1] = create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(after_realm));
+        typename T::Value arguments[] = {
+            create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(before_realm)),
+            create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(after_realm)),
+        };
         Function<T>::callback(m_ctx, m_func, 2, arguments);
     }
 
@@ -243,20 +243,23 @@ public:
     void operator()(SharedRealm before_realm, ThreadSafeReference after_realm_ref, bool did_recover)
     {
         HANDLESCOPE(m_ctx);
-        typename T::Value arguments[2];
 
         SharedRealm after_realm =
             Realm::get_shared_realm(std::move(after_realm_ref), util::Scheduler::make_default());
 
 
         if (did_recover) {
-            arguments[0] = create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(before_realm));
-            arguments[1] = create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(after_realm));
+            typename T::Value arguments[] = {
+                create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(before_realm)),
+                create_object<T, RealmClass<T>>(m_ctx, new SharedRealm(after_realm)),
+            };
             Function<T>::callback(m_ctx, m_func, 2, arguments);
         }
         else {
-            arguments[0] = create_object<T, SessionClass<T>>(m_ctx, new WeakSession(before_realm->sync_session()));
-            arguments[1] = Value<T>::from_string(m_ctx, before_realm->config().path);
+            typename T::Value arguments[] = {
+                create_object<T, SessionClass<T>>(m_ctx, new WeakSession(before_realm->sync_session())),
+                Value<T>::from_string(m_ctx, before_realm->config().path),
+            };
             Function<T>::callback(m_ctx, m_discard_func, 2, arguments);
         }
     }
@@ -305,10 +308,10 @@ private:
 template <typename T>
 class SyncSessionErrorBase {
 public:
-    virtual typename T::Function func()
-    {
-        return typename T::Function();
-    };
+    virtual typename T::Function func();
+    // {
+    //     return typename T::Function();
+    // };
     virtual void operator()(std::shared_ptr<SyncSession>, SyncError){};
 };
 
@@ -326,12 +329,12 @@ public:
 #endif
     }
 
-    typename T::Function func() const
+    typename T::Function func() override
     {
         return m_client_reset_func;
     }
 
-    void operator()(std::shared_ptr<SyncSession> session, SyncError error)
+    void operator()(std::shared_ptr<SyncSession> session, SyncError error) override
     {
         HANDLESCOPE(m_ctx);
 
@@ -366,12 +369,12 @@ public:
 #endif
     }
 
-    typename T::Function func() const
+    typename T::Function func() override
     {
         return m_func;
     }
 
-    void operator()(std::shared_ptr<SyncSession> session, SyncError error)
+    void operator()(std::shared_ptr<SyncSession> session, SyncError error) override
     {
         HANDLESCOPE(m_ctx);
 
@@ -430,12 +433,12 @@ public:
 #endif
     }
 
-    typename T::Function func() const
+    typename T::Function func() override
     {
         return m_func;
     }
 
-    void operator()(std::shared_ptr<SyncSession> session, SyncError error)
+    void operator()(std::shared_ptr<SyncSession> session, SyncError error) override
     {
         HANDLESCOPE(m_ctx);
 
@@ -1303,26 +1306,21 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                 }
 
                 case realm::ClientResyncMode::RecoverOrDiscard: {
-                    FunctionType client_reset_recovery_callback;
-                    FunctionType client_reset_discard_callback;
-
                     ValueType client_reset_after_value = Object::get_property(ctx, client_reset_object, "onDiscard");
-                    if (!Value::is_undefined(ctx, client_reset_after_value)) {
-                        client_reset_discard_callback = Value::validated_to_function(ctx, client_reset_after_value);
-                    }
-                    else {
+                    if (Value::is_undefined(ctx, client_reset_after_value)) {
                         throw std::invalid_argument("'onDiscard' is required");
                     }
 
                     ValueType client_reset_recovery_value =
                         Object::get_property(ctx, client_reset_object, "onRecovery");
-                    if (!Value::is_undefined(ctx, client_reset_after_value)) {
-                        client_reset_recovery_callback =
-                            Value::validated_to_function(ctx, client_reset_recovery_value);
-                    }
-                    else {
+                    if (Value::is_undefined(ctx, client_reset_after_value)) {
                         throw std::invalid_argument("'onRecovery' is required");
                     }
+
+                    FunctionType client_reset_discard_callback =
+                        Value::validated_to_function(ctx, client_reset_after_value);
+                    FunctionType client_reset_recovery_callback =
+                        Value::validated_to_function(ctx, client_reset_recovery_value);
 
                     auto client_reset_after_handler =
                         util::EventLoopDispatcher<void(SharedRealm, ThreadSafeReference, bool)>(

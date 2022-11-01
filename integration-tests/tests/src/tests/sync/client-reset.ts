@@ -34,7 +34,7 @@ const FlexibleDogSchema = { ...DogSchema, properties: { ...DogSchema.properties,
  */
 function addSubscriptions(realm: Realm): void {
   const subs = realm.subscriptions;
-  subs.update((mutableSubs) => {
+  subs.update((mutableSubs: Realm.App.Sync.MutableSubscriptionSet) => {
     mutableSubs.add(realm.objects(FlexiblePersonSchema.name));
     mutableSubs.add(realm.objects(FlexibleDogSchema.name));
   });
@@ -340,7 +340,7 @@ function getSchema(useFlexibleSync: boolean) {
       it(`handles manual simulated client resets by callback with ${getPartialTestTitle(
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
-        return new Promise((resolve, _) => {
+        return new Promise<void>((resolve, _) => {
           const config: Realm.Configuration = {
             schema: getSchema(useFlexibleSync),
             sync: {
@@ -349,7 +349,7 @@ function getSchema(useFlexibleSync: boolean) {
               user: this.user,
               clientReset: {
                 mode: ClientResetMode.Manual,
-                onManual: (session, path) => {
+                onManual: (session: Realm.App.Sync.Session, path: string) => {
                   expect(session).to.be.not.null;
                   expect(path).to.not.empty;
                   resolve();
@@ -380,7 +380,7 @@ function getSchema(useFlexibleSync: boolean) {
               ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
               user: this.user,
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              error: (_) => {
+              onError: (_) => {
                 reject();
               },
               clientReset: {
@@ -415,7 +415,7 @@ function getSchema(useFlexibleSync: boolean) {
             sync: {
               user: this.user,
               ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
-              error: () => {
+              onError: () => {
                 resolve();
               },
               clientReset: {
