@@ -418,7 +418,7 @@ module.exports = {
             });
     },*/
 
-  testProgressNotificationsUnregisterForRealmConstructor() {
+  async testProgressNotificationsUnregisterForRealmConstructor() {
     if (!platformSupported) {
       return;
     }
@@ -427,65 +427,63 @@ module.exports = {
 
     let app = new Realm.App(appConfig);
     const credentials = Realm.Credentials.anonymous();
-    return runOutOfProcess(
+    await runOutOfProcess(
       __dirname + "/download-api-helper.js",
       appConfig.id,
       appConfig.baseUrl,
       partition,
       REALM_MODULE_PATH,
-    )
-      .then(() => app.logIn(credentials))
-      .then((user) => {
-        let config = getSyncConfiguration(user, partition);
+    );
+    const user = await app.logIn(credentials);
+    let config = getSyncConfiguration(user, partition);
 
-        let realm = new Realm(config);
-        let unregisterFunc;
+    let realm = new Realm(config);
+    let unregisterFunc;
 
-        let writeDataFunc = () => {
-          realm.write(() => {
-            for (let i = 1; i <= 3; i++) {
-              realm.create("Dog", { _id: new ObjectId(), name: `Lassy ${i}` });
+    let writeDataFunc = () => {
+      realm.write(() => {
+        for (let i = 1; i <= 3; i++) {
+          realm.create("Dog", { _id: new ObjectId(), name: `Lassy ${i}` });
+        }
+      });
+    };
+
+    await new Promise((resolve, reject) => {
+      let syncFinished = false;
+      let failOnCall = false;
+      const progressCallback = (transferred, total) => {
+        if (failOnCall) {
+          reject(new Error("Progress callback should not be called after removeProgressNotification"));
+        }
+
+        syncFinished = transferred === total;
+
+        //unregister and write some new data.
+        if (syncFinished) {
+          failOnCall = true;
+          unregisterFunc();
+
+          //use second callback to wait for sync finished
+          realm.syncSession.addProgressNotification("upload", "reportIndefinitely", (transferred, transferable) => {
+            if (transferred === transferable) {
+              resolve();
             }
           });
-        };
-
-        return new Promise((resolve, reject) => {
-          let syncFinished = false;
-          let failOnCall = false;
-          const progressCallback = (transferred, total) => {
-            if (failOnCall) {
-              reject(new Error("Progress callback should not be called after removeProgressNotification"));
-            }
-
-            syncFinished = transferred === total;
-
-            //unregister and write some new data.
-            if (syncFinished) {
-              failOnCall = true;
-              unregisterFunc();
-
-              //use second callback to wait for sync finished
-              realm.syncSession.addProgressNotification("upload", "reportIndefinitely", (transferred, transferable) => {
-                if (transferred === transferable) {
-                  resolve();
-                }
-              });
-              writeDataFunc();
-            }
-          };
-
-          realm.syncSession.addProgressNotification("upload", "reportIndefinitely", progressCallback);
-
-          unregisterFunc = () => {
-            realm.syncSession.removeProgressNotification(progressCallback);
-          };
-
           writeDataFunc();
-        });
-      });
+        }
+      };
+
+      realm.syncSession.addProgressNotification("upload", "reportIndefinitely", progressCallback);
+
+      unregisterFunc = () => {
+        realm.syncSession.removeProgressNotification(progressCallback);
+      };
+
+      writeDataFunc();
+    });
   },
 
-  testProgressNotificationsForRealmOpen() {
+  async testProgressNotificationsForRealmOpen() {
     if (!platformSupported) {
       return;
     }
@@ -494,33 +492,28 @@ module.exports = {
     let progressCalled = false;
 
     const credentials = Realm.Credentials.anonymous();
-    let app = new Realm.App(appConfig);
-    return runOutOfProcess(
+    const app = new Realm.App(appConfig);
+    await runOutOfProcess(
       __dirname + "/download-api-helper.js",
       appConfig.id,
       appConfig.baseUrl,
       partition,
       REALM_MODULE_PATH,
-    )
-      .then(() => {
-        return app.logIn(credentials);
-      })
-      .then((user) => {
-        let config = getSyncConfiguration(user, partition);
-
-        return Promise.race([
-          Realm.open(config).progress((transferred, total) => {
-            progressCalled = true;
-          }),
-          new Promise((_, reject) =>
-            setTimeout(
-              () => reject("Progress Notifications API failed to call progress callback for Realm constructor"),
-              5000,
-            ),
-          ),
-        ]);
-      })
-      .then(() => TestCase.assertTrue(progressCalled));
+    );
+    const user = await app.logIn(credentials);
+    const config = getSyncConfiguration(user, partition);
+    await Promise.race([
+      Realm.open(config).progress((transferred, total) => {
+        progressCalled = true;
+      }),
+      new Promise((_, reject) =>
+        setTimeout(
+          () => reject("Progress Notifications API failed to call progress callback for Realm constructor"),
+          5000,
+        ),
+      ),
+    ]);
+    TestCase.assertTrue(progressCalled);
   },
 
   // test that it is possible to register a custom logging function on a
@@ -551,29 +544,24 @@ module.exports = {
     realm.close();
   },
 
-  testAddConnectionNotification() {
+  async testAddConnectionNotification() {
     const partition = Utils.genPartition();
-    let app = new Realm.App(appConfig);
+    const app = new Realm.App(appConfig);
     const credentials = Realm.Credentials.anonymous();
-    return app
-      .logIn(credentials)
-      .then((u) => {
-        let config = getSyncConfiguration(u, partition);
-        return Realm.open(config);
-      })
-      .then((realm) => {
-        return new Promise((resolve, reject) => {
-          realm.syncSession.addConnectionNotification((newState, oldState) => {
-            if (
-              oldState === Realm.App.Sync.ConnectionState.Connected &&
-              newState === Realm.App.Sync.ConnectionState.Disconnected
-            ) {
-              resolve();
-            }
-          });
-          realm.close();
-        });
+    const user = await app.logIn(credentials);
+    const config = getSyncConfiguration(user, partition);
+    const realm = await Realm.open(config);
+    await new Promise((resolve, reject) => {
+      realm.syncSession.addConnectionNotification((newState, oldState) => {
+        if (
+          oldState === Realm.App.Sync.ConnectionState.Connected &&
+          newState === Realm.App.Sync.ConnectionState.Disconnected
+        ) {
+          resolve();
+        }
       });
+      realm.close();
+    });
   },
 
   testRemoveConnectionNotification() {
