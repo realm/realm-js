@@ -454,8 +454,12 @@ function convertToNode(addon: NodeAddon, type: Type, expr: string): string {
                         return ${c(
                           type.ret,
                           `cb(
-                            ${type.args.map((arg, i) => convertFromNode(addon, arg.type, `info[${i}]`)).join(", ")}
-                        )`,
+                            ${type.args
+                              .map((arg, i) => {
+                                assert.notEqual(arg.name, "_", "Arguments passed to C++ must not be named _");
+                                return convertFromNode(addon, arg.type, `info[${i}]`);
+                              })
+                              .join(", ")})`,
                         )};
                     `)}
                 });
@@ -575,7 +579,9 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
       // which requires copyability, but FunctionReferences are move-only.
       const lambda = `
               [_cb = std::make_shared<Napi::FunctionReference>(Napi::Persistent(${expr}.As<Napi::Function>()))]
-                (${type.args.map(({ name, type }) => `${toCpp(type)} ${name}`).join(", ")}) -> ${toCpp(type.ret)} {
+                (${type.args
+                  .map(({ name, type }) => `${toCpp(type)} ${name == "_" ? "" : name}`)
+                  .join(", ")}) -> ${toCpp(type.ret)} {
                     auto ${env} = _cb->Env();
                     Napi::HandleScope hs(${env});
                     try {
@@ -584,9 +590,9 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
                           `_cb->MakeCallback(
                               ${env}.Global(),
                               {${type.args
+                                .filter((arg) => arg.name != "_")
                                 .map(({ name, type }) => convertToNode(addon, type, `FWD(${name})`))
-                                .join(", ")}
-                        })`,
+                                .join(", ")}})`,
                         )};
                     } catch (Napi::Error& _e) {
                         // Populate the cache of the message now to ensure it is safe for any C++ code to call what().

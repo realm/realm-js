@@ -99,7 +99,9 @@ function generateType(spec: BoundSpec, type: Type, kind: Kind): string {
       const Arg = kind == Kind.Arg ? Kind.Ret : Kind.Arg;
       const Ret = kind == Kind.Arg ? Kind.Arg : Kind.Ret;
 
-      const args = type.args.map((arg) => arg.name + ": " + generateType(spec, arg.type, Arg));
+      const args = type.args
+        .filter((arg) => arg.name != "_")
+        .map((arg) => arg.name + ": " + generateType(spec, arg.type, Arg));
       return `((${args.join(", ")}) => ${generateType(spec, type.ret, Ret)})`;
   }
 }
