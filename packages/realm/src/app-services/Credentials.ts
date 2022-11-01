@@ -16,7 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../internal";
+import { assert, binding } from "../internal";
+import { App } from "./App";
 
 /**
  * Types of an authentication provider.
@@ -45,7 +46,25 @@ export class Credentials {
     this.internal = internal;
   }
 
+  /**
+   * Creates credentials for an anonymous user. These can only be used once - using them a second
+   * time will result in a different user being logged in. If you need to get a user that has already logged
+   * in with the Anonymous credentials, use {@linkcode App.currentUser} or {@linkcode App.allUsers}
+   * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode App.logIn}.
+   */
   static anonymous(reuse = true): Credentials {
     return new Credentials(binding.AppCredentials.anonymous(reuse));
+  }
+
+  /**
+   * Creates credentials based on a login with an email address and a password.
+   * @param {string} username The username of the user.
+   * @param {string} password The user's password.
+   * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode App.logIn}.
+   */
+  static emailPassword(credentials: { email: string; password: string }): Credentials {
+    assert.string(credentials.email, "email");
+    assert.string(credentials.password, "password");
+    return new Credentials(binding.AppCredentials.usernamePassword(credentials.email, credentials.password));
   }
 }

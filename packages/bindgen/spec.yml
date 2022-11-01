@@ -52,6 +52,7 @@ typeAliases:
   KeyPathArray: std::vector<KeyPath>
   IndexRange: std::pair<count_t, count_t>
   AppCredentialsToken: std::string
+  Email: std::string
 
 templates: # value tells you how many arguments it takes ('*' means any number)
   util::Optional: 1
@@ -354,6 +355,14 @@ records:
       migration_function: 'Nullable<std::function<(old_realm: SharedRealm, new_realm: SharedRealm, new_schema_handle: IgnoreArgument<Schema&>) -> void>>'
       initialization_function: 'Nullable<std::function<(realm: SharedRealm) -> void>>'
       should_compact_on_launch_function: 'Nullable<std::function<(total_bytes: uint64_t, used_bytes: uint64_t) off_thread -> bool>>'
+
+  UserIdentity:
+    cppName: SyncUserIdentity
+    fields:
+      id: 
+        type: std::string
+      provider_type: 
+        type: std::string
 
   SyncConfig:
     fields:
@@ -961,8 +970,8 @@ classes:
       refresh_token: std::string
       device_id: std::string
       has_device_id: bool
-      # user_profile: SyncUserProfile # TODO
-      # identities: std::vector<SyncUserIdentity> # TODO
+      # user_profile: UserProfile # TODO
+      identities: std::vector<UserIdentity> # TODO
       custom_data: util::Optional<BsonDocument>
       sync_manager: SharedSyncManager
       state: SyncUserState
@@ -1016,6 +1025,9 @@ classes:
 
   UsernamePasswordProviderClient:
     cppName: app::App::UsernamePasswordProviderClient
+    methods:
+      register_email: '(email: const std::string&, password: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      retry_custom_confirmation: '(email: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
   UserAPIKeyProviderClient:
     cppName: app::App::UserAPIKeyProviderClient
 

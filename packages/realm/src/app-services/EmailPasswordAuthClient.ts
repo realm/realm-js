@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../internal";
+import { binding, Realm } from "../internal";
 
 export class EmailPasswordAuthClient {
   /** @internal */
@@ -27,8 +27,8 @@ export class EmailPasswordAuthClient {
     this.internal = internal;
   }
 
-  public async registerUser() {
-    throw new Error("Not yet implemented");
+  public async registerUser(credentials: { email: string; password: string }) {
+    await this.internal.registerEmail(credentials.email, credentials.password);
   }
 
   public async confirmUser() {
@@ -39,8 +39,8 @@ export class EmailPasswordAuthClient {
     throw new Error("Not yet implemented");
   }
 
-  public async retryCustomConfirmation() {
-    throw new Error("Not yet implemented");
+  public async retryCustomConfirmation(credential: { email: string }) {
+    await this.internal.retryCustomConfirmation(credential.email);
   }
 
   public async resetPassword() {
@@ -51,7 +51,7 @@ export class EmailPasswordAuthClient {
     throw new Error("Not yet implemented");
   }
 
-  public async callResetPasswordFunction() {
+  public async callResetPasswordFunction(credentials: { email: string; password: string }, ...args: unknown[]) {
     throw new Error("Not yet implemented");
   }
 }

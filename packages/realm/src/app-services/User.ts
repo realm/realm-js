@@ -124,7 +124,10 @@ export class User<
    * The identities of the user at any of the app's authentication providers.
    */
   get identities(): UserIdentity[] {
-    throw new Error("Not yet implemented");
+    return this.internal.identities.map((identity) => {
+      const { id, provider_type: providerType } = identity as Record<string, string>;
+      return { id, providerType } as UserIdentity;
+    });
   }
 
   /**
