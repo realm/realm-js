@@ -249,6 +249,12 @@ enums:
     values:
       - upload
       - download
+  SyncUserState:
+    cppName: SyncUser::State
+    values:
+      - LoggedOut
+      - LoggedIn
+      - Removed
 
 constants:
   null_col_key:
@@ -939,6 +945,9 @@ classes:
       provider: AuthProvider
       provider_as_string: std::string
 
+  SyncUserSubscriptionToken:
+    cppName: SyncUser::Token
+
   SyncUser:
     sharedPtrWrapped: SharedSyncUser
     properties:
@@ -953,12 +962,18 @@ classes:
       # user_profile: SyncUserProfile # TODO
       # identities: std::vector<SyncUserIdentity> # TODO
       custom_data: util::Optional<BsonDocument>
-      # state: SyncUserState # TODO this shouldn't be a 64-bit enum
       sync_manager: SharedSyncManager
+      state: SyncUserState
+      subscribers_count: count_t
     methods:
       log_out: ()
       session_for_on_disk_path: '(path: StringData) -> Nullable<SharedSyncSession>'
+      subscribe: '(observer: (_: const SyncUser&)) -> SyncUserSubscriptionToken'
+      unsubscribe: '(token: SyncUserSubscriptionToken)'
       # TODO update methods?
+
+  AppSubscriptionToken:
+    cppName: app::App::Token
 
   App:
     cppName: app::App
@@ -969,6 +984,7 @@ classes:
       current_user: Nullable<SharedSyncUser>
       all_users: std::vector<SharedSyncUser>
       sync_manager: SharedSyncManager
+      subscribers_count: count_t
     staticMethods:
       get_shared_app: '(config: AppConfig, sync_client_config: SyncClientConfig) -> SharedApp'
       get_uncached_app: '(config: AppConfig, sync_client_config: SyncClientConfig) -> SharedApp'
@@ -993,6 +1009,8 @@ classes:
       userAPIKeyProviderClient:
         - sig: () -> UserAPIKeyProviderClient
           cppName: provider_client<app::App::UserAPIKeyProviderClient>
+      subscribe: '(observer: (_: const App&)) -> AppSubscriptionToken'
+      unsubscribe: '(token: AppSubscriptionToken)'
 
   UsernamePasswordProviderClient:
     cppName: app::App::UsernamePasswordProviderClient
