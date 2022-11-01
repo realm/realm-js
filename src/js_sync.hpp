@@ -1131,7 +1131,7 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         //   b) if the error handler is not specified, the callback will be wrap as an error handler
         //   c) if no callback and no error handler, an exception is thrown
         // otherwise, the error handler is used as it is
-        ValueType error_func = Object::get_property(ctx, sync_config_object, "error");
+        ValueType error_func = Object::get_property(ctx, sync_config_object, "onError");
 
         ObjectType user_object = Object::validated_get_object(ctx, sync_config_object, "user");
         if (!(Object::template is_instance<UserClass<T>>(ctx, user_object))) {
