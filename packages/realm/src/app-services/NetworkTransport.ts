@@ -21,6 +21,15 @@ import { binding, network } from "../internal";
 /** @internal */
 export function createNetworkTransport() {
   return binding.Helpers.makeNetworkTransport((request, callback) => {
-    network.fetch(request).then(callback);
+    network
+      .fetch(request)
+      .then(callback)
+      .catch((err) => {
+        // Core will propagate any non-zero "custom status code" through to the caller
+        // The error message is passed through the body
+        const reason = err.message || "Unknown";
+        const body = `request to ${request.url} failed, reason: ${reason}`;
+        callback({ httpStatusCode: 0, headers: {}, customStatusCode: -1, body });
+      });
   });
 }

@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import http from "node:http";
+import https from "node:https";
 
 import * as network from "../platform/network";
 
@@ -56,34 +57,42 @@ network.inject({
       headers: request.headers,
     };
     debug("requesting", { url: request.url, body: request.body, usesRefreshToken: request.usesRefreshToken, options });
-    return new Promise((resolve) => {
-      const req = http.request(request.url, options, (res) => {
-        debug("responded", {
-          statusCode: res.statusCode,
-          statusMessage: res.statusMessage,
-          headers: res.headers,
-        });
-        let body = "";
-        res.setEncoding("utf8");
-        res.on("data", (chunk) => {
-          assert.string(chunk, "chunk");
-          body += chunk;
-        });
-        res.once("end", () => {
-          const { headers, statusCode } = res;
-          assert.number(statusCode, "response status code");
-          assert.object(headers, "headers");
-          resolve({
-            body,
-            headers: flattenHeaders(headers),
-            httpStatusCode: statusCode,
-            // TODO: Determine if we want to set this differently
-            customStatusCode: 0,
+    const requester = request.url.startsWith("https://") ? https.request : http.request;
+    return new Promise((resolve, reject) => {
+      try {
+        const req = requester(request.url, options, (res) => {
+          debug("responded", {
+            statusCode: res.statusCode,
+            statusMessage: res.statusMessage,
+            headers: res.headers,
           });
+          let body = "";
+          res.setEncoding("utf8");
+          res.on("data", (chunk) => {
+            assert.string(chunk, "chunk");
+            body += chunk;
+          });
+          res.once("end", () => {
+            const { headers, statusCode } = res;
+            assert.number(statusCode, "response status code");
+            assert.object(headers, "headers");
+            resolve({
+              body,
+              headers: flattenHeaders(headers),
+              httpStatusCode: statusCode,
+              // TODO: Determine if we want to set this differently
+              customStatusCode: 0,
+            });
+          });
+          // Propagate any error though the promise
+          res.once("error", reject);
         });
-      });
-      // Write the request body
-      req.end(request.body, "utf8");
+        req.once("error", reject);
+        // Write the request body
+        req.end(request.body, "utf8");
+      } catch (err) {
+        reject(err);
+      }
     });
   },
 });
