@@ -1028,6 +1028,10 @@ classes:
     methods:
       register_email: '(email: const std::string&, password: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
       retry_custom_confirmation: '(email: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      confirm_user: '(token: const std::string&, token_id: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      resend_confirmation_email: '(email: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      reset_password: '(password: const std::string&, token: const std::string&, token_id: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      send_reset_password_email: '(email: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
   UserAPIKeyProviderClient:
     cppName: app::App::UserAPIKeyProviderClient
 

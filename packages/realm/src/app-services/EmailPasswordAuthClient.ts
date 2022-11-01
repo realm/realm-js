@@ -31,24 +31,24 @@ export class EmailPasswordAuthClient {
     await this.internal.registerEmail(credentials.email, credentials.password);
   }
 
-  public async confirmUser() {
-    throw new Error("Not yet implemented");
+  public async confirmUser(tokenInfo: { token: string; tokenId: string }) {
+    await this.internal.confirmUser(tokenInfo.token, tokenInfo.tokenId);
   }
 
-  public async resendConfirmationEmail() {
-    throw new Error("Not yet implemented");
+  public async resendConfirmationEmail(email: string) {
+    await this.internal.resendConfirmationEmail(email);
   }
 
   public async retryCustomConfirmation(credential: { email: string }) {
     await this.internal.retryCustomConfirmation(credential.email);
   }
 
-  public async resetPassword() {
-    throw new Error("Not yet implemented");
+  public async resetPassword(password: string, tokenInfo: { token: string; tokenId: string }) {
+    await this.internal.resetPassword(password, tokenInfo.token, tokenInfo.tokenId);
   }
 
-  public async sendResetPasswordEmail() {
-    throw new Error("Not yet implemented");
+  public async sendResetPasswordEmail(email: string) {
+    await this.internal.sendResetPasswordEmail(email);
   }
 
   public async callResetPasswordFunction(credentials: { email: string; password: string }, ...args: unknown[]) {
