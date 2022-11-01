@@ -129,7 +129,7 @@ export class SyncSession {
   private connectionListeners = new Listeners<ConnectionNotificationCallback, bigint>(
     (callback) => {
       return this.internal.registerConnectionChangeCallback((oldState, newState) =>
-        callback(fromBindingConnectionState(oldState), fromBindingConnectionState(newState)),
+        callback(fromBindingConnectionState(newState), fromBindingConnectionState(oldState)),
       );
     },
     (token) => this.internal.unregisterProgressNotifier(token),
