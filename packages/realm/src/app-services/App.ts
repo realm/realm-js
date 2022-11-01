@@ -57,6 +57,16 @@ export class App {
   /** @internal */
   public internal: binding.App;
 
+
+  private listeners = new Listeners<AppChangeCallback, unknown>(
+    () => {
+      throw new Error("Not yet implemented");
+    },
+    () => {
+      throw new Error("Not yet implemented");
+    },
+  );
+
   constructor(id: string);
   constructor(config: AppConfiguration);
   constructor(configOrId: AppConfiguration | string) {
@@ -113,15 +123,15 @@ export class App {
     throw new Error("Not yet implemented");
   }
 
-  public addListener(): unknown {
-    throw new Error("Not yet implemented");
+  public addListener(callback: AppChangeCallback) {
+    this.listeners.add(callback);
   }
 
-  public removeListener(): unknown {
-    throw new Error("Not yet implemented");
+  public removeListener(callback: AppChangeCallback) {
+    this.listeners.remove(callback);
   }
 
-  public removeAllListeners(): unknown {
-    throw new Error("Not yet implemented");
+  public removeAllListeners() {
+    this.listeners.removeAll();
   }
 }
