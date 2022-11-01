@@ -186,7 +186,7 @@ function toCpp(type: Type): string {
       assert.notEqual(type.name, "AsyncResult", "Should never see AsyncResult here");
 
       // Nullable is just a marker, not actually a part of the C++ interface.
-      if (type.name == "Nullable") return toCpp(type.args[0]);
+      if (type.name == "Nullable" || type.name == "IgnoreArgument") return toCpp(type.args[0]);
 
       const templateMap: Record<string, string> = {
         AsyncCallback: "util::UniqueFunction",
@@ -453,13 +453,7 @@ function convertToNode(addon: NodeAddon, type: Type, expr: string): string {
                     ${tryWrap(`
                         return ${c(
                           type.ret,
-                          `cb(
-                            ${type.args
-                              .map((arg, i) => {
-                                assert.notEqual(arg.name, "_", "Arguments passed to C++ must not be named _");
-                                return convertFromNode(addon, arg.type, `info[${i}]`);
-                              })
-                              .join(", ")})`,
+                          `cb(${type.args.map((arg, i) => convertFromNode(addon, arg.type, `info[${i}]`)).join(", ")})`,
                         )};
                     `)}
                 });
@@ -580,7 +574,7 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
       const lambda = `
               [_cb = std::make_shared<Napi::FunctionReference>(Napi::Persistent(${expr}.As<Napi::Function>()))]
                 (${type.args
-                  .map(({ name, type }) => `${toCpp(type)} ${name == "_" ? "" : name}`)
+                  .map(({ name, type }) => `${toCpp(type)} ${type.isTemplate("IgnoreArgument") ? "" : name}`)
                   .join(", ")}) -> ${toCpp(type.ret)} {
                     auto ${env} = _cb->Env();
                     Napi::HandleScope hs(${env});
@@ -589,8 +583,8 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
                           type.ret,
                           `_cb->MakeCallback(
                               ${env}.Global(),
-                              {${type.args
-                                .filter((arg) => arg.name != "_")
+                              {${type
+                                .argsSkippingIgnored()
                                 .map(({ name, type }) => convertToNode(addon, type, `FWD(${name})`))
                                 .join(", ")}})`,
                         )};
