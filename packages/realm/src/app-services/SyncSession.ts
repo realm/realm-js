@@ -94,6 +94,19 @@ export function toBindingErrorHandler(onError: ErrorCallback, config: SyncConfig
   };
 }
 
+/** @internal */
+export function toBindingStopPolicy(policy: SessionStopPolicy): binding.SyncSessionStopPolicy {
+  if (policy === SessionStopPolicy.AfterUpload) {
+    return binding.SyncSessionStopPolicy.AfterChangesUploaded;
+  } else if (policy === SessionStopPolicy.Immediately) {
+    return binding.SyncSessionStopPolicy.Immediately;
+  } else if (policy === SessionStopPolicy.Never) {
+    return binding.SyncSessionStopPolicy.LiveIndefinitely;
+  } else {
+    throw new Error(`Unexpected policy (get ${policy})`);
+  }
+}
+
 export class SyncSession {
   /** @internal */
   public internal: binding.SyncSession;
