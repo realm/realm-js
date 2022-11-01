@@ -146,17 +146,41 @@ declare namespace Realm {
     }
 
     enum ClientResetMode {
-        Manual = "manual",
-        DiscardLocal = "discardLocal",
+        Manual = 'manual',
+        DiscardLocal = 'discardLocal', // for backward compatibility
+        DiscardUnsyncedChanges = 'discardUnsyncedChanges',
+        RecoverUnsyncedChanges = 'recoverUnsyncedChanges',
+        RecoverOrDiscardUnsyncedChanges = 'recoverOrDiscardUnsyncedChanges'
     }
 
+    type ClientResetFallbackCallback = (session: Realm.App.Sync.Session, path: string) => void;
     type ClientResetBeforeCallback = (localRealm: Realm) => void;
     type ClientResetAfterCallback = (localRealm: Realm, remoteRealm: Realm) => void;
-    interface ClientResetConfiguration<ClientResetModeT = ClientResetMode> {
-        mode: ClientResetModeT;
-        onBefore?: ClientResetBeforeCallback;
-        onAfter?: ClientResetAfterCallback;
+    interface ClientResetManualConfiguration {
+      mode: ClientResetMode.Manual;
+      onManual?: ClientResetFallbackCallback;
     }
+    interface ClientResetDiscardUnsyncedChangesConfiguration {
+      mode: ClientResetMode.DiscardLocal | ClientResetMode.DiscardUnsyncedChanges;
+      onBefore?: ClientResetBeforeCallback;
+      onAfter?: ClientResetAfterCallback;
+    }
+
+    interface ClientResetRecoveryConfiguration {
+      mode: ClientResetMode.RecoverUnsyncedChanges;
+      onBefore?: ClientResetBeforeCallback;
+      onAfter?: ClientResetAfterCallback;
+      onFallback?: ClientResetFallbackCallback;
+    }
+    interface ClientResetRecoveryOrDiscardConfiguration {
+      mode: ClientResetMode.RecoverOrDiscardUnsyncedChanges;
+      onBefore?: ClientResetBeforeCallback;
+      onRecovery: ClientResetAfterCallback;
+      onDiscard: ClientResetAfterCallback;
+      onFallback?: ClientResetFallbackCallback;
+    }
+
+    type ClientResetConfiguration = ClientResetManualConfiguration | ClientResetDiscardUnsyncedChangesConfiguration | ClientResetRecoveryConfiguration | ClientResetRecoveryOrDiscardConfiguration;
 
     interface BaseSyncConfiguration{
         user: User;
@@ -166,6 +190,7 @@ declare namespace Realm {
         newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
         existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
         onError?: ErrorCallback;
+        clientReset?: ClientResetConfiguration;
     }
 
     // We only allow `flexible` to be `true` or `undefined` - `{ flexible: false }`
@@ -175,7 +200,6 @@ declare namespace Realm {
     interface FlexibleSyncConfiguration extends BaseSyncConfiguration {
         flexible: true;
         partitionValue?: never;
-        clientReset?: ClientResetConfiguration<ClientResetMode.Manual>;
         /**
          * Optional object to configure the setup of an initial set of flexible
          * sync subscriptions to be used when opening the Realm. If this is specified,
@@ -222,7 +246,6 @@ declare namespace Realm {
     interface PartitionSyncConfiguration extends BaseSyncConfiguration {
         flexible?: never;
         partitionValue: Realm.App.Sync.PartitionValue;
-        clientReset?: ClientResetConfiguration<ClientResetMode>;
     }
 
     type SyncConfiguration = FlexibleSyncConfiguration | PartitionSyncConfiguration;

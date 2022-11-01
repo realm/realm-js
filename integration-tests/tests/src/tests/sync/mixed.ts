@@ -229,12 +229,14 @@ function describeTypes(flexibleSync: boolean) {
 }
 
 describe.skipIf(environment.missingServer, "mixed", () => {
-  describe("parition-based sync roundtrip", function () {
+  describe("partition-based sync roundtrip", function () {
+    this.timeout(25 * 1000);
     importAppBefore("with-db");
     describeTypes(false);
   });
 
   describe.skipIf(environment.skipFlexibleSync, "flexible sync roundtrip", function () {
+    this.timeout(25 * 1000);
     importAppBefore("with-db-flx");
     describeTypes(true);
   });
