@@ -62,7 +62,7 @@ export class ApiKeyAuthClient {
   /**
    * Creates an API key that can be used to authenticate as the current user.
    *
-   * @param name the name of the API key to be created.
+   * @param {string} name the name of the API key to be created.
    */
   async create(name: string): Promise<ApiKey> {
     return this.internal.createApiKey(name, this.user).then(({ id, key, name, disabled }) => {
@@ -73,7 +73,7 @@ export class ApiKeyAuthClient {
   /**
    * Fetches an API key associated with the current user.
    *
-   * @param keyId the id of the API key to fetch.
+   * @param {string} keyId the id of the API key to fetch.
    */
   async fetch(keyId: string): Promise<ApiKey> {
     return this.internal.fetchApiKey(new Realm.BSON.ObjectId(keyId), this.user).then(({ id, key, name, disabled }) => {
@@ -93,7 +93,7 @@ export class ApiKeyAuthClient {
   /**
    * Deletes an API key associated with the current user.
    *
-   * @param keyId the id of the API key to delete
+   * @param {string} keyId the id of the API key to delete
    */
   async delete(keyId: string) {
     this.internal.deleteApiKey(new Realm.BSON.ObjectId(keyId), this.user);
@@ -102,7 +102,7 @@ export class ApiKeyAuthClient {
   /**
    * Enables an API key associated with the current user.
    *
-   * @param keyId the id of the API key to enable
+   * @param {string} keyId the id of the API key to enable
    */
   async enable(keyId: string) {
     this.internal.enableApiKey(new Realm.BSON.ObjectId(keyId), this.user);
@@ -111,7 +111,7 @@ export class ApiKeyAuthClient {
   /**
    * Disable an API key associated with the current user.
    *
-   * @param keyId the id of the API key to disable
+   * @param {string} keyId the id of the API key to disable
    */
   async disable(keyId: string) {
     this.internal.disableApiKey(new Realm.BSON.ObjectId(keyId), this.user);
