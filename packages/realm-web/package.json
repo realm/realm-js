@@ -71,7 +71,6 @@
     "mocha": "^5.2.0",
     "node-fetch": "^3.2.10",
     "@realm/network-transport": "^0.7.2",
-    "rollup": "^2.6.1",
     "rollup-plugin-dts": "^1.4.0",
     "rollup-plugin-node-builtins": "^2.1.2"
   }
