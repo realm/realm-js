@@ -62,12 +62,11 @@ export class ApiKeyAuthClient {
   /**
    * Creates an API key that can be used to authenticate as the current user.
    *
-   * @param {string} name the name of the API key to be created.
+   * @param {string} keyName the name of the API key to be created.
    */
-  async create(name: string): Promise<ApiKey> {
-    return this.internal.createApiKey(name, this.user).then(({ id, key, name, disabled }) => {
-      return { _id: id.toHexString(), key, name, disabled };
-    });
+  async create(keyName: string): Promise<ApiKey> {
+    const { id, key, name, disabled } = await this.internal.createApiKey(keyName, this.user);
+    return { _id: id.toHexString(), key, name, disabled };
   }
 
   /**
@@ -76,18 +75,16 @@ export class ApiKeyAuthClient {
    * @param {string} keyId the id of the API key to fetch.
    */
   async fetch(keyId: string): Promise<ApiKey> {
-    return this.internal.fetchApiKey(new Realm.BSON.ObjectId(keyId), this.user).then(({ id, key, name, disabled }) => {
-      return { _id: id.toHexString(), key, name, disabled };
-    });
+    const { id, key, name, disabled } = await this.internal.fetchApiKey(new Realm.BSON.ObjectId(keyId), this.user)
+    return { _id: id.toHexString(), key, name, disabled };
   }
 
   /**
    * Fetches the API keys associated with the current user.
    */
   async fetchAll(): Promise<ApiKey[]> {
-    return (await this.internal.fetchApiKeys(this.user)).map(({ id, key, name, disabled }) => {
-      return { _id: id.toHexString(), key, name, disabled };
-    });
+    const keys = await this.internal.fetchApiKeys(this.user);
+    return keys.map(({ id, key, name, disabled }) => ({ _id: id.toHexString(), key, name, disabled }));
   }
 
   /**
