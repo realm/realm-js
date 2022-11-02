@@ -20,14 +20,19 @@ import { existsSync, readdirSync, rmSync, unlinkSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
 
 import { inject } from "../platform/file-system";
+import { extendDebug } from "../debug";
+
+const debug = extendDebug("fs");
 
 inject({
   removeFile(path) {
+    debug("removeFile", path);
     if (existsSync(path)) {
       unlinkSync(path);
     }
   },
   removeDirectory(path) {
+    debug("removeDirectory", path);
     rmSync(path, { recursive: true, force: true });
   },
   getDefaultDirectoryPath() {
