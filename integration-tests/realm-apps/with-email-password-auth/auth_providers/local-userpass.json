@@ -3,14 +3,7 @@
     "type": "local-userpass",
     "config": {
         "autoConfirm": true,
-        "confirmEmailSubject": "",
-        "confirmationFunctionName": "confirmFunc",
-        "emailConfirmationUrl": "http://localhost/confirmEmail",
-        "resetFunctionName": "resetFunc",
-        "resetPasswordSubject": "",
-        "resetPasswordUrl": "http://localhost/resetPassword",
-        "runConfirmationFunction": true,
-        "runResetFunction": true
+        "resetPasswordUrl": "http://localhost/resetPassword"
     },
     "disabled": false
 }
