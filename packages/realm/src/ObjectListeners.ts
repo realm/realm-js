@@ -34,8 +34,8 @@ export class ObjectListeners<T> {
 
   private properties: PropertyMap;
 
-  private listeners = new Listeners<ObjectChangeCallback<T>, binding.NotificationToken>(
-    (callback) => {
+  private listeners = new Listeners<ObjectChangeCallback<T>, binding.NotificationToken>({
+    register: (callback) => {
       const token = this.notifier.addCallback((changes) => {
         try {
           callback(this.object, {
@@ -53,8 +53,10 @@ export class ObjectListeners<T> {
       // Get an actual NotificationToken for the bigint value
       return binding.NotificationToken.forObject(this.notifier, token);
     },
-    (token) => token.unregister(),
-  );
+    unregister(token) {
+      token.unregister();
+    },
+  });
 
   /**
    * A momoized, lacyly created object notifier.

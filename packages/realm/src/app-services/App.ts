@@ -65,14 +65,14 @@ export class App {
 
   public userAgent = `RealmJS/${App.SDK_VERSION} (${App.PLATFORM_CONTEXT}, ${App.PLATFORM_OS}, v${App.PLATFORM_VERSION})`;
 
-  private listeners = new Listeners<AppChangeCallback, unknown>(
-    () => {
+  private listeners = new Listeners<AppChangeCallback, unknown>({
+    register() {
       throw new Error("Not yet implemented");
     },
-    () => {
+    unregister() {
       throw new Error("Not yet implemented");
     },
-  );
+  });
 
   constructor(id: string);
   constructor(config: AppConfiguration);

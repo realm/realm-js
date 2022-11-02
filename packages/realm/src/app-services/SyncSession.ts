@@ -111,29 +111,54 @@ export function toBindingStopPolicy(policy: SessionStopPolicy): binding.SyncSess
   }
 }
 
+type ListenerToken = {
+  internal: binding.SyncSession;
+  token: bigint;
+};
+
+/**
+ * Progress listeners are shared across instances of the SyncSession, making it possible to deregister a listener on another session
+ * TODO: Consider adding a check to verify that the callback is removed from the correct SynsSession (although that would break the API)
+ */
+const PROGRESS_LISTENERS = new Listeners<
+  ProgressNotificationCallback,
+  ListenerToken,
+  [binding.SyncSession, ProgressDirection, ProgressMode]
+>({
+  throwOnReAdd: true,
+  register(callback, internal, direction, mode) {
+    const token = internal.registerProgressNotifier(
+      (transferred, transferable) => callback(Number(transferred), Number(transferable)),
+      toBindingDirection(direction),
+      mode === ProgressMode.ReportIndefinitely,
+    );
+    return { internal, token };
+  },
+  unregister({ internal, token }) {
+    return internal.unregisterProgressNotifier(token);
+  },
+});
+
+/**
+ * Connection listeners are shared across instances of the SyncSession, making it possible to deregister a listener on another session
+ * TODO: Consider adding a check to verify that the callback is removed from the correct SynsSession (although that would break the API)
+ */
+const CONNECTION_LISTENERS = new Listeners<ConnectionNotificationCallback, ListenerToken, [binding.SyncSession]>({
+  throwOnReAdd: true,
+  register(callback, internal) {
+    const token = internal.registerConnectionChangeCallback((oldState, newState) =>
+      callback(fromBindingConnectionState(newState), fromBindingConnectionState(oldState)),
+    );
+    return { internal, token };
+  },
+  unregister({ internal, token }) {
+    internal.unregisterProgressNotifier(token);
+  },
+});
+
 export class SyncSession {
   /** @internal */
   public internal: binding.SyncSession;
-
-  private progressListeners = new Listeners<ProgressNotificationCallback, bigint, [ProgressDirection, ProgressMode]>(
-    (callback, direction, mode) => {
-      return this.internal.registerProgressNotifier(
-        (transferred, transferable) => callback(Number(transferred), Number(transferable)),
-        toBindingDirection(direction),
-        mode === ProgressMode.ReportIndefinitely,
-      );
-    },
-    (token) => this.internal.unregisterProgressNotifier(token),
-  );
-
-  private connectionListeners = new Listeners<ConnectionNotificationCallback, bigint>(
-    (callback) => {
-      return this.internal.registerConnectionChangeCallback((oldState, newState) =>
-        callback(fromBindingConnectionState(newState), fromBindingConnectionState(oldState)),
-      );
-    },
-    (token) => this.internal.unregisterProgressNotifier(token),
-  );
 
   /** @internal */
   constructor(internal: binding.SyncSession) {
@@ -190,18 +215,18 @@ export class SyncSession {
   }
 
   addProgressNotification(direction: ProgressDirection, mode: ProgressMode, callback: ProgressNotificationCallback) {
-    this.progressListeners.add(callback, direction, mode);
+    PROGRESS_LISTENERS.add(callback, this.internal, direction, mode);
   }
 
   removeProgressNotification(callback: ProgressNotificationCallback) {
-    this.progressListeners.remove(callback);
+    PROGRESS_LISTENERS.remove(callback);
   }
 
   addConnectionNotification(callback: ConnectionNotificationCallback) {
-    this.connectionListeners.add(callback);
+    CONNECTION_LISTENERS.add(callback, this.internal);
   }
   removeConnectionNotification(callback: ConnectionNotificationCallback) {
-    this.connectionListeners.remove(callback);
+    CONNECTION_LISTENERS.remove(callback);
   }
 
   downloadAllServerChanges(timeoutMs?: number): Promise<void> {

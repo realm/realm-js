@@ -24,12 +24,15 @@ export type CallbackRegistrator<CallbackType, TokenType, Args extends unknown[] 
 /** @internal */
 export type CallbackUnregistrator<TokenType> = (token: TokenType) => void;
 
+export type ListenersOptions<CallbackType, TokenType, Args extends unknown[]> = {
+  register: CallbackRegistrator<CallbackType, TokenType, Args>;
+  unregister: CallbackUnregistrator<TokenType>;
+  throwOnReAdd?: boolean;
+};
+
 /** @internal */
 export class Listeners<CallbackType, TokenType, Args extends unknown[] = []> {
-  constructor(
-    private registerCallback: CallbackRegistrator<CallbackType, TokenType, Args>,
-    private unregisterCallback: CallbackUnregistrator<TokenType>,
-  ) {}
+  constructor(private options: ListenersOptions<CallbackType, TokenType, Args>) {}
   /**
    * Mapping of registered listener callbacks onto the their token in the bindings ObjectNotifier.
    */
@@ -38,9 +41,12 @@ export class Listeners<CallbackType, TokenType, Args extends unknown[] = []> {
   add(callback: CallbackType, ...args: Args): void {
     if (this.listeners.has(callback)) {
       // No need to add a listener twice
+      if (this.options.throwOnReAdd) {
+        throw new Error("Remove callback before adding it again");
+      }
       return;
     }
-    const token = this.registerCallback(callback, ...args);
+    const token = this.options.register(callback, ...args);
     // Store the notification token by the callback to enable later removal.
     this.listeners.set(callback, token);
   }
@@ -48,14 +54,14 @@ export class Listeners<CallbackType, TokenType, Args extends unknown[] = []> {
   remove(callback: CallbackType): void {
     const token = this.listeners.get(callback);
     if (typeof token !== "undefined") {
-      this.unregisterCallback(token);
+      this.options.unregister(token);
       this.listeners.delete(callback);
     }
   }
 
   removeAll(): void {
     for (const [, token] of this.listeners) {
-      this.unregisterCallback(token);
+      this.options.unregister(token);
     }
     this.listeners.clear();
   }
