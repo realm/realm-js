@@ -708,17 +708,15 @@ module.exports = {
       obj["stringCol"] = "foobar";
     });
 
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        TestCase.assertEqual(realm.objects(schemas.StringOnly.name)[0]["stringCol"], "foobar");
-        TestCase.assertEqual(calls, 2); // listener only called twice
-        realm.close();
-        resolve();
-      }, 2000);
-    });
+    // Wait a bit for the listener to fire
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    TestCase.assertEqual(realm.objects(schemas.StringOnly.name)[0]["stringCol"], "foobar");
+    TestCase.assertEqual(calls, 2); // listener only called twice
+    realm.close();
   },
 
-  testAddAndRemoveAllListeners: function () {
+  async testAddAndRemoveAllListeners() {
     const realm = new Realm({ schema: [schemas.StringOnly] });
 
     let obj;
@@ -737,25 +735,24 @@ module.exports = {
 
     obj.addListener(listener);
 
-    return new Promise((resolve, reject) => {
-      realm.write(function () {
-        obj["stringCol"] = "bar";
-      });
+    // Wait a bit for the listener to fire
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
-      setTimeout(() => {
-        obj.removeAllListeners();
-        realm.write(function () {
-          obj["stringCol"] = "foobar";
-        });
-
-        setTimeout(() => {
-          TestCase.assertEqual(realm.objects(schemas.StringOnly.name)[0]["stringCol"], "foobar");
-          TestCase.assertEqual(calls, 2); // listener only called twice
-          realm.close();
-          resolve();
-        }, 2000);
-      }, 2000);
+    realm.write(function () {
+      obj["stringCol"] = "bar";
     });
+
+    // Wait a bit for the listener to fire
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    obj.removeAllListeners();
+    realm.write(function () {
+      obj["stringCol"] = "foobar";
+    });
+
+    TestCase.assertEqual(realm.objects(schemas.StringOnly.name)[0]["stringCol"], "foobar");
+    TestCase.assertEqual(calls, 2); // listener only called twice
+    realm.close();
   },
 
   testObjectKeyFound: function () {
