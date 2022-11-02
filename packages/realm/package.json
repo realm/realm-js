@@ -7,9 +7,8 @@
   "scripts": {
     "test": "mocha",
     "test:types": "tsc --project type-tests/tsconfig.json",
-    "build": "npm run build:types && npm run build:rollup",
-    "build:rollup": "rollup -c",
-    "build:types": "tsc --project tsconfig.types.json"
+    "build": "rollup -c",
+    "build:watch": "rollup -c --watch"
   },
   "dependencies": {
     "@realm/bindgen": "^0.1.0",
