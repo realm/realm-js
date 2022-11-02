@@ -16,37 +16,29 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export {
-  App,
-  BSON,
-  ClientResetMode,
-  Collection,
-  Credentials,
-  Dictionary,
-  List,
-  OrderedCollection,
-  ProgressRealmPromise,
-  Realm,
-  RealmObject as Object,
-  RealmSet as Set,
-  Results,
-  SessionStopPolicy,
-  UpdateMode,
-  User,
-  Types,
-  flags,
-} from "./internal";
+if (!global.fs) {
+  throw new Error("Expected 'fs' to be available as a global");
+}
 
-export type {
-  CollectionChangeCallback,
-  CollectionChangeSet,
-  Configuration,
-  ObjectChangeCallback,
-  ObjectChangeSet,
-  RealmEventName,
-  RealmListenerCallback,
-} from "./internal";
+if (!global.path) {
+  throw new Error("Expected 'path' to be available as a global");
+}
 
-// Exporting default for backwards compatibility
-import { Realm } from "./internal";
-export default Realm;
+if (!global.environment || typeof global.environment !== "object") {
+  throw new Error("Expected 'environment' to be available as a global");
+}
+
+// Patch in a function that can skip running tests in specific environments
+import { testSkipIf, suiteSkipIf } from "./utils/skip-if";
+global.describe.skipIf = suiteSkipIf;
+global.it.skipIf = testSkipIf;
+
+console.log("Patched the global");
+
+import chai from "chai";
+
+import chaiAsPromised from "chai-as-promised";
+chai.use(chaiAsPromised);
+
+import { chaiRealmObjects } from "./utils/chai-plugin";
+chai.use(chaiRealmObjects);
