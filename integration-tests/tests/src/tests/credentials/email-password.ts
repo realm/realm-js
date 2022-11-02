@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { expect } from "chai";
-import { Credentials, Realm, User } from "realm";
+import { Credentials, User } from "realm";
 import { importAppBefore } from "../../hooks";
 
 describe.skipIf(environment.missingServer, "email-password credentials", () => {
@@ -28,4 +28,73 @@ describe.skipIf(environment.missingServer, "email-password credentials", () => {
     const user = await this.app.logIn(Credentials.emailPassword(credential_blob));
     expect(user).instanceOf(User);
   });
+
+  it("invalid token on confirmation throws", async function (this: AppContext) {
+    const now = new Date();
+    const nonce = now.getTime();
+    const email = `gilfoil-${nonce}@testing.mongodb.com`;
+    const password = "my-super-secret-password";
+    // Register a user
+    await this.app.emailPasswordAuth.registerUser({ email, password });
+    // Ask for a new confirmation email
+    try {
+      await this.app.emailPasswordAuth.confirmUser({ token: "e30=", tokenId: "some-token-id" });
+    } catch (err) {
+      // We expect this to throw, since we're feading in an invalid token
+      expect((err as Error).message).equals("invalid token data");
+    }
+  });
+
+  it("resending confirmation on already confirmed account throws", async function (this: AppContext) {
+    // Prepare email and password
+    const now = new Date();
+    const nonce = now.getTime();
+    const email = `gilfoil-${nonce}@testing.mongodb.com`;
+    const password = "my-super-secret-password";
+    // Register a user
+    await this.app.emailPasswordAuth.registerUser({ email, password });
+    // Ask for a new confirmation email
+    try {
+      await this.app.emailPasswordAuth.resendConfirmationEmail({ email });
+    } catch (err) {
+      // We expect this to throw, since users are automatically confirmed with this app configuration
+      expect((err as Error).message).equals("already confirmed");
+    }
+  });
+
+  it("custom confirmation on already confirmed account throws", async function (this: AppContext) {
+    // Prepare email and password
+    const now = new Date();
+    const nonce = now.getTime();
+    const email = `gilfoil-${nonce}@testing.mongodb.com`;
+    const password = "my-super-secret-password";
+    // Register a user
+    await this.app.emailPasswordAuth.registerUser({ email, password });
+    // Ask for a new confirmation email
+    try {
+      await this.app.emailPasswordAuth.retryCustomConfirmation({ email });
+    } catch (err) {
+      // We expect this to throw, since the app does not currently have custom confirmation enabled
+      // TODO:  import an app with custom confirmation enabled
+      expect((err as Error).message).equals(`cannot run confirmation for ${email}: automatic confirmation is enabled`);
+    }
+  });
+
+  it("can request a password reset", async function (this: AppContext) {
+    // Prepare email and password
+    const now = new Date();
+    const nonce = now.getTime();
+    const email = `gilfoil-${nonce}@testing.mongodb.com`;
+    const password = "my-super-secret-password";
+    // Register a user
+    await this.app.emailPasswordAuth.registerUser({ email, password });
+    // Ask for a password reset
+    try {
+      await this.app.emailPasswordAuth.sendResetPasswordEmail({ email });
+    } catch (err) {
+      // We expect this to throw, since password resets via email is disabled with this app configuration
+      expect((err as Error).message).equals("error processing request");
+    }
+  });
+  // TODO: add test for CallResetPasswordFunction onse BSONArray is in place
 });
