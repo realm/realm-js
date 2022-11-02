@@ -48,7 +48,6 @@
     "@types/node-fetch": "^2.5.7",
     "chai": "^4.2.0",
     "mocha": "^5.2.0",
-    "rollup": "^2.6.1",
     "rollup-plugin-dts": "^1.4.0"
   }
 }
