@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { expect } from "chai";
-import Realm from "realm";
+import { Realm } from "realm";
 
 import { importAppBefore, authenticateUserBefore, openRealmBefore } from "../../hooks";
 

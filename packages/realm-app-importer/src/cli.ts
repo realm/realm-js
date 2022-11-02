@@ -16,7 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import yargs from "yargs";
+import yargs from "yargs/yargs";
+import { hideBin } from "yargs/helpers";
 import path from "path";
 import fs from "fs";
 import http from "http";
@@ -123,7 +124,7 @@ function getCredentials({ username, password, publicKey, privateKey }: Credentia
   }
 }
 
-yargs
+yargs(hideBin(process.argv))
   .option("base-url", {
     type: "string",
     default: DEFAULTS.baseUrl,
@@ -360,4 +361,5 @@ yargs
       );
     },
   )
-  .help().argv;
+  .help()
+  .parse();

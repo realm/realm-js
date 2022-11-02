@@ -17,12 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import Realm from "realm";
+import { Realm } from "realm";
 
 describe("Realm.Types namespace", () => {
   // We specify explicit types on the instance so TS will error if the type def is wrong
   it("Realm.Types.Decimal128 can be constructed", () => {
-    const instance: Realm.Types.Decimal128 = new Realm.Types.Decimal128();
+    const instance: Realm.Types.Decimal128 = new Realm.Types.Decimal128("123");
     expect(instance).to.be.instanceOf(Realm.BSON.Decimal128);
   });
 
@@ -42,7 +42,7 @@ describe("Realm.Types namespace", () => {
   });
 
   it("Realm.Types.Data can be constructed", () => {
-    const instance: Realm.Types.Data = new Realm.Types.Data();
+    const instance: Realm.Types.Data = new Realm.Types.Data(0);
     expect(instance).to.be.instanceOf(ArrayBuffer);
   });
 });

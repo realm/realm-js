@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Realm from "realm";
+import { Realm } from "realm";
 
 /**
  * Close a Realm instance, and optionally delete its Realm file and clear the test state

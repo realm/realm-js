@@ -1,7 +1,8 @@
 {
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
-		"target": "es2018",
+		"target": "es2022",
+		"module": "es2022",
 		"moduleResolution": "node",
 		"forceConsistentCasingInFileNames": true,
 		"types": [

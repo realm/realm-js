@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import Realm from "realm";
+import { Realm } from "realm";
 
 describe("Realm schema", () => {
   describe("Default property values", () => {

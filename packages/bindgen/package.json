@@ -22,7 +22,6 @@
     "chevrotain": "^10.4.0",
     "commander": "^9.4.1",
     "debug": "^4.3.4",
-    "tsm": "^2.2.2",
     "typescript-json-schema": "^0.54.0",
     "yaml": "^2.1.3"
   },
