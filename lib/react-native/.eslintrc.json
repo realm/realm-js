@@ -2,5 +2,8 @@
   "extends": [
     "@react-native-community",
     "../../.eslintrc"
-  ]
+  ],
+  "parserOptions": {
+    "requireConfigFile": false
+  }
 }
