@@ -16,23 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import "./tests/realm-constructor";
-import "./tests/objects";
-import "./tests/class-models";
-import "./tests/serialization";
-import "./tests/iterators";
-import "./tests/queries";
-import "./tests/dynamic-schema-updates";
-import "./tests/listeners";
-import "./tests/bson";
-import "./tests/dictionary";
-import "./tests/set";
-import "./tests/credentials/anonymous";
-import "./tests/sync/mixed";
-import "./tests/sync/flexible";
-import "./tests/sync/asymmetric";
-import "./tests/sync/sync-as-local";
-import "./tests/transaction";
-import "./tests/schema";
-import "./tests/types";
-import "./tests/credentials/email-password";
+exports = function (...args) {
+  return parseInt(args.reduce((a, b) => a + b, 0));
+};
