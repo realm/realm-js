@@ -738,56 +738,36 @@ module.exports = {
       });
   },
 
-  testDownloadAllServerChangesTimeout() {
+  async testDownloadAllServerChangesTimeout() {
     if (!platformSupported) {
       return;
     }
 
-    let app = new Realm.App(appConfig);
+    const app = new Realm.App(appConfig);
     const realmPartition = Utils.genPartition();
-    let realm;
-    return app
-      .logIn(Realm.Credentials.anonymous())
-      .then((user) => {
-        const config = getSyncConfiguration(user, realmPartition);
-        realm = new Realm(config);
-        return realm.syncSession.downloadAllServerChanges(1);
-      })
-      .then(
-        () => {
-          throw new Error("Download did not time out");
-        },
-        (e) => {
-          TestCase.assertEqual(e, "Downloading changes did not complete in 1 ms.");
-          return realm.syncSession.downloadAllServerChanges();
-        },
-      );
+    const user = await app.logIn(Realm.Credentials.anonymous());
+
+    const config = getSyncConfiguration(user, realmPartition);
+    const realm = new Realm(config);
+    await TestCase.assertThrowsAsyncContaining(async () => {
+      await realm.syncSession.downloadAllServerChanges(1);
+    }, "Downloading changes did not complete in 1 ms.");
   },
 
-  testUploadAllLocalChangesTimeout() {
+  async testUploadAllLocalChangesTimeout() {
     if (!platformSupported) {
       return;
     }
 
-    let realm;
-    let app = new Realm.App(appConfig);
+    const app = new Realm.App(appConfig);
     const realmPartition = Utils.genPartition();
-    return app
-      .logIn(Realm.Credentials.anonymous())
-      .then((user) => {
-        const config = getSyncConfiguration(user, realmPartition);
-        realm = new Realm(config);
-        return realm.syncSession.uploadAllLocalChanges(1);
-      })
-      .then(
-        () => {
-          throw new Error("Upload did not time out");
-        },
-        (e) => {
-          TestCase.assertEqual(e, "Uploading changes did not complete in 1 ms.");
-          return realm.syncSession.uploadAllLocalChanges();
-        },
-      );
+    const user = await app.logIn(Realm.Credentials.anonymous());
+
+    const config = getSyncConfiguration(user, realmPartition);
+    const realm = new Realm(config);
+    await TestCase.assertThrowsAsyncContaining(async () => {
+      await realm.syncSession.uploadAllLocalChanges(1);
+    }, "Uploading changes did not complete in 1 ms.");
   },
 
   testReconnect() {
