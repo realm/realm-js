@@ -30,13 +30,16 @@ export abstract class Collection<
   private listeners: Listeners<ChangeCallbackType, binding.NotificationToken>;
 
   /** @internal */
-  constructor(registerCallback: CallbackRegistrator<ChangeCallbackType, binding.NotificationToken>) {
+  constructor(registerListener: CallbackRegistrator<ChangeCallbackType, binding.NotificationToken>) {
     if (arguments.length === 0) {
       throw new IllegalConstructorError("Collection");
     }
-    this.listeners = new Listeners<ChangeCallbackType, binding.NotificationToken>(registerCallback, (token) =>
-      token.unregister(),
-    );
+    this.listeners = new Listeners<ChangeCallbackType, binding.NotificationToken>({
+      register: registerListener,
+      unregister(token) {
+        token.unregister();
+      },
+    });
     // Make the internal properties non-enumerable
     Object.defineProperties(this, {
       listeners: {
