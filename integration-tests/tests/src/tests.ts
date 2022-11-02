@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2020 Realm Inc.
+// Copyright 2021 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,6 +15,23 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-export * from "./import-app-before";
-export * from "./authenticate-user-before";
-export * from "./open-realm-before";
+
+import "./tests/realm-constructor";
+import "./tests/objects";
+import "./tests/class-models";
+import "./tests/serialization";
+import "./tests/iterators";
+import "./tests/queries";
+import "./tests/dynamic-schema-updates";
+import "./tests/listeners";
+import "./tests/bson";
+import "./tests/dictionary";
+import "./tests/set";
+import "./tests/credentials/anonymous";
+import "./tests/sync/mixed";
+import "./tests/sync/flexible";
+import "./tests/sync/asymmetric";
+import "./tests/sync/sync-as-local";
+import "./tests/transaction";
+import "./tests/schema";
+import "./tests/types";
