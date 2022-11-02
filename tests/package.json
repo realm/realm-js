@@ -18,7 +18,7 @@
     "node-fetch": "^2.6.1",
     "node-pre-gyp": "^0.17.0",
     "node-rsa": "^1.1.1",
-    "realm": "file:../packages/realm",
+    "realm": "*",
     "spawn-sync": "^2.0.0",
     "terminate": "^1.0.8",
     "tmp": "^0.0.30",
@@ -26,7 +26,7 @@
   },
   "scripts": {
     "check-typescript": "tsc --types --noEmit --alwaysStrict ./../types/index.d.ts --lib es2018",
-    "js-tests": "node --expose_gc node_modules/jasmine/bin/jasmine.js spec/unit_tests.js --filter=.",
+    "js-tests": "node --expose_gc ../node_modules/jasmine/bin/jasmine.js spec/unit_tests.js --filter=.",
     "test": "npm run check-typescript && npm run js-tests",
     "import-apps": "realm-app-importer import mongodb/* --app-id-path imported-apps.json"
   }

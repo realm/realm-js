@@ -114,7 +114,8 @@
     "packages/bindgen",
     "packages/realm",
     "packages/realm-app-importer",
-    "integration-tests/tests"
+    "integration-tests/tests",
+    "tests"
   ],
   "devDependencies": {
     "@babel/runtime": "^7.16.3",
