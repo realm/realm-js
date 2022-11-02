@@ -290,7 +290,7 @@ describe("Realm objects", () => {
 
     it("fires and supports removal across accessor objects", async function (this: RealmContext) {
       const alice = getAlice(this.realm);
-      const calls = [createPromiseHandle(), createPromiseHandle(), createPromiseHandle(), createPromiseHandle()];
+      const calls = [createPromiseHandle(), createPromiseHandle()];
       // Add a listener
       let callCount = 0;
       function listener() {
