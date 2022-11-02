@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2021 Realm Inc.
+// Copyright 2022 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,4 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import "./property-reads";
+export * from "./hooks/authenticate-user-before";
+export * from "./hooks/import-app-before";
+export * from "./hooks/open-realm-before";
