@@ -42,15 +42,15 @@ export default [
         tsconfig: "src/node/tsconfig.json",
       }),
     ],
-    external: ["node:module", "node:fs", "undici", "bson"],
+    external: ["node:module", "node:fs", "undici", "bson", "debug"],
   },
   {
-    input: "generated/types/src/index.d.ts",
+    input: "src/index.ts",
     output: {
       file: pkg.types,
       format: "es",
     },
-    plugins: [dts({ respectExternal: true })],
+    plugins: [dts({ respectExternal: true, compilerOptions: { stripInternal: true, noResolve: false } })],
     external: ["bson"],
   },
 ];
