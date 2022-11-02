@@ -732,8 +732,14 @@ class NodeCppDecls extends CppDecls {
       const casted = (expr: string) => (cls.base ? `static_cast<${derivedType}*>(${ptr(expr)})` : ptr(expr));
       const self = `(${cls.needsDeref ? "**" : "*"}${casted("info[0]")})`;
 
-      const selfCheck = (isStatic: boolean) =>
-        isStatic ? "" : `if (!info[0].IsExternal()) throw Napi::TypeError::New(${env}, "need 1 external argument");`;
+      const selfCheck = (isStatic: boolean) => {
+        if (isStatic) return "";
+        let check = `if (!info[0].IsExternal()) throw Napi::TypeError::New(${env}, "need 1 external argument");`;
+        if (cls.sharedPtrWrapped)
+          check += ` if (!*${casted("info[0]")}) throwNullSharedPtrError(${env}, "${cls.jsName}");`;
+
+        return check;
+      };
 
       for (const method of cls.methods) {
         const argOffset = method.isStatic ? 0 : 1; // `this` takes arg 0 if not static
@@ -793,7 +799,9 @@ class NodeCppDecls extends CppDecls {
             auto ${env} = val.Env();
             auto obj = val.ToObject();
             auto external = ${this.addon.accessExtractor(cls)}.Call({obj});
-            return *${casted(`external`)};
+            const auto ptr = ${casted(`external`)};
+            ${cls.sharedPtrWrapped ? `if (!*ptr) throwNullSharedPtrError(${env}, "${cls.name}");` : ""}
+            return *ptr;
           `,
         }),
       );
