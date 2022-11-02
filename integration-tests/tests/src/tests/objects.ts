@@ -48,7 +48,7 @@ describe("Realm objects", () => {
         expect(firstPerson).deep.equals(john);
       });
 
-      it("can have it's properties read", function (this: RealmContext) {
+      it("can have its properties read", function (this: RealmContext) {
         const { realm } = this;
 
         const john = realm.write(() => {
