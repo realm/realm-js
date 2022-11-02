@@ -139,8 +139,8 @@ describe("Partition-values", () => {
         realm1.create("Dog", { _id: new BSON.ObjectId(), name: "King" });
       });
 
+      const dogsBefore = realm1.objects("Dog").length;
       await realm1.syncSession?.uploadAllLocalChanges();
-      expect(realm1.objects("Dog").length).equals(1);
       realm1.close();
 
       // cleanup, re-sync & check changes are synced
@@ -149,7 +149,7 @@ describe("Partition-values", () => {
       const realm2 = await Realm.open(realmConfigPrimary);
       await realm2.syncSession?.downloadAllServerChanges();
 
-      expect(realm2.objects("Dog").length).equals(1);
+      expect(realm2.objects("Dog").length).equals(dogsBefore);
       realm2.close();
 
       // cleanup & re-sync with different partitionValue
@@ -179,8 +179,8 @@ describe("Partition-values", () => {
         realm1.create("Dog", { _id: new BSON.ObjectId(), name: "King" });
       });
 
+      const dogsBefore = realm1.objects("Dog").length;
       await realm1.syncSession?.uploadAllLocalChanges();
-      expect(realm1.objects("Dog").length).equals(1);
       realm1.close();
 
       // cleanup, re-sync & check changes are synced
@@ -189,7 +189,7 @@ describe("Partition-values", () => {
       const realm2 = await Realm.open(realmConfigPrimary);
       await realm2.syncSession?.downloadAllServerChanges();
 
-      expect(realm2.objects("Dog").length).equals(1);
+      expect(realm2.objects("Dog").length).equals(dogsBefore);
       realm2.close();
 
       // cleanup & re-sync with different partitionValue
@@ -227,8 +227,8 @@ describe("Partition-values", () => {
         realm1.create("Dog", { _id: new BSON.ObjectId(), name: "King" });
       });
 
+      const dogsBefore = realm1.objects("Dog").length;
       await realm1.syncSession?.uploadAllLocalChanges();
-      expect(realm1.objects("Dog").length).equals(1);
       realm1.close();
 
       // cleanup, re-sync & check changes are synced
@@ -237,7 +237,7 @@ describe("Partition-values", () => {
       const realm2 = await Realm.open(realmConfigPrimary);
       await realm2.syncSession?.downloadAllServerChanges();
 
-      expect(realm2.objects("Dog").length).equals(1);
+      expect(realm2.objects("Dog").length).equals(dogsBefore);
       realm2.close();
 
       // cleanup & re-sync with different partitionValue
@@ -270,8 +270,8 @@ describe("Partition-values", () => {
         realm1.create("Dog", { _id: new BSON.ObjectId(), name: "King" });
       });
 
+      const dogsBefore = realm1.objects("Dog").length;
       await realm1.syncSession?.uploadAllLocalChanges();
-      expect(realm1.objects("Dog").length).equals(1);
       realm1.close();
 
       Realm.deleteFile(realmConfigPrimary);
@@ -279,7 +279,7 @@ describe("Partition-values", () => {
       const realm2 = await Realm.open(realmConfigPrimary);
       await realm2.syncSession?.downloadAllServerChanges();
 
-      expect(realm2.objects("Dog").length).equals(1);
+      expect(realm2.objects("Dog").length).equals(dogsBefore);
       realm2.close();
 
       // cleanup & re-sync with different partitionValue
