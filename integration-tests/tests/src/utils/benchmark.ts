@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { benchmark, BenchmarkOpts } from "../bench";
+import { benchmark, BenchmarkOpts } from "@thi.ng/bench";
 
 import { openRealmBefore } from "../hooks";
 

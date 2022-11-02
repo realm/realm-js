@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Realm from "realm";
+import { Realm } from "realm";
 
 import { describePerformance } from "../utils/benchmark";
 
@@ -107,11 +107,13 @@ const cases: Array<TestParameters | [Realm.PropertyType | Realm.ObjectSchemaProp
   ["bool{}", {}],
 ];
 
-for (const c of cases) {
-  if (Array.isArray(c)) {
-    const [type, value] = c;
-    describeTypeRead({ type, value });
-  } else {
-    describeTypeRead(c);
+describe.skipIf(environment.performance !== true, "Property read performance", () => {
+  for (const c of cases) {
+    if (Array.isArray(c)) {
+      const [type, value] = c;
+      describeTypeRead({ type, value });
+    } else {
+      describeTypeRead(c);
+    }
   }
-}
+});

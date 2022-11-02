@@ -2,21 +2,20 @@
   "name": "@realm/app-importer",
   "version": "0.1.0",
   "description": "Wrapping the Stitch CLI to import an app from a template (w. secrets)",
-  "main": "./dist/bundle.cjs.js",
-  "module": "./dist/bundle.es.js",
-  "types": "./dist/bundle.d.ts",
+  "type": "module",
+  "main": "./dist/bundle.es.js",
+  "types": "./dist/index.d.ts",
   "react-native": "./dist/bundle.react-native.es.js",
   "bin": {
-    "realm-app-importer": "./realm-app-importer"
+    "realm-app-importer": "./realm-app-importer.ts"
   },
   "scripts": {
     "generate-types": "tsc --project tsconfig.types.json --declaration --emitDeclarationOnly --declarationDir types/generated",
-    "build": "npm run generate-types && rollup --config && npm run build-cli",
-    "build-cli": "tsc -p tsconfig.build.json",
+    "build": "rollup --config",
     "watch": "rollup -w --config",
     "lint": "eslint --ext .js,.ts .",
     "prepare": "npm run build",
-    "start": "ts-node src/cli.ts"
+    "start": "./realm-app-importer.ts"
   },
   "files": [
     "dist",
@@ -46,7 +45,7 @@
     "deepmerge": "^4.2.2",
     "fs-extra": "^10.1.0",
     "glob": "^8.0.3",
-    "node-fetch": "^2.6.7",
+    "node-fetch": "^3.2.10",
     "@realm/network-transport": "*",
     "yargs": "^17.6.0"
   },

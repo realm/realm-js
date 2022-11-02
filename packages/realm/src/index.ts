@@ -19,6 +19,7 @@
 export {
   App,
   BSON,
+  ClientResetMode,
   Collection,
   Credentials,
   Dictionary,
@@ -29,6 +30,7 @@ export {
   RealmObject as Object,
   RealmSet as Set,
   Results,
+  SessionStopPolicy,
   UpdateMode,
   User,
   Types,

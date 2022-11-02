@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2021 Realm Inc.
+// Copyright 2022 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,28 +16,29 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import chaiAsPromised from "chai-as-promised";
+if (!global.fs) {
+  throw new Error("Expected 'fs' to be available as a global");
+}
+
+if (!global.path) {
+  throw new Error("Expected 'path' to be available as a global");
+}
+
+if (!global.environment || typeof global.environment !== "object") {
+  throw new Error("Expected 'environment' to be available as a global");
+}
+
+// Patch in a function that can skip running tests in specific environments
+import { testSkipIf, suiteSkipIf } from "./utils/skip-if";
+global.describe.skipIf = suiteSkipIf;
+global.it.skipIf = testSkipIf;
+
+console.log("Patched the global");
+
 import chai from "chai";
 
+import chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
 
-import "./realm-constructor";
-import "./objects";
-import "./class-models";
-import "./serialization";
-import "./iterators";
-import "./queries";
-import "./dynamic-schema-updates";
-import "./listeners";
-import "./bson";
-import "./dictionary";
-import "./set";
-import "./credentials/anonymous";
-import "./sync/mixed";
-import "./sync/flexible";
-import "./sync/asymmetric";
-import "./sync/sync-as-local";
-import "./transaction";
-import "./schema";
-import "./types";
-import "./sync/client-reset";
+import { chaiRealmObjects } from "./utils/chai-plugin";
+chai.use(chaiRealmObjects);
