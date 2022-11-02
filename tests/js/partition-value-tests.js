@@ -92,8 +92,8 @@ module.exports = {
       realm1.create("Dog", { _id: new ObjectId(), name: "King" });
     });
 
+    const dogsBefore = realm1.objects("Dog").length;
     await realm1.syncSession.uploadAllLocalChanges();
-    TestCase.assertEqual(realm1.objects("Dog").length, 1);
     realm1.close();
 
     // cleanup, re-sync & check changes are synced
@@ -102,7 +102,7 @@ module.exports = {
     const realm2 = await Realm.open(realmConfigPrimary);
     await realm2.syncSession.downloadAllServerChanges();
 
-    TestCase.assertEqual(realm2.objects("Dog").length, 1);
+    TestCase.assertEqual(realm2.objects("Dog").length, dogsBefore);
     realm2.close();
 
     // cleanup & re-sync with different partitionValue
@@ -133,7 +133,7 @@ module.exports = {
     });
 
     await realm1.syncSession.uploadAllLocalChanges();
-    TestCase.assertEqual(realm1.objects("Dog").length, 1);
+    const dogsBefore = realm1.objects("Dog").length;
     realm1.close();
 
     // cleanup, re-sync & check changes are synced
@@ -142,7 +142,7 @@ module.exports = {
     const realm2 = await Realm.open(realmConfigPrimary);
     await realm2.syncSession.downloadAllServerChanges();
 
-    TestCase.assertEqual(realm2.objects("Dog").length, 1);
+    TestCase.assertEqual(realm2.objects("Dog").length, dogsBefore);
     realm2.close();
 
     // cleanup & re-sync with different partitionValue
@@ -173,7 +173,7 @@ module.exports = {
     });
 
     await realm1.syncSession.uploadAllLocalChanges();
-    TestCase.assertEqual(realm1.objects("Dog").length, 1);
+    const dogsBefore = realm1.objects("Dog").length;
     realm1.close();
 
     // cleanup, re-sync & check changes are synced
@@ -182,7 +182,7 @@ module.exports = {
     const realm2 = await Realm.open(realmConfigPrimary);
     await realm2.syncSession.downloadAllServerChanges();
 
-    TestCase.assertEqual(realm2.objects("Dog").length, 1);
+    TestCase.assertEqual(realm2.objects("Dog").length, dogsBefore);
     realm2.close();
 
     // cleanup & re-sync with different partitionValue
@@ -212,7 +212,7 @@ module.exports = {
     });
 
     await realm1.syncSession.uploadAllLocalChanges();
-    TestCase.assertEqual(realm1.objects("Dog").length, 1);
+    const dogsBefore = realm1.objects("Dog").length;
     realm1.close();
 
     Realm.deleteFile(realmConfigPrimary);
@@ -220,7 +220,7 @@ module.exports = {
     const realm2 = await Realm.open(realmConfigPrimary);
     await realm2.syncSession.downloadAllServerChanges();
 
-    TestCase.assertEqual(realm2.objects("Dog").length, 1);
+    TestCase.assertEqual(realm2.objects("Dog").length, dogsBefore);
     realm2.close();
 
     // cleanup & re-sync with different partitionValue
