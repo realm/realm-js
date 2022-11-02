@@ -16,7 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { expect } from "chai";
-import Realm from "realm";
+import { Realm } from "realm";
+
 import { IPerson, Person, PersonSchema } from "../schemas/person-and-dogs";
 import {
   IPerson as IPersonWithId,

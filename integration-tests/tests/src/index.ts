@@ -28,26 +28,7 @@ flags.ALLOW_VALUES_ARRAYS = true;
  */
 const DEFAULT_LONG_TIMEOUT = 30 * 1000; // 30s
 
-if (!global.fs) {
-  throw new Error("Expected 'fs' to be available as a global");
-}
-
-if (!global.path) {
-  throw new Error("Expected 'path' to be available as a global");
-}
-
-if (!global.environment || typeof global.environment !== "object") {
-  throw new Error("Expected 'environment' to be available as a global");
-}
-
-// Patch in a function that can skip running tests in specific environments
-import { testSkipIf, suiteSkipIf } from "./utils/skip-if";
-describe.skipIf = suiteSkipIf;
-it.skipIf = testSkipIf;
-
-import { chaiRealmObjects } from "./utils/chai-plugin";
-import chai from "chai";
-chai.use(chaiRealmObjects);
+import "./setup-globals";
 
 afterEach(() => {
   // Trigger garbage collection after every test, if exposed by the environment.
@@ -56,7 +37,8 @@ afterEach(() => {
   }
 });
 
-// Using `require` instead of `import` here to ensure the Mocha globals (including `skipIf`) are set
+import "./utils/import-app.test";
+import "./utils/chai-plugin.test";
 
 describe("Test Harness", function (this: Mocha.Suite) {
   /**
@@ -79,11 +61,5 @@ describe("Test Harness", function (this: Mocha.Suite) {
   require("./utils/chai-plugin.test");
 });
 
-// Simplify once https://github.com/kraenhansen/mocha-remote/issues/58 gets solved
-describe.skipIf(environment.integration === false || environment.integration === "false", "Integration tests", () => {
-  require("./tests");
-});
-
-describe.skipIf(environment.performance !== true, "Performance tests", () => {
-  require("./performance-tests");
-});
+import "./tests";
+import "./performance-tests";
