@@ -49,6 +49,17 @@ declare const path: path;
 declare const require: Require;
 declare const environment: Environment;
 
+declare type Timer = unknown;
+
+declare function setImmediate<Args extends unknown[]>(callback: (...args: Args) => void, ...args: Args): Timer;
+declare function clearImmediate(timer: Timer): void;
+declare function setTimeout<Args extends unknown[]>(
+  callback: (...args: Args) => void,
+  delay?: number,
+  ...args: Args
+): Timer;
+declare function clearTimeout(timer: Timer): void;
+
 // Extend the mocha test function with the skipIf that we patch in from index.ts
 declare namespace Mocha {
   interface SuiteFunction {
