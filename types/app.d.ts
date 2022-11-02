@@ -386,7 +386,7 @@ declare namespace Realm {
   class User<
     FunctionsFactoryType = DefaultFunctionsFactory,
     CustomDataType = SimpleObject,
-    UserProfileDataType = DefaultUserProfileData
+    UserProfileDataType = DefaultUserProfileData,
   > {
     /**
      * The automatically-generated internal ID of the user.
