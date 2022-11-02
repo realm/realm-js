@@ -21,22 +21,21 @@
     "realm": "*"
   },
   "devDependencies": {
-    "@thi.ng/bench": "^3.1.3",
-    "@types/chai": "^4.1.7",
-    "@types/chai-as-promised": "^7.1.4",
-    "@types/mocha": "^5.2.6",
-    "@types/node": "^16.11.12",
-    "concurrently": "^6.0.2",
-    "mocha": "^9.1.3",
-    "node-fetch": "^2.6.1",
+    "@thi.ng/bench": "^3.1.16",
+    "@types/chai": "^4.3.3",
+    "@types/chai-as-promised": "^7.1.5",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^18.11.9",
+    "concurrently": "^6.5.1",
+    "mocha": "^10.1.0",
+    "node-fetch": "^3.2.10",
     "platform": "^1.3.6",
     "realm": "*",
     "@realm/app-importer": "*",
-    "rollup": "^2.61.1",
     "ts-node": "^10.9.1"
   },
   "dependencies": {
-    "chai": "^4.2.0",
+    "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",
     "@realm/network-transport": "^0.7.2"
   },
