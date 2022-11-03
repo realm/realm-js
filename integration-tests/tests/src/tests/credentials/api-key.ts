@@ -54,12 +54,6 @@ describe.skipIf(environment.missingServer, "api-key credentials", () => {
     // Disable the key and fetch the key
     await user.apiKeys.disable(_id);
     const disabledKey = await user.apiKeys.fetch(_id);
-    console.log("TEEST");
-    console.log(disabledKey._id);
-    console.log(disabledKey.key);
-    console.log(disabledKey.name);
-    console.log(disabledKey.disabled);
-    console.log("TEEST");
     expect(disabledKey).deep.equals({ _id, key: undefined, name, disabled: true });
     // Re-enable the key
     await user.apiKeys.enable(_id);
