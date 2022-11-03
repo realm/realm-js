@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 /** @internal */
-export type HashFunction<K, H> = (k: K) => H;
+export type HashFunction<KeyType, HashType> = (key: KeyType) => HashType;
 
 /**
  * A map from some type of object (the key) into another type of object (the value), where a
@@ -30,16 +30,21 @@ export type HashFunction<K, H> = (k: K) => H;
  * in an effort to make the entire `IndirectWeakMap` avoid leaks.
  * @internal
  */
-export class IndirectWeakMap<K extends object, V extends object, H> implements WeakMap<K, V> {
+export class IndirectWeakMap<KeyType extends object, ValueType extends object, HashType>
+  implements WeakMap<KeyType, ValueType>
+{
   [Symbol.toStringTag] = "IndirectWeakMap";
 
-  private registry = new FinalizationRegistry<H>((hash) => {
+  private registry = new FinalizationRegistry<HashType>((hash) => {
     this.values.delete(hash);
   });
 
-  constructor(private hasher: HashFunction<K, H>, private values: Map<H, WeakRef<V>> = new Map()) {}
+  constructor(
+    private hasher: HashFunction<KeyType, HashType>,
+    private values: Map<HashType, WeakRef<ValueType>> = new Map(),
+  ) {}
 
-  set(key: K, value: V): this {
+  set(key: KeyType, value: ValueType): this {
     const hash = this.hasher(key);
     const ref = new WeakRef(value);
     // Unregister the finalization registry on value being removed from the map
@@ -55,16 +60,16 @@ export class IndirectWeakMap<K extends object, V extends object, H> implements W
     return this;
   }
 
-  has(key: K): boolean {
+  has(key: KeyType): boolean {
     return this.get(key) !== undefined;
   }
 
-  get(key: K): V | undefined {
+  get(key: KeyType): ValueType | undefined {
     const hash = this.hasher(key);
     return this.values.get(hash)?.deref();
   }
 
-  delete(key: K): boolean {
+  delete(key: KeyType): boolean {
     const hash = this.hasher(key);
     return this.values.delete(hash);
   }

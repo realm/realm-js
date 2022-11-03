@@ -25,12 +25,12 @@ import { HashFunction, IndirectWeakMap } from "./internal";
  * @internal
  */
 export class IndirectWeakCache<
-  K extends object,
-  V extends object,
+  KeyType extends object,
+  ValueType extends object,
   Args extends unknown[],
-  H = unknown,
-> extends IndirectWeakMap<K, V, H> {
-  constructor(private ctor: { new (...args: Args): V }, hasher: HashFunction<K, H>) {
+  HashType = unknown,
+> extends IndirectWeakMap<KeyType, ValueType, HashType> {
+  constructor(private construct: { new (...args: Args): ValueType }, hasher: HashFunction<KeyType, HashType>) {
     super(hasher);
   }
   /**
@@ -41,12 +41,12 @@ export class IndirectWeakCache<
    * @returns An existing or new value.
    * @throws If `args` are not supplied and no object existed in the cache.
    */
-  getOrCreate(key: K, args?: Args) {
+  getOrCreate(key: KeyType, args?: Args) {
     const existing = this.get(key);
     if (existing) {
       return existing;
     } else if (args) {
-      const result = new this.ctor(...args);
+      const result = new this.construct(...args);
       this.set(key, result);
       return result;
     } else {
