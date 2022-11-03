@@ -93,7 +93,7 @@ export class ApiKeyAuthClient {
    * @param {string} keyId the id of the API key to delete
    */
   async delete(keyId: string) {
-    this.internal.deleteApiKey(new Realm.BSON.ObjectId(keyId), this.user);
+    await this.internal.deleteApiKey(new Realm.BSON.ObjectId(keyId), this.user);
   }
 
   /**
@@ -102,7 +102,7 @@ export class ApiKeyAuthClient {
    * @param {string} keyId the id of the API key to enable
    */
   async enable(keyId: string) {
-    this.internal.enableApiKey(new Realm.BSON.ObjectId(keyId), this.user);
+    await this.internal.enableApiKey(new Realm.BSON.ObjectId(keyId), this.user);
   }
 
   /**
@@ -111,6 +111,6 @@ export class ApiKeyAuthClient {
    * @param {string} keyId the id of the API key to disable
    */
   async disable(keyId: string) {
-    this.internal.disableApiKey(new Realm.BSON.ObjectId(keyId), this.user);
+    await this.internal.disableApiKey(new Realm.BSON.ObjectId(keyId), this.user);
   }
 }
