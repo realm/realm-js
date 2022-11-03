@@ -21,7 +21,7 @@
             "program": "node",
             "args": [
                 "--expose_gc",
-                "${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js",
+                "${workspaceRoot}/node_modules/jasmine/bin/jasmine.js",
                 "spec/unit_tests.js",
                 "--filter=."
             ],
@@ -45,7 +45,7 @@
             "preLaunchTask": "Build Node Tests",
             "cwd": "${workspaceRoot}/tests",
             "console": "integratedTerminal",
-            "program": "${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js",
+            "program": "${workspaceRoot}/node_modules/jasmine/bin/jasmine.js",
             "runtimeArgs": [
                 "--expose_gc"
             ],
@@ -60,7 +60,7 @@
             "name": "Debug Node Unit Tests",
             "cwd": "${workspaceRoot}/tests",
             "console": "integratedTerminal",
-            "program": "${workspaceRoot}/tests/node_modules/jasmine/bin/jasmine.js",
+            "program": "${workspaceRoot}/node_modules/jasmine/bin/jasmine.js",
             "runtimeArgs": [
                 "--expose_gc"
             ],
@@ -123,7 +123,7 @@
             "program": "node",
             "args": [
                 "--expose_gc",
-                "${workspaceFolder}/tests/node_modules/jasmine/bin/jasmine.js",
+                "${workspaceFolder}/node_modules/jasmine/bin/jasmine.js",
                 "spec/unit_tests.js",
                 "--filter=${input:testFilter}"
             ],
