@@ -16,7 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-type HashFunction<K, H> = (k: K) => H;
+/** @internal */
+export type HashFunction<K, H> = (k: K) => H;
 
 /**
  * A map from some type of object (the key) into another type of object (the value), where a
@@ -27,6 +28,7 @@ type HashFunction<K, H> = (k: K) => H;
  * inserted in the underling map. A value is also registered with a finalization registry, ensuring
  * that their entry in the underlying map is removed when they get garbage collected,
  * in an effort to make the entire `IndirectWeakMap` avoid leaks.
+ * @internal
  */
 export class IndirectWeakMap<K extends object, V extends object, H> implements WeakMap<K, V> {
   [Symbol.toStringTag] = "IndirectWeakMap";
