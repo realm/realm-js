@@ -46,6 +46,7 @@ export function closeRealm(this: Mocha.Context & Partial<RealmContext>) {
 }
 
 export async function gc() {
+  // Breaking synchronious execution seem to be needed
   await new Promise(setImmediate);
   if (global.gc) {
     global.gc();
