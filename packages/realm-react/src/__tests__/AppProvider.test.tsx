@@ -68,7 +68,7 @@ describe("AppProvider", () => {
     });
 
     // Changing the realm provider configuration will cause a remount
-    // of the child component.  Therefore it must be retreived again
+    // of the child component.  Therefore it must be retrieved again
     const newSchemaNameContainer = getByTestId("appId");
 
     expect(newSchemaNameContainer).toHaveTextContent("newId");

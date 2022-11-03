@@ -41,7 +41,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ fallback: Fallback, 
 
   // Support for a possible change in configuration
   useEffect(() => {
-    if (!app.currentUser || user != app.currentUser) {
+    if (!app.currentUser || user?.id != app.currentUser.id) {
       setUser(app.currentUser);
     }
     // Ignoring updates to user, as this would cause a potential infinite loop
@@ -49,7 +49,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ fallback: Fallback, 
 
   useEffect(() => {
     const event = () => {
-      if (app.currentUser !== user) {
+      if (app.currentUser?.id != user?.id) {
         setUser(app.currentUser);
       }
     };

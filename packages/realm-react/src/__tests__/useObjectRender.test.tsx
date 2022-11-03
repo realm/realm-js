@@ -47,6 +47,7 @@ export class List extends Realm.Object {
   title!: string;
   items!: Realm.List<ListItem>;
   favoriteItem?: ListItem;
+  tags!: Realm.List<string>;
 
   static schema: Realm.ObjectSchema = {
     name: "List",
@@ -55,6 +56,7 @@ export class List extends Realm.Object {
       title: "string",
       items: "ListItem[]",
       favoriteItem: "ListItem",
+      tags: "string[]",
     },
     primaryKey: "id",
   };
@@ -201,6 +203,7 @@ const TestComponent: React.FC<{ testID?: string }> = ({ testID }) => {
           <Text>{list?.favoriteItem.name}</Text>
         </View>
       )}
+      <Text>{list?.tags[0]}</Text>
     </View>
   );
 };
@@ -403,6 +406,21 @@ describe("useObject: rendering objects with a Realm.List property", () => {
       });
 
       expect(itemRenderCounter).toHaveBeenCalledTimes(10);
+    });
+
+    it("test that primitive lists render correctly", async () => {
+      const { object } = await setupTest();
+
+      testRealm.write(() => {
+        const tags = ["apple", "banana", "cherry", "durian", "eggplant"];
+        object.tags.push(...tags);
+      });
+
+      await act(async () => {
+        forceSynchronousNotifications(testRealm);
+      });
+
+      // no assertion here, just checking that the test doesn't crash
     });
   });
 });

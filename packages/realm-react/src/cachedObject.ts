@@ -73,7 +73,7 @@ export function createCachedObject({
       }
 
       // If its a Realm.List we need to add a proxy cache around it
-      if (value instanceof Realm.List) {
+      if (value instanceof Realm.List && value.type === "object") {
         if (listCaches.has(key)) {
           // Return a new proxy wrapping the cachedCollection so that its reference gets updated,
           // otherwise the list component will not re-render. The cachedCollection then ensures that
@@ -99,7 +99,7 @@ export function createCachedObject({
       // Don't force a second re-render if any of the changed properties is a Realm.List,
       // as the List's cachedCollection will force a re-render itself
       const anyListPropertyModified = changes.changedProperties.some((property) => {
-        return obj[property] instanceof Realm.List;
+        return obj[property] instanceof Realm.List && obj[property].type === "object";
       });
       const shouldRerender = !anyListPropertyModified;
 
