@@ -29,5 +29,10 @@
     "mocha": "^10.1.0",
     "rollup-plugin-dts": "^5.0.0",
     "tsm": "^2.2.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/realm/realm-js.git",
+    "directory": "packages/realm"
   }
 }
