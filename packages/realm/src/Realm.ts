@@ -511,8 +511,11 @@ export class Realm {
       );
       const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
       table.removeObject(obj.key);
+    } else if (subject instanceof List) {
+      subject.internal.deleteAll();
+    } else if (subject instanceof Results) {
+      subject.internal.clear();
     } else if (Array.isArray(subject) || Symbol.iterator in subject) {
-      // TODO: Optimize this to not get the helper on every iteration
       for (const object of subject) {
         assert.instanceOf(object, RealmObject);
         const { objectSchema } = this.classes.getHelpers(object);
@@ -520,7 +523,7 @@ export class Realm {
         table.removeObject(object[INTERNAL].key);
       }
     } else {
-      throw new Error("Not yet implemented");
+      throw new Error("Can only delete objects, lists and results.");
     }
   }
 
