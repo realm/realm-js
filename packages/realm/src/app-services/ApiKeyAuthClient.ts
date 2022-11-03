@@ -16,8 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { SyncUser } from "../binding";
-import { User, binding, Realm } from "../internal";
+import { BSON, User, binding } from "../internal";
 
 /**
  * The representation of an API-key stored in the service.
@@ -75,7 +74,7 @@ export class ApiKeyAuthClient {
    * @param {string} keyId the id of the API key to fetch.
    */
   async fetch(keyId: string): Promise<ApiKey> {
-    const { id, key, name, disabled } = await this.internal.fetchApiKey(new Realm.BSON.ObjectId(keyId), this.user)
+    const { id, key, name, disabled } = await this.internal.fetchApiKey(new BSON.ObjectId(keyId), this.user);
     return { _id: id.toHexString(), key, name, disabled };
   }
 
@@ -93,7 +92,7 @@ export class ApiKeyAuthClient {
    * @param {string} keyId the id of the API key to delete
    */
   async delete(keyId: string) {
-    await this.internal.deleteApiKey(new Realm.BSON.ObjectId(keyId), this.user);
+    await this.internal.deleteApiKey(new BSON.ObjectId(keyId), this.user);
   }
 
   /**
@@ -102,7 +101,7 @@ export class ApiKeyAuthClient {
    * @param {string} keyId the id of the API key to enable
    */
   async enable(keyId: string) {
-    await this.internal.enableApiKey(new Realm.BSON.ObjectId(keyId), this.user);
+    await this.internal.enableApiKey(new BSON.ObjectId(keyId), this.user);
   }
 
   /**
@@ -111,6 +110,6 @@ export class ApiKeyAuthClient {
    * @param {string} keyId the id of the API key to disable
    */
   async disable(keyId: string) {
-    await this.internal.disableApiKey(new Realm.BSON.ObjectId(keyId), this.user);
+    await this.internal.disableApiKey(new BSON.ObjectId(keyId), this.user);
   }
 }
