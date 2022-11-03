@@ -19,13 +19,14 @@ import { expect } from "chai";
 import { Credentials, User } from "realm";
 import { importAppBefore } from "../../hooks";
 
+//These tests are adopted from email-password-auth.test.ts in the realm-web-integration-tests directory.
 describe.skipIf(environment.missingServer, "email-password credentials", () => {
   importAppBefore("with-auth-providers");
 
   it("authenticates", async function (this: AppContext) {
-    const credential_blob = { email: "validEmail", password: "validPassword" };
-    await this.app.emailPasswordAuth.registerUser(credential_blob);
-    const user = await this.app.logIn(Credentials.emailPassword(credential_blob));
+    const credentialsBlob = { email: "validEmail", password: "validPassword" };
+    await this.app.emailPasswordAuth.registerUser(credentialsBlob);
+    const user = await this.app.logIn(Credentials.emailPassword(credentialsBlob));
     expect(user).instanceOf(User);
   });
 
