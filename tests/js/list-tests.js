@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-const { Realm } = require("realm");
+const { Realm, List } = require("realm");
 const { Decimal128, ObjectId, UUID } = Realm.BSON;
 let TestCase = require("./asserts");
 let schemas = require("./schemas");
@@ -695,7 +695,7 @@ module.exports = {
     }, "Cannot modify managed objects outside of a write transaction");
   },
 
-  testListDeletions: function () {
+  testLinkListDeletions: function () {
     const realm = new Realm({ schema: [schemas.LinkTypes, schemas.TestObject] });
     let object;
     let array;
@@ -731,6 +731,61 @@ module.exports = {
     });
 
     TestCase.assertThrowsContaining(() => array[0], "invalidated");
+
+    realm.write(() => {
+      object = realm.create("LinkTypesObject", {
+        objectCol: { doubleCol: 1 },
+        objectCol1: { doubleCol: 2 },
+        arrayCol: [{ doubleCol: 3 }, { doubleCol: 4 }],
+      });
+
+      array = object.arrayCol;
+    });
+
+    realm.write(() => {
+      realm.delete(array);
+    });
+
+    TestCase.assertEqual(array.length, 0);
+  },
+
+  testPrimitiveListDeletions: function () {
+    const realm = new Realm({ schema: [schemas.PrimitiveArrays] });
+    let prim;
+
+    realm.write(() => {
+      prim = realm.create("PrimitiveArrays", {
+        bool: [true, false],
+        int: [1, 2],
+        float: [1.1, 2.2],
+        double: [1.11, 2.22],
+        string: ["a", "b"],
+        date: [new Date(1), new Date(2)],
+        data: [DATA1, DATA2],
+        decimal128: [Decimal128.fromString("1"), Decimal128.fromString("2")],
+        objectId: [new ObjectId("0000002a9a7969d24bea4cf2"), new ObjectId("0000002a9a7969d24bea4cf3")],
+        uuid: [new UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"), new UUID("b7821fd0-38cf-4f94-8650-d0f5b6295ef4")],
+
+        optBool: [true, null],
+        optInt: [1, null],
+        optFloat: [1.1, null],
+        optDouble: [1.11, null],
+        optString: ["a", null],
+        optDate: [new Date(1), null],
+        optData: [DATA1, null],
+        optDecimal128: [Decimal128.fromString("1"), null],
+        optObjectId: [new ObjectId("0000002a9a7969d24bea4cf2"), null],
+        optUuid: [new UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"), null],
+      });
+    });
+
+    TestCase.assertEqual(prim.bool.length, 2);
+
+    realm.write(() => {
+      realm.delete(prim.bool);
+    });
+
+    TestCase.assertEqual(prim.bool.length, 0);
   },
 
   testLiveUpdatingResults: function () {
