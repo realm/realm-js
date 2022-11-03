@@ -36,3 +36,4 @@ import "./tests/transaction";
 import "./tests/schema";
 import "./tests/types";
 import "./tests/credentials/email-password";
+import "./tests/credentials/api-key";
