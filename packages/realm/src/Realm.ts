@@ -787,7 +787,6 @@ export class Realm {
   /**
    * Add a listener `callback` for the specified event `name`.
    * @param eventName The name of event that should cause the callback to be called.
-   *   DISCUSS: why does it say _Currently, only the "change" and "schema" events are supported_.
    * @param callback Function to be called when a change event occurs.
    *   Each callback will only be called once per event, regardless of the number of times
    *   it was added.
