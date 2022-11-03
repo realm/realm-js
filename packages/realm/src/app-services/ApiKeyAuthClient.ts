@@ -61,7 +61,7 @@ export class ApiKeyAuthClient {
   /**
    * Creates an API key that can be used to authenticate as the current user.
    *
-   * @param {string} keyName the name of the API key to be created.
+   * @param keyName the name of the API key to be created.
    */
   async create(keyName: string): Promise<ApiKey> {
     const { id, key, name, disabled } = await this.internal.createApiKey(keyName, this.user);
@@ -71,11 +71,11 @@ export class ApiKeyAuthClient {
   /**
    * Fetches an API key associated with the current user.
    *
-   * @param {string} keyId the id of the API key to fetch.
+   * @param keyId the id of the API key to fetch.
    */
-  async fetch(keyId: string): Promise<ApiKey> {
-    const { id, key, name, disabled } = await this.internal.fetchApiKey(new BSON.ObjectId(keyId), this.user);
-    return { _id: id.toHexString(), key, name, disabled };
+  async fetch(keyId: string): Promise<Omit<ApiKey, "key">> {
+    const { id, name, disabled } = await this.internal.fetchApiKey(new BSON.ObjectId(keyId), this.user);
+    return { _id: id.toHexString(), name, disabled };
   }
 
   /**
@@ -89,7 +89,7 @@ export class ApiKeyAuthClient {
   /**
    * Deletes an API key associated with the current user.
    *
-   * @param {string} keyId the id of the API key to delete
+   * @param keyId the id of the API key to delete
    */
   async delete(keyId: string) {
     await this.internal.deleteApiKey(new BSON.ObjectId(keyId), this.user);
@@ -98,7 +98,7 @@ export class ApiKeyAuthClient {
   /**
    * Enables an API key associated with the current user.
    *
-   * @param {string} keyId the id of the API key to enable
+   * @param keyId the id of the API key to enable
    */
   async enable(keyId: string) {
     await this.internal.enableApiKey(new BSON.ObjectId(keyId), this.user);
@@ -107,7 +107,7 @@ export class ApiKeyAuthClient {
   /**
    * Disable an API key associated with the current user.
    *
-   * @param {string} keyId the id of the API key to disable
+   * @param keyId the id of the API key to disable
    */
   async disable(keyId: string) {
     await this.internal.disableApiKey(new BSON.ObjectId(keyId), this.user);

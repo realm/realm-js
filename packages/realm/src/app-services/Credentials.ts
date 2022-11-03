@@ -70,7 +70,7 @@ export class Credentials {
 
   /**
    * Creates credentials from an API key.
-   * @param {string} key A string identifying the API key.
+   * @param key A string identifying the API key.
    * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
    */
   static apiKey(key: string): Credentials {
