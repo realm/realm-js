@@ -20,9 +20,9 @@ import { expect } from "chai";
 
 import { gc } from "./utils";
 
-import { WeakCache } from "../WeakCache";
+import { IndirectWeakCache } from "../IndirectWeakCache";
 
-describe("WeakCache", () => {
+describe("IndirectWeakCache", () => {
   it("constructs, gets and forgets values", async () => {
     class Internal {
       constructor(public $addr: bigint) {}
@@ -34,7 +34,7 @@ describe("WeakCache", () => {
     const int1 = new Internal(1n);
     const int1b = new Internal(1n);
 
-    const cache = new WeakCache(External);
+    const cache = new IndirectWeakCache(External, ({ $addr }: Internal) => $addr);
     const objs: Record<number, External> = {};
     objs[0] = cache.get(int1, ["bar"]);
     expect(objs[0].foo).equals("bar");
