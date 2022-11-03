@@ -20,7 +20,7 @@ import { Credentials, User } from "realm";
 import { importAppBefore } from "../../hooks";
 
 describe.skipIf(environment.missingServer, "email-password credentials", () => {
-  importAppBefore("with-email-password-auth");
+  importAppBefore("with-auth-providers");
 
   it("authenticates", async function (this: AppContext) {
     const credential_blob = { email: "validEmail", password: "validPassword" };
