@@ -1,3 +1,9 @@
+## 0.4.1 (2022-11-3)
+
+### Fixed
+* Fix crash when using `useObject` with a model containing a `List` of primitives ([#5058](https://github.com/realm/realm-js/issues/5058))
+* Fix potential infinite rerender issue when using `useUser` and the `UserProvider` ([#4967](https://github.com/realm/realm-js/issues/4967))
+
 ## 0.4.0 (2022-10-18)
 
 ### Enhancements
