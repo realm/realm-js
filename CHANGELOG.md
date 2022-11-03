@@ -15,6 +15,7 @@
 * Fixed performance degradation on subqueries. ([realm/realm-core#6327](https://github.com/realm/realm-core/issues/6327), since v6.0.0)
 * Fixed crash if secure transport returns an error with a non-zero length. It can be observed as `Reading failed: Premature end of input` in the log. ([realm/realm-core#5435](https://github.com/realm/realm-core/issues/5435), since v10.0.0)
 * Creating subscriptions with queries having Unicode parameters causes a server error e.g., `query from client: "{"Product":"(stringQueryField BEGINSWITH B64\"2KzZhdi52Kpz\" )"}" could not be parsed`. ([realm/realm-core#6350](https://github.com/realm/realm-core/issues/6350), since v10.11.0)
+* After introducing class-based models, we don't need to manipulate `Reflect.construct`. ([#5055](https://github.com/realm/realm-js/issues/5055), since v11.0.0)
 
 ### Compatibility
 * React Native >= v0.71.0
@@ -24,7 +25,7 @@
 
 ### Internal
 * Upgraded Realm Core from v13.4.2 to v13.6.0. ([#5495](https://github.com/realm/realm-js/issues/5495))
-* All exceptions thrown out of Realm Core are now of type `Exception`. 
+* All exceptions thrown out of Realm Core are now of type `Exception`.
 
 ## 11.5.1-alpha.0 (2023-02-21)
 
