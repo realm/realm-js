@@ -20,7 +20,7 @@ import { HashFunction, IndirectWeakMap } from "./internal";
 
 /**
  * A cache of objects (the value) which can either be constructed on demand or retrieved from cache.
- * The cache is considered weak as it uses the `IndirectWeakMap` to store it's values, making them available
+ * The cache is considered weak as it uses the `IndirectWeakMap` to store its values, making them available
  * for garbage collection.
  * @internal
  */
