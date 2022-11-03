@@ -36,15 +36,15 @@ describe("IndirectWeakCache", () => {
 
     const cache = new IndirectWeakCache(External, ({ $addr }: Internal) => $addr);
     const objs: Record<number, External> = {};
-    objs[0] = cache.get(int1, ["bar"]);
+    objs[0] = cache.getOrCreate(int1, ["bar"]);
     expect(objs[0].foo).equals("bar");
     // Getting again with another key sharing the $addr should return the same object
-    objs[1] = cache.get(int1b, ["baz"]);
+    objs[1] = cache.getOrCreate(int1b, ["baz"]);
     expect(objs[1]).equals(objs[0]);
     // And it shouldn't update the object
     expect(objs[1].foo).equals("bar");
     // Getting again without providing constructor args should return the same object
-    objs[2] = cache.get(int1);
+    objs[2] = cache.getOrCreate(int1);
     expect(objs[2]).equals(objs[0]);
 
     // Forgetting the previously returned values, should make the cache forget the original object
@@ -56,7 +56,7 @@ describe("IndirectWeakCache", () => {
 
     // Now that the object is pruned from cache, we need to supply constructor arguments when getting it
     expect(() => {
-      cache.get(int1);
+      cache.getOrCreate(int1);
     }).throws("Needed to create an object, but no args were supplied");
   });
 });

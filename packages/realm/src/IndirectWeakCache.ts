@@ -20,15 +20,18 @@ import { HashFunction, IndirectWeakMap } from "./internal";
 
 /**
  * A cache of objects (the value) which can either be constructed on demand or retrieved from cache.
- * The cache is considered weak as it uses the `IndirectWeakMap` to store its values, making them available
+ * The cache is considered weak as it extends the `IndirectWeakMap` to store its values, making them available
  * for garbage collection.
  * @internal
  */
-export class IndirectWeakCache<K extends object, V extends object, Args extends unknown[], H = unknown> {
-  private map: IndirectWeakMap<K, V, H>;
-
+export class IndirectWeakCache<
+  K extends object,
+  V extends object,
+  Args extends unknown[],
+  H = unknown,
+> extends IndirectWeakMap<K, V, H> {
   constructor(private ctor: { new (...args: Args): V }, hasher: HashFunction<K, H>) {
-    this.map = new IndirectWeakMap<K, V, H>(hasher);
+    super(hasher);
   }
   /**
    * Get an existing value from the cache or construct and store one in case of a miss.
@@ -38,13 +41,13 @@ export class IndirectWeakCache<K extends object, V extends object, Args extends 
    * @returns An existing or new value.
    * @throws If `args` are not supplied and no object existed in the cache.
    */
-  get(key: K, args?: Args) {
-    const existing = this.map.get(key);
+  getOrCreate(key: K, args?: Args) {
+    const existing = this.get(key);
     if (existing) {
       return existing;
     } else if (args) {
       const result = new this.ctor(...args);
-      this.map.set(key, result);
+      this.set(key, result);
       return result;
     } else {
       throw new Error("Needed to create an object, but no args were supplied");
