@@ -127,11 +127,11 @@ export class App {
     throw new Error("Not yet implemented");
   }
 
-  public async removeUser(user: User): Promise<void> {
+  public async removeUser(user: User) {
     await this.internal.removeUser(user.internal);
   }
 
-  public async deleteUser(user: User): Promise<void> {
+  public async deleteUser(user: User) {
     await this.internal.deleteUser(user.internal);
   }
 

@@ -37,8 +37,8 @@ export class EmailPasswordAuthClient {
    * @returns {Promise<void>}
    * @since v10.10.0
    */
-  public async registerUser(details: { email: string; password: string }): Promise<void> {
-    return this.internal.registerEmail(details.email, details.password);
+  public async registerUser(details: { email: string; password: string }) {
+    await this.internal.registerEmail(details.email, details.password);
   }
 
   /**
@@ -50,8 +50,8 @@ export class EmailPasswordAuthClient {
    * @returns {Promise<void>}
    * @since v10.10.0
    */
-  public async confirmUser(details: { token: string; tokenId: string }): Promise<void> {
-    return this.internal.confirmUser(details.token, details.tokenId);
+  public async confirmUser(details: { token: string; tokenId: string }) {
+    await this.internal.confirmUser(details.token, details.tokenId);
   }
 
   /**
@@ -63,8 +63,8 @@ export class EmailPasswordAuthClient {
    * @returns {Promise<void>}
    * @since v10.10.0
    */
-  public async resendConfirmationEmail(detail: { email: string }): Promise<void> {
-    return this.internal.resendConfirmationEmail(detail.email);
+  public async resendConfirmationEmail(detail: { email: string }) {
+    await this.internal.resendConfirmationEmail(detail.email);
   }
 
   /**
@@ -76,8 +76,8 @@ export class EmailPasswordAuthClient {
    * @returns {Promise<void>}
    * @since v10.10.0
    */
-  public async retryCustomConfirmation(details: { email: string }): Promise<void> {
-    return this.internal.retryCustomConfirmation(details.email);
+  public async retryCustomConfirmation(details: { email: string }) {
+    await this.internal.retryCustomConfirmation(details.email);
   }
 
   /**
@@ -90,8 +90,8 @@ export class EmailPasswordAuthClient {
    * @returns {Promise<void>}
    * @since v10.10.0
    */
-  public async resetPassword(details: { password: string; token: string; tokenId: string }): Promise<void> {
-    return this.internal.resetPassword(details.password, details.token, details.tokenId);
+  public async resetPassword(details: { password: string; token: string; tokenId: string }) {
+    await this.internal.resetPassword(details.password, details.token, details.tokenId);
   }
 
   /**
@@ -102,8 +102,8 @@ export class EmailPasswordAuthClient {
    * @returns {Promise<void>}
    * @since v10.10.0
    */
-  public async sendResetPasswordEmail(credential: { email: string }): Promise<void> {
-    return this.internal.sendResetPasswordEmail(credential.email);
+  public async sendResetPasswordEmail(credential: { email: string }) {
+    await this.internal.sendResetPasswordEmail(credential.email);
   }
 
   public async callResetPasswordFunction(credentials: { email: string; password: string }, ...args: unknown[]) {
