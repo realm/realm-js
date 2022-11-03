@@ -10,6 +10,7 @@ Here are all the tags Realm class methods are likely to have, **listed in the or
 
 - **Description**
     - Description of the method should go first.
+    - `@link / @linkcode` seems to have often broken behavior, at least in VSCode, so generally from legacy docs it has been replaced with *** {link} *** (i.e. see ***Realm.Collections***) to make what those links bold. In the future one would probably want to replace these with URL links to Realm documentation.
 - `@readonly`?
     - Include this tag if the field is read-only, this is only relevant for getter methods.
 - `@param {name} {description}`

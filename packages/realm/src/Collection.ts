@@ -88,7 +88,7 @@ export abstract class Collection<
   abstract entries(): Iterable<EntryType>;
 
   /**
-   * This is the same method as the {@link Collection.values} method.
+   * This is the same method as the ***Collection.values*** method.
    * Its presence makes collections _iterable_, thus able to be used with ES6
    * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of `for-of`}
    * loops,
