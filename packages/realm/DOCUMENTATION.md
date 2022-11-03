@@ -10,11 +10,12 @@ Here are all the tags Realm class methods are likely to have, **listed in the or
 
 - **Description**
     - Description of the method should go first.
+- `@readonly`?
+    - Include this tag if the field is read-only, this is only relevant for getter methods.
 - `@param {name} {description}`
     - ✅ `@param `**config**` The configuration of the app.`
     - ❌ `@param {boolean} config - the config`
     - Should **not** have a dash after param. name (some of the legacy documentation and is actually ignored by JSDoc but for sake of consistency it would be good to avoid this)
-
 - `@throws {errorType} {If / When + description}`
     - ✅ `@throws {Error} If no app id is provided.`
     - ✅ `@throws {RuntimeError} When Realm closes.`
@@ -27,7 +28,7 @@ Here are all the tags Realm class methods are likely to have, **listed in the or
     - ❌ `@returns appId`
     - For **boolean** return values, use `@returns` \`true\` `if X,` \`false\` `if not.`
 - `@see, etc. ... `
-    - Tags such as `@see` can be decided on case-by-case basis. For example, if `@see` is used instead of description to refer to external documentation, it can be in place of description. If it is used as more of a "learn more by looking here", `@see` can be included after `@returns`.
+    - Tags such as `@see` can be decided on case-by-case basis. For example, if `@see` is used instead of description to refer to external documentation, it can be in place of description. If it is used as more of a "if interested, learn more by looking here", `@see` can be included after `@returns`.
 - `@example`
 - `@since`
     - Kept because of old documenation, not necessarily useful. 
