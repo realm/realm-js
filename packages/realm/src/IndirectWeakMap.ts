@@ -23,43 +23,35 @@ export class IndirectWeakMap<K extends object, V extends object, H extends strin
 {
   [Symbol.toStringTag] = "IndirectWeakMap";
 
-  private values: Map<H, WeakRef<V>> = new Map();
+  private registry = new FinalizationRegistry<H>((hash) => {
+    this.values.delete(hash);
+  });
 
-  constructor(private hasher: HashFunction<K, H>) {}
+  constructor(private hasher: HashFunction<K, H>, private values: Map<H, WeakRef<V>> = new Map()) {}
 
   set(key: K, value: V): this {
     const hash = this.hasher(key);
-    this.values.set(hash, new WeakRef(value));
+    const ref = new WeakRef(value);
+    // Unregister the finalization registry on value being removed from the map
+    // to avoid its finalization to prune the new value from the map of values.
+    const existingRef = this.values.get(hash);
+    if (existingRef) {
+      this.registry.unregister(existingRef);
+    }
+    // Register the new value with the finalization registry, to prune its WeakRef from
+    // the map of values.
+    this.registry.register(value, hash, ref);
+    this.values.set(hash, ref);
     return this;
   }
 
   has(key: K): boolean {
-    const hash = this.hasher(key);
-    const ref = this.values.get(hash);
-    if (ref) {
-      if (ref.deref()) {
-        return true;
-      } else {
-        // Prune the WeakRef
-        this.values.delete(hash);
-        return false;
-      }
-    } else {
-      return false;
-    }
+    return this.get(key) !== undefined;
   }
 
   get(key: K): V | undefined {
     const hash = this.hasher(key);
-    const ref = this.values.get(hash);
-    if (ref) {
-      const result = ref.deref();
-      if (!result) {
-        // Prune the WeakRef
-        this.values.delete(hash);
-      }
-      return result;
-    }
+    return this.values.get(hash)?.deref();
   }
 
   delete(key: K): boolean {

@@ -40,29 +40,53 @@ describe("IndirectWeakMap", () => {
   });
 
   it("stores, retrieves and forgets values", async () => {
-    const map = new IndirectWeakMap<TestKey, TestValue, number>((k) => k.hash);
+    const internalMap = new Map<number, WeakRef<TestValue>>();
+    const map = new IndirectWeakMap<TestKey, TestValue, number>((k) => k.hash, internalMap);
 
     const key1: TestKey = { hash: 1 };
     const key2: TestKey = { hash: 2 };
-    const values: TestValue[] = [{ message: "A" }, { message: "B" }];
+    const values: TestValue[] = [{ message: "A" }, { message: "B" }, { message: "C" }];
     map.set(key1, values[0]);
     map.set(key2, values[1]);
     expect(map.get(key1)).equals(values[0]);
     expect(map.get(key2)).equals(values[1]);
     expect(map.has(key1)).equals(true);
+    expect(internalMap.size).equals(2);
 
     // Forget and garbage collect a value
     delete values[0];
+    await gc();
+    // We need two gc cycles for the finalization registry to kick in
     await gc();
 
     expect(map.get(key1)).equals(undefined);
     expect(map.get(key2)).equals(values[1]);
     expect(map.has(key1)).equals(false);
     expect(map.has(key2)).equals(true);
+    expect(internalMap.size).equals(1);
 
     // Try getting a value for a different key object with the same hash
     const key2b: TestKey = { hash: 2 };
     expect(map.get(key2b)).equals(values[1]);
-    expect(map.get(key2b)).equals(values[1]);
+
+    // Try overriding an existing value
+    map.set(key2, values[2]);
+    expect(map.get(key2)).equals(values[2]);
+
+    // Forgetting the previous value shouldn't prune the internal map
+    delete values[1];
+    await gc();
+    // We need two gc cycles for the finalization registry to kick in
+    await gc();
+
+    expect(map.get(key2)).equals(values[2]);
+
+    // Forgetting the last value should prune the internal map entirely
+    delete values[2];
+    await gc();
+    // We need two gc cycles for the finalization registry to kick in
+    await gc();
+
+    expect(internalMap.size).equals(0);
   });
 });
