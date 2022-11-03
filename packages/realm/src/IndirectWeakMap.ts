@@ -18,9 +18,17 @@
 
 type HashFunction<K, H> = (k: K) => H;
 
-export class IndirectWeakMap<K extends object, V extends object, H extends string | number | symbol>
-  implements WeakMap<K, V>
-{
+/**
+ * A map from some type of object (the key) into another type of object (the value), where a
+ * function (the hasher supplied at construction) is called to derive a hash of the key,
+ * which is used when looking up the value. This makes it possible for multiple different key
+ * objects to get the same value object.
+ * The map is considered weak in the sense that values are wrapped in a `WeakRef` before being
+ * inserted in the underling map. A value is also registered with a finalization registry, ensuring
+ * that their entry in the underlying map is removed when they get garbage collected,
+ * in an effort to make the entire `IndirectWeakMap` avoid leaks.
+ */
+export class IndirectWeakMap<K extends object, V extends object, H> implements WeakMap<K, V> {
   [Symbol.toStringTag] = "IndirectWeakMap";
 
   private registry = new FinalizationRegistry<H>((hash) => {

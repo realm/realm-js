@@ -19,15 +19,7 @@
 import { expect } from "chai";
 
 import { IndirectWeakMap } from "../IndirectWeakMap";
-
-async function gc() {
-  await new Promise(setImmediate);
-  if (global.gc) {
-    global.gc();
-  } else {
-    throw new Error("Expected the test to be run with --expose-gc");
-  }
-}
+import { gc } from "./utils";
 
 type TestKey = { hash: number };
 type TestValue = { message: string };

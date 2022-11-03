@@ -44,3 +44,12 @@ export function closeRealm(this: Mocha.Context & Partial<RealmContext>) {
     delete this.realm;
   }
 }
+
+export async function gc() {
+  await new Promise(setImmediate);
+  if (global.gc) {
+    global.gc();
+  } else {
+    throw new Error("Expected the test to be run with --expose-gc");
+  }
+}

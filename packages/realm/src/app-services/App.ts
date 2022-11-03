@@ -21,6 +21,7 @@ import {
   Credentials,
   DefaultFunctionsFactory,
   EmailPasswordAuth,
+  IndirectWeakMap,
   Listeners,
   Sync,
   User,
@@ -77,6 +78,8 @@ export type AppChangeCallback = () => void;
 
 type AppListenerToken = binding.AppSubscriptionToken;
 
+const appByUser = new IndirectWeakMap<binding.SyncUser, App, string>(({ identity }) => identity);
+
 /**
  * The class represents an Atlas App Services Application.
  *
@@ -130,8 +133,8 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
   public static userAgent = `RealmJS/${App.deviceInfo.sdkVersion} (${App.deviceInfo.platform}, v${App.deviceInfo.platformVersion})`;
 
   /** @internal */
-  public static getAppByUser(userInternal: binding.SyncUser): App {
-    const app = this.appByUserId.get(userInternal.identity)?.deref();
+  public static getByUser(userInternal: binding.SyncUser) {
+    const app = appByUser.get(userInternal);
     if (!app) {
       throw new Error(`Cannot determine which app is associated with user (id = ${userInternal.identity})`);
     }
@@ -202,7 +205,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
 
   public async logIn(credentials: Credentials) {
     const userInternal = await this.internal.logInWithCredentials(credentials.internal);
-    App.appByUserId.set(userInternal.identity, new binding.WeakRef(this));
+    appByUser.set(userInternal, this);
     return new User(userInternal, this);
   }
 
