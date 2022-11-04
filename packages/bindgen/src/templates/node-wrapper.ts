@@ -30,7 +30,7 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
     const require = createRequire(import.meta.url);
     const nativeModule = require("./realm.node");
 
-    import { ObjectId, UUID, Decimal128 } from "bson";
+    import { ObjectId, UUID, Decimal128, EJSON } from "bson";
     import { Float } from "./core";
 
     export * from "./core";
@@ -59,7 +59,14 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
     }
   `);
 
-  const injectables = ["Float", "ObjectId", "UUID", "Decimal128"];
+  const injectables = [
+    "Float",
+    "ObjectId",
+    "UUID",
+    "Decimal128",
+    "EJSON_parse: EJSON.parse",
+    "EJSON_stringify: EJSON.stringify",
+  ];
 
   for (const cls of spec.classes) {
     injectables.push(cls.jsName);
