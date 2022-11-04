@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { BSON, User, binding } from "../internal";
+import { BSON, assert, binding } from "../internal";
 
 /**
  * The representation of an API-key stored in the service.
@@ -28,11 +28,6 @@ export type ApiKey = {
   _id: string;
 
   /**
-   * The secret part of the key.
-   */
-  key?: string;
-
-  /**
    * A name for the key.
    */
   name: string;
@@ -41,6 +36,16 @@ export type ApiKey = {
    * When disabled, the key cannot authenticate.
    */
   disabled: boolean;
+};
+
+/**
+ * The representation of an API-key when returned from the server, just after creation.
+ */
+export type SecretApiKey = ApiKey & {
+  /**
+   * The secret part of the key.
+   */
+  key: string;
 };
 
 /**
@@ -63,8 +68,9 @@ export class ApiKeyAuthClient {
    *
    * @param keyName the name of the API key to be created.
    */
-  async create(keyName: string): Promise<ApiKey> {
+  async create(keyName: string): Promise<SecretApiKey> {
     const { id, key, name, disabled } = await this.internal.createApiKey(keyName, this.user);
+    assert.string(key);
     return { _id: id.toHexString(), key, name, disabled };
   }
 
@@ -73,7 +79,7 @@ export class ApiKeyAuthClient {
    *
    * @param keyId the id of the API key to fetch.
    */
-  async fetch(keyId: string): Promise<Omit<ApiKey, "key">> {
+  async fetch(keyId: string): Promise<ApiKey> {
     const { id, name, disabled } = await this.internal.fetchApiKey(new BSON.ObjectId(keyId), this.user);
     return { _id: id.toHexString(), name, disabled };
   }
@@ -83,7 +89,7 @@ export class ApiKeyAuthClient {
    */
   async fetchAll(): Promise<ApiKey[]> {
     const keys = await this.internal.fetchApiKeys(this.user);
-    return keys.map(({ id, key, name, disabled }) => ({ _id: id.toHexString(), key, name, disabled }));
+    return keys.map(({ id, name, disabled }) => ({ _id: id.toHexString(), name, disabled }));
   }
 
   /**
