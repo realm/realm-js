@@ -104,4 +104,13 @@ export class Credentials {
   static google(authObject: object): Credentials {
     return new Credentials(binding.AppCredentials.googleAuth(authObject));
   }
+
+  /**
+   * Creates credentials with a JSON Web Token (JWT) provider and user identifier.
+   * @param token A string identifying the user. Usually an identity token or a username.
+   * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+   */
+  static jwt(token: string): Credentials {
+    return new Credentials(binding.AppCredentials.custom(token));
+  }
 }
