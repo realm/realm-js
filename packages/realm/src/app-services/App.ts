@@ -127,12 +127,12 @@ export class App {
     throw new Error("Not yet implemented");
   }
 
-  public removeUser(): unknown {
-    throw new Error("Not yet implemented");
+  public async removeUser(user: User) {
+    await this.internal.removeUser(user.internal);
   }
 
-  public deleteUser(): unknown {
-    throw new Error("Not yet implemented");
+  public async deleteUser(user: User) {
+    await this.internal.deleteUser(user.internal);
   }
 
   public addListener(callback: AppChangeCallback) {

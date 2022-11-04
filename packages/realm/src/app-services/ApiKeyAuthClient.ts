@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { User, binding } from "../internal";
+import { BSON, assert, binding } from "../internal";
 
 /**
  * The representation of an API-key stored in the service.
@@ -26,11 +26,6 @@ export type ApiKey = {
    * The internal identifier of the key.
    */
   _id: string;
-
-  /**
-   * The secret part of the key.
-   */
-  key: string;
 
   /**
    * A name for the key.
@@ -44,16 +39,26 @@ export type ApiKey = {
 };
 
 /**
+ * The representation of an API-key when returned from the server, just after creation.
+ */
+export type SecretApiKey = ApiKey & {
+  /**
+   * The secret part of the key.
+   */
+  key: string;
+};
+
+/**
  * Authentication provider where users identify using an API-key.
  */
 export class ApiKeyAuthClient {
   /** @internal */
-  private user: binding.UserApiKeyProviderClient;
+  private user: binding.SyncUser;
   /** @internal */
   private internal: binding.UserApiKeyProviderClient;
 
   /** @internal */
-  constructor(user: User<unknown, unknown, unknown>, internal: binding.UserApiKeyProviderClient) {
+  constructor(user: binding.SyncUser, internal: binding.UserApiKeyProviderClient) {
     this.user = user;
     this.internal = internal;
   }
@@ -61,10 +66,12 @@ export class ApiKeyAuthClient {
   /**
    * Creates an API key that can be used to authenticate as the current user.
    *
-   * @param name the name of the API key to be created.
+   * @param keyName the name of the API key to be created.
    */
-  async create(name: string): Promise<ApiKey> {
-    throw new Error("Not yet implemented");
+  async create(keyName: string): Promise<SecretApiKey> {
+    const { id, key, name, disabled } = await this.internal.createApiKey(keyName, this.user);
+    assert.string(key);
+    return { _id: id.toHexString(), key, name, disabled };
   }
 
   /**
@@ -73,14 +80,16 @@ export class ApiKeyAuthClient {
    * @param keyId the id of the API key to fetch.
    */
   async fetch(keyId: string): Promise<ApiKey> {
-    throw new Error("Not yet implemented");
+    const { id, name, disabled } = await this.internal.fetchApiKey(new BSON.ObjectId(keyId), this.user);
+    return { _id: id.toHexString(), name, disabled };
   }
 
   /**
    * Fetches the API keys associated with the current user.
    */
   async fetchAll(): Promise<ApiKey[]> {
-    throw new Error("Not yet implemented");
+    const keys = await this.internal.fetchApiKeys(this.user);
+    return keys.map(({ id, name, disabled }) => ({ _id: id.toHexString(), name, disabled }));
   }
 
   /**
@@ -89,7 +98,7 @@ export class ApiKeyAuthClient {
    * @param keyId the id of the API key to delete
    */
   async delete(keyId: string) {
-    throw new Error("Not yet implemented");
+    await this.internal.deleteApiKey(new BSON.ObjectId(keyId), this.user);
   }
 
   /**
@@ -98,7 +107,7 @@ export class ApiKeyAuthClient {
    * @param keyId the id of the API key to enable
    */
   async enable(keyId: string) {
-    throw new Error("Not yet implemented");
+    await this.internal.enableApiKey(new BSON.ObjectId(keyId), this.user);
   }
 
   /**
@@ -107,6 +116,6 @@ export class ApiKeyAuthClient {
    * @param keyId the id of the API key to disable
    */
   async disable(keyId: string) {
-    throw new Error("Not yet implemented");
+    await this.internal.disableApiKey(new BSON.ObjectId(keyId), this.user);
   }
 }

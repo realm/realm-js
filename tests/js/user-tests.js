@@ -88,7 +88,7 @@ async function registerAndLogInEmailUser(app) {
   const validEmail = randomVerifiableEmail();
   const validPassword = "test1234567890";
   await app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
-  let user = await app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword));
+  let user = await app.logIn(Realm.Credentials.emailPassword({ email: validEmail, password: validPassword }));
   assertIsUser(user);
   assertIsSameUser(user, app.currentUser);
   return user;
@@ -99,6 +99,13 @@ async function logOutExistingUsers(app) {
   Object.keys(app.allUsers).forEach(async (id) => {
     await users[id].logOut();
   });
+}
+
+function compareWithUserFromAll(all, user1) {
+  assertIsSameUser(
+    all.find((user) => user.id === user1.id),
+    user1,
+  );
 }
 
 module.exports = {
@@ -117,19 +124,19 @@ module.exports = {
   },
 
   testEmailPasswordMissingUsername() {
-    let err = TestCase.assertThrows(() => Realm.Credentials.emailPassword(undefined, "password"));
-    TestCase.assertEqual(err.message, "email must be of type 'string', got (undefined)");
+    let err = TestCase.assertThrows(() => Realm.Credentials.emailPassword({ email: undefined, password: "password" }));
+    TestCase.assertEqual(err.message, "Expected 'email' to be a string, got undefined");
   },
 
   testEmailPasswordMissingPassword() {
     const username = Utils.uuid();
-    let err = TestCase.assertThrows(() => Realm.Credentials.emailPassword(username, undefined));
-    TestCase.assertEqual(err.message, "password must be of type 'string', got (undefined)");
+    let err = TestCase.assertThrows(() => Realm.Credentials.emailPassword({ email: username, password: undefined }));
+    TestCase.assertEqual(err.message, "Expected 'password' to be a string, got undefined");
   },
 
   testLoginNonExistingUser() {
     let app = new Realm.App(appConfig);
-    let credentials = Realm.Credentials.emailPassword("foo", "pass");
+    let credentials = Realm.Credentials.emailPassword({ email: "foo", password: "pass" });
     return app
       .logIn(credentials)
       .then((user) => {
@@ -211,7 +218,7 @@ module.exports = {
 
     {
       // invalid email, invalid password
-      let credentials = Realm.Credentials.emailPassword(invalidEmail, invalidPassword);
+      let credentials = Realm.Credentials.emailPassword({ email: invalidEmail, password: invalidPassword });
       let err = await TestCase.assertThrowsAsync(async () => app.logIn(credentials));
       TestCase.assertEqual(err.message, "invalid username/password"); // this user does not exist yet
       err = await TestCase.assertThrowsAsync(async () =>
@@ -223,19 +230,19 @@ module.exports = {
     }
     {
       // invalid email, valid password
-      let credentials = Realm.Credentials.emailPassword(invalidEmail, validPassword);
+      let credentials = Realm.Credentials.emailPassword({ email: invalidEmail, password: validPassword });
       let err = await TestCase.assertThrowsAsync(async () => app.logIn(credentials));
       TestCase.assertEqual(err.message, "invalid username/password"); // this user does not exist yet
       err = await TestCase.assertThrowsAsync(async () =>
         app.emailPasswordAuth.registerUser({ email: invalidEmail, password: validPassword }),
       );
-      TestCase.assertEqual(err.message, `failed to confirm user ${invalidEmail}`);
+      TestCase.assertEqual(err.message, `failed to confirm user "${invalidEmail}"`);
       err = await TestCase.assertThrowsAsync(async () => app.logIn(credentials));
       TestCase.assertEqual(err.message, "invalid username/password"); // this user did not register
     }
     {
       // valid email, invalid password
-      let credentials = Realm.Credentials.emailPassword(validEmail, invalidPassword);
+      let credentials = Realm.Credentials.emailPassword({ email: validEmail, password: invalidPassword });
       let err = await TestCase.assertThrowsAsync(async () => app.logIn(credentials));
       TestCase.assertEqual(err.message, "invalid username/password"); // this user does not exist yet
       err = await TestCase.assertThrowsAsync(async () =>
@@ -247,7 +254,7 @@ module.exports = {
     }
     {
       // valid email, valid password
-      let credentials = Realm.Credentials.emailPassword(validEmail, validPassword);
+      let credentials = Realm.Credentials.emailPassword({ email: validEmail, password: validPassword });
       let err = await TestCase.assertThrowsAsync(async () => app.logIn(credentials));
       TestCase.assertEqual(err.message, "invalid username/password"); // this user does not exist yet
       await app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
@@ -320,7 +327,7 @@ module.exports = {
     await app.emailPasswordAuth.callResetPasswordFunction({ email: validEmail, password: newPassword });
 
     // see if we can log in
-    let creds = Realm.Credentials.emailPassword(validEmail, newPassword);
+    let creds = Realm.Credentials.emailPassword({ email: validEmail, password: newPassword });
     let user = await app.logIn(creds);
     TestCase.assertTrue(user instanceof Realm.User);
 
@@ -459,13 +466,13 @@ module.exports = {
     let user1 = await app.logIn(credentials);
     all = app.allUsers;
     TestCase.assertArrayLength(Object.keys(all), 1, "One user");
-    assertIsSameUser(all[user1.id], user1);
+    compareWithUserFromAll(all, user1);
     let user2 = await app.logIn(Realm.Credentials.anonymous());
     all = app.allUsers;
     TestCase.assertArrayLength(Object.keys(all), 1, "still one user");
     // NOTE: the list of users is in latest-first order.
-    assertIsSameUser(all[user2.id], user2);
-    assertIsSameUser(all[user1.id], user1);
+    compareWithUserFromAll(all, user2);
+    compareWithUserFromAll(all, user1);
 
     await user2.logOut(); // logs out the shared anonymous session
     all = app.allUsers;
@@ -526,18 +533,18 @@ module.exports = {
     let user1 = await registerAndLogInEmailUser(app);
     all = app.allUsers;
     TestCase.assertArrayLength(Object.keys(all), 1, "One user");
-    assertIsSameUser(all[user1.id], user1);
+    compareWithUserFromAll(all, user1);
     let user2 = await registerAndLogInEmailUser(app);
     all = app.allUsers;
     TestCase.assertArrayLength(Object.keys(all), 2, "Two users");
     // NOTE: the list of users is in latest-first order.
-    assertIsSameUser(all[user2.id], user2);
-    assertIsSameUser(all[user1.id], user1);
+    compareWithUserFromAll(all, user2);
+    compareWithUserFromAll(all, user1);
 
     await user2.logOut();
     all = app.allUsers;
-    assertIsSameUser(all[user2.id], user2);
-    assertIsSameUser(all[user1.id], user1);
+    compareWithUserFromAll(all, user2);
+    compareWithUserFromAll(all, user1);
     TestCase.assertFalse(user2.isLoggedIn);
     TestCase.assertTrue(user1.isLoggedIn);
     TestCase.assertArrayLength(Object.keys(all), 2, "still holds references to both users");
@@ -557,7 +564,7 @@ module.exports = {
     const validEmail = randomVerifiableEmail();
     const validPassword = "test1234567890";
     await app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
-    let user1 = await app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword));
+    let user1 = await app.logIn(Realm.Credentials.emailPassword({ email: validEmail, password: validPassword }));
 
     TestCase.assertTrue(user1.isLoggedIn);
 
@@ -565,7 +572,7 @@ module.exports = {
     TestCase.assertFalse(user1.isLoggedIn);
 
     // Expect that the user still exists on the server
-    let user2 = await app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword));
+    let user2 = await app.logIn(Realm.Credentials.emailPassword({ email: validEmail, password: validPassword }));
     TestCase.assertTrue(user2.isLoggedIn);
 
     await user2.logOut();
@@ -579,7 +586,7 @@ module.exports = {
     const validEmail = randomVerifiableEmail();
     const validPassword = "test1234567890";
     await app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
-    let user = await app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword));
+    let user = await app.logIn(Realm.Credentials.emailPassword({ email: validEmail, password: validPassword }));
 
     TestCase.assertTrue(user.isLoggedIn);
 
@@ -588,11 +595,13 @@ module.exports = {
 
     // cannot log in - user doesn't exist
     let didFail = false;
-    let user2 = await app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword)).catch((err) => {
-      TestCase.assertEqual(err.message, "invalid username/password");
-      TestCase.assertEqual(err.code, 50);
-      didFail = true;
-    });
+    let user2 = await app
+      .logIn(Realm.Credentials.emailPassword({ email: validEmail, password: validPassword }))
+      .catch((err) => {
+        TestCase.assertEqual(err.message, "invalid username/password");
+        TestCase.assertEqual(err.code, 50);
+        didFail = true;
+      });
     TestCase.assertUndefined(user2);
     TestCase.assertEqual(didFail, true);
   },

@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../internal";
+import { binding, Realm } from "../internal";
 
 export class EmailPasswordAuthClient {
   /** @internal */
@@ -27,31 +27,86 @@ export class EmailPasswordAuthClient {
     this.internal = internal;
   }
 
-  public async registerUser() {
-    throw new Error("Not yet implemented");
+  /**
+   * Registers a new email identity with the email/password provider,
+   * and sends a confirmation email to the provided address.
+   *
+   * @param details The new user's email and password details
+   * @param details.email - The email address of the user to register.
+   * @param details.password - The password that the user created for the new username/password identity.
+   * @returns {Promise<void>}
+   * @since v10.10.0
+   */
+  public async registerUser(details: { email: string; password: string }) {
+    await this.internal.registerEmail(details.email, details.password);
   }
 
-  public async confirmUser() {
-    throw new Error("Not yet implemented");
+  /**
+   * Confirms an email identity with the email/password provider.
+   *
+   * @param details The received token and ID details
+   * @param details.token - The confirmation token that was emailed to the user.
+   * @param details.tokenId - The confirmation token id that was emailed to the user.
+   * @returns {Promise<void>}
+   * @since v10.10.0
+   */
+  public async confirmUser(details: { token: string; tokenId: string }) {
+    await this.internal.confirmUser(details.token, details.tokenId);
   }
 
-  public async resendConfirmationEmail() {
-    throw new Error("Not yet implemented");
+  /**
+   * Re-sends a confirmation email to a user that has registered but
+   * not yet confirmed their email address.
+   *
+   * @param details The associated email details
+   * @param details.email - The email address of the user to re-send a confirmation for.
+   * @returns {Promise<void>}
+   * @since v10.10.0
+   */
+  public async resendConfirmationEmail(detail: { email: string }) {
+    await this.internal.resendConfirmationEmail(detail.email);
   }
 
-  public async retryCustomConfirmation() {
-    throw new Error("Not yet implemented");
+  /**
+   * Re-run the custom confirmation function for user that has registered but
+   * not yet confirmed their email address.
+   *
+   * @param details The associated email details
+   * @param details.email - The email address of the user to re-run the confirmation for.
+   * @returns {Promise<void>}
+   * @since v10.10.0
+   */
+  public async retryCustomConfirmation(details: { email: string }) {
+    await this.internal.retryCustomConfirmation(details.email);
   }
 
-  public async resetPassword() {
-    throw new Error("Not yet implemented");
+  /**
+   * Resets the password of an email identity using the password reset token emailed to a user.
+   *
+   * @param details The token and password details for the reset
+   * @param details.password - The desired new password.
+   * @param details.token - The password reset token that was emailed to the user.
+   * @param details.tokenId - The password reset token id that was emailed to the user.
+   * @returns {Promise<void>}
+   * @since v10.10.0
+   */
+  public async resetPassword(details: { password: string; token: string; tokenId: string }) {
+    await this.internal.resetPassword(details.password, details.token, details.tokenId);
   }
 
-  public async sendResetPasswordEmail() {
-    throw new Error("Not yet implemented");
+  /**
+   * Sends an email to the user for resetting the password.
+   *
+   * @param details The email details to send the reset to
+   * @param details.email - The email address of the user to re-send a confirmation for.
+   * @returns {Promise<void>}
+   * @since v10.10.0
+   */
+  public async sendResetPasswordEmail(credential: { email: string }) {
+    await this.internal.sendResetPasswordEmail(credential.email);
   }
 
-  public async callResetPasswordFunction() {
-    throw new Error("Not yet implemented");
+  public async callResetPasswordFunction(credentials: { email: string; password: string }, ...args: unknown[]) {
+    throw new Error("Not yet implemented, need BSONArray");
   }
 }
