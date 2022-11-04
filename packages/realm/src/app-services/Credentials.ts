@@ -95,4 +95,13 @@ export class Credentials {
   static facebook(token: string): Credentials {
     return new Credentials(binding.AppCredentials.facebook(token));
   }
+
+  /**
+   * Creates credentials based on a Google login.
+   * @param authObject An object with either an `authCode` or `idToken` property.
+   * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+   */
+  static google(authObject: object): Credentials {
+    return new Credentials(binding.AppCredentials.googleAuth(authObject));
+  }
 }
