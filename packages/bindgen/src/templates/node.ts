@@ -62,7 +62,7 @@ class NodeAddon extends CppClass {
   inits: string[] = [];
   exports: Record<string, string> = {};
   classes: string[] = [];
-  injectables = ["Float", "UUID", "ObjectId", "Decimal128"];
+  injectables = ["Float", "UUID", "ObjectId", "Decimal128", "EJSON_parse", "EJSON_stringify"];
 
   constructor() {
     super("RealmAddon");
@@ -214,6 +214,9 @@ function toCpp(type: Type): string {
         count_t: "size_t",
         EncryptionKey: "std::vector<char>",
         AppError: "app::AppError",
+        EJson: "std::string",
+        EJsonObj: "std::string",
+        EJsonArray: "std::string",
       };
       return primitiveMap[type.name] ?? type.name;
 
@@ -280,6 +283,15 @@ function convertPrimToNode(addon: NodeAddon, type: string, expr: string): string
     case "UUID":
     case "Decimal128":
       return `${addon.accessCtor(type)}.New({${convertPrimToNode(addon, "std::string", `${expr}.to_string()`)}})`;
+
+    case "EJson":
+    case "EJsonObj":
+    case "EJsonArray":
+      return `${addon.accessCtor("EJSON_parse")}.Call({${convertPrimToNode(
+        addon,
+        "std::string",
+        expr,
+      )}})`;
 
     case "AppError":
       // This matches old JS SDK. The C++ type will be changing as part of the unify error handleing project.
@@ -355,6 +367,15 @@ function convertPrimFromNode(addon: NodeAddon, type: string, expr: string): stri
     // TODO add a StringData overload to the ObjectId ctor in core so this can merge with above.
     case "ObjectId":
       return `${type}(${convertPrimFromNode(addon, "std::string", `${expr}.ToString()`)}.c_str())`;
+
+    case "EJson":
+    case "EJsonObj":
+    case "EJsonArray":
+      return convertPrimFromNode(
+        addon,
+        "std::string",
+        `${addon.accessCtor("EJSON_stringify")}.Call({${expr}})`,
+      );
 
     case "AppError":
       assert.fail("Cannot convert AppError to C++, only from C++.");
