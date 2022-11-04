@@ -42,8 +42,8 @@ function assertIsUser(user) {
   TestCase.assertType(user.refreshToken, "string");
   TestCase.assertType(user.id, "string");
   TestCase.assertType(user.identities, "object");
-  //TestCase.assertType(user.customData, "object");
-  //TestCase.assertInstanceOf(user, Realm.User);
+  TestCase.assertType(user.customData, "object");
+  TestCase.assertInstanceOf(user, Realm.User);
 }
 
 function assertIsSameUser(value, user) {
