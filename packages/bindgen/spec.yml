@@ -1040,6 +1040,7 @@ classes:
           cppName: provider_client<app::App::UserAPIKeyProviderClient>
       subscribe: '(observer: (app: IgnoreArgument<const App&>)) -> AppSubscriptionToken'
       unsubscribe: '(token: AppSubscriptionToken)'
+      call_function: '(user: const SharedSyncUser&, name: std::string, args: EJsonArray, service_name: util::Optional<std::string>, cb: AsyncCallback<(result: EJson, err: util::Optional<AppError>)>)'
 
   UsernamePasswordProviderClient:
     cppName: app::App::UsernamePasswordProviderClient
