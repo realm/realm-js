@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { AppCredentials, GoogleIdToken } from "../binding";
 import { assert, binding } from "../internal";
 import { App } from "./App";
 
@@ -75,5 +76,14 @@ export class Credentials {
    */
   static apiKey(key: string): Credentials {
     return new Credentials(binding.AppCredentials.userApiKey(key));
+  }
+
+  /**
+   * Creates credentials based on an Apple login.
+   * @param token An Apple authentication token, obtained by logging into Apple.
+   * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+   */
+  static apple(token: string): Credentials {
+    return new Credentials(binding.AppCredentials.apple(token));
   }
 }
