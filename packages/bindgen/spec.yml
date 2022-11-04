@@ -52,6 +52,7 @@ typeAliases:
   KeyPathArray: std::vector<KeyPath>
   IndexRange: std::pair<count_t, count_t>
   AppCredentialsToken: std::string
+  Email: std::string
 
 templates: # value tells you how many arguments it takes ('*' means any number)
   util::Optional: 1
@@ -354,6 +355,27 @@ records:
       migration_function: 'Nullable<std::function<(old_realm: SharedRealm, new_realm: SharedRealm, new_schema_handle: IgnoreArgument<Schema&>) -> void>>'
       initialization_function: 'Nullable<std::function<(realm: SharedRealm) -> void>>'
       should_compact_on_launch_function: 'Nullable<std::function<(total_bytes: uint64_t, used_bytes: uint64_t) off_thread -> bool>>'
+
+  UserIdentity:
+    cppName: SyncUserIdentity
+    fields:
+      id: 
+        type: std::string
+      provider_type: 
+        type: std::string
+
+  UserAPIKey:
+    cppName: app::App::UserAPIKey
+    fields:
+      id:
+        type: ObjectId
+      key:
+        type: util::Optional<std::string>
+      name:
+        type: std::string
+      disabled:
+        type: bool
+
 
   SyncConfig:
     fields:
@@ -961,8 +983,8 @@ classes:
       refresh_token: std::string
       device_id: std::string
       has_device_id: bool
-      # user_profile: SyncUserProfile # TODO
-      # identities: std::vector<SyncUserIdentity> # TODO
+      # user_profile: UserProfile # TODO
+      identities: std::vector<UserIdentity> # TODO
       custom_data: util::Optional<BsonDocument>
       sync_manager: SharedSyncManager
       state: SyncUserState
@@ -1016,8 +1038,23 @@ classes:
 
   UsernamePasswordProviderClient:
     cppName: app::App::UsernamePasswordProviderClient
+    methods:
+      register_email: '(email: const std::string&, password: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      retry_custom_confirmation: '(email: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      confirm_user: '(token: const std::string&, token_id: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      resend_confirmation_email: '(email: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      reset_password: '(password: const std::string&, token: const std::string&, token_id: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      send_reset_password_email: '(email: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+
   UserAPIKeyProviderClient:
     cppName: app::App::UserAPIKeyProviderClient
+    methods:
+      create_api_key: '(name: const std::string&, user: SharedSyncUser, completion: AsyncCallback<(apiKey: UserAPIKey&&, err: util::Optional<AppError>)>&&)'
+      fetch_api_key: '(id: ObjectId&, user: const SharedSyncUser, completion: AsyncCallback<(apiKey: UserAPIKey&&, err: util::Optional<AppError>)>&&)'
+      fetch_api_keys: '(user: const SharedSyncUser, completion: AsyncCallback<(apiKeys: std::vector<UserAPIKey>&&, err: util::Optional<AppError>)>&&)'
+      delete_api_key: '(id: ObjectId&, user: const SharedSyncUser, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      enable_api_key: '(id: ObjectId&, user: const SharedSyncUser, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      disable_api_key: '(id: ObjectId&, user: const SharedSyncUser, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
 
   # See Helpers::make_loger_factory to construct one.
   # Using an opaque class here rather than exposing the factory to avoid having to

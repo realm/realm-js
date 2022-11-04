@@ -43,11 +43,18 @@ function expectIsSameUser(value: Realm.User, user: Realm.User | null) {
   expect(value.id).equals(user?.id);
 }
 
+function expectUserFromAll(all: Realm.User[], user: Realm.User) {
+  expectIsSameUser(
+    all.find((other) => other.id === user.id),
+    user,
+  );
+}
+
 async function registerAndLogInEmailUser(app: Realm.App) {
   const validEmail = randomVerifiableEmail();
   const validPassword = "test1234567890";
   await app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
-  const user = await app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword));
+  const user = await app.logIn(Realm.Credentials.emailPassword({ email: validEmail, password: validPassword }));
   expectIsUSer(user);
   expectIsSameUser(user, app.currentUser);
   return user;
@@ -69,23 +76,21 @@ describe.skipIf(environment.missingServer, "User", () => {
     importAppBefore("with-email-password");
     it("login without username throws", async function (this: AppContext & RealmContext) {
       // @ts-expect-error test logging in without providing username.
-      expect(() => Realm.Credentials.emailPassword(undefined, "password")).throws(
-        Error,
-        "email must be of type 'string', got (undefined)",
+      expect(() => Realm.Credentials.emailPassword({ email: undefined, password: "password" })).throws(
+        "Expected 'email' to be a string, got undefined",
       );
     });
 
     it("login without password throws", async function (this: AppContext & RealmContext) {
       const username = new Realm.BSON.UUID().toHexString();
       // @ts-expect-error test logging in without providing password.
-      expect(() => Realm.Credentials.emailPassword(username, undefined)).throws(
-        Error,
-        "password must be of type 'string', got (undefined)",
+      expect(() => Realm.Credentials.emailPassword({ email: username, password: undefined })).throws(
+        "Expected 'password' to be a string, got undefined",
       );
     });
 
     it("login with non existing user throws", async function (this: AppContext & RealmContext) {
-      const credentials = Realm.Credentials.emailPassword("foo", "pass");
+      const credentials = Realm.Credentials.emailPassword({ email: "foo", password: "pass" });
       await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password");
     });
 
@@ -101,7 +106,7 @@ describe.skipIf(environment.missingServer, "User", () => {
       const validPassword = "password123456";
 
       // invalid email, invalid password
-      let credentials = Realm.Credentials.emailPassword(invalidEmail, invalidPassword);
+      let credentials = Realm.Credentials.emailPassword({ email: invalidEmail, password: invalidPassword });
       await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
       await expect(
         this.app.emailPasswordAuth.registerUser({ email: invalidEmail, password: invalidPassword }),
@@ -109,15 +114,15 @@ describe.skipIf(environment.missingServer, "User", () => {
       await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user did not register
 
       // invalid email, valid password
-      credentials = Realm.Credentials.emailPassword(invalidEmail, validPassword);
+      credentials = Realm.Credentials.emailPassword({ email: invalidEmail, password: validPassword });
       await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
       expect(
         this.app.emailPasswordAuth.registerUser({ email: invalidEmail, password: validPassword }),
-      ).to.be.rejectedWith("failed to confirm user ${invalidEmail}");
+      ).to.be.rejectedWith(`failed to confirm user "${invalidEmail}"`);
       await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user did not register
 
       // valid email, invalid password
-      credentials = Realm.Credentials.emailPassword(validEmail, invalidPassword);
+      credentials = Realm.Credentials.emailPassword({ email: validEmail, password: invalidPassword });
       await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
       await expect(
         this.app.emailPasswordAuth.registerUser({ email: validEmail, password: invalidPassword }),
@@ -125,7 +130,7 @@ describe.skipIf(environment.missingServer, "User", () => {
       await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user did not register
 
       // valid email, valid password
-      credentials = Realm.Credentials.emailPassword(validEmail, validPassword);
+      credentials = Realm.Credentials.emailPassword({ email: validEmail, password: validPassword });
       await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
       await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
       const user = await this.app.logIn(credentials);
@@ -179,13 +184,13 @@ describe.skipIf(environment.missingServer, "User", () => {
         const user1 = await this.app.logIn(credentials);
         all = this.app.allUsers;
         expect(Object.keys(all).length).equals(1, "One user");
-        expectIsSameUser(all[user1.id], user1);
+        expectUserFromAll(all, user1);
         const user2 = await this.app.logIn(Realm.Credentials.anonymous());
         all = this.app.allUsers;
         expect(Object.keys(all).length).equals(1, "still one user");
         // NOTE: the list of users is in latest-first order.
-        expectIsSameUser(all[user2.id], user2);
-        expectIsSameUser(all[user1.id], user1);
+        expectUserFromAll(all, user2);
+        expectUserFromAll(all, user1);
 
         await user2.logOut(); // logs out the shared anonymous session
         all = this.app.allUsers;
@@ -232,18 +237,18 @@ describe.skipIf(environment.missingServer, "User", () => {
         const user1 = await registerAndLogInEmailUser(this.app);
         all = this.app.allUsers;
         expect(Object.keys(all).length).equals(1, "One user");
-        expectIsSameUser(all[user1.id], user1);
+        expectUserFromAll(all, user1);
         const user2 = await registerAndLogInEmailUser(this.app);
         all = this.app.allUsers;
         expect(Object.keys(all).length).equals(2, "Two users");
         // NOTE: the list of users is in latest-first order.
-        expectIsSameUser(all[user2.id], user2);
-        expectIsSameUser(all[user1.id], user1);
+        expectUserFromAll(all, user2);
+        expectUserFromAll(all, user1);
 
         await user2.logOut();
         all = this.app.allUsers;
-        expectIsSameUser(all[user2.id], user2);
-        expectIsSameUser(all[user1.id], user1);
+        expectUserFromAll(all, user2);
+        expectUserFromAll(all, user1);
         expect(user2.isLoggedIn).to.be.false;
         expect(user1.isLoggedIn).to.be.true;
         expect(Object.keys(all).length).equals(2, "still holds references to both users");
@@ -274,7 +279,9 @@ describe.skipIf(environment.missingServer, "User", () => {
         const validEmail = randomVerifiableEmail();
         const validPassword = "test1234567890";
         await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
-        const user1 = await this.app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword));
+        const user1 = await this.app.logIn(
+          Realm.Credentials.emailPassword({ email: validEmail, password: validPassword }),
+        );
 
         expect(user1.isLoggedIn).to.be.true;
 
@@ -282,7 +289,9 @@ describe.skipIf(environment.missingServer, "User", () => {
         expect(user1.isLoggedIn).to.be.false;
 
         // Expect that the user still exists on the server
-        const user2 = await this.app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword));
+        const user2 = await this.app.logIn(
+          Realm.Credentials.emailPassword({ email: validEmail, password: validPassword }),
+        );
         expect(user2.isLoggedIn).to.be.true;
 
         await user2.logOut();
@@ -294,7 +303,9 @@ describe.skipIf(environment.missingServer, "User", () => {
         const validEmail = randomVerifiableEmail();
         const validPassword = "test1234567890";
         await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
-        const user = await this.app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword));
+        const user = await this.app.logIn(
+          Realm.Credentials.emailPassword({ email: validEmail, password: validPassword }),
+        );
 
         expect(user.isLoggedIn).to.be.true;
 
@@ -303,11 +314,13 @@ describe.skipIf(environment.missingServer, "User", () => {
 
         // cannot log in - user doesn't exist
         let didFail = false;
-        const user2 = await this.app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword)).catch((err) => {
-          expect(err.message).equals("invalid username/password");
-          expect(err.code).equals(50);
-          didFail = true;
-        });
+        const user2 = await this.app
+          .logIn(Realm.Credentials.emailPassword({ email: validEmail, password: validPassword }))
+          .catch((err) => {
+            expect(err.message).equals("invalid username/password");
+            expect(err.code).equals(50);
+            didFail = true;
+          });
         expect(user2).to.be.undefined;
         expect(didFail).to.be.true;
       });
@@ -352,7 +365,9 @@ describe.skipIf(environment.missingServer, "User", () => {
       const validEmail = randomVerifiableEmail();
       const validPassword = "test1234567890";
       await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
-      const user = await this.app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword));
+      const user = await this.app.logIn(
+        Realm.Credentials.emailPassword({ email: validEmail, password: validPassword }),
+      );
       expect(user.apiKeys instanceof Realm.Auth.ApiKeyAuth).to.be.true;
 
       // TODO: Enable when fixed: Disabling this test since the CI stitch integration returns cryptic error.
@@ -394,7 +409,7 @@ describe.skipIf(environment.missingServer, "User", () => {
       await this.app.emailPasswordAuth.callResetPasswordFunction({ email: validEmail, password: newPassword });
 
       // see if we can log in
-      const creds = Realm.Credentials.emailPassword(validEmail, newPassword);
+      const creds = Realm.Credentials.emailPassword({ email: validEmail, password: newPassword });
       const user = await this.app.logIn(creds);
       expect(user instanceof Realm.User).to.be.true;
 

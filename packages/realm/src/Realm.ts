@@ -59,6 +59,8 @@ import {
   validateConfiguration,
   validateObjectSchema,
   validateRealmSchema,
+  EmailPasswordAuthClient,
+  ApiKeyAuthClient,
 } from "./internal";
 
 const debug = extendDebug("Realm");
@@ -89,6 +91,7 @@ export class Realm {
   public static Types = Types;
   public static User = User;
   public static Credentials = Credentials;
+  public static Auth = { EmailPasswordAuth: EmailPasswordAuthClient, ApiKeyAuth: ApiKeyAuthClient };
 
   public static defaultPath = Realm.normalizePath("default.realm");
 
