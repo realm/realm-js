@@ -152,7 +152,7 @@ const CONNECTION_LISTENERS = new Listeners<ConnectionNotificationCallback, Liste
     return { internal, token };
   },
   unregister({ internal, token }) {
-    internal.unregisterProgressNotifier(token);
+    internal.unregisterConnectionChangeCallback(token);
   },
 });
 
