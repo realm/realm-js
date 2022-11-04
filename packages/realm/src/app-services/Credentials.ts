@@ -86,4 +86,13 @@ export class Credentials {
   static apple(token: string): Credentials {
     return new Credentials(binding.AppCredentials.apple(token));
   }
+
+  /**
+   * Creates credentials based on a Facebook login.
+   * @param token A Facebook authentication token, obtained by logging into Facebook.
+   * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+   */
+  static facebook(token: string): Credentials {
+    return new Credentials(binding.AppCredentials.facebook(token));
+  }
 }
