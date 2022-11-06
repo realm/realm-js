@@ -113,7 +113,8 @@ yargs(hideBin(process.argv))
       ]);
 
       console.log(`Adding realm@${realmVersion} to the app (and installing dependencies)`);
-      exec("npm", ["install", `realm@${realmVersion}`], { cwd: appPath });
+      exec("npm", ["install", `realm@${realmVersion}`, "--force"], { cwd: appPath });
+      // We're using force to succeed on peer dependency issues
 
       if (!skipIOS) {
         console.log(`Installing gem bundle (needed to pod-install for iOS)`);
