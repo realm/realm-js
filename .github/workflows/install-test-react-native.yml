@@ -6,20 +6,11 @@ on:
     paths:
       - install-tests/react-native/**
       - .github/workflows/install-test-react-native.yml
-  # Every day at 9:00 CET
+  # Every monday at 9:00 CET
   schedule:
-    - cron: "0 8 * * *"
+    - cron: "0 8 * * 1"
   # You can also activate this workflow manually from the Actions tab
   workflow_dispatch:
-    inputs:
-      react-native-version:
-        description: The version of React Native to install
-        required: true
-        default: next
-      realm-version:
-        description: The version of Realm to install
-        required: true
-        default: latest
 
 defaults:
   run:
@@ -27,42 +18,78 @@ defaults:
 
 jobs:
   install:
-    name: Installing Realm → React Native (using Xcode v${{matrix.xcode}}, node v${{ matrix.node }}, npm v${{ matrix.npm }})
-    runs-on: macos-11
+    name: Install test on ${{ matrix.platform }} (new architecture ${{ matrix.new-architecture && 'enabled' || 'disabled' }}, realm@${{ matrix.realm-version }}, react-native@${{ matrix.react-native-version }}, using Xcode v${{matrix.xcode}}, node v${{ matrix.node }})
+    runs-on: macos-12
     strategy:
       fail-fast: false
       matrix:
-        # See https://github.com/actions/virtual-environments/blob/main/images/macos/macos-11-Readme.md#xcode
+        platform:
+          - ios
+          - android
+        # See https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md#xcode
         xcode:
-          - 13.1
-        npm:
-          - 7
+          - 14.0.1
+          # - 13.1
         node:
-          - 14
+          - 16
+        realm-version:
+          - latest
+        react-native-version:
+          - latest
+          - next
+          # - nightly # Enable if it's not too noizy
+        new-architecture:
+          - true
+          - false
     env:
       DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode }}.app
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-      - name: Install npm v7
-        run: npm install -g npm@8
+
       - name: ccache
-        uses: hendrikmuhs/ccache-action@v1
+        uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: install-test
       - name: Prepend ccache executables to the PATH
         run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
-      - name: Install React Native & Realm
-        run: ./install.sh ${{ github.event.inputs.react-native-version }} ${{ github.event.inputs.realm-version }}
+
+      # TODO: Remove if this becomes unneeded in the future
       - name: Invoke the simulator (making subsequent "open -a Simulator" calls work)
+        if: ${{ matrix.platform == 'ios' }}
         run: open -a ${{ env.DEVELOPER_DIR }}/Contents/Developer/Applications/Simulator.app/Contents/MacOS/Simulator
+
       - name: Run test (iOS)
-        run: ./run-ios.sh
-      # - name: Run test (Android)
-      #   uses: reactivecircus/android-emulator-runner@v2
-      #   with:
-      #     api-level: 29
-      #     target: google_apis
-      #     script: ./run-android.sh
+        if: ${{ matrix.platform == 'ios' }}
+        run: npm test -- --platform ios
+
+      - name: Run test (Android)
+        if: ${{ matrix.platform == 'android' }}
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          target: google_apis
+          script: npm test -- --platform ios
+
+      - name: Post result to Slack
+        if: always()
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          # For posting a rich message using Block Kit
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Install test ${{ job.status }} on ${{ matrix.platform }} (new architecture ${{ matrix.new-architecture && 'enabled' || 'disabled' }}, realm@${{ matrix.realm-version }}, react-native@${{ matrix.react-native-version }}, using Xcode v${{matrix.xcode}}, node v${{ matrix.node }})\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs/${{ github.job }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_TEST_WEBHOOK }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
