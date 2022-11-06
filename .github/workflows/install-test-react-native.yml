@@ -61,6 +61,9 @@ jobs:
         if: ${{ matrix.platform == 'ios' }}
         run: open -a ${{ env.DEVELOPER_DIR }}/Contents/Developer/Applications/Simulator.app/Contents/MacOS/Simulator
 
+      - name: Install dependencies of the CLI
+        run: npm ci
+
       - name: Run test (iOS)
         if: ${{ matrix.platform == 'ios' }}
         run: npm test -- --platform ios
