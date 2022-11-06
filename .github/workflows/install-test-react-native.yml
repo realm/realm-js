@@ -75,6 +75,12 @@ jobs:
           bundler-cache: true
           working-directory: install-tests/react-native/app
 
+      - uses: actions/setup-java@v3
+        if: ${{ matrix.platform == 'android' }}
+        with:
+          distribution: 'zulu'
+          java-version: '11'
+
       - if: ${{ matrix.platform == 'ios' }}
         run: pod-install
         working-directory: install-tests/react-native/app
