@@ -83,6 +83,7 @@ jobs:
           api-level: 29
           target: google_apis
           script: npm test -- --platform android
+          working-directory: install-tests/react-native
 
       - name: Post result to Slack
         if: always()
