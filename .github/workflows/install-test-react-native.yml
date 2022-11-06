@@ -48,6 +48,9 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
