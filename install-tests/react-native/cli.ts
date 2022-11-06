@@ -28,6 +28,7 @@ const __dirname = new URL(".", import.meta.url).pathname;
 
 const DEFAULT_APP_PATH = path.resolve(__dirname, "app");
 const APP_JS_PATH = path.resolve(__dirname, "App.js");
+const PODFILE_PATCH_PATH = path.resolve(__dirname, "Podfile.patch");
 const PORT = 3000;
 const TIMEOUT = 5 * 60 * 1000; // 5 min should be pleanty of time
 
@@ -40,8 +41,16 @@ function exec(command: string, args: string[], options: cp.SpawnOptions = {}) {
   }
 }
 
-function getEnv(newArchitecture: boolean): Record<string, string> {
-  const env = { ...process.env };
+function getEnv(newArchitecture: boolean) {
+  const env: Record<string, string> = {
+    ...process.env,
+    // Add ccache specific configuration
+    CCACHE_SLOPPINESS:
+      "clang_index_store,file_stat_matches,include_file_ctime,include_file_mtime,ivfsoverlay,pch_defines,modules,system_headers,time_macros",
+    CCACHE_FILECLONE: "true",
+    CCACHE_DEPEND: "true",
+    CCACHE_INODECACHE: "true",
+  };
   if (newArchitecture) {
     // Needed by iOS when running "pod install"
     env.RCT_NEW_ARCH_ENABLED = "1";
@@ -78,14 +87,24 @@ yargs(hideBin(process.argv))
         .option("realm-version", { type: "string", default: "latest" })
         .option("react-native-version", { type: "string", default: "latest" })
         .option("force", { description: "Delete any existing app directory", type: "boolean", default: false })
-        .option("skip-ios", { description: "Skip the iOS specific steps", type: "boolean", default: false }),
+        .option("skip-bundle-install", {
+          description: "Skip the iOS specific 'bundle install'",
+          type: "boolean",
+          default: false,
+        })
+        .option("skip-pod-install", {
+          description: "Skip the iOS specific 'pod install'",
+          type: "boolean",
+          default: false,
+        }),
     (argv) => {
       const {
         "app-path": appPath,
         "realm-version": realmVersion,
         "react-native-version": reactNativeVersion,
         "new-architecture": newArchitecture,
-        "skip-ios": skipIOS,
+        "skip-bundle-install": skipBundleInstall,
+        "skip-pod-install": skipPodInstall,
         force,
       } = argv;
 
@@ -113,13 +132,19 @@ yargs(hideBin(process.argv))
       ]);
 
       console.log(`Adding realm@${realmVersion} to the app (and installing dependencies)`);
-      exec("npm", ["install", `realm@${realmVersion}`, "--force"], { cwd: appPath });
       // We're using force to succeed on peer dependency issues
+      exec("npm", ["install", `realm@${realmVersion}`, "--force"], { cwd: appPath });
 
-      if (!skipIOS) {
+      const podfilePath = path.resolve(appPath, "ios", "Podfile");
+      console.log(`Patching podfile to use ccache (${podfilePath})`);
+      exec("patch", [podfilePath, PODFILE_PATCH_PATH]);
+
+      if (!skipBundleInstall) {
         console.log(`Installing gem bundle (needed to pod-install for iOS)`);
         exec("bundle", ["install"], { cwd: appPath });
+      }
 
+      if (!skipPodInstall) {
         console.log(`Installing CocoaPods`);
         exec("pod", ["install"], { cwd: path.resolve(appPath, "ios"), env });
       }
