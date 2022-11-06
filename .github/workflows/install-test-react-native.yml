@@ -17,10 +17,11 @@ defaults:
     working-directory: install-tests/react-native
 
 jobs:
-  install:
+  install-test:
     name: Install test on ${{ matrix.platform }} (new architecture ${{ matrix.new-architecture && 'enabled' || 'disabled' }}, realm@${{ matrix.realm-version }}, react-native@${{ matrix.react-native-version }}, using Xcode v${{matrix.xcode}}, node v${{ matrix.node }})
     runs-on: macos-12
     timeout-minutes: 60
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -102,15 +103,14 @@ jobs:
           target: google_apis
           script: npm test -- --platform android
           working-directory: install-tests/react-native
-
+  announce:
+    needs: install-test
+    runs-on: ubuntu-latest
+    steps:
       - name: Post result to Slack
-        if: always()
         uses: slackapi/slack-github-action@v1.23.0
         with:
           # For posting a rich message using Block Kit
-          # TODO: Include a URL deep linking into the job
-          # So far, we only know how to build the URL of the run:
-          # ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           payload: |
             {
               "blocks": [
@@ -118,7 +118,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "**Install test ${{ job.status }}**\nTested ${{ matrix.platform }}, new architecture ${{ matrix.new-architecture && 'enabled' || 'disabled' }}, realm@${{ matrix.realm-version }}, react-native@${{ matrix.react-native-version }}, using Xcode v${{matrix.xcode}}, node v${{ matrix.node }}."
+                    "text": "Install test *${{ needs.install-test.result }}*\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
                   }
                 }
               ]
@@ -126,3 +126,4 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_TEST_WEBHOOK }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+    
