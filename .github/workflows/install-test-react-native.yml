@@ -30,8 +30,8 @@ jobs:
           - android
         # See https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md#xcode
         xcode:
-          - 14.0.1
-          # - 13.1
+          # - 14.0.1
+          - 13.1
         node:
           - 16
         realm-version:
@@ -57,7 +57,7 @@ jobs:
           key: install-test-${{ matrix.platform }-r@${{ matrix.realm-version }}-rn@${{ matrix.react-native-version }}-${{ matrix.new-architecture && 'new' || 'old' }}-arch
           max-size: '2.0G'
       - name: Prepend ccache executables to the PATH
-        run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
+        run: echo "/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
       - name: Configure ccache
         if: ${{ runner.os == 'macOS' }}
         run: ccache --set-config="compiler_check=content"
