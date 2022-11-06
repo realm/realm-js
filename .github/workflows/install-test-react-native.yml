@@ -50,6 +50,7 @@ jobs:
           node-version: ${{ matrix.node }}
       - uses: ruby/setup-ruby@v1
         with:
+          ruby-version: 2.7.5
           bundler-cache: true
 
       - name: ccache
