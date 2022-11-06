@@ -70,8 +70,8 @@ jobs:
         run: npm run init -- --skip-ios --realm-version ${{ matrix.realm-version }} --react-native-version ${{ matrix.react-native-version }}
 
       - uses: ruby/setup-ruby@v1
+        if: ${{ matrix.platform == 'ios' }}
         with:
-          ruby-version: 2.7.5
           bundler-cache: true
           working-directory: install-tests/react-native/app
 
