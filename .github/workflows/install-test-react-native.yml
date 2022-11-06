@@ -20,7 +20,7 @@ jobs:
   install-test:
     name: Install test on ${{ matrix.platform }} (new architecture ${{ matrix.new-architecture && 'enabled' || 'disabled' }}, realm@${{ matrix.realm-version }}, react-native@${{ matrix.react-native-version }}, using Xcode v${{matrix.xcode}}, node v${{ matrix.node }})
     runs-on: macos-12
-    timeout-minutes: 60
+    timeout-minutes: 120
     continue-on-error: true
     strategy:
       fail-fast: false
