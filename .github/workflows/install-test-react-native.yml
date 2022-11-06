@@ -81,6 +81,9 @@ jobs:
         uses: slackapi/slack-github-action@v1.23.0
         with:
           # For posting a rich message using Block Kit
+          # TODO: Include a URL deep linking into the job
+          # So far, we only know how to build the URL of the run:
+          # ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           payload: |
             {
               "blocks": [
@@ -88,7 +91,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "Install test ${{ job.status }} on ${{ matrix.platform }} (new architecture ${{ matrix.new-architecture && 'enabled' || 'disabled' }}, realm@${{ matrix.realm-version }}, react-native@${{ matrix.react-native-version }}, using Xcode v${{matrix.xcode}}, node v${{ matrix.node }})\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs/${{ github.job }}"
+                    "text": "**Install test ${{ job.status }}**\nTested ${{ matrix.platform }}, new architecture ${{ matrix.new-architecture && 'enabled' || 'disabled' }}, realm@${{ matrix.realm-version }}, react-native@${{ matrix.react-native-version }}, using Xcode v${{matrix.xcode}}, node v${{ matrix.node }}."
                   }
                 }
               ]
