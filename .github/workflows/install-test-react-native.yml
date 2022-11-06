@@ -75,15 +75,15 @@ jobs:
           bundler-cache: true
           working-directory: install-tests/react-native/app
 
+      - if: ${{ matrix.platform == 'ios' }}
+        run: pod install
+        working-directory: install-tests/react-native/app/ios
+
       - uses: actions/setup-java@v3
         if: ${{ matrix.platform == 'android' }}
         with:
           distribution: 'zulu'
           java-version: '11'
-
-      - if: ${{ matrix.platform == 'ios' }}
-        run: pod-install
-        working-directory: install-tests/react-native/app
 
       - name: Run test (iOS)
         if: ${{ matrix.platform == 'ios' }}
