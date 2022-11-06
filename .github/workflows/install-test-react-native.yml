@@ -74,7 +74,7 @@ jobs:
         with:
           api-level: 29
           target: google_apis
-          script: npm test -- --platform ios
+          script: npm test -- --platform android
 
       - name: Post result to Slack
         if: always()
