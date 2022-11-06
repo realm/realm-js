@@ -20,6 +20,7 @@ jobs:
   install:
     name: Install test on ${{ matrix.platform }} (new architecture ${{ matrix.new-architecture && 'enabled' || 'disabled' }}, realm@${{ matrix.realm-version }}, react-native@${{ matrix.react-native-version }}, using Xcode v${{matrix.xcode}}, node v${{ matrix.node }})
     runs-on: macos-12
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -48,10 +49,6 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 2.7.5
-          bundler-cache: true
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -68,13 +65,15 @@ jobs:
       - name: Install dependencies of the CLI
         run: npm ci
 
-      - name: Initialize app (iOS)
-        if: ${{ matrix.platform == 'ios' }}
-        run: npm run init -- --realm-version ${{ matrix.realm-version }} --react-native-version ${{ matrix.react-native-version }}
-
-      - name: Initialize app (Android)
-        if: ${{ matrix.platform == 'android' }}
+      - name: Initialize app
+        # Using --skip-ios to let the setup-ruby action install the bundle
         run: npm run init -- --skip-ios --realm-version ${{ matrix.realm-version }} --react-native-version ${{ matrix.react-native-version }}
+
+      - uses: ruby/setup-ruby@v1
+          with:
+            ruby-version: 2.7.5
+            bundler-cache: true
+            working-directory: install-tests/react-native/app
 
       - name: Run test (iOS)
         if: ${{ matrix.platform == 'ios' }}
