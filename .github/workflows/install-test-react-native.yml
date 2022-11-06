@@ -64,6 +64,14 @@ jobs:
       - name: Install dependencies of the CLI
         run: npm ci
 
+      - name: Initialize app (iOS)
+        if: ${{ matrix.platform == 'ios' }}
+        run: npm run init -- --realm-version ${{ matrix.realm-version }} --react-native-version ${{ matrix.react-native-version }}
+
+      - name: Initialize app (Android)
+        if: ${{ matrix.platform == 'android' }}
+        run: npm run init -- --skip-ios --realm-version ${{ matrix.realm-version }} --react-native-version ${{ matrix.react-native-version }}
+
       - name: Run test (iOS)
         if: ${{ matrix.platform == 'ios' }}
         run: npm test -- --platform ios

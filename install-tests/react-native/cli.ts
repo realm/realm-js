@@ -77,13 +77,15 @@ yargs(hideBin(process.argv))
       args
         .option("realm-version", { type: "string", default: "latest" })
         .option("react-native-version", { type: "string", default: "latest" })
-        .option("force", { description: "Delete any existing app directory", type: "boolean", default: false }),
+        .option("force", { description: "Delete any existing app directory", type: "boolean", default: false })
+        .option("skip-ios", { description: "Skip the iOS specific steps", type: "boolean", default: false }),
     (argv) => {
       const {
         "app-path": appPath,
         "realm-version": realmVersion,
         "react-native-version": reactNativeVersion,
         "new-architecture": newArchitecture,
+        "skip-ios": skipIOS,
         force,
       } = argv;
 
@@ -113,11 +115,13 @@ yargs(hideBin(process.argv))
       console.log(`Adding realm@${realmVersion} to the app (and installing dependencies)`);
       exec("npm", ["install", `realm@${realmVersion}`], { cwd: appPath });
 
-      console.log(`Installing gem bundle (needed to pod-install for iOS)`);
-      exec("bundle", ["install"], { cwd: appPath });
+      if (!skipIOS) {
+        console.log(`Installing gem bundle (needed to pod-install for iOS)`);
+        exec("bundle", ["install"], { cwd: appPath });
 
-      console.log(`Installing CocoaPods`);
-      exec("pod", ["install"], { cwd: path.resolve(appPath, "ios"), env });
+        console.log(`Installing CocoaPods`);
+        exec("pod", ["install"], { cwd: path.resolve(appPath, "ios"), env });
+      }
 
       console.log("Overwriting App.js");
       const appJsDest = path.resolve(appPath, "App.js");
@@ -130,6 +134,11 @@ yargs(hideBin(process.argv))
     (args) => args.option("platform", { type: "string", choices: ["android", "ios"], demandOption: true }),
     async (argv) => {
       const { "app-path": appPath, "new-architecture": newArchitecture, platform } = argv;
+
+      if (!fs.existsSync(appPath)) {
+        throw new Error(`Expected a React Native app at '${appPath}'`);
+      }
+
       const env = getEnv(newArchitecture);
 
       function prematureExitCallback(code: number) {
