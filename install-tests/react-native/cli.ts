@@ -30,7 +30,7 @@ const DEFAULT_APP_PATH = path.resolve(__dirname, "app");
 const APP_JS_PATH = path.resolve(__dirname, "App.js");
 const PODFILE_PATCH_PATH = path.resolve(__dirname, "Podfile.patch");
 const PORT = 3000;
-const TIMEOUT = 5 * 60 * 1000; // 5 min should be pleanty of time
+const TIMEOUT = 5 * 60 * 1000; // 5 min should be pleanty of time from app has launched until message gets received
 
 const appName = "InstallTestApp";
 
@@ -197,7 +197,8 @@ yargs(hideBin(process.argv))
         // Start the countdown
         const timeout = new Promise((_, reject) => {
           const timer = setTimeout(() => {
-            const err = new Error("It took too long for the app to send the message");
+            const sec = Math.floor(TIMEOUT / 1000);
+            const err = new Error(`It took too long (> ${sec}s) for the app to send the message`);
             reject(err);
           }, TIMEOUT);
           // Makes sure this doesn't hang the process on successful exit
