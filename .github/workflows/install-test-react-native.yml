@@ -17,8 +17,7 @@ defaults:
     working-directory: install-tests/react-native
 
 jobs:
-  install-test:
-    name: Install test on ${{ matrix.platform }} (new architecture ${{ matrix.new-architecture && 'enabled' || 'disabled' }}, realm@${{ matrix.realm-version }}, react-native@${{ matrix.react-native-version }}, using Xcode v${{matrix.xcode}}, node v${{ matrix.node }})
+  install:
     runs-on: macos-12
     timeout-minutes: 120
     strategy:
@@ -49,6 +48,12 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
+
+      - name: CocoaPod cache
+        uses: actions/cache@v3
+        with:
+          path: '**/Pods'
+          key: cocoa-pods-${{ matrix.platform }}-r@${{ matrix.realm-version }}-rn@${{ matrix.react-native-version }}-${{ matrix.new-architecture && 'new' || 'old' }}-arch
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -104,7 +109,7 @@ jobs:
           working-directory: install-tests/react-native
 
   announce:
-    needs: install-test
+    needs: install
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -119,7 +124,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "Install test *${{ toJSON(needs.*.result) }}*\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    "text": "Install test *${{ needs.install.result }}*\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
                   }
                 }
               ]
