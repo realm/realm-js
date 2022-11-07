@@ -6,9 +6,9 @@ on:
     paths:
       - install-tests/react-native/**
       - .github/workflows/install-test-react-native.yml
-  # Every monday at 9:00 CET
+  # Every monday at 7:00 CET
   schedule:
-    - cron: "0 8 * * 1"
+    - cron: "0 6 * * 1"
   # You can also activate this workflow manually from the Actions tab
   workflow_dispatch:
 
