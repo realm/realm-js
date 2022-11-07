@@ -42,9 +42,11 @@ const PRIMITIVES_MAPPING: Record<string, string> = {
   AppError: "AppError",
   "std::exception_ptr": "Error",
   "std::error_code": "CppErrorCode",
-  EJson:  "EJson",
-  EJsonArray:  "EJson[]",
-  EJsonObj:  "Record<string, EJson>",
+  EJson: "EJson",
+  EJsonArray: "EJson[]",
+  EJsonObj: "Record<string, EJson>",
+  "bson::BsonDocument": "Record<string, EJson>",
+  "bson::BsonArray": "EJson[]",
 };
 
 const TEMPLATE_MAPPING: Record<string, (...args: string[]) => string> = {
