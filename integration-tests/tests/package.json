@@ -32,9 +32,9 @@
     "@realm/app-importer": "*"
   },
   "dependencies": {
+    "@realm/network-transport": "^0.7.2",
     "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",
-    "@realm/network-transport": "^0.7.2",
     "jsrsasign": "^10.6.1"
   },
   "files": [
