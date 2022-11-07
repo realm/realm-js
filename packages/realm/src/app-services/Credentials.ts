@@ -116,10 +116,10 @@ export class Credentials {
 
   /**
    * Creates credentials with an Atlas App Services function and user identifier.
-   * @param payload A string identifying the user. Usually an identity token or a username.
+   * @param payload An object identifying the user. Usually an identity token or a username.
    * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
    */
-  static function(payload: string): Credentials {
-    return new Credentials(binding.AppCredentials.function(payload));
+  static function(payload: object): Credentials {
+    return new Credentials(binding.AppCredentials.function(payload as Record<string, binding.EJson>));
   }
 }

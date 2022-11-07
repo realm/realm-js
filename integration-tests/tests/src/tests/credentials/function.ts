@@ -28,12 +28,10 @@ describe.skipIf(environment.missingServer, "custom-function credentials", () => 
   it("authenticates", async function (this: AppContext) {
     this.timeout(60 * 1000); // 1 min
     // Log in
-    const credentials = Credentials.function(
-      EJSON.stringify({
-        username: "my-very-own-username",
-        secret: "v3ry-s3cret",
-      }),
-    );
+    const credentials = Credentials.function({
+      username: "my-very-own-username",
+      secret: "v3ry-s3cret",
+    });
     const user = await this.app.logIn(credentials);
     expect(user).to.be.instanceOf(User);
   });
