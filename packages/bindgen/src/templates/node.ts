@@ -287,11 +287,11 @@ function convertPrimToNode(addon: NodeAddon, type: string, expr: string): string
     case "EJson":
     case "EJsonObj":
     case "EJsonArray":
-      return `${addon.accessCtor("EJSON_parse")}.Call({${convertPrimToNode(
-        addon,
-        "std::string",
-        expr,
-      )}})`;
+      return `${addon.accessCtor("EJSON_parse")}.Call({${convertPrimToNode(addon, "std::string", expr)}})`;
+
+    case "bson::BsonArray":
+    case "bson::BsonDocument":
+      return convertPrimToNode(addon, "EJsonObj", `bson::Bson(${expr}).to_string()`);
 
     case "AppError":
       // This matches old JS SDK. The C++ type will be changing as part of the unify error handleing project.
@@ -371,11 +371,11 @@ function convertPrimFromNode(addon: NodeAddon, type: string, expr: string): stri
     case "EJson":
     case "EJsonObj":
     case "EJsonArray":
-      return convertPrimFromNode(
-        addon,
-        "std::string",
-        `${addon.accessCtor("EJSON_stringify")}.Call({${expr}})`,
-      );
+      return convertPrimFromNode(addon, "std::string", `${addon.accessCtor("EJSON_stringify")}.Call({${expr}})`);
+
+    case "bson::BsonArray":
+    case "bson::BsonDocument":
+      return `${type}(bson::parse(${convertPrimFromNode(addon, "EJsonObj", expr)}))`;
 
     case "AppError":
       assert.fail("Cannot convert AppError to C++, only from C++.");
