@@ -1,0 +1,8 @@
+{
+    "name": "local-mongodb",
+    "type": "mongodb",
+    "config": {},
+    "secret_config": {
+        "uri": "local-mongodb-uri"
+    }
+}
