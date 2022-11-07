@@ -21,7 +21,6 @@ jobs:
     name: Install test on ${{ matrix.platform }} (new architecture ${{ matrix.new-architecture && 'enabled' || 'disabled' }}, realm@${{ matrix.realm-version }}, react-native@${{ matrix.react-native-version }}, using Xcode v${{matrix.xcode}}, node v${{ matrix.node }})
     runs-on: macos-12
     timeout-minutes: 120
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -107,6 +106,7 @@ jobs:
   announce:
     needs: install-test
     runs-on: ubuntu-latest
+    if: always()
     steps:
       - name: Post result to Slack
         uses: slackapi/slack-github-action@v1.23.0
@@ -127,9 +127,3 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_TEST_WEBHOOK }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
-      - name: Fail on install failure
-        if: contains(needs.*.result, 'failure')
-        uses: actions/github-script@v3
-        with:
-          script: |
-              core.setFailed('Install test failed')
