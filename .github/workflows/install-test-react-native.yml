@@ -53,12 +53,6 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      - name: CocoaPod cache
-        uses: actions/cache@v3
-        with:
-          path: '**/Pods'
-          key: cocoa-pods-${{ matrix.platform }}-r@${{ matrix.realm-version }}-rn@${{ matrix.react-native-version }}-${{ matrix.new-architecture && 'new' || 'old' }}-arch
-
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
@@ -82,6 +76,12 @@ jobs:
         # Using "--skip-bundle-install" to let the setup-ruby action install the bundle
         # Using "--skip-pod-install" to ensure it happens after setup-ruby has executed
         run: npm run init -- --skip-bundle-install --skip-pod-install --realm-version ${{ matrix.realm-version }} --react-native-version ${{ matrix.react-native-version }} --engine ${{ matrix.engine }}
+
+      - name: CocoaPod cache
+        uses: actions/cache@v3
+        with:
+          path: '**/Pods'
+          key: cocoa-pods-${{ matrix.platform }}-r@${{ matrix.realm-version }}-rn@${{ matrix.react-native-version }}-${{ matrix.new-architecture && 'new' || 'old' }}-arch
 
       - uses: ruby/setup-ruby@v1
         if: ${{ matrix.platform == 'ios' }}
