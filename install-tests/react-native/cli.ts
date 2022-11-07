@@ -28,7 +28,10 @@ const __dirname = new URL(".", import.meta.url).pathname;
 
 const DEFAULT_APP_PATH = path.resolve(__dirname, "app");
 const APP_JS_PATH = path.resolve(__dirname, "App.js");
-const PODFILE_PATCH_PATH = path.resolve(__dirname, "Podfile.patch");
+const PATCHES_PATH = path.resolve(__dirname, "patches");
+const CCACHE_PODFILE_PATCH_PATH = path.resolve(PATCHES_PATH, "ccache-Podfile.patch");
+const JSC_PODFILE_PATCH_PATH = path.resolve(PATCHES_PATH, "jsc-Podfile.patch");
+const JSC_BUILD_GRADLE_PATCH_PATH = path.resolve(PATCHES_PATH, "jsc-build.gradle.patch");
 const PORT = 3000;
 const TIMEOUT = 5 * 60 * 1000; // 5 min should be pleanty of time from app has launched until message gets received
 
@@ -86,6 +89,7 @@ yargs(hideBin(process.argv))
       args
         .option("realm-version", { type: "string", default: "latest" })
         .option("react-native-version", { type: "string", default: "latest" })
+        .option("engine", { type: "string", choices: ["hermes", "jsc"], default: "hermes" })
         .option("force", { description: "Delete any existing app directory", type: "boolean", default: false })
         .option("skip-bundle-install", {
           description: "Skip the iOS specific 'bundle install'",
@@ -105,6 +109,7 @@ yargs(hideBin(process.argv))
         "new-architecture": newArchitecture,
         "skip-bundle-install": skipBundleInstall,
         "skip-pod-install": skipPodInstall,
+        engine,
         force,
       } = argv;
 
@@ -137,7 +142,16 @@ yargs(hideBin(process.argv))
 
       const podfilePath = path.resolve(appPath, "ios", "Podfile");
       console.log(`Patching podfile to use ccache (${podfilePath})`);
-      exec("patch", [podfilePath, PODFILE_PATCH_PATH]);
+      exec("patch", [podfilePath, CCACHE_PODFILE_PATCH_PATH]);
+
+      if (engine === "jsc") {
+        console.log(`Patching Podfile to use JSC (${podfilePath})`);
+        exec("patch", [podfilePath, JSC_PODFILE_PATCH_PATH]);
+
+        const appGradleBuildPath = path.resolve(appPath, "android", "app", "build.gradle");
+        console.log(`Patching app/build.gradle to use JSC (${appGradleBuildPath})`);
+        exec("patch", [appGradleBuildPath, JSC_BUILD_GRADLE_PATCH_PATH]);
+      }
 
       if (!skipBundleInstall) {
         console.log(`Installing gem bundle (needed to pod-install for iOS)`);
@@ -157,9 +171,12 @@ yargs(hideBin(process.argv))
   .command(
     "test",
     "Start the test application",
-    (args) => args.option("platform", { type: "string", choices: ["android", "ios"], demandOption: true }),
+    (args) =>
+      args
+        .option("platform", { type: "string", choices: ["android", "ios"], demandOption: true })
+        .option("release", { description: "Build the app in 'release' mode", type: "boolean", default: false }),
     async (argv) => {
-      const { "app-path": appPath, "new-architecture": newArchitecture, platform } = argv;
+      const { "app-path": appPath, "new-architecture": newArchitecture, platform, release } = argv;
 
       if (!fs.existsSync(appPath)) {
         throw new Error(`Expected a React Native app at '${appPath}'`);
@@ -186,13 +203,30 @@ yargs(hideBin(process.argv))
         // Start the app
         if (platform === "android") {
           // Using --active-arch-only to speed things up 🙏
-          exec("npx", ["react-native", "run-android", "--no-packager", "--active-arch-only"], { cwd: appPath, env });
+          exec(
+            "npx",
+            [
+              "react-native",
+              "run-android",
+              "--no-packager",
+              "--active-arch-only",
+              ...(release ? ["--variant", "release"] : []),
+            ],
+            { cwd: appPath, env },
+          );
           // Expose the port we're listening on
           console.log(`Exposing port ${PORT}`);
           exec("adb", ["reverse", `tcp:${PORT}`, `tcp:${PORT}`]);
         } else if (platform === "ios") {
           // TODO: Start building using ccache
-          exec("npx", ["react-native", "run-ios", "--no-packager"], { cwd: appPath, env });
+          exec(
+            "npx",
+            ["react-native", "run-ios", "--no-packager", ...(release ? ["--configuration", "Release"] : [])],
+            {
+              cwd: appPath,
+              env,
+            },
+          );
         }
 
         // Start the countdown

@@ -1,4 +1,6 @@
-@@ -39,5 +39,15 @@ target 'InstallTestApp' do
+--- app/ios/Podfile
++++ app/ios/Podfile
+@@ -39,5 +39,15 @@
        :mac_catalyst_enabled => false
      )
      __apply_Xcode_12_5_M1_post_install_workaround(installer)
