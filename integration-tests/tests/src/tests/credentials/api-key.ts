@@ -22,13 +22,11 @@ import { importAppBefore } from "../../hooks";
 
 //These tests are adopted from api-key-auth.test.ts in the realm-web-integration-tests directory.
 describe.skipIf(environment.missingServer, "api-key credentials", () => {
-  importAppBefore("with-auth-providers");
+  importAppBefore("with-api-key");
 
   it("lists, creates, gets, enables, authenticates, disables and deletes api keys", async function (this: AppContext) {
     this.slow(1000);
     this.timeout(10000);
-    // Login a user
-    // const credentials = Credentials.anonymous();
     const credentialData = {
       email: "my-very-own-username",
       password: "v3ry-s3cret",
