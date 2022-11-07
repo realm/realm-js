@@ -225,7 +225,30 @@ export class User<
    * @param args Arguments passed to the function.
    */
   async callFunction(name: string, ...args: unknown[]): Promise<unknown> {
-    throw new Error("Not yet implemented");
+    return this._callFunctionOnService(name, undefined, args);
+  }
+
+  private async _callFunctionOnService(name: string, serviceName: string | undefined, ...args: unknown[]) {
+    const cleanedArgs = this.cleanArguments(args);
+    return this.app.internal.callFunction(this.internal, name, cleanedArgs as binding.EJson[], serviceName);
+  }
+
+  private cleanArguments(...args: unknown[]): unknown {
+    if (Array.isArray(args)) {
+      return args.map(this.cleanArguments);
+    } else if (typeof args === "object") {
+      const result: { [key: string]: unknown } = {};
+      for (const [k, v] of Object.entries(args)) {
+        if (typeof v !== "undefined") {
+          if (typeof k === "string") {
+            result[k] = v;
+          }
+        }
+      }
+      return result;
+    } else {
+      return args;
+    }
   }
 
   /**
