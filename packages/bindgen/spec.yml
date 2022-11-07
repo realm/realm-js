@@ -37,6 +37,8 @@ primitives:
   - OwnedBinaryData
   - BinaryData
   - Mixed
+  - bson::BsonDocument # Suggestion: handle like EJsonObj by converting via EJSON string
+  - bson::BsonArray # Suggestion: handle like EJsonArray by converting via EJSON string
   - ObjectId
   - Decimal128
   - UUID
@@ -936,10 +938,6 @@ classes:
       remove_all: '()'
       try_erase: '(key: StringData) -> bool'
 
-
-  BsonDocument: # TODO this should probably be a primitive
-    cppName: bson::BsonDocument
-
   # These are a bit of a hack.
   # TODO rename one of the AppCredentials::google() functions.
   GoogleAuthCode:
@@ -966,7 +964,7 @@ classes:
       username_password: '(username: std::string, password: std::string) -> AppCredentials'
       function:
         - '(serialized_payload: const std::string&) -> AppCredentials'
-        - sig: '(payload: const BsonDocument&) -> AppCredentials'
+        - sig: '(payload: const bson::BsonDocument&) -> AppCredentials'
           suffix: 'bson'
       user_api_key: '(api_key: std::string) -> AppCredentials'
       server_api_key: '(api_key: std::string) -> AppCredentials'
@@ -990,7 +988,7 @@ classes:
       has_device_id: bool
       # user_profile: UserProfile # TODO
       identities: std::vector<UserIdentity> # TODO
-      custom_data: util::Optional<BsonDocument>
+      custom_data: util::Optional<bson::BsonDocument>
       sync_manager: SharedSyncManager
       state: SyncUserState
       subscribers_count: count_t
