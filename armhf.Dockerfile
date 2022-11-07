@@ -14,6 +14,7 @@ RUN apt-get install -y \
         nodejs \
         libnode-dev:armhf \
         npm \
+        ccache \
         qemu-user
 
 
@@ -22,15 +23,11 @@ ENV NVM_DIR /tmp/.nvm
 RUN mkdir -p $NVM_DIR \
  && curl -s https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash \
  && . $NVM_DIR/nvm.sh \
- && nvm install 10 \
- && nvm install 12 \
- && nvm install 13 \
- && nvm install 14 \
+ && nvm install 16 \
  && chmod a+rwX -R $NVM_DIR
 
 # Ensure a new enough version of CMake is available.
 RUN cd /opt \
-    && curl -O -J https://cmake.org/files/v3.15/cmake-3.15.2-Linux-x86_64.tar.gz \
-    && tar zxf cmake-3.15.2-Linux-x86_64.tar.gz
-
-ENV PATH "/opt/cmake-3.15.2-Linux-x86_64/bin:$PATH"
+    && curl -O -J https://cmake.org/files/v3.21/cmake-3.21.3-linux-x86_64.tar.gz \
+    && tar zxf cmake-3.21.3-linux-x86_64.tar.gz
+ENV PATH "/opt/cmake-3.21.3-linux-x86_64/bin/:$PATH"
