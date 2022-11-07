@@ -22,7 +22,7 @@ import { importAppBefore } from "../../hooks";
 import jwtEncode from "jwt-encode";
 
 describe.skipIf(environment.missingServer, "jwt credentials", () => {
-  importAppBefore("with-auth-providers");
+  importAppBefore("with-jwt");
   it("authenticates", async function (this: AppContext) {
     this.timeout(60 * 1000); // 1 min
     // Log in
