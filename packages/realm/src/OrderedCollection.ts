@@ -400,7 +400,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * are ignored entirely by this method and will not be returned.
    *
    * @param property For a collection of objects, the property to take the minimum of.
-   * @throws {Error} If no property with the name exists or if property is not numeric/date.
+   * @throws {TypeAssertionError} If no property with the name exists or if property is not numeric/date.
    * @returns The minimum value.
    * @since 1.12.1
    */
