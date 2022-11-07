@@ -23,7 +23,7 @@ import { EJSON } from "bson";
 import { importAppBefore } from "../../hooks";
 
 describe.skipIf(environment.missingServer, "custom-function credentials", () => {
-  importAppBefore("with-auth-providers");
+  importAppBefore("with-custom-function");
 
   it("authenticates", async function (this: AppContext) {
     this.timeout(60 * 1000); // 1 min
