@@ -133,6 +133,7 @@ export function createCachedCollection<T extends Realm.Object>({
   const listenerCallback: Realm.CollectionChangeCallback<(T & Realm.Object) | (unknown & Realm.Object)> = (
     listenerCollection,
     changes,
+    deletedObjects
   ) => {
     if (changes.deletions.length > 0 || changes.insertions.length > 0 || changes.newModifications.length > 0) {
       // TODO: There is currently no way to rebuild the cache key from the changes array for deleted object.
@@ -153,6 +154,14 @@ export function createCachedCollection<T extends Realm.Object>({
         const objectId = listenerCollection[index]._objectKey();
         if (objectId) {
           const cacheKey = getCacheKey(objectId);
+          if (objectCache.has(cacheKey)) {
+            objectCache.delete(cacheKey);
+          }
+        }
+      });
+      deletedObjects.forEach((key) => {
+        if (key) {
+          const cacheKey = getCacheKey(key);
           if (objectCache.has(cacheKey)) {
             objectCache.delete(cacheKey);
           }

@@ -31,6 +31,8 @@
 
 #include <realm/parser/query_parser.hpp>
 #include <realm/util/optional.hpp>
+#include <vector>
+
 #ifdef REALM_ENABLE_SYNC
 #include "js_sync.hpp"
 #endif
@@ -367,6 +369,57 @@ void ResultsClass<T>::index_of(ContextType ctx, ObjectType this_object, Argument
     index_of(ctx, fn, args, return_value);
 }
 
+template <typename T, typename U>
+class CallbackWrapper {
+public:
+    using FunctionType = typename T::Function;
+    using ValueType = typename T::Value;
+    using ObjectType = typename T::Object;
+    using Object = js::Object<T>;
+    using Value = js::Value<T>;
+
+    CallbackWrapper(Protected<typename T::Function>& cb, Protected<typename T::Object>& o, Protected<typename T::GlobalContext>& ctx, U& coll)
+        : protected_callback(cb)
+        , protected_this(o)
+        , protected_ctx(ctx)
+        , collection(coll)
+    {
+    }
+    void before(const CollectionChangeSet& change_set)
+    {
+        deleted_object_keys.clear();
+        for (auto i : change_set.deletions.as_indexes()) {
+            Obj obj = collection.get(i);
+            deleted_object_keys.push_back(obj.get_key());
+        }
+
+    }
+    void after(const CollectionChangeSet& change_set)
+    {
+        HANDLESCOPE(protected_ctx)
+        Object::create_empty(protected_ctx);
+        std::vector<ValueType> scratch;
+        scratch.clear();
+        scratch.reserve(deleted_object_keys.size());
+        for (const ObjKey& key : deleted_object_keys) {
+            scratch.push_back(Value::from_number(protected_ctx, key.value));
+        }
+        ObjectType deleted_objects = Object::create_array(protected_ctx, scratch);
+
+        // Breaking change as we have added one more parameter
+        ValueType arguments[]{static_cast<ObjectType>(protected_this),
+                              CollectionClass<T>::create_collection_change_set(protected_ctx, change_set),
+                              deleted_objects};
+        Function<T>::callback(protected_ctx, protected_callback, protected_this, 3, arguments);
+    }
+private:
+    Protected<FunctionType> protected_callback;
+    Protected<ObjectType> protected_this;
+    Protected<typename T::GlobalContext> protected_ctx;
+    U& collection;
+    std::vector<ObjKey> deleted_object_keys;
+};
+
 template <typename T>
 template <typename U>
 void ResultsClass<T>::add_listener(ContextType ctx, U& collection, ObjectType this_object, Arguments& args)
@@ -378,12 +431,12 @@ void ResultsClass<T>::add_listener(ContextType ctx, U& collection, ObjectType th
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(Context<T>::get_global_context(ctx));
 
-    auto token = collection.add_notification_callback([=](CollectionChangeSet const& change_set) {
-        HANDLESCOPE(protected_ctx)
-        ValueType arguments[]{static_cast<ObjectType>(protected_this),
-                              CollectionClass<T>::create_collection_change_set(protected_ctx, change_set)};
-        Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, arguments);
-    });
+    auto token = collection.add_notification_callback(CallbackWrapper<T,U>(
+        protected_callback,
+        protected_this,
+        protected_ctx,
+        collection
+        ));
     NotificationBucket::emplace(collection.m_notification_handle, std::move(protected_callback), std::move(token));
 }
 
