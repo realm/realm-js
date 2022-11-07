@@ -21,7 +21,7 @@ import { importAppBefore } from "../../hooks";
 
 //These tests are adopted from email-password-auth.test.ts in the realm-web-integration-tests directory.
 describe.skipIf(environment.missingServer, "email-password credentials", () => {
-  importAppBefore("with-auth-providers");
+  importAppBefore("with-email-password");
 
   it("authenticates", async function (this: AppContext) {
     const credentialsBlob = { email: "validEmail", password: "validPassword" };

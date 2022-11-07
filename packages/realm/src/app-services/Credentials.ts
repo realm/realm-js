@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { AppCredentials, GoogleIdToken } from "../binding";
 import { assert, binding } from "../internal";
 import { App } from "./App";
 
@@ -75,5 +76,50 @@ export class Credentials {
    */
   static apiKey(key: string): Credentials {
     return new Credentials(binding.AppCredentials.userApiKey(key));
+  }
+
+  /**
+   * Creates credentials based on an Apple login.
+   * @param token An Apple authentication token, obtained by logging into Apple.
+   * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+   */
+  static apple(token: string): Credentials {
+    return new Credentials(binding.AppCredentials.apple(token));
+  }
+
+  /**
+   * Creates credentials based on a Facebook login.
+   * @param token A Facebook authentication token, obtained by logging into Facebook.
+   * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+   */
+  static facebook(token: string): Credentials {
+    return new Credentials(binding.AppCredentials.facebook(token));
+  }
+
+  /**
+   * Creates credentials based on a Google login.
+   * @param authObject An object with either an `authCode` or `idToken` property.
+   * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+   */
+  static google(authObject: object): Credentials {
+    return new Credentials(binding.AppCredentials.googleAuth(authObject));
+  }
+
+  /**
+   * Creates credentials with a JSON Web Token (JWT) provider and user identifier.
+   * @param token A string identifying the user. Usually an identity token or a username.
+   * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+   */
+  static jwt(token: string): Credentials {
+    return new Credentials(binding.AppCredentials.custom(token));
+  }
+
+  /**
+   * Creates credentials with an Atlas App Services function and user identifier.
+   * @param payload A string identifying the user. Usually an identity token or a username.
+   * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+   */
+  static function(payload: string): Credentials {
+    return new Credentials(binding.AppCredentials.function(payload));
   }
 }
