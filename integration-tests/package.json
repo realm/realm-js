@@ -12,8 +12,5 @@
   },
   "devDependencies": {
     "concurrently": "^6.0.2"
-  },
-  "dependencies": {
-    "jose": "^4.10.4"
   }
 }
