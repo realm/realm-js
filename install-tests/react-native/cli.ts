@@ -185,7 +185,8 @@ yargs(hideBin(process.argv))
 
         // Start the app
         if (platform === "android") {
-          exec("npx", ["react-native", "run-android", "--no-packager"], { cwd: appPath, env });
+          // Using --active-arch-only to speed things up 🙏
+          exec("npx", ["react-native", "run-android", "--no-packager", "--active-arch-only"], { cwd: appPath, env });
           // Expose the port we're listening on
           console.log(`Exposing port ${PORT}`);
           exec("adb", ["reverse", `tcp:${PORT}`, `tcp:${PORT}`]);
