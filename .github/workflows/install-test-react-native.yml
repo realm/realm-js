@@ -61,7 +61,6 @@ jobs:
       - name: Prepend ccache executables to the PATH
         run: echo "/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
       - name: Configure ccache
-        if: ${{ runner.os == 'macOS' }}
         run: ccache --set-config="compiler_check=content"
 
       # TODO: Remove if this becomes unneeded in the future
@@ -78,6 +77,7 @@ jobs:
         run: npm run init -- --skip-bundle-install --skip-pod-install --realm-version ${{ matrix.realm-version }} --react-native-version ${{ matrix.react-native-version }} --engine ${{ matrix.engine }}
 
       - name: CocoaPod cache
+        if: ${{ matrix.platform == 'ios' }}
         uses: actions/cache@v3
         with:
           path: '**/Pods'
