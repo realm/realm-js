@@ -121,6 +121,8 @@ jobs:
         run: |
           echo "/usr/lib/ccache:/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
 
+      # in CI file timestamps change with every run so instead rely on file content hashing
+      # https://reactnative.dev/docs/build-speed#using-this-approach-on-a-ci
       - name: Configure ccache
         if: ${{ runner.os != 'Windows' }}
         run: ccache --set-config="compiler_check=content"
@@ -167,7 +169,7 @@ jobs:
       MOCHA_REMOTE_EXIT_ON_ERROR: true
       SPAWN_LOGCAT: true
       # Pin the Xcode version
-      DEVELOPER_DIR: /Applications/Xcode_12.5.1.app
+      DEVELOPER_DIR: /Applications/Xcode_13.1.app
     runs-on: ${{ matrix.variant.runner }}
     strategy:
       fail-fast: false
@@ -179,12 +181,12 @@ jobs:
           #- { os: windows, target: test, runner: windows-latest, environment: node}
           #- { os: windows, target: "test:main", runner: windows-latest, environment: electron }
           #- { os: windows, target: "test:renderer", runner: windows-latest, environment: electron }
-          - { os: darwin, target: "test:main", runner: macos-11, environment: electron }
-          - { os: darwin, target: "test:renderer", runner: macos-11, environment: electron }
-          - { os: darwin, target: test, runner: macos-11, environment: node }
-          - { os: android, target: "test:android", runner: macos-11, environment: react-native }
-          - { os: ios, target: "test:ios", runner: macos-11, environment: react-native }
-          #- { os: ios, target: "test:catalyst", runner: macos-11, environment: react-native }
+          - { os: darwin, target: "test:main", runner: macos-latest, environment: electron }
+          - { os: darwin, target: "test:renderer", runner: macos-latest, environment: electron }
+          - { os: darwin, target: test, runner: macos-latest, environment: node }
+          - { os: android, target: "test:android", runner: macos-latest, environment: react-native, arch: "armeabi-v7a" }
+          - { os: ios, target: "test:ios", runner: macos-latest, environment: react-native, arch: "apple" }
+          #- { os: ios, target: "test:catalyst", runner: macos-latest, environment: react-native, arch: "apple" }
     timeout-minutes: 60
     steps:
       - name: Generate Cluster Differentiator
@@ -240,6 +242,19 @@ jobs:
         if: ${{ runner.os == 'Windows' }}
         uses: ilammy/msvc-dev-cmd@v1
 
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1
+        if: ${{ matrix.variant.environment == 'react-native' }}
+        with:
+          key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}
+          max-size: '2.0G'
+
+      # in CI file timestamps change with every run so instead rely on file content hashing
+      # https://reactnative.dev/docs/build-speed#using-this-approach-on-a-ci
+      - name: Configure ccache
+        if: ${{ matrix.variant.environment == 'react-native' }}
+        run: ccache --set-config="compiler_check=content"
+
       - name: Install IOS tools
         if: ${{ (matrix.variant.os == 'ios') }}
         run: |
@@ -294,6 +309,17 @@ jobs:
           MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.name }}
         timeout-minutes: 45
         run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
+
+      - name: Setup Java Gradle cache for android test app
+        if: ${{ (matrix.variant.os == 'android') }}
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
       - name: Setup Android Emulator cache
         if: ${{ (matrix.variant.os == 'android') }}
