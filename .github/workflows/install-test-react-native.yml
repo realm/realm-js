@@ -36,6 +36,9 @@ jobs:
         new-architecture:
           - true
           - false
+        engine:
+          - jsc
+          - hermes
         # See https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md#xcode
         xcode:
           # - 14.0.1
@@ -78,7 +81,7 @@ jobs:
       - name: Initialize app
         # Using "--skip-bundle-install" to let the setup-ruby action install the bundle
         # Using "--skip-pod-install" to ensure it happens after setup-ruby has executed
-        run: npm run init -- --skip-bundle-install --skip-pod-install --realm-version ${{ matrix.realm-version }} --react-native-version ${{ matrix.react-native-version }}
+        run: npm run init -- --skip-bundle-install --skip-pod-install --realm-version ${{ matrix.realm-version }} --react-native-version ${{ matrix.react-native-version }} --engine ${{ matrix.engine }}
 
       - uses: ruby/setup-ruby@v1
         if: ${{ matrix.platform == 'ios' }}
