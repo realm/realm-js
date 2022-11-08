@@ -177,7 +177,27 @@ export class User<
    * Use this to call functions defined by the Atlas App Services application, as this user.
    */
   get functions(): FunctionsFactoryType {
-    throw new Error("Not yet implemented");
+    return this._functionsOnService(undefined);
+  }
+
+  /** @internal */
+  _functionsOnService(serviceName: string | undefined): FunctionsFactoryType {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const user = this;
+    return new Proxy(
+      {},
+      {
+        get(target, name, receiver) {
+          if (typeof name === "string" && name != "inspect") {
+            return (...args: unknown[]) => {
+              return user._callFunctionOnService(name, serviceName, ...args);
+            };
+          } else {
+            return Reflect.get(target, name, receiver);
+          }
+        },
+      },
+    ) as FunctionsFactoryType;
   }
 
   /**
@@ -224,25 +244,25 @@ export class User<
    * @param name Name of the function.
    * @param args Arguments passed to the function.
    */
-  async callFunction(name: string, ...args: unknown[]): Promise<unknown> {
+  callFunction(name: string, ...args: unknown[]): Promise<unknown> {
     return this._callFunctionOnService(name, undefined, args);
   }
 
-  private async _callFunctionOnService(name: string, serviceName: string | undefined, ...args: unknown[]) {
+  /** @internal */
+  _callFunctionOnService(name: string, serviceName: string | undefined, ...args: unknown[]) {
     const cleanedArgs = this.cleanArguments(args);
     return this.app.internal.callFunction(this.internal, name, cleanedArgs as binding.EJson[], serviceName);
   }
 
-  private cleanArguments(...args: unknown[]): unknown {
+  /** @internal */
+  cleanArguments(args: unknown[] | unknown): unknown[] | unknown {
     if (Array.isArray(args)) {
-      return args.map(this.cleanArguments);
+      return args.map((x) => this.cleanArguments(x));
     } else if (typeof args === "object") {
       const result: { [key: string]: unknown } = {};
-      for (const [k, v] of Object.entries(args)) {
+      for (const [k, v] of Object.entries(args as object)) {
         if (typeof v !== "undefined") {
-          if (typeof k === "string") {
-            result[k] = v;
-          }
+          result[k] = v;
         }
       }
       return result;
