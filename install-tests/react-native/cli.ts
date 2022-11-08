@@ -18,11 +18,12 @@
 
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
+import * as semver from "semver";
 
 import * as path from "node:path";
 import * as cp from "node:child_process";
 import * as fs from "node:fs";
-import { createServer, Server } from "http";
+import { createServer, Server } from "node:http";
 
 const __dirname = new URL(".", import.meta.url).pathname;
 
@@ -44,7 +45,9 @@ function exec(command: string, args: string[], options: cp.SpawnOptions = {}) {
   }
 }
 
-function getEnv(newArchitecture: boolean) {
+type EnvOptions = { newArchitecture: boolean; engine?: string };
+
+function getEnv({ newArchitecture, engine }: EnvOptions) {
   const env: Record<string, string> = {
     ...process.env,
     // Add ccache specific configuration
@@ -53,12 +56,12 @@ function getEnv(newArchitecture: boolean) {
     CCACHE_FILECLONE: "true",
     CCACHE_DEPEND: "true",
     CCACHE_INODECACHE: "true",
+    // From 0.71.0, controlling on the engine is possible on iOS through an environment variable
+    USE_HERMES: engine === "hermes" ? "1" : "0",
   };
   if (newArchitecture) {
     // Needed by iOS when running "pod install"
     env.RCT_NEW_ARCH_ENABLED = "1";
-    // Needed by Android when running Gradle
-    env.ORG_GRADLE_PROJECT_newArchEnabled = "true";
   }
   return env;
 }
@@ -85,6 +88,10 @@ function applyPatch(patchPath: string, targetPath: string) {
   } else {
     console.log(`Skipping patch, since ${targetPath} doesn't exist on the filesystem`);
   }
+}
+
+function readPackageJson(packagePath: string) {
+  return JSON.parse(fs.readFileSync(path.resolve(packagePath, "package.json"), "utf8"));
 }
 
 yargs(hideBin(process.argv))
@@ -121,7 +128,7 @@ yargs(hideBin(process.argv))
         force,
       } = argv;
 
-      const env = getEnv(newArchitecture);
+      const env = getEnv({ newArchitecture, engine });
 
       console.log(`Initializing react-native@${reactNativeVersion} template into '${appPath}'`);
       console.log("New achitecture is", newArchitecture ? "enabled" : "disabled");
@@ -152,14 +159,36 @@ yargs(hideBin(process.argv))
       console.log(`Patching podfile to use ccache (${podfilePath})`);
       applyPatch(CCACHE_PODFILE_PATCH_PATH, podfilePath);
 
-      if (engine === "jsc") {
-        console.log(`Patching Podfile to use JSC (${podfilePath})`);
-        applyPatch(JSC_PODFILE_PATCH_PATH, podfilePath);
+      const { version: resolvedReactNativeVersion } = readPackageJson(
+        path.resolve(appPath, "node_modules/react-native"),
+      );
 
-        const appGradleBuildPath = path.resolve(appPath, "android", "app", "build.gradle");
-        console.log(`Patching app/build.gradle to use JSC (${appGradleBuildPath})`);
-        applyPatch(JSC_BUILD_GRADLE_PATCH_PATH, appGradleBuildPath);
+      // TODO: Delete this once 0.71.0 or above is latest
+      if (semver.satisfies(resolvedReactNativeVersion, "<0.71.0")) {
+        if (engine === "jsc") {
+          console.log(`Patching Podfile to use JSC (${podfilePath})`);
+          applyPatch(JSC_PODFILE_PATCH_PATH, podfilePath);
+
+          const appGradleBuildPath = path.resolve(appPath, "android", "app", "build.gradle");
+          console.log(`Patching app/build.gradle to use JSC (${appGradleBuildPath})`);
+          applyPatch(JSC_BUILD_GRADLE_PATCH_PATH, appGradleBuildPath);
+        }
+      } else {
+        console.log("Skipping patch of Podfile to use JSC, relying on USE_HERMES env variable instead");
       }
+
+      // Store local Gradle properties for RN >=0.71.0
+      const localPropertiesPath = path.resolve(appPath, "android/local.properties");
+      const localProperties = {
+        newArchEnabled: newArchitecture,
+        hermesEnabled: engine === "hermes",
+      };
+      const localPropertiesContent = Object.entries(localProperties)
+        .map(([k, v]) => `${k}=${v}`)
+        .join("\n");
+
+      console.log(`Writing local.properties to ${localPropertiesPath}`);
+      fs.writeFileSync(localPropertiesPath, localPropertiesContent);
 
       if (!skipBundleInstall) {
         console.log(`Installing gem bundle (needed to pod-install for iOS)`);
@@ -169,7 +198,7 @@ yargs(hideBin(process.argv))
       if (!skipPodInstall) {
         console.log(`Installing CocoaPods`);
         // Use --no-repo-update to avoid updating the repo if the install fails
-        exec("pod", ["install", "--no-repo-update"], { cwd: path.resolve(appPath, "ios"), env });
+        exec("bundle", ["exec", "pod", "install", "--no-repo-update"], { cwd: path.resolve(appPath, "ios"), env });
       }
 
       console.log("Overwriting App.js");
@@ -191,7 +220,7 @@ yargs(hideBin(process.argv))
         throw new Error(`Expected a React Native app at '${appPath}'`);
       }
 
-      const env = getEnv(newArchitecture);
+      const env = getEnv({ newArchitecture });
 
       function prematureExitCallback(code: number) {
         console.log(`Metro bundler exited unexpectedly (code = ${code})`);
