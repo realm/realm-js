@@ -24,4 +24,4 @@ jobs:
       - name: Publish templates
         run: templates/scripts/publish_templates.sh
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
