@@ -72,6 +72,7 @@ export * from "./app-services/NetworkTransport";
 export * from "./app-services/SyncSession";
 export * from "./app-services/ApiKeyAuthClient";
 export * from "./app-services/EmailPasswordAuthClient";
+export * from "./app-services/PushClient";
 export * from "./app-services/FunctionsFactory";
 export * from "./app-services/UserProfile";
 export * from "./app-services/Sync";

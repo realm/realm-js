@@ -25,6 +25,7 @@ import {
   DefaultUserProfileData,
   Listeners,
   ProviderType,
+  PushClient,
   binding,
   isProviderType,
 } from "../internal";
@@ -285,8 +286,9 @@ export class User<
    *
    * @returns An service client with methods to register and deregister the device on the user.
    */
-  push(serviceName: string): unknown {
-    throw new Error("Not yet implemented");
+  push(serviceName: string): PushClient {
+    const internal = this.app.internal.pushNotificationClient(serviceName);
+    return new PushClient(this.internal, internal);
   }
 
   /**
