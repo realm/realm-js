@@ -312,7 +312,7 @@ yargs(hideBin(process.argv))
     },
   )
   .command(
-    "parse-results",
+    "results-to-slack-payload",
     "Parse result files from CI to a message on Slack",
     (args) =>
       args

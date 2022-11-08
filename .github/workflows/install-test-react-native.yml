@@ -138,7 +138,7 @@ jobs:
       - name: Install dependencies of the CLI
         run: npm ci
       - name: Parse results into a Slack payload
-        run: npm run cli -- parse-results --status ${{ needs.install.result }} --url '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}' --output payload.json
+        run: npm run results-to-slack-payload -- --status ${{ needs.install.result }} --url '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}' --output payload.json
       - name: Post result to Slack
         uses: slackapi/slack-github-action@v1.23.0
         with:
