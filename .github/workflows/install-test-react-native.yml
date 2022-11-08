@@ -117,13 +117,13 @@ jobs:
       - name: Write result
         if: always()
         run: |
-          echo '{ "matrix": ${{ toJSON(matrix) }}, "job": ${{ toJSON(job) }} }' > result
+          echo '{ "matrix": ${{ toJSON(matrix) }}, "job": ${{ toJSON(job) }} }' > result.json
       - name: Upload result
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: result-${{ hashFiles('**/result-*') }}
-          path: '**/result-*'
+          name: result-${{ hashFiles('**/result-*') }}.json
+          path: '**/result.json'
 
   announce:
     needs: install
