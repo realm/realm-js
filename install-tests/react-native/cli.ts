@@ -160,7 +160,8 @@ yargs(hideBin(process.argv))
 
       if (!skipPodInstall) {
         console.log(`Installing CocoaPods`);
-        exec("pod", ["install"], { cwd: path.resolve(appPath, "ios"), env });
+        // Use --no-repo-update to avoid updating the repo if the install fails
+        exec("pod", ["install", "--no-repo-update"], { cwd: path.resolve(appPath, "ios"), env });
       }
 
       console.log("Overwriting App.js");
