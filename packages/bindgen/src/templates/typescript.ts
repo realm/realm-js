@@ -175,7 +175,7 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
 
   out("// Mixed types");
   out(generateMixedTypes(spec));
-  out("type EJson = null | string | number | boolean | EJson[] | {[name: string]: EJson}");
+  out("export type EJson = null | string | number | boolean | EJson[] | {[name: string]: EJson}");
 
   out("// Opaque types (including Key types)");
   for (const { jsName } of (spec.opaqueTypes as NamedType[]).concat(spec.keyTypes)) {
