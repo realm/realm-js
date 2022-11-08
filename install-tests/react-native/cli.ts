@@ -106,6 +106,8 @@ function getResultEmoji(status: string) {
 }
 
 yargs(hideBin(process.argv))
+  .strict()
+  .demandCommand()
   .command(
     "init",
     "Initialize the app template",
@@ -312,8 +314,8 @@ yargs(hideBin(process.argv))
     },
   )
   .command(
-    "results-to-slack-payload",
-    "Parse result files from CI to a message on Slack",
+    "slack-payload",
+    "Parse result files from CI into a Slack payload",
     (args) =>
       args
         .option("status", { type: "string", demandOption: true, description: "Overall status of the install test" })
@@ -326,6 +328,7 @@ yargs(hideBin(process.argv))
         .option("output", {
           type: "string",
           description: "Will write the output to this file",
+          coerce: path.resolve,
         })
         .positional("result-files", {
           type: "string",
@@ -351,14 +354,16 @@ yargs(hideBin(process.argv))
         }),
       );
       const json = message.buildToJSON();
-      if (preview) {
+      if (output) {
+        console.log("Writing JSON to", output);
+        fs.writeFileSync(output, json, "utf8");
+      } else if (preview) {
         const previewUrl = `https://app.slack.com/block-kit-builder/#${encodeURIComponent(json)}`;
         exec("open", [previewUrl]);
-      } else if (output) {
-        fs.writeFileSync(output, json, "utf8");
       } else {
         console.log(json);
       }
     },
   )
+  .help()
   .parse();
