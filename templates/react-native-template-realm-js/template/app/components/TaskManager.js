@@ -26,7 +26,7 @@ export const TaskManager = ({tasks, userId}) => {
       // of sync participants to successfully sync everything in the transaction, otherwise
       // no changes propagate and the transaction needs to start over when connectivity allows.
       realm.write(() => {
-        realm.create('Task', Task.generate(description, userId));
+        return new Task(realm, description, userId);
       });
     },
     [realm, userId],
