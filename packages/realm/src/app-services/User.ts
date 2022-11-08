@@ -27,6 +27,7 @@ import {
   ProviderType,
   PushClient,
   binding,
+  createFactory,
   isProviderType,
 } from "../internal";
 
@@ -59,7 +60,25 @@ export interface UserIdentity {
   providerType: ProviderType;
 }
 
+/** @internal */
+function cleanArguments(args: unknown[] | unknown): unknown[] | unknown {
+  if (Array.isArray(args)) {
+    return args.map((x) => cleanArguments(x));
+  } else if (typeof args === "object") {
+    const result: { [key: string]: unknown } = {};
+    for (const [k, v] of Object.entries(args as object)) {
+      if (typeof v !== "undefined") {
+        result[k] = v;
+      }
+    }
+    return result;
+  } else {
+    return args;
+  }
+}
+
 type UserListenerToken = binding.SyncUserSubscriptionToken;
+
 export class User<
   FunctionsFactoryType = DefaultFunctionsFactory,
   CustomDataType = DefaultObject,
@@ -178,27 +197,7 @@ export class User<
    * Use this to call functions defined by the Atlas App Services application, as this user.
    */
   get functions(): FunctionsFactoryType {
-    return this._functionsOnService(undefined);
-  }
-
-  /** @internal */
-  _functionsOnService(serviceName: string | undefined): FunctionsFactoryType {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const user = this;
-    return new Proxy(
-      {},
-      {
-        get(target, name, receiver) {
-          if (typeof name === "string" && name != "inspect") {
-            return (...args: unknown[]) => {
-              return user._callFunctionOnService(name, serviceName, ...args);
-            };
-          } else {
-            return Reflect.get(target, name, receiver);
-          }
-        },
-      },
-    ) as FunctionsFactoryType;
+    return createFactory(this as User, undefined);
   }
 
   /**
@@ -246,30 +245,13 @@ export class User<
    * @param args Arguments passed to the function.
    */
   callFunction(name: string, ...args: unknown[]): Promise<unknown> {
-    return this._callFunctionOnService(name, undefined, args);
+    return this.callFunctionOnService(name, undefined, args);
   }
 
   /** @internal */
-  _callFunctionOnService(name: string, serviceName: string | undefined, ...args: unknown[]) {
-    const cleanedArgs = this.cleanArguments(args);
+  callFunctionOnService(name: string, serviceName: string | undefined, ...args: unknown[]) {
+    const cleanedArgs = cleanArguments(args);
     return this.app.internal.callFunction(this.internal, name, cleanedArgs as binding.EJson[], serviceName);
-  }
-
-  /** @internal */
-  cleanArguments(args: unknown[] | unknown): unknown[] | unknown {
-    if (Array.isArray(args)) {
-      return args.map((x) => this.cleanArguments(x));
-    } else if (typeof args === "object") {
-      const result: { [key: string]: unknown } = {};
-      for (const [k, v] of Object.entries(args as object)) {
-        if (typeof v !== "undefined") {
-          result[k] = v;
-        }
-      }
-      return result;
-    } else {
-      return args;
-    }
   }
 
   /**

@@ -33,6 +33,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { User } from "../internal";
+
 /**
  * A function which executes on the MongoDB Realm platform.
  */
@@ -44,3 +46,18 @@ export type DefaultFunctionsFactory = {
    */
   [name: string]: RealmFunction<unknown, unknown[]>;
 };
+
+export function createFactory<T>(user: User, serviceName: string | undefined): T {
+  return new Proxy(
+    {},
+    {
+      get(target, name, receiver) {
+        if (typeof name === "string" && name != "inspect") {
+          return user.callFunctionOnService.bind(user, name, serviceName);
+        } else {
+          return Reflect.get(target, name, receiver);
+        }
+      },
+    },
+  ) as T;
+}
