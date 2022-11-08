@@ -130,23 +130,17 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
       - uses: actions/download-artifact@v3
+      - name: Parse results into a Slack payload
+        run: npm run cli -- parse-results --status success --output payload.json --url '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}' result-*
       - name: Post result to Slack
         uses: slackapi/slack-github-action@v1.23.0
         with:
-          # For posting a rich message using Block Kit
-          payload: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "Install test *${{ needs.install.result }}*\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-                  }
-                }
-              ]
-            }
+          payload-file-path: payload.json
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_TEST_WEBHOOK }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK

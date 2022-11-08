@@ -4,12 +4,14 @@
   "scripts": {
     "cli": "tsm --no-warnings --enable-source-maps cli.ts",
     "init": "npm run cli -- init",
-    "test": "npm run cli -- test"
+    "test": "npm run cli -- test",
+    "parse-results": "npm run cli -- parse-results result-*"
   },
   "dependencies": {
     "@react-native-community/cli": "^9.3.1",
     "concurrently": "^7.5.0",
     "semver": "^7.3.8",
+    "slack-block-builder": "^2.7.0",
     "tsm": "^2.2.2",
     "yargs": "^17.6.2"
   },

@@ -74,6 +74,8 @@ examples/ReactExample/ios/Pods/
 examples/ReactExample/ios/ReactExample.xcworkspace/
 tests/mongodb-realm
 install-tests/react-native/app/
+install-tests/react-native/payload.json
+install-tests/react-native/result-*
 
 # Integration tests
 integration-tests/environments/electron/dist/

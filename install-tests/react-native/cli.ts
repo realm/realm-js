@@ -19,6 +19,7 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import * as semver from "semver";
+import { Message, Blocks } from "slack-block-builder";
 
 import * as path from "node:path";
 import * as cp from "node:child_process";
@@ -94,14 +95,24 @@ function readPackageJson(packagePath: string) {
   return JSON.parse(fs.readFileSync(path.resolve(packagePath, "package.json"), "utf8"));
 }
 
+function getResultEmoji(status: string) {
+  if (status === "success") {
+    return ":tada:";
+  } else if (status === "failed") {
+    return ":buzzfeed-fail:";
+  } else {
+    return ":dog-confused:";
+  }
+}
+
 yargs(hideBin(process.argv))
-  .option("app-path", { type: "string", default: DEFAULT_APP_PATH })
-  .option("new-architecture", { type: "boolean", default: false })
   .command(
     "init",
     "Initialize the app template",
     (args) =>
       args
+        .option("app-path", { type: "string", default: DEFAULT_APP_PATH })
+        .option("new-architecture", { type: "boolean", default: false })
         .option("realm-version", { type: "string", default: "latest" })
         .option("react-native-version", { type: "string", default: "latest" })
         .option("engine", { type: "string", choices: ["hermes", "jsc"], default: "hermes" })
@@ -211,6 +222,8 @@ yargs(hideBin(process.argv))
     "Start the test application",
     (args) =>
       args
+        .option("app-path", { type: "string", default: DEFAULT_APP_PATH })
+        .option("new-architecture", { type: "boolean", default: false })
         .option("platform", { type: "string", choices: ["android", "ios"], demandOption: true })
         .option("release", { description: "Build the app in 'release' mode", type: "boolean", default: false }),
     async (argv) => {
@@ -295,6 +308,54 @@ yargs(hideBin(process.argv))
         metro.kill();
         // Stop listening for the app
         server.close();
+      }
+    },
+  )
+  .command(
+    "parse-results [result-files..]",
+    "Parse result files from CI to a message on Slack",
+    (args) =>
+      args
+        .option("status", { type: "string", demandOption: true, description: "Overall status of the install test" })
+        .option("url", { type: "string", description: "A URL to the results" })
+        .option("preview", {
+          type: "boolean",
+          default: false,
+          description: "Open a preview of the message, instead of outputting JSON",
+        })
+        .option("output", {
+          type: "string",
+          description: "Will write the output to this file",
+        })
+        .positional("result-files", {
+          type: "string",
+          array: true,
+          description: "All the result files to include in the message",
+        }),
+    (argv) => {
+      const { status, "result-files": resultFiles, url, preview, output } = argv;
+      const results = resultFiles.map((p) => JSON.parse(fs.readFileSync(p, "utf8")));
+      const message = Message().blocks(
+        Blocks.Header({ text: `Install test ${status} ${getResultEmoji(status)}` }),
+        url ? Blocks.Section({ text: url }) : undefined,
+        ...results.map((result) => {
+          const contextElements = Object.entries(result.matrix).map(([k, v]) => `${k}=${v}`);
+          return [
+            Blocks.Section({
+              text: `Test *${result.job.status}* ${getResultEmoji(result.job.status)}`,
+            }),
+            Blocks.Context().elements(...contextElements),
+          ];
+        }),
+      );
+      const json = message.buildToJSON();
+      if (preview) {
+        const previewUrl = `https://app.slack.com/block-kit-builder/#${encodeURIComponent(json)}`;
+        exec("open", [previewUrl]);
+      } else if (output) {
+        fs.writeFileSync(output, json, "utf8");
+      } else {
+        console.log(json);
       }
     },
   )
