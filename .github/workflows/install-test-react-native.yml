@@ -135,6 +135,8 @@ jobs:
         with:
           node-version: 16
       - uses: actions/download-artifact@v3
+      - name: Install dependencies of the CLI
+        run: npm ci
       - name: Parse results into a Slack payload
         run: npm run cli -- parse-results --status success --output payload.json --url '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}' result-*
       - name: Post result to Slack
