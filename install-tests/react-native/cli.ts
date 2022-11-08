@@ -79,6 +79,14 @@ async function waitForMessage(server: Server) {
   });
 }
 
+function applyPatch(patchPath: string, targetPath: string) {
+  if (fs.existsSync(targetPath)) {
+    exec("patch", [targetPath, patchPath]);
+  } else {
+    console.log(`Skipping patch, since ${targetPath} doesn't exist on the filesystem`);
+  }
+}
+
 yargs(hideBin(process.argv))
   .option("app-path", { type: "string", default: DEFAULT_APP_PATH })
   .option("new-architecture", { type: "boolean", default: false })
@@ -142,15 +150,15 @@ yargs(hideBin(process.argv))
 
       const podfilePath = path.resolve(appPath, "ios", "Podfile");
       console.log(`Patching podfile to use ccache (${podfilePath})`);
-      exec("patch", [podfilePath, CCACHE_PODFILE_PATCH_PATH]);
+      applyPatch(CCACHE_PODFILE_PATCH_PATH, podfilePath);
 
       if (engine === "jsc") {
         console.log(`Patching Podfile to use JSC (${podfilePath})`);
-        exec("patch", [podfilePath, JSC_PODFILE_PATCH_PATH]);
+        applyPatch(JSC_PODFILE_PATCH_PATH, podfilePath);
 
         const appGradleBuildPath = path.resolve(appPath, "android", "app", "build.gradle");
         console.log(`Patching app/build.gradle to use JSC (${appGradleBuildPath})`);
-        exec("patch", [appGradleBuildPath, JSC_BUILD_GRADLE_PATCH_PATH]);
+        applyPatch(JSC_BUILD_GRADLE_PATCH_PATH, appGradleBuildPath);
       }
 
       if (!skipBundleInstall) {
