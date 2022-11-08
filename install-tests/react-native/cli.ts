@@ -27,8 +27,8 @@ import { createServer, Server } from "http";
 const __dirname = new URL(".", import.meta.url).pathname;
 
 const DEFAULT_APP_PATH = path.resolve(__dirname, "app");
-const APP_JS_PATH = path.resolve(__dirname, "App.js");
 const PATCHES_PATH = path.resolve(__dirname, "patches");
+const APP_JS_PATH = path.resolve(PATCHES_PATH, "App.js");
 const CCACHE_PODFILE_PATCH_PATH = path.resolve(PATCHES_PATH, "ccache-Podfile.patch");
 const JSC_PODFILE_PATCH_PATH = path.resolve(PATCHES_PATH, "jsc-Podfile.patch");
 const JSC_BUILD_GRADLE_PATCH_PATH = path.resolve(PATCHES_PATH, "jsc-build.gradle.patch");
