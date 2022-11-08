@@ -112,11 +112,25 @@ jobs:
           script: npm test -- --platform android
           working-directory: install-tests/react-native
 
+      # As a workaround for the inability to read the status of matrix steps from a dependent job,
+      # we write the matrix and job (containing status) context to file and upload this as an artifact.
+      - name: Write result
+        if: always()
+        run: |
+          echo '{ "matrix": ${{ toJSON(matrix) }}, "job": ${{ toJSON(job) }} }' > result
+      - name: Upload result
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: result-${{ hashFiles('result') }}
+          path: result
+
   announce:
     needs: install
     runs-on: ubuntu-latest
     if: always()
     steps:
+      - uses: actions/download-artifact@v3
       - name: Post result to Slack
         uses: slackapi/slack-github-action@v1.23.0
         with:
