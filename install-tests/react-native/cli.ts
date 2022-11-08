@@ -98,7 +98,7 @@ function readPackageJson(packagePath: string) {
 function getResultEmoji(status: string) {
   if (status === "success") {
     return ":tada:";
-  } else if (status === "failed") {
+  } else if (status === "failure") {
     return ":buzzfeed-fail:";
   } else {
     return ":dog-confused:";
@@ -312,7 +312,7 @@ yargs(hideBin(process.argv))
     },
   )
   .command(
-    "parse-results [result-files..]",
+    "parse-results",
     "Parse result files from CI to a message on Slack",
     (args) =>
       args
@@ -333,12 +333,14 @@ yargs(hideBin(process.argv))
           description: "All the result files to include in the message",
         }),
     (argv) => {
-      const { status, "result-files": resultFiles, url, preview, output } = argv;
+      const { status, url, preview, output } = argv;
+      const resultFiles = fs.readdirSync(__dirname).filter((p) => p.startsWith("result-"));
       const results = resultFiles.map((p) => JSON.parse(fs.readFileSync(p, "utf8")));
+      const relevantResults = results.filter((r) => r.job.status !== "success");
       const message = Message().blocks(
         Blocks.Header({ text: `Install test ${status} ${getResultEmoji(status)}` }),
         url ? Blocks.Section({ text: url }) : undefined,
-        ...results.map((result) => {
+        ...relevantResults.map((result) => {
           const contextElements = Object.entries(result.matrix).map(([k, v]) => `${k}=${v}`);
           return [
             Blocks.Section({
