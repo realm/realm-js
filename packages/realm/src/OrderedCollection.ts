@@ -400,7 +400,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * are ignored entirely by this method and will not be returned.
    *
    * @param property For a collection of objects, the property to take the minimum of.
-   * @throws {TypeAssertionError} If no property with the name exists or if property is not numeric/date.
+   * @throws {@link TypeAssertionError} If no property with the name exists or if property is not numeric/date.
    * @returns The minimum value.
    * @since 1.12.1
    */
@@ -429,7 +429,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * are ignored entirely by this method and will not be returned.
    *
    * @param property For a collection of objects, the property to take the maximum of.
-   * @throws {Error} If no property with the name exists or if property is not numeric/date.
+   * @throws {@link Error} If no property with the name exists or if property is not numeric/date.
    * @returns The maximum value.
    * @since 1.12.1
    */
@@ -457,7 +457,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * Only supported for int, float and double properties. `null` values are
    * ignored entirely by this method.
    * @param property For a collection of objects, the property to take the sum of.
-   * @throws {Error} If no property with the name exists or if property is not numeric.
+   * @throws {@link Error} If no property with the name exists or if property is not numeric.
    * @returns The sum.
    * @since 1.12.1
    */
@@ -483,7 +483,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * Only supported for int, float and double properties. `null` values are
    * ignored entirely by this method and will not be factored into the average.
    * @param property For a collection of objects, the property to take the average of.
-   * @throws {Error} If no property with the name exists or if property is not numeric.
+   * @throws {@link Error} If no property with the name exists or if property is not numeric.
    * @returns The sum.
    * @since 1.12.1
    */
@@ -507,7 +507,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * @param query Query used to filter objects from the collection.
    * @param arg Each subsequent argument is used by the placeholders
    *   (e.g. `$0`, `$1`, `$2`, …) in the query.
-   * @throws {Error} If the query or any other argument passed into this method is invalid.
+   * @throws {@link Error} If the query or any other argument passed into this method is invalid.
    * @returns Results filtered according to the provided query.
    *
    * This is currently only supported for collections of Realm Objects.
@@ -515,7 +515,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * @example
    * let merlots = wines.filtered('variety == "Merlot" && vintage <= $0', maxYear);
    */
-  filtered(queryString: string, ...args: any[]): Results<T> {
+  filtered(queryString: string, ...args: unknown[]): Results<T> {
     const { results: parent, realm, helpers } = this;
     const kpMapping = binding.Helpers.getKeypathMapping(realm.internal);
     const bindingArgs = args.map((arg) => this.mixedToBinding(arg));
@@ -540,7 +540,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * should be supplied.
    * @param reverse Sort in descending order rather than ascended.
    *   May not be supplied if `descriptor` is an array of sort descriptors.
-   * @throws {Error} If a specified property does not exist.
+   * @throws {@link Error} If a specified property does not exist.
    * @returns Results sorted according to the arguments passed in.
    */
   sorted(reverse?: boolean): Results<T>;
@@ -559,7 +559,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * properties of the values, and so no property name or sort descriptors
    * should be supplied.
    * @param descriptor The property name(s) to sort the collection on.
-   * @throws {Error} If a specified property does not exist.
+   * @throws {@link Error} If a specified property does not exist.
    * @returns Results sorted according to the arguments passed in.
    */
   sorted(descriptor: SortDescriptor[]): Results<T>;
@@ -578,7 +578,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * properties of the values, and so no property name or sort descriptors
    * should be supplied.
    * @param descriptor The property name(s) to sort the collection on.
-   * @throws {Error} If a specified property does not exist.
+   * @throws {@link Error} If a specified property does not exist.
    * @returns Results sorted according to the arguments passed in.
    */
   sorted(descriptor: string, reverse?: boolean): Results<T>;

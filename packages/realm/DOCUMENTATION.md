@@ -1,4 +1,4 @@
-For sake of consistency, here are some general principles to follow when writing JSDoc for Realm classes' properties and methods.
+For sake of consistency, here are some general principles to follow when writing [TSDoc](https://tsdoc.org/) for Realm classes' properties and methods.
 
 ### Methods:
 Here are all the tags Realm class methods are likely to have, **listed in the order that they should be described in**.
@@ -10,19 +10,18 @@ Here are all the tags Realm class methods are likely to have, **listed in the or
 
 - **Description**
     - Description of the method should go first.
-    - `@link / @linkcode` seems to have often broken behavior, at least in VSCode, so generally from legacy docs it has been replaced with *** {link} *** (i.e. see ***Realm.Collections***) to make what those links bold. In the future one would probably want to replace these with URL links to Realm documentation.
 - `@readonly`?
     - Include this tag if the field is read-only, this is only relevant for getter methods.
 - `@param {name} {description}`
     - ✅ `@param `**config**` The configuration of the app.`
     - ❌ `@param {boolean} config - the config`
     - Should **not** have a dash after param. name (some of the legacy documentation and is actually ignored by JSDoc but for sake of consistency it would be good to avoid this)
-- `@throws {errorType} {If / When + description}`
-    - ✅ `@throws {Error} If no app id is provided.`
-    - ✅ `@throws {RuntimeError} When Realm closes.`
+- `@throws {@link errorType} {If / When + description}`
+    - ✅ `@throws {@link Error} If no app id is provided.`
+    - ✅ `@throws {@link RuntimeError} When Realm closes.`
     - ❌ `@throws no app id is provided.`
     - Should have description **start with If or When**.
-    - Should include error type, i.e. `{Error}`, `{TypeError}`.
+    - Should include error type, i.e. `{@link Error}`, `{@link TypeError}` using a [@link](https://tsdoc.org/pages/tags/link/) to provide a semantic reference.
 - `@returns {description}`
     - ✅ `@returns The last value or undefined if the list is empty.`
     - ✅ `@returns `**true**`  if the value exists in the Set, ` **false**` if not.`
@@ -45,7 +44,7 @@ Some examples of annotations following the principles above:
    * are ignored entirely by this method and will not be returned.
    *
    * @param property For a collection of objects, the property to take the maximum of.
-   * @throws {Error} If no property with the name exists or if property is not numeric/date.
+   * @throws {@link Error} If no property with the name exists or if property is not numeric/date.
    * @returns The maximum value.
    * @since 1.12.1
 */
@@ -54,7 +53,7 @@ max(property?: string): number | Date | undefined;
 /**
    * Check for existence of a value in the Set
    * @param value Value to search for in the Set
-   * @throws {TypeError} If a `value` is not of a type which can be stored in
+   * @throws {@link TypeError} If a `value` is not of a type which can be stored in
    *   the Set, or if an object being added to the Set does not match the
    *   **object schema** for the Set.
    * @returns `true` if the value exists in the Set, `false` if not.
