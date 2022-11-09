@@ -153,7 +153,7 @@ function ensureBaasDylib() {
   if (!fs.existsSync(dylibUsrLocalLibPath)) {
     console.log(`Missing the ${dylibUsrLocalLibPath} - linking! (will ask for your sudo password)`);
     const existingPath = path.resolve(dylibPath, "lib", dylibFilename);
-    execSync(`sudo ln -s '${existingPath}' '${dylibUsrLocalLibPath}'`);
+    execSync(`sudo ln -sf '${existingPath}' '${dylibUsrLocalLibPath}'`);
   }
 }
 
