@@ -285,10 +285,19 @@ export class User<
    */
   mongoClient(serviceName: string): unknown {
     return {
-      serviceName,
-      db: (dbName: string) => ({
-        collection: (collectionName: string) => new MongoClient(this as User, serviceName, dbName, collectionName),
-      }),
+      get serviceName() {
+        return serviceName;
+      },
+      db: (dbName: string) => {
+        return {
+          get name() {
+            return dbName;
+          },
+          collection: (collectionName: string) => {
+            return new MongoClient(this as User, serviceName, dbName, collectionName);
+          },
+        };
+      },
     };
   }
 
