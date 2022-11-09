@@ -29,6 +29,7 @@ import {
   binding,
   createFactory,
   isProviderType,
+  MongoClient,
 } from "../internal";
 
 export type UserChangeCallback = () => void;
@@ -283,7 +284,12 @@ export class User<
    *                       .find({color: 'blue'});
    */
   mongoClient(serviceName: string): unknown {
-    throw new Error("Not yet implemented");
+    return {
+      serviceName,
+      db: (dbName: string) => ({
+        collection: (collectionName: string) => new MongoClient(this as User, serviceName, dbName, collectionName),
+      }),
+    };
   }
 
   /**
