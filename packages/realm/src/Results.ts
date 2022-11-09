@@ -25,6 +25,17 @@ import {
   binding,
 } from "./internal";
 
+/**
+ * Instances of this class are typically **live** collections returned by
+ * objects() that will update as new objects are either
+ * added to or deleted from the Realm that match the underlying query. Results returned by
+ * snapshot()}, however, will **not** live update
+ * (and listener callbacks added through addListener()
+ * will thus never be called).
+ *
+ * @extends Realm.Collection
+ * @memberof Realm
+ */
 export class Results<T = unknown> extends OrderedCollection<T> {
   /**
    * The representation in the binding.
@@ -66,9 +77,10 @@ export class Results<T = unknown> extends OrderedCollection<T> {
 
   /**
    * Bulk update objects in the collection.
-   * @param  {string} property
-   * @param  {any} value
-   * @returns void
+   * @param propertyName The name of the property.
+   * @param value The updated property value.
+   * @throws {Error} If no property with the name exists.
+   * @since 2.0.0-rc20
    */
   update(propertyName: keyof T, value: T[typeof propertyName]): void {
     const {

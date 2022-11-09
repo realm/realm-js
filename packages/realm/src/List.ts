@@ -27,6 +27,16 @@ import {
 
 type PartiallyWriteableArray<T> = Pick<Array<T>, "pop" | "push" | "shift" | "unshift" | "splice">;
 
+/**
+ * Instances of this class will be returned when accessing object properties whose type is `"list"`.
+ *
+ * Lists mostly behave like normal Javascript Arrays, except for that they can
+ * only store values of a single type (indicated by the `type` and `optional`
+ * properties of the List), and can only be modified inside a ***write*** transaction.
+ *
+ * @extends Realm.Collection
+ * @memberof Realm
+ */
 export class List<T = unknown> extends OrderedCollection<T> implements PartiallyWriteableArray<T> {
   /**
    * The representation in the binding.
@@ -91,6 +101,11 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     return this.internal.size;
   }
 
+  /**
+   * Remove the **last** value from the list and return it.
+   * @throws {Error} If not inside a write transaction.
+   * @returns The last value or undefined if the list is empty.
+   */
   pop(): T | undefined {
     assert.inTransaction(this.realm);
     const {
@@ -106,8 +121,16 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
   }
 
   /**
-   * @param  {T} object
-   * @returns number
+   * Add one or more values to the _end_ of the list.
+   *
+   * @param items Values to add to the list.
+   * @throws {TypeError} If a `value` is not of a type which can be stored in
+   *   the list, or if an object being added to the list does not match the
+   *   ***Realm.ObjectSchema*** for the list.
+   *
+   * @throws {Error} If not inside a write transaction.
+   * @returns A number equal to the new length of
+   *          the list after adding the values.
    */
   push(...items: T[]): number {
     assert.inTransaction(this.realm);
@@ -130,7 +153,9 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
   }
 
   /**
-   * @returns T
+   * Remove the **first** value from the list and return it.
+   * @throws {Error} If not inside a write transaction.
+   * @returns The first value or undefined if the list is empty.
    */
   shift(): T | undefined {
     assert.inTransaction(this.realm);
@@ -145,6 +170,17 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     }
   }
 
+  /**
+   * Add one or more values to the _beginning_ of the list.
+   *
+   * @param items Values to add to the list.
+   * @throws {TypeError} If a `value` is not of a type which can be stored in
+   *   the list, or if an object being added to the list does not match the
+   *   ***ObjectSchema*** for the list.
+   * @throws {Error} If not inside a write transaction.
+   * @returns The new ***length*** of
+   *          the list after adding the values.
+   */
   unshift(...items: T[]): number {
     assert.inTransaction(this.realm);
     const {
@@ -163,8 +199,49 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     return internal.size;
   }
 
+  /** TODO
+   * Changes the contents of the list by removing value and/or inserting new value.
+   *
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice Array.prototype.splice}
+   * @param start The start index. If greater than the length of the list,
+   *   the start index will be set to the length instead. If negative, then the start index
+   *   will be counted from the end of the list (e.g. `list.length - index`).
+   * @param deleteCount The number of values to remove from the list.
+   *   If not provided, then all values from the start index through the end of
+   *   the list will be removed.
+   * @returns An array containing the value that were removed from the list. The
+   *   array is empty if no value were removed.
+   */
   splice(start: number, deleteCount?: number): T[];
+  /**
+   * Changes the contents of the list by removing value and/or inserting new value.
+   *
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice Array.prototype.splice}
+   * @param start The start index. If greater than the length of the list,
+   *   the start index will be set to the length instead. If negative, then the start index
+   *   will be counted from the end of the list (e.g. `list.length - index`).
+   * @param deleteCount The number of values to remove from the list.
+   *   If not provided, then all values from the start index through the end of
+   *   the list will be removed.
+   * @param items Values to insert into the list starting at `index`.
+   * @returns An array containing the value that were removed from the list. The
+   *   array is empty if no value were removed.
+   */
   splice(start: number, deleteCount: number, ...items: T[]): T[];
+  /**
+   * Changes the contents of the list by removing value and/or inserting new value.
+   *
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice Array.prototype.splice}
+   * @param start The start index. If greater than the length of the list,
+   *   the start index will be set to the length instead. If negative, then the start index
+   *   will be counted from the end of the list (e.g. `list.length - index`).
+   * @param deleteCount The number of values to remove from the list.
+   *   If not provided, then all values from the start index through the end of
+   *   the list will be removed.
+   * @param items Values to insert into the list starting at `index`.
+   * @returns An array containing the value that were removed from the list. The
+   *   array is empty if no value were removed.
+   */
   splice(start: number, deleteCount?: number, ...items: T[]): T[] {
     // Comments in the code below is copied from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice
     assert.inTransaction(this.realm);
