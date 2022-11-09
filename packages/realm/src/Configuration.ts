@@ -116,7 +116,7 @@ export enum ClientResetMode {
 //   /**
 //    * Optional object to configure the setup of an initial set of flexible
 //    * sync subscriptions to be used when opening the Realm. If this is specified,
-//    * ***open*** will not resolve until this set of subscriptions has been
+//    * {@link Realm.open} will not resolve until this set of subscriptions has been
 //    * fully synchronized with the server.
 //    *
 //    * Example:

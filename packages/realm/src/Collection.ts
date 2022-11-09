@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { CallbackRegistrator, IllegalConstructorError, Listeners, binding } from "./internal";
+import { CallbackRegistrator, IllegalConstructorError, Listeners, assert, binding } from "./internal";
 
 /**
  * Abstract base class containing methods shared by Realm **List**, **Dictionary**, and **Results**.
@@ -88,7 +88,7 @@ export abstract class Collection<
   abstract entries(): Iterable<EntryType>;
 
   /**
-   * This is the same method as the ***Collection.values*** method.
+   * This is the same method as the {@link Collection.values} method.
    * Its presence makes collections _iterable_, thus able to be used with ES6
    * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of `for-of`}
    * loops,
@@ -115,7 +115,7 @@ export abstract class Collection<
    *      inserted, updated or deleted respectively. `deletions` and `oldModifications` are
    *      indices into the collection before the change happened, while `insertions` and
    *      `newModifications` are indices into the new version of the collection.
-   * @throws {Error} If `callback` is not a function.
+   * @throws {@link TypeAssertionError} If `callback` is not a function.
    * @example
    * wines.addListener((collection, changes) => {
    *  // collection === wines
@@ -127,6 +127,7 @@ export abstract class Collection<
    * });
    */
   addListener(callback: ChangeCallbackType): void {
+    assert.function(callback, "callback");
     this.listeners.add(callback);
   }
 
@@ -134,9 +135,10 @@ export abstract class Collection<
    * Remove the listener `callback` from the collection instance.
    * @param callback Callback function that was previously
    *   added as a listener through the **addListener** method.
-   * @throws {Error} If `callback` is not a function.
+   * @throws {@link TypeAssertionError} If `callback` is not a function.
    */
   removeListener(callback: ChangeCallbackType): void {
+    assert.function(callback, "callback");
     this.listeners.remove(callback);
   }
 

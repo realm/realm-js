@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
+  BSON,
   CanonicalObjectSchema,
   ClassHelpers,
   Constructor,
@@ -321,7 +322,7 @@ export class RealmObject<T = DefaultObject> {
    * Returns all the objects that link to this object in the specified relationship.
    * @param objectType The type of the objects that link to this object's type.
    * @param propertyName The name of the property that references objects of this object's type.
-   * @throws {Error} If the relationship is not valid.
+   * @throws {@link AssertionError} If the relationship is not valid.
    * @returns The objects that link to this object.
    * @since 1.9.0
    */
@@ -332,9 +333,11 @@ export class RealmObject<T = DefaultObject> {
     } = this.realm.getClassHelpers(objectType);
     const tableRef = binding.Helpers.getTable(this.realm.internal, tableKey);
     const property = properties.get(propertyName);
-    if (objectType !== property.objectType) {
-      throw new TypeError(`'${objectType}#${propertyName}' is not a relationship to '${this.objectSchema.name}'`);
-    }
+    assert(
+      objectType === property.objectType,
+      () => `'${objectType}#${propertyName}' is not a relationship to '${this.objectSchema.name}'`,
+    );
+
     // Create the Result for the backlink view
     const { columnKey, collectionHelpers } = property;
     assert(collectionHelpers, "collection helpers");
@@ -375,7 +378,7 @@ export class RealmObject<T = DefaultObject> {
    *   - `changes`: a dictionary with keys `deleted`, and `changedProperties`. `deleted` is true
    *       if the object has been deleted. `changesProperties` is an array of properties that have changed
    *       their value.
-   * @throws {Error} If `callback` is not a function.
+   * @throws {@link TypeAssertionError} If `callback` is not a function.
    * @example
    * wine.addListener((obj, changes) => {
    *  // obj === wine
@@ -388,15 +391,18 @@ export class RealmObject<T = DefaultObject> {
    * @since 2.23.0
    */
   addListener(callback: ObjectChangeCallback<T>): void {
+    assert.function(callback);
     this[INTERNAL_LISTENERS].addListener(callback);
   }
 
   /**
    * Remove the listener `callback`
+   * @throws {@link TypeAssertionError} If `callback` is not a function.
    * @param callback A function previously added as listener
    * @since 2.23.0
    */
   removeListener(callback: ObjectChangeCallback<T>): void {
+    assert.function(callback);
     this[INTERNAL_LISTENERS].removeListener(callback);
   }
 
@@ -411,7 +417,7 @@ export class RealmObject<T = DefaultObject> {
   /**
    * Get underlying type of a property value.
    * @param propertyName The name of the property to retrieve the type of.
-   * @throws {Error} If property does not exist.
+   * @throws {@link Error} If property does not exist.
    * @returns Underlying type of the property value.
    * @since 10.8.0
    */
@@ -424,7 +430,7 @@ export class RealmObject<T = DefaultObject> {
       const value = this[INTERNAL].getAny(columnKey);
       if (value === null) {
         return "null";
-      } else if (value instanceof BigInt) {
+      } else if (typeof value === "bigint") {
         return "int";
       } else if (value instanceof binding.Float) {
         return "float";
@@ -444,8 +450,14 @@ export class RealmObject<T = DefaultObject> {
         return "string";
       } else if (typeof value === "boolean") {
         return "bool";
+      } else if (value instanceof BSON.ObjectId) {
+        return "objectId";
+      } else if (value instanceof BSON.Decimal128) {
+        return "decimal128";
+      } else if (value instanceof BSON.UUID) {
+        return "uuid";
       } else {
-        throw new TypeAssertionError("some other type", value, "value");
+        throw assert.never(value, "value");
       }
     } else {
       return typeName;
