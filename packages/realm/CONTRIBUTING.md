@@ -35,3 +35,6 @@ npx turbo run build
 ```
 
 This will incrementally generate & build any dependencies.
+
+## Documentation
+See `DOCUMENTATION.md` for general principles to follow when adding JSDocs annotations to Realm classes.
