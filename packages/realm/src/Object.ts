@@ -221,7 +221,7 @@ export class RealmObject<T = DefaultObject> {
         value: new ObjectListeners(realm.internal, result),
       },
     });
-    // TODO: Wrap in a proxy to trap keys, enabling the spread operator
+    // Wrap in a proxy to trap keys, enabling the spread operator
     return new Proxy(result, PROXY_HANDLER);
     // return result;
   }
