@@ -63,7 +63,7 @@ type UpdateOptions = {
 
 export class MongoClient<T extends Document> {
   databaseName: string;
-  collectionName: string;
+  name: string;
   user: User;
   serviceName: string;
   functions: DefaultFunctionsFactory;
@@ -75,14 +75,14 @@ export class MongoClient<T extends Document> {
     this.user = user;
     this.functions = createFactory(user, serviceName);
     this.databaseName = databaseName;
-    this.collectionName = collectionName;
+    this.name = collectionName;
     this.serviceName = serviceName;
   }
 
   find(filter: Filter = {}, options: FindOptions = {}): Promise<T[]> {
     return this.functions.find({
       database: this.databaseName,
-      collection: this.collectionName,
+      collection: this.name,
       query: filter,
       project: options.projection,
       sort: options.sort,
@@ -93,7 +93,7 @@ export class MongoClient<T extends Document> {
   findOne(filter: Filter = {}, options: FindOneOptions = {}): Promise<T | null> {
     return this.functions.findOne({
       database: this.databaseName,
-      collection: this.collectionName,
+      collection: this.name,
       query: filter,
       project: options.projection,
       sort: options.sort,
@@ -103,7 +103,7 @@ export class MongoClient<T extends Document> {
   findOneAndUpdate(filter: Filter = {}, update: Update, options: FindOneAndModifyOptions = {}): Promise<T | null> {
     return this.functions.findOneAndUpdate({
       database: this.databaseName,
-      collection: this.collectionName,
+      collection: this.name,
       filter,
       update,
       sort: options.sort,
@@ -120,7 +120,7 @@ export class MongoClient<T extends Document> {
   ): Promise<T | null> {
     return this.functions.findOneAndReplace({
       database: this.databaseName,
-      collection: this.collectionName,
+      collection: this.name,
       filter: filter,
       update: replacement,
       sort: options.sort,
@@ -133,7 +133,7 @@ export class MongoClient<T extends Document> {
   findOneAndDelete(filter: Filter = {}, options: FindOneOptions = {}): Promise<T | null> {
     return this.functions.findOneAndReplace({
       database: this.databaseName,
-      collection: this.collectionName,
+      collection: this.name,
       filter,
       sort: options.sort,
       projection: options.projection,
@@ -143,7 +143,7 @@ export class MongoClient<T extends Document> {
   aggregate(pipeline: AggregatePipelineStage[]): Promise<unknown> {
     return this.functions.aggregate({
       database: this.databaseName,
-      collection: this.collectionName,
+      collection: this.name,
       pipeline,
     });
   }
@@ -152,7 +152,7 @@ export class MongoClient<T extends Document> {
   count(filter: Filter = {}, options: CountOptions = {}): Promise<number> {
     return this.functions.count({
       database: this.databaseName,
-      collection: this.collectionName,
+      collection: this.name,
       query: filter,
       limit: options.limit,
     }) as Promise<number>;
@@ -162,7 +162,7 @@ export class MongoClient<T extends Document> {
   insertOne(document: NewDocument<T>): Promise<InsertOneResult<T["_id"]>> {
     return this.functions.insertOne({
       database: this.databaseName,
-      collection: this.collectionName,
+      collection: this.name,
       document,
     }) as Promise<InsertOneResult<T["_id"]>>;
   }
@@ -171,7 +171,7 @@ export class MongoClient<T extends Document> {
   insertMany(documents: NewDocument<T>[]): Promise<InsertManyResult<T["_id"]>> {
     return this.functions.insertMany({
       database: this.databaseName,
-      collection: this.collectionName,
+      collection: this.name,
       documents,
     }) as Promise<InsertManyResult<T["_id"]>>;
   }
@@ -180,7 +180,7 @@ export class MongoClient<T extends Document> {
   deleteOne(filter: Filter = {}): Promise<DeleteResult> {
     return this.functions.deleteOne({
       database: this.databaseName,
-      collection: this.collectionName,
+      collection: this.name,
       query: filter,
     }) as Promise<DeleteResult>;
   }
@@ -189,7 +189,7 @@ export class MongoClient<T extends Document> {
   deleteMany(filter: Filter = {}): Promise<DeleteResult> {
     return this.functions.deleteMany({
       database: this.databaseName,
-      collection: this.collectionName,
+      collection: this.name,
       query: filter,
     }) as Promise<DeleteResult>;
   }
@@ -198,7 +198,7 @@ export class MongoClient<T extends Document> {
   updateOne(filter: Filter, update: Update, options: UpdateOptions = {}): Promise<UpdateResult<T["_id"]>> {
     return this.functions.updateOne({
       database: this.databaseName,
-      collection: this.collectionName,
+      collection: this.name,
       query: filter,
       update,
       upsert: options.upsert,
@@ -210,7 +210,7 @@ export class MongoClient<T extends Document> {
   updateMany(filter: Filter, update: Update, options: UpdateOptions = {}): Promise<UpdateResult<T["_id"]>> {
     return this.functions.updateMany({
       database: this.databaseName,
-      collection: this.collectionName,
+      collection: this.name,
       query: filter,
       update,
       upsert: options.upsert,
