@@ -196,7 +196,10 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   }
 
   /**
-   * @returns An array of plain objects for JSON serialization.
+   * The plain array representation of the collection for JSON serialization.
+   * Use circular JSON serialization libraries such as {@link https://www.npmjs.com/package/@ungap/structured-clone @ungap/structured-clone}
+   * and {@link https://www.npmjs.com/package/flatted flatted} for stringifying Realm entities that have circular structures.
+   * @returns An array of plain objects.
    **/
   toJSON(_?: string, cache?: unknown): Array<DefaultObject>;
   /**
@@ -245,6 +248,12 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   get type(): PropertyType {
     return getTypeName(this.results.type & ~binding.PropertyType.Flags, undefined);
   }
+
+  /**
+   * Whether `null` is a valid value for the collection.
+   * @readonly
+   * @since 2.0.0
+   */
   get optional(): boolean {
     return !!(this.results.type & binding.PropertyType.Nullable);
   }
@@ -364,14 +373,37 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     throw new Error("Method not implemented.");
   }
 
+  /**
+   * Checks if this collection has not been deleted and is part of a valid Realm.
+   * @returns `true` if the collection can be safely accessed, `false` if not.
+   * @since 0.14.0
+   */
   isValid(): boolean {
     throw new Error(`Calling isValid on a ${this.constructor.name} is not support`);
   }
 
+  /**
+   * Checks if this collection is empty.
+   * @returns `true` if the collection is empty, `false` if not.
+   * @since 2.7.0
+   */
   isEmpty(): boolean {
     return this.results.size() === 0;
   }
 
+  /**
+   * Returns the minimum value of the values in the collection or of the
+   * given property among all the objects in the collection, or `undefined`
+   * if the collection is empty.
+   *
+   * Only supported for int, float, double and date properties. `null` values
+   * are ignored entirely by this method and will not be returned.
+   *
+   * @param property For a collection of objects, the property to take the minimum of.
+   * @throws {TypeAssertionError} If no property with the name exists or if property is not numeric/date.
+   * @returns The minimum value.
+   * @since 1.12.1
+   */
   min(property?: string): number | Date | undefined {
     const columnKey = this.getPropertyColumnKey(property);
     const result = this.results.min(columnKey);
@@ -387,6 +419,20 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
       throw new TypeAssertionError("Timestamp, number, bigint, Float or null", result, "result");
     }
   }
+
+  /**
+   * Returns the maximum value of the values in the collection or of the
+   * given property among all the objects in the collection, or `undefined`
+   * if the collection is empty.
+   *
+   * Only supported for int, float, double and date properties. `null` values
+   * are ignored entirely by this method and will not be returned.
+   *
+   * @param property For a collection of objects, the property to take the maximum of.
+   * @throws {Error} If no property with the name exists or if property is not numeric/date.
+   * @returns The maximum value.
+   * @since 1.12.1
+   */
   max(property?: string): number | Date | undefined {
     const columnKey = this.getPropertyColumnKey(property);
     const result = this.results.max(columnKey);
@@ -402,6 +448,19 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
       throw new TypeAssertionError("Timestamp, number, bigint, Float or undefined", result, "result");
     }
   }
+
+  /**
+   * Computes the sum of the values in the collection or of the given
+   * property among all the objects in the collection, or 0 if the collection
+   * is empty.
+   *
+   * Only supported for int, float and double properties. `null` values are
+   * ignored entirely by this method.
+   * @param property For a collection of objects, the property to take the sum of.
+   * @throws {Error} If no property with the name exists or if property is not numeric.
+   * @returns The sum.
+   * @since 1.12.1
+   */
   sum(property?: string): number {
     const columnKey = this.getPropertyColumnKey(property);
     const result = this.results.sum(columnKey);
@@ -415,6 +474,19 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
       throw new TypeAssertionError("number, bigint or Float", result, "result");
     }
   }
+
+  /**
+   * Computes the average of the values in the collection or of the given
+   * property among all the objects in the collection, or `undefined` if the collection
+   * is empty.
+   *
+   * Only supported for int, float and double properties. `null` values are
+   * ignored entirely by this method and will not be factored into the average.
+   * @param property For a collection of objects, the property to take the average of.
+   * @throws {Error} If no property with the name exists or if property is not numeric.
+   * @returns The sum.
+   * @since 1.12.1
+   */
   avg(property?: string): number | undefined {
     const columnKey = this.getPropertyColumnKey(property);
     const result = this.results.average(columnKey);
@@ -430,9 +502,18 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   }
 
   /**
-   * @param  {string} query
-   * @param  {any[]} ...arg
-   * @returns Results
+   * Returns new _Results_ that represent this collection being filtered by the provided query.
+   *
+   * @param query Query used to filter objects from the collection.
+   * @param arg Each subsequent argument is used by the placeholders
+   *   (e.g. `$0`, `$1`, `$2`, …) in the query.
+   * @throws {Error} If the query or any other argument passed into this method is invalid.
+   * @returns Results filtered according to the provided query.
+   *
+   * This is currently only supported for collections of Realm Objects.
+   *
+   * @example
+   * let merlots = wines.filtered('variety == "Merlot" && vintage <= $0', maxYear);
    */
   filtered(queryString: string, ...args: any[]): Results<T> {
     const { results: parent, realm, helpers } = this;
@@ -443,8 +524,63 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     return new Results(realm, results, helpers);
   }
 
+  /**
+   * Returns new _Results_ that represent a sorted view of this collection.
+   *
+   * A collection of Realm Objects can be sorted on one or more properties of
+   * those objects, or of properties of objects linked to by those objects.
+   * To sort by a single property, simply pass the name of that property to
+   * `sorted()`, optionally followed by a boolean indicating if the sort should be reversed.
+   * For more than one property, you must pass an array of
+   * **sort descriptors** which list
+   * which properties to sort on.
+   *
+   * Collections of other types sort on the values themselves rather than
+   * properties of the values, and so no property name or sort descriptors
+   * should be supplied.
+   * @param reverse Sort in descending order rather than ascended.
+   *   May not be supplied if `descriptor` is an array of sort descriptors.
+   * @throws {Error} If a specified property does not exist.
+   * @returns Results sorted according to the arguments passed in.
+   */
   sorted(reverse?: boolean): Results<T>;
+  /**
+   * Returns new _Results_ that represent a sorted view of this collection.
+   *
+   * A collection of Realm Objects can be sorted on one or more properties of
+   * those objects, or of properties of objects linked to by those objects.
+   * To sort by a single property, simply pass the name of that property to
+   * `sorted()`, optionally followed by a boolean indicating if the sort should be reversed.
+   * For more than one property, you must pass an array of
+   * **sort descriptors** which list
+   * which properties to sort on.
+   *
+   * Collections of other types sort on the values themselves rather than
+   * properties of the values, and so no property name or sort descriptors
+   * should be supplied.
+   * @param descriptor The property name(s) to sort the collection on.
+   * @throws {Error} If a specified property does not exist.
+   * @returns Results sorted according to the arguments passed in.
+   */
   sorted(descriptor: SortDescriptor[]): Results<T>;
+  /**
+   * Returns new _Results_ that represent a sorted view of this collection.
+   *
+   * A collection of Realm Objects can be sorted on one or more properties of
+   * those objects, or of properties of objects linked to by those objects.
+   * To sort by a single property, simply pass the name of that property to
+   * `sorted()`, optionally followed by a boolean indicating if the sort should be reversed.
+   * For more than one property, you must pass an array of
+   * **sort descriptors** which list
+   * which properties to sort on.
+   *
+   * Collections of other types sort on the values themselves rather than
+   * properties of the values, and so no property name or sort descriptors
+   * should be supplied.
+   * @param descriptor The property name(s) to sort the collection on.
+   * @throws {Error} If a specified property does not exist.
+   * @returns Results sorted according to the arguments passed in.
+   */
   sorted(descriptor: string, reverse?: boolean): Results<T>;
   sorted(arg0: boolean | SortDescriptor[] | string = "self", arg1?: boolean): Results<T> {
     if (Array.isArray(arg0)) {
@@ -467,7 +603,19 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   }
 
   /**
-   * @returns Results
+   * Create a frozen snapshot of the collection.
+   *
+   * Values added to and removed from the original collection will not be
+   * reflected in the _Results_ returned by this method, including if the
+   * values of properties are changed to make them match or not match any
+   * filters applied.
+   *
+   * This is **not** a _deep_ snapshot. Realm objects contained in this
+   * snapshot will continue to update as changes are made to them, and if
+   * they are deleted from the Realm they will be replaced by `null` at the
+   * respective indices.
+   *
+   * @returns Results which will **not** live update.
    */
   snapshot(): Results<T> {
     return new Results(this.realm, this.results.snapshot(), this.helpers);
