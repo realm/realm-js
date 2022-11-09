@@ -19,7 +19,6 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import * as semver from "semver";
-import { Message, Blocks } from "slack-block-builder";
 
 import * as path from "node:path";
 import * as cp from "node:child_process";
@@ -93,37 +92,6 @@ function applyPatch(patchPath: string, targetPath: string) {
 
 function readPackageJson(packagePath: string) {
   return JSON.parse(fs.readFileSync(path.resolve(packagePath, "package.json"), "utf8"));
-}
-
-/**
- * Recursively locate the paths of all result.json files.
- */
-function locateResultFiles(startPath = __dirname): string[] {
-  return fs.readdirSync(startPath, { encoding: "utf8", withFileTypes: true }).flatMap((dirent) => {
-    if (dirent.isFile() && dirent.name === "result.json") {
-      return [path.resolve(startPath, dirent.name)];
-    } else if (dirent.isDirectory()) {
-      return locateResultFiles(path.resolve(startPath, dirent.name));
-    } else {
-      return [];
-    }
-  });
-}
-
-function loadResults() {
-  return locateResultFiles().map((filePath) => {
-    return JSON.parse(fs.readFileSync(filePath, "utf8"));
-  });
-}
-
-function getResultEmoji(status: string) {
-  if (status === "success") {
-    return ":tada:";
-  } else if (status === "failure") {
-    return ":buzzfeed-fail:";
-  } else {
-    return ":dog-confused:";
-  }
 }
 
 yargs(hideBin(process.argv))
@@ -331,57 +299,6 @@ yargs(hideBin(process.argv))
         metro.kill();
         // Stop listening for the app
         server.close();
-      }
-    },
-  )
-  .command(
-    "slack-payload",
-    "Parse result files from CI into a Slack payload",
-    (args) =>
-      args
-        .option("status", { type: "string", demandOption: true, description: "Overall status of the install test" })
-        .option("url", { type: "string", description: "A URL to the results" })
-        .option("preview", {
-          type: "boolean",
-          default: false,
-          description: "Open a preview of the message, instead of outputting JSON",
-        })
-        .option("output", {
-          type: "string",
-          description: "Will write the output to this file",
-          coerce: path.resolve,
-        })
-        .positional("result-files", {
-          type: "string",
-          array: true,
-          description: "All the result files to include in the message",
-        }),
-    (argv) => {
-      const { status, url, preview, output } = argv;
-      const results = loadResults();
-      const relevantResults = results.filter((r) => r.job.status !== "success");
-      const message = Message().blocks(
-        Blocks.Header({ text: `Install test ${status} ${getResultEmoji(status)}` }),
-        url ? Blocks.Section({ text: url }) : undefined,
-        ...relevantResults.map((result) => {
-          const contextElements = Object.entries(result.matrix).map(([k, v]) => `${k}=${v}`);
-          return [
-            Blocks.Section({
-              text: `Test *${result.job.status}* ${getResultEmoji(result.job.status)}`,
-            }),
-            Blocks.Context().elements(...contextElements),
-          ];
-        }),
-      );
-      const json = message.buildToJSON();
-      if (output) {
-        console.log("Writing JSON to", output);
-        fs.writeFileSync(output, json, "utf8");
-      } else if (preview) {
-        const previewUrl = `https://app.slack.com/block-kit-builder/#${encodeURIComponent(json)}`;
-        exec("open", [previewUrl]);
-      } else {
-        console.log(json);
       }
     },
   )

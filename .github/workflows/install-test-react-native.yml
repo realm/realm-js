@@ -113,40 +113,18 @@ jobs:
           script: npm test -- --platform android
           working-directory: install-tests/react-native
 
-      # As a workaround for the inability to read the status of matrix steps from a dependent job,
-      # we write the matrix and job (containing status) context to file and upload this as an artifact.
-      - name: Write result
-        if: always()
-        run: |
-          echo '{ "matrix": ${{ toJSON(matrix) }}, "job": ${{ toJSON(job) }} }' > result.json
-      - name: Upload result
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          # Using hashFiles in the name to prevent collisions
-          name: result-${{ hashFiles('install-tests/react-native/result.json') }}
-          path: 'install-tests/react-native/result.json'
-
-  announce:
+  slack-workflow-status:
+    if: always()
+    name: Post Workflow Status To Slack
     needs: install
     runs-on: ubuntu-latest
-    if: always()
+    permissions:
+      actions: 'read'
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - name: Slack Workflow Notification
+        uses: Gamesight/slack-workflow-status@master
         with:
-          node-version: 16
-      - uses: actions/download-artifact@v3
-        with:
-          path: install-tests/react-native
-      - name: Install dependencies of the CLI
-        run: npm ci
-      - name: Parse results into a Slack payload
-        run: npm run slack-payload -- --status ${{ needs.install.result }} --url '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}' --output payload.json
-      - name: Post result to Slack
-        uses: slackapi/slack-github-action@v1.23.0
-        with:
-          payload-file-path: install-tests/react-native/payload.json
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_TEST_WEBHOOK }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          slack_webhook_url: ${{ secrets.SLACK_TEST_WEBHOOK }}
+          include_jobs: true
+          include_commit_message: false
