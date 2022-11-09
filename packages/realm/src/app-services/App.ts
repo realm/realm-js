@@ -28,6 +28,11 @@ import {
   fs,
 } from "../internal";
 
+/**
+ * This describes the options used to create a Realm.App instance.
+ * @prop id - The id of the Atlas App Services application.
+ * @prop baseUrl - The base URL of the Atlas App Services server.
+ */
 export type AppConfiguration = {
   id: string;
   baseUrl?: string;
@@ -38,6 +43,15 @@ export type AppChangeCallback = () => void;
 // TODO: Ensure this doesn't leak
 const appByUserId = new Map<string, App>();
 
+/**
+ * The class represents an Atlas App Services Application.
+ *
+ * ```js
+ * let app = new Realm.App(config);
+ * ```
+ *
+ * @memberof Realm
+ */
 export class App {
   // TODO: Ensure these are injected by the platform
   /** @internal */
@@ -74,8 +88,28 @@ export class App {
     },
   });
 
+  /**
+   * Creates a new app and connects to an Atlas App Services instance.
+   *
+   * @param id A string app id.
+   * @throws {Error} If no app id is provided.
+   */
   constructor(id: string);
+
+  /**
+   * Creates a new app and connects to an Atlas App Services instance.
+   *
+   * @param config The configuration of the app.
+   * @throws {Error} If no app id is provided.
+   */
   constructor(config: AppConfiguration);
+
+  /**
+   * Creates a new app and connects to an Atlas App Services instance.
+   *
+   * @param configOrId The configuration of the app or a string app id.
+   * @throws {Error} If no app id is provided.
+   */
   constructor(configOrId: AppConfiguration | string) {
     const config: AppConfiguration = typeof configOrId === "string" ? { id: configOrId } : configOrId;
     assert.object(config, "config");
@@ -98,6 +132,9 @@ export class App {
     );
   }
 
+  /**
+   * @return The app id.
+   */
   public get id(): string {
     return this.internal.config.appId;
   }

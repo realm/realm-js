@@ -18,6 +18,22 @@
 
 import { CallbackRegistrator, IllegalConstructorError, Listeners, binding } from "./internal";
 
+/**
+ * Abstract base class containing methods shared by Realm **List**, **Dictionary**, and **Results**.
+ *
+ * A Realm Collection is a homogenous sequence of values of any of the types
+ * that can be stored as properties of Realm objects. A collection can be
+ * accessed in any of the ways that a normal Javascript Array can, including
+ * subscripting, enumerating with `for-of` and so on.
+ *
+ * A Collection always reflect the current state of the Realm. The one exception to this is
+ * when using `for...in` or `for...of` enumeration, which will always enumerate over the
+ * objects which matched the query when the enumeration is begun, even if some of them are
+ * deleted or modified to be excluded by the filter during the enumeration.
+ *
+ * @memberof Realm
+ * @since 0.11.0
+ */
 export abstract class Collection<
   KeyType = unknown,
   ValueType = unknown,
@@ -50,19 +66,83 @@ export abstract class Collection<
     });
   }
 
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/keys Array.prototype.keys}
+   * @returns Iterator with all keys in the collection
+   * @since 0.11.0
+   */
   abstract keys(): Iterable<KeyType>;
+
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/keys Array.prototype.keys}
+   * @returns Iterator with all values in the collection
+   * @since 0.11.0
+   */
   abstract values(): Iterable<ValueType>;
+
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/entries Array.prototype.keys}
+   * @returns Iterator with all key/value pairs in the collection
+   * @since 0.11.0
+   */
   abstract entries(): Iterable<EntryType>;
+
+  /**
+   * This is the same method as the ***Collection.values*** method.
+   * Its presence makes collections _iterable_, thus able to be used with ES6
+   * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of `for-of`}
+   * loops,
+   * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_operator `...`}
+   * spread operators, and more.
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/iterator Symbol.iterator}
+   *   and the {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#iterable iterable protocol}
+   * @returns Iterable of each value in the collection
+   * @example
+   * for (let object of collection) {
+   *   // do something with each object
+   * }
+   * @since 0.11.0
+   */
   abstract [Symbol.iterator](): Iterator<T>;
 
+  /**
+   * Add a listener `callback` which will be called when a **live** collection instance changes.
+   * @param callback A function to be called when changes occur.
+   *   The callback function is called with two arguments:
+   *   - `collection`: the collection instance that changed,
+   *   - `changes`: a dictionary with keys `insertions`, `newModifications`, `oldModifications`
+   *      and `deletions`, each containing a list of indices in the collection that were
+   *      inserted, updated or deleted respectively. `deletions` and `oldModifications` are
+   *      indices into the collection before the change happened, while `insertions` and
+   *      `newModifications` are indices into the new version of the collection.
+   * @throws {Error} If `callback` is not a function.
+   * @example
+   * wines.addListener((collection, changes) => {
+   *  // collection === wines
+   *  console.log(`${changes.insertions.length} insertions`);
+   *  console.log(`${changes.oldModifications.length} oldModifications`);
+   *  console.log(`${changes.newModifications.length} newModifications`);
+   *  console.log(`${changes.deletions.length} deletions`);
+   *  console.log(`new size of collection: ${collection.length}`);
+   * });
+   */
   addListener(callback: ChangeCallbackType): void {
     this.listeners.add(callback);
   }
 
+  /**
+   * Remove the listener `callback` from the collection instance.
+   * @param callback Callback function that was previously
+   *   added as a listener through the **addListener** method.
+   * @throws {Error} If `callback` is not a function.
+   */
   removeListener(callback: ChangeCallbackType): void {
     this.listeners.remove(callback);
   }
 
+  /**
+   * Remove all `callback` listeners from the collection instance.
+   */
   removeAllListeners(): void {
     this.listeners.removeAll();
   }
