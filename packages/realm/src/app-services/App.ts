@@ -40,6 +40,8 @@ export type AppConfiguration = {
 
 export type AppChangeCallback = () => void;
 
+type AppListenerToken = binding.AppSubscriptionToken;
+
 // TODO: Ensure this doesn't leak
 const appByUserId = new Map<string, App>();
 
@@ -79,12 +81,12 @@ export class App {
 
   public userAgent = `RealmJS/${App.SDK_VERSION} (${App.PLATFORM_CONTEXT}, ${App.PLATFORM_OS}, v${App.PLATFORM_VERSION})`;
 
-  private listeners = new Listeners<AppChangeCallback, unknown>({
-    register() {
-      throw new Error("Not yet implemented");
+  private listeners = new Listeners<AppChangeCallback, AppListenerToken>({
+    register: (callback: () => void): AppListenerToken => {
+      return this.internal.subscribe(callback);
     },
-    unregister() {
-      throw new Error("Not yet implemented");
+    unregister: (token) => {
+      this.internal.unsubscribe(token);
     },
   });
 

@@ -23,6 +23,7 @@ import {
   DefaultFunctionsFactory,
   DefaultObject,
   DefaultUserProfileData,
+  Listeners,
   ProviderType,
   binding,
   isProviderType,
@@ -57,6 +58,7 @@ export interface UserIdentity {
   providerType: ProviderType;
 }
 
+type UserListenerToken = binding.SyncUserSubscriptionToken;
 export class User<
   FunctionsFactoryType = DefaultFunctionsFactory,
   CustomDataType = DefaultObject,
@@ -67,6 +69,15 @@ export class User<
 
   /** @internal */
   public internal: binding.SyncUser;
+
+  private listeners = new Listeners<UserChangeCallback, UserListenerToken>({
+    register: (callback: () => void): UserListenerToken => {
+      return this.internal.subscribe(callback);
+    },
+    unregister: (token) => {
+      this.internal.unsubscribe(token);
+    },
+  });
 
   /** @internal */
   public static get(internal: binding.SyncUser) {
@@ -253,20 +264,20 @@ export class User<
    * This includes auth token refresh, refresh token refresh, refresh custom user data, and logout.
    */
   addListener(callback: UserChangeCallback): void {
-    throw new Error("Not yet implemented");
+    this.listeners.add(callback);
   }
 
   /**
    * Removes the event listener
    */
   removeListener(callback: UserChangeCallback): void {
-    throw new Error("Not yet implemented");
+    this.listeners.remove(callback);
   }
 
   /**
    * Removes all event listeners
    */
   removeAllListeners(): void {
-    throw new Error("Not yet implemented");
+    this.listeners.removeAll();
   }
 }
