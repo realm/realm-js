@@ -18,12 +18,25 @@
 
 import { AssertionError, DefaultObject, Realm, TypeAssertionError, binding } from "./internal";
 
-export function assert(value: unknown, err?: string | Error): asserts value {
-  if (!value) {
-    if (err instanceof Error) {
+/**
+ * Expects the condition to be truly
+ * @throws {@link Error} If the condition is not truly. Throws either the {@link err} given as param
+ * @param condition The condition that must be truly to avoid throwing.
+ * @param err Optional message or error to throw.
+ * Or a function producing this, which is useful to avoid computing the error message in case it's not needed.
+ */
+export function assert(
+  condition: unknown,
+  err?: string | Error | (() => undefined | string | Error),
+): asserts condition {
+  if (!condition) {
+    const errValue = typeof err === "function" ? err() : err;
+    if (errValue instanceof Error) {
       throw err;
+    } else if (typeof err === "string" || typeof err === "undefined") {
+      throw new AssertionError(errValue);
     } else {
-      throw new AssertionError(err);
+      throw new Error("Expected err to be an Err, string, undefined or a function returning either.");
     }
   }
 }
@@ -126,6 +139,10 @@ assert.iterable = (value: unknown, name?: string): asserts value is Iterable<unk
   if (!(Symbol.iterator in value)) {
     throw new TypeAssertionError("iterable", value, name);
   }
+};
+
+assert.never = (value: never, name?: string): asserts value is never => {
+  throw new TypeAssertionError("never", value, name);
 };
 
 // SDK specific

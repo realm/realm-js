@@ -232,7 +232,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
   /**
  /**
    * Add a key with a value or update value if key exists.
-   * @throws {AssertionError} If not inside a write transaction or if value violates type constraints
+   * @throws {@link AssertionError} If not inside a write transaction or if value violates type constraints
    * @returns The dictionary
    * @since 10.6.0
    */
@@ -250,7 +250,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * Removes elements from the dictionary, with the keys provided.
    * This does not throw if the keys are already missing from the dictionary.
    * @param key The key to be removed.
-   * @throws {AssertionError} If not inside a write transaction.
+   * @throws {@link AssertionError} If not inside a write transaction.
    * @returns The dictionary
    * @since 10.6.0
    */

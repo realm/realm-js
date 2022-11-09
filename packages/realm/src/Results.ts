@@ -79,7 +79,7 @@ export class Results<T = unknown> extends OrderedCollection<T> {
    * Bulk update objects in the collection.
    * @param propertyName The name of the property.
    * @param value The updated property value.
-   * @throws {Error} If no property with the name exists.
+   * @throws {@link Error} If no property with the name exists.
    * @since 2.0.0-rc20
    */
   update(propertyName: keyof T, value: T[typeof propertyName]): void {
