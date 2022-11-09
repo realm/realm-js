@@ -228,8 +228,7 @@ export class RealmObject<T = DefaultObject> {
   /**
    * Create a `RealmObject` wrapping an `Obj` from the binding.
    * @param realm The Realm managing the object.
-   * @param constructor The constructor of the object.
-   * @param internal The internal Obj from the binding.
+   * @param values The values of the object's properties at creation.
    */
   public constructor(realm: Realm, values: RealmInsertionModel<T>) {
     return realm.create(this.constructor as RealmObjectConstructor, values) as unknown as this;
@@ -262,7 +261,10 @@ export class RealmObject<T = DefaultObject> {
   }
 
   /**
-   * @returns A plain object for JSON serialization.
+   * The plain object representation of this object for JSON serialization.
+   * Use circular JSON serialization libraries such as {@link https://www.npmjs.com/package/@ungap/structured-clone @ungap/structured-clone}
+   * and {@link https://www.npmjs.com/package/flatted flatted} for stringifying Realm entities that have circular structures.
+   * @returns A plain object.
    **/
   toJSON(_?: string, cache?: unknown): DefaultObject;
   /** @internal */
@@ -297,13 +299,32 @@ export class RealmObject<T = DefaultObject> {
     return result;
   }
 
+  /**
+   * Checks if this object has not been deleted and is part of a valid Realm.
+   * @returns `true` if the object can be safely accessed, `false` if not.
+   * @since 0.12.0
+   */
   isValid(): boolean {
     return this[INTERNAL] && this[INTERNAL].isValid;
   }
+
+  /**
+   * The schema for the type this object belongs to.
+   * @returns The schema that describes this object.
+   * @since 1.8.1
+   */
   objectSchema(): CanonicalObjectSchema<T> {
     return this.realm.getClassHelpers(this).canonicalObjectSchema as CanonicalObjectSchema<T>;
   }
 
+  /**
+   * Returns all the objects that link to this object in the specified relationship.
+   * @param objectType The type of the objects that link to this object's type.
+   * @param propertyName The name of the property that references objects of this object's type.
+   * @throws {Error} If the relationship is not valid.
+   * @returns The objects that link to this object.
+   * @since 1.9.0
+   */
   linkingObjects<T>(objectType: string, propertyName: string): Results<T> {
     const {
       objectSchema: { tableKey },
@@ -322,6 +343,11 @@ export class RealmObject<T = DefaultObject> {
     return new Realm.Results(this.realm, results, collectionHelpers);
   }
 
+  /**
+   * Returns the total count of incoming links to this object
+   * @returns The number of links to this object.
+   * @since 2.6.0
+   */
   linkingObjectsCount(): number {
     return this[INTERNAL].getBacklinkCount();
   }
@@ -341,15 +367,54 @@ export class RealmObject<T = DefaultObject> {
     return this[INTERNAL].key.toString();
   }
 
+  /**
+   * Add a listener `callback` which will be called when a **live** object instance changes.
+   * @param callback A function to be called when changes occur.
+   *   The callback function is called with two arguments:
+   *   - `obj`: the object that changed,
+   *   - `changes`: a dictionary with keys `deleted`, and `changedProperties`. `deleted` is true
+   *       if the object has been deleted. `changesProperties` is an array of properties that have changed
+   *       their value.
+   * @throws {Error} If `callback` is not a function.
+   * @example
+   * wine.addListener((obj, changes) => {
+   *  // obj === wine
+   *  console.log(`object is deleted: ${changes.deleted}`);
+   *  console.log(`${changes.changedProperties.length} properties have been changed:`);
+   *  changes.changedProperties.forEach(prop => {
+   *      console.log(` ${prop}`);
+   *   });
+   * })
+   * @since 2.23.0
+   */
   addListener(callback: ObjectChangeCallback<T>): void {
     this[INTERNAL_LISTENERS].addListener(callback);
   }
+
+  /**
+   * Remove the listener `callback`
+   * @param callback A function previously added as listener
+   * @since 2.23.0
+   */
   removeListener(callback: ObjectChangeCallback<T>): void {
     this[INTERNAL_LISTENERS].removeListener(callback);
   }
+
+  /**
+   * Remove all listeners.
+   * @since 2.23.0
+   */
   removeAllListeners(): void {
     this[INTERNAL_LISTENERS].removeAllListeners();
   }
+
+  /**
+   * Get underlying type of a property value.
+   * @param propertyName The name of the property to retrieve the type of.
+   * @throws {Error} If property does not exist.
+   * @returns Underlying type of the property value.
+   * @since 10.8.0
+   */
   getPropertyType(propertyName: string): string {
     const { properties } = this.realm.getClassHelpers(this);
     const { type, objectType, columnKey } = properties.get(propertyName);

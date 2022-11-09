@@ -19,6 +19,12 @@
 // export { ObjectId, Decimal128, UUID } from "bson";
 import * as bson from "bson";
 
+/**
+ * A re-export of the "bson" package, enabling access to the BSON types without requiring an explict dependency on the "bson" package.
+ *
+ * @see {@link https://www.npmjs.com/package/bson#documentation|the BSON documentation} for more information.
+ * @memberof Realm
+ */
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace BSON {
   export const ObjectId = bson.ObjectId;

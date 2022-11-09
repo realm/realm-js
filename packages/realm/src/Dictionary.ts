@@ -29,8 +29,6 @@ import {
 const INTERNAL = Symbol("Dictionary#internal");
 const HELPERS = Symbol("Dictionary#helpers");
 
-// TODO: Implement this
-
 type DictionaryChangeSet = {
   deletions: string[];
   modifications: string[];
@@ -98,7 +96,12 @@ const PROXY_HANDLER: ProxyHandler<Dictionary> = {
 };
 
 /**
- * TODO: Make this extends Collection<T> (once that doesn't have a nummeric index accessor)
+ * Instances of this class are returned when accessing object properties whose type is `"Dictionary"`
+ *
+ * Dictionaries behave mostly like a JavaScript object i.e., as a key/value pair
+ * where the key is a string.
+ *
+ * @memberof Realm
  */
 export class Dictionary<T = unknown> extends Collection<string, T, [string, T], [string, T], DictionaryChangeCallback> {
   /**
@@ -213,8 +216,11 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
   }
 
   /**
-   * Adds given element to the dictionary
+ /**
+   * Add a key with a value or update value if key exists.
+   * @throws {Error} If not inside a write transaction or if value violates type constraints
    * @returns The dictionary
+   * @since 10.6.0
    */
   // @ts-expect-error We're exposing methods in the end-users namespace of keys
   set(element: { [key: string]: T }): this {
@@ -228,7 +234,10 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
   /**
    * Removes elements from the dictionary, with the keys provided.
    * This does not throw if the keys are already missing from the dictionary.
+   * @param key The key to be removed.
+   * @throws {Error} If not inside a write transaction
    * @returns The dictionary
+   * @since 10.6.0
    */
   // @ts-expect-error We're exposing methods in the end-users namespace of keys
   remove(key: string | string[]): this {
@@ -240,8 +249,11 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
   }
 
   /**
-   * @returns A plain object for JSON serialization.
-   */
+   * The plain object representation of the Dictionary for JSON serialization.
+   * Use circular JSON serialization libraries such as {@link https://www.npmjs.com/package/@ungap/structured-clone @ungap/structured-clone}
+   * and {@link https://www.npmjs.com/package/flatted flatted} for stringifying Realm entities that have circular structures.
+   * @returns A plain object.
+   **/
   // @ts-expect-error We're exposing methods in the users value namespace
   toJSON(_?: string, cache?: unknown): DefaultObject;
   /** @internal */

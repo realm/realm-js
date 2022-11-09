@@ -18,6 +18,22 @@
 
 import { IllegalConstructorError, OrderedCollection, OrderedCollectionHelpers, Realm, binding } from "./internal";
 
+/**
+ * Instances of this class will be returned when accessing object properties whose type is `"Set"`
+ *
+ * Sets mostly behave like normal JavaScript Sets, with a few exceptions:
+ * They can only store values of a single type (indicated by the `type`
+ * and `optional` properties of the Set).
+ * They can only be modified inside a **write** transaction.
+ * Unlike JavaScript's Set, Realm~Set does NOT make any guarantees about the
+ * traversal order of `values()`, `entries()`, `keys()`, or `forEach` iterations.
+ * If values in a Set are required to have some order, it must be implemented
+ * by the developer by, for example, wrapping values in an object that holds
+ * a user-supplied insertion order.
+ *
+ * @extends Realm.OrderedCollection
+ * @memberof Realm
+ */
 export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
   /** @internal */
   private internal!: binding.Set;
@@ -35,19 +51,26 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
       value: internal,
     });
   }
-
+  /**
+   * Number of items in the set
+   */
   get size(): number {
     return this.length;
   }
 
+  /**
+   * Checks if this set has not been deleted and is part of a valid Realm.
+   * @returns `true` if the set can be safely accessed, `false` if not.
+   */
   isValid() {
     return this.internal.isValid;
   }
 
   /**
    * Delete a value from the Set
-   * @param {T} object Value to delete from the Set
-   * @returns Boolean:  true if the value existed in the Set prior to deletion, false otherwise
+   * @param value Value to delete from the Set
+   * @throws {Error} If not inside a write transaction.
+   * @returns `true` if the value existed in the Set prior to deletion, `false` if not.
    */
   delete(value: T): boolean {
     const [, success] = this.internal.removeAny(this.helpers.toBinding(value, undefined));
@@ -56,7 +79,10 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
 
   /**
    * Add a new value to the Set
-   * @param  {T} object Value to add to the Set
+   * @param value Value to add to the Set
+   * @throws {TypeError} If a `value` is not of a type which can be stored in
+   *   the Set, or if an object being added to the Set does not match the for the Set.
+   * @throws {Error} If not inside a write transaction.
    * @returns The Realm.Set<T> itself, after adding the new value
    */
   add(value: T): this {
@@ -65,7 +91,8 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
   }
 
   /**
-   * Clear all values from the Set
+   * Remove all values from the Set
+   * @throws {Error} If not inside a write transaction.
    */
   clear(): void {
     this.internal.deleteAll();
@@ -73,8 +100,11 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
 
   /**
    * Check for existence of a value in the Set
-   * @param  {T} object Value to search for in the Set
-   * @returns Boolean: true if the value exists in the Set, false otherwise
+   * @param value Value to search for in the Set
+   * @throws {TypeError} If a `value` is not of a type which can be stored in
+   *   the Set, or if an object being added to the Set does not match the
+   *   **object schema** for the Set.
+   * @returns `true` if the value exists in the Set, `false` if not.
    */
   has(value: T): boolean {
     return this.includes(value);
