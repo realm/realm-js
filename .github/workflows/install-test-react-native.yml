@@ -123,7 +123,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           # Using hashFiles in the name to prevent collisions
-          name: result-${{ hashFiles('**/result.json') }}.json
+          name: result-${{ hashFiles('**/result.json') }}
           path: '**/result.json'
 
   announce:

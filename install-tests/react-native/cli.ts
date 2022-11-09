@@ -95,6 +95,20 @@ function readPackageJson(packagePath: string) {
   return JSON.parse(fs.readFileSync(path.resolve(packagePath, "package.json"), "utf8"));
 }
 
+function loadResults() {
+  return fs
+    .readdirSync(__dirname, { encoding: "utf8", withFileTypes: true })
+    .filter((d) => d.name.startsWith("result-") && d.isDirectory())
+    .map((resultDir) => {
+      const resultFilePath = path.resolve(__dirname, resultDir.name, "result.json");
+      if (fs.existsSync(resultFilePath)) {
+        return JSON.parse(fs.readFileSync(resultFilePath, "utf8"));
+      } else {
+        throw new Error(`Expected a result.json file: ${resultFilePath}`);
+      }
+    });
+}
+
 function getResultEmoji(status: string) {
   if (status === "success") {
     return ":tada:";
@@ -337,8 +351,7 @@ yargs(hideBin(process.argv))
         }),
     (argv) => {
       const { status, url, preview, output } = argv;
-      const resultFiles = fs.readdirSync(__dirname).filter((p) => p.startsWith("result-"));
-      const results = resultFiles.map((p) => JSON.parse(fs.readFileSync(p, "utf8")));
+      const results = loadResults();
       const relevantResults = results.filter((r) => r.job.status !== "success");
       const message = Message().blocks(
         Blocks.Header({ text: `Install test ${status} ${getResultEmoji(status)}` }),
