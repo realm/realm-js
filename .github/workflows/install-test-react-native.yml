@@ -78,7 +78,8 @@ jobs:
 
       - name: CocoaPod cache
         if: ${{ matrix.platform == 'ios' }}
-        uses: actions/cache@v3
+        # Using another cache action to work around https://github.com/actions/cache/issues/92
+        uses: pat-s/always-upload-cache@v3.0.11
         with:
           path: '**/Pods'
           key: cocoa-pods-${{ matrix.platform }}-r@${{ matrix.realm-version }}-rn@${{ matrix.react-native-version }}-${{ matrix.new-architecture && 'new' || 'old' }}-arch
