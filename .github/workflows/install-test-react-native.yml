@@ -122,7 +122,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: result-${{ hashFiles('**/result-*') }}.json
+          # Using hashFiles in the name to prevent collisions
+          name: result-${{ hashFiles('**/result.json') }}.json
           path: '**/result.json'
 
   announce:
