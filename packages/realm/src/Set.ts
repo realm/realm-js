@@ -16,7 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { IllegalConstructorError, OrderedCollection, OrderedCollectionHelpers, Realm, binding } from "./internal";
+import {
+  IllegalConstructorError,
+  OrderedCollection,
+  OrderedCollectionHelpers,
+  Realm,
+  assert,
+  binding,
+} from "./internal";
 
 /**
  * Instances of this class will be returned when accessing object properties whose type is `"Set"`
@@ -69,10 +76,11 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
   /**
    * Delete a value from the Set
    * @param value Value to delete from the Set
-   * @throws {Error} If not inside a write transaction.
+   * @throws {@link Error} If not inside a write transaction.
    * @returns `true` if the value existed in the Set prior to deletion, `false` if not.
    */
   delete(value: T): boolean {
+    assert.inTransaction(this.realm);
     const [, success] = this.internal.removeAny(this.helpers.toBinding(value, undefined));
     return success;
   }
@@ -82,19 +90,21 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
    * @param value Value to add to the Set
    * @throws {TypeError} If a `value` is not of a type which can be stored in
    *   the Set, or if an object being added to the Set does not match the for the Set.
-   * @throws {Error} If not inside a write transaction.
+   * @throws {@link Error} If not inside a write transaction.
    * @returns The Realm.Set<T> itself, after adding the new value
    */
   add(value: T): this {
+    assert.inTransaction(this.realm);
     this.internal.insertAny(this.helpers.toBinding(value, undefined));
     return this;
   }
 
   /**
    * Remove all values from the Set
-   * @throws {Error} If not inside a write transaction.
+   * @throws {@link Error} If not inside a write transaction.
    */
   clear(): void {
+    assert.inTransaction(this.realm);
     this.internal.deleteAll();
   }
 

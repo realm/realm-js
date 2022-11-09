@@ -248,7 +248,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     return {
       get(obj) {
         const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
-        return new Dictionary(internal, itemHelpers);
+        return new Dictionary(realm, internal, itemHelpers);
       },
       set(obj, value) {
         const internal = binding.Dictionary.make(realm.internal, obj, columnKey);
