@@ -20,12 +20,14 @@ import {
   DefaultObject,
   IllegalConstructorError,
   JSONCacheMap,
+  Realm,
   RealmObject,
   TypeHelpers,
   assert,
   binding,
 } from "./internal";
 
+const REALM = Symbol("Dictionary#realm");
 const INTERNAL = Symbol("Dictionary#internal");
 const HELPERS = Symbol("Dictionary#helpers");
 
@@ -109,7 +111,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * @internal
    * @param internal The internal representation of the dictionary.
    */
-  constructor(internal: binding.Dictionary, helpers: TypeHelpers) {
+  constructor(/** @internal */ realm: Realm, internal: binding.Dictionary, helpers: TypeHelpers) {
     if (arguments.length === 0 || !(internal instanceof binding.Dictionary)) {
       throw new IllegalConstructorError("Dictionary");
     }
@@ -143,6 +145,12 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
     const proxied = new Proxy(this, PROXY_HANDLER) as Dictionary<T>;
 
     Object.defineProperties(this, {
+      [REALM]: {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: realm,
+      },
       [INTERNAL]: {
         enumerable: false,
         configurable: false,
@@ -160,12 +168,18 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * The representation in the binding.
    * @internal
    */
-  public [INTERNAL]!: binding.Dictionary;
+  private [REALM]!: Realm;
+
+  /**
+   * The representation in the binding.
+   * @internal
+   */
+  private [INTERNAL]!: binding.Dictionary;
 
   /**
    * @internal
    */
-  public [HELPERS]: TypeHelpers;
+  private [HELPERS]: TypeHelpers;
 
   // @ts-expect-error We're exposing methods in the end-users namespace of keys
   [key: string]: T;
@@ -218,12 +232,13 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
   /**
  /**
    * Add a key with a value or update value if key exists.
-   * @throws {Error} If not inside a write transaction or if value violates type constraints
+   * @throws {AssertionError} If not inside a write transaction or if value violates type constraints
    * @returns The dictionary
    * @since 10.6.0
    */
   // @ts-expect-error We're exposing methods in the end-users namespace of keys
   set(element: { [key: string]: T }): this {
+    assert.inTransaction(this[REALM]);
     const internal = this[INTERNAL];
     const toBinding = this[HELPERS].toBinding;
     for (const [key, value] of Object.entries(element)) {
@@ -235,12 +250,13 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * Removes elements from the dictionary, with the keys provided.
    * This does not throw if the keys are already missing from the dictionary.
    * @param key The key to be removed.
-   * @throws {Error} If not inside a write transaction
+   * @throws {AssertionError} If not inside a write transaction.
    * @returns The dictionary
    * @since 10.6.0
    */
   // @ts-expect-error We're exposing methods in the end-users namespace of keys
   remove(key: string | string[]): this {
+    assert.inTransaction(this[REALM]);
     const internal = this[INTERNAL];
     const keys = typeof key === "string" ? [key] : key;
     for (const k of keys) {
