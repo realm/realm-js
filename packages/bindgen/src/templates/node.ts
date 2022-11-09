@@ -283,7 +283,7 @@ function convertPrimToNode(addon: NodeAddon, type: string, expr: string): string
     case "EJson":
     case "EJsonObj":
     case "EJsonArray":
-      return `([&] (const auto& str) -> Napi::Value { return str.empty()? ${env}.Null() : ${addon.accessCtor("EJSON_parse")}.Call({${convertPrimToNode(addon, "std::string", "str")}});})(${expr})`;
+      return `${addon.accessCtor("EJSON_parse")}.Call({${convertPrimToNode(addon, "std::string", expr)}})`;
 
     case "bson::BsonArray":
     case "bson::BsonDocument":
