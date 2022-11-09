@@ -136,6 +136,8 @@ jobs:
         with:
           node-version: 16
       - uses: actions/download-artifact@v3
+        with:
+          path: install-tests/react-native
       - name: Install dependencies of the CLI
         run: npm ci
       - name: Parse results into a Slack payload
