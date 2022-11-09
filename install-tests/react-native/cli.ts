@@ -95,18 +95,25 @@ function readPackageJson(packagePath: string) {
   return JSON.parse(fs.readFileSync(path.resolve(packagePath, "package.json"), "utf8"));
 }
 
+/**
+ * Recursively locate the paths of all result.json files.
+ */
+function locateResultFiles(startPath = __dirname): string[] {
+  return fs.readdirSync(startPath, { encoding: "utf8", withFileTypes: true }).flatMap((dirent) => {
+    if (dirent.isFile() && dirent.name === "result.json") {
+      return [path.resolve(startPath, dirent.name)];
+    } else if (dirent.isDirectory()) {
+      return locateResultFiles(path.resolve(startPath, dirent.name));
+    } else {
+      return [];
+    }
+  });
+}
+
 function loadResults() {
-  return fs
-    .readdirSync(__dirname, { encoding: "utf8", withFileTypes: true })
-    .filter((d) => d.name.startsWith("result-") && d.isDirectory())
-    .map((resultDir) => {
-      const resultFilePath = path.resolve(__dirname, resultDir.name, "result.json");
-      if (fs.existsSync(resultFilePath)) {
-        return JSON.parse(fs.readFileSync(resultFilePath, "utf8"));
-      } else {
-        throw new Error(`Expected a result.json file: ${resultFilePath}`);
-      }
-    });
+  return locateResultFiles().map((filePath) => {
+    return JSON.parse(fs.readFileSync(filePath, "utf8"));
+  });
 }
 
 function getResultEmoji(status: string) {
