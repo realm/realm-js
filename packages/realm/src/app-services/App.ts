@@ -94,7 +94,7 @@ export class App {
    * Creates a new app and connects to an Atlas App Services instance.
    *
    * @param id A string app id.
-   * @throws {Error} If no app id is provided.
+   * @throws {@link Error} If no {@link id} is provided.
    */
   constructor(id: string);
 
@@ -102,20 +102,15 @@ export class App {
    * Creates a new app and connects to an Atlas App Services instance.
    *
    * @param config The configuration of the app.
-   * @throws {Error} If no app id is provided.
+   * @throws {@link Error} If no {@link AppConfiguration.id | app id} is provided.
    */
   constructor(config: AppConfiguration);
 
-  /**
-   * Creates a new app and connects to an Atlas App Services instance.
-   *
-   * @param configOrId The configuration of the app or a string app id.
-   * @throws {Error} If no app id is provided.
-   */
   constructor(configOrId: AppConfiguration | string) {
     const config: AppConfiguration = typeof configOrId === "string" ? { id: configOrId } : configOrId;
     assert.object(config, "config");
     const { id, baseUrl } = config;
+    assert.string(id, "id");
     // TODO: This used getSharedApp in the legacy SDK, but it's failing AppTests
     this.internal = binding.App.getUncachedApp(
       {
