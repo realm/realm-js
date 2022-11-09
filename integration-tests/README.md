@@ -208,3 +208,4 @@ These tests have been designed for increased developer experience and productivi
   - Electron is not running tests on Windows nor MacOS - and the tests running on Linux is running an intermediary version of the app, before it gets packaged, which might produce false negative results.
   - React Native tests are not running in React Native "release" mode.
 - Because React Native bundles its JavaScript source files into a single bundle, using the Metro bundler, we need to be explicit in the files we include in the test-suite. I.e. we cannot call the require function with a expression which value will only be known at runtime, such as iterating over a list of files, would be. Therefore `tests/src/index.ts` must require all individual files in which our tests are defined: We cannot simply ask for all `*/**.tests.js` files to be included.
+- We've pinned chai to v4.3.6 to avoid [a "fix" that got introduced in v4.3.7](https://github.com/chaijs/chai/pull/1483).
