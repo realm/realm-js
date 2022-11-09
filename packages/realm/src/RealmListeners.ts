@@ -18,34 +18,25 @@
 
 import { Realm } from "./internal";
 
-export type RealmEventName = "change" | "schema" | "beforenotify";
-enum RealmEvent {
+export enum RealmEvent {
   Change = "change",
   Schema = "schema",
   BeforeNotify = "beforenotify",
 }
-export type RealmListenerCallback = (r: Realm, name: RealmEventName, schema?: Realm.ObjectSchema[]) => void;
 
-// Temporary functions to work between event names and corresponding enums.
-function eventFromName(name: RealmEventName): RealmEvent {
-  switch (name) {
-    case "change":
-      return RealmEvent.Change;
-    case "schema":
-      return RealmEvent.Schema;
-    case "beforenotify":
-      return RealmEvent.BeforeNotify;
-  }
-}
-////////////////////////////////////////////////////////////////////////////
+export type RealmListenerCallback = (r: Realm, name: RealmEvent, schema?: Realm.ObjectSchema[]) => void;
+
+// Temporary functions to work between event names and corresponding enums
+// TODO: We should update the external API to take a `RealmEvent` instead of a string.
+export ////////////////////////////////////////////////////////////////////////////
 /** @internal */
-export class RealmListeners {
+class RealmListeners {
   /**
    * Keeps tracked of registered listener callbacks for Realm class notifications.
    */
-  private eventType: RealmEvent;
-  constructor(private realm: Realm, name: RealmEventName) {
-    this.eventType = eventFromName(name);
+
+  constructor(private realm: Realm, private eventType: RealmEvent) {
+    this.eventType = eventType;
   }
   private listeners = new Set<RealmListenerCallback>();
 

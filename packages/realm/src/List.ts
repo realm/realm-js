@@ -32,7 +32,7 @@ type PartiallyWriteableArray<T> = Pick<Array<T>, "pop" | "push" | "shift" | "uns
  *
  * Lists mostly behave like normal Javascript Arrays, except for that they can
  * only store values of a single type (indicated by the `type` and `optional`
- * properties of the List), and can only be modified inside a ***write*** transaction.
+ * properties of the List), and can only be modified inside a {@link Realm.write | write} transaction.
  *
  * @extends Realm.Collection
  * @memberof Realm
@@ -103,7 +103,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
 
   /**
    * Remove the **last** value from the list and return it.
-   * @throws {Error} If not inside a write transaction.
+   * @throws {@link AssertionError} If not inside a write transaction.
    * @returns The last value or undefined if the list is empty.
    */
   pop(): T | undefined {
@@ -125,10 +125,9 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
    *
    * @param items Values to add to the list.
    * @throws {TypeError} If a `value` is not of a type which can be stored in
-   *   the list, or if an object being added to the list does not match the
-   *   ***Realm.ObjectSchema*** for the list.
+   *   the list, or if an object being added to the list does not match the {@link Realm.ObjectSchema} for the list.
    *
-   * @throws {Error} If not inside a write transaction.
+   * @throws {@link AssertionError} If not inside a write transaction.
    * @returns A number equal to the new length of
    *          the list after adding the values.
    */
@@ -154,7 +153,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
 
   /**
    * Remove the **first** value from the list and return it.
-   * @throws {Error} If not inside a write transaction.
+   * @throws {@link AssertionError} If not inside a write transaction.
    * @returns The first value or undefined if the list is empty.
    */
   shift(): T | undefined {
@@ -175,11 +174,9 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
    *
    * @param items Values to add to the list.
    * @throws {TypeError} If a `value` is not of a type which can be stored in
-   *   the list, or if an object being added to the list does not match the
-   *   ***ObjectSchema*** for the list.
-   * @throws {Error} If not inside a write transaction.
-   * @returns The new ***length*** of
-   *          the list after adding the values.
+   * the list, or if an object being added to the list does not match the {@link Realm.ObjectSchema} for the list.
+   * @throws {@link AssertionError} If not inside a write transaction.
+   * @returns The new {@link length} of the list after adding the values.
    */
   unshift(...items: T[]): number {
     assert.inTransaction(this.realm);
