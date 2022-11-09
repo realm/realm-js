@@ -82,7 +82,7 @@ abstract class WrapperType extends TypeBase {
   }
 }
 
-class Const extends WrapperType {
+export class Const extends WrapperType {
   readonly kind = "Const";
 
   toString() {
@@ -90,7 +90,7 @@ class Const extends WrapperType {
   }
 }
 
-class Pointer extends WrapperType {
+export class Pointer extends WrapperType {
   readonly kind = "Pointer";
 
   toString() {
@@ -98,7 +98,7 @@ class Pointer extends WrapperType {
   }
 }
 
-class Ref extends WrapperType {
+export class Ref extends WrapperType {
   readonly kind = "Ref";
 
   toString() {
@@ -106,7 +106,7 @@ class Ref extends WrapperType {
   }
 }
 
-class RRef extends WrapperType {
+export class RRef extends WrapperType {
   readonly kind = "RRef";
 
   toString() {
@@ -200,7 +200,7 @@ export class Func extends TypeBase {
   }
 }
 
-class Template extends TypeBase {
+export class Template extends TypeBase {
   readonly kind = "Template";
   constructor(public name: string, public args: Type[]) {
     super();
@@ -254,7 +254,7 @@ export class StaticMethod extends Method {
     return `${this.on.cppName}::${this.cppName}(${args})`;
   }
 }
-class Constructor extends StaticMethod {
+export class Constructor extends StaticMethod {
   readonly isConstructor = true;
   constructor(on: Class, name: string, sig: Func) {
     super(on, "", name, "", sig);
@@ -320,7 +320,7 @@ export class Class extends NamedType {
   }
 }
 
-class Interface extends Class {
+export class Interface extends Class {
   readonly isInterface = true;
   readonly sharedPtrWrapped = true;
   readonly needsDeref = true;
@@ -357,15 +357,15 @@ export class Primitive extends TypeBase {
   }
 }
 
-class Opaque extends NamedType {
+export class Opaque extends NamedType {
   readonly kind = "Opaque";
 }
 
-class Enumerator {
+export class Enumerator {
   constructor(public name: string, public value: number) {}
 }
 
-class Enum extends NamedType {
+export class Enum extends NamedType {
   readonly kind = "Enum";
   cppName!: string;
   enumerators: Enumerator[] = [];
@@ -375,7 +375,7 @@ class Enum extends NamedType {
   }
 }
 
-class KeyType extends NamedType {
+export class KeyType extends NamedType {
   readonly kind = "KeyType";
   type!: Type;
 }

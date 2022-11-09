@@ -747,7 +747,7 @@ classes:
 
       is_closed: bool
 
-      audit_context: AuditInterface*
+      audit_context: Nullable<AuditInterface*>
 
       sync_session: Nullable<SharedSyncSession>
       get_latest_subscription_set: SyncSubscriptionSet

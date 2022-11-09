@@ -19,7 +19,7 @@ import { strict as assert } from "assert";
 
 import { TemplateContext } from "../context";
 import { CppVar, CppFunc, CppFuncProps, CppCtor, CppMethod, CppClass, CppDecls } from "../cpp";
-import { bindModel, BoundSpec, Class, InstanceMethod, StaticMethod, Property, Type, Primitive } from "../bound-model";
+import { bindModel, BoundSpec, Class, InstanceMethod, StaticMethod, Property, Type, Primitive, Pointer } from "../bound-model";
 
 import { doJsPasses } from "../js-passes";
 
@@ -389,7 +389,10 @@ function convertToNode(addon: NodeAddon, type: Type, expr: string): string {
     case "Primitive":
       return convertPrimToNode(addon, type.name, expr);
     case "Pointer":
-      return `[&](auto* ptr){ return ptr ? ${c(type.type, "*ptr")}: ${env}.Null(); } (${expr})`;
+      return `[&] (const auto& ptr){
+          REALM_ASSERT(bool(ptr) && "Must mark nullable pointers with Nullable<> in spec");
+          return ${c(type.type, "*ptr")};
+      } (${expr})`;
 
     case "Opaque":
       return `Napi::External<${type.name}>::New(${env}, &${expr})`;
@@ -408,7 +411,7 @@ function convertToNode(addon: NodeAddon, type: Type, expr: string): string {
       switch (type.name) {
         case "std::shared_ptr":
           if (inner.kind == "Class" && inner.sharedPtrWrapped) return `NODE_FROM_SHARED_${inner.name}(${env}, ${expr})`;
-          return c(inner, `*${expr}`);
+          return c(new Pointer(inner), expr);
         case "Nullable":
           return `[&] (auto&& val) { return !val ? ${env}.Null() : ${c(inner, "FWD(val)")}; }(${expr})`;
         case "util::Optional":
