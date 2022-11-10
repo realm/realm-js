@@ -4,8 +4,7 @@
   "scripts": {
     "cli": "tsm --no-warnings --enable-source-maps cli.ts",
     "init": "npm run cli -- init",
-    "test": "npm run cli -- test",
-    "slack-payload": "npm run cli -- slack-payload"
+    "test": "npm run cli -- test"
   },
   "dependencies": {
     "@react-native-community/cli": "^9.3.1",
