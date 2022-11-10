@@ -184,7 +184,11 @@ export class User<
    * If this value has not been configured, it will be empty.
    */
   get customData(): CustomDataType {
-    throw new Error("Not yet implemented");
+    const result = this.internal.customData;
+    if (result === undefined) {
+      return {} as CustomDataType;
+    }
+    return result as CustomDataType;
   }
 
   /**
