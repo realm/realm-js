@@ -390,9 +390,9 @@ records:
   UserIdentity:
     cppName: SyncUserIdentity
     fields:
-      id: 
+      id:
         type: std::string
-      provider_type: 
+      provider_type:
         type: std::string
 
   UserAPIKey:
@@ -1040,6 +1040,7 @@ classes:
   SyncUser:
     sharedPtrWrapped: SharedSyncUser
     properties:
+      all_sessions: std::vector<SharedSyncSession>
       is_logged_in: bool
       identity: const std::string&
       provider_type: const std::string&

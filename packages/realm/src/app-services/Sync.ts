@@ -77,7 +77,7 @@ export namespace Sync {
     app.internal.syncManager.setLoggerFactory(factory);
   }
   export function getAllSyncSessions(user: User): SyncSession[] {
-    throw new Error("Not yet implemented");
+    return user.internal.allSessions.map((session) => new SyncSession(session));
   }
   export function getSyncSession(user: User, partitionValue: PartitionValue): SyncSession | null {
     const config = toBindingSyncConfig({ user, partitionValue });
