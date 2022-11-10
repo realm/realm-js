@@ -39,9 +39,10 @@ const TIMEOUT = 5 * 60 * 1000; // 5 min should be pleanty of time from app has l
 const appName = "InstallTestApp";
 
 function exec(command: string, args: string[], options: cp.SpawnOptions = {}) {
-  const result = cp.spawnSync(command, args, { stdio: "inherit", ...options });
-  if (result.status !== 0) {
-    process.exit(result.status);
+  const { status } = cp.spawnSync(command, args, { stdio: "inherit", ...options });
+  if (status !== 0) {
+    process.exitCode = status;
+    throw new Error(`Failed running '${command} ${args.join(" ")}' (code = ${status})`);
   }
 }
 
