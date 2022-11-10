@@ -6,20 +6,11 @@ on:
     paths:
       - install-tests/react-native/**
       - .github/workflows/install-test-react-native.yml
-  # Every day at 9:00 CET
+  # Every monday at 7:00 CET
   schedule:
-    - cron: "0 8 * * *"
+    - cron: "0 6 * * 1"
   # You can also activate this workflow manually from the Actions tab
   workflow_dispatch:
-    inputs:
-      react-native-version:
-        description: The version of React Native to install
-        required: true
-        default: next
-      realm-version:
-        description: The version of Realm to install
-        required: true
-        default: latest
 
 defaults:
   run:
@@ -27,42 +18,114 @@ defaults:
 
 jobs:
   install:
-    name: Installing Realm → React Native (using Xcode v${{matrix.xcode}}, node v${{ matrix.node }}, npm v${{ matrix.npm }})
-    runs-on: macos-11
+    runs-on: macos-12
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
-        # See https://github.com/actions/virtual-environments/blob/main/images/macos/macos-11-Readme.md#xcode
+        platform:
+          - ios
+          - android
+        realm-version:
+          # - v10 # Enable if we feel the need
+          - latest
+        react-native-version:
+          - latest
+          - next
+          # - nightly # Enable if it's not too noizy
+        new-architecture:
+          - true
+          - false
+        engine:
+          - jsc
+          - hermes
+        # See https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md#xcode
         xcode:
+          # - 14.0.1
           - 13.1
-        npm:
-          - 7
         node:
-          - 14
+          - 16
     env:
       DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode }}.app
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-      - name: Install npm v7
-        run: npm install -g npm@8
+
       - name: ccache
-        uses: hendrikmuhs/ccache-action@v1
+        uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: install-test
+          key: install-test-${{ matrix.platform }}-r@${{ matrix.realm-version }}-rn@${{ matrix.react-native-version }}-${{ matrix.new-architecture && 'new' || 'old' }}-arch
+          max-size: '2.0G'
       - name: Prepend ccache executables to the PATH
-        run: echo PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
-      - name: Install React Native & Realm
-        run: ./install.sh ${{ github.event.inputs.react-native-version }} ${{ github.event.inputs.realm-version }}
+        run: echo "/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
+      - name: Configure ccache
+        run: ccache --set-config="compiler_check=content"
+
+      # TODO: Remove if this becomes unneeded in the future
       - name: Invoke the simulator (making subsequent "open -a Simulator" calls work)
+        if: ${{ matrix.platform == 'ios' }}
         run: open -a ${{ env.DEVELOPER_DIR }}/Contents/Developer/Applications/Simulator.app/Contents/MacOS/Simulator
+
+      - name: Install dependencies of the CLI
+        run: npm ci
+
+      - name: Initialize app
+        # Using "--skip-bundle-install" to let the setup-ruby action install the bundle
+        # Using "--skip-pod-install" to ensure it happens after setup-ruby has executed
+        run: npm run init -- --skip-bundle-install --skip-pod-install --realm-version ${{ matrix.realm-version }} --react-native-version ${{ matrix.react-native-version }} --engine ${{ matrix.engine }}
+
+      - name: CocoaPod cache
+        if: ${{ matrix.platform == 'ios' }}
+        # Using another cache action to work around https://github.com/actions/cache/issues/92
+        uses: pat-s/always-upload-cache@v3.0.11
+        with:
+          path: '**/Pods'
+          key: cocoa-pods-${{ matrix.platform }}-r@${{ matrix.realm-version }}-rn@${{ matrix.react-native-version }}-${{ matrix.new-architecture && 'new' || 'old' }}-arch
+
+      - uses: ruby/setup-ruby@v1
+        if: ${{ matrix.platform == 'ios' }}
+        with:
+          bundler-cache: true
+          working-directory: install-tests/react-native/app
+
+      - if: ${{ matrix.platform == 'ios' }}
+        run: pod install
+        working-directory: install-tests/react-native/app/ios
+
+      - uses: actions/setup-java@v3
+        if: ${{ matrix.platform == 'android' }}
+        with:
+          distribution: 'zulu'
+          java-version: '11'
+
       - name: Run test (iOS)
-        run: ./run-ios.sh
-      # - name: Run test (Android)
-      #   uses: reactivecircus/android-emulator-runner@v2
-      #   with:
-      #     api-level: 29
-      #     target: google_apis
-      #     script: ./run-android.sh
+        if: ${{ matrix.platform == 'ios' }}
+        run: npm test -- --platform ios
+
+      - name: Run test (Android)
+        if: ${{ matrix.platform == 'android' }}
+        uses: reactivecircus/android-emulator-runner@v2
+        timeout-minutes: 30
+        with:
+          api-level: 29
+          target: google_apis
+          script: npm test -- --platform android
+          working-directory: install-tests/react-native
+
+  slack-workflow-status:
+    if: always()
+    name: Post Workflow Status To Slack
+    needs: install
+    runs-on: ubuntu-latest
+    permissions:
+      actions: 'read'
+    steps:
+      - name: Slack Workflow Notification
+        uses: Gamesight/slack-workflow-status@master
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          slack_webhook_url: ${{ secrets.SLACK_TEST_WEBHOOK }}
+          include_jobs: true
+          include_commit_message: false

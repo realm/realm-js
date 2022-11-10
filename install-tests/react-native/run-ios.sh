@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# This file is no longer used and only stored here for future reference into building with ccache enabled
+# Use "npm run cli" instead
+
 set -e
 
 APP_DIR="$PWD/`dirname $0`/app"

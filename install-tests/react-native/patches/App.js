@@ -20,7 +20,7 @@ import { useEffect } from "react";
 import Realm from "realm";
 
 const CALLBACK_HOST = "http://localhost:3000";
-const DELAY = 5000;
+const DELAY = 1000;
 const schema = [{ name: "Person", properties: { name: "string" } }];
 const App = () => {
   useEffect(() => {

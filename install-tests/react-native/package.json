@@ -1,4 +1,19 @@
 {
-  "name": "empty-package-to-avoid-react-native-cli-confusions",
-  "see": "https://github.com/react-native-community/cli/issues/1493"
+  "name": "@realm/react-native-install-tests",
+  "description": "See https://github.com/react-native-community/cli/issues/1493",
+  "scripts": {
+    "cli": "tsm --no-warnings --enable-source-maps cli.ts",
+    "init": "npm run cli -- init",
+    "test": "npm run cli -- test"
+  },
+  "dependencies": {
+    "@react-native-community/cli": "^9.3.1",
+    "concurrently": "^7.5.0",
+    "semver": "^7.3.8",
+    "tsm": "^2.2.2",
+    "yargs": "^17.6.2"
+  },
+  "devDependencies": {
+    "wtfnode": "^0.9.1"
+  }
 }
