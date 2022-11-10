@@ -1,7 +1,13 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Add support for using functions as default property values, in order to allow dynamic defaults [#5001](https://github.com/realm/realm-js/pull/5001), [#2393](https://github.com/realm/realm-js/issues/2393)
+* All fields of a `Realm.Object` treated as optional by TypeScript when constructing a new class-based model, unless specified in the second type parameter [#5000](https://github.com/realm/realm-js/pull/5000)
+* Support for spread operator on `Realm.Object` [#3805](https://github.com/realm/realm-js/pull/3805)
+
+### Breaking changes
+* Removed `keys` and `entries` methods from `Realm#Object`
+  * Use `Object.keys(realmObject)` and `Object.entries(realmObject)` instead
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)

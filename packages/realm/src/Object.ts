@@ -20,6 +20,7 @@ import {
   BSON,
   CanonicalObjectSchema,
   ClassHelpers,
+  ClassMap,
   Constructor,
   DefaultObject,
   JSONCacheMap,
@@ -252,13 +253,13 @@ export class RealmObject<T = DefaultObject> {
    */
   private readonly [INTERNAL_LISTENERS]!: ObjectListeners<T>;
 
-  // TODO: Find a way to bind this in
-  keys(): string[] {
+  /**
+   * @internal
+   * This is being handled and overwritten by class extending Realm.Object
+   * @see {@link ClassMap.defineProperties}
+   */
+  public keys(): string[] {
     throw new Error("This is expected to have a per-class implementation");
-  }
-
-  entries(): [string, unknown][] {
-    throw new Error("Not yet implemented");
   }
 
   /**

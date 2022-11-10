@@ -885,4 +885,45 @@ module.exports = {
       obj.getPropertyType("foo");
     }, "Property 'foo' does not exist on 'AllTypesObject' objects");
   },
+  testSpreadOperator: function () {
+    const realm = new Realm({ schema: [schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes] });
+
+    const object = realm.write(function () {
+      return realm.create("AllTypesObject", allTypesValues);
+    });
+
+    let spread = { ...object, foo: "bar" };
+
+    TestCase.assertEqual(spread.boolCol, object.boolCol);
+
+    TestCase.assertEqual(spread.floatCol, object.floatCol);
+
+    TestCase.assertEqual(spread.doubleCol, object.doubleCol);
+
+    TestCase.assertEqual(spread.stringCol, object.stringCol);
+
+    TestCase.assertEqualWithTolerance(spread.dateCol, object.dateCol);
+
+    TestCase.assertArraysEqual(spread.dataCol, object.dataCol);
+
+    TestCase.assertEqualWithTolerance(spread.objectCol, object.objectCol);
+
+    TestCase.assertArraysEqual(spread.boolArrayCol, object.boolArrayCol);
+
+    TestCase.assertArraysEqual(spread.floatArrayCol, object.floatArrayCol);
+
+    TestCase.assertArraysEqual(spread.doubleArrayCol, object.doubleArrayCol);
+
+    TestCase.assertArraysEqual(spread.stringArrayCol, object.stringArrayCol);
+
+    TestCase.assertArraysEqual(spread.dateArrayCol, object.dateArrayCol);
+
+    TestCase.assertEqualWithTolerance(spread.dataArrayCol, object.dataArrayCol);
+
+    TestCase.assertArraysEqual(spread.objectArrayCol, object.objectArrayCol);
+
+    TestCase.assertEqual(spread.foo, "bar");
+
+    TestCase.assertNotEqual(spread, object);
+  },
 };

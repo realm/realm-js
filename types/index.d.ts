@@ -333,16 +333,6 @@ declare namespace Realm {
         constructor(realm: Realm, values: Unmanaged<T, RequiredProperties>);
 
         /**
-         * @returns An array of the names of the object's properties.
-         */
-        keys(): string[];
-
-        /**
-         * @returns An array of key/value pairs of the object's properties.
-         */
-        entries(): [string, any][];
-
-        /**
          * @returns A plain object for JSON serialization.
          */
         toJSON(): Record<string, unknown>;
