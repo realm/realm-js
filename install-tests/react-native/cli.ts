@@ -45,9 +45,9 @@ function exec(command: string, args: string[], options: cp.SpawnOptions = {}) {
   }
 }
 
-type EnvOptions = { newArchitecture: boolean; engine?: string };
+type EnvOptions = { newArchitecture?: boolean; engine?: string };
 
-function getEnv({ newArchitecture, engine }: EnvOptions) {
+function getEnv({ newArchitecture, engine }: EnvOptions = {}) {
   const env: Record<string, string> = {
     ...process.env,
     // Add ccache specific configuration
@@ -56,12 +56,14 @@ function getEnv({ newArchitecture, engine }: EnvOptions) {
     CCACHE_FILECLONE: "true",
     CCACHE_DEPEND: "true",
     CCACHE_INODECACHE: "true",
-    // From 0.71.0, controlling on the engine is possible on iOS through an environment variable
-    USE_HERMES: engine === "hermes" ? "1" : "0",
   };
   if (newArchitecture) {
     // Needed by iOS when running "pod install"
     env.RCT_NEW_ARCH_ENABLED = "1";
+  }
+  if (engine) {
+    // From 0.71.0, controlling on the engine is possible on iOS through an environment variable
+    env.USE_HERMES = engine === "hermes" ? "1" : "0";
   }
   return env;
 }
@@ -97,12 +99,12 @@ function readPackageJson(packagePath: string) {
 yargs(hideBin(process.argv))
   .strict()
   .demandCommand()
+  .option("app-path", { type: "string", default: DEFAULT_APP_PATH })
   .command(
     "init",
     "Initialize the app template",
     (args) =>
       args
-        .option("app-path", { type: "string", default: DEFAULT_APP_PATH })
         .option("new-architecture", { type: "boolean", default: false })
         .option("realm-version", { type: "string", default: "latest" })
         .option("react-native-version", { type: "string", default: "latest" })
@@ -213,18 +215,16 @@ yargs(hideBin(process.argv))
     "Start the test application",
     (args) =>
       args
-        .option("app-path", { type: "string", default: DEFAULT_APP_PATH })
-        .option("new-architecture", { type: "boolean", default: false })
         .option("platform", { type: "string", choices: ["android", "ios"], demandOption: true })
         .option("release", { description: "Build the app in 'release' mode", type: "boolean", default: false }),
     async (argv) => {
-      const { "app-path": appPath, "new-architecture": newArchitecture, platform, release } = argv;
+      const { "app-path": appPath, platform, release } = argv;
 
       if (!fs.existsSync(appPath)) {
         throw new Error(`Expected a React Native app at '${appPath}'`);
       }
 
-      const env = getEnv({ newArchitecture });
+      const env = getEnv();
 
       function prematureExitCallback(code: number) {
         console.log(`Metro bundler exited unexpectedly (code = ${code})`);
