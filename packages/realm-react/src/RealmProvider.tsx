@@ -68,7 +68,11 @@ export function createRealmProvider(
    * e.g. `path="newPath.realm"`
    */
   return ({ children, fallback: Fallback, realmRef, ...restProps }) => {
-    const [realm, setRealm] = useState<Realm | null>(null);
+    const [realm, setRealm] = useState<Realm | null>(() =>
+      realmConfig.sync === undefined && restProps.sync === undefined
+        ? new Realm(mergeRealmConfiguration(realmConfig, restProps))
+        : null,
+    );
 
     // Automatically set the user in the configuration if its been set.
     const user = useUser();
