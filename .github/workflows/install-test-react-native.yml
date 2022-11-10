@@ -107,6 +107,7 @@ jobs:
       - name: Run test (Android)
         if: ${{ matrix.platform == 'android' }}
         uses: reactivecircus/android-emulator-runner@v2
+        timeout-minutes: 30
         with:
           api-level: 29
           target: google_apis
