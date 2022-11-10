@@ -34,7 +34,7 @@ const CCACHE_PODFILE_PATCH_PATH = path.resolve(PATCHES_PATH, "ccache-Podfile.pat
 const JSC_PODFILE_PATCH_PATH = path.resolve(PATCHES_PATH, "jsc-Podfile.patch");
 const JSC_BUILD_GRADLE_PATCH_PATH = path.resolve(PATCHES_PATH, "jsc-build.gradle.patch");
 const PORT = 3000;
-const TIMEOUT = 5 * 60 * 1000; // 5 min should be pleanty of time from app has launched until message gets received
+const TIMEOUT = 5 * 60 * 1000; // 5 min should be plenty of time from app has launched until message gets received
 
 const appName = "InstallTestApp";
 
