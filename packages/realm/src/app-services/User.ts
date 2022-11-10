@@ -195,7 +195,7 @@ export class User<
    * A profile containing additional information about the user.
    */
   get profile(): UserProfileDataType {
-    throw new Error("Not yet implemented");
+    return this.internal.userProfile as UserProfileDataType;
   }
 
   /**
