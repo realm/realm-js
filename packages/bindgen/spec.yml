@@ -986,8 +986,8 @@ classes:
       refresh_token: std::string
       device_id: std::string
       has_device_id: bool
-      user_profile: UserProfile # TODO
-      identities: std::vector<UserIdentity> # TODO
+      user_profile: UserProfile 
+      identities: std::vector<UserIdentity>
       custom_data: util::Optional<bson::BsonDocument>
       sync_manager: SharedSyncManager
       state: SyncUserState
