@@ -1001,16 +1001,17 @@ classes:
 
   UserProfile:
     cppName: SyncUserProfile
-    properties:
-      name: util::Optional<std::string>
-      email: util::Optional<std::string>
-      picture_url: util::Optional<std::string>
-      first_name: util::Optional<std::string>
-      last_name: util::Optional<std::string>
-      gender: util::Optional<std::string>
-      birthday: util::Optional<std::string>
-      min_age: util::Optional<std::string>
-      max_age: util::Optional<std::string>
+    methods:
+      name: '() -> util::Optional<std::string>'
+      email: '() -> util::Optional<std::string>'
+      picture_url: '() -> util::Optional<std::string>'
+      first_name: '() -> util::Optional<std::string>'
+      last_name: '() -> util::Optional<std::string>'
+      gender: '() -> util::Optional<std::string>'
+      birthday: '() -> util::Optional<std::string>'
+      min_age: '() -> util::Optional<std::string>'
+      max_age: '() -> util::Optional<std::string>'
+      data: '() -> bson::BsonDocument'  
 
   AppSubscriptionToken:
     cppName: app::App::Token
