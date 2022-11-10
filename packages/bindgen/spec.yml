@@ -1070,6 +1070,7 @@ classes:
       resend_confirmation_email: '(email: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
       reset_password: '(password: const std::string&, token: const std::string&, token_id: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
       send_reset_password_email: '(email: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      call_reset_password_function: '(email: const std::string&, password: const std::string&, args: const bson::BsonArray&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
 
   UserAPIKeyProviderClient:
     cppName: app::App::UserAPIKeyProviderClient
