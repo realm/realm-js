@@ -257,14 +257,10 @@ function convertPrimToNode(addon: NodeAddon, type: string, expr: string): string
     case "uint64_t":
       return `Napi::BigInt::New(${env}, ${expr})`;
 
+    case "StringData":
     case "std::string_view":
     case "std::string":
       return `([&] (auto&& sd) {
-                return Napi::String::New(${env}, sd.data(), sd.size());
-            }(${expr}))`;
-
-    case "StringData":
-      return `([&] (StringData sd) {
                 return Napi::String::New(${env}, sd.data(), sd.size());
             }(${expr}))`;
 
