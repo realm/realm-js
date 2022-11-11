@@ -986,8 +986,8 @@ classes:
       refresh_token: std::string
       device_id: std::string
       has_device_id: bool
-      # user_profile: UserProfile # TODO
-      identities: std::vector<UserIdentity> # TODO
+      user_profile: UserProfile 
+      identities: std::vector<UserIdentity>
       custom_data: util::Optional<bson::BsonDocument>
       sync_manager: SharedSyncManager
       state: SyncUserState
@@ -998,6 +998,20 @@ classes:
       subscribe: '(observer: (user: IgnoreArgument<const SyncUser&>)) -> SyncUserSubscriptionToken'
       unsubscribe: '(token: SyncUserSubscriptionToken)'
       # TODO update methods?
+
+  UserProfile:
+    cppName: SyncUserProfile
+    methods:
+      name: '() -> util::Optional<std::string>'
+      email: '() -> util::Optional<std::string>'
+      picture_url: '() -> util::Optional<std::string>'
+      first_name: '() -> util::Optional<std::string>'
+      last_name: '() -> util::Optional<std::string>'
+      gender: '() -> util::Optional<std::string>'
+      birthday: '() -> util::Optional<std::string>'
+      min_age: '() -> util::Optional<std::string>'
+      max_age: '() -> util::Optional<std::string>'
+      data: '() -> bson::BsonDocument'  
 
   AppSubscriptionToken:
     cppName: app::App::Token
@@ -1056,6 +1070,7 @@ classes:
       resend_confirmation_email: '(email: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
       reset_password: '(password: const std::string&, token: const std::string&, token_id: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
       send_reset_password_email: '(email: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      call_reset_password_function: '(email: const std::string&, password: const std::string&, args: const bson::BsonArray&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
 
   UserAPIKeyProviderClient:
     cppName: app::App::UserAPIKeyProviderClient
