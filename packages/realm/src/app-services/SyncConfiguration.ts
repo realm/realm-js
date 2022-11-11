@@ -120,9 +120,8 @@ function validatePartitionValue(partitionValue: unknown) {
   if (partitionValue === undefined) {
     throw new Error(partitionValue + " is not an allowed PartitionValue");
   }
-  const numberValue = Number(partitionValue);
-  if (!isNaN(numberValue)) {
-    validateNumberValue(numberValue);
+  if (typeof partitionValue == "number") {
+    validateNumberValue(partitionValue);
   }
 }
 
