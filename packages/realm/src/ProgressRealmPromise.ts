@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { Helpers } from "./binding";
 import {
   Configuration,
   OpenRealmBehaviorType,
@@ -78,11 +79,11 @@ export class ProgressRealmPromise implements Promise<Realm> {
         this.task = binding.Realm.getSynchronizedRealm(bindingConfig);
         this.task
           .start()
-          .then(async () => {
+          .then(async (tsr) => {
             // This callback is passed a `ThreadSafeReference` which can (except not easily) be resolved to a Realm
             // We could consider comparing that to the Realm we create below,
             // since the coordinator should ensure they're pointing to the same underlying Realm.
-            const realm = new Realm(config);
+            const realm = new Realm(config, binding.Helpers.consumeThreadSafeReferenceToSharedRealm(tsr));
 
             const initialSubscriptions = config.sync && config.sync.flexible ? config.sync.initialSubscriptions : false;
             const realmExists = Realm.exists(config);
