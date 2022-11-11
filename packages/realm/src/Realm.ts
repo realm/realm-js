@@ -411,6 +411,11 @@ export class Realm {
    */
   public readonly internal: binding.Realm;
 
+  /**
+   * The sync session if this is a synced Realm
+   */
+  public readonly syncSession: SyncSession | null;
+
   private schemaExtras: RealmSchemaExtra = {};
   private classes: ClassMap;
   private changeListeners = new RealmListeners(this, RealmEvent.Change);
@@ -485,6 +490,9 @@ export class Realm {
     });
 
     this.classes = new ClassMap(this, this.internal.schema, this.schema);
+
+    const syncSession = this.internal.syncSession;
+    this.syncSession = syncSession ? new SyncSession(syncSession) : null;
   }
 
   /**
@@ -572,21 +580,6 @@ export class Realm {
   }
 
   /**
-   * The sync session if this is a synced Realm
-   * @readonly
-   */
-  get syncSession(): SyncSession | null {
-    const { syncConfig, path } = this.internal.config;
-    if (syncConfig) {
-      const session = syncConfig.user.syncManager.getExistingActiveSession(path);
-      if (session) {
-        return new SyncSession(session);
-      }
-    }
-    return null;
-  }
-
-  /**
    * The latest set of flexible sync subscriptions.
    * @throws {@link Error} If flexible sync is not enabled for this app
    */
@@ -601,8 +594,7 @@ export class Realm {
    */
   close(): void {
     this.internal.close();
-    // this.syncSession?.internal.close(); // Won't be good if session multiplexing is enabled
-    // this.syncSession?.internal.$resetSharedPtr();
+    this.syncSession?.resetInternal();
   }
 
   // TODO: Support embedded objects and asymmetric sync
