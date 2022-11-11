@@ -24,8 +24,11 @@ import {
   DefaultObject,
   DefaultUserProfileData,
   Listeners,
+  MongoClient,
   ProviderType,
+  PushClient,
   binding,
+  createFactory,
   isProviderType,
 } from "../internal";
 
@@ -58,7 +61,25 @@ export interface UserIdentity {
   providerType: ProviderType;
 }
 
+/** @internal */
+function cleanArguments(args: unknown[] | unknown): unknown[] | unknown {
+  if (Array.isArray(args)) {
+    return args.map((x) => cleanArguments(x));
+  }
+  if (args === null || typeof args != "object") {
+    return args;
+  }
+  const result: { [key: string]: unknown } = {};
+  for (const [k, v] of Object.entries(args)) {
+    if (typeof v !== "undefined") {
+      result[k] = cleanArguments(v);
+    }
+  }
+  return result;
+}
+
 type UserListenerToken = binding.SyncUserSubscriptionToken;
+
 export class User<
   FunctionsFactoryType = DefaultFunctionsFactory,
   CustomDataType = DefaultObject,
@@ -177,7 +198,7 @@ export class User<
    * Use this to call functions defined by the Atlas App Services application, as this user.
    */
   get functions(): FunctionsFactoryType {
-    throw new Error("Not yet implemented");
+    return createFactory(this as User, undefined);
   }
 
   /**
@@ -224,8 +245,14 @@ export class User<
    * @param name Name of the function.
    * @param args Arguments passed to the function.
    */
-  async callFunction(name: string, ...args: unknown[]): Promise<unknown> {
-    throw new Error("Not yet implemented");
+  callFunction(name: string, ...args: unknown[]): Promise<unknown> {
+    return this.callFunctionOnService(name, undefined, args);
+  }
+
+  /** @internal */
+  callFunctionOnService(name: string, serviceName: string | undefined, ...args: unknown[]) {
+    const cleanedArgs = cleanArguments(args);
+    return this.app.internal.callFunction(this.internal, name, cleanedArgs as binding.EJson[], serviceName);
   }
 
   /**
@@ -240,10 +267,12 @@ export class User<
   /**
    * Use the Push service to enable sending push messages to this user via Firebase Cloud Messaging (FCM).
    *
+   * @deprecated https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/
    * @returns An service client with methods to register and deregister the device on the user.
    */
-  push(serviceName: string): unknown {
-    throw new Error("Not yet implemented");
+  push(serviceName: string): PushClient {
+    const internal = this.app.internal.pushNotificationClient(serviceName);
+    return new PushClient(this.internal, internal);
   }
 
   /**
@@ -256,7 +285,21 @@ export class User<
    *                       .find({color: 'blue'});
    */
   mongoClient(serviceName: string): unknown {
-    throw new Error("Not yet implemented");
+    return {
+      get serviceName() {
+        return serviceName;
+      },
+      db: (dbName: string) => {
+        return {
+          get name() {
+            return dbName;
+          },
+          collection: (collectionName: string) => {
+            return new MongoClient(this.internal, serviceName, dbName, collectionName);
+          },
+        };
+      },
+    };
   }
 
   /**
