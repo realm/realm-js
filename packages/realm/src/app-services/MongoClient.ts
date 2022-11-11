@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { Document, EJSON } from "bson";
-import { DefaultFunctionsFactory, User, createFactory } from "../internal";
+import { DefaultFunctionsFactory, User, binding, createFactory } from "../internal";
 
 /**
  * Options passed when finding a signle document
@@ -161,18 +161,20 @@ type Update = Record<string, unknown>;
 type AggregatePipelineStage = Record<string, unknown>;
 
 export class MongoClient<T extends Document> {
+  /** @internal */
+  private user: binding.SyncUser;
   databaseName: string;
   name: string;
-  user: User;
   serviceName: string;
   functions: DefaultFunctionsFactory;
 
   /**
    * Construct a remote collection of documents
    */
-  constructor(user: User, serviceName: string, databaseName: string, collectionName: string) {
+  /** @internal */
+  constructor(user: binding.SyncUser, serviceName: string, databaseName: string, collectionName: string) {
     this.user = user;
-    this.functions = createFactory(user, serviceName);
+    this.functions = createFactory(User.get(user), serviceName);
     this.databaseName = databaseName;
     this.name = collectionName;
     this.serviceName = serviceName;
