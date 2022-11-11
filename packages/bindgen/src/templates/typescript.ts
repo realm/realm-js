@@ -224,10 +224,7 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
         continue;
       }
       const transformedSig = meth.sig.asyncTransformOrSelf();
-      const ret =
-        meth.jsName == "$resetSharedPtr" // Special case to simulate destructive semantics.
-          ? "asserts this is never"
-          : generateType(spec, transformedSig.ret, Kind.Ret);
+      const ret = generateType(spec, transformedSig.ret, Kind.Ret);
       out(
         meth.isStatic ? "static" : "",
         meth.jsName,
