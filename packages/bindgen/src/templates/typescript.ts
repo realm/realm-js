@@ -49,8 +49,9 @@ const PRIMITIVES_MAPPING: Record<string, string> = {
   "bson::BsonArray": "EJson[]",
 };
 
+// Be Careful! These need to apply to the *whole* type, so arg[] would be problematic if arg is A|B.
 const TEMPLATE_MAPPING: Record<string, (...args: string[]) => string> = {
-  "std::vector": (arg) => `${arg}[]`,
+  "std::vector": (arg) => `Array<${arg}>`,
   "util::Optional": (arg) => `undefined | ${arg}`,
   Nullable: (t) => `null | ${t}`,
   "std::shared_ptr": (arg) => arg,
