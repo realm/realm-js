@@ -26,6 +26,7 @@ import {
   SyncConfiguration,
   TimeoutPromise,
   User,
+  assert,
   binding,
   fromBindingSyncError,
 } from "../internal";
@@ -95,6 +96,7 @@ export function toBindingErrorHandler(onError: ErrorCallback) {
     const session = new SyncSession(sessionInternal);
     const error = fromBindingSyncError(bindingError);
     onError(session, error);
+    session.resetInternal();
   };
 }
 
@@ -158,11 +160,23 @@ const CONNECTION_LISTENERS = new Listeners<ConnectionNotificationCallback, Liste
 
 export class SyncSession {
   /** @internal */
-  public internal: binding.SyncSession;
+  private _internal: binding.SyncSession | null;
+  /** @internal */
+  public get internal() {
+    assert(this._internal, "This SyncSession is no longer valid");
+    return this._internal;
+  }
 
   /** @internal */
   constructor(internal: binding.SyncSession) {
-    this.internal = internal;
+    this._internal = internal;
+  }
+
+  /**@internal*/
+  resetInternal() {
+    if (!this._internal) return;
+    this._internal.$resetSharedPtr();
+    this._internal = null;
   }
 
   // TODO: Return the `error_handler` and `custom_http_headers`
