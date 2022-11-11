@@ -267,6 +267,7 @@ export class User<
   /**
    * Use the Push service to enable sending push messages to this user via Firebase Cloud Messaging (FCM).
    *
+   * @deprecated https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/
    * @returns An service client with methods to register and deregister the device on the user.
    */
   push(serviceName: string): PushClient {
