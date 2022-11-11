@@ -92,7 +92,7 @@ export class User<
   public internal: binding.SyncUser;
 
   // cached version of profile
-  private _profile: UserProfileDataType | undefined;
+  private cachedProfile: UserProfileDataType | undefined;
 
   private listeners = new Listeners<UserChangeCallback, UserListenerToken>({
     register: (callback: () => void): UserListenerToken => {
@@ -113,7 +113,7 @@ export class User<
   constructor(internal: binding.SyncUser, app: App) {
     this.internal = internal;
     this.app = app;
-    this._profile = undefined;
+    this.cachedProfile = undefined;
   }
 
   /**
@@ -199,10 +199,10 @@ export class User<
    * A profile containing additional information about the user.
    */
   get profile(): UserProfileDataType {
-    if (!this._profile) {
-      this._profile = this.internal.userProfile.data() as UserProfileDataType;
+    if (!this.cachedProfile) {
+      this.cachedProfile = this.internal.userProfile.data() as UserProfileDataType;
     }
-    return this._profile;
+    return this.cachedProfile;
   }
 
   /**
