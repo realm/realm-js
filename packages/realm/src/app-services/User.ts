@@ -91,6 +91,9 @@ export class User<
   /** @internal */
   public internal: binding.SyncUser;
 
+  // cached version of profile
+  private cachedProfile: UserProfileDataType | undefined;
+
   private listeners = new Listeners<UserChangeCallback, UserListenerToken>({
     register: (callback: () => void): UserListenerToken => {
       return this.internal.subscribe(callback);
@@ -110,6 +113,7 @@ export class User<
   constructor(internal: binding.SyncUser, app: App) {
     this.internal = internal;
     this.app = app;
+    this.cachedProfile = undefined;
   }
 
   /**
@@ -184,14 +188,21 @@ export class User<
    * If this value has not been configured, it will be empty.
    */
   get customData(): CustomDataType {
-    throw new Error("Not yet implemented");
+    const result = this.internal.customData;
+    if (result === undefined) {
+      return {} as CustomDataType;
+    }
+    return result as CustomDataType;
   }
 
   /**
    * A profile containing additional information about the user.
    */
   get profile(): UserProfileDataType {
-    throw new Error("Not yet implemented");
+    if (!this.cachedProfile) {
+      this.cachedProfile = this.internal.userProfile.data() as UserProfileDataType;
+    }
+    return this.cachedProfile;
   }
 
   /**
@@ -261,7 +272,8 @@ export class User<
    * @returns The newly fetched custom data.
    */
   async refreshCustomData(): Promise<CustomDataType> {
-    throw new Error("Not yet implemented");
+    await this.app.internal.refreshCustomData(this.internal);
+    return this.customData;
   }
 
   /**
