@@ -1036,9 +1036,16 @@ classes:
       userAPIKeyProviderClient:
         - sig: () -> UserAPIKeyProviderClient
           cppName: provider_client<app::App::UserAPIKeyProviderClient>
+      push_notification_client: '(service_name: const std::string&) -> PushClient'
       subscribe: '(observer: (app: IgnoreArgument<const App&>)) -> AppSubscriptionToken'
       unsubscribe: '(token: AppSubscriptionToken)'
       call_function: '(user: const SharedSyncUser&, name: std::string, args: EJsonArray, service_name: util::Optional<std::string>, cb: AsyncCallback<(result: Nullable<const EJson*>, err: util::Optional<AppError>)>)'
+
+  PushClient:
+    cppName: app::PushClient
+    methods:
+      register_device: '(registration_token: const std::string&, sync_user: const std::shared_ptr<SyncUser>&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      deregister_device: '(sync_user: const std::shared_ptr<SyncUser>&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
 
   UsernamePasswordProviderClient:
     cppName: app::App::UsernamePasswordProviderClient
