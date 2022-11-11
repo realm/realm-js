@@ -24,12 +24,12 @@ import {
   DefaultObject,
   DefaultUserProfileData,
   Listeners,
+  MongoClient,
   ProviderType,
   PushClient,
   binding,
   createFactory,
   isProviderType,
-  MongoClient,
 } from "../internal";
 
 export type UserChangeCallback = () => void;
@@ -65,17 +65,17 @@ export interface UserIdentity {
 function cleanArguments(args: unknown[] | unknown): unknown[] | unknown {
   if (Array.isArray(args)) {
     return args.map((x) => cleanArguments(x));
-  } else if (typeof args === "object") {
-    const result: { [key: string]: unknown } = {};
-    for (const [k, v] of Object.entries(args as object)) {
-      if (typeof v !== "undefined") {
-        result[k] = v;
-      }
-    }
-    return result;
-  } else {
+  }
+  if (args === null || typeof args != "object") {
     return args;
   }
+  const result: { [key: string]: unknown } = {};
+  for (const [k, v] of Object.entries(args)) {
+    if (typeof v !== "undefined") {
+      result[k] = cleanArguments(v);
+    }
+  }
+  return result;
 }
 
 type UserListenerToken = binding.SyncUserSubscriptionToken;
