@@ -103,6 +103,7 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
   }
   const { user, onError, _sessionStopPolicy } = config;
   assert.instanceOf(user, User, "user");
+  validatePartitionValue(config.partitionValue);
   const partitionValue = EJSON.stringify(config.partitionValue as EJSON.SerializableTypes);
   return {
     user: config.user.internal,
@@ -112,4 +113,28 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
       ? toBindingStopPolicy(_sessionStopPolicy)
       : binding.SyncSessionStopPolicy.AfterChangesUploaded,
   };
+}
+
+/** @internal */
+function validatePartitionValue(partitionValue: unknown) {
+  if (partitionValue === undefined) {
+    throw new Error(partitionValue + " is not an allowed PartitionValue");
+  }
+  const numberValue = Number(partitionValue);
+  if (!isNaN(numberValue)) {
+    validateNumberValue(numberValue);
+  }
+}
+
+/** @internal */
+function validateNumberValue(numberValue: number) {
+  if (!Number.isInteger(numberValue)) {
+    throw new Error("PartitionValue " + numberValue + " must be of type integer");
+  }
+  if (numberValue > Number.MAX_SAFE_INTEGER) {
+    throw new Error("PartitionValue " + numberValue + " is greater than Number.MAX_SAFE_INTEGER");
+  }
+  if (numberValue < Number.MIN_SAFE_INTEGER) {
+    throw new Error("PartitionValue " + numberValue + " is lesser than Number.MIN_SAFE_INTEGER");
+  }
 }
