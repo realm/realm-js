@@ -216,6 +216,12 @@ struct Helpers {
         error.server_requests_action = code == 211 ? sync::ProtocolErrorInfo::Action::ClientReset : sync::ProtocolErrorInfo::Action::Warning;
         SyncSession::OnlyForTesting::handle_error(session, error);
     }
+
+    // This is entirely because ThreadSafeReference is a move-only type, and those are hard to expose to JS.
+    // Instead, we are exposing a function that takes a mutable lvalue reference and moves from it.
+    static SharedRealm consume_thread_safe_reference_to_shared_realm(ThreadSafeReference& tsr) {
+        return Realm::get_shared_realm(std::move(tsr));
+    }
 };
 
 struct ObjectChangeSet {

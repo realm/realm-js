@@ -450,10 +450,12 @@ export class Realm {
    */
   constructor(config: Configuration);
   /** @internal */
+  constructor(config: Configuration, internal: binding.Realm);
+  /** @internal */
   constructor(internal: binding.Realm, schemaExtras?: RealmSchemaExtra);
-  constructor(arg: Configuration | binding.Realm | string = {}, schemaExtras = {}) {
+  constructor(arg: Configuration | binding.Realm | string = {}, secondArg?: object) {
     if (arg instanceof binding.Realm) {
-      this.schemaExtras = schemaExtras;
+      this.schemaExtras = (secondArg ?? {}) as RealmSchemaExtra;
       this.internal = arg;
     } else {
       const config = typeof arg === "string" ? { path: arg } : arg;
@@ -461,7 +463,8 @@ export class Realm {
       const { bindingConfig, schemaExtras } = Realm.transformConfig(config);
       debug("open", bindingConfig);
       this.schemaExtras = schemaExtras;
-      this.internal = binding.Realm.getSharedRealm(bindingConfig);
+      assert(!secondArg || secondArg instanceof binding.Realm, "The realm constructor only takes a single argument");
+      this.internal = secondArg ?? binding.Realm.getSharedRealm(bindingConfig);
 
       binding.Helpers.setBindingContext(this.internal, {
         didChange: (r) => {
