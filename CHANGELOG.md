@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 11.2.0 (2022-11-12)
 
 ### Enhancements
 * Flexible sync will now wait for the server to have sent all pending history after a bootstrap before marking a subscription as Complete. ([realm/realm-core#5795](https://github.com/realm/realm-core/pull/5795))
