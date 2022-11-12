@@ -1,11 +1,12 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Flexible sync will now wait for the server to have sent all pending history after a bootstrap before marking a subscription as Complete. ([realm/realm-core#5795](https://github.com/realm/realm-core/pull/5795))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fix database corruption and encryption issues on apple platforms. ([#5076](https://github.com/realm/realm-js/issues/5076), since v10.12.0)
+* Sync bootstraps will not be applied in a single write transaction - they will be applied 1MB of changesets at a time. ([realm/realm-core#5999](https://github.com/realm/realm-core/pull/5999), since v10.19.0).
+* Fix a race condition which could result in `operation cancelled` errors being delivered to `Realm#open` rather than the actual sync error which caused things to fail. ([realm/realm-core#5968](https://github.com/realm/realm-core/pull/5968), v1.0.0).
 
 ### Compatibility
 * React Native >= v0.70.0
@@ -14,9 +15,9 @@
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v12.11.0 to v12.12.0.
+* Binaries for Centos/RHEL 7 are included in released. ([#5006](https://github.com/realm/realm-js/issues/5006), since v10.21.0)
+* Binaries for Linux/ARMv7 are included in released.
 
 ## 11.1.0 (2022-11-01)
 ### Enhancements
