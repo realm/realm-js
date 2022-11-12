@@ -360,7 +360,7 @@ declare namespace Realm {
         /**
          * @returns Results<T>
          */
-        linkingObjects<T>(objectType: string, property: string): Results<T & Realm.Object>;
+        linkingObjects<T>(objectType: string, property: string): Results<T & Realm.Object<T>>;
 
         /**
          * @returns number
@@ -909,7 +909,7 @@ declare namespace Realm {
              * e.g. `Realm.objects("Cat").filtered("age > 10")`.
              * @returns The subscription with the specified query, or null if the subscription is not found.
              */
-            findByQuery<T>(query: Realm.Results<T & Realm.Object>): Subscription | null;
+            findByQuery<T>(query: Realm.Results<T & Realm.Object<T>>): Subscription | null;
 
             /**
              * @returns The state of the SubscriptionSet.
@@ -1158,7 +1158,7 @@ declare class Realm {
      * @param {Realm.ObjectSchema} object schema describing the object that should be created.
      * @returns {T}
      */
-    static createTemplateObject<T>(objectSchema: Realm.ObjectSchema): T & Realm.Object;
+    static createTemplateObject<T>(objectSchema: Realm.ObjectSchema): T & Realm.Object<T>;
 
     /**
      * Delete the Realm file for the given configuration.
@@ -1225,8 +1225,8 @@ declare class Realm {
      * @param  {Realm.UpdateMode} mode? If not provided, `Realm.UpdateMode.Never` is used.
      * @returns T & Realm.Object
      */
-    create<T>(type: string, properties: Unmanaged<T>, mode?: Realm.UpdateMode.Never): T & Realm.Object;
-    create<T>(type: string, properties: Partial<T> | Partial<Unmanaged<T>>, mode: Realm.UpdateMode.All | Realm.UpdateMode.Modified): T & Realm.Object;
+    create<T>(type: string, properties: Unmanaged<T>, mode?: Realm.UpdateMode.Never): T & Realm.Object<T>;
+    create<T>(type: string, properties: Partial<T> | Partial<Unmanaged<T>>, mode: Realm.UpdateMode.All | Realm.UpdateMode.Modified): T & Realm.Object<T>;
 
     /**
      * @param  {Class} type
@@ -1258,7 +1258,7 @@ declare class Realm {
      * @param  {number|string|ObjectId|UUID} key
      * @returns {T | null}
      */
-    objectForPrimaryKey<T>(type: string, key: Realm.PrimaryKey): (T & Realm.Object) | null;
+    objectForPrimaryKey<T>(type: string, key: Realm.PrimaryKey): (T & Realm.Object<T>) | null;
 
     /**
      * @param  {Class} type
@@ -1274,7 +1274,7 @@ declare class Realm {
      * @param  {string} type
      * @returns Realm.Results<T & Realm.Object>
      */
-    objects<T>(type: string): Realm.Results<T & Realm.Object>;
+    objects<T>(type: string): Realm.Results<T & Realm.Object<T>>;
 
     /**
      * @param  {Class} type
@@ -1283,7 +1283,7 @@ declare class Realm {
     objects<T extends Realm.Object>(type: {new(...arg: any[]): T; }): Realm.Results<T>;
 
     // Combined definitions
-    objects<T>(type: string | {new(...arg: any[]): T; }): Realm.Results<T & Realm.Object>;
+    objects<T>(type: string | {new(...arg: any[]): T; }): Realm.Results<T & Realm.Object<T>>;
 
     /**
      * @param  {string} name
