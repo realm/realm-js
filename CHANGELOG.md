@@ -16,6 +16,8 @@
 
 ### Internal
 * Upgraded Realm Core from v12.11.0 to v12.12.0.
+* Binaries for Centos/RHEL 7 are included in released. ([#5006](https://github.com/realm/realm-js/issues/5006), since v10.21.0)
+* Binaries for Linux/ARMv7 are included in released.
 
 ## 11.1.0 (2022-11-01)
 ### Enhancements
