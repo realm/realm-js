@@ -1,3 +1,23 @@
+## vNext (TBD)
+
+### Enhancements
+* Flexible sync will now wait for the server to have sent all pending history after a bootstrap before marking a subscription as Complete. ([realm/realm-core#5795](https://github.com/realm/realm-core/pull/5795))
+
+### Fixed
+* Fix database corruption and encryption issues on apple platforms. ([#5076](https://github.com/realm/realm-js/issues/5076), since v10.12.0)
+* Sync bootstraps will not be applied in a single write transaction - they will be applied 1MB of changesets at a time. ([realm/realm-core#5999](https://github.com/realm/realm-core/pull/5999), since v10.19.0).
+* Fix a race condition which could result in `operation cancelled` errors being delivered to `Realm#open` rather than the actual sync error which caused things to fail. ([realm/realm-core#5968](https://github.com/realm/realm-core/pull/5968), v1.0.0).
+
+### Compatibility
+* React Native >= v0.64.0
+* Atlas App Services.
+* Realm Studio v12.0.0.
+* APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
+* File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Internal
+* Upgraded Realm Core from v12.11.0 to v12.12.0.
+
 ## 10.23.0 (2022-10-31)
 ### Enhancements
 * Improve performance of client reset with automatic recovery and converting top-level tables into embedded tables. ([realm/realm-core#5897](https://github.com/realm/realm-core/pull/5897))
