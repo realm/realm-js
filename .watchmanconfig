@@ -2,6 +2,7 @@
   "ignore_dirs": [
     "react-native/node_modules",
     "packages/realm-web",
-    "packages/realm-web-integration-tests"
+    "packages/realm-web-integration-tests",
+    "packages/metro-config"
   ]
 }

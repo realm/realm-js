@@ -31,4 +31,6 @@ import "./utils/import-app.test";
 import "./utils/chai-plugin.test";
 
 import "./tests";
-import "./performance-tests";
+// TODO: Uncomment when the Metro config has been updated to load ESM
+// or the performance tests no longer use an ESM dependency.
+// import "./performance-tests";

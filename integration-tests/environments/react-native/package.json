@@ -21,8 +21,7 @@
     "common": "mocha-remote --template @realm/mocha-reporter --context mode=$MODE,appImporterIsRemote,$MOCHA_REMOTE_CONTEXT --watch $WATCH -- concurrently --kill-others-on-fail npm:metro npm:runner npm:app-importer",
     "app-importer": "realm-app-importer serve ../../realm-apps",
     "metro": "react-native start --reset-cache",
-    "runner": "node harness/runner.js",
-    "prepare": "pod-install"
+    "runner": "node harness/runner.js"
   },
   "dependencies": {
     "@react-native-community/art": "^1.2.0",
@@ -32,7 +31,7 @@
     "mocha-remote-client": "^1.5.0",
     "path-browserify": "^1.0.1",
     "react": "18.1.0",
-    "react-native": "0.70.0",
+    "react-native": "0.70.5",
     "react-native-fs": "^2.20.0",
     "react-native-progress": "^4.1.2",
     "realm": "*",
@@ -43,10 +42,9 @@
     "@babel/runtime": "^7.12.5",
     "@realm/metro-config": "*",
     "concurrently": "^6.0.2",
-    "metro-react-native-babel-preset": "^0.72.1",
+    "metro-react-native-babel-preset": "^0.72.3",
     "mocha-github-actions-reporter": "^0.2.3",
     "mocha-remote-cli": "^1.5.0",
-    "pod-install": "^0.1.23",
     "puppeteer": "^9.0.0"
   }
 }
