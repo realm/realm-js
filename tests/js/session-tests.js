@@ -145,6 +145,14 @@ function unexpectedError(e) {
 }
 
 module.exports = {
+  testHttpHeaders() {
+    const config = {
+      ...getSyncConfiguration(),
+      customHttpHeaders: { langue: "English" },
+      onError: (err, syncSession) => {},
+    };
+  },
+
   testLocalRealmHasNoSession() {
     let realm = new Realm();
     TestCase.assertNull(realm.syncSession);

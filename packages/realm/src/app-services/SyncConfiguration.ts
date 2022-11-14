@@ -62,6 +62,7 @@ export type BaseSyncConfiguration = {
   newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
   existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
   onError?: ErrorCallback;
+  customHttpHeaders?: Record<string, string>;
   /** @internal */
   _sessionStopPolicy?: SessionStopPolicy; // TODO: Why is this _ prefixed?
 };
@@ -112,6 +113,7 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
     stopPolicy: _sessionStopPolicy
       ? toBindingStopPolicy(_sessionStopPolicy)
       : binding.SyncSessionStopPolicy.AfterChangesUploaded,
+    customHttpHeaders: config.customHttpHeaders ? (config.customHttpHeaders as Record<string, string>) : {},
   };
 }
 
