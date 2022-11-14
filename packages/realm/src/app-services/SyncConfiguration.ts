@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { EJSON } from "bson";
+import { EJSON, ObjectId, UUID } from "bson";
 
 import {
   BSON,
@@ -116,12 +116,13 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
 }
 
 /** @internal */
-function validatePartitionValue(partitionValue: unknown) {
-  if (partitionValue === undefined) {
-    throw new Error(partitionValue + " is not an allowed PartitionValue");
+function validatePartitionValue(pv: unknown) {
+  if (typeof pv === "number") {
+    validateNumberValue(pv);
+    return;
   }
-  if (typeof partitionValue == "number") {
-    validateNumberValue(partitionValue);
+  if (!(pv instanceof ObjectId || pv instanceof UUID || typeof pv === "string" || pv === null)) {
+    throw new Error(pv + " is not an allowed PartitionValue");
   }
 }
 
