@@ -20,14 +20,14 @@ import { Credentials, User } from "realm";
 
 import { importAppBefore } from "../../hooks";
 import { SignJWT } from "jose";
-import { createSecretKey } from "crypto";
 
 describe.skipIf(environment.missingServer, "jwt credentials", () => {
   importAppBefore("with-jwt");
   it("authenticates", async function (this: AppContext) {
     this.timeout(60 * 1000); // 1 min
     // Needs to match the value in the apps secrets.json
-    const secretKey = createSecretKey("2k66QfKeTRk3MdZ5vpDYgZCu2k66QfKeTRk3MdZ5vpDYgZCu", "utf-8");
+    const privateKey = "2k66QfKeTRk3MdZ5vpDYgZCu2k66QfKeTRk3MdZ5vpDYgZCu";
+    const privateKeyBuffer = Buffer.from(privateKey, "utf-8");
     const token = await new SignJWT({
       aud: this.app.id,
       sub: "my-awesome-internal-id",
@@ -35,7 +35,7 @@ describe.skipIf(environment.missingServer, "jwt credentials", () => {
     })
       .setProtectedHeader({ alg: "HS256" })
       .setExpirationTime(4070908800) // 01/01/2099
-      .sign(secretKey);
+      .sign(privateKeyBuffer);
     const credentials = Credentials.jwt(token);
     const user = await this.app.logIn(credentials);
     expect(user).to.be.instanceOf(User);
