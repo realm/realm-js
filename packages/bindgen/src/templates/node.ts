@@ -341,7 +341,7 @@ function convertPrimFromNode(addon: NodeAddon, type: string, expr: string): stri
     case "BinaryData":
       return `([&] (const Napi::Value& v) -> ${type} {
                 auto buf = v.As<Napi::ArrayBuffer>();
-                return BinaryData(static_cast<const char*>(buf.Data()), buf.ByteLength());
+                return BinaryData(buf.Data() ? static_cast<const char*>(buf.Data()) : "", buf.ByteLength());
             })(${expr})`;
 
     case "EncryptionKey":
