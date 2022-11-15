@@ -32,6 +32,7 @@ import "./tests/sync/mixed";
 import "./tests/sync/flexible";
 import "./tests/sync/asymmetric";
 import "./tests/sync/sync-as-local";
+import "./tests/sync/client-reset";
 import "./tests/transaction";
 import "./tests/schema";
 import "./tests/types";
