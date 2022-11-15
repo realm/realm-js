@@ -129,6 +129,10 @@ function testDataList(value: unknown, input: unknown[]) {
   testList(value, input, testArrayBuffer);
 }
 
+function createEmptyArrayBuffer() {
+  return new ArrayBuffer(0);
+}
+
 function createArrayBuffer() {
   const value = new ArrayBuffer(12);
   const view = new Int32Array(value);
@@ -154,7 +158,12 @@ const TESTS: PropertySuite[] = [
   ],
   ["bool", [true, false]],
   ["string", ["", "Hello!", "💣💥"]],
-  ["data", [[createArrayBuffer, testArrayBuffer]]],
+  [ "data",
+    [
+      [createArrayBuffer, testArrayBuffer],
+      [createEmptyArrayBuffer, testArrayBuffer],
+    ],
+  ],
   ["date", [[new Date("2022-11-04T12:00:00"), testDate]]],
   [
     "float",
@@ -200,6 +209,7 @@ const TESTS: PropertySuite[] = [
       "hi!",
       "💣💥",
       [createArrayBuffer, testArrayBuffer],
+      [createEmptyArrayBuffer, testArrayBuffer],
       [new Date("2022-11-04T12:00:00"), testDate],
       123.567,
       [10n, 10], // bigint is coerced to number when read from the binding
@@ -216,7 +226,7 @@ const TESTS: PropertySuite[] = [
   [{ type: "list", objectType: "bool", optional: true }, [[[true, false, null], testList]]],
   [{ type: "list", objectType: "string" }, [[["hi", "💣💥"], testList]]],
   [{ type: "list", objectType: "string", optional: true }, [[["hi", "💣💥", null], testList]]],
-  [{ type: "list", objectType: "data" }, [[() => [createArrayBuffer()], testDataList]]],
+  [{ type: "list", objectType: "data" }, [[() => [createArrayBuffer(), createEmptyArrayBuffer()], testDataList]]],
   [{ type: "list", objectType: "MyObject" }, [[(realm: Realm) => [realm.create("MyObject", {})], testObjectList]]],
 ];
 
