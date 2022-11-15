@@ -60,13 +60,19 @@ export class Credentials {
 
   /**
    * Creates credentials based on a login with an email address and a password.
-   * @param credentials An object with username and password for the user.
    * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode App.logIn}.
    */
-  static emailPassword(credentials: { email: string; password: string }): Credentials {
-    assert.string(credentials.email, "email");
-    assert.string(credentials.password, "password");
-    return new Credentials(binding.AppCredentials.usernamePassword(credentials.email, credentials.password));
+  static emailPassword(credentials: { email: string; password: string }): Credentials;
+  static emailPassword(email: string, password: string): Credentials;
+  static emailPassword(arg1: { email: string; password: string } | string, password?: string): Credentials {
+    if (typeof arg1 === "string") {
+      assert.string(password, "password");
+      return new Credentials(binding.AppCredentials.usernamePassword(arg1, password));
+    } else {
+      assert.string(arg1.email, "email");
+      assert.string(arg1.password, "password");
+      return new Credentials(binding.AppCredentials.usernamePassword(arg1.email, arg1.password));
+    }
   }
 
   /**
