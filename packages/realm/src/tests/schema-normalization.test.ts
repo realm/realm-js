@@ -35,6 +35,14 @@ describe("normalizePropertySchema", () => {
     expect(result.optional).equals(false);
   });
 
+  it("transforms a string declaring a set of strings", () => {
+    const result = normalizePropertySchema("prop", "string<>");
+    expect(result.name).equals("prop");
+    expect(result.type).equals("set");
+    expect(result.objectType).equals("string");
+    expect(result.optional).equals(false);
+  });
+
   it("transforms a string declaring a list of optional strings", () => {
     const result = normalizePropertySchema("prop", "string?[]");
     expect(result.name).equals("prop");

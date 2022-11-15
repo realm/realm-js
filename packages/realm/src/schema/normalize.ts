@@ -151,7 +151,7 @@ export function normalizePropertyType(type: string, allowObjectType = true): Obj
     return {
       type: "list",
       objectType: item.type === "object" ? item.objectType : item.type,
-      optional: item.type === "object" ? false : item.optional,
+      optional: item.type === "object" ? false : !!item.optional,
     };
   } else if (type.endsWith("<>")) {
     assert(allowObjectType, "Expected no 'objectType' in property schema, when using '<>' shorthand");
@@ -161,7 +161,7 @@ export function normalizePropertyType(type: string, allowObjectType = true): Obj
     return {
       type: "set",
       objectType: item.type === "object" ? item.objectType : item.type,
-      optional: item.type === "object" ? true : item.optional,
+      optional: item.type === "object" ? true : !!item.optional,
     };
   } else if (type.endsWith("{}")) {
     assert(allowObjectType, "Expected no 'objectType' in property schema, when using '{}' shorthand");
@@ -171,7 +171,7 @@ export function normalizePropertyType(type: string, allowObjectType = true): Obj
     return {
       type: "dictionary",
       objectType: item.type === "object" ? item.objectType : item.type,
-      optional: item.type === "object" ? true : item.optional,
+      optional: item.type === "object" ? true : !!item.optional,
     };
   } else if (type.endsWith("?")) {
     return {
@@ -183,6 +183,8 @@ export function normalizePropertyType(type: string, allowObjectType = true): Obj
       return { type, objectType: "mixed", optional: true };
     } else if (type === "set") {
       return { type, objectType: "mixed", optional: true };
+    } else if (type === "mixed") {
+      return {type, optional: true};
     } else {
       // This type is directly mappable, so it can't be the name a user defined object schema.
       return { type };
