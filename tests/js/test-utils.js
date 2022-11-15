@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 /* eslint-env es6, node */
-/* global Realm */
+const {Realm} = require("realm");
 
 function uuid() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
