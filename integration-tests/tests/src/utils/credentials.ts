@@ -16,12 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Credentials } from "realm";
+import { App, Credentials } from "realm";
 import { randomVerifiableEmail } from "./generators";
 
-export async function getRegisteredEmailPassCredentials(
-  app: Realm.App,
-): Promise<Credentials<Credentials.EmailPasswordPayload>> {
+export async function getRegisteredEmailPassCredentials(app: App): Promise<Credentials> {
   if (!app) {
     throw new Error("No app supplied to 'getRegisteredEmailPassCredentials'");
   }
@@ -31,5 +29,5 @@ export async function getRegisteredEmailPassCredentials(
   // Create the user (see note in 'randomVerifiableEmail')
   await app.emailPasswordAuth.registerUser({ email, password });
 
-  return Realm.Credentials.emailPassword(email, password);
+  return Credentials.emailPassword(email, password);
 }
