@@ -118,7 +118,7 @@ describe.skipIf(environment.missingServer, "User", () => {
       await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
       expect(
         this.app.emailPasswordAuth.registerUser({ email: invalidEmail, password: validPassword }),
-      ).to.be.rejectedWith(`failed to confirm user "${invalidEmail}"`);
+      ).to.be.rejectedWith(`failed to confirm user ${invalidEmail}`);
       await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user did not register
 
       // valid email, invalid password
