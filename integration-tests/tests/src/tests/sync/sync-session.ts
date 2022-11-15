@@ -750,6 +750,9 @@ describe("SessionTest", () => {
 
   it("rejects non accepted value types", async function (this: AppContext) {
     const testPartitionValues = [
+      true,
+      {},
+      [],
       undefined,
       Number.MAX_SAFE_INTEGER + 1,
       1.2,
