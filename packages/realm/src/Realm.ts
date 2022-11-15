@@ -124,6 +124,8 @@ export class Realm {
       }
     }
     RETURNED_REALMS.clear();
+    binding.RealmCoordinator.clearAllCaches();
+
     // Delete all Realm files in the default directory
     const defaultDirectoryPath = fs.getDefaultDirectoryPath();
     for (const dirent of fs.readDirectory(defaultDirectoryPath)) {
@@ -139,6 +141,8 @@ export class Realm {
         fs.removeFile(direntPath);
       }
     }
+
+    binding.App.clearCachedApps();
   }
 
   /**
