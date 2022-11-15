@@ -16,26 +16,30 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import "./tests/realm-constructor";
-import "./tests/objects";
-import "./tests/class-models";
-import "./tests/serialization";
-import "./tests/iterators";
-import "./tests/queries";
-import "./tests/dynamic-schema-updates";
-import "./tests/listeners";
-import "./tests/bson";
-import "./tests/dictionary";
-import "./tests/set";
 import "./tests/credentials/anonymous";
-import "./tests/sync/mixed";
-import "./tests/sync/flexible";
-import "./tests/sync/asymmetric";
-import "./tests/sync/sync-as-local";
-import "./tests/transaction";
-import "./tests/schema";
-import "./tests/types";
-import "./tests/credentials/email-password";
 import "./tests/credentials/api-key";
-import "./tests/credentials/jwt";
+import "./tests/credentials/email-password";
 import "./tests/credentials/function";
+import "./tests/credentials/jwt";
+
+import "./tests/sync/asymmetric";
+// import "./tests/sync/client-reset"; // Not implemented yet and takes forever to timeout
+import "./tests/sync/flexible";
+import "./tests/sync/mixed";
+import "./tests/sync/sync-as-local";
+import "./tests/sync/upload-delete-download";
+
+import "./tests/bson";
+import "./tests/class-models";
+import "./tests/dictionary";
+import "./tests/dynamic-schema-updates";
+import "./tests/iterators";
+import "./tests/listeners";
+import "./tests/objects";
+import "./tests/queries";
+import "./tests/realm-constructor";
+import "./tests/schema";
+import "./tests/serialization";
+import "./tests/set";
+import "./tests/transaction";
+import "./tests/types";
