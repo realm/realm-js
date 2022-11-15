@@ -398,7 +398,9 @@ records:
         type: bool
         default: false
       error_handler: 'Nullable<std::function<(session: SharedSyncSession, error: SyncError) -> void>>'
-      custom_http_headers: 'std::map<std::string, std::string>'
+      custom_http_headers: 
+        type: 'std::map<std::string, std::string>'
+        default: {}
 
   ObjectChangeSet:
     fields:

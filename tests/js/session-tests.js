@@ -145,12 +145,21 @@ function unexpectedError(e) {
 }
 
 module.exports = {
-  testHttpHeaders() {
-    const config = {
-      ...getSyncConfiguration(),
-      customHttpHeaders: { langue: "English" },
-      onError: (err, syncSession) => {},
-    };
+  async testHttpHeaders() {
+    const partition = Utils.genPartition();
+    let credentials = Realm.Credentials.anonymous();
+    let app = new Realm.App(appConfig);
+    const user = await app.logIn(credentials);
+    const config = getSyncConfiguration(user, partition);
+    config.sync.customHttpHeaders = { language: "English" };
+    const realm = new Realm(config);
+    const session = realm.syncSession;
+    console.log(session.config);
+    TestCase.assertEqual(
+      "English",
+      session.config.customHttpHeaders.language,
+      "Synced realm does not contain the expected customHttpHeader",
+    );
   },
 
   testLocalRealmHasNoSession() {

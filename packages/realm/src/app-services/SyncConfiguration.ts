@@ -102,7 +102,7 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
   if (config.flexible) {
     throw new Error("Flexible sync has not been implemented yet");
   }
-  const { user, onError, _sessionStopPolicy } = config;
+  const { user, onError, _sessionStopPolicy, customHttpHeaders } = config;
   assert.instanceOf(user, User, "user");
   validatePartitionValue(config.partitionValue);
   const partitionValue = EJSON.stringify(config.partitionValue as EJSON.SerializableTypes);
@@ -113,7 +113,7 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
     stopPolicy: _sessionStopPolicy
       ? toBindingStopPolicy(_sessionStopPolicy)
       : binding.SyncSessionStopPolicy.AfterChangesUploaded,
-    customHttpHeaders: config.customHttpHeaders ? (config.customHttpHeaders as Record<string, string>) : {},
+    customHttpHeaders: customHttpHeaders,
   };
 }
 
