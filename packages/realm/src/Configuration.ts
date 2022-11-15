@@ -18,7 +18,6 @@
 
 import {
   DefaultObject,
-  ErrorCallback,
   ObjectSchema,
   Realm,
   RealmObject,
