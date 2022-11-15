@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { EJSON } from "bson";
+import { EJSON, ObjectId, UUID } from "bson";
 
 import {
   BSON,
@@ -103,6 +103,7 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
   }
   const { user, onError, _sessionStopPolicy } = config;
   assert.instanceOf(user, User, "user");
+  validatePartitionValue(config.partitionValue);
   const partitionValue = EJSON.stringify(config.partitionValue as EJSON.SerializableTypes);
   return {
     user: config.user.internal,
@@ -112,4 +113,28 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
       ? toBindingStopPolicy(_sessionStopPolicy)
       : binding.SyncSessionStopPolicy.AfterChangesUploaded,
   };
+}
+
+/** @internal */
+function validatePartitionValue(pv: unknown) {
+  if (typeof pv === "number") {
+    validateNumberValue(pv);
+    return;
+  }
+  if (!(pv instanceof ObjectId || pv instanceof UUID || typeof pv === "string" || pv === null)) {
+    throw new Error(pv + " is not an allowed PartitionValue");
+  }
+}
+
+/** @internal */
+function validateNumberValue(numberValue: number) {
+  if (!Number.isInteger(numberValue)) {
+    throw new Error("PartitionValue " + numberValue + " must be of type integer");
+  }
+  if (numberValue > Number.MAX_SAFE_INTEGER) {
+    throw new Error("PartitionValue " + numberValue + " is greater than Number.MAX_SAFE_INTEGER");
+  }
+  if (numberValue < Number.MIN_SAFE_INTEGER) {
+    throw new Error("PartitionValue " + numberValue + " is lesser than Number.MIN_SAFE_INTEGER");
+  }
 }
