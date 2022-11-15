@@ -154,7 +154,6 @@ module.exports = {
     config.sync.customHttpHeaders = { language: "English" };
     const realm = new Realm(config);
     const session = realm.syncSession;
-    console.log(session.config);
     TestCase.assertEqual(
       "English",
       session.config.customHttpHeaders.language,
