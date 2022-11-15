@@ -50,6 +50,10 @@ export function closeRealm(
  * @param this Mocha `this` context
  */
 export function closeThisRealm(this: Partial<RealmContext> & Mocha.Context): void {
+  if (!("realm" in this) && !("config" in this)) {
+    return;  // Assume we failed to open the realm, so there is nothing to close.
+  }
+
   if (!this.realm) {
     throw new Error("Expected a 'realm' to close");
   }
