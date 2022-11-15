@@ -67,6 +67,7 @@ module.exports = {
 
     let objects = realm.objects(schema.name);
     TestCase.assertEqual(objects.length, 0, "Table should be empty");
+    realm.close();
   },
 
   //
@@ -230,6 +231,6 @@ module.exports = {
       syncedRealm.deleteAll();
     });
     await syncedRealm.syncSession.uploadAllLocalChanges();
-    realm.close();
+    syncedRealm.close();
   },
 }; // module.exports
