@@ -30,6 +30,9 @@ import {
   assert,
   binding,
   fromBindingSyncError,
+  ClientResetBeforeCallback,
+  Realm,
+  ClientResetAfterCallback,
 } from "../internal";
 
 export enum ProgressDirection {
@@ -98,6 +101,20 @@ export function toBindingErrorHandler(onError: ErrorCallback) {
     const error = fromBindingSyncError(bindingError);
     onError(session, error);
     session.resetInternal();
+  };
+}
+
+/** @internal */
+export function toBindingNotifyBeforeClientReset(onBefore: ClientResetBeforeCallback) {
+  return (localRealmInternal: binding.Realm) => {
+    onBefore(new Realm(localRealmInternal));
+  };
+}
+
+/** @internal */
+export function toBindingNotifyAfterClientReset(onAfter: ClientResetAfterCallback) {
+  return (localRealmInternal: binding.Realm, tsr: binding.ThreadSafeReference) => {
+    onAfter(new Realm(localRealmInternal), new Realm(binding.Helpers.consumeThreadSafeReferenceToSharedRealm(tsr)));
   };
 }
 

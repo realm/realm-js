@@ -30,6 +30,8 @@ import {
   toBindingClientResetMode,
   toBindingErrorHandler,
   toBindingStopPolicy,
+  toBindingNotifyBeforeClientReset,
+  toBindingNotifyAfterClientReset,
 } from "../internal";
 
 export type PartitionValue = string | number | BSON.ObjectId | BSON.UUID | null;
@@ -134,6 +136,8 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
       : binding.SyncSessionStopPolicy.AfterChangesUploaded,
     customHttpHeaders: customHttpHeaders,
     clientResyncMode: clientReset ? toBindingClientResetMode(clientReset.mode) : undefined,
+    notifyBeforeClientReset: clientReset?.onBefore ? toBindingNotifyBeforeClientReset(clientReset.onBefore) : undefined,
+    notifyAfterClientReset: clientReset?.onAfter ? toBindingNotifyAfterClientReset(clientReset.onAfter) : undefined,
   };
 }
 
