@@ -23,7 +23,7 @@ import "./tests/credentials/function";
 import "./tests/credentials/jwt";
 
 import "./tests/sync/asymmetric";
-// import "./tests/sync/client-reset"; // Not implemented yet and takes forever to timeout
+import "./tests/sync/client-reset"; // Not implemented yet and takes forever to timeout
 import "./tests/sync/flexible";
 import "./tests/sync/mixed";
 import "./tests/sync/sync-as-local";
