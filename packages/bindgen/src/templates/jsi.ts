@@ -42,7 +42,7 @@ export function generate({ spec, file: makeFile }: TemplateContext): void {
 
   out(`
       #include <jsi/jsi.h>
-      // #include <realm_js_helpers.h>
+      #include <realm_js_helpers.h>
 
       // Using all-caps JSI to avoid risk of conflicts with jsi namespace from fb.
       namespace realm::js::JSI {
