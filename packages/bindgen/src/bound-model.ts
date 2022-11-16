@@ -22,6 +22,11 @@ import { Spec, TypeSpec, ClassSpec, MethodSpec } from "./spec";
 abstract class TypeBase {
   abstract readonly kind: TypeKind;
 
+  /**
+   * Converts a Type object to its spelling in C++, eg to be used to declare an argument or template parameter.
+   */
+  abstract toCpp(): string;
+
   // This is mostly because TS doesn't know that Type covers all types derived from TypeBase.
   is<Kind extends TypeKind>(kind: Kind): this is Type & { kind: Kind } {
     return this.kind == kind;
@@ -73,6 +78,7 @@ abstract class TypeBase {
 }
 
 abstract class WrapperType extends TypeBase {
+  abstract readonly suffix: string;
   constructor(public type: Type) {
     super();
   }
@@ -80,38 +86,34 @@ abstract class WrapperType extends TypeBase {
   isFunction(): boolean {
     return this.type.isFunction();
   }
+
+  toString() {
+    return `${this.type}${this.suffix}`;
+  }
+
+  toCpp(): string {
+    return `${this.type.toCpp()}${this.suffix}`;
+  }
 }
 
 export class Const extends WrapperType {
   readonly kind = "Const";
-
-  toString() {
-    return `${this.type} const`;
-  }
+  readonly suffix = " const";
 }
 
 export class Pointer extends WrapperType {
   readonly kind = "Pointer";
-
-  toString() {
-    return `${this.type}*`;
-  }
+  readonly suffix = "*";
 }
 
 export class Ref extends WrapperType {
   readonly kind = "Ref";
-
-  toString() {
-    return `${this.type}&`;
-  }
+  readonly suffix = "&";
 }
 
 export class RRef extends WrapperType {
   readonly kind = "RRef";
-
-  toString() {
-    return `${this.type}&&`;
-  }
+  readonly suffix = "&&";
 }
 
 export class Arg {
@@ -140,6 +142,20 @@ export class Func extends TypeBase {
   toString() {
     const args = this.args.map((a) => a.toString()).join(", ");
     return `(${args})${this.isConst ? " const" : ""}${this.noexcept ? " noexcept" : ""} -> ${this.ret}`;
+  }
+
+  toCpp(): string {
+    // This will often just produce a lambda which has an unutterable type.
+    // However we can make a signature type (eg int(string, string)) to be
+    // the template argument of something like std::function.
+    assert.fail(
+      `Cannot convert function types to Cpp type names: ${this}.\n` +
+        "Call toCppFunctionType() to get a signature type.",
+    );
+  }
+
+  toCppFunctionType() {
+    return `${this.ret.toCpp()}(${this.args.map((arg) => arg.type.toCpp()).join(", ")})`;
   }
 
   isFunction(): boolean {
@@ -208,6 +224,30 @@ export class Template extends TypeBase {
 
   toString() {
     return `${this.name}<${this.args.join(", ")}>`;
+  }
+
+  toCpp(): string {
+    assert.notEqual(this.name, "AsyncResult", "Should never see AsyncResult here");
+
+    // These are just markers, not actually a part of the C++ interface.
+    if (["Nullable", "IgnoreArgument"].includes(this.name)) return this.args[0].toCpp();
+
+    const templateMap: Record<string, string> = {
+      AsyncCallback: "util::UniqueFunction",
+    };
+    const cppTemplate = templateMap[this.name] ?? this.name;
+    let args;
+    if (["util::UniqueFunction", "std::function"].includes(cppTemplate)) {
+      // Functions can't normally be toCpp'd because lambda types are unutterable.
+      // But if a wrapper type is used, we can do this.
+      assert.equal(this.args.length, 1);
+      const func = this.args[0];
+      assert.equal(func.kind, "Func" as const);
+      args = func.toCppFunctionType();
+    } else {
+      args = this.args.map((arg) => arg.toCpp()).join(", ");
+    }
+    return `${cppTemplate}<${args}>`;
   }
 
   isFunction(): boolean {
@@ -302,6 +342,10 @@ export class Class extends NamedType {
     return `class ${this.name}`;
   }
 
+  toCpp() {
+    return this.cppName;
+  }
+
   rootBase() {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     let cls: Class = this;
@@ -344,6 +388,10 @@ export class Struct extends NamedType {
   toString() {
     return `struct ${this.name}`;
   }
+
+  toCpp() {
+    return this.cppName;
+  }
 }
 
 export class Primitive extends TypeBase {
@@ -355,10 +403,27 @@ export class Primitive extends TypeBase {
   toString() {
     return this.name;
   }
+
+  toCpp() {
+    const primitiveMap: Record<string, string> = {
+      count_t: "size_t",
+      EncryptionKey: "std::vector<char>",
+      AppError: "app::AppError",
+      EJson: "std::string",
+      EJsonObj: "std::string",
+      EJsonArray: "std::string",
+      QueryArg: "mpark::variant<Mixed, std::vector<Mixed>>",
+    };
+    return primitiveMap[this.name] ?? this.name;
+  }
 }
 
 export class Opaque extends NamedType {
   readonly kind = "Opaque";
+
+  toCpp() {
+    return this.name;
+  }
 }
 
 export class Enumerator {
@@ -373,11 +438,19 @@ export class Enum extends NamedType {
   toString() {
     return `enum ${this.name}`;
   }
+
+  toCpp() {
+    return this.cppName;
+  }
 }
 
 export class KeyType extends NamedType {
   readonly kind = "KeyType";
   type!: Type;
+
+  toCpp() {
+    return this.name;
+  }
 }
 
 export type Type =
