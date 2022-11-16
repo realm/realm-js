@@ -118,9 +118,9 @@ export function toBindingStopPolicy(policy: SessionStopPolicy): binding.SyncSess
 export function toBindingClientResetMode(resetMode: ClientResetMode): binding.ClientResetMode {
   if (resetMode === ClientResetMode.Manual) {
     return binding.ClientResetMode.Manual;
-  } else if (resetMode === ClientResetMode.DiscardLocal) {
+  } else if (resetMode === ClientResetMode.DiscardUnsyncedChanges) {
     return binding.ClientResetMode.DiscardLocal;
-  } else if (resetMode === ClientResetMode.Recover) {
+  } else if (resetMode === ClientResetMode.RecoverUnsyncedChanges) {
     return binding.ClientResetMode.Recover;
   } else if (resetMode === ClientResetMode.RecoverOrDiscard) {
     return binding.ClientResetMode.RecoverOrDiscard;

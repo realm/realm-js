@@ -51,6 +51,9 @@ export type OpenRealmBehaviorConfiguration = {
 };
 
 export type ErrorCallback = (session: SyncSession, error: SyncError | ClientResetError) => void;
+export type ClientResetFallbackCallback = (session: SyncSession, path: string) => void;
+export type ClientResetBeforeCallback = (localRealm: Realm) => void;
+export type ClientResetAfterCallback = (localRealm: Realm, remoteRealm: Realm) => void;
 
 export enum SessionStopPolicy {
   AfterUpload = "after-upload",
@@ -60,13 +63,16 @@ export enum SessionStopPolicy {
 
 export enum ClientResetMode {
   Manual = "manual",
-  DiscardLocal = "discardLocal",
-  Recover = "recover",
+  DiscardUnsyncedChanges = "discardUnsyncedChanges",
+  RecoverUnsyncedChanges = "recoverUnsyncedChanges",
   RecoverOrDiscard = "recoverOrDiscard",
 }
 
 export type ClientReset = {
   mode: ClientResetMode;
+  onAfter?: ClientResetAfterCallback;
+  onBefore?: ClientResetBeforeCallback;
+  onManual?: ClientResetFallbackCallback;
 };
 
 export type BaseSyncConfiguration = {
