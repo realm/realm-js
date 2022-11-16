@@ -20,7 +20,7 @@ import { ObjectId, UUID } from "bson";
 import { expect } from "chai";
 import { Realm, ClientResetMode, SessionStopPolicy } from "realm";
 import { authenticateUserBefore, importAppBefore } from "../../hooks";
-import { DogSchema, IPerson, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
+import { DogSchema, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { expectClientResetError } from "../../utils/expect-sync-error";
 import { createPromiseHandle } from "../../utils/promise-handle";
 
