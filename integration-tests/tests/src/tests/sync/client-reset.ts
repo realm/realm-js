@@ -59,8 +59,7 @@ async function waitServerSideClientResetDiscardUnsyncedChangesCallbacks(
   const resetHandle = createPromiseHandle();
   let afterCalled = false;
   let beforeCalled = false;
-
-  const realm = new Realm({
+  const config: Configuration = {
     schema,
     sync: {
       user,
@@ -84,7 +83,8 @@ async function waitServerSideClientResetDiscardUnsyncedChangesCallbacks(
         },
       },
     },
-  });
+  };
+  const realm = new Realm(config);
   if (useFlexibleSync) {
     addSubscriptions(realm);
   }
@@ -109,7 +109,7 @@ async function waitServerSideClientResetRecoveryCallbacks(
   let afterCalled = false;
   let beforeCalled = false;
 
-  const realm = new Realm({
+  const config: Configuration = {
     schema,
     sync: {
       user,
@@ -133,7 +133,8 @@ async function waitServerSideClientResetRecoveryCallbacks(
         },
       },
     },
-  });
+  };
+  const realm = new Realm(config);
   if (useFlexibleSync) {
     addSubscriptions(realm);
   }
