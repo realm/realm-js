@@ -175,77 +175,6 @@ class NodeAddon extends CppClass {
   }
 }
 
-/**
- * Converts a Type object to its spelling in C++, eg to be used to declare an argument or template parameter.
- *
- * TODO, consider moving this to live on the Type classes themselves.
- */
-function toCpp(type: Type): string {
-  switch (type.kind) {
-    case "Pointer":
-      return `${toCpp(type.type)}*`;
-    case "KeyType":
-    case "Opaque":
-      return type.name;
-    case "Const":
-      return `${toCpp(type.type)} const`;
-    case "Ref":
-      return `${toCpp(type.type)}&`;
-    case "RRef":
-      return `${toCpp(type.type)}&&`;
-    case "Template":
-      assert.notEqual(type.name, "AsyncResult", "Should never see AsyncResult here");
-
-      // Nullable is just a marker, not actually a part of the C++ interface.
-      if (type.name == "Nullable" || type.name == "IgnoreArgument") return toCpp(type.args[0]);
-
-      const templateMap: Record<string, string> = {
-        AsyncCallback: "util::UniqueFunction",
-      };
-      const cppTemplate = templateMap[type.name] ?? type.name;
-      let args;
-      if (["util::UniqueFunction", "std::function"].includes(cppTemplate)) {
-        // Functions can't normally be toCpp'd because lambda types are unutterable.
-        // But if a wrapper type is used, we can do this.
-        const func = type.args[0];
-        assert.equal(func.kind, "Func" as const);
-        args = `${toCpp(func.ret)}(${func.args.map((arg) => toCpp(arg.type)).join(", ")})`;
-      } else {
-        args = type.args.map(toCpp).join(", ");
-      }
-      return `${cppTemplate}<${args}>`;
-
-    case "Struct":
-    case "Enum":
-    case "Class":
-      return type.cppName;
-
-    case "Primitive":
-      const primitiveMap: Record<string, string> = {
-        count_t: "size_t",
-        EncryptionKey: "std::vector<char>",
-        AppError: "app::AppError",
-        EJson: "std::string",
-        EJsonObj: "std::string",
-        EJsonArray: "std::string",
-        QueryArg: "mpark::variant<Mixed, std::vector<Mixed>>",
-      };
-      return primitiveMap[type.name] ?? type.name;
-
-    case "Func":
-      // We currently just produce a lambda which has an unutterable type.
-      // We could make a UniqueFunction for the type, but we may want to
-      // use other types instead, such as std::function in some cases.
-      // This will be more important when implementing interfaces.
-      assert.fail(`Cannot convert function types to Cpp type names: ${type}`);
-      break;
-
-    default:
-      const _exhaustiveCheck: never = type;
-      return _exhaustiveCheck;
-  }
-}
-
 function convertPrimToNode(addon: NodeAddon, type: string, expr: string): string {
   switch (type) {
     case "void":
@@ -374,7 +303,7 @@ function convertPrimFromNode(addon: NodeAddon, type: string, expr: string): stri
     case "QueryArg": {
       const mixed = new Primitive("Mixed");
       return `
-        ([&] (const Napi::Value& v) -> ${toCpp(new Primitive(type))} {
+        ([&] (const Napi::Value& v) -> ${new Primitive(type).toCpp()} {
             if (v.IsArray()) {
                 return ${convertFromNode(addon, new Template("std::vector", [mixed]), "v")};
             } else {
@@ -550,14 +479,16 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
       switch (type.name) {
         case "std::shared_ptr":
           if (inner.kind == "Class" && inner.sharedPtrWrapped) return `NODE_TO_SHARED_${inner.name}(${expr})`;
-          return `std::make_shared<${toCpp(inner)}>(${c(inner, expr)})`;
+          return `std::make_shared<${inner.toCpp()}>(${c(inner, expr)})`;
         case "Nullable":
-          return `[&] (Napi::Value val) { return val.IsNull() ? ${toCpp(inner)}() : ${c(inner, "val")}; }(${expr})`;
+          return `[&] (Napi::Value val) { return val.IsNull() ? ${inner.toCpp()}() : ${c(inner, "val")}; }(${expr})`;
         case "util::Optional":
-          return `[&] (Napi::Value val) { return val.IsUndefined() ? ${toCpp(type)}() : ${c(inner, "val")}; }(${expr})`;
+          return `[&] (Napi::Value val) {
+              return val.IsUndefined() ? ${type.toCpp()}() : ${c(inner, "val")};
+          }(${expr})`;
         case "std::vector":
           return `[&] (const Napi::Array vec) {
-                auto out = std::vector<${toCpp(inner)}>();
+                auto out = std::vector<${inner.toCpp()}>();
 
                 const uint32_t length = vec.Length();
                 out.reserve(length);
@@ -582,7 +513,7 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
           // Consider list-of-pairs for keys that aren't strings or numbers.
           assert.deepEqual(type.args[0], new Primitive("std::string"));
           return `[&] (const Napi::Object obj) {
-                auto out = ${toCpp(type)}();
+                auto out = ${type.toCpp()}();
                 const auto names = obj.GetPropertyNames();
                 const auto length = names.Length();
                 for (uint32_t i = 0; i < length; i++) {
@@ -596,7 +527,7 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
         case "AsyncCallback":
         case "util::UniqueFunction":
         case "std::function":
-          return `${toCpp(type)}(${c(inner, expr)})`;
+          return `${type.toCpp()}(${c(inner, expr)})`;
       }
       assert.fail(`unknown template ${type.name}`);
       break;
@@ -621,8 +552,8 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
       const lambda = `
               [_cb = std::make_shared<Napi::FunctionReference>(Napi::Persistent(${expr}.As<Napi::Function>()))]
                 (${type.args
-                  .map(({ name, type }) => `${toCpp(type)} ${type.isTemplate("IgnoreArgument") ? "" : name}`)
-                  .join(", ")}) -> ${toCpp(type.ret)} {
+                  .map(({ name, type }) => `${type.toCpp()} ${type.isTemplate("IgnoreArgument") ? "" : name}`)
+                  .join(", ")}) -> ${type.ret.toCpp()} {
                     auto ${env} = _cb->Env();
                     Napi::HandleScope hs(${env});
                     try {
