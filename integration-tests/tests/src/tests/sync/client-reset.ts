@@ -63,6 +63,7 @@ async function waitServerSideClientResetDiscardUnsyncedChangesCallbacks(
     schema,
     sync: {
       user,
+      // @ts-expect-error this setting is not for users to consume
       _sessionStopPolicy: SessionStopPolicy.Immediately,
       ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
       clientReset: {
@@ -113,6 +114,7 @@ async function waitServerSideClientResetRecoveryCallbacks(
     schema,
     sync: {
       user,
+      // @ts-expect-error this setting is not for users to consume
       _sessionStopPolicy: SessionStopPolicy.Immediately,
       ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
       clientReset: {
@@ -162,6 +164,7 @@ async function waitSimulatedClientResetDiscardUnsyncedChangesCallbacks(
       schema,
       sync: {
         user,
+        // @ts-expect-error this setting is not for users to consume
         _sessionStopPolicy: SessionStopPolicy.Immediately,
         ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
         clientReset: {
@@ -214,6 +217,7 @@ async function waitSimulatedClientResetRecoverCallbacks(
       schema,
       sync: {
         user,
+        // @ts-expect-error this setting is not for users to consume
         _sessionStopPolicy: SessionStopPolicy.Immediately,
         ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
         clientReset: {
@@ -293,6 +297,7 @@ function getSchema(useFlexibleSync: boolean) {
         const config: Configuration = {
           schema: getSchema(useFlexibleSync),
           sync: {
+            // @ts-expect-error this setting is not for users to consume
             _sessionStopPolicy: SessionStopPolicy.Immediately,
             ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
             user: this.user,
@@ -345,6 +350,7 @@ function getSchema(useFlexibleSync: boolean) {
           const config: Configuration = {
             schema: getSchema(useFlexibleSync),
             sync: {
+              // @ts-expect-error this setting is not for users to consume
               _sessionStopPolicy: SessionStopPolicy.Immediately,
               ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
               user: this.user,
@@ -377,6 +383,7 @@ function getSchema(useFlexibleSync: boolean) {
           const config: Configuration = {
             schema: getSchema(useFlexibleSync),
             sync: {
+              // @ts-expect-error this setting is not for users to consume
               _sessionStopPolicy: SessionStopPolicy.Immediately,
               ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
               user: this.user,
