@@ -76,14 +76,6 @@ jobs:
         # Using "--skip-pod-install" to ensure it happens after setup-ruby has executed
         run: npm run init -- --skip-bundle-install --skip-pod-install --realm-version ${{ matrix.realm-version }} --react-native-version ${{ matrix.react-native-version }} --engine ${{ matrix.engine }}
 
-      - name: CocoaPod cache
-        if: ${{ matrix.platform == 'ios' }}
-        # Using another cache action to work around https://github.com/actions/cache/issues/92
-        uses: pat-s/always-upload-cache@v3.0.11
-        with:
-          path: '**/Pods'
-          key: cocoa-pods-${{ matrix.platform }}-r@${{ matrix.realm-version }}-rn@${{ matrix.react-native-version }}-${{ matrix.new-architecture && 'new' || 'old' }}-arch
-
       - uses: ruby/setup-ruby@v1
         if: ${{ matrix.platform == 'ios' }}
         with:
