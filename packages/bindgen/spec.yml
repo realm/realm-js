@@ -414,8 +414,8 @@ records:
       client_resync_mode:
         type: ClientResetMode 
         default: ClientResyncMode::Manual;
-      notify_before_client_reset: 'Nullable<std::function<(before_frozen: std::shared_ptr<Realm>) -> void>>'
-      notify_after_client_reset: 'Nullable<std::function<(before_frozen: std::shared_ptr<Realm>, after: ThreadSafeReference, did_recover: bool) -> void>>'
+      notify_before_client_reset: 'Nullable<std::function<(before_frozen: std::shared_ptr<Realm>) off_thread -> void>>'
+      notify_after_client_reset: 'Nullable<std::function<(before_frozen: std::shared_ptr<Realm>, after: ThreadSafeReference, did_recover: bool) off_thread -> void>>'
 
 >>>>>>> 621de59a (add clientReset along with clientResetMode)
 
