@@ -69,11 +69,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 set(PACKAGE_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-if(DEFINED CMAKE_JS_VERSION)
-    list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../cmake")
-    include(NodeJSTargets)
-endif()
-
 if (NOT MSVC)
     # Ninja buffers output so we need to tell the compiler to use colors even though stdout isn't a tty.
     if(CMAKE_GENERATOR MATCHES "^Ninja")
@@ -96,43 +91,9 @@ if(REALM_JS_BUILD_CORE_FROM_SOURCE)
     )
 endif()
         
-add_library(realm-js SHARED
-    node_init.cpp
-    ${CMAKE_JS_SRC}
-)
+add_library(realm-js SHARED)
 
-set_target_properties(realm-js PROPERTIES
-    OUTPUT_NAME "realm"
-    PREFIX ""
-    SUFFIX ".node"
-)
-
-if(WIN32)
-    set_source_files_properties(node_init.cpp PROPERTIES
-        # see https://docs.microsoft.com/en-us/cpp/build/reference/bigobj-increase-number-of-sections-in-dot-obj-file?view=msvc-160#remarks
-        COMPILE_FLAGS "/bigobj"
-    )
-
-    find_package(OpenSSL REQUIRED)
-    target_link_libraries(realm-js OpenSSL::SSL)
-    target_link_options(realm-js PRIVATE "/WHOLEARCHIVE:libssl.lib")
-endif()
-
-target_compile_definitions(realm-js PRIVATE
-    REALM_HAVE_UV=1
-    REALM_PLATFORM_NODE=1
-)
-
-if(REALM_JS_BUILD_CORE_FROM_SOURCE AND TARGET ObjectStore)
-    # we need to tell ObjectStore to use the libuv provided by Node.js
-    target_link_libraries(ObjectStore PUBLIC NodeJS)
-    target_compile_definitions(ObjectStore PUBLIC
-        REALM_HAVE_UV=1
-        REALM_PLATFORM_NODE=1
-    )
-endif()
-
-target_link_libraries(realm-js Realm::ObjectStore NodeJS)
+target_link_libraries(realm-js Realm::ObjectStore)
 
 #############################################################
 # The rest of this file is custom to the binding generator. #
@@ -207,17 +168,6 @@ add_custom_command(
 )
 
 add_custom_command(
-    OUTPUT node_init.cpp
-    COMMAND ${NODE_FORCE_COLOR} ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts --spec ${SPEC_FILE} --template node --output ${CMAKE_CURRENT_BINARY_DIR}
-    VERBATIM
-    MAIN_DEPENDENCY src/templates/node.ts
-    DEPENDS
-        ${SPEC_FILE}
-        ${SCHEMA_FILE}
-        ${TS_FILES}
-)
-
-add_custom_command(
     OUTPUT ${GENERATED_TS_FILES}
     COMMAND ${NODE_FORCE_COLOR} ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts --spec ${SPEC_FILE} --template typescript --output ${TYPESCRIPT_OUTPUT_DIR}
     VERBATIM
@@ -228,6 +178,11 @@ add_custom_command(
         ${TS_FILES}
 )
 
+add_custom_target(TypeScript ALL DEPENDS ${GENERATED_TS_FILES} ${GENERATED_JS_FILES})
+
+# For now leaving the native.mjs file as a "common" file between node and jsi.
+# We may need them to differ, but for now it is simpler to avoid that.
+# One issue we may run into when splitting is that they will need to be different files, otherwise ninja will get confused.
 add_custom_command(
     OUTPUT ${GENERATED_JS_FILES}
     COMMAND ${NODE_FORCE_COLOR} ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts --spec ${SPEC_FILE} --template node-wrapper --output ${TYPESCRIPT_OUTPUT_DIR}
@@ -239,4 +194,43 @@ add_custom_command(
         ${TS_FILES}
 )
 
-add_custom_target(TypeScript ALL DEPENDS ${GENERATED_TS_FILES} ${GENERATED_JS_FILES})
+if(DEFINED CMAKE_JS_VERSION)
+    include(node.cmake)
+
+    add_custom_command(
+        OUTPUT node_init.cpp
+        COMMAND ${NODE_FORCE_COLOR} ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts --spec ${SPEC_FILE} --template node --output ${CMAKE_CURRENT_BINARY_DIR}
+        VERBATIM
+        MAIN_DEPENDENCY src/templates/node.ts
+        DEPENDS
+            ${SPEC_FILE}
+            ${SCHEMA_FILE}
+            ${TS_FILES}
+    )
+
+    target_sources(realm-js PRIVATE node_init.cpp ${CMAKE_JS_SRC})
+else()
+    include(jsi.cmake)
+
+    add_custom_command(
+        OUTPUT jsi_init.cpp
+        COMMAND ${NODE_FORCE_COLOR} ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts --spec ${SPEC_FILE} --template jsi --output ${CMAKE_CURRENT_BINARY_DIR}
+        VERBATIM
+        MAIN_DEPENDENCY src/templates/jsi.ts
+        DEPENDS
+            ${SPEC_FILE}
+            ${SCHEMA_FILE}
+            ${TS_FILES}
+    )
+
+    target_sources(realm-js PRIVATE jsi_init.cpp ${CMAKE_JS_SRC})
+
+    if(ANDROID)
+        #add_subdirectory(../../src/android)
+    elseif(CMAKE_SYSTEM_NAME STREQUAL iOS)
+        #add_subdirectory(../../src/ios)
+    else()
+        # disabling for now to simplify the bootstrapping process.
+        # message(FATAL_ERROR "Only support JSI builds for Android and iOS")
+    endif()
+endif()
