@@ -978,6 +978,7 @@ export function generate({ spec, file: makeFile }: TemplateContext): void {
   out(`
       #include <napi.h>
       #include <realm_js_helpers.h>
+      #include <realm_js_node_helpers.h>
 
       namespace realm::js::node {
       namespace {
