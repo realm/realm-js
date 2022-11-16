@@ -27,6 +27,7 @@ import {
   User,
   assert,
   binding,
+  toBindingClientResetMode,
   toBindingErrorHandler,
   toBindingStopPolicy,
 } from "../internal";
@@ -57,6 +58,17 @@ export enum SessionStopPolicy {
   Never = "never",
 }
 
+export enum ClientResetMode {
+  Manual = "manual",
+  DiscardLocal = "discardLocal",
+  Recover = "recover",
+  RecoverOrDiscard = "recoverOrDiscard",
+}
+
+export type ClientReset = {
+  mode: ClientResetMode;
+};
+
 export type BaseSyncConfiguration = {
   user: User;
   newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
@@ -65,6 +77,7 @@ export type BaseSyncConfiguration = {
   customHttpHeaders?: Record<string, string>;
   /** @internal */
   _sessionStopPolicy?: SessionStopPolicy; // TODO: Why is this _ prefixed?
+  clientReset?: ClientReset;
 };
 
 // TODO: Delete once the flexible sync API gets implemented
@@ -102,7 +115,7 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
   if (config.flexible) {
     throw new Error("Flexible sync has not been implemented yet");
   }
-  const { user, onError, _sessionStopPolicy, customHttpHeaders } = config;
+  const { user, onError, _sessionStopPolicy, customHttpHeaders, clientReset } = config;
   assert.instanceOf(user, User, "user");
   validatePartitionValue(config.partitionValue);
   const partitionValue = EJSON.stringify(config.partitionValue as EJSON.SerializableTypes);
@@ -114,6 +127,7 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
       ? toBindingStopPolicy(_sessionStopPolicy)
       : binding.SyncSessionStopPolicy.AfterChangesUploaded,
     customHttpHeaders: customHttpHeaders,
+    clientResyncMode: clientReset ? toBindingClientResetMode(clientReset.mode) : undefined,
   };
 }
 

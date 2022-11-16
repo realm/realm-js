@@ -19,6 +19,7 @@
 import { EJSON } from "bson";
 import {
   App,
+  ClientResetMode,
   ErrorCallback,
   Listeners,
   PartitionValue,
@@ -110,6 +111,21 @@ export function toBindingStopPolicy(policy: SessionStopPolicy): binding.SyncSess
     return binding.SyncSessionStopPolicy.LiveIndefinitely;
   } else {
     throw new Error(`Unexpected policy (get ${policy})`);
+  }
+}
+
+/** @internal */
+export function toBindingClientResetMode(resetMode: ClientResetMode): binding.ClientResetMode {
+  if (resetMode === ClientResetMode.Manual) {
+    return binding.ClientResetMode.Manual;
+  } else if (resetMode === ClientResetMode.DiscardLocal) {
+    return binding.ClientResetMode.DiscardLocal;
+  } else if (resetMode === ClientResetMode.Recover) {
+    return binding.ClientResetMode.Recover;
+  } else if (resetMode === ClientResetMode.RecoverOrDiscard) {
+    return binding.ClientResetMode.RecoverOrDiscard;
+  } else {
+    throw new Error(`Unexpected clientResetMode (get ${resetMode})`);
   }
 }
 

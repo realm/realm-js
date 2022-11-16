@@ -82,10 +82,10 @@ type BaseConfiguration = {
 //   Manual = "manual",
 // }
 
-export enum ClientResetMode {
-  Manual = "manual",
-  DiscardLocal = "discardLocal",
-}
+// export enum ClientResetMode {
+//   Manual = "manual",
+//   DiscardLocal = "discardLocal",
+// }
 
 // export type ClientResetBeforeCallback = (localRealm: Realm) => void;
 // export type ClientResetAfterCallback = (localRealm: Realm, remoteRealm: Realm) => void;
