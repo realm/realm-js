@@ -209,9 +209,6 @@ export function validateConfiguration(arg: unknown): asserts arg is Configuratio
   if (schema) {
     validateRealmSchema(schema);
   }
-  if (sync) {
-    validateSync(sync);
-  }
 }
 
 export function validateRealmSchema(schema: unknown): asserts schema is Configuration["schema"][] {
@@ -250,15 +247,3 @@ export function validateObjectSchema(arg: unknown): asserts arg is ObjectSchema 
   }
 }
 
-function validateSync(sync: unknown) {
-  const syncConfig = sync as SyncConfiguration;
-  if (syncConfig.clientReset !== undefined) {
-    validateClientReset(syncConfig.clientReset, syncConfig.onError);
-  }
-}
-
-function validateClientReset(clientReset: ClientResetConfig, onError: ErrorCallback | undefined) {
-  if (clientReset.mode === ClientResetMode.Manual && onError === undefined && clientReset.onManual == undefined) {
-    throw new Error("For clientReset: 'manual', it is require to set either onError', 'clientReset.onManual' or both");
-  }
-}
