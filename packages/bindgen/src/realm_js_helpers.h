@@ -27,6 +27,7 @@
 #include <realm/object-store/util/event_loop_dispatcher.hpp>
 #include <realm/util/functional.hpp>
 #include <system_error>
+#include <thread>
 #include <type_traits>
 #include <utility>
 
@@ -265,6 +266,15 @@ public:
 private:
     Container* const m_container;
     const size_t m_old_size;
+};
+
+class ThreadConfinementChecker {
+public:
+    void assertOnSameThread() const noexcept {
+        REALM_ASSERT_RELEASE(std::this_thread::get_id() == m_constructed_on);
+    }
+private:
+    const std::thread::id m_constructed_on = std::this_thread::get_id();
 };
 
 template <typename F>
