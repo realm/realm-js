@@ -541,37 +541,39 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
 
     case "Func":
       // TODO see if we ever need to do any conversion from Napi::Error exceptions to something else.
-      // TODO need to consider different kinds of functions:
-      // - functions called inline (or otherwise called from within a JS context)
-      // - async functions called from JS thread (need to use MakeCallback() rather than call) (current impl)
-      // - async functions called from other thread that don't need to wait for JS to return
-      // - async functions called from other thread that must wait for JS to return (anything with non-void return)
-      //     - This has a risk of deadlock if not done correctly.
+      // TODO see if the ThreadConfinementChecker is ever too expensive in release builds.
       // Note: putting the FunctionReference in a shared_ptr because some of these need to be put into a std::function
       // which requires copyability, but FunctionReferences are move-only.
       const lambda = `
-              [_cb = std::make_shared<Napi::FunctionReference>(Napi::Persistent(${expr}.As<Napi::Function>()))]
-                (${type.args
-                  .map(({ name, type }) => `${type.toCpp()} ${type.isTemplate("IgnoreArgument") ? "" : name}`)
-                  .join(", ")}) -> ${type.ret.toCpp()} {
-                    auto ${env} = _cb->Env();
-                    Napi::HandleScope hs(${env});
-                    try {
-                        return ${c(
-                          type.ret,
-                          `_cb->MakeCallback(
-                              ${env}.Global(),
-                              {${type
-                                .argsSkippingIgnored()
-                                .map(({ name, type }) => convertToNode(addon, type, `FWD(${name})`))
-                                .join(", ")}})`,
-                        )};
-                    } catch (Napi::Error& _e) {
-                        // Populate the cache of the message now to ensure it is safe for any C++ code to call what().
-                        (void)_e.what();
-                        throw;
-                    }
-                }`;
+        [
+          _cb = std::make_shared<Napi::FunctionReference>(Napi::Persistent(${expr}.As<Napi::Function>())),
+          _thread = ThreadConfinementChecker()
+        ]
+        (${type.args
+          .map(({ name, type }) => `${type.toCpp()} ${type.isTemplate("IgnoreArgument") ? "" : name}`)
+          .join(", ")}
+        ) -> ${type.ret.toCpp()}
+        {
+            _thread.assertOnSameThread();
+            auto ${env} = _cb->Env();
+            Napi::HandleScope hs(${env});
+            try {
+                return ${c(
+                  type.ret,
+                  `_cb->MakeCallback(
+                      ${env}.Global(),
+                      {${type
+                        .argsSkippingIgnored()
+                        .map(({ name, type }) => convertToNode(addon, type, `FWD(${name})`))
+                        .join(", ")}})`,
+                )};
+            } catch (Napi::Error& _e) {
+                // Populate the cache of the message now to ensure it is safe for any C++ code to call what().
+                (void)_e.what();
+                throw;
+            }
+        }`;
+
       if (!type.isOffThread) return lambda;
 
       // For now assuming that all void-returning functions are "notifications" and don't need to block until done.
