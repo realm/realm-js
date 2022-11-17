@@ -32,6 +32,8 @@ import {
   toBindingStopPolicy,
   toBindingNotifyBeforeClientReset,
   toBindingNotifyAfterClientReset,
+  toBindingNotifyAfterClientResetWithfallback,
+  toBindingErrorHandlerWithOnManual,
 } from "../internal";
 
 export type PartitionValue = string | number | BSON.ObjectId | BSON.UUID | null;
@@ -74,6 +76,7 @@ export type ClientReset = {
   mode: ClientResetMode;
   onAfter?: ClientResetAfterCallback;
   onBefore?: ClientResetBeforeCallback;
+  onFallback?: ClientResetFallbackCallback;
   onManual?: ClientResetFallbackCallback;
 };
 
@@ -130,14 +133,78 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
   return {
     user: config.user.internal,
     partitionValue,
-    errorHandler: onError ? toBindingErrorHandler(onError) : undefined,
     stopPolicy: _sessionStopPolicy
       ? toBindingStopPolicy(_sessionStopPolicy)
       : binding.SyncSessionStopPolicy.AfterChangesUploaded,
     customHttpHeaders: customHttpHeaders,
-    clientResyncMode: clientReset ? toBindingClientResetMode(clientReset.mode) : undefined,
-    notifyBeforeClientReset: clientReset?.onBefore ? toBindingNotifyBeforeClientReset(clientReset.onBefore) : undefined,
-    notifyAfterClientReset: clientReset?.onAfter ? toBindingNotifyAfterClientReset(clientReset.onAfter) : undefined,
+    ...parseClientReset(clientReset, onError),
+  };
+}
+
+/** @internal */
+function parseClientReset(clientReset: ClientReset | undefined, onError: ErrorCallback | undefined) {
+  if (!clientReset) {
+    return {
+      clientResyncMode: undefined,
+      notifyBeforeClientReset: undefined,
+      notifyAfterClientReset: undefined,
+    };
+  }
+  switch (clientReset.mode) {
+    case ClientResetMode.Manual: {
+      return parseManual(clientReset, onError);
+    }
+    case ClientResetMode.DiscardUnsyncedChanges: {
+      return parseDiscardUnsyncedChanges(clientReset, onError);
+    }
+    case ClientResetMode.RecoverUnsyncedChanges: {
+      return parseRecoverUnsyncedChanges(clientReset, onError);
+    }
+    case ClientResetMode.RecoverOrDiscard: {
+      return parseRecoverOrDiscard(clientReset, onError);
+    }
+  }
+}
+
+/** @internal */
+function parseManual(clientReset: ClientReset, onError: ErrorCallback | undefined) {
+  return {
+    clientResyncMode: toBindingClientResetMode(clientReset.mode),
+    errorHandler: toBindingErrorHandlerWithOnManual(onError, clientReset.onManual),
+  };
+}
+
+/** @internal */
+function parseDiscardUnsyncedChanges(clientReset: ClientReset, onError: ErrorCallback | undefined) {
+  return {
+    clientResyncMode: toBindingClientResetMode(clientReset.mode),
+    notifyBeforeClientReset: clientReset.onBefore ? toBindingNotifyBeforeClientReset(clientReset.onBefore) : undefined,
+    notifyAfterClientReset: clientReset.onAfter ? toBindingNotifyAfterClientReset(clientReset.onAfter) : undefined,
+    errorHandler: onError ? toBindingErrorHandler(onError) : undefined,
+  };
+}
+
+/** @internal */
+function parseRecoverUnsyncedChanges(clientReset: ClientReset, onError: ErrorCallback | undefined) {
+  return {
+    clientResyncMode: toBindingClientResetMode(clientReset.mode),
+    notifyBeforeClientReset: clientReset.onBefore ? toBindingNotifyBeforeClientReset(clientReset.onBefore) : undefined,
+    notifyAfterClientReset: clientReset.onAfter
+      ? toBindingNotifyAfterClientResetWithfallback(clientReset.onAfter, clientReset.onFallback)
+      : undefined,
+    errorHandler: onError ? toBindingErrorHandler(onError) : undefined,
+  };
+}
+
+/** @internal */
+function parseRecoverOrDiscard(clientReset: ClientReset, onError: ErrorCallback | undefined) {
+  return {
+    clientResyncMode: toBindingClientResetMode(clientReset.mode),
+    notifyBeforeClientReset: clientReset.onBefore ? toBindingNotifyBeforeClientReset(clientReset.onBefore) : undefined,
+    notifyAfterClientReset: clientReset.onAfter
+      ? toBindingNotifyAfterClientResetWithfallback(clientReset.onAfter, clientReset.onFallback)
+      : undefined,
+    errorHandler: onError ? toBindingErrorHandler(onError) : undefined,
   };
 }
 
@@ -164,3 +231,4 @@ function validateNumberValue(numberValue: number) {
     throw new Error("PartitionValue " + numberValue + " is lesser than Number.MIN_SAFE_INTEGER");
   }
 }
+
