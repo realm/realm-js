@@ -69,16 +69,39 @@ export enum ClientResetMode {
   Manual = "manual",
   DiscardUnsyncedChanges = "discardUnsyncedChanges",
   RecoverUnsyncedChanges = "recoverUnsyncedChanges",
-  RecoverOrDiscard = "recoverOrDiscard",
+  RecoverOrDiscardUnsyncedChanges = "recoverOrDiscardUnsyncedChanges",
 }
 
-export type ClientReset = {
-  mode: ClientResetMode;
+export type ClientResetManualConfiguration = {
+  mode: ClientResetMode.Manual;
+  onManual?: ClientResetFallbackCallback;
+};
+
+export type ClientResetDiscardUnsyncedChangesConfiguration = {
+  mode: ClientResetMode.DiscardUnsyncedChanges;
+  onAfter?: ClientResetAfterCallback;
+  onBefore?: ClientResetBeforeCallback;
+};
+
+export type ClientResetRecoverUnsyncedChangesConfiguration = {
+  mode: ClientResetMode.RecoverUnsyncedChanges;
   onAfter?: ClientResetAfterCallback;
   onBefore?: ClientResetBeforeCallback;
   onFallback?: ClientResetFallbackCallback;
-  onManual?: ClientResetFallbackCallback;
 };
+
+export type ClientResetRecoverOrDiscardUnsyncedChangesConfiguration = {
+  mode: ClientResetMode.RecoverOrDiscardUnsyncedChanges;
+  onAfter?: ClientResetAfterCallback;
+  onBefore?: ClientResetBeforeCallback;
+  onFallback?: ClientResetFallbackCallback;
+};
+
+export type ClientResetConfig =
+  | ClientResetManualConfiguration
+  | ClientResetDiscardUnsyncedChangesConfiguration
+  | ClientResetRecoverUnsyncedChangesConfiguration
+  | ClientResetRecoverOrDiscardUnsyncedChangesConfiguration;
 
 export type BaseSyncConfiguration = {
   user: User;
@@ -88,7 +111,7 @@ export type BaseSyncConfiguration = {
   customHttpHeaders?: Record<string, string>;
   /** @internal */
   _sessionStopPolicy?: SessionStopPolicy; // TODO: Why is this _ prefixed?
-  clientReset?: ClientReset;
+  clientReset?: ClientResetConfig;
 };
 
 // TODO: Delete once the flexible sync API gets implemented
@@ -136,38 +159,52 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
     stopPolicy: _sessionStopPolicy
       ? toBindingStopPolicy(_sessionStopPolicy)
       : binding.SyncSessionStopPolicy.AfterChangesUploaded,
+<<<<<<< HEAD
     customHttpHeaders: customHttpHeaders,
     ...parseClientReset(clientReset, onError),
+=======
+    ...parseClientResetConfig(clientReset, onError),
+>>>>>>> b92e70c3 (refactored code)
   };
 }
 
 /** @internal */
-function parseClientReset(clientReset: ClientReset | undefined, onError: ErrorCallback | undefined) {
+function parseClientResetConfig(clientReset: ClientResetConfig | undefined, onError: ErrorCallback | undefined) {
   if (!clientReset) {
     return {
       clientResyncMode: undefined,
       notifyBeforeClientReset: undefined,
       notifyAfterClientReset: undefined,
+      errorHandler: onError ? toBindingErrorHandler(onError) : undefined,
     };
   }
   switch (clientReset.mode) {
     case ClientResetMode.Manual: {
-      return parseManual(clientReset, onError);
+      return parseManual(clientReset as ClientResetManualConfiguration, onError);
     }
     case ClientResetMode.DiscardUnsyncedChanges: {
-      return parseDiscardUnsyncedChanges(clientReset, onError);
+      return {
+        ...parseDiscardUnsyncedChanges(clientReset as ClientResetDiscardUnsyncedChangesConfiguration),
+        errorHandler: onError ? toBindingErrorHandler(onError) : undefined,
+      };
     }
     case ClientResetMode.RecoverUnsyncedChanges: {
-      return parseRecoverUnsyncedChanges(clientReset, onError);
+      return {
+        ...parseRecoverUnsyncedChanges(clientReset as ClientResetRecoverUnsyncedChangesConfiguration),
+        errorHandler: onError ? toBindingErrorHandler(onError) : undefined,
+      };
     }
-    case ClientResetMode.RecoverOrDiscard: {
-      return parseRecoverOrDiscard(clientReset, onError);
+    case ClientResetMode.RecoverOrDiscardUnsyncedChanges: {
+      return {
+        ...parseRecoverOrDiscardUnsyncedChanges(clientReset as ClientResetRecoverOrDiscardUnsyncedChangesConfiguration),
+        errorHandler: onError ? toBindingErrorHandler(onError) : undefined,
+      };
     }
   }
 }
 
 /** @internal */
-function parseManual(clientReset: ClientReset, onError: ErrorCallback | undefined) {
+function parseManual(clientReset: ClientResetManualConfiguration, onError: ErrorCallback | undefined) {
   return {
     clientResyncMode: toBindingClientResetMode(clientReset.mode),
     errorHandler: toBindingErrorHandlerWithOnManual(onError, clientReset.onManual),
@@ -175,36 +212,33 @@ function parseManual(clientReset: ClientReset, onError: ErrorCallback | undefine
 }
 
 /** @internal */
-function parseDiscardUnsyncedChanges(clientReset: ClientReset, onError: ErrorCallback | undefined) {
+function parseDiscardUnsyncedChanges(clientReset: ClientResetDiscardUnsyncedChangesConfiguration) {
   return {
     clientResyncMode: toBindingClientResetMode(clientReset.mode),
     notifyBeforeClientReset: clientReset.onBefore ? toBindingNotifyBeforeClientReset(clientReset.onBefore) : undefined,
     notifyAfterClientReset: clientReset.onAfter ? toBindingNotifyAfterClientReset(clientReset.onAfter) : undefined,
-    errorHandler: onError ? toBindingErrorHandler(onError) : undefined,
   };
 }
 
 /** @internal */
-function parseRecoverUnsyncedChanges(clientReset: ClientReset, onError: ErrorCallback | undefined) {
+function parseRecoverUnsyncedChanges(clientReset: ClientResetRecoverUnsyncedChangesConfiguration) {
   return {
     clientResyncMode: toBindingClientResetMode(clientReset.mode),
     notifyBeforeClientReset: clientReset.onBefore ? toBindingNotifyBeforeClientReset(clientReset.onBefore) : undefined,
     notifyAfterClientReset: clientReset.onAfter
       ? toBindingNotifyAfterClientResetWithfallback(clientReset.onAfter, clientReset.onFallback)
       : undefined,
-    errorHandler: onError ? toBindingErrorHandler(onError) : undefined,
   };
 }
 
 /** @internal */
-function parseRecoverOrDiscard(clientReset: ClientReset, onError: ErrorCallback | undefined) {
+function parseRecoverOrDiscardUnsyncedChanges(clientReset: ClientResetRecoverOrDiscardUnsyncedChangesConfiguration) {
   return {
     clientResyncMode: toBindingClientResetMode(clientReset.mode),
     notifyBeforeClientReset: clientReset.onBefore ? toBindingNotifyBeforeClientReset(clientReset.onBefore) : undefined,
     notifyAfterClientReset: clientReset.onAfter
       ? toBindingNotifyAfterClientResetWithfallback(clientReset.onAfter, clientReset.onFallback)
       : undefined,
-    errorHandler: onError ? toBindingErrorHandler(onError) : undefined,
   };
 }
 
@@ -231,4 +265,3 @@ function validateNumberValue(numberValue: number) {
     throw new Error("PartitionValue " + numberValue + " is lesser than Number.MIN_SAFE_INTEGER");
   }
 }
-

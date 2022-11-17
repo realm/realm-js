@@ -24,7 +24,7 @@ import {
   RealmObjectConstructor,
   SyncConfiguration,
   assert,
-  ClientReset,
+  ClientResetConfig,
   ClientResetMode,
   ErrorCallback,
 } from "./internal";
@@ -257,7 +257,7 @@ function validateSync(sync: unknown) {
   }
 }
 
-function validateClientReset(clientReset: ClientReset, onError: ErrorCallback | undefined) {
+function validateClientReset(clientReset: ClientResetConfig, onError: ErrorCallback | undefined) {
   if (clientReset.mode === ClientResetMode.Manual && onError === undefined && clientReset.onManual == undefined) {
     throw new Error("For clientReset: 'manual', it is require to set either onError', 'clientReset.onManual' or both");
   }

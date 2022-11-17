@@ -205,7 +205,7 @@ export function toBindingClientResetMode(resetMode: ClientResetMode): binding.Cl
     return binding.ClientResetMode.DiscardLocal;
   } else if (resetMode === ClientResetMode.RecoverUnsyncedChanges) {
     return binding.ClientResetMode.Recover;
-  } else if (resetMode === ClientResetMode.RecoverOrDiscard) {
+  } else if (resetMode === ClientResetMode.RecoverOrDiscardUnsyncedChanges) {
     return binding.ClientResetMode.RecoverOrDiscard;
   } else {
     throw new Error(`Unexpected clientResetMode (get ${resetMode})`);
