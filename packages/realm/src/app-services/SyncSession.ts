@@ -137,7 +137,7 @@ export function toBindingErrorHandlerWithOnManual(
       session.resetInternal();
     };
   }
-  // onManual must be true
+  // onManual must be true here
   return (sessionInternal: binding.SyncSession, bindingError: binding.SyncError) => {
     const session = new SyncSession(sessionInternal);
     const error = fromBindingSyncError(bindingError);
@@ -177,7 +177,6 @@ export function toBindingNotifyAfterClientResetWithfallback(
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         onFallback(realm.syncSession!, realm.path);
       } else {
-        // should we throw here?
         throw new Error("onFallback is undefined");
       }
     }
