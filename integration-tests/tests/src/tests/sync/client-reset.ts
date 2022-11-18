@@ -43,26 +43,26 @@ function getPartitionValue() {
   return new BSON.UUID().toHexString();
 }
 
-async function triggerClientReset(app: Realm.App, user: Realm.User): Promise<void> {
+async function triggerClientReset(app: App, user: User): Promise<void> {
   await user.functions.triggerClientReset(app.id, user.id);
 }
 
 async function waitServerSideClientResetDiscardUnsyncedChangesCallbacks(
   useFlexibleSync: boolean,
   schema: Realm.ObjectSchema[],
-  app: Realm.App,
-  user: Realm.User,
+  app: App,
+  user: User,
   actionBefore: (realm: Realm) => void,
   actionAfter: (beforeRealm: Realm, afterRealm: Realm) => void,
 ): Promise<void> {
   const resetHandle = createPromiseHandle();
   let afterCalled = false;
   let beforeCalled = false;
-
-  const realm = new Realm({
+  const config: Configuration = {
     schema,
     sync: {
       user,
+      // @ts-expect-error this setting is not for users to consume
       _sessionStopPolicy: SessionStopPolicy.Immediately,
       ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
       clientReset: {
@@ -83,7 +83,8 @@ async function waitServerSideClientResetDiscardUnsyncedChangesCallbacks(
         },
       },
     },
-  });
+  };
+  const realm = new Realm(config);
   if (useFlexibleSync) {
     addSubscriptions(realm);
   }
@@ -96,8 +97,8 @@ async function waitServerSideClientResetDiscardUnsyncedChangesCallbacks(
 async function waitServerSideClientResetRecoveryCallbacks(
   useFlexibleSync: boolean,
   schema: Realm.ObjectSchema[],
-  app: Realm.App,
-  user: Realm.User,
+  app: App,
+  user: User,
   actionBefore: (realm: Realm) => void,
   actionAfter: (beforeRealm: Realm, afterRealm: Realm) => void,
 ): Promise<void> {
@@ -105,10 +106,11 @@ async function waitServerSideClientResetRecoveryCallbacks(
   let afterCalled = false;
   let beforeCalled = false;
 
-  const realm = new Realm({
+  const config: Configuration = {
     schema,
     sync: {
       user,
+      // @ts-expect-error this setting is not for users to consume
       _sessionStopPolicy: SessionStopPolicy.Immediately,
       ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
       clientReset: {
@@ -129,7 +131,8 @@ async function waitServerSideClientResetRecoveryCallbacks(
         },
       },
     },
-  });
+  };
+  const realm = new Realm(config);
   if (useFlexibleSync) {
     addSubscriptions(realm);
   }
@@ -142,7 +145,7 @@ async function waitServerSideClientResetRecoveryCallbacks(
 async function waitSimulatedClientResetDiscardUnsyncedChangesCallbacks(
   useFlexibleSync: boolean,
   schema: Realm.ObjectSchema[],
-  user: Realm.User,
+  user: User,
   actionBefore: (realm: Realm) => void,
   actionAfter: (beforeRealm: Realm, afterRealm: Realm) => void,
 ): Promise<void> {
@@ -150,10 +153,11 @@ async function waitSimulatedClientResetDiscardUnsyncedChangesCallbacks(
   let afterCalled = false;
   let beforeCalled = false;
 
-  const config: Realm.Configuration = {
+  const config: Configuration = {
     schema,
     sync: {
       user,
+      // @ts-expect-error this setting is not for users to consume
       _sessionStopPolicy: SessionStopPolicy.Immediately,
       ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
       clientReset: {
@@ -191,7 +195,7 @@ async function waitSimulatedClientResetDiscardUnsyncedChangesCallbacks(
 async function waitSimulatedClientResetRecoverCallbacks(
   useFlexibleSync: boolean,
   schema: Realm.ObjectSchema[],
-  user: Realm.User,
+  user: User,
   actionBefore: (realm: Realm) => void,
   actionAfter: (beforeRealm: Realm, afterRealm: Realm) => void,
 ): Promise<void> {
@@ -199,10 +203,11 @@ async function waitSimulatedClientResetRecoverCallbacks(
   let afterCalled = false;
   let beforeCalled = false;
 
-  const config: Realm.Configuration = {
+  const config: Configuration = {
     schema,
     sync: {
       user,
+      // @ts-expect-error this setting is not for users to consume
       _sessionStopPolicy: SessionStopPolicy.Immediately,
       ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
       clientReset: {
@@ -280,9 +285,10 @@ function getSchema(useFlexibleSync: boolean) {
       it(`manual client reset requires either error handler, client reset callback or both (${getPartialTestTitle(
         useFlexibleSync,
       )} sync)`, async function (this: RealmContext) {
-        const config: Realm.Configuration = {
+        const config: Configuration = {
           schema: getSchema(useFlexibleSync),
           sync: {
+            // @ts-expect-error this setting is not for users to consume
             _sessionStopPolicy: SessionStopPolicy.Immediately,
             ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
             user: this.user,
@@ -332,9 +338,10 @@ function getSchema(useFlexibleSync: boolean) {
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
         return new Promise<void>((resolve, _) => {
-          const config: Realm.Configuration = {
+          const config: Configuration = {
             schema: getSchema(useFlexibleSync),
             sync: {
+              // @ts-expect-error this setting is not for users to consume
               _sessionStopPolicy: SessionStopPolicy.Immediately,
               ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
               user: this.user,
@@ -364,9 +371,10 @@ function getSchema(useFlexibleSync: boolean) {
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
         return new Promise((resolve, reject) => {
-          const config: Realm.Configuration = {
+          const config: Configuration = {
             schema: getSchema(useFlexibleSync),
             sync: {
+              // @ts-expect-error this setting is not for users to consume
               _sessionStopPolicy: SessionStopPolicy.Immediately,
               ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
               user: this.user,
@@ -401,7 +409,7 @@ function getSchema(useFlexibleSync: boolean) {
         // we simulate the failure by error code 132")
 
         return new Promise((resolve, reject) => {
-          const config: Realm.Configuration = {
+          const config: Configuration = {
             schema: getSchema(useFlexibleSync),
             sync: {
               user: this.user,

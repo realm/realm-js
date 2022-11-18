@@ -19,6 +19,7 @@
 import { EJSON } from "bson";
 import {
   App,
+  ClientResetMode,
   ErrorCallback,
   Listeners,
   PartitionValue,
@@ -29,6 +30,11 @@ import {
   assert,
   binding,
   fromBindingSyncError,
+  ClientResetBeforeCallback,
+  Realm,
+  ClientResetAfterCallback,
+  ClientResetFallbackCallback,
+  ClientResetError,
 } from "../internal";
 
 export enum ProgressDirection {
@@ -101,6 +107,84 @@ export function toBindingErrorHandler(onError: ErrorCallback) {
 }
 
 /** @internal */
+export function toBindingErrorHandlerWithOnManual(
+  onError: ErrorCallback | undefined,
+  onManual: ClientResetFallbackCallback | undefined,
+) {
+  if (!onError && !onManual) {
+    throw new Error("need to set either onError or onManual or both");
+  }
+  if (onError && onManual) {
+    return (sessionInternal: binding.SyncSession, bindingError: binding.SyncError) => {
+      const session = new SyncSession(sessionInternal);
+      const error = fromBindingSyncError(bindingError);
+      if (error instanceof ClientResetError) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        onManual(session, error.config.path!);
+      } else {
+        onError(session, error);
+      }
+      session.resetInternal();
+    };
+  }
+  if (onError) {
+    return (sessionInternal: binding.SyncSession, bindingError: binding.SyncError) => {
+      const session = new SyncSession(sessionInternal);
+      const error = fromBindingSyncError(bindingError);
+      if (error instanceof ClientResetError) {
+        onError(session, error);
+      }
+      session.resetInternal();
+    };
+  }
+  if (onManual) {
+    return (sessionInternal: binding.SyncSession, bindingError: binding.SyncError) => {
+      const session = new SyncSession(sessionInternal);
+      const error = fromBindingSyncError(bindingError);
+      if (error instanceof ClientResetError) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        onManual(session, error.config.path!);
+      }
+      session.resetInternal();
+    };
+  }
+}
+
+/** @internal */
+export function toBindingNotifyBeforeClientReset(onBefore: ClientResetBeforeCallback) {
+  return (localRealmInternal: binding.Realm) => {
+    onBefore(new Realm(localRealmInternal));
+  };
+}
+
+/** @internal */
+export function toBindingNotifyAfterClientReset(onAfter: ClientResetAfterCallback) {
+  return (localRealmInternal: binding.Realm, tsr: binding.ThreadSafeReference) => {
+    onAfter(new Realm(localRealmInternal), new Realm(binding.Helpers.consumeThreadSafeReferenceToSharedRealm(tsr)));
+  };
+}
+
+/** @internal */
+export function toBindingNotifyAfterClientResetWithfallback(
+  onAfter: ClientResetAfterCallback,
+  onFallback: ClientResetFallbackCallback | undefined,
+) {
+  return (localRealmInternal: binding.Realm, tsr: binding.ThreadSafeReference, didRecover: boolean) => {
+    if (didRecover) {
+      onAfter(new Realm(localRealmInternal), new Realm(binding.Helpers.consumeThreadSafeReferenceToSharedRealm(tsr)));
+    } else {
+      const realm = new Realm(binding.Helpers.consumeThreadSafeReferenceToSharedRealm(tsr));
+      if (onFallback) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        onFallback(realm.syncSession!, realm.path);
+      } else {
+        throw new Error("onFallback is undefined");
+      }
+    }
+  };
+}
+
+/** @internal */
 export function toBindingStopPolicy(policy: SessionStopPolicy): binding.SyncSessionStopPolicy {
   if (policy === SessionStopPolicy.AfterUpload) {
     return binding.SyncSessionStopPolicy.AfterChangesUploaded;
@@ -110,6 +194,20 @@ export function toBindingStopPolicy(policy: SessionStopPolicy): binding.SyncSess
     return binding.SyncSessionStopPolicy.LiveIndefinitely;
   } else {
     throw new Error(`Unexpected policy (get ${policy})`);
+  }
+}
+
+/** @internal */
+export function toBindingClientResetMode(resetMode: ClientResetMode): binding.ClientResetMode {
+  switch (resetMode) {
+    case ClientResetMode.Manual:
+      return binding.ClientResetMode.Manual;
+    case ClientResetMode.DiscardUnsyncedChanges:
+      return binding.ClientResetMode.DiscardLocal;
+    case ClientResetMode.RecoverUnsyncedChanges:
+      return binding.ClientResetMode.Recover;
+    case ClientResetMode.RecoverOrDiscardUnsyncedChanges:
+      return binding.ClientResetMode.RecoverOrDiscard;
   }
 }
 
