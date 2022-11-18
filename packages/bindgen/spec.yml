@@ -406,18 +406,15 @@ records:
         type: bool
         default: false
       error_handler: 'Nullable<std::function<(session: SharedSyncSession, error: SyncError) -> void>>'
-<<<<<<< HEAD
       custom_http_headers: 
         type: 'std::map<std::string, std::string>'
         default: {}
-=======
       client_resync_mode:
         type: ClientResetMode 
         default: ClientResyncMode::Manual;
       notify_before_client_reset: 'Nullable<std::function<(before_frozen: std::shared_ptr<Realm>) off_thread -> void>>'
       notify_after_client_reset: 'Nullable<std::function<(before_frozen: std::shared_ptr<Realm>, after: ThreadSafeReference, did_recover: bool) off_thread -> void>>'
 
->>>>>>> 621de59a (add clientReset along with clientResetMode)
 
   ObjectChangeSet:
     fields:
