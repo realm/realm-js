@@ -1,22 +1,27 @@
 ## vNext (TBD)
 
+### Notes
+* File format version bumped. If Realm file contains any objects with set of `mixed` or dictionary properties, the file will go through an upgrade process.
+* The layout of the lock-file has changed, the lock file format version is bumped and all participants in a multiprocess scenario needs to be up to date so they expect the same format. This requires an update of Realm Studio. ([realm/realm-core#5440](https://github.com/realm/realm-core/pull/5440))
+
 ### Enhancements
-* None
+* The realm file will be shrunk if the larger file size is no longer needed. ([realm/realm-core#5754](https://github.com/realm/realm-core/issues/5754))
+* Most of the file growth caused by version pinning is eliminated. ([realm/realm-core#5440](https://github.com/realm/realm-core/pull/5440))
+* A set of `mixed` consider string and binary data equivalent. This could cause the client to be inconsistent with the server if a string and some binary data with equivalent content was inserted from Atlas. ([realm/realm-core#4860](https://github.com/realm/realm-core/issues/4860), since v10.5.0)
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fetching a user's profile while the user logs out would result in an assertion failure. ([realm/realm-core#5571](https://github.com/realm/realm-core/issues/5571), since v10.4.1)
+* Removed the `.tmp_compaction_space` file being left over after compacting a Realm on Windows. ([#4526](https://github.com/realm/realm-js/issues/4526) and [realm/realm-core#5997](https://github.com/realm/realm-core/issues/5997), since Windows support for compact was added)
+* Restore fallback to full barrier when `F_BARRIERSYNC` is not available on Apple platforms. ([realm/realm-core#6033](https://github.com/realm/realm-core/pull/6033), since v11.2.0)
 
 ### Compatibility
 * React Native >= v0.70.0
 * Atlas App Services.
 * Realm Studio v12.0.0.
-* File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+* File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v12.12.0 to v13.0.0. ([#5120](https://github.com/realm/realm-js/issues/5120)
 
 ## 11.2.0 (2022-11-12)
 
