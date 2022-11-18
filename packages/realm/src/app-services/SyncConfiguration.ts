@@ -110,7 +110,7 @@ export type BaseSyncConfiguration = {
   onError?: ErrorCallback;
   customHttpHeaders?: Record<string, string>;
   /** @internal */
-  _sessionStopPolicy?: SessionStopPolicy; // TODO: Why is this _ prefixed?
+  sessionStopPolicy?: SessionStopPolicy;
   clientReset?: ClientResetConfig;
 };
 
@@ -149,22 +149,18 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
   if (config.flexible) {
     throw new Error("Flexible sync has not been implemented yet");
   }
-  const { user, onError, _sessionStopPolicy, customHttpHeaders, clientReset } = config;
+  const { user, onError, sessionStopPolicy, customHttpHeaders, clientReset } = config;
   assert.instanceOf(user, User, "user");
   validatePartitionValue(config.partitionValue);
   const partitionValue = EJSON.stringify(config.partitionValue as EJSON.SerializableTypes);
   return {
     user: config.user.internal,
     partitionValue,
-    stopPolicy: _sessionStopPolicy
-      ? toBindingStopPolicy(_sessionStopPolicy)
+    stopPolicy: sessionStopPolicy
+      ? toBindingStopPolicy(sessionStopPolicy)
       : binding.SyncSessionStopPolicy.AfterChangesUploaded,
-<<<<<<< HEAD
     customHttpHeaders: customHttpHeaders,
-    ...parseClientReset(clientReset, onError),
-=======
     ...parseClientResetConfig(clientReset, onError),
->>>>>>> b92e70c3 (refactored code)
   };
 }
 

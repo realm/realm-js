@@ -112,7 +112,7 @@ export function toBindingErrorHandlerWithOnManual(
   onManual: ClientResetFallbackCallback | undefined,
 ) {
   if (!onError && !onManual) {
-    throw new Error("need either onError or onManual");
+    throw new Error("need to set either onError or onManual or both");
   }
   if (onError && onManual) {
     return (sessionInternal: binding.SyncSession, bindingError: binding.SyncError) => {
@@ -137,16 +137,17 @@ export function toBindingErrorHandlerWithOnManual(
       session.resetInternal();
     };
   }
-  // onManual must be true here
-  return (sessionInternal: binding.SyncSession, bindingError: binding.SyncError) => {
-    const session = new SyncSession(sessionInternal);
-    const error = fromBindingSyncError(bindingError);
-    if (error instanceof ClientResetError) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      onManual!(session, error.config.path!);
-    }
-    session.resetInternal();
-  };
+  if (onManual) {
+    return (sessionInternal: binding.SyncSession, bindingError: binding.SyncError) => {
+      const session = new SyncSession(sessionInternal);
+      const error = fromBindingSyncError(bindingError);
+      if (error instanceof ClientResetError) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        onManual(session, error.config.path!);
+      }
+      session.resetInternal();
+    };
+  }
 }
 
 /** @internal */
@@ -198,16 +199,15 @@ export function toBindingStopPolicy(policy: SessionStopPolicy): binding.SyncSess
 
 /** @internal */
 export function toBindingClientResetMode(resetMode: ClientResetMode): binding.ClientResetMode {
-  if (resetMode === ClientResetMode.Manual) {
-    return binding.ClientResetMode.Manual;
-  } else if (resetMode === ClientResetMode.DiscardUnsyncedChanges) {
-    return binding.ClientResetMode.DiscardLocal;
-  } else if (resetMode === ClientResetMode.RecoverUnsyncedChanges) {
-    return binding.ClientResetMode.Recover;
-  } else if (resetMode === ClientResetMode.RecoverOrDiscardUnsyncedChanges) {
-    return binding.ClientResetMode.RecoverOrDiscard;
-  } else {
-    throw new Error(`Unexpected clientResetMode (get ${resetMode})`);
+  switch (resetMode) {
+    case ClientResetMode.Manual:
+      return binding.ClientResetMode.Manual;
+    case ClientResetMode.DiscardUnsyncedChanges:
+      return binding.ClientResetMode.DiscardLocal;
+    case ClientResetMode.RecoverUnsyncedChanges:
+      return binding.ClientResetMode.Recover;
+    case ClientResetMode.RecoverOrDiscardUnsyncedChanges:
+      return binding.ClientResetMode.RecoverOrDiscard;
   }
 }
 
