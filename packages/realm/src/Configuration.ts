@@ -24,6 +24,9 @@ import {
   RealmObjectConstructor,
   SyncConfiguration,
   assert,
+  ClientResetConfig,
+  ClientResetMode,
+  ErrorCallback,
 } from "./internal";
 
 // export type Configuration = ConfigurationWithSync | ConfigurationWithoutSync;
@@ -82,10 +85,10 @@ type BaseConfiguration = {
 //   Manual = "manual",
 // }
 
-export enum ClientResetMode {
-  Manual = "manual",
-  DiscardLocal = "discardLocal",
-}
+// export enum ClientResetMode {
+//   Manual = "manual",
+//   DiscardLocal = "discardLocal",
+// }
 
 // export type ClientResetBeforeCallback = (localRealm: Realm) => void;
 // export type ClientResetAfterCallback = (localRealm: Realm, remoteRealm: Realm) => void;
@@ -243,3 +246,4 @@ export function validateObjectSchema(arg: unknown): asserts arg is ObjectSchema 
     assert(!asymmetric || !embedded, `Cannot be both asymmetric and embedded`);
   }
 }
+
