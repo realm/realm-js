@@ -182,11 +182,11 @@ export class SyncSession {
   // TODO: Return the `error_handler` and `custom_http_headers`
   get config(): SyncConfiguration {
     const user = new User(this.internal.user, {} as unknown as App);
-    const { partitionValue, flxSyncRequested } = this.internal.config;
+    const { partitionValue, flxSyncRequested, customHttpHeaders } = this.internal.config;
     if (flxSyncRequested) {
-      return { user, flexible: true };
+      return { user, flexible: true, customHttpHeaders };
     } else {
-      return { user, partitionValue: EJSON.parse(partitionValue) as PartitionValue };
+      return { user, partitionValue: EJSON.parse(partitionValue) as PartitionValue, customHttpHeaders };
     }
   }
 

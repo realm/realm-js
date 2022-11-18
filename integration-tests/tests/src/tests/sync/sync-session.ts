@@ -190,6 +190,18 @@ describe("SessionTest", () => {
         expect(e.message).contains("Expected 'user' to be an instance of User, got an object");
       }
     });
+
+    it("propagates custom http headers", async function (this: AppContext) {
+      const partition = generatePartition();
+      const { config } = await getSyncConfWithUser(this.app, partition);
+      config.sync.customHttpHeaders = { language: "English" };
+      const realm = new Realm(config);
+      const session = realm.syncSession;
+      expect(session.config.customHttpHeaders.language).equals(
+        "English",
+        "Synced realm does not contain the expected customHttpHeader",
+      );
+    });
   });
 
   describe("opening realm", () => {
