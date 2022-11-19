@@ -2,7 +2,8 @@
 
 ### Notes
 * File format version bumped. If Realm file contains any objects with set of `mixed` or dictionary properties, the file will go through an upgrade process.
-* The layout of the lock-file has changed, the lock file format version is bumped and all participants in a multiprocess scenario needs to be up to date so they expect the same format. This requires an update of Realm Studio. ([realm/realm-core#5440](https://github.com/realm/realm-core/pull/5440))
+* The layout of the lock-file has changed, the lock file format version is bumped and all participants in a multiprocess scenario needs to be up to date so they expect the same format. ([realm/realm-core#5440](https://github.com/realm/realm-core/pull/5440))
+* In order to open Realm files in Realm Studio, you are required to upgrade to Realm Studio v13.0.0 or later.
 
 ### Enhancements
 * The realm file will be shrunk if the larger file size is no longer needed. ([realm/realm-core#5754](https://github.com/realm/realm-core/issues/5754))
