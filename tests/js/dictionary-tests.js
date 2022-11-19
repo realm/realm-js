@@ -266,7 +266,7 @@ module.exports = {
     realm.write(() => realm.create(DictSchema.name, dict));
     let point = realm.objects(DictSchema.name)[0].a;
 
-    Object.keys(dict.a).forEach(key => TestCase.assertEqual(dict.a[key], point[key], `Should be equal: ${key}`));
+    Object.keys(dict.a).forEach((key) => TestCase.assertEqual(dict.a[key], point[key], `Should be equal: ${key}`));
     TestCase.assertArraysEqual(Object.values(point).sort(), [1, 2, 3], "Should be an equals to: [1, 2, 3]");
     TestCase.assertArraysEqual(Object.keys(point).sort(), ["x", "y", "z"], "Should be an equals to: ['x', 'y', 'z']");
 
