@@ -235,7 +235,7 @@ async function waitSimulatedClientResetRecoverCallbacks(
   });
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const session = realm.syncSession!;
-  await  session.uploadAllLocalChanges();
+  await session.uploadAllLocalChanges();
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore calling undocumented method _simulateError
   session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false); // 211 -> diverging histories; 217 -> synchronization no longer possible for client-side file
@@ -478,7 +478,7 @@ function getSchema(useFlexibleSync: boolean) {
         );
       });
 
-      it(`handles discard local client reset with ${getPartialTestTitle(
+      it.skip(`handles discard local client reset with ${getPartialTestTitle(
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
         // (i)   using a client reset in "DiscardUnsyncedChanges" mode, a fresh copy
@@ -504,7 +504,7 @@ function getSchema(useFlexibleSync: boolean) {
         );
       });
 
-      it(`handles recovery client reset with ${getPartialTestTitle(
+      it.skip(`handles recovery client reset with ${getPartialTestTitle(
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
         // (i)   using a client reset in "Recovery" mode, a fresh copy
