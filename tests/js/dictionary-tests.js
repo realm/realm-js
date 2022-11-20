@@ -261,13 +261,14 @@ module.exports = {
       },
     };
 
+    const dict = { a: { x: 1, y: 2, z: 3 } };
     let realm = new Realm({ schema: [DictSchema] });
-    realm.write(() => realm.create(DictSchema.name, { a: { x: 1, y: 2, z: 3 } }));
+    realm.write(() => realm.create(DictSchema.name, dict));
     let point = realm.objects(DictSchema.name)[0].a;
 
-    TestCase.assertEqual(JSON.stringify(point), '{"x":1,"z":3,"y":2}', 'Should be an equals to: {"x":1,"z":3,"y":2}');
-    TestCase.assertArraysEqual(Object.values(point), [1, 3, 2], "Should be an equals to: [1,3,2]");
-    TestCase.assertArraysEqual(Object.keys(point), ["x", "z", "y"], "Should be an equals to: ['x','z','y']");
+    Object.keys(dict.a).forEach((key) => TestCase.assertEqual(dict.a[key], point[key], `Should be equal: ${key}`));
+    TestCase.assertArraysEqual(Object.values(point).sort(), [1, 2, 3], "Should be an equals to: [1, 2, 3]");
+    TestCase.assertArraysEqual(Object.keys(point).sort(), ["x", "y", "z"], "Should be an equals to: ['x', 'y', 'z']");
 
     let { x, y, z } = point;
     TestCase.assertEqual(x, 1, "Should be an equals to: [1,3,2]");
@@ -639,13 +640,14 @@ module.exports = {
   },
 
   testDictionaryToJSON() {
+    const dict = { a: { x: 1, y: 2, z: 3 } };
     let realm = new Realm({ schema: [DictSchema] });
-    realm.write(() => realm.create(DictSchema.name, { a: { x: 1, y: 2, z: 3 } }));
+    realm.write(() => realm.create(DictSchema.name, dict));
 
     let data = realm.objects(DictSchema.name);
     TestCase.assertEqual(
       JSON.stringify(data.toJSON()),
-      '[{"a":{"x":1,"z":3,"y":2}}]',
+      JSON.stringify([dict]),
       "toJSON should return the correct result",
     );
 

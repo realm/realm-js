@@ -88,9 +88,6 @@ async function waitServerSideClientResetDiscardUnsyncedChangesCallbacks(
   if (useFlexibleSync) {
     addSubscriptions(realm);
   }
-  realm.write(() => {
-    realm.create(DogSchema.name, { _id: new ObjectId(), name: "Rex", age: 2 });
-  });
 
   await realm.syncSession?.uploadAllLocalChanges();
   await triggerClientReset(app, user);
@@ -137,9 +134,6 @@ async function waitServerSideClientResetRecoveryCallbacks(
   if (useFlexibleSync) {
     addSubscriptions(realm);
   }
-  realm.write(() => {
-    realm.create(DogSchema.name, { _id: new ObjectId(), name: "Rex", age: 2 });
-  });
 
   await realm.syncSession?.uploadAllLocalChanges();
   await triggerClientReset(app, user);
@@ -153,49 +147,46 @@ async function waitSimulatedClientResetDiscardUnsyncedChangesCallbacks(
   actionBefore: (realm: Realm) => void,
   actionAfter: (beforeRealm: Realm, afterRealm: Realm) => void,
 ): Promise<void> {
-  return new Promise((resolve) => {
-    let afterCalled = false;
-    let beforeCalled = false;
+  const resetHandle = createPromiseHandle();
+  let afterCalled = false;
+  let beforeCalled = false;
 
-    const modifiedConfig: Realm.Configuration = {
-      schema,
-      sync: {
-        user,
-        _sessionStopPolicy: SessionStopPolicy.Immediately,
-        ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
-        clientReset: {
-          mode: ClientResetMode.DiscardUnsyncedChanges,
-          onAfter: (before: Realm, after: Realm) => {
-            afterCalled = true;
-            actionAfter(before, after);
-            if (beforeCalled) {
-              resolve();
-            }
-          },
-          onBefore: (realm: Realm) => {
-            beforeCalled = true;
-            actionBefore(realm);
-            if (afterCalled) {
-              resolve();
-            }
-          },
+  const config: Realm.Configuration = {
+    schema,
+    sync: {
+      user,
+      _sessionStopPolicy: SessionStopPolicy.Immediately,
+      ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
+      clientReset: {
+        mode: ClientResetMode.DiscardUnsyncedChanges,
+        onAfter: (before: Realm, after: Realm) => {
+          afterCalled = true;
+          actionAfter(before, after);
+          if (beforeCalled) {
+            resetHandle.resolve();
+          }
+        },
+        onBefore: (realm: Realm) => {
+          beforeCalled = true;
+          actionBefore(realm);
+          if (afterCalled) {
+            resetHandle.resolve();
+          }
         },
       },
-    };
+    },
+  };
 
-    const realm = new Realm(modifiedConfig);
-    if (useFlexibleSync) {
-      addSubscriptions(realm);
-    }
-    realm.write(() => {
-      realm.create(DogSchema.name, { _id: new ObjectId(), name: "Rex", age: 2 });
-    });
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const session = realm.syncSession;
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore calling undocumented method _simulateError
-    session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false); // 211 -> diverging histories
-  });
+  const realm = new Realm(config);
+  if (useFlexibleSync) {
+    addSubscriptions(realm);
+  }
+
+  await realm.syncSession?.uploadAllLocalChanges();
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore calling undocumented method _simulateError
+  realm.syncSession?._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false); // 211 -> diverging histories
+  await resetHandle.promise;
 }
 
 async function waitSimulatedClientResetRecoverCallbacks(
@@ -205,49 +196,50 @@ async function waitSimulatedClientResetRecoverCallbacks(
   actionBefore: (realm: Realm) => void,
   actionAfter: (beforeRealm: Realm, afterRealm: Realm) => void,
 ): Promise<void> {
-  return new Promise((resolve) => {
-    let afterCalled = false;
-    let beforeCalled = false;
+  const resetHandle = createPromiseHandle();
+  let afterCalled = false;
+  let beforeCalled = false;
 
-    const modifiedConfig: Realm.Configuration = {
-      schema,
-      sync: {
-        user,
-        _sessionStopPolicy: SessionStopPolicy.Immediately,
-        ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
-        clientReset: {
-          mode: ClientResetMode.RecoverUnsyncedChanges,
-          onAfter: (before: Realm, after: Realm) => {
-            afterCalled = true;
-            actionAfter(before, after);
-            if (beforeCalled) {
-              resolve();
-            }
-          },
-          onBefore: (realm: Realm) => {
-            beforeCalled = true;
-            actionBefore(realm);
-            if (afterCalled) {
-              resolve();
-            }
-          },
+  const config: Realm.Configuration = {
+    schema,
+    sync: {
+      user,
+      _sessionStopPolicy: SessionStopPolicy.Immediately,
+      ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
+      clientReset: {
+        mode: ClientResetMode.RecoverUnsyncedChanges,
+        onAfter: (before: Realm, after: Realm) => {
+          afterCalled = true;
+          actionAfter(before, after);
+          if (beforeCalled) {
+            resetHandle.resolve();
+          }
+        },
+        onBefore: (realm: Realm) => {
+          beforeCalled = true;
+          actionBefore(realm);
+          if (afterCalled) {
+            resetHandle.resolve();
+          }
         },
       },
-    };
+    },
+  };
 
-    const realm = new Realm(modifiedConfig);
-    if (useFlexibleSync) {
-      addSubscriptions(realm);
-    }
-    realm.write(() => {
-      realm.create(DogSchema.name, { _id: new ObjectId(), name: "Rex", age: 2 });
-    });
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const session = realm.syncSession!;
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore calling undocumented method _simulateError
-    session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false); // 211 -> diverging histories; 217 -> synchronization no longer possible for client-side file
+  const realm = new Realm(config);
+  if (useFlexibleSync) {
+    addSubscriptions(realm);
+  }
+  realm.write(() => {
+    realm.create(DogSchema.name, { _id: new ObjectId(), name: "Rex", age: 2 });
   });
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const session = realm.syncSession!;
+  await session.uploadAllLocalChanges();
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore calling undocumented method _simulateError
+  session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false); // 211 -> diverging histories; 217 -> synchronization no longer possible for client-side file
+  await resetHandle.promise;
 }
 
 /**
@@ -277,7 +269,7 @@ function getSchema(useFlexibleSync: boolean) {
 }
 
 // FIXME: testing flexible sync is currently disabled as it is timing out
-[false /*, true*/].forEach((useFlexibleSync) => {
+[false /*,  true*/].forEach((useFlexibleSync) => {
   describe.skipIf(
     environment.missingServer,
     `client reset handling (${getPartialTestTitle(useFlexibleSync)} sync)`,
@@ -450,11 +442,11 @@ function getSchema(useFlexibleSync: boolean) {
         // (iii) after the reset, the Realm can be used as before
 
         const clientResetBefore = (realm: Realm) => {
-          expect(realm.objects(DogSchema.name).length).to.equal(1);
+          expect(realm.schema.length).to.equal(2);
         };
         const clientResetAfter = (beforeRealm: Realm, afterRealm: Realm) => {
-          expect(beforeRealm.objects(DogSchema.name).length).to.equal(1);
-          expect(afterRealm.objects(DogSchema.name).length).to.equal(1);
+          expect(beforeRealm.schema.length).to.equal(2);
+          expect(afterRealm.schema.length).to.equal(2);
         };
 
         await waitSimulatedClientResetDiscardUnsyncedChangesCallbacks(
@@ -470,11 +462,11 @@ function getSchema(useFlexibleSync: boolean) {
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
         const clientResetBefore = (realm: Realm): void => {
-          expect(realm.objects(DogSchema.name).length).to.equal(1);
+          expect(realm.schema.length).to.equal(2);
         };
         const clientResetAfter = (beforeRealm: Realm, afterRealm: Realm) => {
-          expect(beforeRealm.objects(DogSchema.name).length).to.equal(1);
-          expect(afterRealm.objects(DogSchema.name).length).to.equal(1);
+          expect(beforeRealm.schema.length).to.equal(2);
+          expect(afterRealm.schema.length).to.equal(2);
         };
 
         await waitSimulatedClientResetRecoverCallbacks(
@@ -495,11 +487,11 @@ function getSchema(useFlexibleSync: boolean) {
         // (iii) after the reset, the Realm can be used as before
 
         const clientResetBefore = (realm: Realm) => {
-          expect(realm.objects(DogSchema.name).length).to.equal(1);
+          expect(realm.schema.length).to.equal(2);
         };
         const clientResetAfter = (beforeRealm: Realm, afterRealm: Realm) => {
-          expect(beforeRealm.objects(DogSchema.name).length).to.equal(1);
-          expect(afterRealm.objects(DogSchema.name).length).to.equal(1);
+          expect(beforeRealm.schema.length).to.equal(2);
+          expect(afterRealm.schema.length).to.equal(2);
         };
 
         await waitServerSideClientResetDiscardUnsyncedChangesCallbacks(
@@ -521,11 +513,11 @@ function getSchema(useFlexibleSync: boolean) {
         // (iii) after the reset, the Realm can be used as before
         this.timeout(900 * 1000);
         const clientResetBefore = (realm: Realm) => {
-          expect(realm.objects(DogSchema.name).length).to.equal(1);
+          expect(realm.schema.length).to.equal(2);
         };
         const clientResetAfter = (beforeRealm: Realm, afterRealm: Realm) => {
-          expect(beforeRealm.objects(DogSchema.name).length).to.equal(1);
-          expect(afterRealm.objects(DogSchema.name).length).to.equal(1);
+          expect(beforeRealm.schema.length).to.equal(2);
+          expect(afterRealm.schema.length).to.equal(2);
         };
 
         await waitServerSideClientResetRecoveryCallbacks(
