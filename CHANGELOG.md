@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 11.3.0-rc.0 (2022-11-20)
 
 ### Notes
 * File format version bumped. If Realm file contains any objects with set of `mixed` or dictionary properties, the file will go through an upgrade process.
