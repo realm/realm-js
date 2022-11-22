@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 11.3.0-rc.1 (2022-11-22)
 
 ### Enhancements
 * The choice of a faster linker will now automatically be propagated to anything that statically links against Realm Core. ([realm/realm-core#6043](https://github.com/realm/realm-core/pull/6043))
