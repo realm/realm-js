@@ -1,11 +1,10 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* The choice of a faster linker will now automatically be propagated to anything that statically links against Realm Core. ([realm/realm-core#6043](https://github.com/realm/realm-core/pull/6043))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Corruption might be introduced during compaction. ([realm/realm-core#6054](https://github.com/realm/realm-core/pull/6054), since v11.3.0-rc.0)
 
 ### Compatibility
 * React Native >= v0.70.0
@@ -14,9 +13,7 @@
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v13.0.0 to v13.1.0. ([#5128](https://github.com/realm/realm-js/issues/5128)
 
 ## 11.3.0-rc.0 (2022-11-20)
 
