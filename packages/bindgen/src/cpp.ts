@@ -42,6 +42,10 @@ export class CppVar {
     const staticTok = this.isStatic ? "static" : "";
     return `${staticTok} ${this.arg_declaration()};`;
   }
+
+  static_definition(on: CppClass) {
+    return `${this.type} ${on.name}::${this.name};`;
+  }
 }
 
 type CppFuncProp = "static" | "const" | "noexcept" | "override";
@@ -174,6 +178,13 @@ export class CppClass {
             };`;
   }
 
+  staticMemberDefs() {
+    return this.members
+      .filter((m) => m.isStatic)
+      .map((m) => m.static_definition(this))
+      .join("\n");
+  }
+
   methodDefs() {
     return this.methods.map((m) => m.definition()).join("\n");
   }
@@ -198,6 +209,7 @@ export class CppDecls {
       out(c.definition());
     }
     for (const c of this.classes) {
+      out(c.staticMemberDefs());
       out(c.methodDefs());
     }
     for (const f of this.free_funcs) {

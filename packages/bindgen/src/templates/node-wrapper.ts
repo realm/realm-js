@@ -60,6 +60,7 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
   `);
 
   const injectables = [
+    "ArrayBuffer",
     "Float",
     "ObjectId",
     "UUID",
