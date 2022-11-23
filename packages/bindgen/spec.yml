@@ -407,7 +407,7 @@ records:
       flx_sync_requested:
         type: bool
         default: false
-      error_handler: 'Nullable<std::function<(session: SharedSyncSession, error: SyncError) -> void>>'
+      error_handler: 'Nullable<std::function<(session: SharedSyncSession, error: SyncError) off_thread -> void>>'
       custom_http_headers: 
         type: 'std::map<std::string, std::string>'
         default: {}
