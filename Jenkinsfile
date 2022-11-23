@@ -154,7 +154,7 @@ def buildLinuxRpi(workerFunction) {
     myNode('docker') {
       unstash 'source'
       sh "bash ./scripts/utils.sh set-version ${dependencies.VERSION}"
-      buildDockerEnv("ci/realm-js:rpi", '-f armhf.Dockerfile').inside('-e HOME=/tmp') {
+      buildDockerEnv("ci/realm-js:rpi", '-f debian-multiarch-arm.Dockerfile').inside('-e HOME=/tmp') {
         workerFunction('linux-arm')
       }
     }
