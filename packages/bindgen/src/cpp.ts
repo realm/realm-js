@@ -194,6 +194,7 @@ export class CppDecls {
   public classes: CppClass[] = [];
   public free_funcs: CppFunc[] = [];
   public free_vars: CppVar[] = [];
+  public static_asserts: string[] = [];
 
   outputDefsTo(out: (...parts: string[]) => void) {
     for (const c of this.classes) {
@@ -214,6 +215,9 @@ export class CppDecls {
     }
     for (const f of this.free_funcs) {
       out(f.definition());
+    }
+    for (const a of this.static_asserts) {
+      out(`static_assert(${a});`);
     }
   }
 }

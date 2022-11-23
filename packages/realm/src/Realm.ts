@@ -384,7 +384,7 @@ export class Realm {
     if (readOnly) {
       return binding.SchemaMode.Immutable;
     } else if (deleteRealmIfMigrationNeeded) {
-      return binding.SchemaMode.ResetFile;
+      return binding.SchemaMode.SoftResetFile;
     } else if (sync) {
       return binding.SchemaMode.AdditiveExplicit;
     } else {
