@@ -183,11 +183,11 @@ struct Helpers {
         }
     }
 
-    using LoggerFactory = std::function<std::unique_ptr<util::Logger>(util::Logger::Level)>;
+    using LoggerFactory = std::function<std::shared_ptr<util::Logger>(util::Logger::Level)>;
     using LogCallback = std::function<void(util::Logger::Level, const std::string& message)>;
     static LoggerFactory make_logger_factory(LogCallback&& logger)
     {
-        class MyLogger final : public util::RootLogger {
+        class MyLogger final : public util::Logger {
         public:
             MyLogger(const LogCallback& log)
                 : m_log(log)
@@ -203,7 +203,7 @@ struct Helpers {
         };
 
         return [logger = std::move(logger)](util::Logger::Level level) {
-            auto out = std::make_unique<MyLogger>(logger);
+            auto out = std::make_shared<MyLogger>(logger);
             out->set_level_threshold(level);
             return out;
         };
