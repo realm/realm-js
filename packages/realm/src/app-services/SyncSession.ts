@@ -115,38 +115,25 @@ export function toBindingErrorHandlerWithOnManual(
     throw new Error("need to set either onError or onManual or both");
   }
   if (onError && onManual) {
-    return (sessionInternal: binding.SyncSession, bindingError: binding.SyncError) => {
-      const session = new SyncSession(sessionInternal);
-      const error = fromBindingSyncError(bindingError);
+    return toBindingErrorHandler((session, error) => {
       if (error instanceof ClientResetError) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         onManual(session, error.config.path!);
       } else {
         onError(session, error);
       }
-      session.resetInternal();
-    };
+    });
   }
-  if (onError) {
-    return (sessionInternal: binding.SyncSession, bindingError: binding.SyncError) => {
-      const session = new SyncSession(sessionInternal);
-      const error = fromBindingSyncError(bindingError);
-      if (error instanceof ClientResetError) {
-        onError(session, error);
-      }
-      session.resetInternal();
-    };
+  if (onError) { // onError gets all errors
+    return toBindingErrorHandler(onError);
   }
-  if (onManual) {
-    return (sessionInternal: binding.SyncSession, bindingError: binding.SyncError) => {
-      const session = new SyncSession(sessionInternal);
-      const error = fromBindingSyncError(bindingError);
+  if (onManual) { // onManual only gets ClientResetErrors
+    return toBindingErrorHandler((session, error) => {
       if (error instanceof ClientResetError) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         onManual(session, error.config.path!);
       }
-      session.resetInternal();
-    };
+    });
   }
 }
 
