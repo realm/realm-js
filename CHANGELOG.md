@@ -1072,6 +1072,7 @@ Based on Realm JS v10.10.1: See changelog below for details on enhancements and 
 * Lint react-native templates and ensure they are checked by the CI.
 * Using Realm Core v11.4.1.
 * Small fix to Jenkins to publish Docker image for Raspberry Pi.
+* Added CMake toolchain file for Linux to prevent compilation using a mix of clang and gcc
 
 ## 10.20.0-alpha.1 (2021-9-1)
 
