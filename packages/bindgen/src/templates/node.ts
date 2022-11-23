@@ -425,10 +425,7 @@ function convertToNode(addon: NodeAddon, type: Type, expr: string): string {
             }(${expr})`;
 
     case "Enum":
-      return `[&]{
-                static_assert(sizeof(${type.cppName}) <= sizeof(int32_t), "we only support enums up to 32 bits");
-                return Napi::Number::New(${env}, int(${expr}));
-            }()`;
+      return `Napi::Number::New(${env}, int(${expr}))`;
 
     default:
       const _exhaustiveCheck: never = type;
@@ -601,6 +598,13 @@ class NodeCppDecls extends CppDecls {
   addon = pushRet(this.classes, new NodeAddon());
   constructor(spec: BoundSpec) {
     super();
+
+    for (const enm of spec.enums) {
+      this.static_asserts.push(`sizeof(${enm.cppName}) <= sizeof(int32_t), "we only support enums up to 32 bits"`);
+      for (const { name, value } of enm.enumerators) {
+        this.static_asserts.push(`${enm.cppName}(int(${value})) == ${enm.cppName}::${name}`);
+      }
+    }
 
     for (const struct of spec.records) {
       // Lazily create the to/from conversions only as needed. This is important because some structs
