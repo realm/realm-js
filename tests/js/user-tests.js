@@ -236,7 +236,7 @@ module.exports = {
       err = await TestCase.assertThrowsAsync(async () =>
         app.emailPasswordAuth.registerUser({ email: invalidEmail, password: validPassword }),
       );
-      TestCase.assertEqual(err.message, `failed to confirm user ${invalidEmail}`);
+      TestCase.assertEqual(err.message, `failed to confirm user "${invalidEmail}"`);
       err = await TestCase.assertThrowsAsync(async () => app.logIn(credentials));
       TestCase.assertEqual(err.message, "invalid username/password"); // this user did not register
     }
