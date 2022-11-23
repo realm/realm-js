@@ -70,7 +70,6 @@ function pushRet<T, U extends T>(arr: T[], elem: U) {
 }
 
 class NodeAddon extends CppClass {
-  inits: string[] = [];
   exports: Record<string, string> = {};
   classes: string[] = [];
   injectables = ["Float", "UUID", "ObjectId", "Decimal128", "EJSON_parse", "EJSON_stringify"];
@@ -122,11 +121,9 @@ class NodeAddon extends CppClass {
     this.addMethod(
       new CppCtor(this.name, [new CppVar("Napi::Env", env), new CppVar("Napi::Object", "exports")], {
         body: `
-            ${this.inits.join("\n")}
-
             DefineAddon(exports, {
                 ${Object.entries(this.exports)
-                  .map(([name, val]) => `InstanceValue("${name}", ${val}.Value(), napi_enumerable),`)
+                  .map(([name, val]) => `InstanceValue("${name}", ${val}, napi_enumerable),`)
                   .join("\n")}
                 InstanceMethod<&${this.name}::injectInjectables>("injectInjectables"),
             });
@@ -136,13 +133,8 @@ class NodeAddon extends CppClass {
   }
 
   addFunc(name: string, props?: CppFuncProps) {
-    const func = new CppNodeFunc(this, name, props);
-    const mem = NodeAddon.memberNameForFuncId(name);
-
-    this.members.push(new CppVar("Napi::FunctionReference", mem));
-    this.inits.push(`${mem} = Persistent(Napi::Function::New<${func.name}>(${env}, "${name}"));`);
-    this.exports[name] = mem;
-    return func;
+    this.exports[name] = `Napi::Function::New<${name}>(${env}, "${name}")`;
+    return new CppNodeFunc(this, name, props);
   }
 
   addClass(cls: Class) {
@@ -150,9 +142,6 @@ class NodeAddon extends CppClass {
     this.classes.push(cls.jsName);
   }
 
-  static memberNameForFuncId(id: string) {
-    return `m_func_${id}`;
-  }
   static memberNameForExtractor(cls: string | { jsName: string }) {
     if (typeof cls != "string") cls = cls.jsName;
     return `m_cls_${cls}_extractor`;
@@ -609,7 +598,6 @@ constCast(StaticMethod.prototype).nodeDescriptorType = "StaticMethod";
 constCast(Property.prototype).nodeDescriptorType = "InstanceAccessor";
 
 class NodeCppDecls extends CppDecls {
-  inits: string[] = [];
   addon = pushRet(this.classes, new NodeAddon());
   constructor(spec: BoundSpec) {
     super();
@@ -625,7 +613,7 @@ class NodeCppDecls extends CppDecls {
           toNode = new CppFunc(
             `STRUCT_TO_NODE_${struct.name}`,
             "Napi::Value",
-            [new CppVar("Napi::Env", env), new CppVar(struct.cppName, "in")],
+            [new CppVar("Napi::Env", env), new CppVar(`const ${struct.cppName}&`, "in")],
             {
               body: `
                     auto out = Napi::Object::New(${env});
@@ -747,7 +735,7 @@ class NodeCppDecls extends CppDecls {
 
               auto& self = ${self};
               auto jsIt = Napi::Object::New(${env});
-              jsIt.Set("_keepAlive", info.This());
+              jsIt.Set("_keepAlive", info[0]);
               jsIt.Set("next", Napi::Function::New(${env},
                   [it = self.begin(), end = self.end()] (const Napi::CallbackInfo& info) mutable {
                       const auto ${env} = info.Env();
