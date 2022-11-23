@@ -1116,7 +1116,7 @@ classes:
   # we just let the C++ code handle it. Hopefully we can change the API here because
   # it is weird that we need a factory here, rather than passing a Logger instance.
   LoggerFactory:
-    cppName: std::function<std::unique_ptr<util::Logger>(util::Logger::Level)>
+    cppName: std::function<std::shared_ptr<util::Logger>(util::Logger::Level)>
 
   SyncManager:
     sharedPtrWrapped: SharedSyncManager
