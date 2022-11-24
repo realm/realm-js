@@ -1,18 +1,24 @@
 FROM debian:10
 
 RUN dpkg --add-architecture armhf && apt-get update
+RUN dpkg --add-architecture arm64 && apt-get update
 RUN apt-get install -y \
         build-essential \
         curl \
         crossbuild-essential-armhf \
+        crossbuild-essential-arm64 \
         git \
         libprocps-dev:armhf \
+        libprocps-dev:arm64 \
         libssl-dev:armhf \
+        libssl-dev:arm64 \
         libz-dev:armhf \
+        libz-dev:arm64 \
         libasio-dev \
         ninja-build \
         nodejs \
         libnode-dev:armhf \
+        libnode-dev:arm64 \
         npm \
         ccache \
         qemu-user
