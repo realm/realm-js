@@ -16,8 +16,8 @@ CHANGELOG=$(cat <<EOF
 ### Compatibility
 * React Native >= v0.70.0
 * Atlas App Services.
-* Realm Studio v12.0.0.
-* File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+* Realm Studio v13.0.0.
+* File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
 <!-- * Either mention core version or upgrade -->
