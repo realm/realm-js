@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 11.3.0 (2022-11-25)
 
 ### Notes
 * The changelog entry for this release includes both v11.3.0-rc.0 and v11.3.0-rc.1.
