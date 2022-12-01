@@ -347,7 +347,7 @@ describe("normalizePropertySchema", () => {
       const input = "";
       const normalizeFn = () => normalizePropertySchema(PROP_NAME, input);
 
-      expect(normalizeFn).to.throw("You must specify a type");
+      expect(normalizeFn).to.throw("The type must be specified");
     });
 
     it("throws when normalizing '?'", () => {

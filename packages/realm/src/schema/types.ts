@@ -22,6 +22,9 @@ export type DefaultObject = Record<string, unknown>;
 export type Constructor<T = unknown> = { new (...args: any): T };
 export type RealmObjectConstructor<T extends RealmObject = RealmObject> = Constructor<T>;
 
+/**
+ * The names of the supported Realm property types.
+ */
 export type PropertyTypeName = PrimitivePropertyTypeName | CollectionPropertyTypeName | "object" | "linkingObjects";
 export type CollectionPropertyTypeName = "list" | "dictionary" | "set";
 export type PrimitivePropertyTypeName =
@@ -48,8 +51,8 @@ export type CanonicalObjectSchema<T = DefaultObject> = {
   name: string;
   properties: Record<keyof T, CanonicalObjectSchemaProperty>;
   primaryKey?: string;
-  embedded?: boolean; // TODO: Perhaps change these to non-nullable since they are passed with defaults from `normalize.ts`?
-  asymmetric?: boolean; // TODO: Same as above
+  embedded?: boolean;
+  asymmetric?: boolean;
   constructor?: RealmObjectConstructor;
 };
 

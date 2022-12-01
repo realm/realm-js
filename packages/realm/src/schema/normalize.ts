@@ -129,7 +129,7 @@ export function normalizePropertySchema(
 }
 
 function normalizePropertySchemaString(name: string, schema: string): CanonicalObjectSchemaProperty {
-  ensure(schema.length > 0, name, "You must specify a type.");
+  ensure(schema.length > 0, name, "The type must be specified.");
 
   let type = "";
   let objectType: string | undefined;

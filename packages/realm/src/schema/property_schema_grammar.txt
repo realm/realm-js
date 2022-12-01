@@ -92,7 +92,7 @@ propertySchemaObjectFields:
     // else
         'objectType' ':' USER_DEFINED_NAME ','
 
-    // if type is type is "mixed" or type is "object" or objectType is "mixed" or objectType is USER_DEFINED_NAME
+    // if type is "mixed" or type is "object" or objectType is "mixed" or objectType is USER_DEFINED_NAME
         'optional' ':' ( 'true' | 'undefined' ) ','
     // else
         'optional' ':' ( 'true' | 'false' | 'undefined' ) ','
