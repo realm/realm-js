@@ -1,0 +1,103 @@
+---------------------------------------------------------------------
+GRAMMAR (from Proposal 2):
+---------------------------------------------------------------------
+- Defines the property schema a user can provide
+---------------------------------------------------------------------
+
+
+---------------
+NOTATION
+---------------
+
+<rule name>:<rule>      Rule structure
+<single quoted string>  Exact literal
+<double quoted string>  Exact string literal
+<uppercase word>        Varying literal
+<lowercase word>        A call to another rule
+
+:                       Start of rule 
+;                       End of rule
+x*                      Match zero or more of x
+x+                      Match one or more of x
+x?                      Match zero or one of x
+x1 x2                   Match x1 then x2
+x1 | x2                 Match x1 or x2
+( x )                   Match x (everything inside the parentheses)
+< ... >                 Description (...) of a rule
+//                      Comment with no semantic meaning
+
+
+---------------
+START RULE
+---------------
+
+propertySchema:
+    propertySchemaString
+    | propertySchemaObject
+    ;
+
+
+---------------
+OTHER RULES
+---------------
+
+primitiveType:
+    "bool"
+    | "int"
+    | "float"
+    | "double"
+    | "decimal128"
+    | "objectId"
+    | "string"
+    | "data"
+    | "date"
+    | "mixed"
+    | "uuid"
+    ;
+
+collectionType:
+    "list"
+    | "dictionary"
+    | "set"
+    ;
+
+relationshipType:
+    "object"
+    | "linkingObjects"
+    ;
+
+propertySchemaString:
+    ( primitiveType | USER_DEFINED_NAME ) ( "?" )? ( "[]" | "{}" | "<>" )?
+    ;
+
+propertySchemaObject:
+    '{' propertySchemaObjectFields '}'
+    ;
+
+// Only showing the fields 'type', 'objectType', and 'optional'
+propertySchemaObjectFields:
+    'type' ':' ( primitiveType | collectionType | relationshipType ) ','
+    'objectType' ':' ( primitiveType | USER_DEFINED_NAME | 'undefined' ) ','
+    'optional' ':' ( 'true' | 'false' | 'undefined' ) ','
+    ;
+
+// Logic-based propertySchemaObjectFields
+propertySchemaObjectFields:
+    'type' ':' ( primitiveType | collectionType | relationshipType ) ','
+
+    // if type is primitiveType
+        'objectType' ':' 'undefined' ','
+    // else if type is collectionType
+        'objectType' ':' ( primitiveType | USER_DEFINED_NAME ) ','
+    // else
+        'objectType' ':' USER_DEFINED_NAME ','
+
+    // if type is type is "mixed" or type is "object" or objectType is "mixed" or objectType is USER_DEFINED_NAME
+        'optional' ':' ( 'true' | 'undefined' ) ','
+    // else
+        'optional' ':' ( 'true' | 'false' | 'undefined' ) ','
+    ;
+
+USER_DEFINED_NAME:
+    " <any Unicode character>+ "   // Excluding reserved type names
+    ;
