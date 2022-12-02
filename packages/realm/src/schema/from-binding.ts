@@ -92,7 +92,7 @@ export function fromBindingObjectSchema({
 }: BindingObjectSchema): CanonicalObjectSchema {
   const properties = [...computedProperties, ...persistedProperties];
   const result: CanonicalObjectSchema = {
-    constructor: undefined,
+    ctor: undefined,
     name,
     properties: Object.fromEntries(
       properties.map((property) => [property.publicName || property.name, fromBindingPropertySchema(property)]),
@@ -161,7 +161,7 @@ function fromBindingPropertyTypeName(
         type: TYPE_MAPPINGS[collectionType] as PropertyTypeName,
         objectType: item.type === "object" ? item.objectType : item.type,
         // optional: item.type === "object" ? false : item.optional, // <-- Original. If item.type === "object", shouldn't optional be true?
-        optional: item.type === "object" || item.optional, // <-- New. TODO: Confirm
+        optional: item.type === "object" || item.optional,
       };
     }
   }

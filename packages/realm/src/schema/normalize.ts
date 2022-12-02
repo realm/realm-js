@@ -70,7 +70,7 @@ export function normalizeObjectSchema(arg: RealmObjectConstructor | ObjectSchema
     assert.extends(arg, RealmObject);
     assert.object(arg.schema, "schema static");
     const schema = normalizeObjectSchema(arg.schema as ObjectSchema);
-    schema.constructor = arg;
+    schema.ctor = arg;
     return schema;
   }
 
@@ -89,7 +89,6 @@ export function normalizeObjectSchema(arg: RealmObjectConstructor | ObjectSchema
   // -------------------------------------------------
 
   return {
-    constructor: undefined,
     name: arg.name,
     primaryKey: arg.primaryKey,
     asymmetric: !!arg.asymmetric,
