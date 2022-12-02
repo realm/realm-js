@@ -325,6 +325,7 @@ function visitRealmClassProperty(path: NodePath<types.ClassProperty>) {
         properties.push(
           types.objectProperty(types.identifier("default"), types.arrowFunctionExpression([], valuePath.node)),
         );
+        valuePath.remove();
       }
 
       if (index) {
