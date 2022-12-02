@@ -84,7 +84,7 @@ export function normalizeObjectSchema(arg: RealmObjectConstructor | ObjectSchema
         properties: Object.fromEntries(arg.properties.map(({ name, ...rest }) => [name, rest])),
       });
     }
-    throw new Error("Array of properties are no longer supported");
+    throw new Error("Array of properties are no longer supported. Use an object instead.");
   }
   // -------------------------------------------------
 
@@ -182,7 +182,7 @@ function normalizePropertySchemaString(name: string, schema: string): CanonicalO
     optional = true;
   }
 
-  const normalizedSchema: CanonicalObjectSchemaProperty = {
+  return {
     name,
     type: type as PropertyTypeName,
     optional,
@@ -190,8 +190,6 @@ function normalizePropertySchemaString(name: string, schema: string): CanonicalO
     mapTo: name,
     objectType,
   };
-
-  return removeUndefinedFields(normalizedSchema); // TODO:? A call to this function can be removed if conditionally adding 'objectType' if it is not undefined
 }
 
 function normalizePropertySchemaObject(name: string, schema: ObjectSchemaProperty): CanonicalObjectSchemaProperty {
@@ -201,7 +199,7 @@ function normalizePropertySchemaObject(name: string, schema: ObjectSchemaPropert
   ensure(type.length > 0, name, "'type' must be specified.");
 
   if (isPrimitive(type)) {
-    ensure(objectType === undefined, name, `'objectType' cannot be defined when 'type' is '${type}'.`); // TODO: Maybe we should allow 'objectType' to be an empty string as well and not yell at the user.
+    ensure(objectType === undefined, name, `'objectType' cannot be defined when 'type' is '${type}'.`);
   } else if (isCollection(type)) {
     ensure(isPrimitive(objectType) || isUserDefined(objectType), name, "A valid 'objectType' must be specified.");
   } else if (type === "object" || type === "linkingObjects") {
@@ -223,7 +221,7 @@ function normalizePropertySchemaObject(name: string, schema: ObjectSchemaPropert
     optional = true;
   }
 
-  const normalizedSchema: CanonicalObjectSchemaProperty = {
+  return {
     name,
     type: type as PropertyTypeName,
     optional: !!optional,
@@ -233,8 +231,6 @@ function normalizePropertySchemaObject(name: string, schema: ObjectSchemaPropert
     property: schema.property,
     default: schema.default,
   };
-
-  return removeUndefinedFields(normalizedSchema);
 }
 
 function ensure(condition: boolean, propertyName: string, errMessage: string): void | never {
@@ -246,17 +242,6 @@ function ensure(condition: boolean, propertyName: string, errMessage: string): v
 function error(propertyName: string, errMessage: string): never {
   // TODO: Create a SchemaParseError that extends Error
   throw new Error(`Invalid schema for property '${propertyName}': ${errMessage}`);
-}
-
-function removeUndefinedFields<T extends Record<string, unknown>>(object: T): T {
-  const copiedObject = { ...object };
-  for (const key in copiedObject) {
-    if (copiedObject[key] === undefined) {
-      delete copiedObject[key];
-    }
-  }
-
-  return copiedObject;
 }
 
 export function extractGeneric(type: string): { typeBase: string; typeArgument?: string } {
