@@ -34,37 +34,36 @@
 //
 // ensure that the current string is not empty
 //
-// set variable endIsCollection to true if current string ends with "[]" or "{}" or "<>"
-// if endIsCollection
+// if current string ends with "[]" or "{}" or "<>"
 //    if current string ends with "[]"
-//        set type to "list"
+//        set `type` to "list"
 //    else if current string ends with "{}"
-//        set type to "dictionary"
+//        set `type` to "dictionary"
 //    else /* if current string ends with "<>" */
-//        set type to "set"
+//        set `type` to "set"
 //    update current string by removing last 2 chars
 //    ensure that current string is not empty
 //
 // if current string ends with "?"
-//    set optional to true
+//    set `optional` to true
 //    update current string by removing last char
 //    ensure that current string is not empty
 //
 // if current string is primitive type
-//    if endIsCollection
-//        set objectType to current string
+//    if `type` is collection type
+//        set `objectType` to current string
 //    else
-//        set type to current string
+//        set `type` to current string
 // else if current string is "list" or "dictionary" or "set" or "object" or "linkingObjects"   // These names cannot be used in shorthand notation
 //    error
 // else /* is a user-defined type */
-//    set objectType to current string
-//    if not endIsCollection
-//        set type to "object"
+//    set `objectType` to current string
+//    if `type` is not collection type
+//        set `type` to "object"
 //
-// set variable isImplicitlyNullable to true if type is "mixed" or objectType is "mixed" or objectType is a user-defined type
+// set variable isImplicitlyNullable to true if `type` is "mixed" or `objectType` is "mixed" or `objectType` is a user-defined type
 // if isImplicitlyNullable
-//      set optional to true
+//      set `optional` to true
 //
 // create and return the CanonicalObjectSchemaProperty
 //
@@ -74,21 +73,21 @@
 // * Function: Normalize property schema object (name: string, schema: ObjectSchemaProperty): CanonicalObjectSchemaProperty
 // --------------------------------------------------------------------------------------------------------------------------
 //
-// ensure that type is not empty
+// ensure that `type` is not empty
 //
-// if type is primitive type
-//    ensure that objectType is undefined
-// else if type is collection type
-//    ensure that objectType is primitive type or user-defined type
-// else if type is "object" or type is "linkingObjects"
-//    ensure that objectType is a user-defined type
-// else /* type is a user-defined type */
+// if `type` is primitive type
+//    ensure that `objectType` is undefined
+// else if `type` is collection type
+//    ensure that `objectType` is primitive type or user-defined type
+// else if `type` is "object" or "linkingObjects"
+//    ensure that `objectType` is a user-defined type
+// else /* `type` is a user-defined type */
 //    error                                    // User-defined types must always have type === "object" or "linkingObjects"
 //
-// set variable isImplicitlyNullable to true if type is "mixed" or bjectType is "mixed" or objectType is a user-defined type
+// set variable isImplicitlyNullable to true if `type` is "mixed" or `objectType` is "mixed" or `objectType` is a user-defined type
 // if isImplicitlyNullable
-//      ensure optional is not false (being 'undefined' is allowed)
-//      set optional to true
+//      ensure `optional` is not false (being undefined is allowed)
+//      set `optional` to true
 //
 // create and return the CanonicalObjectSchemaProperty
 // --------------------------------------------------------------------------------------------------------------------------

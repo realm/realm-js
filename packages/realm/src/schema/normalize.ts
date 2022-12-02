@@ -135,8 +135,7 @@ function normalizePropertySchemaString(name: string, schema: string): CanonicalO
   let objectType: string | undefined;
   let optional = false;
 
-  const endIsCollection = schema.endsWith("[]") || schema.endsWith("{}") || schema.endsWith("<>");
-  if (endIsCollection) {
+  if (schema.endsWith("[]") || schema.endsWith("{}") || schema.endsWith("<>")) {
     const end = schema.substring(schema.length - 2);
     if (end === "[]") {
       type = "list";
@@ -157,7 +156,7 @@ function normalizePropertySchemaString(name: string, schema: string): CanonicalO
   }
 
   if (isPrimitive(schema)) {
-    if (endIsCollection) {
+    if (isCollection(type)) {
       objectType = schema;
     } else {
       type = schema as PropertyTypeName;
@@ -174,7 +173,7 @@ function normalizePropertySchemaString(name: string, schema: string): CanonicalO
   } else {
     // User-defined types
     objectType = schema;
-    if (!endIsCollection) {
+    if (!isCollection(type)) {
       type = "object";
     }
   }
@@ -266,7 +265,6 @@ export function extractGeneric(type: string): { typeBase: string; typeArgument?:
   const bracketEnd = type.indexOf(">", bracketStart);
   if (bracketStart === -1) {
     return { typeBase: type };
-  } else {
-    return { typeBase: type.substring(0, bracketStart), typeArgument: type.substring(bracketStart + 1, bracketEnd) };
   }
+  return { typeBase: type.substring(0, bracketStart), typeArgument: type.substring(bracketStart + 1, bracketEnd) };
 }
