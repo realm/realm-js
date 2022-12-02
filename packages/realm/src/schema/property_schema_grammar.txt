@@ -5,9 +5,9 @@ GRAMMAR (from Proposal 2):
 ---------------------------------------------------------------------
 
 
----------------
-NOTATION
----------------
+----------------
+GRAMMAR NOTATION
+----------------
 
 <rule name>:<rule>      Rule structure
 <single quoted string>  Exact literal
@@ -27,9 +27,9 @@ x1 | x2                 Match x1 or x2
 //                      Comment with no semantic meaning
 
 
----------------
+----------------
 START RULE
----------------
+----------------
 
 propertySchema:
     propertySchemaString
@@ -37,9 +37,9 @@ propertySchema:
     ;
 
 
----------------
+----------------
 OTHER RULES
----------------
+----------------
 
 primitiveType:
     "bool"
@@ -92,12 +92,12 @@ propertySchemaObjectFields:
     // else
         'objectType' ':' USER_DEFINED_NAME ','
 
-    // if type is "mixed" or type is "object" or objectType is "mixed" or objectType is USER_DEFINED_NAME
+    // if type is "mixed" or objectType is "mixed" or objectType is USER_DEFINED_NAME
         'optional' ':' ( 'true' | 'undefined' ) ','
     // else
         'optional' ':' ( 'true' | 'false' | 'undefined' ) ','
     ;
 
 USER_DEFINED_NAME:
-    " <any Unicode character>+ "   // Excluding reserved type names
+    "<any Unicode character>+"   // Excluding reserved type names
     ;

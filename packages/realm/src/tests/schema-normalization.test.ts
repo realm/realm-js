@@ -1042,30 +1042,28 @@ describe("normalizePropertySchema", () => {
       const input = { type: "mixed", optional: false };
       const normalizeFn = () => normalizePropertySchema(PROP_NAME, input);
 
-      expect(normalizeFn).to.throw("A 'mixed' type can itself be a null value, so 'optional' cannot be set to 'false'");
+      expect(normalizeFn).to.throw("A 'mixed' type can itself be null, so 'optional' cannot be set to 'false'");
     });
 
     it('throws when normalizing { type: "list", objectType: "mixed", optional: false }', () => {
       const input = { type: "list", objectType: "mixed", optional: false };
       const normalizeFn = () => normalizePropertySchema(PROP_NAME, input);
 
-      expect(normalizeFn).to.throw("A 'mixed' type can itself be a null value, so 'optional' cannot be set to 'false'");
+      expect(normalizeFn).to.throw("A 'mixed' type can itself be null, so 'optional' cannot be set to 'false'");
     });
 
     it('throws when normalizing { type: "list", objectType: "Person", optional: false }', () => {
-      const input = { type: "list", objectType: "mixed", optional: false };
+      const input = { type: "list", objectType: "Person", optional: false };
       const normalizeFn = () => normalizePropertySchema(PROP_NAME, input);
 
-      expect(normalizeFn).to.throw("A 'mixed' type can itself be a null value, so 'optional' cannot be set to 'false'");
+      expect(normalizeFn).to.throw("A user-defined type can itself be null, so 'optional' cannot be set to 'false'");
     });
 
     it('throws when normalizing { type: "object", objectType: "Person", optional: false }', () => {
       const input = { type: "object", objectType: "Person", optional: false };
       const normalizeFn = () => normalizePropertySchema(PROP_NAME, input);
 
-      expect(normalizeFn).to.throw(
-        "A user-defined type can itself be a null value, so 'optional' cannot be set to 'false'",
-      );
+      expect(normalizeFn).to.throw("A user-defined type can itself be null, so 'optional' cannot be set to 'false'");
     });
 
     it("throws when using optional prop as primary key", () => {

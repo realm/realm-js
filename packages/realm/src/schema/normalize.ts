@@ -21,7 +21,7 @@ import {
   CanonicalObjectSchemaProperty,
   CollectionPropertyTypeName,
   ObjectSchema,
-  ObjectSchemaProperty, // TODO: Rename to PropertySchema
+  ObjectSchemaProperty,
   PrimitivePropertyTypeName,
   PropertiesTypes,
   PropertyTypeName,
@@ -179,14 +179,10 @@ function normalizePropertySchemaString(name: string, schema: string): CanonicalO
     }
   }
 
-  const isImplicitlyNullable =
-    type === "mixed" || type === "object" || objectType === "mixed" || isUserDefined(objectType);
+  const isImplicitlyNullable = type === "mixed" || objectType === "mixed" || isUserDefined(objectType);
   if (isImplicitlyNullable) {
     optional = true;
   }
-
-  // Using 'assert()' here only for internal validation of logic.
-  assert(type.length, "Logic error: Expected 'type' to not be empty.");
 
   const normalizedSchema: CanonicalObjectSchemaProperty = {
     name,
@@ -197,7 +193,7 @@ function normalizePropertySchemaString(name: string, schema: string): CanonicalO
     objectType,
   };
 
-  return removeUndefinedFields(normalizedSchema);
+  return removeUndefinedFields(normalizedSchema); // TODO:? A call to this function can be removed if conditionally adding 'objectType' if it is not undefined
 }
 
 function normalizePropertySchemaObject(name: string, schema: ObjectSchemaProperty): CanonicalObjectSchemaProperty {
@@ -221,15 +217,11 @@ function normalizePropertySchemaObject(name: string, schema: ObjectSchemaPropert
   }
 
   const isImplicitlyNullable =
-    type !== "linkingObjects" &&
-    (type === "mixed" || type === "object" || objectType === "mixed" || isUserDefined(objectType));
+    type !== "linkingObjects" && (type === "mixed" || objectType === "mixed" || isUserDefined(objectType));
   if (isImplicitlyNullable) {
-    const displayedType = type === "object" ? "user-defined" : "'mixed'";
-    ensure(
-      optional !== false, // Don't check for !optional, since 'undefined' is allowed
-      name,
-      `A ${displayedType} type can itself be a null value, so 'optional' cannot be set to 'false'.`,
-    );
+    const displayed = type === "mixed" || objectType === "mixed" ? "'mixed'" : "user-defined";
+    // Don't check for !optional, since 'undefined' is allowed
+    ensure(optional !== false, name, `A ${displayed} type can itself be null, so 'optional' cannot be set to 'false'.`);
     optional = true;
   }
 

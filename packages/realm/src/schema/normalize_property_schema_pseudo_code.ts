@@ -62,7 +62,7 @@
 //    if not endIsCollection
 //        set type to "object"
 //
-// set variable isImplicitlyNullable to true if type is "mixed" or type is "object" or objectType is "mixed" or objectType is a user-defined type
+// set variable isImplicitlyNullable to true if type is "mixed" or objectType is "mixed" or objectType is a user-defined type
 // if isImplicitlyNullable
 //      set optional to true
 //
@@ -85,7 +85,7 @@
 // else /* type is a user-defined type */
 //    error                                    // User-defined types must always have type === "object" or "linkingObjects"
 //
-// set variable isImplicitlyNullable to true if type is "mixed" or type is "object" or objectType is "mixed" or objectType is a user-defined type
+// set variable isImplicitlyNullable to true if type is "mixed" or bjectType is "mixed" or objectType is a user-defined type
 // if isImplicitlyNullable
 //      ensure optional is not false (being 'undefined' is allowed)
 //      set optional to true

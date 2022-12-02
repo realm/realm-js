@@ -91,7 +91,7 @@ export type PropertiesTypes = {
  */
 export type ObjectSchemaProperty = {
   type: PropertyType;
-  objectType?: string;
+  objectType?: string; // TODO: Rename to elementType
   property?: string;
   default?: unknown;
   optional?: boolean;
