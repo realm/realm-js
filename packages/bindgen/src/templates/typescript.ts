@@ -32,6 +32,7 @@ const PRIMITIVES_MAPPING: Record<string, string> = {
   count_t: "number",
   uint64_t: "bigint",
   "std::string": "string",
+  "std::string_view": "string",
   StringData: "string",
   EncryptionKey: "ArrayBuffer",
   BinaryData: "ArrayBuffer",
@@ -42,6 +43,7 @@ const PRIMITIVES_MAPPING: Record<string, string> = {
   AppError: "AppError",
   "std::exception_ptr": "Error",
   "std::error_code": "CppErrorCode",
+  "Status": "Error", // We don't currently expose the code.
   EJson: "EJson",
   EJsonArray: "EJson[]",
   EJsonObj: "Record<string, EJson>",
