@@ -32,6 +32,7 @@ primitives:
   - bool
   - void
   - std::string
+  - std::string_view
   # TODO: see if we need nullable versions of these. For now null buffers are treated as empty.
   - StringData
   - OwnedBinaryData
@@ -47,6 +48,7 @@ primitives:
   - AppError
   - std::exception_ptr
   - std::error_code
+  - Status
   - QueryArg # variant<Mixed, vector<Mixed>> (don't want to support arbitrary variants as a template, because we need logic to distinguish the cases)
 
   # These are all strings in C++, but parsed/serialized EJSON in the binding.
@@ -275,6 +277,16 @@ enums:
       - LoggedOut
       - LoggedIn
       - Removed
+  SyncSubscriptionSetState:
+    cppName: sync::SubscriptionSet::State
+    values:
+      - Uncommitted
+      - Pending
+      - Bootstrapping
+      - Complete
+      - Error
+      - Superseded
+      - AwaitingMark
 
 constants:
   null_col_key:
@@ -394,7 +406,6 @@ records:
       disabled:
         type: bool
 
-
   SyncConfig:
     fields:
       user: SharedSyncUser
@@ -417,6 +428,15 @@ records:
       notify_before_client_reset: 'Nullable<std::function<(before_frozen: std::shared_ptr<Realm>) off_thread -> void>>'
       notify_after_client_reset: 'Nullable<std::function<(before_frozen: std::shared_ptr<Realm>, after: ThreadSafeReference, did_recover: bool) off_thread -> void>>'
 
+  SyncSubscription:
+    cppName: sync::Subscription
+    fields:
+      id: ObjectId
+      created_at: Timestamp
+      updated_at: Timestamp
+      name: util::Optional<std::string>
+      object_class_name: std::string
+      query_string: std::string
 
   ObjectChangeSet:
     fields:
@@ -1169,6 +1189,43 @@ classes:
 
   SyncSubscriptionSet:
     cppName: sync::SubscriptionSet
+    iterable: const SyncSubscription&
+    properties:
+      version: int64_t
+      # not exposing snapshot_version
+      state: SyncSubscriptionSetState
+      error_str: StringData
+      size: count_t
+
+    methods:
+      make_mutable_copy: () const -> MutableSyncSubscriptionSet
+      get_state_change_notification: '(notify_when: SyncSubscriptionSetState, callback: AsyncCallback<(new_state: util::Optional<SyncSubscriptionSetState>, err: util::Optional<Status>)>) off_thread const'
+      at: '(index: count_t) const -> const SyncSubscription&'
+      find:
+        - sig: '(name: StringData) const -> Nullable<const SyncSubscription*>'
+          suffix: by_name
+        - sig: '(query: const Query&) const -> Nullable<const SyncSubscription*>'
+          suffix: by_query
+      refresh: ()
+      # not exposing to_ext_json()
+
+  MutableSyncSubscriptionSet:
+    cppName: sync::MutableSubscriptionSet
+    base: SyncSubscriptionSet
+    methods:
+      clear: ()
+      insert_or_assign: # NOTE: these really return iterators, but the API is close enough to pointers to work here.
+        - sig: '(name: std::string_view, query: const Query&) -> std::pair<const SyncSubscription*, bool>'
+          suffix: by_name
+        - sig: '(query: const Query&) -> std::pair<const SyncSubscription*, bool>'
+          suffix: by_query
+      erase:
+        - sig: '(name: StringData) -> bool'
+          suffix: by_name
+        - sig: '(query: const Query&) -> bool'
+          suffix: by_query
+      commit: () -> SyncSubscriptionSet
+      # not exposing import() or update_state()
 
 interfaces:
   Scheduler:

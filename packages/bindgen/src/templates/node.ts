@@ -234,6 +234,11 @@ function convertPrimToNode(addon: NodeAddon, type: string, expr: string): string
       return `toNodeException(${env}, ${expr})`;
     case "std::error_code":
       return `toNodeErrorCode(${env}, ${expr})`;
+    case "Status":
+      return `([&] (const Status& status) {
+                REALM_ASSERT(!status.is_ok()); // should only get here with errors
+                return Napi::Error::New(${env}, status.reason()).Value();
+              }(${expr}))`;
   }
   assert.fail(`unexpected primitive type '${type}'`);
 }
@@ -331,7 +336,9 @@ function convertToNode(addon: NodeAddon, type: Type, expr: string): string {
       return convertPrimToNode(addon, type.name, expr);
     case "Pointer":
       return `[&] (const auto& ptr){
-          REALM_ASSERT(bool(ptr) && "Must mark nullable pointers with Nullable<> in spec");
+          if constexpr(requires{ bool(ptr); }) { // support claiming that always-valid iterators are pointers.
+              REALM_ASSERT(bool(ptr) && "Must mark nullable pointers with Nullable<> in spec");
+          }
           return ${c(type.type, "*ptr")};
       } (${expr})`;
 

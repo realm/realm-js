@@ -284,6 +284,11 @@ function convertPrimToJsi(addon: JsiAddon, type: string, expr: string): string {
       return `toJsiException(_env, ${expr})`;
     case "std::error_code":
       return `toJsiErrorCode(_env, ${expr})`;
+    case "Status":
+      return `([&] (const Status& status) {
+                REALM_ASSERT(!status.is_ok()); // should only get here with errors
+                return jsi::JSError(_env, status.reason()).value();
+              }(${expr}))`;
   }
   assert.fail(`unexpected primitive type '${type}'`);
 }
@@ -390,7 +395,9 @@ function convertToJsi(addon: JsiAddon, type: Type, expr: string): string {
       return convertPrimToJsi(addon, type.name, expr);
     case "Pointer":
       return `[&] (const auto& ptr){
-          REALM_ASSERT(bool(ptr) && "Must mark nullable pointers with Nullable<> in spec");
+          if constexpr(requires{ bool(ptr); }) { // support claiming that always-valid iterators are pointers.
+              REALM_ASSERT(bool(ptr) && "Must mark nullable pointers with Nullable<> in spec");
+          }
           return ${c(type.type, "*ptr")};
       } (${expr})`;
 
