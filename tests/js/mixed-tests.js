@@ -258,6 +258,19 @@ module.exports = {
       realm.deleteAll();
     });
 
+    // Test with empty array
+    realm.write(() => {
+      realm.create("MixedWithData", { value: new Uint8Array(0) });
+    });
+
+    const emptyArrayBuffer = mixedObjects[0].value;
+    TestCase.assertInstanceOf(emptyArrayBuffer, ArrayBuffer);
+    TestCase.assertEqual(emptyArrayBuffer.byteLength, 0);
+
+    realm.write(() => {
+      realm.deleteAll();
+    });
+
     // test with 16-bit values
     const uint16Values = [0, 512, 256, 65535];
     const uint16Buffer = new Uint16Array(uint16Values).buffer;

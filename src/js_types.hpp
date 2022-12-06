@@ -259,6 +259,8 @@ struct Value {
     VALIDATED(UUID, uuid)
 
 #undef VALIDATED
+private:
+    static OwnedBinaryData to_binary_impl(ContextType, const ValueType&);
 };
 
 template <typename T>
@@ -917,6 +919,14 @@ typename T::Value Value<T>::from_mixed(ContextType ctx, std::shared_ptr<Realm> r
     }
 }
 
+template <typename T>
+inline OwnedBinaryData Value<T>::to_binary(typename T::Context ctx, const ValueType& value)
+{
+    auto bin = to_binary_impl(ctx, value);
+    if (bin.data() == nullptr)
+        return OwnedBinaryData("", 0); // string literals are guaranteed to be non-null.
+    return bin;
+}
 
 template <typename T>
 inline bson::Bson Value<T>::to_bson(typename T::Context ctx, ValueType value)
