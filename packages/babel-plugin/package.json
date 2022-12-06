@@ -1,6 +1,6 @@
 {
   "name": "@realm/babel-plugin",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Babel plugin making it easier to declare your Realm schema",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
