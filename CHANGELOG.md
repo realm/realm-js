@@ -5,6 +5,7 @@
 
 ### Fixed
 * Not possible to open an encrypted file on a device with a page size bigger than the one on which the file was produced. ([#8030](https://github.com/realm/realm-swift/issues/8030), since v11.1.0)
+* Empty binary values will no longer be treated as null ([#5114](https://github.com/realm/realm-js/issues/5114), since v10.5.0)
 
 ### Compatibility
 * React Native >= v0.70.0

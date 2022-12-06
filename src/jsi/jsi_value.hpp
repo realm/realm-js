@@ -300,7 +300,7 @@ inline double realmjsi::Value::to_number(JsiEnv env, const JsiVal& value)
 }
 
 template <>
-inline OwnedBinaryData realmjsi::Value::to_binary(JsiEnv env, const JsiVal& value)
+inline OwnedBinaryData realmjsi::Value::to_binary_impl(JsiEnv env, const JsiVal& value)
 {
     auto obj = value->asObject(env);
     if (obj.isArrayBuffer(env)) {

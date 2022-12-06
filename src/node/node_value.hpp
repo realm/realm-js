@@ -19,8 +19,8 @@
 #pragma once
 
 #include "node_types.hpp"
-#include "node_buffer.hpp"
 #include "napi.h"
+#include "realm/binary_data.hpp"
 
 namespace realm {
 namespace js {
@@ -250,33 +250,23 @@ inline double node::Value::to_number(Napi::Env env, const Napi::Value& value)
 }
 
 template <>
-inline OwnedBinaryData node::Value::to_binary(Napi::Env env, const Napi::Value& value)
+inline OwnedBinaryData node::Value::to_binary_impl(Napi::Env env, const Napi::Value& value)
 {
-    OwnedBinaryData binary_data(nullptr, 0);
-    bool legal_conversion = false;
-
     if (value.IsDataView()) {
-        binary_data = NodeBinaryManager<Napi::DataView, Napi::Value>{value}.create_binary_blob();
-        legal_conversion = true;
-    }
-    else if (value.IsBuffer()) {
-        binary_data = NodeBinaryManager<Napi::Buffer<char>, Napi::Value>{value}.create_binary_blob();
-        legal_conversion = true;
+        auto buf = value.As<Napi::DataView>();
+        return OwnedBinaryData(reinterpret_cast<const char*>(buf.Data()), buf.ByteLength());
     }
     else if (value.IsTypedArray()) {
-        binary_data = NodeBinaryManager<Napi::TypedArray, Napi::Value>{value}.create_binary_blob();
-        legal_conversion = true;
+        auto view = value.As<Napi::TypedArray>();
+        auto buf = view.ArrayBuffer();
+        return OwnedBinaryData(reinterpret_cast<const char*>(buf.Data()) + view.ByteOffset(), view.ByteLength());
     }
     else if (value.IsArrayBuffer()) {
-        binary_data = NodeBinaryManager<Napi::ArrayBuffer, Napi::Value>{value}.create_binary_blob();
-        legal_conversion = true;
+        auto buf = value.As<Napi::ArrayBuffer>();
+        return OwnedBinaryData(reinterpret_cast<const char*>(buf.Data()), buf.ByteLength());
     }
 
-    if (!legal_conversion) {
-        throw std::runtime_error("Can only convert Buffer, ArrayBuffer, and ArrayBufferView objects to binary");
-    }
-
-    return std::move(binary_data);
+    throw std::runtime_error("Can only convert Buffer, ArrayBuffer, and ArrayBufferView objects to binary");
 }
 
 
