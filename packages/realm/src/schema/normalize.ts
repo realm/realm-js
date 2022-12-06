@@ -47,6 +47,12 @@ const PRIMITIVE_TYPES = new Set<PrimitivePropertyTypeName>([
 
 const COLLECTION_TYPES = new Set<CollectionPropertyTypeName>(["list", "dictionary", "set"]);
 
+const COLLECTION_SYMBOL_TO_NAME = {
+  "[]": "list",
+  "{}": "dictionary",
+  "<>": "set",
+};
+
 function isPrimitive(type: string | undefined): boolean {
   return PRIMITIVE_TYPES.has(type as PrimitivePropertyTypeName);
 }
@@ -135,15 +141,9 @@ function normalizePropertySchemaString(name: string, schema: string): CanonicalO
   let optional = false;
 
   if (schema.endsWith("[]") || schema.endsWith("{}") || schema.endsWith("<>")) {
-    const end = schema.substring(schema.length - 2);
-    if (end === "[]") {
-      type = "list";
-    } else if (end === "{}") {
-      type = "dictionary";
-    } else {
-      // end === "<>"
-      type = "set";
-    }
+    const end = schema.substring(schema.length - 2) as "[]" | "{}" | "<>";
+    type = COLLECTION_SYMBOL_TO_NAME[end];
+
     schema = schema.substring(0, schema.length - 2);
     ensure(schema.length > 0, name, `The element type must be specified. See example: 'int${end}'`);
   }
@@ -177,9 +177,15 @@ function normalizePropertySchemaString(name: string, schema: string): CanonicalO
     }
   }
 
-  const isImplicitlyNullable = type === "mixed" || objectType === "mixed" || isUserDefined(objectType);
-  if (isImplicitlyNullable) {
+  if (optionalIsImplicitlyTrue(type, objectType)) {
     optional = true;
+  } else if (optionalIsImplicitlyFalse(type, objectType)) {
+    ensure(
+      !optional,
+      name,
+      "'optional' is implicitly 'false' for user-defined types in lists and sets, so it cannot be set to 'true'. Consider removing '?' or change the type.",
+    );
+    optional = false;
   }
 
   return {
@@ -193,7 +199,7 @@ function normalizePropertySchemaString(name: string, schema: string): CanonicalO
 }
 
 function normalizePropertySchemaObject(name: string, schema: ObjectSchemaProperty): CanonicalObjectSchemaProperty {
-  const { type, objectType } = schema;
+  const { type, objectType, property } = schema;
   let { optional } = schema;
 
   ensure(type.length > 0, name, "'type' must be specified.");
@@ -202,8 +208,11 @@ function normalizePropertySchemaObject(name: string, schema: ObjectSchemaPropert
     ensure(objectType === undefined, name, `'objectType' cannot be defined when 'type' is '${type}'.`);
   } else if (isCollection(type)) {
     ensure(isPrimitive(objectType) || isUserDefined(objectType), name, "A valid 'objectType' must be specified.");
-  } else if (type === "object" || type === "linkingObjects") {
-    ensure(isUserDefined(objectType), name, `A user-defined type must be specified through 'objectType'.`);
+  } else if (type === "object") {
+    ensure(isUserDefined(objectType), name, "A user-defined type must be specified through 'objectType'.");
+  } else if (type === "linkingObjects") {
+    ensure(isUserDefined(objectType), name, "A user-defined type must be specified through 'objectType'.");
+    ensure(!!property, name, "The name of the property that the object links to must be specified through 'property'.");
   } else {
     // 'type' is a user-defined type which is always invalid
     error(
@@ -212,13 +221,25 @@ function normalizePropertySchemaObject(name: string, schema: ObjectSchemaPropert
     );
   }
 
-  const isImplicitlyNullable =
-    type !== "linkingObjects" && (type === "mixed" || objectType === "mixed" || isUserDefined(objectType));
-  if (isImplicitlyNullable) {
-    const displayed = type === "mixed" || objectType === "mixed" ? "'mixed'" : "user-defined";
-    // Don't check for !optional, since 'undefined' is allowed
-    ensure(optional !== false, name, `A ${displayed} type can itself be null, so 'optional' cannot be set to 'false'.`);
+  if (optionalIsImplicitlyTrue(type, objectType)) {
+    const displayedType =
+      type === "mixed" || objectType === "mixed"
+        ? "'mixed' types"
+        : "user-defined types as single objects and in dictionaries";
+    ensure(
+      optional !== false, // 'undefined' is allowed
+      name,
+      `'optional' is implicitly 'true' for ${displayedType}, so it cannot be set to 'false'.`,
+    );
     optional = true;
+  } else if (optionalIsImplicitlyFalse(type, objectType)) {
+    const displayedType = type === "linkingObjects" ? "linking objects" : "user-defined types in lists and sets";
+    ensure(
+      optional !== true, // 'undefined' is allowed
+      name,
+      `'optional' is implicitly 'false' for ${displayedType}, so it cannot be set to 'true'.`,
+    );
+    optional = false;
   }
 
   return {
@@ -228,7 +249,7 @@ function normalizePropertySchemaObject(name: string, schema: ObjectSchemaPropert
     indexed: !!schema.indexed,
     mapTo: schema.mapTo || name,
     objectType,
-    property: schema.property,
+    property,
     default: schema.default,
   };
 }
@@ -239,9 +260,22 @@ function ensure(condition: boolean, propertyName: string, errMessage: string): v
   }
 }
 
-function error(propertyName: string, errMessage: string): never {
+function error(propertyName: string, message: string): never {
   // TODO: Create a SchemaParseError that extends Error
-  throw new Error(`Invalid schema for property '${propertyName}': ${errMessage}`);
+  throw new Error(`Invalid schema for property '${propertyName}': ${message}`);
+}
+
+function optionalIsImplicitlyTrue(type: string, objectType: string | undefined): boolean {
+  return (
+    type === "mixed" ||
+    objectType === "mixed" ||
+    type === "object" ||
+    (type === "dictionary" && isUserDefined(objectType))
+  );
+}
+
+function optionalIsImplicitlyFalse(type: string, objectType: string | undefined): boolean {
+  return (type === "list" || type === "set" || type === "linkingObjects") && isUserDefined(objectType);
 }
 
 export function extractGeneric(type: string): { typeBase: string; typeArgument?: string } {

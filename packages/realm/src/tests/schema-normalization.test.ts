@@ -140,7 +140,7 @@ describe("normalizePropertySchema", () => {
       optional: true,
     });
 
-    itNormalizes("Person", {
+    itNormalizes("Person?", {
       type: "object",
       objectType: "Person",
       optional: true,
@@ -149,11 +149,23 @@ describe("normalizePropertySchema", () => {
     itNormalizes("Person[]", {
       type: "list",
       objectType: "Person",
+      optional: false,
+    });
+
+    itNormalizes("Person<>", {
+      type: "set",
+      objectType: "Person",
+      optional: false,
+    });
+
+    itNormalizes("Person{}", {
+      type: "dictionary",
+      objectType: "Person",
       optional: true,
     });
 
-    itNormalizes("Person?[]", {
-      type: "list",
+    itNormalizes("Person?{}", {
+      type: "dictionary",
       objectType: "Person",
       optional: true,
     });
@@ -183,6 +195,16 @@ describe("normalizePropertySchema", () => {
     itThrowsWhenNormalizing("set", "Cannot use the collection name");
 
     itThrowsWhenNormalizing("list[]", "Cannot use the collection name");
+
+    itThrowsWhenNormalizing(
+      "Person?[]",
+      "'optional' is implicitly 'false' for user-defined types in lists and sets, so it cannot be set to 'true'. Consider removing '?' or change the type.",
+    );
+
+    itThrowsWhenNormalizing(
+      "Person?<>",
+      "'optional' is implicitly 'false' for user-defined types in lists and sets, so it cannot be set to 'true'. Consider removing '?' or change the type.",
+    );
 
     itThrowsWhenNormalizing(
       "object",
@@ -487,7 +509,7 @@ describe("normalizePropertySchema", () => {
       {
         type: "list",
         objectType: "Person",
-        optional: true,
+        optional: false,
       },
     );
 
@@ -495,12 +517,37 @@ describe("normalizePropertySchema", () => {
       {
         type: "list",
         objectType: "Person",
-        optional: true,
+        optional: false,
       },
       {
         type: "list",
         objectType: "Person",
-        optional: true,
+        optional: false,
+      },
+    );
+
+    itNormalizes(
+      {
+        type: "set",
+        objectType: "Person",
+      },
+      {
+        type: "set",
+        objectType: "Person",
+        optional: false,
+      },
+    );
+
+    itNormalizes(
+      {
+        type: "set",
+        objectType: "Person",
+        optional: false,
+      },
+      {
+        type: "set",
+        objectType: "Person",
+        optional: false,
       },
     );
 
@@ -531,26 +578,30 @@ describe("normalizePropertySchema", () => {
 
     itNormalizes(
       {
-        type: "set",
+        type: "linkingObjects",
         objectType: "Person",
+        property: "tasks",
       },
       {
-        type: "set",
+        type: "linkingObjects",
         objectType: "Person",
-        optional: true,
+        property: "tasks",
+        optional: false,
       },
     );
 
     itNormalizes(
       {
-        type: "set",
+        type: "linkingObjects",
         objectType: "Person",
-        optional: true,
+        property: "tasks",
+        optional: false,
       },
       {
-        type: "set",
+        type: "linkingObjects",
         objectType: "Person",
-        optional: true,
+        property: "tasks",
+        optional: false,
       },
     );
   });
@@ -606,6 +657,13 @@ describe("normalizePropertySchema", () => {
 
     itThrowsWhenNormalizing(
       {
+        type: "Person",
+      },
+      "If you meant to define a relationship, use { type: 'object', objectType: 'Person' } or { type: 'linkingObjects', objectType: 'Person', property: 'The Person property' }",
+    );
+
+    itThrowsWhenNormalizing(
+      {
         type: "object",
       },
       "A user-defined type must be specified through 'objectType'",
@@ -621,9 +679,11 @@ describe("normalizePropertySchema", () => {
 
     itThrowsWhenNormalizing(
       {
-        type: "Person",
+        type: "object",
+        objectType: "Person",
+        optional: false,
       },
-      "If you meant to define a relationship, use { type: 'object', objectType: 'Person' } or { type: 'linkingObjects', objectType: 'Person', property: 'The Person property' }",
+      "'optional' is implicitly 'true' for user-defined types as single objects and in dictionaries, so it cannot be set to 'false'",
     );
 
     itThrowsWhenNormalizing(
@@ -631,7 +691,7 @@ describe("normalizePropertySchema", () => {
         type: "mixed",
         optional: false,
       },
-      "A 'mixed' type can itself be null, so 'optional' cannot be set to 'false'",
+      "'optional' is implicitly 'true' for 'mixed' types, so it cannot be set to 'false'",
     );
 
     itThrowsWhenNormalizing(
@@ -640,25 +700,68 @@ describe("normalizePropertySchema", () => {
         objectType: "mixed",
         optional: false,
       },
-      "A 'mixed' type can itself be null, so 'optional' cannot be set to 'false'",
+      "'optional' is implicitly 'true' for 'mixed' types, so it cannot be set to 'false'",
     );
 
     itThrowsWhenNormalizing(
       {
         type: "list",
         objectType: "Person",
-        optional: false,
+        optional: true,
       },
-      "A user-defined type can itself be null, so 'optional' cannot be set to 'false'",
+      "'optional' is implicitly 'false' for user-defined types in lists and sets, so it cannot be set to 'true'",
     );
 
     itThrowsWhenNormalizing(
       {
-        type: "object",
+        type: "set",
+        objectType: "Person",
+        optional: true,
+      },
+      "'optional' is implicitly 'false' for user-defined types in lists and sets, so it cannot be set to 'true'",
+    );
+
+    itThrowsWhenNormalizing(
+      {
+        type: "dictionary",
         objectType: "Person",
         optional: false,
       },
-      "A user-defined type can itself be null, so 'optional' cannot be set to 'false'",
+      "'optional' is implicitly 'true' for user-defined types as single objects and in dictionaries, so it cannot be set to 'false'",
+    );
+
+    itThrowsWhenNormalizing(
+      {
+        type: "linkingObjects",
+      },
+      "A user-defined type must be specified through 'objectType'",
+    );
+
+    itThrowsWhenNormalizing(
+      {
+        type: "linkingObjects",
+        objectType: "Person",
+      },
+      "The name of the property that the object links to must be specified through 'property'",
+    );
+
+    itThrowsWhenNormalizing(
+      {
+        type: "linkingObjects",
+        objectType: "Person",
+        property: "",
+      },
+      "The name of the property that the object links to must be specified through 'property'",
+    );
+
+    itThrowsWhenNormalizing(
+      {
+        type: "linkingObjects",
+        objectType: "Person",
+        property: "tasks",
+        optional: true,
+      },
+      "'optional' is implicitly 'false' for linking objects, so it cannot be set to 'true'",
     );
   });
 });

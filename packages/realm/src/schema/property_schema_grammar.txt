@@ -67,17 +67,18 @@ relationshipType:
     ;
 
 propertySchemaString:
-    ( primitiveType | USER_DEFINED_NAME ) ( "?" )? ( "[]" | "{}" | "<>" )?
+    ( primitiveType | USER_TEXT ) ( "?" )? ( "[]" | "{}" | "<>" )?
     ;
 
 propertySchemaObject:
     '{' propertySchemaObjectFields '}'
     ;
 
-// Only showing the fields 'type', 'objectType', and 'optional'
+// Only showing the fields 'type', 'objectType', 'optional', and 'property'
 propertySchemaObjectFields:
     'type' ':' ( primitiveType | collectionType | relationshipType ) ','
-    'objectType' ':' ( primitiveType | USER_DEFINED_NAME | 'undefined' ) ','
+    'objectType' ':' ( primitiveType | USER_TEXT | 'undefined' ) ','
+    'property' ':' ( USER_TEXT | 'undefined' ) ','
     'optional' ':' ( 'true' | 'false' | 'undefined' ) ','
     ;
 
@@ -85,19 +86,29 @@ propertySchemaObjectFields:
 propertySchemaObjectFields:
     'type' ':' ( primitiveType | collectionType | relationshipType ) ','
 
+    // For objectType:
     // if type is primitiveType
         'objectType' ':' 'undefined' ','
     // else if type is collectionType
-        'objectType' ':' ( primitiveType | USER_DEFINED_NAME ) ','
-    // else
-        'objectType' ':' USER_DEFINED_NAME ','
+        'objectType' ':' ( primitiveType | USER_TEXT ) ','
+    // else (relationshipType)
+        'objectType' ':' USER_TEXT ','
 
-    // if type is "mixed" or objectType is "mixed" or objectType is USER_DEFINED_NAME
+    // For property:
+    // if type is "linkingObjects"
+        'property' ':' USER_TEXT ','
+    // else
+        'property' ':' 'undefined' ','
+
+    // For optional:
+    // if type is "mixed" or objectType is "mixed" or type is "object" or (type is "dictionary" and objectType is USER_TEXT)
         'optional' ':' ( 'true' | 'undefined' ) ','
+    // else if objectType is USER_TEXT and type is "list" or "set" or "linkingObjects"
+        'optional' ':' ( 'false' | 'undefined' ) ','
     // else
         'optional' ':' ( 'true' | 'false' | 'undefined' ) ','
     ;
 
-USER_DEFINED_NAME:
+USER_TEXT:
     "<any Unicode character>+"   // Excluding reserved type names
     ;

@@ -61,9 +61,11 @@
 //    if `type` is not collection type
 //        set `type` to "object"
 //
-// set variable isImplicitlyNullable to true if `type` is "mixed" or `objectType` is "mixed" or `objectType` is a user-defined type
-// if isImplicitlyNullable
-//      set `optional` to true
+// if `optional` is implicitly true (i.e. `type` is "mixed" or `objectType` is "mixed" or `type` is "object" or (`type` is "dictionary" and `objectType` is a user-defined type))
+//    set `optional` to true
+// else if `optional` is implicitly false (i.e. (`type` is "list" or "set" or "linkingObjects") and `objectType` is a user-defined type)
+//    ensure that `optional` is not true (being undefined is allowed)
+//    set `optional` to false
 //
 // create and return the CanonicalObjectSchemaProperty
 //
@@ -79,15 +81,20 @@
 //    ensure that `objectType` is undefined
 // else if `type` is collection type
 //    ensure that `objectType` is primitive type or user-defined type
-// else if `type` is "object" or "linkingObjects"
+// else if `type` is "object"
 //    ensure that `objectType` is a user-defined type
+// else if `type` is "linkingObjects"
+//    ensure that `objectType` is a user-defined type
+//    ensure that `property` is defined and not an empty string
 // else /* `type` is a user-defined type */
 //    error                                    // User-defined types must always have type === "object" or "linkingObjects"
 //
-// set variable isImplicitlyNullable to true if `type` is "mixed" or `objectType` is "mixed" or `objectType` is a user-defined type
-// if isImplicitlyNullable
-//      ensure `optional` is not false (being undefined is allowed)
-//      set `optional` to true
+// if `optional` is implicitly true (i.e. `type` is "mixed" or `objectType` is "mixed" or `type` is "object" or (`type` is "dictionary" and `objectType` is a user-defined type))
+//    ensure that `optional` is not false (being undefined is allowed)
+//    set `optional` to true
+// else if `optional` is implicitly false (i.e. (`type` is "list" or "set" or "linkingObjects") and `objectType` is a user-defined type)
+//    ensure that `optional` is not true (being undefined is allowed)
+//    set `optional` to false
 //
 // create and return the CanonicalObjectSchemaProperty
 // --------------------------------------------------------------------------------------------------------------------------
