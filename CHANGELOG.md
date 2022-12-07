@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Enhancements
-* None
+## 11.3.1 (2022-12-07)
 
 ### Fixed
 * Not possible to open an encrypted file on a device with a page size bigger than the one on which the file was produced. ([#8030](https://github.com/realm/realm-swift/issues/8030), since v11.1.0)
