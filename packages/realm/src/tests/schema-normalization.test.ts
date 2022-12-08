@@ -198,12 +198,12 @@ describe("normalizePropertySchema", () => {
 
     itThrowsWhenNormalizing(
       "Person?[]",
-      "'optional' is implicitly 'false' for user-defined types in lists and sets, so it cannot be set to 'true'. Consider removing '?' or change the type.",
+      "'optional' is implicitly 'false' for user-defined types in lists and sets and cannot be set to 'true'. Remove '?' or change the type.",
     );
 
     itThrowsWhenNormalizing(
       "Person?<>",
-      "'optional' is implicitly 'false' for user-defined types in lists and sets, so it cannot be set to 'true'. Consider removing '?' or change the type.",
+      "'optional' is implicitly 'false' for user-defined types in lists and sets and cannot be set to 'true'. Remove '?' or change the type.",
     );
 
     itThrowsWhenNormalizing(
@@ -683,7 +683,7 @@ describe("normalizePropertySchema", () => {
         objectType: "Person",
         optional: false,
       },
-      "'optional' is implicitly 'true' for user-defined types as single objects and in dictionaries, so it cannot be set to 'false'",
+      "'optional' is implicitly 'true' for user-defined types as single objects and in dictionaries and cannot be set to 'false'",
     );
 
     itThrowsWhenNormalizing(
@@ -691,7 +691,7 @@ describe("normalizePropertySchema", () => {
         type: "mixed",
         optional: false,
       },
-      "'optional' is implicitly 'true' for 'mixed' types, so it cannot be set to 'false'",
+      "'optional' is implicitly 'true' for 'mixed' types and cannot be set to 'false'",
     );
 
     itThrowsWhenNormalizing(
@@ -700,7 +700,7 @@ describe("normalizePropertySchema", () => {
         objectType: "mixed",
         optional: false,
       },
-      "'optional' is implicitly 'true' for 'mixed' types, so it cannot be set to 'false'",
+      "'optional' is implicitly 'true' for 'mixed' types and cannot be set to 'false'",
     );
 
     itThrowsWhenNormalizing(
@@ -709,7 +709,7 @@ describe("normalizePropertySchema", () => {
         objectType: "Person",
         optional: true,
       },
-      "'optional' is implicitly 'false' for user-defined types in lists and sets, so it cannot be set to 'true'",
+      "'optional' is implicitly 'false' for user-defined types in lists and sets and cannot be set to 'true'",
     );
 
     itThrowsWhenNormalizing(
@@ -718,7 +718,7 @@ describe("normalizePropertySchema", () => {
         objectType: "Person",
         optional: true,
       },
-      "'optional' is implicitly 'false' for user-defined types in lists and sets, so it cannot be set to 'true'",
+      "'optional' is implicitly 'false' for user-defined types in lists and sets and cannot be set to 'true'",
     );
 
     itThrowsWhenNormalizing(
@@ -727,7 +727,7 @@ describe("normalizePropertySchema", () => {
         objectType: "Person",
         optional: false,
       },
-      "'optional' is implicitly 'true' for user-defined types as single objects and in dictionaries, so it cannot be set to 'false'",
+      "'optional' is implicitly 'true' for user-defined types as single objects and in dictionaries and cannot be set to 'false'",
     );
 
     itThrowsWhenNormalizing(
@@ -761,7 +761,49 @@ describe("normalizePropertySchema", () => {
         property: "tasks",
         optional: true,
       },
-      "'optional' is implicitly 'false' for linking objects, so it cannot be set to 'true'",
+      "'optional' is implicitly 'false' for linking objects and cannot be set to 'true'",
+    );
+
+    // -------------------------
+    // Combining with shorthand
+    // -------------------------
+
+    itThrowsWhenNormalizing(
+      {
+        type: "int?",
+      },
+      "Cannot use shorthand notation '?' in combination with using an object",
+    );
+
+    itThrowsWhenNormalizing(
+      {
+        type: "int?[]",
+      },
+      "Cannot use shorthand notation '[]' and '?' in combination with using an object",
+    );
+
+    itThrowsWhenNormalizing(
+      {
+        type: "int",
+        objectType: "[]",
+      },
+      "Cannot use shorthand notation '[]' in combination with using an object",
+    );
+
+    itThrowsWhenNormalizing(
+      {
+        type: "int",
+        objectType: "?[]",
+      },
+      "Cannot use shorthand notation '[]' and '?' in combination with using an object",
+    );
+
+    itThrowsWhenNormalizing(
+      {
+        type: "list",
+        objectType: "int?",
+      },
+      "Cannot use shorthand notation '?' in combination with using an object",
     );
   });
 });

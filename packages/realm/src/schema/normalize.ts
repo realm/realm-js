@@ -27,6 +27,7 @@ import {
   PropertyTypeName,
   RealmObject,
   RealmObjectConstructor,
+  TypeAssertionError,
   assert,
   flags,
 } from "../internal";
@@ -80,7 +81,7 @@ export function normalizeObjectSchema(arg: RealmObjectConstructor | ObjectSchema
     return schema;
   }
 
-  // ---- THIS IF BLOCK HAS NOT YET BEEN MODIFIED ----
+  // ---- THIS IF BLOCK HAS NOT YET BEEN REWRITTEN ----
   // TODO: Determine if we still want to support this
   if (Array.isArray(arg.properties)) {
     if (flags.ALLOW_VALUES_ARRAYS) {
@@ -92,7 +93,7 @@ export function normalizeObjectSchema(arg: RealmObjectConstructor | ObjectSchema
     }
     throw new Error("Array of properties are no longer supported. Use an object instead.");
   }
-  // -------------------------------------------------
+  // --------------------------------------------------
 
   return {
     name: arg.name,
@@ -183,7 +184,7 @@ function normalizePropertySchemaString(name: string, schema: string): CanonicalO
     ensure(
       !optional,
       name,
-      "'optional' is implicitly 'false' for user-defined types in lists and sets, so it cannot be set to 'true'. Consider removing '?' or change the type.",
+      "'optional' is implicitly 'false' for user-defined types in lists and sets and cannot be set to 'true'. Remove '?' or change the type.",
     );
     optional = false;
   }
@@ -203,6 +204,8 @@ function normalizePropertySchemaObject(name: string, schema: ObjectSchemaPropert
   let { optional } = schema;
 
   ensure(type.length > 0, name, "'type' must be specified.");
+  ensure(!isUsingShorthand(type), name, errMessageIfUsingShorthand(type));
+  ensure(!isUsingShorthand(objectType), name, errMessageIfUsingShorthand(objectType));
 
   if (isPrimitive(type)) {
     ensure(objectType === undefined, name, `'objectType' cannot be defined when 'type' is '${type}'.`);
@@ -214,7 +217,7 @@ function normalizePropertySchemaObject(name: string, schema: ObjectSchemaPropert
     ensure(isUserDefined(objectType), name, "A user-defined type must be specified through 'objectType'.");
     ensure(!!property, name, "The name of the property that the object links to must be specified through 'property'.");
   } else {
-    // 'type' is a user-defined type which is always invalid
+    // 'type' is a user-defined type
     error(
       name,
       `If you meant to define a relationship, use { type: 'object', objectType: '${type}' } or { type: 'linkingObjects', objectType: '${type}', property: 'The ${type} property' }`,
@@ -222,23 +225,15 @@ function normalizePropertySchemaObject(name: string, schema: ObjectSchemaPropert
   }
 
   if (optionalIsImplicitlyTrue(type, objectType)) {
-    const displayedType =
+    const displayed =
       type === "mixed" || objectType === "mixed"
         ? "'mixed' types"
         : "user-defined types as single objects and in dictionaries";
-    ensure(
-      optional !== false, // 'undefined' is allowed
-      name,
-      `'optional' is implicitly 'true' for ${displayedType}, so it cannot be set to 'false'.`,
-    );
+    ensure(optional !== false, name, `'optional' is implicitly 'true' for ${displayed} and cannot be set to 'false'.`);
     optional = true;
   } else if (optionalIsImplicitlyFalse(type, objectType)) {
-    const displayedType = type === "linkingObjects" ? "linking objects" : "user-defined types in lists and sets";
-    ensure(
-      optional !== true, // 'undefined' is allowed
-      name,
-      `'optional' is implicitly 'false' for ${displayedType}, so it cannot be set to 'true'.`,
-    );
+    const displayed = type === "linkingObjects" ? "linking objects" : "user-defined types in lists and sets";
+    ensure(optional !== true, name, `'optional' is implicitly 'false' for ${displayed} and cannot be set to 'true'.`);
     optional = false;
   }
 
@@ -254,17 +249,6 @@ function normalizePropertySchemaObject(name: string, schema: ObjectSchemaPropert
   };
 }
 
-function ensure(condition: boolean, propertyName: string, errMessage: string): void | never {
-  if (!condition) {
-    error(propertyName, errMessage);
-  }
-}
-
-function error(propertyName: string, message: string): never {
-  // TODO: Create a SchemaParseError that extends Error
-  throw new Error(`Invalid schema for property '${propertyName}': ${message}`);
-}
-
 function optionalIsImplicitlyTrue(type: string, objectType: string | undefined): boolean {
   return (
     type === "mixed" ||
@@ -276,6 +260,39 @@ function optionalIsImplicitlyTrue(type: string, objectType: string | undefined):
 
 function optionalIsImplicitlyFalse(type: string, objectType: string | undefined): boolean {
   return (type === "list" || type === "set" || type === "linkingObjects") && isUserDefined(objectType);
+}
+
+function isUsingShorthand(input: string | undefined): boolean {
+  if (!input) {
+    return false;
+  }
+  return input.endsWith("[]") || input.endsWith("{}") || input.endsWith("<>") || input.endsWith("?");
+}
+
+function errMessageIfUsingShorthand(input: string | undefined): string {
+  let shorthands = "";
+
+  if (input?.endsWith("[]") || input?.endsWith("{}") || input?.endsWith("<>")) {
+    shorthands += `'${input.substring(input.length - 2)}'`;
+    input = input.substring(0, input.length - 2);
+  }
+
+  if (input?.endsWith("?")) {
+    shorthands += shorthands ? " and '?'" : "'?'";
+  }
+
+  return shorthands ? `Cannot use shorthand notation ${shorthands} in combination with using an object.` : "";
+}
+
+function ensure(condition: boolean, propertyName: string, errMessage: string): void | never {
+  if (!condition) {
+    error(propertyName, errMessage);
+  }
+}
+
+function error(propertyName: string, message: string): never {
+  // TODO: Create a SchemaParseError that extends Error
+  throw new Error(`Invalid schema for property '${propertyName}': ${message}`);
 }
 
 export function extractGeneric(type: string): { typeBase: string; typeArgument?: string } {
