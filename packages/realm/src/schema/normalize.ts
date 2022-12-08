@@ -32,6 +32,11 @@ import {
   flags,
 } from "../internal";
 
+type ObjectAndPropertyName = {
+  readonly objectName: string;
+  readonly propertyName: string;
+};
+
 const PRIMITIVE_TYPES = new Set<PrimitivePropertyTypeName>([
   "bool",
   "int",
@@ -100,24 +105,29 @@ export function normalizeObjectSchema(arg: RealmObjectConstructor | ObjectSchema
     primaryKey: arg.primaryKey,
     asymmetric: !!arg.asymmetric,
     embedded: !!arg.embedded,
-    properties: normalizePropertySchemas(arg.properties, arg.primaryKey),
+    properties: normalizePropertySchemas(arg.name, arg.properties, arg.primaryKey),
   };
 }
 
 function normalizePropertySchemas(
+  objectName: string,
   schemas: PropertiesTypes,
   primaryKey?: string,
 ): Record<string, CanonicalObjectSchemaProperty> {
   const normalizedSchemas: Record<string, CanonicalObjectSchemaProperty> = {};
-  for (const name in schemas) {
-    normalizedSchemas[name] = normalizePropertySchema(name, schemas[name], primaryKey === name);
+  for (const propertyName in schemas) {
+    normalizedSchemas[propertyName] = normalizePropertySchema(
+      { objectName, propertyName },
+      schemas[propertyName],
+      primaryKey === propertyName,
+    );
   }
 
   return normalizedSchemas;
 }
 
 export function normalizePropertySchema(
-  name: string,
+  name: ObjectAndPropertyName,
   schema: string | ObjectSchemaProperty,
   isPrimaryKey = false,
 ): CanonicalObjectSchemaProperty {
@@ -134,7 +144,7 @@ export function normalizePropertySchema(
   return normalizedSchema;
 }
 
-function normalizePropertySchemaString(name: string, schema: string): CanonicalObjectSchemaProperty {
+function normalizePropertySchemaString(name: ObjectAndPropertyName, schema: string): CanonicalObjectSchemaProperty {
   ensure(schema.length > 0, name, "The type must be specified.");
 
   let type = "";
@@ -190,16 +200,18 @@ function normalizePropertySchemaString(name: string, schema: string): CanonicalO
   }
 
   return {
-    name,
+    name: name.propertyName,
     type: type as PropertyTypeName,
     optional,
     indexed: false,
-    mapTo: name,
+    mapTo: name.propertyName,
     objectType,
   };
 }
 
-function normalizePropertySchemaObject(name: string, schema: ObjectSchemaProperty): CanonicalObjectSchemaProperty {
+function normalizePropertySchemaObject(name: ObjectAndPropertyName, schema: ObjectSchemaProperty): CanonicalObjectSchemaProperty {
+  sanitizePropertySchemaObject(name, schema);
+
   const { type, objectType, property } = schema;
   let { optional } = schema;
 
@@ -215,7 +227,7 @@ function normalizePropertySchemaObject(name: string, schema: ObjectSchemaPropert
     ensure(isUserDefined(objectType), name, "A user-defined type must be specified through 'objectType'.");
   } else if (type === "linkingObjects") {
     ensure(isUserDefined(objectType), name, "A user-defined type must be specified through 'objectType'.");
-    ensure(!!property, name, "The name of the property that the object links to must be specified through 'property'.");
+    ensure(!!property, name, "The name of the property the object links to must be specified through 'property'.");
   } else {
     // 'type' is a user-defined type
     error(
@@ -238,11 +250,11 @@ function normalizePropertySchemaObject(name: string, schema: ObjectSchemaPropert
   }
 
   return {
-    name,
+    name: name.propertyName,
     type: type as PropertyTypeName,
     optional: !!optional,
     indexed: !!schema.indexed,
-    mapTo: schema.mapTo || name,
+    mapTo: schema.mapTo || name.propertyName,
     objectType,
     property,
     default: schema.default,
@@ -284,15 +296,15 @@ function errMessageIfUsingShorthand(input: string | undefined): string {
   return shorthands ? `Cannot use shorthand notation ${shorthands} in combination with using an object.` : "";
 }
 
-function ensure(condition: boolean, propertyName: string, errMessage: string): void | never {
+function ensure(condition: boolean, name: ObjectAndPropertyName, errMessage: string): void | never {
   if (!condition) {
-    error(propertyName, errMessage);
+    error(name, errMessage);
   }
 }
 
-function error(propertyName: string, message: string): never {
-  // TODO: Create a SchemaParseError that extends Error
-  throw new Error(`Invalid schema for property '${propertyName}': ${message}`);
+function error(name: ObjectAndPropertyName, message: string): never {
+  // TODO: Create a SchemaParseError that extends Error?
+  throw new Error(`Invalid schema for property '${name.objectName}.${name.propertyName}': ${message}`);
 }
 
 export function extractGeneric(type: string): { typeBase: string; typeArgument?: string } {

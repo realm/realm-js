@@ -22,7 +22,7 @@ import { CanonicalObjectSchemaProperty, ObjectSchemaProperty } from "../schema";
 
 import { extractGeneric, normalizePropertySchema } from "../schema/normalize";
 
-const PROP_NAME = "prop";
+const NAME = { objectName: "MyObject", propertyName: "prop" };
 
 describe("normalizePropertySchema", () => {
   // ------------------------------------------------------------------------
@@ -742,7 +742,7 @@ describe("normalizePropertySchema", () => {
         type: "linkingObjects",
         objectType: "Person",
       },
-      "The name of the property that the object links to must be specified through 'property'",
+      "The name of the property the object links to must be specified through 'property'",
     );
 
     itThrowsWhenNormalizing(
@@ -751,7 +751,7 @@ describe("normalizePropertySchema", () => {
         objectType: "Person",
         property: "",
       },
-      "The name of the property that the object links to must be specified through 'property'",
+      "The name of the property the object links to must be specified through 'property'",
     );
 
     itThrowsWhenNormalizing(
@@ -824,11 +824,11 @@ describe("extractGeneric", () => {
 
 function itNormalizes(input: string | ObjectSchemaProperty, expected: Partial<CanonicalObjectSchemaProperty>): void {
   it(`normalizes ${inspect(input, { compact: true, breakLength: Number.MAX_SAFE_INTEGER })}`, () => {
-    const result = normalizePropertySchema(PROP_NAME, input);
+    const result = normalizePropertySchema(NAME, input);
     expect(result).to.deep.equal({
-      name: PROP_NAME,
+      name: NAME.propertyName,
       indexed: false,
-      mapTo: PROP_NAME,
+      mapTo: NAME.propertyName,
       ...expected,
     });
   });
@@ -836,7 +836,7 @@ function itNormalizes(input: string | ObjectSchemaProperty, expected: Partial<Ca
 
 function itThrowsWhenNormalizing(input: string | ObjectSchemaProperty, errMessage: string): void {
   it(`throws when normalizing ${inspect(input, { compact: true, breakLength: Number.MAX_SAFE_INTEGER })}`, () => {
-    const normalizeFn = () => normalizePropertySchema(PROP_NAME, input);
+    const normalizeFn = () => normalizePropertySchema(NAME, input);
     expect(normalizeFn).to.throw(errMessage);
   });
 }
