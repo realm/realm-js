@@ -296,6 +296,53 @@ function errMessageIfUsingShorthand(input: string | undefined): string {
   return shorthands ? `Cannot use shorthand notation ${shorthands} in combination with using an object.` : "";
 }
 
+export function sanitizePropertySchemaObject(name: ObjectAndPropertyName, input: unknown): void {
+  const displayedName = `${name.objectName}.${name.propertyName}`;
+
+  assert.object(input, displayedName); // NOTE: assert.object allows arrays
+  if (Array.isArray(input)) {
+    throw new TypeAssertionError("an object", input, displayedName);
+  }
+  assert.string(input.type, `${displayedName}.type`);
+  if (input.objectType !== undefined) {
+    assert.string(input.objectType, `${displayedName}.objectType`);
+  }
+  if (input.optional !== undefined) {
+    assert.boolean(input.optional, `${displayedName}.optional`);
+  }
+  if (input.property !== undefined) {
+    assert.string(input.property, `${displayedName}.property`);
+  }
+  if (input.indexed !== undefined) {
+    assert.boolean(input.indexed, `${displayedName}.indexed`);
+  }
+  if (input.mapTo !== undefined) {
+    assert.string(input.mapTo, `${displayedName}.mapTo`);
+  }
+
+  const validProperties = new Set([
+    "name", // From the canonical type (needed for schema-transform tests)
+    "type",
+    "objectType",
+    "property",
+    "default",
+    "optional",
+    "indexed",
+    "mapTo",
+  ]);
+  const invalidPropertiesUsed: string[] = [];
+  for (const property in input) {
+    if (!validProperties.has(property)) {
+      invalidPropertiesUsed.push(property);
+    }
+  }
+  assert(
+    !invalidPropertiesUsed.length,
+    `Unexpected field(s) found on the schema for property '${name.objectName}.${name.propertyName}': ` +
+      `'${invalidPropertiesUsed.join("', '")}'.`,
+  );
+}
+
 function ensure(condition: boolean, name: ObjectAndPropertyName, errMessage: string): void | never {
   if (!condition) {
     error(name, errMessage);
