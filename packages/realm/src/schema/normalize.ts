@@ -214,14 +214,18 @@ function normalizePropertySchemaString(name: ObjectAndPropertyName, schema: stri
     optional = false;
   }
 
-  return {
+  const normalizedSchema: CanonicalObjectSchemaProperty = {
     name: name.propertyName,
     type: type as PropertyTypeName,
     optional,
     indexed: false,
     mapTo: name.propertyName,
-    objectType,
   };
+  if (objectType !== undefined) {
+    normalizedSchema.objectType = objectType;
+  }
+
+  return normalizedSchema;
 }
 
 function normalizePropertySchemaObject(
@@ -230,7 +234,7 @@ function normalizePropertySchemaObject(
 ): CanonicalObjectSchemaProperty {
   sanitizePropertySchemaObject(name, schema);
 
-  const { type, objectType, property } = schema;
+  const { type, objectType, property, default: defaultValue } = schema;
   let { optional } = schema;
 
   assert(type.length > 0, errMessage(name, "'type' must be specified."));
@@ -267,16 +271,24 @@ function normalizePropertySchemaObject(
     optional = false;
   }
 
-  return {
+  const normalizedSchema: CanonicalObjectSchemaProperty = {
     name: name.propertyName,
     type: type as PropertyTypeName,
     optional: !!optional,
     indexed: !!schema.indexed,
     mapTo: schema.mapTo || name.propertyName,
-    objectType,
-    property,
-    default: schema.default,
   };
+  if (objectType !== undefined) {
+    normalizedSchema.objectType = objectType;
+  }
+  if (property !== undefined) {
+    normalizedSchema.property = property;
+  }
+  if (defaultValue !== undefined) {
+    normalizedSchema.default = defaultValue;
+  }
+
+  return normalizedSchema;
 }
 
 function optionalIsImplicitlyTrue(type: string, objectType: string | undefined): boolean {
