@@ -33,8 +33,9 @@ import Realm, { BSON, ClientResetMode, FlexibleSyncConfiguration, SessionStopPol
 
 import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "../../hooks";
 import { DogSchema, IPerson, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
-import { closeAndReopenRealm, closeRealm } from "../../utils/close-realm";
+import { closeAndReopenRealm, closeRealm, closeThisRealm } from "../../utils/close-realm";
 import { expectClientResetError } from "../../utils/expect-sync-error";
+import { sleep } from "../../utils/sleep";
 
 const FlexiblePersonSchema = { ...PersonSchema, properties: { ...PersonSchema.properties, nonQueryable: "string?" } };
 
@@ -127,6 +128,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
     schema: [FlexiblePersonSchema, DogSchema],
     sync: {
       flexible: true,
+      onError: console.error,
     },
   });
 
@@ -1657,6 +1659,125 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             expect(error.code).to.equal(211);
           },
         );
+      });
+    });
+    describe("complex sync conflict resolution", function () {
+      it("fires all change listeners until the state between devices is identical", async function (this: RealmContext) {
+        this.timeout(60000);
+
+        const realm1 = this.realm;
+        console.log("Adding subscription to realm1");
+        await addSubscriptionForPersonAndSync(realm1);
+
+        const config2 = { ...this.config, path: "second-realm" };
+        console.log("Opening second realm");
+        const realm2 = await Realm.open(config2);
+        console.log("Opened second realm");
+
+        console.log("Adding subscription to realm2");
+        await addSubscriptionForPersonAndSync(realm2);
+
+        const persons1 = realm1.objects<IPerson>(FlexiblePersonSchema.name);
+        const persons2 = realm2.objects<IPerson>(FlexiblePersonSchema.name);
+
+        let listener1Changes = 0;
+        let listener2Changes = 0;
+
+        persons1.addListener((collection, changes) => {
+          console.log("Listener 1 called: ", JSON.stringify(changes, null, 2));
+          const changeCount = changes.insertions.length + changes.newModifications.length + changes.deletions.length;
+          listener1Changes += changeCount;
+        });
+
+        persons2.addListener((collection, changes) => {
+          console.log("Listener 2 called: ", JSON.stringify(changes, null, 2));
+          const changeCount = changes.insertions.length + changes.newModifications.length + changes.deletions.length;
+          listener2Changes += changeCount;
+        });
+
+        console.log("Pausing sync on realm1");
+        realm1.syncSession?.pause();
+
+        console.log("Adding items to both realms");
+        realm1.write(() => {
+          realm1.create<IPerson>(FlexiblePersonSchema.name, {
+            _id: new BSON.ObjectId(),
+            name: "Tom",
+            age: 36,
+          });
+          realm1.create<IPerson>(FlexiblePersonSchema.name, {
+            _id: new BSON.ObjectId(),
+            name: "Franck",
+            age: 16,
+          });
+          realm1.create<IPerson>(FlexiblePersonSchema.name, {
+            _id: new BSON.ObjectId(),
+            name: "Kenneth",
+            age: 25,
+          });
+          realm1.create<IPerson>(FlexiblePersonSchema.name, {
+            _id: new BSON.ObjectId(),
+            name: "Kraen",
+            age: 52,
+          });
+        });
+
+        realm2.write(() => {
+          return realm2.create<IPerson>(FlexiblePersonSchema.name, {
+            _id: new BSON.ObjectId(),
+            name: "Andrew",
+            age: 36,
+          });
+        });
+
+        expect(persons1).to.have.length(4);
+        expect(persons2).to.have.length(1);
+
+        realm1.syncSession?.resume();
+
+        console.log("waiting for sync on realm1");
+        await realm1.syncSession?.downloadAllServerChanges();
+        console.log("waiting for sync on realm2");
+        await realm2.syncSession?.downloadAllServerChanges();
+
+        console.log("waiting for listeners to be called");
+        await sleep(1000);
+        console.log("finished waiting for listeners to be called");
+
+        expect(persons1).to.have.length(5);
+        expect(persons2).to.have.length(5);
+
+        expect(listener1Changes).to.equal(listener2Changes);
+
+        realm1.syncSession?.pause();
+
+        realm1.write(() => {
+          persons1[0].age = 37;
+          persons1[1].age = 17;
+          persons1[2].age = 26;
+        });
+
+        realm2.write(() => {
+          persons2[3].age = 53;
+          persons2[4].age = 37;
+        });
+
+        realm1.syncSession?.resume();
+
+        console.log("waiting for sync on realm1");
+        await realm1.syncSession?.downloadAllServerChanges();
+        console.log("waiting for sync on realm2");
+        await realm2.syncSession?.downloadAllServerChanges();
+
+        console.log("waiting for listeners to be called");
+        await sleep(1000);
+        console.log("finished waiting for listeners to be called");
+
+        expect(listener1Changes).to.equal(listener2Changes);
+
+        console.log("closing realm2");
+        closeRealm(realm2, config2, true, false);
+        console.log("realm2 closed");
       });
     });
   });
