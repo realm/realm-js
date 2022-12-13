@@ -4,6 +4,7 @@ import {Realm} from '@realm/react';
 
 import {Task} from '../models/Task';
 import {TaskItem} from './TaskItem';
+import {OfflineModeButton} from './OfflineModeButton';
 
 type TaskListProps = {
   tasks: Realm.Results<Task & Realm.Object>;
