@@ -56,6 +56,7 @@ export type CanonicalObjectSchema<T = DefaultObject> = {
   ctor?: RealmObjectConstructor;
 };
 
+// TODO: Rename to CanonicalPropertySchema (only if ObjectSchemaProperty is renamed to PropertySchema)
 /**
  * The canonical representation of the schema of a specific property.
  */

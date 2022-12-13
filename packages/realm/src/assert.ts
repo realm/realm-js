@@ -99,6 +99,7 @@ assert.object = <K extends string | number | symbol = string, V = unknown>(
   value: unknown,
   name?: string,
 ): asserts value is Record<K, V> => {
+  // NOTE: This is not guarding against arrays (Array.isArray(value))
   if (typeof value !== "object" || value === null) {
     throw new TypeAssertionError("an object", value, name);
   }
