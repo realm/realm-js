@@ -53,7 +53,7 @@ const PRIMITIVE_TYPES = new Set<PrimitivePropertyTypeName>([
 
 const COLLECTION_TYPES = new Set<CollectionPropertyTypeName>(["list", "dictionary", "set"]);
 
-const COLLECTION_SYMBOL_TO_NAME: Readonly<Record<string, string>> = {
+const COLLECTION_SHORTHAND_TO_NAME: Readonly<Record<string, string>> = {
   "[]": "list",
   "{}": "dictionary",
   "<>": "set",
@@ -71,12 +71,18 @@ function isUserDefined(type: string | undefined): boolean {
   return !!type && !(isPrimitive(type) || isCollection(type) || type === "object" || type === "linkingObjects");
 }
 
+/**
+ * Transform a user-provided Realm schema into its canonical form.
+ */
 export function normalizeRealmSchema(
   schema: Readonly<(RealmObjectConstructor | ObjectSchema)[]>,
 ): CanonicalObjectSchema[] {
   return schema.map(normalizeObjectSchema);
 }
 
+/**
+ * Transform a user-provided object schema into its canonical form.
+ */
 export function normalizeObjectSchema(arg: RealmObjectConstructor | ObjectSchema): CanonicalObjectSchema {
   if (typeof arg === "function") {
     assert.extends(arg, RealmObject);
@@ -109,6 +115,9 @@ export function normalizeObjectSchema(arg: RealmObjectConstructor | ObjectSchema
   };
 }
 
+/**
+ * Transform user-provided property schemas into their canonical forms.
+ */
 function normalizePropertySchemas(
   objectName: string,
   schemas: PropertiesTypes,
@@ -126,6 +135,9 @@ function normalizePropertySchemas(
   return normalizedSchemas;
 }
 
+/**
+ * Transform a user-provided property schema into its canonical form.
+ */
 export function normalizePropertySchema(
   name: ObjectAndPropertyName,
   schema: string | ObjectSchemaProperty,
@@ -144,6 +156,10 @@ export function normalizePropertySchema(
   return normalizedSchema;
 }
 
+/**
+ * Transform and validate a user-provided property schema that is using
+ * the shorthand string notation into its canonical form.
+ */
 function normalizePropertySchemaString(name: ObjectAndPropertyName, schema: string): CanonicalObjectSchemaProperty {
   assert(schema.length > 0, errMessage(name, "The type must be specified."));
 
@@ -153,7 +169,7 @@ function normalizePropertySchemaString(name: ObjectAndPropertyName, schema: stri
 
   if (endsWithCollection(schema)) {
     const end = schema.substring(schema.length - 2);
-    type = COLLECTION_SYMBOL_TO_NAME[end];
+    type = COLLECTION_SHORTHAND_TO_NAME[end];
 
     schema = schema.substring(0, schema.length - 2);
     assert(schema.length > 0, errMessage(name, `The element type must be specified. See example: 'int${end}'`));
@@ -221,13 +237,16 @@ function normalizePropertySchemaString(name: ObjectAndPropertyName, schema: stri
     indexed: false,
     mapTo: name.propertyName,
   };
-  if (objectType !== undefined) {
-    normalizedSchema.objectType = objectType;
-  }
+  // Add optional properties only if defined (tests expect no 'undefined' properties)
+  objectType !== undefined && (normalizedSchema.objectType = objectType);
 
   return normalizedSchema;
 }
 
+/**
+ * Transform and validate a user-provided property schema that is using
+ * the relaxed object notation into its canonical form.
+ */
 function normalizePropertySchemaObject(
   name: ObjectAndPropertyName,
   schema: ObjectSchemaProperty,
@@ -238,8 +257,8 @@ function normalizePropertySchemaObject(
   let { optional } = schema;
 
   assert(type.length > 0, errMessage(name, "'type' must be specified."));
-  assert(!isUsingShorthand(type), errMessage(name, errMessageIfUsingShorthand(type)));
-  assert(!isUsingShorthand(objectType), errMessage(name, errMessageIfUsingShorthand(objectType)));
+  assert(!isUsingShorthand(type), errMessageIfUsingShorthand(name, type));
+  assert(!isUsingShorthand(objectType), errMessageIfUsingShorthand(name, objectType));
 
   if (isPrimitive(type)) {
     assert(objectType === undefined, errMessage(name, `'objectType' cannot be defined when 'type' is '${type}'.`));
@@ -278,19 +297,81 @@ function normalizePropertySchemaObject(
     indexed: !!schema.indexed,
     mapTo: schema.mapTo || name.propertyName,
   };
-  if (objectType !== undefined) {
-    normalizedSchema.objectType = objectType;
-  }
-  if (property !== undefined) {
-    normalizedSchema.property = property;
-  }
-  if (defaultValue !== undefined) {
-    normalizedSchema.default = defaultValue;
-  }
+  // Add optional properties only if defined (tests expect no 'undefined' properties)
+  objectType !== undefined && (normalizedSchema.objectType = objectType);
+  property !== undefined && (normalizedSchema.property = property);
+  defaultValue !== undefined && (normalizedSchema.default = defaultValue);
 
   return normalizedSchema;
 }
 
+/**
+ * Sanitize a user-provided property schema that ought to use the relaxed
+ * object notation by validating the data types.
+ */
+export function sanitizePropertySchemaObject(
+  name: ObjectAndPropertyName,
+  schema: unknown,
+): asserts schema is ObjectSchemaProperty {
+  const displayedName = `${name.objectName}.${name.propertyName}`;
+
+  assert.object(schema, displayedName); // NOTE: assert.object allows arrays
+  if (Array.isArray(schema)) {
+    throw new TypeAssertionError("an object", schema, displayedName);
+  }
+  assert.string(schema.type, `${displayedName}.type`);
+  if (schema.objectType !== undefined) {
+    assert.string(schema.objectType, `${displayedName}.objectType`);
+  }
+  if (schema.optional !== undefined) {
+    assert.boolean(schema.optional, `${displayedName}.optional`);
+  }
+  if (schema.property !== undefined) {
+    assert.string(schema.property, `${displayedName}.property`);
+  }
+  if (schema.indexed !== undefined) {
+    assert.boolean(schema.indexed, `${displayedName}.indexed`);
+  }
+  if (schema.mapTo !== undefined) {
+    assert.string(schema.mapTo, `${displayedName}.mapTo`);
+  }
+  const invalidKeysUsed = getInvalidPropertySchemaKeys(schema);
+  assert(
+    !invalidKeysUsed.length,
+    `Unexpected field(s) found on the schema for property '${displayedName}': '${invalidKeysUsed.join("', '")}'.`,
+  );
+}
+
+/**
+ * Get the keys of the user-provided property schema that are not expected
+ * to exist on the schema.
+ */
+function getInvalidPropertySchemaKeys(schema: Record<string, unknown>): string[] {
+  // Need to check keys of the canonical form rather than the relaxed
+  // due to 'name' also being needed for schema-transform tests.
+  const allowedKeys = new Set<keyof CanonicalObjectSchemaProperty>([
+    "name",
+    "type",
+    "objectType",
+    "property",
+    "default",
+    "optional",
+    "indexed",
+    "mapTo",
+  ]);
+  const invalidKeysUsed: string[] = [];
+  for (const key in schema) {
+    if (!allowedKeys.has(key as keyof CanonicalObjectSchemaProperty)) {
+      invalidKeysUsed.push(key);
+    }
+  }
+
+  return invalidKeysUsed;
+}
+
+/**
+ * Determine whether a property always is implicitly optional (nullable).
+ */
 function optionalIsImplicitlyTrue(type: string, objectType: string | undefined): boolean {
   return (
     type === "mixed" ||
@@ -300,16 +381,24 @@ function optionalIsImplicitlyTrue(type: string, objectType: string | undefined):
   );
 }
 
+/**
+ * Determine whether a property always is implicitly non-optional (non-nullable).
+ */
 function optionalIsImplicitlyFalse(type: string, objectType: string | undefined): boolean {
   return (type === "list" || type === "set" || type === "linkingObjects") && isUserDefined(objectType);
 }
 
+/**
+ * Determine whether a string ends with a shorthand collection ('[]' or '{}' or '<>').
+ */
 function endsWithCollection(input: string): boolean {
-  // Check if ends with '[]' or '{}' or '<>'
   const end = input.substring(input.length - 2);
-  return !!COLLECTION_SYMBOL_TO_NAME[end];
+  return !!COLLECTION_SHORTHAND_TO_NAME[end];
 }
 
+/**
+ * Determine whether shorthand notation is being used.
+ */
 function isUsingShorthand(input: string | undefined): boolean {
   if (!input) {
     return false;
@@ -317,7 +406,10 @@ function isUsingShorthand(input: string | undefined): boolean {
   return endsWithCollection(input) || input.endsWith("?");
 }
 
-function errMessageIfUsingShorthand(input: string | undefined): string {
+/**
+ * Get a custom error message with the shorthands if used.
+ */
+function errMessageIfUsingShorthand(name: ObjectAndPropertyName, input: string | undefined): string {
   const shorthands: string[] = [];
 
   if (input && endsWithCollection(input)) {
@@ -330,69 +422,28 @@ function errMessageIfUsingShorthand(input: string | undefined): string {
   }
 
   return shorthands.length
-    ? `Cannot use shorthand notation '${shorthands.join("' and '")}' in combination with using an object.`
+    ? errMessage(name, `Cannot use shorthand '${shorthands.join("' and '")}' in combination with using an object.`)
     : "";
 }
 
-export function sanitizePropertySchemaObject(name: ObjectAndPropertyName, input: unknown): void {
-  const displayedName = `${name.objectName}.${name.propertyName}`;
-
-  assert.object(input, displayedName); // NOTE: assert.object allows arrays
-  if (Array.isArray(input)) {
-    throw new TypeAssertionError("an object", input, displayedName);
-  }
-  assert.string(input.type, `${displayedName}.type`);
-  if (input.objectType !== undefined) {
-    assert.string(input.objectType, `${displayedName}.objectType`);
-  }
-  if (input.optional !== undefined) {
-    assert.boolean(input.optional, `${displayedName}.optional`);
-  }
-  if (input.property !== undefined) {
-    assert.string(input.property, `${displayedName}.property`);
-  }
-  if (input.indexed !== undefined) {
-    assert.boolean(input.indexed, `${displayedName}.indexed`);
-  }
-  if (input.mapTo !== undefined) {
-    assert.string(input.mapTo, `${displayedName}.mapTo`);
-  }
-  assertValidPropertySchemaKeys(name, input);
+/**
+ * Get an error message for an invalid property schema.
+ */
+function errMessage(name: ObjectAndPropertyName, message: string): string {
+  return `Invalid schema for property '${name.objectName}.${name.propertyName}': ${message}`;
 }
 
-function assertValidPropertySchemaKeys(name: ObjectAndPropertyName, input: Record<string, unknown>): void {
-  const validKeys = new Set([
-    "name", // From the canonical type (needed for schema-transform tests)
-    "type",
-    "objectType",
-    "property",
-    "default",
-    "optional",
-    "indexed",
-    "mapTo",
-  ]);
-  const invalidKeysUsed: string[] = [];
-  for (const key in input) {
-    if (!validKeys.has(key)) {
-      invalidKeysUsed.push(key);
-    }
-  }
-  assert(
-    !invalidKeysUsed.length,
-    `Unexpected field(s) found on the schema for property '${name.objectName}.${name.propertyName}': ` +
-      `'${invalidKeysUsed.join("', '")}'.`,
-  );
-}
-
+/**
+ * Throw an error caused by an invalid property schema.
+ */
 function error(name: ObjectAndPropertyName, message: string): never {
   // TODO: Create a SchemaParseError that extends Error?
   throw new Error(errMessage(name, message));
 }
 
-function errMessage(name: ObjectAndPropertyName, message: string): string {
-  return `Invalid schema for property '${name.objectName}.${name.propertyName}': ${message}`;
-}
-
+/**
+ * Extract the base type and the type argument from a generic string notation.
+ */
 export function extractGeneric(type: string): { typeBase: string; typeArgument?: string } {
   const bracketStart = type.indexOf("<");
   const bracketEnd = type.indexOf(">", bracketStart);

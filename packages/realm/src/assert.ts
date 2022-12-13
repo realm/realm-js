@@ -19,9 +19,9 @@
 import { AssertionError, DefaultObject, Realm, TypeAssertionError, binding } from "./internal";
 
 /**
- * Expects the condition to be truly
- * @throws {@link Error} If the condition is not truly. Throws either the {@link err} given as param
- * @param condition The condition that must be truly to avoid throwing.
+ * Expects the condition to be truthy
+ * @throws {@link Error} If the condition is not truthy. Throws either the {@link err} given as param
+ * @param condition The condition that must be truthy to avoid throwing.
  * @param err Optional message or error to throw.
  * Or a function producing this, which is useful to avoid computing the error message in case it's not needed.
  */

@@ -790,14 +790,14 @@ describe("normalizePropertySchema", () => {
       {
         type: "int?",
       },
-      "Cannot use shorthand notation '?' in combination with using an object",
+      "Cannot use shorthand '?' in combination with using an object",
     );
 
     itThrowsWhenNormalizing(
       {
         type: "int?[]",
       },
-      "Cannot use shorthand notation '[]' and '?' in combination with using an object",
+      "Cannot use shorthand '[]' and '?' in combination with using an object",
     );
 
     itThrowsWhenNormalizing(
@@ -805,7 +805,7 @@ describe("normalizePropertySchema", () => {
         type: "int",
         objectType: "[]",
       },
-      "Cannot use shorthand notation '[]' in combination with using an object",
+      "Cannot use shorthand '[]' in combination with using an object",
     );
 
     itThrowsWhenNormalizing(
@@ -813,7 +813,7 @@ describe("normalizePropertySchema", () => {
         type: "int",
         objectType: "?[]",
       },
-      "Cannot use shorthand notation '[]' and '?' in combination with using an object",
+      "Cannot use shorthand '[]' and '?' in combination with using an object",
     );
 
     itThrowsWhenNormalizing(
@@ -821,7 +821,7 @@ describe("normalizePropertySchema", () => {
         type: "list",
         objectType: "int?",
       },
-      "Cannot use shorthand notation '?' in combination with using an object",
+      "Cannot use shorthand '?' in combination with using an object",
     );
   });
 });
