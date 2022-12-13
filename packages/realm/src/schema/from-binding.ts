@@ -160,8 +160,7 @@ function fromBindingPropertyTypeName(
       return {
         type: TYPE_MAPPINGS[collectionType] as PropertyTypeName,
         objectType: item.type === "object" ? item.objectType : item.type,
-        // optional: item.type === "object" ? false : item.optional, // <-- Original. If item.type === "object", shouldn't optional be true?
-        optional: item.type === "object" || item.optional,
+        optional: item.type === "object" ? false : item.optional,
       };
     }
   }
