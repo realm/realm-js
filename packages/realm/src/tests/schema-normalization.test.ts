@@ -188,6 +188,24 @@ describe("normalizePropertySchema", () => {
 
     itThrowsWhenNormalizing("<>", "The element type must be specified");
 
+    itThrowsWhenNormalizing("[][]", "Nested collections are not supported");
+
+    itThrowsWhenNormalizing("{}[]", "Nested collections are not supported");
+
+    itThrowsWhenNormalizing("[]<>", "Nested collections are not supported");
+
+    itThrowsWhenNormalizing("int[][]", "Nested collections are not supported");
+
+    itThrowsWhenNormalizing(
+      "[]?",
+      "Collections cannot be optional. To allow elements of the collection to be optional, use '?' after the element type",
+    );
+
+    itThrowsWhenNormalizing(
+      "int[]?",
+      "Collections cannot be optional. To allow elements of the collection to be optional, use '?' after the element type",
+    );
+
     itThrowsWhenNormalizing("list", "Cannot use the collection name");
 
     itThrowsWhenNormalizing("dictionary", "Cannot use the collection name");

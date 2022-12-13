@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { inspect } from "util";
 
 import { sanitizePropertySchemaObject } from "../schema/normalize";
 

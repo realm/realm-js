@@ -151,18 +151,29 @@ function normalizePropertySchemaString(name: ObjectAndPropertyName, schema: stri
   let objectType: string | undefined;
   let optional = false;
 
-  if (schema.endsWith("[]") || schema.endsWith("{}") || schema.endsWith("<>")) {
+  if (endsWithCollection(schema)) {
     const end = schema.substring(schema.length - 2) as "[]" | "{}" | "<>";
     type = COLLECTION_SYMBOL_TO_NAME[end];
 
     schema = schema.substring(0, schema.length - 2);
     ensure(schema.length > 0, name, `The element type must be specified. See example: 'int${end}'`);
+
+    const isNestedCollection = endsWithCollection(schema);
+    ensure(!isNestedCollection, name, "Nested collections are not supported.");
   }
 
   if (schema.endsWith("?")) {
     optional = true;
+
     schema = schema.substring(0, schema.length - 1);
     ensure(schema.length > 0, name, "The type must be specified. See examples: 'int?', 'int?[]'");
+
+    const usingOptionalOnCollection = endsWithCollection(schema);
+    ensure(
+      !usingOptionalOnCollection,
+      name,
+      "Collections cannot be optional. To allow elements of the collection to be optional, use '?' after the element type. See examples: 'int?[]', 'int?{}', 'int?<>'.",
+    );
   }
 
   if (isPrimitive(schema)) {
@@ -209,7 +220,10 @@ function normalizePropertySchemaString(name: ObjectAndPropertyName, schema: stri
   };
 }
 
-function normalizePropertySchemaObject(name: ObjectAndPropertyName, schema: ObjectSchemaProperty): CanonicalObjectSchemaProperty {
+function normalizePropertySchemaObject(
+  name: ObjectAndPropertyName,
+  schema: ObjectSchemaProperty,
+): CanonicalObjectSchemaProperty {
   sanitizePropertySchemaObject(name, schema);
 
   const { type, objectType, property } = schema;
@@ -274,26 +288,32 @@ function optionalIsImplicitlyFalse(type: string, objectType: string | undefined)
   return (type === "list" || type === "set" || type === "linkingObjects") && isUserDefined(objectType);
 }
 
+function endsWithCollection(input: string): boolean {
+  return input.endsWith("[]") || input.endsWith("{}") || input.endsWith("<>");
+}
+
 function isUsingShorthand(input: string | undefined): boolean {
   if (!input) {
     return false;
   }
-  return input.endsWith("[]") || input.endsWith("{}") || input.endsWith("<>") || input.endsWith("?");
+  return endsWithCollection(input) || input.endsWith("?");
 }
 
 function errMessageIfUsingShorthand(input: string | undefined): string {
-  let shorthands = "";
+  const shorthands: string[] = [];
 
-  if (input?.endsWith("[]") || input?.endsWith("{}") || input?.endsWith("<>")) {
-    shorthands += `'${input.substring(input.length - 2)}'`;
+  if (input && endsWithCollection(input)) {
+    shorthands.push(input.substring(input.length - 2));
     input = input.substring(0, input.length - 2);
   }
 
   if (input?.endsWith("?")) {
-    shorthands += shorthands ? " and '?'" : "'?'";
+    shorthands.push("?");
   }
 
-  return shorthands ? `Cannot use shorthand notation ${shorthands} in combination with using an object.` : "";
+  return shorthands.length
+    ? `Cannot use shorthand notation '${shorthands.join("' and '")}' in combination with using an object.`
+    : "";
 }
 
 export function sanitizePropertySchemaObject(name: ObjectAndPropertyName, input: unknown): void {
@@ -319,8 +339,11 @@ export function sanitizePropertySchemaObject(name: ObjectAndPropertyName, input:
   if (input.mapTo !== undefined) {
     assert.string(input.mapTo, `${displayedName}.mapTo`);
   }
+  assertValidPropertySchemaKeys(name, input);
+}
 
-  const validProperties = new Set([
+function assertValidPropertySchemaKeys(name: ObjectAndPropertyName, input: Record<string, unknown>): void {
+  const validKeys = new Set([
     "name", // From the canonical type (needed for schema-transform tests)
     "type",
     "objectType",
@@ -330,20 +353,20 @@ export function sanitizePropertySchemaObject(name: ObjectAndPropertyName, input:
     "indexed",
     "mapTo",
   ]);
-  const invalidPropertiesUsed: string[] = [];
-  for (const property in input) {
-    if (!validProperties.has(property)) {
-      invalidPropertiesUsed.push(property);
+  const invalidKeysUsed: string[] = [];
+  for (const key in input) {
+    if (!validKeys.has(key)) {
+      invalidKeysUsed.push(key);
     }
   }
   assert(
-    !invalidPropertiesUsed.length,
+    !invalidKeysUsed.length,
     `Unexpected field(s) found on the schema for property '${name.objectName}.${name.propertyName}': ` +
-      `'${invalidPropertiesUsed.join("', '")}'.`,
+      `'${invalidKeysUsed.join("', '")}'.`,
   );
 }
 
-function ensure(condition: boolean, name: ObjectAndPropertyName, errMessage: string): void | never {
+function ensure(condition: boolean, name: ObjectAndPropertyName, errMessage: string): asserts condition {
   if (!condition) {
     error(name, errMessage);
   }
