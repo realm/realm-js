@@ -137,7 +137,7 @@ export function normalizePropertySchema(
       : normalizePropertySchemaObject(name, schema);
 
   if (isPrimaryKey) {
-    ensure(!normalizedSchema.optional, name, "Optional properties cannot be used as a primary key.");
+    assert(!normalizedSchema.optional, errMessage(name, "Optional properties cannot be used as a primary key."));
     normalizedSchema.indexed = true;
   }
 
@@ -145,7 +145,7 @@ export function normalizePropertySchema(
 }
 
 function normalizePropertySchemaString(name: ObjectAndPropertyName, schema: string): CanonicalObjectSchemaProperty {
-  ensure(schema.length > 0, name, "The type must be specified.");
+  assert(schema.length > 0, errMessage(name, "The type must be specified."));
 
   let type = "";
   let objectType: string | undefined;
@@ -156,23 +156,25 @@ function normalizePropertySchemaString(name: ObjectAndPropertyName, schema: stri
     type = COLLECTION_SYMBOL_TO_NAME[end];
 
     schema = schema.substring(0, schema.length - 2);
-    ensure(schema.length > 0, name, `The element type must be specified. See example: 'int${end}'`);
+    assert(schema.length > 0, errMessage(name, `The element type must be specified. See example: 'int${end}'`));
 
     const isNestedCollection = endsWithCollection(schema);
-    ensure(!isNestedCollection, name, "Nested collections are not supported.");
+    assert(!isNestedCollection, errMessage(name, "Nested collections are not supported."));
   }
 
   if (schema.endsWith("?")) {
     optional = true;
 
     schema = schema.substring(0, schema.length - 1);
-    ensure(schema.length > 0, name, "The type must be specified. See examples: 'int?', 'int?[]'");
+    assert(schema.length > 0, errMessage(name, "The type must be specified. See examples: 'int?', 'int?[]'"));
 
     const usingOptionalOnCollection = endsWithCollection(schema);
-    ensure(
+    assert(
       !usingOptionalOnCollection,
-      name,
-      "Collections cannot be optional. To allow elements of the collection to be optional, use '?' after the element type. See examples: 'int?[]', 'int?{}', 'int?<>'.",
+      errMessage(
+        name,
+        "Collections cannot be optional. To allow elements of the collection to be optional, use '?' after the element type. See examples: 'int?[]', 'int?{}', 'int?<>'.",
+      ),
     );
   }
 
@@ -202,10 +204,12 @@ function normalizePropertySchemaString(name: ObjectAndPropertyName, schema: stri
   if (optionalIsImplicitlyTrue(type, objectType)) {
     optional = true;
   } else if (optionalIsImplicitlyFalse(type, objectType)) {
-    ensure(
+    assert(
       !optional,
-      name,
-      "'optional' is implicitly 'false' for user-defined types in lists and sets and cannot be set to 'true'. Remove '?' or change the type.",
+      errMessage(
+        name,
+        "'optional' is implicitly 'false' for user-defined types in lists and sets and cannot be set to 'true'. Remove '?' or change the type.",
+      ),
     );
     optional = false;
   }
@@ -229,19 +233,19 @@ function normalizePropertySchemaObject(
   const { type, objectType, property } = schema;
   let { optional } = schema;
 
-  ensure(type.length > 0, name, "'type' must be specified.");
-  ensure(!isUsingShorthand(type), name, errMessageIfUsingShorthand(type));
-  ensure(!isUsingShorthand(objectType), name, errMessageIfUsingShorthand(objectType));
+  assert(type.length > 0, errMessage(name, "'type' must be specified."));
+  assert(!isUsingShorthand(type), errMessage(name, errMessageIfUsingShorthand(type)));
+  assert(!isUsingShorthand(objectType), errMessage(name, errMessageIfUsingShorthand(objectType)));
 
   if (isPrimitive(type)) {
-    ensure(objectType === undefined, name, `'objectType' cannot be defined when 'type' is '${type}'.`);
+    assert(objectType === undefined, errMessage(name, `'objectType' cannot be defined when 'type' is '${type}'.`));
   } else if (isCollection(type)) {
-    ensure(isPrimitive(objectType) || isUserDefined(objectType), name, "A valid 'objectType' must be specified.");
+    assert(isPrimitive(objectType) || isUserDefined(objectType), errMessage(name, "A valid 'objectType' must be specified."));
   } else if (type === "object") {
-    ensure(isUserDefined(objectType), name, "A user-defined type must be specified through 'objectType'.");
+    assert(isUserDefined(objectType), errMessage(name, "A user-defined type must be specified through 'objectType'."));
   } else if (type === "linkingObjects") {
-    ensure(isUserDefined(objectType), name, "A user-defined type must be specified through 'objectType'.");
-    ensure(!!property, name, "The name of the property the object links to must be specified through 'property'.");
+    assert(isUserDefined(objectType), errMessage(name, "A user-defined type must be specified through 'objectType'."));
+    assert(!!property, errMessage(name, "The name of the property the object links to must be specified through 'property'."));
   } else {
     // 'type' is a user-defined type
     error(
@@ -255,11 +259,11 @@ function normalizePropertySchemaObject(
       type === "mixed" || objectType === "mixed"
         ? "'mixed' types"
         : "user-defined types as single objects and in dictionaries";
-    ensure(optional !== false, name, `'optional' is implicitly 'true' for ${displayed} and cannot be set to 'false'.`);
+    assert(optional !== false, errMessage(name, `'optional' is implicitly 'true' for ${displayed} and cannot be set to 'false'.`));
     optional = true;
   } else if (optionalIsImplicitlyFalse(type, objectType)) {
     const displayed = type === "linkingObjects" ? "linking objects" : "user-defined types in lists and sets";
-    ensure(optional !== true, name, `'optional' is implicitly 'false' for ${displayed} and cannot be set to 'true'.`);
+    assert(optional !== true, errMessage(name, `'optional' is implicitly 'false' for ${displayed} and cannot be set to 'true'.`));
     optional = false;
   }
 
@@ -368,15 +372,13 @@ function assertValidPropertySchemaKeys(name: ObjectAndPropertyName, input: Recor
   );
 }
 
-function ensure(condition: boolean, name: ObjectAndPropertyName, errMessage: string): asserts condition {
-  if (!condition) {
-    error(name, errMessage);
-  }
-}
-
 function error(name: ObjectAndPropertyName, message: string): never {
   // TODO: Create a SchemaParseError that extends Error?
-  throw new Error(`Invalid schema for property '${name.objectName}.${name.propertyName}': ${message}`);
+  throw new Error(errMessage(name, message));
+}
+
+function errMessage(name: ObjectAndPropertyName, message: string): string {
+  return `Invalid schema for property '${name.objectName}.${name.propertyName}': ${message}`;
 }
 
 export function extractGeneric(type: string): { typeBase: string; typeArgument?: string } {
