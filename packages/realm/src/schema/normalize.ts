@@ -53,7 +53,7 @@ const PRIMITIVE_TYPES = new Set<PrimitivePropertyTypeName>([
 
 const COLLECTION_TYPES = new Set<CollectionPropertyTypeName>(["list", "dictionary", "set"]);
 
-const COLLECTION_SYMBOL_TO_NAME = {
+const COLLECTION_SYMBOL_TO_NAME: Readonly<Record<string, string>> = {
   "[]": "list",
   "{}": "dictionary",
   "<>": "set",
@@ -68,7 +68,7 @@ function isCollection(type: string | undefined): boolean {
 }
 
 function isUserDefined(type: string | undefined): boolean {
-  return !!type && !isPrimitive(type) && !isCollection(type) && type !== "object" && type !== "linkingObjects";
+  return !!type && !(isPrimitive(type) || isCollection(type) || type === "object" || type === "linkingObjects");
 }
 
 export function normalizeRealmSchema(
@@ -87,7 +87,7 @@ export function normalizeObjectSchema(arg: RealmObjectConstructor | ObjectSchema
   }
 
   // ---- THIS IF BLOCK HAS NOT YET BEEN REWRITTEN ----
-  // TODO: Determine if we still want to support this
+  // TODO: Determine if we still want to support this (should show warning to users of future deprecation)
   if (Array.isArray(arg.properties)) {
     if (flags.ALLOW_VALUES_ARRAYS) {
       return normalizeObjectSchema({
@@ -152,7 +152,7 @@ function normalizePropertySchemaString(name: ObjectAndPropertyName, schema: stri
   let optional = false;
 
   if (endsWithCollection(schema)) {
-    const end = schema.substring(schema.length - 2) as "[]" | "{}" | "<>";
+    const end = schema.substring(schema.length - 2);
     type = COLLECTION_SYMBOL_TO_NAME[end];
 
     schema = schema.substring(0, schema.length - 2);
@@ -289,7 +289,9 @@ function optionalIsImplicitlyFalse(type: string, objectType: string | undefined)
 }
 
 function endsWithCollection(input: string): boolean {
-  return input.endsWith("[]") || input.endsWith("{}") || input.endsWith("<>");
+  // Check if ends with '[]' or '{}' or '<>'
+  const end = input.substring(input.length - 2);
+  return !!COLLECTION_SYMBOL_TO_NAME[end];
 }
 
 function isUsingShorthand(input: string | undefined): boolean {
