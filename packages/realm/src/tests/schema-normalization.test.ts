@@ -855,6 +855,8 @@ function itNormalizes(input: string | ObjectSchemaProperty, expected: Partial<Ca
 function itThrowsWhenNormalizing(input: string | ObjectSchemaProperty, errMessage: string): void {
   it(`throws when normalizing ${inspect(input, { compact: true, breakLength: Number.MAX_SAFE_INTEGER })}`, () => {
     const normalizeFn = () => normalizePropertySchema(NAME, input);
-    expect(normalizeFn).to.throw(errMessage);
+    expect(normalizeFn).to.throw(
+      `Invalid schema for property '${NAME.objectName}.${NAME.propertyName}': ${errMessage}`,
+    );
   });
 }
