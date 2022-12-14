@@ -362,14 +362,7 @@ function getInvalidPropertySchemaKeys(schema: Record<string, unknown>): string[]
     "indexed",
     "mapTo",
   ]);
-  const invalidKeysUsed: string[] = [];
-  for (const key in schema) {
-    if (!allowedKeys.has(key as keyof CanonicalObjectSchemaProperty)) {
-      invalidKeysUsed.push(key);
-    }
-  }
-
-  return invalidKeysUsed;
+  return Object.keys(schema).filter((key) => !allowedKeys.has(key as keyof CanonicalObjectSchemaProperty));
 }
 
 /**
@@ -410,7 +403,7 @@ function isUsingShorthand(input: string | undefined): boolean {
 }
 
 /**
- * Get a custom error message with the shorthands if used.
+ * Get a custom error message containing the shorthands if used.
  */
 function errMessageIfUsingShorthand(name: ObjectAndPropertyName, input: string | undefined): string {
   const shorthands: string[] = [];
