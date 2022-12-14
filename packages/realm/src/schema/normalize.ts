@@ -172,7 +172,7 @@ function normalizePropertySchemaString(name: ObjectAndPropertyName, schema: stri
     type = COLLECTION_SHORTHAND_TO_NAME[end];
 
     schema = schema.substring(0, schema.length - 2);
-    assert(schema.length > 0, errMessage(name, `The element type must be specified. See example: 'int${end}'`));
+    assert(schema.length > 0, errMessage(name, `The element type must be specified. (Example: 'int${end}')`));
 
     const isNestedCollection = endsWithCollection(schema);
     assert(!isNestedCollection, errMessage(name, "Nested collections are not supported."));
@@ -182,14 +182,14 @@ function normalizePropertySchemaString(name: ObjectAndPropertyName, schema: stri
     optional = true;
 
     schema = schema.substring(0, schema.length - 1);
-    assert(schema.length > 0, errMessage(name, "The type must be specified. See examples: 'int?', 'int?[]'"));
+    assert(schema.length > 0, errMessage(name, "The type must be specified. (Examples: 'int?', 'int?[]')"));
 
     const usingOptionalOnCollection = endsWithCollection(schema);
     assert(
       !usingOptionalOnCollection,
       errMessage(
         name,
-        "Collections cannot be optional. To allow elements of the collection to be optional, use '?' after the element type. See examples: 'int?[]', 'int?{}', 'int?<>'.",
+        "Collections cannot be optional. To allow elements of the collection to be optional, use '?' after the element type. (Examples: 'int?[]', 'int?{}', 'int?<>')",
       ),
     );
   }
@@ -201,7 +201,7 @@ function normalizePropertySchemaString(name: ObjectAndPropertyName, schema: stri
       type = schema as PropertyTypeName;
     }
   } else if (isCollection(schema)) {
-    error(name, "Cannot use the collection name. See examples: 'int[]' (list), 'int{}' (dictionary), 'int<>' (set).");
+    error(name, "Cannot use the collection name. (Examples: 'int[]' (list), 'int{}' (dictionary), 'int<>' (set))");
   } else if (schema === "object") {
     error(name, "To define a relationship, use either 'ObjectName' or { type: 'object', objectType: 'ObjectName' }");
   } else if (schema === "linkingObjects") {
@@ -224,7 +224,7 @@ function normalizePropertySchemaString(name: ObjectAndPropertyName, schema: stri
       !optional,
       errMessage(
         name,
-        "'optional' is implicitly 'false' for user-defined types in lists and sets and cannot be set to 'true'. Remove '?' or change the type.",
+        "Being optional is always 'false' for user-defined types in lists and sets and cannot be set to 'true'. Remove '?' or change the type.",
       ),
     );
     optional = false;
@@ -263,12 +263,15 @@ function normalizePropertySchemaObject(
   if (isPrimitive(type)) {
     assert(objectType === undefined, errMessage(name, `'objectType' cannot be defined when 'type' is '${type}'.`));
   } else if (isCollection(type)) {
-    assert(isPrimitive(objectType) || isUserDefined(objectType), errMessage(name, "A valid 'objectType' must be specified."));
+    assert(
+      isPrimitive(objectType) || isUserDefined(objectType),
+      errMessage(name, `A ${type} must contain only primitive or user-defined types specified through 'objectType'.`),
+    );
   } else if (type === "object") {
     assert(isUserDefined(objectType), errMessage(name, "A user-defined type must be specified through 'objectType'."));
   } else if (type === "linkingObjects") {
     assert(isUserDefined(objectType), errMessage(name, "A user-defined type must be specified through 'objectType'."));
-    assert(!!property, errMessage(name, "The name of the property the object links to must be specified through 'property'."));
+    assert(!!property, errMessage(name, "The linking object's property name must be specified through 'property'."));
   } else {
     // 'type' is a user-defined type
     error(
@@ -281,12 +284,12 @@ function normalizePropertySchemaObject(
     const displayed =
       type === "mixed" || objectType === "mixed"
         ? "'mixed' types"
-        : "user-defined types as single objects and in dictionaries";
-    assert(optional !== false, errMessage(name, `'optional' is implicitly 'true' for ${displayed} and cannot be set to 'false'.`));
+        : "user-defined types as standalone objects and in dictionaries";
+    assert(optional !== false, errMessage(name, `'optional' is always 'true' for ${displayed} and cannot be set to 'false'.`));
     optional = true;
   } else if (optionalIsImplicitlyFalse(type, objectType)) {
     const displayed = type === "linkingObjects" ? "linking objects" : "user-defined types in lists and sets";
-    assert(optional !== true, errMessage(name, `'optional' is implicitly 'false' for ${displayed} and cannot be set to 'true'.`));
+    assert(optional !== true, errMessage(name, `'optional' is always 'false' for ${displayed} and cannot be set to 'true'.`));
     optional = false;
   }
 

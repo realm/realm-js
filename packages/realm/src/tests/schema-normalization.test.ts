@@ -216,12 +216,12 @@ describe("normalizePropertySchema", () => {
 
     itThrowsWhenNormalizing(
       "Person?[]",
-      "'optional' is implicitly 'false' for user-defined types in lists and sets and cannot be set to 'true'. Remove '?' or change the type.",
+      "Being optional is always 'false' for user-defined types in lists and sets and cannot be set to 'true'. Remove '?' or change the type.",
     );
 
     itThrowsWhenNormalizing(
       "Person?<>",
-      "'optional' is implicitly 'false' for user-defined types in lists and sets and cannot be set to 'true'. Remove '?' or change the type.",
+      "Being optional is always 'false' for user-defined types in lists and sets and cannot be set to 'true'. Remove '?' or change the type.",
     );
 
     itThrowsWhenNormalizing(
@@ -648,21 +648,21 @@ describe("normalizePropertySchema", () => {
       {
         type: "list",
       },
-      "A valid 'objectType' must be specified",
+      "A list must contain only primitive or user-defined types specified through 'objectType'",
     );
 
     itThrowsWhenNormalizing(
       {
         type: "dictionary",
       },
-      "A valid 'objectType' must be specified",
+      "A dictionary must contain only primitive or user-defined types specified through 'objectType'",
     );
 
     itThrowsWhenNormalizing(
       {
         type: "set",
       },
-      "A valid 'objectType' must be specified",
+      "A set must contain only primitive or user-defined types specified through 'objectType'",
     );
 
     itThrowsWhenNormalizing(
@@ -670,7 +670,7 @@ describe("normalizePropertySchema", () => {
         type: "list",
         objectType: "list",
       },
-      "A valid 'objectType' must be specified",
+      "A list must contain only primitive or user-defined types specified through 'objectType'",
     );
 
     itThrowsWhenNormalizing(
@@ -701,7 +701,7 @@ describe("normalizePropertySchema", () => {
         objectType: "Person",
         optional: false,
       },
-      "'optional' is implicitly 'true' for user-defined types as single objects and in dictionaries and cannot be set to 'false'",
+      "'optional' is always 'true' for user-defined types as standalone objects and in dictionaries and cannot be set to 'false'",
     );
 
     itThrowsWhenNormalizing(
@@ -709,7 +709,7 @@ describe("normalizePropertySchema", () => {
         type: "mixed",
         optional: false,
       },
-      "'optional' is implicitly 'true' for 'mixed' types and cannot be set to 'false'",
+      "'optional' is always 'true' for 'mixed' types and cannot be set to 'false'",
     );
 
     itThrowsWhenNormalizing(
@@ -718,7 +718,7 @@ describe("normalizePropertySchema", () => {
         objectType: "mixed",
         optional: false,
       },
-      "'optional' is implicitly 'true' for 'mixed' types and cannot be set to 'false'",
+      "'optional' is always 'true' for 'mixed' types and cannot be set to 'false'",
     );
 
     itThrowsWhenNormalizing(
@@ -727,7 +727,7 @@ describe("normalizePropertySchema", () => {
         objectType: "Person",
         optional: true,
       },
-      "'optional' is implicitly 'false' for user-defined types in lists and sets and cannot be set to 'true'",
+      "'optional' is always 'false' for user-defined types in lists and sets and cannot be set to 'true'",
     );
 
     itThrowsWhenNormalizing(
@@ -736,7 +736,7 @@ describe("normalizePropertySchema", () => {
         objectType: "Person",
         optional: true,
       },
-      "'optional' is implicitly 'false' for user-defined types in lists and sets and cannot be set to 'true'",
+      "'optional' is always 'false' for user-defined types in lists and sets and cannot be set to 'true'",
     );
 
     itThrowsWhenNormalizing(
@@ -745,7 +745,7 @@ describe("normalizePropertySchema", () => {
         objectType: "Person",
         optional: false,
       },
-      "'optional' is implicitly 'true' for user-defined types as single objects and in dictionaries and cannot be set to 'false'",
+      "'optional' is always 'true' for user-defined types as standalone objects and in dictionaries and cannot be set to 'false'",
     );
 
     itThrowsWhenNormalizing(
@@ -760,7 +760,7 @@ describe("normalizePropertySchema", () => {
         type: "linkingObjects",
         objectType: "Person",
       },
-      "The name of the property the object links to must be specified through 'property'",
+      "The linking object's property name must be specified through 'property'",
     );
 
     itThrowsWhenNormalizing(
@@ -769,7 +769,7 @@ describe("normalizePropertySchema", () => {
         objectType: "Person",
         property: "",
       },
-      "The name of the property the object links to must be specified through 'property'",
+      "The linking object's property name must be specified through 'property'",
     );
 
     itThrowsWhenNormalizing(
@@ -779,7 +779,7 @@ describe("normalizePropertySchema", () => {
         property: "tasks",
         optional: true,
       },
-      "'optional' is implicitly 'false' for linking objects and cannot be set to 'true'",
+      "'optional' is always 'false' for linking objects and cannot be set to 'true'",
     );
 
     // -------------------------
