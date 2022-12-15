@@ -136,22 +136,6 @@ function getVersion() {
   return version;
 }
 
-function copyOutput(arch, buildDir) {
-  const outFile = path.resolve(buildDir, "src", "android", "libs", arch, "librealm.so");
-  if (!fs.existsSync(outFile)) {
-    throw new Error(`Build output file not found: ${outFile}`);
-  }
-
-  const archDir = path.resolve(copyOutputPath, arch);
-  if (!fs.existsSync(archDir)) {
-    fs.mkdirSync(archDir, { recursive: true });
-  }
-
-  const targetFile = path.resolve(archDir, "librealm.so");
-  console.log(`Copying build file \n${outFile} to \n${targetFile}`);
-  fs.copyFileSync(outFile, targetFile);
-}
-
 function validateBuildType(buildTypeOption) {
   if (!buildTypes.includes(buildTypeOption)) {
     throw new Error(`Invalid build type: ${buildTypeOption}. Supported architectures ${buildTypes}`);
