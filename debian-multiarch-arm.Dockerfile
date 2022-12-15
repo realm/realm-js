@@ -1,4 +1,4 @@
-FROM debian:11
+FROM debian:10
 
 RUN dpkg --add-architecture armhf && apt-get update
 RUN dpkg --add-architecture arm64 && apt-get update
