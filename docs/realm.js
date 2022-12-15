@@ -143,8 +143,8 @@ class Realm {
   close() {}
 
   /**
-   * Create a new Realm object of the given type and with the specified properties. For object schemas annotated
-   * as asymmetric, no object is returned. The API for asymmetric object schema is subject to changes in the future.
+   * Create a new Realm object of the given type and with the specified properties. For objects marked asymmetric,
+   * `undefined` is returned. The API for asymmetric object schema is subject to changes in the future.
    * @param {Realm~ObjectType} type - The type of Realm object to create.
    * @param {Object} properties - Property values for all required properties without a
    *   default value.
@@ -184,7 +184,7 @@ class Realm {
    * Returns all objects of the given `type` in the Realm.
    * @param {Realm~ObjectType} type - The type of Realm objects to retrieve.
    * @throws {Error} If type passed into this method is invalid or if the type is marked embedded or asymmetric.
-   * @returns {Realm.Results} that will live-update as objects are created and destroyed.
+   * @returns {Realm.Results} that will live-update as objects are created, modified, and destroyed.
    */
   objects(type) {}
 
@@ -193,7 +193,8 @@ class Realm {
    * @param {Realm~ObjectType} type - The type of Realm object to search for.
    * @param {number|string} key - The primary key value of the object to search for.
    * @throws {Error} If type passed into this method is invalid or if the object type did
-   *   not have a `primaryKey` specified in its {@link Realm~ObjectSchema ObjectSchema}.
+   *   not have a `primaryKey` specified in its {@link Realm~ObjectSchema ObjectSchema}
+   *   or if it was marked asymmetric.
    * @returns {Realm.Object|null} if no object is found.
    * @since 0.14.0
    */

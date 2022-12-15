@@ -604,11 +604,11 @@ export class Realm {
     this.syncSession?.resetInternal();
   }
 
-  // TODO: Support embedded objects and asymmetric sync
+  // TODO: Support embedded objects
   // TODO: Rollback by deleting the object if any property assignment fails (fixing #2638)
   /**
-   * Create a new Realm object of the given type and with the specified properties. For object schemas annotated
-   * as asymmetric, no object is returned. The API for asymmetric object schema is subject to changes in the future.
+   * Create a new {@link Realm.Object} of the given type and with the specified properties. For objects marked asymmetric,
+   * `undefined` is returned. The API for asymmetric object schema is subject to changes in the future.
    * @param type The type of Realm object to create.
    * @param values Property values for all required properties without a
    *   default value.
@@ -622,6 +622,7 @@ export class Realm {
    *       across devices are merged. For most use cases, the behaviour will match the intuitive behaviour of how
    *       changes should be merged, but if updating an entire object is considered an atomic operation, this mode
    *       should not be used.
+   * @returns A {@link Realm.Object} or `undefined` if the object is asymmetric.
    */
   create<T = DefaultObject>(type: string, values: RealmInsertionModel<T>, mode?: UpdateMode.Never): RealmObject<T> & T;
   create<T = DefaultObject>(
@@ -656,7 +657,7 @@ export class Realm {
     this.internal.verifyOpen();
     const helpers = this.classes.getHelpers(type);
     const realmObject = RealmObject.create(this, values, mode, { helpers });
-    if (helpers.objectSchema.tableType === binding.TableType.TopLevelAsymmetric) {
+    if (isTopLevelAsymmetric(helpers.objectSchema)) {
       return;
     }
     return realmObject;
@@ -723,8 +724,8 @@ export class Realm {
    * @param type The type of Realm object to search for.
    * @param primaryKey The primary key value of the object to search for.
    * @throws {@link Error} If type passed into this method is invalid or if the object type did
-   * not have a {@link primaryKey} specified in the schema.
-   * @returns A Realm.Object or undefined if no object is found.
+   *    not have a {@link primaryKey} specified in the schema or if it was marked asymmetric.
+   * @returns A {@link Realm.Object} or `null` if no object is found.
    * @since 0.14.0
    */
   objectForPrimaryKey<T = DefaultObject>(type: string, primaryKey: T[keyof T]): (RealmObject<T> & T) | null;
@@ -734,6 +735,9 @@ export class Realm {
     const { objectSchema, properties, wrapObject } = this.classes.getHelpers(type);
     if (!objectSchema.primaryKey) {
       throw new Error(`Expected a primary key on '${objectSchema.name}'`);
+    }
+    if (isTopLevelAsymmetric(objectSchema)) {
+      throw new Error("You cannot query an asymmetric object.");
     }
     const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
     const value = properties.get(objectSchema.primaryKey).toBinding(primaryKey, undefined);
@@ -758,9 +762,10 @@ export class Realm {
 
   /**
    * Returns all objects of the given {@link type} in the Realm.
-   * @param type The type of Realm objects to retrieve.
+   * @param type The type of Realm object to search for.
+   * @param objectKey The object key value of the object to search for.
    * @throws {@link Error} If type passed into this method is invalid or if the type is marked embedded or asymmetric.
-   * @returns Realm.Results that will live-update as objects are created and destroyed.
+   * @returns A {@link Realm.Object} or `undefined` if the object key is invalid.
    */
   /**
    * @internal
@@ -769,6 +774,12 @@ export class Realm {
   _objectForObjectKey<T extends RealmObject>(type: Constructor<T>, objectKey: string): T | undefined;
   _objectForObjectKey<T extends RealmObject>(type: string | Constructor<T>, objectKey: string): T | undefined {
     const { objectSchema, wrapObject } = this.classes.getHelpers(type);
+    if (objectSchema.tableType === binding.TableType.Embedded) {
+      throw new Error("You cannot query an embedded object.");
+    } else if (isTopLevelAsymmetric(objectSchema)) {
+      throw new Error("You cannot query an asymmetric object.");
+    }
+
     const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
     try {
       const objKey = binding.stringToObjKey(objectKey);
@@ -784,14 +795,20 @@ export class Realm {
     }
   }
 
+  /**
+   * Returns all objects of the given {@link type} in the Realm.
+   * @param type The type of Realm objects to retrieve.
+   * @throws {@link Error} If type passed into this method is invalid or if the type is marked embedded or asymmetric.
+   * @returns Realm.Results that will live-update as objects are created, modified, and destroyed.
+   */
   objects<T>(type: string): Results<RealmObject & T>;
   objects<T extends RealmObject = RealmObject>(type: Constructor<T>): Results<T>;
   objects<T extends RealmObject = RealmObject>(type: string | Constructor<T>): Results<T> {
     const { objectSchema, wrapObject } = this.classes.getHelpers(type);
     if (objectSchema.tableType === binding.TableType.Embedded) {
       throw new Error("You cannot query an embedded object.");
-    } else if (objectSchema.tableType === binding.TableType.TopLevelAsymmetric) {
-      throw new Error("You cannot query an asymmetric class.");
+    } else if (isTopLevelAsymmetric(objectSchema)) {
+      throw new Error("You cannot query an asymmetric object.");
     }
 
     const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
@@ -1007,6 +1024,16 @@ export class Realm {
   ): ClassHelpers {
     return this.classes.getHelpers<T>(arg);
   }
+}
+
+/**
+ * Determines whether an object is a top level asymmetric object.
+ *
+ * @param objectSchema The schema of the object.
+ * @returns `true` if it is asymmetric, otherwise `false`.
+ */
+function isTopLevelAsymmetric(objectSchema: binding.ObjectSchema): boolean {
+  return objectSchema.tableType === binding.TableType.TopLevelAsymmetric;
 }
 
 // Declare the Realm namespace for backwards compatibility
