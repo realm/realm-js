@@ -622,7 +622,7 @@ export function bindModel(spec: Spec): BoundSpec {
       const type = resolveTypes(field.type);
       // Optional and Nullable fields are never required.
       const required =
-        field.default === undefined && !(type.kind == "Template" && ["util::Optional", "Nullable"].includes(type.name));
+        field.default === undefined && !(type.isNullable() || type.isOptional());
       return new Field(name, field.cppName ?? name, type, required, field.default);
     });
   }
