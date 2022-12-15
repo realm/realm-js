@@ -655,7 +655,11 @@ export class Realm {
     }
     this.internal.verifyOpen();
     const helpers = this.classes.getHelpers(type);
-    return RealmObject.create(this, values, mode, { helpers });
+    const realmObject = RealmObject.create(this, values, mode, { helpers });
+    if (helpers.objectSchema.tableType === binding.TableType.TopLevelAsymmetric) {
+      return;
+    }
+    return realmObject;
   }
 
   /**
