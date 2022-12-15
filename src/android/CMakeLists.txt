@@ -11,7 +11,7 @@ add_library(realm-js-android SHARED
     platform.cpp
     jni_utils.cpp
     io_realm_react_RealmReactModule.cpp
-    ../../node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/turbomodule/core/jni/ReactCommon/CallInvokerHolder.cpp
+    ../../node_modules/react-native/ReactAndroid/src/main/jni/react/turbomodule/ReactCommon/CallInvokerHolder.cpp
 )
 
 set_target_properties(realm-js-android PROPERTIES
@@ -28,8 +28,25 @@ target_compile_definitions(realm-js-android PRIVATE
 )
 
 # Extract .so files from the React Native AAR
-file(GLOB_RECURSE REACT_NATIVE_AAR_FILE ${REACT_NATIVE_ROOT_DIR}/android/*/react-native-*-release.aar)
-file(ARCHIVE_EXTRACT INPUT ${REACT_NATIVE_AAR_FILE} DESTINATION ${REACT_NATIVE_AAR_DIR})
+if(NOT EXISTS ${REACT_NATIVE_AAR_DIR})
+    set(REACT_ANDROID_LIB_URL "https://repo1.maven.org/maven2/com/facebook/react/react-android/0.71.0-rc.3/react-android-0.71.0-rc.3-release.aar")
+    message(STATUS "Getting ${REACT_ANDROID_LIB_URL}")
+    file(DOWNLOAD "${REACT_ANDROID_LIB_URL}" "${REACT_NATIVE_AAR_DIR}/react-android-0.71.0-rc.3-release.aar" STATUS download_status)
+
+    list(GET download_status 0 status_code)
+    if (NOT "${status_code}" STREQUAL "0")
+        message(FATAL_ERROR "Downloading ${url}... Failed. Status: ${download_status}")
+    endif()
+
+    message(STATUS "Uncompressing ${REACT_NATIVE_AAR_DIR}/react-android-0.71.0-rc.3-release.aar")
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} -E tar xfz "react-android-0.71.0-rc.3-release.aar"
+        WORKING_DIRECTORY "${REACT_NATIVE_AAR_DIR}"
+    )
+endif()
+
+# file(GLOB_RECURSE REACT_NATIVE_AAR_FILE ${REACT_NATIVE_ROOT_DIR}/android/*/react-native-*-release.aar)
+# file(ARCHIVE_EXTRACT INPUT ${REACT_NATIVE_AAR_FILE} DESTINATION ${REACT_NATIVE_AAR_DIR})
 set(REACT_NATIVE_SO_DIR "${REACT_NATIVE_AAR_DIR}/jni/${ANDROID_ABI}")
 
 target_link_directories(realm-js-android PRIVATE ${REACT_NATIVE_SO_DIR})
@@ -92,6 +109,7 @@ find_library(FBJNI_LIBRARY fbjni PATHS ${FBJNI_LIB_DIR} NO_CMAKE_FIND_ROOT_PATH)
 target_include_directories(realm-js-android PUBLIC
     ${FBJNI_INCLUDE_DIR}
     ../../node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/turbomodule/core/jni/
+    ../../node_modules/react-native/ReactAndroid/src/main/jni/react/turbomodule/
     ../../node_modules/react-native/ReactCommon/callinvoker/
 )
 
