@@ -68,15 +68,15 @@ const PROXY_HANDLER: ProxyHandler<RealmObject<any>> = {
       return DEFAULT_PROPERTY_DESCRIPTOR;
     }
     const result = Reflect.getOwnPropertyDescriptor(target, prop);
-    if (res && typeof prop === "symbol") {
+    if (result && typeof prop === "symbol") {
       if (prop == INTERNAL) {
-        res.enumerable = false;
-        res.writable = false;
+        result.enumerable = false;
+        result.writable = false;
       } else if (prop == INTERNAL_LISTENERS) {
-        res.enumerable = false;
+        result.enumerable = false;
       }
     }
-    return res;
+    return result;
   },
 };
 
