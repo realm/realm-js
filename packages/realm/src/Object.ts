@@ -50,6 +50,9 @@ type CreationContext = {
   createObj?: ObjCreator;
 };
 
+export const KEY_ARRAY = Symbol("Object#keys");
+export const KEY_SET = Symbol("Object#keySet");
+export const REALM = Symbol("Object#realm");
 export const INTERNAL = Symbol("Object#internal");
 const INTERNAL_LISTENERS = Symbol("Object#listeners");
 export const INTERNAL_HELPERS = Symbol("Object.helpers");
@@ -58,14 +61,22 @@ const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, en
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
 const PROXY_HANDLER: ProxyHandler<RealmObject<any>> = {
   ownKeys(target) {
-    return Reflect.ownKeys(target).concat([...target.keys()].map(String));
+    return Reflect.ownKeys(target).concat(target[KEY_ARRAY]);
   },
   getOwnPropertyDescriptor(target, prop) {
-    if (typeof prop === "string" && target.keys().includes(prop)) {
+    if (typeof prop === "string" && target[KEY_SET].has(prop)) {
       return DEFAULT_PROPERTY_DESCRIPTOR;
-    } else {
-      return Reflect.getOwnPropertyDescriptor(target, prop);
     }
+    const res = Reflect.getOwnPropertyDescriptor(target, prop);
+    if (res && typeof prop === "symbol") {
+      if (prop == INTERNAL) {
+        res.enumerable = false;
+        res.writable = false;
+      } else if (prop == INTERNAL_LISTENERS) {
+        res.enumerable = false;
+      }
+    }
+    return res;
   },
 };
 
@@ -201,29 +212,10 @@ export class RealmObject<T = DefaultObject> {
     constructor: Constructor,
   ): RealmObject<T> & T {
     const result = Object.create(constructor.prototype);
-    Object.defineProperties(result, {
-      realm: {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-        value: realm,
-      },
-      [INTERNAL]: {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-        value: internal,
-      },
-      [INTERNAL_LISTENERS]: {
-        enumerable: false,
-        configurable: false,
-        writable: true,
-        value: new ObjectListeners(realm.internal, result),
-      },
-    });
-    // Wrap in a proxy to trap keys, enabling the spread operator
+    result[INTERNAL] = internal;
+    result[INTERNAL_LISTENERS] = null;
+    // Wrap in a proxy to trap keys, enabling the spread operator, and hiding our internal fields.
     return new Proxy(result, PROXY_HANDLER);
-    // return result;
   }
 
   /**
@@ -236,25 +228,39 @@ export class RealmObject<T = DefaultObject> {
   }
 
   /**
+   * @internal
    * The Realm managing the object.
+   * Note: this is on the injected prototype from ClassMap.defineProperties().
    */
-  public readonly realm!: Realm;
+  public declare readonly [REALM]: Realm;
 
   /**
    * @internal
    * The object's representation in the binding.
    */
-  public readonly [INTERNAL]!: binding.Obj;
+  public declare readonly [INTERNAL]: binding.Obj;
 
   /**
    * @internal
-   * Wrapper for the object notifier.
+   * Lazily created wrapper for the object notifier.
    */
-  private readonly [INTERNAL_LISTENERS]!: ObjectListeners<T>;
+  private declare [INTERNAL_LISTENERS]: ObjectListeners<T> | null;
 
-  // TODO: Find a way to bind this in
+  /**
+   * @internal
+   * Note: this is on the injected prototype from ClassMap.defineProperties()
+   */
+  private declare readonly [KEY_ARRAY]: ReadonlyArray<string>;
+
+  /**
+   * @internal
+   * Note: this is on the injected prototype from ClassMap.defineProperties()
+   */
+  private declare readonly [KEY_SET]: ReadonlySet<string>;
+
   keys(): string[] {
-    throw new Error("This is expected to have a per-class implementation");
+    // copying to prevent caller from modifying the static array.
+    return [...this[KEY_ARRAY]];
   }
 
   entries(): [string, unknown][] {
@@ -315,7 +321,7 @@ export class RealmObject<T = DefaultObject> {
    * @since 1.8.1
    */
   objectSchema(): CanonicalObjectSchema<T> {
-    return this.realm.getClassHelpers(this).canonicalObjectSchema as CanonicalObjectSchema<T>;
+    return this[REALM].getClassHelpers(this).canonicalObjectSchema as CanonicalObjectSchema<T>;
   }
 
   /**
@@ -330,8 +336,8 @@ export class RealmObject<T = DefaultObject> {
     const {
       objectSchema: { tableKey },
       properties,
-    } = this.realm.getClassHelpers(objectType);
-    const tableRef = binding.Helpers.getTable(this.realm.internal, tableKey);
+    } = this[REALM].getClassHelpers(objectType);
+    const tableRef = binding.Helpers.getTable(this[REALM].internal, tableKey);
     const property = properties.get(propertyName);
     assert(
       objectType === property.objectType,
@@ -342,8 +348,8 @@ export class RealmObject<T = DefaultObject> {
     const { columnKey, collectionHelpers } = property;
     assert(collectionHelpers, "collection helpers");
     const tableView = this[INTERNAL].getBacklinkView(tableRef, columnKey);
-    const results = binding.Results.fromTableView(this.realm.internal, tableView);
-    return new Realm.Results(this.realm, results, collectionHelpers);
+    const results = binding.Results.fromTableView(this[REALM].internal, tableView);
+    return new Realm.Results(this[REALM], results, collectionHelpers);
   }
 
   /**
@@ -390,8 +396,9 @@ export class RealmObject<T = DefaultObject> {
    * })
    * @since 2.23.0
    */
-  addListener(callback: ObjectChangeCallback<T>): void {
+  addListener(this: RealmObject<T> & T, callback: ObjectChangeCallback<T>): void {
     assert.function(callback);
+    if (!this[INTERNAL_LISTENERS]) this[INTERNAL_LISTENERS] = new ObjectListeners<T>(this[REALM].internal, this);
     this[INTERNAL_LISTENERS].addListener(callback);
   }
 
@@ -403,15 +410,17 @@ export class RealmObject<T = DefaultObject> {
    */
   removeListener(callback: ObjectChangeCallback<T>): void {
     assert.function(callback);
-    this[INTERNAL_LISTENERS].removeListener(callback);
+    // Note: if the INTERNAL_LISTENERS field hasn't been initialized, then we have no listeners to remove.
+    this[INTERNAL_LISTENERS]?.removeListener(callback);
   }
 
   /**
    * Remove all listeners.
    * @since 2.23.0
    */
-  removeAllListeners(): void {
-    this[INTERNAL_LISTENERS].removeAllListeners();
+  removeAllListeners(this: RealmObject<T> & T): void {
+    // Note: if the INTERNAL_LISTENERS field hasn't been initialized, then we have no listeners to remove.
+    this[INTERNAL_LISTENERS]?.removeAllListeners();
   }
 
   /**
@@ -422,7 +431,7 @@ export class RealmObject<T = DefaultObject> {
    * @since 10.8.0
    */
   getPropertyType(propertyName: string): string {
-    const { properties } = this.realm.getClassHelpers(this);
+    const { properties } = this[REALM].getClassHelpers(this);
     const { type, objectType, columnKey } = properties.get(propertyName);
     const typeName = getTypeName(type, objectType);
     if (typeName === "mixed") {
@@ -437,10 +446,10 @@ export class RealmObject<T = DefaultObject> {
       } else if (value instanceof binding.Timestamp) {
         return "date";
       } else if (value instanceof binding.Obj) {
-        const { objectSchema } = this.realm.getClassHelpers(value.table.key);
+        const { objectSchema } = this[REALM].getClassHelpers(value.table.key);
         return `<${objectSchema.name}>`;
       } else if (value instanceof binding.ObjLink) {
-        const { objectSchema } = this.realm.getClassHelpers(value.tableKey);
+        const { objectSchema } = this[REALM].getClassHelpers(value.tableKey);
         return `<${objectSchema.name}>`;
       } else if (value instanceof ArrayBuffer) {
         return "data";
