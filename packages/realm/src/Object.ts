@@ -396,9 +396,11 @@ export class RealmObject<T = DefaultObject> {
    * })
    * @since 2.23.0
    */
-  addListener(this: RealmObject<T> & T, callback: ObjectChangeCallback<T>): void {
+  addListener(callback: ObjectChangeCallback<T>): void {
     assert.function(callback);
-    if (!this[INTERNAL_LISTENERS]) this[INTERNAL_LISTENERS] = new ObjectListeners<T>(this[REALM].internal, this);
+    if (!this[INTERNAL_LISTENERS]) {
+      this[INTERNAL_LISTENERS] = new ObjectListeners<T>(this[REALM].internal, this as unknown as RealmObject<T> & T);
+    }
     this[INTERNAL_LISTENERS].addListener(callback);
   }
 
