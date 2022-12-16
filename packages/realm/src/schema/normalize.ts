@@ -27,7 +27,6 @@ import {
   PropertyTypeName,
   RealmObject,
   RealmObjectConstructor,
-  TypeAssertionError,
   assert,
   flags,
 } from "../internal";
@@ -105,6 +104,15 @@ export function normalizeObjectSchema(arg: RealmObjectConstructor | ObjectSchema
     throw new Error("Array of properties are no longer supported. Use an object instead.");
   }
   // --------------------------------------------------
+
+  sanitizeObjectSchema(arg);
+
+  const primaryKeyFieldIsMissing = arg.primaryKey && !Object.hasOwn(arg.properties, arg.primaryKey);
+  if (primaryKeyFieldIsMissing) {
+    throw new Error(
+      `Invalid schema for object '${arg.name}': '${arg.primaryKey}' is set as the primary key field but was not found in 'properties'.`,
+    );
+  }
 
   return {
     name: arg.name,
@@ -309,6 +317,31 @@ function normalizePropertySchemaObject(
 }
 
 /**
+ * Sanitize the top-level fields of a user-provided object schema by
+ * validating the data types.
+ */
+export function sanitizeObjectSchema(schema: unknown): asserts schema is ObjectSchema {
+  assert.object(schema, "the object schema", false);
+  assert.string(schema.name, "the object schema name");
+  assert.object(schema.properties, `${schema.name}.properties`, false);
+  if (schema.primaryKey !== undefined) {
+    assert.string(schema.primaryKey, `${schema.name}.primaryKey`);
+  }
+  if (schema.embedded !== undefined) {
+    assert.boolean(schema.embedded, `${schema.name}.embedded`);
+  }
+  if (schema.asymmetric !== undefined) {
+    assert.boolean(schema.asymmetric, `${schema.name}.asymmetric`);
+  }
+  const allowedKeys = new Set<keyof ObjectSchema>(["name", "primaryKey", "embedded", "asymmetric", "properties"]);
+  const invalidKeysUsed = filterInvalidKeys(schema, allowedKeys);
+  assert(
+    !invalidKeysUsed.length,
+    `Unexpected field(s) found on the schema for object '${schema.name}': '${invalidKeysUsed.join("', '")}'.`,
+  );
+}
+
+/**
  * Sanitize a user-provided property schema that ought to use the relaxed
  * object notation by validating the data types.
  */
@@ -318,10 +351,7 @@ export function sanitizePropertySchemaObject(
 ): asserts schema is ObjectSchemaProperty {
   const displayedName = `${name.objectName}.${name.propertyName}`;
 
-  assert.object(schema, displayedName); // NOTE: assert.object allows arrays
-  if (Array.isArray(schema)) {
-    throw new TypeAssertionError("an object", schema, displayedName);
-  }
+  assert.object(schema, displayedName, false);
   assert.string(schema.type, `${displayedName}.type`);
   if (schema.objectType !== undefined) {
     assert.string(schema.objectType, `${displayedName}.objectType`);
@@ -338,21 +368,9 @@ export function sanitizePropertySchemaObject(
   if (schema.mapTo !== undefined) {
     assert.string(schema.mapTo, `${displayedName}.mapTo`);
   }
-  const invalidKeysUsed = getInvalidPropertySchemaKeys(schema);
-  assert(
-    !invalidKeysUsed.length,
-    `Unexpected field(s) found on the schema for property '${displayedName}': '${invalidKeysUsed.join("', '")}'.`,
-  );
-}
-
-/**
- * Get the keys of the user-provided property schema that are not expected
- * to exist on the schema.
- */
-function getInvalidPropertySchemaKeys(schema: Record<string, unknown>): string[] {
   // Need to check keys of the canonical form rather than the relaxed
   // due to 'name' also being needed for schema-transform tests.
-  const allowedKeys = new Set<keyof CanonicalObjectSchemaProperty>([
+  const validKeys = new Set<keyof CanonicalObjectSchemaProperty>([
     "name",
     "type",
     "objectType",
@@ -362,7 +380,18 @@ function getInvalidPropertySchemaKeys(schema: Record<string, unknown>): string[]
     "indexed",
     "mapTo",
   ]);
-  return Object.keys(schema).filter((key) => !allowedKeys.has(key as keyof CanonicalObjectSchemaProperty));
+  const invalidKeysUsed = filterInvalidKeys(schema, validKeys);
+  assert(
+    !invalidKeysUsed.length,
+    `Unexpected field(s) found on the schema for property '${displayedName}': '${invalidKeysUsed.join("', '")}'.`,
+  );
+}
+
+/**
+ * Get the keys of an object that are not part of the provided valid keys.
+ */
+function filterInvalidKeys(object: Record<string, unknown>, validKeys: Set<string>): string[] {
+  return Object.keys(object).filter((key) => !validKeys.has(key));
 }
 
 /**

@@ -18,9 +18,124 @@
 
 import { expect } from "chai";
 
-import { sanitizePropertySchemaObject } from "../schema/normalize";
+import { sanitizeObjectSchema, sanitizePropertySchemaObject } from "../schema/normalize";
 
 const NAME = { objectName: "MyObject", propertyName: "prop" };
+const NOT_A_STRING = 0;
+const NOT_A_BOOLEAN = 0;
+const NOT_AN_OBJECT = 0;
+
+describe("sanitizeObjectSchema", () => {
+  // ------------------------------------------------------------------------
+  // Valid shape of input
+  // ------------------------------------------------------------------------
+
+  describe("using valid shape of input", () => {
+    itSanitizes("an object with all top-level fields defined", {
+      name: "",
+      primaryKey: "",
+      embedded: false,
+      asymmetric: false,
+      properties: {},
+    });
+
+    itSanitizes("an object with required top-level fields defined and optional fields set to 'undefined'", {
+      name: "",
+      primaryKey: undefined,
+      embedded: undefined,
+      asymmetric: undefined,
+      properties: {},
+    });
+
+    itSanitizes("an object with only required top-level fields defined", {
+      name: "",
+      properties: {},
+    });
+  });
+
+  // ------------------------------------------------------------------------
+  // Invalid shape of input
+  // ------------------------------------------------------------------------
+
+  describe("using invalid shape of input", () => {
+    itThrowsWhenSanitizing("an array", [], `Expected 'the object schema' to be an object, got an array`);
+
+    itThrowsWhenSanitizing("'null'", null, `Expected 'the object schema' to be an object, got null`);
+
+    itThrowsWhenSanitizing(
+      "an object with invalid type for property 'name'",
+      {
+        name: NOT_A_STRING,
+      },
+      `Expected 'the object schema name' to be a string, got a number`,
+    );
+
+    itThrowsWhenSanitizing(
+      "an object with invalid type for property 'properties'",
+      {
+        name: NAME.objectName,
+        properties: NOT_AN_OBJECT,
+      },
+      `Expected '${NAME.objectName}.properties' to be an object, got a number`,
+    );
+
+    itThrowsWhenSanitizing(
+      "an object with invalid type for property 'primaryKey'",
+      {
+        name: NAME.objectName,
+        properties: {},
+        primaryKey: NOT_A_STRING,
+      },
+      `Expected '${NAME.objectName}.primaryKey' to be a string, got a number`,
+    );
+
+    itThrowsWhenSanitizing(
+      "an object with invalid type for property 'embedded'",
+      {
+        name: NAME.objectName,
+        properties: {},
+        embedded: NOT_A_BOOLEAN,
+      },
+      `Expected '${NAME.objectName}.embedded' to be a boolean, got a number`,
+    );
+
+    itThrowsWhenSanitizing(
+      "an object with invalid type for property 'asymmetric'",
+      {
+        name: NAME.objectName,
+        properties: {},
+        asymmetric: NOT_A_BOOLEAN,
+      },
+      `Expected '${NAME.objectName}.asymmetric' to be a boolean, got a number`,
+    );
+
+    itThrowsWhenSanitizing(
+      "an object with invalid property names",
+      {
+        name: NAME.objectName,
+        properties: {},
+        invalidName1: "",
+        invalidName2: "",
+        invalidName3: "",
+      },
+      `Unexpected field(s) found on the schema for object '${NAME.objectName}': 'invalidName1', 'invalidName2', 'invalidName3'`,
+    );
+  });
+
+  function itSanitizes(description: string, input: unknown): void {
+    it(`sanitizes ${description}.`, () => {
+      const sanitizeFn = () => sanitizeObjectSchema(input);
+      expect(sanitizeFn).to.not.throw();
+    });
+  }
+
+  function itThrowsWhenSanitizing(description: string, input: unknown, errMessage: string): void {
+    it(`throws when sanitizing ${description}.`, () => {
+      const sanitizeFn = () => sanitizeObjectSchema(input);
+      expect(sanitizeFn).to.throw(errMessage);
+    });
+  }
+});
 
 describe("sanitizePropertySchemaObject", () => {
   // ------------------------------------------------------------------------
@@ -58,8 +173,6 @@ describe("sanitizePropertySchemaObject", () => {
   // ------------------------------------------------------------------------
 
   describe("using invalid shape of input", () => {
-    const NOT_A_STRING = 0;
-    const NOT_A_BOOLEAN = 0;
     const DISPLAYED_NAME = `${NAME.objectName}.${NAME.propertyName}`;
 
     itThrowsWhenSanitizing("an array", [], `Expected '${DISPLAYED_NAME}' to be an object, got an array`);
@@ -130,18 +243,18 @@ describe("sanitizePropertySchemaObject", () => {
       `Unexpected field(s) found on the schema for property '${DISPLAYED_NAME}': 'invalidName1', 'invalidName2', 'invalidName3'`,
     );
   });
+
+  function itSanitizes(description: string, input: unknown): void {
+    it(`sanitizes ${description}.`, () => {
+      const sanitizeFn = () => sanitizePropertySchemaObject(NAME, input);
+      expect(sanitizeFn).to.not.throw();
+    });
+  }
+
+  function itThrowsWhenSanitizing(description: string, input: unknown, errMessage: string): void {
+    it(`throws when sanitizing ${description}.`, () => {
+      const sanitizeFn = () => sanitizePropertySchemaObject(NAME, input);
+      expect(sanitizeFn).to.throw(errMessage);
+    });
+  }
 });
-
-function itSanitizes(description: string, input: unknown): void {
-  it(`sanitizes ${description}.`, () => {
-    const sanitizeFn = () => sanitizePropertySchemaObject(NAME, input);
-    expect(sanitizeFn).to.not.throw();
-  });
-}
-
-function itThrowsWhenSanitizing(description: string, input: unknown, errMessage: string): void {
-  it(`throws when sanitizing ${description}.`, () => {
-    const sanitizeFn = () => sanitizePropertySchemaObject(NAME, input);
-    expect(sanitizeFn).to.throw(errMessage);
-  });
-}

@@ -18,8 +18,8 @@
 
 import { expect } from "chai";
 import { inspect } from "util";
-import { CanonicalObjectSchemaProperty, ObjectSchemaProperty } from "../schema";
 
+import { CanonicalObjectSchemaProperty, ObjectSchemaProperty } from "../schema";
 import { extractGeneric, normalizePropertySchema } from "../schema/normalize";
 
 const NAME = { objectName: "MyObject", propertyName: "prop" };
