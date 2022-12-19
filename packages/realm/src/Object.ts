@@ -69,10 +69,10 @@ const PROXY_HANDLER: ProxyHandler<RealmObject<any>> = {
     }
     const result = Reflect.getOwnPropertyDescriptor(target, prop);
     if (result && typeof prop === "symbol") {
-      if (prop == INTERNAL) {
+      if (prop === INTERNAL) {
         result.enumerable = false;
         result.writable = false;
-      } else if (prop == INTERNAL_LISTENERS) {
+      } else if (prop === INTERNAL_LISTENERS) {
         result.enumerable = false;
       }
     }
@@ -213,7 +213,10 @@ export class RealmObject<T = DefaultObject> {
   ): RealmObject<T> & T {
     const result = Object.create(constructor.prototype);
     result[INTERNAL] = internal;
+    // Initializing INTERNAL_LISTENERS here rather than letting it just be implicitly undefined since JS engines
+    // prefer adding all fields to objects upfront. Adding optional fields later can sometimes trigger deoptimizations.
     result[INTERNAL_LISTENERS] = null;
+
     // Wrap in a proxy to trap keys, enabling the spread operator, and hiding our internal fields.
     return new Proxy(result, PROXY_HANDLER);
   }
@@ -399,7 +402,7 @@ export class RealmObject<T = DefaultObject> {
   addListener(callback: ObjectChangeCallback<T>): void {
     assert.function(callback);
     if (!this[INTERNAL_LISTENERS]) {
-      this[INTERNAL_LISTENERS] = new ObjectListeners<T>(this[REALM].internal, this as unknown as RealmObject<T> & T);
+      this[INTERNAL_LISTENERS] = new ObjectListeners<T>(this[REALM].internal, this);
     }
     this[INTERNAL_LISTENERS].addListener(callback);
   }
