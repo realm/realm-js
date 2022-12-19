@@ -33,7 +33,7 @@ describe.skipIf(environment.missingServer, "Synced Realm as local", () => {
   });
 
   before(async function (this: RealmContext) {
-    this.timeout(5000);
+    this.timeout(30 * 1000);
     // Add a subscription
     await this.realm.subscriptions.update((subs) => {
       subs.add(this.realm.objects("Person"));
@@ -50,6 +50,7 @@ describe.skipIf(environment.missingServer, "Synced Realm as local", () => {
   });
 
   it("opens when `sync: true`", function (this: RealmContext) {
+    this.timeout(30 * 1000);
     // Close the synced Realm
     const realmPath = this.realm.path;
     this.realm.close();

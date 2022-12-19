@@ -121,6 +121,7 @@ async function addSubscriptionAndSync<T>(
 }
 
 describe.skipIf(environment.missingServer, "Flexible sync", function () {
+  this.timeout(25 * 1000);
   importAppBefore("with-db-flx");
   authenticateUserBefore();
   openRealmBeforeEach({
