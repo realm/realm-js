@@ -39,11 +39,12 @@ const TEST_CASES: (string | ObjectSchemaProperty)[] = [
 describe("schema transform", () => {
   for (const prop of TEST_CASES) {
     it(inspect(prop, { compact: true, breakLength: Number.MAX_SAFE_INTEGER }), () => {
-      const NAME = { objectName: "MyObject", propertyName: "prop" };
-      const normalizedSchema = normalizePropertySchema(NAME, prop);
-      const bindingSchema = toBindingPropertySchema(NAME.propertyName, normalizedSchema);
+      const objectName = "MyObject";
+      const propertyName = "prop";
+      const normalizedSchema = normalizePropertySchema({ objectName, propertyName, propertySchema: prop });
+      const bindingSchema = toBindingPropertySchema(propertyName, normalizedSchema);
       const reversedSchema = fromBindingPropertySchema({
-        publicName: NAME.propertyName,
+        publicName: propertyName,
         objectType: "",
         linkOriginPropertyName: "",
         isPrimary: false,
@@ -51,7 +52,11 @@ describe("schema transform", () => {
         columnKey: { value: 0n } as any,
         ...bindingSchema,
       });
-      const normalizedReversedSchema = normalizePropertySchema(NAME, reversedSchema);
+      const normalizedReversedSchema = normalizePropertySchema({
+        objectName,
+        propertyName,
+        propertySchema: reversedSchema,
+      });
       expect(normalizedReversedSchema).deep.equals(normalizedSchema);
     });
   }

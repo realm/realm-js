@@ -31,10 +31,19 @@ import {
   flags,
 } from "../internal";
 
-type ObjectAndPropertyName = {
+type PropertyInfo = {
   readonly objectName: string;
   readonly propertyName: string;
+  readonly propertySchema: string | ObjectSchemaProperty; // TODO: Type will change to: PropertySchema | PropertySchemaShorthand
 };
+
+interface PropertyInfoUsingObject extends PropertyInfo {
+  readonly propertySchema: ObjectSchemaProperty;
+}
+
+interface PropertyInfoUsingShorthand extends PropertyInfo {
+  readonly propertySchema: string;
+}
 
 const PRIMITIVE_TYPES = new Set<PrimitivePropertyTypeName>([
   "bool",
@@ -74,9 +83,9 @@ function isUserDefined(type: string | undefined): boolean {
  * Transform a user-provided Realm schema into its canonical form.
  */
 export function normalizeRealmSchema(
-  schema: Readonly<(RealmObjectConstructor | ObjectSchema)[]>,
+  realmSchema: Readonly<(RealmObjectConstructor | ObjectSchema)[]>,
 ): CanonicalObjectSchema[] {
-  return schema.map(normalizeObjectSchema);
+  return realmSchema.map(normalizeObjectSchema);
 }
 
 /**
@@ -86,9 +95,9 @@ export function normalizeObjectSchema(arg: RealmObjectConstructor | ObjectSchema
   if (typeof arg === "function") {
     assert.extends(arg, RealmObject);
     assert.object(arg.schema, "schema static");
-    const schema = normalizeObjectSchema(arg.schema as ObjectSchema);
-    schema.ctor = arg;
-    return schema;
+    const objectSchema = normalizeObjectSchema(arg.schema as ObjectSchema);
+    objectSchema.ctor = arg;
+    return objectSchema;
   }
 
   // ---- THIS IF BLOCK HAS NOT YET BEEN REWRITTEN ----
@@ -128,14 +137,13 @@ export function normalizeObjectSchema(arg: RealmObjectConstructor | ObjectSchema
  */
 function normalizePropertySchemas(
   objectName: string,
-  schemas: PropertiesTypes,
+  propertiesSchemas: PropertiesTypes,
   primaryKey?: string,
 ): Record<string, CanonicalObjectSchemaProperty> {
   const normalizedSchemas: Record<string, CanonicalObjectSchemaProperty> = {};
-  for (const propertyName in schemas) {
+  for (const propertyName in propertiesSchemas) {
     normalizedSchemas[propertyName] = normalizePropertySchema(
-      { objectName, propertyName },
-      schemas[propertyName],
+      { objectName, propertyName, propertySchema: propertiesSchemas[propertyName] },
       primaryKey === propertyName,
     );
   }
@@ -146,18 +154,14 @@ function normalizePropertySchemas(
 /**
  * Transform a user-provided property schema into its canonical form.
  */
-export function normalizePropertySchema(
-  name: ObjectAndPropertyName,
-  schema: string | ObjectSchemaProperty,
-  isPrimaryKey = false,
-): CanonicalObjectSchemaProperty {
+export function normalizePropertySchema(info: PropertyInfo, isPrimaryKey = false): CanonicalObjectSchemaProperty {
   const normalizedSchema =
-    typeof schema === "string"
-      ? normalizePropertySchemaString(name, schema)
-      : normalizePropertySchemaObject(name, schema);
+    typeof info.propertySchema === "string"
+      ? normalizePropertySchemaShorthand(info as PropertyInfoUsingShorthand)
+      : normalizePropertySchemaObject(info as PropertyInfoUsingObject);
 
   if (isPrimaryKey) {
-    assert(!normalizedSchema.optional, errMessage(name, "Optional properties cannot be used as a primary key."));
+    assert(!normalizedSchema.optional, errMessage(info, "Optional properties cannot be used as a primary key."));
     normalizedSchema.indexed = true;
   }
 
@@ -168,58 +172,59 @@ export function normalizePropertySchema(
  * Transform and validate a user-provided property schema that is using
  * the shorthand string notation into its canonical form.
  */
-function normalizePropertySchemaString(name: ObjectAndPropertyName, schema: string): CanonicalObjectSchemaProperty {
-  assert(schema.length > 0, errMessage(name, "The type must be specified."));
+function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): CanonicalObjectSchemaProperty {
+  let { propertySchema } = info;
+  assert(propertySchema.length > 0, errMessage(info, "The type must be specified."));
 
   let type = "";
   let objectType: string | undefined;
   let optional = false;
 
-  if (endsWithCollection(schema)) {
-    const end = schema.substring(schema.length - 2);
+  if (endsWithCollection(propertySchema)) {
+    const end = propertySchema.substring(propertySchema.length - 2);
     type = COLLECTION_SHORTHAND_TO_NAME[end];
 
-    schema = schema.substring(0, schema.length - 2);
-    assert(schema.length > 0, errMessage(name, `The element type must be specified. (Example: 'int${end}')`));
+    propertySchema = propertySchema.substring(0, propertySchema.length - 2);
+    assert(propertySchema.length > 0, errMessage(info, `The element type must be specified. (Example: 'int${end}')`));
 
-    const isNestedCollection = endsWithCollection(schema);
-    assert(!isNestedCollection, errMessage(name, "Nested collections are not supported."));
+    const isNestedCollection = endsWithCollection(propertySchema);
+    assert(!isNestedCollection, errMessage(info, "Nested collections are not supported."));
   }
 
-  if (schema.endsWith("?")) {
+  if (propertySchema.endsWith("?")) {
     optional = true;
 
-    schema = schema.substring(0, schema.length - 1);
-    assert(schema.length > 0, errMessage(name, "The type must be specified. (Examples: 'int?', 'int?[]')"));
+    propertySchema = propertySchema.substring(0, propertySchema.length - 1);
+    assert(propertySchema.length > 0, errMessage(info, "The type must be specified. (Examples: 'int?', 'int?[]')"));
 
-    const usingOptionalOnCollection = endsWithCollection(schema);
+    const usingOptionalOnCollection = endsWithCollection(propertySchema);
     assert(
       !usingOptionalOnCollection,
       errMessage(
-        name,
+        info,
         "Collections cannot be optional. To allow elements of the collection to be optional, use '?' after the element type. (Examples: 'int?[]', 'int?{}', 'int?<>')",
       ),
     );
   }
 
-  if (isPrimitive(schema)) {
+  if (isPrimitive(propertySchema)) {
     if (isCollection(type)) {
-      objectType = schema;
+      objectType = propertySchema;
     } else {
-      type = schema as PropertyTypeName;
+      type = propertySchema as PropertyTypeName;
     }
-  } else if (isCollection(schema)) {
-    error(name, "Cannot use the collection name. (Examples: 'int[]' (list), 'int{}' (dictionary), 'int<>' (set))");
-  } else if (schema === "object") {
-    error(name, "To define a relationship, use either 'ObjectName' or { type: 'object', objectType: 'ObjectName' }");
-  } else if (schema === "linkingObjects") {
+  } else if (isCollection(propertySchema)) {
+    error(info, "Cannot use the collection name. (Examples: 'int[]' (list), 'int{}' (dictionary), 'int<>' (set))");
+  } else if (propertySchema === "object") {
+    error(info, "To define a relationship, use either 'ObjectName' or { type: 'object', objectType: 'ObjectName' }");
+  } else if (propertySchema === "linkingObjects") {
     error(
-      name,
+      info,
       "To define an inverse relationship, use { type: 'linkingObjects', objectType: 'ObjectName', property: 'ObjectProperty' }",
     );
   } else {
     // User-defined types
-    objectType = schema;
+    objectType = propertySchema;
     if (!isCollection(type)) {
       type = "object";
     }
@@ -231,7 +236,7 @@ function normalizePropertySchemaString(name: ObjectAndPropertyName, schema: stri
     assert(
       !optional,
       errMessage(
-        name,
+        info,
         "Being optional is always 'false' for user-defined types in lists and sets and cannot be set to 'true'. Remove '?' or change the type.",
       ),
     );
@@ -239,11 +244,11 @@ function normalizePropertySchemaString(name: ObjectAndPropertyName, schema: stri
   }
 
   const normalizedSchema: CanonicalObjectSchemaProperty = {
-    name: name.propertyName,
+    name: info.propertyName,
     type: type as PropertyTypeName,
     optional,
     indexed: false,
-    mapTo: name.propertyName,
+    mapTo: info.propertyName,
   };
   // Add optional properties only if defined (tests expect no 'undefined' properties)
   objectType !== undefined && (normalizedSchema.objectType = objectType);
@@ -255,35 +260,33 @@ function normalizePropertySchemaString(name: ObjectAndPropertyName, schema: stri
  * Transform and validate a user-provided property schema that is using
  * the relaxed object notation into its canonical form.
  */
-function normalizePropertySchemaObject(
-  name: ObjectAndPropertyName,
-  schema: ObjectSchemaProperty,
-): CanonicalObjectSchemaProperty {
-  sanitizePropertySchemaObject(name, schema);
+function normalizePropertySchemaObject(info: PropertyInfoUsingObject): CanonicalObjectSchemaProperty {
+  sanitizePropertySchema(info.objectName, info.propertyName, info.propertySchema);
 
-  const { type, objectType, property, default: defaultValue } = schema;
-  let { optional } = schema;
+  const { propertySchema } = info;
+  const { type, objectType, property, default: defaultValue } = propertySchema;
+  let { optional } = propertySchema;
 
-  assert(type.length > 0, errMessage(name, "'type' must be specified."));
-  assert(!isUsingShorthand(type), errMessageIfUsingShorthand(name, type));
-  assert(!isUsingShorthand(objectType), errMessageIfUsingShorthand(name, objectType));
+  assert(type.length > 0, errMessage(info, "'type' must be specified."));
+  assert(!isUsingShorthand(type), errMessageIfUsingShorthand(info, type));
+  assert(!isUsingShorthand(objectType), errMessageIfUsingShorthand(info, objectType));
 
   if (isPrimitive(type)) {
-    assert(objectType === undefined, errMessage(name, `'objectType' cannot be defined when 'type' is '${type}'.`));
+    assert(objectType === undefined, errMessage(info, `'objectType' cannot be defined when 'type' is '${type}'.`));
   } else if (isCollection(type)) {
     assert(
       isPrimitive(objectType) || isUserDefined(objectType),
-      errMessage(name, `A ${type} must contain only primitive or user-defined types specified through 'objectType'.`),
+      errMessage(info, `A ${type} must contain only primitive or user-defined types specified through 'objectType'.`),
     );
   } else if (type === "object") {
-    assert(isUserDefined(objectType), errMessage(name, "A user-defined type must be specified through 'objectType'."));
+    assert(isUserDefined(objectType), errMessage(info, "A user-defined type must be specified through 'objectType'."));
   } else if (type === "linkingObjects") {
-    assert(isUserDefined(objectType), errMessage(name, "A user-defined type must be specified through 'objectType'."));
-    assert(!!property, errMessage(name, "The linking object's property name must be specified through 'property'."));
+    assert(isUserDefined(objectType), errMessage(info, "A user-defined type must be specified through 'objectType'."));
+    assert(!!property, errMessage(info, "The linking object's property name must be specified through 'property'."));
   } else {
     // 'type' is a user-defined type
     error(
-      name,
+      info,
       `If you meant to define a relationship, use { type: 'object', objectType: '${type}' } or { type: 'linkingObjects', objectType: '${type}', property: 'The ${type} property' }`,
     );
   }
@@ -293,20 +296,20 @@ function normalizePropertySchemaObject(
       type === "mixed" || objectType === "mixed"
         ? "'mixed' types"
         : "user-defined types as standalone objects and in dictionaries";
-    assert(optional !== false, errMessage(name, `'optional' is always 'true' for ${displayed} and cannot be set to 'false'.`));
+    assert(optional !== false, errMessage(info, `'optional' is always 'true' for ${displayed} and cannot be set to 'false'.`));
     optional = true;
   } else if (optionalIsImplicitlyFalse(type, objectType)) {
     const displayed = type === "linkingObjects" ? "linking objects" : "user-defined types in lists and sets";
-    assert(optional !== true, errMessage(name, `'optional' is always 'false' for ${displayed} and cannot be set to 'true'.`));
+    assert(optional !== true, errMessage(info, `'optional' is always 'false' for ${displayed} and cannot be set to 'true'.`));
     optional = false;
   }
 
   const normalizedSchema: CanonicalObjectSchemaProperty = {
-    name: name.propertyName,
+    name: info.propertyName,
     type: type as PropertyTypeName,
     optional: !!optional,
-    indexed: !!schema.indexed,
-    mapTo: schema.mapTo || name.propertyName,
+    indexed: !!propertySchema.indexed,
+    mapTo: propertySchema.mapTo || info.propertyName,
   };
   // Add optional properties only if defined (tests expect no 'undefined' properties)
   objectType !== undefined && (normalizedSchema.objectType = objectType);
@@ -320,24 +323,24 @@ function normalizePropertySchemaObject(
  * Sanitize the top-level fields of a user-provided object schema by
  * validating the data types.
  */
-export function sanitizeObjectSchema(schema: unknown): asserts schema is ObjectSchema {
-  assert.object(schema, "the object schema", false);
-  assert.string(schema.name, "the object schema name");
-  assert.object(schema.properties, `${schema.name}.properties`, false);
-  if (schema.primaryKey !== undefined) {
-    assert.string(schema.primaryKey, `${schema.name}.primaryKey`);
+export function sanitizeObjectSchema(objectSchema: unknown): asserts objectSchema is ObjectSchema {
+  assert.object(objectSchema, "the object schema", false);
+  assert.string(objectSchema.name, "the object schema name");
+  assert.object(objectSchema.properties, `${objectSchema.name}.properties`, false);
+  if (objectSchema.primaryKey !== undefined) {
+    assert.string(objectSchema.primaryKey, `${objectSchema.name}.primaryKey`);
   }
-  if (schema.embedded !== undefined) {
-    assert.boolean(schema.embedded, `${schema.name}.embedded`);
+  if (objectSchema.embedded !== undefined) {
+    assert.boolean(objectSchema.embedded, `${objectSchema.name}.embedded`);
   }
-  if (schema.asymmetric !== undefined) {
-    assert.boolean(schema.asymmetric, `${schema.name}.asymmetric`);
+  if (objectSchema.asymmetric !== undefined) {
+    assert.boolean(objectSchema.asymmetric, `${objectSchema.name}.asymmetric`);
   }
-  const allowedKeys = new Set<keyof ObjectSchema>(["name", "primaryKey", "embedded", "asymmetric", "properties"]);
-  const invalidKeysUsed = filterInvalidKeys(schema, allowedKeys);
+  const validKeys = new Set<keyof ObjectSchema>(["name", "primaryKey", "embedded", "asymmetric", "properties"]);
+  const invalidKeysUsed = filterInvalidKeys(objectSchema, validKeys);
   assert(
     !invalidKeysUsed.length,
-    `Unexpected field(s) found on the schema for object '${schema.name}': '${invalidKeysUsed.join("', '")}'.`,
+    `Unexpected field(s) found on the schema for object '${objectSchema.name}': '${invalidKeysUsed.join("', '")}'.`,
   );
 }
 
@@ -345,28 +348,28 @@ export function sanitizeObjectSchema(schema: unknown): asserts schema is ObjectS
  * Sanitize a user-provided property schema that ought to use the relaxed
  * object notation by validating the data types.
  */
-export function sanitizePropertySchemaObject(
-  name: ObjectAndPropertyName,
-  schema: unknown,
-): asserts schema is ObjectSchemaProperty {
-  const displayedName = `${name.objectName}.${name.propertyName}`;
-
-  assert.object(schema, displayedName, false);
-  assert.string(schema.type, `${displayedName}.type`);
-  if (schema.objectType !== undefined) {
-    assert.string(schema.objectType, `${displayedName}.objectType`);
+export function sanitizePropertySchema(
+  objectName: string,
+  propertyName: string,
+  propertySchema: unknown,
+): asserts propertySchema is ObjectSchemaProperty {
+  const displayedName = `${objectName}.${propertyName}`;
+  assert.object(propertySchema, displayedName, false);
+  assert.string(propertySchema.type, `${displayedName}.type`);
+  if (propertySchema.objectType !== undefined) {
+    assert.string(propertySchema.objectType, `${displayedName}.objectType`);
   }
-  if (schema.optional !== undefined) {
-    assert.boolean(schema.optional, `${displayedName}.optional`);
+  if (propertySchema.optional !== undefined) {
+    assert.boolean(propertySchema.optional, `${displayedName}.optional`);
   }
-  if (schema.property !== undefined) {
-    assert.string(schema.property, `${displayedName}.property`);
+  if (propertySchema.property !== undefined) {
+    assert.string(propertySchema.property, `${displayedName}.property`);
   }
-  if (schema.indexed !== undefined) {
-    assert.boolean(schema.indexed, `${displayedName}.indexed`);
+  if (propertySchema.indexed !== undefined) {
+    assert.boolean(propertySchema.indexed, `${displayedName}.indexed`);
   }
-  if (schema.mapTo !== undefined) {
-    assert.string(schema.mapTo, `${displayedName}.mapTo`);
+  if (propertySchema.mapTo !== undefined) {
+    assert.string(propertySchema.mapTo, `${displayedName}.mapTo`);
   }
   // Need to check keys of the canonical form rather than the relaxed
   // due to 'name' also being needed for schema-transform tests.
@@ -380,7 +383,7 @@ export function sanitizePropertySchemaObject(
     "indexed",
     "mapTo",
   ]);
-  const invalidKeysUsed = filterInvalidKeys(schema, validKeys);
+  const invalidKeysUsed = filterInvalidKeys(propertySchema, validKeys);
   assert(
     !invalidKeysUsed.length,
     `Unexpected field(s) found on the schema for property '${displayedName}': '${invalidKeysUsed.join("', '")}'.`,
@@ -434,7 +437,7 @@ function isUsingShorthand(input: string | undefined): boolean {
 /**
  * Get a custom error message containing the shorthands if used.
  */
-function errMessageIfUsingShorthand(name: ObjectAndPropertyName, input: string | undefined): string {
+function errMessageIfUsingShorthand(info: PropertyInfo, input: string | undefined): string {
   const shorthands: string[] = [];
 
   if (input && endsWithCollection(input)) {
@@ -447,23 +450,23 @@ function errMessageIfUsingShorthand(name: ObjectAndPropertyName, input: string |
   }
 
   return shorthands.length
-    ? errMessage(name, `Cannot use shorthand '${shorthands.join("' and '")}' in combination with using an object.`)
+    ? errMessage(info, `Cannot use shorthand '${shorthands.join("' and '")}' in combination with using an object.`)
     : "";
 }
 
 /**
  * Get an error message for an invalid property schema.
  */
-function errMessage(name: ObjectAndPropertyName, message: string): string {
-  return `Invalid schema for property '${name.objectName}.${name.propertyName}': ${message}`;
+function errMessage({ objectName, propertyName }: PropertyInfo, message: string): string {
+  return `Invalid type declaration for property '${objectName}.${propertyName}': ${message}`;
 }
 
 /**
  * Throw an error caused by an invalid property schema.
  */
-function error(name: ObjectAndPropertyName, message: string): never {
+function error(info: PropertyInfo, message: string): never {
   // TODO: Create a SchemaParseError that extends Error?
-  throw new Error(errMessage(name, message));
+  throw new Error(errMessage(info, message));
 }
 
 /**

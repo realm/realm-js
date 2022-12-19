@@ -18,9 +18,10 @@
 
 import { expect } from "chai";
 
-import { sanitizeObjectSchema, sanitizePropertySchemaObject } from "../schema/normalize";
+import { sanitizeObjectSchema, sanitizePropertySchema } from "../schema/normalize";
 
-const NAME = { objectName: "MyObject", propertyName: "prop" };
+const OBJECT_NAME = "MyObject";
+const PROPERTY_NAME = "prop";
 const NOT_A_STRING = 0;
 const NOT_A_BOOLEAN = 0;
 const NOT_AN_OBJECT = 0;
@@ -73,52 +74,52 @@ describe("sanitizeObjectSchema", () => {
     itThrowsWhenSanitizing(
       "an object with invalid type for property 'properties'",
       {
-        name: NAME.objectName,
+        name: OBJECT_NAME,
         properties: NOT_AN_OBJECT,
       },
-      `Expected '${NAME.objectName}.properties' to be an object, got a number`,
+      `Expected '${OBJECT_NAME}.properties' to be an object, got a number`,
     );
 
     itThrowsWhenSanitizing(
       "an object with invalid type for property 'primaryKey'",
       {
-        name: NAME.objectName,
+        name: OBJECT_NAME,
         properties: {},
         primaryKey: NOT_A_STRING,
       },
-      `Expected '${NAME.objectName}.primaryKey' to be a string, got a number`,
+      `Expected '${OBJECT_NAME}.primaryKey' to be a string, got a number`,
     );
 
     itThrowsWhenSanitizing(
       "an object with invalid type for property 'embedded'",
       {
-        name: NAME.objectName,
+        name: OBJECT_NAME,
         properties: {},
         embedded: NOT_A_BOOLEAN,
       },
-      `Expected '${NAME.objectName}.embedded' to be a boolean, got a number`,
+      `Expected '${OBJECT_NAME}.embedded' to be a boolean, got a number`,
     );
 
     itThrowsWhenSanitizing(
       "an object with invalid type for property 'asymmetric'",
       {
-        name: NAME.objectName,
+        name: OBJECT_NAME,
         properties: {},
         asymmetric: NOT_A_BOOLEAN,
       },
-      `Expected '${NAME.objectName}.asymmetric' to be a boolean, got a number`,
+      `Expected '${OBJECT_NAME}.asymmetric' to be a boolean, got a number`,
     );
 
     itThrowsWhenSanitizing(
       "an object with invalid property names",
       {
-        name: NAME.objectName,
+        name: OBJECT_NAME,
         properties: {},
         invalidName1: "",
         invalidName2: "",
         invalidName3: "",
       },
-      `Unexpected field(s) found on the schema for object '${NAME.objectName}': 'invalidName1', 'invalidName2', 'invalidName3'`,
+      `Unexpected field(s) found on the schema for object '${OBJECT_NAME}': 'invalidName1', 'invalidName2', 'invalidName3'`,
     );
   });
 
@@ -173,7 +174,7 @@ describe("sanitizePropertySchemaObject", () => {
   // ------------------------------------------------------------------------
 
   describe("using invalid shape of input", () => {
-    const DISPLAYED_NAME = `${NAME.objectName}.${NAME.propertyName}`;
+    const DISPLAYED_NAME = `${OBJECT_NAME}.${PROPERTY_NAME}`;
 
     itThrowsWhenSanitizing("an array", [], `Expected '${DISPLAYED_NAME}' to be an object, got an array`);
 
@@ -246,14 +247,14 @@ describe("sanitizePropertySchemaObject", () => {
 
   function itSanitizes(description: string, input: unknown): void {
     it(`sanitizes ${description}.`, () => {
-      const sanitizeFn = () => sanitizePropertySchemaObject(NAME, input);
+      const sanitizeFn = () => sanitizePropertySchema(OBJECT_NAME, PROPERTY_NAME, input);
       expect(sanitizeFn).to.not.throw();
     });
   }
 
   function itThrowsWhenSanitizing(description: string, input: unknown, errMessage: string): void {
     it(`throws when sanitizing ${description}.`, () => {
-      const sanitizeFn = () => sanitizePropertySchemaObject(NAME, input);
+      const sanitizeFn = () => sanitizePropertySchema(OBJECT_NAME, PROPERTY_NAME, input);
       expect(sanitizeFn).to.throw(errMessage);
     });
   }

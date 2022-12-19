@@ -22,7 +22,8 @@ import { inspect } from "util";
 import { CanonicalObjectSchemaProperty, ObjectSchemaProperty } from "../schema";
 import { extractGeneric, normalizePropertySchema } from "../schema/normalize";
 
-const NAME = { objectName: "MyObject", propertyName: "prop" };
+const OBJECT_NAME = "MyObject";
+const PROPERTY_NAME = "prop";
 
 describe("normalizePropertySchema", () => {
   // ------------------------------------------------------------------------
@@ -842,11 +843,15 @@ describe("extractGeneric", () => {
 
 function itNormalizes(input: string | ObjectSchemaProperty, expected: Partial<CanonicalObjectSchemaProperty>): void {
   it(`normalizes ${inspect(input, { compact: true, breakLength: Number.MAX_SAFE_INTEGER })}`, () => {
-    const result = normalizePropertySchema(NAME, input);
+    const result = normalizePropertySchema({
+      objectName: OBJECT_NAME,
+      propertyName: PROPERTY_NAME,
+      propertySchema: input,
+    });
     expect(result).to.deep.equal({
-      name: NAME.propertyName,
+      name: PROPERTY_NAME,
       indexed: false,
-      mapTo: NAME.propertyName,
+      mapTo: PROPERTY_NAME,
       ...expected,
     });
   });
@@ -854,9 +859,14 @@ function itNormalizes(input: string | ObjectSchemaProperty, expected: Partial<Ca
 
 function itThrowsWhenNormalizing(input: string | ObjectSchemaProperty, errMessage: string): void {
   it(`throws when normalizing ${inspect(input, { compact: true, breakLength: Number.MAX_SAFE_INTEGER })}`, () => {
-    const normalizeFn = () => normalizePropertySchema(NAME, input);
+    const normalizeFn = () =>
+      normalizePropertySchema({
+        objectName: OBJECT_NAME,
+        propertyName: PROPERTY_NAME,
+        propertySchema: input,
+      });
     expect(normalizeFn).to.throw(
-      `Invalid schema for property '${NAME.objectName}.${NAME.propertyName}': ${errMessage}`,
+      `Invalid type declaration for property '${OBJECT_NAME}.${PROPERTY_NAME}': ${errMessage}`,
     );
   });
 }
