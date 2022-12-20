@@ -377,6 +377,7 @@ jobs:
           disable-animations: true
           arch: x86
           ndk: ${{ env.NDK_VERSION }}
+          cmake: 3.22.1
           script: npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
       - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56
