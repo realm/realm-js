@@ -4,6 +4,7 @@ import {Realm} from '@realm/react';
 
 import {Task} from '../models/Task';
 import {TaskItem} from './TaskItem';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import {OfflineModeButton} from './OfflineModeButton';
 
 type TaskListProps = {
