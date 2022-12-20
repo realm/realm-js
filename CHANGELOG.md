@@ -4,8 +4,7 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fix no notification for write transaction that contains only change to backlink property. ([realm/realm-core#4994](https://github.com/realm/realm-core/issues/4994), since v10.8.0)
 
 ### Compatibility
 * React Native >= v0.70.0
@@ -14,9 +13,8 @@
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v13.1.1 to v13.1.2. ([#5174](https://github.com/realm/realm-js/issues/5174))
+* Migrated to the new `Subscription` API in Realm Core.
 
 ## 11.3.1 (2022-12-07)
 
