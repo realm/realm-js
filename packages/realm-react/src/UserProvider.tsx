@@ -62,10 +62,13 @@ export const UserProvider: React.FC<UserProviderProps> = ({ fallback: Fallback, 
   }, [user, app]);
 
   if (!user) {
-    if (typeof Fallback === "function") {
-      return <Fallback />;
+    if (Fallback) {
+      if (typeof Fallback === "function") {
+        return <Fallback />;
+      }
+      return <>{Fallback}</>;
     }
-    return <>{Fallback}</>;
+    return children
   }
 
   return <UserContext.Provider value={user}>{children}</UserContext.Provider>;
