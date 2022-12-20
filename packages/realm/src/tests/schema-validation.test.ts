@@ -63,6 +63,8 @@ describe("validateObjectSchema", () => {
 
     itThrowsWhenValidating("'null'", null, "Expected 'the object schema' to be an object, got null");
 
+    itThrowsWhenValidating("an empty object", {}, "Expected 'the object schema name' to be a string, got undefined");
+
     itThrowsWhenValidating(
       "an object with invalid type for property 'name'",
       {
@@ -179,6 +181,8 @@ describe("validatePropertySchemaObject", () => {
     itThrowsWhenValidating("an array", [], `Expected '${DISPLAYED_NAME}' to be an object, got an array`);
 
     itThrowsWhenValidating("'null'", null, `Expected '${DISPLAYED_NAME}' to be an object, got null`);
+
+    itThrowsWhenValidating("an empty object", {}, `Expected '${DISPLAYED_NAME}.type' to be a string, got undefined`);
 
     itThrowsWhenValidating(
       "an object with invalid type for property 'type'",
