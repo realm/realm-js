@@ -23,6 +23,7 @@ import {
   INTERNAL,
   List,
   ObjCreator,
+  REALM,
   Realm,
   RealmObject,
   TypeAssertionError,
@@ -83,7 +84,7 @@ export function mixedToBinding(realm: binding.Realm, value: unknown): binding.Mi
   } else if (value instanceof Date) {
     return binding.Timestamp.fromDate(value);
   } else if (value instanceof RealmObject) {
-    const otherRealm = value.realm.internal;
+    const otherRealm = value[REALM].internal;
     assert.isSameRealm(realm, otherRealm, "Realm object is from another Realm");
     return value[INTERNAL];
   } else if (value instanceof Collection) {

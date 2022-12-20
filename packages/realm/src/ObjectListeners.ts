@@ -28,7 +28,7 @@ export class ObjectListeners<T> {
    */
   private internal!: binding.ObjectNotifier | null;
 
-  constructor(private realm: binding.Realm, private object: RealmObject<T> & T) {
+  constructor(private realm: binding.Realm, private object: RealmObject<T>) {
     this.properties = getClassHelpers(this.object.constructor as typeof RealmObject).properties;
   }
 
@@ -38,7 +38,7 @@ export class ObjectListeners<T> {
     register: (callback) => {
       const token = this.notifier.addCallback((changes) => {
         try {
-          callback(this.object, {
+          callback(this.object as RealmObject<T> & T, {
             deleted: changes.isDeleted,
             changedProperties: changes.changedColumns.map(this.properties.getName),
           });
