@@ -29,7 +29,7 @@ import { openRealm, OpenRealmConfiguration } from "../utils/open-realm";
  */
 export function openRealmHook(config: OpenRealmConfiguration = {}) {
   return async function openRealmHandler(this: Partial<RealmContext> & Mocha.Context): Promise<void> {
-    this.timeout(10 * 1000);
+    this.timeout(20 * 1000);
     if (this.realm) {
       throw new Error("Unexpected realm on context, use only one openRealmBefore per test");
     } else {
