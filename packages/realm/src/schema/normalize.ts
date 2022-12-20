@@ -159,6 +159,7 @@ export function normalizePropertySchema(info: PropertyInfo, isPrimaryKey = false
 
   if (isPrimaryKey) {
     assert(!normalizedSchema.optional, errMessage(info, "Optional properties cannot be used as a primary key."));
+    assert(normalizedSchema.indexed !== false, errMessage(info, "Primary keys must always be indexed."));
     normalizedSchema.indexed = true;
   }
 
@@ -177,14 +178,15 @@ function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): Can
   let objectType: string | undefined;
   let optional = false;
 
-  if (endsWithCollection(propertySchema)) {
-    const end = propertySchema.substring(propertySchema.length - 2);
-    type = COLLECTION_SHORTHAND_TO_NAME[end];
+  if (hasCollectionSuffix(propertySchema)) {
+    const suffixLength = 2;
+    const suffix = propertySchema.substring(propertySchema.length - suffixLength);
+    type = COLLECTION_SHORTHAND_TO_NAME[suffix];
 
     propertySchema = propertySchema.substring(0, propertySchema.length - 2);
-    assert(propertySchema.length > 0, errMessage(info, `The element type must be specified. (Example: 'int${end}')`));
+    assert(propertySchema.length > 0, errMessage(info, `The element type must be specified (Example: 'int${suffix}')`));
 
-    const isNestedCollection = endsWithCollection(propertySchema);
+    const isNestedCollection = hasCollectionSuffix(propertySchema);
     assert(!isNestedCollection, errMessage(info, "Nested collections are not supported."));
   }
 
@@ -192,14 +194,14 @@ function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): Can
     optional = true;
 
     propertySchema = propertySchema.substring(0, propertySchema.length - 1);
-    assert(propertySchema.length > 0, errMessage(info, "The type must be specified. (Examples: 'int?', 'int?[]')"));
+    assert(propertySchema.length > 0, errMessage(info, "The type must be specified. (Examples: 'int?' and 'int?[]')"));
 
-    const usingOptionalOnCollection = endsWithCollection(propertySchema);
+    const usingOptionalOnCollection = hasCollectionSuffix(propertySchema);
     assert(
       !usingOptionalOnCollection,
       errMessage(
         info,
-        "Collections cannot be optional. To allow elements of the collection to be optional, use '?' after the element type. (Examples: 'int?[]', 'int?{}', 'int?<>')",
+        "Collections cannot be optional. To allow elements of the collection to be optional, use '?' after the element type. (Examples: 'int?[]', 'int?{}', and 'int?<>')",
       ),
     );
   }
@@ -211,13 +213,19 @@ function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): Can
       type = propertySchema as PropertyTypeName;
     }
   } else if (isCollection(propertySchema)) {
-    error(info, "Cannot use the collection name. (Examples: 'int[]' (list), 'int{}' (dictionary), 'int<>' (set))");
+    error(
+      info,
+      `Cannot use the collection name ${propertySchema}. (Examples: 'int[]' (list), 'int{}' (dictionary), and 'int<>' (set))`,
+    );
   } else if (propertySchema === "object") {
-    error(info, "To define a relationship, use either 'ObjectName' or { type: 'object', objectType: 'ObjectName' }");
+    error(
+      info,
+      "To define a relationship, use either 'MyObjectType' or { type: 'object', objectType: 'MyObjectType' }",
+    );
   } else if (propertySchema === "linkingObjects") {
     error(
       info,
-      "To define an inverse relationship, use { type: 'linkingObjects', objectType: 'ObjectName', property: 'ObjectProperty' }",
+      "To define an inverse relationship, use { type: 'linkingObjects', objectType: 'MyObjectType', property: 'myObjectTypesProperty' }",
     );
   } else {
     // User-defined types
@@ -234,7 +242,7 @@ function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): Can
       !optional,
       errMessage(
         info,
-        "Being optional is always 'false' for user-defined types in lists and sets and cannot be set to 'true'. Remove '?' or change the type.",
+        "User-defined types in lists and sets are always non-optional and cannot be made optional. Remove '?' or change the type.",
       ),
     );
     optional = false;
@@ -248,7 +256,7 @@ function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): Can
     mapTo: info.propertyName,
   };
   // Add optional properties only if defined (tests expect no 'undefined' properties)
-  objectType !== undefined && (normalizedSchema.objectType = objectType);
+  if (objectType !== undefined) normalizedSchema.objectType = objectType;
 
   return normalizedSchema;
 }
@@ -263,8 +271,8 @@ function normalizePropertySchemaObject(info: PropertyInfoUsingObject): Canonical
   let { optional } = propertySchema;
 
   assert(type.length > 0, errMessage(info, "'type' must be specified."));
-  assert(!isUsingShorthand(type), errMessageIfUsingShorthand(info, type));
-  assert(!isUsingShorthand(objectType), errMessageIfUsingShorthand(info, objectType));
+  assertNotUsingShorthand(type, info);
+  assertNotUsingShorthand(objectType, info);
 
   if (isPrimitive(type)) {
     assert(objectType === undefined, errMessage(info, `'objectType' cannot be defined when 'type' is '${type}'.`));
@@ -290,12 +298,14 @@ function normalizePropertySchemaObject(info: PropertyInfoUsingObject): Canonical
     const displayed =
       type === "mixed" || objectType === "mixed"
         ? "'mixed' types"
-        : "user-defined types as standalone objects and in dictionaries";
-    assert(optional !== false, errMessage(info, `'optional' is always 'true' for ${displayed} and cannot be set to 'false'.`));
+        : "User-defined types as standalone objects and in dictionaries";
+    assert(optional !== false, errMessage(info, `${displayed} are always optional and cannot be made non-optional.`));
     optional = true;
   } else if (optionalIsImplicitlyFalse(type, objectType)) {
-    const displayed = type === "linkingObjects" ? "linking objects" : "user-defined types in lists and sets";
-    assert(optional !== true, errMessage(info, `'optional' is always 'false' for ${displayed} and cannot be set to 'true'.`));
+    assert(
+      optional !== true,
+      errMessage(info, "User-defined types in lists and sets are always non-optional and cannot be made optional."),
+    );
     optional = false;
   }
 
@@ -307,9 +317,9 @@ function normalizePropertySchemaObject(info: PropertyInfoUsingObject): Canonical
     mapTo: propertySchema.mapTo || info.propertyName,
   };
   // Add optional properties only if defined (tests expect no 'undefined' properties)
-  objectType !== undefined && (normalizedSchema.objectType = objectType);
-  property !== undefined && (normalizedSchema.property = property);
-  defaultValue !== undefined && (normalizedSchema.default = defaultValue);
+  if (objectType !== undefined) normalizedSchema.objectType = objectType;
+  if (property !== undefined) normalizedSchema.property = property;
+  if (defaultValue !== undefined) normalizedSchema.default = defaultValue;
 
   return normalizedSchema;
 }
@@ -336,28 +346,18 @@ function optionalIsImplicitlyFalse(type: string, objectType: string | undefined)
 /**
  * Determine whether a string ends with a shorthand collection ('[]' or '{}' or '<>').
  */
-function endsWithCollection(input: string): boolean {
+function hasCollectionSuffix(input: string): boolean {
   const end = input.substring(input.length - 2);
   return !!COLLECTION_SHORTHAND_TO_NAME[end];
 }
 
 /**
- * Determine whether shorthand notation is being used.
+ * Assert that shorthand notation is not being used.
  */
-function isUsingShorthand(input: string | undefined): boolean {
-  if (!input) {
-    return false;
-  }
-  return endsWithCollection(input) || input.endsWith("?");
-}
-
-/**
- * Get a custom error message containing the shorthands if used.
- */
-function errMessageIfUsingShorthand(info: PropertyInfo, input: string | undefined): string {
+function assertNotUsingShorthand(input: string | undefined, info: PropertyInfo): void {
   const shorthands: string[] = [];
 
-  if (input && endsWithCollection(input)) {
+  if (input && hasCollectionSuffix(input)) {
     shorthands.push(input.substring(input.length - 2));
     input = input.substring(0, input.length - 2);
   }
@@ -366,9 +366,13 @@ function errMessageIfUsingShorthand(info: PropertyInfo, input: string | undefine
     shorthands.push("?");
   }
 
-  return shorthands.length
-    ? errMessage(info, `Cannot use shorthand '${shorthands.join("' and '")}' in combination with using an object.`)
-    : "";
+  assert(
+    !shorthands.length,
+    errMessage(
+      info,
+      `Cannot use shorthand '${shorthands.join("' and '")}' in 'type' or 'objectType' when defining property objects.`,
+    ),
+  );
 }
 
 /**

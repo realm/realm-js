@@ -217,22 +217,22 @@ describe("normalizePropertySchema", () => {
 
     itThrowsWhenNormalizing(
       "Person?[]",
-      "Being optional is always 'false' for user-defined types in lists and sets and cannot be set to 'true'. Remove '?' or change the type.",
+      "User-defined types in lists and sets are always non-optional and cannot be made optional. Remove '?' or change the type.",
     );
 
     itThrowsWhenNormalizing(
       "Person?<>",
-      "Being optional is always 'false' for user-defined types in lists and sets and cannot be set to 'true'. Remove '?' or change the type.",
+      "User-defined types in lists and sets are always non-optional and cannot be made optional. Remove '?' or change the type.",
     );
 
     itThrowsWhenNormalizing(
       "object",
-      "To define a relationship, use either 'ObjectName' or { type: 'object', objectType: 'ObjectName' }",
+      "To define a relationship, use either 'MyObjectType' or { type: 'object', objectType: 'MyObjectType' }",
     );
 
     itThrowsWhenNormalizing(
       "linkingObjects",
-      "To define an inverse relationship, use { type: 'linkingObjects', objectType: 'ObjectName', property: 'ObjectProperty' }",
+      "To define an inverse relationship, use { type: 'linkingObjects', objectType: 'MyObjectType', property: 'myObjectTypesProperty' }",
     );
   });
 
@@ -702,7 +702,7 @@ describe("normalizePropertySchema", () => {
         objectType: "Person",
         optional: false,
       },
-      "'optional' is always 'true' for user-defined types as standalone objects and in dictionaries and cannot be set to 'false'",
+      "User-defined types as standalone objects and in dictionaries are always optional and cannot be made non-optional",
     );
 
     itThrowsWhenNormalizing(
@@ -710,7 +710,7 @@ describe("normalizePropertySchema", () => {
         type: "mixed",
         optional: false,
       },
-      "'optional' is always 'true' for 'mixed' types and cannot be set to 'false'",
+      "'mixed' types are always optional and cannot be made non-optional",
     );
 
     itThrowsWhenNormalizing(
@@ -719,7 +719,7 @@ describe("normalizePropertySchema", () => {
         objectType: "mixed",
         optional: false,
       },
-      "'optional' is always 'true' for 'mixed' types and cannot be set to 'false'",
+      "'mixed' types are always optional and cannot be made non-optional",
     );
 
     itThrowsWhenNormalizing(
@@ -728,7 +728,7 @@ describe("normalizePropertySchema", () => {
         objectType: "Person",
         optional: true,
       },
-      "'optional' is always 'false' for user-defined types in lists and sets and cannot be set to 'true'",
+      "User-defined types in lists and sets are always non-optional and cannot be made optional",
     );
 
     itThrowsWhenNormalizing(
@@ -737,7 +737,7 @@ describe("normalizePropertySchema", () => {
         objectType: "Person",
         optional: true,
       },
-      "'optional' is always 'false' for user-defined types in lists and sets and cannot be set to 'true'",
+      "User-defined types in lists and sets are always non-optional and cannot be made optional",
     );
 
     itThrowsWhenNormalizing(
@@ -746,7 +746,7 @@ describe("normalizePropertySchema", () => {
         objectType: "Person",
         optional: false,
       },
-      "'optional' is always 'true' for user-defined types as standalone objects and in dictionaries and cannot be set to 'false'",
+      "User-defined types as standalone objects and in dictionaries are always optional and cannot be made non-optional",
     );
 
     itThrowsWhenNormalizing(
@@ -780,7 +780,7 @@ describe("normalizePropertySchema", () => {
         property: "tasks",
         optional: true,
       },
-      "'optional' is always 'false' for linking objects and cannot be set to 'true'",
+      "User-defined types in lists and sets are always non-optional and cannot be made optional",
     );
 
     // -------------------------
@@ -791,14 +791,14 @@ describe("normalizePropertySchema", () => {
       {
         type: "int?",
       },
-      "Cannot use shorthand '?' in combination with using an object",
+      "Cannot use shorthand '?' in 'type' or 'objectType' when defining property objects",
     );
 
     itThrowsWhenNormalizing(
       {
         type: "int?[]",
       },
-      "Cannot use shorthand '[]' and '?' in combination with using an object",
+      "Cannot use shorthand '[]' and '?' in 'type' or 'objectType' when defining property objects",
     );
 
     itThrowsWhenNormalizing(
@@ -806,7 +806,7 @@ describe("normalizePropertySchema", () => {
         type: "int",
         objectType: "[]",
       },
-      "Cannot use shorthand '[]' in combination with using an object",
+      "Cannot use shorthand '[]' in 'type' or 'objectType' when defining property objects",
     );
 
     itThrowsWhenNormalizing(
@@ -814,7 +814,7 @@ describe("normalizePropertySchema", () => {
         type: "int",
         objectType: "?[]",
       },
-      "Cannot use shorthand '[]' and '?' in combination with using an object",
+      "Cannot use shorthand '[]' and '?' in 'type' or 'objectType' when defining property objects",
     );
 
     itThrowsWhenNormalizing(
@@ -822,7 +822,7 @@ describe("normalizePropertySchema", () => {
         type: "list",
         objectType: "int?",
       },
-      "Cannot use shorthand '?' in combination with using an object",
+      "Cannot use shorthand '?' in 'type' or 'objectType' when defining property objects",
     );
   });
 });
