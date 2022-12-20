@@ -18,7 +18,7 @@
 
 import { expect } from "chai";
 
-import { sanitizeObjectSchema, sanitizePropertySchema } from "../schema/normalize";
+import { validateObjectSchema, validatePropertySchema } from "../Configuration";
 
 const OBJECT_NAME = "MyObject";
 const PROPERTY_NAME = "prop";
@@ -26,13 +26,13 @@ const NOT_A_STRING = 0;
 const NOT_A_BOOLEAN = 0;
 const NOT_AN_OBJECT = 0;
 
-describe("sanitizeObjectSchema", () => {
+describe("validateObjectSchema", () => {
   // ------------------------------------------------------------------------
   // Valid shape of input
   // ------------------------------------------------------------------------
 
   describe("using valid shape of input", () => {
-    itSanitizes("an object with all top-level fields defined", {
+    itValidates("an object with all top-level fields defined", {
       name: "",
       primaryKey: "",
       embedded: false,
@@ -40,7 +40,7 @@ describe("sanitizeObjectSchema", () => {
       properties: {},
     });
 
-    itSanitizes("an object with required top-level fields defined and optional fields set to 'undefined'", {
+    itValidates("an object with required top-level fields defined and optional fields set to 'undefined'", {
       name: "",
       primaryKey: undefined,
       embedded: undefined,
@@ -48,7 +48,7 @@ describe("sanitizeObjectSchema", () => {
       properties: {},
     });
 
-    itSanitizes("an object with only required top-level fields defined", {
+    itValidates("an object with only required top-level fields defined", {
       name: "",
       properties: {},
     });
@@ -59,11 +59,11 @@ describe("sanitizeObjectSchema", () => {
   // ------------------------------------------------------------------------
 
   describe("using invalid shape of input", () => {
-    itThrowsWhenSanitizing("an array", [], `Expected 'the object schema' to be an object, got an array`);
+    itThrowsWhenValidating("an array", [], `Expected 'the object schema' to be an object, got an array`);
 
-    itThrowsWhenSanitizing("'null'", null, `Expected 'the object schema' to be an object, got null`);
+    itThrowsWhenValidating("'null'", null, `Expected 'the object schema' to be an object, got null`);
 
-    itThrowsWhenSanitizing(
+    itThrowsWhenValidating(
       "an object with invalid type for property 'name'",
       {
         name: NOT_A_STRING,
@@ -71,7 +71,7 @@ describe("sanitizeObjectSchema", () => {
       `Expected 'the object schema name' to be a string, got a number`,
     );
 
-    itThrowsWhenSanitizing(
+    itThrowsWhenValidating(
       "an object with invalid type for property 'properties'",
       {
         name: OBJECT_NAME,
@@ -80,7 +80,7 @@ describe("sanitizeObjectSchema", () => {
       `Expected '${OBJECT_NAME}.properties' to be an object, got a number`,
     );
 
-    itThrowsWhenSanitizing(
+    itThrowsWhenValidating(
       "an object with invalid type for property 'primaryKey'",
       {
         name: OBJECT_NAME,
@@ -90,7 +90,7 @@ describe("sanitizeObjectSchema", () => {
       `Expected '${OBJECT_NAME}.primaryKey' to be a string, got a number`,
     );
 
-    itThrowsWhenSanitizing(
+    itThrowsWhenValidating(
       "an object with invalid type for property 'embedded'",
       {
         name: OBJECT_NAME,
@@ -100,7 +100,7 @@ describe("sanitizeObjectSchema", () => {
       `Expected '${OBJECT_NAME}.embedded' to be a boolean, got a number`,
     );
 
-    itThrowsWhenSanitizing(
+    itThrowsWhenValidating(
       "an object with invalid type for property 'asymmetric'",
       {
         name: OBJECT_NAME,
@@ -110,7 +110,7 @@ describe("sanitizeObjectSchema", () => {
       `Expected '${OBJECT_NAME}.asymmetric' to be a boolean, got a number`,
     );
 
-    itThrowsWhenSanitizing(
+    itThrowsWhenValidating(
       "an object with invalid property names",
       {
         name: OBJECT_NAME,
@@ -123,28 +123,28 @@ describe("sanitizeObjectSchema", () => {
     );
   });
 
-  function itSanitizes(description: string, input: unknown): void {
-    it(`sanitizes ${description}.`, () => {
-      const sanitizeFn = () => sanitizeObjectSchema(input);
-      expect(sanitizeFn).to.not.throw();
+  function itValidates(description: string, input: unknown): void {
+    it(`validates ${description}.`, () => {
+      const validateFn = () => validateObjectSchema(input);
+      expect(validateFn).to.not.throw();
     });
   }
 
-  function itThrowsWhenSanitizing(description: string, input: unknown, errMessage: string): void {
-    it(`throws when sanitizing ${description}.`, () => {
-      const sanitizeFn = () => sanitizeObjectSchema(input);
-      expect(sanitizeFn).to.throw(errMessage);
+  function itThrowsWhenValidating(description: string, input: unknown, errMessage: string): void {
+    it(`throws when validating ${description}.`, () => {
+      const validateFn = () => validateObjectSchema(input);
+      expect(validateFn).to.throw(errMessage);
     });
   }
 });
 
-describe("sanitizePropertySchemaObject", () => {
+describe("validatePropertySchemaObject", () => {
   // ------------------------------------------------------------------------
   // Valid shape of input
   // ------------------------------------------------------------------------
 
   describe("using valid shape of input", () => {
-    itSanitizes("an object with all fields defined", {
+    itValidates("an object with all fields defined", {
       type: "",
       objectType: "",
       optional: true,
@@ -154,7 +154,7 @@ describe("sanitizePropertySchemaObject", () => {
       default: "",
     });
 
-    itSanitizes("an object with required fields defined and optional fields set to 'undefined'", {
+    itValidates("an object with required fields defined and optional fields set to 'undefined'", {
       type: "",
       objectType: undefined,
       optional: undefined,
@@ -164,7 +164,7 @@ describe("sanitizePropertySchemaObject", () => {
       default: undefined,
     });
 
-    itSanitizes("an object with only required fields defined", {
+    itValidates("an object with only required fields defined", {
       type: "",
     });
   });
@@ -176,11 +176,11 @@ describe("sanitizePropertySchemaObject", () => {
   describe("using invalid shape of input", () => {
     const DISPLAYED_NAME = `${OBJECT_NAME}.${PROPERTY_NAME}`;
 
-    itThrowsWhenSanitizing("an array", [], `Expected '${DISPLAYED_NAME}' to be an object, got an array`);
+    itThrowsWhenValidating("an array", [], `Expected '${DISPLAYED_NAME}' to be an object, got an array`);
 
-    itThrowsWhenSanitizing("'null'", null, `Expected '${DISPLAYED_NAME}' to be an object, got null`);
+    itThrowsWhenValidating("'null'", null, `Expected '${DISPLAYED_NAME}' to be an object, got null`);
 
-    itThrowsWhenSanitizing(
+    itThrowsWhenValidating(
       "an object with invalid type for property 'type'",
       {
         type: NOT_A_STRING,
@@ -188,7 +188,7 @@ describe("sanitizePropertySchemaObject", () => {
       `Expected '${DISPLAYED_NAME}.type' to be a string, got a number`,
     );
 
-    itThrowsWhenSanitizing(
+    itThrowsWhenValidating(
       "an object with invalid type for property 'objectType'",
       {
         type: "",
@@ -197,7 +197,7 @@ describe("sanitizePropertySchemaObject", () => {
       `Expected '${DISPLAYED_NAME}.objectType' to be a string, got a number`,
     );
 
-    itThrowsWhenSanitizing(
+    itThrowsWhenValidating(
       "an object with invalid type for property 'optional'",
       {
         type: "",
@@ -206,7 +206,7 @@ describe("sanitizePropertySchemaObject", () => {
       `Expected '${DISPLAYED_NAME}.optional' to be a boolean, got a number`,
     );
 
-    itThrowsWhenSanitizing(
+    itThrowsWhenValidating(
       "an object with invalid type for property 'property'",
       {
         type: "",
@@ -215,7 +215,7 @@ describe("sanitizePropertySchemaObject", () => {
       `Expected '${DISPLAYED_NAME}.property' to be a string, got a number`,
     );
 
-    itThrowsWhenSanitizing(
+    itThrowsWhenValidating(
       "an object with invalid type for property 'indexed'",
       {
         type: "",
@@ -224,7 +224,7 @@ describe("sanitizePropertySchemaObject", () => {
       `Expected '${DISPLAYED_NAME}.indexed' to be a boolean, got a number`,
     );
 
-    itThrowsWhenSanitizing(
+    itThrowsWhenValidating(
       "an object with invalid type for property 'mapTo'",
       {
         type: "",
@@ -233,7 +233,7 @@ describe("sanitizePropertySchemaObject", () => {
       `Expected '${DISPLAYED_NAME}.mapTo' to be a string, got a number`,
     );
 
-    itThrowsWhenSanitizing(
+    itThrowsWhenValidating(
       "an object with invalid property names",
       {
         type: "",
@@ -245,17 +245,17 @@ describe("sanitizePropertySchemaObject", () => {
     );
   });
 
-  function itSanitizes(description: string, input: unknown): void {
-    it(`sanitizes ${description}.`, () => {
-      const sanitizeFn = () => sanitizePropertySchema(OBJECT_NAME, PROPERTY_NAME, input);
-      expect(sanitizeFn).to.not.throw();
+  function itValidates(description: string, input: unknown): void {
+    it(`validates ${description}.`, () => {
+      const validateFn = () => validatePropertySchema(OBJECT_NAME, PROPERTY_NAME, input);
+      expect(validateFn).to.not.throw();
     });
   }
 
-  function itThrowsWhenSanitizing(description: string, input: unknown, errMessage: string): void {
-    it(`throws when sanitizing ${description}.`, () => {
-      const sanitizeFn = () => sanitizePropertySchema(OBJECT_NAME, PROPERTY_NAME, input);
-      expect(sanitizeFn).to.throw(errMessage);
+  function itThrowsWhenValidating(description: string, input: unknown, errMessage: string): void {
+    it(`throws when validating ${description}.`, () => {
+      const validateFn = () => validatePropertySchema(OBJECT_NAME, PROPERTY_NAME, input);
+      expect(validateFn).to.throw(errMessage);
     });
   }
 });

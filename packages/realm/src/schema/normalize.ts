@@ -25,7 +25,6 @@ import {
   PrimitivePropertyTypeName,
   PropertiesTypes,
   PropertyTypeName,
-  RealmObject,
   RealmObjectConstructor,
   assert,
   flags,
@@ -80,7 +79,7 @@ function isUserDefined(type: string | undefined): boolean {
 }
 
 /**
- * Transform a user-provided Realm schema into its canonical form.
+ * Transform a validated user-provided Realm schema into its canonical form.
  */
 export function normalizeRealmSchema(
   realmSchema: Readonly<(RealmObjectConstructor | ObjectSchema)[]>,
@@ -89,13 +88,11 @@ export function normalizeRealmSchema(
 }
 
 /**
- * Transform a user-provided object schema into its canonical form.
+ * Transform a validated user-provided object schema into its canonical form.
  */
 export function normalizeObjectSchema(arg: RealmObjectConstructor | ObjectSchema): CanonicalObjectSchema {
   if (typeof arg === "function") {
-    assert.extends(arg, RealmObject);
-    assert.object(arg.schema, "schema static");
-    const objectSchema = normalizeObjectSchema(arg.schema as ObjectSchema);
+    const objectSchema = normalizeObjectSchema(arg.schema);
     objectSchema.ctor = arg;
     return objectSchema;
   }
@@ -114,21 +111,21 @@ export function normalizeObjectSchema(arg: RealmObjectConstructor | ObjectSchema
   }
   // --------------------------------------------------
 
-  sanitizeObjectSchema(arg);
-
-  const primaryKeyFieldIsMissing = arg.primaryKey && !Object.hasOwn(arg.properties, arg.primaryKey);
-  if (primaryKeyFieldIsMissing) {
-    throw new Error(
-      `Invalid schema for object '${arg.name}': '${arg.primaryKey}' is set as the primary key field but was not found in 'properties'.`,
-    );
-  }
+  const { name, primaryKey, asymmetric, embedded, properties } = arg;
+  assert(name.length > 0, "Invalid schema for unnamed object: 'name' must be specified.");
+  const primaryKeyFieldIsMissing = primaryKey && !Object.hasOwn(properties, primaryKey);
+  assert(
+    !primaryKeyFieldIsMissing,
+    `Invalid schema for object '${name}': '${primaryKey}' is set as the primary key field but was not found in 'properties'.`,
+  );
+  assert(!asymmetric || !embedded, `Invalid schema for object '${name}': Cannot be both asymmetric and embedded.`);
 
   return {
-    name: arg.name,
-    primaryKey: arg.primaryKey,
-    asymmetric: !!arg.asymmetric,
-    embedded: !!arg.embedded,
-    properties: normalizePropertySchemas(arg.name, arg.properties, arg.primaryKey),
+    name,
+    primaryKey,
+    asymmetric: !!asymmetric,
+    embedded: !!embedded,
+    properties: normalizePropertySchemas(name, properties, primaryKey),
   };
 }
 
@@ -169,7 +166,7 @@ export function normalizePropertySchema(info: PropertyInfo, isPrimaryKey = false
 }
 
 /**
- * Transform and validate a user-provided property schema that is using
+ * Transform a validated user-provided property schema that is using
  * the shorthand string notation into its canonical form.
  */
 function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): CanonicalObjectSchemaProperty {
@@ -257,12 +254,10 @@ function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): Can
 }
 
 /**
- * Transform and validate a user-provided property schema that is using
+ * Transform a validated user-provided property schema that is using
  * the relaxed object notation into its canonical form.
  */
 function normalizePropertySchemaObject(info: PropertyInfoUsingObject): CanonicalObjectSchemaProperty {
-  sanitizePropertySchema(info.objectName, info.propertyName, info.propertySchema);
-
   const { propertySchema } = info;
   const { type, objectType, property, default: defaultValue } = propertySchema;
   let { optional } = propertySchema;
@@ -317,84 +312,6 @@ function normalizePropertySchemaObject(info: PropertyInfoUsingObject): Canonical
   defaultValue !== undefined && (normalizedSchema.default = defaultValue);
 
   return normalizedSchema;
-}
-
-/**
- * Sanitize the top-level fields of a user-provided object schema by
- * validating the data types.
- */
-export function sanitizeObjectSchema(objectSchema: unknown): asserts objectSchema is ObjectSchema {
-  assert.object(objectSchema, "the object schema", false);
-  assert.string(objectSchema.name, "the object schema name");
-  assert.object(objectSchema.properties, `${objectSchema.name}.properties`, false);
-  if (objectSchema.primaryKey !== undefined) {
-    assert.string(objectSchema.primaryKey, `${objectSchema.name}.primaryKey`);
-  }
-  if (objectSchema.embedded !== undefined) {
-    assert.boolean(objectSchema.embedded, `${objectSchema.name}.embedded`);
-  }
-  if (objectSchema.asymmetric !== undefined) {
-    assert.boolean(objectSchema.asymmetric, `${objectSchema.name}.asymmetric`);
-  }
-  const validKeys = new Set<keyof ObjectSchema>(["name", "primaryKey", "embedded", "asymmetric", "properties"]);
-  const invalidKeysUsed = filterInvalidKeys(objectSchema, validKeys);
-  assert(
-    !invalidKeysUsed.length,
-    `Unexpected field(s) found on the schema for object '${objectSchema.name}': '${invalidKeysUsed.join("', '")}'.`,
-  );
-}
-
-/**
- * Sanitize a user-provided property schema that ought to use the relaxed
- * object notation by validating the data types.
- */
-export function sanitizePropertySchema(
-  objectName: string,
-  propertyName: string,
-  propertySchema: unknown,
-): asserts propertySchema is ObjectSchemaProperty {
-  const displayedName = `${objectName}.${propertyName}`;
-  assert.object(propertySchema, displayedName, false);
-  assert.string(propertySchema.type, `${displayedName}.type`);
-  if (propertySchema.objectType !== undefined) {
-    assert.string(propertySchema.objectType, `${displayedName}.objectType`);
-  }
-  if (propertySchema.optional !== undefined) {
-    assert.boolean(propertySchema.optional, `${displayedName}.optional`);
-  }
-  if (propertySchema.property !== undefined) {
-    assert.string(propertySchema.property, `${displayedName}.property`);
-  }
-  if (propertySchema.indexed !== undefined) {
-    assert.boolean(propertySchema.indexed, `${displayedName}.indexed`);
-  }
-  if (propertySchema.mapTo !== undefined) {
-    assert.string(propertySchema.mapTo, `${displayedName}.mapTo`);
-  }
-  // Need to check keys of the canonical form rather than the relaxed
-  // due to 'name' also being needed for schema-transform tests.
-  const validKeys = new Set<keyof CanonicalObjectSchemaProperty>([
-    "name",
-    "type",
-    "objectType",
-    "property",
-    "default",
-    "optional",
-    "indexed",
-    "mapTo",
-  ]);
-  const invalidKeysUsed = filterInvalidKeys(propertySchema, validKeys);
-  assert(
-    !invalidKeysUsed.length,
-    `Unexpected field(s) found on the schema for property '${displayedName}': '${invalidKeysUsed.join("', '")}'.`,
-  );
-}
-
-/**
- * Get the keys of an object that are not part of the provided valid keys.
- */
-function filterInvalidKeys(object: Record<string, unknown>, validKeys: Set<string>): string[] {
-  return Object.keys(object).filter((key) => !validKeys.has(key));
 }
 
 /**
