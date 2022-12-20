@@ -854,6 +854,13 @@ function itNormalizes(input: string | ObjectSchemaProperty, expected: Partial<Ca
       mapTo: PROPERTY_NAME,
       ...expected,
     });
+
+    const resultUsingNormalizedInput = normalizePropertySchema({
+      objectName: OBJECT_NAME,
+      propertyName: PROPERTY_NAME,
+      propertySchema: result,
+    });
+    expect(resultUsingNormalizedInput).to.deep.equal(result);
   });
 }
 
