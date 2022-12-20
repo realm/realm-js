@@ -104,7 +104,7 @@ Next you need to define some environment variables. The best way to do this is i
 export ANDROID_SDK_ROOT=$HOME/Library/Android/sdk
 
 # Location of your Android NDK
-export ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/21.0.6113669
+export ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/23.2.8568313
 export ANDROID_NDK=$ANDROID_NDK_HOME
 
 # Other required locations
@@ -113,7 +113,7 @@ export ANDROID_EMULATOR_HOME=$HOME/.android
 export ANDROID_AVD_HOME=$HOME/.android/avd
 
 # Add the Android SDK tools to your PATH
-export PATH=$PATH:$ANDROID_SDK_ROOT/tools/bin
+export PATH=$PATH:$ANDROID_SDK_ROOT/to$ols/bin
 export PATH=$PATH:$ANDROID_SDK_ROOT/platform-tools
 export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin
 ```
