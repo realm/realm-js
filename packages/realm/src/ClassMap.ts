@@ -17,10 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
+  CanonicalObjectSchema,
   CanonicalRealmSchema,
   Constructor,
   INTERNAL,
+  KEY_ARRAY,
+  KEY_SET,
   PropertyMap,
+  REALM,
   Realm,
   RealmObject,
   RealmObjectConstructor,
@@ -65,7 +69,12 @@ export class ClassMap {
     return result;
   }
 
-  private static defineProperties(constructor: Constructor, schema: BindingObjectSchema, propertyMap: PropertyMap) {
+  private static defineProperties(
+    constructor: Constructor,
+    schema: BindingObjectSchema,
+    propertyMap: PropertyMap,
+    realm: Realm,
+  ) {
     // Create bound functions for getting and setting properties
     const properties = [...schema.persistedProperties, ...schema.computedProperties];
     const propertyNames = properties.map((p) => p.publicName || p.name);
@@ -90,14 +99,23 @@ export class ClassMap {
       }),
     );
 
-    // Per class optimized methods
-    descriptors.keys = {
+    descriptors[REALM] = {
       enumerable: false,
       configurable: false,
       writable: false,
-      value() {
-        return propertyNames;
-      },
+      value: realm,
+    };
+    descriptors[KEY_ARRAY] = {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: propertyNames,
+    };
+    descriptors[KEY_SET] = {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: new Set(propertyNames),
     };
 
     Object.defineProperties(constructor.prototype, descriptors);
@@ -106,7 +124,7 @@ export class ClassMap {
   constructor(realm: Realm, realmSchema: readonly BindingObjectSchema[], canonicalRealmSchema: CanonicalRealmSchema) {
     this.mapping = Object.fromEntries(
       realmSchema.map((objectSchema, index) => {
-        const canonicalObjectSchema = canonicalRealmSchema[index];
+        const canonicalObjectSchema: CanonicalObjectSchema = canonicalRealmSchema[index];
         assert.object(canonicalObjectSchema);
         // Create the wrapping class first
         const constructor = ClassMap.createClass(objectSchema, canonicalObjectSchema.constructor);
@@ -148,7 +166,7 @@ export class ClassMap {
         getClassHelpers: (name: string) => this.getHelpers(name),
       });
       // Transfer property getters and setters onto the prototype of the class
-      ClassMap.defineProperties(constructor, objectSchema, properties);
+      ClassMap.defineProperties(constructor, objectSchema, properties, realm);
     }
   }
 
