@@ -14,7 +14,6 @@
 
 ### Internal
 * Upgraded Realm Core from v13.1.1 to v13.1.2. ([#5174](https://github.com/realm/realm-js/issues/5174))
-* Migrated to the new `Subscription` API in Realm Core.
 
 ## 11.3.1 (2022-12-07)
 
