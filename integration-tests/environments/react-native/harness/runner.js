@@ -15,18 +15,15 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-const puppeteer = require("puppeteer");
-
 const rn = require("./react-native-cli");
 const android = require("./android-cli");
 const xcode = require("./xcode-cli");
-const puppeteerLog = require("./puppeteer-log");
 const logcat = require("./logcat");
 
 const IOS_DEVICE_NAME = "realm-js-integration-tests";
 const IOS_DEVICE_TYPE_ID = "com.apple.CoreSimulator.SimDeviceType.iPhone-11";
 
-const { MOCHA_REMOTE_PORT, PLATFORM, HEADLESS_DEBUGGER, SPAWN_LOGCAT, SKIP_RUNNER, RETRY_DELAY, RETRIES } = process.env;
+const { MOCHA_REMOTE_PORT, PLATFORM, SPAWN_LOGCAT, SKIP_RUNNER, RETRY_DELAY, RETRIES } = process.env;
 
 const reversedAndroidPorts = [
   // Metro server
@@ -128,31 +125,9 @@ function ensureSimulator() {
   }
 }
 
-async function launchDebugger(headless) {
-  try {
-    const browser = await puppeteer.launch({ headless });
-    const page = await browser.newPage();
-    page.on("console", puppeteerLog.handleConsole);
-    await page.goto("http://localhost:8081/debugger-ui/");
-  } catch (err) {
-    if (err.message.startsWith("net::ERR_CONNECTION_REFUSED")) {
-      console.log("Metro was not ready: Retrying in 1s");
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      return launchDebugger();
-    } else {
-      throw err;
-    }
-  }
-}
-
-async function run(headless, spawnLogcat, retries, retryDelay) {
+async function run(spawnLogcat, retries, retryDelay) {
   // Ensure the simulator is booted and ready for the app to start
   ensureSimulator();
-
-  // Connect the debugger, right away
-  if (typeof headless === "boolean") {
-    await launchDebugger(headless);
-  }
 
   console.log("Starting the app");
   for (let attempt = 0; attempt <= retries; attempt++) {
@@ -197,9 +172,8 @@ if (module.parent === null) {
     process.exit(0);
   }
 
-  const headlessDebugger = optionalStringToBoolean(HEADLESS_DEBUGGER);
   const spawnLogcat = optionalStringToBoolean(SPAWN_LOGCAT);
-  run(headlessDebugger, spawnLogcat, retries, retryDelay).catch((err) => {
+  run(spawnLogcat, retries, retryDelay).catch((err) => {
     console.error(err.stack);
     process.exit(1);
   });

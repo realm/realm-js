@@ -45,6 +45,27 @@ export default [
     external: ["node:module", "node:fs", "undici", "bson", "debug"],
   },
   {
+    input: "src/react-native/index.ts",
+    output: {
+      file: pkg["react-native"],
+      format: "es",
+      sourcemap: true,
+    },
+    plugins: [
+      replace({
+        preventAssignment: true,
+        delimiters: ["", ""],
+        values: {
+          '"./realm.react-native"': '"../generated/ts/realm.react-native"',
+        },
+      }),
+      typescript({
+        tsconfig: "src/react-native/tsconfig.json",
+      }),
+    ],
+    external: ["bson", "debug"],
+  },
+  {
     input: "src/index.ts",
     output: {
       file: pkg.types,

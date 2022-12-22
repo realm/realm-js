@@ -21,7 +21,7 @@ type RealmObject = import("realm").Object;
 type App = import("realm").App;
 type User = import("realm").User;
 type Configuration = import("realm").Configuration;
-type BenchmarkResult = import("@thi.ng/bench").BenchmarkResult;
+//type BenchmarkResult = import("@thi.ng/bench").BenchmarkResult;
 
 interface fs {
   exists: (path: string) => boolean;
@@ -74,9 +74,9 @@ type RealmContext = {
 type RealmObjectContext<T = Record<string, unknown>> = {
   object: RealmObject & T;
 } & RealmContext;
-type BenchmarkContext = {
-  result: BenchmarkResult;
-} & Mocha.Context;
+// type BenchmarkContext = {
+//   result: BenchmarkResult;
+// } & Mocha.Context;
 
 // Added by the "utils/chai-plugin.ts"
 declare namespace Chai {
