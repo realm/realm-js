@@ -62,4 +62,4 @@ describe("Test Harness", function (this: Mocha.Suite) {
 });
 
 import "./tests";
-import "./performance-tests";
+//import "./performance-tests";

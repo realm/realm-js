@@ -36,10 +36,12 @@
   "workspaces": [
     "packages/bindgen",
     "packages/realm",
+    "packages/metro-config",
     "packages/realm-app-importer",
     "packages/realm-network-transport",
     "packages/mocha-reporter",
-    "integration-tests/tests"
+    "integration-tests/tests",
+    "integration-tests/environments/react-native"
   ],
   "dependencies": {
     "@react-native-community/eslint-config": "^3.1.0",
