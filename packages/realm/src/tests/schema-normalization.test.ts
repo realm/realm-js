@@ -783,6 +783,15 @@ describe("normalizePropertySchema", () => {
       "User-defined types in lists and sets are always non-optional and cannot be made optional",
     );
 
+    itThrowsWhenNormalizing(
+      {
+        type: "object",
+        objectType: "Person",
+        property: "tasks",
+      },
+      "'property' can only be specified if 'type' is 'linkingObjects'",
+    );
+
     // -------------------------
     // Combining with shorthand
     // -------------------------

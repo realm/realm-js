@@ -294,6 +294,10 @@ function normalizePropertySchemaObject(info: PropertyInfoUsingObject): Canonical
     );
   }
 
+  if (type !== "linkingObjects") {
+    assert(property === undefined, errMessage(info, "'property' can only be specified if 'type' is 'linkingObjects'."));
+  }
+
   if (optionalIsImplicitlyTrue(type, objectType)) {
     const displayed =
       type === "mixed" || objectType === "mixed"
