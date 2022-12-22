@@ -46,8 +46,6 @@ if(NOT EXISTS ${REACT_NATIVE_AAR_DIR})
     )
 endif()
 
-# file(GLOB_RECURSE REACT_NATIVE_AAR_FILE ${REACT_NATIVE_ROOT_DIR}/android/*/react-native-*-release.aar)
-# file(ARCHIVE_EXTRACT INPUT ${REACT_NATIVE_AAR_FILE} DESTINATION ${REACT_NATIVE_AAR_DIR})
 set(REACT_NATIVE_SO_DIR "${REACT_NATIVE_AAR_DIR}/jni/${ANDROID_ABI}")
 
 target_link_directories(realm-js-android PRIVATE ${REACT_NATIVE_SO_DIR})
