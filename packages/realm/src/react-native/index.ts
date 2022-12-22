@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2021 Realm Inc.
+// Copyright 2022 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,14 +15,9 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+import "./fs";
+import "./network";
 
-const path = require("path");
-module.exports = require("@realm/metro-config")({
-  projectRoot: __dirname,
-  watchFolders: [
-    path.resolve(__dirname, "../../../packages/realm"),
-    path.resolve(__dirname, "../../../node_modules"),
-    path.resolve(__dirname, "../../tests"),
-    path.resolve(__dirname, "../../../packages/realm-app-importer"),
-  ],
-});
+export * from "../index";
+import { Realm } from "../index";
+export default Realm;
