@@ -79,10 +79,11 @@ import org.apache.tools.ant.taskdefs.condition.Os
  */
 
 project.ext.react = [
+    cliPath: "../../../../../node_modules/react-native/cli.js",
     enableHermes: System.getenv().getOrDefault("USE_HERMES", "1") == "1",  // default: true
 ]
 
-apply from: "../../node_modules/react-native/react.gradle"
+apply from: "../../../../../node_modules/react-native/react.gradle"
 
 /**
  * Set this to true to create two separate APKs instead of one:
@@ -147,9 +148,9 @@ android {
             externalNativeBuild {
                 cmake {
                     arguments "-DPROJECT_BUILD_DIR=$buildDir",
-                        "-DREACT_ANDROID_DIR=$rootDir/../node_modules/react-native/ReactAndroid",
-                        "-DREACT_ANDROID_BUILD_DIR=$rootDir/../node_modules/react-native/ReactAndroid/build",
-                        "-DNODE_MODULES_DIR=$rootDir/../node_modules",
+                        "-DREACT_ANDROID_DIR=$rootDir/../../../../node_modules/react-native/ReactAndroid",
+                        "-DREACT_ANDROID_BUILD_DIR=$rootDir/../../../../node_modules/react-native/ReactAndroid/build",
+                        "-DNODE_MODULES_DIR=$rootDir/../../../../node_modules",
                         "-DANDROID_STL=c++_shared"
                 }
             }
@@ -315,7 +316,7 @@ task copyDownloadableDepsToLibs(type: Copy) {
     into 'libs'
 }
 
-apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
+apply from: file("../../../../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
 
 def isNewArchitectureEnabled() {
     // To opt-in for the New Architecture, you can either:

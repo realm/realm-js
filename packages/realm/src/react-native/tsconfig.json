@@ -1,10 +1,9 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "types": ["node"],
     "noResolve": false
   },
 	"exclude": [
-		"../react-native/*",
+		"../node/*",
 	]
 }
