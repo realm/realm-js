@@ -21,11 +21,13 @@ import {
   CanonicalObjectSchemaProperty,
   CollectionPropertyTypeName,
   ObjectSchema,
-  ObjectSchemaProperty,
   PrimitivePropertyTypeName,
   PropertiesTypes,
+  PropertySchema,
+  PropertySchemaShorthand,
   PropertyTypeName,
   RealmObjectConstructor,
+  UserTypeName,
   assert,
   flags,
 } from "../internal";
@@ -33,15 +35,15 @@ import {
 type PropertyInfo = {
   readonly objectName: string;
   readonly propertyName: string;
-  readonly propertySchema: string | ObjectSchemaProperty; // TODO: Type will change to: PropertySchema | PropertySchemaShorthand
+  readonly propertySchema: PropertySchema | PropertySchemaShorthand;
 };
 
 interface PropertyInfoUsingObject extends PropertyInfo {
-  readonly propertySchema: ObjectSchemaProperty;
+  readonly propertySchema: PropertySchema;
 }
 
 interface PropertyInfoUsingShorthand extends PropertyInfo {
-  readonly propertySchema: string;
+  readonly propertySchema: PropertySchemaShorthand;
 }
 
 const PRIMITIVE_TYPES = new Set<PrimitivePropertyTypeName>([
@@ -66,15 +68,15 @@ const COLLECTION_SHORTHAND_TO_NAME: Readonly<Record<string, string>> = {
   "<>": "set",
 };
 
-function isPrimitive(type: string | undefined): boolean {
+function isPrimitive(type: string | undefined): type is PrimitivePropertyTypeName {
   return PRIMITIVE_TYPES.has(type as PrimitivePropertyTypeName);
 }
 
-function isCollection(type: string | undefined): boolean {
+function isCollection(type: string | undefined): type is CollectionPropertyTypeName {
   return COLLECTION_TYPES.has(type as CollectionPropertyTypeName);
 }
 
-function isUserDefined(type: string | undefined): boolean {
+function isUserDefined(type: string | undefined): type is UserTypeName {
   return !!type && !(isPrimitive(type) || isCollection(type) || type === "object" || type === "linkingObjects");
 }
 
