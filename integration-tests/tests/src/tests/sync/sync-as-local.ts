@@ -33,7 +33,6 @@ describe.skipIf(environment.missingServer, "Synced Realm as local", () => {
   });
 
   before(async function (this: RealmContext) {
-    this.timeout(5000);
     // Add a subscription
     await this.realm.subscriptions.update((subs) => {
       subs.add(this.realm.objects("Person"));
