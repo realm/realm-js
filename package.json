@@ -36,7 +36,9 @@
   "workspaces": [
     "packages/bindgen",
     "packages/realm",
+    "packages/metro-config",
     "packages/realm-app-importer",
+    "integration-tests/environments/react-native",
     "integration-tests/tests",
     "tests"
   ],

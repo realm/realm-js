@@ -7,17 +7,11 @@
     "lint": "eslint .",
     "test": "npm run test:android && npm run test:ios",
     "test:ios": "PLATFORM=ios WATCH=false MODE=native npm run common",
-    "test:ios:chrome": "PLATFORM=ios WATCH=false MODE=chrome-debugging npm run common",
     "test:catalyst": "PLATFORM=catalyst WATCH=false MODE=native npm run common",
-    "test:catalyst:chrome": "PLATFORM=catalyst WATCH=false MODE=chrome-debugging npm run common",
     "test:android": "PLATFORM=android WATCH=false MODE=native npm run common",
-    "test:android:chrome": "PLATFORM=android WATCH=false MODE=chrome-debugging npm run common",
     "watch:ios": "PLATFORM=ios WATCH=true MODE=native npm run common",
-    "watch:ios:chrome": "PLATFORM=ios WATCH=true MODE=chrome-debugging npm run common",
     "watch:catalyst": "PLATFORM=catalyst WATCH=true MODE=native npm run common",
-    "watch:catalyst:chrome": "PLATFORM=catalyst WATCH=true MODE=chrome-debugging npm run common",
     "watch:android": "PLATFORM=android WATCH=true MODE=native npm run common",
-    "watch:android:chrome": "PLATFORM=android WATCH=true MODE=chrome-debugging npm run common",
     "common": "mocha-remote --template @realm/mocha-reporter --context mode=$MODE,appImporterIsRemote,$MOCHA_REMOTE_CONTEXT --watch $WATCH -- concurrently --kill-others-on-fail npm:metro npm:runner npm:app-importer",
     "app-importer": "realm-app-importer serve ../../realm-apps",
     "metro": "react-native start --reset-cache",
@@ -46,7 +40,6 @@
     "metro-react-native-babel-preset": "^0.72.1",
     "mocha-github-actions-reporter": "^0.2.3",
     "mocha-remote-cli": "^1.5.0",
-    "pod-install": "^0.1.23",
-    "puppeteer": "^9.0.0"
+    "pod-install": "^0.1.23"
   }
 }
