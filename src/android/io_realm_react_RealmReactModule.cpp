@@ -23,9 +23,9 @@
 #include <android/asset_manager_jni.h>
 #include <jsi/jsi.h>
 
-#include <jsi/jsi_init.h>
-#include <jsi/jsi_externs.hpp>
-#include "platform.hpp"
+#include "../jsi/jsi_init.h"
+#include "../jsi/jsi_externs.hpp"
+#include "../platform.hpp"
 #include "jni_utils.hpp"
 #include "hack.hpp"
 

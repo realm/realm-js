@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.18.1)
 
+set(REACT_NATIVE_VERSION "0.71.0-rc.5")
+
 set(REACT_NATIVE_ROOT_DIR "${PACKAGE_ROOT_DIR}/node_modules/react-native")
 set(REACT_NATIVE_AAR_DIR "${CMAKE_BINARY_DIR}/../react-native-aar") # TODO: Could we use CMAKE_BINARY_DIR instead?
 
@@ -11,7 +13,7 @@ add_library(realm-js-android SHARED
     platform.cpp
     jni_utils.cpp
     io_realm_react_RealmReactModule.cpp
-    ../../node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/turbomodule/core/jni/ReactCommon/CallInvokerHolder.cpp
+    ../../node_modules/react-native/ReactAndroid/src/main/jni/react/turbomodule/ReactCommon/CallInvokerHolder.cpp
 )
 
 set_target_properties(realm-js-android PROPERTIES 
@@ -28,8 +30,26 @@ target_compile_definitions(realm-js-android PRIVATE
 )
 
 # Extract .so files from the React Native AAR
-file(GLOB_RECURSE REACT_NATIVE_AAR_FILE ${REACT_NATIVE_ROOT_DIR}/android/*/react-native-*-release.aar)
-file(ARCHIVE_EXTRACT INPUT ${REACT_NATIVE_AAR_FILE} DESTINATION ${REACT_NATIVE_AAR_DIR})
+if(NOT EXISTS ${REACT_NATIVE_AAR_DIR})
+    set(REACT_ANDROID_LIB_URL "https://repo1.maven.org/maven2/com/facebook/react/react-android/${REACT_NATIVE_VERSION}/react-android-${REACT_NATIVE_VERSION}-release.aar")
+    message(STATUS "Getting ${REACT_ANDROID_LIB_URL}")
+    file(DOWNLOAD "${REACT_ANDROID_LIB_URL}" "${REACT_NATIVE_AAR_DIR}/react-android-${REACT_NATIVE_VERSION}-release.aar" STATUS download_status)
+
+    list(GET download_status 0 status_code)
+    if (NOT "${status_code}" STREQUAL "0")
+        message(FATAL_ERROR "Downloading ${url}... Failed. Status: ${download_status}")
+    endif()
+
+    message(STATUS "Uncompressing ${REACT_NATIVE_AAR_DIR}/react-android-${REACT_NATIVE_VERSION}-release.aar")
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} -E tar xfz "react-android-${REACT_NATIVE_VERSION}-release.aar"
+        WORKING_DIRECTORY "${REACT_NATIVE_AAR_DIR}"
+    )
+endif()
+
+#file(GLOB_RECURSE REACT_NATIVE_AAR_FILE ${REACT_NATIVE_ROOT_DIR}/android/*/react-native-*-release.aar)
+#file(ARCHIVE_EXTRACT INPUT ${REACT_NATIVE_AAR_FILE} DESTINATION ${REACT_NATIVE_AAR_DIR})
+
 set(REACT_NATIVE_SO_DIR "${REACT_NATIVE_AAR_DIR}/jni/${ANDROID_ABI}")
 
 target_link_directories(realm-js-android PRIVATE ${REACT_NATIVE_SO_DIR})
@@ -70,6 +90,16 @@ else()
     target_compile_definitions(realm-js-android PUBLIC REALM_WRAP_MEMMOVE=0)
 endif()
 
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
+set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -Oz")
+
+target_link_options(realm-js-android PUBLIC  -fvisibility=hidden)
+
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(REALM_LINKER_FLAGS "${REALM_LINKER_FLAGS} -Wl,-gc-sections -Wl,--exclude-libs,ALL")
+endif()
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${REALM_LINKER_FLAGS}")
+
 if(REALM_JS_BUILD_CORE_FROM_SOURCE AND TARGET ObjectStore)
     target_compile_definitions(ObjectStore PUBLIC
         REALM_PLATFORM=Android
@@ -82,13 +112,15 @@ find_library(FBJNI_LIBRARY fbjni PATHS ${FBJNI_LIB_DIR} NO_CMAKE_FIND_ROOT_PATH)
 target_include_directories(realm-js-android PUBLIC 
     ${FBJNI_INCLUDE_DIR}
     ../../node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/turbomodule/core/jni/
+    ../../node_modules/react-native/ReactAndroid/src/main/jni/react/turbomodule/
     ../../node_modules/react-native/ReactCommon/callinvoker/
 )
 
 target_link_libraries(realm-js-android
     ${FBJNI_LIBRARY}
-    realm-js-jsi
-    realm-js-shared
+    realm-js
+    #realm-js-jsi
+    #realm-js-shared
     jsi
 )
 
