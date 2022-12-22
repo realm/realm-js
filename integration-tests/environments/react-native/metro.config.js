@@ -23,5 +23,6 @@ module.exports = require("@realm/metro-config")({
     path.resolve(__dirname, "../../../packages/realm"),
     path.resolve(__dirname, "../../../node_modules"),
     path.resolve(__dirname, "../../tests"),
+    path.resolve(__dirname, "../../../packages/realm-app-importer"),
   ],
 });
