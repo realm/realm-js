@@ -15,7 +15,7 @@ Currently this directory consists of:
 To install this environment, run the following command from the root directory of repository:
 
 ```bash
-npx lerna bootstrap --scope realm-react-native-tests --include-dependencies
+npx lerna bootstrap --scope @realm/react-native-tests --include-dependencies
 ```
 
 This will run `pod install` (in `./ios`) for you.
