@@ -139,7 +139,7 @@ class JsiAddon extends CppClass {
     }
 
     this.addMethod(
-      new CppCtor(this.name, [new CppVar("jsi::Runtime&", env), new CppVar("jsi::Object", "exports")], {
+      new CppCtor(this.name, [new CppVar("jsi::Runtime&", env), new CppVar("jsi::Object&", "exports")], {
         mem_inits: this.mem_inits,
         body: `
             ${this.exports
@@ -161,7 +161,7 @@ class JsiAddon extends CppClass {
                 std::bind(&${this.name}::injectInjectables, this, _1, _2, _3, _4)
             ));
 
-            _env.global().setProperty(_env, "__RealmFuncs", std::move(exports));
+            _env.global().setProperty(_env, "__RealmFuncs", exports);
             `,
       }),
     );
@@ -287,7 +287,7 @@ function convertPrimToJsi(addon: JsiAddon, type: string, expr: string): string {
     case "Status":
       return `([&] (const Status& status) {
                 REALM_ASSERT(!status.is_ok()); // should only get here with errors
-                return jsi::JSError(_env, status.reason()).value();
+                return jsi::JSError(_env, status.reason()).value().getObject(_env);
               }(${expr}))`;
   }
   assert.fail(`unexpected primitive type '${type}'`);
@@ -968,6 +968,10 @@ export function generate({ spec, file: makeFile }: TemplateContext): void {
       #include <jsi/jsi.h>
       #include <realm_js_jsi_helpers.h>
 
+      namespace realm::js {
+      std::function<void()> flush_ui_queue;
+      }
+
       // Using all-caps JSI to avoid risk of conflicts with jsi namespace from fb.
       namespace realm::js::JSI {
       namespace {
@@ -977,6 +981,28 @@ export function generate({ spec, file: makeFile }: TemplateContext): void {
 
   out(`
         } // namespace
+
+        extern "C" {
+        void realm_jsi_invalidate_caches() {
+            // Close all cached Realms
+            realm::_impl::RealmCoordinator::clear_all_caches();
+            // Clear the Object Store App cache, to prevent instances from using a context that was released
+            realm::app::App::clear_cached_apps();
+            // Blow away the addon state.
+            RealmAddon::self.reset();
+        }
+        void realm_jsi_init(jsi::Runtime& rt, jsi::Object& exports, std::function<void()> /*flush_ui_queue*/) {
+            realm_jsi_invalidate_caches();
+            RealmAddon::self = std::make_unique<RealmAddon>(rt, exports);
+        }
+        void realm_jsi_close_sync_sessions() {
+            // Force all sync sessions to close immediately. This prevents the new JS thread
+            // from opening a new sync session while the old one is still active when reloading
+            // in dev mode.
+            realm::app::App::close_all_sync_sessions();
+        }
+        } // extern "C"
+
         } // namespace realm::js::JSI
     `);
 }

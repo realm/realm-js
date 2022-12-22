@@ -94,7 +94,7 @@ for (const arch of architectures) {
     "-DANDROID_NATIVE_API_LEVEL=16",
     `-DCMAKE_BUILD_TYPE=${buildType}`,
     "-DANDROID_STL=c++_shared",
-    process.cwd(),
+    process.cwd() + "/packages/bindgen",
   ];
   exec(cmakePath, args, { cwd: archBuildDir, stdio: "inherit" });
 

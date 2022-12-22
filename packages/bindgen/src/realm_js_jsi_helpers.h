@@ -1,6 +1,5 @@
 #pragma once
 
-#include <concepts>
 #include <jsi/jsi.h>
 #include <realm_js_helpers.h>
 #include <type_traits>
@@ -133,13 +132,15 @@ public:
     }
 
     auto operator()(auto&&... args) const
-        requires std::invocable<Func, decltype(FWD(args))...>
+        // TODO replace with this once stdlib has concepts.
+        //requires std::invocable<Func, decltype(FWD(args))...>
+        requires std::is_invocable_v<Func, decltype(FWD(args))...>
     {
         return (*m_func)(FWD(args)...);
     }
 
 private:
-    static_assert(!std::copyable<Func>);
+    static_assert(!std::is_copy_constructible_v<Func>);
     static_assert(!std::is_reference_v<Func>);
     std::shared_ptr<Func> m_func;
 };
@@ -147,7 +148,8 @@ private:
 /**
  * Specialization if Func is already copyable stores Func inline.
  */
-template <std::copyable Func>
+template <typename Func>
+    requires std::is_copy_constructible_v<Func>
 class MakeCopyable<Func> {
 public:
     explicit MakeCopyable(Func&& func)
@@ -156,7 +158,9 @@ public:
     }
 
     auto operator()(auto&&... args) const
-        requires std::invocable<Func, decltype(FWD(args))...>
+        // TODO replace with this once stdlib has concepts.
+        //requires std::invocable<Func, decltype(FWD(args))...>
+        requires std::is_invocable_v<Func, decltype(FWD(args))...>
     {
         return m_func(FWD(args)...);
     }
