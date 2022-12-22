@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.18.1)
 
 set(REACT_NATIVE_ROOT_DIR "${PACKAGE_ROOT_DIR}/node_modules/react-native")
 set(REACT_NATIVE_AAR_DIR "${CMAKE_BINARY_DIR}/../react-native-aar") # TODO: Could we use CMAKE_BINARY_DIR instead?
+set(REACT_NATIVE_VERSION "0.71.0-rc.5")
 
 set(JSI_HEADER_DIR "${REACT_NATIVE_ROOT_DIR}/ReactCommon/jsi")
 
@@ -29,18 +30,18 @@ target_compile_definitions(realm-js-android PRIVATE
 
 # Extract .so files from the React Native AAR
 if(NOT EXISTS ${REACT_NATIVE_AAR_DIR})
-    set(REACT_ANDROID_LIB_URL "https://repo1.maven.org/maven2/com/facebook/react/react-android/0.71.0-rc.3/react-android-0.71.0-rc.3-release.aar")
+    set(REACT_ANDROID_LIB_URL "https://repo1.maven.org/maven2/com/facebook/react/react-android/${REACT_NATIVE_VERSION}/react-android-${REACT_NATIVE_VERSION}-release.aar")
     message(STATUS "Getting ${REACT_ANDROID_LIB_URL}")
-    file(DOWNLOAD "${REACT_ANDROID_LIB_URL}" "${REACT_NATIVE_AAR_DIR}/react-android-0.71.0-rc.3-release.aar" STATUS download_status)
+    file(DOWNLOAD "${REACT_ANDROID_LIB_URL}" "${REACT_NATIVE_AAR_DIR}/react-android-${REACT_NATIVE_VERSION}-release.aar" STATUS download_status)
 
     list(GET download_status 0 status_code)
     if (NOT "${status_code}" STREQUAL "0")
         message(FATAL_ERROR "Downloading ${url}... Failed. Status: ${download_status}")
     endif()
 
-    message(STATUS "Uncompressing ${REACT_NATIVE_AAR_DIR}/react-android-0.71.0-rc.3-release.aar")
+    message(STATUS "Uncompressing ${REACT_NATIVE_AAR_DIR}/react-android-${REACT_NATIVE_VERSION}-release.aar")
     execute_process(
-        COMMAND ${CMAKE_COMMAND} -E tar xfz "react-android-0.71.0-rc.3-release.aar"
+        COMMAND ${CMAKE_COMMAND} -E tar xfz "react-android-${REACT_NATIVE_VERSION}-release.aar"
         WORKING_DIRECTORY "${REACT_NATIVE_AAR_DIR}"
     )
 endif()
