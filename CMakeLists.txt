@@ -3,8 +3,8 @@ include(CheckCXXCompilerFlag)
 # compiling for Node.js, need to set up toolchains before project() call
 if(DEFINED CMAKE_JS_VERSION)
     if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
-        set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/vendor/realm-core/tools/vcpkg/ports/scripts/buildsystems/vcpkg.cmake")
-        set(VCPKG_MANIFEST_DIR "${CMAKE_SOURCE_DIR}/vendor/realm-core/tools/vcpkg")
+        set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}\\vendor\\realm-core\\tools\\vcpkg\\ports\\scripts\\buildsystems\\vcpkg.cmake")
+        set(VCPKG_MANIFEST_DIR "${CMAKE_SOURCE_DIR}\\vendor\\realm-core\\tools\\vcpkg")
 
         if(NODE_ARCH STREQUAL "ia32")
             set(VCPKG_TARGET_TRIPLET "x86-windows-static" CACHE STRING "")
@@ -35,7 +35,7 @@ if(DEFINED CMAKE_JS_VERSION)
     endif()
 endif()
 
-cmake_minimum_required(VERSION 3.21.3)
+cmake_minimum_required(VERSION 3.15)
 project(RealmJS)
 
 # Use ccache if available

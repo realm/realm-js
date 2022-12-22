@@ -17,15 +17,6 @@
 <!-- * Either mention core version or upgrade -->
 <!-- * Using Realm Core vX.Y.Z -->
 <!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
-* Switching from NDK 21 to NDK 23 for Android builds, and bumping the required CMake version to 3.21.4. Sizes of binaries are found below. ([#3905](https://github.com/realm/realm-js/issues/3905))
-
-| Architecture | NDK 21      | NDK 23      |
-|--------------|-------------|-------------|
-| armeabi-v7a  |     5669208 |     5603176 |
-| x86          |    10088204 |    10924524 |
-| arm64-v8a    |     9301128 |     9723968 |
-| x86_64       |    10371064 |    10702472 |
-
 
 ## 11.3.1 (2022-12-07)
 

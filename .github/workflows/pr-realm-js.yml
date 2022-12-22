@@ -13,7 +13,7 @@ jobs:
     container: ${{ matrix.variant.container }}
     env:
       REALM_DISABLE_ANALYTICS: 1
-      NDK_VERSION: 23.2.8568313
+      NDK_VERSION: 21.0.6113669
     strategy:
       fail-fast: false
       matrix:
@@ -351,7 +351,7 @@ jobs:
           disable-animations: true
           arch: x86
           ndk: ${{ env.NDK_VERSION }}
-          cmake: 3.22.1
+          cmake: 3.10.2.4988404
           script: npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
       - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56
