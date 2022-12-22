@@ -5,10 +5,17 @@ if(DEFINED CMAKE_JS_VERSION)
     include(NodeJSTargets)
 endif()
 
-set_target_properties(realm-js PROPERTIES
+add_library(realm-js-node SHARED)
+
+set_target_properties(realm-js-node PROPERTIES
     OUTPUT_NAME "realm"
     PREFIX ""
     SUFFIX ".node"
+)
+
+set_target_properties(realm-js-node PROPERTIES
+    # Need a dummy generator expression to avoid adding in the config name
+    LIBRARY_OUTPUT_DIRECTORY "${TYPESCRIPT_OUTPUT_DIR}/$<0:dummy_genex>"
 )
 
 if(WIN32)
@@ -18,8 +25,8 @@ if(WIN32)
     )
 
     find_package(OpenSSL REQUIRED)
-    target_link_libraries(realm-js OpenSSL::SSL)
-    target_link_options(realm-js PRIVATE "/WHOLEARCHIVE:libssl.lib")
+    target_link_libraries(realm-js-node OpenSSL::SSL)
+    target_link_options(realm-js-node PRIVATE "/WHOLEARCHIVE:libssl.lib")
 endif()
 
 target_compile_definitions(realm-js PRIVATE
@@ -37,4 +44,7 @@ if(REALM_JS_BUILD_CORE_FROM_SOURCE AND TARGET ObjectStore)
     )
 endif()
 
-target_link_libraries(realm-js NodeJS)
+target_link_libraries(realm-js-node
+    NodeJS
+    realm-js
+)

@@ -67,7 +67,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
-set(PACKAGE_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(PACKAGE_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 
 if (NOT MSVC)
     # Ninja buffers output so we need to tell the compiler to use colors even though stdout isn't a tty.
@@ -91,7 +91,7 @@ if(REALM_JS_BUILD_CORE_FROM_SOURCE)
     )
 endif()
         
-add_library(realm-js SHARED)
+add_library(realm-js OBJECT)
 
 target_link_libraries(realm-js Realm::ObjectStore)
 
@@ -142,11 +142,6 @@ set(SCHEMA_FILE ${CMAKE_CURRENT_SOURCE_DIR}/generated/spec.schema.json)
 set(SDK_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../realm)
 
 set(TYPESCRIPT_OUTPUT_DIR ${SDK_DIR}/generated/ts)
-
-set_target_properties(realm-js PROPERTIES
-    # Need a dummy generator expression to avoid adding in the config name
-    LIBRARY_OUTPUT_DIRECTORY "${TYPESCRIPT_OUTPUT_DIR}/$<0:dummy_genex>"
-)
 
 set(GENERATED_TS_FILES
     ${TYPESCRIPT_OUTPUT_DIR}/native.d.mts
@@ -226,9 +221,9 @@ else()
     target_sources(realm-js PRIVATE jsi_init.cpp ${CMAKE_JS_SRC})
 
     if(ANDROID)
-        #add_subdirectory(../../src/android)
+        add_subdirectory(../../src/android android)
     elseif(CMAKE_SYSTEM_NAME STREQUAL iOS)
-        #add_subdirectory(../../src/ios)
+        add_subdirectory(../../src/ios ios)
     else()
         # disabling for now to simplify the bootstrapping process.
         # message(FATAL_ERROR "Only support JSI builds for Android and iOS")
