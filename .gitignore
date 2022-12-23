@@ -111,3 +111,6 @@ integration-tests/**/.lock
 
 # Turbo repo caches
 .turbo
+
+# TypeScript build info
+tsconfig.tsbuildinfo
