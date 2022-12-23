@@ -10,18 +10,18 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
-    "@realm/react": "^0.4.0",
+    "@realm/react": "^0.4.1",
     "react": "^18.1.0",
     "react-native": "^0.70.3",
     "react-native-get-random-values": "^1.8.0",
-    "realm": "^11.0.0"
+    "realm": "^11.3.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
     "@babel/plugin-proposal-decorators": "^7.19.0",
     "@babel/runtime": "^7.12.5",
     "@react-native-community/eslint-config": "^2.0.0",
-    "@realm/babel-plugin": "^0.1.0",
+    "@realm/babel-plugin": "^0.1.1",
     "@types/jest": "^26.0.23",
     "@types/react-native": "^0.67.3",
     "@types/react-test-renderer": "^17.0.1",
