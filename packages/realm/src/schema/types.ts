@@ -105,7 +105,8 @@ export type CanonicalObjectSchemaProperty = {
  */
 export type ObjectSchema = {
   /**
-   * The name of the Realm object type.
+   * The name of the Realm object type. The name must be unique across all objects
+   * within the same Realm.
    */
   name: string;
   /**
@@ -125,7 +126,7 @@ export type ObjectSchema = {
    * Whether the object is used in asymmetric sync. An object that is asymmetrically
    * synced is not stored locally and cannot be accessed locally. Querying such
    * objects will throw an error. This is useful for write-heavy applications that
-   * only need to send the data to the server.
+   * only need to get data from devices to the cloud fast.
    *
    * Default value: `false`.
    */
@@ -214,7 +215,8 @@ export type PropertySchema = {
    */
   objectType?: PrimitivePropertyTypeName | UserTypeName;
   /**
-   * The name of the property of the object specified in `objectType` that creates this link.
+   * The name of the property of the object specified in `objectType` that creates this
+   * link. (Can only be set for linking objects.)
    */
   property?: string;
   /**
@@ -222,12 +224,11 @@ export type PropertySchema = {
    * case of a collection, to be assigned to its elements. (Realm object types in lists
    * and sets cannot be optional.)
    *
-   * Default value: See the requirements in the documentation for this type.
+   * Default value: `false` except in cases listed in the documentation for this type.
    */
   optional?: boolean;
   /**
-   * Whether the property should be indexed. (Only supported if `type` is `"string"`,
-   * `"int"`, or `"bool"`).
+   * Whether the property should be indexed.
    *
    * Default value: `false` if the property is not a primary key, otherwise `true`.
    */
@@ -271,46 +272,35 @@ export type PropertySchemaStrict = PropertySchemaCommon &
     | {
         type: Exclude<PrimitivePropertyTypeName, "mixed">;
         optional?: boolean;
-        // TODO: Do we want TS errors for PropertySchemaStrict when `objectType` and
-        //       `property` exist on the schema as `undefined`? (The parser allows this)
-        // objectType?: undefined;
-        // property?: undefined;
       }
     | {
         type: "mixed";
         optional?: true;
-        // objectType?: undefined;
-        // property?: undefined;
       }
     | {
         type: CollectionPropertyTypeName;
         objectType: Exclude<PrimitivePropertyTypeName, "mixed">;
         optional?: boolean;
-        // property?: undefined;
       }
     | {
         type: CollectionPropertyTypeName;
         objectType: "mixed";
         optional?: true;
-        // property?: undefined;
       }
     | {
         type: "list" | "set";
         objectType: UserTypeName;
         optional?: false;
-        // property?: undefined;
       }
     | {
         type: "dictionary";
         objectType: UserTypeName;
         optional?: true;
-        // property?: undefined;
       }
     | {
         type: "object";
         objectType: UserTypeName;
         optional?: true;
-        // property?: undefined;
       }
     | {
         type: "linkingObjects";
