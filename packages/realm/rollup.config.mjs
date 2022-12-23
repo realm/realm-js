@@ -39,7 +39,7 @@ export default [
         },
       }),
       typescript({
-        tsconfig: "src/node/tsconfig.json",
+        tsconfig: "tsconfig.node.json",
       }),
     ],
     external: ["node:module", "node:fs", "undici", "bson", "debug"],
@@ -52,15 +52,8 @@ export default [
       sourcemap: true,
     },
     plugins: [
-      replace({
-        preventAssignment: true,
-        delimiters: ["", ""],
-        values: {
-          '"./realm.react-native"': '"../generated/ts/realm.react-native"',
-        },
-      }),
       typescript({
-        tsconfig: "src/react-native/tsconfig.json",
+        tsconfig: "tsconfig.react-native.json",
       }),
     ],
     external: ["bson", "debug"],
@@ -71,7 +64,15 @@ export default [
       file: pkg.types,
       format: "es",
     },
-    plugins: [dts({ respectExternal: true, compilerOptions: { stripInternal: true, noResolve: false } })],
+    plugins: [
+      dts({
+        respectExternal: true,
+        compilerOptions: {
+          stripInternal: true,
+          noResolve: false,
+        },
+      }),
+    ],
     external: ["bson"],
   },
 ];

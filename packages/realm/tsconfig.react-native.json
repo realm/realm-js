@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noResolve": false,
+    "incremental": true
+  },
+  "exclude": [
+    "src/tests/",
+    "type-tests/",
+    "src/node/"
+  ],
+}
