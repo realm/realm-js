@@ -2,6 +2,7 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "noResolve": false,
+    "hhehhe": "fkjdf",
     "strictFunctionTypes": false,
     "types": [
       "mocha",
