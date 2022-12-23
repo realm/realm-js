@@ -97,7 +97,7 @@ template <typename T>
 void SubscriptionClass<T>::get_id(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
 {
     auto sub = get_internal<T, SubscriptionClass<T>>(ctx, this_object);
-    return_value.set(sub->id());
+    return_value.set(sub->id);
 }
 
 /**
@@ -111,7 +111,7 @@ template <typename T>
 void SubscriptionClass<T>::get_created_at(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
 {
     auto sub = get_internal<T, SubscriptionClass<T>>(ctx, this_object);
-    return_value.set(Object::create_date(ctx, sub->created_at().get_nanoseconds()));
+    return_value.set(Object::create_date(ctx, sub->created_at.get_nanoseconds()));
 }
 
 /**
@@ -125,7 +125,7 @@ template <typename T>
 void SubscriptionClass<T>::get_updated_at(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
 {
     auto sub = get_internal<T, SubscriptionClass<T>>(ctx, this_object);
-    return_value.set(Object::create_date(ctx, sub->updated_at().get_nanoseconds()));
+    return_value.set(Object::create_date(ctx, sub->updated_at.get_nanoseconds()));
 }
 
 /**
@@ -139,13 +139,13 @@ template <typename T>
 void SubscriptionClass<T>::get_name(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
 {
     auto sub = get_internal<T, SubscriptionClass<T>>(ctx, this_object);
-    auto name = sub->name();
+    auto name = sub->name;
 
-    if (name == "") {
-        return_value.set_null();
+    if (name) {
+        return_value.set(name);
     }
     else {
-        return_value.set(std::string{name});
+        return_value.set_null();
     }
 }
 
@@ -160,7 +160,7 @@ template <typename T>
 void SubscriptionClass<T>::get_object_type(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
 {
     auto sub = get_internal<T, SubscriptionClass<T>>(ctx, this_object);
-    return_value.set(std::string{sub->object_class_name()});
+    return_value.set(sub->object_class_name);
 }
 
 /**
@@ -174,7 +174,7 @@ template <typename T>
 void SubscriptionClass<T>::get_query_string(ContextType ctx, ObjectType this_object, ReturnValue& return_value)
 {
     auto sub = get_internal<T, SubscriptionClass<T>>(ctx, this_object);
-    return_value.set(std::string{sub->query_string()});
+    return_value.set(sub->query_string);
 }
 
 /**
@@ -401,14 +401,12 @@ void SubscriptionSetClass<T>::find_by_name(ContextType ctx, ObjectType this_obje
     std::string name = Value::validated_to_string(ctx, args[0], "name");
     auto subs = get_internal<T, SubscriptionSetClass<T>>(ctx, this_object);
 
-    auto it = subs->find(name);
-
-    if (it == subs->end()) {
-        return_value.set_null();
+    if (auto named_sub = subs->find(name)) {
+        auto sub = SubscriptionClass<T>::create_instance(ctx, *named_sub);
+        return_value.set(sub);
     }
     else {
-        auto sub = SubscriptionClass<T>::create_instance(ctx, *it);
-        return_value.set(sub);
+        return_value.set_null();
     }
 }
 
@@ -436,14 +434,12 @@ void SubscriptionSetClass<T>::find_by_query(ContextType ctx, ObjectType this_obj
     auto results = get_internal<T, ResultsClass<T>>(ctx, results_arg);
     auto query = results->get_query();
 
-    auto it = subs->find(query);
-
-    if (it == subs->end()) {
-        return_value.set_null();
+    if (auto named_sub = subs->find(query)) {
+        auto sub = SubscriptionClass<T>::create_instance(ctx, *named_sub);
+        return_value.set(sub);
     }
     else {
-        auto sub = SubscriptionClass<T>::create_instance(ctx, *it);
-        return_value.set(sub);
+        return_value.set_null();
     }
 }
 
@@ -745,9 +741,9 @@ void MutableSubscriptionSetClass<T>::add(ContextType ctx, ObjectType this_object
 
     if (throw_on_update && name_specified) {
         auto subs = get_internal<T, MutableSubscriptionSetClass<T>>(ctx, this_object);
-        auto existing_sub_it = subs->find(name);
-        if (existing_sub_it != subs->end() && !(existing_sub_it->query_string() == query.get_description() &&
-                                                existing_sub_it->object_class_name() == results->get_object_type())) {
+        auto existing_sub = subs->find(name);
+        if (existing_sub && !(existing_sub->query_string == query.get_description() &&
+                              existing_sub->object_class_name == results->get_object_type())) {
             throw std::runtime_error(
                 util::format("A subscription with the name '%1' already exists but has a different query. If you "
                              "meant to update it, remove `throwOnUpdate: true` from the subscription options.",
@@ -779,14 +775,7 @@ void MutableSubscriptionSetClass<T>::remove_by_name(ContextType ctx, ObjectType 
 
     args.validate_count(1);
     std::string name = Value::validated_to_string(ctx, args[0], "name");
-
-    if (auto it = subs->find(name); it != subs->end()) {
-        subs->erase(it);
-        return_value.set(true);
-    }
-    else {
-        return_value.set(false);
-    }
+    return_value.set(subs->erase(name));
 }
 
 /**
@@ -816,15 +805,7 @@ void MutableSubscriptionSetClass<T>::remove(ContextType ctx, ObjectType this_obj
 
     auto results = get_internal<T, ResultsClass<T>>(ctx, results_arg);
     auto query = results->get_query();
-
-    auto it = subs->find(query);
-    if (it == subs->end()) {
-        return_value.set(false);
-    }
-    else {
-        subs->erase(it);
-        return_value.set(true);
-    }
+    return_value.set(subs->erase(query));
 }
 
 /**
@@ -854,7 +835,7 @@ void MutableSubscriptionSetClass<T>::remove_subscription(ContextType ctx, Object
     auto sub_to_remove = get_internal<T, SubscriptionClass<T>>(ctx, sub_arg);
 
     auto it = std::find_if(subs->begin(), subs->end(), [sub_to_remove](auto& sub) {
-        return sub.id() == sub_to_remove->id();
+        return sub.id == sub_to_remove->id;
     });
 
     if (it == subs->end()) {
@@ -909,7 +890,7 @@ void MutableSubscriptionSetClass<T>::remove_by_object_type(ContextType ctx, Obje
     size_t removed = 0;
 
     for (auto it = subs->begin(); it != subs->end();) {
-        if (it->object_class_name() == object_type) {
+        if (it->object_class_name == object_type) {
             it = subs->erase(it);
             removed++;
         }
