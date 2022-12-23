@@ -117,4 +117,4 @@ integration-tests/**/.lock
 .turbo
 
 # TypeScript build info
-tsconfig.tsbuildinfo
+*.tsbuildinfo
