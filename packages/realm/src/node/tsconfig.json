@@ -6,5 +6,7 @@
   },
 	"exclude": [
 		"../react-native/*",
+    "../tests/",
+    "../../type-tests/"
 	]
 }

@@ -5,5 +5,7 @@
   },
 	"exclude": [
 		"../node/*",
+    "../tests/",
+    "../../type-tests/"
 	]
 }
