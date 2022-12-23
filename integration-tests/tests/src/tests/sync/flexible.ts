@@ -1677,8 +1677,8 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         console.log("Adding subscription to realm2");
         await addSubscriptionForPersonAndSync(realm2);
 
-        const persons1 = realm1.objects<IPerson>(FlexiblePersonSchema.name);
-        const persons2 = realm2.objects<IPerson>(FlexiblePersonSchema.name);
+        const persons1 = realm1.objects<IPerson>(FlexiblePersonSchema.name).sorted("_id");
+        const persons2 = realm2.objects<IPerson>(FlexiblePersonSchema.name).sorted("_id");
 
         let listener1Changes = 0;
         let listener2Changes = 0;
@@ -1735,19 +1735,37 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
         realm1.syncSession?.resume();
 
-        console.log("waiting for sync on realm1");
-        await realm1.syncSession?.downloadAllServerChanges();
-        console.log("waiting for sync on realm2");
-        await realm2.syncSession?.downloadAllServerChanges();
+        // console.log("waiting for sync on realm1");
+        // await realm1.syncSession?.downloadAllServerChanges();
+        // console.log("waiting for sync on realm2");
+        // await realm2.syncSession?.downloadAllServerChanges();
 
         console.log("waiting for listeners to be called");
-        await sleep(1000);
+        await sleep(2000);
         console.log("finished waiting for listeners to be called");
 
         expect(persons1).to.have.length(5);
         expect(persons2).to.have.length(5);
 
         expect(listener1Changes).to.equal(listener2Changes);
+
+        console.log(
+          "current state of realm1: ",
+          JSON.stringify(
+            persons1.map((p) => p.toJSON()),
+            null,
+            2,
+          ),
+        );
+
+        console.log(
+          "current state of realm2: ",
+          JSON.stringify(
+            persons2.map((p) => p.toJSON()),
+            null,
+            2,
+          ),
+        );
 
         realm1.syncSession?.pause();
 
@@ -1764,13 +1782,14 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
         realm1.syncSession?.resume();
 
-        console.log("waiting for sync on realm1");
-        await realm1.syncSession?.downloadAllServerChanges();
-        console.log("waiting for sync on realm2");
-        await realm2.syncSession?.downloadAllServerChanges();
+        // console.log("waiting for sync on realm1");
+        // await realm1.syncSession?.uploadAllLocalChanges();
+        // await realm1.syncSession?.downloadAllServerChanges();
+        // console.log("waiting for sync on realm2");
+        // await realm2.syncSession?.downloadAllServerChanges();
 
         console.log("waiting for listeners to be called");
-        await sleep(1000);
+        await sleep(2000);
         console.log("finished waiting for listeners to be called");
 
         expect(listener1Changes).to.equal(listener2Changes);

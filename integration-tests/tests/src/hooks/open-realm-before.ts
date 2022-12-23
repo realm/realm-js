@@ -32,7 +32,9 @@ export function openRealmHook(config: OpenRealmConfiguration = {}) {
     if (this.realm) {
       throw new Error("Unexpected realm on context, use only one openRealmBefore per test");
     } else {
+      console.log("Opening realm with config", config);
       const result = await openRealm(config, this.user);
+      console.log("Opened realm", result.realm.path, "with config", result.config);
 
       this.realm = result.realm;
       this.config = result.config;
