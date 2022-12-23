@@ -42,7 +42,7 @@ export default [
         tsconfig: "tsconfig.node.json",
       }),
     ],
-    external: ["node:module", "node:fs", "undici", "bson", "debug"],
+    external: ["node:module", "node:fs", "undici", "bson", "debug", "react-native"],
   },
   {
     input: "src/react-native/index.ts",
@@ -52,11 +52,18 @@ export default [
       sourcemap: true,
     },
     plugins: [
+      replace({
+        preventAssignment: true,
+        delimiters: ["", ""],
+        values: {
+          '"../generated/ts/native.mjs"': '"../generated/ts/native-rn.mjs"',
+        },
+      }),
       typescript({
         tsconfig: "tsconfig.react-native.json",
       }),
     ],
-    external: ["bson", "debug"],
+    external: ["bson", "debug", "react-native"],
   },
   {
     input: "src/index.ts",

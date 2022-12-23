@@ -149,6 +149,7 @@ set(GENERATED_TS_FILES
 )
 set(GENERATED_JS_FILES
     ${TYPESCRIPT_OUTPUT_DIR}/native.mjs
+    ${TYPESCRIPT_OUTPUT_DIR}/native-rn.mjs
 )
 
 add_custom_command(
