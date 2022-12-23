@@ -17,7 +17,8 @@ export const AppWrapperSync: React.FC<{
     <SafeAreaView style={styles.screen}>
       <AppProvider id={appId}>
         <UserProvider fallback={LoginScreen}>
-          <RealmProvider sync={{flexible: true}}>
+          <RealmProvider
+            sync={{flexible: true, onError: error => console.error(error)}}>
             <AppSync />
           </RealmProvider>
         </UserProvider>

@@ -1,6 +1,6 @@
 {
   "name": "@realm/expo-template-js",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Expo Template Realm Js",
   "scripts": {
     "start": "expo start --dev-client",
@@ -16,7 +16,7 @@
     "react": "18.1.0",
     "react-native": "0.70.5",
     "react-native-get-random-values": "~1.8.0",
-    "realm": "^11.0.0"
+    "realm": "^11.3.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9"

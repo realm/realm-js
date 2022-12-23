@@ -8,6 +8,7 @@ import { TaskManager } from "./components/TaskManager";
 import { buttonStyles } from "./styles/button";
 import { shadows } from "./styles/shadows";
 import colors from "./styles/colors";
+import { OfflineModeButton } from "./components/OfflineModeButton";
 
 const { useRealm, useQuery } = TaskRealmContext;
 
@@ -36,6 +37,7 @@ export const AppSync = () => {
       <Pressable style={styles.authButton} onPress={handleLogout}>
         <Text style={styles.authButtonText}>{`Logout ${user?.profile.email}`}</Text>
       </Pressable>
+      <OfflineModeButton />
     </>
   );
 };
