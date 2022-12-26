@@ -72,7 +72,7 @@ body:
         - -- select --
         - Local Database only
         - Atlas Device Sync
-        - 'Atlas App Services: Auth or Functions etc'
+        - 'Atlas App Services: Functions or GraphQL or DataAPI etc'
         - Both Atlas Device Sync and Atlas App Services
     validations:
       required: true
