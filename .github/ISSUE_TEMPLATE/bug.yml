@@ -15,7 +15,7 @@ body:
         - -- select --
         - Once
         - Sometimes
-        - Allways
+        - Always
     validations:
       required: true
 
@@ -67,7 +67,7 @@ body:
   - type: dropdown
     id: services
     attributes:
-      label: What Services are you using?
+      label: What services are you using?
       options:
         - -- select --
         - Local Database only
@@ -79,7 +79,7 @@ body:
   - type: dropdown
     id: encryption
     attributes:
-      label: Are you using Encryption?
+      label: Are you using encryption?
       options:
         - -- select --
         - 'Yes'
