@@ -329,7 +329,7 @@ export class Realm {
             return [name, property.default];
           }),
         );
-        return [schema.name, { defaults, constructor: schema.constructor }];
+        return [schema.name, { defaults, constructor: schema.ctor }];
       }),
     );
   }
@@ -548,7 +548,7 @@ export class Realm {
     for (const objectSchema of schemas) {
       const extras = this.schemaExtras[objectSchema.name];
       if (extras) {
-        objectSchema.constructor = extras.constructor;
+        objectSchema.ctor = extras.constructor;
       }
       for (const property of Object.values(objectSchema.properties)) {
         property.default = extras ? extras.defaults[property.name] : undefined;

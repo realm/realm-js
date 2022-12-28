@@ -92,7 +92,7 @@ export function fromBindingObjectSchema({
 }: BindingObjectSchema): CanonicalObjectSchema {
   const properties = [...computedProperties, ...persistedProperties];
   const result: CanonicalObjectSchema = {
-    constructor: undefined,
+    ctor: undefined,
     name,
     properties: Object.fromEntries(
       properties.map((property) => [property.publicName || property.name, fromBindingPropertySchema(property)]),

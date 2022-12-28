@@ -127,7 +127,7 @@ export class ClassMap {
         const canonicalObjectSchema: CanonicalObjectSchema = canonicalRealmSchema[index];
         assert.object(canonicalObjectSchema);
         // Create the wrapping class first
-        const constructor = ClassMap.createClass(objectSchema, canonicalObjectSchema.constructor);
+        const constructor = ClassMap.createClass(objectSchema, canonicalObjectSchema.ctor);
         // Create property getters and setters
         const properties = new PropertyMap();
         // Setting the helpers on the class

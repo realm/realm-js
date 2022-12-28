@@ -19,9 +19,9 @@
 import { AssertionError, DefaultObject, Realm, TypeAssertionError, binding } from "./internal";
 
 /**
- * Expects the condition to be truly
- * @throws {@link Error} If the condition is not truly. Throws either the {@link err} given as param
- * @param condition The condition that must be truly to avoid throwing.
+ * Expects the condition to be truthy
+ * @throws {@link Error} If the condition is not truthy. Throws either the {@link err} given as param
+ * @param condition The condition that must be truthy to avoid throwing.
  * @param err Optional message or error to throw.
  * Or a function producing this, which is useful to avoid computing the error message in case it's not needed.
  */
@@ -98,8 +98,9 @@ assert.symbol = (value: unknown, name?: string): asserts value is symbol => {
 assert.object = <K extends string | number | symbol = string, V = unknown>(
   value: unknown,
   name?: string,
+  allowArrays = true,
 ): asserts value is Record<K, V> => {
-  if (typeof value !== "object" || value === null) {
+  if (typeof value !== "object" || value === null || (!allowArrays && Array.isArray(value))) {
     throw new TypeAssertionError("an object", value, name);
   }
 };
