@@ -34,6 +34,7 @@
     "@realm/network-transport": "^0.7.2",
     "chai": "4.3.6",
     "chai-as-promised": "^7.1.1",
+    "concurrently": "^6.0.2",
     "jose": "^4.10.4"
   },
   "files": [

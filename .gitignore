@@ -114,3 +114,6 @@ integration-tests/**/.lock
 
 # TypeScript build info
 *.tsbuildinfo
+
+# Rollup
+.rollup.cache/
