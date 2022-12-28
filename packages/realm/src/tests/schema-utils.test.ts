@@ -128,7 +128,7 @@ describe("schema-utils", () => {
           tableKey,
         },
         {
-          constructor: undefined,
+          ctor: undefined,
           embedded: false,
           asymmetric: false,
           name: "Person",

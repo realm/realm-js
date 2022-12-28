@@ -19,6 +19,7 @@
 import {
   DefaultObject,
   ObjectSchema,
+  ObjectSchemaProperty,
   Realm,
   RealmObject,
   RealmObjectConstructor,
@@ -194,9 +195,24 @@ type BaseConfiguration = {
 //   disableFormatUpgrade?: boolean;
 // };
 
-export function validateConfiguration(arg: unknown): asserts arg is Configuration {
-  assert.object(arg);
-  const { path, schema, onMigration, sync } = arg;
+const OBJECT_SCHEMA_KEYS = new Set<keyof ObjectSchema>(["name", "primaryKey", "embedded", "asymmetric", "properties"]);
+
+const PROPERTY_SCHEMA_KEYS = new Set<keyof ObjectSchemaProperty>([
+  "type",
+  "objectType",
+  "property",
+  "default",
+  "optional",
+  "indexed",
+  "mapTo",
+]);
+
+/**
+ * Validate the fields of a user-provided Realm configuration.
+ */
+export function validateConfiguration(config: unknown): asserts config is Configuration {
+  assert.object(config);
+  const { path, schema, onMigration, sync } = config;
   if (typeof onMigration !== "undefined") {
     assert.function(onMigration, "migration");
   }
@@ -211,39 +227,107 @@ export function validateConfiguration(arg: unknown): asserts arg is Configuratio
   }
 }
 
-export function validateRealmSchema(schema: unknown): asserts schema is Configuration["schema"][] {
-  assert.array(schema, "schema");
-  schema.forEach(validateObjectSchema);
+/**
+ * Validate the data types of the fields of a user-provided realm schema.
+ */
+export function validateRealmSchema(realmSchema: unknown): asserts realmSchema is Configuration["schema"][] {
+  assert.array(realmSchema, "the realm schema");
+  for (const objectSchema of realmSchema) {
+    validateObjectSchema(objectSchema);
+  }
   // TODO: Assert that backlinks point to object schemas that are actually declared
 }
 
-export function validateObjectSchema(arg: unknown): asserts arg is ObjectSchema {
-  if (typeof arg === "function") {
+/**
+ * Validate the data types of the fields of a user-provided object schema.
+ */
+export function validateObjectSchema(
+  objectSchema: unknown,
+): asserts objectSchema is RealmObjectConstructor | ObjectSchema {
+  if (typeof objectSchema === "function") {
     // Class based model
-    const clazz = arg as unknown as DefaultObject;
+    const clazz = objectSchema as unknown as DefaultObject;
     // We assert this later, but want a custom error message
-    if (!(arg.prototype instanceof RealmObject)) {
+    if (!(objectSchema.prototype instanceof RealmObject)) {
       const schemaName = clazz.schema && (clazz.schema as DefaultObject).name;
-      if (typeof schemaName === "string" && schemaName != arg.name) {
-        throw new TypeError(`Class '${arg.name}' (declaring '${schemaName}' schema) must extend Realm.Object`);
+      if (typeof schemaName === "string" && schemaName !== objectSchema.name) {
+        throw new TypeError(`Class '${objectSchema.name}' (declaring '${schemaName}' schema) must extend Realm.Object`);
       } else {
-        throw new TypeError(`Class '${arg.name}' must extend Realm.Object`);
+        throw new TypeError(`Class '${objectSchema.name}' must extend Realm.Object`);
       }
     }
     assert.object(clazz.schema, "schema static");
     validateObjectSchema(clazz.schema);
   } else {
-    assert.object(arg, "object schema");
-    const { name, properties, asymmetric, embedded } = arg;
-    assert.string(name, "name");
-    assert.object(properties, "properties");
-    if (typeof asymmetric !== "undefined") {
-      assert.boolean(asymmetric);
+    // Schema is passed as an object
+    assert.object(objectSchema, "the object schema", false);
+    const { name: objectName, properties, primaryKey, asymmetric, embedded } = objectSchema;
+    assert.string(objectName, "the object schema name");
+    assert.object(properties, `${objectName}.properties`, false);
+    if (primaryKey !== undefined) {
+      assert.string(primaryKey, `${objectName}.primaryKey`);
     }
-    if (typeof embedded !== "undefined") {
-      assert.boolean(embedded);
+    if (embedded !== undefined) {
+      assert.boolean(embedded, `${objectName}.embedded`);
     }
-    assert(!asymmetric || !embedded, `Cannot be both asymmetric and embedded`);
+    if (asymmetric !== undefined) {
+      assert.boolean(asymmetric, `${objectName}.asymmetric`);
+    }
+
+    const invalidKeysUsed = filterInvalidKeys(objectSchema, OBJECT_SCHEMA_KEYS);
+    assert(
+      !invalidKeysUsed.length,
+      `Unexpected field(s) found on the schema for object '${objectName}': '${invalidKeysUsed.join("', '")}'.`,
+    );
+
+    for (const propertyName in properties) {
+      const propertySchema = properties[propertyName];
+      const isUsingShorthand = typeof propertySchema === "string";
+      if (!isUsingShorthand) {
+        validatePropertySchema(objectName, propertyName, propertySchema);
+      }
+    }
   }
 }
 
+/**
+ * Validate the data types of a user-provided property schema that ought to use the
+ * relaxed object notation.
+ */
+export function validatePropertySchema(
+  objectName: string,
+  propertyName: string,
+  propertySchema: unknown,
+): asserts propertySchema is ObjectSchemaProperty {
+  const displayedName = `${objectName}.${propertyName}`;
+  assert.object(propertySchema, displayedName, false);
+  const { type, objectType, optional, property, indexed, mapTo } = propertySchema;
+  assert.string(type, `${displayedName}.type`);
+  if (objectType !== undefined) {
+    assert.string(objectType, `${displayedName}.objectType`);
+  }
+  if (optional !== undefined) {
+    assert.boolean(optional, `${displayedName}.optional`);
+  }
+  if (property !== undefined) {
+    assert.string(property, `${displayedName}.property`);
+  }
+  if (indexed !== undefined) {
+    assert.boolean(indexed, `${displayedName}.indexed`);
+  }
+  if (mapTo !== undefined) {
+    assert.string(mapTo, `${displayedName}.mapTo`);
+  }
+  const invalidKeysUsed = filterInvalidKeys(propertySchema, PROPERTY_SCHEMA_KEYS);
+  assert(
+    !invalidKeysUsed.length,
+    `Unexpected field(s) found on the schema for property '${displayedName}': '${invalidKeysUsed.join("', '")}'.`,
+  );
+}
+
+/**
+ * Get the keys of an object that are not part of the provided valid keys.
+ */
+function filterInvalidKeys(object: Record<string, unknown>, validKeys: Set<string>): string[] {
+  return Object.keys(object).filter((key) => !validKeys.has(key));
+}
