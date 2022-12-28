@@ -15,8 +15,7 @@
     "common": "mocha-remote --template @realm/mocha-reporter --context mode=$MODE,appImporterIsRemote,$MOCHA_REMOTE_CONTEXT --watch $WATCH -- concurrently --kill-others-on-fail npm:metro npm:runner npm:app-importer",
     "app-importer": "realm-app-importer serve ../../realm-apps",
     "metro": "react-native start --reset-cache",
-    "runner": "node harness/runner.js",
-    "prepare": "pod-install"
+    "runner": "node harness/runner.js"
   },
   "dependencies": {
     "@react-native-community/art": "^1.2.0",
