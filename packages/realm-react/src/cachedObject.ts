@@ -37,6 +37,11 @@ type CachedObjectArgs = {
   updateCallback: () => void;
 };
 
+export type CachedObject = {
+  object: Realm.Object | null;
+  tearDown: () => void;
+};
+
 /**
  * Creates a proxy around a {@link Realm.Object} that will return a new reference
  * on any relevant update to the object itself. It also wraps accesses to {@link Realm.List}
@@ -49,17 +54,24 @@ type CachedObjectArgs = {
  * @param args - {@link CachedObjectArgs} object arguments
  * @returns Proxy object wrapping the {@link Realm.Object}
  */
-export function createCachedObject({
-  object,
-  realm,
-  updateCallback,
-}: CachedObjectArgs): { object: Realm.Object | null; tearDown: () => void } {
+export function createCachedObject({ object, realm, updateCallback }: CachedObjectArgs): CachedObject {
   const listCaches = new Map();
   const listTearDowns: Array<() => void> = [];
   // If the object doesn't exist, just return it with an noop tearDown
   if (object === null) {
     return { object, tearDown: () => undefined };
   }
+
+  // Create a cache for any Realm.List properties on the object
+  object.keys().forEach((key) => {
+    //@ts-expect-error - TS doesn't know that the key is a valid property
+    const value = object[key];
+    if (value instanceof Realm.List && value.type === "object") {
+      const { collection, tearDown } = createCachedCollection({ collection: value, realm, updateCallback });
+      listCaches.set(key, collection);
+      listTearDowns.push(tearDown);
+    }
+  });
 
   // This Proxy handler intercepts any accesses into properties of the cached object
   // of type `Realm.List`, and returns a `cachedCollection` wrapping those properties
@@ -80,12 +92,6 @@ export function createCachedObject({
           // only the modified children of the list component actually re-render.
           return new Proxy(listCaches.get(key), {});
         }
-        const { collection, tearDown } = createCachedCollection({ collection: value, realm, updateCallback });
-        // Add to a list of teardowns which will be invoked when the cachedObject's teardown is called
-        listTearDowns.push(tearDown);
-        // Store the proxied list into a map to persist the cachedCollection
-        listCaches.set(key, collection);
-        return collection;
       }
       return value;
     },
