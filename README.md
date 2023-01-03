@@ -33,7 +33,7 @@ If you are using React Native, please also take a look the README for [@realm/re
 [TypeScript](https://www.typescriptlang.org/) is a popular alternative to pure JavaScript as it provide static typing. Our TypeScript support consists of two parts
 
 * Accurate TypeScript definitions
-  [`@realm/babel-plugin`](https://www.npmjs.com/package/@realm/babel-plugin) to transform TypeScript classes to Realm schemas. An example of a model class is: 
+  [`@realm/babel-plugin`](https://www.npmjs.com/package/@realm/babel-plugin) to transform TypeScript classes to Realm schemas. An example of a model class is:
 
 ```typescript
 class Task extends Realm.Object<Task, "description"> {
@@ -52,11 +52,11 @@ class Task extends Realm.Object<Task, "description"> {
 
 ### Integration with React Native
 
-Realm is a general SDK which provide you persistence of objects and the capability of perform advanced queries on the objects. You can have a tighter integration with React Native by using [`@realm/react](https://www.npmjs.com/package/@realm/react).  
+Realm is a general SDK which provide you persistence of objects and the capability of perform advanced queries on the objects. You can have a tighter integration with React Native by using [`@realm/react](https://www.npmjs.com/package/@realm/react).
 
 Moreover, we have a [Flipper plugin](https://www.npmjs.com/package/realm-flipper-plugin) to help you inspect, query and modify your Realm files while debugging your app on a simulator or a physical device. The plugin is still in an early stage so expect rough edges.
 
-## Template apps using Expo for React Native
+## Template apps
 
 We have TypeScript and JavaScript templates to help you get started using Realm.  Follow the links to your desired template and follow the instructions there to get up and running fast.
 ### Using Expo
@@ -81,7 +81,7 @@ See [CONTRIBUTING.md](https://github.com/realm/realm-js/blob/master/CONTRIBUTING
 ## Known issues
 
 * Realm is not compatible with the legacy Chrome Debugger. The following debugging methods are supported:
-   * [Flipper](https://fbflipper.com/) has many similar features in relation to the Chrome Debugger. 
+   * [Flipper](https://fbflipper.com/) has many similar features in relation to the Chrome Debugger.
    * [Safari](https://reactnative.dev/docs/debugging#safari-developer-tools) also has a similar feature set, but requires [some setup](https://blog.nparashuram.com/2019/10/debugging-react-native-ios-apps-with.html) and only supports debugging in iOS.
    * **NOTE:** For the above methods, it is not neccessary to enable `Debug with Chrome` in the Debug Menu.
 * Version 10.21.0 accidently [dropped support other Linux versions](https://github.com/realm/realm-js/issues/5006) e.g., RHEL 7.
