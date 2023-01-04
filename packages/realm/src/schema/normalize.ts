@@ -18,7 +18,7 @@
 
 import {
   CanonicalObjectSchema,
-  CanonicalObjectSchemaProperty,
+  CanonicalPropertySchema,
   CollectionPropertyTypeName,
   ObjectSchema,
   PrimitivePropertyTypeName,
@@ -138,8 +138,8 @@ function normalizePropertySchemas(
   objectName: string,
   propertiesSchemas: PropertiesTypes,
   primaryKey?: string,
-): Record<string, CanonicalObjectSchemaProperty> {
-  const normalizedSchemas: Record<string, CanonicalObjectSchemaProperty> = {};
+): Record<string, CanonicalPropertySchema> {
+  const normalizedSchemas: Record<string, CanonicalPropertySchema> = {};
   for (const propertyName in propertiesSchemas) {
     normalizedSchemas[propertyName] = normalizePropertySchema(
       { objectName, propertyName, propertySchema: propertiesSchemas[propertyName] },
@@ -153,7 +153,7 @@ function normalizePropertySchemas(
 /**
  * Transform a user-provided property schema into its canonical form.
  */
-export function normalizePropertySchema(info: PropertyInfo, isPrimaryKey = false): CanonicalObjectSchemaProperty {
+export function normalizePropertySchema(info: PropertyInfo, isPrimaryKey = false): CanonicalPropertySchema {
   const normalizedSchema =
     typeof info.propertySchema === "string"
       ? normalizePropertySchemaShorthand(info as PropertyInfoUsingShorthand)
@@ -172,7 +172,7 @@ export function normalizePropertySchema(info: PropertyInfo, isPrimaryKey = false
  * Transform a validated user-provided property schema that is using
  * the shorthand string notation into its canonical form.
  */
-function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): CanonicalObjectSchemaProperty {
+function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): CanonicalPropertySchema {
   let { propertySchema } = info;
   assert(propertySchema.length > 0, errMessage(info, "The type must be specified."));
 
@@ -250,7 +250,7 @@ function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): Can
     optional = false;
   }
 
-  const normalizedSchema: CanonicalObjectSchemaProperty = {
+  const normalizedSchema: CanonicalPropertySchema = {
     name: info.propertyName,
     type: type as PropertyTypeName,
     optional,
@@ -267,7 +267,7 @@ function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): Can
  * Transform a validated user-provided property schema that is using
  * the relaxed object notation into its canonical form.
  */
-function normalizePropertySchemaObject(info: PropertyInfoUsingObject): CanonicalObjectSchemaProperty {
+function normalizePropertySchemaObject(info: PropertyInfoUsingObject): CanonicalPropertySchema {
   const { propertySchema } = info;
   const { type, objectType, property, default: defaultValue } = propertySchema;
   let { optional } = propertySchema;
@@ -315,7 +315,7 @@ function normalizePropertySchemaObject(info: PropertyInfoUsingObject): Canonical
     optional = false;
   }
 
-  const normalizedSchema: CanonicalObjectSchemaProperty = {
+  const normalizedSchema: CanonicalPropertySchema = {
     name: info.propertyName,
     type: type as PropertyTypeName,
     optional: !!optional,

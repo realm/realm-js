@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { ObjectSchemaProperty } from "realm";
+import { PropertySchema } from "realm";
 import { generatePropertyCode, generatePropertyVariants, PropertyTestOptions } from "./variants";
 import { extractSchema, transformProperty } from "./transform";
 
@@ -28,7 +28,7 @@ type PropertySuiteOptions = {
 };
 
 function inferSchema(options: PropertyTestOptions) {
-  const property: ObjectSchemaProperty = { type: options.type };
+  const property: PropertySchema = { type: options.type };
   if (typeof options.default !== "undefined") {
     property.default = options.default;
   }

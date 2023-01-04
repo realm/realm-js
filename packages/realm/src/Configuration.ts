@@ -19,7 +19,7 @@
 import {
   DefaultObject,
   ObjectSchema,
-  ObjectSchemaProperty,
+  PropertySchema,
   Realm,
   RealmObject,
   RealmObjectConstructor,
@@ -197,7 +197,7 @@ type BaseConfiguration = {
 
 const OBJECT_SCHEMA_KEYS = new Set<keyof ObjectSchema>(["name", "primaryKey", "embedded", "asymmetric", "properties"]);
 
-const PROPERTY_SCHEMA_KEYS = new Set<keyof ObjectSchemaProperty>([
+const PROPERTY_SCHEMA_KEYS = new Set<keyof PropertySchema>([
   "type",
   "objectType",
   "property",
@@ -298,7 +298,7 @@ export function validatePropertySchema(
   objectName: string,
   propertyName: string,
   propertySchema: unknown,
-): asserts propertySchema is ObjectSchemaProperty {
+): asserts propertySchema is PropertySchema {
   const displayedName = `${objectName}.${propertyName}`;
   assert.object(propertySchema, displayedName, false);
   const { type, objectType, optional, property, indexed, mapTo } = propertySchema;

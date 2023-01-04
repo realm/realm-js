@@ -186,7 +186,7 @@ describe("Realm#constructor", () => {
       }).throws("Expected 'name' to be a string, got undefined");
     });
 
-    function expectInvalidProperty(badProperty: Realm.PropertyType | Realm.ObjectSchemaProperty, message: string) {
+    function expectInvalidProperty(badProperty: Realm.PropertyType | Realm.PropertySchema, message: string) {
       expect(() => {
         new Realm({
           schema: [

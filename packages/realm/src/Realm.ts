@@ -36,6 +36,7 @@ import {
   ObjectSchema,
   OrderedCollection,
   ProgressRealmPromise,
+  PropertySchema,
   RealmEvent,
   RealmInsertionModel,
   RealmListenerCallback,
@@ -1017,6 +1018,7 @@ type SetType<T> = RealmSet<T>;
 type AppType = App;
 type UpdateModeType = UpdateMode;
 type ObjectSchemaType = ObjectSchema;
+type PropertySchemaType = PropertySchema;
 type BSONType = typeof BSON;
 type TypesType = typeof Types;
 type UserType = typeof User;
@@ -1034,6 +1036,7 @@ export namespace Realm {
   export type App = AppType;
   export type UpdateMode = UpdateModeType;
   export type ObjectSchema = ObjectSchemaType;
+  export type PropertySchema = PropertySchemaType;
   export type Mixed = unknown;
   export type BSON = BSONType;
   export type Types = TypesType;

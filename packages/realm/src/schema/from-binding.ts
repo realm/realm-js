@@ -23,7 +23,7 @@ import { assert, binding } from "../internal";
 type BindingObjectSchema = binding.Realm["schema"][0];
 type BindingProperty = binding.Realm["schema"][0]["persistedProperties"][0];
 
-import { CanonicalObjectSchema, CanonicalObjectSchemaProperty, PropertyTypeName } from "./types";
+import { CanonicalObjectSchema, CanonicalPropertySchema, PropertyTypeName } from "./types";
 
 const TYPE_MAPPINGS: Record<binding.PropertyType, PropertyTypeName | null> = {
   [PropertyType.Int]: "int",
@@ -113,9 +113,9 @@ export function fromBindingObjectSchema({
  * @returns The property schema, as represented by the SDK.
  * @internal
  */
-export function fromBindingPropertySchema(propertySchema: BindingProperty): CanonicalObjectSchemaProperty {
+export function fromBindingPropertySchema(propertySchema: BindingProperty): CanonicalPropertySchema {
   const { name, isIndexed, publicName } = propertySchema;
-  const result: CanonicalObjectSchemaProperty = {
+  const result: CanonicalPropertySchema = {
     name,
     indexed: isIndexed,
     mapTo: name,
@@ -134,7 +134,7 @@ export function fromBindingPropertySchema(propertySchema: BindingProperty): Cano
  */
 function fromBindingPropertyTypeName(
   propertySchema: BindingProperty,
-): Pick<CanonicalObjectSchemaProperty, "type" | "optional" | "objectType" | "property"> {
+): Pick<CanonicalPropertySchema, "type" | "optional" | "objectType" | "property"> {
   const { type, objectType, linkOriginPropertyName } = propertySchema;
   const itemType = type & ~PropertyType.Collection;
 

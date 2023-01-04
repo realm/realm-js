@@ -43,6 +43,8 @@ export type {
   Configuration,
   ObjectChangeCallback,
   ObjectChangeSet,
+  ObjectSchema,
+  PropertySchema,
   RealmEventName,
   RealmListenerCallback,
 } from "./internal";

@@ -22,7 +22,7 @@
 
 // type Value = ((realm: Realm) => unknown) | unknown;
 
-// function getTypeName(type: Realm.PropertyType | Realm.ObjectSchemaProperty) {
+// function getTypeName(type: Realm.PropertyType | Realm.PropertySchema) {
 //   if (typeof type === "object") {
 //     if (type.objectType) {
 //       return `${type.type}<${type.objectType}>`;
@@ -36,7 +36,7 @@
 
 // type TestParameters = {
 //   name?: string;
-//   type: Realm.PropertyType | Realm.ObjectSchemaProperty;
+//   type: Realm.PropertyType | Realm.PropertySchema;
 //   value: Value;
 //   schema?: Realm.ObjectSchema[];
 // };
@@ -83,7 +83,7 @@
 //   });
 // }
 
-// const cases: Array<TestParameters | [Realm.PropertyType | Realm.ObjectSchemaProperty, Value]> = [
+// const cases: Array<TestParameters | [Realm.PropertyType | Realm.PropertySchema, Value]> = [
 //   ["bool", true],
 //   ["int", 123],
 //   ["float", 123.456],

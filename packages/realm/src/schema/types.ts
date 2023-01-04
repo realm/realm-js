@@ -65,7 +65,7 @@ export type RelationshipPropertyTypeName = "object" | "linkingObjects";
  */
 export type UserTypeName = string;
 
-// TODO: Can be removed when ObjectSchemaProperty is removed
+// TODO: Can be removed if/when integration tests no longer use it.
 export type PropertyType = UserTypeName | PropertyTypeName;
 
 /**
@@ -78,18 +78,17 @@ export type CanonicalRealmSchema = CanonicalObjectSchema[];
  */
 export type CanonicalObjectSchema<T = DefaultObject> = {
   name: string;
-  properties: Record<keyof T, CanonicalObjectSchemaProperty>;
+  properties: Record<keyof T, CanonicalPropertySchema>;
   primaryKey?: string;
   embedded?: boolean;
   asymmetric?: boolean;
   ctor?: RealmObjectConstructor;
 };
 
-// TODO: Rename to CanonicalPropertySchema (when ObjectSchemaProperty is renamed to PropertySchema)
 /**
  * The canonical representation of the schema of a specific property.
  */
-export type CanonicalObjectSchemaProperty = {
+export type CanonicalPropertySchema = {
   name: string;
   type: PropertyTypeName;
   optional: boolean;
@@ -143,21 +142,6 @@ export type ObjectSchema = {
  */
 export type PropertiesTypes = {
   [key: string]: PropertySchema | PropertySchemaShorthand;
-};
-
-// TODO: When we rename this to PropertySchema, use the PropertySchema type already
-//       defined further below in this file which has the correct documentation.
-/**
- * The relaxed representation of the schema of a specific property.
- */
-export type ObjectSchemaProperty = {
-  type: PropertyType;
-  objectType?: string; // TODO: Rename to elementType
-  property?: string;
-  default?: unknown;
-  optional?: boolean;
-  indexed?: boolean;
-  mapTo?: string;
 };
 
 /**
