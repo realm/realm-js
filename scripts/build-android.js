@@ -21,6 +21,8 @@ const fs = require("fs-extra");
 const path = require("path");
 const exec = require("child_process").execFileSync;
 
+const EXPECTED_NDK_VERSION = "23.1.7779620";
+
 //simple validation of current directory.
 const rnDir = path.resolve(process.cwd(), "react-native");
 if (!fs.existsSync(rnDir)) {
@@ -51,6 +53,11 @@ const buildType = options.buildType;
 const ndkPath = process.env["ANDROID_NDK"] || process.env["ANDROID_NDK_HOME"];
 if (!ndkPath) {
   throw Error("ANDROID_NDK / ANDROID_NDK_HOME environment variable not set");
+}
+
+const ndkVersion = determineNdkVersion(ndkPath);
+if (ndkVersion !== EXPECTED_NDK_VERSION) {
+  throw new Error(`Expected NDK version ${EXPECTED_NDK_VERSION} (found ${ndkVersion})`);
 }
 
 const cmakePath = process.platform === "win32" ? "cmake.exe" : "cmake";
@@ -150,4 +157,16 @@ function validateArchitectures(arch) {
   }
 
   return arch;
+}
+
+function determineNdkVersion(ndkPath) {
+  // Pkg.Revision = 21.0.6113669
+  const sourcePropertiesPath = path.resolve(ndkPath, "source.properties");
+  const sourcePropertiesContent = fs.readFileSync(sourcePropertiesPath, "utf8");
+  const versionMatch = sourcePropertiesContent.match(/Pkg.Revision = (?<version>.+)/);
+  if (versionMatch) {
+    return versionMatch.groups.version;
+  } else {
+    throw new Error(`Failed to determine NDK version from ${sourcePropertiesPath}`);
+  }
 }
