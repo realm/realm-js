@@ -231,7 +231,7 @@ export function validateConfiguration(config: unknown): asserts config is Config
  * Validate the data types of the fields of a user-provided realm schema.
  */
 export function validateRealmSchema(realmSchema: unknown): asserts realmSchema is Configuration["schema"][] {
-  assert.array(realmSchema, "the realm schema");
+  assert.array(realmSchema, "schema (the realm schema)");
   for (const objectSchema of realmSchema) {
     validateObjectSchema(objectSchema);
   }
@@ -260,9 +260,9 @@ export function validateObjectSchema(
     validateObjectSchema(clazz.schema);
   } else {
     // Schema is passed as an object
-    assert.object(objectSchema, "the object schema", false);
+    assert.object(objectSchema, "object schema", false);
     const { name: objectName, properties, primaryKey, asymmetric, embedded } = objectSchema;
-    assert.string(objectName, "the object schema name");
+    assert.string(objectName, "name (the object schema name)");
     assert.object(properties, `${objectName}.properties`, false);
     if (primaryKey !== undefined) {
       assert.string(primaryKey, `${objectName}.primaryKey`);

@@ -59,18 +59,22 @@ describe("validateObjectSchema", () => {
   // ------------------------------------------------------------------------
 
   describe("using invalid shape of input", () => {
-    itThrowsWhenValidating("an array", [], "Expected 'the object schema' to be an object, got an array");
+    itThrowsWhenValidating("an array", [], "Expected 'object schema' to be an object, got an array");
 
-    itThrowsWhenValidating("'null'", null, "Expected 'the object schema' to be an object, got null");
+    itThrowsWhenValidating("'null'", null, "Expected 'object schema' to be an object, got null");
 
-    itThrowsWhenValidating("an empty object", {}, "Expected 'the object schema name' to be a string, got undefined");
+    itThrowsWhenValidating(
+      "an empty object",
+      {},
+      "Expected 'name (the object schema name)' to be a string, got undefined",
+    );
 
     itThrowsWhenValidating(
       "an object with invalid type for property 'name'",
       {
         name: NOT_A_STRING,
       },
-      "Expected 'the object schema name' to be a string, got a number",
+      "Expected 'name (the object schema name)' to be a string, got a number",
     );
 
     itThrowsWhenValidating(

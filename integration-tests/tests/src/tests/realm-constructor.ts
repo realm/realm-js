@@ -159,7 +159,7 @@ describe("Realm#constructor", () => {
     it("fails when passed an object", () => {
       expect(() => {
         new RealmAsAny({ schema: {} });
-      }).throws("Expected 'schema' to be an array, got an object");
+      }).throws("Expected 'schema (the realm schema)' to be an array, got an object");
     });
 
     it("fails when passed an array with non-objects", () => {
@@ -171,22 +171,29 @@ describe("Realm#constructor", () => {
     it("fails when passed an array with empty object", () => {
       expect(() => {
         new RealmAsAny({ schema: [{}] });
-      }).throws("Expected 'name' to be a string, got undefined");
+      }).throws("Expected 'name (the object schema name)' to be a string, got undefined");
     });
 
     it("fails when passed an array with an object without 'properties'", () => {
       expect(() => {
         new RealmAsAny({ schema: [{ name: "SomeObject" }] });
-      }).throws("Expected 'properties' to be an object, got undefined");
+      }).throws("Expected 'SomeObject.properties' to be an object, got undefined");
     });
 
     it("fails when passed an array with an object without 'name'", () => {
       expect(() => {
         new RealmAsAny({ schema: [{ properties: {} }] });
-      }).throws("Expected 'name' to be a string, got undefined");
+      }).throws("Expected 'name (the object schema name)' to be a string, got undefined");
     });
 
-    function expectInvalidProperty(badProperty: Realm.PropertyType | Realm.ObjectSchemaProperty, message: string) {
+    function expectInvalidProperty(
+      badProperty: Realm.PropertyType | Realm.ObjectSchemaProperty,
+      message: string,
+      addMessagePrefix = true,
+    ) {
+      if (addMessagePrefix) {
+        message = `Invalid type declaration for property 'InvalidObject.bad': ${message}`;
+      }
       expect(() => {
         new Realm({
           schema: [
@@ -204,19 +211,35 @@ describe("Realm#constructor", () => {
       }).throws(message);
     }
 
-    it("fails when asking for a list of lists", () => {
+    // Old test: The new schema parser no longer allows combining shorthand and object notation.
+    it.skip("fails when asking for a list of lists", () => {
       expectInvalidProperty({ type: "list[]" }, "List property 'InvalidObject#bad' cannot have list elements");
     });
 
-    it("fails when asking for an optional list", () => {
+    it("fails when asking for a list of lists", () => {
+      expectInvalidProperty(
+        { type: "list", objectType: "list" },
+        "A list must contain only primitive or user-defined types specified through 'objectType'",
+      );
+    });
+
+    // Old test: The new schema parser no longer allows combining shorthand and object notation.
+    it.skip("fails when asking for an optional list", () => {
       expectInvalidProperty(
         { type: "list?", objectType: "InvalidObject" },
         "List property 'InvalidObject#bad' of 'InvalidObject' elements, cannot be optional",
       );
     });
 
+    it("fails when asking for an optional list of objects", () => {
+      expectInvalidProperty(
+        { type: "list", objectType: "InvalidObject", optional: true },
+        "User-defined types in lists and sets are always non-optional and cannot be made optional",
+      );
+    });
+
     it("fails when asking for an empty type string", () => {
-      expectInvalidProperty("", "Property 'InvalidObject#bad' cannot have an empty object type");
+      expectInvalidProperty("", "The type must be specified.");
     });
 
     it("fails when asking for linkingObjects to a non-existing property", () => {
@@ -227,6 +250,7 @@ describe("Realm#constructor", () => {
           type: "linkingObjects",
         },
         "Property 'InvalidObject.nosuchproperty' declared as origin of linking objects property 'InvalidObject.bad' does not exist",
+        false,
       );
     });
 
@@ -238,6 +262,7 @@ describe("Realm#constructor", () => {
           type: "linkingObjects",
         },
         "Property 'InvalidObject.nummeric' declared as origin of linking objects property 'InvalidObject.bad' is not a link",
+        false,
       );
     });
 
@@ -249,10 +274,12 @@ describe("Realm#constructor", () => {
           type: "linkingObjects",
         },
         "Property 'InvalidObject.another' declared as origin of linking objects property 'InvalidObject.bad' links to type 'AnotherObject'",
+        false,
       );
     });
 
-    it("doesn't allow list of objects with objectType defined", () => {
+    // Old test: The new schema parser no longer allows combining shorthand and object notation.
+    it.skip("doesn't allow list of objects with objectType defined", () => {
       expect(() => {
         new Realm({
           schema: [
