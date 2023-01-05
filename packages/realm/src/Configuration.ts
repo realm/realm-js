@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
+  CanonicalObjectSchema,
+  CanonicalObjectSchemaProperty,
   DefaultObject,
   ObjectSchema,
   ObjectSchemaProperty,
@@ -195,9 +197,23 @@ type BaseConfiguration = {
 //   disableFormatUpgrade?: boolean;
 // };
 
-const OBJECT_SCHEMA_KEYS = new Set<keyof ObjectSchema>(["name", "primaryKey", "embedded", "asymmetric", "properties"]);
+// Need to use `CanonicalObjectSchema` rather than `ObjectSchema` due to some
+// integration tests using `openRealmHook()`. That function sets `this.realm`
+// to the opened realm whose schema is a `CanonicalObjectSchema[]`. Consequently,
+// the key `"ctor"` (which doesn't exist on `ObjectSchema`) also needs to be allowed.
+const OBJECT_SCHEMA_KEYS = new Set<keyof CanonicalObjectSchema>([
+  "name",
+  "primaryKey",
+  "embedded",
+  "asymmetric",
+  "properties",
+  // Not part of `ObjectSchema`
+  "ctor",
+]);
 
-const PROPERTY_SCHEMA_KEYS = new Set<keyof ObjectSchemaProperty>([
+// Need to use `CanonicalObjectSchemaProperty` rather than `ObjectSchemaProperty`
+// due to the same reasons as above.
+const PROPERTY_SCHEMA_KEYS = new Set<keyof CanonicalObjectSchemaProperty>([
   "type",
   "objectType",
   "property",
@@ -205,6 +221,8 @@ const PROPERTY_SCHEMA_KEYS = new Set<keyof ObjectSchemaProperty>([
   "optional",
   "indexed",
   "mapTo",
+  // Not part of `ObjectSchemaProperty`
+  "name",
 ]);
 
 /**
@@ -244,8 +262,8 @@ export function validateRealmSchema(realmSchema: unknown): asserts realmSchema i
 export function validateObjectSchema(
   objectSchema: unknown,
 ): asserts objectSchema is RealmObjectConstructor | ObjectSchema {
+  // Schema is passed via a class based model (RealmObjectConstructor)
   if (typeof objectSchema === "function") {
-    // Class based model
     const clazz = objectSchema as unknown as DefaultObject;
     // We assert this later, but want a custom error message
     if (!(objectSchema.prototype instanceof RealmObject)) {
@@ -258,8 +276,9 @@ export function validateObjectSchema(
     }
     assert.object(clazz.schema, "schema static");
     validateObjectSchema(clazz.schema);
-  } else {
-    // Schema is passed as an object
+  }
+  // Schema is passed as an object (ObjectSchema)
+  else {
     assert.object(objectSchema, "object schema", false);
     const { name: objectName, properties, primaryKey, asymmetric, embedded } = objectSchema;
     assert.string(objectName, "name (the object schema name)");

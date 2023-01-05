@@ -53,7 +53,7 @@ describe("realm._updateSchema", () => {
     const MyClassSchema = this.realm.schema.find((s) => s.name === "MyClass");
     expect(MyClassSchema).deep.equals({
       name: "MyClass",
-      constructor: undefined,
+      ctor: undefined,
       asymmetric: false,
       embedded: false,
       properties: {
@@ -86,7 +86,7 @@ describe("realm._updateSchema", () => {
     const ModifiedDogSchema = this.realm.schema.find((s) => s.name === "Dog");
     expect(ModifiedDogSchema).deep.equals({
       name: "Dog",
-      constructor: undefined,
+      ctor: undefined,
       asymmetric: false,
       embedded: false,
       properties: {
