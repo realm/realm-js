@@ -70,7 +70,7 @@ export default [
         tsconfig: "src/react-native/tsconfig.json",
       }),
     ],
-    external: ["bson", "debug", "react-native"],
+    external: ["bson", "debug", "react-native", "react-native-fs", "path-browserify"],
   },
   {
     input: "src/index.ts",

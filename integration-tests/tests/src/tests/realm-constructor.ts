@@ -25,8 +25,8 @@ import { IPerson, PersonSchema, DogSchema } from "../schemas/person-and-dogs";
 const RealmAsAny = Realm as any;
 
 describe("Realm#constructor", () => {
-  beforeEach(() => {
-    Realm.clearTestState();
+  beforeEach(async () => {
+    await Realm.clearTestState();
   });
 
   it("is a function", () => {
@@ -272,29 +272,29 @@ describe("Realm#constructor", () => {
 // Testing static methods
 
 describe("#deleteFile", () => {
-  beforeEach(() => {
-    Realm.clearTestState();
+  beforeEach(async () => {
+    await Realm.clearTestState();
   });
 
-  function expectDeletion(path?: string) {
+  async function expectDeletion(path?: string) {
     // Create the Realm with a schema
     const realm = new Realm({ path, schema: [PersonSchema, DogSchema] });
     realm.close();
     // Delete the Realm
-    Realm.deleteFile({ path });
+    await Realm.deleteFile({ path });
     // Re-open the Realm without a schema and expect it to be empty
     const reopenedRealm = new Realm({ path });
     expect(reopenedRealm.schema).deep.equals([]);
   }
 
-  it("deletes the default Realm", () => {
-    expectDeletion();
+  it("deletes the default Realm", async () => {
+    await expectDeletion();
   });
 
   // TODO: Fix the issue on Android that prevents this from passing
   // @see https://github.com/realm/realm-js-private/issues/507
 
-  it.skipIf(environment.android, "deletes a Realm with a space in its path", () => {
-    expectDeletion("my realm.realm");
+  it.skipIf(environment.android, "deletes a Realm with a space in its path", async () => {
+    await expectDeletion("my realm.realm");
   });
 });

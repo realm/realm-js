@@ -26,16 +26,16 @@ import { Realm } from "realm";
  * @param deleteRealmFile If false, do not delete the Realm file before reopening.
  * @param clearTestState If false, do not clear test state before reopening.
  */
-export function closeRealm(
+export async function closeRealm(
   realm: Realm,
   config: Realm.Configuration,
   deleteRealmFile = true,
   clearTestState = true,
-): void {
+): Promise<void> {
   realm.close();
 
   if (deleteRealmFile) {
-    Realm.deleteFile(config);
+    await Realm.deleteFile(config);
   }
 
   if (clearTestState) {
@@ -49,9 +49,9 @@ export function closeRealm(
  *
  * @param this Mocha `this` context
  */
-export function closeThisRealm(this: Partial<RealmContext> & Mocha.Context): void {
+export async function closeThisRealm(this: Partial<RealmContext> & Mocha.Context): void {
   if (!("realm" in this) && !("config" in this)) {
-    return;  // Assume we failed to open the realm, so there is nothing to close.
+    return; // Assume we failed to open the realm, so there is nothing to close.
   }
 
   if (!this.realm) {
@@ -61,7 +61,7 @@ export function closeThisRealm(this: Partial<RealmContext> & Mocha.Context): voi
     throw new Error("Expected a 'config' to close");
   }
 
-  closeRealm(this.realm, this.config);
+  await closeRealm(this.realm, this.config);
 
   delete this.realm;
   delete this.config;
@@ -78,7 +78,11 @@ export function closeThisRealm(this: Partial<RealmContext> & Mocha.Context): voi
  * the config. Useful for testing if something has been persisted between sessions. Defaults to true.
  * @returns New re-opened Realm instance
  */
-export function closeAndReopenRealm(realm: Realm, config: Realm.Configuration, clearRealm = true): Promise<Realm> {
-  closeRealm(realm, config, clearRealm, clearRealm);
+export async function closeAndReopenRealm(
+  realm: Realm,
+  config: Realm.Configuration,
+  clearRealm = true,
+): Promise<Realm> {
+  await closeRealm(realm, config, clearRealm, clearRealm);
   return Realm.open(config);
 }

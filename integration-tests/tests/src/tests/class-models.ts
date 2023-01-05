@@ -23,8 +23,8 @@ import { openRealmBeforeEach } from "../hooks";
 
 describe("Class models", () => {
   describe("as schema element", () => {
-    beforeEach(() => {
-      Realm.clearTestState();
+    beforeEach(async () => {
+      await Realm.clearTestState();
     });
 
     it("fails without a schema static", () => {

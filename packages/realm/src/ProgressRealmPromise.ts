@@ -42,6 +42,9 @@ function determineBehaviour(config: Configuration): OpenBehaviour {
   if (!sync) {
     return { openBehaviour: OpenRealmBehaviorType.OpenImmediately };
   } else {
+    // TODO: The calling code needs a refactor to accept a promise of the OpenBehaviour
+    throw new Error("Not yet implemented");
+    /*
     const configProperty = Realm.exists(config) ? "existingRealmFileBehavior" : "newRealmFileBehavior";
     const configBehaviour = sync[configProperty];
     if (configBehaviour) {
@@ -53,6 +56,7 @@ function determineBehaviour(config: Configuration): OpenBehaviour {
     } else {
       return { openBehaviour: OpenRealmBehaviorType.DownloadBeforeOpen }; // Default is downloadBeforeOpen
     }
+    */
   }
 }
 

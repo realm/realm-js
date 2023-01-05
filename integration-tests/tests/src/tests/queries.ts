@@ -47,8 +47,8 @@ describe("Realm Query Language", () => {
   let contacts: Realm.Results<IContact>;
   let primitives: Realm.Results<IPrimitive>;
 
-  beforeEach(() => {
-    Realm.clearTestState();
+  beforeEach(async () => {
+    await Realm.clearTestState();
     realm = new Realm({ schema: [PersonSchema, ContactSchema, PrimitiveSchema] });
     realm.write(() => {
       const alice = realm.create<IPerson>(PersonSchema.name, { name: "Alice", age: 15 });

@@ -23,8 +23,8 @@ import { openRealmBeforeEach } from "../hooks";
 import { PersonSchema, DogSchema } from "../schemas/person-and-dogs";
 
 describe("realm._updateSchema", () => {
-  beforeEach(() => {
-    Realm.clearTestState();
+  beforeEach(async () => {
+    await Realm.clearTestState();
   });
   openRealmBeforeEach({ inMemory: true, schema: [PersonSchema, DogSchema] });
 
