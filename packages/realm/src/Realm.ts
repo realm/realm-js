@@ -75,7 +75,7 @@ type ObjectSchemaExtra = {
 };
 
 // Using a set of weak refs to avoid prevention of garbage collection
-const RETURNED_REALMS = new Set<WeakRef<binding.Realm>>();
+const RETURNED_REALMS = new Set<binding.Realm>();
 const NOT_VERSIONED = 18446744073709551615n;
 
 export type RealmEventName = "change" | "schema" | "beforenotify";
@@ -118,7 +118,7 @@ export class Realm {
   public static async clearTestState(): Promise<void> {
     // Close any realms not already closed
     for (const weakRealm of RETURNED_REALMS) {
-      const realm = weakRealm.deref();
+      const realm = weakRealm;
       if (realm && !realm.isClosed) {
         realm.close();
       }
@@ -480,7 +480,8 @@ export class Realm {
           this.beforeNotifyListeners.callback();
         },
       });
-      RETURNED_REALMS.add(new WeakRef(this.internal));
+      // RETURNED_REALMS.add(new WeakRef(this.internal));
+      RETURNED_REALMS.add(this.internal);
     }
 
     Object.defineProperties(this, {
