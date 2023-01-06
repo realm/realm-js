@@ -145,16 +145,16 @@
             "request": "launch",
             "name": "LLDB Debug Integration Tests",
             "program": "node",
+            "cwd": "${workspaceRoot}/integration-tests/tests",
             "env": {
                 "CONTEXT": "appTemplatesPath=../realm-apps"
             },
             "args": [
+                "--loader=tsm",
                 "--expose_gc",
                 "--enable-source-maps",
                 "--no-warnings",
-                "--require",
-                "ts-node/register/transpile-only",
-                "node_modules/mocha/lib/cli/cli.js",
+                "${workspaceRoot}/node_modules/mocha/lib/cli/cli.js",
                 "--require",
                 "src/node/inject-globals.ts",
                 "src/index.ts",
@@ -162,8 +162,30 @@
                 "10000",
                 "--grep",
                 "${input:integrationTestFilter}"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Integration Tests (JS)",
+            "cwd": "${workspaceFolder}/integration-tests/tests",
+            "console": "integratedTerminal",
+            "program": "${workspaceRoot}/node_modules/mocha/lib/cli/cli.js",
+            "runtimeArgs": [
+                "--loader=tsm",
+                "--expose_gc",
+                "--enable-source-maps",
+                "--no-warnings"
             ],
-            "cwd": "${workspaceFolder}/integration-tests/tests"
+            "args": [
+                "--require",
+                "src/node/inject-globals.ts",
+                "src/index.ts",
+                "--timeout",
+                "10000",
+                "--grep",
+                "${input:integrationTestFilter}"
+            ]
         },
         {
             "type": "lldb",
