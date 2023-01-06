@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
+  CanonicalObjectSchema,
+  CanonicalObjectSchemaProperty,
   DefaultObject,
   ObjectSchema,
   ObjectSchemaProperty,
@@ -195,9 +197,23 @@ type BaseConfiguration = {
 //   disableFormatUpgrade?: boolean;
 // };
 
-const OBJECT_SCHEMA_KEYS = new Set<keyof ObjectSchema>(["name", "primaryKey", "embedded", "asymmetric", "properties"]);
+// Need to use `CanonicalObjectSchema` rather than `ObjectSchema` due to some
+// integration tests using `openRealmHook()`. That function sets `this.realm`
+// to the opened realm whose schema is a `CanonicalObjectSchema[]`. Consequently,
+// the key `"ctor"` (which doesn't exist on `ObjectSchema`) also needs to be allowed.
+const OBJECT_SCHEMA_KEYS = new Set<keyof CanonicalObjectSchema>([
+  "name",
+  "primaryKey",
+  "embedded",
+  "asymmetric",
+  "properties",
+  // Not part of `ObjectSchema`
+  "ctor",
+]);
 
-const PROPERTY_SCHEMA_KEYS = new Set<keyof ObjectSchemaProperty>([
+// Need to use `CanonicalObjectSchemaProperty` rather than `ObjectSchemaProperty`
+// due to the same reasons as above.
+const PROPERTY_SCHEMA_KEYS = new Set<keyof CanonicalObjectSchemaProperty>([
   "type",
   "objectType",
   "property",
@@ -205,6 +221,8 @@ const PROPERTY_SCHEMA_KEYS = new Set<keyof ObjectSchemaProperty>([
   "optional",
   "indexed",
   "mapTo",
+  // Not part of `ObjectSchemaProperty`
+  "name",
 ]);
 
 /**
@@ -231,7 +249,7 @@ export function validateConfiguration(config: unknown): asserts config is Config
  * Validate the data types of the fields of a user-provided realm schema.
  */
 export function validateRealmSchema(realmSchema: unknown): asserts realmSchema is Configuration["schema"][] {
-  assert.array(realmSchema, "the realm schema");
+  assert.array(realmSchema, "realm schema");
   for (const objectSchema of realmSchema) {
     validateObjectSchema(objectSchema);
   }
@@ -244,8 +262,8 @@ export function validateRealmSchema(realmSchema: unknown): asserts realmSchema i
 export function validateObjectSchema(
   objectSchema: unknown,
 ): asserts objectSchema is RealmObjectConstructor | ObjectSchema {
+  // Schema is passed via a class based model (RealmObjectConstructor)
   if (typeof objectSchema === "function") {
-    // Class based model
     const clazz = objectSchema as unknown as DefaultObject;
     // We assert this later, but want a custom error message
     if (!(objectSchema.prototype instanceof RealmObject)) {
@@ -258,20 +276,21 @@ export function validateObjectSchema(
     }
     assert.object(clazz.schema, "schema static");
     validateObjectSchema(clazz.schema);
-  } else {
-    // Schema is passed as an object
-    assert.object(objectSchema, "the object schema", false);
+  }
+  // Schema is passed as an object (ObjectSchema)
+  else {
+    assert.object(objectSchema, "object schema", { allowArrays: false });
     const { name: objectName, properties, primaryKey, asymmetric, embedded } = objectSchema;
-    assert.string(objectName, "the object schema name");
-    assert.object(properties, `${objectName}.properties`, false);
+    assert.string(objectName, "'name' on object schema");
+    assert.object(properties, `'properties' on '${objectName}'`, { allowArrays: false });
     if (primaryKey !== undefined) {
-      assert.string(primaryKey, `${objectName}.primaryKey`);
+      assert.string(primaryKey, `'primaryKey' on '${objectName}'`);
     }
     if (embedded !== undefined) {
-      assert.boolean(embedded, `${objectName}.embedded`);
+      assert.boolean(embedded, `'embedded' on '${objectName}'`);
     }
     if (asymmetric !== undefined) {
-      assert.boolean(asymmetric, `${objectName}.asymmetric`);
+      assert.boolean(asymmetric, `'asymmetric' on '${objectName}'`);
     }
 
     const invalidKeysUsed = filterInvalidKeys(objectSchema, OBJECT_SCHEMA_KEYS);
@@ -299,29 +318,28 @@ export function validatePropertySchema(
   propertyName: string,
   propertySchema: unknown,
 ): asserts propertySchema is ObjectSchemaProperty {
-  const displayedName = `${objectName}.${propertyName}`;
-  assert.object(propertySchema, displayedName, false);
+  assert.object(propertySchema, `'${propertyName}' on '${objectName}'`, { allowArrays: false });
   const { type, objectType, optional, property, indexed, mapTo } = propertySchema;
-  assert.string(type, `${displayedName}.type`);
+  assert.string(type, `'${propertyName}.type' on '${objectName}'`);
   if (objectType !== undefined) {
-    assert.string(objectType, `${displayedName}.objectType`);
+    assert.string(objectType, `'${propertyName}.objectType' on '${objectName}'`);
   }
   if (optional !== undefined) {
-    assert.boolean(optional, `${displayedName}.optional`);
+    assert.boolean(optional, `'${propertyName}.optional' on '${objectName}'`);
   }
   if (property !== undefined) {
-    assert.string(property, `${displayedName}.property`);
+    assert.string(property, `'${propertyName}.property' on '${objectName}'`);
   }
   if (indexed !== undefined) {
-    assert.boolean(indexed, `${displayedName}.indexed`);
+    assert.boolean(indexed, `'${propertyName}.indexed' on '${objectName}'`);
   }
   if (mapTo !== undefined) {
-    assert.string(mapTo, `${displayedName}.mapTo`);
+    assert.string(mapTo, `'${propertyName}.mapTo' on '${objectName}'`);
   }
   const invalidKeysUsed = filterInvalidKeys(propertySchema, PROPERTY_SCHEMA_KEYS);
   assert(
     !invalidKeysUsed.length,
-    `Unexpected field(s) found on the schema for property '${displayedName}': '${invalidKeysUsed.join("', '")}'.`,
+    `Unexpected field(s) found on the schema for property '${propertyName}' on '${objectName}': '${invalidKeysUsed.join("', '")}'.`,
   );
 }
 

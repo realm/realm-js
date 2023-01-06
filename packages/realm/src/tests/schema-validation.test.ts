@@ -59,18 +59,18 @@ describe("validateObjectSchema", () => {
   // ------------------------------------------------------------------------
 
   describe("using invalid shape of input", () => {
-    itThrowsWhenValidating("an array", [], "Expected 'the object schema' to be an object, got an array");
+    itThrowsWhenValidating("an array", [], "Expected 'object schema' to be an object, got an array");
 
-    itThrowsWhenValidating("'null'", null, "Expected 'the object schema' to be an object, got null");
+    itThrowsWhenValidating("'null'", null, "Expected 'object schema' to be an object, got null");
 
-    itThrowsWhenValidating("an empty object", {}, "Expected 'the object schema name' to be a string, got undefined");
+    itThrowsWhenValidating("an empty object", {}, "Expected 'name' on object schema to be a string, got undefined");
 
     itThrowsWhenValidating(
       "an object with invalid type for property 'name'",
       {
         name: NOT_A_STRING,
       },
-      "Expected 'the object schema name' to be a string, got a number",
+      "Expected 'name' on object schema to be a string, got a number",
     );
 
     itThrowsWhenValidating(
@@ -79,7 +79,7 @@ describe("validateObjectSchema", () => {
         name: OBJECT_NAME,
         properties: NOT_AN_OBJECT,
       },
-      `Expected '${OBJECT_NAME}.properties' to be an object, got a number`,
+      `Expected 'properties' on '${OBJECT_NAME}' to be an object, got a number`,
     );
 
     itThrowsWhenValidating(
@@ -89,7 +89,7 @@ describe("validateObjectSchema", () => {
         properties: {},
         primaryKey: NOT_A_STRING,
       },
-      `Expected '${OBJECT_NAME}.primaryKey' to be a string, got a number`,
+      `Expected 'primaryKey' on '${OBJECT_NAME}' to be a string, got a number`,
     );
 
     itThrowsWhenValidating(
@@ -99,7 +99,7 @@ describe("validateObjectSchema", () => {
         properties: {},
         embedded: NOT_A_BOOLEAN,
       },
-      `Expected '${OBJECT_NAME}.embedded' to be a boolean, got a number`,
+      `Expected 'embedded' on '${OBJECT_NAME}' to be a boolean, got a number`,
     );
 
     itThrowsWhenValidating(
@@ -109,7 +109,7 @@ describe("validateObjectSchema", () => {
         properties: {},
         asymmetric: NOT_A_BOOLEAN,
       },
-      `Expected '${OBJECT_NAME}.asymmetric' to be a boolean, got a number`,
+      `Expected 'asymmetric' on '${OBJECT_NAME}' to be a boolean, got a number`,
     );
 
     itThrowsWhenValidating(
@@ -140,7 +140,7 @@ describe("validateObjectSchema", () => {
   }
 });
 
-describe("validatePropertySchemaObject", () => {
+describe("validatePropertySchema", () => {
   // ------------------------------------------------------------------------
   // Valid shape of input
   // ------------------------------------------------------------------------
@@ -176,20 +176,26 @@ describe("validatePropertySchemaObject", () => {
   // ------------------------------------------------------------------------
 
   describe("using invalid shape of input", () => {
-    const DISPLAYED_NAME = `${OBJECT_NAME}.${PROPERTY_NAME}`;
+    itThrowsWhenValidating(
+      "an array",
+      [],
+      `Expected '${PROPERTY_NAME}' on '${OBJECT_NAME}' to be an object, got an array`,
+    );
 
-    itThrowsWhenValidating("an array", [], `Expected '${DISPLAYED_NAME}' to be an object, got an array`);
+    itThrowsWhenValidating("'null'", null, `Expected '${PROPERTY_NAME}' on '${OBJECT_NAME}' to be an object, got null`);
 
-    itThrowsWhenValidating("'null'", null, `Expected '${DISPLAYED_NAME}' to be an object, got null`);
-
-    itThrowsWhenValidating("an empty object", {}, `Expected '${DISPLAYED_NAME}.type' to be a string, got undefined`);
+    itThrowsWhenValidating(
+      "an empty object",
+      {},
+      `Expected '${PROPERTY_NAME}.type' on '${OBJECT_NAME}' to be a string, got undefined`,
+    );
 
     itThrowsWhenValidating(
       "an object with invalid type for property 'type'",
       {
         type: NOT_A_STRING,
       },
-      `Expected '${DISPLAYED_NAME}.type' to be a string, got a number`,
+      `Expected '${PROPERTY_NAME}.type' on '${OBJECT_NAME}' to be a string, got a number`,
     );
 
     itThrowsWhenValidating(
@@ -198,7 +204,7 @@ describe("validatePropertySchemaObject", () => {
         type: "",
         objectType: NOT_A_STRING,
       },
-      `Expected '${DISPLAYED_NAME}.objectType' to be a string, got a number`,
+      `Expected '${PROPERTY_NAME}.objectType' on '${OBJECT_NAME}' to be a string, got a number`,
     );
 
     itThrowsWhenValidating(
@@ -207,7 +213,7 @@ describe("validatePropertySchemaObject", () => {
         type: "",
         optional: NOT_A_BOOLEAN,
       },
-      `Expected '${DISPLAYED_NAME}.optional' to be a boolean, got a number`,
+      `Expected '${PROPERTY_NAME}.optional' on '${OBJECT_NAME}' to be a boolean, got a number`,
     );
 
     itThrowsWhenValidating(
@@ -216,7 +222,7 @@ describe("validatePropertySchemaObject", () => {
         type: "",
         property: NOT_A_STRING,
       },
-      `Expected '${DISPLAYED_NAME}.property' to be a string, got a number`,
+      `Expected '${PROPERTY_NAME}.property' on '${OBJECT_NAME}' to be a string, got a number`,
     );
 
     itThrowsWhenValidating(
@@ -225,7 +231,7 @@ describe("validatePropertySchemaObject", () => {
         type: "",
         indexed: NOT_A_BOOLEAN,
       },
-      `Expected '${DISPLAYED_NAME}.indexed' to be a boolean, got a number`,
+      `Expected '${PROPERTY_NAME}.indexed' on '${OBJECT_NAME}' to be a boolean, got a number`,
     );
 
     itThrowsWhenValidating(
@@ -234,7 +240,7 @@ describe("validatePropertySchemaObject", () => {
         type: "",
         mapTo: NOT_A_STRING,
       },
-      `Expected '${DISPLAYED_NAME}.mapTo' to be a string, got a number`,
+      `Expected '${PROPERTY_NAME}.mapTo' on '${OBJECT_NAME}' to be a string, got a number`,
     );
 
     itThrowsWhenValidating(
@@ -245,7 +251,7 @@ describe("validatePropertySchemaObject", () => {
         invalidName2: "",
         invalidName3: "",
       },
-      `Unexpected field(s) found on the schema for property '${DISPLAYED_NAME}': 'invalidName1', 'invalidName2', 'invalidName3'`,
+      `Unexpected field(s) found on the schema for property '${PROPERTY_NAME}' on '${OBJECT_NAME}': 'invalidName1', 'invalidName2', 'invalidName3'`,
     );
   });
 

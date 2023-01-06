@@ -219,7 +219,7 @@ describe("Realm#constructor", () => {
       expect(() => {
         //@ts-expect-error passing plain empty object to schema
         new Realm({ schema: {} });
-      }).throws("Expected 'schema' to be an array, got an object");
+      }).throws("Expected 'realm schema' to be an array, got an object");
     });
 
     it("fails when passed an array with non-objects", () => {
@@ -233,24 +233,31 @@ describe("Realm#constructor", () => {
       expect(() => {
         //@ts-expect-error passing array of empty object
         new Realm({ schema: [{}] });
-      }).throws("Expected 'name' to be a string, got undefined");
+      }).throws("Expected 'name' on object schema to be a string, got undefined");
     });
 
     it("fails when passed an array with an object without 'properties'", () => {
       expect(() => {
         //@ts-expect-error object without properties
         new Realm({ schema: [{ name: "SomeObject" }] });
-      }).throws("Expected 'properties' to be an object, got undefined");
+      }).throws("Expected 'properties' on 'SomeObject' to be an object, got undefined");
     });
 
     it("fails when passed an array with an object without 'name'", () => {
       expect(() => {
         //@ts-expect-error object without name
         new Realm({ schema: [{ properties: {} }] });
-      }).throws("Expected 'name' to be a string, got undefined");
+      }).throws("Expected 'name' on object schema to be a string, got undefined");
     });
 
-    function expectInvalidProperty(badProperty: Realm.PropertyType | Realm.ObjectSchemaProperty, message: string) {
+    function expectInvalidProperty(
+      badProperty: Realm.PropertyType | Realm.ObjectSchemaProperty,
+      message: string,
+      addMessagePrefix = true,
+    ) {
+      if (addMessagePrefix) {
+        message = `Invalid type declaration for property 'bad' on 'InvalidObject': ${message}`;
+      }
       expect(() => {
         new Realm({
           schema: [
@@ -269,18 +276,21 @@ describe("Realm#constructor", () => {
     }
 
     it("fails when asking for a list of lists", () => {
-      expectInvalidProperty({ type: "list[]" }, "List property 'InvalidObject#bad' cannot have list elements");
+      expectInvalidProperty(
+        { type: "list", objectType: "list" },
+        "A list must contain only primitive or user-defined types specified through 'objectType'",
+      );
     });
 
-    it("fails when asking for an optional list", () => {
+    it("fails when asking for an optional list of objects", () => {
       expectInvalidProperty(
-        { type: "list?", objectType: "InvalidObject" },
-        "List property 'InvalidObject#bad' of 'InvalidObject' elements, cannot be optional",
+        { type: "list", objectType: "InvalidObject", optional: true },
+        "User-defined types in lists and sets are always non-optional and cannot be made optional",
       );
     });
 
     it("fails when asking for an empty type string", () => {
-      expectInvalidProperty("", "Property 'InvalidObject#bad' cannot have an empty object type");
+      expectInvalidProperty("", "The type must be specified.");
     });
 
     it("fails when asking for linkingObjects to a non-existing property", () => {
@@ -291,6 +301,7 @@ describe("Realm#constructor", () => {
           type: "linkingObjects",
         },
         "Property 'InvalidObject.nosuchproperty' declared as origin of linking objects property 'InvalidObject.bad' does not exist",
+        false,
       );
     });
 
@@ -302,6 +313,7 @@ describe("Realm#constructor", () => {
           type: "linkingObjects",
         },
         "Property 'InvalidObject.nummeric' declared as origin of linking objects property 'InvalidObject.bad' is not a link",
+        false,
       );
     });
 
@@ -313,25 +325,8 @@ describe("Realm#constructor", () => {
           type: "linkingObjects",
         },
         "Property 'InvalidObject.another' declared as origin of linking objects property 'InvalidObject.bad' links to type 'AnotherObject'",
+        false,
       );
-    });
-
-    it("doesn't allow list of objects with objectType defined", () => {
-      expect(() => {
-        new Realm({
-          schema: [
-            {
-              name: "SomeObject",
-              properties: {
-                myObjects: {
-                  objectType: "SomeObject",
-                  type: "object[]",
-                },
-              },
-            },
-          ],
-        });
-      }).throws("Expected no 'objectType' in property schema, when using '[]' shorthand");
     });
   });
 
