@@ -44,12 +44,12 @@ export class ClassMap {
   private nameByTableKey: Record<binding.TableKey, string>;
 
   private static createNamedConstructor<T extends Constructor>(name: string): T {
-    const obj = {
-      [name]: function () {
-        /* no-op */
-      },
+    const result = function () {
+      /* no-op */
     };
-    return obj[name] as unknown as T;
+    // Need to use `defineProperty` since it isn't writable
+    Object.defineProperty(result, "name", { value: name });
+    return result as unknown as T;
   }
 
   private static createClass<T extends RealmObjectConstructor = RealmObjectConstructor>(
