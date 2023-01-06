@@ -40,6 +40,7 @@
     "packages/realm-app-importer",
     "packages/realm-network-transport",
     "packages/mocha-reporter",
+    "integration-tests/baas-test-server",
     "integration-tests/tests",
     "integration-tests/environments/react-native"
   ],
