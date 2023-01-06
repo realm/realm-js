@@ -30,7 +30,7 @@ describe("Set", () => {
       schema: [
         {
           name: "Item",
-          properties: { set: { type: "set" } },
+          properties: { set: { type: "set", objectType: "mixed" } },
         },
         {
           name: "Person",
