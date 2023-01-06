@@ -249,7 +249,7 @@ export function validateConfiguration(config: unknown): asserts config is Config
  * Validate the data types of the fields of a user-provided realm schema.
  */
 export function validateRealmSchema(realmSchema: unknown): asserts realmSchema is Configuration["schema"][] {
-  assert.array(realmSchema, "schema (the realm schema)");
+  assert.array(realmSchema, "realm schema");
   for (const objectSchema of realmSchema) {
     validateObjectSchema(objectSchema);
   }
@@ -279,18 +279,18 @@ export function validateObjectSchema(
   }
   // Schema is passed as an object (ObjectSchema)
   else {
-    assert.object(objectSchema, "object schema", false);
+    assert.object(objectSchema, "object schema", { allowArrays: false });
     const { name: objectName, properties, primaryKey, asymmetric, embedded } = objectSchema;
-    assert.string(objectName, "name (the object schema name)");
-    assert.object(properties, `${objectName}.properties`, false);
+    assert.string(objectName, "'name' on object schema");
+    assert.object(properties, `'properties' on '${objectName}'`, { allowArrays: false });
     if (primaryKey !== undefined) {
-      assert.string(primaryKey, `${objectName}.primaryKey`);
+      assert.string(primaryKey, `'primaryKey' on '${objectName}'`);
     }
     if (embedded !== undefined) {
-      assert.boolean(embedded, `${objectName}.embedded`);
+      assert.boolean(embedded, `'embedded' on '${objectName}'`);
     }
     if (asymmetric !== undefined) {
-      assert.boolean(asymmetric, `${objectName}.asymmetric`);
+      assert.boolean(asymmetric, `'asymmetric' on '${objectName}'`);
     }
 
     const invalidKeysUsed = filterInvalidKeys(objectSchema, OBJECT_SCHEMA_KEYS);
@@ -318,29 +318,28 @@ export function validatePropertySchema(
   propertyName: string,
   propertySchema: unknown,
 ): asserts propertySchema is ObjectSchemaProperty {
-  const displayedName = `${objectName}.${propertyName}`;
-  assert.object(propertySchema, displayedName, false);
+  assert.object(propertySchema, `'${propertyName}' on '${objectName}'`, { allowArrays: false });
   const { type, objectType, optional, property, indexed, mapTo } = propertySchema;
-  assert.string(type, `${displayedName}.type`);
+  assert.string(type, `'${propertyName}.type' on '${objectName}'`);
   if (objectType !== undefined) {
-    assert.string(objectType, `${displayedName}.objectType`);
+    assert.string(objectType, `'${propertyName}.objectType' on '${objectName}'`);
   }
   if (optional !== undefined) {
-    assert.boolean(optional, `${displayedName}.optional`);
+    assert.boolean(optional, `'${propertyName}.optional' on '${objectName}'`);
   }
   if (property !== undefined) {
-    assert.string(property, `${displayedName}.property`);
+    assert.string(property, `'${propertyName}.property' on '${objectName}'`);
   }
   if (indexed !== undefined) {
-    assert.boolean(indexed, `${displayedName}.indexed`);
+    assert.boolean(indexed, `'${propertyName}.indexed' on '${objectName}'`);
   }
   if (mapTo !== undefined) {
-    assert.string(mapTo, `${displayedName}.mapTo`);
+    assert.string(mapTo, `'${propertyName}.mapTo' on '${objectName}'`);
   }
   const invalidKeysUsed = filterInvalidKeys(propertySchema, PROPERTY_SCHEMA_KEYS);
   assert(
     !invalidKeysUsed.length,
-    `Unexpected field(s) found on the schema for property '${displayedName}': '${invalidKeysUsed.join("', '")}'.`,
+    `Unexpected field(s) found on the schema for property '${propertyName}' on '${objectName}': '${invalidKeysUsed.join("', '")}'.`,
   );
 }
 

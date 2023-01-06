@@ -182,7 +182,7 @@ describe("normalizePropertySchema", () => {
         indexed: true,
         optional: false,
       },
-      true, // Declare that it is a primary key.
+      { isPrimaryKey: true },
     );
   });
 
@@ -253,17 +253,9 @@ describe("normalizePropertySchema", () => {
     // Indexed & Primary Keys
     // -------------------------
 
-    itThrowsWhenNormalizing(
-      "string?",
-      "Optional properties cannot be used as a primary key.",
-      true, // Declare that it is a primary key.
-    );
+    itThrowsWhenNormalizing("string?", "Optional properties cannot be used as a primary key.", { isPrimaryKey: true });
 
-    itThrowsWhenNormalizing(
-      "mixed",
-      "Optional properties cannot be used as a primary key.",
-      true, // Declare that it is a primary key.
-    );
+    itThrowsWhenNormalizing("mixed", "Optional properties cannot be used as a primary key.", { isPrimaryKey: true });
   });
 
   // ------------------------------------------------------------------------
@@ -667,7 +659,7 @@ describe("normalizePropertySchema", () => {
         indexed: true,
         optional: false,
       },
-      true, // Declare that it is a primary key.
+      { isPrimaryKey: true },
     );
 
     itNormalizes(
@@ -680,7 +672,7 @@ describe("normalizePropertySchema", () => {
         indexed: true,
         optional: false,
       },
-      true, // Declare that it is a primary key.
+      { isPrimaryKey: true },
     );
 
     itNormalizes(
@@ -693,7 +685,7 @@ describe("normalizePropertySchema", () => {
         indexed: true,
         optional: false,
       },
-      false, // Declare that it is not a primary key (default).
+      { isPrimaryKey: false },
     );
   });
 
@@ -916,7 +908,7 @@ describe("normalizePropertySchema", () => {
         optional: true,
       },
       "Optional properties cannot be used as a primary key.",
-      true, // Declare that it is a primary key.
+      { isPrimaryKey: true },
     );
 
     itThrowsWhenNormalizing(
@@ -924,7 +916,7 @@ describe("normalizePropertySchema", () => {
         type: "mixed",
       },
       "Optional properties cannot be used as a primary key.",
-      true, // Declare that it is a primary key.
+      { isPrimaryKey: true },
     );
 
     itThrowsWhenNormalizing(
@@ -934,7 +926,7 @@ describe("normalizePropertySchema", () => {
         optional: false,
       },
       "Primary keys must always be indexed.",
-      true, // Declare that it is a primary key.
+      { isPrimaryKey: true },
     );
   });
 });
@@ -956,7 +948,7 @@ describe("extractGeneric", () => {
 function itNormalizes(
   input: string | ObjectSchemaProperty,
   expected: Partial<CanonicalObjectSchemaProperty>,
-  isPrimaryKey = false,
+  { isPrimaryKey } = { isPrimaryKey: false },
 ): void {
   it(`normalizes ${inspect(input, { compact: true, breakLength: Number.MAX_SAFE_INTEGER })} ${isPrimaryKey ? "(primary key)" : ""}`, () => {
     const result = normalizePropertySchema({
@@ -982,7 +974,11 @@ function itNormalizes(
   });
 }
 
-function itThrowsWhenNormalizing(input: string | ObjectSchemaProperty, errMessage: string, isPrimaryKey = false): void {
+function itThrowsWhenNormalizing(
+  input: string | ObjectSchemaProperty,
+  errMessage: string,
+  { isPrimaryKey } = { isPrimaryKey: false },
+): void {
   it(`throws when normalizing ${inspect(input, { compact: true, breakLength: Number.MAX_SAFE_INTEGER })} ${isPrimaryKey ? "(primary key)" : ""}`, () => {
     const normalizeFn = () =>
       normalizePropertySchema({
@@ -992,7 +988,7 @@ function itThrowsWhenNormalizing(input: string | ObjectSchemaProperty, errMessag
         isPrimaryKey,
       });
     expect(normalizeFn).to.throw(
-      `Invalid type declaration for property '${OBJECT_NAME}.${PROPERTY_NAME}': ${errMessage}`,
+      `Invalid type declaration for property '${PROPERTY_NAME}' on '${OBJECT_NAME}': ${errMessage}`,
     );
   });
 }

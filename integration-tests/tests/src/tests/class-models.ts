@@ -40,7 +40,7 @@ describe("Class models", () => {
       }
       expect(() => {
         new Realm({ schema: [Person as any] });
-      }).throws("Expected 'Person.properties' to be an object, got undefined");
+      }).throws("Expected 'properties' on 'Person' to be an object, got undefined");
     });
 
     it("fails if it doesn't extend Realm.Object", () => {

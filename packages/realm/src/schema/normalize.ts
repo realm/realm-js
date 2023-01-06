@@ -392,7 +392,7 @@ function assertNotUsingShorthand(input: string | undefined, info: PropertyInfo):
  * Get an error message for an invalid property schema.
  */
 function errMessage({ objectName, propertyName }: PropertyInfo, message: string): string {
-  return `Invalid type declaration for property '${objectName}.${propertyName}': ${message}`;
+  return `Invalid type declaration for property '${propertyName}' on '${objectName}': ${message}`;
 }
 
 /**

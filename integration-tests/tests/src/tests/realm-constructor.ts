@@ -159,7 +159,7 @@ describe("Realm#constructor", () => {
     it("fails when passed an object", () => {
       expect(() => {
         new RealmAsAny({ schema: {} });
-      }).throws("Expected 'schema (the realm schema)' to be an array, got an object");
+      }).throws("Expected 'realm schema' to be an array, got an object");
     });
 
     it("fails when passed an array with non-objects", () => {
@@ -171,19 +171,19 @@ describe("Realm#constructor", () => {
     it("fails when passed an array with empty object", () => {
       expect(() => {
         new RealmAsAny({ schema: [{}] });
-      }).throws("Expected 'name (the object schema name)' to be a string, got undefined");
+      }).throws("Expected 'name' on object schema to be a string, got undefined");
     });
 
     it("fails when passed an array with an object without 'properties'", () => {
       expect(() => {
         new RealmAsAny({ schema: [{ name: "SomeObject" }] });
-      }).throws("Expected 'SomeObject.properties' to be an object, got undefined");
+      }).throws("Expected 'properties' on 'SomeObject' to be an object, got undefined");
     });
 
     it("fails when passed an array with an object without 'name'", () => {
       expect(() => {
         new RealmAsAny({ schema: [{ properties: {} }] });
-      }).throws("Expected 'name (the object schema name)' to be a string, got undefined");
+      }).throws("Expected 'name' on object schema to be a string, got undefined");
     });
 
     function expectInvalidProperty(
@@ -192,7 +192,7 @@ describe("Realm#constructor", () => {
       addMessagePrefix = true,
     ) {
       if (addMessagePrefix) {
-        message = `Invalid type declaration for property 'InvalidObject.bad': ${message}`;
+        message = `Invalid type declaration for property 'bad' on 'InvalidObject': ${message}`;
       }
       expect(() => {
         new Realm({
@@ -211,23 +211,10 @@ describe("Realm#constructor", () => {
       }).throws(message);
     }
 
-    // Old test: The new schema parser no longer allows combining shorthand and object notation.
-    it.skip("fails when asking for a list of lists", () => {
-      expectInvalidProperty({ type: "list[]" }, "List property 'InvalidObject#bad' cannot have list elements");
-    });
-
     it("fails when asking for a list of lists", () => {
       expectInvalidProperty(
         { type: "list", objectType: "list" },
         "A list must contain only primitive or user-defined types specified through 'objectType'",
-      );
-    });
-
-    // Old test: The new schema parser no longer allows combining shorthand and object notation.
-    it.skip("fails when asking for an optional list", () => {
-      expectInvalidProperty(
-        { type: "list?", objectType: "InvalidObject" },
-        "List property 'InvalidObject#bad' of 'InvalidObject' elements, cannot be optional",
       );
     });
 
@@ -276,25 +263,6 @@ describe("Realm#constructor", () => {
         "Property 'InvalidObject.another' declared as origin of linking objects property 'InvalidObject.bad' links to type 'AnotherObject'",
         false,
       );
-    });
-
-    // Old test: The new schema parser no longer allows combining shorthand and object notation.
-    it.skip("doesn't allow list of objects with objectType defined", () => {
-      expect(() => {
-        new Realm({
-          schema: [
-            {
-              name: "SomeObject",
-              properties: {
-                myObjects: {
-                  objectType: "SomeObject",
-                  type: "object[]",
-                },
-              },
-            },
-          ],
-        });
-      }).throws("Expected no 'objectType' in property schema, when using '[]' shorthand");
     });
   });
 
