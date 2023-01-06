@@ -2,7 +2,10 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "noResolve": false,
-    "incremental": true
+    "incremental": true,
+    "types": [
+      "react-native"
+    ]
   },
   "exclude": [
     "../tests/",
