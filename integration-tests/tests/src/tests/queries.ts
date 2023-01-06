@@ -35,7 +35,8 @@ const PrimitiveSchema: Realm.ObjectSchema = {
     s: "string",
     b: "bool",
     i: "int",
-    f: "float",
+    // TODO: Fix the crash
+    // f: "float",
     d: "double",
     t: "date",
   },
