@@ -54,7 +54,7 @@ interface IPlaylist {
 const BirthdaysSchema: Realm.ObjectSchema = {
   name: "Birthdays",
   properties: {
-    dict: "{}",
+    dict: "mixed{}",
   },
 };
 

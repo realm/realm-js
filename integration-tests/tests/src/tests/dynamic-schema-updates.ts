@@ -53,7 +53,7 @@ describe("realm._updateSchema", () => {
     const MyClassSchema = this.realm.schema.find((s) => s.name === "MyClass");
     expect(MyClassSchema).deep.equals({
       name: "MyClass",
-      constructor: undefined,
+      ctor: undefined,
       asymmetric: false,
       embedded: false,
       properties: {
@@ -86,7 +86,7 @@ describe("realm._updateSchema", () => {
     const ModifiedDogSchema = this.realm.schema.find((s) => s.name === "Dog");
     expect(ModifiedDogSchema).deep.equals({
       name: "Dog",
-      constructor: undefined,
+      ctor: undefined,
       asymmetric: false,
       embedded: false,
       properties: {
@@ -172,7 +172,7 @@ describe("realm._updateSchema", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (this.realm as any)._updateSchema();
       });
-    }).to.throw("Expected 'schema' to be an array, got undefined");
+    }).to.throw("Expected 'realm schema' to be an array, got undefined");
   });
 
   it("throws if called with an unexpected type", function (this: RealmContext) {
@@ -181,6 +181,6 @@ describe("realm._updateSchema", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (this.realm as any)._updateSchema("w00t");
       });
-    }).to.throw("Expected 'schema' to be an array, got a string");
+    }).to.throw("Expected 'realm schema' to be an array, got a string");
   });
 });
