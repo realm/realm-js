@@ -35,7 +35,7 @@ body:
       description: Please paste any relevant log output or stacktrace if you're getting an exception/crash.
       render: shell
 # Repro information
- - type: dropdown
+  - type: dropdown
     id: repro
     attributes:
       label: Can you reproduce the bug?
