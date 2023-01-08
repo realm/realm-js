@@ -140,3 +140,11 @@ Realm JS and [Realm Core](https://github.com/realm/realm-core) are published und
 **_And if you don't like it, please let us know what you would like improved, so we can fix it!_**
 
 <img style="width: 0px; height: 0px;" src="https://3eaz4mshcd.execute-api.us-east-1.amazonaws.com/prod?s=https://github.com/realm/realm-js/#README.md">
+
+## Contributors
+
+<a href="https://github.com/realm/realm-js/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=realm/realm-js" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).
