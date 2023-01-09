@@ -31,4 +31,4 @@ import "./utils/import-app.test";
 import "./utils/chai-plugin.test";
 
 import "./tests";
-//import "./performance-tests";
+import "./performance-tests";
