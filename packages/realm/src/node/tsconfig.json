@@ -1,13 +1,13 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
     "types": ["node"],
     "noResolve": false,
     "incremental": true
   },
   "exclude": [
-    "src/tests/",
-    "type-tests/",
-    "src/react-native/"
+    "../tests/",
+    "../react-native/",
+    "../../type-tests/"
   ],
 }
