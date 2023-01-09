@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { isEqual } from "lodash";
-import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import React, { createContext, useContext, useLayoutEffect, useRef, useState } from "react";
 import Realm from "realm";
 
 /**
@@ -54,7 +54,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children, appRef, ...a
     }
   }
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (appRef) {
       appRef.current = app;
     }
