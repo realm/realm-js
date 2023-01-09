@@ -39,10 +39,10 @@ export default [
         },
       }),
       typescript({
-        tsconfig: "tsconfig.node.json",
+        tsconfig: "src/node/tsconfig.json",
       }),
     ],
-    external: ["node:module", "node:fs", "undici", "bson", "debug"],
+    external: ["bson", "debug", "node:module", "node:fs", "undici"],
   },
   {
     input: "src/react-native/index.ts",
@@ -53,7 +53,7 @@ export default [
     },
     plugins: [
       typescript({
-        tsconfig: "tsconfig.react-native.json",
+        tsconfig: "src/react-native/tsconfig.json",
       }),
     ],
     external: ["bson", "debug"],
