@@ -63,7 +63,7 @@ export function createCachedObject({ object, realm, updateCallback }: CachedObje
   }
 
   // Create a cache for any Realm.List properties on the object
-  object.keys().forEach((key) => {
+  for (const key of object.keys()) {
     //@ts-expect-error - TS doesn't know that the key is a valid property
     const value = object[key];
     if (value instanceof Realm.List && value.type === "object") {
@@ -71,7 +71,7 @@ export function createCachedObject({ object, realm, updateCallback }: CachedObje
       listCaches.set(key, collection);
       listTearDowns.push(tearDown);
     }
-  });
+  }
 
   // This Proxy handler intercepts any accesses into properties of the cached object
   // of type `Realm.List`, and returns a `cachedCollection` wrapping those properties
@@ -130,7 +130,9 @@ export function createCachedObject({ object, realm, updateCallback }: CachedObje
 
   const tearDown = () => {
     object.removeListener(listenerCallback);
-    listTearDowns.forEach((listTearDown) => listTearDown());
+    for (const listTearDown of listTearDowns) {
+      listTearDown();
+    }
   };
 
   return { object: cachedObjectResult, tearDown };

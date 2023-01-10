@@ -91,7 +91,7 @@ export function createUseObject(useRealm: () => Realm) {
 
         // Re-instantiate the cachedObject if the primaryKey has changed or the originalObject has gone from null to not null
         if (
-          !comparePrimaryKeys(primaryKey, primaryKeyRef.current) ||
+          !arePrimaryKeysIdentical(primaryKey, primaryKeyRef.current) ||
           (originalObjectRef.current === null && originalObject !== null)
         ) {
           cachedObjectRef.current = createCachedObject({
@@ -114,14 +114,16 @@ export function createUseObject(useRealm: () => Realm) {
     // If the object doesn't exist, listen for insertions to the collection and force a rerender if the inserted object has the correct primary key
     useEffect(() => {
       const collectionListener: Realm.CollectionChangeCallback<T & Realm.Object> = (collection, changes) => {
+        const primaryKeyProperty = collection?.[0]?.objectSchema()?.primaryKey;
         for (const index of changes.insertions) {
           const object = collection[index];
-          const primaryKeyProperty = object.objectSchema().primaryKey;
           if (primaryKeyProperty) {
             //@ts-expect-error - if the primaryKeyProperty exists, then it is indexable. However, we don't allow it when we don't actually know the type of the object
             const insertedPrimaryKey = object[primaryKeyProperty];
-            if (comparePrimaryKeys(insertedPrimaryKey, primaryKeyRef.current)) {
+            if (arePrimaryKeysIdentical(insertedPrimaryKey, primaryKeyRef.current)) {
               forceRerender();
+              collection.removeListener(collectionListener);
+              break;
             }
           }
         }
@@ -154,7 +156,7 @@ export function createUseObject(useRealm: () => Realm) {
 }
 
 // This is a helper function that determines if two primary keys are equal.  It will also handle the case where the primary key is an ObjectId or UUID
-const comparePrimaryKeys = (a: any, b: any): boolean => {
+function arePrimaryKeysIdentical(a: unknown, b: unknown): boolean {
   if (typeof a !== typeof b) {
     return false;
   }
@@ -168,4 +170,4 @@ const comparePrimaryKeys = (a: any, b: any): boolean => {
     return a.toHexString() === b.toHexString();
   }
   return false;
-};
+}
