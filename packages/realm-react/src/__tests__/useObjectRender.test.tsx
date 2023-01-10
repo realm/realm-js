@@ -361,7 +361,7 @@ describe("useObject: rendering objects with a Realm.List property", () => {
       const nameElement = getByTestId(`name${idString}`);
       const input = getByTestId(`input${idString}`);
 
-      expect(nameElement).toHaveTextContent(`${idString}`);
+      expect(nameElement).toHaveTextContent(idString);
 
       fireEvent.changeText(input, "apple");
 
@@ -386,7 +386,7 @@ describe("useObject: rendering objects with a Realm.List property", () => {
       const deleteButton = getByTestId(`deleteButton${idString}`);
       const nameElement = getByTestId(`name${idString}`);
 
-      expect(nameElement).toHaveTextContent(`${idString}`);
+      expect(nameElement).toHaveTextContent(idString);
       expect(itemRenderCounter).toHaveBeenCalledTimes(10);
 
       fireEvent.press(deleteButton);

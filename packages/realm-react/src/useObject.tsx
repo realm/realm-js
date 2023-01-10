@@ -63,7 +63,7 @@ export function createUseObject(useRealm: () => Realm) {
 
     // Initializing references with a function call or class constructor will
     // cause the function or constructor to be called on ever render.
-    // Even though this value is thrown away, `createCachedObject` will end up registering a listener.
+    // Even though this value is thrown away on subsequent renders, `createCachedObject` will end up registering a listener.
     // Therefore, we initialize the references with null, and only create the object if it is null
     // Ref: https://github.com/facebook/react/issues/14490
     const cachedObjectRef = useRef<null | CachedObject>(null);
@@ -91,7 +91,7 @@ export function createUseObject(useRealm: () => Realm) {
 
         // Re-instantiate the cachedObject if the primaryKey has changed or the originalObject has gone from null to not null
         if (
-          comparePrimaryKeys(primaryKey, primaryKeyRef.current) === false ||
+          !comparePrimaryKeys(primaryKey, primaryKeyRef.current) ||
           (originalObjectRef.current === null && originalObject !== null)
         ) {
           cachedObjectRef.current = createCachedObject({
@@ -159,17 +159,13 @@ const comparePrimaryKeys = (a: any, b: any): boolean => {
     return false;
   }
   if (typeof a === "string" || typeof a === "number") {
-    if (a === b) {
-      return true;
-    }
-  } else if (a instanceof Realm.BSON.ObjectId && b instanceof Realm.BSON.ObjectId) {
-    if (a.toHexString() === b.toHexString()) {
-      return true;
-    }
-  } else if (a instanceof Realm.BSON.UUID && b instanceof Realm.BSON.ObjectId) {
-    if (a.toHexString() === b.toHexString()) {
-      return true;
-    }
+    return a === b;
+  }
+  if (a instanceof Realm.BSON.ObjectId && b instanceof Realm.BSON.ObjectId) {
+    return a.toHexString() === b.toHexString();
+  }
+  if (a instanceof Realm.BSON.UUID && b instanceof Realm.BSON.UUID) {
+    return a.toHexString() === b.toHexString();
   }
   return false;
 };
