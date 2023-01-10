@@ -66,7 +66,7 @@ void clear_test_state()
 #else
     auto remove_test_files = [] {
         if (!s_test_files_path.empty()) {
-            util::remove_dir_recursive(s_test_files_path);
+            util::try_remove_dir_recursive(s_test_files_path);
         }
     };
     remove_test_files();

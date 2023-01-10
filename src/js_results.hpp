@@ -314,9 +314,6 @@ void ResultsClass<T>::index_of(ContextType ctx, Fn& fn, Arguments& args, ReturnV
     try {
         ndx = fn(args[0]);
     }
-    catch (realm::Results::IncorrectTableException&) {
-        throw std::runtime_error("Object type does not match the type contained in result");
-    }
     catch (NonRealmObjectException&) {
         ndx = realm::not_found;
     }
