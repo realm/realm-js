@@ -13,7 +13,7 @@ jobs:
     container: ${{ matrix.variant.container }}
     env:
       REALM_DISABLE_ANALYTICS: 1
-      NDK_VERSION: 23.2.8568313
+      NDK_VERSION: 23.1.7779620
     strategy:
       fail-fast: false
       matrix:
@@ -146,8 +146,6 @@ jobs:
       - name: Build Android
         if: ${{ (matrix.variant.os == 'android') }}
         run: npm run prebuild:android -- --arch=${{matrix.variant.arch}}
-        env:
-          ANDROID_NDK: ${{ env.ANDROID_SDK_ROOT }}/ndk/${{ env.NDK_VERSION }}
 
       - name: Upload prebuild artifact
         uses: actions/upload-artifact@v2
