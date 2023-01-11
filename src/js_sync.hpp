@@ -314,10 +314,9 @@ protected:
     static typename T::Object create_error_object(typename T::Context ctx, const SyncError& error)
     {
         std::string name = "SyncError";
-        auto error_object = Object<T>::create_empty(ctx);
+        auto error_object = Object<T>::create_error(ctx, std::string(error.reason()));
 
         Object<T>::set_property(ctx, error_object, "name", Value<T>::from_string(ctx, name));
-        Object<T>::set_property(ctx, error_object, "message", Value<T>::from_string(ctx, error.reason()));
         Object<T>::set_property(ctx, error_object, "isFatal", Value<T>::from_boolean(ctx, error.is_fatal));
         Object<T>::set_property(ctx, error_object, "category",
                                 Value<T>::from_string(ctx, error.get_category().name()));
