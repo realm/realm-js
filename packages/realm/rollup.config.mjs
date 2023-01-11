@@ -25,11 +25,18 @@ import pkg from "./package.json" assert { type: "json" };
 export default [
   {
     input: "src/node/index.ts",
-    output: {
+    output: [
+      {
       file: pkg.main,
       format: "cjs",
       sourcemap: true,
     },
+      {
+        file: pkg.module,
+        format: "esm",
+        sourcemap: true,
+      },
+    ],
     plugins: [
       replace({
         preventAssignment: true,
@@ -42,7 +49,7 @@ export default [
         tsconfig: "src/node/tsconfig.json",
       }),
     ],
-    external: ["bson", "debug", "node:module", "node:fs", "undici"],
+    external: ["bson", "debug", "node:module", "node:fs", "node:path", "node:http", "node:https"],
   },
   {
     input: "src/react-native/index.ts",

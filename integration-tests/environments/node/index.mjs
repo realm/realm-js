@@ -16,23 +16,34 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-const os = require("os");
-const { Client } = require("mocha-remote-client");
+import os from "node:os";
+import { Client } from "mocha-remote-client";
+import fs from "fs-extra";
+import path from "path";
 
-global.client = new Client({
+const client = new Client({
   title: `Node.js v${process.versions.node} on ${os.platform()}`,
-  tests(context) {
+  async tests(context) {
+    console.log("Test is being called!");
     // Exposing the Realm constructor as a global
-    global.fs = require("fs-extra");
-    global.path = require("path");
+    global.fs = fs;
+    global.path = path;
     global.environment = { ...context, node: true };
 
-    // Add the integration test suite (in TypeScript)
-    require("ts-node/register/transpile-only");
-    require("@realm/integration-tests");
+    // Add the integration test suite
+    await import("@realm/integration-tests");
+    console.log("integration tests loaded");
     // Load the Node.js specific part of the integration tests
-    require("@realm/integration-tests/src/node");
+    await import("@realm/integration-tests/node");
+    console.log("node integration tests loaded");
   },
 });
+
+client.on("error", (err) => {
+  console.error("Failure from Mocha Remote Client:", err);
+  process.exitCode = 1;
+});
+
+global.client = client;
 
 // TODO: Setup a watch to re-run when the tests change
