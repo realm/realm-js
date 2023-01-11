@@ -12,7 +12,7 @@
     "start": "./realm-bindgen.ts",
     "test": "mocha",
     "generate:spec-schema": "typescript-json-schema src/spec/relaxed-model.ts RelaxedSpec --out generated/spec.schema.json --required",
-    "compile:node": "cmake-js compile --debug"
+    "build": "cmake-js compile --debug"
   },
   "dependencies": {
     "@types/node": "^18.11.9",
