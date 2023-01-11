@@ -37,8 +37,10 @@
     "packages/bindgen",
     "packages/realm",
     "packages/metro-config",
+    "packages/mocha-reporter",
     "packages/realm-app-importer",
     "integration-tests/baas-test-server",
+    "integration-tests/environments/node",
     "integration-tests/environments/react-native",
     "integration-tests/tests",
     "tests"
