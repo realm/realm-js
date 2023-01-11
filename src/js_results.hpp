@@ -255,8 +255,12 @@ template <typename T>
 void ResultsClass<T>::get_index(ContextType ctx, ObjectType object, uint32_t index, ReturnValue& return_value)
 {
     auto results = get_internal<T, ResultsClass<T>>(ctx, object);
-    NativeAccessor<T> accessor(ctx, *results);
-    return_value.set(results->get(accessor, index));
+    if (index >= results->size()) {
+        return_value.set_undefined();
+    } else {
+        NativeAccessor<T> accessor(ctx, *results);
+        return_value.set(results->get(accessor, index));
+    }
 }
 
 template <typename T>
