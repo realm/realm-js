@@ -23,14 +23,14 @@ import Realm from "realm";
 import { createUseObject } from "../useObject";
 
 export class ListItem extends Realm.Object {
-  id!: number;
+  id!: Realm.BSON.ObjectId;
   name!: string;
   lists!: Realm.List<List>;
 
   static schema: Realm.ObjectSchema = {
     name: "ListItem",
     properties: {
-      id: "int",
+      id: "objectId",
       name: "string",
       lists: {
         type: "linkingObjects",
@@ -43,7 +43,7 @@ export class ListItem extends Realm.Object {
 }
 
 export class List extends Realm.Object {
-  id!: number;
+  id!: Realm.BSON.ObjectId;
   title!: string;
   items!: Realm.List<ListItem>;
   favoriteItem?: ListItem;
@@ -52,7 +52,7 @@ export class List extends Realm.Object {
   static schema: Realm.ObjectSchema = {
     name: "List",
     properties: {
-      id: "int",
+      id: "objectId",
       title: "string",
       items: "ListItem[]",
       favoriteItem: "ListItem",
@@ -81,7 +81,10 @@ const listRenderCounter = jest.fn();
 
 let testRealm: Realm = new Realm(configuration);
 
-const testCollection = [...new Array(100)].map((_, index) => ({ id: index, name: `${index}` }));
+const testCollection = [...new Array(100)].map(() => {
+  const id = new Realm.BSON.ObjectId();
+  return { id, name: id.toHexString() };
+});
 
 const useRealm = () => {
   testRealm = new Realm(configuration);
@@ -92,13 +95,18 @@ const useRealm = () => {
 
 const useObject = createUseObject(useRealm);
 
-const App = () => {
+// setting renderItems to false will invoke `useObject` but not actual display the data
+// this is to test that the changes to the object is still trigger a rerender, even when not displayed
+// see https://github.com/realm/realm-js/issues/5185
+const App = ({ renderItems = true, targetPrimaryKey = parentObjectId }) => {
   return (
     <SetupComponent>
-      <TestComponent testID="testContainer" />
+      <TestComponent testID="testContainer" renderItems={renderItems} targetPrimaryKey={targetPrimaryKey} />
     </SetupComponent>
   );
 };
+
+const parentObjectId = new Realm.BSON.ObjectId();
 
 const SetupComponent = ({ children }: { children: JSX.Element }): JSX.Element | null => {
   const realm = useRealm();
@@ -113,7 +121,6 @@ const SetupComponent = ({ children }: { children: JSX.Element }): JSX.Element | 
   useEffect(() => {
     realm.write(() => {
       realm.deleteAll();
-      realm.create(List, { id: 1, title: "List", items: testCollection });
     });
     setSetupComplete(true);
   }, [realm]);
@@ -128,14 +135,15 @@ const SetupComponent = ({ children }: { children: JSX.Element }): JSX.Element | 
 const Item: React.FC<{ item: ListItem }> = React.memo(({ item }) => {
   itemRenderCounter();
   const realm = useRealm();
+  const idString = item.id.toHexString();
 
   return (
-    <View testID={`result${item.id}`}>
-      <View testID={`name${item.id}`}>
+    <View testID={`result${idString}`}>
+      <View testID={`name${idString}`}>
         <Text>{item.name}</Text>
       </View>
       <TextInput
-        testID={`input${item.id}`}
+        testID={`input${idString}`}
         value={item.name}
         onChangeText={(text) => {
           realm.write(() => {
@@ -144,7 +152,7 @@ const Item: React.FC<{ item: ListItem }> = React.memo(({ item }) => {
         }}
       ></TextInput>
       <TouchableHighlight
-        testID={`deleteButton${item.id}`}
+        testID={`deleteButton${idString}`}
         onPress={() => {
           realm.write(() => {
             realm.delete(item);
@@ -157,11 +165,13 @@ const Item: React.FC<{ item: ListItem }> = React.memo(({ item }) => {
   );
 });
 
-const TestComponent: React.FC<{ testID?: string }> = ({ testID }) => {
-  const list = useObject(List, 1);
+const TestComponent: React.FC<{ testID?: string; renderItems?: boolean; targetPrimaryKey: Realm.BSON.ObjectId }> = ({
+  testID,
+  renderItems,
+  targetPrimaryKey,
+}) => {
+  const list = useObject(List, targetPrimaryKey);
   const realm = useRealm();
-
-  listRenderCounter();
 
   const renderItem = useCallback<ListRenderItem<ListItem>>(({ item }) => <Item item={item} />, []);
 
@@ -171,15 +181,21 @@ const TestComponent: React.FC<{ testID?: string }> = ({ testID }) => {
     return <View testID={testID} />;
   }
 
+  listRenderCounter();
+
+  const listIdString = list.id.toHexString();
+
   return (
     <View testID={testID}>
-      <FlatList testID="list" data={list?.items ?? []} keyExtractor={keyExtractor} renderItem={renderItem} />;
-      <View testID={`list${list.id}`}>
-        <View testID={`listTitle${list.id}`}>
+      <View testID="list">
+        {renderItems && <FlatList data={list.items} keyExtractor={keyExtractor} renderItem={renderItem} />}
+      </View>
+      <View testID={`list${listIdString}`}>
+        <View testID={`listTitle${listIdString}`}>
           <Text>{list.title}</Text>
         </View>
         <TextInput
-          testID={`listTitleInput${list.id}`}
+          testID={`listTitleInput${listIdString}`}
           value={list.title}
           onChangeText={(text) => {
             realm.write(() => {
@@ -188,7 +204,7 @@ const TestComponent: React.FC<{ testID?: string }> = ({ testID }) => {
           }}
         ></TextInput>
         <TouchableHighlight
-          testID={`deleteListButton${list.id}`}
+          testID={`deleteListButton${listIdString}`}
           onPress={() => {
             realm.write(() => {
               realm.delete(list);
@@ -209,17 +225,24 @@ const TestComponent: React.FC<{ testID?: string }> = ({ testID }) => {
 };
 
 async function setupTest() {
-  const { getByTestId, getByText, debug } = render(<App />);
+  const { getByTestId, getByText, debug, rerender } = render(<App />);
   await waitFor(() => getByTestId("testContainer"));
 
-  const object = testRealm.objectForPrimaryKey(List, 1);
+  // In order to test that `useObject` brings the non-existing object into view when it's created,
+  // we do the creation after the app is rendered.
+  testRealm.write(() => {
+    testRealm.create(List, { id: parentObjectId, title: "List", items: testCollection });
+  });
+
+  const object = testRealm.objectForPrimaryKey(List, parentObjectId);
   if (!object) throw new Error("Object not found in Realm");
+  await waitFor(() => getByTestId("list"));
   const collection = object.items;
 
   expect(listRenderCounter).toHaveBeenCalledTimes(1);
   expect(itemRenderCounter).toHaveBeenCalledTimes(10);
 
-  return { getByTestId, getByText, debug, object, collection };
+  return { getByTestId, getByText, debug, object, collection, rerender };
 }
 
 describe("useObject: rendering objects with a Realm.List property", () => {
@@ -227,22 +250,33 @@ describe("useObject: rendering objects with a Realm.List property", () => {
     listRenderCounter.mockClear();
     itemRenderCounter.mockClear();
   });
+
   afterAll(() => {
     testRealm.close();
   });
+
   describe("rendering single object", () => {
-    it("render an object in one render cycle", async () => {
+    it("renders an object in one render cycle", async () => {
       const { getByTestId } = render(<App />);
+
+      // In order to test that `useObject` brings the non-existing object into view when it's created,
+      // we do the creation after the app is rendered.
+      testRealm.write(() => {
+        testRealm.create(List, { id: parentObjectId, title: "List", items: testCollection });
+      });
 
       await waitFor(() => getByTestId("list"));
 
       expect(listRenderCounter).toHaveBeenCalledTimes(1);
     });
+
     it("only re-renders the changed object when a property changes", async () => {
       const { getByTestId, getByText, object } = await setupTest();
 
-      const titleElement = getByTestId(`listTitle${object.id}`);
-      const inputComponent = getByTestId(`listTitleInput${object.id}`);
+      const idString = object.id.toHexString();
+
+      const titleElement = getByTestId(`listTitle${idString}`);
+      const inputComponent = getByTestId(`listTitleInput${idString}`);
 
       expect(titleElement).toHaveTextContent("List");
       expect(listRenderCounter).toHaveBeenCalledTimes(1);
@@ -254,10 +288,13 @@ describe("useObject: rendering objects with a Realm.List property", () => {
       expect(titleElement).toHaveTextContent("ChangedList");
       expect(listRenderCounter).toHaveBeenCalledTimes(2);
     });
+
     it("it nullifies the object when it is deleted", async () => {
       const { getByTestId, object } = await setupTest();
 
-      const deleteButton = getByTestId(`deleteListButton${object.id}`);
+      const idString = object.id.toHexString();
+
+      const deleteButton = getByTestId(`deleteListButton${idString}`);
 
       fireEvent.press(deleteButton);
 
@@ -267,17 +304,18 @@ describe("useObject: rendering objects with a Realm.List property", () => {
 
       expect(object.isValid()).toBe(false);
 
-      expect(testRealm.objectForPrimaryKey(List, 1)).toBe(null);
+      expect(testRealm.objectForPrimaryKey(List, parentObjectId)).toBe(null);
 
       const testContainer = getByTestId("testContainer");
       expect(testContainer).toBeEmptyElement();
 
-      expect(listRenderCounter).toHaveBeenCalledTimes(2);
+      // List is now gone, so it wasn't detected as a render
+      expect(listRenderCounter).toHaveBeenCalledTimes(1);
     });
 
     it("test changes to linked object", async () => {
       const { getByTestId } = await setupTest();
-      const object = testRealm.objectForPrimaryKey(List, 1);
+      const object = testRealm.objectForPrimaryKey(List, parentObjectId);
       if (!object) throw new Error("Object not found in Realm");
 
       await act(async () => {
@@ -310,10 +348,30 @@ describe("useObject: rendering objects with a Realm.List property", () => {
       // We should only have re-rendered once, as only the last change actually modified an item
       expect(itemRenderCounter).toHaveBeenCalledTimes(11);
     });
+
+    it("renders a different list if the target primary key changes", async () => {
+      const { rerender, getByTestId } = await setupTest();
+
+      const newParentObjectId = new Realm.BSON.ObjectId();
+
+      testRealm.write(() => {
+        testRealm.create(List, { id: newParentObjectId, title: "Other List", items: [] });
+      });
+
+      rerender(<App targetPrimaryKey={newParentObjectId} />);
+
+      const titleElement = getByTestId(`listTitle${newParentObjectId.toHexString()}`);
+      expect(titleElement).toHaveTextContent("Other List");
+    });
   });
+
   describe("rendering objects with a Realm.List property", () => {
     it("renders each visible item in the list once", async () => {
       const { getByTestId } = render(<App />);
+
+      testRealm.write(() => {
+        testRealm.create(List, { id: parentObjectId, title: "List", items: testCollection });
+      });
 
       await waitFor(() => getByTestId("list"));
 
@@ -325,10 +383,12 @@ describe("useObject: rendering objects with a Realm.List property", () => {
 
       const id = collection[0].id;
 
-      const nameElement = getByTestId(`name${id}`);
-      const input = getByTestId(`input${id}`);
+      const idString = id.toHexString();
 
-      expect(nameElement).toHaveTextContent(`${id}`);
+      const nameElement = getByTestId(`name${idString}`);
+      const input = getByTestId(`input${idString}`);
+
+      expect(nameElement).toHaveTextContent(idString);
 
       fireEvent.changeText(input, "apple");
 
@@ -346,17 +406,21 @@ describe("useObject: rendering objects with a Realm.List property", () => {
       const firstItem = collection[0];
       const id = firstItem.id;
 
+      const idString = id.toHexString();
+
       const nextVisible = collection[10];
 
-      const deleteButton = getByTestId(`deleteButton${id}`);
-      const nameElement = getByTestId(`name${id}`);
+      const deleteButton = getByTestId(`deleteButton${idString}`);
+      const nameElement = getByTestId(`name${idString}`);
 
-      expect(nameElement).toHaveTextContent(`${id}`);
+      expect(nameElement).toHaveTextContent(idString);
       expect(itemRenderCounter).toHaveBeenCalledTimes(10);
 
       fireEvent.press(deleteButton);
 
-      await waitFor(() => getByTestId(`name${nextVisible.id}`));
+      const nextIdString = nextVisible.id.toHexString();
+
+      await waitFor(() => getByTestId(`name${nextIdString}`));
 
       expect(itemRenderCounter).toHaveBeenCalledTimes(20);
     });
@@ -380,7 +444,7 @@ describe("useObject: rendering objects with a Realm.List property", () => {
     it("only renders the new item when a list item is added", async () => {
       const { collection } = await setupTest();
       testRealm.write(() => {
-        collection.unshift(testRealm.create(ListItem, { id: 9999, name: "apple" }));
+        collection.unshift(testRealm.create(ListItem, { id: new Realm.BSON.ObjectId(), name: "apple" }));
       });
 
       // Force Realm listeners to fire rather than waiting for the text "apple"
@@ -421,6 +485,37 @@ describe("useObject: rendering objects with a Realm.List property", () => {
       });
 
       // no assertion here, just checking that the test doesn't crash
+    });
+
+    it("re-renders the list even if the list items have not been rendered", async () => {
+      const { getByTestId } = render(<App renderItems={false} />);
+
+      const list = testRealm.write(() => {
+        return testRealm.create(List, { id: parentObjectId, title: "List" });
+      });
+
+      await waitFor(() => getByTestId("list"));
+
+      expect(listRenderCounter).toHaveBeenCalledTimes(1);
+
+      testRealm.write(() => {
+        list.items.push(testRealm.create(ListItem, testCollection[0]));
+      });
+
+      await act(async () => {
+        forceSynchronousNotifications(testRealm);
+      });
+
+      expect(listRenderCounter).toHaveBeenCalledTimes(2);
+
+      testRealm.write(() => {
+        list.items.push(testRealm.create(ListItem, testCollection[1]));
+      });
+
+      await act(async () => {
+        forceSynchronousNotifications(testRealm);
+      });
+      expect(listRenderCounter).toHaveBeenCalledTimes(3);
     });
   });
 });

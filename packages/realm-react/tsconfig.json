@@ -82,7 +82,6 @@
     // ]
   },
   "exclude": [
-    "dist",
-    "testApp"
+    "dist"
   ]
 }
