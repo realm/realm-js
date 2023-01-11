@@ -21,6 +21,7 @@ import { EJSON, ObjectId, UUID } from "bson";
 import {
   BSON,
   ClientResetError,
+  MutableSubscriptionSet,
   Realm,
   SyncError,
   SyncSession,
@@ -29,11 +30,11 @@ import {
   binding,
   toBindingClientResetMode,
   toBindingErrorHandler,
-  toBindingStopPolicy,
-  toBindingNotifyBeforeClientReset,
+  toBindingErrorHandlerWithOnManual,
   toBindingNotifyAfterClientReset,
   toBindingNotifyAfterClientResetWithfallback,
-  toBindingErrorHandlerWithOnManual,
+  toBindingNotifyBeforeClientReset,
+  toBindingStopPolicy,
 } from "../internal";
 
 export type PartitionValue = string | number | BSON.ObjectId | BSON.UUID | null;
@@ -114,9 +115,6 @@ export type BaseSyncConfiguration = {
   clientReset?: ClientResetConfig;
 };
 
-// TODO: Delete once the flexible sync API gets implemented
-type MutableSubscriptionSet = unknown;
-
 export type FlexibleSyncConfiguration = BaseSyncConfiguration & {
   flexible: true;
   partitionValue?: never;
@@ -146,13 +144,17 @@ export type SyncConfiguration = FlexibleSyncConfiguration | PartitionSyncConfigu
 
 /** @internal */
 export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConfig_Relaxed {
-  if (config.flexible) {
-    throw new Error("Flexible sync has not been implemented yet");
-  }
-  const { user, onError, _sessionStopPolicy, customHttpHeaders, clientReset } = config;
+  const { user, onError, _sessionStopPolicy, customHttpHeaders, clientReset, flexible } = config;
   assert.instanceOf(user, User, "user");
-  validatePartitionValue(config.partitionValue);
-  const partitionValue = EJSON.stringify(config.partitionValue as EJSON.SerializableTypes);
+
+  // TODO: Validate all fields (add the missing ones to Configuration.ts)
+
+  let partitionValue: string | undefined;
+  if (!flexible) {
+    validatePartitionValue(config.partitionValue);
+    partitionValue = EJSON.stringify(config.partitionValue as EJSON.SerializableTypes);
+  }
+
   return {
     user: config.user.internal,
     partitionValue,
@@ -160,6 +162,7 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
       ? toBindingStopPolicy(_sessionStopPolicy)
       : binding.SyncSessionStopPolicy.AfterChangesUploaded,
     customHttpHeaders: customHttpHeaders,
+    flxSyncRequested: !!flexible,
     ...parseClientResetConfig(clientReset, onError),
   };
 }
