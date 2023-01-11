@@ -109,10 +109,17 @@ jobs:
         if: ${{ matrix.variant.os == 'android' }}
         run: sdkmanager --install "ndk;${{ env.NDK_VERSION }}"
 
+      # The ccache installed by github doesn't want to be moved around. Let the ccache action download a new one.
+      - name: Remove pre-installed ccache
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        # There are two; remove both
+        run: |
+          rm -fv $(which ccache)
+          rm -fv $(which ccache)
+
       - name: ccache
-        uses: hendrikmuhs/ccache-action@v1
-        #TODO: figure out using ccache or equivalent on windows
-        if: ${{ runner.os != 'Windows' }}
+        uses: hendrikmuhs/ccache-action@bd43b7f5fb36d5f97ef5c6cc818a2055b04f610a
         with:
           key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}
           max-size: '2.0G'
@@ -125,12 +132,31 @@ jobs:
       # in CI file timestamps change with every run so instead rely on file content hashing
       # https://reactnative.dev/docs/build-speed#using-this-approach-on-a-ci
       - name: Configure ccache
-        if: ${{ runner.os != 'Windows' }}
         run: ccache --set-config="compiler_check=content"
 
       - name: Install dependencies
         # Ignoring scripts to prevent a prebuilt from getting fetched / built
         run: npm ci --ignore-scripts
+
+      - name: Insert ccache executables
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: |
+          cl_exe=$(which cl.exe)
+          cl_dir=$(dirname "$cl_exe")
+          cl_dir_windows="C:${cl_dir#/c}"
+          mv -v "$cl_exe" "$cl_dir"/cl-real.exe
+          cp -v "$cl_dir"/cl.exe.config "$cl_dir"/cl-real.exe.config
+          ccache_exe=$(which ccache.exe)
+          cp -v "$ccache_exe" "$cl_dir"/cl.exe
+          ls -l "$cl_dir"
+          echo "CCACHE_COMPILER=$cl_dir_windows/cl-real.exe" >> $GITHUB_ENV
+          echo 'CCACHE_COMPILERTYPE=msvc' >> $GITHUB_ENV
+          echo 'CCACHE_STATSLOG=C:\Users\runneradmin\ccache\statslog.txt' >> $GITHUB_ENV
+          #echo 'CCACHE_LOGFILE=C:\Users\runneradmin\ccache\logfile.txt' >> $GITHUB_ENV
+          # This tells msbuild to compile only one file at a time; ccache needs that.
+          echo 'UseMultiToolTask=true' >> $GITHUB_ENV
+          echo 'VCPKG_KEEP_ENV_VARS=CCACHE_COMPILER;CCACHE_STATSLOG;CCACHE_LOGFILE;CCACHE_COMPILERTYPE;UseMultiToolTask' >> $GITHUB_ENV
 
       # build the c++ library for standard targets
       - name: Build node
