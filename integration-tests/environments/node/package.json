@@ -4,7 +4,7 @@
   "description": "Realm JS tests running in a Node.js environment",
   "private": true,
   "scripts": {
-    "start": "node index.js",
+    "start": "tsm --no-warnings index.mjs",
     "test": "mocha-remote --reporter @realm/mocha-reporter npm start",
     "lint": "eslint ."
   },
@@ -12,14 +12,15 @@
     "@realm/integration-tests": "*",
     "mocha-cli": "^1.0.1",
     "mocha-github-actions-reporter": "^0.2.3",
-    "mocha-remote-cli": "^1.5.0",
-    "mocha-remote-client": "^1.5.0",
+    "mocha-remote-cli": "^1.6.0",
+    "mocha-remote-client": "^1.6.0",
     "realm": "*"
   },
   "devDependencies": {
+    "@realm/app-importer": "*",
     "@realm/mocha-reporter": "*",
     "cmake-js": "^6.1.0",
     "concurrently": "^6.0.2",
-    "@realm/app-importer": "*"
+    "tsm": "^2.3.0"
   }
 }
