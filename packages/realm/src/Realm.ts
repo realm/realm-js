@@ -30,6 +30,7 @@ import {
   DefaultObject,
   Dictionary,
   EmailPasswordAuthClient,
+  FlexibleSyncConfiguration,
   INTERNAL,
   List,
   MigrationCallback,
@@ -44,6 +45,7 @@ import {
   RealmObjectConstructor,
   RealmSet,
   Results,
+  SubscriptionSet,
   SyncSession,
   TypeAssertionError,
   Types,
@@ -583,10 +585,24 @@ export class Realm {
 
   /**
    * The latest set of flexible sync subscriptions.
-   * @throws {@link Error} If flexible sync is not enabled for this app
+   * @throws {@link Error} If flexible sync is not enabled for this app  // TODO: Specifically it throws AssertionError, update doc?
    */
-  get subscriptions(): any {
-    throw new Error("Not yet implemented");
+  get subscriptions(): SubscriptionSet {
+    const { syncConfig } = this.internal.config;
+    assert(
+      syncConfig,
+      "`subscriptions` can only be accessed if flexible sync is enabled, but sync is " +
+        "currently disabled for your app. Add a flexible sync config when opening the " +
+        "Realm, for example: { sync: { user, flexible: true } }.",
+    );
+    assert(
+      syncConfig.flxSyncRequested,
+      "`subscriptions` can only be accessed if flexible sync is enabled, but partition " +
+        "based sync is currently enabled for your Realm. Modify your sync config to remove any `partitionValue` " +
+        "and enable flexible sync, for example: { sync: { user, flexible: true } }",
+    );
+
+    return new SubscriptionSet(this, this.internal.latestSubscriptionSet);
   }
 
   /**
@@ -997,6 +1013,11 @@ export class Realm {
     arg: string | binding.TableKey | RealmObject<T> | Constructor<RealmObject<T>>,
   ): ClassHelpers {
     return this.classes.getHelpers<T>(arg);
+  }
+
+  // TODO
+  private handleInitialSubscriptions(config: FlexibleSyncConfiguration): void {
+    throw new Error("Not yet implemented");
   }
 }
 
