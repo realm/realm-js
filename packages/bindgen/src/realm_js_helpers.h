@@ -3,9 +3,11 @@
 #include "realm/binary_data.hpp"
 #include "realm/object-store/object_store.hpp"
 #include "realm/object-store/sync/sync_session.hpp"
+#include "realm/object_id.hpp"
 #include "realm/query.hpp"
 #include "realm/sync/client_base.hpp"
 #include "realm/sync/protocol.hpp"
+#include "realm/sync/subscriptions.hpp"
 #include "realm/util/base64.hpp"
 #include "realm/util/file.hpp"
 #include "realm/util/logger.hpp"
@@ -227,6 +229,26 @@ struct Helpers {
 
     static bool file_exists(const StringData& path) {
         return realm::util::File::exists(path);
+    }
+
+    static bool erase_subscription(sync::MutableSubscriptionSet& subs, const sync::Subscription& sub_to_remove) {
+        auto it = std::find_if(subs.begin(), subs.end(), [sub_to_remove](auto& sub) {
+            return sub.id == sub_to_remove.id;
+        });
+
+        if (it == subs.end()) {
+            return false;
+        }
+        subs.erase(it);
+
+        return true;
+    }
+
+    static std::string get_results_description(const Results& results) {
+        auto query = results.get_query();
+        auto descriptor = results.get_descriptor_ordering();
+
+        return query.get_description() + " " + descriptor.get_description(query.get_table());
     }
 };
 
