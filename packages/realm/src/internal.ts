@@ -79,6 +79,7 @@ export * from "./app-services/UserProfile";
 export * from "./app-services/Sync";
 export * from "./app-services/App";
 export * from "./app-services/BaseSubscriptionSet";
+export * from "./app-services/MutableSubscriptionSet";
 export * from "./app-services/Subscription";
 
 export * from "./Realm";
