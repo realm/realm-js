@@ -37,8 +37,8 @@ afterEach(() => {
   }
 });
 
-import "./utils/import-app.test";
-import "./utils/chai-plugin.test";
+import "./utils/import-app.test.ts";
+import "./utils/chai-plugin.test.ts";
 
 describe("Test Harness", function (this: Mocha.Suite) {
   /**

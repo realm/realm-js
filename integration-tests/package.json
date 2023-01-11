@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "start": "npm start --prefix tests --",
-    "test": "npm run build --prefix tests && concurrently -m 1 npm:test:*",
+    "test": "concurrently -m 1 npm:test:*",
     "test:node": "npm test --prefix environments/node",
     "test:electron": "npm test --prefix environments/electron",
     "test:react-native": "npm test --prefix environments/react-native"
