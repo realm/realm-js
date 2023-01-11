@@ -78,6 +78,7 @@ export * from "./app-services/FunctionsFactory";
 export * from "./app-services/UserProfile";
 export * from "./app-services/Sync";
 export * from "./app-services/App";
+export * from "./app-services/Subscription";
 
 export * from "./Realm";
 export * from "./RealmListeners";
