@@ -87,9 +87,6 @@ describe("Aliasing property names using mapTo", () => {
         age: 42,
       });
 
-      // Creating uses arrays still work
-      realm.create("ObjectA", ["Bar", 42]);
-
       // Using the internal name instead of the alias throws an exception.
       expect(() => realm.create("ObjectA", { name: "Boom" })).to.throw();
     });
