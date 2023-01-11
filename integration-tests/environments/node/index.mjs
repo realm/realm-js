@@ -24,7 +24,6 @@ import path from "path";
 const client = new Client({
   title: `Node.js v${process.versions.node} on ${os.platform()}`,
   async tests(context) {
-    console.log("Test is being called!");
     // Exposing the Realm constructor as a global
     global.fs = fs;
     global.path = path;
