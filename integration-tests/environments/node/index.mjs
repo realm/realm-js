@@ -32,10 +32,8 @@ const client = new Client({
 
     // Add the integration test suite
     await import("@realm/integration-tests");
-    console.log("integration tests loaded");
     // Load the Node.js specific part of the integration tests
     await import("@realm/integration-tests/node");
-    console.log("node integration tests loaded");
   },
 });
 
