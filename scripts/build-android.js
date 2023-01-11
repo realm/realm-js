@@ -21,10 +21,26 @@ const fs = require("fs-extra");
 const path = require("path");
 const exec = require("child_process").execFileSync;
 
+const NDK_VERSION = "23.1.7779620";
+
+const { ANDROID_SDK_ROOT } = process.env;
+if (!fs.existsSync(ANDROID_SDK_ROOT)) {
+  console.error(`Missing the Android SDK ${ANDROID_SDK_ROOT}`);
+  process.exit(1);
+}
+
+const ndkPath = path.resolve(ANDROID_SDK_ROOT, "ndk", NDK_VERSION);
+if (!fs.existsSync(ndkPath)) {
+  const cmd = `sdkmanager --install "ndk;${NDK_VERSION}"`;
+  console.error(`Missing Android NDK v${NDK_VERSION} (${ndkPath}) - run: ${cmd}`);
+  process.exit(1);
+}
+
 //simple validation of current directory.
 const rnDir = path.resolve(process.cwd(), "react-native");
 if (!fs.existsSync(rnDir)) {
-  throw new Error("This script needs to be run at the root dir of the project");
+  console.error("This script needs to be run at the root dir of the project");
+  process.exit(1);
 }
 
 const buildTypes = ["Debug", "Release", "RelWithDebInfo", "MinSizeRel"];
