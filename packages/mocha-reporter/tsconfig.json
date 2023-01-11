@@ -6,7 +6,6 @@
 		"moduleResolution": "node",
 		"noEmit": false,
 		"declaration": true,
-		"outDir": "./dist",
-		"typeRoots": ["./types", "./node_modules/@types", "../../node_modules/@types"]
+		"outDir": "./dist"
 	}
 }

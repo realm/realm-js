@@ -2,9 +2,14 @@
   "name": "realm",
   "version": "12.0.0-rc.0",
   "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
-  "main": "dist/bundle.cjs.js",
-  "react-native": "dist/bundle.react-native.es.js",
+  "main": "dist/bundle.js",
+  "module": "dist/bundle.mjs",
+  "react-native": "dist/bundle.react-native.mjs",
   "types": "dist/bundle.d.ts",
+  "exports": {
+    ".": "./dist/bundle.mjs",
+    "./scripts/submit-analytics": "./scripts/submit-analytics.mjs"
+  },
   "scripts": {
     "test": "mocha",
     "test:types": "tsc --project type-tests/tsconfig.json",
