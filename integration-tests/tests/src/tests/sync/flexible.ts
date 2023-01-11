@@ -29,7 +29,7 @@
 // fraction too long.
 
 import { expect } from "chai";
-import Realm, { BSON, ClientResetMode, FlexibleSyncConfiguration, SessionStopPolicy } from "realm";
+import { BSON, ClientResetMode, FlexibleSyncConfiguration, Realm, SessionStopPolicy } from "realm";
 
 import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "../../hooks";
 import { DogSchema, IPerson, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
@@ -121,6 +121,7 @@ async function addSubscriptionAndSync<T>(
 }
 
 describe.skipIf(environment.missingServer, "Flexible sync", function () {
+  this.timeout(25 * 1000);
   importAppBefore("with-db-flx");
   authenticateUserBefore();
   openRealmBeforeEach({
