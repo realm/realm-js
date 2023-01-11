@@ -29,6 +29,7 @@ import "./tests/sync/mixed";
 import "./tests/sync/sync-as-local";
 import "./tests/sync/upload-delete-download";
 
+import "./tests/alias";
 import "./tests/bson";
 import "./tests/class-models";
 import "./tests/dictionary";
