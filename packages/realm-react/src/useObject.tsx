@@ -61,6 +61,8 @@ export function createUseObject(useRealm: () => Realm) {
     // Store the primaryKey as a ref, since when it is an objectId or UUID, it will be a new instance on every render
     const primaryKeyRef = useRef(primaryKey);
 
+    const collectionRef = useRef(realm.objects(type));
+
     // Initializing references with a function call or class constructor will
     // cause the function or constructor to be called on ever render.
     // Even though this value is thrown away on subsequent renders, `createCachedObject` will end up registering a listener.
@@ -113,7 +115,8 @@ export function createUseObject(useRealm: () => Realm) {
 
     // If the object doesn't exist, listen for insertions to the collection and force a rerender if the inserted object has the correct primary key
     useEffect(() => {
-      const collectionListener: Realm.CollectionChangeCallback<T & Realm.Object> = (collection, changes) => {
+      const collection = collectionRef.current;
+      const collectionListener: Realm.CollectionChangeCallback<T & Realm.Object> = (_, changes) => {
         const primaryKeyProperty = collection?.[0]?.objectSchema()?.primaryKey;
         for (const index of changes.insertions) {
           const object = collection[index];
@@ -130,17 +133,13 @@ export function createUseObject(useRealm: () => Realm) {
       };
 
       if (!originalObjectRef.current) {
-        const collection = realm.objects(type);
         collection.addListener(collectionListener);
       }
 
       return () => {
-        if (!originalObjectRef.current) {
-          // If the app is closing, the realm will be closed and the listener does not need to be removed
-          if (!realm.isClosed) {
-            const collection = realm.objects(type);
-            collection.removeListener(collectionListener);
-          }
+        // If the app is closing, the realm will be closed and the listener does not need to be removed if
+        if (!realm.isClosed && collection) {
+          collection.removeListener(collectionListener);
         }
       };
     }, [realm, type, forceRerender]);
