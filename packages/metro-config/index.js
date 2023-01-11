@@ -19,24 +19,14 @@
 const path = require("path");
 const exclusionList = require("metro-config/src/defaults/exclusionList");
 
-function build({ projectRoot, watchFolders }) {
-  const extraNodeModules = new Proxy(
-    {},
-    {
-      get(target, name) {
-        // We want to resolve to the directory of the package, to let Metro choose the correct "main" field.
-        const resolvedPackage = require.resolve(name + "/package.json");
-        return path.dirname(resolvedPackage);
-      },
-    },
-  );
+const rootDir = path.resolve(__dirname, "../..");
 
+function build({ projectRoot, watchFolders = [] }) {
   return {
     projectRoot,
-    watchFolders,
+    watchFolders: [rootDir, ...watchFolders],
     resolver: {
       blockList: exclusionList(),
-      extraNodeModules,
     },
     transformer: {
       getTransformOptions: async () => ({
