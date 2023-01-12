@@ -23,7 +23,7 @@ import path from "path";
 
 import { extend } from "./debug";
 import { createOutputter, Outputter } from "./outputter";
-import { FormatterName, format, formatterNames } from "./formatter";
+import { FormatterName, format, getFormatterNames } from "./formatter";
 
 const debug = extend("out");
 
@@ -71,6 +71,13 @@ export function createOutputDirectory(outputPath: string): OutputDirectory {
       }
       const fileDebug = debug.extend(filePath);
 
+      // Check that all formatters are known
+      const knownFormatters = getFormatterNames();
+      const missingFormatters = formatters.filter((name) => !knownFormatters.includes(name));
+      if (missingFormatters.length > 0) {
+        throw new Error(`Unexpected formatter(s): ${missingFormatters}`);
+      }
+
       fileDebug(chalk.dim("Opening", resolvedPath));
       const fd = fs.openSync(resolvedPath, "w");
       openFiles.push({ fd, formatters, resolvedPath, debug: fileDebug });
@@ -86,7 +93,7 @@ export function createOutputDirectory(outputPath: string): OutputDirectory {
       }
     },
     format() {
-      for (const formatterName of formatterNames) {
+      for (const formatterName of getFormatterNames()) {
         const relevantFiles = openFiles.filter((f) => f.formatters.includes(formatterName)).map((f) => f.resolvedPath);
         format(formatterName, outputPath, relevantFiles);
       }
