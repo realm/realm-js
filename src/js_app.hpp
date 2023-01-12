@@ -89,11 +89,16 @@ public:
         return std::make_unique<NetworkTransport>(ctx, std::move(eld));
     };
 
-    // These values are overridden at runtime
-    static inline std::string package_version = "?.?.?";
-    static inline std::string platform_context = "unknown-context";
-    static inline std::string platform_os = "unknown-os";
+    // These values are overridden at runtime - from app.hpp
+    static inline std::string platform = "unknown-platform";
     static inline std::string platform_version = "?.?.?";
+    static inline std::string sdk_version = "?.?.?";
+    static inline std::string sdk = "unknown-sdk";
+    static inline std::string cpu_arch = "unknown-cpu-arch";
+    static inline std::string device_name = "unknown-device-name";
+    static inline std::string device_version = "?.?.?";
+    static inline std::string framework_name = "unknown-framework-name";
+    static inline std::string framework_version = "?.?.?";
 
     static void constructor(ContextType, ObjectType, Arguments&);
     static FunctionType create_constructor(ContextType);
@@ -221,9 +226,15 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
     config.transport = AppClass<T>::transport_generator(Protected(Context::get_global_context(ctx)),
                                                         NetworkTransport::make_dispatcher());
 
-    config.platform = platform_os;
-    config.platform_version = platform_version;
-    config.sdk_version = "RealmJS/" + package_version;
+    config.device_info.platform = platform;
+    config.device_info.platform_version = platform_version;
+    config.device_info.sdk = "Realm JavaScript";
+    config.device_info.sdk_version = sdk_version;
+    config.device_info.cpu_arch = cpu_arch;
+    config.device_info.device_name = device_name;
+    config.device_info.device_version = device_version;
+    config.device_info.framework_name = framework_name;
+    config.device_info.framework_version = framework_version;
 
     auto realm_file_directory = default_realm_file_directory();
     ensure_directory_exists_for_file(realm_file_directory);
@@ -241,8 +252,7 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
 template <typename T>
 std::string AppClass<T>::get_user_agent()
 {
-    return "RealmJS/" + package_version + " (" + platform_context + ", " + platform_os + ", v" + platform_version +
-           ")";
+    return "RealmJS/" + sdk_version + " (" + platform + ", v" + platform_version + ")";
 }
 
 template <typename T>
@@ -380,11 +390,18 @@ void AppClass<T>::set_versions(ContextType ctx, ObjectType this_object, Argument
 {
     args.validate_count(1);
     auto versions = Value::validated_to_object(ctx, args[0]);
-    AppClass<T>::package_version = Object::validated_get_string(ctx, versions, "packageVersion");
-    AppClass<T>::platform_context = Object::validated_get_string(ctx, versions, "platformContext");
-    AppClass<T>::platform_os = Object::validated_get_string(ctx, versions, "platformOs");
+
+    AppClass<T>::platform = Object::validated_get_string(ctx, versions, "platform");
     AppClass<T>::platform_version = Object::validated_get_string(ctx, versions, "platformVersion");
+    AppClass<T>::sdk = Object::validated_get_string(ctx, versions, "sdk");
+    AppClass<T>::sdk_version = Object::validated_get_string(ctx, versions, "sdkVersion");
+    AppClass<T>::cpu_arch = Object::validated_get_string(ctx, versions, "cpuArch");
+    AppClass<T>::device_name = Object::validated_get_string(ctx, versions, "deviceName");
+    AppClass<T>::device_version = Object::validated_get_string(ctx, versions, "deviceVersion");
+    AppClass<T>::framework_name = Object::validated_get_string(ctx, versions, "frameworkName");
+    AppClass<T>::framework_version = Object::validated_get_string(ctx, versions, "frameworkVersion");
 }
+
 /**
  * @brief Registers an event listener on the SharedApp that fires on various app events.
  * This includes login, logout, switching users, linking users and refreshing custom data.

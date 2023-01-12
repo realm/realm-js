@@ -14,12 +14,10 @@
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
+* Upgraded Realm Core from v13.1.1 to v13.2.0. ([#5174](https://github.com/realm/realm-js/issues/5174) and [#5244](https://github.com/realm/realm-js/issues/5244))
 * Unpin Xcode version when building locally and upgrade the Xcode version used by GHA.
 * Enable tests for notifications on dictionary.
 * Automate releasing package on GHA
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
 
 ## 11.4.0 (2023-01-23)
 
