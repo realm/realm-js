@@ -28,6 +28,66 @@ type Item<ValueType = Realm.Mixed> = {
 type DictValues = { [key: string]: unknown };
 
 describe("Dictionary", () => {
+  describe("schema", () => {
+    let canonicalRealm;
+    let shorthandRealm;
+    let canSchema;
+    let shSchema;
+
+    const DictWrongSchema: Realm.ObjectSchema = {
+      name: "Dictionary",
+      properties: {
+        a: "wwwww{}",
+      },
+    };
+
+    const childSchema: Realm.ObjectSchema = {
+      name: "Child",
+      properties: {
+        value: "int",
+      },
+    };
+
+    const shorthandSchema: Realm.ObjectSchema = {
+      name: "ShorthandSchema",
+      properties: {
+        a: "string{}",
+        b: "{}",
+        c: "Child{}",
+      },
+    };
+    const canonicalSchema: Realm.ObjectSchema = {
+      name: "CanonicalSchema",
+      properties: {
+        a: { type: "dictionary", objectType: "string", optional: false },
+        b: { type: "dictionary", objectType: "mixed", optional: true },
+        c: { type: "dictionary", objectType: "Child", optional: true },
+      },
+    };
+
+    beforeEach(() => {
+      Realm.clearTestState();
+    });
+    it("short and canonical schema type yields same result", () => {
+      canonicalRealm = new Realm({ schema: [canonicalSchema, childSchema] });
+      canSchema = canonicalRealm.schema;
+      canonicalRealm.close();
+      shorthandRealm = new Realm({ schema: [shorthandSchema, childSchema] });
+      shSchema = shorthandRealm.schema;
+      shorthandRealm.close();
+      expect(shSchema.properties).equals(
+        canSchema.properties,
+        "Canonical and shorthand schemas should have identical properties",
+      );
+    });
+    it("throws on invalid schema", () => {
+      expect(() => {
+        new Realm({ schema: [DictWrongSchema] });
+      }).throws(
+        "Schema validation failed due to the following errors:\n- Property 'Dictionary.a' of type 'dictionary' has unknown object type 'wwwww'",
+      );
+    });
+  });
   describe("with unconstrained (mixed) values", () => {
     openRealmBefore({
       schema: [
@@ -205,6 +265,44 @@ describe("Dictionary", () => {
         // expect(item.dict).deep.equals({});
       });
     });
+    it("can have values updated", function (this: RealmContext) {
+      let item;
+      this.realm.write(() => {
+        item = this.realm.create<Item>("Item", {
+          dict: { a: 1, b: 2, c: "hey" },
+        });
+      });
+      expect(item.dict.a).equals(1);
+      expect(item.dict.b).equals(2);
+      expect(item.dict.c).equals("hey");
+      this.realm.write(() => {
+        item = this.realm.create<Item>("Item", {
+          dict: { a: 0, b: 0, c: "new value" },
+        });
+      });
+      expect(item.dict.a).equals(0);
+      expect(item.dict.b).equals(0);
+      expect(item.dict.c).equals("new value");
+    });
+    it("can have values mutated", function (this: RealmContext) {
+      let item;
+      this.realm.write(() => {
+        item = this.realm.create<Item>("Item", {
+          dict: { a: 1, b: 2, c: "hey" },
+        });
+      });
+      expect(item.dict.a).equals(1);
+      expect(item.dict.b).equals(2);
+      expect(item.dict.c).equals("hey");
+      this.realm.write(() => {
+        item.dict.a = 0;
+        item.dict.b = 0;
+        item.dict.c = "new value";
+      });
+      expect(item.dict.a).equals(0);
+      expect(item.dict.b).equals(0);
+      expect(item.dict.c).equals("new value");
+    });
   });
 
   describe("toJSON", function () {
@@ -332,5 +430,343 @@ describe("Dictionary", () => {
       key1: "unexpected string",
     },
     expectedError: "JS value must be of type 'object'",
+  });
+  describe("Dictionary queries", () => {
+    const DictSchema: Realm.ObjectSchema = {
+      name: "Dictionary",
+      properties: {
+        a: "{}",
+      },
+    };
+    let realm: Realm;
+    beforeEach(() => {
+      Realm.clearTestState();
+      realm = new Realm({ schema: [DictSchema] });
+    });
+    it("support filters", () => {
+      const N = 100;
+      for (let i = 0; i < N; i++) {
+        realm.write(() => realm.create(DictSchema.name, { a: { x: i, y: 2, z: 3 } }));
+      }
+
+      const data = realm.objects(DictSchema.name);
+      expect(data.length).equals(N, "We expect ${N} objects.");
+
+      const half = data.filtered("a['x'] >= 50");
+      const seventy = data.filtered("a['x'] >= $0", 70);
+      expect(half.length).equals(N / 2, "We expect only 50 items, matching for field x.");
+      expect(seventy.length).equals(30, "We expect only 30 items, matching for field x.");
+    });
+  });
+  describe("notifications", () => {
+    const DictSchema: Realm.ObjectSchema = {
+      name: "Dictionary",
+      properties: {
+        fields: "{}",
+      },
+    };
+    let realm;
+    beforeEach(() => {
+      Realm.clearTestState();
+      realm = new Realm({ schema: [DictSchema] });
+    });
+    it("support update notifications", () => {
+      const UPDATES = 5;
+      realm.write(() => realm.create(DictSchema.name, { fields: { field1: 0, filed2: 2, field3: 3 } }));
+      const fields = realm.objects(DictSchema.name)[0].fields;
+      let cnt = 0;
+      fields.addListener((_, changeset) => {
+        expect(fields.field1).equals(cnt, "fields.field1: ${fields.field1} should be equals to: cnt -> ${cnt}");
+        // We ignore the first as it just reflect the creation in the line above.
+        if (cnt > 0) {
+          expect(changeset.modifications[0]).equals(
+            "field1",
+            "The changeset should reflect an update on field1 but it shows -> ${changeset.modifications[0]}",
+          );
+        }
+        cnt++;
+      });
+
+      for (let i = 1; i <= UPDATES; i++) {
+        realm.write(() => {
+          fields.field1 = i;
+        });
+      }
+
+      return new Promise<void>((resolve, reject) => {
+        setTimeout(() => {
+          expect(realm.objects(DictSchema.name)[0].fields.field1).equals(5);
+          expect(cnt).equals(UPDATES + 1, "We expect ${UPDATES + 1} updates.");
+          fields.removeAllListeners();
+          realm.close();
+          resolve();
+        }, 1000);
+      });
+    });
+    // FIXME: Running the following test produce unexpected side-effects which breaks all subsequent tests.
+    // See https://github.com/realm/realm-js/issues/3834
+    it.skip("support insert notifications", () => {
+      //     realm.write(() => realm.create(DictSchema.name, {fields: {field1: 0, filed2: 2, field3: 3}}));
+      //     let ff = realm.objects(DictSchema.name)[0];
+      //     let cnt = 0;
+      //     let a = function (obj, changeset) {
+      //         if (cnt === 1) {
+      //             TestCase.assertTrue(obj.x2 !== undefined,"This field should be equal x2");
+      //             TestCase.assertTrue(obj.x1 !== undefined,"This field should be equal x1");
+      //             TestCase.assertArrayLength(changeset.deletions, 3, "deletions");
+      //             TestCase.assertArrayLength(changeset.insertions, 2, "insertions");
+      //             TestCase.assertArrayLength(changeset.modifications, 0, "modifications");
+      //         }
+      //         if (cnt === 2) {
+      //             TestCase.assertTrue(obj.x1 !== undefined,"This field should be equal x1");
+      //             TestCase.assertTrue(obj.x5 !== undefined,"This field should be equal x5");
+      //             TestCase.assertTrue(obj.x3 !== undefined,"This field should be equal x3");
+      //             TestCase.assertArrayLength(changeset.deletions, 2, "deletions");
+      //             TestCase.assertArrayLength(changeset.insertions, 3, "insertions");
+      //             TestCase.assertArrayLength(changeset.modifications, 0, "modifications");
+      //         }
+      //         if (cnt === 3) {
+      //             let keys = Object.keys(obj);
+      //             TestCase.assertEqual(keys[0], "x1", "First field should be equal x1");
+      //             TestCase.assertEqual(obj.x1, "hello", "x1 should be equals to \"hello\"");
+      //             TestCase.assertArrayLength(changeset.deletions, 3, "deletions");
+      //             TestCase.assertArrayLength(changeset.insertions, 1, "insertions");
+      //             TestCase.assertArrayLength(changeset.modifications, 0, "modifications");
+      //         }
+      //         cnt++;
+      //     }
+      //     ff.fields.addListener(a);
+      //     // total object mutation.
+      //     realm.write(() => { ff.fields = {x1: 1, x2: 2} } );
+      //     // partial object mutation.
+      //     realm.write(() => { ff.fields = {x1: 1, x3: 2, x5: 5} } );
+      //     // deleting all but one field.
+      //     realm.write(() => { ff.fields = {x1: "hello"} } );
+      //     return new Promise((resolve, reject) => {
+      //         setTimeout(() => {
+      //             TestCase.assertEqual(cnt, 4, "Counter should be four");
+      //             ff.fields.removeAllListeners();
+      //             realm.close();
+      //             resolve();
+      //         }, 1000);
+      //     })
+    });
+    it("support removeAll notifications", () => {
+      realm.write(() => realm.create(DictSchema.name, { fields: { x: 1, y: 2, z: 3 } }));
+      const point = realm.objects(DictSchema.name)[0].fields;
+
+      let cnt = 0;
+      for (let i = 0; i < 10; i++) {
+        point.addListener((_, changeset) => {
+          cnt++;
+        });
+      }
+
+      point.removeAllListeners();
+      realm.write(() => (point.x = 10));
+
+      return new Promise<void>((resolve, reject) => {
+        setTimeout(() => {
+          expect(cnt).equal(0);
+          realm.close();
+          resolve();
+        }, 1000);
+      });
+    });
+    it("support removeListener notifications", () => {
+      const called = {
+        a: 0,
+        b: 0,
+        c: 0,
+        d: 0,
+      };
+      realm.write(() => realm.create(DictSchema.name, { fields: { field1: 0, filed2: 2, field3: 3 } }));
+      const fields = realm.objects(DictSchema.name)[0].fields;
+
+      const a = function (obj, chg) {
+        called.a++;
+      };
+
+      const b = function (obj, chg) {
+        called.b++;
+      };
+
+      const c = function (obj, chg) {
+        called.c++;
+      };
+
+      const d = function (obj, chg) {
+        called.d++;
+      };
+      fields.addListener(a);
+      fields.addListener(b);
+      fields.addListener(c);
+      fields.addListener(d);
+
+      fields.removeListener(a);
+      fields.removeListener(b);
+      fields.removeListener(d);
+      fields.removeListener(d);
+      fields.removeListener(d);
+      fields.removeListener(d);
+      fields.removeListener(d);
+
+      realm.write(() => {
+        fields.field1 = 1;
+      });
+
+      return new Promise<void>((resolve, _) => {
+        setTimeout(() => {
+          expect(called.a).equal(0, "Function a");
+          expect(called.b).equal(0, "Function b");
+          expect(called.c).equal(2, "Function c");
+          expect(called.d).equal(0, "Function d");
+          fields.removeAllListeners();
+          realm.close();
+          resolve();
+        }, 1000);
+      });
+    });
+    it("support removeListener notifications", () => {
+      realm.write(() => realm.create(DictSchema.name, { fields: { field1: 0, filed2: 2, field3: 3 } }));
+      const fields = realm.objects(DictSchema.name)[0].fields;
+
+      const a = (obj, chg) => {
+        expect(false).equal(true, "Function a should be unsubscribed.");
+      };
+      const b = (obj, chg) => {
+        expect(false).equal(true, "Function b should be unsubscribed.");
+      };
+
+      /*
+            We try to remove listeners that doesn't exist in order to provoke to test out-of-bounds and stability.
+         */
+
+      fields.removeListener(a);
+      fields.removeListener(a);
+      fields.removeListener(b);
+      fields.removeListener(b);
+
+      realm.write(() => {
+        fields.field1 = 1;
+      });
+
+      let correct = false;
+      fields.addListener((obj, chg) => {
+        correct = true;
+      });
+      realm.write(() => {
+        fields.field1 = 2;
+      });
+
+      return new Promise<void>((resolve, _) => {
+        setTimeout(() => {
+          expect(fields.field1).equal(2);
+          expect(correct).equal(true, "This is expected to work.");
+          fields.removeAllListeners();
+          realm.close();
+          resolve();
+        }, 1000);
+      });
+    });
+  });
+  describe("nested models", () => {
+    const Child: Realm.ObjectSchema = {
+      name: "Children",
+      properties: {
+        num: "int",
+      },
+    };
+
+    const DictSchema: Realm.ObjectSchema = {
+      name: "Dictionary",
+      properties: {
+        dict1: "{}",
+        dict2: "{}",
+      },
+    };
+    let realm;
+    beforeEach(() => {
+      Realm.clearTestState();
+      realm = new Realm({ schema: [DictSchema, Child] });
+    });
+    it("updates successfully", () => {
+      realm.write(() => {
+        realm.create(DictSchema.name, {
+          dict1: { children1: "x", children2: "y" },
+          dict2: { children1: "y", children2: "x" },
+        });
+      });
+
+      const dict_1 = realm.objects(DictSchema.name)[0].dict1;
+      const dict_2 = realm.objects(DictSchema.name)[0].dict2;
+
+      realm.write(() => {
+        const child1 = realm.create(Child.name, { num: 555 });
+        const child2 = realm.create(Child.name, { num: 666 });
+        dict_1.set({ children1: child1, children2: child2 });
+      });
+
+      expect(dict_1.children1.num).equal(555, "We expect children1#555");
+      expect(dict_1.children2.num).equal(666, "We expect children1#666");
+      expect(dict_2.children1).equal("y", "We expect children1#y");
+      expect(dict_2.children2).equal("x", "We expect children1#x");
+    });
+  });
+  describe("embedded models", () => {
+    const Child = {
+      name: "Children",
+      embedded: true,
+      properties: {
+        num: "int",
+      },
+    };
+
+    const DictTypedSchema = {
+      name: "TypedDictionary",
+      properties: {
+        dict1: { type: "dictionary", objectType: "Children" }, // dictionary of objects is nullable by default
+        dict2: { type: "dictionary", objectType: "Children", optional: true },
+      },
+    };
+
+    const DictMixedSchema = {
+      name: "MixedDictionary",
+      properties: {
+        dict1: "{}",
+        dict2: "{}",
+      },
+    };
+    let realm;
+    beforeEach(() => {
+      Realm.clearTestState();
+      realm = new Realm({ schema: [DictTypedSchema, DictMixedSchema, Child] });
+    });
+
+    it("inserts correctly", () => {
+      realm.write(() => {
+        realm.create(DictTypedSchema.name, {
+          dict1: { children1: { num: 2 }, children2: { num: 3 } },
+          dict2: { children1: { num: 4 }, children2: { num: 5 } },
+        });
+      });
+
+      const dict_1 = realm.objects(DictTypedSchema.name)[0].dict1;
+      const dict_2 = realm.objects(DictTypedSchema.name)[0].dict2;
+      expect(dict_1.children1.num).equal(2, "We expect children1#2");
+      expect(dict_1.children2.num).equal(3, "We expect children2#3");
+      expect(dict_2.children1.num).equal(4, "We expect children1#4");
+      expect(dict_2.children2.num).equal(5, "We expect children2#5");
+    });
+    it("throws on invalid input", () => {
+      realm.write(() => {
+        expect(() => {
+          realm.create(DictMixedSchema.name, {
+            dict1: { children1: { num: 2 }, children2: { num: 3 } },
+            dict2: { children1: { num: 4 }, children2: { num: 5 } },
+          });
+        }).throws(Error, "Only Realm instances are supported.");
+      });
+    });
   });
 });
