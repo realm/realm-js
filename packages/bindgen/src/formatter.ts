@@ -22,18 +22,29 @@ import cp from "child_process";
 import { extend } from "./debug";
 const debug = extend("format");
 
-const FORMATTERS = {
+const FORMATTERS: Record<string, string[]> = {
   eslint: ["npx", "eslint", "--fix", "--format=stylish"],
   "clang-format": ["npx", "clang-format", "-i"],
-  "typescript-checker": ["npx", "tsc", "--noEmit"],
+  // "typescript-checker": ["npx", "tsc", "--noEmit"],
 };
 
-export type FormatterName = keyof typeof FORMATTERS;
-export const formatterNames = Object.keys(FORMATTERS) as FormatterName[];
+export function addFormatter(name: string, commandAndArgs: string[]) {
+  if (name in FORMATTERS) {
+    throw new Error(`Cannot add ${name} as it's already there`);
+  } else {
+    FORMATTERS[name] = commandAndArgs;
+  }
+}
+
+export function getFormatterNames() {
+  return Object.keys(FORMATTERS);
+}
+
+export type FormatterName = string;
 
 export class FormatError extends Error {
-  constructor(formatterName: string) {
-    super(`Failure when running the '${formatterName}' formatter`);
+  constructor(formatterName: string, filePaths: string[]) {
+    super(`Failure when running the '${formatterName}' formatter on ${JSON.stringify(filePaths)}`);
   }
 }
 
@@ -53,7 +64,7 @@ export function format(formatterName: FormatterName, cwd: string, filePaths: str
       });
       if (result.error) throw result.error;
       if (result.status) {
-        throw new FormatError(formatterName);
+        throw new FormatError(formatterName, filePaths);
       }
     }
   }
