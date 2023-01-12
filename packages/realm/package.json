@@ -20,7 +20,13 @@
     "debug": "^4.3.4"
   },
   "peerDependencies": {
-    "bson": "^4"
+    "bson": "^4",
+    "react-native": "^0.70.0"
+  },
+  "peerDependenciesMeta": {
+    "react-native": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@realm/bindgen": "^0.1.0",
