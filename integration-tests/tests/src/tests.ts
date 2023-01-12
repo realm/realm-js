@@ -36,6 +36,7 @@ import "./tests/dictionary";
 import "./tests/dynamic-schema-updates";
 import "./tests/iterators";
 import "./tests/listeners";
+import "./tests/mixed";
 import "./tests/objects";
 import "./tests/queries";
 import "./tests/realm-constructor";
