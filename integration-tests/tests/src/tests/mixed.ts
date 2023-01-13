@@ -21,34 +21,34 @@ import { Decimal128, ObjectId, UUID } from "bson";
 import { expect } from "chai";
 import { openRealmBefore } from "../hooks";
 
-interface ISingleSchema {
+type ISingleSchema = {
   a: Realm.Mixed;
   b: Realm.Mixed;
   c: Realm.Mixed;
   d: Realm.Mixed;
-}
+};
 
-interface IVertexSchema {
+type IVertexSchema = {
   a: number;
   b: number;
   c: number;
-}
+};
 
-interface IMixNestedSchema {
+type IMixNestedSchema = {
   a: Realm.Mixed;
   b: Realm.Mixed;
   c: Realm.Mixed;
   d: Realm.Mixed;
-}
+};
 
-interface IMixedNullableSchema {
+type IMixedNullableSchema = {
   nullable: Realm.Mixed;
   nullable_list: Realm.Mixed[];
-}
+};
 
-interface IMixedSchema {
+type IMixedSchema = {
   value: Realm.Mixed;
-}
+};
 
 const SingleSchema: Realm.ObjectSchema = {
   name: "mixed",
@@ -269,12 +269,13 @@ describe("Mixed", () => {
       });
 
       // Test with empty array
-      const emptyArrayBuffer = this.realm.write(() => {
-        return this.realm.create<IMixedSchema>("MixedClass", { value: new Uint8Array(0) });
+      this.realm.write(() => {
+        this.realm.create<IMixedSchema>("MixedClass", { value: new Uint8Array(0) });
       });
 
-      expect(emptyArrayBuffer.value instanceof ArrayBuffer);
-      expect((emptyArrayBuffer.value as ArrayBuffer).byteLength).equals(0);
+      const emptyArrayBuffer = mixedObjects[0].value;
+      expect(emptyArrayBuffer).instanceOf(ArrayBuffer);
+      expect((emptyArrayBuffer as ArrayBuffer).byteLength).equals(0);
 
       this.realm.write(() => {
         this.realm.deleteAll();
