@@ -59,11 +59,18 @@ export default [
       sourcemap: true,
     },
     plugins: [
+      replace({
+        preventAssignment: true,
+        delimiters: ["", ""],
+        values: {
+          '"../generated/ts/native.mjs"': '"../generated/ts/native-rn.mjs"',
+        },
+      }),
       typescript({
         tsconfig: "src/react-native/tsconfig.json",
       }),
     ],
-    external: ["bson", "debug"],
+    external: ["bson", "debug", "react-native"],
   },
   {
     input: "src/index.ts",
