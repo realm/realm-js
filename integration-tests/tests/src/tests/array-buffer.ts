@@ -21,8 +21,6 @@ import { expect } from "chai";
 import Realm from "realm";
 import { openRealmBeforeEach } from "../hooks";
 
-const isNodeProcess = typeof process === "object" && process + "" === "[object process]";
-
 const SingleSchema: Realm.ObjectSchema = {
   name: "PrimitiveData",
   properties: {
@@ -185,11 +183,7 @@ describe("ArrayBuffer", () => {
       expect(p1).equals(p2, "buffers should be equals");
     }
   });
-  it("supports arrayBuffer-nodeBuffer", function (this: RealmContext) {
-    if (!isNodeProcess) {
-      return;
-    }
-
+  it.skipIf(!environment.node, "supports arrayBuffer-nodeBuffer", function (this: RealmContext) {
     const n_buffer = Buffer.from([0xca, 0xfe, 0xba, 0xbe]);
     this.realm.write(() => this.realm.create(SingleSchema.name, { a: n_buffer }));
 
@@ -205,11 +199,6 @@ describe("ArrayBuffer", () => {
     }
   });
   it("supports inserting empty arrayBuffer", function (this: RealmContext) {
-    // TODO: Only NodeJS implementation verify for empty buffer.
-    if (!isNodeProcess) {
-      return;
-    }
-
     SingleSchema.properties.a = "data?";
     expect(() => {
       this.realm.write(() => this.realm.create(SingleSchema.name, { a: new ArrayBuffer(0) }));
