@@ -28,9 +28,9 @@ const SingleSchema: Realm.ObjectSchema = {
   },
 };
 
-interface ISingleSchema {
+type ISingleSchema = {
   a: ArrayBuffer;
-}
+};
 
 describe("ArrayBuffer", () => {
   openRealmBeforeEach({ schema: [SingleSchema] });
