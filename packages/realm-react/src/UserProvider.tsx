@@ -37,15 +37,12 @@ type UserProviderProps = {
  */
 export const UserProvider: React.FC<UserProviderProps> = ({ fallback: Fallback, children }) => {
   const app = useApp();
-  const [user, setUser] = useState<Realm.User | null>(null);
+  const [user, setUser] = useState<Realm.User | null>(() => app.currentUser);
 
   // Support for a possible change in configuration
-  useEffect(() => {
-    if (!app.currentUser || user?.id != app.currentUser.id) {
-      setUser(app.currentUser);
-    }
-    // Ignoring updates to user, as this would cause a potential infinite loop
-  }, [app, setUser]);
+  if (app.currentUser?.id != user?.id) {
+    setUser(app.currentUser);
+  }
 
   useEffect(() => {
     const event = () => {

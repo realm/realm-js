@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { isEqual } from "lodash";
-import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import React, { createContext, useContext, useLayoutEffect, useRef, useState } from "react";
 import Realm from "realm";
 
 /**
@@ -41,32 +41,24 @@ type AppProviderProps = Realm.AppConfiguration & {
 export const AppProvider: React.FC<AppProviderProps> = ({ children, appRef, ...appProps }) => {
   const configuration = useRef<Realm.AppConfiguration>(appProps);
 
-  const [app, setApp] = useState<Realm.App>(new Realm.App(configuration.current));
-
-  // We increment `configVersion` when a config override passed as a prop
-  // changes, which triggers a `useEffect` to overwrite the current App with the
-  // new config
-  const [configVersion, setConfigVersion] = useState(0);
-
-  useEffect(() => {
-    if (!isEqual(appProps, configuration.current)) {
-      configuration.current = appProps;
-      setConfigVersion((x) => x + 1);
-    }
-  }, [appProps]);
+  const [app, setApp] = useState<Realm.App>(() => new Realm.App(configuration.current));
 
   // Support for a possible change in configuration
-  useEffect(() => {
+  if (!isEqual(appProps, configuration.current)) {
+    configuration.current = appProps;
+
     try {
-      const app = new Realm.App(configuration.current);
-      setApp(app);
-      if (appRef) {
-        appRef.current = app;
-      }
+      setApp(new Realm.App(configuration.current));
     } catch (err) {
       console.error(err);
     }
-  }, [configVersion, setApp]);
+  }
+
+  useLayoutEffect(() => {
+    if (appRef) {
+      appRef.current = app;
+    }
+  }, [appRef, app]);
 
   return <AppContext.Provider value={app}>{children}</AppContext.Provider>;
 };
