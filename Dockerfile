@@ -30,7 +30,8 @@ ENV PATH /opt/rh/rh-git218/root/usr/bin:/opt/rh/python27/root/usr/bin:/opt/rh/de
 ENV LD_LIBRARY_PATH /opt/rh/httpd24/root/usr/lib64:/opt/rh/python27/root/usr/lib64:/opt/rh/devtoolset-9/root/usr/lib64:/opt/rh/devtoolset-9/root/usr/lib:/opt/rh/devtoolset-9/root/usr/lib64/dyninst:/opt/rh/devtoolset-9/root/usr/lib/dyninst:/opt/rh/devtoolset-9/root/usr/lib64:/opt/rh/devtoolset-9/root/usr/lib
 
 # Ensure a new enough version of CMake is available.
-RUN cd /opt \
-    && curl -O -J https://cmake.org/files/v3.21/cmake-3.21.3-linux-x86_64.tar.gz \
-    && tar zxf cmake-3.21.3-linux-x86_64.tar.gz
-ENV PATH "/opt/cmake-3.21.3-linux-x86_64/bin/:$PATH"
+RUN mkdir -p /home/jenkins/cmake && \
+    cd /home/jenkins/cmake && \
+    curl -O -J https://cmake.org/files/v3.23/cmake-3.23.2-linux-x86_64.tar.gz &&\
+    tar zxf cmake-3.23.2-linux-x86_64.tar.gz
+ENV PATH "/home/jenkins/cmake/cmake-3.23.2-linux-x86_64/bin:$PATH"

@@ -7,13 +7,19 @@
 * Fix no notification for write transaction that contains only change to backlink property. ([realm/realm-core#4994](https://github.com/realm/realm-core/issues/4994), since v10.8.0)
 
 ### Compatibility
-* React Native >= v0.70.0
-* Atlas App Services.
-* Realm Studio v13.0.0.
+* React Native >= v0.71.0
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
 * Upgraded Realm Core from v13.1.1 to v13.1.2. ([#5174](https://github.com/realm/realm-js/issues/5174))
+* Switching from NDK 21 to NDK 23 for Android builds, and bumping the required CMake version to 3.21.4. Sizes of binaries are found below. ([#3905](https://github.com/realm/realm-js/issues/3905))
+
+| Architecture | NDK 21      | NDK 23      |
+|--------------|-------------|-------------|
+| armeabi-v7a  |     5669208 |     5603176 |
+| x86          |    10088204 |    10924524 |
+| arm64-v8a    |     9301128 |     9723968 |
+| x86_64       |    10371064 |    10702472 |
 
 ## 11.3.1 (2022-12-07)
 
