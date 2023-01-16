@@ -138,7 +138,7 @@
     "mockery": "^2.0.0",
     "prebuild": "^10.0.1",
     "prettier": "^2.0.4",
-    "react-native": "0.71.0-rc.5",
+    "react-native": "0.71.0",
     "rimraf": "^2.6.3",
     "semver": "^5.6.0",
     "shelljs": "^0.8.5",

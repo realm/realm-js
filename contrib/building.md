@@ -113,7 +113,7 @@ export ANDROID_EMULATOR_HOME=$HOME/.android
 export ANDROID_AVD_HOME=$HOME/.android/avd
 
 # Add the Android SDK tools to your PATH
-export PATH=$PATH:$ANDROID_SDK_ROOT/to$ols/bin
+export PATH=$PATH:$ANDROID_SDK_ROOT/tools/bin
 export PATH=$PATH:$ANDROID_SDK_ROOT/platform-tools
 export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin
 ```
