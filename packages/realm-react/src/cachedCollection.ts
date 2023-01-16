@@ -39,6 +39,14 @@ type CachedCollectionArgs<T> = {
    * Callback which is called whenever an object in the collection changes
    */
   updateCallback: () => void;
+
+  /**
+   * Reference boolean which is set to true whenever an object in the collection changes
+   * It is used to determine if the collection's object reference should be updated
+   * The implementing component should reset this to false when updating its object reference
+   */
+  updatedRef: React.MutableRefObject<boolean>;
+
   /**
    * Optional Map to be used as the cache. This is used to allow a `sorted` or `filtered`
    * (derived) version of the collection to reuse the same cache, preventing excess new object
@@ -69,6 +77,7 @@ export function createCachedCollection<T extends Realm.Object>({
   collection,
   realm,
   updateCallback,
+  updatedRef,
   objectCache = new Map(),
   isDerived = false,
 }: CachedCollectionArgs<T>): { collection: Realm.Collection<T>; tearDown: () => void } {
@@ -84,6 +93,7 @@ export function createCachedCollection<T extends Realm.Object>({
               collection: col,
               realm,
               updateCallback,
+              updatedRef,
               objectCache,
               isDerived: true,
             });
@@ -158,7 +168,7 @@ export function createCachedCollection<T extends Realm.Object>({
           }
         }
       });
-
+      updatedRef.current = true;
       updateCallback();
     }
   };

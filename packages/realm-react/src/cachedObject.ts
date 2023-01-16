@@ -35,6 +35,13 @@ type CachedObjectArgs = {
    * using the {@link useObject} hook to re-render.
    */
   updateCallback: () => void;
+
+  /**
+   * Reference boolean which is set to true whenever the object changes
+   * It is used to determine if the object's reference should be updated
+   * The implementing component should reset this to false when updating its object reference
+   */
+  updatedRef: React.MutableRefObject<boolean>;
 };
 
 export type CachedObject = {
@@ -54,7 +61,7 @@ export type CachedObject = {
  * @param args - {@link CachedObjectArgs} object arguments
  * @returns Proxy object wrapping the {@link Realm.Object}
  */
-export function createCachedObject({ object, realm, updateCallback }: CachedObjectArgs): CachedObject {
+export function createCachedObject({ object, realm, updateCallback, updatedRef }: CachedObjectArgs): CachedObject {
   const listCaches = new Map();
   const listTearDowns: Array<() => void> = [];
   // If the object doesn't exist, just return it with an noop tearDown
@@ -67,8 +74,9 @@ export function createCachedObject({ object, realm, updateCallback }: CachedObje
     //@ts-expect-error - TS doesn't know that the key is a valid property
     const value = object[key];
     if (value instanceof Realm.List && value.type === "object") {
-      const { collection, tearDown } = createCachedCollection({ collection: value, realm, updateCallback });
-      listCaches.set(key, collection);
+      const updatedRef = { current: true };
+      const { collection, tearDown } = createCachedCollection({ collection: value, realm, updateCallback, updatedRef });
+      listCaches.set(key, { collection, updatedRef });
       listTearDowns.push(tearDown);
     }
   }
@@ -90,7 +98,14 @@ export function createCachedObject({ object, realm, updateCallback }: CachedObje
           // Return a new proxy wrapping the cachedCollection so that its reference gets updated,
           // otherwise the list component will not re-render. The cachedCollection then ensures that
           // only the modified children of the list component actually re-render.
-          return new Proxy(listCaches.get(key), {});
+          const { collection, updatedRef } = listCaches.get(key);
+          if (updatedRef.current) {
+            updatedRef.current = false;
+            const proxyCollection = new Proxy(collection, {});
+            listCaches.set(key, { collection: proxyCollection, updatedRef });
+            return proxyCollection;
+          }
+          return collection;
         }
       }
       return value;
@@ -113,6 +128,7 @@ export function createCachedObject({ object, realm, updateCallback }: CachedObje
         updateCallback();
       }
     }
+    updatedRef.current = true;
   };
 
   // We cannot add a listener to an invalid object

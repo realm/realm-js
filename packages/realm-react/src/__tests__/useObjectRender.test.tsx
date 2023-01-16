@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { fireEvent, render, waitFor, act } from "@testing-library/react-native";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { TextInput, Text, TouchableHighlight, View, FlatList, ListRenderItem } from "react-native";
 import Realm from "realm";
 import { createUseObject } from "../useObject";
@@ -78,6 +78,8 @@ function forceSynchronousNotifications(realm: Realm) {
 
 const itemRenderCounter = jest.fn();
 const listRenderCounter = jest.fn();
+const objectChangeCounter = jest.fn();
+const listChangeCounter = jest.fn();
 
 let testRealm: Realm = new Realm(configuration);
 
@@ -165,6 +167,34 @@ const Item: React.FC<{ item: ListItem }> = React.memo(({ item }) => {
   );
 });
 
+const keyExtractor = (item: ListItem) => `${item.id}`;
+
+const renderItem: ListRenderItem<ListItem> = ({ item }) => <Item item={item} />;
+
+const ItemList: React.FC<{ list: Realm.List<ListItem> }> = React.memo(({ list }) => {
+  const [counter, setCounter] = useState(0);
+
+  // This useEffect is to test that the list object reference is not changing when
+  // the component is re-rendered.
+  useEffect(() => {
+    listChangeCounter();
+  }, [list]);
+
+  return (
+    <>
+      <FlatList data={list} keyExtractor={keyExtractor} renderItem={renderItem} />
+      <TouchableHighlight
+        testID={`rerenderListButton`}
+        onPress={() => {
+          setCounter(counter + 1);
+        }}
+      >
+        <Text>Rerender</Text>
+      </TouchableHighlight>
+    </>
+  );
+});
+
 const TestComponent: React.FC<{ testID?: string; renderItems?: boolean; targetPrimaryKey: Realm.BSON.ObjectId }> = ({
   testID,
   renderItems,
@@ -172,10 +202,13 @@ const TestComponent: React.FC<{ testID?: string; renderItems?: boolean; targetPr
 }) => {
   const list = useObject(List, targetPrimaryKey);
   const realm = useRealm();
+  const [counter, setCounter] = useState(0);
 
-  const renderItem = useCallback<ListRenderItem<ListItem>>(({ item }) => <Item item={item} />, []);
-
-  const keyExtractor = useCallback((item: ListItem) => `${item.id}`, []);
+  // This useEffect is to test that the list object reference is not changing when
+  // the component is re-rendered.
+  useEffect(() => {
+    objectChangeCounter();
+  }, [list]);
 
   if (list === null) {
     return <View testID={testID} />;
@@ -187,9 +220,7 @@ const TestComponent: React.FC<{ testID?: string; renderItems?: boolean; targetPr
 
   return (
     <View testID={testID}>
-      <View testID="list">
-        {renderItems && <FlatList data={list.items} keyExtractor={keyExtractor} renderItem={renderItem} />}
-      </View>
+      <View testID="list">{renderItems && <ItemList list={list.items} />}</View>
       <View testID={`list${listIdString}`}>
         <View testID={`listTitle${listIdString}`}>
           <Text>{list.title}</Text>
@@ -220,6 +251,14 @@ const TestComponent: React.FC<{ testID?: string; renderItems?: boolean; targetPr
         </View>
       )}
       <Text>{list?.tags[0]}</Text>
+      <TouchableHighlight
+        testID={`rerenderObjectButton`}
+        onPress={() => {
+          setCounter(counter + 1);
+        }}
+      >
+        <Text>Rerender</Text>
+      </TouchableHighlight>
     </View>
   );
 };
@@ -249,6 +288,8 @@ describe("useObject: rendering objects with a Realm.List property", () => {
   afterEach(() => {
     listRenderCounter.mockClear();
     itemRenderCounter.mockClear();
+    objectChangeCounter.mockClear();
+    listChangeCounter.mockClear();
   });
 
   afterAll(() => {
@@ -362,6 +403,23 @@ describe("useObject: rendering objects with a Realm.List property", () => {
 
       const titleElement = getByTestId(`listTitle${newParentObjectId.toHexString()}`);
       expect(titleElement).toHaveTextContent("Other List");
+    });
+    it("will return the same reference when state changes", async () => {
+      const { getByTestId } = await setupTest();
+
+      // Force a rerender
+      const rerenderButton = getByTestId("rerenderObjectButton");
+
+      // We expect the object to be re-rendered 3 times, once for the initial render, once for the
+      // object itself coming into existence, and once adding list of items to the list
+      const expectedCount = 3;
+
+      // Update the state twice to ensure the object reference is the same and we don't have a false positive
+      fireEvent.press(rerenderButton);
+      expect(objectChangeCounter).toHaveBeenCalledTimes(expectedCount);
+
+      fireEvent.press(rerenderButton);
+      expect(objectChangeCounter).toHaveBeenCalledTimes(expectedCount);
     });
   });
 
@@ -517,5 +575,21 @@ describe("useObject: rendering objects with a Realm.List property", () => {
       });
       expect(listRenderCounter).toHaveBeenCalledTimes(3);
     });
+  });
+  it("will return the same reference when state changes", async () => {
+    const { getByTestId } = await setupTest();
+
+    // Force a rerender
+    const rerenderButton = getByTestId("rerenderListButton");
+
+    // We expect the object to be re-rendered 2 times, once for the initial render
+    // and once for adding list of items to the list
+    const expectedCount = 2;
+
+    // Update the state twice to ensure the object reference is the same and we don't have a false positive
+    fireEvent.press(rerenderButton);
+    expect(objectChangeCounter).toHaveBeenCalledTimes(expectedCount);
+    fireEvent.press(rerenderButton);
+    expect(objectChangeCounter).toHaveBeenCalledTimes(expectedCount);
   });
 });

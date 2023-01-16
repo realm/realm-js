@@ -71,6 +71,7 @@ const configuration: Realm.Configuration = {
 
 const itemRenderCounter = jest.fn();
 const tagRenderCounter = jest.fn();
+const queryObjectChangeCounter = jest.fn();
 
 let testRealm: Realm = new Realm(configuration);
 
@@ -121,11 +122,12 @@ const UseObjectItemComponent: React.FC<{ item: Item | (Item & Realm.Object) }> =
   return <ItemComponent item={localItem}></ItemComponent>;
 });
 
+const renderTag: ListRenderItem<Tag> = ({ item }) => <TagComponent tag={item} />;
+const tagKeyExtractor = (item: Tag) => `tag-${item.id}`;
+
 const ItemComponent: React.FC<{ item: Item | (Item & Realm.Object) }> = React.memo(({ item }) => {
   itemRenderCounter();
   const realm = useRealm();
-  const renderItem = useCallback<ListRenderItem<Tag>>(({ item }) => <TagComponent tag={item} />, []);
-  const keyExtractor = useCallback((item: Tag) => `tag-${item.id}`, []);
 
   return (
     <View testID={`result${item.id}`}>
@@ -155,8 +157,8 @@ const ItemComponent: React.FC<{ item: Item | (Item & Realm.Object) }> = React.me
         horizontal={true} // Make this internal list horizontal to avoid invariant error
         testID={`tagList-${item.id}`}
         data={item.tags}
-        keyExtractor={keyExtractor}
-        renderItem={renderItem}
+        keyExtractor={tagKeyExtractor}
+        renderItem={renderTag}
       />
     </View>
   );
@@ -176,8 +178,12 @@ const TagComponent: React.FC<{ tag: Tag }> = React.memo(({ tag }) => {
 const FILTER_ARGS: [string] = ["id < 20"];
 const SORTED_ARGS: [string, boolean] = ["id", true];
 
+const keyExtractor = (item: Item & Realm.Object) => `${item.id}`;
+
 const TestComponent = ({ queryType, useUseObject }: { queryType: QueryType; useUseObject: boolean }) => {
   const collection = useQuery(Item);
+
+  const [counter, setCounter] = useState(0);
 
   const result = useMemo(() => {
     switch (queryType) {
@@ -190,14 +196,30 @@ const TestComponent = ({ queryType, useUseObject }: { queryType: QueryType; useU
     }
   }, [queryType, collection]);
 
+  // This useEffect is to test that the list object reference is not changing when
+  // the component is re-rendered.
+  useEffect(() => {
+    queryObjectChangeCounter();
+  }, [result]);
+
   const renderItem = useCallback<ListRenderItem<Item & Realm.Object>>(
     ({ item }) => (useUseObject ? <UseObjectItemComponent item={item} /> : <ItemComponent item={item} />),
     [useUseObject],
   );
 
-  const keyExtractor = useCallback((item: Item & Realm.Object) => `${item.id}`, []);
-
-  return <FlatList testID={"list"} data={result} keyExtractor={keyExtractor} renderItem={renderItem} />;
+  return (
+    <>
+      <FlatList testID={"list"} data={result} keyExtractor={keyExtractor} renderItem={renderItem} />;
+      <TouchableHighlight
+        testID={`rerenderButton`}
+        onPress={() => {
+          setCounter(counter + 1);
+        }}
+      >
+        <Text>Rerender</Text>
+      </TouchableHighlight>
+    </>
+  );
 };
 
 function getTestCollection(queryType: QueryType) {
@@ -238,6 +260,7 @@ describe.each`
   afterEach(() => {
     itemRenderCounter.mockClear();
     tagRenderCounter.mockClear();
+    queryObjectChangeCounter.mockClear();
     Realm.clearTestState();
   });
 
@@ -400,5 +423,19 @@ describe.each`
     });
 
     await waitFor(() => queryByTestId(`name${109}`));
+  });
+
+  it("will return the same reference when state changes", async () => {
+    const { getByTestId } = await setupTest({ queryType });
+
+    // Force a rerender
+    const rerenderButton = getByTestId("rerenderButton");
+
+    // Update the state twice to ensure the object reference is the same and we don't have a false positive
+    fireEvent.press(rerenderButton);
+    expect(queryObjectChangeCounter).toHaveBeenCalledTimes(1);
+
+    fireEvent.press(rerenderButton);
+    expect(queryObjectChangeCounter).toHaveBeenCalledTimes(1);
   });
 });
