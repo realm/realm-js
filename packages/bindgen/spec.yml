@@ -20,6 +20,7 @@ headers:
   - "realm/object-store/sync/sync_session.hpp"
   - "realm/object-store/sync/sync_user.hpp"
   - "realm/object-store/util/bson/bson.hpp"
+  - "platform.hpp"
 
 primitives:
   # TODO need to distinguish 64bit types where all bits are needed vs where double would be fine
@@ -579,7 +580,20 @@ opaqueTypes:
 classes:
   #SchemaChange: {}
 
+  JsPlatformHelpers:
+    abstract: true
+    staticMethods:
+      # set_default_realm_file_directory: '(dir: std::string)' # currently only used via android JNI
+      default_realm_file_directory: () -> std::string
+      ensure_directory_exists_for_file: '(file: const std::string&)'
+      copy_bundled_realm_files: ()
+      remove_realm_files_from_directory: '(directory: const std::string&)'
+      remove_file: '(path: const std::string&)'
+      remove_directory: '(path: const std::string&)'
+      # print: (const char* fmt, ...) # can't expose varargs directly. Could expose a fixed overload.
+
   Helpers:
+    abstract: true
     staticMethods:
       get_table:
         - '(r: SharedRealm, key: TableKey) -> TableRef'

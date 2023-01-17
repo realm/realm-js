@@ -109,6 +109,9 @@ endif()
 
 target_include_directories(realm-js PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
+# TODO move platform.hpp and delete this line.
+target_include_directories(realm-js PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../src")
+
 # Right now we only support Ninja generators because they are the only ones that can correctly handle
 # mutliple custom_commands in separate targets that transitively depend on a common output file from
 # another custom_command. Right now we have the situation where all generators depend on the json schema
@@ -204,7 +207,7 @@ if(DEFINED CMAKE_JS_VERSION)
             ${TS_FILES}
     )
 
-    target_sources(realm-js PRIVATE node_init.cpp ${CMAKE_JS_SRC})
+    target_sources(realm-js PRIVATE node_init.cpp ${CMAKE_JS_SRC} ../../src/node/platform.cpp)
 else()
     include(jsi.cmake)
 

@@ -97,7 +97,7 @@ JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileD
     env->ReleaseStringUTFChars(fileDir, strFileDir);
 
     __android_log_print(ANDROID_LOG_DEBUG, "JSRealm", "Absolute path: %s",
-                        realm::default_realm_file_directory().c_str());
+                        realm::JsPlatformHelpers::default_realm_file_directory().c_str());
 }
 
 JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_install(JNIEnv*, jobject, jlong runtimePointer)
