@@ -614,6 +614,7 @@ classes:
       make_logger_factory: '(log: (level: LoggerLevel, message: const std::string&) off_thread) -> LoggerFactory'
       simulate_sync_error: '(session: SyncSession&, code: int, message: StringData, type: StringData, is_fatal: bool)'
       consume_thread_safe_reference_to_shared_realm: '(tsr: ThreadSafeReference) -> SharedRealm'
+      file_exists: '(path: StringData) -> bool'
 
   ConstTableRef:
     needsDeref: true

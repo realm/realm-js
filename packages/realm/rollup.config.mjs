@@ -27,10 +27,10 @@ export default [
     input: "src/node/index.ts",
     output: [
       {
-      file: pkg.main,
-      format: "cjs",
-      sourcemap: true,
-    },
+        file: pkg.main,
+        format: "cjs",
+        sourcemap: true,
+      },
       {
         file: pkg.module,
         format: "esm",
@@ -70,7 +70,7 @@ export default [
         tsconfig: "src/react-native/tsconfig.json",
       }),
     ],
-    external: ["bson", "debug", "react-native"],
+    external: ["bson", "debug", "react-native", "path-browserify"],
   },
   {
     input: "src/index.ts",

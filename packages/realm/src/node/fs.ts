@@ -25,6 +25,12 @@ import { extendDebug } from "../debug";
 const debug = extendDebug("fs");
 
 inject({
+  isAbsolutePath(path) {
+    return isAbsolute(path);
+  },
+  joinPaths(...segments) {
+    return join(...segments);
+  },
   removeFile(path) {
     debug("removeFile", path);
     if (existsSync(path)) {
@@ -38,19 +44,31 @@ inject({
   getDefaultDirectoryPath() {
     return process.cwd();
   },
-  isAbsolutePath(path) {
-    return isAbsolute(path);
-  },
-  joinPaths(...segments) {
-    return join(...segments);
-  },
-  readDirectory(path) {
-    return readdirSync(path, { encoding: "utf8", withFileTypes: true });
-  },
   exists(path) {
     return existsSync(path);
   },
   copyBundledRealmFiles() {
     throw new Error("Realm for Node does not support this method.");
+  },
+  /*
+  readDirectory(path) {
+    return readdirSync(path, { encoding: "utf8", withFileTypes: true });
+  },
+  */
+  removeRealmFilesFromDirectory(path: string) {
+    debug("removeRealmFilesFromDirectory", path);
+    for (const dirent of readdirSync(path, { encoding: "utf8", withFileTypes: true })) {
+      const direntPath = join(path, dirent.name);
+      if (dirent.isDirectory() && dirent.name.endsWith(".realm.management")) {
+        rmSync(path, { recursive: true, force: true });
+      } else if (
+        dirent.name.endsWith(".realm") ||
+        dirent.name.endsWith(".realm.note") ||
+        dirent.name.endsWith(".realm.lock") ||
+        dirent.name.endsWith(".realm.log")
+      ) {
+        unlinkSync(direntPath);
+      }
+    }
   },
 });

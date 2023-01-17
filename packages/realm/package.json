@@ -17,7 +17,8 @@
     "build:watch": "rollup -c --watch"
   },
   "dependencies": {
-    "debug": "^4.3.4"
+    "debug": "^4.3.4",
+    "path-browserify": "^1.0.1"
   },
   "peerDependencies": {
     "bson": "^4",
@@ -37,6 +38,7 @@
     "@types/chai": "^4.3.3",
     "@types/mocha": "^10.0.0",
     "@types/node": "^18.11.9",
+    "@types/path-browserify": "^1.0.0",
     "chai": "^4.3.6",
     "mocha": "^10.1.0",
     "react-native": "^0.71.0-rc.5",

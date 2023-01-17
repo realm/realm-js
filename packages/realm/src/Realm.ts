@@ -128,19 +128,7 @@ export class Realm {
 
     // Delete all Realm files in the default directory
     const defaultDirectoryPath = fs.getDefaultDirectoryPath();
-    for (const dirent of fs.readDirectory(defaultDirectoryPath)) {
-      const direntPath = fs.joinPaths(defaultDirectoryPath, dirent.name);
-      if (dirent.isDirectory() && dirent.name.endsWith(".realm.management")) {
-        fs.removeDirectory(direntPath);
-      } else if (
-        dirent.name.endsWith(".realm") ||
-        dirent.name.endsWith(".realm.note") ||
-        dirent.name.endsWith(".realm.lock") ||
-        dirent.name.endsWith(".realm.log")
-      ) {
-        fs.removeFile(direntPath);
-      }
-    }
+    fs.removeRealmFilesFromDirectory(defaultDirectoryPath);
 
     binding.App.clearCachedApps();
   }
