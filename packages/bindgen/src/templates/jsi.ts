@@ -304,7 +304,7 @@ function convertPrimFromJsi(addon: JsiAddon, type: string, expr: string): string
     case "double":
       return `(${expr}).asNumber()`;
     case "float":
-      return `(${expr}).asObject(_env).getProperty(_env, ${addon.getPropId("value")}).asNumber()`;
+      return `float((${expr}).asObject(_env).getProperty(_env, ${addon.getPropId("value")}).asNumber())`;
 
     case "int32_t":
       return `int32_t((${expr}).asNumber())`;
