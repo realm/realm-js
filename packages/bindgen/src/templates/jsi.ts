@@ -349,15 +349,16 @@ function convertPrimFromJsi(addon: JsiAddon, type: string, expr: string): string
       const mixed = new Primitive("Mixed");
       return `
         ([&] (auto&& arg) -> ${new Primitive(type).toCpp()} {
-            if (arg.isObject()) {
-                auto obj = FWD(arg).getObject(_env);
+            jsi::Value v = FWD(arg);
+            if (v.isObject()) {
+                auto obj = std::move(v).getObject(_env);
                 const bool isArray = obj.isArray(_env);
-                jsi::Value v = std::move(obj); // move back into a value
+                v = std::move(obj); // move back into a value
                 if (isArray) {
                   return ${convertFromJsi(addon, new Template("std::vector", [mixed]), "std::move(v)")};
                 }
             }
-            return ${convertFromJsi(addon, mixed, "FWD(arg)")};
+            return ${convertFromJsi(addon, mixed, "std::move(v)")};
         })(${expr})`;
     }
 
