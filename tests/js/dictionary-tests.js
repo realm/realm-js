@@ -349,70 +349,73 @@ module.exports = {
     });
   },
 
-  // FIXME: Running the following test produce unexpected side-effects which breaks all subsequent tests.
-  // See https://github.com/realm/realm-js/issues/3834
+  testDictionaryNotificationObjectFieldInsertion() {
+    const DictSchema = {
+      name: "Dictionary",
+      properties: {
+        fields: "{}",
+      },
+    };
 
-  // testDictionaryNotificationObjectFieldInsertion() {
-  //     const DictSchema = {
-  //         name: "Dictionary",
-  //         properties: {
-  //             fields: "{}"
-  //         }
-  //     };
+    let realm = new Realm({ schema: [DictSchema] });
+    realm.write(() => realm.create(DictSchema.name, { fields: { field1: 0, filed2: 2, field3: 3 } }));
+    let ff = realm.objects(DictSchema.name)[0];
+    let cnt = 0;
 
-  //     let realm = new Realm({schema: [DictSchema]});
-  //     realm.write(() => realm.create(DictSchema.name, {fields: {field1: 0, filed2: 2, field3: 3}}));
-  //     let ff = realm.objects(DictSchema.name)[0];
-  //     let cnt = 0;
+    let a = function (obj, changeset) {
+      if (cnt === 1) {
+        TestCase.assertTrue(obj.x2 !== undefined, "This field should be equal x2");
+        TestCase.assertTrue(obj.x1 !== undefined, "This field should be equal x1");
+        TestCase.assertArrayLength(changeset.deletions, 3, "deletions");
+        TestCase.assertArrayLength(changeset.insertions, 2, "insertions");
+        TestCase.assertArrayLength(changeset.modifications, 0, "modifications");
+      }
 
-  //     let a = function (obj, changeset) {
-  //         if (cnt === 1) {
-  //             TestCase.assertTrue(obj.x2 !== undefined,"This field should be equal x2");
-  //             TestCase.assertTrue(obj.x1 !== undefined,"This field should be equal x1");
-  //             TestCase.assertArrayLength(changeset.deletions, 3, "deletions");
-  //             TestCase.assertArrayLength(changeset.insertions, 2, "insertions");
-  //             TestCase.assertArrayLength(changeset.modifications, 0, "modifications");
-  //         }
+      if (cnt === 2) {
+        TestCase.assertTrue(obj.x1 !== undefined, "This field should be equal x1");
+        TestCase.assertTrue(obj.x5 !== undefined, "This field should be equal x5");
+        TestCase.assertTrue(obj.x3 !== undefined, "This field should be equal x3");
+        TestCase.assertArrayLength(changeset.deletions, 2, "deletions");
+        TestCase.assertArrayLength(changeset.insertions, 3, "insertions");
+        TestCase.assertArrayLength(changeset.modifications, 0, "modifications");
+      }
 
-  //         if (cnt === 2) {
-  //             TestCase.assertTrue(obj.x1 !== undefined,"This field should be equal x1");
-  //             TestCase.assertTrue(obj.x5 !== undefined,"This field should be equal x5");
-  //             TestCase.assertTrue(obj.x3 !== undefined,"This field should be equal x3");
-  //             TestCase.assertArrayLength(changeset.deletions, 2, "deletions");
-  //             TestCase.assertArrayLength(changeset.insertions, 3, "insertions");
-  //             TestCase.assertArrayLength(changeset.modifications, 0, "modifications");
-  //         }
+      if (cnt === 3) {
+        let keys = Object.keys(obj);
+        TestCase.assertEqual(keys[0], "x1", "First field should be equal x1");
+        TestCase.assertEqual(obj.x1, "hello", 'x1 should be equals to "hello"');
+        TestCase.assertArrayLength(changeset.deletions, 3, "deletions");
+        TestCase.assertArrayLength(changeset.insertions, 1, "insertions");
+        TestCase.assertArrayLength(changeset.modifications, 0, "modifications");
+      }
+      cnt++;
+    };
+    ff.fields.addListener(a);
 
-  //         if (cnt === 3) {
-  //             let keys = Object.keys(obj);
-  //             TestCase.assertEqual(keys[0], "x1", "First field should be equal x1");
-  //             TestCase.assertEqual(obj.x1, "hello", "x1 should be equals to \"hello\"");
-  //             TestCase.assertArrayLength(changeset.deletions, 3, "deletions");
-  //             TestCase.assertArrayLength(changeset.insertions, 1, "insertions");
-  //             TestCase.assertArrayLength(changeset.modifications, 0, "modifications");
-  //         }
-  //         cnt++;
-  //     }
-  //     ff.fields.addListener(a);
+    // total object mutation.
+    realm.write(() => {
+      ff.fields = { x1: 1, x2: 2 };
+    });
 
-  //     // total object mutation.
-  //     realm.write(() => { ff.fields = {x1: 1, x2: 2} } );
+    // partial object mutation.
+    realm.write(() => {
+      ff.fields = { x1: 1, x3: 2, x5: 5 };
+    });
 
-  //     // partial object mutation.
-  //     realm.write(() => { ff.fields = {x1: 1, x3: 2, x5: 5} } );
+    // deleting all but one field.
+    realm.write(() => {
+      ff.fields = { x1: "hello" };
+    });
 
-  //     // deleting all but one field.
-  //     realm.write(() => { ff.fields = {x1: "hello"} } );
-
-  //     return new Promise((resolve, reject) => {
-  //         setTimeout(() => {
-  //             TestCase.assertEqual(cnt, 4, "Counter should be four");
-  //             ff.fields.removeAllListeners();
-  //             realm.close();
-  //             resolve();
-  //         }, 1000);
-  //     })
-  // },
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        TestCase.assertEqual(cnt, 4, "Counter should be four");
+        ff.fields.removeAllListeners();
+        realm.close();
+        resolve();
+      }, 1000);
+    });
+  },
 
   testDictionaryUserShouldDeleteFields() {
     const DictSchema = {
