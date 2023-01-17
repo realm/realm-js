@@ -34,6 +34,7 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
   // TODO RN vs Node will probably diverge further in the future and will likely need different templates.
   // But for now, this should work to let us load the native module for both platforms.
   reactLines.push(`
+    /*global global*/
     import { Platform, NativeModules } from "react-native";
     if (Platform.OS === "android") {
       // Getting the native module on Android will inject the Realm global
@@ -42,13 +43,21 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
     }
     // TODO: Remove the need to store Realm as a global
     // @see https://github.com/realm/realm-js/issues/2126
-    // eslint-disable-next-line no-restricted-globals
-    const nativeModule = globalThis.__RealmFuncs;
+    const nativeModule = global.__RealmFuncs;
+
+    export const WeakRef = global.WeakRef ?? class WeakRef {
+        constructor(obj) { this.native = nativeModule.createWeakRef(obj) }
+        deref() { return nativeModule.lockWeakRef(this.native) }
+    };
   `);
   nodeLines.push(`
+    /*global global*/
     import { createRequire } from 'node:module';
     const require = createRequire(import.meta.url);
     const nativeModule = require("./realm.node");
+
+    // We know that node always has real WeakRefs so just use them.
+    export const WeakRef = global.WeakRef;
   `);
 
   both(`

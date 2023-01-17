@@ -73,6 +73,14 @@ struct HostObjClassWrapper : HostRefWrapper<Base&> {
     T value;
 };
 
+struct WeakObjectWrapper : jsi::HostObject {
+    WeakObjectWrapper(jsi::Runtime& rt, const jsi::Object& obj)
+        : ref(rt, obj)
+    {
+    }
+    jsi::WeakObject ref;
+};
+
 template <typename T>
 std::remove_cvref_t<T> copyIfNeeded(jsi::Runtime& rt, const T& val)
 {

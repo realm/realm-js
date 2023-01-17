@@ -948,6 +948,39 @@ class JsiCppDecls extends CppDecls {
       }),
     );
 
+    // Hermes doesn't (always?) have WeakRef support so expose some helpers to let us emulate it.
+    // If we remove this, also remove the WeakObjectWrapper in realm_js_jsi_helpers.h
+    {
+      this.free_funcs.push(
+        this.addon.addFunc("createWeakRef", {
+          body: `
+            if (count != 1)
+                throw jsi::JSError(_env, "expected 1 argument");
+            if (!args[0].isObject())
+                throw jsi::JSError(_env, "expected an object");
+            return jsi::Object::createFromHostObject(
+                _env,
+                std::make_shared<WeakObjectWrapper>(_env, args[0].getObject(_env))
+            );
+          `
+        })
+      );
+      this.free_funcs.push(
+        this.addon.addFunc("lockWeakRef", {
+          body: `
+            if (count != 1)
+                throw jsi::JSError(_env, "expected 1 argument");
+            if (!args[0].isObject())
+                throw jsi::JSError(_env, "expected an object");
+            auto obj = args[0].getObject(_env);
+            if (!obj.isHostObject<WeakObjectWrapper>(_env))
+                throw jsi::JSError(_env, "expected a WeakObjectWrapper");
+            return std::move(obj).getHostObject<WeakObjectWrapper>(_env)->ref.lock(_env);
+          `
+        })
+      );
+    }
+
     this.addon.generateMembers();
   }
 

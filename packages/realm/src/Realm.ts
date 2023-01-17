@@ -75,7 +75,7 @@ type ObjectSchemaExtra = {
 };
 
 // Using a set of weak refs to avoid prevention of garbage collection
-const RETURNED_REALMS = new Set<WeakRef<binding.Realm>>();
+const RETURNED_REALMS = new Set<binding.WeakRef<binding.Realm>>();
 const NOT_VERSIONED = 18446744073709551615n;
 
 export type RealmEventName = "change" | "schema" | "beforenotify";
@@ -468,7 +468,7 @@ export class Realm {
           this.beforeNotifyListeners.callback();
         },
       });
-      RETURNED_REALMS.add(new WeakRef(this.internal));
+      RETURNED_REALMS.add(new binding.WeakRef(this.internal));
     }
 
     Object.defineProperties(this, {
