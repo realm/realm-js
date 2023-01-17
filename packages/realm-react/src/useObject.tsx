@@ -63,6 +63,9 @@ export function createUseObject(useRealm: () => Realm) {
 
     const collectionRef = useRef(realm.objects(type));
 
+    const objectRef = useRef<T & Realm.Object<T>>();
+    const updatedRef = useRef(true);
+
     // Initializing references with a function call or class constructor will
     // cause the function or constructor to be called on ever render.
     // Even though this value is thrown away on subsequent renders, `createCachedObject` will end up registering a listener.
@@ -75,6 +78,7 @@ export function createUseObject(useRealm: () => Realm) {
         object: originalObject ?? null,
         realm,
         updateCallback: forceRerender,
+        updatedRef,
       });
     }
 
@@ -100,6 +104,7 @@ export function createUseObject(useRealm: () => Realm) {
             object: originalObject ?? null,
             realm,
             updateCallback: forceRerender,
+            updatedRef,
           });
           originalObjectRef.current = originalObject;
         }
@@ -149,8 +154,13 @@ export function createUseObject(useRealm: () => Realm) {
       return null;
     }
 
-    // Wrap object in a proxy to update the reference on rerender ( should only rerender when something has changed )
-    return new Proxy(object, {}) as T & Realm.Object<T>;
+    if (updatedRef.current) {
+      // Wrap object in a proxy to update the reference on rerender ( should only rerender when something has changed )
+      objectRef.current = new Proxy(object, {}) as T & Realm.Object<T>;
+      updatedRef.current = false;
+    }
+    // This will never be undefined, but the type system doesn't know that
+    return objectRef.current as T & Realm.Object<T>;
   };
 }
 

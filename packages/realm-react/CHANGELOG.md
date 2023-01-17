@@ -4,8 +4,7 @@
 * Improve AppProvider and UserProvider rendering performance ([#5215](https://github.com/realm/realm-js/pull/5215))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Stabilized references for Collections, Lists and Objects ([#5269](https://github.com/realm/realm-js/issues/5269))
 
 ### Compatibility
 * React Native >= v0.70.0
