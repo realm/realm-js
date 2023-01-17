@@ -625,6 +625,8 @@ function convertFromJsi(addon: JsiAddon, type: Type, expr: string): string {
         {
             _thread.assertOnSameThread();
             auto& _env = ${addon.get()}->m_rt;
+            // TODO consider not flushing when calling back into JS from withing a JS->CPP call.
+            FlushMicrotaskQueueGuard guard;
             return ${c(
               type.ret,
               `_cb->call(
@@ -991,8 +993,9 @@ export function generate({ spec, file: makeFile }: TemplateContext): void {
             // Blow away the addon state.
             RealmAddon::self.reset();
         }
-        void realm_jsi_init(jsi::Runtime& rt, jsi::Object& exports, std::function<void()> /*flush_ui_queue*/) {
+        void realm_jsi_init(jsi::Runtime& rt, jsi::Object& exports, std::function<void()> flush_ui_queue) {
             realm_jsi_invalidate_caches();
+            js::flush_ui_queue = flush_ui_queue;
             RealmAddon::self = std::make_unique<RealmAddon>(rt, exports);
         }
         void realm_jsi_close_sync_sessions() {

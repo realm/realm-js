@@ -4,8 +4,19 @@
 #include <realm_js_helpers.h>
 #include <type_traits>
 
+namespace realm::js {
+    extern std::function<void()> flush_ui_queue;
+}
 namespace realm::js::JSI {
 namespace {
+
+struct FlushMicrotaskQueueGuard {
+    ~FlushMicrotaskQueueGuard()
+    {
+        flush_ui_queue();
+    }
+};
+
 namespace jsi = facebook::jsi;
 template <typename Ref>
 struct HostRefWrapper : jsi::HostObject {
