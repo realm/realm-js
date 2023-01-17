@@ -15,48 +15,32 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-
-import rnfs from "react-native-fs";
-import { isAbsolute, join } from "path-browserify";
-
 import { inject } from "../platform/file-system";
 import { extendDebug } from "../debug";
 
 const debug = extendDebug("fs");
 
 inject({
-  async removeFile(path) {
-    if (await rnfs.exists(path)) {
-      const { isFile } = await rnfs.stat(path);
-      if (!isFile()) {
-        throw new Error("Expected a file");
-      }
-      await rnfs.unlink(path);
-    }
+  removeFile(path) {
+    throw new Error("Not yet implemented");
   },
-  async removeDirectory(path) {
-    if (await rnfs.exists(path)) {
-      const { isDirectory } = await rnfs.stat(path);
-      if (!isDirectory()) {
-        throw new Error("Expected a directory");
-      }
-      await rnfs.unlink(path);
-    }
+  removeDirectory(path) {
+    throw new Error("Not yet implemented");
   },
   getDefaultDirectoryPath() {
-    return rnfs.DocumentDirectoryPath;
+    throw new Error("Not yet implemented");
   },
   isAbsolutePath(path) {
-    return isAbsolute(path);
+    throw new Error("Not yet implemented");
   },
   joinPaths(...segments) {
-    return join(...segments);
+    throw new Error("Not yet implemented");
   },
-  async readDirectory(path) {
-    return rnfs.readDir(path);
+  readDirectory(path) {
+    throw new Error("Not yet implemented");
   },
-  async exists(path) {
-    return rnfs.exists(path);
+  exists(path) {
+    throw new Error("Not yet implemented");
   },
   copyBundledRealmFiles() {
     throw new Error("Not yet implemented");

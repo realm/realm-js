@@ -26,8 +26,8 @@ import {
 } from "../schemas/person-and-dog-with-object-ids";
 
 describe("Realm objects", () => {
-  beforeEach(async () => {
-    await Realm.clearTestState();
+  beforeEach(() => {
+    Realm.clearTestState();
   });
 
   describe("Interface & object literal", () => {

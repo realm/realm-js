@@ -25,13 +25,13 @@ import { extendDebug } from "../debug";
 const debug = extendDebug("fs");
 
 inject({
-  async removeFile(path) {
+  removeFile(path) {
     debug("removeFile", path);
     if (existsSync(path)) {
       unlinkSync(path);
     }
   },
-  async removeDirectory(path) {
+  removeDirectory(path) {
     debug("removeDirectory", path);
     rmSync(path, { recursive: true, force: true });
   },
@@ -44,10 +44,10 @@ inject({
   joinPaths(...segments) {
     return join(...segments);
   },
-  async readDirectory(path) {
+  readDirectory(path) {
     return readdirSync(path, { encoding: "utf8", withFileTypes: true });
   },
-  async exists(path) {
+  exists(path) {
     return existsSync(path);
   },
   copyBundledRealmFiles() {

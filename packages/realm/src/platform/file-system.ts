@@ -17,14 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 type FileSystemType = {
-  removeFile(path: string): Promise<void>;
-  removeDirectory(path: string): Promise<void>;
+  removeFile(path: string): void;
+  removeDirectory(path: string): void;
   isAbsolutePath(path: string): boolean;
   joinPaths(...segments: string[]): string;
   getDefaultDirectoryPath(): string;
-  readDirectory(path: string): Promise<Dirent[]>;
-  exists(path: string): Promise<boolean>;
-  copyBundledRealmFiles(): Promise<void>;
+  readDirectory(path: string): Dirent[];
+  exists(path: string): boolean;
+  copyBundledRealmFiles(): void;
 };
 
 export type Dirent = {

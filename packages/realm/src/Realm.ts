@@ -115,7 +115,7 @@ export class Realm {
    * Clears the state by closing and deleting any Realm in the default directory and logout all users.
    * @private Not a part of the public API: It's primarily used from the library's tests.
    */
-  public static async clearTestState(): Promise<void> {
+  public static clearTestState(): void {
     // Close any realms not already closed
     for (const weakRealm of RETURNED_REALMS) {
       const realm = weakRealm;
@@ -128,17 +128,17 @@ export class Realm {
 
     // Delete all Realm files in the default directory
     const defaultDirectoryPath = fs.getDefaultDirectoryPath();
-    for (const dirent of await fs.readDirectory(defaultDirectoryPath)) {
+    for (const dirent of fs.readDirectory(defaultDirectoryPath)) {
       const direntPath = fs.joinPaths(defaultDirectoryPath, dirent.name);
       if (dirent.isDirectory() && dirent.name.endsWith(".realm.management")) {
-        await fs.removeDirectory(direntPath);
+        fs.removeDirectory(direntPath);
       } else if (
         dirent.name.endsWith(".realm") ||
         dirent.name.endsWith(".realm.note") ||
         dirent.name.endsWith(".realm.lock") ||
         dirent.name.endsWith(".realm.log")
       ) {
-        await fs.removeFile(direntPath);
+        fs.removeFile(direntPath);
       }
     }
 
@@ -150,12 +150,12 @@ export class Realm {
    * @param config The configuration for the Realm
    * @throws {@link Error} If anything in the provided {@link config} is invalid.
    */
-  public static async deleteFile(config: Configuration): Promise<void> {
+  public static deleteFile(config: Configuration): void {
     const path = Realm.determinePath(config);
-    await fs.removeFile(path);
-    await fs.removeFile(path + ".lock");
-    await fs.removeFile(path + ".note");
-    await fs.removeDirectory(path + ".management");
+    fs.removeFile(path);
+    fs.removeFile(path + ".lock");
+    fs.removeFile(path + ".note");
+    fs.removeDirectory(path + ".management");
   }
 
   /**
@@ -164,7 +164,7 @@ export class Realm {
    * @throws {@link Error} If anything in the provided {@link config} is invalid.
    * @returns `true` if the Realm exists on the device, `false` if not.
    */
-  public static exists(arg: Configuration | string = {}): Promise<boolean> {
+  public static exists(arg: Configuration | string = {}): boolean {
     const config = typeof arg === "string" ? { path: arg } : arg;
     validateConfiguration(config);
     const path = Realm.determinePath(config);

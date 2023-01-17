@@ -208,8 +208,8 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         }
 
         describe("error", function () {
-          afterEach(async function () {
-            await Realm.deleteFile(this.config);
+          afterEach(function () {
+            Realm.deleteFile(this.config);
           });
 
           it("throws an error if no update function is provided", async function (this: RealmContext) {

@@ -4,9 +4,7 @@
     "noResolve": false,
     "incremental": true,
     "types": [
-      "react-native",
-      "react-native-fs",
-      "path-browserify"
+      "react-native"
     ]
   },
   "exclude": [
