@@ -25,6 +25,7 @@
   "devDependencies": {
     "@types/chai": "^4.3.3",
     "@types/chai-as-promised": "^7.1.5",
+    "@types/jsrsasign": "^10.5.4",
     "@types/mocha": "^10.0.0",
     "@types/node": "^18.11.9",
     "concurrently": "^6.5.1",
@@ -40,7 +41,7 @@
     "chai": "4.3.6",
     "chai-as-promised": "^7.1.1",
     "concurrently": "^6.0.2",
-    "jose": "^4.10.4"
+    "jsrsasign": "^10.6.1"
   },
   "files": [
     "/src"

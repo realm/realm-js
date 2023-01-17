@@ -18,8 +18,10 @@
 import { expect } from "chai";
 import { Credentials, User } from "realm";
 
+// Using "jsrsasign" as it's a pure JS implementation which doesn't rely on the crypto global
+import { KJUR } from "jsrsasign";
+
 import { importAppBefore } from "../../hooks";
-import { SignJWT } from "jose";
 
 describe.skipIf(environment.missingServer, "jwt credentials", () => {
   importAppBefore("with-jwt");
@@ -27,15 +29,17 @@ describe.skipIf(environment.missingServer, "jwt credentials", () => {
     this.timeout(60 * 1000); // 1 min
     // Needs to match the value in the apps secrets.json
     const privateKey = "2k66QfKeTRk3MdZ5vpDYgZCu2k66QfKeTRk3MdZ5vpDYgZCu";
-    const privateKeyBuffer = Buffer.from(privateKey, "utf-8");
-    const token = await new SignJWT({
-      aud: this.app.id,
-      sub: "my-awesome-internal-id",
-      mySecretField: "some-secret-stuff",
-    })
-      .setProtectedHeader({ alg: "HS256" })
-      .setExpirationTime(4070908800) // 01/01/2099
-      .sign(privateKeyBuffer);
+    const token = KJUR.jws.JWS.sign(
+      null,
+      { alg: "HS256" },
+      {
+        exp: 4070908800, // 01/01/2099
+        aud: this.app.id,
+        sub: "my-awesome-internal-id",
+        mySecretField: "some-secret-stuff",
+      },
+      privateKey,
+    );
     const credentials = Credentials.jwt(token);
     const user = await this.app.logIn(credentials);
     expect(user).to.be.instanceOf(User);

@@ -20,8 +20,7 @@ import "./tests/credentials/anonymous";
 import "./tests/credentials/api-key";
 import "./tests/credentials/email-password";
 import "./tests/credentials/function";
-// Disabled because the browser variant of "jose" depends on the crypto global
-//import "./tests/credentials/jwt";
+import "./tests/credentials/jwt";
 
 import "./tests/sync/asymmetric";
 import "./tests/sync/client-reset";
