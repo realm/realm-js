@@ -22,16 +22,16 @@ import { DogSchema, IDog, IPerson, PersonSchema } from "../schemas/person-and-do
 const TestSchema = {
   name: "Test",
   properties: {
-    prop0: "string",
-    prop1: "int",
+    name: "string",
+    age: "int",
   },
 };
 interface Test {
-  prop0: string;
-  prop1: number;
+  name: string;
+  age: number;
 }
 interface TestWithNewProperty extends Test {
-  prop2: string;
+  surname: string;
 }
 
 describe("Migrations", () => {
@@ -116,20 +116,20 @@ describe("Migrations", () => {
     it("should work with renamed properties", () => {
       interface TestWithRenamedProperty {
         renamed: string;
-        prop1: number;
+        age: number;
       }
       const TestWithRenamedPropertySchema = {
         ...TestSchema,
         properties: {
-          renamed: TestSchema.properties.prop0,
-          prop1: TestSchema.properties.prop1,
+          renamed: TestSchema.properties.name,
+          age: TestSchema.properties.age,
         },
       };
       const realm = new Realm({
         schema: [TestSchema],
       });
       realm.write(function () {
-        realm.create<Test>("Test", { prop0: "stringValue", prop1: 1 });
+        realm.create<Test>("Test", { name: "stringValue", age: 1 });
       });
       realm.close();
 
@@ -142,20 +142,20 @@ describe("Migrations", () => {
           expect(oldObjects.length).equals(1);
           expect(newObjects.length).equals(1);
 
-          expect(oldObjects[0].prop0).equals("stringValue");
-          expect(oldObjects[0].prop1).equals(1);
+          expect(oldObjects[0].name).equals("stringValue");
+          expect(oldObjects[0].age).equals(1);
           //@ts-expect-error Should not have this field.
           expect(oldObjects[0].renamed).equals(undefined);
 
           //@ts-expect-error Should not have this field.
-          expect(newObjects[0].prop0).equals(undefined);
+          expect(newObjects[0].name).equals(undefined);
           expect(newObjects[0].renamed).equals("");
-          expect(newObjects[0].prop1).equals(1);
+          expect(newObjects[0].age).equals(1);
 
-          newObjects[0].renamed = oldObjects[0].prop0;
+          newObjects[0].renamed = oldObjects[0].name;
 
           expect(function () {
-            oldRealm.write(() => (oldObjects[0].prop0 = "throws"));
+            oldRealm.write(() => (oldObjects[0].name = "throws"));
           }).throws("Can't perform transactions on read-only Realms.");
         },
       });
@@ -163,9 +163,9 @@ describe("Migrations", () => {
       const objects = migratedRealm.objects<TestWithRenamedProperty>("Test");
       expect(objects.length).equals(1);
       expect(objects[0].renamed).equals("stringValue");
-      expect(objects[0].prop1).equals(1);
+      expect(objects[0].age).equals(1);
       //@ts-expect-error Should not have this field.
-      expect(objects[0].prop0).equals(undefined);
+      expect(objects[0].name).equals(undefined);
     });
 
     it("should be able to create objects with added properties", () => {
@@ -173,7 +173,7 @@ describe("Migrations", () => {
         name: "SecondTest",
         properties: {
           ...TestSchema.properties,
-          prop2: "int",
+          surname: "int",
         },
       };
 
@@ -196,26 +196,27 @@ describe("Migrations", () => {
           expect(newObjects_2.length).equals(0);
 
           newRealm.create("SecondTest", {
-            prop0: oldObjects_1[0].prop0,
-            prop1: oldObjects_1[0].prop1,
-            prop2: 42,
+            name: oldObjects_1[0].name,
+            age: oldObjects_1[0].age,
+            surname: 42,
           });
         },
       });
       const objects_1 = realmB.objects<Test>("Test");
       const objects_2 = realmB.objects<TestWithNewProperty>("SecondTest");
       expect(objects_1.length).equals(1);
-      expect(objects_1[0].prop1).equals(1);
+      expect(objects_1[0].age).equals(1);
       expect(objects_2.length).equals(1);
-      expect(objects_2[0].prop1).equals(1);
-      expect(objects_2[0].prop2).equals(42);
+      expect(objects_2[0].age).equals(1);
+      expect(objects_2[0].surname).equals(42);
     });
+
     it("should be able to add optional new properties", () => {
       const TestSchemaWithOptionalNewProperty = {
         ...TestSchema,
         properties: {
           ...TestSchema.properties,
-          prop2: { type: "string", optional: true },
+          surname: { type: "string", optional: true },
         },
       };
 
@@ -224,7 +225,7 @@ describe("Migrations", () => {
         schema: [TestSchema],
       });
       realm.write(() => {
-        realm.create("Test", { prop0: "Fred Bloggs", prop1: 1 });
+        realm.create("Test", { name: "Fred Bloggs", age: 1 });
       });
       realm.close();
 
@@ -232,25 +233,25 @@ describe("Migrations", () => {
         schemaVersion: 1,
         schema: [TestSchemaWithOptionalNewProperty],
         onMigration: (oldRealm, newRealm) => {
-          newRealm.create("Test", { prop0: "Freddy Bloggson", prop1: 1, prop2: "Freddy" });
-          newRealm.create("Test", { prop0: "Blogs Fredson", prop1: 2 });
+          newRealm.create("Test", { name: "Freddy Bloggson", age: 1, surname: "Freddy" });
+          newRealm.create("Test", { name: "Blogs Fredson", age: 2 });
         },
       });
 
       migratedRealm.write(() => {
-        migratedRealm.create("Test", { prop0: "Bloggy Freddy", prop1: 1 });
+        migratedRealm.create("Test", { name: "Bloggy Freddy", age: 1 });
       });
 
       const objs = migratedRealm.objects<TestWithNewProperty>("Test");
       expect(objs.length).equals(4);
 
-      expect(objs[0].prop0).equals("Fred Bloggs");
-      expect(objs[0].prop1).equals(1);
-      expect(objs[0].prop2).equals(null);
+      expect(objs[0].name).equals("Fred Bloggs");
+      expect(objs[0].age).equals(1);
+      expect(objs[0].surname).equals(null);
 
-      expect(objs[1].prop0).equals("Freddy Bloggson");
-      expect(objs[0].prop1).equals(1);
-      expect(objs[1].prop2).equals("Freddy");
+      expect(objs[1].name).equals("Freddy Bloggson");
+      expect(objs[0].age).equals(1);
+      expect(objs[1].surname).equals("Freddy");
 
       migratedRealm.close();
     });
@@ -259,14 +260,15 @@ describe("Migrations", () => {
     beforeEach(() => {
       Realm.clearTestState();
     });
+
     it("should change during migration", () => {
       const realm = new Realm({
         schema: [
           {
             name: "Test",
             properties: {
-              prop0: "string",
-              prop1: "int",
+              name: "string",
+              age: "int",
             },
           },
         ],
@@ -279,7 +281,7 @@ describe("Migrations", () => {
             name: "Test",
             properties: {
               renamed: "string",
-              prop1: "int",
+              age: "int",
             },
           },
         ],
@@ -293,11 +295,11 @@ describe("Migrations", () => {
           expect(oldSchema[0].name).equals("Test");
           expect(newSchema[0].name).equals("Test");
 
-          expect(oldSchema[0].properties.prop0.type).equals("string");
-          expect(newSchema[0].properties.prop0).equals(undefined);
+          expect(oldSchema[0].properties.name.type).equals("string");
+          expect(newSchema[0].properties.name).equals(undefined);
 
-          expect(oldSchema[0].properties.prop1.type).equals("int");
-          expect(newSchema[0].properties.prop1.type).equals("int");
+          expect(oldSchema[0].properties.age.type).equals("int");
+          expect(newSchema[0].properties.age.type).equals("int");
 
           expect(oldSchema[0].properties.renamed).equals(undefined);
           expect(newSchema[0].properties.renamed.type).equals("string");
@@ -373,6 +375,7 @@ describe("Migrations", () => {
 
       realm.close();
     });
+
     it("should ignore deleteModel with non-existing models", () => {
       realm = new Realm({
         schema: [TestSchema],
@@ -428,7 +431,7 @@ describe("Migrations", () => {
       realm.close();
 
       realm = new Realm({
-        schema: [DogSchema, PersonSchema],
+        schema: [DogSchema, PersonWithDogsSchema],
         schemaVersion: 1,
         onMigration: function (oldRealm, newRealm) {
           expect(() => {
@@ -444,7 +447,7 @@ describe("Migrations", () => {
       realm.close();
 
       realm = new Realm({
-        schema: [DogSchema, PersonSchema],
+        schema: [DogSchema, PersonWithDogsSchema],
         schemaVersion: 2,
         onMigration: function (oldRealm, newRealm) {
           // deleting a model which isn't target of linkingObjects works fine
@@ -454,7 +457,7 @@ describe("Migrations", () => {
 
       expect(realm.objects("Person").length).equals(1);
       expect(realm.objects("Dog").length).equals(0);
-      expect(realm.objects<IPerson>("Person")[0].dogs).equals(undefined);
+      expect(realm.objects<IPerson>("Person")[0].dogs.length).equals(0);
 
       realm.close();
     });
