@@ -67,7 +67,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
-set(PACKAGE_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(PACKAGE_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 
 if (NOT MSVC)
     # Ninja buffers output so we need to tell the compiler to use colors even though stdout isn't a tty.
@@ -91,7 +91,7 @@ if(REALM_JS_BUILD_CORE_FROM_SOURCE)
     )
 endif()
         
-add_library(realm-js SHARED)
+add_library(realm-js OBJECT)
 
 target_link_libraries(realm-js Realm::ObjectStore)
 
@@ -108,6 +108,9 @@ else()
 endif()
 
 target_include_directories(realm-js PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
+
+# TODO move platform.hpp and delete this line.
+target_include_directories(realm-js PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../src")
 
 # Right now we only support Ninja generators because they are the only ones that can correctly handle
 # mutliple custom_commands in separate targets that transitively depend on a common output file from
@@ -143,17 +146,13 @@ set(SDK_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../realm)
 
 set(TYPESCRIPT_OUTPUT_DIR ${SDK_DIR}/generated/ts)
 
-set_target_properties(realm-js PROPERTIES
-    # Need a dummy generator expression to avoid adding in the config name
-    LIBRARY_OUTPUT_DIRECTORY "${TYPESCRIPT_OUTPUT_DIR}/$<0:dummy_genex>"
-)
-
 set(GENERATED_TS_FILES
     ${TYPESCRIPT_OUTPUT_DIR}/native.d.mts
     ${TYPESCRIPT_OUTPUT_DIR}/core.ts
 )
 set(GENERATED_JS_FILES
     ${TYPESCRIPT_OUTPUT_DIR}/native.mjs
+    ${TYPESCRIPT_OUTPUT_DIR}/native-rn.mjs
 )
 
 add_custom_command(
@@ -208,7 +207,7 @@ if(DEFINED CMAKE_JS_VERSION)
             ${TS_FILES}
     )
 
-    target_sources(realm-js PRIVATE node_init.cpp ${CMAKE_JS_SRC})
+    target_sources(realm-js PRIVATE node_init.cpp ${CMAKE_JS_SRC} ../../src/node/platform.cpp)
 else()
     include(jsi.cmake)
 
@@ -226,9 +225,9 @@ else()
     target_sources(realm-js PRIVATE jsi_init.cpp ${CMAKE_JS_SRC})
 
     if(ANDROID)
-        #add_subdirectory(../../src/android)
+        add_subdirectory(../../src/android android)
     elseif(CMAKE_SYSTEM_NAME STREQUAL iOS)
-        #add_subdirectory(../../src/ios)
+        add_subdirectory(../../src/ios ios)
     else()
         # disabling for now to simplify the bootstrapping process.
         # message(FATAL_ERROR "Only support JSI builds for Android and iOS")

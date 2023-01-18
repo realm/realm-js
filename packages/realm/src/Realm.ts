@@ -75,7 +75,7 @@ type ObjectSchemaExtra = {
 };
 
 // Using a set of weak refs to avoid prevention of garbage collection
-const RETURNED_REALMS = new Set<WeakRef<binding.Realm>>();
+const RETURNED_REALMS = new Set<binding.WeakRef<binding.Realm>>();
 const NOT_VERSIONED = 18446744073709551615n;
 
 export type RealmEventName = "change" | "schema" | "beforenotify";
@@ -128,19 +128,7 @@ export class Realm {
 
     // Delete all Realm files in the default directory
     const defaultDirectoryPath = fs.getDefaultDirectoryPath();
-    for (const dirent of fs.readDirectory(defaultDirectoryPath)) {
-      const direntPath = fs.joinPaths(defaultDirectoryPath, dirent.name);
-      if (dirent.isDirectory() && dirent.name.endsWith(".realm.management")) {
-        fs.removeDirectory(direntPath);
-      } else if (
-        dirent.name.endsWith(".realm") ||
-        dirent.name.endsWith(".realm.note") ||
-        dirent.name.endsWith(".realm.lock") ||
-        dirent.name.endsWith(".realm.log")
-      ) {
-        fs.removeFile(direntPath);
-      }
-    }
+    fs.removeRealmFilesFromDirectory(defaultDirectoryPath);
 
     binding.App.clearCachedApps();
   }
@@ -154,6 +142,7 @@ export class Realm {
     const path = Realm.determinePath(config);
     fs.removeFile(path);
     fs.removeFile(path + ".lock");
+    fs.removeFile(path + ".fresh.lock");
     fs.removeFile(path + ".note");
     fs.removeDirectory(path + ".management");
   }
@@ -480,7 +469,7 @@ export class Realm {
           this.beforeNotifyListeners.callback();
         },
       });
-      RETURNED_REALMS.add(new WeakRef(this.internal));
+      RETURNED_REALMS.add(new binding.WeakRef(this.internal));
     }
 
     Object.defineProperties(this, {

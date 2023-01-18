@@ -45,7 +45,7 @@ struct FileSystemRequest : uv_fs_t {
 };
 
 // taken from Node.js: function Cwd in node.cc
-std::string default_realm_file_directory()
+std::string JsPlatformHelpers::default_realm_file_directory()
 {
 #ifdef _WIN32
     /* MAX_PATH is in characters, not bytes. Make sure we have enough headroom. */
@@ -63,7 +63,7 @@ std::string default_realm_file_directory()
     return std::string(buf, cwd_len);
 }
 
-void ensure_directory_exists_for_file(const std::string& file_path)
+void JsPlatformHelpers::ensure_directory_exists_for_file(const std::string& file_path)
 {
     size_t pos = 0;
 
@@ -82,7 +82,7 @@ void ensure_directory_exists_for_file(const std::string& file_path)
     }
 }
 
-void copy_bundled_realm_files()
+void JsPlatformHelpers::copy_bundled_realm_files()
 {
     throw std::runtime_error("Realm for Node does not support this method.");
 }
@@ -92,7 +92,7 @@ inline bool ends_with(const std::string& str, const std::string& suffix)
     return str.size() > suffix.size() && str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
 
-void remove_realm_files_from_directory(const std::string& dir_path)
+void JsPlatformHelpers::remove_realm_files_from_directory(const std::string& dir_path)
 {
     FileSystemRequest scandir_req;
     if (uv_fs_scandir(uv_default_loop(), &scandir_req, dir_path.c_str(), 0, nullptr) < 0) {
@@ -145,7 +145,7 @@ void remove_realm_files_from_directory(const std::string& dir_path)
     }
 }
 
-void remove_directory(const std::string& path)
+void JsPlatformHelpers::remove_directory(const std::string& path)
 {
     FileSystemRequest exists_req;
     if (uv_fs_stat(uv_default_loop(), &exists_req, path.c_str(), nullptr) != 0) {
@@ -179,7 +179,7 @@ void remove_directory(const std::string& path)
 }
 
 
-void remove_file(const std::string& path)
+void JsPlatformHelpers::remove_file(const std::string& path)
 {
     FileSystemRequest exists_req;
     if (uv_fs_stat(uv_default_loop(), &exists_req, path.c_str(), nullptr) != 0) {
@@ -198,7 +198,7 @@ void remove_file(const std::string& path)
     }
 }
 
-void print(const char* fmt, ...)
+void JsPlatformHelpers::print(const char* fmt, ...)
 {
     va_list vl;
     va_start(vl, fmt);

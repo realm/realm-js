@@ -1,12 +1,22 @@
 #pragma once
 
-#include <concepts>
 #include <jsi/jsi.h>
 #include <realm_js_helpers.h>
 #include <type_traits>
 
+namespace realm::js {
+    extern std::function<void()> flush_ui_queue;
+}
 namespace realm::js::JSI {
 namespace {
+
+struct FlushMicrotaskQueueGuard {
+    ~FlushMicrotaskQueueGuard()
+    {
+        flush_ui_queue();
+    }
+};
+
 namespace jsi = facebook::jsi;
 template <typename Ref>
 struct HostRefWrapper : jsi::HostObject {
@@ -61,6 +71,14 @@ struct HostObjClassWrapper : HostRefWrapper<Base&> {
     }
 
     T value;
+};
+
+struct WeakObjectWrapper : jsi::HostObject {
+    WeakObjectWrapper(jsi::Runtime& rt, const jsi::Object& obj)
+        : ref(rt, obj)
+    {
+    }
+    jsi::WeakObject ref;
 };
 
 template <typename T>
@@ -133,13 +151,15 @@ public:
     }
 
     auto operator()(auto&&... args) const
-        requires std::invocable<Func, decltype(FWD(args))...>
+        // TODO replace with this once stdlib has concepts.
+        //requires std::invocable<Func, decltype(FWD(args))...>
+        requires std::is_invocable_v<Func, decltype(FWD(args))...>
     {
         return (*m_func)(FWD(args)...);
     }
 
 private:
-    static_assert(!std::copyable<Func>);
+    static_assert(!std::is_copy_constructible_v<Func>);
     static_assert(!std::is_reference_v<Func>);
     std::shared_ptr<Func> m_func;
 };
@@ -147,7 +167,8 @@ private:
 /**
  * Specialization if Func is already copyable stores Func inline.
  */
-template <std::copyable Func>
+template <typename Func>
+    requires std::is_copy_constructible_v<Func>
 class MakeCopyable<Func> {
 public:
     explicit MakeCopyable(Func&& func)
@@ -156,7 +177,9 @@ public:
     }
 
     auto operator()(auto&&... args) const
-        requires std::invocable<Func, decltype(FWD(args))...>
+        // TODO replace with this once stdlib has concepts.
+        //requires std::invocable<Func, decltype(FWD(args))...>
+        requires std::is_invocable_v<Func, decltype(FWD(args))...>
     {
         return m_func(FWD(args)...);
     }

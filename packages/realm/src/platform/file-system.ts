@@ -17,14 +17,15 @@
 ////////////////////////////////////////////////////////////////////////////
 
 type FileSystemType = {
-  removeFile(path: string): void;
-  removeDirectory(path: string): void;
   isAbsolutePath(path: string): boolean;
   joinPaths(...segments: string[]): string;
+  removeFile(path: string): void;
+  removeDirectory(path: string): void;
   getDefaultDirectoryPath(): string;
-  readDirectory(path: string): Dirent[];
   exists(path: string): boolean;
   copyBundledRealmFiles(): void;
+  // readDirectory(path: string): Dirent[];
+  removeRealmFilesFromDirectory(path: string): void;
 };
 
 export type Dirent = {
@@ -34,29 +35,34 @@ export type Dirent = {
 };
 
 export const fs: FileSystemType = {
-  removeFile() {
-    throw new Error("Not supported on this platform");
-  },
-  removeDirectory() {
-    throw new Error("Not supported on this platform");
-  },
   isAbsolutePath() {
     throw new Error("Not supported on this platform");
   },
   joinPaths() {
     throw new Error("Not supported on this platform");
   },
-  getDefaultDirectoryPath() {
+  removeFile() {
     throw new Error("Not supported on this platform");
   },
-  readDirectory() {
-    throw new Error("Not supported on this playform");
+  getDefaultDirectoryPath() {
+    throw new Error("Not supported on this platform");
   },
   exists() {
     throw new Error("Not supported on this playform");
   },
   copyBundledRealmFiles() {
     throw new Error("Not supported on this playform");
+  },
+  removeDirectory() {
+    throw new Error("Not supported on this platform");
+  },
+  /*
+  readDirectory() {
+    throw new Error("Not supported on this playform");
+  },
+  */
+  removeRealmFilesFromDirectory() {
+    throw new Error("Not supported on this platform");
   },
 };
 

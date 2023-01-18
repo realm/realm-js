@@ -7,6 +7,7 @@
 #include "realm/sync/client_base.hpp"
 #include "realm/sync/protocol.hpp"
 #include "realm/util/base64.hpp"
+#include "realm/util/file.hpp"
 #include "realm/util/logger.hpp"
 #include <condition_variable>
 #include <exception>
@@ -222,6 +223,10 @@ struct Helpers {
     // Instead, we are exposing a function that takes a mutable lvalue reference and moves from it.
     static SharedRealm consume_thread_safe_reference_to_shared_realm(ThreadSafeReference& tsr) {
         return Realm::get_shared_realm(std::move(tsr));
+    }
+
+    static bool file_exists(const StringData& path) {
+        return realm::util::File::exists(path);
     }
 };
 
