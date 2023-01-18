@@ -192,6 +192,14 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
   out("export type AppError = Error & {code: number};");
   out("export type CppErrorCode = Error & {code: number, category: string};");
 
+  out(`
+    // WeakRef polyfill for Hermes.
+    export class WeakRef<T extends object> {
+      constructor(obj: T);
+      deref(): T | undefined;
+    }
+  `);
+
   out("// Mixed types");
   out(generateMixedTypes(spec));
   out("export type EJson = null | string | number | boolean | EJson[] | {[name: string]: EJson}");

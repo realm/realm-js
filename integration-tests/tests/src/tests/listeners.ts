@@ -42,12 +42,16 @@ describe("Realm Listeners", () => {
       });
     });
     it("should work for beforenotify", function (this: RealmContext, done) {
-      this.realm.addListener("beforenotify", (realm, name, schema) => {
+      const callback = (realm: Realm, name: string, schema: undefined) => {
         expect(name).to.equal("beforenotify");
         expect(realm).to.equal(this.realm);
         expect(schema).to.equal(undefined);
+        // Removing the comment from the following line will make the test pass,
+        // but we don't currently know why its fireing twice on React Native only.
+        // this.realm.removeListener("beforenotify", callback);
         done();
-      });
+      };
+      this.realm.addListener("beforenotify", callback);
       this.realm.write(() => {
         this.realm.create("Person", { age: 3, name: "Bob" });
       });
