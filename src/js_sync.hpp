@@ -1303,19 +1303,20 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                 }
 
                 case realm::ClientResyncMode::RecoverOrDiscard: {
-                    ValueType client_reset_after_value = Object::get_property(ctx, client_reset_object, "onDiscard");
-                    if (Value::is_undefined(ctx, client_reset_after_value)) {
+                    ValueType client_reset_discard_value =
+                        Object::get_property(ctx, client_reset_object, "onDiscard");
+                    if (Value::is_undefined(ctx, client_reset_discard_value)) {
                         throw std::invalid_argument("'onDiscard' is required");
                     }
 
                     ValueType client_reset_recovery_value =
                         Object::get_property(ctx, client_reset_object, "onRecovery");
-                    if (Value::is_undefined(ctx, client_reset_after_value)) {
+                    if (Value::is_undefined(ctx, client_reset_recovery_value)) {
                         throw std::invalid_argument("'onRecovery' is required");
                     }
 
                     FunctionType client_reset_discard_callback =
-                        Value::validated_to_function(ctx, client_reset_after_value);
+                        Value::validated_to_function(ctx, client_reset_discard_value);
                     FunctionType client_reset_recovery_callback =
                         Value::validated_to_function(ctx, client_reset_recovery_value);
 
