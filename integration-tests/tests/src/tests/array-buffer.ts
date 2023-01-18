@@ -32,9 +32,9 @@ type ISingleSchema = {
   a: ArrayBuffer;
 };
 
-describe("ArrayBuffer", () => {
+describe("ArrayBuffer type", () => {
   openRealmBeforeEach({ schema: [SingleSchema] });
-  it("supports bufferView", function (this: RealmContext) {
+  it("supports storing data from a bufferView", function (this: RealmContext) {
     const view = new Uint8Array([
       0xd8,
       0x21,
@@ -83,7 +83,7 @@ describe("ArrayBuffer", () => {
       expect(p1).equals(p2, "buffers should be equals");
     }
   });
-  it("supports bufferDataView", function (this: RealmContext) {
+  it("supports storing data from a bufferDataView", function (this: RealmContext) {
     const view = new Uint8Array([
       0xd8,
       0x21,
@@ -133,7 +133,7 @@ describe("ArrayBuffer", () => {
       expect(p1).equals(p2, "buffers should be equals");
     }
   });
-  it("supports arrayBuffer", function (this: RealmContext) {
+  it("supports storing data from an arrayBuffer", function (this: RealmContext) {
     const array_buffer = new ArrayBuffer(32);
     const view = new Uint8Array(array_buffer);
     view.set([
@@ -183,7 +183,7 @@ describe("ArrayBuffer", () => {
       expect(p1).equals(p2, "buffers should be equals");
     }
   });
-  it.skipIf(!environment.node, "supports arrayBuffer-nodeBuffer", function (this: RealmContext) {
+  it.skipIf(!environment.node, "supports storing data from an arrayBuffer-nodeBuffer", function (this: RealmContext) {
     const n_buffer = Buffer.from([0xca, 0xfe, 0xba, 0xbe]);
     this.realm.write(() => this.realm.create(SingleSchema.name, { a: n_buffer }));
 
