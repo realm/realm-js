@@ -20,6 +20,7 @@ import { expect } from "chai";
 import Realm from "realm";
 
 import { openRealmBeforeEach } from "../hooks";
+import { sleep } from "../utils/sleep";
 
 type Item<ValueType = Realm.Mixed> = {
   dict: Realm.Dictionary<ValueType>;
@@ -459,7 +460,7 @@ describe("Dictionary", () => {
   });
   describe("notifications", () => {
     openRealmBeforeEach({ schema: [DictSchema] });
-    it("support update notifications", function (this: RealmContext) {
+    it("support update notifications", async function (this: RealmContext) {
       const UPDATES = 5;
       this.realm.write(() => this.realm.create(DictSchema.name, { fields: { field1: 0, filed2: 2, field3: 3 } }));
       const fields = this.realm.objects<IDictSchema>(DictSchema.name)[0].fields;
@@ -482,65 +483,63 @@ describe("Dictionary", () => {
         });
       }
 
-      return new Promise<void>((resolve) => {
-        setTimeout(() => {
-          expect(this.realm.objects<IDictSchema>(DictSchema.name)[0].fields.field1).equals(5);
-          expect(cnt).equals(UPDATES + 1, "We expect ${UPDATES + 1} updates.");
-          fields.removeAllListeners();
-          this.realm.close();
-          resolve();
-        }, 1000);
-      });
+      await sleep(1000);
+      expect(this.realm.objects<IDictSchema>(DictSchema.name)[0].fields.field1).equals(5);
+      expect(cnt).equals(UPDATES + 1, "We expect ${UPDATES + 1} updates.");
+      fields.removeAllListeners();
+      this.realm.close();
     });
     // FIXME: Running the following test produce unexpected side-effects which breaks all subsequent tests.
     // See https://github.com/realm/realm-js/issues/3834
-    it.skip("support insert notifications", () => {
-      //     realm.write(() => realm.create(DictSchema.name, {fields: {field1: 0, filed2: 2, field3: 3}}));
-      //     let ff = realm.objects(DictSchema.name)[0];
-      //     let cnt = 0;
-      //     let a = function (obj, changeset) {
-      //         if (cnt === 1) {
-      //             TestCase.assertTrue(obj.x2 !== undefined,"This field should be equal x2");
-      //             TestCase.assertTrue(obj.x1 !== undefined,"This field should be equal x1");
-      //             TestCase.assertArrayLength(changeset.deletions, 3, "deletions");
-      //             TestCase.assertArrayLength(changeset.insertions, 2, "insertions");
-      //             TestCase.assertArrayLength(changeset.modifications, 0, "modifications");
-      //         }
-      //         if (cnt === 2) {
-      //             TestCase.assertTrue(obj.x1 !== undefined,"This field should be equal x1");
-      //             TestCase.assertTrue(obj.x5 !== undefined,"This field should be equal x5");
-      //             TestCase.assertTrue(obj.x3 !== undefined,"This field should be equal x3");
-      //             TestCase.assertArrayLength(changeset.deletions, 2, "deletions");
-      //             TestCase.assertArrayLength(changeset.insertions, 3, "insertions");
-      //             TestCase.assertArrayLength(changeset.modifications, 0, "modifications");
-      //         }
-      //         if (cnt === 3) {
-      //             let keys = Object.keys(obj);
-      //             TestCase.assertEqual(keys[0], "x1", "First field should be equal x1");
-      //             TestCase.assertEqual(obj.x1, "hello", "x1 should be equals to \"hello\"");
-      //             TestCase.assertArrayLength(changeset.deletions, 3, "deletions");
-      //             TestCase.assertArrayLength(changeset.insertions, 1, "insertions");
-      //             TestCase.assertArrayLength(changeset.modifications, 0, "modifications");
-      //         }
-      //         cnt++;
-      //     }
-      //     ff.fields.addListener(a);
-      //     // total object mutation.
-      //     realm.write(() => { ff.fields = {x1: 1, x2: 2} } );
-      //     // partial object mutation.
-      //     realm.write(() => { ff.fields = {x1: 1, x3: 2, x5: 5} } );
-      //     // deleting all but one field.
-      //     realm.write(() => { ff.fields = {x1: "hello"} } );
-      //     return new Promise((resolve, reject) => {
-      //         setTimeout(() => {
-      //             TestCase.assertEqual(cnt, 4, "Counter should be four");
-      //             ff.fields.removeAllListeners();
-      //             realm.close();
-      //             resolve();
-      //         }, 1000);
-      //     })
+    it.skip("support insert notifications", async function (this: RealmContext) {
+      this.realm.write(() => this.realm.create(DictSchema.name, { fields: { field1: 0, filed2: 2, field3: 3 } }));
+      const ff = this.realm.objects<IDictSchema>(DictSchema.name)[0];
+      let cnt = 0;
+      const a = function (obj: any, changeset: any) {
+        if (cnt === 1) {
+          expect(obj.x2 !== undefined, "This field should be equal x2").to.be.true;
+          expect(obj.x1 !== undefined, "This field should be equal x1").to.be.true;
+          expect(changeset.deletions).equals(3);
+          expect(changeset.insertions).equals(2);
+          expect(changeset.modifications).equals(0);
+        }
+        if (cnt === 2) {
+          expect(obj.x1 !== undefined, "This field should be equal x1").to.be.true;
+          expect(obj.x5 !== undefined, "This field should be equal x5").to.be.true;
+          expect(obj.x3 !== undefined, "This field should be equal x3").to.be.true;
+          expect(changeset.deletions).equals(2);
+          expect(changeset.insertions).equals(3);
+          expect(changeset.modifications).equals(0);
+        }
+        if (cnt === 3) {
+          const keys = Object.keys(obj);
+          expect(keys[0]).equals("x1");
+          expect(obj.x1).equals("hello");
+          expect(changeset.deletions).equals(3);
+          expect(changeset.insertions).equals(1);
+          expect(changeset.modifications).equals(0);
+        }
+        cnt++;
+      };
+      ff.fields.addListener(a);
+      // total object mutation.
+      this.realm.write(() => {
+        ff.fields = { x1: 1, x2: 2 };
+      });
+      // partial object mutation.
+      this.realm.write(() => {
+        ff.fields = { x1: 1, x3: 2, x5: 5 };
+      });
+      // deleting all but one field.
+      this.realm.write(() => {
+        ff.fields = { x1: "hello" };
+      });
+      await sleep(1000);
+      expect(cnt).equals(4);
+      ff.fields.removeAllListeners();
+      this.realm.close();
     });
-    it("support removeAll notifications", function (this: RealmContext) {
+    it("support removeAll notifications", async function (this: RealmContext) {
       this.realm.write(() => this.realm.create(DictSchema.name, { fields: { x: 1, y: 2, z: 3 } }));
       const point = this.realm.objects<IDictSchema>(DictSchema.name)[0].fields;
 
@@ -554,15 +553,11 @@ describe("Dictionary", () => {
       point.removeAllListeners();
       this.realm.write(() => (point.x = 10));
 
-      return new Promise<void>((resolve, reject) => {
-        setTimeout(() => {
-          expect(cnt).equal(0);
-          this.realm.close();
-          resolve();
-        }, 1000);
-      });
+      await sleep(1000);
+      expect(cnt).equal(0);
+      this.realm.close();
     });
-    it("support removeListener notifications", function (this: RealmContext) {
+    it("support removeListener notifications", async function (this: RealmContext) {
       const called = {
         a: 0,
         b: 0,
@@ -604,19 +599,15 @@ describe("Dictionary", () => {
         fields.field1 = 1;
       });
 
-      return new Promise<void>((resolve, _) => {
-        setTimeout(() => {
-          expect(called.a).equal(0, "Function a");
-          expect(called.b).equal(0, "Function b");
-          expect(called.c).equal(2, "Function c");
-          expect(called.d).equal(0, "Function d");
-          fields.removeAllListeners();
-          this.realm.close();
-          resolve();
-        }, 1000);
-      });
+      await sleep(1000);
+      expect(called.a).equal(0, "Function a");
+      expect(called.b).equal(0, "Function b");
+      expect(called.c).equal(2, "Function c");
+      expect(called.d).equal(0, "Function d");
+      fields.removeAllListeners();
+      this.realm.close();
     });
-    it("support removeListener notifications", function (this: RealmContext) {
+    it("support removeListener notifications", async function (this: RealmContext) {
       this.realm.write(() => this.realm.create(DictSchema.name, { fields: { field1: 0, filed2: 2, field3: 3 } }));
       const fields = this.realm.objects<IDictSchema>(DictSchema.name)[0].fields;
 
@@ -648,15 +639,11 @@ describe("Dictionary", () => {
         fields.field1 = 2;
       });
 
-      return new Promise<void>((resolve) => {
-        setTimeout(() => {
-          expect(fields.field1).equal(2);
-          expect(correct).equal(true, "This is expected to work.");
-          fields.removeAllListeners();
-          this.realm.close();
-          resolve();
-        }, 1000);
-      });
+      await sleep(1000);
+      expect(fields.field1).equal(2);
+      expect(correct).equal(true, "This is expected to work.");
+      fields.removeAllListeners();
+      this.realm.close();
     });
   });
   describe("nested models", () => {
