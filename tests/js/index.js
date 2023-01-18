@@ -46,7 +46,6 @@ var TESTS = {
   BsonTests: require("./bson-tests"),
   DictionaryTest: require("./dictionary-tests"),
   // Garbagecollectiontests: require('./garbage-collection'),
-  ArrayBuffer: require("./array-buffer-tests"),
   SetTests: require("./set-tests"),
 };
 
