@@ -60,11 +60,12 @@ inject({
     for (const dirent of readdirSync(path, { encoding: "utf8", withFileTypes: true })) {
       const direntPath = join(path, dirent.name);
       if (dirent.isDirectory() && dirent.name.endsWith(".realm.management")) {
-        rmSync(path, { recursive: true, force: true });
+        rmSync(direntPath, { recursive: true, force: true });
       } else if (
         dirent.name.endsWith(".realm") ||
         dirent.name.endsWith(".realm.note") ||
         dirent.name.endsWith(".realm.lock") ||
+        dirent.name.endsWith(".realm.fresh.lock") ||
         dirent.name.endsWith(".realm.log")
       ) {
         unlinkSync(direntPath);

@@ -142,6 +142,7 @@ export class Realm {
     const path = Realm.determinePath(config);
     fs.removeFile(path);
     fs.removeFile(path + ".lock");
+    fs.removeFile(path + ".fresh.lock");
     fs.removeFile(path + ".note");
     fs.removeDirectory(path + ".management");
   }
