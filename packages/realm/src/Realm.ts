@@ -93,6 +93,9 @@ function assertRealmEvent(name: RealmEventName): asserts name is RealmEvent {
   }
 }
 
+/** @internal */
+type InternalConfig = { internal?: binding.Realm; schemaExtras?: RealmSchemaExtra };
+
 export class Realm {
   public static Object = RealmObject;
   public static Collection = Collection;
@@ -387,8 +390,8 @@ export class Realm {
   ): binding.RealmConfig_Relaxed["migrationFunction"] {
     return (oldRealmInternal: binding.Realm, newRealmInternal: binding.Realm) => {
       try {
-        const oldRealm = new Realm(oldRealmInternal, schemaExtras);
-        const newRealm = new Realm(newRealmInternal, schemaExtras);
+        const oldRealm = new Realm(null, { internal: oldRealmInternal, schemaExtras });
+        const newRealm = new Realm(null, { internal: newRealmInternal, schemaExtras });
         onMigration(oldRealm, newRealm);
       } finally {
         oldRealmInternal.close();
@@ -439,21 +442,20 @@ export class Realm {
    */
   constructor(config: Configuration);
   /** @internal */
-  constructor(config: Configuration, internal: binding.Realm);
-  /** @internal */
-  constructor(internal: binding.Realm, schemaExtras?: RealmSchemaExtra);
-  constructor(arg: Configuration | binding.Realm | string = {}, secondArg?: object) {
-    if (arg instanceof binding.Realm) {
-      this.schemaExtras = (secondArg ?? {}) as RealmSchemaExtra;
-      this.internal = arg;
-    } else {
-      const config = typeof arg === "string" ? { path: arg } : arg;
+  constructor(config: Configuration | null, internalConfig: InternalConfig);
+  constructor(arg?: Configuration | string | null, internalConfig: InternalConfig = {}) {
+    const { internal } = internalConfig;
+
+    if (arg !== null) {
+      assert(!internalConfig.schemaExtras, "Expected either a configuration or schemaExtras");
+
+      const config = typeof arg === "string" ? { path: arg } : arg || {};
       validateConfiguration(config);
       const { bindingConfig, schemaExtras } = Realm.transformConfig(config);
       debug("open", bindingConfig);
       this.schemaExtras = schemaExtras;
-      assert(!secondArg || secondArg instanceof binding.Realm, "The realm constructor only takes a single argument");
-      this.internal = secondArg ?? binding.Realm.getSharedRealm(bindingConfig);
+
+      this.internal = internal ?? binding.Realm.getSharedRealm(bindingConfig);
 
       binding.Helpers.setBindingContext(this.internal, {
         didChange: (r) => {
@@ -470,6 +472,10 @@ export class Realm {
         },
       });
       RETURNED_REALMS.add(new binding.WeakRef(this.internal));
+    } else {
+      assert.instanceOf(internal, binding.Realm, "internal");
+      this.internal = internal;
+      this.schemaExtras = internalConfig.schemaExtras || {};
     }
 
     Object.defineProperties(this, {

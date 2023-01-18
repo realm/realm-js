@@ -19,10 +19,15 @@
 import { EJSON } from "bson";
 import {
   App,
+  ClientResetAfterCallback,
+  ClientResetBeforeCallback,
+  ClientResetError,
+  ClientResetFallbackCallback,
   ClientResetMode,
   ErrorCallback,
   Listeners,
   PartitionValue,
+  Realm,
   SessionStopPolicy,
   SyncConfiguration,
   TimeoutPromise,
@@ -30,11 +35,6 @@ import {
   assert,
   binding,
   fromBindingSyncError,
-  ClientResetBeforeCallback,
-  Realm,
-  ClientResetAfterCallback,
-  ClientResetFallbackCallback,
-  ClientResetError,
 } from "../internal";
 
 export enum ProgressDirection {
@@ -124,10 +124,12 @@ export function toBindingErrorHandlerWithOnManual(
       }
     });
   }
-  if (onError) { // onError gets all errors
+  if (onError) {
+    // onError gets all errors
     return toBindingErrorHandler(onError);
   }
-  if (onManual) { // onManual only gets ClientResetErrors
+  if (onManual) {
+    // onManual only gets ClientResetErrors
     return toBindingErrorHandler((session, error) => {
       if (error instanceof ClientResetError) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -139,15 +141,18 @@ export function toBindingErrorHandlerWithOnManual(
 
 /** @internal */
 export function toBindingNotifyBeforeClientReset(onBefore: ClientResetBeforeCallback) {
-  return (localRealmInternal: binding.Realm) => {
-    onBefore(new Realm(localRealmInternal));
+  return (internal: binding.Realm) => {
+    onBefore(new Realm(null, { internal }));
   };
 }
 
 /** @internal */
 export function toBindingNotifyAfterClientReset(onAfter: ClientResetAfterCallback) {
-  return (localRealmInternal: binding.Realm, tsr: binding.ThreadSafeReference) => {
-    onAfter(new Realm(localRealmInternal), new Realm(binding.Helpers.consumeThreadSafeReferenceToSharedRealm(tsr)));
+  return (internal: binding.Realm, tsr: binding.ThreadSafeReference) => {
+    onAfter(
+      new Realm(null, { internal }),
+      new Realm(null, { internal: binding.Helpers.consumeThreadSafeReferenceToSharedRealm(tsr) }),
+    );
   };
 }
 
@@ -156,11 +161,14 @@ export function toBindingNotifyAfterClientResetWithfallback(
   onAfter: ClientResetAfterCallback,
   onFallback: ClientResetFallbackCallback | undefined,
 ) {
-  return (localRealmInternal: binding.Realm, tsr: binding.ThreadSafeReference, didRecover: boolean) => {
+  return (internal: binding.Realm, tsr: binding.ThreadSafeReference, didRecover: boolean) => {
     if (didRecover) {
-      onAfter(new Realm(localRealmInternal), new Realm(binding.Helpers.consumeThreadSafeReferenceToSharedRealm(tsr)));
+      onAfter(
+        new Realm(null, { internal }),
+        new Realm(null, { internal: binding.Helpers.consumeThreadSafeReferenceToSharedRealm(tsr) }),
+      );
     } else {
-      const realm = new Realm(binding.Helpers.consumeThreadSafeReferenceToSharedRealm(tsr));
+      const realm = new Realm(null, { internal: binding.Helpers.consumeThreadSafeReferenceToSharedRealm(tsr) });
       if (onFallback) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         onFallback(realm.syncSession!, realm.path);

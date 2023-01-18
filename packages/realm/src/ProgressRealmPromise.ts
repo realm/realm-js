@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Helpers } from "./binding";
 import {
   Configuration,
   OpenRealmBehaviorType,
@@ -80,7 +79,7 @@ export class ProgressRealmPromise implements Promise<Realm> {
         this.task
           .start()
           .then(async (tsr) => {
-            const realm = new Realm(config, binding.Helpers.consumeThreadSafeReferenceToSharedRealm(tsr));
+            const realm = new Realm(config, { internal: binding.Helpers.consumeThreadSafeReferenceToSharedRealm(tsr) });
 
             const initialSubscriptions = config.sync && config.sync.flexible ? config.sync.initialSubscriptions : false;
             const realmExists = Realm.exists(config);
