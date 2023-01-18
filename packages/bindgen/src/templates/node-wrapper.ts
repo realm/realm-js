@@ -22,14 +22,45 @@ import { doJsPasses } from "../js-passes";
 
 export function generate({ spec: rawSpec, file }: TemplateContext): void {
   const spec = doJsPasses(bindModel(rawSpec));
+  let reactLines = []
+  let nodeLines = []
+  function both(content: string) {
+    reactLines.push(content);
+    nodeLines.push(content);
+  }
 
-  const js = file("native.mjs", "eslint");
-  js("// This file is generated: Update the spec instead of editing this file directly");
-  js(`
+  both("// This file is generated: Update the spec instead of editing this file directly");
+
+  // TODO RN vs Node will probably diverge further in the future and will likely need different templates.
+  // But for now, this should work to let us load the native module for both platforms.
+  reactLines.push(`
+    /*global global*/
+    import { Platform, NativeModules } from "react-native";
+    if (Platform.OS === "android") {
+      // Getting the native module on Android will inject the Realm global
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const RealmNativeModule = NativeModules.Realm;
+    }
+    // TODO: Remove the need to store Realm as a global
+    // @see https://github.com/realm/realm-js/issues/2126
+    const nativeModule = global.__RealmFuncs;
+
+    export const WeakRef = global.WeakRef ?? class WeakRef {
+        constructor(obj) { this.native = nativeModule.createWeakRef(obj) }
+        deref() { return nativeModule.lockWeakRef(this.native) }
+    };
+  `);
+  nodeLines.push(`
+    /*global global*/
     import { createRequire } from 'node:module';
     const require = createRequire(import.meta.url);
     const nativeModule = require("./realm.node");
 
+    // We know that node always has real WeakRefs so just use them.
+    export const WeakRef = global.WeakRef;
+  `);
+
+  both(`
     import { ObjectId, UUID, Decimal128, EJSON } from "bson";
     import { Float } from "./core";
 
@@ -80,7 +111,7 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
 
     if (!cls.base) {
       // Only root classes get symbols and constructors
-      js(`const ${symb} = Symbol("Realm.${cls.jsName}.external_pointer");`);
+      both(`const ${symb} = Symbol("Realm.${cls.jsName}.external_pointer");`);
 
       body += `constructor(ptr) { this[${symb}] = ptr};`;
     }
@@ -100,7 +131,7 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
     for (const method of cls.methods) {
       // Eagerly bind the name once from the native module.
       const native = `_native_${method.id}`;
-      js(`const ${native} = nativeModule.${method.id};`);
+      both(`const ${native} = nativeModule.${method.id};`);
       // TODO consider pre-extracting class-typed arguments while still in JIT VM.
       const asyncSig = method.sig.asyncTransform();
       const params = (asyncSig ?? method.sig).args.map((a) => a.name);
@@ -121,12 +152,15 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
 
     if (cls.iterable) {
       const native = `_native_${cls.iteratorMethodId()}`;
-      js(`const ${native} = nativeModule.${cls.iteratorMethodId()};`);
+      both(`const ${native} = nativeModule.${cls.iteratorMethodId()};`);
       body += `\n[Symbol.iterator]() { return ${native}(this[${symb}]); }`;
     }
 
-    js(`export class ${cls.jsName} ${cls.base ? `extends ${cls.base.jsName}` : ""} { ${body} }`);
+    both(`export class ${cls.jsName} ${cls.base ? `extends ${cls.base.jsName}` : ""} { ${body} }`);
   }
 
-  js(`nativeModule.injectInjectables({ ${injectables} });`);
+  both(`nativeModule.injectInjectables({ ${injectables} });`);
+
+  file("native.mjs", "eslint")(nodeLines.join('\n'));
+  file("native-rn.mjs", "eslint")(reactLines.join('\n'));
 }

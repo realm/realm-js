@@ -17,32 +17,42 @@
 ////////////////////////////////////////////////////////////////////////////
 import { inject } from "../platform/file-system";
 import { extendDebug } from "../debug";
+import { Helpers, JsPlatformHelpers } from "../binding";
+import { isAbsolute, join } from "path-browserify";
 
 const debug = extendDebug("fs");
 
 inject({
-  removeFile(path) {
-    throw new Error("Not yet implemented");
-  },
-  removeDirectory(path) {
-    throw new Error("Not yet implemented");
-  },
-  getDefaultDirectoryPath() {
-    throw new Error("Not yet implemented");
-  },
   isAbsolutePath(path) {
-    throw new Error("Not yet implemented");
+    return isAbsolute(path);
   },
   joinPaths(...segments) {
-    throw new Error("Not yet implemented");
+    return join(...segments);
   },
-  readDirectory(path) {
-    throw new Error("Not yet implemented");
+  removeFile(path) {
+    debug("removeFile", path);
+    JsPlatformHelpers.removeFile(path);
+  },
+  removeDirectory(path) {
+    debug("removeDirectory", path);
+    JsPlatformHelpers.removeDirectory(path);
+  },
+  getDefaultDirectoryPath() {
+    return JsPlatformHelpers.defaultRealmFileDirectory();
   },
   exists(path) {
-    throw new Error("Not yet implemented");
+    return Helpers.fileExists(path);
   },
   copyBundledRealmFiles() {
-    throw new Error("Not yet implemented");
+    JsPlatformHelpers.copyBundledRealmFiles();
+  },
+  /*
+  readDirectory(path) {
+    JsPlatformHelpers.
+  },
+  */
+  removeRealmFilesFromDirectory(path) {
+    debug("removeRealmFilesFromDirectory", path);
+    JsPlatformHelpers.removeRealmFilesFromDirectory(path);
   },
 });

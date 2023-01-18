@@ -29,28 +29,30 @@ namespace realm {
 // set the directory where realm files should be stored
 void set_default_realm_file_directory(std::string dir);
 
-// return the directory in which realm files can/should be written to
-std::string default_realm_file_directory();
+class JsPlatformHelpers {
+public:
+    // return the directory in which realm files can/should be written to
+    static std::string default_realm_file_directory();
 
-// create the directories for the given filename
-void ensure_directory_exists_for_file(const std::string& file);
+    // create the directories for the given filename
+    static void ensure_directory_exists_for_file(const std::string& file);
 
-// copy all realm files from resources directory to default realm dir
-void copy_bundled_realm_files();
+    // copy all realm files from resources directory to default realm dir
+    static void copy_bundled_realm_files();
 
-// remove all realm files in the given directory
-void remove_realm_files_from_directory(const std::string& directory);
+    // remove all realm files in the given directory
+    static void remove_realm_files_from_directory(const std::string& directory);
 
-// remove file at the given path
-void remove_file(const std::string& path);
+    // remove file at the given path
+    static void remove_file(const std::string& path);
 
-// remove directory at the given path
-void remove_directory(const std::string& path);
+    // remove directory at the given path
+    static void remove_directory(const std::string& path);
 
-// print something
-void print(const char* fmt, ...);
+    // the CPU architecture
+    std::string get_cpu_arch();
 
-// the CPU architecture
-std::string get_cpu_arch();
-
+    // print something
+    static void print(const char* fmt, ...);
+};
 } // namespace realm

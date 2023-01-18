@@ -27,10 +27,10 @@ export default [
     input: "src/node/index.ts",
     output: [
       {
-      file: pkg.main,
-      format: "cjs",
-      sourcemap: true,
-    },
+        file: pkg.main,
+        format: "cjs",
+        sourcemap: true,
+      },
       {
         file: pkg.module,
         format: "esm",
@@ -59,11 +59,18 @@ export default [
       sourcemap: true,
     },
     plugins: [
+      replace({
+        preventAssignment: true,
+        delimiters: ["", ""],
+        values: {
+          '"../generated/ts/native.mjs"': '"../generated/ts/native-rn.mjs"',
+        },
+      }),
       typescript({
         tsconfig: "src/react-native/tsconfig.json",
       }),
     ],
-    external: ["bson", "debug"],
+    external: ["bson", "debug", "react-native", "path-browserify"],
   },
   {
     input: "src/index.ts",
