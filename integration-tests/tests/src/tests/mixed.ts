@@ -180,7 +180,7 @@ describe("Mixed", () => {
 
       let data: ISingleSchema = this.realm.objects<ISingleSchema>(SingleSchema.name)[0];
 
-      expect((data.a as IVertexSchema).a).equals(1, "Should be equal 1");
+      expect((data.a as IVertexSchema).a).equals(1, "Should be equal to 1");
       expect((data.a as IVertexSchema).b).equals(0, "Should be equal 0");
       expect((data.a as IVertexSchema).c).equals(0, "Should be equal 0");
 
@@ -210,7 +210,7 @@ describe("Mixed", () => {
 
   describe("Nullable types", () => {
     openRealmBefore({ schema: [MixedNullableSchema] });
-    it("support nullable types", function (this: RealmContext) {
+    it("supports nullable types", function (this: RealmContext) {
       this.realm.write(() => this.realm.create(MixedNullableSchema.name, { nullable: undefined }));
 
       const value = this.realm.objects<IMixedNullableSchema>(MixedNullableSchema.name)[0];
@@ -244,7 +244,7 @@ describe("Mixed", () => {
       const objectsAfter = this.realm.objects(MixedSchema.name);
       expect(objectsAfter.length).equals(0);
     });
-    it("support datatypes with binary data contents", function (this: RealmContext) {
+    it("supports datatypes with binary data contents", function (this: RealmContext) {
       const uint8Values1 = [0, 1, 2, 4, 8];
       const uint8Values2 = [255, 128, 64, 32, 16, 8];
       const uint8Buffer1 = new Uint8Array(uint8Values1).buffer;
