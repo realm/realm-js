@@ -31,6 +31,7 @@ import "./queries";
 import "./dynamic-schema-updates";
 import "./bson";
 import "./dictionary";
+import "./list";
 import "./credentials/anonymous";
 import "./sync/mixed";
 import "./sync/flexible";
