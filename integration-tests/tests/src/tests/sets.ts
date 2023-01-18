@@ -225,7 +225,7 @@ describe("Sets", () => {
       realm.close();
     });
 
-    it("Spread operation", () => {
+    it("should do the spread operation correctly", () => {
       const myInts = [1, 2, 3, 7, 9, 13];
 
       const intRealm = new Realm({ schema: [IntSetObjectSchema] });
