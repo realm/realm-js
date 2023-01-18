@@ -140,4 +140,36 @@ describe("Realm Query Language", () => {
       expect(contacts.filtered("ALL {'555-1122-333', '555-1234-567'} IN phones").length).equal(1);
     });
   });
+
+  describe("logical operators", () => {
+    it("primititive types - OR operator", () => {
+      const unicornString = "Here is a Unicorn 🦄 today";
+      const fooString = "foo";
+
+      expect(primitives.filtered(`s == "${unicornString}" OR s == "bar"`).length).equal(1);
+      expect(primitives.filtered("s == $0 OR s == $1", unicornString, "bar").length).equal(1);
+
+      expect(primitives.filtered(`s == "${unicornString}" OR s == "${fooString}"`).length).equal(2);
+      expect(primitives.filtered("s == $0 OR s == $1", unicornString, fooString).length).equal(2);
+
+      expect(primitives.filtered(`s == "${unicornString}" OR i == 44`).length).equal(1);
+      expect(primitives.filtered("s == $0 OR i == $1", unicornString, 44).length).equal(1);
+      expect(primitives.filtered("s == $0 OR i == $1", unicornString, 2).length).equal(2);
+      expect(primitives.filtered("s == $0 OR i == $1", unicornString, 3).length).equal(1);
+    });
+
+    it("primititive types - AND operator", () => {
+      const unicornString = "Here is a Unicorn 🦄 today";
+      const fooString = "foo";
+
+      expect(primitives.filtered(`s == "${unicornString}" AND s == "bar"`).length).equal(0);
+      expect(primitives.filtered("s == $0 AND s == $1", unicornString, "bar").length).equal(0);
+
+      expect(primitives.filtered(`s == "${unicornString}" AND s == "${fooString}"`).length).equal(0);
+      expect(primitives.filtered("s == $0 AND s == $1", unicornString, fooString).length).equal(0);
+
+      expect(primitives.filtered(`s == "${unicornString}" AND i == 44`).length).equal(1);
+      expect(primitives.filtered("s == $0 AND i == $1", unicornString, 44).length).equal(1);
+    });
+  });
 });
