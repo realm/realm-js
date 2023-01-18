@@ -16,9 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Double, ObjectId } from "bson";
+import { ObjectId } from "bson";
 import { expect } from "chai";
-import Realm, { Collection } from "realm";
+import Realm from "realm";
 import { openRealmBeforeEach } from "../hooks";
 
 function names(results: Realm.Collection<IPersonSchema> | Realm.Results<IPersonSchema>) {
