@@ -73,14 +73,14 @@ describe("ArrayBuffer type", () => {
     this.realm.write(() => this.realm.create(SingleSchema.name, { a: view }));
 
     const data = this.realm.objects<ISingleSchema>(SingleSchema.name)[0];
-    expect(data.a.byteLength).equals(view.byteLength, "Data size should be equals");
+    expect(data.a.byteLength).equals(view.byteLength, "Data size should be equal");
 
     const binary_view = new Uint8Array(data.a);
 
     for (let i = 0; i < view.byteLength; i++) {
       const p1 = view[i];
       const p2 = binary_view[i];
-      expect(p1).equals(p2, "buffers should be equals");
+      expect(p1).equals(p2, "buffers should be equal");
     }
   });
   it("supports storing data from a bufferDataView", function (this: RealmContext) {
@@ -122,7 +122,7 @@ describe("ArrayBuffer type", () => {
     this.realm.write(() => this.realm.create(SingleSchema.name, { a: new DataView(view.buffer) }));
 
     const data = this.realm.objects<ISingleSchema>(SingleSchema.name)[0];
-    expect(data.a.byteLength).equals(view.byteLength, "Data size should be equals");
+    expect(data.a.byteLength).equals(view.byteLength, "Data size should be equal");
 
     const binary_view = new Uint8Array(data.a);
 
@@ -130,7 +130,7 @@ describe("ArrayBuffer type", () => {
       const p1 = view[i];
       const p2 = binary_view[i];
 
-      expect(p1).equals(p2, "buffers should be equals");
+      expect(p1).equals(p2, "buffers should be equal");
     }
   });
   it("supports storing data from an arrayBuffer", function (this: RealmContext) {
@@ -188,7 +188,7 @@ describe("ArrayBuffer type", () => {
     this.realm.write(() => this.realm.create(SingleSchema.name, { a: n_buffer }));
 
     const data = this.realm.objects<ISingleSchema>(SingleSchema.name)[0];
-    expect(data.a.byteLength).equals(n_buffer.byteLength, "Data size should be equals");
+    expect(data.a.byteLength).equals(n_buffer.byteLength, "Data size should be equal");
 
     const into_int = new Uint8Array(data.a);
 
