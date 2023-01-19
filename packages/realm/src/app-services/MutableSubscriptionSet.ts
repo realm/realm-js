@@ -74,16 +74,16 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
       assertIsSubscriptionOptions(options);
     }
 
-    const internalSubscriptions = this.internal;
-    const internalResults = query.internal;
-    const internalQuery = internalResults.query;
+    const subscriptions = this.internal;
+    const results = query.internal;
+    const queryInternal = results.query;
 
     if (options?.throwOnUpdate && options.name) {
-      const existingSubscription = internalSubscriptions.findByName(options.name);
+      const existingSubscription = subscriptions.findByName(options.name);
       if (existingSubscription) {
         const isSameQuery =
-          existingSubscription.queryString === internalQuery.description &&
-          existingSubscription.objectClassName === internalResults.objectType;
+          existingSubscription.queryString === queryInternal.description &&
+          existingSubscription.objectClassName === results.objectType;
         assert(
           isSameQuery,
           `A subscription with the name '${options.name}' already exists but has a different query. If you meant to update it, remove 'throwOnUpdate: true' from the subscription options.`,
@@ -91,11 +91,11 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
       }
     }
 
-    const [internalSubscription] = options?.name
-      ? internalSubscriptions.insertOrAssignByName(options.name, internalQuery)
-      : internalSubscriptions.insertOrAssignByQuery(internalQuery);
+    const [subscription] = options?.name
+      ? subscriptions.insertOrAssignByName(options.name, queryInternal)
+      : subscriptions.insertOrAssignByQuery(queryInternal);
 
-    return new Subscription(internalSubscription);
+    return new Subscription(subscription);
   }
 
   /**
@@ -144,9 +144,9 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
     assert.string(objectType, "the argument to 'removeByObjectType()'");
 
     let numRemoved = 0;
-    for (const internalSubscription of this.internal) {
-      if (internalSubscription.objectClassName === objectType) {
-        const isRemoved = binding.Helpers.eraseSubscription(this.internal, internalSubscription);
+    for (const subscription of this.internal) {
+      if (subscription.objectClassName === objectType) {
+        const isRemoved = binding.Helpers.eraseSubscription(this.internal, subscription);
         if (isRemoved) {
           numRemoved++;
         }
@@ -170,7 +170,7 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
 }
 
 function assertIsSubscriptionOptions(input: unknown): asserts input is SubscriptionOptions {
-  assert.object(input, "the options argument to 'add'", { allowArrays: false });
+  assert.object(input, "the options argument to 'add()'", { allowArrays: false });
   if (input.name !== undefined) {
     assert.string(input.name, "'name' on 'SubscriptionOptions'");
   }

@@ -96,26 +96,25 @@ export class SubscriptionSet extends BaseSubscriptionSet {
    * @returns A promise which resolves when the SubscriptionSet is synchronized, or is rejected
    *  if there was an error during synchronization (see {@link SubscriptionSet.waitForSynchronization})
    */
-  async update(callback: (mutableSubs: MutableSubscriptionSet, realm: Realm) => void): Promise<void> {
+  async update(callback: (mutableSubscriptions: MutableSubscriptionSet, realm: Realm) => void): Promise<void> {
     this.updateSync(callback);
     await this.waitForSynchronization();
   }
 
   /**@internal */
-  updateSync(callback: (mutableSubs: MutableSubscriptionSet, realm: Realm) => void): void {
+  updateSync(callback: (mutableSubscriptions: MutableSubscriptionSet, realm: Realm) => void): void {
     assert.function(callback, "the argument to 'update()'");
 
     // Create a mutable copy of this instance (which copies the original and upgrades
     // its internal transaction to a write transaction) so that we can make updates to it.
-    const internalMutableSubscriptions = this.internal.makeMutableCopy();
-    const mutableSubscriptions = new MutableSubscriptionSet(internalMutableSubscriptions);
+    const mutableSubscriptions = this.internal.makeMutableCopy();
 
-    callback(mutableSubscriptions, this.realm);
+    callback(new MutableSubscriptionSet(mutableSubscriptions), this.realm);
 
     // Commit the mutation, which downgrades its internal transaction to a read transaction
     // so no more changes can be made to it, and returns a new (immutable) SubscriptionSet
     // with the changes we made. Then update this SubscriptionSet instance to point to the
     // updated version.
-    this.internal = internalMutableSubscriptions.commit();
+    this.internal = mutableSubscriptions.commit();
   }
 }

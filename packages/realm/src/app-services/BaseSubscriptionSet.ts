@@ -16,12 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Realm, Subscription, assert, binding } from "../internal";
+import { MutableSubscriptionSet, Realm, Subscription, assert, binding } from "../internal";
 
 /**
  * Enum representing the state of a {@link SubscriptionSet}.
  */
-export const enum SubscriptionsState {
+export enum SubscriptionsState {
   /**
    * The subscription update has been persisted locally, but the server hasn't
    * yet returned all the data that matched the updated subscription queries.
@@ -62,7 +62,7 @@ export const enum SubscriptionsState {
  * `realm.subscriptions[0]`. This array is readonly – SubscriptionSets can only be
  * modified inside a {@link SubscriptionSet.update} callback.
  */
-export class BaseSubscriptionSet {
+export abstract class BaseSubscriptionSet {
   // Enables index accessing when combined with the proxy handler's `get()` method
   readonly [n: number]: Subscription;
 
@@ -120,18 +120,18 @@ export class BaseSubscriptionSet {
   /**
    * Get the state of the SubscriptionSet.
    *
-   * @returns If `state` is {@link Realm.App.Sync.SubscriptionsState.Error}, this will return a `string`
+   * @returns If `state` is {@link SubscriptionsState.Error}, this will return a `string`
    *  representing why the SubscriptionSet is in an error state. `null` is returned if there is no error.
    */
   get error(): string | null {
-    return this.internal.errorStr;
+    return this.state === SubscriptionsState.Error ? this.internal.errorStr : null;
   }
 
   /**
-   * @internal
-   *
    * Get the number of subscriptions in the set.
-   * This was internally exposed in the legacy SDK.
+   *
+   * @returns The number of subscriptions in the set.
+   * @internal
    */
   get length(): number {
     return this.internal.size;
@@ -146,8 +146,8 @@ export class BaseSubscriptionSet {
   findByName(name: string): Subscription | null {
     assert.string(name, "the argument to 'findByName()'");
 
-    const internalSubscription = this.internal.findByName(name);
-    return internalSubscription ? new Subscription(internalSubscription) : null;
+    const subscription = this.internal.findByName(name);
+    return subscription ? new Subscription(subscription) : null;
   }
 
   /**
@@ -160,7 +160,7 @@ export class BaseSubscriptionSet {
   findByQuery<T>(query: Realm.Results<T & Realm.Object>): Subscription | null {
     assert.instanceOf(query, Realm.Results, "the argument to 'findByQuery()'");
 
-    const internalSubscription = this.internal.findByQuery(query.internal.query);
-    return internalSubscription ? new Subscription(internalSubscription) : null;
+    const subscription = this.internal.findByQuery(query.internal.query);
+    return subscription ? new Subscription(subscription) : null;
   }
 }
