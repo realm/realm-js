@@ -66,6 +66,11 @@ function fromBindingLoggerLevel(arg: binding.LoggerLevel): NumericLogLevel {
 export namespace Sync {
   export const Session = SyncSession;
   export const ConnectionState = internal.ConnectionState;
+  export const Subscription = internal.Subscription;
+  export const SubscriptionSet = internal.SubscriptionSet;
+  export const MutableSubscriptionSet = internal.MutableSubscriptionSet;
+  export const SubscriptionsState = internal.SubscriptionsState;
+  export type SubscriptionOptions = internal.SubscriptionOptions;
   export function setLogLevel(app: App, level: LogLevel) {
     const numericLevel = toBindingLoggerLevel(level);
     app.internal.syncManager.setLogLevel(numericLevel);
