@@ -27,6 +27,7 @@ import "./objects";
 import "./class-models";
 import "./serialization";
 import "./iterators";
+import "./migrations";
 import "./queries";
 import "./dynamic-schema-updates";
 import "./bson";
