@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { BaseSubscriptionSet, MutableSubscriptionSet, Realm, assert, binding } from "../internal";
+import { BaseSubscriptionSet, MutableSubscriptionSet, Realm, SubscriptionsState, assert, binding } from "../internal";
 
 /**
  * Class representing the set of all active flexible sync subscriptions for a Realm
@@ -47,26 +47,15 @@ export class SubscriptionSet extends BaseSubscriptionSet {
    */
   async waitForSynchronization(): Promise<void> {
     try {
-      await this.internal.getStateChangeNotification(binding.SyncSubscriptionSetState.Complete);
+      const state = await this.internal.getStateChangeNotification(binding.SyncSubscriptionSetState.Complete);
+      if (state === binding.SyncSubscriptionSetState.Error) {
+        throw new Error(this.error || "Encountered an error when waiting for synchronization.");
+      }
     } finally {
-      // TODO:
-      // See if checking that the realm is not closed is enough to verify that
-      // the SyncSession has not closed. Old code checks if sync_session.lock().
       if (!this.realm.isClosed) {
         this.internal.refresh();
       }
     }
-
-    // TODO:
-    // See if handling a KeyNotFound is necessary
-    /** From js_subscriptions.hpp - wait_for_synchronization_impl()
-    catch (KeyNotFound const& ex) {
-      // TODO Waiting on https://github.com/realm/realm-core/issues/5165 to remove this
-      auto error = Object::create_error(
-          ctx, "`waitForSynchronisation` cannot be called before creating a SubscriptionSet using `update`");
-      Function<T>::callback(protected_ctx, protected_callback, protected_this, {error});
-    }
-    */
   }
 
   /**
@@ -99,7 +88,13 @@ export class SubscriptionSet extends BaseSubscriptionSet {
    * @returns A promise which resolves when the SubscriptionSet is synchronized, or is rejected
    *  if there was an error during synchronization (see {@link waitForSynchronization})
    */
-  update(callback: (mutableSubs: MutableSubscriptionSet, realm: Realm) => void): Promise<void> {
+  async update(callback: (mutableSubs: MutableSubscriptionSet, realm: Realm) => void): Promise<void> {
+    this.updateSync(callback);
+    await this.waitForSynchronization();
+  }
+
+  /**@internal */
+  updateSync(callback: (mutableSubs: MutableSubscriptionSet, realm: Realm) => void): void {
     assert.function(callback, "the argument to 'update()'");
 
     // Create a mutable copy of this instance (which copies the original and upgrades
@@ -114,8 +109,5 @@ export class SubscriptionSet extends BaseSubscriptionSet {
     // with the changes we made. Then update this SubscriptionSet instance to point to the
     // updated version.
     this.internal = internalMutableSubscriptions.commit();
-
-    // Asynchronously wait for the SubscriptionSet to be synchronized.
-    return this.waitForSynchronization();
   }
 }
