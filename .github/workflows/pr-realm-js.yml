@@ -320,7 +320,7 @@ jobs:
 
       - name: Create Mocha Env
         id: mocha-env
-        run: echo "::set-output name=name::syncLogLevel=warn,realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ steps.deploy-mdb-apps.outputs.clusterName }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}"
+        run: echo "::set-output name=name::syncLogLevel=warn,realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=Cluster0,privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}"
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ (matrix.variant.os != 'android') && (matrix.variant.os != 'ios') }}
