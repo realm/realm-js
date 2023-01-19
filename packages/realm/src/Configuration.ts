@@ -26,10 +26,9 @@ import {
   RealmObject,
   RealmObjectConstructor,
   SyncConfiguration,
+  TypeAssertionError,
   assert,
-  ClientResetConfig,
-  ClientResetMode,
-  ErrorCallback,
+  validateSyncConfiguration,
 } from "./internal";
 
 // export type Configuration = ConfigurationWithSync | ConfigurationWithoutSync;
@@ -229,19 +228,62 @@ const PROPERTY_SCHEMA_KEYS = new Set<keyof CanonicalObjectSchemaProperty>([
  * Validate the fields of a user-provided Realm configuration.
  */
 export function validateConfiguration(config: unknown): asserts config is Configuration {
-  assert.object(config);
-  const { path, schema, onMigration, sync } = config;
-  if (typeof onMigration !== "undefined") {
-    assert.function(onMigration, "migration");
+  assert.object(config, "realm configuration", { allowArrays: false });
+  const {
+    path,
+    schema,
+    schemaVersion,
+    inMemory,
+    readOnly,
+    fifoFilesFallbackPath,
+    sync,
+    shouldCompact,
+    deleteRealmIfMigrationNeeded,
+    disableFormatUpgrade,
+    encryptionKey,
+    onMigration,
+  } = config;
+
+  if (path !== undefined) {
+    assert.string(path, "'path' on realm configuration");
+    assert(path.length > 0, "The path cannot be empty. Provide a path or remove the field.");
   }
-  if (typeof path === "string") {
-    assert(path.length > 0, "Expected a non-empty path or none at all");
-  }
-  if (onMigration && sync) {
-    throw new Error("Options 'onMigration' and 'sync' are mutually exclusive");
-  }
-  if (schema) {
+  if (schema !== undefined) {
     validateRealmSchema(schema);
+  }
+  if (schemaVersion !== undefined) {
+    assert.number(schemaVersion, "'schemaVersion' on realm configuration");
+  }
+  if (inMemory !== undefined) {
+    assert.boolean(inMemory, "'inMemory' on realm configuration");
+  }
+  if (readOnly !== undefined) {
+    assert.boolean(readOnly, "'readOnly' on realm configuration");
+  }
+  if (fifoFilesFallbackPath !== undefined) {
+    assert.string(fifoFilesFallbackPath, "'fifoFilesFallbackPath' on realm configuration");
+  }
+  if (onMigration !== undefined) {
+    assert.function(onMigration, "'onMigration' on realm configuration");
+  }
+  if (sync !== undefined) {
+    assert(!onMigration, "The realm configuration options 'onMigration' and 'sync' cannot both be defined.");
+    validateSyncConfiguration(sync);
+  }
+  if (shouldCompact !== undefined) {
+    assert.function(shouldCompact, "'shouldCompact' on realm configuration");
+  }
+  if (deleteRealmIfMigrationNeeded !== undefined) {
+    assert.boolean(deleteRealmIfMigrationNeeded, "'deleteRealmIfMigrationNeeded' on realm configuration");
+  }
+  if (disableFormatUpgrade !== undefined) {
+    assert.boolean(disableFormatUpgrade, "'disableFormatUpgrade' on realm configuration");
+  }
+  if (encryptionKey !== undefined) {
+    assert(
+      encryptionKey instanceof ArrayBuffer || ArrayBuffer.isView(encryptionKey) || encryptionKey instanceof Int8Array,
+      `Expected 'encryptionKey' on realm configuration to be an ArrayBuffer, ArrayBufferView (Uint8Array), or Int8Array, got ${TypeAssertionError.deriveType(encryptionKey)}.`,
+    );
   }
 }
 

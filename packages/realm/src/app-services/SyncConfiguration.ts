@@ -25,6 +25,7 @@ import {
   Realm,
   SyncError,
   SyncSession,
+  TypeAssertionError,
   User,
   assert,
   binding,
@@ -144,24 +145,15 @@ export type SyncConfiguration = FlexibleSyncConfiguration | PartitionSyncConfigu
 
 /** @internal */
 export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConfig_Relaxed {
-  const { user, onError, _sessionStopPolicy, customHttpHeaders, clientReset, flexible } = config;
-  assert.instanceOf(user, User, "user");
-
-  // TODO: Validate all fields (add the missing ones to Configuration.ts)
-
-  let partitionValue: string | undefined;
-  if (!flexible) {
-    validatePartitionValue(config.partitionValue);
-    partitionValue = EJSON.stringify(config.partitionValue as EJSON.SerializableTypes);
-  }
+  const { user, flexible, partitionValue, onError, _sessionStopPolicy, customHttpHeaders, clientReset } = config;
 
   return {
-    user: config.user.internal,
-    partitionValue,
+    user: user.internal,
+    partitionValue: flexible ? undefined : EJSON.stringify(partitionValue),
     stopPolicy: _sessionStopPolicy
       ? toBindingStopPolicy(_sessionStopPolicy)
       : binding.SyncSessionStopPolicy.AfterChangesUploaded,
-    customHttpHeaders: customHttpHeaders,
+    customHttpHeaders,
     flxSyncRequested: !!flexible,
     ...parseClientResetConfig(clientReset, onError),
   };
@@ -241,26 +233,165 @@ function parseRecoverOrDiscardUnsyncedChanges(clientReset: ClientResetRecoverOrD
   };
 }
 
-/** @internal */
-function validatePartitionValue(pv: unknown) {
-  if (typeof pv === "number") {
-    validateNumberValue(pv);
-    return;
+/**
+ * Validate the fields of a user-provided realm sync configuration.
+ */
+export function validateSyncConfiguration(config: unknown): asserts config is SyncConfiguration {
+  assert.object(config, "'sync' on realm configuration", { allowArrays: false });
+  const { user, newRealmFileBehavior, existingRealmFileBehavior, onError, customHttpHeaders, clientReset, flexible } =
+    config;
+
+  assert.instanceOf(user, User, "'user' on realm sync configuration");
+  if (newRealmFileBehavior !== undefined) {
+    validateOpenRealmBehaviorConfiguration(newRealmFileBehavior, "newRealmFileBehavior");
   }
-  if (!(pv instanceof ObjectId || pv instanceof UUID || typeof pv === "string" || pv === null)) {
-    throw new Error(pv + " is not an allowed PartitionValue");
+  if (existingRealmFileBehavior !== undefined) {
+    validateOpenRealmBehaviorConfiguration(existingRealmFileBehavior, "existingRealmFileBehavior");
+  }
+  if (onError !== undefined) {
+    assert.function(onError, "'onError' on realm sync configuration");
+  }
+  if (customHttpHeaders !== undefined) {
+    assert.object(customHttpHeaders, "'customHttpHeaders' on realm sync configuration", { allowArrays: false });
+    for (const key in customHttpHeaders) {
+      assert.string(customHttpHeaders[key], "all property values of 'customHttpHeaders' on realm sync configuration");
+    }
+  }
+  if (clientReset !== undefined) {
+    validateClientResetConfiguration(clientReset);
+  }
+  // Assume the user intends to use Flexible Sync for all truthy values provided.
+  if (flexible) {
+    validateFlexibleSyncConfiguration(config);
+  } else {
+    validatePartitionSyncConfiguration(config);
   }
 }
 
-/** @internal */
-function validateNumberValue(numberValue: number) {
-  if (!Number.isInteger(numberValue)) {
-    throw new Error("PartitionValue " + numberValue + " must be of type integer");
+/**
+ * Validate the fields of a user-provided open realm behavior configuration.
+ */
+function validateOpenRealmBehaviorConfiguration(
+  config: unknown,
+  target: string,
+): asserts config is OpenRealmBehaviorConfiguration {
+  assert.object(config, `'${target}' on realm sync configuration`, { allowArrays: false });
+  assert(
+    config.type === OpenRealmBehaviorType.DownloadBeforeOpen || config.type === OpenRealmBehaviorType.OpenImmediately,
+    `'${target}.type' on realm sync configuration must be either '${OpenRealmBehaviorType.DownloadBeforeOpen}' or '${OpenRealmBehaviorType.OpenImmediately}'.`,
+  );
+  if (config.timeOut !== undefined) {
+    assert.number(config.timeOut, `'${target}.timeOut' on realm sync configuration`);
   }
-  if (numberValue > Number.MAX_SAFE_INTEGER) {
-    throw new Error("PartitionValue " + numberValue + " is greater than Number.MAX_SAFE_INTEGER");
+  if (config.timeOutBehavior !== undefined) {
+    assert(
+      config.timeOutBehavior === OpenRealmTimeOutBehavior.OpenLocalRealm ||
+        config.timeOutBehavior === OpenRealmTimeOutBehavior.ThrowException,
+      `'${target}.timeOutBehavior' on realm sync configuration must be either '${OpenRealmTimeOutBehavior.OpenLocalRealm}' or '${OpenRealmTimeOutBehavior.ThrowException}'.`,
+    );
   }
-  if (numberValue < Number.MIN_SAFE_INTEGER) {
-    throw new Error("PartitionValue " + numberValue + " is lesser than Number.MIN_SAFE_INTEGER");
+}
+
+/**
+ * Validate the fields of a user-provided client reset configuration.
+ */
+function validateClientResetConfiguration(config: unknown): asserts config is ClientResetConfig {
+  assert.object(config, "'clientReset' on realm sync configuration", { allowArrays: false });
+  const modes = [
+    ClientResetMode.Manual,
+    ClientResetMode.DiscardUnsyncedChanges,
+    ClientResetMode.RecoverUnsyncedChanges,
+    ClientResetMode.RecoverOrDiscardUnsyncedChanges,
+  ];
+  assert(
+    modes.includes(config.mode as ClientResetMode),
+    `'clientReset' on realm sync configuration must be one of the following: '${modes.join("', '")}'`,
+  );
+  if (config.onManual !== undefined) {
+    assert.function(config.onManual, "'clientReset.onManual' on realm sync configuration");
+  }
+  if (config.onAfter !== undefined) {
+    assert.function(config.onAfter, "'clientReset.onAfter' on realm sync configuration");
+  }
+  if (config.onBefore !== undefined) {
+    assert.function(config.onBefore, "'clientReset.onBefore' on realm sync configuration");
+  }
+  if (config.onFallback !== undefined) {
+    assert.function(config.onFallback, "'clientReset.onFallback' on realm sync configuration");
+  }
+}
+
+/**
+ * Validate the fields of a user-provided realm flexible sync configuration.
+ */
+function validateFlexibleSyncConfiguration(
+  config: Record<string, unknown>,
+): asserts config is FlexibleSyncConfiguration {
+  const { flexible, partitionValue, initialSubscriptions } = config;
+
+  assert(
+    flexible === true,
+    "'flexible' must always be true for realms using flexible sync. To enable partition-based sync, remove 'flexible' and specify 'partitionValue'.",
+  );
+  if (initialSubscriptions !== undefined) {
+    assert.object(initialSubscriptions, "'initialSubscriptions' on realm sync configuration", { allowArrays: false });
+    assert.function(initialSubscriptions.update, "'initialSubscriptions.update' on realm sync configuration");
+    if (initialSubscriptions.rerunOnOpen !== undefined) {
+      assert.boolean(
+        initialSubscriptions.rerunOnOpen,
+        "'initialSubscriptions.rerunOnOpen' on realm sync configuration",
+      );
+    }
+  }
+  assert(
+    partitionValue === undefined,
+    "'partitionValue' cannot be specified when flexible sync is enabled. To enable partition-based sync, remove 'flexible' and specify 'partitionValue'.",
+  );
+}
+
+/**
+ * Validate the fields of a user-provided realm partition sync configuration.
+ */
+function validatePartitionSyncConfiguration(
+  config: Record<string, unknown>,
+): asserts config is PartitionSyncConfiguration {
+  const { flexible, partitionValue, initialSubscriptions } = config;
+
+  validatePartitionValue(partitionValue);
+  assert(
+    // TODO: Our TS types do not allow `flexible` to be anything other than `undefined`
+    //       for partition sync. But one of our tests assumes `flexible: false` is allowed.
+    //       Need to decide which one to enforce.
+    flexible === undefined,
+    "'flexible' can only be specified to enable flexible sync. To enable flexible sync, remove 'partitionValue' and set 'flexible' to true.",
+  );
+  assert(
+    initialSubscriptions === undefined,
+    "'initialSubscriptions' can only be specified when flexible sync is enabled. To enable flexible sync, remove 'partitionValue' and set 'flexible' to true.",
+  );
+}
+
+/**
+ * Validate the user-provided partition value of a realm sync configuration.
+ */
+function validatePartitionValue(value: unknown): asserts value is PartitionValue {
+  if (typeof value === "number") {
+    assert(
+      Number.isInteger(value),
+      `Expected 'partitionValue' on realm sync configuration to be an integer, got ${
+        Number.isNaN(value) ? "NaN" : "a decimal number"
+      }.`,
+    );
+    assert(
+      value >= Number.MIN_SAFE_INTEGER && value <= Number.MAX_SAFE_INTEGER,
+      `Expected 'partitionValue' on realm sync configuration to be between Number.MIN_SAFE_INTEGER and Number.MAX_SAFE_INTEGER.`,
+    );
+  } else {
+    assert(
+      typeof value === "string" || value instanceof ObjectId || value instanceof UUID || value === null,
+      `Expected 'partitionValue' on realm sync configuration to be an integer, string, ObjectId, UUID, or null, got ${TypeAssertionError.deriveType(
+        value,
+      )}.`,
+    );
   }
 }
