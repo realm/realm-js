@@ -209,16 +209,12 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         }
 
         describe("error", function () {
-          afterEach(function () {
-            Realm.deleteFile(this.config);
-          });
-
           it("throws an error if no update function is provided", async function (this: RealmContext) {
             // @ts-expect-error Intentionally testing the wrong type
             this.config = getConfig(this.user, {});
 
             await expect(Realm.open(this.config)).to.be.rejectedWith(
-              "update must be of type 'function', got (undefined)",
+              "Expected 'initialSubscriptions.update' on realm sync configuration to be a function, got undefined",
             );
           });
 
@@ -229,7 +225,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             });
 
             await expect(Realm.open(this.config)).to.be.rejectedWith(
-              "update must be of type 'function', got (undefined)",
+              "Expected 'initialSubscriptions.update' on realm sync configuration to be a function, got undefined",
             );
           });
 
@@ -239,7 +235,9 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
               update: "Person",
             });
 
-            await expect(Realm.open(this.config)).to.be.rejectedWith("update must be of type 'function', got (Person)");
+            await expect(Realm.open(this.config)).to.be.rejectedWith(
+              "Expected 'initialSubscriptions.update' on realm sync configuration to be a function, got a string",
+            );
           });
 
           it("throws an error if `rerunOnOpen` is not a boolean", async function (this: RealmContext) {
@@ -251,7 +249,9 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
               rerunOnOpen: "yes please",
             });
 
-            await expect(Realm.open(this.config)).to.be.rejectedWith(/rerunOnOpen must be of type 'boolean', got.*/);
+            await expect(Realm.open(this.config)).to.be.rejectedWith(
+              "Expected 'initialSubscriptions.rerunOnOpen' on realm sync configuration to be a boolean, got a string",
+            );
           });
         });
 
@@ -1125,7 +1125,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
                 mutableSubs.add(query, { name: "test", throwOnUpdate: true });
               }),
             ).to.be.rejectedWith(
-              "A subscription with the name 'test' already exists but has a different query. If you meant to update it, remove `throwOnUpdate: true` from the subscription options.",
+              "A subscription with the name 'test' already exists but has a different query. If you meant to update it, remove 'throwOnUpdate: true' from the subscription options.",
             );
 
             expect(subs.findByQuery(query)).to.be.null;
