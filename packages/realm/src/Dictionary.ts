@@ -157,9 +157,13 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
         writable: false,
         value: internal,
       },
+      [HELPERS]: {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: helpers,
+      },
     });
-
-    this[HELPERS] = helpers;
 
     return proxied;
   }
@@ -179,7 +183,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
   /**
    * @internal
    */
-  private [HELPERS]: TypeHelpers;
+  private [HELPERS]!: TypeHelpers;
 
   // @ts-expect-error We're exposing methods in the end-users namespace of keys
   [key: string]: T;
