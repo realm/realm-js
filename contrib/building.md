@@ -42,8 +42,8 @@
 
 The following dependencies are required. All except Xcode can be installed by following the [setup instructions for MacOS section](#setup-instructions-for-macos).
 
-- [Xcode](https://developer.apple.com/xcode/) 13+ with Xcode command line tools installed
-  - Newer versions may work, but 13.1 is the current recommended version, which can be downloaded from [Apple](https://developer.apple.com/download/all/?q=xcode%2013.1). To install older Xcode versions, [Xcodes.app](https://github.com/RobotsAndPencils/XcodesApp) is highly recommended
+- [Xcode](https://developer.apple.com/xcode/) latest Xcode with command line tools installed
+  - The latest Xcode should work, which can be downloaded from [Mac App Store](https://itunes.apple.com/us/app/xcode/id497799835?mt=12). To install older Xcode versions, [Xcodes.app](https://github.com/RobotsAndPencils/XcodesApp) is highly recommended
 - [Node.js](https://nodejs.org/en/) version 13 or later
   - Consider [using NVM](https://github.com/nvm-sh/nvm#installing-and-updating) to enable fast switching between Node.js & NPM versions
 - [CMake](https://cmake.org/) 3.21.4 or later

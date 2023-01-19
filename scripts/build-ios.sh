@@ -87,12 +87,16 @@ pushd react-native/ios
 mkdir -p build
 pushd build
 
+# If the developer directory is not set, use the default Xcode path
+SELECTED_DEVELOPER_DIR="$(xcode-select -p)"
+DEVELOPER_DIR="${DEVELOPER_DIR:-${SELECTED_DEVELOPER_DIR}}"
+
 # Configure CMake project
-SDKROOT="${SDK_ROOT_OVERRIDE:-/Applications/Xcode_13.1.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/}" cmake "$PROJECT_ROOT" -GXcode \
+SDKROOT="$DEVELOPER_DIR/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/" cmake "$PROJECT_ROOT" -GXcode \
     -DCMAKE_TOOLCHAIN_FILE="$PROJECT_ROOT/vendor/realm-core/tools/cmake/xcode.toolchain.cmake" \
     -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY="$(pwd)/out/$<CONFIG>\$EFFECTIVE_PLATFORM_NAME" \
 
-DEVELOPER_DIR="${DEVELOPER_DIR_OVERRIDE:-/Applications/Xcode_13.1.app}" xcodebuild build \
+DEVELOPER_DIR="$DEVELOPER_DIR" xcodebuild build \
     -scheme realm-js-ios \
     "${DESTINATIONS[@]}" \
     -configuration $CONFIGURATION \
