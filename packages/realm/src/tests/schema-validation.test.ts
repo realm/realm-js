@@ -18,7 +18,7 @@
 
 import { expect } from "chai";
 
-import { validateObjectSchema, validatePropertySchema } from "../Configuration";
+import { validateObjectSchema, validatePropertySchema } from "../internal";
 
 const OBJECT_NAME = "MyObject";
 const PROPERTY_NAME = "prop";

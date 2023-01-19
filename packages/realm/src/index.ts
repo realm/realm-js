@@ -33,7 +33,6 @@ export {
   Results,
   SessionStopPolicy,
   Subscription,
-  SubscriptionOptions,
   SubscriptionSet,
   SubscriptionsState,
   UpdateMode,
@@ -50,6 +49,7 @@ export type {
   ObjectChangeSet,
   RealmEventName,
   RealmListenerCallback,
+  SubscriptionOptions,
 } from "./internal";
 
 // Exporting default for backwards compatibility
