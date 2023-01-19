@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { BaseSubscriptionSet, Realm, Subscription, assert, binding } from "../internal";
+import { BaseSubscriptionSet, Realm, Subscription, SubscriptionSet, assert, binding } from "../internal";
 
 /**
  * Options for {@link MutableSubscriptionSet.add}.

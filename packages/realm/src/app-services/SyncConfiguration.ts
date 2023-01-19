@@ -23,6 +23,7 @@ import {
   ClientResetError,
   MutableSubscriptionSet,
   Realm,
+  SubscriptionSet,
   SyncError,
   SyncSession,
   TypeAssertionError,
@@ -123,7 +124,7 @@ export type FlexibleSyncConfiguration = BaseSyncConfiguration & {
     /**
      * Callback called with the {@link Realm} instance to allow you to setup the
      * initial set of subscriptions by calling `realm.subscriptions.update`.
-     * See {@link Realm.App.Sync.SubscriptionSet.update} for more information.
+     * See {@link SubscriptionSet.update} for more information.
      */
     update: (subs: MutableSubscriptionSet, realm: Realm) => void;
     /**

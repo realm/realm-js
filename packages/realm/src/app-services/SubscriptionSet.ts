@@ -16,7 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { BaseSubscriptionSet, MutableSubscriptionSet, Realm, SubscriptionsState, assert, binding } from "../internal";
+import {
+  BaseSubscriptionSet,
+  FlexibleSyncConfiguration,
+  MutableSubscriptionSet,
+  Realm,
+  SubscriptionsState,
+  assert,
+  binding,
+} from "../internal";
 
 /**
  * Class representing the set of all active flexible sync subscriptions for a Realm
@@ -66,8 +74,8 @@ export class SubscriptionSet extends BaseSubscriptionSet {
    * the `mutableSubs` argument rather than the original {@link SubscriptionSet} instance.
    *
    * Any changes to the subscriptions after the callback has executed will be batched and sent
-   * to the server. You can either `await` the call to `update`, or call {@link waitForSynchronization}
-   * to wait for the new data to be available.
+   * to the server. You can either `await` the call to `update`, or call
+   * {@link SubscriptionSet.waitForSynchronization} to wait for the new data to be available.
    *
    * Example:
    * ```
@@ -79,14 +87,14 @@ export class SubscriptionSet extends BaseSubscriptionSet {
    * // `realm` will now return the expected results based on the updated subscriptions
    * ```
    *
-   * @param callback A callback function which receives a {@link Realm.App.Sync.MutableSubscriptionSet}
+   * @param callback A callback function which receives a {@link MutableSubscriptionSet}
    *  instance as the first argument, which can be used to add or remove subscriptions
    *  from the set, and the {@link Realm} associated with the SubscriptionSet as the
    *  second argument (mainly useful when working with `initialSubscriptions` in
-   *  {@link Realm.App.Sync.FlexibleSyncConfiguration}).
+   *  {@link FlexibleSyncConfiguration}).
    *
    * @returns A promise which resolves when the SubscriptionSet is synchronized, or is rejected
-   *  if there was an error during synchronization (see {@link waitForSynchronization})
+   *  if there was an error during synchronization (see {@link SubscriptionSet.waitForSynchronization})
    */
   async update(callback: (mutableSubs: MutableSubscriptionSet, realm: Realm) => void): Promise<void> {
     this.updateSync(callback);
