@@ -23,6 +23,7 @@ import {
   ProgressNotificationCallback,
   PromiseHandle,
   Realm,
+  SubscriptionsState,
   TimeoutError,
   TimeoutPromise,
   assert,
@@ -30,27 +31,27 @@ import {
   validateConfiguration,
 } from "./internal";
 
-type OpenBehaviour = {
-  openBehaviour: OpenRealmBehaviorType;
+type OpenBehavior = {
+  openBehavior: OpenRealmBehaviorType;
   timeOut?: number;
   timeOutBehavior?: OpenRealmTimeOutBehavior;
 };
 
-function determineBehaviour(config: Configuration): OpenBehaviour {
+function determineBehavior(config: Configuration, realmExists: boolean): OpenBehavior {
   const { sync } = config;
   if (!sync) {
-    return { openBehaviour: OpenRealmBehaviorType.OpenImmediately };
+    return { openBehavior: OpenRealmBehaviorType.OpenImmediately };
   } else {
-    const configProperty = Realm.exists(config) ? "existingRealmFileBehavior" : "newRealmFileBehavior";
-    const configBehaviour = sync[configProperty];
-    if (configBehaviour) {
-      const { type, timeOut, timeOutBehavior } = configBehaviour;
+    const configProperty = realmExists ? "existingRealmFileBehavior" : "newRealmFileBehavior";
+    const configBehavior = sync[configProperty];
+    if (configBehavior) {
+      const { type, timeOut, timeOutBehavior } = configBehavior;
       if (typeof timeOut !== "undefined") {
         assert.number(timeOut, "timeOut");
       }
-      return { openBehaviour: type, timeOut, timeOutBehavior };
+      return { openBehavior: type, timeOut, timeOutBehavior };
     } else {
-      return { openBehaviour: OpenRealmBehaviorType.DownloadBeforeOpen }; // Default is downloadBeforeOpen
+      return { openBehavior: OpenRealmBehaviorType.DownloadBeforeOpen }; // Default is downloadBeforeOpen
     }
   }
 }
@@ -69,27 +70,31 @@ export class ProgressRealmPromise implements Promise<Realm> {
   constructor(config: Configuration) {
     try {
       validateConfiguration(config);
-      const { openBehaviour, timeOut, timeOutBehavior } = determineBehaviour(config);
-      if (openBehaviour === OpenRealmBehaviorType.OpenImmediately) {
+      // Calling `Realm.exists()` here is necessary to capture the correct value
+      // when the constructor was called since the realm may be opened during this
+      // construction. This is needed when calling the Realm constructor.
+      const realmExists = Realm.exists(config);
+      const { openBehavior, timeOut, timeOutBehavior } = determineBehavior(config, realmExists);
+      if (openBehavior === OpenRealmBehaviorType.OpenImmediately) {
         const realm = new Realm(config);
         this.handle.resolve(realm);
-      } else if (openBehaviour === OpenRealmBehaviorType.DownloadBeforeOpen) {
+      } else if (openBehavior === OpenRealmBehaviorType.DownloadBeforeOpen) {
         const { bindingConfig } = Realm.transformConfig(config);
         this.task = binding.Realm.getSynchronizedRealm(bindingConfig);
         this.task
           .start()
           .then(async (tsr) => {
-            const realm = new Realm(config, { internal: binding.Helpers.consumeThreadSafeReferenceToSharedRealm(tsr) });
-
-            const initialSubscriptions = config.sync && config.sync.flexible ? config.sync.initialSubscriptions : false;
-            const realmExists = Realm.exists(config);
-            if (!initialSubscriptions || (!initialSubscriptions.rerunOnOpen && realmExists)) {
-              return realm;
+            const realm = new Realm(config, {
+              internal: binding.Helpers.consumeThreadSafeReferenceToSharedRealm(tsr),
+              // Do not call `Realm.exists()` here in case the realm has been opened by this point in time.
+              realmExists,
+            });
+            if (config.sync?.flexible) {
+              const { subscriptions } = realm;
+              if (subscriptions.state === SubscriptionsState.Pending) {
+                await subscriptions.waitForSynchronization();
+              }
             }
-            // TODO: Implement this once flexible sync gets implemented
-            // await realm.subscriptions.waitForSynchronization();
-            // TODO: Consider implementing adding the subscriptions here as well
-            throw new Error("'initialSubscriptions' is not yet supported");
             return realm;
           })
           .then(this.handle.resolve, this.handle.reject);
@@ -122,7 +127,7 @@ export class ProgressRealmPromise implements Promise<Realm> {
           }
         }
       } else {
-        throw new Error(`Unexpected open behaviour '${openBehaviour}'`);
+        throw new Error(`Unexpected open behavior '${openBehavior}'`);
       }
     } catch (err) {
       this.handle.reject(err);

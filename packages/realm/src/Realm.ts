@@ -96,7 +96,11 @@ function assertRealmEvent(name: RealmEventName): asserts name is RealmEvent {
 }
 
 /** @internal */
-type InternalConfig = { internal?: binding.Realm; schemaExtras?: RealmSchemaExtra };
+type InternalConfig = {
+  internal?: binding.Realm;
+  schemaExtras?: RealmSchemaExtra;
+  realmExists?: boolean;
+};
 
 export class Realm {
   public static Object = RealmObject;
@@ -144,6 +148,7 @@ export class Realm {
    * @throws {@link Error} If anything in the provided {@link config} is invalid.
    */
   public static deleteFile(config: Configuration): void {
+    validateConfiguration(config);
     const path = Realm.determinePath(config);
     fs.removeFile(path);
     fs.removeFile(path + ".lock");
@@ -446,18 +451,19 @@ export class Realm {
   /** @internal */
   constructor(config: Configuration | null, internalConfig: InternalConfig);
   constructor(arg?: Configuration | string | null, internalConfig: InternalConfig = {}) {
-    const { internal } = internalConfig;
-
+    const config = typeof arg === "string" ? { path: arg } : arg || {};
+    // Calling `Realm.exists()` here is necessary to capture the correct value when
+    // the constructor was called since the realm may be opened during this construction.
+    // This is needed when deciding whether to update initial subscriptions.
+    const realmExists = Realm.exists(config);
     if (arg !== null) {
       assert(!internalConfig.schemaExtras, "Expected either a configuration or schemaExtras");
-
-      const config = typeof arg === "string" ? { path: arg } : arg || {};
       validateConfiguration(config);
       const { bindingConfig, schemaExtras } = Realm.transformConfig(config);
       debug("open", bindingConfig);
       this.schemaExtras = schemaExtras;
 
-      this.internal = internal ?? binding.Realm.getSharedRealm(bindingConfig);
+      this.internal = internalConfig.internal ?? binding.Realm.getSharedRealm(bindingConfig);
 
       binding.Helpers.setBindingContext(this.internal, {
         didChange: (r) => {
@@ -475,9 +481,10 @@ export class Realm {
       });
       RETURNED_REALMS.add(new binding.WeakRef(this.internal));
     } else {
+      const { internal, schemaExtras } = internalConfig;
       assert.instanceOf(internal, binding.Realm, "internal");
       this.internal = internal;
-      this.schemaExtras = internalConfig.schemaExtras || {};
+      this.schemaExtras = schemaExtras || {};
     }
 
     Object.defineProperties(this, {
@@ -497,6 +504,15 @@ export class Realm {
 
     const syncSession = this.internal.syncSession;
     this.syncSession = syncSession ? new SyncSession(syncSession) : null;
+
+    // Do not call `Realm.exists()` here in case the realm has been opened by this point in time.
+    // Check `!realmExists` last so that `!internalConfig.realmExists` takes precedence.
+    const initialSubscriptions = config.sync?.initialSubscriptions;
+    const shouldUpdateSubscriptions =
+      initialSubscriptions && (initialSubscriptions.rerunOnOpen || !internalConfig.realmExists || !realmExists);
+    if (shouldUpdateSubscriptions) {
+      this.subscriptions.updateSync(initialSubscriptions.update);
+    }
   }
 
   /**
@@ -1014,11 +1030,6 @@ export class Realm {
   ): ClassHelpers {
     return this.classes.getHelpers<T>(arg);
   }
-
-  // TODO
-  private handleInitialSubscriptions(config: FlexibleSyncConfiguration): void {
-    throw new Error("Not yet implemented");
-  }
 }
 
 // Declare the Realm namespace for backwards compatibility
@@ -1037,6 +1048,8 @@ type BSONType = typeof BSON;
 type TypesType = typeof Types;
 type UserType = typeof User;
 type CredentialsType = typeof Credentials;
+type ConfigurationType = Configuration;
+type FlexibleSyncConfigurationType = FlexibleSyncConfiguration;
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Realm {
@@ -1055,4 +1068,6 @@ export namespace Realm {
   export type Types = TypesType;
   export type User = UserType;
   export type Credentials = CredentialsType;
+  export type Configuration = ConfigurationType;
+  export type FlexibleSyncConfiguration = FlexibleSyncConfigurationType;
 }

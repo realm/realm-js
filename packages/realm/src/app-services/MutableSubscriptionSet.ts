@@ -74,14 +74,15 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
       assertIsSubscriptionOptions(options);
     }
 
-    const internalResults = query.internal;
     const internalSubscriptions = this.internal;
+    const internalResults = query.internal;
+    const internalQuery = internalResults.query;
 
     if (options?.throwOnUpdate && options.name) {
       const existingSubscription = internalSubscriptions.findByName(options.name);
       if (existingSubscription) {
         const isSameQuery =
-          existingSubscription.queryString === query.description() &&
+          existingSubscription.queryString === internalQuery.description &&
           existingSubscription.objectClassName === internalResults.objectType;
         assert(
           isSameQuery,
@@ -91,8 +92,8 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
     }
 
     const [internalSubscription] = options?.name
-      ? internalSubscriptions.insertOrAssignByName(options.name, internalResults.query)
-      : internalSubscriptions.insertOrAssignByQuery(internalResults.query);
+      ? internalSubscriptions.insertOrAssignByName(options.name, internalQuery)
+      : internalSubscriptions.insertOrAssignByQuery(internalQuery);
 
     return new Subscription(internalSubscription);
   }
