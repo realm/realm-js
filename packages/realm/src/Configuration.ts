@@ -42,6 +42,7 @@ type BaseConfiguration = {
   readOnly?: boolean;
   fifoFilesFallbackPath?: string;
   sync?: SyncConfiguration;
+  /**@internal */ openSyncedRealmLocally?: true;
   shouldCompact?: (totalBytes: number, usedBytes: number) => boolean;
   deleteRealmIfMigrationNeeded?: boolean;
   disableFormatUpgrade?: boolean;
@@ -205,6 +206,7 @@ export function validateConfiguration(config: unknown): asserts config is Config
     readOnly,
     fifoFilesFallbackPath,
     sync,
+    openSyncedRealmLocally,
     shouldCompact,
     deleteRealmIfMigrationNeeded,
     disableFormatUpgrade,
@@ -237,6 +239,13 @@ export function validateConfiguration(config: unknown): asserts config is Config
   if (sync !== undefined) {
     assert(!onMigration, "The realm configuration options 'onMigration' and 'sync' cannot both be defined.");
     validateSyncConfiguration(sync);
+  }
+  // Internal use
+  if (openSyncedRealmLocally !== undefined) {
+    assert(
+      openSyncedRealmLocally === true,
+      "'openSyncedRealmLocally' on realm configuration is only used internally and must be `true` if defined.",
+    );
   }
   if (shouldCompact !== undefined) {
     assert.function(shouldCompact, "'shouldCompact' on realm configuration");

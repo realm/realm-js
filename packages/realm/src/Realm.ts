@@ -32,6 +32,7 @@ import {
   EmailPasswordAuthClient,
   FlexibleSyncConfiguration,
   INTERNAL,
+  InitialSubscriptions,
   List,
   MigrationCallback,
   ObjectSchema,
@@ -302,7 +303,7 @@ export class Realm {
   }
 
   private static determinePath(config: Configuration): string {
-    if (config.path || !config.sync) {
+    if (config.path || config.openSyncedRealmLocally || !config.sync) {
       return Realm.normalizePath(config.path);
     } else {
       // TODO: Determine if it's okay to get the syncManager through the app instead of the user:
@@ -366,6 +367,7 @@ export class Realm {
         disableFormatUpgrade: config.disableFormatUpgrade,
         encryptionKey: Realm.determineEncryptionKey(config.encryptionKey),
         syncConfig: config.sync ? toBindingSyncConfig(config.sync) : undefined,
+        forceSyncHistory: config.openSyncedRealmLocally,
       },
     };
   }
@@ -505,13 +507,10 @@ export class Realm {
     const syncSession = this.internal.syncSession;
     this.syncSession = syncSession ? new SyncSession(syncSession) : null;
 
-    // Do not call `Realm.exists()` here in case the realm has been opened by this point in time.
-    // Check `!realmExists` last so that `!internalConfig.realmExists` takes precedence.
     const initialSubscriptions = config.sync?.initialSubscriptions;
-    const shouldUpdateSubscriptions =
-      initialSubscriptions && (initialSubscriptions.rerunOnOpen || !internalConfig.realmExists || !realmExists);
-    if (shouldUpdateSubscriptions) {
-      this.subscriptions.updateSync(initialSubscriptions.update);
+    if (!config.openSyncedRealmLocally && initialSubscriptions) {
+      // Do not call `Realm.exists()` here in case the realm has been opened by this point in time.
+      this.handleInitialSubscriptions(initialSubscriptions, internalConfig.realmExists && realmExists);
     }
   }
 
@@ -1050,6 +1049,19 @@ export class Realm {
     arg: string | binding.TableKey | RealmObject<T> | Constructor<RealmObject<T>>,
   ): ClassHelpers {
     return this.classes.getHelpers<T>(arg);
+  }
+
+  /**
+   * Update subscriptions with the initial subscriptions if needed.
+   *
+   * @param initialSubscriptions The initial subscriptions.
+   * @param realmExists Whether the realm already exists.
+   */
+  private handleInitialSubscriptions(initialSubscriptions: InitialSubscriptions, realmExists?: boolean): void {
+    const shouldUpdateSubscriptions = initialSubscriptions.rerunOnOpen || !realmExists;
+    if (shouldUpdateSubscriptions) {
+      this.subscriptions.updateSync(initialSubscriptions.update);
+    }
   }
 }
 

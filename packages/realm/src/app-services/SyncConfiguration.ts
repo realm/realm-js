@@ -117,23 +117,25 @@ export type BaseSyncConfiguration = {
   clientReset?: ClientResetConfig;
 };
 
+export type InitialSubscriptions = {
+  /**
+   * Callback called with the {@link Realm} instance to allow you to setup the
+   * initial set of subscriptions by calling `realm.subscriptions.update`.
+   * See {@link SubscriptionSet.update} for more information.
+   */
+  update: (subs: MutableSubscriptionSet, realm: Realm) => void;
+  /**
+   * If `true`, the {@link update} callback will be rerun every time the Realm is
+   * opened (e.g. every time a user opens your app), otherwise (by default) it
+   * will only be run if the Realm does not yet exist.
+   */
+  rerunOnOpen?: boolean;
+};
+
 export type FlexibleSyncConfiguration = BaseSyncConfiguration & {
   flexible: true;
   partitionValue?: never;
-  initialSubscriptions?: {
-    /**
-     * Callback called with the {@link Realm} instance to allow you to setup the
-     * initial set of subscriptions by calling `realm.subscriptions.update`.
-     * See {@link SubscriptionSet.update} for more information.
-     */
-    update: (subs: MutableSubscriptionSet, realm: Realm) => void;
-    /**
-     * If `true`, the {@link update} callback will be rerun every time the Realm is
-     * opened (e.g. every time a user opens your app), otherwise (by default) it
-     * will only be run if the Realm does not yet exist.
-     */
-    rerunOnOpen?: boolean;
-  };
+  initialSubscriptions?: InitialSubscriptions;
 };
 
 export type PartitionSyncConfiguration = BaseSyncConfiguration & {
