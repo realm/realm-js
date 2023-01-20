@@ -33,7 +33,8 @@ function extractRelease(changelog, expectedVersion) {
 }
 
 if (require.main === module) {
-  const changelogPath = path.resolve(__dirname, "../CHANGELOG.md");
+  const changelogPathArg = process.argv[3];
+  const changelogPath = path.resolve(__dirname, changelogPathArg ? changelogPathArg : "../CHANGELOG.md");
   const changelog = fs.readFileSync(changelogPath, { encoding: "utf8" });
   const version = process.argv[2];
   const release = extractRelease(changelog, version);
