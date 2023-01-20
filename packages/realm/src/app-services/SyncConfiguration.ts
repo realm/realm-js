@@ -359,10 +359,10 @@ function validatePartitionSyncConfiguration(
   const { flexible, partitionValue, initialSubscriptions } = config;
 
   validatePartitionValue(partitionValue);
+  // We only allow `flexible` to be `true` (for Flexible Sync) or `undefined` (for Partition Sync).
+  // `{ flexible: false }` is not allowed because TypeScript cannot discriminate that type correctly
+  // with `strictNullChecks` disabled, and there is no real use case for `{ flexible: false }`.
   assert(
-    // TODO: Our TS types do not allow `flexible` to be anything other than `undefined`
-    //       for partition sync. But one of our tests assumes `flexible: false` is allowed.
-    //       Need to decide which one to enforce.
     flexible === undefined,
     "'flexible' can only be specified to enable flexible sync. To enable flexible sync, remove 'partitionValue' and set 'flexible' to true.",
   );

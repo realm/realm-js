@@ -165,7 +165,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         }).to.throw("'partitionValue' cannot be specified when flexible sync is enabled");
       });
 
-      it("accepts { flexible: false } and a partition value", function () {
+      it("does not accept { flexible: false } and a partition value", function () {
         expect(() => {
           // @ts-expect-error This is not a compatible configuration anymore and will cause a typescript error
           new Realm({
@@ -176,7 +176,9 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
               partitionValue: "test",
             },
           });
-        }).to.not.throw();
+        }).to.throw(
+          "'flexible' can only be specified to enable flexible sync. To enable flexible sync, remove 'partitionValue' and set 'flexible' to true",
+        );
       });
 
       it("accepts { flexible: undefined } and a partition value", function () {
