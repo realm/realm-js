@@ -23,7 +23,7 @@ type ExtractPropertyNamesOfType<T, PropType> = {
 }[keyof T];
 
 /**
- * Exchanges properties defined as Realm.List<Model> with an optional Array<Model | RealmInsertionModel<Model>>.
+ * Exchanges properties defined as {@link List<T>} with an optional {@link Array<T | RealmInsertionModel<T>>}.
  */
 type RealmListsRemappedModelPart<T> = {
   [K in ExtractPropertyNamesOfType<T, List>]?: T[K] extends List<infer GT>
@@ -32,7 +32,7 @@ type RealmListsRemappedModelPart<T> = {
 };
 
 /**
- * Exchanges properties defined as Realm.Dicionary<Model> with an optional key to mixed value object.
+ * Exchanges properties defined as {@link Dictionary<T>} with an optional key to mixed value object.
  */
 type RealmDictionaryRemappedModelPart<T> = {
   [K in ExtractPropertyNamesOfType<T, Dictionary>]?: T[K] extends Dictionary<infer ValueType>

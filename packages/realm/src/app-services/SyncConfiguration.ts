@@ -29,11 +29,11 @@ import {
   binding,
   toBindingClientResetMode,
   toBindingErrorHandler,
-  toBindingStopPolicy,
-  toBindingNotifyBeforeClientReset,
-  toBindingNotifyAfterClientReset,
-  toBindingNotifyAfterClientResetWithfallback,
   toBindingErrorHandlerWithOnManual,
+  toBindingNotifyAfterClientReset,
+  toBindingNotifyAfterClientResetWithFallback,
+  toBindingNotifyBeforeClientReset,
+  toBindingStopPolicy,
 } from "../internal";
 
 export type PartitionValue = string | number | BSON.ObjectId | BSON.UUID | null;
@@ -222,7 +222,7 @@ function parseRecoverUnsyncedChanges(clientReset: ClientResetRecoverUnsyncedChan
     clientResyncMode: toBindingClientResetMode(clientReset.mode),
     notifyBeforeClientReset: clientReset.onBefore ? toBindingNotifyBeforeClientReset(clientReset.onBefore) : undefined,
     notifyAfterClientReset: clientReset.onAfter
-      ? toBindingNotifyAfterClientResetWithfallback(clientReset.onAfter, clientReset.onFallback)
+      ? toBindingNotifyAfterClientResetWithFallback(clientReset.onAfter, clientReset.onFallback)
       : undefined,
   };
 }
@@ -233,7 +233,7 @@ function parseRecoverOrDiscardUnsyncedChanges(clientReset: ClientResetRecoverOrD
     clientResyncMode: toBindingClientResetMode(clientReset.mode),
     notifyBeforeClientReset: clientReset.onBefore ? toBindingNotifyBeforeClientReset(clientReset.onBefore) : undefined,
     notifyAfterClientReset: clientReset.onAfter
-      ? toBindingNotifyAfterClientResetWithfallback(clientReset.onAfter, clientReset.onFallback)
+      ? toBindingNotifyAfterClientResetWithFallback(clientReset.onAfter, clientReset.onFallback)
       : undefined,
   };
 }

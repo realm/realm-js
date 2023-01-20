@@ -271,9 +271,9 @@ export class RealmObject<T = DefaultObject> {
   }
 
   /**
-   * The plain object representation of this object for JSON serialization.
-   * Use circular JSON serialization libraries such as {@link https://www.npmjs.com/package/@ungap/structured-clone @ungap/structured-clone}
-   * and {@link https://www.npmjs.com/package/flatted flatted} for stringifying Realm entities that have circular structures.
+   * The plain object representation for JSON serialization.
+   * Use circular JSON serialization libraries such as [@ungap/structured-clone](https://www.npmjs.com/package/@ungap/structured-clone)
+   * and [flatted](https://www.npmjs.com/package/flatted) to stringify Realm entities that have circular structures.
    * @returns A plain object.
    **/
   toJSON(_?: string, cache?: unknown): DefaultObject;
@@ -366,7 +366,7 @@ export class RealmObject<T = DefaultObject> {
 
   /**
    * @deprecated
-   * TODO: Remove completely once the type tests are obandend.
+   * TODO: Remove completely once the type tests are abandoned.
    */
   _objectId(): string {
     throw new Error("This is now removed!");

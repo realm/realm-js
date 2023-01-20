@@ -35,7 +35,7 @@ export class ObjectListeners<T> {
   private properties: PropertyMap;
 
   private listeners = new Listeners<ObjectChangeCallback<T>, binding.NotificationToken>({
-    register: (callback) => {
+    add: (callback) => {
       const token = this.notifier.addCallback((changes) => {
         try {
           callback(this.object as RealmObject<T> & T, {
@@ -53,7 +53,7 @@ export class ObjectListeners<T> {
       // Get an actual NotificationToken for the bigint value
       return binding.NotificationToken.forObject(this.notifier, token);
     },
-    unregister(token) {
+    remove(token) {
       token.unregister();
     },
   });

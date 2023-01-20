@@ -16,9 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { AppCredentials, GoogleIdToken } from "../binding";
-import { assert, binding } from "../internal";
-import { App } from "./App";
+import {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Used by TS docs
+  App,
+  assert,
+  binding,
+} from "../internal";
 
 /**
  * Types of an authentication provider.
@@ -50,9 +53,9 @@ export class Credentials {
   /**
    * Creates credentials for an anonymous user. These can only be used once - using them a second
    * time will result in a different user being logged in. If you need to get a user that has already logged
-   * in with the Anonymous credentials, use {@linkcode App.currentUser} or {@linkcode App.allUsers}.
+   * in with the Anonymous credentials, use {@link App.currentUser} or {@link App.allUsers}.
    * @param reuse Reuse any existing anonymous user already logged in.
-   * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode App.logIn}.
+   * @return {Credentials} An instance of `Credentials` that can be used in {@link App.logIn}.
    */
   static anonymous(reuse = true): Credentials {
     return new Credentials(binding.AppCredentials.anonymous(reuse));
@@ -60,7 +63,7 @@ export class Credentials {
 
   /**
    * Creates credentials based on a login with an email address and a password.
-   * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode App.logIn}.
+   * @return {Credentials} An instance of `Credentials` that can be used in {@link App.logIn}.
    */
   static emailPassword(credentials: { email: string; password: string }): Credentials;
   static emailPassword(email: string, password: string): Credentials;
@@ -78,7 +81,7 @@ export class Credentials {
   /**
    * Creates credentials from an API key.
    * @param key A string identifying the API key.
-   * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+   * @return {Credentials} An instance of `Credentials` that can be used in {@link Realm.App.logIn}.
    */
   static apiKey(key: string): Credentials {
     return new Credentials(binding.AppCredentials.userApiKey(key));
@@ -87,7 +90,7 @@ export class Credentials {
   /**
    * Creates credentials based on an Apple login.
    * @param token An Apple authentication token, obtained by logging into Apple.
-   * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+   * @return {Credentials} An instance of `Credentials` that can be used in {@link Realm.App.logIn}.
    */
   static apple(token: string): Credentials {
     return new Credentials(binding.AppCredentials.apple(token));
@@ -96,7 +99,7 @@ export class Credentials {
   /**
    * Creates credentials based on a Facebook login.
    * @param token A Facebook authentication token, obtained by logging into Facebook.
-   * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+   * @return {Credentials} An instance of `Credentials` that can be used in {@link Realm.App.logIn}.
    */
   static facebook(token: string): Credentials {
     return new Credentials(binding.AppCredentials.facebook(token));
@@ -105,7 +108,7 @@ export class Credentials {
   /**
    * Creates credentials based on a Google login.
    * @param authObject An object with either an `authCode` or `idToken` property.
-   * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+   * @return {Credentials} An instance of `Credentials` that can be used in {@link Realm.App.logIn}.
    */
   static google(authObject: object): Credentials {
     return new Credentials(binding.AppCredentials.googleAuth(authObject));
@@ -114,7 +117,7 @@ export class Credentials {
   /**
    * Creates credentials with a JSON Web Token (JWT) provider and user identifier.
    * @param token A string identifying the user. Usually an identity token or a username.
-   * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+   * @return {Credentials} An instance of `Credentials` that can be used in {@link Realm.App.logIn}.
    */
   static jwt(token: string): Credentials {
     return new Credentials(binding.AppCredentials.custom(token));
@@ -123,7 +126,7 @@ export class Credentials {
   /**
    * Creates credentials with an Atlas App Services function and user identifier.
    * @param payload An object identifying the user. Usually an identity token or a username.
-   * @return {Credentials} An instance of `Credentials` that can be used in {@linkcode Realm.App.logIn}.
+   * @return {Credentials} An instance of `Credentials` that can be used in {@link Realm.App.logIn}.
    */
   static function(payload: object): Credentials {
     return new Credentials(binding.AppCredentials.function(payload as Record<string, binding.EJson>));

@@ -19,10 +19,15 @@
 import { EJSON } from "bson";
 import {
   App,
+  ClientResetAfterCallback,
+  ClientResetBeforeCallback,
+  ClientResetError,
+  ClientResetFallbackCallback,
   ClientResetMode,
   ErrorCallback,
   Listeners,
   PartitionValue,
+  Realm,
   SessionStopPolicy,
   SyncConfiguration,
   TimeoutPromise,
@@ -30,11 +35,6 @@ import {
   assert,
   binding,
   fromBindingSyncError,
-  ClientResetBeforeCallback,
-  Realm,
-  ClientResetAfterCallback,
-  ClientResetFallbackCallback,
-  ClientResetError,
 } from "../internal";
 
 export enum ProgressDirection {
@@ -85,7 +85,7 @@ function fromBindingConnectionState(state: binding.SyncSessionConnectionState) {
   }
 }
 
-// TODO: This mapping is an interpretation of the behaviour of the legacy SDK we might want to revisit
+// TODO: This mapping is an interpretation of the behavior of the legacy SDK we might want to revisit
 function fromBindingSessionState(state: binding.SyncSessionState) {
   if (state === binding.SyncSessionState.Inactive) {
     return SessionState.Inactive;
@@ -124,10 +124,12 @@ export function toBindingErrorHandlerWithOnManual(
       }
     });
   }
-  if (onError) { // onError gets all errors
+  if (onError) {
+    // onError gets all errors
     return toBindingErrorHandler(onError);
   }
-  if (onManual) { // onManual only gets ClientResetErrors
+  if (onManual) {
+    // onManual only gets ClientResetErrors
     return toBindingErrorHandler((session, error) => {
       if (error instanceof ClientResetError) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -152,7 +154,7 @@ export function toBindingNotifyAfterClientReset(onAfter: ClientResetAfterCallbac
 }
 
 /** @internal */
-export function toBindingNotifyAfterClientResetWithfallback(
+export function toBindingNotifyAfterClientResetWithFallback(
   onAfter: ClientResetAfterCallback,
   onFallback: ClientResetFallbackCallback | undefined,
 ) {
@@ -205,7 +207,7 @@ type ListenerToken = {
 
 /**
  * Progress listeners are shared across instances of the SyncSession, making it possible to deregister a listener on another session
- * TODO: Consider adding a check to verify that the callback is removed from the correct SynsSession (although that would break the API)
+ * TODO: Consider adding a check to verify that the callback is removed from the correct SyncSession (although that would break the API)
  */
 const PROGRESS_LISTENERS = new Listeners<
   ProgressNotificationCallback,
@@ -213,7 +215,7 @@ const PROGRESS_LISTENERS = new Listeners<
   [binding.SyncSession, ProgressDirection, ProgressMode]
 >({
   throwOnReAdd: true,
-  register(callback, internal, direction, mode) {
+  add(callback, internal, direction, mode) {
     const token = internal.registerProgressNotifier(
       (transferred, transferable) => callback(Number(transferred), Number(transferable)),
       toBindingDirection(direction),
@@ -221,24 +223,24 @@ const PROGRESS_LISTENERS = new Listeners<
     );
     return { internal, token };
   },
-  unregister({ internal, token }) {
+  remove({ internal, token }) {
     return internal.unregisterProgressNotifier(token);
   },
 });
 
 /**
  * Connection listeners are shared across instances of the SyncSession, making it possible to deregister a listener on another session
- * TODO: Consider adding a check to verify that the callback is removed from the correct SynsSession (although that would break the API)
+ * TODO: Consider adding a check to verify that the callback is removed from the correct SyncSession (although that would break the API)
  */
 const CONNECTION_LISTENERS = new Listeners<ConnectionNotificationCallback, ListenerToken, [binding.SyncSession]>({
   throwOnReAdd: true,
-  register(callback, internal) {
+  add(callback, internal) {
     const token = internal.registerConnectionChangeCallback((oldState, newState) =>
       callback(fromBindingConnectionState(newState), fromBindingConnectionState(oldState)),
     );
     return { internal, token };
   },
-  unregister({ internal, token }) {
+  remove({ internal, token }) {
     internal.unregisterConnectionChangeCallback(token);
   },
 });

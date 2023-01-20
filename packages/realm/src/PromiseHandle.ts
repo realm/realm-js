@@ -33,7 +33,7 @@ export class PromiseHandle<T> {
       };
       this.reject = arg1;
     });
-    assert(this.resolve, "Expected promise executor to be called synchroniously");
-    assert(this.reject, "Expected promise executor to be called synchroniously");
+    assert(this.resolve, "Expected promise executor to be called synchronously");
+    assert(this.reject, "Expected promise executor to be called synchronously");
   }
 }

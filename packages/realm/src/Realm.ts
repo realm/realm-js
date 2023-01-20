@@ -273,7 +273,7 @@ export class Realm {
    *
    * This is only implemented for React Native.
    *
-   * @throws {@link Error} If an I/O error occured or method is not implemented.
+   * @throws {@link Error} If an I/O error occurred or method is not implemented.
    */
   public static copyBundledRealmFiles() {
     fs.copyBundledRealmFiles();
@@ -608,7 +608,7 @@ export class Realm {
    *       remain unchanged.
    *     - UpdateMode.Modified: If an existing object exists, only properties where the value has actually changed will be
    *       updated. This improves notifications and server side performance but also have implications for how changes
-   *       across devices are merged. For most use cases, the behaviour will match the intuitive behaviour of how
+   *       across devices are merged. For most use cases, the behavior will match the intuitive behavior of how
    *       changes should be merged, but if updating an entire object is considered an atomic operation, this mode
    *       should not be used.
    */
@@ -724,7 +724,6 @@ export class Realm {
     const value = properties.get(objectSchema.primaryKey).toBinding(primaryKey, undefined);
     try {
       const objKey = table.findPrimaryKey(value);
-      // This relies on the JS represenation of an ObjKey being a bigint
       if (binding.isEmptyObjKey(objKey)) {
         return null;
       } else {
@@ -816,7 +815,7 @@ export class Realm {
   }
 
   /**
-   * Remove the listener {@link callback} for the specfied event {@link eventName}.
+   * Remove the listener {@link callback} for the specified event {@link eventName}.
    * @param eventName The event name.
    * @param callback Function that was previously added as a listener for this event through the {@link addListener} method.
    * @throws {@link Error} If an invalid event {@link eventName} is supplied, if Realm is closed or if {@link callback} is not a function.
