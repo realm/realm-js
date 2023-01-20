@@ -595,6 +595,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(subs).to.have.length(0);
         });
 
+        // TODO: Possibly remove this and use the one below
         it("returns an array of Subscription objects", async function (this: RealmContext) {
           addSubscriptionForPerson(this.realm);
           const { subs } = await addSubscriptionAndSync(
@@ -604,6 +605,18 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
           expect(subs).to.have.length(2);
           expect(subs.every((s) => s instanceof Realm.App.Sync.Subscription)).to.be.true;
+        });
+
+        it("accesses Subscription objects using index operator", async function (this: RealmContext) {
+          addSubscriptionForPerson(this.realm);
+          const { subs } = await addSubscriptionAndSync(
+            this.realm,
+            this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"),
+          );
+
+          expect(subs).to.have.length(2);
+          expect(subs[0]).to.be.instanceOf(Realm.App.Sync.Subscription);
+          expect(subs[1]).to.be.instanceOf(Realm.App.Sync.Subscription);
         });
 
         it("is an immutable snapshot of the subscriptions from when it was called", async function (this: RealmContext) {

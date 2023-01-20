@@ -54,6 +54,37 @@ export enum SubscriptionsState {
   Superseded = "superseded",
 }
 
+const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true, writable: true };
+const PROXY_HANDLER: ProxyHandler<BaseSubscriptionSet> = {
+  get(target, prop) {
+    if (Reflect.has(target, prop)) {
+      return Reflect.get(target, prop);
+    }
+    if (typeof prop === "string") {
+      const BASE = 10;
+      const index = Number.parseInt(prop, BASE);
+      // TODO: Consider catching an error from access out of bounds, instead of checking the length, to optimize for the hot path
+      if (!Number.isNaN(index) && index >= 0 && index < target.length) {
+        return target.get(index);
+      }
+    }
+  },
+  ownKeys(target) {
+    return Reflect.ownKeys(target).concat([...target.keys()].map(String));
+  },
+  getOwnPropertyDescriptor(target, prop) {
+    if (Reflect.has(target, prop)) {
+      return Reflect.getOwnPropertyDescriptor(target, prop);
+    } else if (typeof prop === "string") {
+      const BASE = 10;
+      const index = Number.parseInt(prop, BASE);
+      if (index < target.length) {
+        return DEFAULT_PROPERTY_DESCRIPTOR;
+      }
+    }
+  },
+};
+
 /**
  * Class representing the common functionality for the {@link SubscriptionSet} and
  * {@link MutableSubscriptionSet} classes.
@@ -72,6 +103,7 @@ export abstract class BaseSubscriptionSet {
   /**@internal */
   protected constructor(internal: binding.SyncSubscriptionSet) {
     this.internal = internal;
+    return new Proxy(this, PROXY_HANDLER);
   }
 
   /**
@@ -135,6 +167,28 @@ export abstract class BaseSubscriptionSet {
    */
   get length(): number {
     return this.internal.size;
+  }
+
+  /**
+   * Get a Subscription by index.
+   * (Needed by the ProxyHandler when the subscription set is accessed by index.)
+   *
+   * @param index The index.
+   * @returns The subscription.
+   * @internal
+   */
+  get(index: number): Subscription {
+    return new Subscription(this.internal.at(index));
+  }
+
+  /**
+   * Get an iterator that contains the keys for each index in the subscription set.
+   */
+  *keys() {
+    const size = this.length;
+    for (let i = 0; i < size; i++) {
+      yield i;
+    }
   }
 
   /**
