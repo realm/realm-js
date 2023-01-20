@@ -15,6 +15,7 @@
 
 ### Internal
 * Enable tests for notifications on dictionary.
+* Automate releasing package on GHA
 <!-- * Either mention core version or upgrade -->
 <!-- * Using Realm Core vX.Y.Z -->
 <!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
