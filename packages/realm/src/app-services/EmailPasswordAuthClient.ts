@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding, Realm } from "../internal";
+import { binding } from "../internal";
 
 export class EmailPasswordAuthClient {
   /** @internal */

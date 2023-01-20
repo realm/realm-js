@@ -950,7 +950,9 @@ function itNormalizes(
   expected: Partial<CanonicalObjectSchemaProperty>,
   { isPrimaryKey } = { isPrimaryKey: false },
 ): void {
-  it(`normalizes ${inspect(input, { compact: true, breakLength: Number.MAX_SAFE_INTEGER })} ${isPrimaryKey ? "(primary key)" : ""}`, () => {
+  it(`normalizes ${inspect(input, { compact: true, breakLength: Number.MAX_SAFE_INTEGER })} ${
+    isPrimaryKey ? "(primary key)" : ""
+  }`, () => {
     const result = normalizePropertySchema({
       objectName: OBJECT_NAME,
       propertyName: PROPERTY_NAME,
@@ -979,7 +981,9 @@ function itThrowsWhenNormalizing(
   errMessage: string,
   { isPrimaryKey } = { isPrimaryKey: false },
 ): void {
-  it(`throws when normalizing ${inspect(input, { compact: true, breakLength: Number.MAX_SAFE_INTEGER })} ${isPrimaryKey ? "(primary key)" : ""}`, () => {
+  it(`throws when normalizing ${inspect(input, { compact: true, breakLength: Number.MAX_SAFE_INTEGER })} ${
+    isPrimaryKey ? "(primary key)" : ""
+  }`, () => {
     const normalizeFn = () =>
       normalizePropertySchema({
         objectName: OBJECT_NAME,

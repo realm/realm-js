@@ -61,11 +61,11 @@ const PROXY_HANDLER: ProxyHandler<Dictionary> = {
     }
   },
   deleteProperty(target, prop) {
-    // We're intentionally not checking !Reflect.has(target, prop) below to allow deletes to propagage for any key
+    // We're intentionally not checking !Reflect.has(target, prop) below to allow deletes to propagate for any key
     if (typeof prop === "string") {
       const internal = target[INTERNAL];
       internal.tryErase(prop);
-      // We consider any key without a value as "deleteable", the same way `const foo = {}; delete foo.bar;` returns true
+      // We consider any key without a value as "deletable", the same way `const foo = {}; delete foo.bar;` returns true
       return true;
     } else {
       return false;
@@ -74,7 +74,6 @@ const PROXY_HANDLER: ProxyHandler<Dictionary> = {
   ownKeys(target) {
     const internal = target[INTERNAL];
     const result: (string | symbol)[] = Reflect.ownKeys(target);
-    // assert(internal.isValid, "Expected a valid dicitonary");
     const keys = internal.keys.snapshot();
     for (let i = 0; i < keys.size(); i++) {
       const key = keys.getAny(i);
@@ -134,7 +133,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
           });
         } catch (err) {
           // Scheduling a throw on the event loop,
-          // since throwing synchroniously here would result in an abort in the calling C++
+          // since throwing synchronously here would result in an abort in the calling C++
           setImmediate(() => {
             throw err;
           });
@@ -269,9 +268,9 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
   }
 
   /**
-   * The plain object representation of the Dictionary for JSON serialization.
-   * Use circular JSON serialization libraries such as {@link https://www.npmjs.com/package/@ungap/structured-clone @ungap/structured-clone}
-   * and {@link https://www.npmjs.com/package/flatted flatted} for stringifying Realm entities that have circular structures.
+   * The plain object representation for JSON serialization.
+   * Use circular JSON serialization libraries such as [@ungap/structured-clone](https://www.npmjs.com/package/@ungap/structured-clone)
+   * and [flatted](https://www.npmjs.com/package/flatted) to stringify Realm entities that have circular structures.
    * @returns A plain object.
    **/
   // @ts-expect-error We're exposing methods in the users value namespace

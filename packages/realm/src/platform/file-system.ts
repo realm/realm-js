@@ -48,17 +48,17 @@ export const fs: FileSystemType = {
     throw new Error("Not supported on this platform");
   },
   exists() {
-    throw new Error("Not supported on this playform");
+    throw new Error("Not supported on this platform");
   },
   copyBundledRealmFiles() {
-    throw new Error("Not supported on this playform");
+    throw new Error("Not supported on this platform");
   },
   removeDirectory() {
     throw new Error("Not supported on this platform");
   },
   /*
   readDirectory() {
-    throw new Error("Not supported on this playform");
+    throw new Error("Not supported on this platform");
   },
   */
   removeRealmFilesFromDirectory() {

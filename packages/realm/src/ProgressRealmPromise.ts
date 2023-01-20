@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Helpers } from "./binding";
 import {
   Configuration,
   OpenRealmBehaviorType,
@@ -31,27 +30,27 @@ import {
   validateConfiguration,
 } from "./internal";
 
-type OpenBehaviour = {
-  openBehaviour: OpenRealmBehaviorType;
+type OpenBehavior = {
+  openBehavior: OpenRealmBehaviorType;
   timeOut?: number;
   timeOutBehavior?: OpenRealmTimeOutBehavior;
 };
 
-function determineBehaviour(config: Configuration): OpenBehaviour {
+function determineBehavior(config: Configuration): OpenBehavior {
   const { sync } = config;
   if (!sync) {
-    return { openBehaviour: OpenRealmBehaviorType.OpenImmediately };
+    return { openBehavior: OpenRealmBehaviorType.OpenImmediately };
   } else {
     const configProperty = Realm.exists(config) ? "existingRealmFileBehavior" : "newRealmFileBehavior";
-    const configBehaviour = sync[configProperty];
-    if (configBehaviour) {
-      const { type, timeOut, timeOutBehavior } = configBehaviour;
+    const configBehavior = sync[configProperty];
+    if (configBehavior) {
+      const { type, timeOut, timeOutBehavior } = configBehavior;
       if (typeof timeOut !== "undefined") {
         assert.number(timeOut, "timeOut");
       }
-      return { openBehaviour: type, timeOut, timeOutBehavior };
+      return { openBehavior: type, timeOut, timeOutBehavior };
     } else {
-      return { openBehaviour: OpenRealmBehaviorType.DownloadBeforeOpen }; // Default is downloadBeforeOpen
+      return { openBehavior: OpenRealmBehaviorType.DownloadBeforeOpen }; // Default is downloadBeforeOpen
     }
   }
 }
@@ -70,11 +69,11 @@ export class ProgressRealmPromise implements Promise<Realm> {
   constructor(config: Configuration) {
     try {
       validateConfiguration(config);
-      const { openBehaviour, timeOut, timeOutBehavior } = determineBehaviour(config);
-      if (openBehaviour === OpenRealmBehaviorType.OpenImmediately) {
+      const { openBehavior: openBehavior, timeOut, timeOutBehavior } = determineBehavior(config);
+      if (openBehavior === OpenRealmBehaviorType.OpenImmediately) {
         const realm = new Realm(config);
         this.handle.resolve(realm);
-      } else if (openBehaviour === OpenRealmBehaviorType.DownloadBeforeOpen) {
+      } else if (openBehavior === OpenRealmBehaviorType.DownloadBeforeOpen) {
         const { bindingConfig } = Realm.transformConfig(config);
         this.task = binding.Realm.getSynchronizedRealm(bindingConfig);
         this.task
@@ -123,7 +122,7 @@ export class ProgressRealmPromise implements Promise<Realm> {
           }
         }
       } else {
-        throw new Error(`Unexpected open behaviour '${openBehaviour}'`);
+        throw new Error(`Unexpected open behavior '${openBehavior}'`);
       }
     } catch (err) {
       this.handle.reject(err);

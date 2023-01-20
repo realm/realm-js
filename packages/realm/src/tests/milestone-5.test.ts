@@ -158,7 +158,8 @@ const TESTS: PropertySuite[] = [
   ],
   ["bool", [true, false]],
   ["string", ["", "Hello!", "💣💥"]],
-  [ "data",
+  [
+    "data",
     [
       [createArrayBuffer, testArrayBuffer],
       [createEmptyArrayBuffer, testArrayBuffer],

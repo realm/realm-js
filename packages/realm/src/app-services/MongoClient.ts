@@ -16,11 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Document, EJSON } from "bson";
+import { Document } from "bson";
 import { DefaultFunctionsFactory, User, binding, createFactory } from "../internal";
 
 /**
- * Options passed when finding a signle document
+ * Options passed when finding a single document
  */
 type FindOneOptions = {
   /**
@@ -46,7 +46,7 @@ type FindOptions = FindOneOptions & {
 };
 
 /**
- * Options passed when finding and modifying a signle document
+ * Options passed when finding and modifying a single document
  */
 type FindOneAndModifyOptions = FindOneOptions & {
   /**

@@ -169,7 +169,7 @@ function fromBindingPropertyTypeName(
     if (!objectType) {
       throw new Error("Expected property with 'object' type to declare an objectType");
     }
-    // TODO: Decide if this change is resonable
+    // TODO: Decide if this change is reasonable
     return { type: "object", objectType, optional: true }; // Implicitly nullable
   } else if (type === PropertyType.LinkingObjects) {
     if (!objectType) {
