@@ -17,28 +17,36 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { importAppBefore, openRealmBefore } from "../../hooks";
-
-const conf = {
-  id: "smurf",
-  baseUrl: "http://localhost:9999",
-  timeout: 500,
-  app: {
-    name: "realm-sdk-integration-tests",
-    version: "42",
-  },
-};
+import { importAppBefore } from "../../hooks";
+import { deleteApp, importApp } from "../../utils/import-app";
 
 describe("App", () => {
-  describe("instantiation", () => {
-    it("from config", function () {
-      const app = new Realm.App(conf);
+  describe("instantiation", function () {
+    type ConfigContext = {
+      appConfig: { appId: string; baseUrl: string };
+      conf: { id: string; baseUrl: string };
+    } & Mocha.Context;
+
+    before(async function (this: ConfigContext) {
+      // this.appConfig = await importApp("with-db");
+      // console.log(this.appConfig);
+      this.conf = { id: "foo", baseUrl: "http://localhost:9090" };
+    });
+
+    afterEach(async () => {
+      Realm.clearTestState();
+    });
+    after(async function (this: ConfigContext) {
+      // await deleteApp(this.appConfig.appId);
+    });
+    it("from config", function (this: ConfigContext) {
+      const app = new Realm.App(this.conf.id);
       expect(app).instanceOf(Realm.App);
     });
-    it("from string", function () {
-      const app = new Realm.App(conf.id);
+    it("from string", function (this: ConfigContext) {
+      const app = new Realm.App(this.conf.id);
       expect(app).instanceOf(Realm.App);
-      expect(app.id).equals(conf.id);
+      expect(app.id).equals(this.conf.id);
     });
     it("throws on undefined app", function () {
       //@ts-expect-error creating an app without a config should fail
@@ -49,13 +57,17 @@ describe("App", () => {
       expect(() => new Realm.App(1234)).throws(Error, "Expected either a configuration object or an app id string.");
     });
     it("throws on invalid server", function () {
-      const app = new Realm.App(conf);
+      const invalid_server_conf = { id: "smurf", baseUrl: "http://localhost:9999" };
+      const app = new Realm.App(invalid_server_conf);
+
       const credentials = Realm.Credentials.anonymous();
+      console.log(credentials);
+      console.log(app.logIn);
       return new Promise<void>((resolve, reject) => {
         return app
           .logIn(credentials)
           .then((user) => {
-            return reject(`Able to log in with config ${JSON.stringify(conf)}`);
+            return reject(`Able to log in with config ${JSON.stringify(invalid_server_conf)}`);
           })
           .catch((err) => {
             expect(err.message).contains(
@@ -65,13 +77,19 @@ describe("App", () => {
           });
       });
     });
-  });
-  describe("with valid app", () => {
-    importAppBefore("with-db");
-    openRealmBefore({
-      schema: [],
+    it("throws on non existing app", async function () {
+      const app = new Realm.App({ id: "smurf", baseUrl: this.conf.baseUrl });
+      const credentials = Realm.Credentials.anonymous();
+      let failed = false;
+      await app.logIn(credentials).catch((err) => {
+        failed = true;
+        expect(err.message).equals("cannot find app using Client App ID 'smurf'");
+      });
+      expect(failed).to.be.true;
     });
-
+  });
+  describe("with valid app", async () => {
+    importAppBefore("with-db");
     it("logins successfully ", async function (this: Mocha.Context & AppContext & RealmContext) {
       expect(this.app).instanceOf(Realm.App);
       const credentials = Realm.Credentials.anonymous();
@@ -168,6 +186,20 @@ describe("App", () => {
   });
   describe("with sync", () => {
     importAppBefore("with-db");
-    //TODO
+    it("migration while sync is enabled throws", async function (this: Mocha.Context & AppContext & RealmContext) {
+      const user = await this.app.logIn(Realm.Credentials.anonymous());
+      const config = {
+        schema: [schemas.TestObject],
+        sync: { user, partitionValue: '"Lolo"' },
+        deleteRealmIfMigrationNeeded: true,
+      };
+      expect();
+
+      TestCase.assertThrows(function () {
+        new Realm(config);
+      }, "Cannot set 'deleteRealmIfMigrationNeeded' when sync is enabled ('sync.partitionValue' is set).");
+
+      await user.logOut();
+    });
   });
 });
