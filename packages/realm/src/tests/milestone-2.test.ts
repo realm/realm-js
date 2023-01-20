@@ -85,9 +85,9 @@ describe("Milestone #2", () => {
     it("returns a spreadable object", function (this: RealmContext) {
       const alice = this.realm.objectForPrimaryKey<PersonWithFriend>("Person", "Alice");
       expect(alice.keys()).deep.equals(["name", "bestFriend"]);
-      const spreaded = { ...alice };
-      expect(Object.keys(spreaded)).deep.equals(alice.keys());
-      expect(spreaded.name).deep.equals(alice.name);
+      const spread = { ...alice };
+      expect(Object.keys(spread)).deep.equals(alice.keys());
+      expect(spread.name).deep.equals(alice.name);
     });
   });
 
@@ -260,8 +260,8 @@ describe("Milestone #2", () => {
       const persons = this.realm.objects("Person");
       expect(persons).instanceOf(Results);
       expect(persons.length).greaterThan(0);
-      const spreaded = { ...persons };
-      expect(Object.keys(spreaded));
+      const spread = { ...persons };
+      expect(Object.keys(spread));
     });
   });
 });

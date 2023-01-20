@@ -75,7 +75,7 @@ export type TypeOptions = {
   getClassHelpers(nameOrTableKey: string | binding.TableKey): ClassHelpers;
 };
 
-// TODO: Consider testing for expected object instance types and throw something simular to the legacy SDK:
+// TODO: Consider testing for expected object instance types and throw something similar to the legacy SDK:
 // "Only Realm instances are supported." (which should probably have been "Realm.Object")
 // instead of relying on the binding to throw.
 export function mixedToBinding(realm: binding.Realm, value: unknown): binding.MixedArg {

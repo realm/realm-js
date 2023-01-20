@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { BSON, assert, binding } from "../internal";
+import { binding } from "../internal";
 /**
  * Authentication provider where users identify using an API-key.
  */

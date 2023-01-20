@@ -95,10 +95,10 @@ export class User<
   private cachedProfile: UserProfileDataType | undefined;
 
   private listeners = new Listeners<UserChangeCallback, UserListenerToken>({
-    register: (callback: () => void): UserListenerToken => {
+    add: (callback: () => void): UserListenerToken => {
       return this.internal.subscribe(callback);
     },
-    unregister: (token) => {
+    remove: (token) => {
       this.internal.unsubscribe(token);
     },
   });
@@ -236,7 +236,7 @@ export class User<
    * @param credentials The credentials to use when linking.
    */
   async linkCredentials(credentials: Credentials) {
-    throw new Error("Not yet implemented");
+    await this.app.internal.linkUser(this.internal, credentials.internal);
   }
 
   /**

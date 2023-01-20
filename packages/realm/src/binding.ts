@@ -67,5 +67,6 @@ export function stringToObjKey(input: string): ObjKey {
 }
 
 export function isEmptyObjKey(objKey: ObjKey) {
+  // This relies on the JS representation of an ObjKey being a bigint
   return (objKey as unknown as bigint) === -1n;
 }

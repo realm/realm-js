@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { CallbackRegistrator, IllegalConstructorError, Listeners, assert, binding } from "./internal";
+import { CallbackAdder, IllegalConstructorError, Listeners, assert, binding } from "./internal";
 
 /**
  * Abstract base class containing methods shared by Realm **List**, **Dictionary**, and **Results**.
@@ -46,13 +46,13 @@ export abstract class Collection<
   private listeners: Listeners<ChangeCallbackType, binding.NotificationToken>;
 
   /** @internal */
-  constructor(registerListener: CallbackRegistrator<ChangeCallbackType, binding.NotificationToken>) {
+  constructor(addListener: CallbackAdder<ChangeCallbackType, binding.NotificationToken>) {
     if (arguments.length === 0) {
       throw new IllegalConstructorError("Collection");
     }
     this.listeners = new Listeners<ChangeCallbackType, binding.NotificationToken>({
-      register: registerListener,
-      unregister(token) {
+      add: addListener,
+      remove(token) {
         token.unregister();
       },
     });
