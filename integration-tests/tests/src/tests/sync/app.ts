@@ -16,49 +16,96 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { ObjectId } from "bson";
 import { expect } from "chai";
+import { List } from "realm";
 import { importAppBefore } from "../../hooks";
-import { deleteApp, importApp } from "../../utils/import-app";
+import { genPartition } from "../../utils/generators";
+import { TemplateReplacements } from "../../utils/import-app";
+
+const TestObjectSchema: Realm.ObjectSchema = {
+  name: "TestObject",
+  properties: {
+    doubleCol: "double",
+  },
+};
+
+const PersonForSyncSchema: Realm.ObjectSchema = {
+  name: "Person",
+  primaryKey: "_id",
+  properties: {
+    _id: "objectId",
+    age: "int",
+    dogs: "Dog[]",
+    firstName: "string",
+    lastName: "string",
+    realm_id: "string?",
+  },
+};
+
+const DogForSyncSchema: Realm.ObjectSchema = {
+  name: "Dog",
+  primaryKey: "_id",
+  properties: {
+    _id: "objectId",
+    breed: "string?",
+    name: "string",
+    realm_id: "string?",
+  },
+};
+
+interface IPersonForSyncSchema {
+  _id: ObjectId;
+  age: number;
+  dogs: IDogForSyncSchema[];
+  firstName: string;
+  lastName: string;
+  realm_id: string | undefined;
+}
+
+interface IDogForSyncSchema {
+  _id: ObjectId;
+  breed: string | undefined;
+  name: string;
+  realm_id: string | undefined;
+}
 
 describe("App", () => {
   describe("instantiation", function () {
     type ConfigContext = {
-      appConfig: { appId: string; baseUrl: string };
       conf: { id: string; baseUrl: string };
     } & Mocha.Context;
-
-    before(async function (this: ConfigContext) {
-      // this.appConfig = await importApp("with-db");
-      // console.log(this.appConfig);
-      this.conf = { id: "foo", baseUrl: "http://localhost:9090" };
-    });
-
     afterEach(async () => {
       Realm.clearTestState();
     });
-    after(async function (this: ConfigContext) {
-      // await deleteApp(this.appConfig.appId);
+    before(async function (this: ConfigContext) {
+      this.conf = { id: "smurf", baseUrl: "http://localhost:9090" };
     });
+
     it("from config", function (this: ConfigContext) {
-      const app = new Realm.App(this.conf.id);
+      const app = new Realm.App(this.conf);
       expect(app).instanceOf(Realm.App);
     });
+
     it("from string", function (this: ConfigContext) {
       const app = new Realm.App(this.conf.id);
       expect(app).instanceOf(Realm.App);
       expect(app.id).equals(this.conf.id);
     });
+
     it("throws on undefined app", function () {
       //@ts-expect-error creating an app without a config should fail
       expect(() => new Realm.App()).throws(Error, "Invalid arguments: 1 expected, but 0 supplied.");
     });
-    it("throws on undefined invalid input", function () {
+
+    it("throws on invalid input", function () {
       //@ts-expect-error creating an app with an invalid config should fail
       expect(() => new Realm.App(1234)).throws(Error, "Expected either a configuration object or an app id string.");
     });
-    it("throws on invalid server", function () {
-      const invalid_server_conf = { id: "smurf", baseUrl: "http://localhost:9999" };
-      const app = new Realm.App(invalid_server_conf);
+
+    it("throws on invalid baseURL", function () {
+      const invalid_url_conf = { id: "smurf", baseUrl: "http://localhost:9999" };
+      const app = new Realm.App(invalid_url_conf);
 
       const credentials = Realm.Credentials.anonymous();
       console.log(credentials);
@@ -67,7 +114,7 @@ describe("App", () => {
         return app
           .logIn(credentials)
           .then((user) => {
-            return reject(`Able to log in with config ${JSON.stringify(invalid_server_conf)}`);
+            return reject(`Able to log in with config ${JSON.stringify(invalid_url_conf)}`);
           })
           .catch((err) => {
             expect(err.message).contains(
@@ -77,8 +124,9 @@ describe("App", () => {
           });
       });
     });
+
     it("throws on non existing app", async function () {
-      const app = new Realm.App({ id: "smurf", baseUrl: this.conf.baseUrl });
+      const app = new Realm.App(this.conf);
       const credentials = Realm.Credentials.anonymous();
       let failed = false;
       await app.logIn(credentials).catch((err) => {
@@ -88,8 +136,10 @@ describe("App", () => {
       expect(failed).to.be.true;
     });
   });
+
   describe("with valid app", async () => {
     importAppBefore("with-db");
+
     it("logins successfully ", async function (this: Mocha.Context & AppContext & RealmContext) {
       expect(this.app).instanceOf(Realm.App);
       const credentials = Realm.Credentials.anonymous();
@@ -99,6 +149,7 @@ describe("App", () => {
       expect(user.providerType).equals("anon-user");
       await user.logOut();
     });
+
     it("throws on login with non existing user ", async function (this: Mocha.Context & AppContext & RealmContext) {
       expect(this.app).instanceOf(Realm.App);
       const credentials = Realm.Credentials.emailPassword("me", "secret");
@@ -111,6 +162,7 @@ describe("App", () => {
       expect(user).to.be.undefined;
       expect(didFail).equals(true);
     });
+
     it("logout and allUsers works", async function (this: Mocha.Context & AppContext & RealmContext) {
       const credentials = Realm.Credentials.anonymous();
       let users = this.app.allUsers;
@@ -124,6 +176,7 @@ describe("App", () => {
       users = this.app.allUsers;
       expect(Object.keys(users).length).equals(nUsers);
     });
+
     it("currentUser works", async function (this: Mocha.Context & AppContext & RealmContext) {
       expect(this.app.currentUser).to.be.null;
 
@@ -136,6 +189,7 @@ describe("App", () => {
       await user1.logOut();
       expect(this.app.currentUser).to.be.null;
     });
+
     it("changeListeners works", async function (this: Mocha.Context & AppContext & RealmContext) {
       let eventListenerCalls = 0;
       expect(this.app).instanceOf(Realm.App);
@@ -184,21 +238,84 @@ describe("App", () => {
       expect(eventListener2Calls).equals(1);
     });
   });
+
   describe("with sync", () => {
     importAppBefore("with-db");
+
     it("migration while sync is enabled throws", async function (this: Mocha.Context & AppContext & RealmContext) {
       const user = await this.app.logIn(Realm.Credentials.anonymous());
       const config = {
-        schema: [schemas.TestObject],
+        schema: [TestObjectSchema],
         sync: { user, partitionValue: '"Lolo"' },
         deleteRealmIfMigrationNeeded: true,
       };
-      expect();
+      //@ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
+      expect(() => new Realm(config)).throws(
+        "Cannot set 'deleteRealmIfMigrationNeeded' when sync is enabled ('sync.partitionValue' is set).",
+      );
+      await user.logOut();
+    });
+    it("MongoDB Realm sync works", async function (this: Mocha.Context & AppContext & RealmContext) {
+      const dogNames = ["King", "Rex"]; // must be sorted
+      let nCalls = 0;
 
-      TestCase.assertThrows(function () {
-        new Realm(config);
-      }, "Cannot set 'deleteRealmIfMigrationNeeded' when sync is enabled ('sync.partitionValue' is set).");
+      const credentials = Realm.Credentials.anonymous();
+      const user = await this.app.logIn(credentials);
+      const partition = genPartition();
+      const realmConfig = {
+        schema: [PersonForSyncSchema, DogForSyncSchema],
+        shouldCompact: () => {
+          nCalls++;
+          return true;
+        },
+        sync: {
+          user: user,
+          partitionValue: partition,
+          _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
+        },
+      };
+      //@ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
+      Realm.deleteFile(realmConfig);
+      //@ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
+      const realm = await Realm.open(realmConfig);
+      expect(nCalls).equals(1);
+      realm.write(() => {
+        const tmpDogs: IDogForSyncSchema[] = [];
+        dogNames.forEach((n) => {
+          const dog = realm.create<IDogForSyncSchema>(DogForSyncSchema.name, { _id: new ObjectId(), name: n });
+          tmpDogs.push(dog);
+          return tmpDogs;
+        });
+        realm.create(PersonForSyncSchema.name, {
+          _id: new ObjectId(),
+          age: 12,
+          firstName: "John",
+          lastName: "Smith",
+          dogs: tmpDogs,
+        });
+      });
 
+      await realm.syncSession?.uploadAllLocalChanges();
+      expect(realm.objects("Dog").length).equals(2);
+      realm.close();
+
+      //@ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
+      Realm.deleteFile(realmConfig);
+
+      //@ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
+      const realm2 = await Realm.open(realmConfig);
+      expect(nCalls).equals(2);
+      await realm2.syncSession?.downloadAllServerChanges();
+
+      const dogs = realm2.objects<IDogForSyncSchema>(DogForSyncSchema.name).sorted("name");
+      expect(dogs.length).equals(dogNames.length);
+      for (let i = 0; i < dogNames.length; i++) {
+        expect(dogs[i].name).equals(dogNames[i]);
+      }
+      const persons = realm2.objects<IPersonForSyncSchema>(PersonForSyncSchema.name);
+      expect(persons.length).equals(1);
+      expect(persons[0].dogs.length).equals(dogNames.length);
+      realm2.close();
       await user.logOut();
     });
   });
