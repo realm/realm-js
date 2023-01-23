@@ -72,16 +72,14 @@ describe("Sets", () => {
     it("should add and delete operations", () => {
       const realm = new Realm({ schema: [teamSchema] });
 
-      realm.write(() => {
+      const team = realm.write(() => {
         // insert two people
-        realm.create(teamSchema.name, {
+        return realm.create(teamSchema.name, {
           names: ["John", "Sue"],
         });
       });
 
-      let teams = realm.objects<Team>(teamSchema.name);
-      expect(teams.length).equals(1, "There should be one team");
-      expect(teams[0].names.size).equals(2, "Team Set size should be 2");
+      expect(team.names.size).equals(2, "Team Set size should be 2");
 
       // add another three names
       realm.write(() => {
