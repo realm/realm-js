@@ -629,14 +629,10 @@ typeConverters["uuid?"] = typeConverters["uuid"];
 function runQuerySuite(suite: TestCase) {
   //@ts-expect-error This uses non-public schema definition.
   const realm = new Realm({ schema: suite.schema });
-  const objects = suite.objects.map(function (obj) {
-    return { type: obj.type, value: convertValue(obj.value, suite.schema, obj.type) };
-  });
-
-  realm.write(function () {
-    for (let i = 0; i < objects.length; i++) {
-      objects[i] = realm.create(objects[i].type, objects[i].value);
-    }
+  const objects = realm.write(() => {
+    return suite.objects.map((obj) => {
+      return realm.create(obj.type, convertValue(obj.value, suite.schema, obj.type));
+    });
   });
 
   for (const index in suite.tests) {
