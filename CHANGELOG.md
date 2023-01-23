@@ -1,25 +1,4 @@
-## vNext (TBD)
-
-### Enhancements
-* None
-
-### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
-
-### Compatibility
-* React Native >= v0.70.0
-* Atlas App Services.
-* Realm Studio v13.0.0.
-* File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
-
-### Internal
-* Enable tests for notifications on dictionary.
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
-
-## 11.3.2 (2023-01-16)
+## 11.4.0 (2023-01-23)
 
 ### Fixed
 * Fix no notification for write transaction that contains only change to backlink property. ([realm/realm-core#4994](https://github.com/realm/realm-core/issues/4994), since v10.8.0)
@@ -38,6 +17,9 @@
 | x86          |     9760312 |    10905472 |
 | arm64-v8a    |     8883176 |     9547032 |
 | x86_64       |     9879208 |    10574368 |
+
+## 11.3.2 (2023-01-16)
+## DEPRECATED: Please use 11.3.1 or 11.4.0
 
 ## 11.3.1 (2022-12-07)
 
