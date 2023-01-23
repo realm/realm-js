@@ -45,15 +45,11 @@ export interface SubscriptionOptions {
  */
 export class MutableSubscriptionSet extends BaseSubscriptionSet {
   /**@internal */
-  protected internal: binding.MutableSyncSubscriptionSet;
-
-  /**@internal */
-  constructor(internal: binding.MutableSyncSubscriptionSet) {
-    // This class overrides the BaseSubscriptionSet's `internal` field in
-    // order to be able to write `this.internal.someOwnMember` rather than
-    // `(this.internal as binding.MutableSyncSubscriptionSet).someOwnMember`.
+  constructor(/**@internal */ protected internal: binding.MutableSyncSubscriptionSet) {
+    // This class overrides the BaseSubscriptionSet's `internal` field (by having
+    // `protected internal` as the param) in order to be able to write `this.internal.someOwnMember`
+    // rather than `(this.internal as binding.MutableSyncSubscriptionSet).someOwnMember`.
     super(internal);
-    this.internal = internal;
   }
 
   /**

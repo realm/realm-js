@@ -38,7 +38,7 @@ import {
  */
 export class SubscriptionSet extends BaseSubscriptionSet {
   /**@internal */
-  constructor(private realm: Realm, internal: binding.SyncSubscriptionSet) {
+  constructor(/**@internal */ private realm: Realm, /**@internal */ internal: binding.SyncSubscriptionSet) {
     super(internal);
   }
 

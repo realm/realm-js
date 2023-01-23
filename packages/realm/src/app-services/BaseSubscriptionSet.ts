@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { MutableSubscriptionSet, Realm, Subscription, assert, binding } from "../internal";
+import { MutableSubscriptionSet, Realm, Subscription, SubscriptionSet, assert, binding } from "../internal";
 
 /**
  * Enum representing the state of a {@link SubscriptionSet}.
@@ -98,11 +98,7 @@ export abstract class BaseSubscriptionSet {
   readonly [n: number]: Subscription;
 
   /**@internal */
-  protected internal: binding.SyncSubscriptionSet;
-
-  /**@internal */
-  protected constructor(internal: binding.SyncSubscriptionSet) {
-    this.internal = internal;
+  protected constructor(/**@internal */ protected internal: binding.SyncSubscriptionSet) {
     return new Proxy(this, PROXY_HANDLER);
   }
 
@@ -136,7 +132,7 @@ export abstract class BaseSubscriptionSet {
       case 0: // Uncommitted
       case 1: // Pending
       case 2: // Bootstrapping
-      case 6: // AwaitingMark   // TODO: This was not used in the previous implementation. Keep?
+      case 6: // AwaitingMark
         return SubscriptionsState.Pending;
       case 3:
         return SubscriptionsState.Complete;
@@ -145,7 +141,7 @@ export abstract class BaseSubscriptionSet {
       case 5:
         return SubscriptionsState.Superseded;
       default:
-        throw new Error(`Unsupported SubscriptionsState value: ${stateValue}`); // TODO: How to handle?
+        throw new Error(`Unsupported SubscriptionsState value: ${stateValue}`);
     }
   }
 

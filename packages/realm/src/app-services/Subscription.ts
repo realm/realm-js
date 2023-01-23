@@ -27,10 +27,7 @@ import { binding } from "../internal";
  */
 export class Subscription {
   /**@internal */
-  public internal: binding.SyncSubscription;
-
-  /**@internal */
-  constructor(internal: binding.SyncSubscription) {
+  constructor(/**@internal */ public internal: binding.SyncSubscription) {
     this.internal = internal;
   }
 
