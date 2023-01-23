@@ -78,7 +78,7 @@ async function removeExistingUsers(app: Realm.App) {
   });
 }
 
-describe("User", () => {
+describe.skipIf(environment.missingServer, "User", () => {
   importAppBefore("with-db");
   describe("email password", () => {
     it("login without username throws", async function (this: Mocha.Context & AppContext & RealmContext) {
