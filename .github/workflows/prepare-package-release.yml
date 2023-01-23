@@ -1,0 +1,27 @@
+name: Prepare Package Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Use this to provide a version, instead of deriving it from the changelog.
+        required: false
+        type: string
+      package:
+        description: 'Package'
+        required: true
+        default: 'realm'
+        type: choice
+        options:
+        - '@realm/babel-plugin'
+        - '@realm/common'
+        - '@realm/network-transport'
+        - '@realm/react'
+        - '@realm/tools'
+        - '@realm/web'
+
+jobs:
+  prepare-release:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Preparing release for ${{inputs.package}}"
