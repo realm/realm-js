@@ -24,7 +24,7 @@ interface SchemaWithPropertyArray extends Omit<Realm.ObjectSchema, "properties">
 }
 
 type AssertLengthTest = [
-  TestType: string,
+  TestType: "AssertLength",
   ObjectType: string,
   ExpectedLength: number,
   Query: string,
@@ -32,7 +32,7 @@ type AssertLengthTest = [
 ];
 
 type AssertExceptionTest = [
-  TestType: string,
+  TestType: "AssertException",
   ObjectType: string,
   ExpectedException: string,
   Query: string,
@@ -40,7 +40,7 @@ type AssertExceptionTest = [
 ];
 
 type AssertResultValuesTest = [
-  TestType: string,
+  TestType: "AssertResultValues",
   ObjectType: string,
   ExpectedValues: any[],
   Query: string,
@@ -635,12 +635,12 @@ function runQuerySuite(suite: TestCase) {
     });
   });
 
-  for (const index in suite.tests) {
-    const [testType, objectType] = suite.tests[index];
+  for (const test of suite.tests) {
+    const [testType, objectType, ...rest] = test;
 
     switch (testType) {
       case "AssertLength": {
-        const [, , expectedLength, queryString, ...queryArgs] = suite.tests[index] as AssertLengthTest;
+        const [, , expectedLength, queryString, ...queryArgs] = suite.tests[index];
 
         // Array arguments reference a specific field of an object at a specifc index
         // in the objects array. Not a good way to do this, just supporting legacy behavior
