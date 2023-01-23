@@ -39,7 +39,8 @@
   "dependencies": {
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "@realm/network-transport": "^0.7.2"
+    "@realm/network-transport": "^0.7.2",
+    "jsrsasign": "^10.6.1"
   },
   "files": [
     "/src"
