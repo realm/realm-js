@@ -39,7 +39,7 @@ type OpenBehavior = {
 
 function determineBehavior(config: Configuration, realmExists: boolean): OpenBehavior {
   const { sync, openSyncedRealmLocally } = config;
-  if (openSyncedRealmLocally || !sync) {
+  if (!sync || openSyncedRealmLocally) {
     return { openBehavior: OpenRealmBehaviorType.OpenImmediately };
   } else {
     const configProperty = realmExists ? "existingRealmFileBehavior" : "newRealmFileBehavior";
@@ -89,7 +89,7 @@ export class ProgressRealmPromise implements Promise<Realm> {
               // Do not call `Realm.exists()` here in case the realm has been opened by this point in time.
               realmExists,
             });
-            if (!config.openSyncedRealmLocally && config.sync?.flexible) {
+            if (config.sync?.flexible && !config.openSyncedRealmLocally) {
               const { subscriptions } = realm;
               if (subscriptions.state === SubscriptionsState.Pending) {
                 await subscriptions.waitForSynchronization();

@@ -303,7 +303,7 @@ export class Realm {
   }
 
   private static determinePath(config: Configuration): string {
-    if (config.path || config.openSyncedRealmLocally || !config.sync) {
+    if (config.path || !config.sync || config.openSyncedRealmLocally) {
       return Realm.normalizePath(config.path);
     } else {
       // TODO: Determine if it's okay to get the syncManager through the app instead of the user:
@@ -457,7 +457,7 @@ export class Realm {
     // Calling `Realm.exists()` here is necessary to capture the correct value when
     // the constructor was called since the realm may be opened during this construction.
     // This is needed when deciding whether to update initial subscriptions.
-    const realmExists = Realm.exists(config);
+    const realmExists = internalConfig.realmExists !== false && Realm.exists(config);
     if (arg !== null) {
       assert(!internalConfig.schemaExtras, "Expected either a configuration or schemaExtras");
       validateConfiguration(config);
@@ -508,9 +508,9 @@ export class Realm {
     this.syncSession = syncSession ? new SyncSession(syncSession) : null;
 
     const initialSubscriptions = config.sync?.initialSubscriptions;
-    if (!config.openSyncedRealmLocally && initialSubscriptions) {
+    if (initialSubscriptions && !config.openSyncedRealmLocally) {
       // Do not call `Realm.exists()` here in case the realm has been opened by this point in time.
-      this.handleInitialSubscriptions(initialSubscriptions, internalConfig.realmExists && realmExists);
+      this.handleInitialSubscriptions(initialSubscriptions, realmExists);
     }
   }
 

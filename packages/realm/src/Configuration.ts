@@ -240,11 +240,11 @@ export function validateConfiguration(config: unknown): asserts config is Config
     assert(!onMigration, "The realm configuration options 'onMigration' and 'sync' cannot both be defined.");
     validateSyncConfiguration(sync);
   }
-  // Internal use
   if (openSyncedRealmLocally !== undefined) {
+    // Internal use
     assert(
       openSyncedRealmLocally === true,
-      "'openSyncedRealmLocally' on realm configuration is only used internally and must be `true` if defined.",
+      "'openSyncedRealmLocally' on realm configuration is only used internally and must be true if defined.",
     );
   }
   if (shouldCompact !== undefined) {
