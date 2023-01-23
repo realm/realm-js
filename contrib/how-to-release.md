@@ -11,6 +11,7 @@ The procedure is:
     - Verify that all fixes are linked to the associated pull request.
     - If the release upgrades `realm-core`, review the `realm-core` release notes and copy over any relevant notes (edited to be JS-specific if appropriate) into our `CHANGELOG`.
     - Make sure the "Breaking Changes" and "Enhancements" sections are present if appropriate. These will be used to set the new version number, following [semantic versioning](https://semver.org/).
+    - NOTE: If the new version requires an update to React Native, then make sure it is at least a minor release, as to not unintentionally break realm for current users.
 - If you made changes: add, commit, and push the changes to the changelog:
     - `git add CHANGELOG.md`
     - `git commit -m "Reviewed changelog"`
