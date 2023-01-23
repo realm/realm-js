@@ -622,8 +622,8 @@ function runQuerySuite(suite: TestCase) {
       case "AssertLength": {
         const [, , expectedLength, queryString, ...queryArgs] = suite.tests[index];
 
-        // Array arguments reference a field in objects in the objects array
-        // Not a good way to do this, just supporting legacy behavior
+        // Array arguments reference a specific field of an object at a specifc index
+        // in the objects array. Not a good way to do this, just supporting legacy behavior
         if (Array.isArray(queryArgs[0])) {
           const [indexOfReferencedObject, referencedProperty] = queryArgs[0];
           //@ts-expect-error Expected to be a valid index.
