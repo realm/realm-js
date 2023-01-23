@@ -311,6 +311,11 @@ jobs:
       - name: Bootstrap lerna sub-packages
         run: npx lerna bootstrap --scope @realm/${{ matrix.variant.environment }}-tests --include-dependencies
 
+      - name: Install pods
+        if: ${{ matrix.variant.environment == 'react-native' && matrix.variant.os == 'ios'}}
+        working-directory: integration-tests/environments/${{ matrix.variant.environment }}
+        run: npx pod-install
+
       - name: Build tests
         run: npm run build --prefix integration-tests/tests
 
