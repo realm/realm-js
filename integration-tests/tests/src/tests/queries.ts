@@ -23,13 +23,37 @@ interface SchemaWithPropertyArray extends Omit<Realm.ObjectSchema, "properties">
   properties: { name: string; type: string; objectType?: string; optional?: boolean }[];
 }
 
+type AssertLengthTest = [
+  TestType: string,
+  ObjectType: string,
+  ExpectedLength: number,
+  Query: string,
+  ...QueryArgs: Array<any>
+];
+
+type AssertExceptionTest = [
+  TestType: string,
+  ObjectType: string,
+  ExpectedException: string,
+  Query: string,
+  ...QueryArgs: Array<any>
+];
+
+type AssertResultValuesTest = [
+  TestType: string,
+  ObjectType: string,
+  ExpectedValues: any[],
+  Query: string,
+  ...QueryArgs: Array<any>
+];
+
 interface TestCase {
   schema: SchemaWithPropertyArray[];
   objects: {
     type: string;
     value: any[];
   }[];
-  tests: [TestType: string, ObjectType: string, ...TestTypeArgs: Array<any>][];
+  tests: (AssertLengthTest | AssertExceptionTest | AssertResultValuesTest)[];
 }
 
 const SharedTestSuiteCases: Record<string, TestCase> = {
@@ -620,7 +644,7 @@ function runQuerySuite(suite: TestCase) {
 
     switch (testType) {
       case "AssertLength": {
-        const [, , expectedLength, queryString, ...queryArgs] = suite.tests[index];
+        const [, , expectedLength, queryString, ...queryArgs] = suite.tests[index] as AssertLengthTest;
 
         // Array arguments reference a specific field of an object at a specifc index
         // in the objects array. Not a good way to do this, just supporting legacy behavior
@@ -639,7 +663,7 @@ function runQuerySuite(suite: TestCase) {
       case "AssertResultValues": {
         // Run a query then compare whether the results are as expected by comparing
         // their primary keys with a given array of expected primary keys.
-        const [, , expectedResults, queryString, ...queryArgs] = suite.tests[index];
+        const [, , expectedResults, queryString, ...queryArgs] = suite.tests[index] as AssertResultValuesTest;
         let results = realm.objects<any>(objectType);
         results = results.filtered(queryString, ...queryArgs);
 
@@ -658,7 +682,7 @@ function runQuerySuite(suite: TestCase) {
         break;
       }
       case "AssertException": {
-        const [, , expectedException, queryString, ...queryArgs] = suite.tests[index];
+        const [, , expectedException, queryString, ...queryArgs] = suite.tests[index] as AssertExceptionTest;
         const results = realm.objects(objectType);
 
         expect(() => {
