@@ -56,6 +56,31 @@ interface TestCase {
   tests: (AssertLengthTest | AssertExceptionTest | AssertResultValuesTest)[];
 }
 
+/**
+ * TODO: These are legacy tests from the old JS tests.
+ * There is a test for every Realm type represented a field in this object,
+ * and the value is an object with the following fields:
+ * - schema: The schema for the object type to test
+ * - objects: The objects to insert into the Realm
+ * - tests: The tests to run on the objects, presented as an array "command":
+ *  It follows a general format:
+ *
+ *   [(Type of test), (Object type to test), (Test-specific argument), (Query to run), (Query arguments)]
+ *
+ *  Types of tests:
+ *  - AssertLength: Assert that the query returns the expected number of objects
+ *      Test-specific argument: The expected number of objects
+ *  - AssertException: Assert that the query throws the expected exception
+ *       Test-specific argument: The expected exception string to match
+ *  - AssertResultValues: Assert that the query returns the expected values
+ *       Test-specific argument: An array of the expected primary keys of the query results object
+ *
+ * Query arguments are optional, and can be provided as a single argument or as an array of arguments.
+ * Query arguments in format of an array, i.e. [2, "dateCol"] refer to the "dateCol" field of the second object
+ * in the objects array.
+ *
+ * This is all legacy code, and should be rewritten to fit the new test framework.
+ */
 const SharedTestSuiteCases: Record<string, TestCase> = {
   dateTests: {
     schema: [{ name: "DateObject", properties: [{ name: "dateCol", type: "date" }] }],
@@ -167,8 +192,8 @@ const SharedTestSuiteCases: Record<string, TestCase> = {
       ["AssertException", "FloatObject", "Unsupported comparison operator", "floatCol CONTAINS 1"],
       ["AssertException", "FloatObject", "Unsupported comparison operator", "floatCol ENDSWITH 1"],
 
-      ["Disabled", "AssertException", "FloatObject", "floatCol = 3.5e+38"],
-      ["Disabled", "AssertException", "FloatObject", "floatCol = -3.5e+38"],
+      // ["Disabled", "AssertException", "FloatObject", "floatCol = 3.5e+38"],
+      // ["Disabled", "AssertException", "FloatObject", "floatCol = -3.5e+38"],
     ],
   },
 
@@ -636,11 +661,11 @@ function runQuerySuite(suite: TestCase) {
   });
 
   for (const test of suite.tests) {
-    const [testType, objectType, ...rest] = test;
+    const [testType, objectType, commandArgument, queryString, ...queryArgs] = test;
 
     switch (testType) {
       case "AssertLength": {
-        const [, , expectedLength, queryString, ...queryArgs] = suite.tests[index];
+        const expectedLength = commandArgument;
 
         // Array arguments reference a specific field of an object at a specifc index
         // in the objects array. Not a good way to do this, just supporting legacy behavior
@@ -659,11 +684,11 @@ function runQuerySuite(suite: TestCase) {
       case "AssertResultValues": {
         // Run a query then compare whether the results are as expected by comparing
         // their primary keys with a given array of expected primary keys.
-        const [, , expectedResults, queryString, ...queryArgs] = suite.tests[index] as AssertResultValuesTest;
+        const expectedResultsArray = commandArgument;
         let results = realm.objects<any>(objectType);
         results = results.filtered(queryString, ...queryArgs);
 
-        expect(expectedResults.length).equals(results.length);
+        expect(expectedResultsArray.length).equals(results.length);
 
         const objSchema = suite.schema.find((el) => el.name == objectType);
         if (!objSchema) {
@@ -674,11 +699,11 @@ function runQuerySuite(suite: TestCase) {
           throw "Primary key required for object comparison";
         }
 
-        expect(expectedResults).to.deep.equal(results.map((el) => el[primary]));
+        expect(expectedResultsArray).to.deep.equal(results.map((el) => el[primary]));
         break;
       }
       case "AssertException": {
-        const [, , expectedException, queryString, ...queryArgs] = suite.tests[index] as AssertExceptionTest;
+        const expectedException = commandArgument;
         const results = realm.objects(objectType);
 
         expect(() => {
@@ -686,8 +711,6 @@ function runQuerySuite(suite: TestCase) {
         }).throws(expectedException, "Expected exception not thrown for query: " + JSON.stringify(queryArgs));
         break;
       }
-      case "Disabled":
-        break;
       default: {
         throw "Invalid query test '" + testType + "'";
       }
@@ -891,6 +914,10 @@ const PrimitiveSchema: Realm.ObjectSchema = {
   },
 };
 
+/**
+ * TODO: These are the newer tests which should be included when refactoring the migrated ones.
+ * During migration we should probably include them all as part of the same "describe" block.
+ */
 describe("Realm Query Language", () => {
   let realm: Realm;
   let persons: Realm.Results<IPerson>;
