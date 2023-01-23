@@ -74,7 +74,7 @@ describe("Sets", () => {
 
       const team = realm.write(() => {
         // insert two people
-        return realm.create(teamSchema.name, {
+        return realm.create<Team>(teamSchema.name, {
           names: ["John", "Sue"],
         });
       });
@@ -83,20 +83,16 @@ describe("Sets", () => {
 
       // add another three names
       realm.write(() => {
-        teams[0].names.add("Pernille").add("Magrethe").add("Wilbur");
+        team.names.add("Pernille").add("Magrethe").add("Wilbur");
       });
-      teams = realm.objects(teamSchema.name);
-      expect(teams.length).equals(1, "There should be one team.  We didn't add any");
-      expect(teams[0].names.size).equals(5, "Team Set size should be 5");
+      expect(team.names.size).equals(5, "Team Set size should be 5");
 
       // remove two names
       realm.write(() => {
-        teams[0].names.delete("John");
-        teams[0].names.delete("Sue");
+        team.names.delete("John");
+        team.names.delete("Sue");
       });
-      teams = realm.objects(teamSchema.name);
-      expect(teams.length).equals(1, "There should still be only one team");
-      expect(teams[0].names.size).equals(3, "Team Set size should be 3");
+      expect(team.names.size).equals(3, "Team Set size should be 3");
 
       realm.close();
     });
@@ -116,7 +112,7 @@ describe("Sets", () => {
         },
       };
       interface MixedObject {
-        mixedField: Set<Realm.Types.Mixed>;
+        mixedField: Realm.Set<Realm.Types.Mixed>;
       }
       interface IntObject {
         intField: Realm.Types.Int;
@@ -124,21 +120,19 @@ describe("Sets", () => {
 
       const realm = new Realm({ schema: [MixedObjectSchema, IntSetObjectSchema] });
 
-      const mixedValues: Realm.Types.Mixed[] = ["Joe", 54, true];
+      const mixedValues: Realm.Types.Mixed[] = ["Joe", 54, true] as Realm.Types.Mixed[];
       realm.write(() => {
         const intObject = realm.create<IntObject>(IntSetObjectSchema.name, { intField: 41 });
         mixedValues.push(intObject);
       });
 
-      realm.write(() => {
-        realm.create(MixedObjectSchema.name, { mixedField: mixedValues });
+      const mixedObject = realm.write<MixedObject>(() => {
+        return realm.create<MixedObject>(MixedObjectSchema.name, { mixedField: mixedValues });
       });
 
-      const objs = realm.objects<MixedObject>(MixedObjectSchema.name);
-      expect(1).equals(objs.length, "One MixedObject");
-      expect(mixedValues.length).equals(objs[0].mixedField.size, `${mixedValues.length} values in set`);
+      expect(mixedValues.length).equals(mixedObject.mixedField.size, `${mixedValues.length} values in set`);
       for (let i = 0; i < mixedValues.length; i++) {
-        expect(objs[0].mixedField.has(mixedValues[i])).equal(true, `The set does not have "${mixedValues[i]}"`);
+        expect(mixedObject.mixedField.has(mixedValues[i])).equal(true, `The set does not have "${mixedValues[i]}"`);
       }
     });
 
@@ -184,13 +178,13 @@ describe("Sets", () => {
 
       const myInts = [1, 2, 3, 7, 9, 13];
 
-      realm.write(() => {
-        realm.create(IntSetObjectSchema.name, {
+      const intSetObject = realm.write(() => {
+        return realm.create<IntSetObject>(IntSetObjectSchema.name, {
           intSet: myInts,
         });
       });
 
-      const dbInts = realm.objects<IntSetObject>(IntSetObjectSchema.name)[0].intSet;
+      const dbInts = intSetObject.intSet;
       const intArray2 = Array.from(myInts);
       let intCount = 0;
       dbInts.forEach((element) => {
@@ -227,13 +221,13 @@ describe("Sets", () => {
       const myInts = [1, 2, 3, 7, 9, 13];
 
       const intRealm = new Realm({ schema: [IntSetObjectSchema] });
-      intRealm.write(() => {
-        intRealm.create(IntSetObjectSchema.name, {
+      const intSetObject = intRealm.write(() => {
+        return intRealm.create<IntSetObject>(IntSetObjectSchema.name, {
           intSet: myInts,
         });
       });
 
-      const dbInts = intRealm.objects<IntSetObject>(IntSetObjectSchema.name)[0].intSet;
+      const dbInts = intSetObject.intSet;
       expect([...dbInts]).deep.equals(myInts);
 
       intRealm.close();
@@ -265,11 +259,13 @@ describe("Sets", () => {
       persons: Realm.Set<Person>;
     }
 
+    let footballTeam: Team;
+
     openRealmBeforeEach({ schema: [personSchema, personTeamSchema] });
     beforeEach(function (this: RealmContext) {
-      this.realm.write(() => {
+      footballTeam = this.realm.write(() => {
         // insert two people
-        this.realm.create(personTeamSchema.name, {
+        return this.realm.create<Team>(personTeamSchema.name, {
           persons: [
             { firstName: "Joe", age: 4 },
             { firstName: "Sue", age: 53 },
@@ -286,7 +282,7 @@ describe("Sets", () => {
 
       // add another person
       this.realm.write(() => {
-        teams[0].persons.add({ firstName: "Bob", age: 99 });
+        footballTeam.persons.add({ firstName: "Bob", age: 99 });
       });
       teams = this.realm.objects(personTeamSchema.name);
       expect(teams.length).equals(1, "There should still be only one team");
@@ -295,20 +291,19 @@ describe("Sets", () => {
 
     describe("Object filtering", () => {
       it("should work correctly", function (this: RealmContext) {
-        const teams = this.realm.objects<Team>(personTeamSchema.name);
-        let filteredSues = teams[0].persons.filtered("firstName = $0", "Sue");
+        let filteredSues = footballTeam.persons.filtered("firstName = $0", "Sue");
         expect(filteredSues.length).equals(1, "There should be only one Sue");
         expect(filteredSues[0].age).equals(53, "Sue's age should be 53");
 
         // add another Sue
         this.realm.write(() => {
-          teams[0].persons.add({ firstName: "Sue", age: 35 });
+          footballTeam.persons.add({ firstName: "Sue", age: 35 });
         });
-        filteredSues = teams[0].persons.filtered('firstName = "Sue"');
+        filteredSues = footballTeam.persons.filtered('firstName = "Sue"');
         expect(filteredSues.length).equals(2, "There should be two Sues");
 
         // find people older than 50
-        const olderPersons = teams[0].persons.filtered("age > 50");
+        const olderPersons = footballTeam.persons.filtered("age > 50");
         expect(olderPersons.length).equals(2, "There should be two people over 50");
       });
 
@@ -383,15 +378,12 @@ describe("Sets", () => {
       expect(footballTeam.names.has("Alice")).equals(false, "Alice shouldn't be in the football team");
 
       // create another team with two people
-      this.realm.write(() => {
-        this.realm.create(teamSchema.name, {
+      const handballTeam = this.realm.write(() => {
+        return this.realm.create<Team>(teamSchema.name, {
           names: ["Daniel", "Felicia"],
         });
       });
       teams = this.realm.objects(teamSchema.name);
-      expect(teams.length).equals(2, "There should be two teams");
-      footballTeam = teams[0];
-      const handballTeam = teams[1];
       expect(footballTeam.names.size).equals(3, "There should be 3 people in the football team. It wasn't altered");
       expect(handballTeam.names.size).equals(2, "There should be 2 people in the handball team");
 
@@ -423,13 +415,13 @@ describe("Sets", () => {
 
       // test serialization of simple types
       const intRealm = new Realm({ schema: [IntSetObjectSchema] });
-      intRealm.write(() => {
-        intRealm.create(IntSetObjectSchema.name, {
+      const intSetObject = intRealm.write(() => {
+        return intRealm.create<IntSetObject>(IntSetObjectSchema.name, {
           intSet: myInts,
         });
       });
 
-      const dbInts = intRealm.objects<IntSetObject>(IntSetObjectSchema.name)[0].intSet;
+      const dbInts = intSetObject.intSet;
       const dbString = JSON.stringify(dbInts);
       const jsString = JSON.stringify(myInts);
       expect(dbString).equals(jsString, "JSON serialization of dbInts should be the same as jsInts");
@@ -474,13 +466,13 @@ describe("Sets", () => {
       ];
 
       const itemRealm = new Realm({ schema: [itemSchema, itemSetSchema] });
-      itemRealm.write(() => {
-        itemRealm.create(itemSetSchema.name, {
+      const itemSetObject = itemRealm.write(() => {
+        return itemRealm.create<ItemSetObject>(itemSetSchema.name, {
           itemSet: myItems,
         });
       });
 
-      const dbItems = itemRealm.objects<ItemSetObject>(itemSetSchema.name)[0].itemSet;
+      const dbItems = itemSetObject.itemSet;
       const dbItemString = JSON.stringify(dbItems);
       const jsItemString = JSON.stringify(myItems);
       expect(dbItemString).equals(jsItemString, "Object serialization from Set and JS object should be the same");
