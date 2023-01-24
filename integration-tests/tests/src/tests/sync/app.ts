@@ -19,7 +19,7 @@
 import { ObjectId } from "bson";
 import { expect } from "chai";
 import { importAppBefore } from "../../hooks";
-import { genPartition } from "../../utils/generators";
+import { generatePartition } from "../../utils/generators";
 
 const TestObjectSchema: Realm.ObjectSchema = {
   name: "TestObject",
@@ -70,25 +70,20 @@ interface IDogForSyncSchema {
 
 describe("App", () => {
   describe("instantiation", function () {
-    type ConfigContext = {
-      conf: { id: string; baseUrl: string };
-    } & Mocha.Context;
     afterEach(async () => {
       Realm.clearTestState();
     });
-    before(async function (this: ConfigContext) {
-      this.conf = { id: "smurf", baseUrl: "http://localhost:9090" };
-    });
+    const conf = { id: "smurf", baseUrl: "http://localhost:9090" };
 
-    it("from config", function (this: ConfigContext) {
-      const app = new Realm.App(this.conf);
+    it("from config", () => {
+      const app = new Realm.App(conf);
       expect(app).instanceOf(Realm.App);
     });
 
-    it("from string", function (this: ConfigContext) {
-      const app = new Realm.App(this.conf.id);
+    it("from string", () => {
+      const app = new Realm.App(conf.id);
       expect(app).instanceOf(Realm.App);
-      expect(app.id).equals(this.conf.id);
+      expect(app.id).equals(conf.id);
     });
 
     it("throws on undefined app", function () {
@@ -101,37 +96,20 @@ describe("App", () => {
       expect(() => new Realm.App(1234)).throws(Error, "Expected either a configuration object or an app id string.");
     });
 
-    it("throws on invalid baseURL", function () {
+    it("throws on invalid baseURL", async function () {
       const invalid_url_conf = { id: "smurf", baseUrl: "http://localhost:9999" };
       const app = new Realm.App(invalid_url_conf);
 
       const credentials = Realm.Credentials.anonymous();
-      console.log(credentials);
-      console.log(app.logIn);
-      return new Promise<void>((resolve, reject) => {
-        return app
-          .logIn(credentials)
-          .then((user) => {
-            return reject(`Able to log in with config ${JSON.stringify(invalid_url_conf)}`);
-          })
-          .catch((err) => {
-            expect(err.message).contains(
-              "request to http://localhost:9999/api/client/v2.0/app/smurf/location failed, reason: connect ECONNREFUSED",
-            );
-            return resolve();
-          });
-      });
+      await expect(app.logIn(credentials)).to.be.rejectedWith(
+        "request to http://localhost:9999/api/client/v2.0/app/smurf/location failed, reason: connect ECONNREFUSED",
+      );
     });
 
     it("throws on non existing app", async function () {
-      const app = new Realm.App(this.conf);
+      const app = new Realm.App(conf);
       const credentials = Realm.Credentials.anonymous();
-      let failed = false;
-      await app.logIn(credentials).catch((err) => {
-        failed = true;
-        expect(err.message).equals("cannot find app using Client App ID 'smurf'");
-      });
-      expect(failed).to.be.true;
+      await expect(app.logIn(credentials)).to.be.rejectedWith("cannot find app using Client App ID 'smurf'");
     });
   });
 
@@ -139,13 +117,17 @@ describe("App", () => {
     importAppBefore("with-db");
 
     it("logins successfully ", async function (this: Mocha.Context & AppContext & RealmContext) {
-      expect(this.app).instanceOf(Realm.App);
-      const credentials = Realm.Credentials.anonymous();
-      const user = await this.app.logIn(credentials);
-      expect(user).instanceOf(Realm.User);
-      expect(user.deviceId).to.not.be.null;
-      expect(user.providerType).equals("anon-user");
-      await user.logOut();
+      let user;
+      try {
+        expect(this.app).instanceOf(Realm.App);
+        const credentials = Realm.Credentials.anonymous();
+        user = await this.app.logIn(credentials);
+        expect(user).instanceOf(Realm.User);
+        expect(user.deviceId).to.not.be.null;
+        expect(user.providerType).equals("anon-user");
+      } finally {
+        await user?.logOut();
+      }
     });
 
     it("logout and allUsers works", async function (this: Mocha.Context & AppContext & RealmContext) {
@@ -250,7 +232,7 @@ describe("App", () => {
         sync: { user, partitionValue: '"Lolo"' },
         deleteRealmIfMigrationNeeded: true,
       };
-      //@ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
+      //@ts-expect-error deleteRealmIfMigrationNeeded is not a field on a syncConfiguration.
       expect(() => new Realm(config)).throws(
         "Cannot set 'deleteRealmIfMigrationNeeded' when sync is enabled ('sync.partitionValue' is set).",
       );
@@ -263,7 +245,7 @@ describe("App", () => {
 
       const credentials = Realm.Credentials.anonymous();
       const user = await this.app.logIn(credentials);
-      const partition = genPartition();
+      const partition = generatePartition();
       const realmConfig = {
         schema: [PersonForSyncSchema, DogForSyncSchema],
         shouldCompact: () => {
