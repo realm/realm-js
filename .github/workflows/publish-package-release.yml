@@ -86,6 +86,14 @@ jobs:
         submodules: recursive
         ref: ${{ inputs.commit || github.event.pull_request.head.sha }}
 
+    - name: Setup node version
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16
+        registry-url: 'https://registry.npmjs.org'
+        cache: 'npm'
+        cache-dependency-path: '**/package-lock.json'
+
     - name: Install node modules
       run: npx lerna bootstrap --scope=${{ env.PACKAGE_NAME }} --include-dependencies
 
