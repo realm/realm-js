@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 0.5.0 (2023-01-24)
 
 ### Enhancements
 * Improve AppProvider and UserProvider rendering performance ([#5215](https://github.com/realm/realm-js/pull/5215))
