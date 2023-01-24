@@ -22,10 +22,6 @@ import Realm, { BSON } from "realm";
 import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "../../hooks";
 
 describe.skipIf(environment.missingServer, "Asymmetric sync", function () {
-  // A helper in order to get correct intellisense and to make sure `this` is used
-  // in the correct context, instead of writing '(this.realm as Realm).<prop/method>'
-  const getRealm = (context: Mocha.Context) => context.realm as Realm;
-
   describe("Configuration and schema", function () {
     this.timeout(20 * 1000);
     const PersonSchema: Realm.ObjectSchema = {
@@ -49,17 +45,16 @@ describe.skipIf(environment.missingServer, "Asymmetric sync", function () {
       },
     });
 
-    it("Schema with asymmetric = true and embedded = false", function () {
-      const schema = getRealm(this).schema;
+    it("Schema with asymmetric = true and embedded = false", function (this: RealmContext) {
+      const schema = this.realm.schema;
       expect(schema.length).to.equal(1);
       expect(schema[0].asymmetric).to.be.true;
       expect(schema[0].embedded).to.be.false;
     });
 
-    it("creating an object for an asymmetric schema returns undefined", function () {
-      const realm = getRealm(this);
-      realm.write(() => {
-        const returnValue = realm.create(PersonSchema.name, {
+    it("creating an object for an asymmetric schema returns undefined", function (this: RealmContext) {
+      this.realm.write(() => {
+        const returnValue = this.realm.create(PersonSchema.name, {
           _id: new BSON.ObjectId(),
           name: "Joe",
           age: 12,
@@ -68,22 +63,22 @@ describe.skipIf(environment.missingServer, "Asymmetric sync", function () {
       });
     });
 
-    it("an asymmetric schema cannot be queried through 'objects()'", function () {
+    it("an asymmetric schema cannot be queried through 'objects()'", function (this: RealmContext) {
       expect(() => {
-        getRealm(this).objects(PersonSchema.name);
+        this.realm.objects(PersonSchema.name);
       }).to.throw("You cannot query an asymmetric object.");
     });
 
-    it("an asymmetric schema cannot be queried through 'objectForPrimaryKey()'", function () {
+    it("an asymmetric schema cannot be queried through 'objectForPrimaryKey()'", function (this: RealmContext) {
       expect(() => {
-        getRealm(this).objectForPrimaryKey(PersonSchema.name, new BSON.ObjectId());
+        this.realm.objectForPrimaryKey(PersonSchema.name, new BSON.ObjectId());
       }).to.throw("You cannot query an asymmetric object.");
     });
 
-    it("an asymmetric schema cannot be queried through '_objectForObjectKey()'", function () {
+    it("an asymmetric schema cannot be queried through '_objectForObjectKey()'", function (this: RealmContext) {
       expect(() => {
         // A valid objectKey is not needed for this test
-        getRealm(this)._objectForObjectKey(PersonSchema.name, "12345");
+        this.realm._objectForObjectKey(PersonSchema.name, "12345");
       }).to.throw("You cannot query an asymmetric object.");
     });
   });
