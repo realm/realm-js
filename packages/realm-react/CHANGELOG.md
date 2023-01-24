@@ -6,17 +6,6 @@
 ### Fixed
 * Stabilized references for Collections, Lists and Objects ([#5269](https://github.com/realm/realm-js/issues/5269))
 
-### Compatibility
-* React Native >= v0.70.0
-* Atlas App Services.
-* Realm Studio v13.0.0.
-* File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
-
-### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
-
 ## 0.4.2 (2023-1-11)
 
 ### Enhancements
