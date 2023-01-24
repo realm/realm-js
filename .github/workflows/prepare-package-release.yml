@@ -21,7 +21,69 @@ on:
         - '@realm/web'
 
 jobs:
-  prepare-release:
+  prepare-package-release:
     runs-on: ubuntu-latest
     steps:
       - run: echo "Preparing release for ${{inputs.package}}"
+      - uses: kanga333/variable-mapper@v0.3.0
+        name: Map package to environment variables
+        with:
+          key: "${{inputs.package}}"
+          map: |
+            {
+              "@realm/babel-plugin": {
+                "PACKAGE_PATH": "packages/babel-plugin",
+                "PACKAGE_NAME": "@realm/babel-plugin",
+                "VERSION_PREFIX": "babel-plugin-"
+              },
+              "@realm/common": {
+                "PACKAGE_PATH": "packages/realm-common",
+                "PACKAGE_NAME": "@realm/common",
+                "VERSION_PREFIX": "realm-common-"
+              },
+              "@realm/network-transport": {
+                "PACKAGE_PATH": "packages/realm-network-transport",
+                "PACKAGE_NAME": "@realm/network-transport",
+                "VERSION_PREFIX": "realm-network-transport-"
+              },
+              "@realm/react": {
+                "PACKAGE_PATH": "packages/realm-react",
+                "PACKAGE_NAME": "@realm/react",
+                "VERSION_PREFIX": "realm-react-"
+              },
+              "@realm/tools": {
+                "PACKAGE_PATH": "packages/realm-tools",
+                "PACKAGE_NAME": "@realm/tools",
+                "VERSION_PREFIX": "realm-tools-"
+              },
+              "@realm/web": {
+                "PACKAGE_PATH": "packages/realm-web",
+                "PACKAGE_NAME": "realm-web",
+                "VERSION_PREFIX": "realm-web-"
+              }
+            }
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      # action is at https://github.com/realm/ci-actions/tree/main/update-changelog
+      - name: Update Changelog
+        id: update-changelog
+        uses: realm/ci-actions/update-changelog@main
+        with:
+          version: ${{ inputs.version }}
+          changelog: ${{ github.workspace }}/${{env.PACKAGE_PATH}}/CHANGELOG.md
+
+      - name: Update package.json
+        working-directory: ${{ github.workspace }}/${{env.PACKAGE_PATH}}
+        run: |
+          jq '.version="${{ steps.update-changelog.outputs.new-version }}"' package.json > package.tmp
+          mv package.tmp package.json
+
+      - name: Create Release PR
+        uses: peter-evans/create-pull-request@v4
+        with:
+          branch: release/${{env.VERSION_PREFIX}}${{ steps.update-changelog.outputs.new-version }}
+          title: Prepare for ${{env.VERSION_PREFIX}}${{ steps.update-changelog.outputs.new-version }}
+          body: An automated PR for next release.
+          commit-message: "[${{env.VERSION_PREFIX}}${{ steps.update-changelog.outputs.new-version }}] Bump version"
+          token: ${{ secrets.REALM_CI_PAT }}
