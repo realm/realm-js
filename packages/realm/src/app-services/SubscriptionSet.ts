@@ -38,8 +38,16 @@ import {
  */
 export class SubscriptionSet extends BaseSubscriptionSet {
   /**@internal */
-  constructor(/**@internal */ private realm: Realm, /**@internal */ internal: binding.SyncSubscriptionSet) {
+  constructor(/**@internal */ private realm: Realm, internal: binding.SyncSubscriptionSet) {
     super(internal);
+
+    Object.defineProperties(this, {
+      realm: {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+      },
+    });
   }
 
   /**
@@ -71,7 +79,7 @@ export class SubscriptionSet extends BaseSubscriptionSet {
    *
    * Adding or removing subscriptions from the set must be performed inside
    * the callback argument of this method, and the mutating methods must be called on
-   * the `mutableSubs` argument rather than the original {@link SubscriptionSet} instance.
+   * the `mutableSubscriptions` argument rather than the original {@link SubscriptionSet} instance.
    *
    * Any changes to the subscriptions after the callback has executed will be batched and sent
    * to the server. You can either `await` the call to `update`, or call
@@ -79,10 +87,10 @@ export class SubscriptionSet extends BaseSubscriptionSet {
    *
    * Example:
    * ```
-   * await realm.subscriptions.update(mutableSubs => {
-   *   mutableSubs.add(realm.objects("Cat").filtered("age > 10"));
-   *   mutableSubs.add(realm.objects("Dog").filtered("age > 20"));
-   *   mutableSubs.removeByName("personSubs");
+   * await realm.subscriptions.update(mutableSubscriptions => {
+   *   mutableSubscriptions.add(realm.objects("Cat").filtered("age > 10"));
+   *   mutableSubscriptions.add(realm.objects("Dog").filtered("age > 20"));
+   *   mutableSubscriptions.removeByName("personSubs");
    * });
    * // `realm` will now return the expected results based on the updated subscriptions
    * ```

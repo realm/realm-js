@@ -48,13 +48,13 @@ export enum SubscriptionsState {
   /**
    * The SubscriptionSet has been superseded by an updated one. This typically means
    * that someone has called {@link SubscriptionSet.update} on a different instance
-   * of the `Subscriptions`. You should not use a superseded SubscriptionSet,
+   * of the {@link SubscriptionSet}. You should not use a superseded SubscriptionSet,
    * and instead obtain a new instance from {@link Realm.subscriptions}.
    */
   Superseded = "superseded",
 }
 
-const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true, writable: true };
+const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true, writable: false };
 const PROXY_HANDLER: ProxyHandler<BaseSubscriptionSet> = {
   get(target, prop) {
     if (Reflect.has(target, prop)) {
@@ -99,7 +99,16 @@ export abstract class BaseSubscriptionSet {
 
   /**@internal */
   protected constructor(/**@internal */ protected internal: binding.SyncSubscriptionSet) {
-    return new Proxy(this, PROXY_HANDLER);
+    Object.defineProperties(this, {
+      internal: {
+        enumerable: false,
+        configurable: false,
+        // `internal` needs to be writable due to `SubscriptionSet.updateSync`
+        // overwriting `this.internal` with the new committed set.
+        writable: true,
+      },
+    });
+    return new Proxy<BaseSubscriptionSet>(this, PROXY_HANDLER);
   }
 
   /**
@@ -179,11 +188,22 @@ export abstract class BaseSubscriptionSet {
 
   /**
    * Get an iterator that contains the keys for each index in the subscription set.
+   *
+   * @internal
    */
   *keys() {
     const size = this.length;
     for (let i = 0; i < size; i++) {
       yield i;
+    }
+  }
+
+  /**
+   * Makes the set iterable.
+   */
+  *[Symbol.iterator](): IterableIterator<Subscription> {
+    for (const subscription of this.internal) {
+      yield new Subscription(subscription);
     }
   }
 

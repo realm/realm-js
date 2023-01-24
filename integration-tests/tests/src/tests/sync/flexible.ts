@@ -595,7 +595,6 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(subs).to.have.length(0);
         });
 
-        // TODO: Possibly remove this and use the one below
         it("returns an array of Subscription objects", async function (this: RealmContext) {
           addSubscriptionForPerson(this.realm);
           const { subs } = await addSubscriptionAndSync(
@@ -617,6 +616,44 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(subs).to.have.length(2);
           expect(subs[0]).to.be.instanceOf(Realm.App.Sync.Subscription);
           expect(subs[1]).to.be.instanceOf(Realm.App.Sync.Subscription);
+        });
+
+        it("iterates over a SubscriptionSet using for-of loop", async function (this: RealmContext) {
+          addSubscriptionForPerson(this.realm);
+          const { subs } = await addSubscriptionAndSync(
+            this.realm,
+            this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"),
+          );
+
+          let numSubs = 0;
+          for (const sub of subs) {
+            expect(sub).to.be.instanceOf(Realm.App.Sync.Subscription);
+            numSubs++;
+          }
+          expect(numSubs).to.equal(2);
+        });
+
+        it("spreads Subscription objects using spread operator", async function (this: RealmContext) {
+          addSubscriptionForPerson(this.realm);
+          const { subs } = await addSubscriptionAndSync(
+            this.realm,
+            this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"),
+          );
+
+          const subsSpread = [...subs];
+          expect(subsSpread).to.have.length(2);
+          expect(subsSpread.every((s) => s instanceof Realm.App.Sync.Subscription)).to.be.true;
+        });
+
+        it("iterates over Subscription objects using Object.keys()", async function (this: RealmContext) {
+          addSubscriptionForPerson(this.realm);
+          const { subs } = await addSubscriptionAndSync(
+            this.realm,
+            this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"),
+          );
+
+          // Object.keys() always returns an array of strings.
+          expect(Object.keys(subs)).deep.equals(["0", "1"]);
         });
 
         it("is an immutable snapshot of the subscriptions from when it was called", async function (this: RealmContext) {
