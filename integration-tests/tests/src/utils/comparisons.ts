@@ -20,25 +20,37 @@ import { Decimal128, ObjectId, UUID } from "bson";
 import { expect } from "chai";
 type BSON = Decimal128 | ObjectId | UUID | null;
 
-export function expectSimilar(type: string, val1: any, val2: any) {
-  type = type.replace("?", "");
+export function expectSimilar(type: string, val1: unknown, val2: unknown): void {
   if (val2 === null) {
     expect(val1).equals(null);
     return;
-  } else if (type === "float" || type === "double") {
-    expectDecimalEqual(val1, val2);
-  } else if (type === "decimal128" || type === "objectId" || type === "uuid") {
-    expectBSONEqual(val1.toString(), val2.toString());
-  } else if (type === "data") {
-    expectArraysEqual(new Uint8Array(val1), val2);
-  } else if (type === "date") {
-    expectDateEqual(val1, val2);
-  } else if (type === "object") {
-    expectObjectEquals(val1, val2);
-  } else if (type === "list") {
-    expectArraysEqual(val1, val2);
-  } else {
-    expect(val1).equals(val2);
+  }
+  type = type.replace("?", "");
+  switch (type) {
+    case "float":
+    case "double":
+      expectDecimalEqual(val1 as number, val2 as number);
+      break;
+    case "decimal128":
+    case "objectId":
+    case "uuid":
+      expectBSONEqual(val1 as BSON, val2 as BSON);
+      break;
+    case "data":
+      expectArraysEqual(new Uint8Array(val1 as number), val2);
+      break;
+    case "date":
+      expectDateEqual(val1 as Date, val2 as Date);
+      break;
+    case "object":
+      expectObjectEquals(val1, val2);
+      break;
+    case "list":
+      expectArraysEqual(val1, val2);
+      break;
+    default:
+      expect(val1).equals(val2);
+      break;
   }
 }
 ////////////////////////////////////////////////////////////////////////////
@@ -70,18 +82,29 @@ export function expectArraysEqual(val1: any, val2: any): void {
   expect(val2).not.to.equals(undefined);
   expect(val1.length).equals(val2.length);
   let compare;
-  if (val1.type === "data") {
-    compare = (_i: number, a: ArrayBuffer, b: Uint8Array) => a === b || expectArraysEqual(new Uint8Array(a), b) || true;
-  } else if (val1.type === "date") {
-    compare = (_i: number, a: Date, b: Date) => expectDateEqual(a, b);
-  } else if (val1.type === "float" || val1.type === "double") {
-    compare = (_i: number, a: number, b: number) => expectDecimalEqual(a, b);
-  } else if (val1.type === "object") {
-    compare = (_i: number, a: any, b: any) => expectObjectEquals(a, b);
-  } else if (val1.type === "decimal128" || val1.type === "objectId" || val1.type === "uuid") {
-    compare = (_i: number, a: BSON, b: BSON) => expectBSONEqual(a, b);
-  } else {
-    compare = (_i: number, a: any, b: any) => expect(a).equals(b);
+  switch (val1.type) {
+    case "data":
+      compare = (_i: number, a: ArrayBuffer, b: Uint8Array) =>
+        a === b || expectArraysEqual(new Uint8Array(a), b) || true;
+      break;
+    case "date":
+      compare = (_i: number, a: Date, b: Date) => expectDateEqual(a, b);
+      break;
+    case "float":
+    case "double":
+      compare = (_i: number, a: number, b: number) => expectDecimalEqual(a, b);
+      break;
+    case "object":
+      compare = (_i: number, a: any, b: any) => expectObjectEquals(a, b);
+      break;
+    case "decimal128":
+    case "objectId":
+    case "uuid":
+      compare = (_i: number, a: BSON, b: BSON) => expectBSONEqual(a, b);
+      break;
+    default:
+      compare = (_i: number, a: any, b: any) => expect(a).equals(b);
+      break;
   }
 
   for (let i = 0; i < val1.length; i++) {
