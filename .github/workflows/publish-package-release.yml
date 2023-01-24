@@ -109,7 +109,7 @@ jobs:
         branch: ${{ github.ref }}
 
     - name: Merge Pull Request
-      uses: juliangruber/merge-pull-request-action@8a13f2645ad8b6ada32f829b2fae9c0955a5265d
+      uses: juliangruber/merge-pull-request-action@v1
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         number: ${{ steps.find-pull-request.outputs.number }}
@@ -159,7 +159,7 @@ jobs:
         base: ${{ steps.find-pull-request.outputs.base-ref }}
 
     - name: Merge Pull Request
-      uses: juliangruber/merge-pull-request-action@1
+      uses: juliangruber/merge-pull-request-action@v1
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         number: ${{ steps.vnext-pr.outputs.pull-request-number }}
