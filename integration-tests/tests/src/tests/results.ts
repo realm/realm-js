@@ -32,14 +32,6 @@ const PersonObjectSchema = {
   },
 };
 
-const DateObjectSchema = {
-  name: "Date",
-  properties: {
-    currentDate: "date",
-    nullDate: "date?",
-  },
-};
-
 class PersonObject extends Realm.Object {
   name!: string;
   age!: Realm.Types.Double;
@@ -149,6 +141,7 @@ describe("Results", () => {
 
   describe("General functionality", () => {
     openRealmBeforeEach({ schema: [TestObjectSchema] });
+
     it("should have a valid constructor", function (this: RealmContext) {
       const objects = this.realm.objects<TestObject>("TestObject");
 
@@ -217,7 +210,6 @@ describe("Results", () => {
     });
 
     it("implements addListener", function (this: RealmContext) {
-      /* global navigator */
       //@ts-expect-error Navigator could be defined in some environments.
       if (typeof navigator !== "undefined" && /Chrome/.test(navigator.userAgent)) {
         // eslint-disable-line no-undef
@@ -291,22 +283,21 @@ describe("Results", () => {
       }).throws("Cannot assign to read only property 'length'");
     });
 
-    it("should use correct subscript", () => {
-      const realm = new Realm({ schema: [PersonObjectSchema] });
-      expect(realm.objects("PersonObject")[0]).equals(undefined);
+    it("should use correct subscript", function (this: RealmContext) {
+      expect(this.realm.objects("TestObject")[0]).equals(undefined);
 
-      realm.write(function () {
-        realm.create<PersonObject>("PersonObject", { name: "name1", age: 1 });
-        realm.create<PersonObject>("PersonObject", { name: "name2", age: 2 });
+      this.realm.write(() => {
+        this.realm.create<TestObject>("TestObject", { doubleCol: 1 });
+        this.realm.create<TestObject>("TestObject", { doubleCol: 2 });
       });
 
-      const people = realm.objects<PersonObject>("PersonObject");
-      expect(people[0].age).equals(1);
-      expect(people[1].age).equals(2);
-      expect(people[2]).equals(undefined);
-      expect(people[-1]).equals(undefined);
-      // TODO: expect(Object.getPrototypeOf(people[0])).equals(PersonObject.prototype);
-      expect(people[0] instanceof Realm.Object).equals(true);
+      const results = this.realm.objects<TestObject>("TestObject");
+      expect(results[0].doubleCol).equals(1.0);
+      expect(results[1].doubleCol).equals(2.0);
+      expect(results[2]).equals(undefined);
+      expect(results[-1]).equals(undefined);
+      // TODO: expect(Object.getPrototypeOf(results[0])).equals(TestObject.prototype);
+      expect(results[0] instanceof Realm.Object).equals(true);
     });
 
     it("should handle invalidated objects", function (this: RealmContext) {
@@ -599,6 +590,7 @@ describe("Results", () => {
       expect(() => {
         objects.sorted();
       }).throws("property 'IntPrimaryObject.self' does not exist.");
+
       expect(() => {
         //@ts-expect-error Expected to be an invalid sorted argument.
         objects.sorted(1);
@@ -607,12 +599,14 @@ describe("Results", () => {
         //@ts-expect-error Expected to be an invalid sorted argument.
         objects.sorted([1]);
       }).throws("JS value must be of type 'string'");
+
       expect(() => {
         objects.sorted("fish");
       }).throws("property 'IntPrimaryObject.fish' does not exist");
       expect(() => {
         objects.sorted(["valueCol", "fish"]);
       }).throws("property 'IntPrimaryObject.fish' does not exist");
+
       expect(() => {
         //@ts-expect-error Expected to be an invalid sorted argument.
         objects.sorted(["valueCol", "primaryCol"], true);
@@ -736,6 +730,7 @@ describe("Results", () => {
   });
   describe("Aggregation", () => {
     openRealmBeforeEach({ schema: [NullableBasicTypesSchema] });
+
     it("supports aggregate functions", function (this: RealmContext) {
       const N = 50;
       this.realm.write(() => {
