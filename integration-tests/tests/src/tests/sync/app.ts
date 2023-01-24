@@ -18,10 +18,8 @@
 
 import { ObjectId } from "bson";
 import { expect } from "chai";
-import { List } from "realm";
 import { importAppBefore } from "../../hooks";
 import { genPartition } from "../../utils/generators";
-import { TemplateReplacements } from "../../utils/import-app";
 
 const TestObjectSchema: Realm.ObjectSchema = {
   name: "TestObject",
@@ -150,19 +148,6 @@ describe("App", () => {
       await user.logOut();
     });
 
-    it("throws on login with non existing user ", async function (this: Mocha.Context & AppContext & RealmContext) {
-      expect(this.app).instanceOf(Realm.App);
-      const credentials = Realm.Credentials.emailPassword("me", "secret");
-      let didFail = false;
-      const user = await this.app.logIn(credentials).catch((err) => {
-        expect(err.message).equals("invalid username/password");
-        expect(err.code).equals(50);
-        didFail = true;
-      });
-      expect(user).to.be.undefined;
-      expect(didFail).equals(true);
-    });
-
     it("logout and allUsers works", async function (this: Mocha.Context & AppContext & RealmContext) {
       const credentials = Realm.Credentials.anonymous();
       let users = this.app.allUsers;
@@ -239,6 +224,22 @@ describe("App", () => {
     });
   });
 
+  describe("with email-password auth", () => {
+    importAppBefore("with-email-password");
+    it("throws on login with non existing user ", async function (this: Mocha.Context & AppContext & RealmContext) {
+      expect(this.app).instanceOf(Realm.App);
+      const credentials = Realm.Credentials.emailPassword("me", "secret");
+      let didFail = false;
+      const user = await this.app.logIn(credentials).catch((err) => {
+        expect(err.message).equals("invalid username/password");
+        expect(err.code).equals(50);
+        didFail = true;
+      });
+      expect(user).to.be.undefined;
+      expect(didFail).equals(true);
+    });
+  });
+
   describe("with sync", () => {
     importAppBefore("with-db");
 
@@ -255,6 +256,7 @@ describe("App", () => {
       );
       await user.logOut();
     });
+
     it("MongoDB Realm sync works", async function (this: Mocha.Context & AppContext & RealmContext) {
       const dogNames = ["King", "Rex"]; // must be sorted
       let nCalls = 0;
