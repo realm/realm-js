@@ -24,6 +24,7 @@ chai.use(chaiAsPromised);
 import "./alias";
 import "./realm-constructor";
 import "./objects";
+import "./sets";
 import "./class-models";
 import "./serialization";
 import "./iterators";
