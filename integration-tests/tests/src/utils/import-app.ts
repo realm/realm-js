@@ -93,7 +93,7 @@ export function getDefaultReplacements(name: string): TemplateReplacements {
 export async function importApp(
   name: string,
   replacements: TemplateReplacements = getDefaultReplacements(name),
-): Promise<App> {
+): Promise<{ appId: string; baseUrl: string }> {
   const { baseUrl, appImporterUrl } = getUrls();
 
   if (appImporterIsRemote) {
@@ -104,7 +104,7 @@ export async function importApp(
 
     const json = await response.json<Response>();
     if (response.ok && typeof json.appId === "string") {
-      return new App({ baseUrl, id: json.appId });
+      return { appId: json.appId, baseUrl };
     } else if (typeof json.message === "string") {
       throw new Error(`Failed to import: ${json.message}`);
     } else {
@@ -128,7 +128,7 @@ export async function importApp(
 
     const { appId } = await importer.importApp(appTemplatePath, replacements);
 
-    return new App({ baseUrl, id: appId });
+    return { appId, baseUrl };
   }
 }
 

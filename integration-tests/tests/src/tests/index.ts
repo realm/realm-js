@@ -40,6 +40,7 @@ import "./sync/mixed";
 import "./sync/flexible";
 import "./sync/asymmetric";
 import "./sync/sync-as-local";
+import "./sync/app";
 import "./transaction";
 import "./schema";
 import "./types";

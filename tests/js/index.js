@@ -55,7 +55,6 @@ var TESTS = {
 if (global.enableSyncTests) {
   //TODO: remove when Atlas App Services test server can be hosted on Mac or other options exists
   if (isNodeProcess) {
-    TESTS.AppTests = require("./app-tests");
     TESTS.OpenBehaviorTests = require("./open-behavior-tests");
     TESTS.UserTests = require("./user-tests");
     TESTS.SessionTests = require("./session-tests");

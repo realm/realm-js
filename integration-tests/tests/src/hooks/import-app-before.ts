@@ -30,7 +30,9 @@ export function importAppBefore(
     if (this.app) {
       throw new Error("Unexpected app on context, use only one importAppBefore per test");
     } else {
-      this.app = await importApp(name, replacements);
+      const { appId, baseUrl } = await importApp(name, replacements);
+      this.app = new Realm.App({ id: appId, baseUrl });
+
       Realm.App.Sync.setLogLevel(this.app, logLevel);
       // Set a default logger as Android does not forward stdout
       Realm.App.Sync.setLogger(this.app, (level, message) => {

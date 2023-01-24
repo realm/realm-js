@@ -1,0 +1,9 @@
+{
+    "name": "local-userpass",
+    "type": "local-userpass",
+    "config": {
+        "autoConfirm": true,
+        "resetPasswordUrl": "http://localhost/resetPassword"
+    },
+    "disabled": false
+}
