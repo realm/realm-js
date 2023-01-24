@@ -33,6 +33,7 @@ import "./queries";
 import "./dynamic-schema-updates";
 import "./bson";
 import "./dictionary";
+import "./list";
 import "./credentials/anonymous";
 import "./sync/open";
 import "./sync/mixed";
