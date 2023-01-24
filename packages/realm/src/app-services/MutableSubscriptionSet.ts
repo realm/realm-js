@@ -144,13 +144,20 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
   removeByObjectType(objectType: string): number {
     assert.string(objectType, "the argument to 'removeByObjectType()'");
 
-    let numRemoved = 0;
+    // If removing the subscription (calling `eraseSubscription()`) while iterating,
+    // then `subscription.objectClassName` will incorrectly be empty for the last element.
+    // Instead, we push it to an array (iterating in reverse also works.)
+    const subscriptionsToRemove: binding.SyncSubscription[] = [];
     for (const subscription of this.internal) {
       if (subscription.objectClassName === objectType) {
-        const isRemoved = binding.Helpers.eraseSubscription(this.internal, subscription);
-        if (isRemoved) {
-          numRemoved++;
-        }
+        subscriptionsToRemove.push(subscription);
+      }
+    }
+    let numRemoved = 0;
+    for (const subscription of subscriptionsToRemove) {
+      const isRemoved = binding.Helpers.eraseSubscription(this.internal, subscription);
+      if (isRemoved) {
+        numRemoved++;
       }
     }
 
