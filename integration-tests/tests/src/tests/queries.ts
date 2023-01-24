@@ -42,7 +42,7 @@ type AssertExceptionTest = [
 type AssertResultValuesTest = [
   TestType: "AssertResultValues",
   ObjectType: string,
-  ExpectedValues: any[],
+  ExpectedValues: unknown[],
   Query: string,
   ...QueryArgs: Array<any>
 ];
@@ -51,7 +51,7 @@ interface TestCase {
   schema: SchemaWithPropertyArray[];
   objects: {
     type: string;
-    value: any[];
+    value: unknown[];
   }[];
   tests: (AssertLengthTest | AssertExceptionTest | AssertResultValuesTest)[];
 }
@@ -665,7 +665,7 @@ function runQuerySuite(suite: TestCase) {
 
     switch (testType) {
       case "AssertLength": {
-        const expectedLength = commandArgument;
+        const expectedLength = commandArgument as number;
 
         // Array arguments reference a specific field of an object at a specifc index
         // in the objects array. Not a good way to do this, just supporting legacy behavior
@@ -684,7 +684,7 @@ function runQuerySuite(suite: TestCase) {
       case "AssertResultValues": {
         // Run a query then compare whether the results are as expected by comparing
         // their primary keys with a given array of expected primary keys.
-        const expectedResultsArray = commandArgument;
+        const expectedResultsArray = commandArgument as unknown[];
         let results = realm.objects<any>(objectType);
         results = results.filtered(queryString, ...queryArgs);
 
@@ -703,7 +703,7 @@ function runQuerySuite(suite: TestCase) {
         break;
       }
       case "AssertException": {
-        const expectedException = commandArgument;
+        const expectedException = commandArgument as string;
         const results = realm.objects(objectType);
 
         expect(() => {
