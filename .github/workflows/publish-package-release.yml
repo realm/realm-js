@@ -30,46 +30,46 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - run: echo "Publishing release for ${{inputs.package}}"
-    - uses: kanga333/variable-mapper@master
+    - uses: kanga333/variable-mapper@v0.3.0
       with:
         key: "${{inputs.package}}"
         map: |
           {
             "@realm/babel-plugin": {
-              "package-path": "packages/babel-plugin",
-              "package-name": "@realm/babel-plugin",
-              "version-prefix": "babel-plugin-",
-              "release-title": "Realm Babel Plugin"
+              "PACKAGE_PATH": "packages/babel-plugin",
+              "PACKAGE_NAME": "@realm/babel-plugin",
+              "VERSION_PREFIX": "babel-plugin-",
+              "RELEASE_TITLE": "Realm Babel Plugin"
             },
             "@realm/common": {
-              "package-path": "packages/common",
-              "package-name": "@realm/common",
-              "version-prefix": "realm-common-",
-              "release-title": "Realm Common"
+              "PACKAGE_PATH": "packages/realm-common",
+              "PACKAGE_NAME": "@realm/common",
+              "VERSION_PREFIX": "realm-common-",
+              "RELEASE_TITLE": "Realm Common"
             },
             "@realm/network-transport": {
-              "package-path": "packages/network-transport",
-              "package-name": "@realm/network-transport",
-              "version-prefix": "realm-network-transport-",
-              "release-title": "Realm Network Transport"
+              "PACKAGE_PATH": "packages/realm-network-transport",
+              "PACKAGE_NAME": "@realm/network-transport",
+              "VERSION_PREFIX": "realm-network-transport-",
+              "RELEASE_TITLE": "Realm Network Transport"
             },
             "@realm/react": {
-              "package-path": "packages/react",
-              "package-name": "@realm/react",
-              "version-prefix": "realm-react-",
-              "release-title": "Realm React"
+              "PACKAGE_PATH": "packages/realm-react",
+              "PACKAGE_NAME": "@realm/react",
+              "VERSION_PREFIX": "realm-react-",
+              "RELEASE_TITLE": "Realm React"
             },
             "@realm/tools": {
-              "package-path": "packages/tools",
-              "package-name": "@realm/tools",
-              "version-prefix": "realm-tools-",
-              "release-title": "Realm Tools"
+              "PACKAGE_PATH": "packages/realm-tools",
+              "PACKAGE_NAME": "@realm/tools",
+              "VERSION_PREFIX": "realm-tools-",
+              "RELEASE_TITLE": "Realm Tools"
             },
             "@realm/web": {
-              "package-path": "packages/web",
-              "package-name": "realm-web",
-              "version-prefix": "realm-web-",
-              "release-title": "Realm Web"
+              "PACKAGE_PATH": "packages/realm-web",
+              "PACKAGE_NAME": "realm-web",
+              "VERSION_PREFIX": "realm-web-",
+              "RELEASE_TITLE": "Realm Web"
             }
           }
 
@@ -80,17 +80,17 @@ jobs:
         ref: ${{ inputs.commit || github.event.pull_request.head.sha }}
 
     - name: Install node modules
-      run: npx lerna bootstrap --scope=${{ env.package-name }} --include-dependencies
+      run: npx lerna bootstrap --scope=${{ env.PACKAGE_NAME }} --include-dependencies
 
     - name: Read version
       id: get-version
       run: |
-        pkgVersion=$(jq -r .version ${{env.package-path}}/package.json)
+        pkgVersion=$(jq -r .version ${{env.PACKAGE_PATH}}/package.json)
         echo "::set-output name=version::$pkgVersion"
       shell: bash
 
-    - name: Publish ${{env.release-title}} v${{ steps.get-version.outputs.version }} on NPM
-      run: npm publish --tag '${{ inputs.tag}}'
+    - name: Publish ${{env.RELEASE_TITLE}} v${{ steps.get-version.outputs.version }} on NPM
+      run: npm publish --tag '${{ inputs.tag}} --dry-run'
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -114,16 +114,16 @@ jobs:
         ref: ${{ steps.find-pull-request.outputs.base-ref }}
 
     - name: Extract Changelog
-      run: node scripts/extract-changelog.js ${{ steps.get-version.outputs.version }} ${{ github.workspace }}/${{env.package-path}}/CHANGELOG.md > EXTRACTED_CHANGELOG.md
+      run: node scripts/extract-changelog.js ${{ steps.get-version.outputs.version }} ${{ github.workspace }}/${{env.PACKAGE_PATH}}/CHANGELOG.md > EXTRACTED_CHANGELOG.md
 
     - name: Create Github Release
-      uses: ncipollo/release-action@10c84d509b28aae3903113151bfd832314964f2e
+      uses: ncipollo/release-action@v1
       with:
         bodyFile: EXTRACTED_CHANGELOG.md
-        name: ${{env.release-title}} v${{ steps.get-version.outputs.version }}
-        tag: ${{env.version-prefix}}v${{ steps.get-version.outputs.version }}
+        name: ${{env.RELEASE_TITLE}} v${{ steps.get-version.outputs.version }}
+        tag: ${{env.VERSION_PREFIX}}v${{ steps.get-version.outputs.version }}
         token: ${{ secrets.GITHUB_TOKEN }}
-        draft: false
+        draft: true
 
     - name: 'Post to #realm-releases'
       uses: realm/ci-actions/release-to-slack@v3
@@ -136,23 +136,23 @@ jobs:
       continue-on-error: true
 
     - name: Update Changelog
-      working-directory: ${{ github.workspace }}/${{env.package-path}}
+      working-directory: ${{ github.workspace }}/${{env.PACKAGE_PATH}}
       run: ${{ github.workspace }}/scripts/changelog-header.sh
 
     - name: Create vNext PR
       id: vnext-pr
-      uses: peter-evans/create-pull-request@7380612b49221684fefa025244f2ef4008ae50ad
+      uses: peter-evans/create-pull-request@v4
       with:
         branch: prepare-vnext
-        title: Prepare for ${{env.release-title}} vNext
+        title: Prepare for ${{env.RELEASE_TITLE}} vNext
         body: Update Changelog for vNext
         delete-branch: true
         commit-message: Prepare for vNext
         base: ${{ steps.find-pull-request.outputs.base-ref }}
 
-    - name: Merge Pull Request
-      uses: juliangruber/merge-pull-request-action@8a13f2645ad8b6ada32f829b2fae9c0955a5265d
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        number: ${{ steps.vnext-pr.outputs.pull-request-number }}
-        method: squash
+    # - name: Merge Pull Request
+    #   uses: juliangruber/merge-pull-request-action@1
+    #   with:
+    #     github-token: ${{ secrets.GITHUB_TOKEN }}
+    #     number: ${{ steps.vnext-pr.outputs.pull-request-number }}
+    #     method: squash
