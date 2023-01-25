@@ -27,6 +27,7 @@ import {
   assert,
   binding,
   toBindingSyncConfig,
+  validateSyncConfiguration,
 } from "../internal";
 
 import * as internal from "../internal";
@@ -85,6 +86,7 @@ export namespace Sync {
     throw new Error("Not yet implemented");
   }
   export function getSyncSession(user: User, partitionValue: PartitionValue): SyncSession | null {
+    validateSyncConfiguration({ user, partitionValue });
     const config = toBindingSyncConfig({ user, partitionValue });
     const path = user.app.internal.syncManager.pathForRealm(config);
     const session = user.internal.sessionForOnDiskPath(path);
