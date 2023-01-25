@@ -21,25 +21,6 @@ import Realm, { BSON } from "realm";
 import { openRealmBeforeEach } from "../hooks";
 const { Decimal128, ObjectId, UUID } = Realm.BSON;
 
-const PersonObjectSchema = {
-  name: "PersonObject",
-  properties: {
-    name: "string",
-    age: "double",
-    married: { type: "bool", default: false },
-    children: { type: "list", objectType: "PersonObject" },
-    parents: { type: "linkingObjects", objectType: "PersonObject", property: "children" },
-  },
-};
-
-class PersonObject extends Realm.Object {
-  name!: string;
-  age!: Realm.Types.Double;
-  married!: boolean;
-  children!: Realm.List<PersonObject>;
-  parents!: Realm.List<PersonObject>;
-}
-
 class TestObject extends Realm.Object {
   doubleCol!: Realm.Types.Double;
   static schema = {
@@ -459,8 +440,26 @@ describe("Results", () => {
   });
 
   describe("Filtering and sorting", () => {
+    class PersonObject extends Realm.Object {
+      name!: string;
+      age!: Realm.Types.Double;
+      married!: boolean;
+      children!: Realm.List<PersonObject>;
+      parents!: Realm.List<PersonObject>;
+      static schema = {
+        name: "PersonObject",
+        properties: {
+          name: "string",
+          age: "double",
+          married: { type: "bool", default: false },
+          children: { type: "list", objectType: "PersonObject" },
+          parents: { type: "linkingObjects", objectType: "PersonObject", property: "children" },
+        },
+      };
+    }
+
     it("implements filtered", () => {
-      const realm = new Realm({ schema: [PersonObjectSchema, DefaultValuesSchema, TestObject] });
+      const realm = new Realm({ schema: [DefaultValuesSchema, PersonObject, TestObject] });
 
       realm.write(function () {
         realm.create("PersonObject", { name: "Ari", age: 10 });
