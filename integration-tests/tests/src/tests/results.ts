@@ -137,7 +137,6 @@ const NullableBasicTypesSchema = {
 };
 
 describe("Results", () => {
-  beforeEach(Realm.clearTestState);
 
   describe("General functionality", () => {
     openRealmBeforeEach({ schema: [TestObjectSchema] });
@@ -210,12 +209,6 @@ describe("Results", () => {
     });
 
     it("implements addListener", function (this: RealmContext) {
-      //@ts-expect-error Navigator could be defined in some environments.
-      if (typeof navigator !== "undefined" && /Chrome/.test(navigator.userAgent)) {
-        // eslint-disable-line no-undef
-        // FIXME: async callbacks do not work correctly in Chrome debugging mode
-        return Promise.resolve();
-      }
 
       this.realm.write(() => {
         this.realm.create("TestObject", { doubleCol: 1 });
@@ -296,7 +289,7 @@ describe("Results", () => {
       expect(results[1].doubleCol).equals(2.0);
       expect(results[2]).equals(undefined);
       expect(results[-1]).equals(undefined);
-      // TODO: expect(Object.getPrototypeOf(results[0])).equals(TestObject.prototype);
+      expect(results[0]).instanceOf(TestObject);
       expect(results[0] instanceof Realm.Object).equals(true);
     });
 
