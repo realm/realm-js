@@ -683,10 +683,8 @@ export class Realm {
     this.internal.verifyOpen();
     const helpers = this.classes.getHelpers(type);
     const realmObject = RealmObject.create(this, values, mode, { helpers });
-    if (isTopLevelAsymmetric(helpers.objectSchema)) {
-      return;
-    }
-    return realmObject;
+
+    return isAsymmetric(helpers.objectSchema) ? undefined : realmObject;
   }
 
   /**
@@ -762,7 +760,7 @@ export class Realm {
     if (!objectSchema.primaryKey) {
       throw new Error(`Expected a primary key on '${objectSchema.name}'`);
     }
-    if (isTopLevelAsymmetric(objectSchema)) {
+    if (isAsymmetric(objectSchema)) {
       throw new Error("You cannot query an asymmetric object.");
     }
     const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
@@ -800,9 +798,9 @@ export class Realm {
   _objectForObjectKey<T extends RealmObject>(type: Constructor<T>, objectKey: string): T | undefined;
   _objectForObjectKey<T extends RealmObject>(type: string | Constructor<T>, objectKey: string): T | undefined {
     const { objectSchema, wrapObject } = this.classes.getHelpers(type);
-    if (objectSchema.tableType === binding.TableType.Embedded) {
+    if (isEmbedded(objectSchema)) {
       throw new Error("You cannot query an embedded object.");
-    } else if (isTopLevelAsymmetric(objectSchema)) {
+    } else if (isAsymmetric(objectSchema)) {
       throw new Error("You cannot query an asymmetric object.");
     }
 
@@ -831,9 +829,9 @@ export class Realm {
   objects<T extends RealmObject = RealmObject>(type: Constructor<T>): Results<T>;
   objects<T extends RealmObject = RealmObject>(type: string | Constructor<T>): Results<T> {
     const { objectSchema, wrapObject } = this.classes.getHelpers(type);
-    if (objectSchema.tableType === binding.TableType.Embedded) {
+    if (isEmbedded(objectSchema)) {
       throw new Error("You cannot query an embedded object.");
-    } else if (isTopLevelAsymmetric(objectSchema)) {
+    } else if (isAsymmetric(objectSchema)) {
       throw new Error("You cannot query an asymmetric object.");
     }
 
@@ -1057,7 +1055,7 @@ export class Realm {
    * @param initialSubscriptions The initial subscriptions.
    * @param realmExists Whether the realm already exists.
    */
-  private handleInitialSubscriptions(initialSubscriptions: InitialSubscriptions, realmExists?: boolean): void {
+  private handleInitialSubscriptions(initialSubscriptions: InitialSubscriptions, realmExists: boolean): void {
     const shouldUpdateSubscriptions = initialSubscriptions.rerunOnOpen || !realmExists;
     if (shouldUpdateSubscriptions) {
       this.subscriptions.updateSync(initialSubscriptions.update);
@@ -1066,14 +1064,25 @@ export class Realm {
 }
 
 /**
- * Determine whether an object is a top level asymmetric object.
+ * Determine whether an object is an asymmetric object.
  *
  * @param objectSchema The schema of the object.
  * @returns `true` if it is asymmetric, otherwise `false`.
  * @internal
  */
-function isTopLevelAsymmetric(objectSchema: binding.ObjectSchema): boolean {
+function isAsymmetric(objectSchema: binding.ObjectSchema): boolean {
   return objectSchema.tableType === binding.TableType.TopLevelAsymmetric;
+}
+
+/**
+ * Determine whether an object is an embedded object.
+ *
+ * @param objectSchema The schema of the object.
+ * @returns `true` if it is embedded, otherwise `false`.
+ * @internal
+ */
+function isEmbedded(objectSchema: binding.ObjectSchema): boolean {
+  return objectSchema.tableType === binding.TableType.Embedded;
 }
 
 // Declare the Realm namespace for backwards compatibility
