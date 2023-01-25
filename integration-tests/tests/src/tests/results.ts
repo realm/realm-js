@@ -40,15 +40,14 @@ class PersonObject extends Realm.Object {
   parents!: Realm.List<PersonObject>;
 }
 
-const TestObjectSchema = {
-  name: "TestObject",
-  properties: {
-    doubleCol: "double",
-  },
-};
-
-interface TestObject {
-  doubleCol: Realm.Types.Double;
+class TestObject extends Realm.Object {
+  doubleCol!: Realm.Types.Double;
+  static schema = {
+    name: "TestObject",
+    properties: {
+      doubleCol: "double",
+    },
+  };
 }
 
 const IntPrimarySchema = {
@@ -137,22 +136,21 @@ const NullableBasicTypesSchema = {
 };
 
 describe("Results", () => {
-
   describe("General functionality", () => {
-    openRealmBeforeEach({ schema: [TestObjectSchema] });
+    openRealmBeforeEach({ schema: [TestObject] });
 
     it("should have a valid constructor", function (this: RealmContext) {
       const objects = this.realm.objects<TestObject>("TestObject");
 
-      expect(objects instanceof Realm.Results).equals(true);
-      expect(objects instanceof Realm.Collection).equals(true);
+      expect(objects).instanceOf(Realm.Results);
+      expect(objects).instanceOf(Realm.Collection);
 
       expect(() => {
         new Realm.Results();
       }).throws("Illegal constructor");
 
       expect(typeof Realm.Results).equals("function");
-      expect(Realm.Results instanceof Function).equals(true);
+      expect(Realm.Results).instanceOf(Function);
     });
 
     it("should return the correct length", function (this: RealmContext) {
@@ -209,7 +207,6 @@ describe("Results", () => {
     });
 
     it("implements addListener", function (this: RealmContext) {
-
       this.realm.write(() => {
         this.realm.create("TestObject", { doubleCol: 1 });
         this.realm.create("TestObject", { doubleCol: 2 });
@@ -290,7 +287,7 @@ describe("Results", () => {
       expect(results[2]).equals(undefined);
       expect(results[-1]).equals(undefined);
       expect(results[0]).instanceOf(TestObject);
-      expect(results[0] instanceof Realm.Object).equals(true);
+      expect(results[0]).instanceOf(Realm.Object);
     });
 
     it("should handle invalidated objects", function (this: RealmContext) {
@@ -316,7 +313,7 @@ describe("Results", () => {
       this.realm.close();
       const reopenedRealm = new Realm({
         schemaVersion: 1,
-        schema: [TestObjectSchema],
+        schema: [TestObject],
       });
 
       resultsVariants.forEach(function (objects) {
@@ -463,7 +460,7 @@ describe("Results", () => {
 
   describe("Filtering and sorting", () => {
     it("implements filtered", () => {
-      const realm = new Realm({ schema: [PersonObjectSchema, DefaultValuesSchema, TestObjectSchema] });
+      const realm = new Realm({ schema: [PersonObjectSchema, DefaultValuesSchema, TestObject] });
 
       realm.write(function () {
         realm.create("PersonObject", { name: "Ari", age: 10 });
@@ -506,10 +503,11 @@ describe("Results", () => {
 
       expect(realm.objects("DefaultValuesObject").filtered("dateCol > $0", new Date(4)).length).equals(1);
       expect(realm.objects("DefaultValuesObject").filtered("dateCol <= $0", new Date(4)).length).equals(2);
+      realm.close();
     });
 
     it("should throw when filtering foreign object", () => {
-      const realm = new Realm({ schema: [LinkTypesSchema, TestObjectSchema] });
+      const realm = new Realm({ schema: [LinkTypesSchema, TestObject] });
       const realm2 = new Realm({ path: "2.realm", schema: realm.schema });
       const object = realm2.write(function () {
         return realm2.create<TestObject>("TestObject", { doubleCol: 1 });
@@ -604,6 +602,8 @@ describe("Results", () => {
         //@ts-expect-error Expected to be an invalid sorted argument.
         objects.sorted(["valueCol", "primaryCol"], true);
       }).throws("Second argument is not allowed if passed an array of sort descriptors");
+
+      realm.close();
     });
 
     it("implements sorted correctly with all types", () => {
@@ -719,6 +719,8 @@ describe("Results", () => {
       testSortingWithToStringEquals("decimal128Col", decimals);
       testSortingWithToStringEquals("objectIdCol", oids);
       testSortingWithToStringEquals("uuidCol", uuids);
+
+      realm.close();
     });
   });
   describe("Aggregation", () => {
@@ -1021,7 +1023,7 @@ describe("Results", () => {
       this.realm.close();
       const updatedRealm = new Realm({
         schemaVersion: 1,
-        schema: [TestObjectSchema, BasicTypesSchema],
+        schema: [TestObject, BasicTypesSchema],
       });
 
       resultsVariants.forEach(function (objects) {
