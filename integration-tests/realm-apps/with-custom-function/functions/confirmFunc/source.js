@@ -60,10 +60,10 @@ exports = ({ token, tokenId, username }) => {
   // process the confirm token, tokenId and username
 
   /*
-    usernames that contain realm_tests_do_autoverify* will automatically be registered and approved.
-    usernames that contain realm_tests_do_pendverify* will automatically be registered pending approval.
-    all other usernames will fail verification and not be registered.
-  */
+        usernames that contain realm_tests_do_autoverify* will automatically be registered and approved.
+        usernames that contain realm_tests_do_pendverify* will automatically be registered pending approval.
+        all other usernames will fail verification and not be registered.
+      */
 
   if (username.includes("realm_tests_do_autoverify")) {
     return { status: "success" };

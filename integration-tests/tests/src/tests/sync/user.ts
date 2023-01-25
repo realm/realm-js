@@ -79,8 +79,8 @@ async function removeExistingUsers(app: Realm.App) {
 }
 
 describe.skipIf(environment.missingServer, "User", () => {
-  importAppBefore("with-db");
   describe("email password", () => {
+    importAppBefore("with-email-password");
     it("login without username throws", async function (this: Mocha.Context & AppContext & RealmContext) {
       // @ts-expect-error test logging in without providing username.
       expect(() => Realm.Credentials.emailPassword(undefined, "password")).throws(
@@ -223,181 +223,188 @@ describe.skipIf(environment.missingServer, "User", () => {
   });
 
   describe("properties and methods", () => {
-    it("login and logout works", async function (this: Mocha.Context & AppContext & RealmContext) {
-      await removeExistingUsers(this.app);
-      const credentials = Realm.Credentials.anonymous();
+    describe("with anonymous", () => {
+      importAppBefore("with-db");
+      it("login and logout works", async function (this: Mocha.Context & AppContext & RealmContext) {
+        await removeExistingUsers(this.app);
+        const credentials = Realm.Credentials.anonymous();
 
-      const user = await this.app.logIn(credentials);
-      assertIsUser(user);
-      assertIsSameUser(user, this.app.currentUser);
-      await user.logOut();
-      // Is now logged out.
-      expect(this.app.currentUser).to.be.null;
-    });
-
-    it("can fetch customData", async function (this: Mocha.Context & AppContext & RealmContext) {
-      await removeExistingUsers(this.app);
-      const credentials = Realm.Credentials.anonymous();
-      const user = await this.app.logIn(credentials);
-      const customData = user.customData;
-      // TODO: Enable custom user data in the app to test this e2e
-      expect(typeof customData).equals("object");
-    });
-
-    it("can fetch userProfile", async function (this: Mocha.Context & AppContext & RealmContext) {
-      await removeExistingUsers(this.app);
-      const credentials = Realm.Credentials.anonymous();
-      const user = await this.app.logIn(credentials);
-      const profile = user.profile;
-      expect(typeof profile).equals("object");
-
-      await user.logOut();
-    });
-    it("can fetch allUsers with anonymous", async function (this: Mocha.Context & AppContext & RealmContext) {
-      let all = this.app.allUsers;
-      await removeExistingUsers(this.app);
-
-      all = this.app.allUsers;
-      expect(Object.keys(all).length).equals(0, "Noone to begin with");
-
-      const credentials = Realm.Credentials.anonymous();
-      const user1 = await this.app.logIn(credentials);
-      all = this.app.allUsers;
-      expect(Object.keys(all).length).equals(1, "One user");
-      assertIsSameUser(all[user1.id], user1);
-      const user2 = await this.app.logIn(Realm.Credentials.anonymous());
-      all = this.app.allUsers;
-      expect(Object.keys(all).length).equals(1, "still one user");
-      // NOTE: the list of users is in latest-first order.
-      assertIsSameUser(all[user2.id], user2);
-      assertIsSameUser(all[user1.id], user1);
-
-      await user2.logOut(); // logs out the shared anonymous session
-      all = this.app.allUsers;
-      expect(Object.keys(all).length).equals(0, "All gone");
-    });
-    it("can fetch currentUser with anonymous", async function (this: Mocha.Context & AppContext & RealmContext) {
-      await removeExistingUsers(this.app);
-      expect(this.app.currentUser).to.be.null;
-
-      const firstUser = await this.app.logIn(Realm.Credentials.anonymous());
-      assertIsSameUser(firstUser, this.app.currentUser);
-      const secondUser = await this.app.logIn(Realm.Credentials.anonymous());
-      // the most recently logged in user is considered current
-      expect(firstUser.isLoggedIn).to.be.true;
-      expect(secondUser.isLoggedIn).to.be.true;
-      assertIsSameUser(secondUser, this.app.currentUser);
-      secondUser.logOut();
-      // since anonymous user sessions are shared, firstUser is logged out as well
-      expect(this.app.currentUser).to.be.null;
-      expect(firstUser.isLoggedIn).to.be.false;
-      expect(secondUser.isLoggedIn).to.be.false;
-    });
-    it("can fetch allUsers with email password", async function (this: Mocha.Context & AppContext & RealmContext) {
-      await removeExistingUsers(this.app);
-
-      let all = this.app.allUsers;
-      const userIDs = Object.keys(all);
-
-      let loggedInUsers = 0;
-      for (let i = 0; i < userIDs.length; i++) {
-        console.log("Checking for login on user " + userIDs[i] + "\n");
-        if (all[userIDs[i]].isLoggedIn) {
-          loggedInUsers++;
-        }
-      }
-      expect(loggedInUsers).equals(0, "Noone to begin with");
-
-      const credentials = Realm.Credentials.anonymous();
-      const user1 = await registerAndLogInEmailUser(this.app);
-      all = this.app.allUsers;
-      expect(Object.keys(all).length).equals(1, "One user");
-      assertIsSameUser(all[user1.id], user1);
-      const user2 = await registerAndLogInEmailUser(this.app);
-      all = this.app.allUsers;
-      expect(Object.keys(all).length).equals(2, "Two users");
-      // NOTE: the list of users is in latest-first order.
-      assertIsSameUser(all[user2.id], user2);
-      assertIsSameUser(all[user1.id], user1);
-
-      await user2.logOut();
-      all = this.app.allUsers;
-      assertIsSameUser(all[user2.id], user2);
-      assertIsSameUser(all[user1.id], user1);
-      expect(user2.isLoggedIn).to.be.false;
-      expect(user1.isLoggedIn).to.be.true;
-      expect(Object.keys(all).length).equals(2, "still holds references to both users");
-
-      await user1.logOut();
-      all = this.app.allUsers;
-      expect(user1.isLoggedIn).to.be.false;
-      expect(user2.isLoggedIn).to.be.false;
-      expect(Object.keys(all).length).equals(2, "still holds references to both users"); // FIXME: is this actually expected?
-    });
-    it("can fetch currentUser with email password", async function (this: Mocha.Context & AppContext & RealmContext) {
-      await removeExistingUsers(this.app);
-      expect(this.app.currentUser).to.be.null;
-
-      const firstUser = await registerAndLogInEmailUser(this.app);
-      assertIsSameUser(firstUser, this.app.currentUser);
-      const secondUser = await registerAndLogInEmailUser(this.app);
-      assertIsSameUser(secondUser, this.app.currentUser); // the most recently logged in user is considered current
-      await secondUser.logOut();
-      assertIsSameUser(firstUser, this.app.currentUser); // auto change back to another logged in user
-      await firstUser.logOut();
-      expect(this.app.currentUser).to.be.null;
-    });
-    it("can remove a user", async function (this: Mocha.Context & AppContext & RealmContext) {
-      await removeExistingUsers(this.app); //this somewhat already tests the remove function
-      expect(this.app.currentUser, "No users").to.be.null;
-
-      const validEmail = randomVerifiableEmail();
-      const validPassword = "test1234567890";
-      await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
-      const user1 = await this.app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword));
-
-      expect(user1.isLoggedIn).to.be.true;
-
-      this.app.removeUser(user1);
-      expect(user1.isLoggedIn).to.be.false;
-
-      // Expect that the user still exists on the server
-      const user2 = await this.app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword));
-      expect(user2.isLoggedIn).to.be.true;
-
-      await user2.logOut();
-    });
-    it("can delete a user", async function (this: Mocha.Context & AppContext & RealmContext) {
-      await removeExistingUsers(this.app);
-      expect(this.app.currentUser, "No users").to.be.null;
-
-      const validEmail = randomVerifiableEmail();
-      const validPassword = "test1234567890";
-      await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
-      const user = await this.app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword));
-
-      expect(user.isLoggedIn).to.be.true;
-
-      await this.app.deleteUser(user);
-      expect(user.isLoggedIn, "User is logged out").to.be.false;
-
-      // cannot log in - user doesn't exist
-      let didFail = false;
-      const user2 = await this.app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword)).catch((err) => {
-        expect(err.message).equals("invalid username/password");
-        expect(err.code).equals(50);
-        didFail = true;
+        const user = await this.app.logIn(credentials);
+        assertIsUser(user);
+        assertIsSameUser(user, this.app.currentUser);
+        await user.logOut();
+        // Is now logged out.
+        expect(this.app.currentUser).to.be.null;
       });
-      expect(user2).to.be.undefined;
-      expect(didFail).to.be.true;
+
+      it("can fetch customData", async function (this: Mocha.Context & AppContext & RealmContext) {
+        await removeExistingUsers(this.app);
+        const credentials = Realm.Credentials.anonymous();
+        const user = await this.app.logIn(credentials);
+        const customData = user.customData;
+        // TODO: Enable custom user data in the app to test this e2e
+        expect(typeof customData).equals("object");
+      });
+
+      it("can fetch userProfile", async function (this: Mocha.Context & AppContext & RealmContext) {
+        await removeExistingUsers(this.app);
+        const credentials = Realm.Credentials.anonymous();
+        const user = await this.app.logIn(credentials);
+        const profile = user.profile;
+        expect(typeof profile).equals("object");
+
+        await user.logOut();
+      });
+      it("can fetch allUsers with anonymous", async function (this: Mocha.Context & AppContext & RealmContext) {
+        let all = this.app.allUsers;
+        await removeExistingUsers(this.app);
+
+        all = this.app.allUsers;
+        expect(Object.keys(all).length).equals(0, "Noone to begin with");
+
+        const credentials = Realm.Credentials.anonymous();
+        const user1 = await this.app.logIn(credentials);
+        all = this.app.allUsers;
+        expect(Object.keys(all).length).equals(1, "One user");
+        assertIsSameUser(all[user1.id], user1);
+        const user2 = await this.app.logIn(Realm.Credentials.anonymous());
+        all = this.app.allUsers;
+        expect(Object.keys(all).length).equals(1, "still one user");
+        // NOTE: the list of users is in latest-first order.
+        assertIsSameUser(all[user2.id], user2);
+        assertIsSameUser(all[user1.id], user1);
+
+        await user2.logOut(); // logs out the shared anonymous session
+        all = this.app.allUsers;
+        expect(Object.keys(all).length).equals(0, "All gone");
+      });
+      it("can fetch currentUser with anonymous", async function (this: Mocha.Context & AppContext & RealmContext) {
+        await removeExistingUsers(this.app);
+        expect(this.app.currentUser).to.be.null;
+
+        const firstUser = await this.app.logIn(Realm.Credentials.anonymous());
+        assertIsSameUser(firstUser, this.app.currentUser);
+        const secondUser = await this.app.logIn(Realm.Credentials.anonymous());
+        // the most recently logged in user is considered current
+        expect(firstUser.isLoggedIn).to.be.true;
+        expect(secondUser.isLoggedIn).to.be.true;
+        assertIsSameUser(secondUser, this.app.currentUser);
+        secondUser.logOut();
+        // since anonymous user sessions are shared, firstUser is logged out as well
+        expect(this.app.currentUser).to.be.null;
+        expect(firstUser.isLoggedIn).to.be.false;
+        expect(secondUser.isLoggedIn).to.be.false;
+      });
+    });
+    describe("with email password", () => {
+      importAppBefore("with-email-password");
+      it("can fetch allUsers with email password", async function (this: Mocha.Context & AppContext & RealmContext) {
+        await removeExistingUsers(this.app);
+
+        let all = this.app.allUsers;
+        const userIDs = Object.keys(all);
+
+        let loggedInUsers = 0;
+        for (let i = 0; i < userIDs.length; i++) {
+          console.log("Checking for login on user " + userIDs[i] + "\n");
+          if (all[userIDs[i]].isLoggedIn) {
+            loggedInUsers++;
+          }
+        }
+        expect(loggedInUsers).equals(0, "Noone to begin with");
+
+        const credentials = Realm.Credentials.anonymous();
+        const user1 = await registerAndLogInEmailUser(this.app);
+        all = this.app.allUsers;
+        expect(Object.keys(all).length).equals(1, "One user");
+        assertIsSameUser(all[user1.id], user1);
+        const user2 = await registerAndLogInEmailUser(this.app);
+        all = this.app.allUsers;
+        expect(Object.keys(all).length).equals(2, "Two users");
+        // NOTE: the list of users is in latest-first order.
+        assertIsSameUser(all[user2.id], user2);
+        assertIsSameUser(all[user1.id], user1);
+
+        await user2.logOut();
+        all = this.app.allUsers;
+        assertIsSameUser(all[user2.id], user2);
+        assertIsSameUser(all[user1.id], user1);
+        expect(user2.isLoggedIn).to.be.false;
+        expect(user1.isLoggedIn).to.be.true;
+        expect(Object.keys(all).length).equals(2, "still holds references to both users");
+
+        await user1.logOut();
+        all = this.app.allUsers;
+        expect(user1.isLoggedIn).to.be.false;
+        expect(user2.isLoggedIn).to.be.false;
+        expect(Object.keys(all).length).equals(2, "still holds references to both users"); // FIXME: is this actually expected?
+      });
+      it("can fetch currentUser with email password", async function (this: Mocha.Context & AppContext & RealmContext) {
+        await removeExistingUsers(this.app);
+        expect(this.app.currentUser).to.be.null;
+
+        const firstUser = await registerAndLogInEmailUser(this.app);
+        assertIsSameUser(firstUser, this.app.currentUser);
+        const secondUser = await registerAndLogInEmailUser(this.app);
+        assertIsSameUser(secondUser, this.app.currentUser); // the most recently logged in user is considered current
+        await secondUser.logOut();
+        assertIsSameUser(firstUser, this.app.currentUser); // auto change back to another logged in user
+        await firstUser.logOut();
+        expect(this.app.currentUser).to.be.null;
+      });
+      it("can remove a user", async function (this: Mocha.Context & AppContext & RealmContext) {
+        await removeExistingUsers(this.app); //this somewhat already tests the remove function
+        expect(this.app.currentUser, "No users").to.be.null;
+
+        const validEmail = randomVerifiableEmail();
+        const validPassword = "test1234567890";
+        await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
+        const user1 = await this.app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword));
+
+        expect(user1.isLoggedIn).to.be.true;
+
+        this.app.removeUser(user1);
+        expect(user1.isLoggedIn).to.be.false;
+
+        // Expect that the user still exists on the server
+        const user2 = await this.app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword));
+        expect(user2.isLoggedIn).to.be.true;
+
+        await user2.logOut();
+      });
+      it("can delete a user", async function (this: Mocha.Context & AppContext & RealmContext) {
+        await removeExistingUsers(this.app);
+        expect(this.app.currentUser, "No users").to.be.null;
+
+        const validEmail = randomVerifiableEmail();
+        const validPassword = "test1234567890";
+        await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
+        const user = await this.app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword));
+
+        expect(user.isLoggedIn).to.be.true;
+
+        await this.app.deleteUser(user);
+        expect(user.isLoggedIn, "User is logged out").to.be.false;
+
+        // cannot log in - user doesn't exist
+        let didFail = false;
+        const user2 = await this.app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword)).catch((err) => {
+          expect(err.message).equals("invalid username/password");
+          expect(err.code).equals(50);
+          didFail = true;
+        });
+        expect(user2).to.be.undefined;
+        expect(didFail).to.be.true;
+      });
     });
   });
   describe("JWT", () => {
+    importAppBefore("with-jwt");
     it.skipIf(
       !environment.node,
       "can fetch JWTUserProfile",
       async function (this: Mocha.Context & AppContext & RealmContext) {
-        const signingKey = "My_very_confidential_secretttttt";
+        const signingKey = "2k66QfKeTRk3MdZ5vpDYgZCu2k66QfKeTRk3MdZ5vpDYgZCu";
         const claims = {
           name: "John Doe",
           iss: "http://myapp.com/",
@@ -407,6 +414,7 @@ describe.skipIf(environment.missingServer, "User", () => {
           exp: 4070908800, // 01/01/2099
 
           // metadata
+          mySecretField: "foo",
           id: "one",
           license: "one-two-three",
         };
@@ -426,10 +434,13 @@ describe.skipIf(environment.missingServer, "User", () => {
       },
     );
   });
-  describe("JWT", () => {
-    it("can fetch userProfile", async function (this: Mocha.Context & AppContext & RealmContext) {
-      const credentials = Realm.Credentials.anonymous();
-      const user = await this.app.logIn(credentials);
+  describe("api-key auth", () => {
+    importAppBefore("with-api-key");
+    it("can create valid key", async function (this: Mocha.Context & AppContext & RealmContext) {
+      const validEmail = randomVerifiableEmail();
+      const validPassword = "test1234567890";
+      await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
+      const user = await this.app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword));
       expect(user.apiKeys instanceof Realm.Auth.ApiKeyAuth).to.be.true;
 
       // TODO: Enable when fixed: Disabling this test since the CI stitch integration returns cryptic error.
@@ -447,6 +458,7 @@ describe.skipIf(environment.missingServer, "User", () => {
     });
   });
   describe("custom functions", () => {
+    importAppBefore("with-custom-function");
     it("custom confirmation function works", async function (this: Mocha.Context & AppContext & RealmContext) {
       const pendingEmail = randomPendingVerificationEmail();
       const validPassword = "password123456";
@@ -498,18 +510,19 @@ describe.skipIf(environment.missingServer, "User", () => {
     });
   });
   describe("mongo client", () => {
+    importAppBefore("with-db");
     it("can perform operations on a collection via the client", async function (this: Mocha.Context &
       AppContext &
       RealmContext) {
       const credentials = Realm.Credentials.anonymous();
       const user = await this.app.logIn(credentials);
 
-      const mongo = user.mongoClient("BackingDB");
+      const mongo = user.mongoClient("mongodb");
       //@ts-expect-error TYPEBUG: serviceName is a missing property on MongoDB interface
-      expect(mongo.serviceName).equals("BackingDB");
-      const database = mongo.db("test_data");
+      expect(mongo.serviceName).equals("mongodb");
+      const database = mongo.db("test-database");
       //@ts-expect-error TYPEBUG: name is a missing property on MongoDBDatabase interface
-      expect(database.name).equals("test_data");
+      expect(database.name).equals("test-database");
 
       const collection = database.collection("testRemoteMongoClient");
       //@ts-expect-error TYPEBUG: name is a missing property on MongoDBCollection interface
@@ -524,7 +537,7 @@ describe.skipIf(environment.missingServer, "User", () => {
     it("can watch changes correctly", async function (this: Mocha.Context & AppContext & RealmContext) {
       const credentials = Realm.Credentials.anonymous();
       const user = await this.app.logIn(credentials);
-      const collection = user.mongoClient("BackingDB").db("test_data").collection("testRemoteMongoClient") as any;
+      const collection = user.mongoClient("mongodb").db("test-database").collection("testRemoteMongoClient") as any;
 
       await collection.deleteMany({});
 
@@ -582,6 +595,7 @@ describe.skipIf(environment.missingServer, "User", () => {
     });
   });
   describe("push service", () => {
+    importAppBefore("with-db");
     it("can perform operations on a collection via the client", async function (this: Mocha.Context &
       AppContext &
       RealmContext) {
