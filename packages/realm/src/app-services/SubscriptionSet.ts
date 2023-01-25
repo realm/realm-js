@@ -85,16 +85,6 @@ export class SubscriptionSet extends BaseSubscriptionSet {
    * to the server. You can either `await` the call to `update`, or call
    * {@link SubscriptionSet.waitForSynchronization} to wait for the new data to be available.
    *
-   * Example:
-   * ```
-   * await realm.subscriptions.update(mutableSubscriptions => {
-   *   mutableSubscriptions.add(realm.objects("Cat").filtered("age > 10"));
-   *   mutableSubscriptions.add(realm.objects("Dog").filtered("age > 20"));
-   *   mutableSubscriptions.removeByName("personSubs");
-   * });
-   * // `realm` will now return the expected results based on the updated subscriptions
-   * ```
-   *
    * @param callback A callback function which receives a {@link MutableSubscriptionSet}
    *  instance as the first argument, which can be used to add or remove subscriptions
    *  from the set, and the {@link Realm} associated with the SubscriptionSet as the
@@ -103,6 +93,14 @@ export class SubscriptionSet extends BaseSubscriptionSet {
    *
    * @returns A promise which resolves when the SubscriptionSet is synchronized, or is rejected
    *  if there was an error during synchronization (see {@link SubscriptionSet.waitForSynchronization})
+   *
+   * @example
+   * await realm.subscriptions.update(mutableSubscriptions => {
+   *   mutableSubscriptions.add(realm.objects("Cat").filtered("age > 10"));
+   *   mutableSubscriptions.add(realm.objects("Dog").filtered("age > 20"));
+   *   mutableSubscriptions.removeByName("personSubs");
+   * });
+   * // `realm` will now return the expected results based on the updated subscriptions
    */
   async update(callback: (mutableSubscriptions: MutableSubscriptionSet, realm: Realm) => void): Promise<void> {
     this.updateSync(callback);

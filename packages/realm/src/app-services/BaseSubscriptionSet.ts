@@ -75,7 +75,8 @@ const PROXY_HANDLER: ProxyHandler<BaseSubscriptionSet> = {
   getOwnPropertyDescriptor(target, prop) {
     if (Reflect.has(target, prop)) {
       return Reflect.getOwnPropertyDescriptor(target, prop);
-    } else if (typeof prop === "string") {
+    }
+    if (typeof prop === "string") {
       const BASE = 10;
       const index = Number.parseInt(prop, BASE);
       if (index < target.length) {
@@ -83,6 +84,8 @@ const PROXY_HANDLER: ProxyHandler<BaseSubscriptionSet> = {
       }
     }
   },
+  // Not defining `set()` here will make e.g. `mySubscriptions[0] = someValue` a no-op
+  // if strict mode (`"use strict"`) is used, or throw a TypeError if it is not used.
 };
 
 /**
@@ -199,7 +202,13 @@ export abstract class BaseSubscriptionSet {
   }
 
   /**
-   * Makes the set iterable.
+   * Makes the subscription set iterable.
+   *
+   * @returns Iterable of each value in the set.
+   * @example
+   * for (const subscription of subscriptions) {
+   *   // ...
+   * }
    */
   *[Symbol.iterator](): IterableIterator<Subscription> {
     for (const subscription of this.internal) {
