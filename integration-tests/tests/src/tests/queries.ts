@@ -191,9 +191,6 @@ const SharedTestSuiteCases: Record<string, TestCase> = {
       ["AssertException", "FloatObject", "Unsupported comparison operator", "floatCol BEGINSWITH 1"],
       ["AssertException", "FloatObject", "Unsupported comparison operator", "floatCol CONTAINS 1"],
       ["AssertException", "FloatObject", "Unsupported comparison operator", "floatCol ENDSWITH 1"],
-
-      // ["Disabled", "AssertException", "FloatObject", "floatCol = 3.5e+38"],
-      // ["Disabled", "AssertException", "FloatObject", "floatCol = -3.5e+38"],
     ],
   },
 
@@ -892,6 +889,7 @@ describe("Migrated Query Tests", () => {
 
 import { IPerson, PersonSchema } from "../schemas/person-and-dogs";
 import { IContact, ContactSchema } from "../schemas/contact";
+import { openRealmBeforeEach } from "../hooks";
 
 interface IPrimitive {
   s: string;
@@ -918,103 +916,138 @@ const PrimitiveSchema: Realm.ObjectSchema = {
  * TODO: These are the newer tests which should be included when refactoring the migrated ones.
  * During migration we should probably include them all as part of the same "describe" block.
  */
-describe("Realm Query Language", () => {
-  let realm: Realm;
-  let persons: Realm.Results<IPerson>;
-  let contacts: Realm.Results<IContact>;
-  let primitives: Realm.Results<IPrimitive>;
+describe("New Query Tests", () => {
+  describe("Realm Query Language", () => {
+    let persons: Realm.Results<IPerson>;
+    let contacts: Realm.Results<IContact>;
+    let primitives: Realm.Results<IPrimitive>;
 
-  beforeEach(() => {
-    Realm.clearTestState();
-    realm = new Realm({ schema: [PersonSchema, ContactSchema, PrimitiveSchema] });
-    realm.write(() => {
-      const alice = realm.create<IPerson>(PersonSchema.name, { name: "Alice", age: 15 });
-      const bob = realm.create<IPerson>(PersonSchema.name, { name: "Bob", age: 14, friends: [alice] });
-      realm.create<IPerson>(PersonSchema.name, { name: "Charlie", age: 17, friends: [bob, alice] });
+    openRealmBeforeEach({ schema: [PersonSchema, ContactSchema, PrimitiveSchema] });
 
-      realm.create<IContact>(ContactSchema.name, { name: "Alice", phones: ["555-1234-567"] });
-      realm.create<IContact>(ContactSchema.name, { name: "Bob", phones: ["555-1122-333", "555-1234-567"] });
-      realm.create<IContact>(ContactSchema.name, { name: "Charlie" });
+    beforeEach(function (this: RealmContext) {
+      this.realm.write(() => {
+        const alice = this.realm.create<IPerson>(PersonSchema.name, { name: "Alice", age: 15 });
+        const bob = this.realm.create<IPerson>(PersonSchema.name, { name: "Bob", age: 14, friends: [alice] });
+        this.realm.create<IPerson>(PersonSchema.name, { name: "Charlie", age: 17, friends: [bob, alice] });
 
-      realm.create<IPrimitive>(PrimitiveSchema.name, {
-        s: "foo",
-        b: true,
-        i: 2,
-        f: 3.14,
-        d: 2.72,
-        t: new Date("2001-05-11T12:45:05"),
+        this.realm.create<IContact>(ContactSchema.name, { name: "Alice", phones: ["555-1234-567"] });
+        this.realm.create<IContact>(ContactSchema.name, { name: "Bob", phones: ["555-1122-333", "555-1234-567"] });
+        this.realm.create<IContact>(ContactSchema.name, { name: "Charlie" });
+
+        this.realm.create<IPrimitive>(PrimitiveSchema.name, {
+          s: "foo",
+          b: true,
+          i: 2,
+          f: 3.14,
+          d: 2.72,
+          t: new Date("2001-05-11T12:45:05"),
+        });
+        this.realm.create<IPrimitive>(PrimitiveSchema.name, {
+          s: "Here is a Unicorn 🦄 today",
+          b: false,
+          i: 44,
+          f: 1.41,
+          d: 4.67,
+          t: new Date("2004-02-26T10:15:02"),
+        });
       });
-      realm.create<IPrimitive>(PrimitiveSchema.name, {
-        s: "Here is a Unicorn 🦄 today",
-        b: false,
-        i: 44,
-        f: 1.41,
-        d: 4.67,
-        t: new Date("2004-02-26T10:15:02"),
+      persons = this.realm.objects<IPerson>(PersonSchema.name);
+      contacts = this.realm.objects<IContact>(ContactSchema.name);
+      primitives = this.realm.objects<IPrimitive>(PrimitiveSchema.name);
+    });
+
+    describe("All objects", () => {
+      it("properties and primitive types", () => {
+        expect(persons.length).equal(3);
+        expect(persons[0].name).equal("Alice");
+        expect(persons[0].age).equal(15);
+      });
+
+      it("array of primitive types", () => {
+        expect(contacts.length).equal(3);
+        expect(contacts[0].phones.length).equal(1);
+        expect(contacts[1].phones.length).equal(2);
+        expect(contacts[2].phones.length).equal(0);
+      });
+
+      // https://github.com/realm/realm-js/issues/4844
+      it("emoiji and contains", () => {
+        const text = "unicorn 🦄 today";
+        expect(primitives.length).equal(2);
+        const unicorn1 = primitives.filtered("s CONTAINS 'unicorn 🦄 today'");
+        const unicorn2 = primitives.filtered("s CONTAINS[c] 'unicorn 🦄 today'");
+        const unicorn3 = primitives.filtered("s CONTAINS $0", text);
+        const unicorn4 = primitives.filtered("s CONTAINS[c] $0", text);
+        expect(unicorn1.length).equal(0);
+        expect(unicorn2.length).equal(1);
+        expect(unicorn3.length).equal(0);
+        expect(unicorn4.length).equal(1);
       });
     });
-    persons = realm.objects<IPerson>(PersonSchema.name);
-    contacts = realm.objects<IContact>(ContactSchema.name);
-    primitives = realm.objects<IPrimitive>(PrimitiveSchema.name);
-  });
 
-  afterEach(() => {
-    realm.close();
-  });
+    describe("IN operator", () => {
+      it("properties and array of values", () => {
+        const aged14Or15 = persons.filtered("age IN {14, 15}");
+        expect(aged14Or15.length).equal(2);
 
-  describe("All objects", () => {
-    it("properties and primitive types", () => {
-      expect(persons.length).equal(3);
-      expect(persons[0].name).equal("Alice");
-      expect(persons[0].age).equal(15);
-    });
+        const aged17 = persons.filtered("age IN $0", [17]);
+        expect(aged17.length).equal(1);
 
-    it("array of primitive types", () => {
-      expect(contacts.length).equal(3);
-      expect(contacts[0].phones.length).equal(1);
-      expect(contacts[1].phones.length).equal(2);
-      expect(contacts[2].phones.length).equal(0);
-    });
+        const dennis = persons.filtered("name in {'Dennis'}");
+        expect(dennis.length).equal(0);
+      });
 
-    // https://github.com/realm/realm-js/issues/4844
-    it("emoiji and contains", () => {
-      const text = "unicorn 🦄 today";
-      expect(primitives.length).equal(2);
-      const unicorn1 = primitives.filtered("s CONTAINS 'unicorn 🦄 today'");
-      const unicorn2 = primitives.filtered("s CONTAINS[c] 'unicorn 🦄 today'");
-      const unicorn3 = primitives.filtered("s CONTAINS $0", text);
-      const unicorn4 = primitives.filtered("s CONTAINS[c] $0", text);
-      expect(unicorn1.length).equal(0);
-      expect(unicorn2.length).equal(1);
-      expect(unicorn3.length).equal(0);
-      expect(unicorn4.length).equal(1);
+      it("array of primitive types", () => {
+        const hasTwoPhones = contacts.filtered("phones.@count = 2");
+        expect(hasTwoPhones.length).equal(1);
+        expect(hasTwoPhones[0].name).equal("Bob");
+
+        expect(contacts.filtered("'555-1234-567' IN phones").length).equal(2);
+        expect(contacts.filtered("'123-4567-890' IN phones").length).equal(0);
+        expect(contacts.filtered("ANY {'555-1234-567', '123-4567-890'} IN phones").length).equal(2);
+        expect(contacts.filtered("ALL {'555-1234-567', '123-4567-890'} IN phones").length).equal(0);
+        expect(contacts.filtered("NONE {'555-1234-567', '123-4567-890'} IN phones").length).equal(1);
+        expect(contacts.filtered("NONE {'555-1122-333', '555-1234-567'} IN phones").length).equal(1);
+        expect(contacts.filtered("ALL {'555-1122-333', '555-1234-567'} IN phones").length).equal(1);
+      });
     });
   });
+  describe("Special cases", () => {
+    class DecimalNumbersObject extends Realm.Object {
+      f!: Realm.Types.Float;
+      d!: Realm.Types.Double;
 
-  describe("IN operator", () => {
-    it("properties and array of values", () => {
-      const aged14Or15 = persons.filtered("age IN {14, 15}");
-      expect(aged14Or15.length).equal(2);
+      static schema = {
+        name: "DecimalNumbersObject",
+        properties: {
+          f: "float",
+          d: "double",
+        },
+      };
+    }
+    openRealmBeforeEach({ schema: [DecimalNumbersObject] });
+    it("should work with scientific notation numbers", function (this: RealmContext) {
+      this.realm.write(() => {
+        this.realm.create<DecimalNumbersObject>("DecimalNumbersObject", { f: 10e-12, d: 5e10 });
+        this.realm.create<DecimalNumbersObject>("DecimalNumbersObject", { f: 12e-12, d: 3e10 });
+        this.realm.create<DecimalNumbersObject>("DecimalNumbersObject", { f: 10e-10, d: 8e10 });
+        this.realm.create<DecimalNumbersObject>("DecimalNumbersObject", { f: 10e-20, d: 8e32 });
+      });
+      const numbers = this.realm.objects<DecimalNumbersObject>("DecimalNumbersObject");
 
-      const aged17 = persons.filtered("age IN $0", [17]);
-      expect(aged17.length).equal(1);
+      expect(numbers.filtered("f == 10e-12 AND d == 5e10").length).equal(1);
+      expect(numbers.filtered("f == 10e-12 AND d == 5e9").length).equal(0);
+      expect(numbers.filtered("f == 6e-6").length).equal(0);
+      expect(numbers.filtered("d == 9e32").length).equal(0);
 
-      const dennis = persons.filtered("name in {'Dennis'}");
-      expect(dennis.length).equal(0);
-    });
+      expect(numbers.filtered("f == 100e-13").length).equal(1);
+      expect(numbers.filtered("f > 10e-12").length).equal(2);
+      expect(numbers.filtered("f > 10e-50").length).equal(4);
 
-    it("array of primitive types", () => {
-      const hasTwoPhones = contacts.filtered("phones.@count = 2");
-      expect(hasTwoPhones.length).equal(1);
-      expect(hasTwoPhones[0].name).equal("Bob");
+      expect(numbers.filtered("d > 8e32").length).equal(0);
+      expect(numbers.filtered("d >= 8e32").length).equal(1);
 
-      expect(contacts.filtered("'555-1234-567' IN phones").length).equal(2);
-      expect(contacts.filtered("'123-4567-890' IN phones").length).equal(0);
-      expect(contacts.filtered("ANY {'555-1234-567', '123-4567-890'} IN phones").length).equal(2);
-      expect(contacts.filtered("ALL {'555-1234-567', '123-4567-890'} IN phones").length).equal(0);
-      expect(contacts.filtered("NONE {'555-1234-567', '123-4567-890'} IN phones").length).equal(1);
-      expect(contacts.filtered("NONE {'555-1122-333', '555-1234-567'} IN phones").length).equal(1);
-      expect(contacts.filtered("ALL {'555-1122-333', '555-1234-567'} IN phones").length).equal(1);
+      expect(numbers.filtered("(f > 10e-12 AND f <= 10e10) AND (d >= 3e10 AND d <= 8e10)").length).equal(2);
     });
   });
 });
