@@ -223,6 +223,10 @@ export function validateConfiguration(config: unknown): asserts config is Config
   }
   if (schemaVersion !== undefined) {
     assert.number(schemaVersion, "'schemaVersion' on realm configuration");
+    assert(
+      schemaVersion >= 0 && Number.isInteger(schemaVersion),
+      "'schemaVersion' on realm configuration must be 0 or a positive integer.",
+    );
   }
   if (inMemory !== undefined) {
     assert.boolean(inMemory, "'inMemory' on realm configuration");
