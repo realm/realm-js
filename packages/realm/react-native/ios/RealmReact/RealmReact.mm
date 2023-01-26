@@ -42,7 +42,6 @@
 @end
 
 @implementation RealmReact {
-  NSMutableDictionary *_eventHandlers;
   // Keep track of whether we are already waiting for the React Native UI queue
   // to be flushed asynchronously
   bool waitingForUiFlush;
@@ -65,7 +64,6 @@ RCT_EXPORT_MODULE(Realm)
 - (instancetype)init {
   self = [super init];
   if (self) {
-    _eventHandlers = [[NSMutableDictionary alloc] init];
     waitingForUiFlush = false;
   }
   return self;
@@ -77,29 +75,6 @@ RCT_EXPORT_MODULE(Realm)
 
 - (NSDictionary *)constantsToExport {
   return @{};
-}
-
-- (void)addListenerForEvent:(NSString *)eventName
-                    handler:(RealmReactEventHandler)handler {
-  NSMutableOrderedSet *handlers = _eventHandlers[eventName];
-  if (!handlers) {
-    handlers = _eventHandlers[eventName] = [[NSMutableOrderedSet alloc] init];
-  }
-  [handlers addObject:handler];
-}
-
-- (void)removeListenerForEvent:(NSString *)eventName
-                       handler:(RealmReactEventHandler)handler {
-  NSMutableOrderedSet *handlers = _eventHandlers[eventName];
-  [handlers removeObject:handler];
-}
-
-RCT_REMAP_METHOD(emit, emitEvent
-                 : (NSString *)eventName withObject
-                 : (id)object) {
-  for (RealmReactEventHandler handler in [_eventHandlers[eventName] copy]) {
-    handler(object);
-  }
 }
 
 - (void)invalidate {
