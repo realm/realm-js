@@ -1,6 +1,8 @@
-name: Wipe all clusters and apps on dev
+name: Wipe all clusters and apps
 
 on:
+  schedule:
+    - cron: "0 6 * * *"
   workflow_dispatch:
 jobs:
   main:
