@@ -21,34 +21,34 @@ import { Decimal128, ObjectId, UUID } from "bson";
 import { expect } from "chai";
 import { openRealmBefore } from "../hooks";
 
-type ISingleSchema = {
+interface ISingle {
   a: Realm.Mixed;
   b: Realm.Mixed;
   c: Realm.Mixed;
   d: Realm.Mixed;
-};
+}
 
-type IVertexSchema = {
+interface IVertex {
   a: number;
   b: number;
   c: number;
-};
+}
 
-type IMixNestedSchema = {
+interface IMixNested {
   a: Realm.Mixed;
   b: Realm.Mixed;
   c: Realm.Mixed;
   d: Realm.Mixed;
-};
+}
 
-type IMixedNullableSchema = {
+interface IMixedNullable {
   nullable: Realm.Mixed;
   nullable_list: Realm.Mixed[];
-};
+}
 
-type IMixedSchema = {
+interface IMixedSchema {
   value: Realm.Mixed;
-};
+}
 
 const SingleSchema: Realm.ObjectSchema = {
   name: "mixed",
@@ -96,7 +96,7 @@ describe("Mixed", () => {
     openRealmBefore({ schema: [SingleSchema] });
     it("support primitives", function (this: RealmContext) {
       this.realm.write(() => this.realm.create(SingleSchema.name, { a: "xxxxxx", b: 555, c: true }));
-      const data = this.realm.objects<ISingleSchema>(SingleSchema.name)[0];
+      const data = this.realm.objects<ISingle>(SingleSchema.name)[0];
       expect(data.a).equals("xxxxxx", "should store xxxxxx");
       expect(data.b).equals(555, "should store 555");
       expect(data.c).equals(true, "should store boolean (true)");
@@ -121,8 +121,8 @@ describe("Mixed", () => {
       const uuid = new UUID();
       const date = new Date();
 
-      const data: ISingleSchema = this.realm.write(() =>
-        this.realm.create(SingleSchema.name, { a: oid, b: uuid, c: d128, d: date }),
+      const data = this.realm.write(() =>
+        this.realm.create<ISingle>(SingleSchema.name, { a: oid, b: uuid, c: d128, d: date }),
       );
 
       expect(typeof data.a === typeof oid, "should be the same type ObjectId");
@@ -138,9 +138,7 @@ describe("Mixed", () => {
       const uuid = new UUID();
       const date = new Date();
 
-      const data: ISingleSchema = this.realm.write(() =>
-        this.realm.create<ISingleSchema>(SingleSchema.name, { a: oid }),
-      );
+      const data = this.realm.write(() => this.realm.create<ISingle>(SingleSchema.name, { a: oid }));
       expect(typeof data.a === typeof oid, "should be the same type ObjectId");
       expect(String(data.a)).equals(oid.toString(), "should have the same content");
 
@@ -170,41 +168,37 @@ describe("Mixed", () => {
   describe("Nested types", () => {
     openRealmBefore({ schema: [SingleSchema, VertexSchema, MixNestedSchema] });
     it("support nested types", function (this: RealmContext) {
-      this.realm.write(() => {
-        const r = this.realm.create(VertexSchema.name, { a: 1, b: 0, c: 0 });
-        const r2 = this.realm.create(VertexSchema.name, { a: 0, b: 1, c: 0 });
-        const r3 = this.realm.create(VertexSchema.name, { a: 0, b: 0, c: 1 });
+      const obj1 = this.realm.write(() => {
+        const r = this.realm.create<IVertex>(VertexSchema.name, { a: 1, b: 0, c: 0 });
+        const r2 = this.realm.create<IVertex>(VertexSchema.name, { a: 0, b: 1, c: 0 });
+        const r3 = this.realm.create<IVertex>(VertexSchema.name, { a: 0, b: 0, c: 1 });
 
-        this.realm.create(SingleSchema.name, { a: r, b: r2, c: r3, d: null });
+        return this.realm.create<ISingle>(SingleSchema.name, { a: r, b: r2, c: r3, d: null });
       });
 
-      let data: ISingleSchema = this.realm.objects<ISingleSchema>(SingleSchema.name)[0];
+      expect((obj1.a as IVertex).a).equals(1, "Should be equal to 1");
+      expect((obj1.a as IVertex).b).equals(0, "Should be equal 0");
+      expect((obj1.a as IVertex).c).equals(0, "Should be equal 0");
 
-      expect((data.a as IVertexSchema).a).equals(1, "Should be equal to 1");
-      expect((data.a as IVertexSchema).b).equals(0, "Should be equal 0");
-      expect((data.a as IVertexSchema).c).equals(0, "Should be equal 0");
+      expect((obj1.b as IVertex).a).equals(0, "Should be equal 0");
+      expect((obj1.b as IVertex).b).equals(1, "Should be equal 1");
+      expect((obj1.b as IVertex).c).equals(0, "Should be equal 0");
 
-      expect((data.b as IVertexSchema).a).equals(0, "Should be equal 0");
-      expect((data.b as IVertexSchema).b).equals(1, "Should be equal 1");
-      expect((data.b as IVertexSchema).c).equals(0, "Should be equal 0");
+      expect((obj1.c as IVertex).a).equals(0, "Should be equal 0");
+      expect((obj1.c as IVertex).b).equals(0, "Should be equal 0");
+      expect((obj1.c as IVertex).c).equals(1, "Should be equal 1");
 
-      expect((data.c as IVertexSchema).a).equals(0, "Should be equal 0");
-      expect((data.c as IVertexSchema).b).equals(0, "Should be equal 0");
-      expect((data.c as IVertexSchema).c).equals(1, "Should be equal 1");
-
-      this.realm.write(() => {
+      const obj2 = this.realm.write(() => {
         const r = this.realm.create(MixNestedSchema.name, { a: 0, b: -1 });
         const r1 = this.realm.create(MixNestedSchema.name, { a: 1, b: 0 });
-        this.realm.create(SingleSchema.name, { a: r, b: r1 });
+        return this.realm.create<ISingle>(SingleSchema.name, { a: r, b: r1 });
       });
 
-      data = this.realm.objects<ISingleSchema>(SingleSchema.name)[1];
+      expect((obj2.a as IVertex).a).equals(0, "Should be equal 0");
+      expect((obj2.a as IVertex).b).equals(-1, "Should be equal -1");
 
-      expect((data.a as IVertexSchema).a).equals(0, "Should be equal 0");
-      expect((data.a as IVertexSchema).b).equals(-1, "Should be equal -1");
-
-      expect((data.b as IVertexSchema).a).equals(1, "Should be equal 1");
-      expect((data.b as IVertexSchema).b).equals(0, "Should be equal 0");
+      expect((obj2.b as IVertex).a).equals(1, "Should be equal 1");
+      expect((obj2.b as IVertex).b).equals(0, "Should be equal 0");
     });
   });
 
@@ -213,7 +207,7 @@ describe("Mixed", () => {
     it("supports nullable types", function (this: RealmContext) {
       this.realm.write(() => this.realm.create(MixedNullableSchema.name, { nullable: undefined }));
 
-      const value = this.realm.objects<IMixedNullableSchema>(MixedNullableSchema.name)[0];
+      const value = this.realm.objects<IMixedNullable>(MixedNullableSchema.name)[0];
       this.realm.write(() => (value.nullable = null));
       this.realm.write(() => (value.nullable = undefined));
 
