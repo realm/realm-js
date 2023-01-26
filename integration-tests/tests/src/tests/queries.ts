@@ -124,7 +124,12 @@ describe("Queries", () => {
       let results = realm.objects<any>(objectSchema);
       results = results.filtered(queryString, ...queryArgs);
       expect(expectedResults.length).equals(results.length);
-      expect(expectedResults).to.deep.equal(results.map((el) => el[propertyToCompare]));
+      expect(expectedResults).to.deep.equal(
+        results.map((el) => el[propertyToCompare]),
+        `
+        Expected results not returned from query: ${queryString} ${JSON.stringify(queryArgs)}, 
+      `,
+      );
     });
   };
 
