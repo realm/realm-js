@@ -45,22 +45,6 @@ interface IntPrimaryObject {
   valueCol: string;
 }
 
-const DefaultValuesSchema = {
-  name: "DefaultValuesObject",
-  properties: {
-    boolCol: { type: "bool", default: true },
-    intCol: { type: "int", default: -1 },
-    floatCol: { type: "float", default: -1.1 },
-    doubleCol: { type: "double", default: -1.11 },
-    stringCol: { type: "string", default: "defaultString" },
-    dateCol: { type: "date", default: new Date(1.111) },
-    dataCol: { type: "data", default: new ArrayBuffer(1) },
-    objectCol: { type: "TestObject", default: { doubleCol: 1 } },
-    nullObjectCol: { type: "TestObject", default: null },
-    arrayCol: { type: "TestObject[]", default: [{ doubleCol: 2 }] },
-  },
-};
-
 const BasicTypesSchema = {
   name: "BasicTypesObject",
   properties: {
@@ -459,7 +443,7 @@ describe("Results", () => {
     }
 
     it("implements filtered", () => {
-      const realm = new Realm({ schema: [DefaultValuesSchema, PersonObject, TestObject] });
+      const realm = new Realm({ schema: [PersonObject] });
 
       realm.write(function () {
         realm.create("PersonObject", { name: "Ari", age: 10 });
@@ -468,22 +452,7 @@ describe("Results", () => {
         realm.create("PersonObject", { name: "Alex", age: 12, married: true });
       });
 
-      expect(realm.objects("PersonObject").filtered("truepredicate").length).equals(4);
-      expect(realm.objects("PersonObject").length).equals(4);
-      expect(realm.objects("PersonObject").filtered("age = 11").length).equals(1);
-      expect(realm.objects<PersonObject>("PersonObject").filtered("age = 11")[0].name).equals("Tim");
-      expect(realm.objects("PersonObject").filtered("age = 12").length).equals(2);
-      expect(realm.objects("PersonObject").filtered("age = 13").length).equals(0);
-      expect(realm.objects("PersonObject").filtered("age < 12").length).equals(2);
-      expect(realm.objects("PersonObject").filtered("age > 10 && age < 13").length).equals(3);
-      expect(realm.objects("PersonObject").filtered("age > 10").filtered("age < 13").length).equals(3);
-
-      expect(realm.objects("PersonObject").filtered("age >= 11 && age < 13").length).equals(3);
-      expect(realm.objects("PersonObject").filtered('name = "Tim"').length).equals(1);
-      expect(realm.objects("PersonObject").filtered("name = 'Tim'").length).equals(1);
-      expect(realm.objects("PersonObject").filtered("married == TRUE").length).equals(1);
-      expect(realm.objects("PersonObject").filtered("married == false").length).equals(3);
-
+      // Covered more throughly in Queries tests.
       expect(realm.objects("PersonObject").filtered("name = $0", "Tim").length).equals(1);
       expect(realm.objects("PersonObject").filtered("age > $1 && age < $0", 13, 10).length).equals(3);
 
@@ -494,14 +463,6 @@ describe("Results", () => {
         realm.objects("PersonObject").filtered("invalidQuery");
       }).throws("Invalid predicate: 'invalidQuery'");
 
-      realm.write(function () {
-        realm.create("DefaultValuesObject", { dateCol: new Date(3) });
-        realm.create("DefaultValuesObject", { dateCol: new Date(4) });
-        realm.create("DefaultValuesObject", { dateCol: new Date(5) });
-      });
-
-      expect(realm.objects("DefaultValuesObject").filtered("dateCol > $0", new Date(4)).length).equals(1);
-      expect(realm.objects("DefaultValuesObject").filtered("dateCol <= $0", new Date(4)).length).equals(2);
       realm.close();
     });
 
@@ -619,42 +580,42 @@ describe("Results", () => {
       }
 
       realm.write(function () {
-        realm.create("BasicTypesObject", [
-          false,
-          0,
-          0,
-          0,
-          "0",
-          new Date(0),
-          new ArrayBuffer(1),
-          decimals[0],
-          oids[0],
-          uuids[0],
-        ]);
-        realm.create("BasicTypesObject", [
-          true,
-          2,
-          2,
-          2,
-          "2",
-          new Date(2),
-          new ArrayBuffer(1),
-          decimals[2],
-          oids[2],
-          uuids[2],
-        ]);
-        realm.create("BasicTypesObject", [
-          false,
-          1,
-          1,
-          1,
-          "1",
-          new Date(1),
-          new ArrayBuffer(1),
-          decimals[1],
-          oids[1],
-          uuids[1],
-        ]);
+        realm.create("BasicTypesObject", {
+          boolCol: false,
+          intCol: 0,
+          floatCol: 0,
+          doubleCol: 0,
+          stringCol: "0",
+          dateCol: new Date(0),
+          dataCol: new ArrayBuffer(1),
+          decimal128Col: decimals[0],
+          objectIdCol: oids[0],
+          uuidCol: uuids[0],
+        });
+        realm.create("BasicTypesObject", {
+          boolCol: true,
+          intCol: 2,
+          floatCol: 2,
+          doubleCol: 2,
+          stringCol: "2",
+          dateCol: new Date(2),
+          dataCol: new ArrayBuffer(1),
+          decimal128Col: decimals[2],
+          objectIdCol: oids[2],
+          uuidCol: uuids[2],
+        });
+        realm.create("BasicTypesObject", {
+          boolCol: false,
+          intCol: 1,
+          floatCol: 1,
+          doubleCol: 1,
+          stringCol: "1",
+          dateCol: new Date(1),
+          dataCol: new ArrayBuffer(1),
+          decimal128Col: decimals[1],
+          objectIdCol: oids[1],
+          uuidCol: uuids[1],
+        });
       });
 
       const numberProps = ["intCol", "floatCol", "doubleCol", "stringCol"];
@@ -869,6 +830,7 @@ describe("Results", () => {
       }).throws("Property 'foo' does not exist on object 'NullableBasicTypesObject'");
     });
   });
+
   describe("Updating Results", () => {
     openRealmBeforeEach({ schema: [NullableBasicTypesSchema] });
     it("should update correctly", function (this: RealmContext) {
