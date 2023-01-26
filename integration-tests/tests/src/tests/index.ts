@@ -28,6 +28,7 @@ import "./sets";
 import "./class-models";
 import "./serialization";
 import "./iterators";
+import "./results";
 import "./migrations";
 import "./queries";
 import "./dynamic-schema-updates";
