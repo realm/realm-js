@@ -144,6 +144,11 @@ jobs:
         run: |
           cl_exe=$(which cl.exe)
           cl_dir=$(dirname "$cl_exe")
+          # For 32-bit it uses a different compiler than the one in the path
+          if [ ${{ matrix.variant.arch }} = ia32 ]; then
+              cl_dir=$(dirname "$cl_dir")/x86
+              cl_exe="$cl_dir/cl.exe"
+          fi
           cl_dir_windows="C:${cl_dir#/c}"
           mv -v "$cl_exe" "$cl_dir"/cl-real.exe
           cp -v "$cl_dir"/cl.exe.config "$cl_dir"/cl-real.exe.config
