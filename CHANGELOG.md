@@ -14,6 +14,7 @@
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
+* Unpin Xcode version when building locally and upgrade the Xcode version used by GHA.
 * Enable tests for notifications on dictionary.
 * Automate releasing package on GHA
 <!-- * Either mention core version or upgrade -->
