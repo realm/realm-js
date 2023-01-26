@@ -446,7 +446,7 @@ describe("Realmtest", () => {
     afterEach(() => {
       Realm.clearTestState();
     });
-    it("is correct type", () => {
+    it("new realm returns correct type", () => {
       const realm = new Realm({ schema: [] });
       expect(realm instanceof Realm).to.be.true;
 
@@ -454,17 +454,19 @@ describe("Realmtest", () => {
       expect(Realm instanceof Function).to.be.true;
       realm.close();
     });
-    it("constructor path behaves correctly", () => {
+    it("throws with unvalid paths provided", () => {
       expect(() => new Realm("")).throws(); // the message for this error is platform-specific
       //@ts-expect-error using realm constructor with too many arguments
       expect(() => new Realm("test1.realm", "invalidArgument")).throws("Invalid arguments when constructing 'Realm'");
-
+    });
+    it("with default path works", () => {
       const defaultRealm = new Realm({ schema: [] });
       expect(defaultRealm.path).equals(Realm.defaultPath);
 
       const defaultRealm2 = new Realm();
       expect(defaultRealm2.path).equals(Realm.defaultPath);
-
+    });
+    it("with custom path works", () => {
       const defaultDir = Realm.defaultPath.substring(0, Realm.defaultPath.lastIndexOf(pathSeparator) + 1);
       const testPath = "test1.realm";
       const realm = new Realm({ schema: [], path: testPath });
@@ -495,7 +497,7 @@ describe("Realmtest", () => {
       const defaultDir = Realm.defaultPath.substring(0, Realm.defaultPath.lastIndexOf(pathSeparator) + 1);
       const realm = new Realm({ fifoFilesFallbackPath: defaultDir });
     });
-    it("schemaversion behaves correctly", () => {
+    it("schemaversion behaves correctly when creating new realms", () => {
       const defaultRealm = new Realm({ schema: [] });
       expect(defaultRealm.schemaVersion).equals(0);
       expect(Realm.schemaVersion(Realm.defaultPath)).equals(0);
@@ -520,6 +522,7 @@ describe("Realmtest", () => {
       expect(realm.schema.length).equals(1);
     });
     it("dynamic schema works", () => {
+      // constructing realm with same path returns the same instance
       let realm = new Realm({ schema: [TestObjectSchema] });
       realm.write(() => {
         realm.create(TestObjectSchema.name, [1]);
@@ -643,7 +646,7 @@ describe("Realmtest", () => {
       expect(() => new Realm({})).throws("already opened with different inMemory settings.");
       realm3.close();
     });
-    it("construct with readonly works", () => {
+    it("realm constructed with readonly property throws when write operation is invoked", () => {
       let realm = new Realm({ schema: [TestObjectSchema] });
       realm.write(() => {
         realm.create(TestObjectSchema.name, [1]);
@@ -2491,10 +2494,6 @@ describe("Realmtest", () => {
   describe("UUID", () => {
     openRealmBeforeEach({ schema: [UUIDObjectSchema, UUIDPkObjectSchema] });
     it("can successfully store and retrieve uuid", function (this: RealmContext) {
-      // Check schema
-      // expect(this.realm.schema.length).equals(1);
-      // expect(this.realm.schema[0].properties["id"].type).equals("uuid");
-
       // Predefined uuid checks
       const uuidStr = "af4f40c0-e833-4ab1-b026-484cdeadd782";
       const uuid = new UUID(uuidStr);
@@ -2503,12 +2502,9 @@ describe("Realmtest", () => {
       });
 
       expect(this.realm.objects(UUIDObjectSchema.name).length).equals(1);
-      // const obj = this.realm.objects<IUUIDObject>(UUIDObjectSchema.name)[0];
 
       expect(obj.id).instanceof(BSON.UUID, "Roundtrip data is instance of UUID.");
-      console.log(uuid);
-      console.log(obj.id);
-      expect(obj.id.equals(uuid)).equals(true);
+      expect(uuid.equals(obj.id)).equals(true);
       expect(obj.id.toString()).equals(uuidStr, "Roundtrip string representation equals predefined input string.");
     });
     it("can retrieve object with uuid as primarykey", function (this: RealmContext) {
