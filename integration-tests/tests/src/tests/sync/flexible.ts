@@ -786,6 +786,19 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(subs.some((sub) => sub === "Not a Subscription")).to.be.false;
         });
 
+        it("determines whether a Subscription exists using 'includes()'", async function (this: RealmContext) {
+          const { subs } = await addThreeSubscriptions.call(this);
+
+          const searchElement = subs[1];
+          expect(subs.includes(searchElement)).to.be.true;
+
+          await subs.update((mutableSubs) => {
+            mutableSubs.removeSubscription(searchElement);
+          });
+          expect(subs).to.have.length(2);
+          expect(subs.includes(searchElement)).to.be.false;
+        });
+
         it("is an immutable snapshot of the subscriptions from when it was called", async function (this: RealmContext) {
           const { subs } = await addSubscriptionForPersonAndSync(this.realm);
           const snapshot = subs;

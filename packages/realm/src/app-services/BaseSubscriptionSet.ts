@@ -351,4 +351,8 @@ export abstract class BaseSubscriptionSet implements ReadonlyArray<Subscription>
   ): boolean {
     return [...this].some(predicate, thisArg);
   }
+
+  includes(searchElement: Subscription, fromIndex?: number): boolean {
+    return this.indexOf(searchElement, fromIndex) !== -1;
+  }
 }
