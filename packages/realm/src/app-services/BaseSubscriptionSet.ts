@@ -251,4 +251,11 @@ export abstract class BaseSubscriptionSet implements ReadonlyArray<Subscription>
       yield this.get(i);
     }
   }
+
+  forEach(
+    callbackfn: (value: Subscription, index: number, array: readonly Subscription[]) => void,
+    thisArg?: any,
+  ): void {
+    return [...this].forEach(callbackfn, thisArg);
+  }
 }
