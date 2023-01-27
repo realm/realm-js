@@ -434,4 +434,16 @@ export abstract class BaseSubscriptionSet implements ReadonlyArray<Subscription>
   at(index: number) {
     return [...this].at(index);
   }
+
+  flatMap<U, This = undefined>(
+    callback: (this: This, value: Subscription, index: number, array: Subscription[]) => U | readonly U[],
+    thisArg?: This,
+  ): U[] {
+    return [...this].flatMap(callback, thisArg);
+  }
+
+  flat<A, D extends number = 1>(this: A, depth?: D): FlatArray<A, D>[];
+  flat<D extends number = 1>(): FlatArray<this, D>[] {
+    throw new Error("Not yet implemented.");
+  }
 }

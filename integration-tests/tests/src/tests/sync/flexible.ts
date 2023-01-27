@@ -1059,6 +1059,24 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(subs.at(subs.length + 1)).to.be.undefined;
         });
 
+        it("flattens a SubscriptionsSet using 'flatMap()'", async function (this: RealmContext) {
+          const { subs } = await addThreeSubscriptions.call(this);
+
+          const flattenedSubs = subs.flatMap((sub) => sub);
+          expect(flattenedSubs).to.be.an("array");
+          expect(flattenedSubs).to.have.length(3);
+          expect(flattenedSubs.every((sub) => sub instanceof Realm.App.Sync.Subscription)).to.be.true;
+        });
+
+        it("flattens a SubscriptionsSet using 'flat()'", async function (this: RealmContext) {
+          const { subs } = await addThreeSubscriptions.call(this);
+
+          const flattenedSubs = subs.flat();
+          expect(flattenedSubs).to.be.an("array");
+          expect(flattenedSubs).to.have.length(3);
+          expect(flattenedSubs.every((sub) => sub instanceof Realm.App.Sync.Subscription)).to.be.true;
+        });
+
         it("is an immutable snapshot of the subscriptions from when it was called", async function (this: RealmContext) {
           const { subs } = await addSubscriptionForPersonAndSync(this.realm);
           const snapshot = subs;
