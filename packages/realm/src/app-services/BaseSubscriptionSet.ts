@@ -112,8 +112,6 @@ export abstract class BaseSubscriptionSet {
   }
 
   /**
-   * Determine whether the SubscriptionSet is empty.
-   *
    * @returns `true` if there are no subscriptions in the set, otherwise `false`.
    */
   get isEmpty(): boolean {
@@ -121,9 +119,7 @@ export abstract class BaseSubscriptionSet {
   }
 
   /**
-   * Get the version of the SubscriptionSet.
-   *
-   * @returns The version of the SubscriptionSet. This is incremented every time an
+   * @returns The version of the SubscriptionSet. This is incremented every time a
    *  {@link SubscriptionSet.update} is applied.
    */
   get version(): number {
@@ -131,8 +127,6 @@ export abstract class BaseSubscriptionSet {
   }
 
   /**
-   * Get the state of the SubscriptionSet.
-   *
    * @returns The state of the SubscriptionSet.
    */
   get state(): SubscriptionsState {
@@ -155,8 +149,6 @@ export abstract class BaseSubscriptionSet {
   }
 
   /**
-   * Get the reason why the SubscriptionSet is in an error state.
-   *
    * @returns If `state` is {@link SubscriptionsState.Error}, this will return a `string`
    *  representing why the SubscriptionSet is in an error state. `null` is returned if there is no error.
    */
@@ -165,8 +157,6 @@ export abstract class BaseSubscriptionSet {
   }
 
   /**
-   * Get the number of subscriptions in the set.
-   *
    * @returns The number of subscriptions in the set.
    */
   get length(): number {

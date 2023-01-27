@@ -1062,20 +1062,16 @@ export class Realm {
 }
 
 /**
- * Determine whether an object is an asymmetric object.
- *
  * @param objectSchema The schema of the object.
- * @returns `true` if it is asymmetric, otherwise `false`.
+ * @returns `true` if the object is marked for asymmetric sync, otherwise `false`.
  */
 function isAsymmetric(objectSchema: binding.ObjectSchema): boolean {
   return objectSchema.tableType === binding.TableType.TopLevelAsymmetric;
 }
 
 /**
- * Determine whether an object is an embedded object.
- *
  * @param objectSchema The schema of the object.
- * @returns `true` if it is embedded, otherwise `false`.
+ * @returns `true` if the object is marked as embedded, otherwise `false`.
  */
 function isEmbedded(objectSchema: binding.ObjectSchema): boolean {
   return objectSchema.tableType === binding.TableType.Embedded;
