@@ -430,4 +430,8 @@ export abstract class BaseSubscriptionSet implements ReadonlyArray<Subscription>
 
     return NOT_FOUND;
   }
+
+  at(index: number) {
+    return [...this].at(index);
+  }
 }

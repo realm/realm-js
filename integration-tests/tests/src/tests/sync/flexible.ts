@@ -1043,6 +1043,22 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(subs.lastIndexOf(searchElement, fromIndex)).to.equal(notFound);
         });
 
+        it("returns the Subscription at an index using 'at()'", async function (this: RealmContext) {
+          const { subs } = await addThreeSubscriptions.call(this);
+
+          const index = 1;
+          const expectedSub = subs[index];
+          const actualSub = subs.at(index);
+          expect(actualSub).to.be.instanceOf(Realm.App.Sync.Subscription);
+          expect(actualSub.id.equals(expectedSub.id));
+        });
+
+        it("returns undefined using 'at()' if no Subscription is found", async function (this: RealmContext) {
+          const { subs } = await addThreeSubscriptions.call(this);
+
+          expect(subs.at(subs.length + 1)).to.be.undefined;
+        });
+
         it("is an immutable snapshot of the subscriptions from when it was called", async function (this: RealmContext) {
           const { subs } = await addSubscriptionForPersonAndSync(this.realm);
           const snapshot = subs;
