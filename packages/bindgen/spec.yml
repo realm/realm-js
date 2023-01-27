@@ -382,7 +382,6 @@ records:
         default: false
       sync_config: Nullable<std::shared_ptr<SyncConfig>>
       # Used internally as a flag for opening a synced realm locally.
-      # (Needed for TS when returning a binding.RealmConfig_relaxed.)
       force_sync_history:
         type: bool
         default: false
