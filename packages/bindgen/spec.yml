@@ -381,6 +381,10 @@ records:
         type: bool
         default: false
       sync_config: Nullable<std::shared_ptr<SyncConfig>>
+      # Used internally as a flag for opening a synced realm locally.
+      force_sync_history:
+        type: bool
+        default: false
       # Unclear if migration_function and initialization_function should be marked as off_thread.
       # Existing JS sdk treats them as not.
       migration_function: 'Nullable<std::function<(old_realm: SharedRealm, new_realm: SharedRealm, new_schema_handle: IgnoreArgument<Schema&>) -> void>>'
@@ -615,6 +619,9 @@ classes:
       simulate_sync_error: '(session: SyncSession&, code: int, message: StringData, type: StringData, is_fatal: bool)'
       consume_thread_safe_reference_to_shared_realm: '(tsr: ThreadSafeReference) -> SharedRealm'
       file_exists: '(path: StringData) -> bool'
+      erase_subscription: '(subs: MutableSyncSubscriptionSet&, sub_to_remove: const SyncSubscription&) -> bool'
+      # This is added due to DescriptorOrdering not being exposed
+      get_results_description: '(results: const Results&) -> StringData'
 
   ConstTableRef:
     needsDeref: true
@@ -715,6 +722,7 @@ classes:
   Query:
     properties:
       get_table: ConstTableRef
+      get_description: StringData
     methods:
       count: () const -> count_t
 
@@ -1211,10 +1219,9 @@ classes:
       state: SyncSubscriptionSetState
       error_str: StringData
       size: count_t
-
     methods:
       make_mutable_copy: () const -> MutableSyncSubscriptionSet
-      get_state_change_notification: '(notify_when: SyncSubscriptionSetState, callback: AsyncCallback<(new_state: util::Optional<SyncSubscriptionSetState>, err: util::Optional<Status>)>) off_thread const'
+      get_state_change_notification: '(notify_when: SyncSubscriptionSetState, callback: AsyncCallback<(new_state: util::Optional<SyncSubscriptionSetState>, err: util::Optional<Status>) off_thread>) const'
       at: '(index: count_t) const -> const SyncSubscription&'
       find:
         - sig: '(name: StringData) const -> Nullable<const SyncSubscription*>'

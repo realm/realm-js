@@ -23,6 +23,7 @@ import {
   ProgressNotificationCallback,
   PromiseHandle,
   Realm,
+  SubscriptionsState,
   TimeoutError,
   TimeoutPromise,
   assert,
@@ -36,12 +37,12 @@ type OpenBehavior = {
   timeOutBehavior?: OpenRealmTimeOutBehavior;
 };
 
-function determineBehavior(config: Configuration): OpenBehavior {
-  const { sync } = config;
-  if (!sync) {
+function determineBehavior(config: Configuration, realmExists: boolean): OpenBehavior {
+  const { sync, openSyncedRealmLocally } = config;
+  if (!sync || openSyncedRealmLocally) {
     return { openBehavior: OpenRealmBehaviorType.OpenImmediately };
   } else {
-    const configProperty = Realm.exists(config) ? "existingRealmFileBehavior" : "newRealmFileBehavior";
+    const configProperty = realmExists ? "existingRealmFileBehavior" : "newRealmFileBehavior";
     const configBehavior = sync[configProperty];
     if (configBehavior) {
       const { type, timeOut, timeOutBehavior } = configBehavior;
@@ -69,7 +70,11 @@ export class ProgressRealmPromise implements Promise<Realm> {
   constructor(config: Configuration) {
     try {
       validateConfiguration(config);
-      const { openBehavior: openBehavior, timeOut, timeOutBehavior } = determineBehavior(config);
+      // Calling `Realm.exists()` before `binding.Realm.getSynchronizedRealm()` is necessary to capture
+      // the correct value when this constructor was called since `binding.Realm.getSynchronizedRealm()`
+      // will open the realm. This is needed when calling the Realm constructor.
+      const realmExists = Realm.exists(config);
+      const { openBehavior, timeOut, timeOutBehavior } = determineBehavior(config, realmExists);
       if (openBehavior === OpenRealmBehaviorType.OpenImmediately) {
         const realm = new Realm(config);
         this.handle.resolve(realm);
@@ -79,17 +84,17 @@ export class ProgressRealmPromise implements Promise<Realm> {
         this.task
           .start()
           .then(async (tsr) => {
-            const realm = new Realm(config, binding.Helpers.consumeThreadSafeReferenceToSharedRealm(tsr));
-
-            const initialSubscriptions = config.sync && config.sync.flexible ? config.sync.initialSubscriptions : false;
-            const realmExists = Realm.exists(config);
-            if (!initialSubscriptions || (!initialSubscriptions.rerunOnOpen && realmExists)) {
-              return realm;
+            const realm = new Realm(config, {
+              internal: binding.Helpers.consumeThreadSafeReferenceToSharedRealm(tsr),
+              // Do not call `Realm.exists()` here in case the realm has been opened by this point in time.
+              realmExists,
+            });
+            if (config.sync?.flexible && !config.openSyncedRealmLocally) {
+              const { subscriptions } = realm;
+              if (subscriptions.state === SubscriptionsState.Pending) {
+                await subscriptions.waitForSynchronization();
+              }
             }
-            // TODO: Implement this once flexible sync gets implemented
-            // await realm.subscriptions.waitForSynchronization();
-            // TODO: Consider implementing adding the subscriptions here as well
-            throw new Error("'initialSubscriptions' is not yet supported");
             return realm;
           })
           .then(this.handle.resolve, this.handle.reject);

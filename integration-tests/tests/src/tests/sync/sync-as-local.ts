@@ -22,7 +22,8 @@ import { Realm } from "realm";
 import { PersonSchema, IPerson } from "../../schemas/person-and-dog-with-object-ids";
 import { authenticateUserBefore, importAppBefore, openRealmBefore } from "../../hooks";
 
-describe.skipIf(environment.missingServer, "Synced Realm as local", () => {
+describe.skipIf(environment.missingServer, "Synced Realm as local", function () {
+  this.timeout(60_000); // TODO: Temporarily hardcoded until envs are set up.
   importAppBefore("with-db-flx");
   authenticateUserBefore();
   openRealmBefore({
@@ -49,13 +50,13 @@ describe.skipIf(environment.missingServer, "Synced Realm as local", () => {
     });
   });
 
-  it("opens when `sync: true`", function (this: RealmContext) {
+  it("opens when `openSyncedRealmLocally: true`", function (this: RealmContext) {
     // Close the synced Realm
     const realmPath = this.realm.path;
     this.realm.close();
     // Re-open as local Realm
-    // @ts-expect-error Using sync: true is an undocumented API
-    this.realm = new Realm({ path: realmPath, sync: true });
+    // @ts-expect-error Using `openSyncedRealmLocally: true` is an internal API
+    this.realm = new Realm({ path: realmPath, openSyncedRealmLocally: true });
     expect(this.realm.schema[0].name).equals("Person");
     console.log(this.realm.objects<IPerson>("Person").length);
     expect(this.realm.objects<IPerson>("Person")[0].name).equals("Alice");

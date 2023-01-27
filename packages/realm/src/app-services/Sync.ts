@@ -27,6 +27,7 @@ import {
   assert,
   binding,
   toBindingSyncConfig,
+  validateSyncConfiguration,
 } from "../internal";
 
 import * as internal from "../internal";
@@ -66,6 +67,11 @@ function fromBindingLoggerLevel(arg: binding.LoggerLevel): NumericLogLevel {
 export namespace Sync {
   export const Session = SyncSession;
   export const ConnectionState = internal.ConnectionState;
+  export const Subscription = internal.Subscription;
+  export const SubscriptionSet = internal.SubscriptionSet;
+  export const MutableSubscriptionSet = internal.MutableSubscriptionSet;
+  export const SubscriptionsState = internal.SubscriptionsState;
+  export type SubscriptionOptions = internal.SubscriptionOptions;
   export function setLogLevel(app: App, level: LogLevel) {
     const numericLevel = toBindingLoggerLevel(level);
     app.internal.syncManager.setLogLevel(numericLevel);
@@ -80,6 +86,7 @@ export namespace Sync {
     throw new Error("Not yet implemented");
   }
   export function getSyncSession(user: User, partitionValue: PartitionValue): SyncSession | null {
+    validateSyncConfiguration({ user, partitionValue });
     const config = toBindingSyncConfig({ user, partitionValue });
     const path = user.app.internal.syncManager.pathForRealm(config);
     const session = user.internal.sessionForOnDiskPath(path);
