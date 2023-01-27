@@ -22,6 +22,7 @@ import chai from "chai";
 chai.use(chaiAsPromised);
 
 import "./alias";
+import "./mixed";
 import "./realm-constructor";
 import "./objects";
 import "./sets";
