@@ -328,4 +328,8 @@ export abstract class BaseSubscriptionSet implements ReadonlyArray<Subscription>
   slice(start?: number, end?: number): Subscription[] {
     return [...this].slice(start, end);
   }
+
+  join(separator?: string): string {
+    return [...this].join(separator);
+  }
 }
