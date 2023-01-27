@@ -34,7 +34,8 @@ Here is a simple task manager application written with Realm React.  Copy into a
 ```tsx
 import React, { useState } from "react";
 import { SafeAreaView, View, Text, TextInput, FlatList, Pressable } from "react-native";
-import { Realm, createRealmContext } from '@realm/react'
+import { Realm, RealmProvider, useRealm, useQuery } from '@realm/react'
+
 class Task extends Realm.Object {
   _id!: Realm.BSON.ObjectId;
   description!: string;
@@ -61,11 +62,9 @@ class Task extends Realm.Object {
   };
 }
 
-const { RealmProvider, useRealm, useQuery } = createRealmContext({ schema: [Task] })
-
 export default function AppWrapper() {
   return (
-    <RealmProvider><TaskApp /></RealmProvider>
+    <RealmProvider schema={[Task]}><TaskApp /></RealmProvider>
   )
 }
 
@@ -116,12 +115,14 @@ function TaskApp() {
 
 For a full fledged example, check out [our templates](https://github.com/realm/realm-js#template-apps-using-expo-for-react-native).
 
+
 ## Realm Hooks
 
 ### useRealm
 Returns the instance of the [`Realm`](https://www.mongodb.com/docs/realm-sdks/js/latest/Realm.html) configured by `createRealmContext` and the `RealmProvider`.  The following is an example of how to use this Hook to make a write transaction callback for a component.
 
 ```tsx
+import {useRealm} from '@realm/react';
 // assume props contain item a Realm.Object
 const Component = ({item}) => {
   const realm = useRealm();
@@ -149,6 +150,8 @@ Returns [`Realm.Results`](https://www.mongodb.com/docs/realm-sdks/js/latest/Real
 The result of this can be consumed directly by the `data` argument of any React Native [`VirtualizedList`](https://reactnative.dev/docs/virtualizedlist) or [`FlatList`](https://reactnative.dev/docs/flatlist).  If the component used for the list's `renderItem` prop is wrapped with [`React.Memo`](https://reactjs.org/docs/react-api.html#reactmemo), then only the modified object will re-render.
 
 ```tsx
+import {useQuery} from '@realm/react';
+
 const Component = () => {
   // ObjectClass is a class extending Realm.Object, which should have been provided in the Realm Config.
   // It is also possible to use the model's name as a string ( ex. "Object" ) if you are not using class based models.
@@ -167,6 +170,8 @@ const Component = () => {
  Returns a [`Realm.Object`](https://www.mongodb.com/docs/realm-sdks/js/latest/Realm.Object.html) for a given type and primary key.  The Hook will update on any changes to the properties on the returned Object and return `null` if it either doesn't exist or has been deleted.
 
 ```tsx
+import {useObject} from '@realm/react';
+
 const Component = ({someId}) => {
   // ObjectClass is a class extending Realm.Object, which should have been provided in the Realm Config.
   // It is also possible to use the model's name as a string ( ex. "Object" ) if you are not using class based models.
@@ -180,66 +185,30 @@ const Component = ({someId}) => {
 }
 ```
 ## Setting Things Up
-### createRealmContext
-
-To get started with `@realm/react`, one must create a Context object with `createRealmContext`.  The Context object will contain a Realm Context Provider, which will have an open Realm as its context, and a set of Hooks that access the Realm Context.
-
-The structure of the Context object is:
-
-```
-{
-  RealmProvider, // Wrapper for your application to enable usage of hooks
-  useRealm, // Hook to access the configured Realm
-  useQuery, // Hook to access collections of Realm objects
-  useObject, // Hook to access a single Realm object by primary key
-}
-```
-
-The configuration for the Realm context can be given as an object argument to `createRealmContext` or be set directly on the `RealmProvider` props. The props set on `RealmProvider` will be merged with those provided to `createRealmContext`, with the props taking priority.  A Realm will be opened with this merged configuration when the Realm Context Provider is rendered.  A fallback component can optionally be rendered until the Realm is opened.  This is useful for projects using Realm Sync.
-
-Here is an example of how to setup Realm React with a Task model:
-
-```tsx
-import {createRealmContext} from '@realm/react';
-
-const myRealmConfig = { schema: [Task, User, /*...*/]};
-
-const { RealmProvider, useRealm, useObject, useQuery } = createRealmContext(myRealmConfig);
-
-const AppWrapper = () => {
-  return (
-    <RealmProvider>
-      <App/>
-    <RealmProvider>
-  )
-}
-
-```
-
-#### Multiple Realms
-`createRealmContext` can be called multiple times if your app requires more than one Realm.  In that case, you would have multiple `RealmProvider`s that wrap your app and must use the hooks from the context you wish to access.
-
-```tsx
-const { RealmProvider: PublicRealmProvider, useRealm: usePublicRealm, useObject: usePublicObject, useQuery: usePublicQuery } = createRealmContext(publicConfig);
-const { RealmProvider: PrivateRealmProvider, useRealm: usePrivateRealm, useObject: usePrivateObject, useQuery: usePrivateQuery } = createRealmContext(privateConfig);
-```
-
-It is also possible to call it without any Config; in the case that you want to do all your configuration through the `RealmProvider` props.
 ### RealmProvider
 
-In the example above, we used the `RealmProvider` without any props.  It is, however, possible to configure the Realm through props on the `RealmProvider`.
+To get started with `@realm/react`, one must wrap your app with a `RealmProvider`. The `RealmProvider` can be configured using props.  At a minimum, one must set the `schema` prop to the Realm models that they have configured.
+Any child of the RealmProvider will be able to use the hooks to access and manipulate Realm data. Here is an example of how to setup Realm React with a Task model:
 
 ```tsx
+import { RealmProvider, useQuery, Realm } from '@realm/react';
+
 const AppWrapper = () => {
   return (
-    <RealmProvider schema={[Task, User, /*...*/]} onFirstOpen={(realm) => {/*initialize realm with some data*/}}>
-      <App/>
+    <RealmProvider schema={[Item]}>
+      <SomeComponent/>
     <RealmProvider>
   )
 }
+
+const SomeComponent = () => {
+  const items = useQuery(Item)
+  //..
+}
+
 ```
 
-The `RealmProvider` also comes with a fallback prop that can be used for sync conifigurations.  It can take time for larger datasets to sync, especially if it's the first time.  In that case, it is recommended to provide a loading component as a fallback.
+The `RealmProvider` also comes with a fallback prop that is rendered when while awaiting for the Realm to open. For local Realm, this is instant, but for synced a Realm, it can take time for larger datasets to sync, especially if it's the first time the app has been opened.  In that case, it is recommended to provide a loading component as a fallback.
 
 ```tsx
 const AppWrapper = () => {
@@ -352,3 +321,29 @@ const SomeComponent = () => {
 	//...
 }
 ```
+
+
+#### Multiple Realms
+`createRealmContext` can be used to create a contextualized hooks and a RealmProvider to the passed in configuration for a Realm. It can be called multiple times if your app requires more than one Realm.  In that case, you would have multiple `RealmProvider`s that wrap your app and must use the hooks from the created context you wish to access.
+
+The Context object will contain a `RealmProvider`, which will a open a Realm when it is rendered. It also contains a set of hooks that can be used by children to the `RealmProvider` to access and manipulate Realm data.
+
+The structure of the Context object is:
+
+```
+{
+  RealmProvider, // Wrapper for your application to enable usage of hooks
+  useRealm, // Hook to access the configured Realm
+  useQuery, // Hook to access collections of Realm objects
+  useObject, // Hook to access a single Realm object by primary key
+}
+```
+
+The configuration for the Realm context can be given as an object argument to `createRealmContext` or be set directly on the `RealmProvider` props. The props set on `RealmProvider` will be merged with those provided to `createRealmContext`, with the props taking priority.  A Realm will be opened with this merged configuration when the Realm Context Provider is rendered.  A fallback component can optionally be rendered until the Realm is opened.  This is useful for projects using Realm Sync.
+
+```tsx
+const { RealmProvider: PublicRealmProvider, useRealm: usePublicRealm, useObject: usePublicObject, useQuery: usePublicQuery } = createRealmContext(publicConfig);
+const { RealmProvider: PrivateRealmProvider, useRealm: usePrivateRealm, useObject: usePrivateObject, useQuery: usePrivateQuery } = createRealmContext(privateConfig);
+```
+
+It is also possible to call it without any Config; in the case that you want to do all your configuration through the `RealmProvider` props.

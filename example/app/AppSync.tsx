@@ -3,14 +3,13 @@ import {useApp, useUser} from '@realm/react';
 import {Pressable, StyleSheet, Text} from 'react-native';
 
 import {Task} from './models/Task';
-import {TaskRealmContext} from './models';
 import {TaskManager} from './components/TaskManager';
 import {buttonStyles} from './styles/button';
 import {shadows} from './styles/shadows';
 import colors from './styles/colors';
 import {OfflineModeButton} from './components/OfflineModeButton';
 
-const {useRealm, useQuery} = TaskRealmContext;
+import {useRealm, useQuery} from '@realm/react';
 
 export const AppSync: React.FC = () => {
   const realm = useRealm();

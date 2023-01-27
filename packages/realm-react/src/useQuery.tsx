@@ -28,26 +28,6 @@ import { symbols } from "@realm/common";
  * @returns useObject - Hook that is used to gain access to a {@link Realm.Collection}
  */
 export function createUseQuery(useRealm: () => Realm) {
-  /**
-   * Returns a {@link Realm.Collection} of {@link Realm.Object}s from a given type.
-   * The hook will update on any changes to any object in the collection
-   * and return an empty array if the colleciton is empty.
-   *
-   * The result of this can be consumed directly by the `data` argument of any React Native
-   * VirtualizedList or FlatList.  If the component used for the list's `renderItem` prop is {@link React.Memo}ized,
-   * then only the modified object will re-render.
-   *
-   * @example
-   * ```
-   * const collection = useQuery(Object);
-   *
-   * // The methods `sorted` and `filtered` should be wrapped in a useMemo.
-   * const sortedCollection = useMemo(collection.sorted(), [collection]);
-   * ```
-   *
-   * @param type - The object type, depicted by a string or a class extending Realm.Object
-   * @returns a collection of realm objects or an empty array
-   */
   return function useQuery<T>(
     type: string | ({ new (...args: any): T } & Realm.ObjectClass),
   ): Realm.Results<T & Realm.Object> {

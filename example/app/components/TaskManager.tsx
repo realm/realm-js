@@ -2,12 +2,11 @@ import React, {useCallback} from 'react';
 import {View, StyleSheet} from 'react-native';
 
 import {Task} from '../models/Task';
-import {TaskRealmContext} from '../models';
 import {IntroText} from './IntroText';
 import {AddTaskForm} from './AddTaskForm';
 import TaskList from './TaskList';
 
-const {useRealm} = TaskRealmContext;
+import {useRealm} from '@realm/react';
 
 export const TaskManager: React.FC<{
   tasks: Realm.Results<Task & Realm.Object>;
