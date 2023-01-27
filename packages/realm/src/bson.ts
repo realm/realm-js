@@ -20,7 +20,7 @@
 import * as bson from "bson";
 
 /**
- * A re-export of the "bson" package, enabling access to the BSON types without requiring an explict dependency on the "bson" package.
+ * A re-export of the "bson" package, enabling access to the BSON types without requiring an explicit dependency on the "bson" package.
  *
  * @see {@link https://www.npmjs.com/package/bson#documentation|the BSON documentation} for more information.
  * @memberof Realm

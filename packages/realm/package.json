@@ -2,6 +2,26 @@
   "name": "realm",
   "version": "12.0.0-rc.0",
   "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
+  "license": "apache-2.0",
+  "homepage": "https://realm.io",
+  "keywords": [
+    "database",
+    "db",
+    "react",
+    "react-native",
+    "persistence",
+    "localstorage",
+    "sqlite",
+    "asyncstorage",
+    "rocksdb",
+    "leveldb",
+    "realm"
+  ],
+  "author": {
+    "name": "Realm",
+    "email": "help@realm.io",
+    "url": "https://realm.io"
+  },
   "main": "dist/bundle.js",
   "module": "dist/bundle.mjs",
   "react-native": "dist/bundle.react-native.mjs",

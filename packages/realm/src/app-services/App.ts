@@ -82,10 +82,10 @@ export class App {
   public userAgent = `RealmJS/${App.SDK_VERSION} (${App.PLATFORM_CONTEXT}, ${App.PLATFORM_OS}, v${App.PLATFORM_VERSION})`;
 
   private listeners = new Listeners<AppChangeCallback, AppListenerToken>({
-    register: (callback: () => void): AppListenerToken => {
+    add: (callback: () => void): AppListenerToken => {
       return this.internal.subscribe(callback);
     },
-    unregister: (token) => {
+    remove: (token) => {
       this.internal.unsubscribe(token);
     },
   });

@@ -34,7 +34,7 @@ import {
   toBindingErrorHandler,
   toBindingErrorHandlerWithOnManual,
   toBindingNotifyAfterClientReset,
-  toBindingNotifyAfterClientResetWithfallback,
+  toBindingNotifyAfterClientResetWithFallback,
   toBindingNotifyBeforeClientReset,
   toBindingStopPolicy,
 } from "../internal";
@@ -220,7 +220,7 @@ function parseRecoverUnsyncedChanges(clientReset: ClientResetRecoverUnsyncedChan
     clientResyncMode: toBindingClientResetMode(clientReset.mode),
     notifyBeforeClientReset: clientReset.onBefore ? toBindingNotifyBeforeClientReset(clientReset.onBefore) : undefined,
     notifyAfterClientReset: clientReset.onAfter
-      ? toBindingNotifyAfterClientResetWithfallback(clientReset.onAfter, clientReset.onFallback)
+      ? toBindingNotifyAfterClientResetWithFallback(clientReset.onAfter, clientReset.onFallback)
       : undefined,
   };
 }
@@ -231,7 +231,7 @@ function parseRecoverOrDiscardUnsyncedChanges(clientReset: ClientResetRecoverOrD
     clientResyncMode: toBindingClientResetMode(clientReset.mode),
     notifyBeforeClientReset: clientReset.onBefore ? toBindingNotifyBeforeClientReset(clientReset.onBefore) : undefined,
     notifyAfterClientReset: clientReset.onAfter
-      ? toBindingNotifyAfterClientResetWithfallback(clientReset.onAfter, clientReset.onFallback)
+      ? toBindingNotifyAfterClientResetWithFallback(clientReset.onAfter, clientReset.onFallback)
       : undefined,
   };
 }

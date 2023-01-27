@@ -123,7 +123,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
           });
         } catch (err) {
           // Scheduling a throw on the event loop,
-          // since throwing synchroniously here would result in an abort in the calling C++
+          // since throwing synchronously here would result in an abort in the calling C++
           setImmediate(() => {
             throw err;
           });
@@ -191,14 +191,15 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * @param value The value
    * @internal
    */
-  public set(index: number, value: unknown) {
+  public set(index: number, value: T): void;
+  public set() {
     throw new Error(`Assigning into a ${this.constructor.name} is not support`);
   }
 
   /**
-   * The plain array representation of the collection for JSON serialization.
-   * Use circular JSON serialization libraries such as {@link https://www.npmjs.com/package/@ungap/structured-clone @ungap/structured-clone}
-   * and {@link https://www.npmjs.com/package/flatted flatted} for stringifying Realm entities that have circular structures.
+   * The plain object representation for JSON serialization.
+   * Use circular JSON serialization libraries such as [@ungap/structured-clone](https://www.npmjs.com/package/@ungap/structured-clone)
+   * and [flatted](https://www.npmjs.com/package/flatted) to stringify Realm entities that have circular structures.
    * @returns An array of plain objects.
    **/
   toJSON(_?: string, cache?: unknown): Array<DefaultObject>;
@@ -356,7 +357,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     return [...this].flatMap(callback, thisArg);
   }
   flat<A, D extends number = 1>(this: A, depth?: D): FlatArray<A, D>[];
-  flat<D extends number = 1>(depth?: D): FlatArray<this, D>[] {
+  flat<D extends number = 1>(): FlatArray<this, D>[] {
     throw new Error("Method not implemented.");
   }
   at(index: number) {
@@ -588,11 +589,11 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     if (Array.isArray(arg0)) {
       assert(typeof arg1 === "undefined", "Second argument is not allowed if passed an array of sort descriptors");
       const { results: parent, realm, helpers } = this;
-      // Map optional "reversed" to "accending" (expected by the binding)
+      // Map optional "reversed" to "ascending" (expected by the binding)
       const descriptors = arg0.map<[string, boolean]>((arg) =>
         typeof arg === "string" ? [arg, true] : [arg[0], !arg[1]],
       );
-      // TODO: Call `parent.sort`, avoiding property name to colkey conversion to speed up performance here.
+      // TODO: Call `parent.sort`, avoiding property name to column key conversion to speed up performance here.
       const results = parent.sortByNames(descriptors);
       return new Results(realm, results, helpers);
     } else if (typeof arg0 === "string") {

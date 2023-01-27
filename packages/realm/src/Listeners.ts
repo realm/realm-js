@@ -17,16 +17,16 @@
 ////////////////////////////////////////////////////////////////////////////
 
 /** @internal */
-export type CallbackRegistrator<CallbackType, TokenType, Args extends unknown[] = []> = (
+export type CallbackAdder<CallbackType, TokenType, Args extends unknown[] = []> = (
   callback: CallbackType,
   ...args: Args
 ) => TokenType;
 /** @internal */
-export type CallbackUnregistrator<TokenType> = (token: TokenType) => void;
+export type CallbackRemover<TokenType> = (token: TokenType) => void;
 
 export type ListenersOptions<CallbackType, TokenType, Args extends unknown[]> = {
-  register: CallbackRegistrator<CallbackType, TokenType, Args>;
-  unregister: CallbackUnregistrator<TokenType>;
+  add: CallbackAdder<CallbackType, TokenType, Args>;
+  remove: CallbackRemover<TokenType>;
   throwOnReAdd?: boolean;
 };
 
@@ -46,7 +46,7 @@ export class Listeners<CallbackType, TokenType, Args extends unknown[] = []> {
       }
       return;
     }
-    const token = this.options.register(callback, ...args);
+    const token = this.options.add(callback, ...args);
     // Store the notification token by the callback to enable later removal.
     this.listeners.set(callback, token);
   }
@@ -54,14 +54,14 @@ export class Listeners<CallbackType, TokenType, Args extends unknown[] = []> {
   remove(callback: CallbackType): void {
     const token = this.listeners.get(callback);
     if (typeof token !== "undefined") {
-      this.options.unregister(token);
+      this.options.remove(token);
       this.listeners.delete(callback);
     }
   }
 
   removeAll(): void {
     for (const [, token] of this.listeners) {
-      this.options.unregister(token);
+      this.options.remove(token);
     }
     this.listeners.clear();
   }

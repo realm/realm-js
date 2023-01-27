@@ -17,7 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
-  Realm, // Used by TS docs
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Used by TS docs
+  Realm,
   RealmObject,
 } from "../internal";
 
