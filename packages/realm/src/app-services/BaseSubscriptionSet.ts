@@ -344,4 +344,11 @@ export abstract class BaseSubscriptionSet implements ReadonlyArray<Subscription>
   every(predicate: any, thisArg?: any): boolean {
     return [...this].every(predicate, thisArg);
   }
+
+  some(
+    predicate: (value: Subscription, index: number, array: readonly Subscription[]) => unknown,
+    thisArg?: any,
+  ): boolean {
+    return [...this].some(predicate, thisArg);
+  }
 }

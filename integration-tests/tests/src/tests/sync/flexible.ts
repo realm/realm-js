@@ -779,6 +779,13 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(subs.every((sub) => sub === "Not a Subscription")).to.be.false;
         });
 
+        it("determines whether a predicate is true for at least one Subscription using 'some()'", async function (this: RealmContext) {
+          const { subs } = await addThreeSubscriptions.call(this);
+
+          expect(subs.some((sub) => sub instanceof Realm.App.Sync.Subscription)).to.be.true;
+          expect(subs.some((sub) => sub === "Not a Subscription")).to.be.false;
+        });
+
         it("is an immutable snapshot of the subscriptions from when it was called", async function (this: RealmContext) {
           const { subs } = await addSubscriptionForPersonAndSync(this.realm);
           const snapshot = subs;
