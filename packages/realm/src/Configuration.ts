@@ -195,6 +195,7 @@ type BaseConfiguration = {
 
 /**
  * Validate the fields of a user-provided Realm configuration.
+ * @internal
  */
 export function validateConfiguration(config: unknown): asserts config is Configuration {
   assert.object(config, "realm configuration", { allowArrays: false });

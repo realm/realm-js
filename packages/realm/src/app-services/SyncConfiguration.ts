@@ -238,6 +238,7 @@ function parseRecoverOrDiscardUnsyncedChanges(clientReset: ClientResetRecoverOrD
 
 /**
  * Validate the fields of a user-provided realm sync configuration.
+ * @internal
  */
 export function validateSyncConfiguration(config: unknown): asserts config is SyncConfiguration {
   assert.object(config, "'sync' on realm configuration", { allowArrays: false });
