@@ -182,7 +182,7 @@ export abstract class BaseSubscriptionSet {
    * @returns The named subscription, or `null` if the subscription is not found.
    */
   findByName(name: string): Subscription | null {
-    assert.string(name, "the argument to 'findByName()'");
+    assert.string(name, "name");
 
     const subscription = this.internal.findByName(name);
     return subscription ? new Subscription(subscription) : null;
@@ -196,7 +196,7 @@ export abstract class BaseSubscriptionSet {
    * @returns The subscription with the specified query, or `null` if the subscription is not found.
    */
   findByQuery<Subscription>(query: Realm.Results<Subscription & Realm.Object>): Subscription | null {
-    assert.instanceOf(query, Realm.Results, "the argument to 'findByQuery()'");
+    assert.instanceOf(query, Realm.Results, "query");
 
     const subscription = this.internal.findByQuery(query.internal.query);
     return subscription ? (new Subscription(subscription) as Subscription) : null; // TODO: Remove the type assertion into Subscription

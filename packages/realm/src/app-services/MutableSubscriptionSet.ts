@@ -69,7 +69,7 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
    * @returns A `Subscription` instance for the new subscription.
    */
   add(query: Realm.Results<unknown>, options?: SubscriptionOptions): Subscription {
-    assert.instanceOf(query, Realm.Results, "the query argument to 'add()'");
+    assert.instanceOf(query, Realm.Results, "query");
     if (options) {
       assertIsSubscriptionOptions(options);
     }
@@ -105,7 +105,7 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
    * @returns `true` if the subscription was removed, `false` if it was not found.
    */
   remove(query: Realm.Results<unknown>): boolean {
-    assert.instanceOf(query, Realm.Results, "the argument to 'remove()'");
+    assert.instanceOf(query, Realm.Results, "query");
 
     return this.internal.eraseByQuery(query.internal.query);
   }
@@ -117,7 +117,7 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
    * @returns `true` if the subscription was removed, `false` if it was not found.
    */
   removeByName(name: string): boolean {
-    assert.string(name, "the argument to 'removeByName()'");
+    assert.string(name, "name");
 
     return this.internal.eraseByName(name);
   }
@@ -129,7 +129,7 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
    * @returns `true` if the subscription was removed, `false` if it was not found.
    */
   removeSubscription(subscription: Subscription): boolean {
-    assert.instanceOf(subscription, Subscription, "the argument to 'removeSubscription()'");
+    assert.instanceOf(subscription, Subscription, "subscription");
 
     return binding.Helpers.eraseSubscription(this.internal, subscription.internal);
   }
@@ -144,7 +144,7 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
     // TODO: This is currently O(n^2) because each erase call is O(n). Once Core has
     //       fixed https://github.com/realm/realm-core/issues/6241, we can update this.
 
-    assert.string(objectType, "the argument to 'removeByObjectType()'");
+    assert.string(objectType, "objectType");
 
     // Removing the subscription (calling `eraseSubscription()`) invalidates all current
     // iterators, so it would be illegal to continue iterating. Instead, we push it to an
@@ -180,7 +180,7 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
 }
 
 function assertIsSubscriptionOptions(input: unknown): asserts input is SubscriptionOptions {
-  assert.object(input, "the options argument to 'add()'", { allowArrays: false });
+  assert.object(input, "options", { allowArrays: false });
   if (input.name !== undefined) {
     assert.string(input.name, "'name' on 'SubscriptionOptions'");
   }

@@ -108,7 +108,7 @@ export class SubscriptionSet extends BaseSubscriptionSet {
 
   /**@internal */
   updateNoWait(callback: (mutableSubscriptions: MutableSubscriptionSet, realm: Realm) => void): void {
-    assert.function(callback, "the argument to 'update()'");
+    assert.function(callback, "callback");
 
     // Create a mutable copy of this instance (which copies the original and upgrades
     // its internal transaction to a write transaction) so that we can make updates to it.
