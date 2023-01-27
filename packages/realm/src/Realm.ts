@@ -454,10 +454,10 @@ export class Realm {
   constructor(config: Configuration | null, internalConfig: InternalConfig);
   constructor(arg?: Configuration | string | null, internalConfig: InternalConfig = {}) {
     const config = typeof arg === "string" ? { path: arg } : arg || {};
-    // Calling `Realm.exists()` here is necessary to capture the correct value when
-    // the constructor was called since the realm may be opened during this construction.
-    // This is needed when deciding whether to update initial subscriptions.
-    const realmExists = internalConfig.realmExists !== false && Realm.exists(config);
+    // Calling `Realm.exists()` before `binding.Realm.getSharedRealm()` is necessary to capture
+    // the correct value when this constructor was called since `binding.Realm.getSharedRealm()`
+    // will open the realm. This is needed when deciding whether to update initial subscriptions.
+    const realmExists = internalConfig.realmExists ?? Realm.exists(config);
     if (arg !== null) {
       assert(!internalConfig.schemaExtras, "Expected either a configuration or schemaExtras");
       validateConfiguration(config);
@@ -634,7 +634,7 @@ export class Realm {
   // TODO: Rollback by deleting the object if any property assignment fails (fixing #2638)
   /**
    * Create a new {@link Realm.Object} of the given type and with the specified properties. For objects marked asymmetric,
-   * `undefined` is returned. The API for asymmetric object schema is subject to changes in the future.
+   * `undefined` is returned. The API for asymmetric objects is subject to changes in the future.
    * @param type The type of Realm object to create.
    * @param values Property values for all required properties without a
    *   default value.
@@ -790,8 +790,6 @@ export class Realm {
    * @param objectKey The object key of the Realm object to search for.
    * @throws {@link Error} If type passed into this method is invalid or if the type is marked embedded or asymmetric.
    * @returns A {@link Realm.Object} or `undefined` if the object key is not found.
-   */
-  /**
    * @internal
    */
   _objectForObjectKey<T = DefaultObject>(type: string, objectKey: string): (RealmObject<T> & T) | undefined;
@@ -1058,7 +1056,7 @@ export class Realm {
   private handleInitialSubscriptions(initialSubscriptions: InitialSubscriptions, realmExists: boolean): void {
     const shouldUpdateSubscriptions = initialSubscriptions.rerunOnOpen || !realmExists;
     if (shouldUpdateSubscriptions) {
-      this.subscriptions.updateSync(initialSubscriptions.update);
+      this.subscriptions.updateNoWait(initialSubscriptions.update);
     }
   }
 }
@@ -1068,7 +1066,6 @@ export class Realm {
  *
  * @param objectSchema The schema of the object.
  * @returns `true` if it is asymmetric, otherwise `false`.
- * @internal
  */
 function isAsymmetric(objectSchema: binding.ObjectSchema): boolean {
   return objectSchema.tableType === binding.TableType.TopLevelAsymmetric;
@@ -1079,7 +1076,6 @@ function isAsymmetric(objectSchema: binding.ObjectSchema): boolean {
  *
  * @param objectSchema The schema of the object.
  * @returns `true` if it is embedded, otherwise `false`.
- * @internal
  */
 function isEmbedded(objectSchema: binding.ObjectSchema): boolean {
   return objectSchema.tableType === binding.TableType.Embedded;

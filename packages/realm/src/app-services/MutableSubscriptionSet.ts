@@ -39,9 +39,8 @@ export interface SubscriptionOptions {
 }
 
 /**
- * The mutable version of a given SubscriptionSet. The mutable methods of a given
- * {@link SubscriptionSet} instance can only be accessed from inside the
- * {@link SubscriptionSet.update} callback.
+ * The mutable version of a given SubscriptionSet. The {@link MutableSubscriptionSet}
+ * instance can only be used from inside the {@link SubscriptionSet.update} callback.
  */
 export class MutableSubscriptionSet extends BaseSubscriptionSet {
   // This class overrides the BaseSubscriptionSet's `internal` field (by having
@@ -142,11 +141,14 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
    * @returns The number of subscriptions removed.
    */
   removeByObjectType(objectType: string): number {
+    // TODO: This is currently O(n^2) because each erase call is O(n). Once Core has
+    //       fixed https://github.com/realm/realm-core/issues/6241, we can update this.
+
     assert.string(objectType, "the argument to 'removeByObjectType()'");
 
-    // If removing the subscription (calling `eraseSubscription()`) while iterating,
-    // then `subscription.objectClassName` will incorrectly be empty for the last element.
-    // Instead, we push it to an array (iterating in reverse also works.)
+    // Removing the subscription (calling `eraseSubscription()`) invalidates all current
+    // iterators, so it would be illegal to continue iterating. Instead, we push it to an
+    // array to remove later.
     const subscriptionsToRemove: binding.SyncSubscription[] = [];
     for (const subscription of this.internal) {
       if (subscription.objectClassName === objectType) {

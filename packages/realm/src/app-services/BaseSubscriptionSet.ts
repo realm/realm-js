@@ -64,7 +64,7 @@ const PROXY_HANDLER: ProxyHandler<BaseSubscriptionSet> = {
       const BASE = 10;
       const index = Number.parseInt(prop, BASE);
       // TODO: Consider catching an error from access out of bounds, instead of checking the length, to optimize for the hot path
-      if (!Number.isNaN(index) && index >= 0 && index < target.length) {
+      if (index >= 0 && index < target.length) {
         return target.get(index);
       }
     }
@@ -79,7 +79,7 @@ const PROXY_HANDLER: ProxyHandler<BaseSubscriptionSet> = {
     if (typeof prop === "string") {
       const BASE = 10;
       const index = Number.parseInt(prop, BASE);
-      if (index < target.length) {
+      if (index >= 0 && index < target.length) {
         return DEFAULT_PROPERTY_DESCRIPTOR;
       }
     }
@@ -97,16 +97,13 @@ const PROXY_HANDLER: ProxyHandler<BaseSubscriptionSet> = {
  * modified inside a {@link SubscriptionSet.update} callback.
  */
 export abstract class BaseSubscriptionSet {
-  // Enables index accessing when combined with the proxy handler's `get()` method
-  readonly [n: number]: Subscription;
-
   /**@internal */
   protected constructor(/**@internal */ protected internal: binding.SyncSubscriptionSet) {
     Object.defineProperties(this, {
       internal: {
         enumerable: false,
         configurable: false,
-        // `internal` needs to be writable due to `SubscriptionSet.updateSync`
+        // `internal` needs to be writable due to `SubscriptionSet.updateNoWait()`
         // overwriting `this.internal` with the new committed set.
         writable: true,
       },
@@ -139,26 +136,26 @@ export abstract class BaseSubscriptionSet {
    * @returns The state of the SubscriptionSet.
    */
   get state(): SubscriptionsState {
-    const stateValue = this.internal.state.valueOf();
-    switch (stateValue) {
-      case 0: // Uncommitted
-      case 1: // Pending
-      case 2: // Bootstrapping
-      case 6: // AwaitingMark
+    const state = this.internal.state;
+    switch (state) {
+      case binding.SyncSubscriptionSetState.Uncommitted:
+      case binding.SyncSubscriptionSetState.Pending:
+      case binding.SyncSubscriptionSetState.Bootstrapping:
+      case binding.SyncSubscriptionSetState.AwaitingMark:
         return SubscriptionsState.Pending;
-      case 3:
+      case binding.SyncSubscriptionSetState.Complete:
         return SubscriptionsState.Complete;
-      case 4:
+      case binding.SyncSubscriptionSetState.Error:
         return SubscriptionsState.Error;
-      case 5:
+      case binding.SyncSubscriptionSetState.Superseded:
         return SubscriptionsState.Superseded;
       default:
-        throw new Error(`Unsupported SubscriptionsState value: ${stateValue}`);
+        throw new Error(`Unsupported SubscriptionsState value: ${state}`);
     }
   }
 
   /**
-   * Get the state of the SubscriptionSet.
+   * Get the reason why the SubscriptionSet is in an error state.
    *
    * @returns If `state` is {@link SubscriptionsState.Error}, this will return a `string`
    *  representing why the SubscriptionSet is in an error state. `null` is returned if there is no error.
@@ -171,7 +168,6 @@ export abstract class BaseSubscriptionSet {
    * Get the number of subscriptions in the set.
    *
    * @returns The number of subscriptions in the set.
-   * @internal
    */
   get length(): number {
     return this.internal.size;
@@ -187,33 +183,6 @@ export abstract class BaseSubscriptionSet {
    */
   get(index: number): Subscription {
     return new Subscription(this.internal.at(index));
-  }
-
-  /**
-   * Get an iterator that contains the keys for each index in the subscription set.
-   *
-   * @internal
-   */
-  *keys() {
-    const size = this.length;
-    for (let i = 0; i < size; i++) {
-      yield i;
-    }
-  }
-
-  /**
-   * Makes the subscription set iterable.
-   *
-   * @returns Iterable of each value in the set.
-   * @example
-   * for (const subscription of subscriptions) {
-   *   // ...
-   * }
-   */
-  *[Symbol.iterator](): IterableIterator<Subscription> {
-    for (const subscription of this.internal) {
-      yield new Subscription(subscription);
-    }
   }
 
   /**
@@ -236,10 +205,40 @@ export abstract class BaseSubscriptionSet {
    *  e.g. `Realm.objects("Cat").filtered("age > 10")`.
    * @returns The subscription with the specified query, or `null` if the subscription is not found.
    */
-  findByQuery<T>(query: Realm.Results<T & Realm.Object>): Subscription | null {
+  findByQuery<Subscription>(query: Realm.Results<Subscription & Realm.Object>): Subscription | null {
     assert.instanceOf(query, Realm.Results, "the argument to 'findByQuery()'");
 
     const subscription = this.internal.findByQuery(query.internal.query);
-    return subscription ? new Subscription(subscription) : null;
+    return subscription ? (new Subscription(subscription) as Subscription) : null; // TODO: Remove the type assertion into Subscription
+  }
+
+  /**
+   * Enables index accessing when combined with the proxy handler's `get()` method.
+   */
+  readonly [n: number]: Subscription;
+
+  /**
+   * Makes the subscription set iterable.
+   *
+   * @returns Iterable of each value in the set.
+   * @example
+   * for (const subscription of subscriptions) {
+   *   // ...
+   * }
+   */
+  *[Symbol.iterator](): IterableIterator<Subscription> {
+    for (const subscription of this.internal) {
+      yield new Subscription(subscription);
+    }
+  }
+
+  /**
+   * Get an iterator that contains each index in the subscription set.
+   */
+  *keys() {
+    const size = this.length;
+    for (let i = 0; i < size; i++) {
+      yield i;
+    }
   }
 }

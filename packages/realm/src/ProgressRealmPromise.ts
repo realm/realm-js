@@ -70,9 +70,9 @@ export class ProgressRealmPromise implements Promise<Realm> {
   constructor(config: Configuration) {
     try {
       validateConfiguration(config);
-      // Calling `Realm.exists()` here is necessary to capture the correct value
-      // when the constructor was called since the realm may be opened during this
-      // construction. This is needed when calling the Realm constructor.
+      // Calling `Realm.exists()` before `binding.Realm.getSynchronizedRealm()` is necessary to capture
+      // the correct value when this constructor was called since `binding.Realm.getSynchronizedRealm()`
+      // will open the realm. This is needed when calling the Realm constructor.
       const realmExists = Realm.exists(config);
       const { openBehavior, timeOut, timeOutBehavior } = determineBehavior(config, realmExists);
       if (openBehavior === OpenRealmBehaviorType.OpenImmediately) {

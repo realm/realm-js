@@ -119,11 +119,11 @@ export type BaseSyncConfiguration = {
 
 export type InitialSubscriptions = {
   /**
-   * Callback called with the {@link Realm} instance to allow you to setup the
-   * initial set of subscriptions by calling `realm.subscriptions.update`.
-   * See {@link SubscriptionSet.update} for more information.
+   * A callback to make changes to a SubscriptionSet.
+   *
+   * @see {@link SubscriptionSet.update} for more information.
    */
-  update: (subs: MutableSubscriptionSet, realm: Realm) => void;
+  update: (mutableSubscriptions: MutableSubscriptionSet, realm: Realm) => void;
   /**
    * If `true`, the {@link update} callback will be rerun every time the Realm is
    * opened (e.g. every time a user opens your app), otherwise (by default) it
@@ -300,12 +300,7 @@ function validateOpenRealmBehaviorConfiguration(
  */
 function validateClientResetConfiguration(config: unknown): asserts config is ClientResetConfig {
   assert.object(config, "'clientReset' on realm sync configuration", { allowArrays: false });
-  const modes = [
-    ClientResetMode.Manual,
-    ClientResetMode.DiscardUnsyncedChanges,
-    ClientResetMode.RecoverUnsyncedChanges,
-    ClientResetMode.RecoverOrDiscardUnsyncedChanges,
-  ];
+  const modes = Object.values(ClientResetMode);
   assert(
     modes.includes(config.mode as ClientResetMode),
     `'clientReset' on realm sync configuration must be one of the following: '${modes.join("', '")}'`,
@@ -380,14 +375,8 @@ function validatePartitionSyncConfiguration(
 function validatePartitionValue(value: unknown): asserts value is PartitionValue {
   if (typeof value === "number") {
     assert(
-      Number.isInteger(value),
-      `Expected 'partitionValue' on realm sync configuration to be an integer, got ${
-        Number.isNaN(value) ? "NaN" : "a decimal number"
-      }.`,
-    );
-    assert(
-      value >= Number.MIN_SAFE_INTEGER && value <= Number.MAX_SAFE_INTEGER,
-      `Expected 'partitionValue' on realm sync configuration to be between Number.MIN_SAFE_INTEGER and Number.MAX_SAFE_INTEGER.`,
+      Number.isSafeInteger(value),
+      `Expected 'partitionValue' on realm sync configuration to be an integer, got ${value}.`,
     );
   } else {
     assert(

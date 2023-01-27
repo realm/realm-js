@@ -27,13 +27,12 @@ import {
 } from "../internal";
 
 /**
- * Class representing the set of all active flexible sync subscriptions for a Realm
- * instance.
+ * Represents the set of all active flexible sync subscriptions for a Realm instance.
  *
  * The server will continuously evaluate the queries that the instance is subscribed to
  * and will send data that matches them, as well as remove data that no longer does.
  *
- * The set of subscriptions can only be updated inside a {@link SubscriptionSet.update} callback,
+ * The set of subscriptions can only be modifed inside a {@link SubscriptionSet.update} callback,
  * by calling methods on the corresponding {@link MutableSubscriptionSet} instance.
  */
 export class SubscriptionSet extends BaseSubscriptionSet {
@@ -75,15 +74,15 @@ export class SubscriptionSet extends BaseSubscriptionSet {
   }
 
   /**
-   * Update the SubscriptionSet and change this instance to point to the updated SubscriptionSet.
+   * Call this to make changes to this SubscriptionSet from inside the callback,
+   * such as adding or removing subscriptions from the set.
    *
-   * Adding or removing subscriptions from the set must be performed inside
-   * the callback argument of this method, and the mutating methods must be called on
-   * the `mutableSubscriptions` argument rather than the original {@link SubscriptionSet} instance.
+   * The MutableSubscriptonSet argument can only be used from the callback and must
+   * not be used after it returns.
    *
-   * Any changes to the subscriptions after the callback has executed will be batched and sent
-   * to the server. You can either `await` the call to `update`, or call
-   * {@link SubscriptionSet.waitForSynchronization} to wait for the new data to be available.
+   * All changes done by the callback will be batched and sent to the server. You can either
+   * `await` the call to `update`, or call {@link SubscriptionSet.waitForSynchronization}
+   * to wait for the new data to be available.
    *
    * @param callback A callback function which receives a {@link MutableSubscriptionSet}
    *  instance as the first argument, which can be used to add or remove subscriptions
@@ -97,18 +96,18 @@ export class SubscriptionSet extends BaseSubscriptionSet {
    * @example
    * await realm.subscriptions.update(mutableSubscriptions => {
    *   mutableSubscriptions.add(realm.objects("Cat").filtered("age > 10"));
-   *   mutableSubscriptions.add(realm.objects("Dog").filtered("age > 20"));
-   *   mutableSubscriptions.removeByName("personSubs");
+   *   mutableSubscriptions.add(realm.objects("Dog").filtered("age > 20"), { name: "oldDogs" });
+   *   mutableSubscriptions.removeByName("youngDogs");
    * });
    * // `realm` will now return the expected results based on the updated subscriptions
    */
   async update(callback: (mutableSubscriptions: MutableSubscriptionSet, realm: Realm) => void): Promise<void> {
-    this.updateSync(callback);
+    this.updateNoWait(callback);
     await this.waitForSynchronization();
   }
 
   /**@internal */
-  updateSync(callback: (mutableSubscriptions: MutableSubscriptionSet, realm: Realm) => void): void {
+  updateNoWait(callback: (mutableSubscriptions: MutableSubscriptionSet, realm: Realm) => void): void {
     assert.function(callback, "the argument to 'update()'");
 
     // Create a mutable copy of this instance (which copies the original and upgrades
