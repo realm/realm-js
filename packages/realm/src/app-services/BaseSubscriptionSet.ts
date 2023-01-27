@@ -332,4 +332,16 @@ export abstract class BaseSubscriptionSet implements ReadonlyArray<Subscription>
   join(separator?: string): string {
     return [...this].join(separator);
   }
+
+  every<S extends Subscription>(
+    predicate: (value: Subscription, index: number, array: readonly Subscription[]) => value is S,
+    thisArg?: any,
+  ): this is readonly S[];
+  every(
+    predicate: (value: Subscription, index: number, array: readonly Subscription[]) => unknown,
+    thisArg?: any,
+  ): boolean;
+  every(predicate: any, thisArg?: any): boolean {
+    return [...this].every(predicate, thisArg);
+  }
 }
