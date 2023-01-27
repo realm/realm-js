@@ -264,4 +264,8 @@ export abstract class BaseSubscriptionSet implements ReadonlyArray<Subscription>
   concat(...items: any[]): any[] {
     return [...this].concat(...items);
   }
+
+  map<U>(callbackfn: (value: Subscription, index: number, array: readonly Subscription[]) => U, thisArg?: any): U[] {
+    return [...this].map(callbackfn, thisArg);
+  }
 }
