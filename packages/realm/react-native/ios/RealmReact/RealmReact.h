@@ -22,13 +22,7 @@
 extern "C" {
 #endif
 
-typedef void (^RealmReactEventHandler)(id message);
-
 @interface RealmReact : NSObject
-
-- (void)addListenerForEvent:(NSString *)eventName handler:(RealmReactEventHandler)handler;
-- (void)removeListenerForEvent:(NSString *)eventName handler:(RealmReactEventHandler)handler;
-
 @end
 
 #ifdef __cplusplus

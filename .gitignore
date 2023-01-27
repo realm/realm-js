@@ -101,6 +101,7 @@ integration-tests/**/.lock
 /react-native/android/src/main/jniLibs/
 /realm*.tgz
 /react-native/ios/realm-js-ios.xcframework/
+/packages/realm/react-native/ios/realm-js-ios.xcframework/
 
 # Ignore template package-lock.json files
 /templates/*/package-lock.json
