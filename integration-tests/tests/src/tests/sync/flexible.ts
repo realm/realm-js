@@ -298,7 +298,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           it("returns a promise", async function (this: RealmContext) {
             const result = openRealm(this.user, {});
             try {
-              expect(result).to.be.instanceOf(Promise);
+              expect(result).to.be.an.instanceOf(Promise);
             } finally {
               const { realm, config } = await result;
               closeRealm(realm, config);
@@ -382,7 +382,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
     describe("Realm#subscriptions", function () {
       it("returns a SubscriptionSet instance", function (this: RealmContext) {
-        expect(this.realm.subscriptions).to.be.instanceOf(Realm.App.Sync.SubscriptionSet);
+        expect(this.realm.subscriptions).to.be.an.instanceOf(Realm.App.Sync.SubscriptionSet);
       });
 
       it("throws an error if the Realm does not have a sync config", function (this: RealmContext) {
@@ -406,17 +406,17 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
     describe("Subscription class", function () {
       it("has an id", function (this: RealmContext) {
         const { sub } = addSubscriptionForPerson(this.realm);
-        expect(sub.id).to.be.instanceOf(BSON.ObjectId);
+        expect(sub.id).to.be.an.instanceOf(BSON.ObjectId);
       });
 
       it("has a createdAt date", function (this: RealmContext) {
         const { sub } = addSubscriptionForPerson(this.realm);
-        expect(sub.createdAt).to.be.instanceOf(Date);
+        expect(sub.createdAt).to.be.an.instanceOf(Date);
       });
 
       it("has an updatedAt date", function (this: RealmContext) {
         const { sub } = addSubscriptionForPerson(this.realm);
-        expect(sub.updatedAt).to.be.instanceOf(Date);
+        expect(sub.updatedAt).to.be.an.instanceOf(Date);
       });
 
       it("has a default name", function (this: RealmContext) {
@@ -467,7 +467,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           const { subs } = addSubscriptionForPerson(this.realm);
 
           const promise = subs.waitForSynchronization();
-          expect(promise).to.be.instanceOf(Promise);
+          expect(promise).to.be.an.instanceOf(Promise);
           await promise;
         });
 
