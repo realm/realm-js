@@ -29,7 +29,7 @@ const SingleSchema: Realm.ObjectSchema = {
 };
 
 type ISingleSchema = {
-  a: ArrayBuffer;
+  a: ArrayBufferLike | DataView;
 };
 
 describe("ArrayBuffer type", () => {
@@ -75,7 +75,7 @@ describe("ArrayBuffer type", () => {
     const data = this.realm.objects<ISingleSchema>(SingleSchema.name)[0];
     expect(data.a.byteLength).equals(view.byteLength, "Data size should be equal");
 
-    const binary_view = new Uint8Array(data.a);
+    const binary_view = new Uint8Array(data.a as ArrayBuffer);
 
     for (let i = 0; i < view.byteLength; i++) {
       const p1 = view[i];
@@ -119,10 +119,12 @@ describe("ArrayBuffer type", () => {
       0xff,
     ]);
 
-    const data = this.realm.write(() => this.realm.create(SingleSchema.name, { a: new DataView(view.buffer) }));
+    const data = this.realm.write(() =>
+      this.realm.create<ISingleSchema>(SingleSchema.name, { a: new DataView(view.buffer) }),
+    );
     expect(data.a.byteLength).equals(view.byteLength, "Data size should be equal");
 
-    const binary_view = new Uint8Array(data.a);
+    const binary_view = new Uint8Array(data.a as ArrayBuffer);
 
     for (let i = 0; i < view.byteLength; i++) {
       const p1 = view[i];
@@ -173,7 +175,7 @@ describe("ArrayBuffer type", () => {
 
     const data = this.realm.objects<ISingleSchema>(SingleSchema.name)[0];
     expect(data.a.byteLength).equals(array_buffer.byteLength, "Data size should be equals");
-    const ab_view = new Uint8Array(data.a);
+    const ab_view = new Uint8Array(data.a as ArrayBuffer);
 
     for (let i = 0; i < view.byteLength; i++) {
       const p1 = view[i];
@@ -188,7 +190,7 @@ describe("ArrayBuffer type", () => {
     const data = this.realm.objects<ISingleSchema>(SingleSchema.name)[0];
     expect(data.a.byteLength).equals(n_buffer.byteLength, "Data size should be equal");
 
-    const into_int = new Uint8Array(data.a);
+    const into_int = new Uint8Array(data.a as ArrayBuffer);
 
     for (let i = 0; i < n_buffer.byteLength; i++) {
       const p1 = n_buffer[i];
