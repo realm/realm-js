@@ -446,4 +446,12 @@ export abstract class BaseSubscriptionSet implements ReadonlyArray<Subscription>
   flat<D extends number = 1>(): FlatArray<this, D>[] {
     throw new Error("Not yet implemented.");
   }
+
+  toString(): string {
+    return [...this].toString();
+  }
+
+  toLocaleString(): string {
+    return [...this].toLocaleString();
+  }
 }

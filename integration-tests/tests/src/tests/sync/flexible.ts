@@ -1077,6 +1077,18 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(flattenedSubs.every((sub) => sub instanceof Realm.App.Sync.Subscription)).to.be.true;
         });
 
+        it("stringifies a SubscriptionSet using 'toString()'", async function (this: RealmContext) {
+          const { subs } = await addThreeSubscriptions.call(this);
+
+          expect(subs.toString()).to.equal("[object Object],[object Object],[object Object]");
+        });
+
+        it("stringifies a SubscriptionSet using 'toLocaleString()'", async function (this: RealmContext) {
+          const { subs } = await addThreeSubscriptions.call(this);
+
+          expect(subs.toString()).to.equal("[object Object],[object Object],[object Object]");
+        });
+
         it("is an immutable snapshot of the subscriptions from when it was called", async function (this: RealmContext) {
           const { subs } = await addSubscriptionForPersonAndSync(this.realm);
           const snapshot = subs;
