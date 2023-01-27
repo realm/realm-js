@@ -258,4 +258,10 @@ export abstract class BaseSubscriptionSet implements ReadonlyArray<Subscription>
   ): void {
     return [...this].forEach(callbackfn, thisArg);
   }
+
+  concat(...items: ConcatArray<Subscription>[]): Subscription[];
+  concat(...items: (Subscription | ConcatArray<Subscription>)[]): Subscription[];
+  concat(...items: any[]): any[] {
+    return [...this].concat(...items);
+  }
 }

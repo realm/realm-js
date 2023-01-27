@@ -669,6 +669,36 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(count).to.equal(3);
         });
 
+        it("concatenates a SubscriptionSet with values using 'concat()'", async function (this: RealmContext) {
+          const { subs } = await addThreeSubscriptions.call(this);
+
+          const item1 = "Item1";
+          const item2 = "Item2";
+          const concatenated = subs.concat(item1, item2);
+          expect(concatenated).to.be.an("array");
+          expect(concatenated).to.have.length(3 + 2);
+          expect(concatenated[0]).to.be.an.instanceOf(Realm.App.Sync.Subscription);
+          expect(concatenated[1]).to.be.an.instanceOf(Realm.App.Sync.Subscription);
+          expect(concatenated[2]).to.be.an.instanceOf(Realm.App.Sync.Subscription);
+          expect(concatenated[3]).to.equal(item1);
+          expect(concatenated[4]).to.equal(item2);
+        });
+
+        it("concatenates a SubscriptionSet with array of values using 'concat()'", async function (this: RealmContext) {
+          const { subs } = await addThreeSubscriptions.call(this);
+
+          const item1 = "Item1";
+          const item2 = "Item2";
+          const concatenated = subs.concat([item1, item2]);
+          expect(concatenated).to.be.an("array");
+          expect(concatenated).to.have.length(3 + 2);
+          expect(concatenated[0]).to.be.an.instanceOf(Realm.App.Sync.Subscription);
+          expect(concatenated[1]).to.be.an.instanceOf(Realm.App.Sync.Subscription);
+          expect(concatenated[2]).to.be.an.instanceOf(Realm.App.Sync.Subscription);
+          expect(concatenated[3]).to.equal(item1);
+          expect(concatenated[4]).to.equal(item2);
+        });
+
         it("is an immutable snapshot of the subscriptions from when it was called", async function (this: RealmContext) {
           const { subs } = await addSubscriptionForPersonAndSync(this.realm);
           const snapshot = subs;
