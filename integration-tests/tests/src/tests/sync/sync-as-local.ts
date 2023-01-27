@@ -23,7 +23,7 @@ import { PersonSchema, IPerson } from "../../schemas/person-and-dog-with-object-
 import { authenticateUserBefore, importAppBefore, openRealmBefore } from "../../hooks";
 
 describe.skipIf(environment.missingServer, "Synced Realm as local", function () {
-  this.timeout(25 * 1000);
+  this.timeout(60_000); // TODO: Temporarily hardcoded until envs are set up.
   importAppBefore("with-db-flx");
   authenticateUserBefore();
   openRealmBefore({
