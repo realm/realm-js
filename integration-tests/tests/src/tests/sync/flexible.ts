@@ -709,6 +709,20 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(mappedSubs).to.deep.equal([0, 1, 2]);
         });
 
+        it("filters a SubscriptionSet using 'filter()'", async function (this: RealmContext) {
+          const { subs } = await addThreeSubscriptions.call(this);
+
+          const expectedSub = subs[0];
+          const filteredSubs = subs.filter((sub) => {
+            expect(sub).to.be.instanceOf(Realm.App.Sync.Subscription);
+            return sub.id.equals(expectedSub.id);
+          });
+          expect(filteredSubs).to.be.an("array");
+          expect(filteredSubs).to.have.length(1);
+          expect(filteredSubs[0]).to.be.instanceOf(Realm.App.Sync.Subscription);
+          expect(filteredSubs[0].id.equals(expectedSub.id)).to.be.true;
+        });
+
         it("is an immutable snapshot of the subscriptions from when it was called", async function (this: RealmContext) {
           const { subs } = await addSubscriptionForPersonAndSync(this.realm);
           const snapshot = subs;

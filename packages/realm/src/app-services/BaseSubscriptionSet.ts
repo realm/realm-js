@@ -268,4 +268,16 @@ export abstract class BaseSubscriptionSet implements ReadonlyArray<Subscription>
   map<U>(callbackfn: (value: Subscription, index: number, array: readonly Subscription[]) => U, thisArg?: any): U[] {
     return [...this].map(callbackfn, thisArg);
   }
+
+  filter<S extends Subscription>(
+    predicate: (value: Subscription, index: number, array: readonly Subscription[]) => value is S,
+    thisArg?: any,
+  ): S[];
+  filter(
+    predicate: (value: Subscription, index: number, array: readonly Subscription[]) => unknown,
+    thisArg?: any,
+  ): Subscription[];
+  filter<S extends Subscription>(predicate: any, thisArg?: any): Subscription[] | S[] {
+    return [...this].filter(predicate, thisArg);
+  }
 }
