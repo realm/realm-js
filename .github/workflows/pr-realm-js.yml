@@ -182,44 +182,23 @@ jobs:
           path: |
             dependencies.list
             ${{ matrix.variant.artifact-path }}
+
   cluster-prep:
     name: Prepare Clusters for Integration Tests
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        variant:
-          - { key: linux-node }
-          - { key: linux-electron-main }
-          - { key: linux-electron-render }
-          #- { key: windows-node }
-          #- { key: windows-electron-main }
-          #- { key: windows-electron-render }
-          - { key: darwin-electron-main }
-          - { key: darwin-electron-render }
-          - { key: darwin-node }
-          - { key: android-rn }
-          - { key: ios-rn }
-          #- { key: ios-rn-catalyst }
+    outputs:
+      atlasUrl: ${{ steps.deploy-cluster.outputs.atlasUrl }}
+      realmUrl: ${{ steps.deploy-cluster.outputs.realmUrl }}
+      clusterName: ${{ steps.deploy-cluster.outputs.clusterName }}
     steps:
-    - name: Deploy Cluster for ${{ matrix.variant.key }}
-      uses: realm/ci-actions/mdb-realm/deployApps@fac1d6958f03d71de743305ce3ab27594efbe7b7
-      id: deploy-mdb-apps
+    - name: Deploy Cluster
+      uses: realm/ci-actions/mdb-realm/deploy@e7b65d7d587e1abc358968d7ff816cc0163906d2
+      id: deploy-cluster
       with:
-        realmUrl: ${{ secrets.REALM_QA_BASE_URL }}
         projectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
-        atlasUrl: ${{ secrets.ATLAS_QA_BASE_URL}}
         apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
         privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
-        differentiator: ${{ matrix.variant.key }}-${{ github.run_id }}
-    - name: Save Cluster Name to File
-      run: |
-          echo ${{ steps.deploy-mdb-apps.outputs.clusterName }} > cluster-name.txt
-    - name: Save Cluster Name
-      uses: actions/upload-artifact@v3
-      with:
-        name: ${{matrix.variant.key}}-cluster-name
-        path: cluster-name.txt
+        clusterSize: "M10"
 
   integration-tests:
     name: Integration tests (${{matrix.variant.target}}) for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
@@ -240,33 +219,35 @@ jobs:
       fail-fast: false
       matrix:
         variant:
-          - { key: linux-node, os: linux, target: test, runner: ubuntu-latest, environment: node }
-          - { key: linux-electron-main, os: linux, target: "test:main", runner: ubuntu-latest, environment: electron }
-          - { key: linux-electron-render, os: linux, target: "test:renderer", runner: ubuntu-latest, environment: electron }
-          #- { key: windows-node, os: windows, target: test, runner: windows-latest, environment: node}
-          #- { key: windows-electron-main, os: windows, target: "test:main", runner: windows-latest, environment: electron }
-          #- { key: windows-electron-render, os: windows, target: "test:renderer", runner: windows-latest, environment: electron }
-          - { key: darwin-electron-main, os: darwin, target: "test:main", runner: macos-latest, environment: electron }
-          - { key: darwin-electron-render, os: darwin, target: "test:renderer", runner: macos-latest, environment: electron }
-          - { key: darwin-node, os: darwin, target: test, runner: macos-latest, environment: node }
-          - { key: android-rn, os: android, target: "test:android", runner: macos-latest, environment: react-native, arch: "armeabi-v7a" }
-          - { key: ios-rn, os: ios, target: "test:ios", runner: macos-latest, environment: react-native, arch: "apple" }
-          #- { key: ios-rn-catalyst, os: ios, target: "test:catalyst", runner: macos-latest, environment: react-native, arch: "apple" }
+          - {  os: linux, target: test, runner: ubuntu-latest, environment: node }
+          - {  os: linux, target: "test:main", runner: ubuntu-latest, environment: electron }
+          - {  os: linux, target: "test:renderer", runner: ubuntu-latest, environment: electron }
+          #- {  os: windows, target: test, runner: windows-latest, environment: node}
+          #- {  os: windows, target: "test:main", runner: windows-latest, environment: electron }
+          #- {  os: windows, target: "test:renderer", runner: windows-latest, environment: electron }
+          - {  os: darwin, target: "test:main", runner: macos-latest, environment: electron }
+          - {  os: darwin, target: "test:renderer", runner: macos-latest, environment: electron }
+          - {  os: darwin, target: test, runner: macos-latest, environment: node }
+          - {  os: android, target: "test:android", runner: macos-latest, environment: react-native, arch: "armeabi-v7a" }
+          - {  os: ios, target: "test:ios", runner: macos-latest, environment: react-native, arch: "apple" }
+          #- { os: ios, target: "test:catalyst", runner: macos-latest, environment: react-native, arch: "apple" }
     timeout-minutes: 60
     steps:
-      - name: Save Cluster Name to File
-        uses: actions/download-artifact@v3
-        with:
-          name: ${{matrix.variant.key}}-cluster-name
-
-      - name: Save Cluster Name to Environment Variable
-        run: |
-          echo "CLUSTER_NAME=$(cat cluster-name.txt)" >> $GITHUB_ENV
-
       - name: Checkout code
         uses: actions/checkout@v2
         with:
           submodules: "recursive"
+
+      # On the first run, this step will output the cluster name from the previous deploy job.
+      # On a re-run, it will deploy a new cluster and output a new cluster name.
+      - name: Deploy Cluster if not already deployed
+        uses: realm/ci-actions/mdb-realm/deploy@e7b65d7d587e1abc358968d7ff816cc0163906d2
+        id: deploy
+        with:
+          projectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+          apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+          privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
+          clusterSize: "M10"
 
       - name: Setup node version
         uses: actions/setup-node@v2
@@ -358,7 +339,7 @@ jobs:
 
       - name: Create Mocha Env
         id: mocha-env
-        run: echo "::set-output name=name::syncLogLevel=warn,realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ env.CLUSTER_NAME}},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}"
+        run: echo "::set-output name=name::syncLogLevel=warn,realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ steps.deploy.outputs.clusterName }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}"
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ (matrix.variant.os != 'android') && (matrix.variant.os != 'ios') }}
@@ -423,29 +404,10 @@ jobs:
     name: Cleanup Clusters
     runs-on: ubuntu-latest
     needs: [integration-tests]
-    strategy:
-      fail-fast: false
-      matrix:
-        variant:
-          - { key: linux-node }
-          - { key: linux-electron-main }
-          - { key: linux-electron-render }
-          #- { key: windows-node }
-          #- { key: windows-electron-main }
-          #- { key: windows-electron-render }
-          - { key: darwin-electron-main }
-          - { key: darwin-electron-render }
-          - { key: darwin-node }
-          - { key: android-rn }
-          - { key: ios-rn }
-          #- { key: ios-rn-catalyst }
+    if: ${{always()}}
     steps:
-    - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56
-      if: ${{always()}}
+    - uses: realm/ci-actions/mdb-realm/cleanup@e7b65d7d587e1abc358968d7ff816cc0163906d2
       with:
-        realmUrl: ${{ secrets.REALM_QA_BASE_URL }}
-        atlasUrl: ${{ secrets.ATLAS_QA_BASE_URL}}
         projectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
         apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
         privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
-        differentiator: ${{ matrix.variant.key }}-${{ github.run_id }}
