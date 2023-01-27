@@ -377,4 +377,30 @@ export abstract class BaseSubscriptionSet implements ReadonlyArray<Subscription>
   ): number {
     return [...this].findIndex(predicate, thisArg);
   }
+
+  indexOf(searchElement: Subscription, fromIndex?: number): number {
+    const NOT_FOUND = -1;
+    const size = this.length;
+    if (
+      !size ||
+      !(searchElement instanceof Subscription) ||
+      (fromIndex !== undefined && typeof fromIndex !== "number")
+    ) {
+      return NOT_FOUND;
+    }
+    // `!fromIndex` handles both the `undefined` and `NaN` case.
+    if (!fromIndex || fromIndex < 0) {
+      fromIndex = 0;
+    } else if (!Number.isInteger(fromIndex)) {
+      fromIndex = Math.floor(fromIndex);
+    }
+
+    for (let i = fromIndex; i < size; i++) {
+      if (searchElement.id.equals(this.internal.at(i).id)) {
+        return i;
+      }
+    }
+
+    return NOT_FOUND;
+  }
 }

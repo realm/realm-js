@@ -823,6 +823,107 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(foundIndex).to.equal(expectedIndex);
         });
 
+        it("returns the index of a Subscription using 'indexOf()'", async function (this: RealmContext) {
+          const { subs } = await addThreeSubscriptions.call(this);
+
+          const expectedIndex = 1;
+          const searchElement = subs[expectedIndex];
+          expect(subs.indexOf(searchElement)).to.equal(expectedIndex);
+        });
+
+        it("returns the index of a Subscription using 'indexOf()' if 'fromIndex' is an integer", async function (this: RealmContext) {
+          const { subs } = await addThreeSubscriptions.call(this);
+
+          const expectedIndex = 1;
+          const searchElement = subs[expectedIndex];
+          const fromIndex = expectedIndex;
+          expect(subs.indexOf(searchElement, fromIndex)).to.equal(expectedIndex);
+        });
+
+        it("returns the index of a Subscription using 'indexOf()' if 'fromIndex' is a float", async function (this: RealmContext) {
+          const { subs } = await addThreeSubscriptions.call(this);
+
+          const expectedIndex = 1;
+          const searchElement = subs[expectedIndex];
+          const fromIndex = expectedIndex + 0.9;
+          expect(subs.indexOf(searchElement, fromIndex)).to.equal(expectedIndex);
+        });
+
+        it("returns the index of a Subscription using 'indexOf()' if 'fromIndex' is negative", async function (this: RealmContext) {
+          const { subs } = await addThreeSubscriptions.call(this);
+
+          const expectedIndex = 1;
+          const searchElement = subs[expectedIndex];
+          const fromIndex = -1;
+          expect(subs.indexOf(searchElement, fromIndex)).to.equal(expectedIndex);
+        });
+
+        it("returns the index of a Subscription using 'indexOf()' if 'fromIndex' is 'NaN'", async function (this: RealmContext) {
+          const { subs } = await addThreeSubscriptions.call(this);
+
+          const expectedIndex = 1;
+          const searchElement = subs[expectedIndex];
+          const fromIndex = NaN;
+          expect(subs.indexOf(searchElement, fromIndex)).to.equal(expectedIndex);
+        });
+
+        it("returns -1 using 'indexOf' if the Subscription is not found'", async function (this: RealmContext) {
+          const { subs } = await addThreeSubscriptions.call(this);
+
+          const searchElement = subs[1];
+          await subs.update((mutableSubs) => {
+            mutableSubs.removeSubscription(searchElement);
+          });
+          expect(subs).to.have.length(2);
+
+          const notFound = -1;
+          expect(subs.indexOf(searchElement)).to.equal(notFound);
+        });
+
+        it("returns -1 using 'indexOf()' if the SubscriptionSet is empty", async function (this: RealmContext) {
+          const { subs } = await addSubscriptionAndSync(
+            this.realm,
+            this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"),
+          );
+          expect(subs).to.have.length(1);
+
+          const searchElement = subs[0];
+          await subs.update((mutableSubs) => {
+            mutableSubs.removeSubscription(searchElement);
+          });
+          expect(subs).to.have.length(0);
+
+          const notFound = -1;
+          expect(subs.indexOf(searchElement)).to.equal(notFound);
+        });
+
+        it("returns -1 using 'indexOf()' if 'searchElement' is not a Subscription", async function (this: RealmContext) {
+          const { subs } = await addThreeSubscriptions.call(this);
+
+          const searchElement = "Not a Subscription";
+          const notFound = -1;
+          expect(subs.indexOf(searchElement)).to.equal(notFound);
+        });
+
+        it("returns -1 using 'indexOf()' if 'fromIndex' is not a number", async function (this: RealmContext) {
+          const { subs } = await addThreeSubscriptions.call(this);
+
+          const searchElement = subs[0];
+          const fromIndex = "Not a number";
+          const notFound = -1;
+          expect(subs.indexOf(searchElement, fromIndex)).to.equal(notFound);
+        });
+
+        it("returns -1 using 'indexOf()' if 'fromIndex' is greater than the correct index", async function (this: RealmContext) {
+          const { subs } = await addThreeSubscriptions.call(this);
+
+          const index = 1;
+          const fromIndex = index + 1;
+          const searchElement = subs[index];
+          const notFound = -1;
+          expect(subs.indexOf(searchElement, fromIndex)).to.equal(notFound);
+        });
+
         it("is an immutable snapshot of the subscriptions from when it was called", async function (this: RealmContext) {
           const { subs } = await addSubscriptionForPersonAndSync(this.realm);
           const snapshot = subs;
