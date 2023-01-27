@@ -723,6 +723,28 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(filteredSubs[0].id.equals(expectedSub.id)).to.be.true;
         });
 
+        it("reduces a SubscriptionSet using 'reduce()'", async function (this: RealmContext) {
+          const { subs } = await addThreeSubscriptions.call(this);
+
+          const expectedIndices = [0, 1, 2];
+          const reducedIndices = subs.reduce((previousValue, currentValue, currentIndex) => {
+            expect(currentValue).to.be.an.instanceOf(Realm.App.Sync.Subscription);
+            return [...previousValue, currentIndex];
+          }, []);
+          expect(reducedIndices).to.deep.equal(expectedIndices);
+        });
+
+        it("reduces a SubscriptionSet using 'reduceRight()'", async function (this: RealmContext) {
+          const { subs } = await addThreeSubscriptions.call(this);
+
+          const expectedIndices = [2, 1, 0];
+          const reducedIndices = subs.reduceRight((previousValue, currentValue, currentIndex) => {
+            expect(currentValue).to.be.an.instanceOf(Realm.App.Sync.Subscription);
+            return [...previousValue, currentIndex];
+          }, []);
+          expect(reducedIndices).to.deep.equal(expectedIndices);
+        });
+
         it("is an immutable snapshot of the subscriptions from when it was called", async function (this: RealmContext) {
           const { subs } = await addSubscriptionForPersonAndSync(this.realm);
           const snapshot = subs;

@@ -280,4 +280,48 @@ export abstract class BaseSubscriptionSet implements ReadonlyArray<Subscription>
   filter<S extends Subscription>(predicate: any, thisArg?: any): Subscription[] | S[] {
     return [...this].filter(predicate, thisArg);
   }
+
+  reduce(
+    callbackfn: (
+      previousValue: Subscription,
+      currentValue: Subscription,
+      currentIndex: number,
+      array: readonly Subscription[],
+    ) => Subscription,
+    initialValue?: Subscription,
+  ): Subscription;
+  reduce<U>(
+    callbackfn: (
+      previousValue: U,
+      currentValue: Subscription,
+      currentIndex: number,
+      array: readonly Subscription[],
+    ) => U,
+    initialValue: U,
+  ): U;
+  reduce<U>(callbackfn: any, initialValue?: any): Subscription | U {
+    return [...this].reduce(callbackfn, initialValue);
+  }
+
+  reduceRight(
+    callbackfn: (
+      previousValue: Subscription,
+      currentValue: Subscription,
+      currentIndex: number,
+      array: readonly Subscription[],
+    ) => Subscription,
+    initialValue?: Subscription,
+  ): Subscription;
+  reduceRight<U>(
+    callbackfn: (
+      previousValue: U,
+      currentValue: Subscription,
+      currentIndex: number,
+      array: readonly Subscription[],
+    ) => U,
+    initialValue: U,
+  ): U;
+  reduceRight<U>(callbackfn: any, initialValue?: any): Subscription | U {
+    return [...this].reduceRight(callbackfn, initialValue);
+  }
 }
