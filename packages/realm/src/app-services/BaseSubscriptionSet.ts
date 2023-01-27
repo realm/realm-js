@@ -355,4 +355,19 @@ export abstract class BaseSubscriptionSet implements ReadonlyArray<Subscription>
   includes(searchElement: Subscription, fromIndex?: number): boolean {
     return this.indexOf(searchElement, fromIndex) !== -1;
   }
+
+  find<S extends Subscription>(
+    predicate: (this: void, value: Subscription, index: number, obj: Subscription[]) => value is S,
+    thisArg?: any,
+  ): S | undefined;
+  find<Subscription>(
+    predicate: (value: Subscription, index: number, obj: Subscription[]) => unknown,
+    thisArg?: any,
+  ): Subscription | undefined;
+  find(
+    predicate: (value: Subscription, index: number, obj: Subscription[]) => boolean,
+    thisArg?: any,
+  ): Subscription | undefined {
+    return [...this].find(predicate, thisArg);
+  }
 }
