@@ -403,4 +403,31 @@ export abstract class BaseSubscriptionSet implements ReadonlyArray<Subscription>
 
     return NOT_FOUND;
   }
+
+  lastIndexOf(searchElement: Subscription, fromIndex?: number): number {
+    const NOT_FOUND = -1;
+    const size = this.length;
+    if (
+      !size ||
+      !(searchElement instanceof Subscription) ||
+      (fromIndex !== undefined && typeof fromIndex !== "number")
+    ) {
+      return NOT_FOUND;
+    }
+    if (fromIndex === undefined || fromIndex > size - 1 || fromIndex === -1) {
+      fromIndex = size - 1;
+    } else if (Number.isNaN(fromIndex)) {
+      fromIndex = 0;
+    } else if (!Number.isInteger(fromIndex)) {
+      fromIndex = Math.floor(fromIndex);
+    }
+
+    for (let i = fromIndex; i >= 0; i--) {
+      if (searchElement.id.equals(this.internal.at(i).id)) {
+        return i;
+      }
+    }
+
+    return NOT_FOUND;
+  }
 }
