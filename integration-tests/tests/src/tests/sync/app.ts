@@ -20,6 +20,7 @@ import { ObjectId } from "bson";
 import { expect } from "chai";
 import { importAppBefore } from "../../hooks";
 import { generatePartition } from "../../utils/generators";
+import { getUrls } from "../../utils/import-app";
 
 const TestObjectSchema: Realm.ObjectSchema = {
   name: "TestObject",
@@ -73,7 +74,8 @@ describe("App", () => {
     afterEach(async () => {
       Realm.clearTestState();
     });
-    const conf = { id: "smurf", baseUrl: "http://localhost:9090" };
+    const urls = getUrls();
+    const conf = { id: "smurf", baseUrl: urls.baseUrl };
 
     it("from config", () => {
       const app = new Realm.App(conf);
@@ -97,8 +99,8 @@ describe("App", () => {
     });
 
     it("throws on invalid baseURL", async function () {
-      const invalid_url_conf = { id: "smurf", baseUrl: "http://localhost:9999" };
-      const app = new Realm.App(invalid_url_conf);
+      const invalidUrlConf = { id: conf.id, baseUrl: "http://localhost:9999" };
+      const app = new Realm.App(invalidUrlConf);
 
       const credentials = Realm.Credentials.anonymous();
       await expect(app.logIn(credentials)).to.be.rejectedWith(

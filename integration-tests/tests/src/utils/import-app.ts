@@ -25,7 +25,7 @@ export type ErrorResponse = { message: string; appId: never };
 export type ImportResponse = { appId: string; message: never };
 export type Response = ImportResponse | ErrorResponse;
 
-function getUrls() {
+export function getUrls() {
   // Try reading the app importer URL out of the environment, it might not be accessiable via localhost
   const { appImporterUrl, realmBaseUrl } = environment;
   return {
