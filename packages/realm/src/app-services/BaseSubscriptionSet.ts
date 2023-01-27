@@ -324,4 +324,8 @@ export abstract class BaseSubscriptionSet implements ReadonlyArray<Subscription>
   reduceRight<U>(callbackfn: any, initialValue?: any): Subscription | U {
     return [...this].reduceRight(callbackfn, initialValue);
   }
+
+  slice(start?: number, end?: number): Subscription[] {
+    return [...this].slice(start, end);
+  }
 }

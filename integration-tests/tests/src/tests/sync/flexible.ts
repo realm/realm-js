@@ -745,6 +745,27 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(reducedIndices).to.deep.equal(expectedIndices);
         });
 
+        it("slices a SubscriptionSet using 'slice()'", async function (this: RealmContext) {
+          const { subs } = await addThreeSubscriptions.call(this);
+
+          const originalSize = subs.length;
+          expect(originalSize).to.equal(3);
+
+          const slicedSubs1 = subs.slice(1);
+          expect(slicedSubs1).to.be.an("array");
+          expect(slicedSubs1).to.have.length(2);
+          expect(slicedSubs1.every((sub) => sub instanceof Realm.App.Sync.Subscription)).to.be.true;
+
+          const slicedSubs2 = subs.slice(originalSize + 1);
+          expect(slicedSubs2).to.be.an("array");
+          expect(slicedSubs2).to.be.empty;
+
+          const slicedSubs3 = subs.slice("Not a number");
+          expect(slicedSubs3).to.be.an("array");
+          expect(slicedSubs3).to.have.length(originalSize);
+          expect(slicedSubs3.every((sub) => sub instanceof Realm.App.Sync.Subscription)).to.be.true;
+        });
+
         it("is an immutable snapshot of the subscriptions from when it was called", async function (this: RealmContext) {
           const { subs } = await addSubscriptionForPersonAndSync(this.realm);
           const snapshot = subs;
