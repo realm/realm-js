@@ -34,7 +34,7 @@ type ISingleSchema = {
 
 describe("ArrayBuffer type", () => {
   openRealmBeforeEach({ schema: [SingleSchema] });
-  it("supports storing data from a bufferView", function (this: RealmContext) {
+  it("supports storing data from a BufferView", function (this: RealmContext) {
     const view = new Uint8Array([
       0xd8,
       0x21,
@@ -83,7 +83,7 @@ describe("ArrayBuffer type", () => {
       expect(p1).equals(p2, "buffers should be equal");
     }
   });
-  it("supports storing data from a bufferDataView", function (this: RealmContext) {
+  it("supports storing data from a DataView", function (this: RealmContext) {
     const view = new Uint8Array([
       0xd8,
       0x21,
@@ -119,9 +119,7 @@ describe("ArrayBuffer type", () => {
       0xff,
     ]);
 
-    this.realm.write(() => this.realm.create(SingleSchema.name, { a: new DataView(view.buffer) }));
-
-    const data = this.realm.objects<ISingleSchema>(SingleSchema.name)[0];
+    const data = this.realm.write(() => this.realm.create(SingleSchema.name, { a: new DataView(view.buffer) }));
     expect(data.a.byteLength).equals(view.byteLength, "Data size should be equal");
 
     const binary_view = new Uint8Array(data.a);
@@ -133,7 +131,7 @@ describe("ArrayBuffer type", () => {
       expect(p1).equals(p2, "buffers should be equal");
     }
   });
-  it("supports storing data from an arrayBuffer", function (this: RealmContext) {
+  it("supports storing data from an ArrayBuffer", function (this: RealmContext) {
     const array_buffer = new ArrayBuffer(32);
     const view = new Uint8Array(array_buffer);
     view.set([
@@ -198,13 +196,13 @@ describe("ArrayBuffer type", () => {
       expect(p1).equals(p2, "Data points should be the same");
     }
   });
-  it("supports inserting empty arrayBuffer", function (this: RealmContext) {
+  it("supports inserting empty ArrayBuffer", function (this: RealmContext) {
     SingleSchema.properties.a = "data?";
     expect(() => {
       this.realm.write(() => this.realm.create(SingleSchema.name, { a: new ArrayBuffer(0) }));
     }).to.not.throw();
   });
-  it("supports inserting null for optional arrayBuffer", function (this: RealmContext) {
+  it("supports inserting null for optional ArrayBuffer", function (this: RealmContext) {
     SingleSchema.properties.a = "data?";
     expect(() => {
       this.realm.write(() => this.realm.create(SingleSchema.name, { a: null }));
