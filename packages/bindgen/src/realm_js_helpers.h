@@ -247,7 +247,7 @@ struct Helpers {
     static std::string get_results_description(const Results& results) {
         const auto& query = results.get_query();
 
-        return query.get_description() + " " + results.get_descriptor_ordering().get_description(query.get_table());
+        return query.get_description() + ' ' + results.get_descriptor_ordering().get_description(query.get_table());
     }
 };
 
