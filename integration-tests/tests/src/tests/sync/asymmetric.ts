@@ -45,24 +45,41 @@ describe.skipIf(environment.missingServer, "Asymmetric sync", function () {
       },
     });
 
-    it("Schema with asymmetric = true and embedded = false", function () {
+    it("Schema with asymmetric = true and embedded = false", function (this: RealmContext) {
       const schema = this.realm.schema;
       expect(schema.length).to.equal(1);
-      expect(schema[0].asymmetric).to.equal(true);
-      expect(schema[0].embedded).to.equal(false);
+      expect(schema[0].asymmetric).to.be.true;
+      expect(schema[0].embedded).to.be.false;
     });
 
-    it("creating an object for an asymmetric schema returns undefined", function () {
+    it("creating an object for an asymmetric schema returns undefined", function (this: RealmContext) {
       this.realm.write(() => {
-        const returnValue = this.realm.create(PersonSchema.name, { _id: new BSON.ObjectId(), name: "Joe", age: 12 });
-        expect(returnValue).to.equal(undefined);
+        const returnValue = this.realm.create(PersonSchema.name, {
+          _id: new BSON.ObjectId(),
+          name: "Joe",
+          age: 12,
+        });
+        expect(returnValue).to.be.undefined;
       });
     });
 
-    it("an asymmetric schema cannot be queried", function () {
+    it("an asymmetric schema cannot be queried through 'objects()'", function (this: RealmContext) {
       expect(() => {
         this.realm.objects(PersonSchema.name);
-      }).to.throw("You cannot query an asymmetric class.");
+      }).to.throw("You cannot query an asymmetric object.");
+    });
+
+    it("an asymmetric schema cannot be queried through 'objectForPrimaryKey()'", function (this: RealmContext) {
+      expect(() => {
+        this.realm.objectForPrimaryKey(PersonSchema.name, new BSON.ObjectId());
+      }).to.throw("You cannot query an asymmetric object.");
+    });
+
+    it("an asymmetric schema cannot be queried through '_objectForObjectKey()'", function (this: RealmContext) {
+      expect(() => {
+        // A valid objectKey is not needed for this test
+        this.realm._objectForObjectKey(PersonSchema.name, "12345");
+      }).to.throw("You cannot query an asymmetric object.");
     });
   });
 });

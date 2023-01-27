@@ -21,9 +21,12 @@ import { EJSON, ObjectId, UUID } from "bson";
 import {
   BSON,
   ClientResetError,
+  MutableSubscriptionSet,
   Realm,
+  SubscriptionSet,
   SyncError,
   SyncSession,
+  TypeAssertionError,
   User,
   assert,
   binding,
@@ -114,26 +117,25 @@ export type BaseSyncConfiguration = {
   clientReset?: ClientResetConfig;
 };
 
-// TODO: Delete once the flexible sync API gets implemented
-type MutableSubscriptionSet = unknown;
+export type InitialSubscriptions = {
+  /**
+   * A callback to make changes to a SubscriptionSet.
+   *
+   * @see {@link SubscriptionSet.update} for more information.
+   */
+  update: (mutableSubscriptions: MutableSubscriptionSet, realm: Realm) => void;
+  /**
+   * If `true`, the {@link update} callback will be rerun every time the Realm is
+   * opened (e.g. every time a user opens your app), otherwise (by default) it
+   * will only be run if the Realm does not yet exist.
+   */
+  rerunOnOpen?: boolean;
+};
 
 export type FlexibleSyncConfiguration = BaseSyncConfiguration & {
   flexible: true;
   partitionValue?: never;
-  initialSubscriptions?: {
-    /**
-     * Callback called with the {@link Realm} instance to allow you to setup the
-     * initial set of subscriptions by calling `realm.subscriptions.update`.
-     * See {@link Realm.App.Sync.SubscriptionSet.update} for more information.
-     */
-    update: (subs: MutableSubscriptionSet, realm: Realm) => void;
-    /**
-     * If `true`, the {@link update} callback will be rerun every time the Realm is
-     * opened (e.g. every time a user opens your app), otherwise (by default) it
-     * will only be run if the Realm does not yet exist.
-     */
-    rerunOnOpen?: boolean;
-  };
+  initialSubscriptions?: InitialSubscriptions;
 };
 
 export type PartitionSyncConfiguration = BaseSyncConfiguration & {
@@ -146,20 +148,16 @@ export type SyncConfiguration = FlexibleSyncConfiguration | PartitionSyncConfigu
 
 /** @internal */
 export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConfig_Relaxed {
-  if (config.flexible) {
-    throw new Error("Flexible sync has not been implemented yet");
-  }
-  const { user, onError, _sessionStopPolicy, customHttpHeaders, clientReset } = config;
-  assert.instanceOf(user, User, "user");
-  validatePartitionValue(config.partitionValue);
-  const partitionValue = EJSON.stringify(config.partitionValue as EJSON.SerializableTypes);
+  const { user, flexible, partitionValue, onError, _sessionStopPolicy, customHttpHeaders, clientReset } = config;
+
   return {
-    user: config.user.internal,
-    partitionValue,
+    user: user.internal,
+    partitionValue: flexible ? undefined : EJSON.stringify(partitionValue),
     stopPolicy: _sessionStopPolicy
       ? toBindingStopPolicy(_sessionStopPolicy)
       : binding.SyncSessionStopPolicy.AfterChangesUploaded,
-    customHttpHeaders: customHttpHeaders,
+    customHttpHeaders,
+    flxSyncRequested: !!flexible,
     ...parseClientResetConfig(clientReset, onError),
   };
 }
@@ -238,26 +236,155 @@ function parseRecoverOrDiscardUnsyncedChanges(clientReset: ClientResetRecoverOrD
   };
 }
 
-/** @internal */
-function validatePartitionValue(pv: unknown) {
-  if (typeof pv === "number") {
-    validateNumberValue(pv);
-    return;
+/**
+ * Validate the fields of a user-provided realm sync configuration.
+ * @internal
+ */
+export function validateSyncConfiguration(config: unknown): asserts config is SyncConfiguration {
+  assert.object(config, "'sync' on realm configuration", { allowArrays: false });
+  const { user, newRealmFileBehavior, existingRealmFileBehavior, onError, customHttpHeaders, clientReset, flexible } =
+    config;
+
+  assert.instanceOf(user, User, "'user' on realm sync configuration");
+  if (newRealmFileBehavior !== undefined) {
+    validateOpenRealmBehaviorConfiguration(newRealmFileBehavior, "newRealmFileBehavior");
   }
-  if (!(pv instanceof ObjectId || pv instanceof UUID || typeof pv === "string" || pv === null)) {
-    throw new Error(pv + " is not an allowed PartitionValue");
+  if (existingRealmFileBehavior !== undefined) {
+    validateOpenRealmBehaviorConfiguration(existingRealmFileBehavior, "existingRealmFileBehavior");
+  }
+  if (onError !== undefined) {
+    assert.function(onError, "'onError' on realm sync configuration");
+  }
+  if (customHttpHeaders !== undefined) {
+    assert.object(customHttpHeaders, "'customHttpHeaders' on realm sync configuration", { allowArrays: false });
+    for (const key in customHttpHeaders) {
+      assert.string(customHttpHeaders[key], "all property values of 'customHttpHeaders' on realm sync configuration");
+    }
+  }
+  if (clientReset !== undefined) {
+    validateClientResetConfiguration(clientReset);
+  }
+  // Assume the user intends to use Flexible Sync for all truthy values provided.
+  if (flexible) {
+    validateFlexibleSyncConfiguration(config);
+  } else {
+    validatePartitionSyncConfiguration(config);
   }
 }
 
-/** @internal */
-function validateNumberValue(numberValue: number) {
-  if (!Number.isInteger(numberValue)) {
-    throw new Error("PartitionValue " + numberValue + " must be of type integer");
+/**
+ * Validate the fields of a user-provided open realm behavior configuration.
+ */
+function validateOpenRealmBehaviorConfiguration(
+  config: unknown,
+  target: string,
+): asserts config is OpenRealmBehaviorConfiguration {
+  assert.object(config, `'${target}' on realm sync configuration`, { allowArrays: false });
+  assert(
+    config.type === OpenRealmBehaviorType.DownloadBeforeOpen || config.type === OpenRealmBehaviorType.OpenImmediately,
+    `'${target}.type' on realm sync configuration must be either '${OpenRealmBehaviorType.DownloadBeforeOpen}' or '${OpenRealmBehaviorType.OpenImmediately}'.`,
+  );
+  if (config.timeOut !== undefined) {
+    assert.number(config.timeOut, `'${target}.timeOut' on realm sync configuration`);
   }
-  if (numberValue > Number.MAX_SAFE_INTEGER) {
-    throw new Error("PartitionValue " + numberValue + " is greater than Number.MAX_SAFE_INTEGER");
+  if (config.timeOutBehavior !== undefined) {
+    assert(
+      config.timeOutBehavior === OpenRealmTimeOutBehavior.OpenLocalRealm ||
+        config.timeOutBehavior === OpenRealmTimeOutBehavior.ThrowException,
+      `'${target}.timeOutBehavior' on realm sync configuration must be either '${OpenRealmTimeOutBehavior.OpenLocalRealm}' or '${OpenRealmTimeOutBehavior.ThrowException}'.`,
+    );
   }
-  if (numberValue < Number.MIN_SAFE_INTEGER) {
-    throw new Error("PartitionValue " + numberValue + " is lesser than Number.MIN_SAFE_INTEGER");
+}
+
+/**
+ * Validate the fields of a user-provided client reset configuration.
+ */
+function validateClientResetConfiguration(config: unknown): asserts config is ClientResetConfig {
+  assert.object(config, "'clientReset' on realm sync configuration", { allowArrays: false });
+  const modes = Object.values(ClientResetMode);
+  assert(
+    modes.includes(config.mode as ClientResetMode),
+    `'clientReset' on realm sync configuration must be one of the following: '${modes.join("', '")}'`,
+  );
+  if (config.onManual !== undefined) {
+    assert.function(config.onManual, "'clientReset.onManual' on realm sync configuration");
+  }
+  if (config.onAfter !== undefined) {
+    assert.function(config.onAfter, "'clientReset.onAfter' on realm sync configuration");
+  }
+  if (config.onBefore !== undefined) {
+    assert.function(config.onBefore, "'clientReset.onBefore' on realm sync configuration");
+  }
+  if (config.onFallback !== undefined) {
+    assert.function(config.onFallback, "'clientReset.onFallback' on realm sync configuration");
+  }
+}
+
+/**
+ * Validate the fields of a user-provided realm flexible sync configuration.
+ */
+function validateFlexibleSyncConfiguration(
+  config: Record<string, unknown>,
+): asserts config is FlexibleSyncConfiguration {
+  const { flexible, partitionValue, initialSubscriptions } = config;
+
+  assert(
+    flexible === true,
+    "'flexible' must always be true for realms using flexible sync. To enable partition-based sync, remove 'flexible' and specify 'partitionValue'.",
+  );
+  if (initialSubscriptions !== undefined) {
+    assert.object(initialSubscriptions, "'initialSubscriptions' on realm sync configuration", { allowArrays: false });
+    assert.function(initialSubscriptions.update, "'initialSubscriptions.update' on realm sync configuration");
+    if (initialSubscriptions.rerunOnOpen !== undefined) {
+      assert.boolean(
+        initialSubscriptions.rerunOnOpen,
+        "'initialSubscriptions.rerunOnOpen' on realm sync configuration",
+      );
+    }
+  }
+  assert(
+    partitionValue === undefined,
+    "'partitionValue' cannot be specified when flexible sync is enabled. To enable partition-based sync, remove 'flexible' and specify 'partitionValue'.",
+  );
+}
+
+/**
+ * Validate the fields of a user-provided realm partition sync configuration.
+ */
+function validatePartitionSyncConfiguration(
+  config: Record<string, unknown>,
+): asserts config is PartitionSyncConfiguration {
+  const { flexible, partitionValue, initialSubscriptions } = config;
+
+  validatePartitionValue(partitionValue);
+  // We only allow `flexible` to be `true` (for Flexible Sync) or `undefined` (for Partition Sync).
+  // `{ flexible: false }` is not allowed because TypeScript cannot discriminate that type correctly
+  // with `strictNullChecks` disabled, and there is no real use case for `{ flexible: false }`.
+  assert(
+    flexible === undefined,
+    "'flexible' can only be specified to enable flexible sync. To enable flexible sync, remove 'partitionValue' and set 'flexible' to true.",
+  );
+  assert(
+    initialSubscriptions === undefined,
+    "'initialSubscriptions' can only be specified when flexible sync is enabled. To enable flexible sync, remove 'partitionValue' and set 'flexible' to true.",
+  );
+}
+
+/**
+ * Validate the user-provided partition value of a realm sync configuration.
+ */
+function validatePartitionValue(value: unknown): asserts value is PartitionValue {
+  if (typeof value === "number") {
+    assert(
+      Number.isSafeInteger(value),
+      `Expected 'partitionValue' on realm sync configuration to be an integer, got ${value}.`,
+    );
+  } else {
+    assert(
+      typeof value === "string" || value instanceof ObjectId || value instanceof UUID || value === null,
+      `Expected 'partitionValue' on realm sync configuration to be an integer, string, ObjectId, UUID, or null, got ${TypeAssertionError.deriveType(
+        value,
+      )}.`,
+    );
   }
 }

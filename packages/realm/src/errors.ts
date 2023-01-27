@@ -26,7 +26,7 @@ export class AssertionError extends Error {
 
 export class TypeAssertionError extends AssertionError {
   /** @internal */
-  private static deriveType(value: unknown) {
+  public static deriveType(value: unknown) {
     if (typeof value === "object") {
       if (value === null) {
         return "null";

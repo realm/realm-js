@@ -30,7 +30,9 @@ import {
   DefaultObject,
   Dictionary,
   EmailPasswordAuthClient,
+  FlexibleSyncConfiguration,
   INTERNAL,
+  InitialSubscriptions,
   List,
   MigrationCallback,
   ObjectSchema,
@@ -44,6 +46,7 @@ import {
   RealmObjectConstructor,
   RealmSet,
   Results,
+  SubscriptionSet,
   SyncSession,
   TypeAssertionError,
   Types,
@@ -93,6 +96,13 @@ function assertRealmEvent(name: RealmEventName): asserts name is RealmEvent {
   }
 }
 
+/** @internal */
+type InternalConfig = {
+  internal?: binding.Realm;
+  schemaExtras?: RealmSchemaExtra;
+  realmExists?: boolean;
+};
+
 export class Realm {
   public static Object = RealmObject;
   public static Collection = Collection;
@@ -139,6 +149,7 @@ export class Realm {
    * @throws {@link Error} If anything in the provided {@link config} is invalid.
    */
   public static deleteFile(config: Configuration): void {
+    validateConfiguration(config);
     const path = Realm.determinePath(config);
     fs.removeFile(path);
     fs.removeFile(path + ".lock");
@@ -292,7 +303,7 @@ export class Realm {
   }
 
   private static determinePath(config: Configuration): string {
-    if (config.path || !config.sync) {
+    if (config.path || !config.sync || config.openSyncedRealmLocally) {
       return Realm.normalizePath(config.path);
     } else {
       // TODO: Determine if it's okay to get the syncManager through the app instead of the user:
@@ -356,6 +367,7 @@ export class Realm {
         disableFormatUpgrade: config.disableFormatUpgrade,
         encryptionKey: Realm.determineEncryptionKey(config.encryptionKey),
         syncConfig: config.sync ? toBindingSyncConfig(config.sync) : undefined,
+        forceSyncHistory: config.openSyncedRealmLocally,
       },
     };
   }
@@ -387,8 +399,8 @@ export class Realm {
   ): binding.RealmConfig_Relaxed["migrationFunction"] {
     return (oldRealmInternal: binding.Realm, newRealmInternal: binding.Realm) => {
       try {
-        const oldRealm = new Realm(oldRealmInternal, schemaExtras);
-        const newRealm = new Realm(newRealmInternal, schemaExtras);
+        const oldRealm = new Realm(null, { internal: oldRealmInternal, schemaExtras });
+        const newRealm = new Realm(null, { internal: newRealmInternal, schemaExtras });
         onMigration(oldRealm, newRealm);
       } finally {
         oldRealmInternal.close();
@@ -439,21 +451,21 @@ export class Realm {
    */
   constructor(config: Configuration);
   /** @internal */
-  constructor(config: Configuration, internal: binding.Realm);
-  /** @internal */
-  constructor(internal: binding.Realm, schemaExtras?: RealmSchemaExtra);
-  constructor(arg: Configuration | binding.Realm | string = {}, secondArg?: object) {
-    if (arg instanceof binding.Realm) {
-      this.schemaExtras = (secondArg ?? {}) as RealmSchemaExtra;
-      this.internal = arg;
-    } else {
-      const config = typeof arg === "string" ? { path: arg } : arg;
+  constructor(config: Configuration | null, internalConfig: InternalConfig);
+  constructor(arg?: Configuration | string | null, internalConfig: InternalConfig = {}) {
+    const config = typeof arg === "string" ? { path: arg } : arg || {};
+    // Calling `Realm.exists()` before `binding.Realm.getSharedRealm()` is necessary to capture
+    // the correct value when this constructor was called since `binding.Realm.getSharedRealm()`
+    // will open the realm. This is needed when deciding whether to update initial subscriptions.
+    const realmExists = internalConfig.realmExists ?? Realm.exists(config);
+    if (arg !== null) {
+      assert(!internalConfig.schemaExtras, "Expected either a configuration or schemaExtras");
       validateConfiguration(config);
       const { bindingConfig, schemaExtras } = Realm.transformConfig(config);
       debug("open", bindingConfig);
       this.schemaExtras = schemaExtras;
-      assert(!secondArg || secondArg instanceof binding.Realm, "The realm constructor only takes a single argument");
-      this.internal = secondArg ?? binding.Realm.getSharedRealm(bindingConfig);
+
+      this.internal = internalConfig.internal ?? binding.Realm.getSharedRealm(bindingConfig);
 
       binding.Helpers.setBindingContext(this.internal, {
         didChange: (r) => {
@@ -470,6 +482,11 @@ export class Realm {
         },
       });
       RETURNED_REALMS.add(new binding.WeakRef(this.internal));
+    } else {
+      const { internal, schemaExtras } = internalConfig;
+      assert.instanceOf(internal, binding.Realm, "internal");
+      this.internal = internal;
+      this.schemaExtras = schemaExtras || {};
     }
 
     Object.defineProperties(this, {
@@ -489,6 +506,12 @@ export class Realm {
 
     const syncSession = this.internal.syncSession;
     this.syncSession = syncSession ? new SyncSession(syncSession) : null;
+
+    const initialSubscriptions = config.sync?.initialSubscriptions;
+    if (initialSubscriptions && !config.openSyncedRealmLocally) {
+      // Do not call `Realm.exists()` here in case the realm has been opened by this point in time.
+      this.handleInitialSubscriptions(initialSubscriptions, realmExists);
+    }
   }
 
   /**
@@ -577,10 +600,24 @@ export class Realm {
 
   /**
    * The latest set of flexible sync subscriptions.
-   * @throws {@link Error} If flexible sync is not enabled for this app
+   * @throws {@link Error} If flexible sync is not enabled for this app.
    */
-  get subscriptions(): any {
-    throw new Error("Not yet implemented");
+  get subscriptions(): SubscriptionSet {
+    const { syncConfig } = this.internal.config;
+    assert(
+      syncConfig,
+      "`subscriptions` can only be accessed if flexible sync is enabled, but sync is " +
+        "currently disabled for your app. Add a flexible sync config when opening the " +
+        "Realm, for example: { sync: { user, flexible: true } }.",
+    );
+    assert(
+      syncConfig.flxSyncRequested,
+      "`subscriptions` can only be accessed if flexible sync is enabled, but partition " +
+        "based sync is currently enabled for your Realm. Modify your sync config to remove any `partitionValue` " +
+        "and enable flexible sync, for example: { sync: { user, flexible: true } }",
+    );
+
+    return new SubscriptionSet(this, this.internal.latestSubscriptionSet);
   }
 
   /**
@@ -593,11 +630,11 @@ export class Realm {
     this.syncSession?.resetInternal();
   }
 
-  // TODO: Support embedded objects and asymmetric sync
+  // TODO: Support embedded objects
   // TODO: Rollback by deleting the object if any property assignment fails (fixing #2638)
   /**
-   * Create a new Realm object of the given type and with the specified properties. For object schemas annotated
-   * as asymmetric, no object is returned. The API for asymmetric object schema is subject to changes in the future.
+   * Create a new {@link Realm.Object} of the given type and with the specified properties. For objects marked asymmetric,
+   * `undefined` is returned. The API for asymmetric objects is subject to changes in the future.
    * @param type The type of Realm object to create.
    * @param values Property values for all required properties without a
    *   default value.
@@ -611,6 +648,7 @@ export class Realm {
    *       across devices are merged. For most use cases, the behavior will match the intuitive behavior of how
    *       changes should be merged, but if updating an entire object is considered an atomic operation, this mode
    *       should not be used.
+   * @returns A {@link Realm.Object} or `undefined` if the object is asymmetric.
    */
   create<T = DefaultObject>(type: string, values: RealmInsertionModel<T>, mode?: UpdateMode.Never): RealmObject<T> & T;
   create<T = DefaultObject>(
@@ -644,7 +682,9 @@ export class Realm {
     }
     this.internal.verifyOpen();
     const helpers = this.classes.getHelpers(type);
-    return RealmObject.create(this, values, mode, { helpers });
+    const realmObject = RealmObject.create(this, values, mode, { helpers });
+
+    return isAsymmetric(helpers.objectSchema) ? undefined : realmObject;
   }
 
   /**
@@ -707,9 +747,9 @@ export class Realm {
    * Searches for a Realm object by its primary key.
    * @param type The type of Realm object to search for.
    * @param primaryKey The primary key value of the object to search for.
-   * @throws {@link Error} If type passed into this method is invalid or if the object type did
-   * not have a {@link primaryKey} specified in the schema.
-   * @returns A Realm.Object or undefined if no object is found.
+   * @throws {@link Error} If type passed into this method is invalid, or if the object type did
+   *  not have a {@link primaryKey} specified in the schema, or if it was marked asymmetric.
+   * @returns A {@link Realm.Object} or `null` if no object is found.
    * @since 0.14.0
    */
   objectForPrimaryKey<T = DefaultObject>(type: string, primaryKey: T[keyof T]): (RealmObject<T> & T) | null;
@@ -719,6 +759,9 @@ export class Realm {
     const { objectSchema, properties, wrapObject } = this.classes.getHelpers(type);
     if (!objectSchema.primaryKey) {
       throw new Error(`Expected a primary key on '${objectSchema.name}'`);
+    }
+    if (isAsymmetric(objectSchema)) {
+      throw new Error("You cannot query an asymmetric object.");
     }
     const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
     const value = properties.get(objectSchema.primaryKey).toBinding(primaryKey, undefined);
@@ -742,17 +785,22 @@ export class Realm {
 
   /**
    * Returns all objects of the given {@link type} in the Realm.
-   * @param type The type of Realm objects to retrieve.
+   * @param type The type of Realm object to search for.
+   * @param objectKey The object key of the Realm object to search for.
    * @throws {@link Error} If type passed into this method is invalid or if the type is marked embedded or asymmetric.
-   * @returns Realm.Results that will live-update as objects are created and destroyed.
-   */
-  /**
+   * @returns A {@link Realm.Object} or `undefined` if the object key is not found.
    * @internal
    */
   _objectForObjectKey<T = DefaultObject>(type: string, objectKey: string): (RealmObject<T> & T) | undefined;
   _objectForObjectKey<T extends RealmObject>(type: Constructor<T>, objectKey: string): T | undefined;
   _objectForObjectKey<T extends RealmObject>(type: string | Constructor<T>, objectKey: string): T | undefined {
     const { objectSchema, wrapObject } = this.classes.getHelpers(type);
+    if (isEmbedded(objectSchema)) {
+      throw new Error("You cannot query an embedded object.");
+    } else if (isAsymmetric(objectSchema)) {
+      throw new Error("You cannot query an asymmetric object.");
+    }
+
     const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
     try {
       const objKey = binding.stringToObjKey(objectKey);
@@ -768,14 +816,20 @@ export class Realm {
     }
   }
 
+  /**
+   * Returns all objects of the given {@link type} in the Realm.
+   * @param type The type of Realm objects to retrieve.
+   * @throws {@link Error} If type passed into this method is invalid or if the type is marked embedded or asymmetric.
+   * @returns Realm.Results that will live-update as objects are created, modified, and destroyed.
+   */
   objects<T>(type: string): Results<RealmObject & T>;
   objects<T extends RealmObject = RealmObject>(type: Constructor<T>): Results<T>;
   objects<T extends RealmObject = RealmObject>(type: string | Constructor<T>): Results<T> {
     const { objectSchema, wrapObject } = this.classes.getHelpers(type);
-    if (objectSchema.tableType === binding.TableType.Embedded) {
+    if (isEmbedded(objectSchema)) {
       throw new Error("You cannot query an embedded object.");
-    } else if (objectSchema.tableType === binding.TableType.TopLevelAsymmetric) {
-      throw new Error("You cannot query an asymmetric class.");
+    } else if (isAsymmetric(objectSchema)) {
+      throw new Error("You cannot query an asymmetric object.");
     }
 
     const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
@@ -991,6 +1045,35 @@ export class Realm {
   ): ClassHelpers {
     return this.classes.getHelpers<T>(arg);
   }
+
+  /**
+   * Update subscriptions with the initial subscriptions if needed.
+   *
+   * @param initialSubscriptions The initial subscriptions.
+   * @param realmExists Whether the realm already exists.
+   */
+  private handleInitialSubscriptions(initialSubscriptions: InitialSubscriptions, realmExists: boolean): void {
+    const shouldUpdateSubscriptions = initialSubscriptions.rerunOnOpen || !realmExists;
+    if (shouldUpdateSubscriptions) {
+      this.subscriptions.updateNoWait(initialSubscriptions.update);
+    }
+  }
+}
+
+/**
+ * @param objectSchema The schema of the object.
+ * @returns `true` if the object is marked for asymmetric sync, otherwise `false`.
+ */
+function isAsymmetric(objectSchema: binding.ObjectSchema): boolean {
+  return objectSchema.tableType === binding.TableType.TopLevelAsymmetric;
+}
+
+/**
+ * @param objectSchema The schema of the object.
+ * @returns `true` if the object is marked as embedded, otherwise `false`.
+ */
+function isEmbedded(objectSchema: binding.ObjectSchema): boolean {
+  return objectSchema.tableType === binding.TableType.Embedded;
 }
 
 // Declare the Realm namespace for backwards compatibility
@@ -1009,6 +1092,8 @@ type BSONType = typeof BSON;
 type TypesType = typeof Types;
 type UserType = typeof User;
 type CredentialsType = typeof Credentials;
+type ConfigurationType = Configuration;
+type FlexibleSyncConfigurationType = FlexibleSyncConfiguration;
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Realm {
@@ -1027,4 +1112,6 @@ export namespace Realm {
   export type Types = TypesType;
   export type User = UserType;
   export type Credentials = CredentialsType;
+  export type Configuration = ConfigurationType;
+  export type FlexibleSyncConfiguration = FlexibleSyncConfigurationType;
 }
