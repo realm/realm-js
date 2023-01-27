@@ -593,10 +593,13 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         async function addThreeSubscriptions(this: RealmContext) {
           addSubscriptionForPerson(this.realm);
           await addSubscriptionAndSync(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"));
-          return await addSubscriptionAndSync(
+          const result = await addSubscriptionAndSync(
             this.realm,
             this.realm.objects(FlexiblePersonSchema.name).filtered("age < 50"),
           );
+          expect(result.subs).to.have.length(3);
+
+          return result;
         }
 
         it("returns an empty array if there are no subscriptions", function (this: RealmContext) {
@@ -607,7 +610,6 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         it("accesses a SubscriptionSet using index operator", async function (this: RealmContext) {
           const { subs } = await addThreeSubscriptions.call(this);
 
-          expect(subs).to.have.length(3);
           expect(subs[0]).to.be.instanceOf(Realm.App.Sync.Subscription);
           expect(subs[1]).to.be.instanceOf(Realm.App.Sync.Subscription);
           expect(subs[2]).to.be.instanceOf(Realm.App.Sync.Subscription);
@@ -637,6 +639,17 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
           // Object.keys() always returns an array of strings.
           expect(Object.keys(subs)).deep.equals(["0", "1", "2"]);
+        });
+
+        it("iterates over a SubscriptionSet using 'Object.entries()'", async function (this: RealmContext) {
+          const { subs } = await addThreeSubscriptions.call(this);
+
+          let index = 0;
+          for (const [key, value] of Object.entries(subs)) {
+            // Keys are always strings, thus we convert it into a number.
+            expect(+key).to.equal(index++);
+            expect(value).to.be.an.instanceOf(Realm.App.Sync.Subscription);
+          }
         });
 
         it("is an immutable snapshot of the subscriptions from when it was called", async function (this: RealmContext) {

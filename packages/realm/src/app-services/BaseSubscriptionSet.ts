@@ -96,7 +96,7 @@ const PROXY_HANDLER: ProxyHandler<BaseSubscriptionSet> = {
  * `realm.subscriptions[0]`. This array is readonly – SubscriptionSets can only be
  * modified inside a {@link SubscriptionSet.update} callback.
  */
-export abstract class BaseSubscriptionSet {
+export abstract class BaseSubscriptionSet implements ReadonlyArray<Subscription> {
   /**@internal */
   protected constructor(/**@internal */ protected internal: binding.SyncSubscriptionSet) {
     Object.defineProperties(this, {
@@ -229,6 +229,19 @@ export abstract class BaseSubscriptionSet {
     const size = this.length;
     for (let i = 0; i < size; i++) {
       yield i;
+    }
+  }
+
+  // ==================================================
+  //
+  // JS Array Methods
+  //
+  // ==================================================
+
+  *entries() {
+    const size = this.length;
+    for (let i = 0; i < size; i++) {
+      yield [i, this.get(i)] as [number, Subscription];
     }
   }
 }
