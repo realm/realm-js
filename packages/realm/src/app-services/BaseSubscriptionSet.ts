@@ -370,4 +370,11 @@ export abstract class BaseSubscriptionSet implements ReadonlyArray<Subscription>
   ): Subscription | undefined {
     return [...this].find(predicate, thisArg);
   }
+
+  findIndex(
+    predicate: (value: Subscription, index: number, obj: readonly Subscription[]) => unknown,
+    thisArg?: any,
+  ): number {
+    return [...this].findIndex(predicate, thisArg);
+  }
 }

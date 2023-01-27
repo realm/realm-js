@@ -811,6 +811,18 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(foundSub.id.equals(expectedSub.id)).to.be.true;
         });
 
+        it("returns the index of a Subscription using 'findIndex()'", async function (this: RealmContext) {
+          const { subs } = await addThreeSubscriptions.call(this);
+
+          const expectedIndex = 1;
+          const expectedSub = subs[expectedIndex];
+          const foundIndex = subs.findIndex((sub) => {
+            expect(sub).to.be.instanceOf(Realm.App.Sync.Subscription);
+            return sub.id.equals(expectedSub.id);
+          });
+          expect(foundIndex).to.equal(expectedIndex);
+        });
+
         it("is an immutable snapshot of the subscriptions from when it was called", async function (this: RealmContext) {
           const { subs } = await addSubscriptionForPersonAndSync(this.realm);
           const snapshot = subs;
