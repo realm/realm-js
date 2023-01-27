@@ -244,4 +244,11 @@ export abstract class BaseSubscriptionSet implements ReadonlyArray<Subscription>
       yield [i, this.get(i)] as [number, Subscription];
     }
   }
+
+  *values() {
+    const size = this.length;
+    for (let i = 0; i < size; i++) {
+      yield this.get(i);
+    }
+  }
 }

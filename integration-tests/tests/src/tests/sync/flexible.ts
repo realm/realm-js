@@ -652,6 +652,12 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           }
         });
 
+        it("iterates over a SubscriptionSet using 'Object.values()'", async function (this: RealmContext) {
+          const { subs } = await addThreeSubscriptions.call(this);
+
+          expect(Object.values(subs).every((sub) => sub instanceof Realm.App.Sync.Subscription));
+        });
+
         it("is an immutable snapshot of the subscriptions from when it was called", async function (this: RealmContext) {
           const { subs } = await addSubscriptionForPersonAndSync(this.realm);
           const snapshot = subs;
