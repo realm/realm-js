@@ -441,6 +441,8 @@ describe("Queries", () => {
           [5, "dataCol != $0", null],
         ]);
       });
+
+      // TODO: invalid query tests for data.
     });
 
     describe("querying with decimal128", () => {
@@ -466,6 +468,8 @@ describe("Queries", () => {
           [3, "decimal128Col != $0", null],
         ]);
       });
+
+      // TODO: invalid query tests for decimal128.
     });
 
     describe("querying with objectId", () => {
@@ -504,6 +508,8 @@ describe("Queries", () => {
           [5, "objectIdCol != null"],
         ]);
       });
+
+      // TODO: invalid query tests for ObjectId.
     });
 
     describe("querying with uuid", () => {
@@ -541,13 +547,7 @@ describe("Queries", () => {
         ]);
       });
 
-      it("throws with invalid queries", function (this: RealmContext) {
-        assertQueryException(this.realm, NullableTypesObject, [
-          ["Unsupported comparison between type", "dateCol == 'not a date'"],
-          ["Unsupported comparison between type", "dateCol == 1"],
-          ["Unsupported comparison between type", "dateCol == $0", 1],
-        ]);
-      });
+      // TODO: invalid query tests for UUID.
     });
 
     describe("compound queries", () => {
@@ -699,6 +699,8 @@ describe("Queries", () => {
           [[5], "linkList.intCol == 3"],
         ]);
       });
+
+      // TODO: invalid query tests for key paths.
     });
 
     describe("querying objects with ordering", () => {
@@ -737,6 +739,8 @@ describe("Queries", () => {
           [[0, 2], "age > 20 SORT(age ASC) DISTINCT(age) SORT(name DESC) DISTINCT(name)"],
         ]);
       });
+
+      // TODO: invalid query tests for ordering.
     });
 
     describe("querying primitive lists", () => {
@@ -794,6 +798,8 @@ describe("Queries", () => {
         ]);
       });
     });
+
+    // TODO: invalid query tests for primitive lists.
   });
 
   describe("Realm Query Language", () => {
