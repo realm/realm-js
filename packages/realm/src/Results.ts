@@ -75,6 +75,10 @@ export class Results<T = unknown> extends OrderedCollection<T> {
     return this.internal.size();
   }
 
+  description(): string {
+    return binding.Helpers.getResultsDescription(this.internal);
+  }
+
   /**
    * Bulk update objects in the collection.
    * @param propertyName The name of the property.
