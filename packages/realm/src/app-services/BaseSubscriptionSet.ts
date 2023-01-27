@@ -112,22 +112,22 @@ export abstract class BaseSubscriptionSet {
   }
 
   /**
-   * @returns `true` if there are no subscriptions in the set, otherwise `false`.
+   * Whether there are no subscriptions in the set.
    */
   get isEmpty(): boolean {
     return this.internal.size === 0;
   }
 
   /**
-   * @returns The version of the SubscriptionSet. This is incremented every time a
-   *  {@link SubscriptionSet.update} is applied.
+   * The version of the SubscriptionSet. This is incremented every time a
+   * {@link SubscriptionSet.update} is applied.
    */
   get version(): number {
     return Number(this.internal.version);
   }
 
   /**
-   * @returns The state of the SubscriptionSet.
+   * The state of the SubscriptionSet.
    */
   get state(): SubscriptionsState {
     const state = this.internal.state;
@@ -149,15 +149,15 @@ export abstract class BaseSubscriptionSet {
   }
 
   /**
-   * @returns If `state` is {@link SubscriptionsState.Error}, this will return a `string`
-   *  representing why the SubscriptionSet is in an error state. `null` is returned if there is no error.
+   * If `state` is {@link SubscriptionsState.Error}, this will be a `string` representing
+   * why the SubscriptionSet is in an error state. It will be `null` if there is no error.
    */
   get error(): string | null {
     return this.state === SubscriptionsState.Error ? this.internal.errorStr : null;
   }
 
   /**
-   * @returns The number of subscriptions in the set.
+   * The number of subscriptions in the set.
    */
   get length(): number {
     return this.internal.size;

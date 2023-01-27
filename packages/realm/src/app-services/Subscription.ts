@@ -32,56 +32,44 @@ export class Subscription {
   }
 
   /**
-   * Get the ID of the subscription.
-   *
-   * @returns The ObjectId of the subscription.
+   * The ObjectId of the subscription.
    */
   get id(): BSON.ObjectId {
     return this.internal.id;
   }
 
   /**
-   * Get date when this subscription was created.
-   *
-   * @returns The date when this subscription was created.
+   * The date when this subscription was created.
    */
   get createdAt(): Date {
     return this.internal.createdAt.toDate();
   }
 
   /**
-   * Get the date when this subscription was last updated.
-   *
-   * @returns The date when this subscription was last updated.
+   * The date when this subscription was last updated.
    */
   get updatedAt(): Date {
     return this.internal.updatedAt.toDate();
   }
 
   /**
-   * Get the name given to this subscription when it was created.
-   *
-   * @returns The name given to this subscription when it was created.
-   *  If no name was set, this will return `null`.
+   * The name given to this subscription when it was created.
+   * If no name was set, this will be `null`.
    */
   get name(): string | null {
     return this.internal.name || null;
   }
 
   /**
-   * Get the type of objects the subscription refers to.
-   *
-   * @returns The type of objects the subscription refers to.
+   * The type of objects the subscription refers to.
    */
   get objectType(): string {
     return this.internal.objectClassName;
   }
 
   /**
-   * Get the string representation of the query the subscription was created with.
-   *
-   * @returns The string representation of the query the subscription was created with.
-   *  If no filter or sort was specified, this will return `"TRUEPREDICATE"`.
+   * The string representation of the query the subscription was created with.
+   * If no filter or sort was specified, this will be `"TRUEPREDICATE"`.
    */
   get queryString(): string {
     return this.internal.queryString;
