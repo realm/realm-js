@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { Document } from "bson";
+
 import {
   ApiKeyAuth,
   App,
@@ -60,6 +62,17 @@ export interface UserIdentity {
    */
   providerType: ProviderType;
 }
+
+/**
+ * A remote MongoDB Service enabling access to a MongoDB Atlas cluster.
+ */
+export type MongoDBService = {
+  serviceName: string;
+  db(dbName: string): {
+    name: string;
+    collection<T extends Document>(collectionName: string): MongoDBCollection<T>;
+  };
+};
 
 /** @internal */
 function cleanArguments(args: unknown[] | unknown): unknown[] | unknown {
@@ -296,7 +309,7 @@ export class User<
    *                       .collection('widgets')
    *                       .find({color: 'blue'});
    */
-  mongoClient(serviceName: string): unknown {
+  mongoClient(serviceName: string): MongoDBService {
     return {
       get serviceName() {
         return serviceName;
@@ -306,8 +319,8 @@ export class User<
           get name() {
             return dbName;
           },
-          collection: (collectionName: string) => {
-            return new MongoDBCollection(this.internal, serviceName, dbName, collectionName);
+          collection: <T extends Document = Document>(collectionName: string) => {
+            return new MongoDBCollection<T>(this.internal, serviceName, dbName, collectionName);
           },
         };
       },
