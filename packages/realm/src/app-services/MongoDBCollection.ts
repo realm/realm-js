@@ -161,23 +161,21 @@ type Update = Record<string, unknown>;
 type AggregatePipelineStage = Record<string, unknown>;
 
 export class MongoDBCollection<T extends Document> {
-  /** @internal */
-  private user: binding.SyncUser;
-  databaseName: string;
-  name: string;
-  serviceName: string;
-  functions: DefaultFunctionsFactory;
+  public readonly name: string;
+  private functions: DefaultFunctionsFactory;
 
   /**
    * Construct a remote collection of documents
    */
   /** @internal */
-  constructor(user: binding.SyncUser, serviceName: string, databaseName: string, collectionName: string) {
-    this.user = user;
+  constructor(
+    /** @internal */ private user: binding.SyncUser,
+    public readonly serviceName: string,
+    public readonly databaseName: string,
+    collectionName: string,
+  ) {
     this.functions = createFactory(User.get(user), serviceName);
-    this.databaseName = databaseName;
     this.name = collectionName;
-    this.serviceName = serviceName;
   }
 
   /**
