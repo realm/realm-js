@@ -20,6 +20,7 @@ import { ObjectId } from "bson";
 import { expect } from "chai";
 import { importAppBefore } from "../../hooks";
 import { generatePartition } from "../../utils/generators";
+import { getUrls } from "../../utils/import-app";
 
 const TestObjectSchema: Realm.ObjectSchema = {
   name: "TestObject",
@@ -73,17 +74,20 @@ describe("App", () => {
     afterEach(async () => {
       Realm.clearTestState();
     });
-    const conf = { id: "smurf", baseUrl: "http://localhost:9090" };
+    const { baseUrl } = getUrls();
+    const missingAppConfig = { id: "smurf", baseUrl: baseUrl };
 
     it("from config", () => {
-      const app = new Realm.App(conf);
+      //even if "id" is not an existing app we can still instantiate a new Realm.
+      const app = new Realm.App(missingAppConfig);
       expect(app).instanceOf(Realm.App);
     });
 
     it("from string", () => {
-      const app = new Realm.App(conf.id);
+      //even if "id" is not an existing app we can still instantiate a new Realm.
+      const app = new Realm.App(missingAppConfig.id);
       expect(app).instanceOf(Realm.App);
-      expect(app.id).equals(conf.id);
+      expect(app.id).equals(missingAppConfig.id);
     });
 
     it("throws on undefined app", function () {
@@ -96,9 +100,9 @@ describe("App", () => {
       expect(() => new Realm.App(1234)).throws(Error, "Expected either a configuration object or an app id string.");
     });
 
-    it("throws on invalid baseURL", async function () {
-      const invalid_url_conf = { id: "smurf", baseUrl: "http://localhost:9999" };
-      const app = new Realm.App(invalid_url_conf);
+    it("logging in throws on invalid baseURL", async function () {
+      const invalidUrlConf = { id: missingAppConfig.id, baseUrl: "http://localhost:9999" };
+      const app = new Realm.App(invalidUrlConf);
 
       const credentials = Realm.Credentials.anonymous();
       await expect(app.logIn(credentials)).to.be.rejectedWith(
@@ -106,8 +110,8 @@ describe("App", () => {
       );
     });
 
-    it("throws on non existing app", async function () {
-      const app = new Realm.App(conf);
+    it("logging in throws on non existing app", async function () {
+      const app = new Realm.App(missingAppConfig);
       const credentials = Realm.Credentials.anonymous();
       await expect(app.logIn(credentials)).to.be.rejectedWith("cannot find app using Client App ID 'smurf'");
     });
