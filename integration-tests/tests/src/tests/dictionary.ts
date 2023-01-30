@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import Realm from "realm";
+import Realm, { clearTestState } from "realm";
 
 import { openRealmBefore, openRealmBeforeEach } from "../hooks";
 import { sleep } from "../utils/sleep";
@@ -85,6 +85,9 @@ type IDictTypedSchema = {
 type DictValues = { [key: string]: unknown };
 
 describe("Dictionary", () => {
+  before(() => {
+    Realm.clearTestState();
+  });
   describe("schema", () => {
     it("throws on invalid schema", () => {
       expect(() => {
