@@ -78,7 +78,7 @@ export * from "./app-services/SyncSession";
 export * from "./app-services/ApiKeyAuth";
 export * from "./app-services/EmailPasswordAuth";
 export * from "./app-services/PushClient";
-export * from "./app-services/MongoClient";
+export * from "./app-services/MongoDBCollection";
 export * from "./app-services/FunctionsFactory";
 export * from "./app-services/UserProfile";
 export * from "./app-services/BaseSubscriptionSet";

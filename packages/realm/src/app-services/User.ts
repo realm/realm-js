@@ -24,7 +24,7 @@ import {
   DefaultObject,
   DefaultUserProfileData,
   Listeners,
-  MongoClient,
+  MongoDBCollection,
   ProviderType,
   PushClient,
   binding,
@@ -307,7 +307,7 @@ export class User<
             return dbName;
           },
           collection: (collectionName: string) => {
-            return new MongoClient(this.internal, serviceName, dbName, collectionName);
+            return new MongoDBCollection(this.internal, serviceName, dbName, collectionName);
           },
         };
       },

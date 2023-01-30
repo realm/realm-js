@@ -160,7 +160,7 @@ type Update = Record<string, unknown>;
  */
 type AggregatePipelineStage = Record<string, unknown>;
 
-export class MongoClient<T extends Document> {
+export class MongoDBCollection<T extends Document> {
   /** @internal */
   private user: binding.SyncUser;
   databaseName: string;
