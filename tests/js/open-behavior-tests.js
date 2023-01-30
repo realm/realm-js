@@ -115,7 +115,7 @@ module.exports = {
       const realm = await Realm.open(config);
 
       TestCase.assertEqual(realm.objects(schemas.DogForSync.name).length, 1);
-
+      //comment
       realm.close();
     }
 
