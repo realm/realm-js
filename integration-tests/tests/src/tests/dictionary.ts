@@ -138,6 +138,7 @@ describe("Dictionary", () => {
       "removeAllListeners",
       "toJSON",
     ];
+
     for (const name of methodNames) {
       it(`exposes a method named '${name}'`, function (this: RealmContext) {
         this.realm.write(() => {
@@ -295,6 +296,7 @@ describe("Dictionary", () => {
       expect(item.dict.b).equals(0);
       expect(item.dict.c).equals("new value");
     });
+
     it("can have values mutated", function (this: RealmContext) {
       const item = this.realm.write(() => {
         return this.realm.create<Item>("Item", {
@@ -441,6 +443,7 @@ describe("Dictionary", () => {
     },
     expectedError: "JS value must be of type 'object'",
   });
+
   describe("Dictionary queries", () => {
     openRealmBeforeEach({ schema: [DictSchema] });
     it("support filters", function (this: RealmContext) {
@@ -458,6 +461,7 @@ describe("Dictionary", () => {
       expect(seventy.length).equals(30, "We expect only 30 items, matching for field x.");
     });
   });
+
   describe("notifications", () => {
     openRealmBeforeEach({ schema: [DictSchema] });
     it("support update notifications", async function (this: RealmContext) {
@@ -489,6 +493,7 @@ describe("Dictionary", () => {
       fields.removeAllListeners();
       this.realm.close();
     });
+
     // FIXME: Running the following test produce unexpected side-effects which breaks all subsequent tests.
     // See https://github.com/realm/realm-js/issues/3834
     it.skip("support insert notifications", async function (this: RealmContext) {
@@ -539,6 +544,7 @@ describe("Dictionary", () => {
       ff.fields.removeAllListeners();
       this.realm.close();
     });
+
     it("support removeAll notifications", async function (this: RealmContext) {
       this.realm.write(() => this.realm.create(DictSchema.name, { fields: { x: 1, y: 2, z: 3 } }));
       const point = this.realm.objects<IDictSchema>(DictSchema.name)[0].fields;
@@ -557,6 +563,7 @@ describe("Dictionary", () => {
       expect(cnt).equal(0);
       this.realm.close();
     });
+
     it("support removeListener notifications", async function (this: RealmContext) {
       const called = {
         a: 0,
@@ -607,6 +614,7 @@ describe("Dictionary", () => {
       fields.removeAllListeners();
       this.realm.close();
     });
+
     it("support removeListener notifications", async function (this: RealmContext) {
       this.realm.write(() => this.realm.create(DictSchema.name, { fields: { field1: 0, filed2: 2, field3: 3 } }));
       const fields = this.realm.objects<IDictSchema>(DictSchema.name)[0].fields;
@@ -646,6 +654,7 @@ describe("Dictionary", () => {
       this.realm.close();
     });
   });
+
   describe("nested models", () => {
     openRealmBeforeEach({ schema: [TwoDictSchema, Child] });
     it("updates successfully", function (this: RealmContext) {
@@ -671,6 +680,7 @@ describe("Dictionary", () => {
       expect(dict_2.children2).equal("x", "We expect children1#x");
     });
   });
+
   describe("embedded models", () => {
     openRealmBeforeEach({ schema: [DictTypedSchema, DictMixedSchema, EmbeddedChild] });
     it("inserts correctly", function (this: RealmContext) {
@@ -688,6 +698,7 @@ describe("Dictionary", () => {
       expect(dict_2.children1?.num).equal(4, "We expect children1#4");
       expect(dict_2.children2?.num).equal(5, "We expect children2#5");
     });
+
     it("throws on invalid input", function (this: RealmContext) {
       this.realm.write(() => {
         expect(() => {
