@@ -19,17 +19,11 @@
 import { expect } from "chai";
 import Realm from "realm";
 
-import { openRealmBeforeEach } from "../hooks";
+import { openRealmBefore, openRealmBeforeEach } from "../hooks";
 import { sleep } from "../utils/sleep";
 
 type Item<ValueType = Realm.Mixed> = {
   dict: Realm.Dictionary<ValueType>;
-};
-const DictWrongSchema: Realm.ObjectSchema = {
-  name: "Dictionary",
-  properties: {
-    a: "wwwww{}",
-  },
 };
 const DictSchema: Realm.ObjectSchema = {
   name: "Dictionary",
@@ -94,14 +88,23 @@ describe("Dictionary", () => {
   describe("schema", () => {
     it("throws on invalid schema", () => {
       expect(() => {
-        new Realm({ schema: [DictWrongSchema] });
+        new Realm({
+          schema: [
+            {
+              name: "Dictionary",
+              properties: {
+                a: "wwwww{}",
+              },
+            },
+          ],
+        });
       }).throws(
         "Schema validation failed due to the following errors:\n- Property 'Dictionary.a' of type 'dictionary' has unknown object type 'wwwww'",
       );
     });
   });
   describe("with unconstrained (mixed) values", () => {
-    openRealmBeforeEach({
+    openRealmBefore({
       schema: [
         {
           name: "Item",
@@ -318,7 +321,7 @@ describe("Dictionary", () => {
   });
 
   describe("toJSON", function () {
-    openRealmBeforeEach({
+    openRealmBefore({
       schema: [
         {
           name: "Item",
@@ -354,7 +357,7 @@ describe("Dictionary", () => {
 
   function describeTypedSuite({ extraSchema = [], type, goodValues, badValues, expectedError }: TypedDictionarySuite) {
     return describe(`with constrained '${type}' values`, () => {
-      openRealmBeforeEach({
+      openRealmBefore({
         schema: [
           {
             name: "Item",
@@ -462,6 +465,7 @@ describe("Dictionary", () => {
     });
   });
 
+  // TODO: Refactor to not use a `sleep` and instead resolve a promise when the listener has fired the expected amount of times (and throw if that gets exceeded)
   describe("notifications", () => {
     openRealmBeforeEach({ schema: [DictSchema] });
     it("support update notifications", async function (this: RealmContext) {
@@ -494,9 +498,7 @@ describe("Dictionary", () => {
       this.realm.close();
     });
 
-    // FIXME: Running the following test produce unexpected side-effects which breaks all subsequent tests.
-    // See https://github.com/realm/realm-js/issues/3834
-    it.skip("support insert notifications", async function (this: RealmContext) {
+    it("support insert notifications", async function (this: RealmContext) {
       this.realm.write(() => this.realm.create(DictSchema.name, { fields: { field1: 0, filed2: 2, field3: 3 } }));
       const ff = this.realm.objects<IDictSchema>(DictSchema.name)[0];
       let cnt = 0;
@@ -504,25 +506,25 @@ describe("Dictionary", () => {
         if (cnt === 1) {
           expect(obj.x2 !== undefined, "This field should be equal x2").to.be.true;
           expect(obj.x1 !== undefined, "This field should be equal x1").to.be.true;
-          expect(changeset.deletions).equals(3);
-          expect(changeset.insertions).equals(2);
-          expect(changeset.modifications).equals(0);
+          expect(changeset.deletions.length).equals(3);
+          expect(changeset.insertions.length).equals(2);
+          expect(changeset.modifications.length).equals(0);
         }
         if (cnt === 2) {
           expect(obj.x1 !== undefined, "This field should be equal x1").to.be.true;
           expect(obj.x5 !== undefined, "This field should be equal x5").to.be.true;
           expect(obj.x3 !== undefined, "This field should be equal x3").to.be.true;
-          expect(changeset.deletions).equals(2);
-          expect(changeset.insertions).equals(3);
-          expect(changeset.modifications).equals(0);
+          expect(changeset.deletions.length).equals(2);
+          expect(changeset.insertions.length).equals(3);
+          expect(changeset.modifications.length).equals(0);
         }
         if (cnt === 3) {
           const keys = Object.keys(obj);
           expect(keys[0]).equals("x1");
           expect(obj.x1).equals("hello");
-          expect(changeset.deletions).equals(3);
-          expect(changeset.insertions).equals(1);
-          expect(changeset.modifications).equals(0);
+          expect(changeset.deletions.length).equals(3);
+          expect(changeset.insertions.length).equals(1);
+          expect(changeset.modifications.length).equals(0);
         }
         cnt++;
       };
