@@ -421,7 +421,7 @@ module.exports = {
   },
 
   testObjectIsValid: function () {
-    const realm = new Realm({ schema: [schemas.TestObject] });
+    const realm = new realm({ schema: [schemas.testobject] });
     var obj;
     realm.write(function () {
       obj = realm.create("TestObject", { doubleCol: 1 });
