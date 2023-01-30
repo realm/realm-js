@@ -63,6 +63,56 @@ const RANDOM_DATA = new Uint8Array([
   0xff,
 ]);
 
+const allTypesValues = {
+  boolCol: true,
+  intCol: 1,
+  floatCol: 1.1,
+  doubleCol: 1.11,
+  stringCol: "string",
+  dateCol: new Date(1),
+  dataCol: RANDOM_DATA,
+  objectCol: { doubleCol: 2.2 },
+
+  optBoolCol: true,
+  optIntCol: 1,
+  optFloatCol: 1.1,
+  optDoubleCol: 1.11,
+  optStringCol: "string",
+  optDateCol: new Date(1),
+  optDataCol: RANDOM_DATA,
+
+  boolArrayCol: [true],
+  intArrayCol: [1],
+  floatArrayCol: [1.1],
+  doubleArrayCol: [1.11],
+  stringArrayCol: ["string"],
+  dateArrayCol: [new Date(1)],
+  dataArrayCol: [RANDOM_DATA],
+  objectArrayCol: [{ doubleCol: 2.2 }],
+
+  optBoolArrayCol: [true],
+  optIntArrayCol: [1],
+  optFloatArrayCol: [1.1],
+  optDoubleArrayCol: [1.11],
+  optStringArrayCol: ["string"],
+  optDateArrayCol: [new Date(1)],
+  optDataArrayCol: [RANDOM_DATA],
+};
+
+const nullPropertyValues = (() => {
+  const values = {};
+  for (const name in allTypesValues) {
+    if (name.includes("opt")) {
+      //@ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
+      values[name] = name.includes("Array") ? [null] : null;
+    } else {
+      //@ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
+      values[name] = allTypesValues[name];
+    }
+  }
+  return values;
+})();
+
 const MixedSchema = {
   name: "MixedSchema",
   properties: {
@@ -154,55 +204,6 @@ const LinkTypesSchema = {
     arrayCol1: { type: "list", objectType: "TestObject" },
   },
 };
-
-const allTypesValues = {
-  boolCol: true,
-  intCol: 1,
-  floatCol: 1.1,
-  doubleCol: 1.11,
-  stringCol: "string",
-  dateCol: new Date(1),
-  dataCol: RANDOM_DATA,
-  objectCol: { doubleCol: 2.2 },
-
-  optBoolCol: true,
-  optIntCol: 1,
-  optFloatCol: 1.1,
-  optDoubleCol: 1.11,
-  optStringCol: "string",
-  optDateCol: new Date(1),
-  optDataCol: RANDOM_DATA,
-
-  boolArrayCol: [true],
-  intArrayCol: [1],
-  floatArrayCol: [1.1],
-  doubleArrayCol: [1.11],
-  stringArrayCol: ["string"],
-  dateArrayCol: [new Date(1)],
-  dataArrayCol: [RANDOM_DATA],
-  objectArrayCol: [{ doubleCol: 2.2 }],
-
-  optBoolArrayCol: [true],
-  optIntArrayCol: [1],
-  optFloatArrayCol: [1.1],
-  optDoubleArrayCol: [1.11],
-  optStringArrayCol: ["string"],
-  optDateArrayCol: [new Date(1)],
-  optDataArrayCol: [RANDOM_DATA],
-};
-const nullPropertyValues = (() => {
-  const values = {};
-  for (const name in allTypesValues) {
-    if (name.includes("opt")) {
-      //@ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
-      values[name] = name.includes("Array") ? [null] : null;
-    } else {
-      //@ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
-      values[name] = allTypesValues[name];
-    }
-  }
-  return values;
-})();
 
 const LinkToAllTypesSchema = {
   name: "LinkToAllTypesObject",
@@ -360,6 +361,7 @@ interface IAllTypes {
   optDataArrayCol: (ArrayBuffer | undefined)[];
   linkingObjectsCol: IAllTypes[];
 }
+
 describe("Objectstest", () => {
   describe("Interface & object literal", () => {
     describe("without primary key", () => {
@@ -408,6 +410,7 @@ describe("Objectstest", () => {
         expect(firstPerson).deep.equals(john);
       });
     });
+
     describe("with primary key", () => {
       openRealmBeforeEach({ schema: [PersonSchemaWithId] });
       it("can be fetched with objectForPrimaryKey", function (this: Mocha.Context & RealmContext) {
@@ -589,6 +592,7 @@ describe("Objectstest", () => {
       });
     });
   });
+
   describe("properties", () => {
     openRealmBeforeEach({
       schema: [
@@ -638,6 +642,7 @@ describe("Objectstest", () => {
       //@ts-expect-error: test to fetch non existing property.
       expect(object.nonexistent).equals(undefined);
     });
+
     it("setters work on all types", function (this: Mocha.Context & RealmContext) {
       const obj = this.realm.write(() => {
         return this.realm.create<IAllTypes>("AllTypesObject", allTypesValues);
@@ -720,6 +725,7 @@ describe("Objectstest", () => {
         tryAssign("optDataCol", RANDOM_DATA);
       });
     });
+
     it("data-type works", function (this: Mocha.Context & RealmContext) {
       // Should be be able to set a data property with a typed array.
       const object = this.realm.write(() => {
@@ -813,6 +819,7 @@ describe("Objectstest", () => {
         }).throws;
       });
     });
+
     it("supports date type", function (this: Mocha.Context & RealmContext) {
       const stringifiedDate = new Date();
       this.realm.write(() => {
@@ -837,6 +844,7 @@ describe("Objectstest", () => {
       expect(new Date("2017-12-07T20:16:03.837Z").getTime()).equals(obj.currentDate.getTime());
       expect(new Date("2017-12-07T20:16:03.837Z").toISOString() === obj.currentDate.toISOString()).to.be.true;
     });
+
     it("supports link type", function (this: Mocha.Context & RealmContext) {
       this.realm.write(() => {
         this.realm.create("PrimaryInt", { pk: 1, value: 2 });
@@ -896,6 +904,7 @@ describe("Objectstest", () => {
         expect(obj.stringLink).equals(null);
       });
     });
+
     it("can enumerate properties", function (this: Mocha.Context & RealmContext) {
       const object = this.realm.write(() => {
         return this.realm.create("AllTypesObject", allTypesValues);
@@ -910,6 +919,7 @@ describe("Objectstest", () => {
 
       expect(propNames.length).equals(0);
     });
+
     it("can set non-persistent properties", function (this: Mocha.Context & RealmContext) {
       const obj = this.realm.write(() => {
         return this.realm.create<INonPersistentTestObject>(TestObjectSchema.name, { doubleCol: 1, ignored: true });
@@ -920,6 +930,7 @@ describe("Objectstest", () => {
       obj.ignored = true;
       expect(obj.ignored).equals(true);
     });
+
     it("getPropertyType gives correct properties", function (this: Mocha.Context & RealmContext) {
       let obj!: Realm.Object;
       let mixedNull!: Realm.Object;
@@ -968,6 +979,7 @@ describe("Objectstest", () => {
       }).throws("No such property: foo");
     });
   });
+
   describe("linktype properties", () => {
     openRealmBeforeEach({ schema: [LinkTypesSchema, TestObjectSchema] });
     it("getters work", function (this: Mocha.Context & RealmContext) {
@@ -992,6 +1004,7 @@ describe("Objectstest", () => {
       expect(arrayVal.length).equals(1);
       expect(arrayVal[0]?.doubleCol).equals(3);
     });
+
     it("setters work", function (this: Mocha.Context & RealmContext) {
       const objects = this.realm.objects<ITestObject>(TestObjectSchema.name);
 
@@ -1054,6 +1067,7 @@ describe("Objectstest", () => {
       expect(obj.objectCol?.doubleCol).equals(3);
     });
   });
+
   describe("isValid", () => {
     openRealmBeforeEach({ schema: [TestObjectSchema] });
     it("works", function (this: Mocha.Context & RealmContext) {
@@ -1071,6 +1085,7 @@ describe("Objectstest", () => {
       }).throws;
     });
   });
+
   describe("object conversion", () => {
     openRealmBeforeEach({ schema: [TestObjectSchema] });
     it("works", function (this: Mocha.Context & RealmContext) {
@@ -1103,6 +1118,7 @@ describe("Objectstest", () => {
       }).throws(TypeError);
     });
   });
+
   describe("boolean conversion", () => {
     openRealmBeforeEach({ schema: [TestObjectSchema] });
     it("converts to expected value", function (this: Mocha.Context & RealmContext) {
@@ -1133,6 +1149,7 @@ describe("Objectstest", () => {
       expect(this.realm.__to_boolean(Object())).equals(true, "__to_boolean(Object()) should return true");
     });
   });
+
   describe("schema", () => {
     openRealmBeforeEach({ schema: [TestObjectSchema] });
     it("schema fetched from object is correct type", function (this: Mocha.Context & RealmContext) {
@@ -1146,6 +1163,7 @@ describe("Objectstest", () => {
       expect((schema.properties.doubleCol as Realm.ObjectSchemaProperty).type).equals("double");
     });
   });
+
   describe("notifications", () => {
     openRealmBeforeEach({ schema: [StringOnlySchema] });
     it("fires correct changeset", async function (this: Mocha.Context & RealmContext) {
@@ -1200,6 +1218,7 @@ describe("Objectstest", () => {
       });
       await promise;
     });
+
     it("can add and remove listeners", async function (this: Mocha.Context & RealmContext) {
       const obj = this.realm.write(() => {
         return this.realm.create<IStringOnly>(StringOnlySchema.name, { stringCol: "foo" });
@@ -1238,6 +1257,7 @@ describe("Objectstest", () => {
       expect(this.realm.objects<IStringOnly>(StringOnlySchema.name)[0]["stringCol"]).equals("foobar");
       expect(calls).equals(2); // listener only called twice
     });
+
     it("can add and remove listeners with removeAllListeners", async function (this: Mocha.Context & RealmContext) {
       const obj = this.realm.write(() => {
         return this.realm.create<IStringOnly>(StringOnlySchema.name, { stringCol: "foo" });
@@ -1267,6 +1287,7 @@ describe("Objectstest", () => {
       expect(calls).equals(2); // listener only called twice
     });
   });
+
   describe("keys", () => {
     openRealmBeforeEach({ schema: [AgeSchema] });
     it("can find object with key", async function (this: Mocha.Context & RealmContext) {
@@ -1280,6 +1301,7 @@ describe("Objectstest", () => {
 
       expect(objFromKey).to.not.be.undefined;
     });
+
     it("non existing objects fetched from key are undefined", async function (this: Mocha.Context & RealmContext) {
       const obj = this.realm.write(() => {
         return this.realm.create(AgeSchema.name, { age: 1 });
@@ -1293,6 +1315,7 @@ describe("Objectstest", () => {
       expect(obj1).to.be.undefined;
       expect(obj2).to.be.undefined;
     });
+
     it("modifying object fetched from key propagates", async function (this: Mocha.Context & RealmContext) {
       const obj = this.realm.write(() => {
         return this.realm.create<IAge>(AgeSchema.name, { age: 5 });
