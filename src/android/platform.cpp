@@ -114,4 +114,13 @@ void print(const char* fmt, ...)
     __android_log_vprint(ANDROID_LOG_INFO, "RealmJS", fmt, vl);
     va_end(vl);
 }
+
+std::string get_cpu_arch()
+{
+#define QUOTE(name) #name
+#define STR(name) QUOTE(name)
+#define ABI_NAME STR(REALM_ANDROID_ABI)
+    return ABI_NAME;
+}
+
 } // namespace realm

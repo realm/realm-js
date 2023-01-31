@@ -208,4 +208,10 @@ void print(const char* fmt, ...)
     va_end(vl);
 }
 
+// this should never be called
+std::string get_cpu_arch()
+{
+    return "unknown";
+}
+
 } // namespace realm

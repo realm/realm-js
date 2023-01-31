@@ -27,12 +27,14 @@
 
 #include <realm/object-store/util/event_loop_dispatcher.hpp>
 
+#include "platform.hpp"
 #include "js_notifications.hpp"
 #include "js_user.hpp"
 #include "js_app_credentials.hpp"
 #include "js_network_transport.hpp"
 #include "js_email_password_auth.hpp"
 #include "realm/object-store/sync/subscribable.hpp"
+
 
 using SharedApp = std::shared_ptr<realm::app::App>;
 using SharedUser = std::shared_ptr<realm::SyncUser>;
@@ -400,6 +402,11 @@ void AppClass<T>::set_versions(ContextType ctx, ObjectType this_object, Argument
     AppClass<T>::device_version = Object::validated_get_string(ctx, versions, "deviceVersion");
     AppClass<T>::framework_name = Object::validated_get_string(ctx, versions, "frameworkName");
     AppClass<T>::framework_version = Object::validated_get_string(ctx, versions, "frameworkVersion");
+
+    // we are likely on iOS or Android
+    if (AppClass<T>::cpu_arch == "unknown") {
+        AppClass<T>::cpu_arch = get_cpu_arch();
+    }
 }
 
 /**
