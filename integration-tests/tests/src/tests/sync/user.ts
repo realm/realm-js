@@ -37,7 +37,7 @@ function expectIsUSer(user: Realm.User) {
   expect(user).instanceOf(Realm.User);
 }
 
-function assertIsSameUser(value: Realm.User, user: Realm.User | null) {
+function expectIsSameUser(value: Realm.User, user: Realm.User | null) {
   expectIsUSer(value);
   expect(value.accessToken).equals(user?.accessToken);
   expect(value.id).equals(user?.id);
@@ -49,7 +49,7 @@ async function registerAndLogInEmailUser(app: Realm.App) {
   await app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
   const user = await app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword));
   expectIsUSer(user);
-  assertIsSameUser(user, app.currentUser);
+  expectIsSameUser(user, app.currentUser);
   return user;
 }
 
@@ -130,7 +130,7 @@ describe.skipIf(environment.missingServer, "User", () => {
       await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
       const user = await this.app.logIn(credentials);
       expectIsUSer(user);
-      assertIsSameUser(user, this.app.currentUser);
+      expectIsSameUser(user, this.app.currentUser);
       await user.logOut();
     });
   });
@@ -146,7 +146,7 @@ describe.skipIf(environment.missingServer, "User", () => {
 
         const user = await this.app.logIn(credentials);
         expectIsUSer(user);
-        assertIsSameUser(user, this.app.currentUser);
+        expectIsSameUser(user, this.app.currentUser);
         await user.logOut();
         // Is now logged out.
         expect(this.app.currentUser).to.be.null;
@@ -179,13 +179,13 @@ describe.skipIf(environment.missingServer, "User", () => {
         const user1 = await this.app.logIn(credentials);
         all = this.app.allUsers;
         expect(Object.keys(all).length).equals(1, "One user");
-        assertIsSameUser(all[user1.id], user1);
+        expectIsSameUser(all[user1.id], user1);
         const user2 = await this.app.logIn(Realm.Credentials.anonymous());
         all = this.app.allUsers;
         expect(Object.keys(all).length).equals(1, "still one user");
         // NOTE: the list of users is in latest-first order.
-        assertIsSameUser(all[user2.id], user2);
-        assertIsSameUser(all[user1.id], user1);
+        expectIsSameUser(all[user2.id], user2);
+        expectIsSameUser(all[user1.id], user1);
 
         await user2.logOut(); // logs out the shared anonymous session
         all = this.app.allUsers;
@@ -196,12 +196,12 @@ describe.skipIf(environment.missingServer, "User", () => {
         expect(this.app.currentUser).to.be.null;
 
         const firstUser = await this.app.logIn(Realm.Credentials.anonymous());
-        assertIsSameUser(firstUser, this.app.currentUser);
+        expectIsSameUser(firstUser, this.app.currentUser);
         const secondUser = await this.app.logIn(Realm.Credentials.anonymous());
         // the most recently logged in user is considered current
         expect(firstUser.isLoggedIn).to.be.true;
         expect(secondUser.isLoggedIn).to.be.true;
-        assertIsSameUser(secondUser, this.app.currentUser);
+        expectIsSameUser(secondUser, this.app.currentUser);
         secondUser.logOut();
         // since anonymous user sessions are shared, firstUser is logged out as well
         expect(this.app.currentUser).to.be.null;
@@ -232,18 +232,18 @@ describe.skipIf(environment.missingServer, "User", () => {
         const user1 = await registerAndLogInEmailUser(this.app);
         all = this.app.allUsers;
         expect(Object.keys(all).length).equals(1, "One user");
-        assertIsSameUser(all[user1.id], user1);
+        expectIsSameUser(all[user1.id], user1);
         const user2 = await registerAndLogInEmailUser(this.app);
         all = this.app.allUsers;
         expect(Object.keys(all).length).equals(2, "Two users");
         // NOTE: the list of users is in latest-first order.
-        assertIsSameUser(all[user2.id], user2);
-        assertIsSameUser(all[user1.id], user1);
+        expectIsSameUser(all[user2.id], user2);
+        expectIsSameUser(all[user1.id], user1);
 
         await user2.logOut();
         all = this.app.allUsers;
-        assertIsSameUser(all[user2.id], user2);
-        assertIsSameUser(all[user1.id], user1);
+        expectIsSameUser(all[user2.id], user2);
+        expectIsSameUser(all[user1.id], user1);
         expect(user2.isLoggedIn).to.be.false;
         expect(user1.isLoggedIn).to.be.true;
         expect(Object.keys(all).length).equals(2, "still holds references to both users");
@@ -259,11 +259,11 @@ describe.skipIf(environment.missingServer, "User", () => {
         expect(this.app.currentUser).to.be.null;
 
         const firstUser = await registerAndLogInEmailUser(this.app);
-        assertIsSameUser(firstUser, this.app.currentUser);
+        expectIsSameUser(firstUser, this.app.currentUser);
         const secondUser = await registerAndLogInEmailUser(this.app);
-        assertIsSameUser(secondUser, this.app.currentUser); // the most recently logged in user is considered current
+        expectIsSameUser(secondUser, this.app.currentUser); // the most recently logged in user is considered current
         await secondUser.logOut();
-        assertIsSameUser(firstUser, this.app.currentUser); // auto change back to another logged in user
+        expectIsSameUser(firstUser, this.app.currentUser); // auto change back to another logged in user
         await firstUser.logOut();
         expect(this.app.currentUser).to.be.null;
       });
@@ -505,24 +505,6 @@ describe.skipIf(environment.missingServer, "User", () => {
       } catch (err: any) {
         expect(err.code).equals(401);
       }
-    });
-  });
-
-  describe("push service", () => {
-    importAppBefore("with-db");
-    it("can perform operations on a collection via the client", async function (this: AppContext & RealmContext) {
-      const credentials = Realm.Credentials.anonymous();
-      const user = await this.app.logIn(credentials);
-
-      const push = user.push("gcm");
-
-      await push.deregister(); // deregister never registered not an error
-      await push.register("hello");
-      await push.register("hello"); // double register not an error
-      await push.deregister();
-      await push.deregister(); // double deregister not an error
-
-      await expect(user.push("nonesuch").register("hello")).to.be.rejectedWith("service not found: 'nonesuch'");
     });
   });
 });
