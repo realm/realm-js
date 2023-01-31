@@ -233,7 +233,6 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
   }
 
   /**
- /**
    * Add a key with a value or update value if key exists.
    * @throws {@link AssertionError} If not inside a write transaction or if value violates type constraints
    * @returns The dictionary
