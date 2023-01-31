@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* The ECMAScript Array APIs (such as `map`, `every`, access using indexing operator `[]`, etc.) on the `BaseSubscriptionSet` type was deprecated.
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
