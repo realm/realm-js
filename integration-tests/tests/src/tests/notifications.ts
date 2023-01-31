@@ -81,15 +81,23 @@ describe("Notifications", () => {
       });
     });
 
-    it("implements removeListener", function (this: RealmContext) {
+    it("implements removeListener", function (this: RealmContext, done) {
       const handler = () => {
-        const objects = this.realm.objects(TestObject);
         runCount++;
         if (runCount === 1) {
-          expect(objects.length).equals(1);
-          expect(objects[0].doubleCol).equals(1);
+          this.realm.removeListener("change", handler);
+
+          // This listener should be the only one that is fired.
+          this.realm.addListener("change", () => done());
+
+          this.realm.write(() => {
+            this.realm.create("TestObject", { doubleCol: 2 });
+          });
         } else {
-          throw new Error("Should not run after removeListener");
+          // On the second (unexpected) run, this handler will call done.
+          // If removeListener does not work correctly then it will lead to done
+          // being called twice as a result which will cause the test to fail.
+          done();
         }
       };
 
@@ -98,36 +106,35 @@ describe("Notifications", () => {
       this.realm.write(() => {
         this.realm.create("TestObject", { doubleCol: 1 });
       });
-
-      this.realm.removeListener("change", handler);
-
-      this.realm.write(() => {
-        this.realm.create("TestObject", { doubleCol: 2 });
-      });
-
-      expect(runCount).equal(1);
     });
 
-    it("implements removeAllListeners", function (this: RealmContext) {
+    it("implements removeAllListeners", function (this: RealmContext, done) {
       const handler = () => {
-        const objects = this.realm.objects(TestObject);
         runCount++;
-        if (runCount === 1) {
-          expect(objects.length).equals(1);
-          expect(objects[0].doubleCol).equals(1);
-        } else {
-          throw new Error("Should not run after removeListener");
+        if (runCount >= 2) {
+          // On the second (unexpected) run, this handler will call done.
+          // If removeAllListeners does not work correctly then it will lead to done
+          // being called twice as a result which will cause the test to fail.
+          done();
         }
       };
 
       const secondHandler = () => {
-        const objects = this.realm.objects(TestObject);
         runCount++;
-        if (runCount === 2) {
-          expect(objects.length).equals(1);
-          expect(objects[0].doubleCol).equals(1);
-        } else {
-          throw new Error("Should not run after removeAllListeners");
+        if (runCount == 2) {
+          this.realm.removeAllListeners("change");
+
+          // This listener should be the only one that is fired.
+          this.realm.addListener("change", () => done());
+
+          this.realm.write(() => {
+            this.realm.create("TestObject", { doubleCol: 2 });
+          });
+        } else if (runCount >= 3) {
+          // On the second (unexpected) run, this handler will call done.
+          // If removeAllListeners does not work correctly then it will lead to done
+          // being called twice as a result which will cause the test to fail.
+          done();
         }
       };
 
@@ -137,14 +144,6 @@ describe("Notifications", () => {
       this.realm.write(() => {
         this.realm.create("TestObject", { doubleCol: 1 });
       });
-
-      this.realm.removeAllListeners("change");
-
-      this.realm.write(() => {
-        this.realm.create("TestObject", { doubleCol: 2 });
-      });
-
-      expect(runCount).equal(2);
     });
   });
 
