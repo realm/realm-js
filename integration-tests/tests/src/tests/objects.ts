@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 import { expect } from "chai";
 import Realm from "realm";
-import { Buffer } from "buffer";
 import { IPerson, Person, PersonSchema } from "../schemas/person-and-dogs";
 import {
   IPerson as IPersonWithId,
@@ -26,7 +25,7 @@ import {
 } from "../schemas/person-and-dog-with-object-ids";
 import { openRealmBeforeEach } from "../hooks";
 import { expectArraysEqual, expectSimilar } from "../utils/comparisons";
-import { sleep } from "../utils/sleep";
+import jsrsasign from "jsrsasign";
 
 const RANDOM_DATA = new Uint8Array([
   0xd8,
@@ -744,10 +743,11 @@ describe("Objectstest", () => {
       expectArraysEqual(new Uint8Array(object.dataCol as ArrayBuffer), RANDOM_DATA);
 
       if (Realm.App.Sync) {
-        // The base64 decoder comes from realm-sync
         // Should be able to also set a data property to base64-encoded string.
         this.realm.write(function () {
-          object.dataCol = Buffer.from(RANDOM_DATA).toString("base64");
+          const hex = jsrsasign.ArrayBuffertohex(RANDOM_DATA.buffer);
+          const b64string = jsrsasign.hextob64(hex);
+          object.dataCol = b64string;
         });
         expectArraysEqual(new Uint8Array(object.dataCol as ArrayBuffer), RANDOM_DATA);
       }
@@ -1163,7 +1163,7 @@ describe("Objectstest", () => {
       expect((schema.properties.doubleCol as Realm.ObjectSchemaProperty).type).equals("double");
     });
   });
-
+  //TODO move this to notofications test
   describe("notifications", () => {
     openRealmBeforeEach({ schema: [StringOnlySchema] });
     it("fires correct changeset", async function (this: Mocha.Context & RealmContext) {
@@ -1219,56 +1219,67 @@ describe("Objectstest", () => {
       await promise;
     });
 
-    it("can add and remove listeners", async function (this: Mocha.Context & RealmContext) {
+    it("can add and remove listeners", function (this: Mocha.Context & RealmContext, done) {
       const obj = this.realm.write(() => {
         return this.realm.create<IStringOnly>(StringOnlySchema.name, { stringCol: "foo" });
       });
 
       let calls = 0;
-      let resolve: any;
 
-      const listener = function (obj: IStringOnly) {
+      const listener = (object: IStringOnly) => {
         calls++;
         if (calls === 1) {
-          expect(obj["stringCol"]).equals("foo");
+          expect(object["stringCol"]).equals("foo");
+          this.realm.write(() => {
+            obj["stringCol"] = "bar";
+          });
         } else if (calls === 2) {
-          expect(obj["stringCol"]).equals("bar");
+          expect(object["stringCol"]).equals("bar");
+          obj.removeListener(listener);
+          let isFirstRun = true;
+          obj.addListener(() => {
+            if (isFirstRun) {
+              isFirstRun = false;
+            } else {
+              expect(this.realm.objects<IStringOnly>(StringOnlySchema.name)[0]["stringCol"]).equals("foobar");
+              done();
+            }
+          });
+          this.realm.write(function () {
+            obj["stringCol"] = "foobar";
+          });
         } else {
-          throw new Error("Too many calls to listener");
+          done(new Error("Listener ran too many times"));
         }
-        resolve();
       };
-
-      const initialNotification = new Promise((r) => (resolve = r));
       obj.addListener(listener);
-      await initialNotification;
-
-      const firstChange = new Promise((r) => (resolve = r));
-      this.realm.write(() => {
-        obj["stringCol"] = "bar";
-      });
-      await firstChange;
-      obj.removeListener(listener);
-
-      this.realm.write(function () {
-        obj["stringCol"] = "foobar";
-      });
-      await sleep(500);
-      expect(this.realm.objects<IStringOnly>(StringOnlySchema.name)[0]["stringCol"]).equals("foobar");
-      expect(calls).equals(2); // listener only called twice
     });
 
-    it("can add and remove listeners with removeAllListeners", async function (this: Mocha.Context & RealmContext) {
+    it("can add and remove listeners with removeAllListeners", function (this: Mocha.Context & RealmContext, done) {
       const obj = this.realm.write(() => {
         return this.realm.create<IStringOnly>(StringOnlySchema.name, { stringCol: "foo" });
       });
 
       let calls = 0;
 
-      const listener = function (obj: IStringOnly) {
+      const listener = (object: IStringOnly) => {
         calls++;
         if (calls === 2) {
-          expect(obj["stringCol"]).equals("bar");
+          expect(object["stringCol"]).equals("bar");
+          obj.removeAllListeners();
+          let isFirstRun = true;
+          obj.addListener(() => {
+            if (isFirstRun) {
+              isFirstRun = false;
+            } else {
+              expect(this.realm.objects<IStringOnly>(StringOnlySchema.name)[0]["stringCol"]).equals("foobar");
+              expect(calls).equals(2); // listener only called twice
+              done();
+            }
+          });
+          this.realm.write(function () {
+            obj["stringCol"] = "foobar";
+          });
         }
       };
 
@@ -1277,14 +1288,6 @@ describe("Objectstest", () => {
       this.realm.write(function () {
         obj["stringCol"] = "bar";
       });
-      await sleep(500);
-      obj.removeAllListeners();
-      this.realm.write(function () {
-        obj["stringCol"] = "foobar";
-      });
-      await sleep(500);
-      expect(this.realm.objects<IStringOnly>(StringOnlySchema.name)[0]["stringCol"]).equals("foobar");
-      expect(calls).equals(2); // listener only called twice
     });
   });
 
