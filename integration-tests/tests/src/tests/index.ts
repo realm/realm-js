@@ -47,6 +47,7 @@ import "./sync/sync-as-local";
 import "./sync/encryption";
 import "./sync/app";
 import "./sync/user";
+import "./sync/types";
 import "./transaction";
 import "./schema";
 import "./types";
