@@ -21,12 +21,11 @@ import {
   randomNonVerifiableEmail,
   randomPendingVerificationEmail,
   randomVerifiableEmail,
-  uuid,
 } from "../../utils/generators";
 import { KJUR } from "jsrsasign";
 import { sleep } from "../../utils/sleep";
 
-function assertIsUser(user: Realm.User) {
+function expectIsUSer(user: Realm.User) {
   expect(user).to.not.be.undefined;
   expect(user).to.not.be.null;
   expect(typeof user).equals("object");
@@ -39,26 +38,9 @@ function assertIsUser(user: Realm.User) {
 }
 
 function assertIsSameUser(value: Realm.User, user: Realm.User | null) {
-  assertIsUser(value);
+  expectIsUSer(value);
   expect(value.accessToken).equals(user?.accessToken);
   expect(value.id).equals(user?.id);
-}
-
-function assertIsError(error: any, message: string) {
-  expect(error).instanceOf(Error, "The API should return an Error");
-  if (message) {
-    expect(error.message).equals(message);
-  }
-}
-
-function assertIsAuthError(error: any, code: number, title: string) {
-  expect(error).instanceOf(Realm.App.Sync.AuthError, "The API should return an AuthError");
-  if (code) {
-    expect(error.code).equals(code);
-  }
-  if (title) {
-    expect(error.title).equals(title);
-  }
 }
 
 async function registerAndLogInEmailUser(app: Realm.App) {
@@ -66,22 +48,26 @@ async function registerAndLogInEmailUser(app: Realm.App) {
   const validPassword = "test1234567890";
   await app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
   const user = await app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword));
-  assertIsUser(user);
+  expectIsUSer(user);
   assertIsSameUser(user, app.currentUser);
   return user;
 }
 
-async function removeExistingUsers(app: Realm.App) {
-  const users = app.allUsers;
-  Object.keys(app.allUsers).forEach(async (id) => {
-    await app.removeUser(users[id]);
+function removeExistingUsers(): void {
+  beforeEach(async function (this: AppContext & Partial<UserContext>) {
+    if (this.app) {
+      const users = this.app.allUsers;
+      Object.keys(this.app.allUsers).forEach(async (id) => {
+        await this.app.removeUser(users[id]);
+      });
+    }
   });
 }
 
 describe.skipIf(environment.missingServer, "User", () => {
   describe("email password", () => {
     importAppBefore("with-email-password");
-    it("login without username throws", async function (this: Mocha.Context & AppContext & RealmContext) {
+    it("login without username throws", async function (this: AppContext & RealmContext) {
       // @ts-expect-error test logging in without providing username.
       expect(() => Realm.Credentials.emailPassword(undefined, "password")).throws(
         Error,
@@ -89,8 +75,8 @@ describe.skipIf(environment.missingServer, "User", () => {
       );
     });
 
-    it("login without password throws", async function (this: Mocha.Context & AppContext & RealmContext) {
-      const username = uuid();
+    it("login without password throws", async function (this: AppContext & RealmContext) {
+      const username = new Realm.BSON.UUID().toHexString();
       // @ts-expect-error test logging in without providing password.
       expect(() => Realm.Credentials.emailPassword(username, undefined)).throws(
         Error,
@@ -98,26 +84,17 @@ describe.skipIf(environment.missingServer, "User", () => {
       );
     });
 
-    it("login with non existing user throws", async function (this: Mocha.Context & AppContext & RealmContext) {
+    it("login with non existing user throws", async function (this: AppContext & RealmContext) {
       const credentials = Realm.Credentials.emailPassword("foo", "pass");
-      return this.app
-        .logIn(credentials)
-        .then((user) => {
-          throw new Error("Login should have failed");
-        })
-        .catch((err) => {
-          expect(err.message).equals("invalid username/password");
-        });
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password");
     });
 
-    it("email password authprovider is correct instance", async function (this: Mocha.Context &
-      AppContext &
-      RealmContext) {
+    it("email password authprovider is correct instance", async function (this: AppContext & RealmContext) {
       const provider = this.app.emailPasswordAuth;
       expect(provider).instanceof(Realm.Auth.EmailPasswordAuth);
     });
 
-    it("autoverify email password works", async function (this: Mocha.Context & AppContext & RealmContext) {
+    it("autoverify email password works", async function (this: AppContext & RealmContext) {
       const validEmail = randomVerifiableEmail();
       const invalidEmail = randomNonVerifiableEmail();
       const invalidPassword = "pass"; // too short
@@ -125,98 +102,34 @@ describe.skipIf(environment.missingServer, "User", () => {
 
       // invalid email, invalid password
       let credentials = Realm.Credentials.emailPassword(invalidEmail, invalidPassword);
-      this.app
-        .logIn(credentials)
-        .then(() => {
-          throw new Error("Login should have failed");
-        })
-        .catch((err) => {
-          expect(err.message).equals("invalid username/password"); // this user does not exist yet
-        });
-      this.app.emailPasswordAuth
-        .registerUser({ email: invalidEmail, password: invalidPassword })
-        .then(() => {
-          throw new Error("Login should have failed");
-        })
-        .catch((err) => {
-          expect(err.message).equals("password must be between 6 and 128 characters");
-        });
-      this.app
-        .logIn(credentials)
-        .then(() => {
-          throw new Error("Login should have failed");
-        })
-        .catch((err) => {
-          expect(err.message).equals("invalid username/password"); // this user did not register
-        });
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
+      await expect(
+        this.app.emailPasswordAuth.registerUser({ email: invalidEmail, password: invalidPassword }),
+      ).to.be.rejectedWith("password must be between 6 and 128 characters");
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user did not register
 
       // invalid email, valid password
       credentials = Realm.Credentials.emailPassword(invalidEmail, validPassword);
-      this.app
-        .logIn(credentials)
-        .then(() => {
-          throw new Error("Login should have failed");
-        })
-        .catch((err) => {
-          expect(err.message).equals("invalid username/password"); // this user does not exist yet
-        });
-      this.app.emailPasswordAuth
-        .registerUser({ email: invalidEmail, password: invalidPassword })
-        .then(() => {
-          throw new Error("Login should have failed");
-        })
-        .catch((err) => {
-          expect(err.message).equals("failed to confirm user ${invalidEmail}");
-        });
-      this.app
-        .logIn(credentials)
-        .then(() => {
-          throw new Error("Login should have failed");
-        })
-        .catch((err) => {
-          expect(err.message).equals("invalid username/password"); // this user did not register
-        });
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
+      expect(
+        this.app.emailPasswordAuth.registerUser({ email: invalidEmail, password: validPassword }),
+      ).to.be.rejectedWith("failed to confirm user ${invalidEmail}");
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user did not register
 
       // valid email, invalid password
       credentials = Realm.Credentials.emailPassword(validEmail, invalidPassword);
-      this.app
-        .logIn(credentials)
-        .then(() => {
-          throw new Error("Login should have failed");
-        })
-        .catch((err) => {
-          expect(err.message).equals("invalid username/password"); // this user does not exist yet
-        });
-      this.app.emailPasswordAuth
-        .registerUser({ email: invalidEmail, password: invalidPassword })
-        .then(() => {
-          throw new Error("Login should have failed");
-        })
-        .catch((err) => {
-          expect(err.message).equals("password must be between 6 and 128 characters");
-        });
-      this.app
-        .logIn(credentials)
-        .then(() => {
-          throw new Error("Login should have failed");
-        })
-        .catch((err) => {
-          expect(err.message).equals("invalid username/password"); // this user did not register
-        });
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
+      await expect(
+        this.app.emailPasswordAuth.registerUser({ email: validEmail, password: invalidPassword }),
+      ).to.be.rejectedWith("password must be between 6 and 128 characters");
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user did not register
 
       // valid email, valid password
       credentials = Realm.Credentials.emailPassword(validEmail, validPassword);
-      this.app
-        .logIn(credentials)
-        .then(() => {
-          throw new Error("Login should have failed");
-        })
-        .catch((err) => {
-          expect(err.message).equals("invalid username/password"); // this user does not exist yet
-        });
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
       await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
       const user = await this.app.logIn(credentials);
-      assertIsUser(user);
+      expectIsUSer(user);
       assertIsSameUser(user, this.app.currentUser);
       await user.logOut();
     });
@@ -225,20 +138,21 @@ describe.skipIf(environment.missingServer, "User", () => {
   describe("properties and methods", () => {
     describe("with anonymous", () => {
       importAppBefore("with-db");
-      it("login and logout works", async function (this: Mocha.Context & AppContext & RealmContext) {
-        await removeExistingUsers(this.app);
+      beforeEach(() => {
+        removeExistingUsers();
+      });
+      it("login and logout works", async function (this: AppContext & RealmContext) {
         const credentials = Realm.Credentials.anonymous();
 
         const user = await this.app.logIn(credentials);
-        assertIsUser(user);
+        expectIsUSer(user);
         assertIsSameUser(user, this.app.currentUser);
         await user.logOut();
         // Is now logged out.
         expect(this.app.currentUser).to.be.null;
       });
 
-      it("can fetch customData", async function (this: Mocha.Context & AppContext & RealmContext) {
-        await removeExistingUsers(this.app);
+      it("can fetch customData", async function (this: AppContext & RealmContext) {
         const credentials = Realm.Credentials.anonymous();
         const user = await this.app.logIn(credentials);
         const customData = user.customData;
@@ -246,8 +160,7 @@ describe.skipIf(environment.missingServer, "User", () => {
         expect(typeof customData).equals("object");
       });
 
-      it("can fetch userProfile", async function (this: Mocha.Context & AppContext & RealmContext) {
-        await removeExistingUsers(this.app);
+      it("can fetch userProfile", async function (this: AppContext & RealmContext) {
         const credentials = Realm.Credentials.anonymous();
         const user = await this.app.logIn(credentials);
         const profile = user.profile;
@@ -255,9 +168,9 @@ describe.skipIf(environment.missingServer, "User", () => {
 
         await user.logOut();
       });
-      it("can fetch allUsers with anonymous", async function (this: Mocha.Context & AppContext & RealmContext) {
+
+      it("can fetch allUsers with anonymous", async function (this: AppContext & RealmContext) {
         let all = this.app.allUsers;
-        await removeExistingUsers(this.app);
 
         all = this.app.allUsers;
         expect(Object.keys(all).length).equals(0, "Noone to begin with");
@@ -278,8 +191,8 @@ describe.skipIf(environment.missingServer, "User", () => {
         all = this.app.allUsers;
         expect(Object.keys(all).length).equals(0, "All gone");
       });
-      it("can fetch currentUser with anonymous", async function (this: Mocha.Context & AppContext & RealmContext) {
-        await removeExistingUsers(this.app);
+
+      it("can fetch currentUser with anonymous", async function (this: AppContext & RealmContext) {
         expect(this.app.currentUser).to.be.null;
 
         const firstUser = await this.app.logIn(Realm.Credentials.anonymous());
@@ -296,11 +209,13 @@ describe.skipIf(environment.missingServer, "User", () => {
         expect(secondUser.isLoggedIn).to.be.false;
       });
     });
+
     describe("with email password", () => {
       importAppBefore("with-email-password");
-      it("can fetch allUsers with email password", async function (this: Mocha.Context & AppContext & RealmContext) {
-        await removeExistingUsers(this.app);
-
+      beforeEach(() => {
+        removeExistingUsers();
+      });
+      it("can fetch allUsers with email password", async function (this: AppContext & RealmContext) {
         let all = this.app.allUsers;
         const userIDs = Object.keys(all);
 
@@ -339,8 +254,8 @@ describe.skipIf(environment.missingServer, "User", () => {
         expect(user2.isLoggedIn).to.be.false;
         expect(Object.keys(all).length).equals(2, "still holds references to both users"); // FIXME: is this actually expected?
       });
-      it("can fetch currentUser with email password", async function (this: Mocha.Context & AppContext & RealmContext) {
-        await removeExistingUsers(this.app);
+
+      it("can fetch currentUser with email password", async function (this: AppContext & RealmContext) {
         expect(this.app.currentUser).to.be.null;
 
         const firstUser = await registerAndLogInEmailUser(this.app);
@@ -352,8 +267,8 @@ describe.skipIf(environment.missingServer, "User", () => {
         await firstUser.logOut();
         expect(this.app.currentUser).to.be.null;
       });
-      it("can remove a user", async function (this: Mocha.Context & AppContext & RealmContext) {
-        await removeExistingUsers(this.app); //this somewhat already tests the remove function
+
+      it("can remove a user", async function (this: AppContext & RealmContext) {
         expect(this.app.currentUser, "No users").to.be.null;
 
         const validEmail = randomVerifiableEmail();
@@ -372,8 +287,8 @@ describe.skipIf(environment.missingServer, "User", () => {
 
         await user2.logOut();
       });
-      it("can delete a user", async function (this: Mocha.Context & AppContext & RealmContext) {
-        await removeExistingUsers(this.app);
+
+      it("can delete a user", async function (this: AppContext & RealmContext) {
         expect(this.app.currentUser, "No users").to.be.null;
 
         const validEmail = randomVerifiableEmail();
@@ -398,45 +313,42 @@ describe.skipIf(environment.missingServer, "User", () => {
       });
     });
   });
+
   describe("JWT", () => {
     importAppBefore("with-jwt");
-    it.skipIf(
-      !environment.node,
-      "can fetch JWTUserProfile",
-      async function (this: Mocha.Context & AppContext & RealmContext) {
-        const signingKey = "2k66QfKeTRk3MdZ5vpDYgZCu2k66QfKeTRk3MdZ5vpDYgZCu";
-        const claims = {
-          name: "John Doe",
-          iss: "http://myapp.com/",
-          sub: "users/user1234",
-          scope: "self, admins",
-          aud: this.app.id,
-          exp: 4070908800, // 01/01/2099
+    it.skipIf(!environment.node, "can fetch JWTUserProfile", async function (this: AppContext & RealmContext) {
+      const signingKey = "2k66QfKeTRk3MdZ5vpDYgZCu2k66QfKeTRk3MdZ5vpDYgZCu";
+      const claims = {
+        name: "John Doe",
+        iss: "http://myapp.com/",
+        sub: "users/user1234",
+        scope: "self, admins",
+        aud: this.app.id,
+        exp: 4070908800, // 01/01/2099
 
-          // metadata
-          mySecretField: "foo",
-          id: "one",
-          license: "one-two-three",
-        };
+        // metadata
+        mySecretField: "foo",
+        id: "one",
+        license: "one-two-three",
+      };
 
-        const jwt = KJUR.jws.JWS.sign(null, { alg: "HS256" }, claims, signingKey);
-        await removeExistingUsers(this.app);
-        const credentials = Realm.Credentials.jwt(jwt);
-        const user = await this.app.logIn(credentials);
-        await user.refreshCustomData();
-        const profile = user.profile;
+      const jwt = KJUR.jws.JWS.sign(null, { alg: "HS256" }, claims, signingKey);
+      const credentials = Realm.Credentials.jwt(jwt);
+      const user = await this.app.logIn(credentials);
+      await user.refreshCustomData();
+      const profile = user.profile;
 
-        expect(typeof profile).equals("object");
-        expect(profile.id).equals(claims.id);
-        expect(profile.license).equals(claims.license);
+      expect(typeof profile).equals("object");
+      expect(profile.id).equals(claims.id);
+      expect(profile.license).equals(claims.license);
 
-        await user.logOut();
-      },
-    );
+      await user.logOut();
+    });
   });
+
   describe("api-key auth", () => {
     importAppBefore("with-api-key");
-    it("can create valid key", async function (this: Mocha.Context & AppContext & RealmContext) {
+    it("can create valid key", async function (this: AppContext & RealmContext) {
       const validEmail = randomVerifiableEmail();
       const validPassword = "test1234567890";
       await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
@@ -444,22 +356,25 @@ describe.skipIf(environment.missingServer, "User", () => {
       expect(user.apiKeys instanceof Realm.Auth.ApiKeyAuth).to.be.true;
 
       // TODO: Enable when fixed: Disabling this test since the CI stitch integration returns cryptic error.
-      // const apikey = await user.apiKeys.create("mykey");
-      // const keys = await user.apiKeys.fetchAll();
-      // expect(Array.isArray(keys)).to.be.true;
+      const apikey = await user.apiKeys.create("mykey");
+      const keys = await user.apiKeys.fetchAll();
+      expect(Array.isArray(keys)).to.be.true;
 
-      // expect(keys.length).equals(1);
+      expect(keys.length).equals(1);
 
-      // expect(keys[0]._id).to.not.be.null;
-      // expect(keys[0]._id).to.not.be.undefined;
-      // expect(keys[0].name).equals(apikey);
+      //@ts-expect-error TYPEBUG: Realm.Auth.ApiKey expects an _id field while on the other hand this key only has a id field.
+      expect(keys[0].id).to.not.be.null;
+      //@ts-expect-error TYPEBUG: Realm.Auth.ApiKey expects an _id field while on the other hand this key only has a id field.
+      expect(keys[0].id).to.not.be.undefined;
+      expect(keys[0].name).equals("mykey");
 
       await user.logOut();
     });
   });
+
   describe("custom functions", () => {
     importAppBefore("with-custom-function");
-    it("custom confirmation function works", async function (this: Mocha.Context & AppContext & RealmContext) {
+    it("custom confirmation function works", async function (this: AppContext & RealmContext) {
       const pendingEmail = randomPendingVerificationEmail();
       const validPassword = "password123456";
 
@@ -469,7 +384,8 @@ describe.skipIf(environment.missingServer, "User", () => {
       // we should be able to call the registration function again
       await this.app.emailPasswordAuth.retryCustomConfirmation({ email: pendingEmail });
     });
-    it("reset password function works", async function (this: Mocha.Context & AppContext & RealmContext) {
+
+    it("reset password function works", async function (this: AppContext & RealmContext) {
       const validEmail = randomVerifiableEmail();
       const validPassword = "password123456";
       await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
@@ -484,7 +400,8 @@ describe.skipIf(environment.missingServer, "User", () => {
 
       await user.logOut();
     });
-    it("arbitrary custom function works", async function (this: Mocha.Context & AppContext & RealmContext) {
+
+    it("arbitrary custom function works", async function (this: AppContext & RealmContext) {
       const credentials = Realm.Credentials.anonymous();
       const user = await this.app.logIn(credentials);
 
@@ -502,18 +419,13 @@ describe.skipIf(environment.missingServer, "User", () => {
       expect(await user.functions.sumFunc()).equals(0);
       expect(await user.functions.sumFunc(1, 2, 3)).equals(6);
 
-      try {
-        await user.functions.error();
-      } catch (err: any) {
-        expect(err.message).equals("function not found: 'error'");
-      }
+      await expect(user.functions.error()).to.be.rejectedWith("function not found: 'error'");
     });
   });
+
   describe("mongo client", () => {
     importAppBefore("with-db");
-    it("can perform operations on a collection via the client", async function (this: Mocha.Context &
-      AppContext &
-      RealmContext) {
+    it("can perform operations on a collection via the client", async function (this: AppContext & RealmContext) {
       const credentials = Realm.Credentials.anonymous();
       const user = await this.app.logIn(credentials);
 
@@ -534,7 +446,8 @@ describe.skipIf(environment.missingServer, "User", () => {
       expect(await collection.count({ hello: "world" })).equals(1);
       expect(await collection.count({ hello: "pineapple" })).equals(0);
     });
-    it("can watch changes correctly", async function (this: Mocha.Context & AppContext & RealmContext) {
+
+    it("can watch changes correctly", async function (this: AppContext & RealmContext) {
       const credentials = Realm.Credentials.anonymous();
       const user = await this.app.logIn(credentials);
       const collection = user.mongoClient("mongodb").db("test-database").collection("testRemoteMongoClient") as any;
@@ -594,11 +507,10 @@ describe.skipIf(environment.missingServer, "User", () => {
       }
     });
   });
+
   describe("push service", () => {
     importAppBefore("with-db");
-    it("can perform operations on a collection via the client", async function (this: Mocha.Context &
-      AppContext &
-      RealmContext) {
+    it("can perform operations on a collection via the client", async function (this: AppContext & RealmContext) {
       const credentials = Realm.Credentials.anonymous();
       const user = await this.app.logIn(credentials);
 
@@ -610,11 +522,7 @@ describe.skipIf(environment.missingServer, "User", () => {
       await push.deregister();
       await push.deregister(); // double deregister not an error
 
-      try {
-        await user.push("nonesuch").register("hello");
-      } catch (err: any) {
-        expect(err.message).equals("service not found: 'nonesuch'");
-      }
+      await expect(user.push("nonesuch").register("hello")).to.be.rejectedWith("service not found: 'nonesuch'");
     });
   });
 });
