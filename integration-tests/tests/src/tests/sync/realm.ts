@@ -19,9 +19,9 @@
 import { Decimal128, ObjectId, ObjectID, UUID } from "bson";
 import { expect } from "chai";
 import { BSON, CollectionChangeSet } from "realm";
-import { setTimeout } from "timers";
 import { importAppBefore, openRealmBeforeEach } from "../../hooks";
 import { expectArraysEqual, expectDecimalEqual } from "../../utils/comparisons";
+import { sleep } from "../../utils/sleep";
 
 const pathSeparator = "/";
 const CarSchema = {
@@ -1981,7 +1981,7 @@ describe("Realmtest", () => {
         }
       }
     });
-    it("adding schema updates realm", () => {
+    it("adding schema updates realm", async () => {
       const realm1 = new Realm();
       expect(realm1.isEmpty).to.be.true;
       expect(realm1.schema.length).equals(0); // empty schema
@@ -1995,7 +1995,8 @@ describe("Realmtest", () => {
         },
       ];
 
-      return new Promise((resolve, reject) => {
+      // eslint-disable-next-line no-async-promise-executor
+      return new Promise<void>(async (resolve, reject) => {
         realm1.addListener("schema", (realm: Realm, event: string, schema: Realm.ObjectSchema[]) => {
           try {
             expect(event).equals("schema");
@@ -2004,9 +2005,9 @@ describe("Realmtest", () => {
             expect(schema[0].name).equals("TestObject");
             expect(realm1.schema.length).equals(1);
             expect(realm.schema[0].name).equals("TestObject");
-            setTimeout(resolve, 1);
+            resolve();
           } catch (e) {
-            setTimeout(() => reject(e), 1);
+            reject();
           }
         });
 
@@ -2018,7 +2019,8 @@ describe("Realmtest", () => {
         // give some time to let advance_read to complete
         // in real world, a Realm will not be closed just after its
         // schema has been updated
-        setTimeout(() => reject(new Error("Schema change listener was not called")), 15000);
+        await sleep(15000);
+        expect(true).to.be.false;
       });
     });
     it("embedded objectschemas return correct types", () => {
