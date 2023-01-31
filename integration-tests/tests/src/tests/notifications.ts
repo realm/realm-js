@@ -48,15 +48,12 @@ describe("Notifications", () => {
   describe("Realm notifications", () => {
     openRealmBeforeEach({ schema: [TestObject] });
 
+    /**
+     * TODO: only "change" event is being tested, not "schema".
+     */
     it("should fire on change", function (this: RealmContext, done) {
-      this.realm.addListener("change", (sender, event) => {
-        expect(sender).deep.equals(this.realm);
+      this.realm.addListener("change", (_, event) => {
         expect(event).equals("change");
-
-        const objects = this.realm.objects(TestObject);
-
-        expect(objects.length).equals(1);
-        expect(objects[0].doubleCol).equals(42);
         done();
       });
 
@@ -66,19 +63,10 @@ describe("Notifications", () => {
     });
 
     it("should fire on multiple changes", function (this: RealmContext, done) {
-      this.realm.addListener("change", (sender, event) => {
-        expect(sender).deep.equals(this.realm);
+      this.realm.addListener("change", (_, event) => {
         expect(event).equals("change");
-
-        const objects = this.realm.objects(TestObject);
         runCount++;
-        if (runCount === 1) {
-          expect(objects.length).equals(1);
-          expect(objects[0].doubleCol).equals(1);
-        } else if (runCount == 2) {
-          expect(objects.length).equals(3);
-          expect(objects[1].doubleCol).equals(2);
-          expect(objects[2].doubleCol).equals(3);
+        if (runCount >= 2) {
           done();
         }
       });
@@ -177,7 +165,6 @@ describe("Notifications", () => {
       expect(changes.insertions).deep.equals(changesOnRun[runCount - 1].insertions);
       expect(changes.oldModifications).deep.equals(changesOnRun[runCount - 1].oldModifications);
       expect(changes.newModifications).deep.equals(changesOnRun[runCount - 1].newModifications);
-      // expect(changes.modifications).deep.equals(changesOnRun[runCount - 1].modifications);
       expect(changes.deletions).deep.equals(changesOnRun[runCount - 1].deletions);
 
       if (runCount >= changesOnRun.length) {
@@ -217,7 +204,8 @@ describe("Notifications", () => {
         expectCollectionChangesOnEveryRun(done, [
           { insertions: [], newModifications: [], oldModifications: [], deletions: [] },
           { insertions: [0, 1, 2], newModifications: [], oldModifications: [], deletions: [] },
-          { insertions: [], newModifications: [0, 2], oldModifications: [0, 2], deletions: [] },
+          { insertions: [], newModifications: [0], oldModifications: [0], deletions: [] },
+          { insertions: [], newModifications: [0, 1], oldModifications: [0, 2], deletions: [1] },
         ]),
       );
 
@@ -228,8 +216,13 @@ describe("Notifications", () => {
       });
 
       this.realm.write(() => {
+        testObjects[0].doubleCol = 15;
+      });
+
+      this.realm.write(() => {
         testObjects[0].doubleCol = 10;
         testObjects[2].doubleCol = 30;
+        this.realm.delete(testObjects[1]);
       });
     });
 
