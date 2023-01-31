@@ -44,7 +44,6 @@ var TESTS = {
   MigrationTests: require("./migration-tests"),
   EncryptionTests: require("./encryption-tests"),
   BsonTests: require("./bson-tests"),
-  DictionaryTest: require("./dictionary-tests"),
   // Garbagecollectiontests: require('./garbage-collection'),
   SetTests: require("./set-tests"),
 };
