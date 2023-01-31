@@ -93,11 +93,11 @@ describe("Notifications", () => {
           this.realm.write(() => {
             this.realm.create("TestObject", { doubleCol: 2 });
           });
-        } else {
+        } else if (runCount >= 2) {
           // On the second (unexpected) run, this handler will call done.
           // If removeListener does not work correctly then it will lead to done
           // being called twice as a result which will cause the test to fail.
-          done();
+          done(new Error("Listener ran too many times"));
         }
       };
 
@@ -115,7 +115,7 @@ describe("Notifications", () => {
           // On the second (unexpected) run, this handler will call done.
           // If removeAllListeners does not work correctly then it will lead to done
           // being called twice as a result which will cause the test to fail.
-          done();
+          done(new Error("Listener ran too many times"));
         }
       };
 
@@ -131,10 +131,7 @@ describe("Notifications", () => {
             this.realm.create("TestObject", { doubleCol: 2 });
           });
         } else if (runCount >= 3) {
-          // On the second (unexpected) run, this handler will call done.
-          // If removeAllListeners does not work correctly then it will lead to done
-          // being called twice as a result which will cause the test to fail.
-          done();
+          done(new Error("Listener ran too many times"));
         }
       };
 
