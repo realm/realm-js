@@ -47,6 +47,7 @@
 #include <realm/util/uri.hpp>
 #include <realm/util/network.hpp>
 #include <stdexcept>
+#include <string>
 
 #if REALM_PLATFORM_NODE
 #include <realm/object-store/impl/realm_coordinator.hpp>
@@ -1426,7 +1427,17 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         }
 
         config.schema_mode = SchemaMode::AdditiveExplicit;
-        config.path = user->m_user->sync_manager()->path_for_realm(*(config.sync_config));
+        if (config.path.empty()) {
+            config.path = user->m_user->sync_manager()->path_for_realm(*(config.sync_config));
+        }
+        else {
+            // remove .realm if it exists
+            std::size_t found = config.path.rfind(".realm");
+            if (found != std::string::npos) {
+                config.path = config.path.erase(found, std::string::npos);
+            }
+            config.path = user->m_user->sync_manager()->path_for_realm(*(config.sync_config), config.path);
+        }
     }
 }
 

@@ -121,6 +121,7 @@ async function addSubscriptionAndSync<T>(
 }
 
 describe.skipIf(environment.missingServer, "Flexible sync", function () {
+  this.timeout(20 * 1000);
   importAppBefore("with-db-flx");
   authenticateUserBefore();
   openRealmBeforeEach({
@@ -138,6 +139,26 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             sync: { _sessionStopPolicy: SessionStopPolicy.Immediately, flexible: true, user: this.user },
           });
         }).to.not.throw();
+      });
+
+      it("possible to set file name when { flexible: true }", async function () {
+        const config = {
+          path: "foobar.realm",
+          schema: [FlexiblePersonSchema, DogSchema],
+          sync: {
+            _sessionStopPolicy: SessionStopPolicy.Immediately,
+            flexible: true,
+            user: this.user,
+          },
+        } as Realm.Configuration;
+        const realm = await Realm.open(config);
+        // Expect file name to be the same as `config.path`
+        expect(realm.path.endsWith("foobar.realm")).to.be.true;
+        // Expect the file to be created
+        const fileExists = await fs.exists(realm.path);
+        expect(fileExists).to.equal(true);
+
+        realm.close();
       });
 
       it("can be constructed asynchronously", async function () {

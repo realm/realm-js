@@ -628,17 +628,22 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
                 config.encryption_key.assign(encryption_key.data(), encryption_key.data() + encryption_key.size());
             }
 
-#if REALM_ENABLE_SYNC
-            SyncClass<T>::populate_sync_config(ctx, Value::validated_to_object(ctx, Object::get_global(ctx, "Realm")),
-                                               object, config);
-#endif
-
+            // Parsing the `path` option must be done before parsing `sync` in order to 
+            // be able to control the path for synced Realms. 
             static const String path_string = "path";
             ValueType path_value = Object::get_property(ctx, object, path_string);
             if (!Value::is_undefined(ctx, path_value)) {
                 config.path = Value::validated_to_string(ctx, path_value, "path");
             }
-            else if (config.path.empty()) {
+
+#if REALM_ENABLE_SYNC
+            SyncClass<T>::populate_sync_config(ctx, Value::validated_to_object(ctx, Object::get_global(ctx, "Realm")),
+                                               object, config);
+#endif
+
+            // (i)  Synced Realms will have `path` set by `SyncClass<T>::populate_sync_config()`
+            // (ii) Local Realms might not have `path` set, and we need to set it to the default path
+            if (config.path.empty()) {
                 config.path = js::default_path();
             }
             static const String fifo_fallback_path_string = "fifoFilesFallbackPath";

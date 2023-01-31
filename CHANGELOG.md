@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* You can now specify the path for synced Realms. The absolute path will contain some user related information in order to avoid collisions. The property `Realm#path` will still give you the full absolute path.
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
