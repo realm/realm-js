@@ -69,70 +69,70 @@ type QueryLengthPair = [ExpectedLength: number, Query: string, ...QueryArgs: Arr
 type QueryExceptionPair = [ExpectedException: string, Query: string, ...QueryArgs: Array<any>];
 type QueryResultsPair = [ExpectedResults: any[], Query: string, ...QueryArgs: Array<any>];
 
+/**
+ * Helper method which runs an array of queries and asserts them to given expected length
+ * For example: (r, "Obj", [1, "intCol == 0"]) => querying "intCol == 0" should return 1 elements.
+ */
+const expectQueryLength = (
+  realm: Realm,
+  objectSchema: string | Realm.ObjectClass,
+  queryLengthPairs: QueryLengthPair[],
+) => {
+  queryLengthPairs.forEach(([expectedLength, queryString, ...queryArgs]) => {
+    const filtered = realm.objects(objectSchema).filtered(queryString, ...queryArgs);
+    expect(filtered.length).equal(
+      expectedLength,
+      `Expected length ${expectedLength} for query: ${queryString} ${JSON.stringify(queryArgs)}`,
+    );
+  });
+};
+
+/**
+ * Helper method which runs an array of queries and asserts them to throw given exception.
+ * For example: (r, "Obj", ["invalid", "intCol == #"]) => querying "intCol == #" should
+ * throw an exception which includes the string "invalid".
+ */
+const expectQueryException = (
+  realm: Realm,
+  objectSchema: string | Realm.ObjectClass,
+  queryExceptionPairs: QueryExceptionPair[],
+) => {
+  queryExceptionPairs.forEach(([expectedException, queryString, ...queryArgs]) => {
+    expect(() => {
+      realm.objects(objectSchema).filtered(queryString, ...queryArgs);
+    }).throws(
+      expectedException,
+      `Expected exception not thrown for query: ${queryString} ${JSON.stringify(queryArgs)}`,
+    );
+  });
+};
+
+/**
+ * Helper method which runs an array of queries and asserts the results' provided [propertyToCompare]
+ * field to equal the given expected result array's values.
+ * For example: (r, "Obj", "intCol" [[3, 4], "intCol > 2]) => querying "intCol > 2" should
+ * return results whose elements' intCol property values are 3 and 4.
+ */
+const expectQueryResultValues = (
+  realm: Realm,
+  objectSchema: string | Realm.ObjectClass,
+  propertyToCompare: string,
+  queryResultPairs: QueryResultsPair[],
+) => {
+  queryResultPairs.forEach(([expectedResults, queryString, ...queryArgs]) => {
+    let results = realm.objects<any>(objectSchema);
+    results = results.filtered(queryString, ...queryArgs);
+    expect(expectedResults.length).equals(results.length);
+    expect(expectedResults).to.deep.equal(
+      results.map((el) => el[propertyToCompare]),
+      `
+      Expected results not returned from query: ${queryString} ${JSON.stringify(queryArgs)}, 
+    `,
+    );
+  });
+};
+
 describe("Queries", () => {
-  /**
-   * Helper method which runs an array of queries and asserts them to given expected length
-   * For example: (r, "Obj", [1, "intCol == 0"]) => querying "intCol == 0" should return 1 elements.
-   */
-  const assertQueryLength = (
-    realm: Realm,
-    objectSchema: string | Realm.ObjectClass,
-    queryLengthPairs: QueryLengthPair[],
-  ) => {
-    queryLengthPairs.forEach(([expectedLength, queryString, ...queryArgs]) => {
-      const filtered = realm.objects(objectSchema).filtered(queryString, ...queryArgs);
-      expect(filtered.length).equal(
-        expectedLength,
-        `Expected length ${expectedLength} for query: ${queryString} ${JSON.stringify(queryArgs)}`,
-      );
-    });
-  };
-
-  /**
-   * Helper method which runs an array of queries and asserts them to throw given exception.
-   * For example: (r, "Obj", ["invalid", "intCol == #"]) => querying "intCol == #" should
-   * throw an exception which includes the string "invalid".
-   */
-  const assertQueryException = (
-    realm: Realm,
-    objectSchema: string | Realm.ObjectClass,
-    queryExceptionPairs: QueryExceptionPair[],
-  ) => {
-    queryExceptionPairs.forEach(([expectedException, queryString, ...queryArgs]) => {
-      expect(() => {
-        realm.objects(objectSchema).filtered(queryString, ...queryArgs);
-      }).throws(
-        expectedException,
-        `Expected exception not thrown for query: ${queryString} ${JSON.stringify(queryArgs)}`,
-      );
-    });
-  };
-
-  /**
-   * Helper method which runs an array of queries and asserts the results' provided [propertyToCompare]
-   * field to equal the given expected result array's values.
-   * For example: (r, "Obj", "intCol" [[3, 4], "intCol > 2]) => querying "intCol > 2" should
-   * return results whose elements' intCol property values are 3 and 4.
-   */
-  const assertQueryResultValues = (
-    realm: Realm,
-    objectSchema: string | Realm.ObjectClass,
-    propertyToCompare: string,
-    queryResultPairs: QueryResultsPair[],
-  ) => {
-    queryResultPairs.forEach(([expectedResults, queryString, ...queryArgs]) => {
-      let results = realm.objects<any>(objectSchema);
-      results = results.filtered(queryString, ...queryArgs);
-      expect(expectedResults.length).equals(results.length);
-      expect(expectedResults).to.deep.equal(
-        results.map((el) => el[propertyToCompare]),
-        `
-        Expected results not returned from query: ${queryString} ${JSON.stringify(queryArgs)}, 
-      `,
-      );
-    });
-  };
-
   beforeEach(Realm.clearTestState);
 
   describe("Basic types", () => {
@@ -149,7 +149,7 @@ describe("Queries", () => {
       });
 
       it("returns correct length", function (this: RealmContext) {
-        assertQueryLength(this.realm, NullableTypesObject, [
+        expectQueryLength(this.realm, NullableTypesObject, [
           [2, "boolCol == true"],
           [1, "boolCol==false"],
           [2, "boolCol != true"],
@@ -171,7 +171,7 @@ describe("Queries", () => {
       });
 
       it("throws with invalid queries", function (this: RealmContext) {
-        assertQueryException(this.realm, NullableTypesObject, [
+        expectQueryException(this.realm, NullableTypesObject, [
           ["Unsupported comparison between type", "boolCol == 0"],
           ["Unsupported comparison between type", "boolCol == 1"],
           ["Unsupported comparison between type", "boolCol == 'not a bool'"],
@@ -194,7 +194,7 @@ describe("Queries", () => {
       });
 
       it("returns correct length", function (this: RealmContext) {
-        assertQueryLength(this.realm, NullableTypesObject, [
+        expectQueryLength(this.realm, NullableTypesObject, [
           [2, "dateCol < $0", new Date(2)],
           [3, "dateCol <= $0", new Date(2)],
           [2, "dateCol > $0", new Date(0)],
@@ -208,7 +208,7 @@ describe("Queries", () => {
       });
 
       it("throws with invalid queries", function (this: RealmContext) {
-        assertQueryException(this.realm, NullableTypesObject, [
+        expectQueryException(this.realm, NullableTypesObject, [
           ["Unsupported comparison between type", "dateCol == 'not a date'"],
           ["Unsupported comparison between type", "dateCol == 1"],
           ["Unsupported comparison between type", "dateCol == $0", 1],
@@ -227,7 +227,7 @@ describe("Queries", () => {
       });
 
       it("returns correct length", function (this: RealmContext) {
-        assertQueryLength(this.realm, NullableTypesObject, [
+        expectQueryLength(this.realm, NullableTypesObject, [
           [1, "intCol == -1"],
           [1, "intCol==0"],
           [0, "1 == intCol"],
@@ -246,7 +246,7 @@ describe("Queries", () => {
       });
 
       it("throws with invalid queries", function (this: RealmContext) {
-        assertQueryException(this.realm, NullableTypesObject, [
+        expectQueryException(this.realm, NullableTypesObject, [
           ["Unsupported comparison between type", "intCol == false"],
           ["Cannot convert", "intCol == 'not an int'"],
           ["Unsupported comparison between type", "intCol == $0", "not an int"],
@@ -268,7 +268,7 @@ describe("Queries", () => {
       });
 
       it("returns correct length", function (this: RealmContext) {
-        assertQueryLength(this.realm, NullableTypesObject, [
+        expectQueryLength(this.realm, NullableTypesObject, [
           [1, "floatCol == -1.001"],
           [1, "floatCol = 0"],
           [0, "floatCol == 1"],
@@ -291,7 +291,7 @@ describe("Queries", () => {
       });
 
       it("throws with invalid queries", function (this: RealmContext) {
-        assertQueryException(this.realm, NullableTypesObject, [
+        expectQueryException(this.realm, NullableTypesObject, [
           ["Unsupported comparison between type", "floatCol == false"],
           ["Cannot convert", "floatCol == 'not a float'"],
           ["Unsupported comparison between type", "floatCol == $0", "not a float"],
@@ -313,7 +313,7 @@ describe("Queries", () => {
       });
 
       it("returns correct length", function (this: RealmContext) {
-        assertQueryLength(this.realm, NullableTypesObject, [
+        expectQueryLength(this.realm, NullableTypesObject, [
           [1, "doubleCol == -1.001"],
           [1, "doubleCol == 0"],
           [0, "1 == doubleCol"],
@@ -337,7 +337,7 @@ describe("Queries", () => {
       });
 
       it("throws with invalid queries", function (this: RealmContext) {
-        assertQueryException(this.realm, NullableTypesObject, [
+        expectQueryException(this.realm, NullableTypesObject, [
           ["Unsupported comparison between type", "doubleCol == false"],
           ["Cannot convert", "doubleCol == 'not a double'"],
           ["Unsupported comparison between type", "doubleCol == $0", "not a double"],
@@ -365,7 +365,7 @@ describe("Queries", () => {
       });
 
       it("returns correct length", function (this: RealmContext) {
-        assertQueryLength(this.realm, NullableTypesObject, [
+        expectQueryLength(this.realm, NullableTypesObject, [
           [2, "stringCol == 'a'"],
           [1, "'c' == stringCol"],
           [2, 'stringCol == "a"'],
@@ -402,7 +402,7 @@ describe("Queries", () => {
       });
 
       it("throws with invalid queries", function (this: RealmContext) {
-        assertQueryException(this.realm, NullableTypesObject, [
+        expectQueryException(this.realm, NullableTypesObject, [
           ["Unsupported comparison between type", "stringCol == true"],
           ["Unsupported comparison between type", "stringCol == 123"],
           ["Unsupported comparison operator", "stringCol CONTAINS $0", 1],
@@ -428,7 +428,7 @@ describe("Queries", () => {
       });
 
       it("returns correct length", function (this: RealmContext) {
-        assertQueryLength(this.realm, NullableTypesObject, [
+        expectQueryLength(this.realm, NullableTypesObject, [
           [1, "dataCol == $0", objects[1].dataCol],
           [1, "$0 == dataCol", objects[2].dataCol],
           [5, "dataCol != $0", objects[0].dataCol],
@@ -456,7 +456,7 @@ describe("Queries", () => {
       });
 
       it("returns correct length", function (this: RealmContext) {
-        assertQueryLength(this.realm, NullableTypesObject, [
+        expectQueryLength(this.realm, NullableTypesObject, [
           [2, "decimal128Col <  10002"],
           [3, "decimal128Col <= 10002"],
           [1, "decimal128Col >  10001"],
@@ -490,7 +490,7 @@ describe("Queries", () => {
       });
 
       it("returns correct length", function (this: RealmContext) {
-        assertQueryLength(this.realm, NullableTypesObject, [
+        expectQueryLength(this.realm, NullableTypesObject, [
           [1, "objectIdCol == $0", objects[3].objectIdCol],
           [1, "$0 == objectIdCol", objects[3].objectIdCol],
           [6, "objectIdCol != $0", objects[2].objectIdCol],
@@ -528,7 +528,7 @@ describe("Queries", () => {
       });
 
       it("returns correct length", function (this: RealmContext) {
-        assertQueryLength(this.realm, NullableTypesObject, [
+        expectQueryLength(this.realm, NullableTypesObject, [
           [1, "uuidCol == $0", objects[3].uuidCol],
           [1, "$0 == uuidCol", objects[3].uuidCol],
           [6, "uuidCol != $0", objects[2].uuidCol],
@@ -561,7 +561,7 @@ describe("Queries", () => {
       });
 
       it("returns correct results", function (this: RealmContext) {
-        assertQueryResultValues(this.realm, NullableTypesObject, "intCol", [
+        expectQueryResultValues(this.realm, NullableTypesObject, "intCol", [
           [[], "intCol == 0 && intCol == 1"],
           [[0, 1], "intCol == 0 || intCol == 1"],
           [[0], "intCol == 0 && intCol != 1"],
@@ -603,7 +603,7 @@ describe("Queries", () => {
       });
 
       it("returns correct length", function (this: RealmContext) {
-        assertQueryLength(this.realm, LinkObject, [
+        expectQueryLength(this.realm, LinkObject, [
           [1, "linkCol == $0", objects[1].linkCol],
           [1, "$0 == linkCol", objects[1].linkCol],
           [2, "linkCol != $0", objects[0].linkCol],
@@ -614,7 +614,7 @@ describe("Queries", () => {
       });
 
       it("throws with invalid queries", function (this: RealmContext) {
-        assertQueryException(this.realm, "LinkObject", [
+        expectQueryException(this.realm, "LinkObject", [
           ["Unsupported operator", "linkCol > $0", objects[0].linkCol],
           ["'LinkObject' has no property 'intCol'", "intCol = $0", objects[0].linkCol],
         ]);
@@ -689,7 +689,7 @@ describe("Queries", () => {
       });
 
       it("returns correct results", function (this: RealmContext) {
-        assertQueryResultValues(this.realm, "LinkTypesObject", "id", [
+        expectQueryResultValues(this.realm, "LinkTypesObject", "id", [
           [[0, 2], "basicLink.intCol == 1"],
           [[1], "linkLink.basicLink.intCol == 1"],
           [[1, 3], "linkLink.basicLink.intCol > 0"],
@@ -730,7 +730,7 @@ describe("Queries", () => {
       });
 
       it("returns correct results", function (this: RealmContext) {
-        assertQueryResultValues(this.realm, "Person", "id", [
+        expectQueryResultValues(this.realm, "Person", "id", [
           [[1, 3], "age > 20 SORT(age DESC) DISTINCT(name)"],
           [[2, 0], "age > 20 SORT(age ASC) DISTINCT(name)"],
           [[2, 0], "age > 20 SORT(age ASC, name DESC) DISTINCT(name)"],
@@ -783,7 +783,7 @@ describe("Queries", () => {
       });
 
       it("returns correct results", function (this: RealmContext) {
-        assertQueryResultValues(this.realm, "Movie", "id", [
+        expectQueryResultValues(this.realm, "Movie", "id", [
           [[0, 1, 2], "tags =[c] 'science fiction'"],
           [[0, 1, 2], "tags BEGINSWITH[c] 'science'"],
           [[], "NONE tags CONTAINS ' '"],
@@ -836,27 +836,27 @@ describe("Queries", () => {
         const bob = this.realm.create<IPerson>(PersonSchema.name, { name: "Bob", age: 14, friends: [alice] });
         this.realm.create<IPerson>(PersonSchema.name, { name: "Charlie", age: 17, friends: [bob, alice] });
 
-        this.realm.create<IContact>(ContactSchema.name, { name: "Alice", phones: ["555-1234-567"] });
-        this.realm.create<IContact>(ContactSchema.name, { name: "Bob", phones: ["555-1122-333", "555-1234-567"] });
-        this.realm.create<IContact>(ContactSchema.name, { name: "Charlie" });
+        [
+          { name: "Alice", phones: ["555-1234-567"] },
+          { name: "Bob", phones: ["555-1122-333", "555-1234-567"] },
+          { name: "Charlie" },
+        ].forEach((values) => this.realm.create(ContactSchema.name, values));
 
-        this.realm.create<IPrimitive>(PrimitiveSchema.name, {
-          s: "foo",
-          b: true,
-          i: 2,
-          f: 3.14,
-          d: 2.72,
-          t: new Date("2001-05-11T12:45:05"),
-        });
-        this.realm.create<IPrimitive>(PrimitiveSchema.name, {
-          s: "Here is a Unicorn 🦄 today",
-          b: false,
-          i: 44,
-          f: 1.41,
-          d: 4.67,
-          t: new Date("2004-02-26T10:15:02"),
-        });
+        [
+          ["foo", true, 2, 3.14, 2.72, "2001-05-11T12:45:05"],
+          ["Here is a Unicorn 🦄 today", false, 44, 1.41, 4.67, "2004-02-26T10:15:02"],
+        ].forEach((values) =>
+          this.realm.create<IPrimitive>(PrimitiveSchema.name, {
+            s: values[0] as string,
+            b: values[1] as boolean,
+            i: values[2] as number,
+            f: values[3] as number,
+            d: values[4] as number,
+            t: new Date(values[5] as string),
+          }),
+        );
       });
+
       persons = this.realm.objects<IPerson>(PersonSchema.name);
       contacts = this.realm.objects<IContact>(ContactSchema.name);
       primitives = this.realm.objects<IPrimitive>(PrimitiveSchema.name);
