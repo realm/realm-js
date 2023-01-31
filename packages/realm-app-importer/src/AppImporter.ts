@@ -132,6 +132,12 @@ type App = {
   environment: string;
 };
 
+type FetchArgs = Parameters<typeof fetch>;
+type FetchReturn = ReturnType<typeof fetch>;
+
+const RETRY_COUNT = 5;
+const RETRY_TIMEOUT = 1000;
+
 export class AppImporter {
   private readonly baseUrl: string;
   private readonly credentials: Credentials;
@@ -160,6 +166,30 @@ export class AppImporter {
         }
       });
     }
+  }
+
+  private async fetch(url: FetchArgs[0], init?: FetchArgs[1]): Promise<FetchReturn> {
+    let response = await fetch(url, init);
+    // If the response is not ok, we want to retry a few times
+    if (!response.ok) {
+      for (let i = 0; i < RETRY_COUNT; i++) {
+        await new Promise((resolve) => setTimeout(resolve, RETRY_TIMEOUT));
+        response = await fetch(url, init);
+        if (response.ok) {
+          break;
+        } else {
+          console.log(`Retrying request to ${url} after ${RETRY_TIMEOUT}ms`);
+          if (i === RETRY_COUNT - 1) {
+            // Print the error minus the headers
+            const responseText = await response.text();
+            const responseJson = JSON.parse(responseText);
+            const error = responseJson.error || responseJson;
+            console.error(JSON.stringify({ responseText, error, init: { ...init, headers: {} } }, null, 2));
+          }
+        }
+      }
+    }
+    return response;
   }
 
   /**
@@ -208,7 +238,7 @@ export class AppImporter {
     const app = await this.getAppByClientAppId(groupId, clientAppId);
     const url = `${this.baseUrl}/api/admin/v3.0/groups/${groupId}/apps/${app._id}`;
 
-    const response = await fetch(url, {
+    const response = await this.fetch(url, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${this.accessToken}`,
@@ -273,7 +303,7 @@ export class AppImporter {
   private async applyAllowedRequestOrigins(origins: string[], appId: string, groupId: string) {
     console.log("Applying allowed request origins: ", origins);
     const originsUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/security/allowed_request_origins`;
-    const response = await fetch(originsUrl, {
+    const response = await this.fetch(originsUrl, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${this.accessToken}`,
@@ -289,7 +319,7 @@ export class AppImporter {
   private async enableDevelopmentMode(groupId: string, appId: string) {
     const configUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/sync/config`;
     const config = { development_mode_enabled: true };
-    const response = await fetch(configUrl, {
+    const response = await this.fetch(configUrl, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${this.accessToken}`,
@@ -314,7 +344,7 @@ export class AppImporter {
 
         console.log("creating new value: ", config);
         const url = `${this.apiUrl}/groups/${groupId}/apps/${appId}/values`;
-        const response = await fetch(url, {
+        const response = await this.fetch(url, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${this.accessToken}`,
@@ -351,7 +381,7 @@ export class AppImporter {
             ? config.config.sync?.database_name
             : config.config.flexible_sync?.database_name;
           const serviceUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/services`;
-          const response = await fetch(serviceUrl, {
+          const response = await this.fetch(serviceUrl, {
             method: "POST",
             headers: {
               Authorization: `Bearer ${this.accessToken}`,
@@ -388,7 +418,7 @@ export class AppImporter {
                   delete ruleConfig.relationships;
                 }
                 const rulesUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/services/${serviceId}/rules`;
-                const response = await fetch(rulesUrl, {
+                const response = await this.fetch(rulesUrl, {
                   method: "POST",
                   headers: {
                     Authorization: `Bearer ${this.accessToken}`,
@@ -455,7 +485,7 @@ export class AppImporter {
         const currentProvider = providers.find((provider) => provider.type === authConfig.type);
         if (currentProvider) {
           const authUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/auth_providers/${currentProvider._id}`;
-          const response = await fetch(authUrl, {
+          const response = await this.fetch(authUrl, {
             method: "PATCH",
             headers: {
               Authorization: `Bearer ${this.accessToken}`,
@@ -468,7 +498,7 @@ export class AppImporter {
           }
         } else {
           const authUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/auth_providers`;
-          const response = await fetch(authUrl, {
+          const response = await this.fetch(authUrl, {
             method: "POST",
             headers: {
               Authorization: `Bearer ${this.accessToken}`,
@@ -487,7 +517,7 @@ export class AppImporter {
 
   private async getFunctions(appId: string, groupId: string): Promise<RemoteFunction[]> {
     const url = `${this.apiUrl}/groups/${groupId}/apps/${appId}/functions`;
-    const response = await fetch(url, {
+    const response = await this.fetch(url, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${this.accessToken}`,
@@ -517,7 +547,7 @@ export class AppImporter {
 
         console.log("creating new function provider: ", config);
         const url = `${this.apiUrl}/groups/${groupId}/apps/${appId}/functions`;
-        const response = await fetch(url, {
+        const response = await this.fetch(url, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${this.accessToken}`,
@@ -536,7 +566,7 @@ export class AppImporter {
 
   private async getAuthProviders(appId: string, groupId: string): Promise<AuthProvider[]> {
     const authUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/auth_providers`;
-    const response = await fetch(authUrl, {
+    const response = await this.fetch(authUrl, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${this.accessToken}`,
@@ -574,7 +604,7 @@ export class AppImporter {
   private performLogIn() {
     const { credentials } = this;
     if (credentials.kind === "api-key") {
-      return fetch(`${this.apiUrl}/auth/providers/mongodb-cloud/login`, {
+      return this.fetch(`${this.apiUrl}/auth/providers/mongodb-cloud/login`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -583,7 +613,7 @@ export class AppImporter {
         }),
       });
     } else if (credentials.kind === "username-password") {
-      return fetch(`${this.apiUrl}/auth/providers/local-userpass/login`, {
+      return this.fetch(`${this.apiUrl}/auth/providers/local-userpass/login`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -630,7 +660,7 @@ export class AppImporter {
       throw new Error("Login before calling this method");
     }
     const url = `${this.baseUrl}/api/admin/v3.0/auth/profile`;
-    const response = await fetch(url, {
+    const response = await this.fetch(url, {
       headers: { Authorization: `Bearer ${this.accessToken}` },
     });
     if (response.ok) {
@@ -660,7 +690,7 @@ export class AppImporter {
       throw new Error("Login before calling this method");
     }
     const url = `${this.baseUrl}/api/admin/v3.0/groups/${groupId}/apps`;
-    const response = await fetch(url, {
+    const response = await this.fetch(url, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${this.accessToken}`,
@@ -686,7 +716,7 @@ export class AppImporter {
     if (!this.accessToken) {
       throw new Error("Login before calling this method");
     }
-    const response = await fetch(`${this.apiUrl}/groups/${groupId}/apps`, {
+    const response = await this.fetch(`${this.apiUrl}/groups/${groupId}/apps`, {
       method: "GET",
       headers: { authorization: `Bearer ${this.accessToken}` },
     });
@@ -709,7 +739,7 @@ export class AppImporter {
         development_mode_enabled: true,
       },
     });
-    const response = await fetch(url, {
+    const response = await this.fetch(url, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${this.accessToken}`,
@@ -735,7 +765,7 @@ export class AppImporter {
     }
     const url = `${this.apiUrl}/groups/${groupId}/apps/${internalAppId}/secrets`;
     const body = JSON.stringify({ name, value });
-    const response = await fetch(url, {
+    const response = await this.fetch(url, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${this.accessToken}`,
