@@ -121,6 +121,8 @@ std::string get_cpu_arch()
 #define STR(name) QUOTE(name)
 #define ABI_NAME STR(REALM_ANDROID_ABI)
     return ABI_NAME;
+#undef STR
+#undef QUOTE
 }
 
 } // namespace realm
