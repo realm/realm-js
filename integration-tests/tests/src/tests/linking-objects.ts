@@ -149,10 +149,9 @@ describe("Linking objects", () => {
       });
     });
     it("filters work on linking object", function (this: RealmContext) {
-      let christine, olivier;
       this.realm.write(() => {
-        olivier = this.realm.create<IPersonSchema>(PersonSchema.name, { name: "Olivier", age: 0 });
-        christine = this.realm.create<IPersonSchema>(PersonSchema.name, {
+        const olivier = this.realm.create<IPersonSchema>(PersonSchema.name, { name: "Olivier", age: 0 });
+        this.realm.create<IPersonSchema>(PersonSchema.name, {
           name: "Christine",
           age: 25,
           children: [olivier],
