@@ -628,8 +628,8 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
                 config.encryption_key.assign(encryption_key.data(), encryption_key.data() + encryption_key.size());
             }
 
-            // Parsing the `path` option must be done before parsing `sync` in order to 
-            // be able to control the path for synced Realms. 
+            // Parsing the `path` option must be done before parsing `sync` in order to
+            // be able to control the path for synced Realms.
             static const String path_string = "path";
             ValueType path_value = Object::get_property(ctx, object, path_string);
             if (!Value::is_undefined(ctx, path_value)) {
