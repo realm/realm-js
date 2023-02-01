@@ -136,9 +136,12 @@ var SubscriptionsState = {
  * Class representing the common functionality for the {@link Realm.App.Sync.SubscriptionSet} and
  * {@link Realm.App.Sync.SubscriptionSet} classes
  *
- * The {@link Realm.App.Sync.Subscription}s in a SubscriptionSet can be accessed as an array, e.g.
- * `realm.subscriptions[0]`. This array is readonly – SubscriptionSets can only be
- * modified inside a {@link Realm.App.Sync.SubscriptionSet.update} callback.
+ * SubscriptionSets can only be modified inside a {@link SubscriptionSet.update} callback.
+ *
+ * The SubscriptionSet is an iterable; thus, if absolutely needed, the contained
+ * {@link Subscription}s can be accessed in `for-of` loops or spread into an `Array`
+ * for access to the ECMAScript Array API, e.g. `[...realm.subscriptions][0]`. Directly
+ * accessing the SubscriptionSet as an array is deprecated.
  *
  * @memberof Realm.App.Sync
  */
@@ -150,6 +153,14 @@ class BaseSubscriptionSet {
    * @readonly
    */
   get isEmpty() {}
+
+  /**
+   * The number of subscriptions in the set.
+   *
+   * @type number
+   * @readonly
+   */
+  get length() {}
 
   /**
    * The version of the SubscriptionSet. This is incremented every time a
@@ -197,6 +208,7 @@ class BaseSubscriptionSet {
   get error() {}
 
   /**
+   * @deprecated Will be removed in v12.0.0.
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach Array.prototype.forEach}
    * @param {function} callback - Function to execute on each object in the SubscriptionSet.
    *   This function takes three arguments:
@@ -209,6 +221,7 @@ class BaseSubscriptionSet {
   forEach(callback, thisArg) {}
 
   /**
+   * @deprecated Will be removed in v12.0.0.
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/every Array.prototype.every}
    * @param {function} callback - Function to execute on each object in the SubscriptionSet.
    *   If this function returns `true` for every object, then this method will return `true`.
@@ -224,6 +237,7 @@ class BaseSubscriptionSet {
   every(callback, thisArg) {}
 
   /**
+   * @deprecated Will be removed in v12.0.0.
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some Array.prototype.some}
    * @param {function} callback - Function to execute on each object in the SubscriptionSet.
    *   If this function ever returns `true`, then this method will return `true`.
@@ -239,6 +253,7 @@ class BaseSubscriptionSet {
   some(callback, thisArg) {}
 
   /**
+   * @deprecated Will be removed in v12.0.0.
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map Array.prototype.map}
    * @param {function} callback - Function to execute on each object in the SubscriptionSet.
    *   This function takes three arguments:
@@ -253,6 +268,7 @@ class BaseSubscriptionSet {
   map(callback, thisArg) {}
 
   /**
+   * @deprecated Will be removed in v12.0.0.
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce Array.prototype.reduce}
    * @param {function} callback - Function to execute on each object in the SubscriptionSet.
    *   This function takes four arguments:
@@ -274,6 +290,7 @@ class BaseSubscriptionSet {
   reduce(callback, initialValue) {}
 
   /**
+   * @deprecated Will be removed in v12.0.0.
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduceRight Array.prototype.reduceRight}
    * @param {function} callback - Function to execute on each object, from **right to left**,
    *   in the SubscriptionSet. This function takes four arguments:
