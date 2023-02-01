@@ -38,6 +38,7 @@ import "./bson";
 import "./dictionary";
 import "./list";
 import "./credentials/anonymous";
+import "./linking-objects";
 import "./sync/open";
 import "./sync/mixed";
 import "./sync/flexible";
