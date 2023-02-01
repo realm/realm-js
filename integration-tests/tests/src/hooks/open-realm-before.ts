@@ -42,11 +42,11 @@ export function openRealmHook(config: OpenRealmConfiguration = {}) {
 }
 
 export function openRealmBeforeEach(config: OpenRealmConfiguration = {}): void {
-  beforeEach(openRealmHook(config));
-  afterEach(closeThisRealm);
+  beforeEach("openRealmBeforeEach", openRealmHook(config));
+  afterEach("closeRealmAfterEach", closeThisRealm);
 }
 
 export function openRealmBefore(config: OpenRealmConfiguration = {}): void {
-  before(openRealmHook(config));
-  after(closeThisRealm);
+  before("openRealmBefore", openRealmHook(config));
+  after("closeRealmAfter", closeThisRealm);
 }
