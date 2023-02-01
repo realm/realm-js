@@ -75,141 +75,155 @@ const createConfig = (schema: Realm.ObjectSchema, user: Realm.User, partitionVal
 });
 
 describe("Partition-values", () => {
-  importAppBefore("with-db");
-  authenticateUserBefore();
-  it("support integer", async function (this: Mocha.Context & AppContext & UserContext) {
-    const realmConfigPrimary = createConfig(PvIntDog, this.user, 42);
-    const realmConfigSecondary = createConfig(PvIntDog, this.user, 43);
+  describe("integer", () => {
+    importAppBefore("pv-int-tests");
+    authenticateUserBefore();
+    it("works", async function (this: Mocha.Context & AppContext & UserContext) {
+      const realmConfigPrimary = createConfig(PvIntDog, this.user, 42);
+      const realmConfigSecondary = createConfig(PvIntDog, this.user, 43);
 
-    console.log(realmConfigPrimary);
-    // ensure clean starting point
-    Realm.deleteFile(realmConfigPrimary);
+      console.log(realmConfigPrimary);
+      // ensure clean starting point
+      Realm.deleteFile(realmConfigPrimary);
 
-    const realm1 = await Realm.open(realmConfigPrimary);
-    realm1.write(() => {
-      realm1.create("Dog", { _id: new ObjectId(), name: "King" });
+      const realm1 = await Realm.open(realmConfigPrimary);
+      realm1.write(() => {
+        realm1.create("Dog", { _id: new ObjectId(), name: "King" });
+      });
+
+      await realm1.syncSession?.uploadAllLocalChanges();
+      expect(realm1.objects("Dog").length).equals(1);
+      realm1.close();
+
+      // cleanup, re-sync & check changes are synced
+      Realm.deleteFile(realmConfigPrimary);
+
+      const realm2 = await Realm.open(realmConfigPrimary);
+      await realm2.syncSession?.downloadAllServerChanges();
+
+      expect(realm2.objects("Dog").length).equals(1);
+      realm2.close();
+
+      // cleanup & re-sync with different partitionValue
+      Realm.deleteFile(realmConfigPrimary);
+
+      const realm3 = await Realm.open(realmConfigSecondary);
+      await realm3.syncSession?.downloadAllServerChanges();
+
+      expect(realm3.objects("Dog").length).equals(0);
+      realm3.close();
     });
-
-    await realm1.syncSession?.uploadAllLocalChanges();
-    expect(realm1.objects("Dog").length).equals(1);
-    realm1.close();
-
-    // cleanup, re-sync & check changes are synced
-    Realm.deleteFile(realmConfigPrimary);
-
-    const realm2 = await Realm.open(realmConfigPrimary);
-    await realm2.syncSession?.downloadAllServerChanges();
-
-    expect(realm2.objects("Dog").length).equals(1);
-    realm2.close();
-
-    // cleanup & re-sync with different partitionValue
-    Realm.deleteFile(realmConfigPrimary);
-
-    const realm3 = await Realm.open(realmConfigSecondary);
-    await realm3.syncSession?.downloadAllServerChanges();
-
-    expect(realm3.objects("Dog").length).equals(0);
-    realm3.close();
   });
-  it("support string", async function (this: Mocha.Context & AppContext & UserContext) {
-    const realmConfigPrimary = createConfig(PvStringDog, this.user, "42");
-    const realmConfigSecondary = createConfig(PvStringDog, this.user, "43");
+  describe("string", () => {
+    importAppBefore("pv-string-tests");
+    authenticateUserBefore();
+    it("works", async function (this: Mocha.Context & AppContext & UserContext) {
+      const realmConfigPrimary = createConfig(PvStringDog, this.user, "42");
+      const realmConfigSecondary = createConfig(PvStringDog, this.user, "43");
 
-    // ensure clean starting point
-    Realm.deleteFile(realmConfigPrimary);
+      // ensure clean starting point
+      Realm.deleteFile(realmConfigPrimary);
 
-    const realm1 = await Realm.open(realmConfigPrimary);
-    realm1.write(() => {
-      realm1.create("Dog", { _id: new ObjectId(), name: "King" });
+      const realm1 = await Realm.open(realmConfigPrimary);
+      realm1.write(() => {
+        realm1.create("Dog", { _id: new ObjectId(), name: "King" });
+      });
+
+      await realm1.syncSession?.uploadAllLocalChanges();
+      expect(realm1.objects("Dog").length).equals(1);
+      realm1.close();
+
+      // cleanup, re-sync & check changes are synced
+      Realm.deleteFile(realmConfigPrimary);
+
+      const realm2 = await Realm.open(realmConfigPrimary);
+      await realm2.syncSession?.downloadAllServerChanges();
+
+      expect(realm2.objects("Dog").length).equals(1);
+      realm2.close();
+
+      // cleanup & re-sync with different partitionValue
+      Realm.deleteFile(realmConfigPrimary);
+
+      const realm3 = await Realm.open(realmConfigSecondary);
+      await realm3.syncSession?.downloadAllServerChanges();
+
+      expect(realm3.objects("Dog").length).equals(0);
+      realm3.close();
     });
-
-    await realm1.syncSession?.uploadAllLocalChanges();
-    expect(realm1.objects("Dog").length).equals(1);
-    realm1.close();
-
-    // cleanup, re-sync & check changes are synced
-    Realm.deleteFile(realmConfigPrimary);
-
-    const realm2 = await Realm.open(realmConfigPrimary);
-    await realm2.syncSession?.downloadAllServerChanges();
-
-    expect(realm2.objects("Dog").length).equals(1);
-    realm2.close();
-
-    // cleanup & re-sync with different partitionValue
-    Realm.deleteFile(realmConfigPrimary);
-
-    const realm3 = await Realm.open(realmConfigSecondary);
-    await realm3.syncSession?.downloadAllServerChanges();
-
-    expect(realm3.objects("Dog").length).equals(0);
-    realm3.close();
   });
-  it("support UUID", async function (this: Mocha.Context & AppContext & UserContext) {
-    const realmConfigPrimary = createConfig(PvUuidDog, this.user, new UUID("57eade47-8406-4397-ab97-49abcc4d681f"));
-    const realmConfigSecondary = createConfig(PvUuidDog, this.user, new UUID("90d82df4-6037-4eb6-869b-a62f7af522b0"));
+  describe("UUID", () => {
+    importAppBefore("pv-uuid-tests");
+    authenticateUserBefore();
+    it("works", async function (this: Mocha.Context & AppContext & UserContext) {
+      const realmConfigPrimary = createConfig(PvUuidDog, this.user, new UUID("57eade47-8406-4397-ab97-49abcc4d681f"));
+      const realmConfigSecondary = createConfig(PvUuidDog, this.user, new UUID("90d82df4-6037-4eb6-869b-a62f7af522b0"));
 
-    // ensure clean starting point
-    Realm.deleteFile(realmConfigPrimary);
+      // ensure clean starting point
+      Realm.deleteFile(realmConfigPrimary);
 
-    const realm1 = await Realm.open(realmConfigPrimary);
-    realm1.write(() => {
-      realm1.create("Dog", { _id: new ObjectId(), name: "King" });
+      const realm1 = await Realm.open(realmConfigPrimary);
+      realm1.write(() => {
+        realm1.create("Dog", { _id: new ObjectId(), name: "King" });
+      });
+
+      await realm1.syncSession?.uploadAllLocalChanges();
+      expect(realm1.objects("Dog").length).equals(1);
+      realm1.close();
+
+      // cleanup, re-sync & check changes are synced
+      Realm.deleteFile(realmConfigPrimary);
+
+      const realm2 = await Realm.open(realmConfigPrimary);
+      await realm2.syncSession?.downloadAllServerChanges();
+
+      expect(realm2.objects("Dog").length).equals(1);
+      realm2.close();
+
+      // cleanup & re-sync with different partitionValue
+      Realm.deleteFile(realmConfigPrimary);
+
+      const realm3 = await Realm.open(realmConfigSecondary);
+      await realm3.syncSession?.downloadAllServerChanges();
+
+      expect(realm3.objects("Dog").length).equals(0);
+      realm3.close();
     });
-
-    await realm1.syncSession?.uploadAllLocalChanges();
-    expect(realm1.objects("Dog").length).equals(1);
-    realm1.close();
-
-    // cleanup, re-sync & check changes are synced
-    Realm.deleteFile(realmConfigPrimary);
-
-    const realm2 = await Realm.open(realmConfigPrimary);
-    await realm2.syncSession?.downloadAllServerChanges();
-
-    expect(realm2.objects("Dog").length).equals(1);
-    realm2.close();
-
-    // cleanup & re-sync with different partitionValue
-    Realm.deleteFile(realmConfigPrimary);
-
-    const realm3 = await Realm.open(realmConfigSecondary);
-    await realm3.syncSession?.downloadAllServerChanges();
-
-    expect(realm3.objects("Dog").length).equals(0);
-    realm3.close();
   });
-  it("support objectId", async function (this: Mocha.Context & AppContext & UserContext) {
-    const realmConfigPrimary = createConfig(PvObjectIdDog, this.user, new ObjectId("606d8cdf33e41d1409245e60"));
-    const realmConfigSecondary = createConfig(PvObjectIdDog, this.user, new ObjectId("606d8cdf33e41d1409245e63"));
+  describe("objectId", () => {
+    importAppBefore("pv-objectid-tests");
+    authenticateUserBefore();
+    it("works", async function (this: Mocha.Context & AppContext & UserContext) {
+      const realmConfigPrimary = createConfig(PvObjectIdDog, this.user, new ObjectId("606d8cdf33e41d1409245e60"));
+      const realmConfigSecondary = createConfig(PvObjectIdDog, this.user, new ObjectId("606d8cdf33e41d1409245e63"));
 
-    // ensure clean starting point
-    Realm.deleteFile(realmConfigPrimary);
-    const realm1 = await Realm.open(realmConfigPrimary);
-    realm1.write(() => {
-      realm1.create("Dog", { _id: new ObjectId(), name: "King" });
+      // ensure clean starting point
+      Realm.deleteFile(realmConfigPrimary);
+      const realm1 = await Realm.open(realmConfigPrimary);
+      realm1.write(() => {
+        realm1.create("Dog", { _id: new ObjectId(), name: "King" });
+      });
+
+      await realm1.syncSession?.uploadAllLocalChanges();
+      expect(realm1.objects("Dog").length).equals(1);
+      realm1.close();
+
+      Realm.deleteFile(realmConfigPrimary);
+
+      const realm2 = await Realm.open(realmConfigPrimary);
+      await realm2.syncSession?.downloadAllServerChanges();
+
+      expect(realm2.objects("Dog").length).equals(1);
+      realm2.close();
+
+      // cleanup & re-sync with different partitionValue
+      Realm.deleteFile(realmConfigPrimary);
+
+      const realm3 = await Realm.open(realmConfigSecondary);
+      await realm3.syncSession?.downloadAllServerChanges();
+
+      expect(realm3.objects("Dog").length).equals(0);
+      realm3.close();
     });
-
-    await realm1.syncSession?.uploadAllLocalChanges();
-    expect(realm1.objects("Dog").length).equals(1);
-    realm1.close();
-
-    Realm.deleteFile(realmConfigPrimary);
-
-    const realm2 = await Realm.open(realmConfigPrimary);
-    await realm2.syncSession?.downloadAllServerChanges();
-
-    expect(realm2.objects("Dog").length).equals(1);
-    realm2.close();
-
-    // cleanup & re-sync with different partitionValue
-    Realm.deleteFile(realmConfigPrimary);
-
-    const realm3 = await Realm.open(realmConfigSecondary);
-    await realm3.syncSession?.downloadAllServerChanges();
-
-    expect(realm3.objects("Dog").length).equals(0);
-    realm3.close();
   });
 });
