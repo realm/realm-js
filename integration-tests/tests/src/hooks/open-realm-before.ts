@@ -31,6 +31,7 @@ export function openRealmHook(config: OpenRealmConfiguration = {}) {
   return async function openRealmHandler(
     this: Partial<RealmContext> & Partial<UserContext> & Mocha.Context,
   ): Promise<void> {
+    this.longTimeout();
     if (this.realm) {
       throw new Error("Unexpected realm on context, use only one openRealmBefore per test");
     } else {
