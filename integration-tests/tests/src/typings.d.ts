@@ -31,10 +31,6 @@ type Require = (id: string) => unknown;
 
 type Environment = Record<string, unknown> & {
   longTimeout?: number;
-  /** Are the tests running without a server? In which case all sync tests should be skipped. */
-  missingServer?: true;
-  /** The URL of the Realm server to run tests against. */
-  realmBaseUrl?: string;
   /** Set the name of the cluster, used when setting up the "mongodb-atlas" service on imported apps. */
   mongodbClusterName?: string;
   /** Run the performance tests (skipped by default) */
@@ -43,6 +39,37 @@ type Environment = Record<string, unknown> & {
   preserveAppAfterRun?: true;
   /** Set the sync client log level to help debugging sync client issues */
   syncLogLevel?: Realm.App.Sync.LogLevel;
+
+  // BaaS server and Realm App Importer specific variables below
+
+  /** Are the tests running without a server? In which case all sync tests should be skipped. */
+  missingServer?: true;
+  /** The URL of the Realm server to run tests against. */
+  realmBaseUrl?: string;
+  /**
+   * Public key part used when authenticating towards BaaS during import of an app.
+   * Note: This is only used when the app importer is ran from within the test suite.
+   * Note: Either (publicKey and privateKey) or (username and password) needs to be set.
+   */
+  publicKey?: string;
+  /**
+   * Private key part used when authenticating towards BaaS during import of an app.
+   * Note: This is only used when the app importer is ran from within the test suite.
+   * Note: Either (publicKey and privateKey) or (username and password) needs to be set.
+   */
+  privateKey?: string;
+  /**
+   * Username used when authenticating towards BaaS during import of an app.
+   * Note: This is only used when the app importer is ran from within the test suite.
+   * Note: Either (publicKey and privateKey) or (username and password) needs to be set.
+   */
+  username?: string;
+  /**
+   * Password used when authenticating towards BaaS during import of an app.
+   * Note: This is only used when the app importer is ran from within the test suite.
+   * Note: Either (publicKey and privateKey) or (username and password) needs to be set.
+   */
+  password?: string;
 
   // Platform specific variables below
 
