@@ -56,13 +56,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Cache prebuild artifacts
-        id: cache-prebuild
-        uses: actions/cache@v2
-        with:
-          path: ${{ matrix.variant.artifact-path }}
-          key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}-${{ env.cache-name }}-${{hashFiles('./src/**', './vendor/**')}}
-
       - name: MSVC Setup
         if: ${{ runner.os == 'Windows' }}
         uses: ilammy/msvc-dev-cmd@v1
