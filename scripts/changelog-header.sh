@@ -6,6 +6,9 @@ set -o pipefail
 CHANGELOG=$(cat <<EOF
 ## vNext (TBD)
 
+### Deprecations
+* None
+
 ### Enhancements
 * None
 
