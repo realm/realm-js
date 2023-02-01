@@ -432,9 +432,9 @@ describe.skipIf(environment.missingServer, "User", () => {
       const mongo = user.mongoClient("mongodb");
       //@ts-expect-error TYPEBUG: serviceName is a missing property on MongoDB interface
       expect(mongo.serviceName).equals("mongodb");
-      const database = mongo.db("test-database");
+      const database = mongo.db(this.databaseName);
       //@ts-expect-error TYPEBUG: name is a missing property on MongoDBDatabase interface
-      expect(database.name).equals("test-database");
+      expect(database.name).equals(this.databaseName);
 
       const collection = database.collection("testRemoteMongoClient");
       //@ts-expect-error TYPEBUG: name is a missing property on MongoDBCollection interface
@@ -450,7 +450,7 @@ describe.skipIf(environment.missingServer, "User", () => {
     it("can watch changes correctly", async function (this: AppContext & RealmContext) {
       const credentials = Realm.Credentials.anonymous();
       const user = await this.app.logIn(credentials);
-      const collection = user.mongoClient("mongodb").db("test-database").collection("testRemoteMongoClient") as any;
+      const collection = user.mongoClient("mongodb").db(this.databaseName).collection("testRemoteMongoClient") as any;
 
       await collection.deleteMany({});
 
