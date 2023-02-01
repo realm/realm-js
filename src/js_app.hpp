@@ -230,7 +230,7 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
 
     config.device_info.platform = platform;
     config.device_info.platform_version = platform_version;
-    config.device_info.sdk = "Realm JavaScript";
+    config.device_info.sdk = sdk;
     config.device_info.sdk_version = sdk_version;
     config.device_info.cpu_arch = cpu_arch;
     config.device_info.device_name = device_name;
