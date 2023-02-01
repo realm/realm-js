@@ -103,6 +103,20 @@ declare namespace Mocha {
   interface TestFunction {
     skipIf: (condition: unknown, title: string, callback: Mocha.AsyncFunc | Mocha.Func) => void;
   }
+  interface Context {
+    /**
+     * Sets a "long timeout" for the test or hook.
+     * It will use the timeout provided via `environment.longTimeout` or default to 1 min.
+     */
+    longTimeout(): void;
+  }
+  interface Suite {
+    /**
+     * Sets a "long timeout" for the suite.
+     * It will use the timeout provided via `environment.longTimeout` or default to 1 min.
+     */
+    longTimeout(): void;
+  }
 }
 
 // Mocha contexts made available by hooks
