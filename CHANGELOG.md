@@ -18,6 +18,7 @@
 * Unpin Xcode version when building locally and upgrade the Xcode version used by GHA.
 * Enable tests for notifications on dictionary.
 * Automate releasing package on GHA
+* Upgrade OpenSSL v1.1.1n to v3.0.7. ([realm/realm-core#6097](https://github.com/realm/realm-core/pull/6097))
 
 ## 11.4.0 (2023-01-23)
 
