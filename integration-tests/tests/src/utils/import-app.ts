@@ -53,7 +53,11 @@ function getCredentials(): Credentials {
   };
 }
 
-export function getDefaultReplacements(name: string): TemplateReplacements {
+function generateDatabaseName(): string {
+  return `test-database-${new BSON.ObjectID().toHexString()}`;
+}
+
+export function getDefaultReplacements(name: string, databaseName: string): TemplateReplacements {
   // When running on CI we connect through mongodb-atlas instead of local-mongodb
   const { mongodbClusterName } = environment;
   if (typeof mongodbClusterName === "string") {
@@ -62,7 +66,6 @@ export function getDefaultReplacements(name: string): TemplateReplacements {
 
     if (name === "with-db" || name === "with-db-flx") {
       // Generate a unique database name to limit crosstalk between runs
-      const databaseName = `test-database-${new BSON.ObjectID().toHexString()}`;
       return {
         ...appNameReplacement,
         "services/mongodb/config.json": {
@@ -85,9 +88,15 @@ export function getDefaultReplacements(name: string): TemplateReplacements {
 
 export async function importApp(
   name: string,
-  replacements: TemplateReplacements = getDefaultReplacements(name),
-): Promise<{ appId: string; baseUrl: string }> {
+  replacements?: TemplateReplacements,
+): Promise<{ appId: string; baseUrl: string; databaseName: string }> {
   const { baseUrl, appImporterUrl } = getUrls();
+
+  const databaseName = generateDatabaseName();
+
+  if (!replacements) {
+    replacements = getDefaultReplacements(name, databaseName);
+  }
 
   if (appImporterIsRemote) {
     const response = await fetch(appImporterUrl, {
@@ -97,7 +106,7 @@ export async function importApp(
 
     const json = await response.json<Response>();
     if (response.ok && typeof json.appId === "string") {
-      return { appId: json.appId, baseUrl };
+      return { appId: json.appId, baseUrl, databaseName };
     } else if (typeof json.message === "string") {
       throw new Error(`Failed to import: ${json.message}`);
     } else {
@@ -121,7 +130,7 @@ export async function importApp(
 
     const { appId } = await importer.importApp(appTemplatePath, replacements);
 
-    return { appId, baseUrl };
+    return { appId, baseUrl, databaseName };
   }
 }
 

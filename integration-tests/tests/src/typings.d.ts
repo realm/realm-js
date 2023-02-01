@@ -60,7 +60,7 @@ declare namespace Mocha {
 }
 
 // Mocha contexts made available by hooks
-type AppContext = { app: Realm.App } & Mocha.Context;
+type AppContext = { app: Realm.App; databaseName: string } & Mocha.Context;
 type UserContext = { user: Realm.User } & Mocha.Context;
 type RealmContext = {
   realm: Realm;

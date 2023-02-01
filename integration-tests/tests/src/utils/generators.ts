@@ -15,10 +15,29 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+
 export function generatePartition() {
   return "xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx".replace(/[xy]/g, function (c) {
     const r = (Math.random() * 16) | 0,
       v = c == "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
+}
+
+export function randomVerifiableEmail() {
+  // according to the custom register function, emails will register if they contain "realm_tests_do_autoverify"
+  const uuid = new Realm.BSON.UUID().toHexString();
+  return `realm_tests_do_autoverify_${uuid}_@test.com`;
+}
+
+export function randomNonVerifiableEmail() {
+  // according to the custom register function, emails will not register if they don't contain "realm_tests_do_autoverify"
+  const uuid = new Realm.BSON.UUID().toHexString();
+  return `should-not-register-${uuid}_@test.com`;
+}
+
+export function randomPendingVerificationEmail() {
+  // create an email address that should neither auto-verify or fail verification
+  const uuid = new Realm.BSON.UUID().toHexString();
+  return `realm_tests_do_pendverify-${uuid}_@test.com`;
 }
