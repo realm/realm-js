@@ -70,6 +70,7 @@ export {
   mapTo,
   MapToDecorator,
   MigrationCallback,
+  MongoDBCollection,
   MutableSubscriptionSet,
   NumericLogLevel,
   /** @deprecated Got renamed to {@link RealmObjectConstructor} */

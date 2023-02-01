@@ -70,8 +70,10 @@ export * from "./Dictionary";
 
 export * from "./Types";
 
+export * from "./app-services/utils";
 export * from "./app-services/SyncConfiguration";
 export * from "./app-services/Credentials";
+export * from "./app-services/MongoDBService";
 export * from "./app-services/User";
 export * from "./app-services/NetworkTransport";
 export * from "./app-services/SyncSession";

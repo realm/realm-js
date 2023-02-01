@@ -27,9 +27,11 @@ import {
   DefaultUserProfileData,
   Listeners,
   MongoDBCollection,
+  MongoDBService,
   ProviderType,
   PushClient,
   binding,
+  cleanArguments,
   createFactory,
   isProviderType,
 } from "../internal";
@@ -61,34 +63,6 @@ export interface UserIdentity {
    * The type of the provider associated with the identity.
    */
   providerType: ProviderType;
-}
-
-/**
- * A remote MongoDB Service enabling access to a MongoDB Atlas cluster.
- */
-export type MongoDBService = {
-  serviceName: string;
-  db(dbName: string): {
-    name: string;
-    collection<T extends Document>(collectionName: string): MongoDBCollection<T>;
-  };
-};
-
-/** @internal */
-function cleanArguments(args: unknown[] | unknown): unknown[] | unknown {
-  if (Array.isArray(args)) {
-    return args.map((x) => cleanArguments(x));
-  }
-  if (args === null || typeof args != "object") {
-    return args;
-  }
-  const result: { [key: string]: unknown } = {};
-  for (const [k, v] of Object.entries(args)) {
-    if (typeof v !== "undefined") {
-      result[k] = cleanArguments(v);
-    }
-  }
-  return result;
 }
 
 type UserListenerToken = binding.SyncUserSubscriptionToken;
