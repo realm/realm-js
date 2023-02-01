@@ -44,6 +44,7 @@ import "./sync/mixed";
 import "./sync/flexible";
 import "./sync/asymmetric";
 import "./sync/sync-as-local";
+import "./sync/encryption";
 import "./sync/app";
 import "./sync/user";
 import "./transaction";
