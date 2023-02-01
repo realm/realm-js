@@ -31,6 +31,7 @@ describe("Encryption", () => {
     afterEach(() => {
       Realm.clearTestState();
     });
+
     it("invalid key throws", () => {
       expect(function () {
         //@ts-expect-error testing invalid string parameter as encryption key
@@ -41,6 +42,7 @@ describe("Encryption", () => {
         new Realm({ schema: [TestObjectSchema], encryptionKey: new Int8Array(63) });
       }).throws; // Encryption Key must be 64 bytes
     });
+
     it("test valid key", () => {
       const key = new Int8Array(64);
       key[0] = 1;
@@ -64,6 +66,7 @@ describe("Encryption", () => {
       realm = new Realm({ schema: [TestObjectSchema], encryptionKey: key });
       expect(realm.objects(TestObjectSchema.name).length).equals(1);
     });
+
     it("schema version with encrypted realm", () => {
       const encryptionKey = new Int8Array(64);
       const realm = new Realm({ schema: [], schemaVersion: 3, path: "encrypted.realm", encryptionKey: encryptionKey });
@@ -80,8 +83,10 @@ describe("Encryption", () => {
       }).throws;
     });
   });
+
   describe("with sync", () => {
     importAppBefore("simple");
+
     it("can set propery in config", async function (this: AppContext) {
       const credentials = Realm.Credentials.anonymous();
       return this.app.logIn(credentials).then((user: Realm.User) => {
