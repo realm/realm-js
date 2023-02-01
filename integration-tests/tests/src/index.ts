@@ -18,6 +18,11 @@
 
 console.log("Loading Realm Integration Tests");
 
+/**
+ * Use the `longTimeout` context variable to override this.
+ */
+const DEFAULT_LONG_TIMEOUT = 10 * 1000; // 10s
+
 if (!global.fs) {
   throw new Error("Expected 'fs' to be available as a global");
 }
@@ -49,7 +54,7 @@ describe("Test Harness", function (this: Mocha.Suite) {
    * @see [typings.d.ts](./typings.d.ts) for documentation.
    */
   function longTimeout(this: Mocha.Context | Mocha.Suite) {
-    this.timeout(environment.longTimeout || 5 * 60 * 1000); // 5 minutes
+    this.timeout(environment.longTimeout || DEFAULT_LONG_TIMEOUT); // 5 minutes
   }
   // Patching the Suite and Context with a longTimeout method
   // We cannot simply `import { Suite, Context } from "mocha"` here,
