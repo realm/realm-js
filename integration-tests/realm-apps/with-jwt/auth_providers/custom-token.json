@@ -17,6 +17,16 @@
             "required": true,
             "name": "mySecretField",
             "field_name": "secret"
+        },
+        {
+            "required": false,
+            "name": "id",
+            "field_name": "id"
+        },
+        {
+            "required": false,
+            "name": "license",
+            "field_name": "license"
         }
     ]
 }
