@@ -30,6 +30,7 @@ interface path {
 type Require = (id: string) => unknown;
 
 type Environment = Record<string, unknown> & {
+  /** Set the number of milliseconds to use for tests that require a long timeout. */
   longTimeout?: number;
   /** Set the name of the cluster, used when setting up the "mongodb-atlas" service on imported apps. */
   mongodbClusterName?: string;

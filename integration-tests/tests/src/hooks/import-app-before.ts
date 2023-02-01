@@ -24,7 +24,7 @@ export function importAppBefore(
   replacements?: TemplateReplacements,
   logLevel: Realm.App.Sync.LogLevel = (environment.syncLogLevel as Realm.App.Sync.LogLevel) || "warn",
 ): void {
-  before("importAppBefore", async function (this: Partial<AppContext> & Mocha.Context) {
+  before(importAppBefore.name, async function (this: Partial<AppContext> & Mocha.Context) {
     // Importing an app might take up to 5 minutes when the app has a MongoDB Atlas service enabled.
     this.longTimeout();
     if (this.app) {
