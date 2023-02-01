@@ -133,8 +133,6 @@ const expectQueryResultValues = (
 };
 
 describe("Queries", () => {
-  beforeEach(Realm.clearTestState);
-
   describe("Basic types", () => {
     openRealmBeforeEach({ schema: [NullableTypesObject] });
 
