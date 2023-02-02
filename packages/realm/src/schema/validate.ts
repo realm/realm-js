@@ -18,11 +18,11 @@
 
 import {
   CanonicalObjectSchema,
-  CanonicalObjectSchemaProperty,
+  CanonicalPropertySchema,
   Configuration,
   DefaultObject,
   ObjectSchema,
-  ObjectSchemaProperty,
+  PropertySchema,
   RealmObject,
   RealmObjectConstructor,
   assert,
@@ -42,9 +42,9 @@ const OBJECT_SCHEMA_KEYS = new Set<keyof CanonicalObjectSchema>([
   "ctor",
 ]);
 
-// Need to use `CanonicalObjectSchemaProperty` rather than `ObjectSchemaProperty`
+// Need to use `CanonicalPropertySchema` rather than `PropertySchema`
 // due to the same reasons as above.
-const PROPERTY_SCHEMA_KEYS = new Set<keyof CanonicalObjectSchemaProperty>([
+const PROPERTY_SCHEMA_KEYS = new Set<keyof CanonicalPropertySchema>([
   "type",
   "objectType",
   "property",
@@ -52,7 +52,7 @@ const PROPERTY_SCHEMA_KEYS = new Set<keyof CanonicalObjectSchemaProperty>([
   "optional",
   "indexed",
   "mapTo",
-  // Not part of `ObjectSchemaProperty`
+  // Not part of `PropertySchema`
   "name",
 ]);
 
@@ -128,7 +128,7 @@ export function validatePropertySchema(
   objectName: string,
   propertyName: string,
   propertySchema: unknown,
-): asserts propertySchema is ObjectSchemaProperty {
+): asserts propertySchema is PropertySchema {
   assert.object(propertySchema, `'${propertyName}' on '${objectName}'`, { allowArrays: false });
   const { type, objectType, optional, property, indexed, mapTo } = propertySchema;
   assert.string(type, `'${propertyName}.type' on '${objectName}'`);

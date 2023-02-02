@@ -48,6 +48,8 @@ export type {
   FlexibleSyncConfiguration,
   ObjectChangeCallback,
   ObjectChangeSet,
+  ObjectSchema,
+  PropertySchema,
   PartitionSyncConfiguration,
   RealmEventName,
   RealmListenerCallback,

@@ -36,8 +36,11 @@ import {
   List,
   MigrationCallback,
   ObjectSchema,
+  ObjectSchemaProperty,
   OrderedCollection,
   ProgressRealmPromise,
+  PropertySchema,
+  PropertySchemaShorthand,
   RealmEvent,
   RealmInsertionModel,
   RealmListenerCallback,
@@ -1088,6 +1091,9 @@ type SetType<T> = RealmSet<T>;
 type AppType = App;
 type UpdateModeType = UpdateMode;
 type ObjectSchemaType = ObjectSchema;
+type ObjectSchemaPropertyType = ObjectSchemaProperty;
+type PropertySchemaType = PropertySchema;
+type PropertySchemaShorthandType = PropertySchemaShorthand;
 type BSONType = typeof BSON;
 type TypesType = typeof Types;
 type UserType = typeof User;
@@ -1107,6 +1113,12 @@ export namespace Realm {
   export type App = AppType;
   export type UpdateMode = UpdateModeType;
   export type ObjectSchema = ObjectSchemaType;
+  /**
+   * @deprecated Will be removed in v13.0.0. Please use {@link PropertySchema}.
+   */
+  export type ObjectSchemaProperty = ObjectSchemaPropertyType;
+  export type PropertySchema = PropertySchemaType;
+  export type PropertySchemaShorthand = PropertySchemaShorthandType;
   export type Mixed = unknown;
   export type BSON = BSONType;
   export type Types = TypesType;

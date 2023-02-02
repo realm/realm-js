@@ -66,9 +66,6 @@ export type RelationshipPropertyTypeName = "object" | "linkingObjects";
  */
 export type UserTypeName = string;
 
-// TODO: Can be removed when ObjectSchemaProperty is removed
-export type PropertyType = UserTypeName | PropertyTypeName;
-
 /**
  * The list of object schemas belonging to a specific {@link Realm}.
  */
@@ -79,18 +76,22 @@ export type CanonicalRealmSchema = CanonicalObjectSchema[];
  */
 export type CanonicalObjectSchema<T = DefaultObject> = {
   name: string;
-  properties: Record<keyof T, CanonicalObjectSchemaProperty>;
+  properties: Record<keyof T, CanonicalPropertySchema>;
   primaryKey?: string;
   embedded?: boolean;
   asymmetric?: boolean;
   ctor?: RealmObjectConstructor;
 };
 
-// TODO: Rename to CanonicalPropertySchema (when ObjectSchemaProperty is renamed to PropertySchema)
+/**
+ * @deprecated Will be removed in v13.0.0. Please use {@link CanonicalPropertySchema}.
+ */
+export type CanonicalObjectSchemaProperty = CanonicalPropertySchema;
+
 /**
  * The canonical representation of the schema of a specific property.
  */
-export type CanonicalObjectSchemaProperty = {
+export type CanonicalPropertySchema = {
   name: string;
   type: PropertyTypeName;
   optional: boolean;
@@ -140,25 +141,11 @@ export type ObjectSchema = {
 
 /**
  * The properties of a Realm object defined in {@link ObjectSchema.properties} where
- * the key is the name of the property and the value is its type.
+ * each key is the name of a property and the value is its type in the form of a
+ * {@link PropertySchemaShorthand} or {@link PropertySchema}.
  */
 export type PropertiesTypes = {
   [key: string]: PropertySchema | PropertySchemaShorthand;
-};
-
-// TODO: When we rename this to PropertySchema, use the PropertySchema type already
-//       defined further below in this file which has the correct documentation.
-/**
- * The relaxed representation of the schema of a specific property.
- */
-export type ObjectSchemaProperty = {
-  type: PropertyType;
-  objectType?: string; // TODO: Rename to elementType
-  property?: string;
-  default?: unknown;
-  optional?: boolean;
-  indexed?: boolean;
-  mapTo?: string;
 };
 
 /**
@@ -182,8 +169,15 @@ export type ObjectSchemaProperty = {
  * "int?"
  * "int[]"
  * "int?[]"
+ *
+ * @see {@link PropertySchema} for using the object representation of a property schema.
  */
 export type PropertySchemaShorthand = string;
+
+/**
+ * @deprecated Will be removed in v13.0.0. Please use {@link PropertySchema}.
+ */
+export type ObjectSchemaProperty = PropertySchema;
 
 /**
  * The schema for specifying the type of a specific Realm object property.
@@ -197,6 +191,9 @@ export type PropertySchemaShorthand = string;
  *   set to `null` and cannot be made non-optional.
  * - Properties declared as the primary key in {@link ObjectSchema.primaryKey} are always
  *   indexed. In such cases, they cannot be made non-indexed.
+ *
+ * @see {@link PropertySchemaShorthand} for a shorthand representation of a property
+ * schema.
  *
  * @see {@link PropertySchemaStrict} for a precise type definition of the requirements
  * with the allowed combinations. This type is less strict in order to provide a more
