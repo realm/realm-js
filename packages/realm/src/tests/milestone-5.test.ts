@@ -21,13 +21,13 @@ import { inspect } from "node:util";
 import { Decimal128, ObjectId, UUID } from "bson";
 
 import { List, Realm, Object as RealmObject } from "../index";
-import { ObjectSchemaProperty, PropertyTypeName } from "../schema";
+import { PropertySchema, PropertyTypeName } from "../schema";
 import { RealmContext, closeRealm, generateTempRealmPath } from "./utils";
 
 type ValueFunction<T = unknown> = (realm: Realm) => T;
 type TestFunction<T = unknown> = (result: unknown, input: T) => boolean;
 type PropertyTest<T = unknown> = [T | ValueFunction<T>, T | TestFunction<T>];
-type PropertySuite = [PropertyTypeName | ObjectSchemaProperty, (unknown | PropertyTest)[]];
+type PropertySuite = [PropertyTypeName | PropertySchema, (unknown | PropertyTest)[]];
 
 /**
   Int = 0,

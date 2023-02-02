@@ -49,7 +49,7 @@ const mermaid: FormatterFunction = (realm: Realm) => {
     const name = objectSchema.name;
     writer(`class ${name} {`);
     Object.keys(objectSchema.properties).forEach((propertyName) => {
-      const prop = objectSchema.properties[propertyName] as Realm.ObjectSchemaProperty;
+      const prop = objectSchema.properties[propertyName] as Realm.PropertySchema;
       if (collectionTypes.includes(prop.type) || prop.type === "object") {
         const objectType = prop.objectType ?? "__unknown__";
         if (!primitiveTypes.includes(objectType)) {
