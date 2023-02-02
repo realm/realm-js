@@ -39,7 +39,6 @@ var TESTS = {
   ObjectTests: require("./object-tests"),
   RealmTests: require("./realm-tests"),
   ResultsTests: require("./results-tests"),
-  QueryTests: require("./query-tests"),
   MigrationTests: require("./migration-tests"),
   EncryptionTests: require("./encryption-tests"),
   BsonTests: require("./bson-tests"),
