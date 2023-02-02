@@ -187,7 +187,7 @@ describe("Realm#constructor", () => {
     });
 
     function expectInvalidProperty(
-      badProperty: Realm.PropertyType | Realm.ObjectSchemaProperty,
+      badProperty: Realm.PropertySchemaShorthand | Realm.PropertySchema,
       message: string,
       addMessagePrefix = true,
     ) {

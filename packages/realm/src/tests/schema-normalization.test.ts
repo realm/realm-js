@@ -19,7 +19,7 @@
 import { expect } from "chai";
 import { inspect } from "util";
 
-import { CanonicalObjectSchemaProperty, ObjectSchemaProperty } from "../schema";
+import { CanonicalPropertySchema, PropertySchema, PropertySchemaShorthand } from "../schema";
 import { extractGeneric, normalizePropertySchema } from "../schema/normalize";
 
 const OBJECT_NAME = "MyObject";
@@ -946,8 +946,8 @@ describe("extractGeneric", () => {
 });
 
 function itNormalizes(
-  input: string | ObjectSchemaProperty,
-  expected: Partial<CanonicalObjectSchemaProperty>,
+  input: PropertySchema | PropertySchemaShorthand,
+  expected: Partial<CanonicalPropertySchema>,
   { isPrimaryKey } = { isPrimaryKey: false },
 ): void {
   it(`normalizes ${inspect(input, { compact: true, breakLength: Number.MAX_SAFE_INTEGER })} ${
@@ -977,7 +977,7 @@ function itNormalizes(
 }
 
 function itThrowsWhenNormalizing(
-  input: string | ObjectSchemaProperty,
+  input: PropertySchema | PropertySchemaShorthand,
   errMessage: string,
   { isPrimaryKey } = { isPrimaryKey: false },
 ): void {

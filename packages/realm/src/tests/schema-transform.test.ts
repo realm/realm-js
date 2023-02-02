@@ -22,9 +22,9 @@ import { expect } from "chai";
 import { fromBindingPropertySchema } from "../schema/from-binding";
 import { toBindingPropertySchema } from "../schema/to-binding";
 import { normalizePropertySchema } from "../schema/normalize";
-import { ObjectSchemaProperty } from "../schema";
+import { PropertySchema } from "../schema";
 
-const TEST_CASES: (string | ObjectSchemaProperty)[] = [
+const TEST_CASES: (string | PropertySchema)[] = [
   "string",
   "string?",
   "string?[]",

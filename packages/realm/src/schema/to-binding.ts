@@ -22,7 +22,7 @@ import {
   PropertyType as BindingPropertyType,
   TableType,
 } from "../binding";
-import { CanonicalObjectSchema, CanonicalObjectSchemaProperty, PropertyTypeName, assert } from "../internal";
+import { CanonicalObjectSchema, CanonicalPropertySchema, PropertyTypeName, assert } from "../internal";
 
 /** @internal */
 export const TYPE_MAPPINGS: Record<PropertyTypeName, BindingPropertyType> = {
@@ -91,7 +91,7 @@ export function toBindingObjectSchema(schema: CanonicalObjectSchema): BindingObj
 }
 
 /** @internal */
-export function toBindingPropertySchema(name: string, schema: CanonicalObjectSchemaProperty): BindingProperty {
+export function toBindingPropertySchema(name: string, schema: CanonicalPropertySchema): BindingProperty {
   if (name !== schema.name) {
     // TODO: Consider if this API should be used to support declaring an alias?
     throw new Error("The key of a property must match its name property");
@@ -111,7 +111,7 @@ export function toBindingPropertySchema(name: string, schema: CanonicalObjectSch
 }
 
 /** @internal */
-export function toBindingPropertyType(schema: CanonicalObjectSchemaProperty): BindingPropertyType {
+export function toBindingPropertyType(schema: CanonicalPropertySchema): BindingPropertyType {
   let type = TYPE_MAPPINGS[schema.type];
   let isNullable = schema.optional;
   if (type === BindingPropertyType.LinkingObjects) {
