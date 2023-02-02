@@ -274,7 +274,7 @@ function getSchema(useFlexibleSync: boolean) {
     environment.missingServer,
     `client reset handling (${getPartialTestTitle(useFlexibleSync)} sync)`,
     function () {
-      this.timeout(100 * 1000); // client reset with flexible sync can take quite some time
+      this.longTimeout(); // client reset with flexible sync can take quite some time
       importAppBefore(useFlexibleSync ? "with-db-flx" : "with-db");
       authenticateUserBefore();
 
@@ -511,7 +511,7 @@ function getSchema(useFlexibleSync: boolean) {
         //       of the Realm will be downloaded (resync)
         // (ii)  two callback will be called, while the sync error handler is not
         // (iii) after the reset, the Realm can be used as before
-        this.timeout(900 * 1000);
+        this.longTimeout();
         const clientResetBefore = (realm: Realm) => {
           expect(realm.schema.length).to.equal(2);
         };

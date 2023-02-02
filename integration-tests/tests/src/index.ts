@@ -18,6 +18,11 @@
 
 console.log("Loading Realm Integration Tests");
 
+/**
+ * Use the `longTimeout` context variable to override this.
+ */
+const DEFAULT_LONG_TIMEOUT = 10 * 1000; // 10s
+
 if (!global.fs) {
   throw new Error("Expected 'fs' to be available as a global");
 }
@@ -32,8 +37,8 @@ if (!global.environment || typeof global.environment !== "object") {
 
 // Patch in a function that can skip running tests in specific environments
 import { testSkipIf, suiteSkipIf } from "./utils/skip-if";
-global.describe.skipIf = suiteSkipIf;
-global.it.skipIf = testSkipIf;
+describe.skipIf = suiteSkipIf;
+it.skipIf = testSkipIf;
 
 afterEach(() => {
   // Trigger garbage collection after every test, if exposed by the environment.
@@ -44,7 +49,22 @@ afterEach(() => {
 
 // Using `require` instead of `import` here to ensure the Mocha globals (including `skipIf`) are set
 
-describe("Test Harness", () => {
+describe("Test Harness", function (this: Mocha.Suite) {
+  /**
+   * @see [typings.d.ts](./typings.d.ts) for documentation.
+   */
+  function longTimeout(this: Mocha.Context | Mocha.Suite) {
+    this.timeout(environment.longTimeout || DEFAULT_LONG_TIMEOUT); // 5 minutes
+  }
+  // Patching the Suite and Context with a longTimeout method
+  // We cannot simply `import { Suite, Context } from "mocha"` here,
+  // since Mocha Remote client brings its own classes
+  const Suite = this.constructor as typeof Mocha.Suite;
+  const Context = this.ctx.constructor as typeof Mocha.Context;
+  Suite.prototype.longTimeout = longTimeout;
+  Context.prototype.longTimeout = longTimeout;
+
+  // Test importing an app
   require("./utils/import-app.test");
 });
 
