@@ -92,14 +92,14 @@ public:
     };
 
     // These values are overridden at runtime - from app.hpp
-    static inline std::string platform = "unknown-platform";
+    static inline std::string platform = "unknown";
     static inline std::string platform_version = "?.?.?";
     static inline std::string sdk_version = "?.?.?";
-    static inline std::string sdk = "unknown-sdk";
-    static inline std::string cpu_arch = "unknown-cpu-arch";
-    static inline std::string device_name = "unknown-device-name";
+    static inline std::string sdk = "unknown";
+    static inline std::string cpu_arch = "unknown";
+    static inline std::string device_name = "unknown";
     static inline std::string device_version = "?.?.?";
-    static inline std::string framework_name = "unknown-framework-name";
+    static inline std::string framework_name = "unknown";
     static inline std::string framework_version = "?.?.?";
 
     static void constructor(ContextType, ObjectType, Arguments&);
