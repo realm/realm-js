@@ -17,12 +17,15 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
+import { toASCII } from "punycode";
 import Realm from "realm";
 import { authenticateUserBefore, importAppBefore, openRealmBefore } from "../../hooks";
 import { expectDecimalEqual } from "../../utils/comparisons";
 import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
 
 describe.skipIf(environment.missingServer, "Type roundtrip tests", () => {
+  importAppBefore("with-db");
+  authenticateUserBefore();
   describe("roundtrip of UUID object", function () {
     const { UUID } = Realm.BSON;
 
@@ -44,24 +47,10 @@ describe.skipIf(environment.missingServer, "Type roundtrip tests", () => {
       };
     }
 
-    this.timeout(25 * 1000);
-    importAppBefore("with-db");
-    authenticateUserBefore();
-    const flexibleSync = false;
-
     openRealmBefore({
       schema: [UUIDObject],
-      sync: flexibleSync ? { flexible: true } : { partitionValue: "uuid-test" },
+      sync: { partitionValue: "uuid-test" },
     });
-
-    async function setupTest(realm: Realm) {
-      if (flexibleSync) {
-        await realm.subscriptions.update((mutableSubs) => {
-          mutableSubs.add(realm.objects("MixedClass"));
-        });
-        await realm.subscriptions.waitForSynchronization();
-      }
-    }
 
     const uuidTestArray = [
       new UUID("183f85f5-9fbc-4010-8566-85b9b2a91464"),
@@ -69,9 +58,7 @@ describe.skipIf(environment.missingServer, "Type roundtrip tests", () => {
       new UUID("383f85f5-9fbc-4010-8566-85b9b2a91464"),
     ];
 
-    it("writes", async function (this: RealmContext) {
-      await setupTest(this.realm);
-
+    it("writes", function (this: RealmContext) {
       this.realm.write(() => {
         this.realm.create("UUIDObject", {
           _id: new UUID("a2a26ae1-3ba0-4c2c-a730-52f7e0825b85"),
@@ -92,9 +79,7 @@ describe.skipIf(environment.missingServer, "Type roundtrip tests", () => {
 
     itUploadsDeletesAndDownloads();
 
-    it("reads", async function (this: RealmContext) {
-      await setupTest(this.realm);
-
+    it("reads", function (this: RealmContext) {
       expect(this.realm.objects(UUIDObject).length).equals(3);
 
       const objects = this.realm.objects(UUIDObject);
@@ -150,24 +135,10 @@ describe.skipIf(environment.missingServer, "Type roundtrip tests", () => {
       };
     }
 
-    this.timeout(25 * 1000);
-    importAppBefore("with-db");
-    authenticateUserBefore();
-    const flexibleSync = false;
-
     openRealmBefore({
       schema: [DictionaryObject],
-      sync: flexibleSync ? { flexible: true } : { partitionValue: "dictionary-test" },
+      sync: { partitionValue: "dictionary-test" },
     });
-
-    async function setupTest(realm: Realm) {
-      if (flexibleSync) {
-        await realm.subscriptions.update((mutableSubs) => {
-          mutableSubs.add(realm.objects(DictionaryObject));
-        });
-        await realm.subscriptions.waitForSynchronization();
-      }
-    }
 
     const expectedObject = {
       _id: 1,
@@ -176,9 +147,7 @@ describe.skipIf(environment.missingServer, "Type roundtrip tests", () => {
       columnFloatDictionary: { x: 3.14 },
     };
 
-    it("writes", async function (this: RealmContext) {
-      await setupTest(this.realm);
-
+    it("writes", function (this: RealmContext) {
       this.realm.write(() => {
         this.realm.create(DictionaryObject, expectedObject);
       });
@@ -186,9 +155,7 @@ describe.skipIf(environment.missingServer, "Type roundtrip tests", () => {
 
     itUploadsDeletesAndDownloads();
 
-    it("reads", async function (this: RealmContext) {
-      await setupTest(this.realm);
-
+    it("reads", function (this: RealmContext) {
       const dictionaryObjects = this.realm.objects(DictionaryObject);
       expect(dictionaryObjects.length).equals(1, "There should be 1 object");
 
@@ -205,6 +172,49 @@ describe.skipIf(environment.missingServer, "Type roundtrip tests", () => {
       Object.entries(expectedObject.columnStringDictionary).forEach(([property, expectedValue]) => {
         expect(dictionaryObject.columnStringDictionary[property]).equal(expectedValue);
       });
+    });
+  });
+
+  describe("roundtrip of Set object", function () {
+    class SetObject extends Realm.Object {
+      _id!: Realm.Types.Int;
+      numbers!: Realm.Set<Realm.Types.Int>;
+
+      static schema = {
+        name: "SyncedNumbers",
+        primaryKey: "_id",
+        properties: {
+          _id: "int",
+          numbers: "int<>",
+        },
+      };
+    }
+
+    openRealmBefore({
+      schema: [SetObject],
+      sync: { partitionValue: "dictionary-test" },
+    });
+
+    const expectedObject = {
+      _id: 1,
+      numbers: [2],
+    };
+
+    it("writes", function (this: RealmContext) {
+      this.realm.write(() => {
+        this.realm.create(SetObject, expectedObject);
+      });
+    });
+
+    itUploadsDeletesAndDownloads();
+
+    it("reads", function (this: RealmContext) {
+      const setObjects = this.realm.objects(SetObject);
+      expect(setObjects.length).equals(1, "There should be 1 object");
+
+      const setObject = setObjects[0];
+      expect(setObject._id).equals(1);
+      expect(setObject.numbers.has(2)).to.be.true;
     });
   });
 });
