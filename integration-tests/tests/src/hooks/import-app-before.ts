@@ -24,9 +24,9 @@ export function importAppBefore(
   replacements?: TemplateReplacements,
   logLevel: Realm.App.Sync.LogLevel = (environment.syncLogLevel as Realm.App.Sync.LogLevel) || "warn",
 ): void {
-  before(async function (this: Partial<AppContext> & Mocha.Context) {
+  before(importAppBefore.name, async function (this: Partial<AppContext> & Mocha.Context) {
     // Importing an app might take up to 5 minutes when the app has a MongoDB Atlas service enabled.
-    this.timeout(5 * 60 * 1000);
+    this.longTimeout();
     if (this.app) {
       throw new Error("Unexpected app on context, use only one importAppBefore per test");
     } else {
@@ -49,7 +49,7 @@ export function importAppBefore(
 
   // Delete our app after we have finished, otherwise the server can slow down
   // (in the case of flexible sync, with lots of apps with subscriptions created)
-  after(async function (this: Partial<AppContext> & Mocha.Context) {
+  after("deleteAppAfter", async function (this: Partial<AppContext> & Mocha.Context) {
     if (environment.preserveAppAfterRun) return;
     if (this.app) {
       await deleteApp(this.app.id);

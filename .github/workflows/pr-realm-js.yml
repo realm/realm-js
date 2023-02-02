@@ -189,6 +189,7 @@ jobs:
     env:
       REALM_DISABLE_ANALYTICS: 1
       MOCHA_REMOTE_TIMEOUT: 60000
+      LONG_TIMEOUT: 300000 # 5 minutes
       REALM_BASE_URL: ${{ secrets.REALM_QA_BASE_URL }}
       REALM_PUBLIC_KEY: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
       REALM_PRIVATE_KEY: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
@@ -325,7 +326,7 @@ jobs:
 
       - name: Create Mocha Env
         id: mocha-env
-        run: echo "::set-output name=name::syncLogLevel=warn,realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ steps.deploy-mdb-apps.outputs.clusterName }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}"
+        run: echo "::set-output name=name::syncLogLevel=warn,longTimeout=${{ env.LONG_TIMEOUT }},realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ steps.deploy-mdb-apps.outputs.clusterName }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}"
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ (matrix.variant.os != 'android') && (matrix.variant.os != 'ios') }}

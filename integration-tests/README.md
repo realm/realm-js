@@ -71,6 +71,8 @@ This is controlled via an environment variable:
 
 To set context variables, simply set the environment variable (seperate multiple values with comma `,` and keys from values with equal-sign `=`). You can skip the `=` and value to indicate a `true` boolean value. As an example: To set the value `key1` to `value1` and `key2` to `true`, run with the context environment variable set to `key1=value1,key2`.
 
+See all valid context variables in the `Environment` type declared in [typings.d.ts](./tests/src/typings.d.ts).
+
 Examples of context variables used:
 - `missingServer`: Skip tests that require a running BaaS server.
 - `performance`: Disabled skipping of the "Performance tests" suite.
