@@ -16,7 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-// Following [the internal module pattern](https://medium.com/visual-development/how-to-fix-nasty-circular-dependency-issues-once-and-for-all-in-javascript-typescript-a04c987cf0de)
+/**
+ * @module
+ * We're following [the internal module pattern](https://medium.com/visual-development/how-to-fix-nasty-circular-dependency-issues-once-and-for-all-in-javascript-typescript-a04c987cf0de) to control of the order of code when bundled.
+ */
 
 /** @internal */
 export * from "./debug";
@@ -76,6 +79,10 @@ export * from "./app-services/PushClient";
 export * from "./app-services/MongoClient";
 export * from "./app-services/FunctionsFactory";
 export * from "./app-services/UserProfile";
+export * from "./app-services/BaseSubscriptionSet";
+export * from "./app-services/MutableSubscriptionSet";
+export * from "./app-services/SubscriptionSet";
+export * from "./app-services/Subscription";
 export * from "./app-services/Sync";
 export * from "./app-services/App";
 

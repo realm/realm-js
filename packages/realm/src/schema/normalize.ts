@@ -36,6 +36,7 @@ type PropertyInfo = {
   readonly objectName: string;
   readonly propertyName: string;
   readonly propertySchema: PropertySchema | PropertySchemaShorthand;
+  readonly isPrimaryKey?: boolean;
 };
 
 interface PropertyInfoUsingObject extends PropertyInfo {
@@ -141,10 +142,12 @@ function normalizePropertySchemas(
 ): Record<string, CanonicalPropertySchema> {
   const normalizedSchemas: Record<string, CanonicalPropertySchema> = {};
   for (const propertyName in propertiesSchemas) {
-    normalizedSchemas[propertyName] = normalizePropertySchema(
-      { objectName, propertyName, propertySchema: propertiesSchemas[propertyName] },
-      primaryKey === propertyName,
-    );
+    normalizedSchemas[propertyName] = normalizePropertySchema({
+      objectName,
+      propertyName,
+      propertySchema: propertiesSchemas[propertyName],
+      isPrimaryKey: primaryKey === propertyName,
+    });
   }
 
   return normalizedSchemas;
@@ -153,17 +156,11 @@ function normalizePropertySchemas(
 /**
  * Transform a user-provided property schema into its canonical form.
  */
-export function normalizePropertySchema(info: PropertyInfo, isPrimaryKey = false): CanonicalPropertySchema {
-  const normalizedSchema =
-    typeof info.propertySchema === "string"
-      ? normalizePropertySchemaShorthand(info as PropertyInfoUsingShorthand)
-      : normalizePropertySchemaObject(info as PropertyInfoUsingObject);
-
-  if (isPrimaryKey) {
-    assert(!normalizedSchema.optional, errMessage(info, "Optional properties cannot be used as a primary key."));
-    assert(normalizedSchema.indexed !== false, errMessage(info, "Primary keys must always be indexed."));
-    normalizedSchema.indexed = true;
-  }
+export function normalizePropertySchema(info: PropertyInfo): CanonicalPropertySchema {
+  const isUsingShorthand = typeof info.propertySchema === "string";
+  const normalizedSchema = isUsingShorthand
+    ? normalizePropertySchemaShorthand(info as PropertyInfoUsingShorthand)
+    : normalizePropertySchemaObject(info as PropertyInfoUsingObject);
 
   return normalizedSchema;
 }
@@ -178,7 +175,7 @@ function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): Can
 
   let type = "";
   let objectType: string | undefined;
-  let optional = false;
+  let optional: boolean | undefined;
 
   if (hasCollectionSuffix(propertySchema)) {
     const suffixLength = 2;
@@ -250,11 +247,15 @@ function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): Can
     optional = false;
   }
 
+  if (info.isPrimaryKey) {
+    assert(!optional, errMessage(info, "Optional properties cannot be used as a primary key."));
+  }
+
   const normalizedSchema: CanonicalPropertySchema = {
     name: info.propertyName,
     type: type as PropertyTypeName,
-    optional,
-    indexed: false,
+    optional: !!optional,
+    indexed: !!info.isPrimaryKey,
     mapTo: info.propertyName,
   };
   // Add optional properties only if defined (tests expect no 'undefined' properties)
@@ -270,7 +271,7 @@ function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): Can
 function normalizePropertySchemaObject(info: PropertyInfoUsingObject): CanonicalPropertySchema {
   const { propertySchema } = info;
   const { type, objectType, property, default: defaultValue } = propertySchema;
-  let { optional } = propertySchema;
+  let { optional, indexed } = propertySchema;
 
   assert(type.length > 0, errMessage(info, "'type' must be specified."));
   assertNotUsingShorthand(type, info);
@@ -315,11 +316,17 @@ function normalizePropertySchemaObject(info: PropertyInfoUsingObject): Canonical
     optional = false;
   }
 
+  if (info.isPrimaryKey) {
+    assert(!optional, errMessage(info, "Optional properties cannot be used as a primary key."));
+    assert(indexed !== false, errMessage(info, "Primary keys must always be indexed."));
+    indexed = true;
+  }
+
   const normalizedSchema: CanonicalPropertySchema = {
     name: info.propertyName,
     type: type as PropertyTypeName,
     optional: !!optional,
-    indexed: !!propertySchema.indexed,
+    indexed: !!indexed,
     mapTo: propertySchema.mapTo || info.propertyName,
   };
   // Add optional properties only if defined (tests expect no 'undefined' properties)
@@ -385,7 +392,7 @@ function assertNotUsingShorthand(input: string | undefined, info: PropertyInfo):
  * Get an error message for an invalid property schema.
  */
 function errMessage({ objectName, propertyName }: PropertyInfo, message: string): string {
-  return `Invalid type declaration for property '${objectName}.${propertyName}': ${message}`;
+  return `Invalid type declaration for property '${propertyName}' on '${objectName}': ${message}`;
 }
 
 /**

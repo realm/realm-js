@@ -139,7 +139,7 @@ class JsiAddon extends CppClass {
     }
 
     this.addMethod(
-      new CppCtor(this.name, [new CppVar("jsi::Runtime&", env), new CppVar("jsi::Object", "exports")], {
+      new CppCtor(this.name, [new CppVar("jsi::Runtime&", env), new CppVar("jsi::Object&", "exports")], {
         mem_inits: this.mem_inits,
         body: `
             ${this.exports
@@ -161,7 +161,7 @@ class JsiAddon extends CppClass {
                 std::bind(&${this.name}::injectInjectables, this, _1, _2, _3, _4)
             ));
 
-            _env.global().setProperty(_env, "__RealmFuncs", std::move(exports));
+            _env.global().setProperty(_env, "__RealmFuncs", exports);
             `,
       }),
     );
@@ -287,7 +287,7 @@ function convertPrimToJsi(addon: JsiAddon, type: string, expr: string): string {
     case "Status":
       return `([&] (const Status& status) {
                 REALM_ASSERT(!status.is_ok()); // should only get here with errors
-                return jsi::JSError(_env, status.reason()).value();
+                return jsi::JSError(_env, status.reason()).value().getObject(_env);
               }(${expr}))`;
   }
   assert.fail(`unexpected primitive type '${type}'`);
@@ -304,7 +304,7 @@ function convertPrimFromJsi(addon: JsiAddon, type: string, expr: string): string
     case "double":
       return `(${expr}).asNumber()`;
     case "float":
-      return `(${expr}).asObject(_env).getProperty(_env, ${addon.getPropId("value")}).asNumber()`;
+      return `float((${expr}).asObject(_env).getProperty(_env, ${addon.getPropId("value")}).asNumber())`;
 
     case "int32_t":
       return `int32_t((${expr}).asNumber())`;
@@ -349,15 +349,16 @@ function convertPrimFromJsi(addon: JsiAddon, type: string, expr: string): string
       const mixed = new Primitive("Mixed");
       return `
         ([&] (auto&& arg) -> ${new Primitive(type).toCpp()} {
-            if (arg.isObject()) {
-                auto obj = FWD(arg).getObject(_env);
+            jsi::Value v = FWD(arg);
+            if (v.isObject()) {
+                auto obj = std::move(v).getObject(_env);
                 const bool isArray = obj.isArray(_env);
-                jsi::Value v = std::move(obj); // move back into a value
+                v = std::move(obj); // move back into a value
                 if (isArray) {
                   return ${convertFromJsi(addon, new Template("std::vector", [mixed]), "std::move(v)")};
                 }
             }
-            return ${convertFromJsi(addon, mixed, "FWD(arg)")};
+            return ${convertFromJsi(addon, mixed, "std::move(v)")};
         })(${expr})`;
     }
 
@@ -625,6 +626,8 @@ function convertFromJsi(addon: JsiAddon, type: Type, expr: string): string {
         {
             _thread.assertOnSameThread();
             auto& _env = ${addon.get()}->m_rt;
+            // TODO consider not flushing when calling back into JS from withing a JS->CPP call.
+            FlushMicrotaskQueueGuard guard;
             return ${c(
               type.ret,
               `_cb->call(
@@ -945,6 +948,39 @@ class JsiCppDecls extends CppDecls {
       }),
     );
 
+    // Hermes doesn't (always?) have WeakRef support so expose some helpers to let us emulate it.
+    // If we remove this, also remove the WeakObjectWrapper in realm_js_jsi_helpers.h
+    {
+      this.free_funcs.push(
+        this.addon.addFunc("createWeakRef", {
+          body: `
+            if (count != 1)
+                throw jsi::JSError(_env, "expected 1 argument");
+            if (!args[0].isObject())
+                throw jsi::JSError(_env, "expected an object");
+            return jsi::Object::createFromHostObject(
+                _env,
+                std::make_shared<WeakObjectWrapper>(_env, args[0].getObject(_env))
+            );
+          `
+        })
+      );
+      this.free_funcs.push(
+        this.addon.addFunc("lockWeakRef", {
+          body: `
+            if (count != 1)
+                throw jsi::JSError(_env, "expected 1 argument");
+            if (!args[0].isObject())
+                throw jsi::JSError(_env, "expected an object");
+            auto obj = args[0].getObject(_env);
+            if (!obj.isHostObject<WeakObjectWrapper>(_env))
+                throw jsi::JSError(_env, "expected a WeakObjectWrapper");
+            return std::move(obj).getHostObject<WeakObjectWrapper>(_env)->ref.lock(_env);
+          `
+        })
+      );
+    }
+
     this.addon.generateMembers();
   }
 
@@ -968,6 +1004,10 @@ export function generate({ spec, file: makeFile }: TemplateContext): void {
       #include <jsi/jsi.h>
       #include <realm_js_jsi_helpers.h>
 
+      namespace realm::js {
+      std::function<void()> flush_ui_queue;
+      }
+
       // Using all-caps JSI to avoid risk of conflicts with jsi namespace from fb.
       namespace realm::js::JSI {
       namespace {
@@ -977,6 +1017,29 @@ export function generate({ spec, file: makeFile }: TemplateContext): void {
 
   out(`
         } // namespace
+
+        extern "C" {
+        void realm_jsi_invalidate_caches() {
+            // Close all cached Realms
+            realm::_impl::RealmCoordinator::clear_all_caches();
+            // Clear the Object Store App cache, to prevent instances from using a context that was released
+            realm::app::App::clear_cached_apps();
+            // Blow away the addon state.
+            RealmAddon::self.reset();
+        }
+        void realm_jsi_init(jsi::Runtime& rt, jsi::Object& exports, std::function<void()> flush_ui_queue) {
+            realm_jsi_invalidate_caches();
+            js::flush_ui_queue = flush_ui_queue;
+            RealmAddon::self = std::make_unique<RealmAddon>(rt, exports);
+        }
+        void realm_jsi_close_sync_sessions() {
+            // Force all sync sessions to close immediately. This prevents the new JS thread
+            // from opening a new sync session while the old one is still active when reloading
+            // in dev mode.
+            realm::app::App::close_all_sync_sessions();
+        }
+        } // extern "C"
+
         } // namespace realm::js::JSI
     `);
 }

@@ -17,7 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
-  Realm, // Used by TS docs
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Used by TS docs
+  Realm,
   RealmObject,
 } from "../internal";
 
@@ -64,9 +65,6 @@ export type RelationshipPropertyTypeName = "object" | "linkingObjects";
  * and cannot be a {@link PropertyTypeName}. (Unicode is supported.)
  */
 export type UserTypeName = string;
-
-// TODO: Can be removed if/when integration tests no longer use it.
-export type PropertyType = UserTypeName | PropertyTypeName;
 
 /**
  * The list of object schemas belonging to a specific {@link Realm}.

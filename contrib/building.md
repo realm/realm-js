@@ -103,10 +103,6 @@ Next you need to define some environment variables. The best way to do this is i
 # Location of your Android SDK
 export ANDROID_SDK_ROOT=$HOME/Library/Android/sdk
 
-# Location of your Android NDK
-export ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/23.2.8568313
-export ANDROID_NDK=$ANDROID_NDK_HOME
-
 # Other required locations
 export ANDROID_SDK_HOME=$HOME/.android
 export ANDROID_EMULATOR_HOME=$HOME/.android
@@ -122,7 +118,7 @@ Then you can install the SDK and NDK by running: (you can alternatively do this 
 
 ```sh
 sdkmanager --install "platforms;android-31"
-sdkmanager --install "ndk;23.2.8568313"
+sdkmanager --install "ndk;23.1.7779620"
 ```
 
 #### Optional extras

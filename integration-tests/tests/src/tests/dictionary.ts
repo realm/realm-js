@@ -33,7 +33,7 @@ describe("Dictionary", () => {
       schema: [
         {
           name: "Item",
-          properties: { dict: "{}" },
+          properties: { dict: "mixed{}" },
         },
         {
           name: "Person",
@@ -236,7 +236,7 @@ describe("Dictionary", () => {
       schema: [
         {
           name: "Item",
-          properties: { dict: "{}" },
+          properties: { dict: "mixed{}" },
         },
       ],
     });

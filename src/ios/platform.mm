@@ -35,7 +35,7 @@ static NSString *error_description(NSError *error) {
 
 namespace realm {
 
-std::string default_realm_file_directory()
+std::string JsPlatformHelpers::default_realm_file_directory()
 {
     std::string ret;
     @autoreleasepool {
@@ -66,7 +66,7 @@ std::string default_realm_file_directory()
     return ret;
 }
 
-void ensure_directory_exists_for_file(const std::string &fileName)
+void JsPlatformHelpers::ensure_directory_exists_for_file(const std::string &fileName)
 {
     @autoreleasepool {
         NSString *docsDir = [@(fileName.c_str()) stringByDeletingLastPathComponent];
@@ -83,7 +83,7 @@ void ensure_directory_exists_for_file(const std::string &fileName)
     }
 }
 
-void copy_bundled_realm_files()
+void JsPlatformHelpers::copy_bundled_realm_files()
 {
     @autoreleasepool {
         NSString *docsDir = @(default_realm_file_directory().c_str());
@@ -110,7 +110,7 @@ void copy_bundled_realm_files()
     }
 }
 
-void remove_realm_files_from_directory(const std::string &directory)
+void JsPlatformHelpers::remove_realm_files_from_directory(const std::string &directory)
 {
     @autoreleasepool {
         NSFileManager *manager = [NSFileManager defaultManager];
@@ -131,7 +131,7 @@ void remove_realm_files_from_directory(const std::string &directory)
     }
 }
 
-void remove_file(const std::string &path)
+void JsPlatformHelpers::remove_file(const std::string &path)
 {
     @autoreleasepool {
         NSFileManager *manager = [NSFileManager defaultManager];
@@ -146,13 +146,13 @@ void remove_file(const std::string &path)
     }
 }
 
-void remove_directory(const std::string &path)
+void JsPlatformHelpers::remove_directory(const std::string &path)
 {
     remove_file(path); // works for directories too
 }
 
 
-void print(const char* fmt, ...)
+void JsPlatformHelpers::print(const char* fmt, ...)
 {
     va_list vl;
     va_start(vl, fmt);

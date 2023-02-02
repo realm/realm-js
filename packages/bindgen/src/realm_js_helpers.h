@@ -3,10 +3,13 @@
 #include "realm/binary_data.hpp"
 #include "realm/object-store/object_store.hpp"
 #include "realm/object-store/sync/sync_session.hpp"
+#include "realm/object_id.hpp"
 #include "realm/query.hpp"
 #include "realm/sync/client_base.hpp"
 #include "realm/sync/protocol.hpp"
+#include "realm/sync/subscriptions.hpp"
 #include "realm/util/base64.hpp"
+#include "realm/util/file.hpp"
 #include "realm/util/logger.hpp"
 #include <condition_variable>
 #include <exception>
@@ -222,6 +225,29 @@ struct Helpers {
     // Instead, we are exposing a function that takes a mutable lvalue reference and moves from it.
     static SharedRealm consume_thread_safe_reference_to_shared_realm(ThreadSafeReference& tsr) {
         return Realm::get_shared_realm(std::move(tsr));
+    }
+
+    static bool file_exists(const StringData& path) {
+        return realm::util::File::exists(path);
+    }
+
+    static bool erase_subscription(sync::MutableSubscriptionSet& subs, const sync::Subscription& sub_to_remove) {
+        auto it = std::find_if(subs.begin(), subs.end(), [&](const auto& sub) {
+            return sub.id == sub_to_remove.id;
+        });
+
+        if (it == subs.end()) {
+            return false;
+        }
+        subs.erase(it);
+
+        return true;
+    }
+
+    static std::string get_results_description(const Results& results) {
+        const auto& query = results.get_query();
+
+        return query.get_description() + ' ' + results.get_descriptor_ordering().get_description(query.get_table());
     }
 };
 

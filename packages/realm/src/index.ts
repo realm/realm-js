@@ -24,6 +24,7 @@ export {
   Credentials,
   Dictionary,
   List,
+  MutableSubscriptionSet,
   OrderedCollection,
   ProgressRealmPromise,
   Realm,
@@ -31,6 +32,9 @@ export {
   RealmSet as Set,
   Results,
   SessionStopPolicy,
+  Subscription,
+  SubscriptionSet,
+  SubscriptionsState,
   UpdateMode,
   User,
   Types,
@@ -41,12 +45,15 @@ export type {
   CollectionChangeCallback,
   CollectionChangeSet,
   Configuration,
+  FlexibleSyncConfiguration,
   ObjectChangeCallback,
   ObjectChangeSet,
   ObjectSchema,
   PropertySchema,
+  PartitionSyncConfiguration,
   RealmEventName,
   RealmListenerCallback,
+  SubscriptionOptions,
 } from "./internal";
 
 // Exporting default for backwards compatibility

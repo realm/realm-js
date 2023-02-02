@@ -25,11 +25,18 @@ import pkg from "./package.json" assert { type: "json" };
 export default [
   {
     input: "src/node/index.ts",
-    output: {
-      file: pkg.main,
-      format: "cjs",
-      sourcemap: true,
-    },
+    output: [
+      {
+        file: pkg.main,
+        format: "cjs",
+        sourcemap: true,
+      },
+      {
+        file: pkg.module,
+        format: "esm",
+        sourcemap: true,
+      },
+    ],
     plugins: [
       replace({
         preventAssignment: true,
@@ -39,10 +46,10 @@ export default [
         },
       }),
       typescript({
-        tsconfig: "tsconfig.node.json",
+        tsconfig: "src/node/tsconfig.json",
       }),
     ],
-    external: ["node:module", "node:fs", "undici", "bson", "debug"],
+    external: ["bson", "debug", "node:module", "node:fs", "node:path", "node:http", "node:https"],
   },
   {
     input: "src/react-native/index.ts",
@@ -52,11 +59,18 @@ export default [
       sourcemap: true,
     },
     plugins: [
+      replace({
+        preventAssignment: true,
+        delimiters: ["", ""],
+        values: {
+          '"../generated/ts/native.mjs"': '"../generated/ts/native-rn.mjs"',
+        },
+      }),
       typescript({
-        tsconfig: "tsconfig.react-native.json",
+        tsconfig: "src/react-native/tsconfig.json",
       }),
     ],
-    external: ["bson", "debug"],
+    external: ["bson", "debug", "react-native", "path-browserify"],
   },
   {
     input: "src/index.ts",

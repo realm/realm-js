@@ -52,7 +52,7 @@ describe("Milestone #4", () => {
       expect(person.name).equals("Alice");
     });
 
-    it("filters on placeholded strings", function (this: RealmContext) {
+    it("filters on placeholder strings", function (this: RealmContext) {
       const results = this.realm.objects<Person>("Person").filtered("name == $0", "Alice");
       expect(results).instanceOf(Realm.Results);
       expect(results.length).equals(1);
@@ -60,7 +60,7 @@ describe("Milestone #4", () => {
       expect(person.name).equals("Alice");
     });
 
-    it("filters on placeholded ints", function (this: RealmContext) {
+    it("filters on placeholder ints", function (this: RealmContext) {
       const results = this.realm.objects<Person>("Person").filtered("age > $0", 10);
       expect(results).instanceOf(Realm.Results);
       expect(results.length).equals(2);

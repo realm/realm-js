@@ -15,14 +15,82 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+
 import * as network from "../platform/network";
 
-//import { assert, binding, extendDebug } from "../internal";
+import { binding, extendDebug } from "../internal";
 
-//const debug = extendDebug("network");
+const debug = extendDebug("network");
+
+const HTTP_METHOD: Record<binding.HttpMethod, string> = {
+  [binding.HttpMethod.get]: "get",
+  [binding.HttpMethod.post]: "post",
+  [binding.HttpMethod.put]: "put",
+  [binding.HttpMethod.patch]: "patch",
+  [binding.HttpMethod.del]: "delete",
+};
+
+function flattenHeaders(headers: Headers) {
+  const result: Record<string, string> = {};
+  headers.forEach((value: string, key: string) => {
+    result[key] = value;
+  });
+  return result;
+}
+
+function createTimeoutSignal(timeoutMs: bigint | undefined) {
+  if (typeof timeoutMs === "bigint") {
+    const controller = new AbortController();
+    // Call abort after a specific number of milliseconds
+    const timeout = setTimeout(() => {
+      controller.abort();
+    }, Number(timeoutMs));
+    return {
+      signal: controller.signal,
+      cancelTimeout: () => {
+        clearTimeout(timeout);
+      },
+    };
+  } else {
+    return {
+      signal: undefined,
+      cancelTimeout: () => {
+        /* No-op */
+      },
+    };
+  }
+}
 
 network.inject({
   async fetch(request): Promise<network.Response> {
-    throw new Error("Not implemented");
+    debug("requesting", request);
+    const { signal, cancelTimeout } = createTimeoutSignal(request.timeoutMs);
+    try {
+      const response = await fetch(request.url, {
+        body: request.body,
+        method: HTTP_METHOD[request.method],
+        headers: request.headers,
+        signal,
+        // @see https://github.com/realm/realm-js/pull/4155 for context
+        reactNative: { textStreaming: true },
+      } as RequestInit); // Need the type assertion to allow adding the `reactNative` property
+      const responseHeaders = flattenHeaders(response.headers);
+      debug("responded", {
+        status: response.status,
+        statusText: response.statusText,
+        headers: responseHeaders,
+      });
+      const decodedBody = await response.text();
+      return {
+        body: decodedBody,
+        headers: responseHeaders,
+        httpStatusCode: response.status,
+        // TODO: Determine if we want to set this differently
+        customStatusCode: 0,
+      };
+    } finally {
+      // Whatever happens, cancel any timeout
+      cancelTimeout();
+    }
   },
 });

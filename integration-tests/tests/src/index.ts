@@ -27,8 +27,8 @@ afterEach(() => {
   }
 });
 
-import "./utils/import-app.test";
-import "./utils/chai-plugin.test";
+import "./utils/import-app.test.ts";
+import "./utils/chai-plugin.test.ts";
 
 import "./tests";
-//import "./performance-tests";
+import "./performance-tests";

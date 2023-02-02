@@ -170,6 +170,20 @@ describe("normalizePropertySchema", () => {
       objectType: "Person",
       optional: true,
     });
+
+    // -------------------------
+    // Indexed & Primary Keys
+    // -------------------------
+
+    itNormalizes(
+      "string",
+      {
+        type: "string",
+        indexed: true,
+        optional: false,
+      },
+      { isPrimaryKey: true },
+    );
   });
 
   // ------------------------------------------------------------------------
@@ -234,6 +248,14 @@ describe("normalizePropertySchema", () => {
       "linkingObjects",
       "To define an inverse relationship, use { type: 'linkingObjects', objectType: 'MyObjectType', property: 'myObjectTypesProperty' }",
     );
+
+    // -------------------------
+    // Indexed & Primary Keys
+    // -------------------------
+
+    itThrowsWhenNormalizing("string?", "Optional properties cannot be used as a primary key.", { isPrimaryKey: true });
+
+    itThrowsWhenNormalizing("mixed", "Optional properties cannot be used as a primary key.", { isPrimaryKey: true });
   });
 
   // ------------------------------------------------------------------------
@@ -623,6 +645,48 @@ describe("normalizePropertySchema", () => {
         optional: false,
       },
     );
+
+    // -------------------------
+    // Indexed & Primary Keys
+    // -------------------------
+
+    itNormalizes(
+      {
+        type: "string",
+      },
+      {
+        type: "string",
+        indexed: true,
+        optional: false,
+      },
+      { isPrimaryKey: true },
+    );
+
+    itNormalizes(
+      {
+        type: "string",
+        indexed: true,
+      },
+      {
+        type: "string",
+        indexed: true,
+        optional: false,
+      },
+      { isPrimaryKey: true },
+    );
+
+    itNormalizes(
+      {
+        type: "string",
+        indexed: true,
+      },
+      {
+        type: "string",
+        indexed: true,
+        optional: false,
+      },
+      { isPrimaryKey: false },
+    );
   });
 
   // ------------------------------------------------------------------------
@@ -833,6 +897,37 @@ describe("normalizePropertySchema", () => {
       },
       "Cannot use shorthand '?' in 'type' or 'objectType' when defining property objects",
     );
+
+    // -------------------------
+    // Indexed & Primary Keys
+    // -------------------------
+
+    itThrowsWhenNormalizing(
+      {
+        type: "string",
+        optional: true,
+      },
+      "Optional properties cannot be used as a primary key.",
+      { isPrimaryKey: true },
+    );
+
+    itThrowsWhenNormalizing(
+      {
+        type: "mixed",
+      },
+      "Optional properties cannot be used as a primary key.",
+      { isPrimaryKey: true },
+    );
+
+    itThrowsWhenNormalizing(
+      {
+        type: "string",
+        indexed: false,
+        optional: false,
+      },
+      "Primary keys must always be indexed.",
+      { isPrimaryKey: true },
+    );
   });
 });
 
@@ -853,12 +948,16 @@ describe("extractGeneric", () => {
 function itNormalizes(
   input: PropertySchema | PropertySchemaShorthand,
   expected: Partial<CanonicalPropertySchema>,
+  { isPrimaryKey } = { isPrimaryKey: false },
 ): void {
-  it(`normalizes ${inspect(input, { compact: true, breakLength: Number.MAX_SAFE_INTEGER })}`, () => {
+  it(`normalizes ${inspect(input, { compact: true, breakLength: Number.MAX_SAFE_INTEGER })} ${
+    isPrimaryKey ? "(primary key)" : ""
+  }`, () => {
     const result = normalizePropertySchema({
       objectName: OBJECT_NAME,
       propertyName: PROPERTY_NAME,
       propertySchema: input,
+      isPrimaryKey,
     });
     expect(result).to.deep.equal({
       name: PROPERTY_NAME,
@@ -871,21 +970,29 @@ function itNormalizes(
       objectName: OBJECT_NAME,
       propertyName: PROPERTY_NAME,
       propertySchema: result,
+      isPrimaryKey,
     });
     expect(resultUsingNormalizedInput).to.deep.equal(result);
   });
 }
 
-function itThrowsWhenNormalizing(input: PropertySchema | PropertySchemaShorthand, errMessage: string): void {
-  it(`throws when normalizing ${inspect(input, { compact: true, breakLength: Number.MAX_SAFE_INTEGER })}`, () => {
+function itThrowsWhenNormalizing(
+  input: PropertySchema | PropertySchemaShorthand,
+  errMessage: string,
+  { isPrimaryKey } = { isPrimaryKey: false },
+): void {
+  it(`throws when normalizing ${inspect(input, { compact: true, breakLength: Number.MAX_SAFE_INTEGER })} ${
+    isPrimaryKey ? "(primary key)" : ""
+  }`, () => {
     const normalizeFn = () =>
       normalizePropertySchema({
         objectName: OBJECT_NAME,
         propertyName: PROPERTY_NAME,
         propertySchema: input,
+        isPrimaryKey,
       });
     expect(normalizeFn).to.throw(
-      `Invalid type declaration for property '${OBJECT_NAME}.${PROPERTY_NAME}': ${errMessage}`,
+      `Invalid type declaration for property '${PROPERTY_NAME}' on '${OBJECT_NAME}': ${errMessage}`,
     );
   });
 }

@@ -26,7 +26,7 @@ export class AssertionError extends Error {
 
 export class TypeAssertionError extends AssertionError {
   /** @internal */
-  private static deriveType(value: unknown) {
+  public static deriveType(value: unknown) {
     if (typeof value === "object") {
       if (value === null) {
         return "null";
@@ -49,13 +49,23 @@ export class TypeAssertionError extends AssertionError {
     }
   }
 
-  private static message(expected: string, value: unknown, name?: string) {
+  /**
+   * Get an error message for when the target's value is of
+   * the wrong type. Single quotes are added around the target
+   * string if it does not already contain one.
+   */
+  private static message(expected: string, value: unknown, target?: string) {
     const actual = TypeAssertionError.deriveType(value);
-    return `Expected ${name ? "'" + name + "'" : "value"} to be ${expected}, got ${actual}`;
+    if (target) {
+      target = target.includes("'") ? target : `'${target}'`;
+    } else {
+      target = "value";
+    }
+    return `Expected ${target} to be ${expected}, got ${actual}`;
   }
 
-  constructor(private expected: string, private value: unknown, name?: string) {
-    super(TypeAssertionError.message(expected, value, name));
+  constructor(private expected: string, private value: unknown, target?: string) {
+    super(TypeAssertionError.message(expected, value, target));
   }
 
   public rename(name: string) {

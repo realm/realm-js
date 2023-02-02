@@ -18,7 +18,7 @@
 
 import { expect } from "chai";
 
-import { CollectionChangeSet, ObjectChangeSet, Realm, Results } from "../index";
+import { ObjectChangeSet, Realm, Results } from "../index";
 import { RealmContext, closeRealm, generateTempRealmPath } from "./utils";
 
 describe("Milestone #3", () => {
@@ -170,14 +170,14 @@ describe("Milestone #3", () => {
       }
       alice.addListener(foo);
       alice.addListener(foo);
-      // Make a change to fire the listerner
+      // Make a change to fire the listener
       realm.write(() => (alice.name = "Alison"));
       // Begin a new write transaction to ensure the read transaction gets advanced
       realm.beginTransaction();
       realm.cancelTransaction();
       // Expect initial event + change
       expect(fooCalls).equals(2);
-      // Make another change to fire the listerner
+      // Make another change to fire the listener
       realm.write(() => (alice.name = "Alison!"));
       // Begin a new write transaction to ensure the read transaction gets advanced
       realm.beginTransaction();
@@ -362,14 +362,14 @@ describe("Milestone #3", () => {
       }
       persons.addListener(foo);
       persons.addListener(foo);
-      // Make a change to fire the listerner
+      // Make a change to fire the listener
       realm.write(() => (alice.name = "Alison"));
       // Begin a new write transaction to ensure the read transaction gets advanced
       realm.beginTransaction();
       realm.cancelTransaction();
       // Expect initial event + change
       expect(fooCalls).equals(2);
-      // Make another change to fire the listerner
+      // Make another change to fire the listener
       realm.write(() => (alice.name = "Alison!"));
       // Begin a new write transaction to ensure the read transaction gets advanced
       realm.beginTransaction();

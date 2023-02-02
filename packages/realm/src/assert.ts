@@ -45,81 +45,81 @@ export function assert(
 assert.instanceOf = <T extends Function>(
   value: unknown,
   constructor: T,
-  name?: string,
+  target?: string,
 ): asserts value is T["prototype"] => {
   if (!(value instanceof constructor)) {
-    throw new TypeAssertionError(`an instance of ${constructor.name}`, value, name);
+    throw new TypeAssertionError(`an instance of ${constructor.name}`, value, target);
   }
 };
 
-assert.string = (value: unknown, name?: string): asserts value is string => {
+assert.string = (value: unknown, target?: string): asserts value is string => {
   if (typeof value !== "string") {
-    throw new TypeAssertionError("a string", value, name);
+    throw new TypeAssertionError("a string", value, target);
   }
 };
 
-assert.number = (value: unknown, name?: string): asserts value is number => {
+assert.number = (value: unknown, target?: string): asserts value is number => {
   if (typeof value !== "number") {
-    throw new TypeAssertionError("a number", value, name);
+    throw new TypeAssertionError("a number", value, target);
   }
 };
 
-assert.boolean = (value: unknown, name?: string): asserts value is boolean => {
+assert.boolean = (value: unknown, target?: string): asserts value is boolean => {
   if (typeof value !== "boolean") {
-    throw new TypeAssertionError("a boolean", value, name);
+    throw new TypeAssertionError("a boolean", value, target);
   }
 };
 
-assert.bigInt = (value: unknown, name?: string): asserts value is bigint => {
+assert.bigInt = (value: unknown, target?: string): asserts value is bigint => {
   if (typeof value !== "bigint") {
-    throw new TypeAssertionError("a bigint", value, name);
+    throw new TypeAssertionError("a bigint", value, target);
   }
 };
 
-assert.numberOrBigInt = (value: unknown, name?: string): asserts value is number => {
+assert.numberOrBigInt = (value: unknown, target?: string): asserts value is number => {
   if (typeof value !== "number" && typeof value !== "bigint") {
-    throw new TypeAssertionError("a number or bigint", value, name);
+    throw new TypeAssertionError("a number or bigint", value, target);
   }
 };
 
 /* eslint-disable-next-line @typescript-eslint/ban-types */
-assert.function = (value: unknown, name?: string): asserts value is (...args: unknown[]) => unknown => {
+assert.function = (value: unknown, target?: string): asserts value is (...args: unknown[]) => unknown => {
   if (typeof value !== "function") {
-    throw new TypeAssertionError("a function", value, name);
+    throw new TypeAssertionError("a function", value, target);
   }
 };
 
-assert.symbol = (value: unknown, name?: string): asserts value is symbol => {
+assert.symbol = (value: unknown, target?: string): asserts value is symbol => {
   if (typeof value !== "symbol") {
-    throw new TypeAssertionError("a symbol", value, name);
+    throw new TypeAssertionError("a symbol", value, target);
   }
 };
 
 assert.object = <K extends string | number | symbol = string, V = unknown>(
   value: unknown,
-  name?: string,
-  allowArrays = true,
+  target?: string,
+  { allowArrays } = { allowArrays: true },
 ): asserts value is Record<K, V> => {
   if (typeof value !== "object" || value === null || (!allowArrays && Array.isArray(value))) {
-    throw new TypeAssertionError("an object", value, name);
+    throw new TypeAssertionError("an object", value, target);
   }
 };
 
-assert.undefined = (value: unknown, name?: string): asserts value is undefined => {
+assert.undefined = (value: unknown, target?: string): asserts value is undefined => {
   if (typeof value !== "undefined") {
-    throw new TypeAssertionError("undefined", value, name);
+    throw new TypeAssertionError("undefined", value, target);
   }
 };
 
-assert.null = (value: unknown, name?: string): asserts value is null => {
+assert.null = (value: unknown, target?: string): asserts value is null => {
   if (value !== null) {
-    throw new TypeAssertionError("null", value, name);
+    throw new TypeAssertionError("null", value, target);
   }
 };
 
-assert.array = (value: unknown, name?: string): asserts value is Array<unknown> => {
+assert.array = (value: unknown, target?: string): asserts value is Array<unknown> => {
   if (!Array.isArray(value)) {
-    throw new TypeAssertionError("an array", value, name);
+    throw new TypeAssertionError("an array", value, target);
   }
 };
 
@@ -127,23 +127,23 @@ assert.array = (value: unknown, name?: string): asserts value is Array<unknown> 
 assert.extends = <T extends Function>(
   value: unknown,
   constructor: T,
-  name?: string,
+  target?: string,
 ): asserts value is T & DefaultObject => {
-  assert.function(value, name);
+  assert.function(value, target);
   if (!(value.prototype instanceof constructor)) {
-    throw new TypeAssertionError(`a class extending ${constructor.name}`, value, name);
+    throw new TypeAssertionError(`a class extending ${constructor.name}`, value, target);
   }
 };
 
-assert.iterable = (value: unknown, name?: string): asserts value is Iterable<unknown> => {
-  assert.object(value, name);
+assert.iterable = (value: unknown, target?: string): asserts value is Iterable<unknown> => {
+  assert.object(value, target);
   if (!(Symbol.iterator in value)) {
-    throw new TypeAssertionError("iterable", value, name);
+    throw new TypeAssertionError("iterable", value, target);
   }
 };
 
-assert.never = (value: never, name?: string): asserts value is never => {
-  throw new TypeAssertionError("never", value, name);
+assert.never = (value: never, target?: string): asserts value is never => {
+  throw new TypeAssertionError("never", value, target);
 };
 
 // SDK specific

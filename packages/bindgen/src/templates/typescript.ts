@@ -22,6 +22,21 @@ import { strict as assert } from "assert";
 
 import { doJsPasses } from "../js-passes";
 
+import { addFormatter } from "../formatter";
+
+// Ideally, this would be codified in a tsconfig.json, but tsc doesn't support
+// configs mixed with filenames when invoked via the CLI.
+addFormatter("typescript-checker", [
+  "npx",
+  "tsc",
+  "--noEmit",
+  "--noResolve",
+  "--lib",
+  "es2022",
+  "--types",
+  "buffer,bson",
+]);
+
 const PRIMITIVES_MAPPING: Record<string, string> = {
   void: "void",
   bool: "boolean",
@@ -43,7 +58,7 @@ const PRIMITIVES_MAPPING: Record<string, string> = {
   AppError: "AppError",
   "std::exception_ptr": "Error",
   "std::error_code": "CppErrorCode",
-  "Status": "Error", // We don't currently expose the code.
+  Status: "Error", // We don't currently expose the code.
   EJson: "EJson",
   EJsonArray: "EJson[]",
   EJsonObj: "Record<string, EJson>",
@@ -176,6 +191,14 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
   out("// Utilities");
   out("export type AppError = Error & {code: number};");
   out("export type CppErrorCode = Error & {code: number, category: string};");
+
+  out(`
+    // WeakRef polyfill for Hermes.
+    export class WeakRef<T extends object> {
+      constructor(obj: T);
+      deref(): T | undefined;
+    }
+  `);
 
   out("// Mixed types");
   out(generateMixedTypes(spec));

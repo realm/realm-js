@@ -11,8 +11,9 @@
   "scripts": {
     "start": "./realm-bindgen.ts",
     "test": "mocha",
-    "generate:spec-schema": "typescript-json-schema src/spec/relaxed-model.ts RelaxedSpec --out generated/spec.schema.json --required",
-    "compile:node": "cmake-js compile --debug"
+    "generate:spec-schema": "typescript-json-schema tsconfig.json RelaxedSpec --include src/spec/relaxed-model.ts --out generated/spec.schema.json --required",
+    "build": "cmake-js build --debug",
+    "rebuild": "cmake-js rebuild --debug"
   },
   "dependencies": {
     "@types/node": "^18.11.9",

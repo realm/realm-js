@@ -6,6 +6,8 @@ set -o pipefail
 # Start in the root directory of the project.
 cd "$(dirname "$0")/.."
 PROJECT_ROOT=$(pwd)
+SDK_PATH=$PROJECT_ROOT/packages/realm
+BINDGEN_PATH=$PROJECT_ROOT/packages/bindgen
 SCRIPT=$(basename "${BASH_SOURCE[0]}")
 
 function usage {
@@ -82,13 +84,13 @@ for platform in "${PLATFORMS[@]}"; do
     esac
 done
 
-pushd react-native/ios
+pushd $SDK_PATH/react-native/ios
 
 mkdir -p build
 pushd build
 
 # Configure CMake project
-SDKROOT="${SDK_ROOT_OVERRIDE:-/Applications/Xcode_13.1.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/}" cmake "$PROJECT_ROOT" -GXcode \
+SDKROOT="${SDK_ROOT_OVERRIDE:-/Applications/Xcode_13.1.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/}" cmake "$BINDGEN_PATH" -GXcode \
     -DCMAKE_TOOLCHAIN_FILE="$PROJECT_ROOT/vendor/realm-core/tools/cmake/xcode.toolchain.cmake" \
     -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY="$(pwd)/out/$<CONFIG>\$EFFECTIVE_PLATFORM_NAME" \
 
