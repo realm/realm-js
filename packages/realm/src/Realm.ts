@@ -34,6 +34,7 @@ import {
   List,
   MigrationCallback,
   ObjectSchema,
+  ObjectSchemaProperty,
   OrderedCollection,
   ProgressRealmPromise,
   PropertySchema,
@@ -1018,6 +1019,7 @@ type SetType<T> = RealmSet<T>;
 type AppType = App;
 type UpdateModeType = UpdateMode;
 type ObjectSchemaType = ObjectSchema;
+type ObjectSchemaPropertyType = ObjectSchemaProperty;
 type PropertySchemaType = PropertySchema;
 type BSONType = typeof BSON;
 type TypesType = typeof Types;
@@ -1036,6 +1038,10 @@ export namespace Realm {
   export type App = AppType;
   export type UpdateMode = UpdateModeType;
   export type ObjectSchema = ObjectSchemaType;
+  /**
+   * @deprecated Will be removed in v13.0.0. Please use {@link PropertySchema}.
+   */
+  export type ObjectSchemaProperty = ObjectSchemaPropertyType;
   export type PropertySchema = PropertySchemaType;
   export type Mixed = unknown;
   export type BSON = BSONType;

@@ -86,6 +86,11 @@ export type CanonicalObjectSchema<T = DefaultObject> = {
 };
 
 /**
+ * @deprecated Will be removed in v13.0.0. Please use {@link CanonicalPropertySchema}.
+ */
+export type CanonicalObjectSchemaProperty = CanonicalPropertySchema;
+
+/**
  * The canonical representation of the schema of a specific property.
  */
 export type CanonicalPropertySchema = {
@@ -138,7 +143,8 @@ export type ObjectSchema = {
 
 /**
  * The properties of a Realm object defined in {@link ObjectSchema.properties} where
- * the key is the name of the property and the value is its type.
+ * each key is the name of a property and the value is its type in the form of a
+ * {@link PropertySchemaShorthand} or {@link PropertySchema}.
  */
 export type PropertiesTypes = {
   [key: string]: PropertySchema | PropertySchemaShorthand;
@@ -165,8 +171,15 @@ export type PropertiesTypes = {
  * "int?"
  * "int[]"
  * "int?[]"
+ *
+ * @see {@link PropertySchema} for using the object representation of a property schema.
  */
 export type PropertySchemaShorthand = string;
+
+/**
+ * @deprecated Will be removed in v13.0.0. Please use {@link PropertySchema}.
+ */
+export type ObjectSchemaProperty = PropertySchema;
 
 /**
  * The schema for specifying the type of a specific Realm object property.
@@ -180,6 +193,9 @@ export type PropertySchemaShorthand = string;
  *   set to `null` and cannot be made non-optional.
  * - Properties declared as the primary key in {@link ObjectSchema.primaryKey} are always
  *   indexed. In such cases, they cannot be made non-indexed.
+ *
+ * @see {@link PropertySchemaShorthand} for a shorthand representation of a property
+ * schema.
  *
  * @see {@link PropertySchemaStrict} for a precise type definition of the requirements
  * with the allowed combinations. This type is less strict in order to provide a more
