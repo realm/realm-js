@@ -29,7 +29,81 @@ interface path {
 
 type Require = (id: string) => unknown;
 
-type Environment = Record<string, unknown>;
+type Environment = Record<string, unknown> & {
+  /** Set the number of milliseconds to use for tests that require a long timeout. */
+  longTimeout?: number;
+  /** Set the name of the cluster, used when setting up the "mongodb-atlas" service on imported apps. */
+  mongodbClusterName?: string;
+  /** Run the performance tests (skipped by default) */
+  performance?: true;
+  /** Disable deletion of the Realm app after the test run. */
+  preserveAppAfterRun?: true;
+  /** Set the sync client log level to help debugging sync client issues */
+  syncLogLevel?: Realm.App.Sync.LogLevel;
+
+  // BaaS server and Realm App Importer specific variables below
+
+  /** Are the tests running without a server? In which case all sync tests should be skipped. */
+  missingServer?: true;
+  /** The URL of the Realm server to run tests against. */
+  realmBaseUrl?: string;
+  /**
+   * Public key part used when authenticating towards BaaS during import of an app.
+   * Note: This is only used when the app importer is ran from within the test suite.
+   * Note: Either (publicKey and privateKey) or (username and password) needs to be set.
+   */
+  publicKey?: string;
+  /**
+   * Private key part used when authenticating towards BaaS during import of an app.
+   * Note: This is only used when the app importer is ran from within the test suite.
+   * Note: Either (publicKey and privateKey) or (username and password) needs to be set.
+   */
+  privateKey?: string;
+  /**
+   * Username used when authenticating towards BaaS during import of an app.
+   * Note: This is only used when the app importer is ran from within the test suite.
+   * Note: Either (publicKey and privateKey) or (username and password) needs to be set.
+   */
+  username?: string;
+  /**
+   * Password used when authenticating towards BaaS during import of an app.
+   * Note: This is only used when the app importer is ran from within the test suite.
+   * Note: Either (publicKey and privateKey) or (username and password) needs to be set.
+   */
+  password?: string;
+
+  // Platform specific variables below
+
+  /**
+   * Node specific variable injected by the runner, to signal if we're running on Node.
+   */
+  node?: true;
+  /**
+   * Electron specific variable injected by the runner, to signal if we're running on Electron (and what process mode).
+   */
+  electron?: "main" | "renderer";
+  /**
+   * React native specific variable injected by the runner, to signal if we're running on React Native (and what platform OS we're running on).
+   */
+  reactNative?: "ios" | "android" | "web" | "macos" | "windows";
+  /**
+   * React native specific variable to control if tests are ran natively (default) or via the legacy chrome-debugger.
+   * @deprecated Since we no longer support the legacy chrome debugger.
+   */
+  mode?: "native" | "chrome-debugging";
+  /**
+   * React native specific variable injected by the runner, to signal if we're running on Android.
+   */
+  android?: true;
+  /**
+   * React native specific variable injected by the runner, to signal if we're running on iOS.
+   */
+  ios?: true;
+  /**
+   * React native specific variable injected by the runner, to signal if the tests are ran by the legacy chrome debugger (i.e. in a browser).
+   * @deprecated Since we no longer support the legacy chrome debugger. */
+  chromeDebugging?: true;
+};
 
 interface Global extends NodeJS.Global {
   title: string;
@@ -56,6 +130,20 @@ declare namespace Mocha {
   }
   interface TestFunction {
     skipIf: (condition: unknown, title: string, callback: Mocha.AsyncFunc | Mocha.Func) => void;
+  }
+  interface Context {
+    /**
+     * Sets a "long timeout" for the test or hook.
+     * It will use the timeout provided via `environment.longTimeout` or default to 1 min.
+     */
+    longTimeout(): void;
+  }
+  interface Suite {
+    /**
+     * Sets a "long timeout" for the suite.
+     * It will use the timeout provided via `environment.longTimeout` or default to 1 min.
+     */
+    longTimeout(): void;
   }
 }
 

@@ -29,6 +29,7 @@ import { openRealm, OpenRealmConfiguration } from "../utils/open-realm";
  */
 export function openRealmHook(config: OpenRealmConfiguration = {}) {
   return async function openRealmHandler(this: Partial<RealmContext> & Mocha.Context): Promise<void> {
+    this.longTimeout();
     if (this.realm) {
       throw new Error("Unexpected realm on context, use only one openRealmBefore per test");
     } else {
@@ -41,11 +42,11 @@ export function openRealmHook(config: OpenRealmConfiguration = {}) {
 }
 
 export function openRealmBeforeEach(config: OpenRealmConfiguration = {}): void {
-  beforeEach(openRealmHook(config));
-  afterEach(closeThisRealm);
+  beforeEach(openRealmBeforeEach.name, openRealmHook(config));
+  afterEach("closeRealmAfterEach", closeThisRealm);
 }
 
 export function openRealmBefore(config: OpenRealmConfiguration = {}): void {
-  before(openRealmHook(config));
-  after(closeThisRealm);
+  before(openRealmBefore.name, openRealmHook(config));
+  after("closeRealmAfter", closeThisRealm);
 }
