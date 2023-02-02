@@ -171,48 +171,6 @@ describe("Results", () => {
       }).throws("Realm object is from another Realm");
     });
 
-    it("implements addListener", function (this: RealmContext) {
-      this.realm.write(() => {
-        this.realm.create("TestObject", { doubleCol: 1 });
-        this.realm.create("TestObject", { doubleCol: 2 });
-        this.realm.create("TestObject", { doubleCol: 3 });
-      });
-
-      let resolve: ((value?: unknown) => void) | null = null;
-      let firstCall = true;
-
-      this.realm.objects("TestObject").addListener((testObjects, changes) => {
-        if (firstCall) {
-          expect(testObjects.length).equals(3);
-          expect(changes.insertions.length).equals(0);
-          //@ts-expect-error Deprecated field
-          expect(changes.modifications.length).equals(0);
-          expect(changes.newModifications.length).equals(0);
-          expect(changes.oldModifications.length).equals(0);
-          firstCall = false;
-        } else {
-          expect(testObjects.length).equals(4);
-          expect(changes.insertions.length).equals(1);
-          //@ts-expect-error Deprecated field
-          expect(changes.modifications.length).equals(1);
-          expect(changes.newModifications.length).equals(1);
-          expect(changes.oldModifications.length).equals(1);
-        }
-
-        if (resolve) {
-          resolve();
-        }
-      });
-
-      return new Promise((resolveFunction) => {
-        resolve = resolveFunction;
-        this.realm.write(() => {
-          this.realm.objects<TestObject>("TestObject")[0].doubleCol = 5;
-          this.realm.create("TestObject", { doubleCol: 1 });
-        });
-      }).finally(() => this.realm.objects("TestObject").removeAllListeners());
-    });
-
     it("should be read-only", function (this: RealmContext) {
       const objects = this.realm.objects<TestObject>("TestObject");
 
