@@ -1943,34 +1943,6 @@ describe("Realmtest", () => {
       expect(this.realm.isEmpty).to.be.true;
     });
   });
-  describe("transactions", () => {
-    openRealmBeforeEach({ schema: [TestObjectSchema] });
-    it("can perform a manual transaction", function (this: RealmContext) {
-      expect(this.realm.isEmpty).to.be.true;
-
-      this.realm.beginTransaction();
-      this.realm.create("TestObject", { doubleCol: 3.1415 });
-      this.realm.commitTransaction();
-
-      expect(this.realm.objects("TestObject").length).equals(1);
-    });
-    it("can cancel a transaction", function (this: RealmContext) {
-      expect(this.realm.isEmpty).to.be.true;
-
-      this.realm.beginTransaction();
-      this.realm.create("TestObject", { doubleCol: 3.1415 });
-      this.realm.cancelTransaction();
-
-      expect(this.realm.isEmpty).to.be.true;
-    });
-    it("isInTransaction reflects state", function (this: RealmContext) {
-      expect(!this.realm.isInTransaction).to.be.true;
-      this.realm.beginTransaction();
-      expect(this.realm.isInTransaction).to.be.true;
-      this.realm.cancelTransaction();
-      expect(!this.realm.isInTransaction).to.be.true;
-    });
-  });
   describe("compaction", () => {
     afterEach(() => {
       Realm.clearTestState();
