@@ -809,7 +809,7 @@ describe("Realmtest", () => {
         });
       });
 
-      it("diffed updates only trigger notificaitons for changed values", async function (this: RealmContext) {
+      it("diffed updates only trigger notifications for changed values", async function (this: RealmContext) {
         type iAllPrimaryTypesChanges = [Realm.Collection<IAllPrimaryTypes>, CollectionChangeSet];
         let resolve: ((value: iAllPrimaryTypesChanges) => void) | undefined;
         this.realm.objects<IAllPrimaryTypes>(AllPrimaryTypesSchema.name).addListener((objects, changes) => {
