@@ -392,7 +392,10 @@ class Realm {
  *   the Realm will be in a write transaction. The callback takes one argument:
  *     - `realm` - The Realm
  * @property {string} [path={@link Realm.defaultPath}] - The path to the file where the
- *   Realm database should be stored.
+ *   Realm database should be stored. For synced Realms, a relative path is used together with app id and
+ *   user id in order to avoid collisions with other apps or users. An absolute path is left untouched
+ *   and on some platforms (iOS and Android) the app might not have permissions to create or open
+ *   the file - permissions are not validated.
  * @property {string} [fifoFilesFallbackPath] - Opening a Realm creates a number of FIFO special files in order to
  * coordinate access to the Realm across threads and processes. If the Realm file is stored in a location
  * that does not allow the creation of FIFO special files (e.g. FAT32 filesystems), then the Realm cannot be opened.
