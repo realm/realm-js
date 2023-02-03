@@ -288,7 +288,7 @@ yargs(hideBin(process.argv))
         // Await the response from the server or a timeout
         const actualMessage = await Promise.race([message, timeout]);
         console.log(`App sent "${actualMessage}"!`);
-        const expectedMessage = "Persons are Alice, Bob, Charlie";
+        const expectedMessage = "Persons are Alice, Bob, Charlie!";
         if (actualMessage === expectedMessage) {
           console.log("... which was expected ✅");
         } else {

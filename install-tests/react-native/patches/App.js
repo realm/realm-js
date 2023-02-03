@@ -19,12 +19,16 @@
 import { useEffect } from "react";
 import Realm from "realm";
 
+const engine = globalThis.HermesInternal ? "hermes" : "jsc";
+console.log(`Running on '${engine}'`);
+
 const CALLBACK_HOST = "http://localhost:3000";
 const DELAY = 1000;
 const schema = [{ name: "Person", properties: { name: "string" } }];
 const App = () => {
   useEffect(() => {
     const realm = new Realm({ schema });
+
     // Write persons into the database
     if (realm.isEmpty) {
       realm.write(() => {
@@ -33,13 +37,29 @@ const App = () => {
         realm.create("Person", { name: "Charlie" });
       });
     }
+
+    function testExceptions() {
+      try {
+        // Historically, we've seen crashes when throwing JS exceptions from functions called by C++
+        // This is often caused by an NDK mismatch between prebuild shared-object files.
+        realm.write(() => {
+          throw new Error("!");
+        });
+      } catch (err) {
+        return err.message;
+      }
+    }
+
+    const suffix = testExceptions();
+
     // Read the persons out of the database again
     const message =
       "Persons are " +
       realm
         .objects("Person")
         .map((p) => p.name)
-        .join(", ");
+        .join(", ") +
+      suffix;
     console.log(`Sending '${message}'`);
     // Perform a request to signal a successful write & read
     setTimeout(() => {
