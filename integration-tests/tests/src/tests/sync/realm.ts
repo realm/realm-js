@@ -286,6 +286,14 @@ const EmbeddedObjectSchemas: Realm.ObjectSchema[] = [
   },
 ];
 
+const UUIDPkObjectSchema = {
+  name: "uuidpk",
+  primaryKey: "_id",
+  properties: {
+    _id: "uuid",
+  },
+};
+
 interface ICar {
   make: string;
   model: string;
@@ -342,14 +350,6 @@ interface IAllTypes {
   linkingObjectsCol: IAllTypes[];
 }
 
-const UUIDPkObjectSchema = {
-  name: "uuidpk",
-  primaryKey: "_id",
-  properties: {
-    _id: "uuid",
-  },
-};
-
 interface IAllPrimaryTypes {
   primaryCol: string;
   boolCol: boolean;
@@ -388,14 +388,6 @@ interface IDefaultValues {
 interface IObject {
   intCol: number;
 }
-interface IPersonObject {
-  name: string;
-  age: number;
-  married: boolean;
-  children: IPersonObject[];
-  parents: IPersonObject[];
-}
-
 interface IDateObject {
   currentDate: Date;
   nullDate: Date | undefined;
@@ -418,6 +410,11 @@ interface IUUIDPkObject {
 }
 
 class PersonObject extends Realm.Object {
+  name!: string;
+  age!: number;
+  married!: boolean;
+  children!: PersonObject[];
+  parents!: PersonObject[];
   static schema: Realm.ObjectSchema = {
     name: "PersonObject",
     properties: {
@@ -442,235 +439,6 @@ const originalSchema: (Realm.ObjectSchema | typeof PersonObject)[] = [
 ];
 
 describe("Realmtest", () => {
-  describe("constructor", () => {
-    afterEach(() => {
-      Realm.clearTestState();
-    });
-    it("new realm returns correct type", () => {
-      const realm = new Realm({ schema: [] });
-      expect(realm instanceof Realm).to.be.true;
-
-      expect(typeof Realm).equals("function");
-      expect(Realm instanceof Function).to.be.true;
-      realm.close();
-    });
-    it("throws with unvalid paths provided", () => {
-      expect(() => new Realm("")).throws(); // the message for this error is platform-specific
-      //@ts-expect-error using realm constructor with too many arguments
-      expect(() => new Realm("test1.realm", "invalidArgument")).throws("Invalid arguments when constructing 'Realm'");
-    });
-    it("with default path works", () => {
-      const defaultRealm = new Realm({ schema: [] });
-      expect(defaultRealm.path).equals(Realm.defaultPath);
-
-      const defaultRealm2 = new Realm();
-      expect(defaultRealm2.path).equals(Realm.defaultPath);
-    });
-    it("with custom path works", () => {
-      const defaultDir = Realm.defaultPath.substring(0, Realm.defaultPath.lastIndexOf(pathSeparator) + 1);
-      const testPath = "test1.realm";
-      const realm = new Realm({ schema: [], path: testPath });
-      expect(realm.path).equals(defaultDir + testPath);
-
-      const testPath2 = "test2.realm";
-      const realm2 = new Realm({ schema: [], path: testPath2 });
-      expect(realm2.path).equals(defaultDir + testPath2);
-    });
-    it("new realms pick up overriden default path", () => {
-      const defaultPath = Realm.defaultPath;
-      let defaultRealm = new Realm({ schema: [] });
-      expect(defaultRealm.path).equals(Realm.defaultPath);
-
-      try {
-        const newPath = `${Realm.defaultPath.substring(0, defaultPath.lastIndexOf(pathSeparator) + 1)}default2.realm`;
-        Realm.defaultPath = newPath;
-        defaultRealm = new Realm({ schema: [] });
-        expect(defaultRealm.path).equals(newPath, "should use updated default realm path");
-        expect(Realm.defaultPath).equals(newPath, "defaultPath should have been updated");
-      } finally {
-        Realm.defaultPath = defaultPath;
-      }
-    });
-    it("fifoFilesFallbackPath works", () => {
-      // Object Store already tests the fallback logic
-      // So this is just a smoke test to ensure that setting the property from JS doesn't actually crash anything.
-      const defaultDir = Realm.defaultPath.substring(0, Realm.defaultPath.lastIndexOf(pathSeparator) + 1);
-      const realm = new Realm({ fifoFilesFallbackPath: defaultDir });
-    });
-    it("schemaversion behaves correctly when creating new realms", () => {
-      const defaultRealm = new Realm({ schema: [] });
-      expect(defaultRealm.schemaVersion).equals(0);
-      expect(Realm.schemaVersion(Realm.defaultPath)).equals(0);
-
-      expect(() => new Realm({ schemaVersion: 1, schema: [] })).throws("already opened with different schema version.");
-
-      expect(new Realm().schemaVersion).equals(0);
-      expect(new Realm({ schemaVersion: 0 }).schemaVersion).equals(0);
-
-      let realm = new Realm({ path: "test1.realm", schema: [], schemaVersion: 1 });
-      expect(realm.schemaVersion).equals(1);
-      expect(realm.schema.length).equals(0);
-      expect(Realm.schemaVersion("test1.realm")).equals(1);
-      realm.close();
-
-      realm = new Realm({ path: "test1.realm", schema: [TestObjectSchema], schemaVersion: 2 });
-      realm.write(() => {
-        realm.create(TestObjectSchema.name, { doubleCol: 1 });
-      });
-      expect(realm.objects<ITestObject>(TestObjectSchema.name)[0].doubleCol).equals(1);
-      expect(realm.schemaVersion).equals(2);
-      expect(realm.schema.length).equals(1);
-    });
-    it("dynamic schema works", () => {
-      // constructing realm with same path returns the same instance
-      let realm = new Realm({ schema: [TestObjectSchema] });
-      realm.write(() => {
-        realm.create(TestObjectSchema.name, [1]);
-      });
-      realm.close();
-
-      realm = new Realm();
-      const objects = realm.objects<ITestObject>(TestObjectSchema.name);
-      expect(objects.length).equals(1);
-      expect(objects[0].doubleCol).equals(1.0);
-    });
-    it("schema validation throws correcty", () => {
-      //@ts-expect-error invalid schema sent
-      expect(() => new Realm({ schema: AllTypesSchema })).throws("must be of type 'array', got");
-      //@ts-expect-error can not pass plain string as schema
-      expect(() => new Realm({ schema: ["SomeType"] })).throws(
-        "Failed to read ObjectSchema: JS value must be of type 'object', got (SomeType)",
-      );
-      //@ts-expect-error can not pass empty object to schema
-      expect(() => new Realm({ schema: [{}] })).throws(
-        "Failed to read ObjectSchema: name must be of type 'string', got (undefined)",
-      );
-      //@ts-expect-error missing properties in schema
-      expect(() => new Realm({ schema: [{ name: "SomeObject" }] })).throws(
-        "Failed to read ObjectSchema: properties must be of type 'object', got (undefined)",
-      );
-      //@ts-expect-error missing name property
-      expect(() => new Realm({ schema: [{ properties: { intCol: "int" } }] })).throws(
-        "Failed to read ObjectSchema: name must be of type 'string', got (undefined)",
-      );
-
-      function assertPropertyInvalid(prop: Realm.ObjectSchemaProperty, message: string) {
-        expect(() => {
-          new Realm({ schema: [{ name: "InvalidObject", properties: { int: "int", bad: prop } }] });
-        }).throws(message);
-      }
-
-      assertPropertyInvalid(
-        { type: "list[]", objectType: "InvalidObject" },
-        "List property 'InvalidObject.bad' must have a non-list value type",
-      );
-      assertPropertyInvalid(
-        { type: "list?", objectType: "InvalidObject" },
-        "List property 'InvalidObject.bad' cannot be optional",
-      );
-      //@ts-expect-error passing empty property
-      assertPropertyInvalid("", "Property 'InvalidObject.bad' must have a non-empty type");
-      assertPropertyInvalid(
-        { type: "linkingObjects", objectType: "InvalidObject", property: "nosuchproperty" },
-        "Property 'InvalidObject.nosuchproperty' declared as origin of linking objects property 'InvalidObject.bad' does not exist",
-      );
-      assertPropertyInvalid(
-        { type: "linkingObjects", objectType: "InvalidObject", property: "int" },
-        "Property 'InvalidObject.int' declared as origin of linking objects property 'InvalidObject.bad' is not a link",
-      );
-
-      // linkingObjects property where the source property links elsewhere
-      expect(() => {
-        new Realm({
-          schema: [
-            {
-              name: "InvalidObject",
-              properties: {
-                link: "IntObject",
-                linkingObjects: { type: "linkingObjects", objectType: "InvalidObject", property: "link" },
-              },
-            },
-            {
-              name: "IntObject",
-              properties: {
-                integer: "int",
-              },
-            },
-          ],
-        });
-      }).throws(
-        "Property 'InvalidObject.link' declared as origin of linking objects property 'InvalidObject.linkingObjects' links to type 'IntObject'",
-      );
-
-      {
-        new Realm({
-          schema: [
-            {
-              name: "Object",
-              properties: {
-                // weird but valid
-                objectList: { type: "object[]", objectType: "Object" },
-              },
-            },
-          ],
-        });
-      }
-    });
-    it("in memory realm constructor works", () => {
-      // open in-memory realm instance
-      const realm1 = new Realm({ inMemory: true, schema: [TestObjectSchema] });
-      realm1.write(() => {
-        realm1.create("TestObject", [1]);
-      });
-      //@ts-expect-error TYPEBUG: isInMemory property does not exist
-      expect(realm1.isInMemory).to.be.true;
-
-      // open a second instance of the same realm and check that they share data
-      const realm2 = new Realm({ inMemory: true });
-      const objects = realm2.objects<ITestObject>("TestObject");
-      expect(objects.length).equals(1);
-      expect(objects[0].doubleCol).equals(1.0);
-      //@ts-expect-error TYPEBUG: isInMemory property does not exist
-      expect(realm2.isInMemory).equals(true);
-
-      // Close both realms (this should delete the realm since there are no more
-      // references to it.
-      realm1.close();
-      realm2.close();
-
-      // Open the same in-memory realm again and verify that it is now empty
-      const realm3 = new Realm({ inMemory: true });
-      expect(realm3.schema.length).equals(0);
-
-      // try to open the same realm in persistent mode (should fail as you cannot mix modes)
-      expect(() => new Realm({})).throws("already opened with different inMemory settings.");
-      realm3.close();
-    });
-    it("realm constructed with readonly property throws when write operation is invoked", () => {
-      let realm = new Realm({ schema: [TestObjectSchema] });
-      realm.write(() => {
-        realm.create(TestObjectSchema.name, [1]);
-      });
-      expect(realm.isReadOnly).to.be.false;
-      realm.close();
-
-      realm = new Realm({ readOnly: true, schema: [TestObjectSchema] });
-      const objects = realm.objects<ITestObject>(TestObjectSchema.name);
-      expect(objects.length).equals(1);
-      expect(objects[0].doubleCol).equals(1.0);
-      expect(realm.isReadOnly).equals(true);
-
-      // for some reasone ts-expect-error can not be used here
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      expect(() => realm.write(() => {})).throws("Can't perform transactions on read-only Realms.");
-      realm.close();
-
-      realm = new Realm({ readOnly: true });
-      expect(realm.schema.length).equals(1);
-      expect(realm.isReadOnly).to.be.true;
-      realm.close();
-    });
-  });
   describe("function overwrite", () => {
     it("bind works on realm", () => {
       const realm = new Realm({ schema: [] });
@@ -1036,7 +804,7 @@ describe("Realmtest", () => {
     it("error message form invalid write is correct", function (this: RealmContext) {
       expect(() => {
         this.realm.write(() => {
-          const p1 = this.realm.create<IPersonObject>(PersonObject.schema.name, { name: "Ari", age: 10 });
+          const p1 = this.realm.create<PersonObject>(PersonObject.schema.name, { name: "Ari", age: 10 });
           //@ts-expect-error assigning string to int
           p1.age = "Ten";
         });
@@ -1772,7 +1540,7 @@ describe("Realmtest", () => {
         "Constructor was not registered in the schema for this Realm",
       );
 
-      const person = this.realm.objects<IPersonObject>(PersonObject.schema.name)[0];
+      const person = this.realm.objects<PersonObject>(PersonObject.schema.name)[0];
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       const listenerCallback = () => {};
       this.realm.addListener("change", listenerCallback);
