@@ -24,6 +24,7 @@ import { Realm } from "../index";
 import { Results } from "../Results";
 import { CanonicalObjectSchema } from "../schema";
 import { REALMS_DIR, RealmContext, closeRealm, generateRandomInteger, generateTempRealmPath } from "./utils";
+import { RealmObject } from "../Object";
 
 type Person = { name: string };
 type PersonWithFriend = { name: string; bestFriend: Person | null };
@@ -77,9 +78,9 @@ describe("Milestone #2", () => {
     });
     after(closeRealm);
 
-    it("returns an instance of Realm.Object", function (this: RealmContext) {
+    it("returns an instance of RealmObject", function (this: RealmContext) {
       const alice = this.realm.objectForPrimaryKey("Person", "Alice");
-      expect(alice).instanceOf(Realm.Object);
+      expect(alice).instanceOf(RealmObject);
     });
 
     it("returns a spreadable object", function (this: RealmContext) {
@@ -111,7 +112,7 @@ describe("Milestone #2", () => {
 
     it("returns the correct object", function (this: RealmContext) {
       const alice = this.realm.objectForPrimaryKey<PersonWithFriend>("Person", "Alice");
-      assert(alice.bestFriend instanceof Realm.Object);
+      assert(alice.bestFriend instanceof RealmObject);
       expect(alice.bestFriend.name).equals("Bob");
     });
   });
@@ -200,7 +201,7 @@ describe("Milestone #2", () => {
       });
       expect(alice.name).equals("Alice");
       expect(bob.name).equals("Bob");
-      assert(bob.bestFriend instanceof Realm.Object);
+      assert(bob.bestFriend instanceof RealmObject);
       expect(bob.bestFriend.name).equals("Alice");
     });
 
@@ -223,7 +224,7 @@ describe("Milestone #2", () => {
       });
       expect(alice.name).equals("Alice");
       expect(bob.name).equals("Bob");
-      assert(bob.bestFriend instanceof Realm.Object);
+      assert(bob.bestFriend instanceof RealmObject);
       expect(bob.bestFriend.name).equals("Alice");
       expect(bob.friends[0].name).equals("Alice");
       */
@@ -245,7 +246,7 @@ describe("Milestone #2", () => {
       if (!alice) {
         throw new Error("Expected an object");
       }
-      expect(alice).instanceOf(Realm.Object);
+      expect(alice).instanceOf(RealmObject);
       expect(alice.name).equals("Alice");
     });
 
@@ -253,7 +254,7 @@ describe("Milestone #2", () => {
       const persons = this.realm.objects("Person");
       expect(persons).instanceOf(Results);
       expect(persons.length).greaterThan(0);
-      expect(persons[0]).instanceOf(Realm.Object);
+      expect(persons[0]).instanceOf(RealmObject);
     });
 
     it("allows object spreads", function (this: RealmContext) {

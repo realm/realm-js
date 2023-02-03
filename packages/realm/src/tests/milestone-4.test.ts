@@ -18,7 +18,8 @@
 
 import { expect } from "chai";
 
-import { Realm } from "../index";
+import { Realm, Results } from "../index";
+import { RealmObject } from "../Object";
 import { RealmContext, closeRealm, generateTempRealmPath } from "./utils";
 
 type Person = { name: string; age: number; bestFriend: Person | null };
@@ -46,7 +47,7 @@ describe("Milestone #4", () => {
   describe("Result#filtered", () => {
     it("filters on inline strings", function (this: RealmContext) {
       const results = this.realm.objects<Person>("Person").filtered("name == 'Alice'");
-      expect(results).instanceOf(Realm.Results);
+      expect(results).instanceOf(Results);
       expect(results.length).equals(1);
       const [person] = results;
       expect(person.name).equals("Alice");
@@ -54,7 +55,7 @@ describe("Milestone #4", () => {
 
     it("filters on placeholder strings", function (this: RealmContext) {
       const results = this.realm.objects<Person>("Person").filtered("name == $0", "Alice");
-      expect(results).instanceOf(Realm.Results);
+      expect(results).instanceOf(Results);
       expect(results.length).equals(1);
       const [person] = results;
       expect(person.name).equals("Alice");
@@ -62,11 +63,11 @@ describe("Milestone #4", () => {
 
     it("filters on placeholder ints", function (this: RealmContext) {
       const results = this.realm.objects<Person>("Person").filtered("age > $0", 10);
-      expect(results).instanceOf(Realm.Results);
+      expect(results).instanceOf(Results);
       expect(results.length).equals(2);
       // Expect Alice and Charlie to be in the results
-      expect(results.find((p) => p.name === "Alice")).instanceOf(Realm.Object);
-      expect(results.find((p) => p.name === "Charlie")).instanceOf(Realm.Object);
+      expect(results.find((p) => p.name === "Alice")).instanceOf(RealmObject);
+      expect(results.find((p) => p.name === "Charlie")).instanceOf(RealmObject);
     });
 
     it("filters and sorts", function (this: RealmContext) {

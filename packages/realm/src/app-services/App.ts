@@ -18,7 +18,7 @@
 
 import {
   Credentials,
-  EmailPasswordAuthClient,
+  EmailPasswordAuth,
   Listeners,
   Sync,
   User,
@@ -29,12 +29,19 @@ import {
 } from "../internal";
 
 /**
- * This describes the options used to create a Realm.App instance.
+ * This describes the options used to create a Realm App instance.
  * @prop id - The id of the Atlas App Services application.
  * @prop baseUrl - The base URL of the Atlas App Services server.
  */
 export type AppConfiguration = {
+  /**
+   * The Realm App ID
+   */
   id: string;
+
+  /**
+   * An optional URL to use as a prefix when requesting the Atlas App Services.
+   */
   baseUrl?: string;
 
   /**
@@ -71,10 +78,8 @@ const appByUserId = new Map<string, App>();
  * The class represents an Atlas App Services Application.
  *
  * ```js
- * let app = new Realm.App(config);
+ * const app = new App({ id: "my-app-qwert" });
  * ```
- *
- * @memberof Realm
  */
 export class App {
   // TODO: Ensure these are injected by the platform
@@ -87,7 +92,10 @@ export class App {
   /** @internal */
   public static SDK_VERSION = "0.0.0";
 
+  /** @deprecated Please use named imports */
   public static Sync = Sync;
+  /** @deprecated Please use named imports */
+  public static Credentials = Credentials;
 
   /** @internal */
   public static get(userInternal: binding.SyncUser) {
@@ -166,10 +174,10 @@ export class App {
     return new User(userInternal, this);
   }
 
-  public get emailPasswordAuth(): EmailPasswordAuthClient {
+  public get emailPasswordAuth(): EmailPasswordAuth {
     // TODO: Add memoization
     const internal = this.internal.usernamePasswordProviderClient();
-    return new EmailPasswordAuthClient(internal);
+    return new EmailPasswordAuth(internal);
   }
 
   public get currentUser(): User | null {

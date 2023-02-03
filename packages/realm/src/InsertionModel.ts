@@ -54,7 +54,7 @@ type OmittedRealmTypes<T> = Omit<
 type RemappedRealmTypes<T> = RealmListsRemappedModelPart<T> & RealmDictionaryRemappedModelPart<T>;
 
 /**
- * Joins T stripped of all keys which value extends Realm.Collection and all inherited from Realm.Object,
- * with only the keys which value extends Realm.List, remapped as Arrays.
+ * Joins T stripped of all keys which value extends {@link Collection} and all inherited from {@link RealmObject},
+ * with only the keys which value extends {@link List}, remapped as Arrays.
  */
 export type RealmInsertionModel<T> = OmittedRealmTypes<T> & RemappedRealmTypes<T>;

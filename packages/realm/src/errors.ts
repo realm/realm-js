@@ -16,7 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Configuration, binding } from "./internal";
+import {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Used by TS docs
+  ClientResetMode,
+  Configuration,
+  binding,
+} from "./internal";
 
 export class AssertionError extends Error {
   constructor(message = "Assertion failed!") {
@@ -113,6 +118,9 @@ export class SyncError extends Error {
 const ORIGINAL_FILE_PATH_KEY = "ORIGINAL_FILE_PATH";
 const RECOVERY_FILE_PATH_KEY = "RECOVERY_FILE_PATH";
 
+/**
+ * @deprecated Use the another {@link ClientResetMode} than {@link ClientResetMode.Manual}.
+ */
 export class ClientResetError extends SyncError {
   public name = "ClientReset";
   public config: Configuration;

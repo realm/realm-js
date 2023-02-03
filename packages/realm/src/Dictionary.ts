@@ -101,8 +101,6 @@ const PROXY_HANDLER: ProxyHandler<Dictionary> = {
  *
  * Dictionaries behave mostly like a JavaScript object i.e., as a key/value pair
  * where the key is a string.
- *
- * @memberof Realm
  */
 export class Dictionary<T = unknown> extends Collection<string, T, [string, T], [string, T], DictionaryChangeCallback> {
   /**
