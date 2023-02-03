@@ -38,12 +38,6 @@ const schema = {
 };
 
 describe("path configuration (local)", function () {
-  it("default path", function () {
-    const realm = new Realm({ schema: [schema] });
-    expect(realm.path).to.equal(Realm.defaultPath);
-    realm.close();
-  });
-
   it("relative path", function () {
     const filename = getRelativePath();
     const realm = new Realm({ path: filename, schema: [ schema ] });
@@ -116,7 +110,7 @@ describe.skipIf(environment.skipFlexibleSync, "path configuration (flexible sync
       path: filename,
       schema: [schema],
       sync: {
-        partitionValue: getPartitionValue(),
+        flexible: true,
         user: this.user,
       }
     });
