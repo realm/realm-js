@@ -30,6 +30,7 @@ class TestObject extends Realm.Object {
     },
   };
 }
+
 const pathSeparator = "/";
 
 describe("Realm#constructor", () => {
@@ -410,35 +411,5 @@ describe("Realm#constructor", () => {
       expect(() => realm.write(() => {})).throws("Can't perform transactions on read-only Realms.");
       realm.close();
     });
-  });
-});
-
-// Testing static methods
-
-describe("#deleteFile", () => {
-  beforeEach(() => {
-    Realm.clearTestState();
-  });
-
-  function expectDeletion(path?: string) {
-    // Create the Realm with a schema
-    const realm = new Realm({ path, schema: [PersonSchema, DogSchema] });
-    realm.close();
-    // Delete the Realm
-    Realm.deleteFile({ path });
-    // Re-open the Realm without a schema and expect it to be empty
-    const reopenedRealm = new Realm({ path });
-    expect(reopenedRealm.schema).deep.equals([]);
-  }
-
-  it("deletes the default Realm", () => {
-    expectDeletion();
-  });
-
-  // TODO: Fix the issue on Android that prevents this from passing
-  // @see https://github.com/realm/realm-js-private/issues/507
-
-  it.skipIf(environment.android, "deletes a Realm with a space in its path", () => {
-    expectDeletion("my realm.realm");
   });
 });

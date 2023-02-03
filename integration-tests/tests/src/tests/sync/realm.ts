@@ -294,6 +294,25 @@ const UUIDPkObjectSchema = {
   },
 };
 
+const PersonSchema = {
+  name: "Person",
+  primaryKey: "name",
+  properties: {
+    age: "int",
+    name: "string",
+    friends: "Person[]",
+  },
+};
+
+const DogSchema = {
+  name: "Dog",
+  properties: {
+    age: "int",
+    name: "string",
+    owner: "Person",
+  },
+};
+
 interface ICar {
   make: string;
   model: string;
@@ -409,6 +428,16 @@ interface IUUIDPkObject {
   _id: UUID;
 }
 
+class TestObject extends Realm.Object {
+  doubleCol!: number;
+  static schema: Realm.ObjectSchema = {
+    name: "TestObject",
+    properties: {
+      doubleCol: "double",
+    },
+  };
+}
+
 class PersonObject extends Realm.Object {
   name!: string;
   age!: number;
@@ -462,6 +491,7 @@ describe("Realmtest", () => {
     afterEach(() => {
       Realm.clearTestState();
     });
+
     it("by object works", () => {
       const realm = new Realm({ schema: [CarSchema] });
       realm.write(() => {
@@ -607,68 +637,871 @@ describe("Realmtest", () => {
       });
     });
   });
-  describe("close method", () => {
-    openRealmBeforeEach({ schema: [] });
-    it("isClosed works", function (this: RealmContext) {
-      expect(this.realm.isClosed).to.be.false;
-      this.realm.close();
-      expect(this.realm.isClosed).to.be.true;
-    });
-    it("isClosed works", function (this: RealmContext) {
-      this.realm.close();
-      expect(this.realm.isClosed).to.be.true;
-      this.realm.close();
-      expect(this.realm.isClosed).to.be.true;
-    });
-  });
-  describe("open method", () => {
-    afterEach(() => {
-      Realm.clearTestState();
-    });
-    it("Can open a realm", () => {
-      const realm = new Realm({ schema: [TestObjectSchema], schemaVersion: 1 });
-      realm.write(() => {
-        realm.create("TestObject", [1]);
-      });
-      realm.close();
 
-      return Realm.open({ schema: [TestObjectSchema], schemaVersion: 2 }).then((realm) => {
-        const objects = realm.objects<ITestObject>("TestObject");
-        expect(objects.length).equals(1);
-        expect(objects[0].doubleCol).equals(1.0);
+  describe("methods", () => {
+    describe("close", () => {
+      openRealmBeforeEach({ schema: [] });
+
+      it("yields correct value from isClosed", function (this: RealmContext) {
+        expect(this.realm.isClosed).to.be.false;
+        this.realm.close();
+        expect(this.realm.isClosed).to.be.true;
+      });
+    });
+    describe("write", () => {
+      openRealmBeforeEach({
+        schema: [
+          IntPrimarySchema,
+          TestObjectSchema,
+          AllTypesSchema,
+          LinkToAllTypesObjectSchema,
+          DefaultValuesSchema,
+          PersonObject,
+        ],
+      });
+
+      it("exceptions behave correctly", function (this: RealmContext) {
+        expect(() =>
+          this.realm.write(() => {
+            throw new Error("Inner exception message");
+          }),
+        ).throws("Inner exception message");
+
+        // writes should be possible after caught exception
+        this.realm.write(() => {
+          this.realm.create("TestObject", { doubleCol: 1 });
+        });
+        expect(1).equals(this.realm.objects("TestObject").length);
+
+        this.realm.write(() => {
+          // nested transactions not supported, ts-expect-error does not work here.
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          expect(() => this.realm.write(() => {})).throws("The Realm is already in a write transaction");
+        });
+      });
+
+      it("returns from write callback work", function (this: RealmContext) {
+        const foobar = this.realm.write(() => {
+          return { foo: "bar" };
+        });
+        expect(foobar.foo).equals("bar", "wrong foobar object property value");
+
+        const testObject = this.realm.write(() => {
+          return this.realm.create<ITestObject>(TestObjectSchema.name, { doubleCol: 1 });
+        });
+        // object was created
+        expect(1).equals(this.realm.objects(TestObjectSchema.name).length);
+        // object was returned
+        const objects = this.realm.objects<ITestObject>("TestObject");
+        expect(objects[0].doubleCol).equals(testObject.doubleCol, "wrong test object property value");
+      });
+      it("error message form invalid write is correct", function (this: RealmContext) {
+        expect(() => {
+          this.realm.write(() => {
+            const p1 = this.realm.create<PersonObject>(PersonObject.schema.name, { name: "Ari", age: 10 });
+            //@ts-expect-error assigning string to int
+            p1.age = "Ten";
+          });
+        }).throws("PersonObject.age must be of type 'number', got 'string' ('Ten')");
+      });
+    });
+    describe("create and update", () => {
+      openRealmBeforeEach({
+        schema: [
+          TestObjectSchema,
+          AllPrimaryTypesSchema,
+          StringPrimarySchema,
+          IntPrimarySchema,
+          OptionalStringSchema,
+          DefaultValuesSchema,
+          ObjectSchema,
+          AllTypesSchema,
+          LinkToAllTypesObjectSchema,
+          ObjectWithoutPropertiesSchema,
+          PersonObject,
+        ],
+      });
+      it("Creating object with wrong property types throw correct error message", function (this: RealmContext) {
+        expect(() => {
+          this.realm.write(() => {
+            this.realm.create(PersonObject.schema.name, { name: "Ari", age: "Ten" });
+          });
+        }).throws("PersonObject.age must be of type 'number', got 'string' ('Ten')");
+      });
+      it("create only works within transaction", function (this: RealmContext) {
+        expect(() => this.realm.create<ITestObject>(TestObjectSchema.name, { doubleCol: 1 })).throws(
+          "Cannot modify managed objects outside of a write transaction.",
+        );
+
+        this.realm.write(() => {
+          this.realm.create("TestObject", { doubleCol: 1 });
+          this.realm.create("TestObject", { doubleCol: 2 });
+        });
+
+        const objects = this.realm.objects<ITestObject>(TestObjectSchema.name);
+        expect(objects.length).equals(2, "wrong object count");
+        expect(objects[0].doubleCol).equals(1, "wrong object property value");
+        expect(objects[1].doubleCol).equals(2, "wrong object property value");
+      });
+
+      it("with invalid arguments throw", function (this: RealmContext) {
+        this.realm.write(() => {
+          //@ts-expect-error testing realm create with invalid arguments
+          expect(() => this.realm.create(TestObjectSchema.name, { doubleCol: 1 }, "foo")).throws(
+            "Unsupported 'updateMode'. Only 'never', 'modified' or 'all' is supported.",
+          );
+        });
+      });
+
+      it("create updates already existing object with new properties", function (this: RealmContext) {
+        this.realm.write(() => {
+          const objects = this.realm.objects(AllPrimaryTypesSchema.name);
+
+          // Create Initial object
+          const obj1 = this.realm.create(AllPrimaryTypesSchema.name, {
+            primaryCol: "33",
+            boolCol: false,
+            intCol: 1,
+            floatCol: 1.1,
+            doubleCol: 1.11,
+            stringCol: "1",
+            dateCol: new Date(1),
+            dataCol: new ArrayBuffer(1),
+            objectCol: { doubleCol: 1 },
+            arrayCol: [{ doubleCol: 1 }],
+          });
+
+          // Update object
+          const obj2 = this.realm.create(
+            AllPrimaryTypesSchema.name,
+            {
+              primaryCol: "33",
+              boolCol: true,
+              intCol: 2,
+              floatCol: 2.2,
+              doubleCol: 2.22,
+              stringCol: "2",
+              dateCol: new Date(2),
+              dataCol: new ArrayBuffer(2),
+              objectCol: { doubleCol: 2 },
+              arrayCol: [{ doubleCol: 2 }],
+            },
+            Realm.UpdateMode.All,
+          );
+
+          expect(objects.length).equals(1);
+          expect(obj2.stringCol).equals("2");
+          expect(obj2.boolCol).equals(true);
+          expect(obj2.intCol).equals(2);
+          expectDecimalEqual(obj2.floatCol, 2.2);
+          expectDecimalEqual(obj2.doubleCol, 2.22);
+          expect(obj2.dateCol.getTime()).equals(2);
+          expect(obj2.dataCol.byteLength).equals(2);
+          expect(obj2.objectCol.doubleCol).equals(2);
+          expect(obj2.arrayCol.length).equals(1);
+          expect(obj2.arrayCol[0].doubleCol).equals(2);
+        });
+      });
+
+      it("create updates already existing object with same properties", function (this: RealmContext) {
+        this.realm.write(() => {
+          const objects = this.realm.objects(AllPrimaryTypesSchema.name);
+          expect(objects.length).equals(0);
+          // Create Initial object
+          const obj1 = this.realm.create(AllPrimaryTypesSchema.name, {
+            primaryCol: "34",
+            boolCol: false,
+            intCol: 1,
+            floatCol: 1.1,
+            doubleCol: 1.11,
+            stringCol: "1",
+            dateCol: new Date(1),
+            dataCol: new ArrayBuffer(1),
+            objectCol: { doubleCol: 1 },
+            arrayCol: [{ doubleCol: 1 }],
+          });
+          // Update object
+          const obj2 = this.realm.create(
+            AllPrimaryTypesSchema.name,
+            {
+              primaryCol: "34",
+              boolCol: false,
+              intCol: 1,
+              floatCol: 1.1,
+              doubleCol: 1.11,
+              stringCol: "1",
+              dateCol: new Date(1),
+              dataCol: new ArrayBuffer(1),
+              objectCol: { doubleCol: 1 },
+              arrayCol: [{ doubleCol: 1 }],
+            },
+            Realm.UpdateMode.Modified,
+          );
+          expect(objects.length).equals(1);
+          expect(obj2.stringCol).equals("1");
+          expect(obj2.boolCol).equals(false);
+          expect(obj2.intCol).equals(1);
+          expectDecimalEqual(obj2.floatCol, 1.1);
+          expectDecimalEqual(obj2.doubleCol, 1.11);
+          expect(obj2.dateCol.getTime()).equals(1);
+          expect(obj2.dataCol.byteLength).equals(1);
+          expect(obj2.objectCol.doubleCol).equals(1);
+          expect(obj2.arrayCol.length).equals(1);
+          expect(obj2.arrayCol[0].doubleCol).equals(1);
+        });
+      });
+
+      it("diffed updates only trigger notificaitons for changed values", async function (this: RealmContext) {
+        type iAllPrimaryTypesChanges = [Realm.Collection<IAllPrimaryTypes>, CollectionChangeSet];
+        let resolve: ((value: iAllPrimaryTypesChanges) => void) | undefined;
+        this.realm.objects<IAllPrimaryTypes>(AllPrimaryTypesSchema.name).addListener((objects, changes) => {
+          resolve?.([objects, changes]);
+          resolve = undefined;
+        });
+
+        let [objects, changes] = await new Promise<iAllPrimaryTypesChanges>((r) => (resolve = r));
+        expect(changes.insertions.length).equals(0);
+        expect(objects.length).equals(0);
+
+        const template = Realm.createTemplateObject(AllPrimaryTypesSchema);
+
+        // First notification -> Object created
+        this.realm.write(() => {
+          // Create Initial object
+          this.realm.create(
+            AllPrimaryTypesSchema.name,
+            Object.assign(template, {
+              primaryCol: "35",
+              dataCol: new ArrayBuffer(1),
+              boolCol: false,
+            }),
+          );
+          this.realm.create(
+            AllPrimaryTypesSchema.name,
+            Object.assign(template, {
+              primaryCol: "36",
+              boolCol: false,
+            }),
+          );
+        });
+        [objects, changes] = await new Promise((r) => (resolve = r));
+        expect(changes.insertions.length).equals(2);
+        expect(objects[0].boolCol).equals(false);
+
+        this.realm.write(() => {
+          // Update object with a change in value.
+          this.realm.create(
+            AllPrimaryTypesSchema.name,
+            {
+              primaryCol: "35",
+              boolCol: true,
+            },
+            Realm.UpdateMode.Modified,
+          );
+        });
+        [objects, changes] = await new Promise((r) => (resolve = r));
+        expect(changes.newModifications.length).equals(1);
+        expect(objects[0].boolCol).equals(true);
+
+        this.realm.write(() => {
+          // Update object with no change in value
+          this.realm.create(
+            AllPrimaryTypesSchema.name,
+            {
+              primaryCol: "35",
+              boolCol: true,
+            },
+            Realm.UpdateMode.Modified,
+          );
+
+          // Update other object to ensure that notifications are triggered
+          this.realm.create(
+            AllPrimaryTypesSchema.name,
+            {
+              primaryCol: "36",
+              boolCol: true,
+            },
+            Realm.UpdateMode.All,
+          );
+        });
+        [objects, changes] = await new Promise((r) => (resolve = r));
+        expect(changes.newModifications.length).equals(1);
+        expect(changes.newModifications[0]).equals(1);
+
+        this.realm.write(() => {
+          // Update object with no change in value and no diffed update.
+          // This should still trigger a notification
+          this.realm.create(
+            AllPrimaryTypesSchema.name,
+            {
+              primaryCol: "35",
+              boolCol: true,
+            },
+            Realm.UpdateMode.All,
+          );
+        });
+        [objects, changes] = await new Promise((r) => (resolve = r));
+        expect(changes.newModifications.length).equals(1);
+        expect(changes.newModifications[0]).equals(0);
+        expect(objects[0].boolCol).equals(true);
+      });
+      it("partial default values are set correctly", async function (this: RealmContext) {
+        this.realm.write(() => {
+          this.realm.create(OptionalStringSchema.name, { name: "Alex" });
+          this.realm.create(OptionalStringSchema.name, { name: "Birger" }, Realm.UpdateMode.Modified);
+        });
+
+        const objs = this.realm.objects<IOptionalString>(OptionalStringSchema.name);
+
+        expect(objs[0]["name"]).equals("Alex");
+        expect(objs[0]["age"]).equals(0);
+
+        expect(objs[1]["name"]).equals("Birger");
+        expect(objs[1]["age"]).equals(0);
+
+        this.realm.close();
+      });
+      it("with primarykeys", async function (this: RealmContext) {
+        this.realm.write(() => {
+          const obj0 = this.realm.create<IIntPrimary>(IntPrimarySchema.name, {
+            primaryCol: 0,
+            valueCol: "val0",
+          });
+
+          expect(() => {
+            this.realm.create(IntPrimarySchema.name, {
+              primaryCol: 0,
+              valueCol: "val0",
+            });
+          }).throws(
+            "Attempting to create an object of type 'IntPrimaryObject' with an existing primary key value '0'.",
+          );
+
+          this.realm.create(
+            IntPrimarySchema.name,
+            {
+              primaryCol: 1,
+              valueCol: "val1",
+            },
+            Realm.UpdateMode.All,
+          );
+
+          const objects = this.realm.objects(IntPrimarySchema.name);
+          expect(objects.length).equals(2);
+
+          this.realm.create(
+            IntPrimarySchema.name,
+            {
+              primaryCol: 0,
+              valueCol: "newVal0",
+            },
+            Realm.UpdateMode.All,
+          );
+
+          expect(obj0.valueCol).equals("newVal0");
+          expect(objects.length).equals(2);
+
+          this.realm.create(IntPrimarySchema.name, { primaryCol: 0 }, Realm.UpdateMode.All);
+          expect(obj0.valueCol).equals("newVal0");
+        });
+      });
+      it("upsert works", async function (this: RealmContext) {
+        this.realm.write(() => {
+          const values = {
+            primaryCol: "0",
+            boolCol: true,
+            intCol: 1,
+            floatCol: 1.1,
+            doubleCol: 1.11,
+            stringCol: "1",
+            dateCol: new Date(1),
+            dataCol: new ArrayBuffer(1),
+            objectCol: { doubleCol: 1 },
+            arrayCol: [],
+          };
+          const obj0 = this.realm.create<IAllPrimaryTypes>(AllPrimaryTypesSchema.name, values);
+          expect(() => this.realm.create(AllPrimaryTypesSchema.name, values)).throws(
+            "Attempting to create an object of type 'AllPrimaryTypesObject' with an existing primary key value ''0''.",
+          );
+          const obj1 = this.realm.create<IAllPrimaryTypes>(
+            AllPrimaryTypesSchema.name,
+            {
+              primaryCol: "1",
+              boolCol: false,
+              intCol: 2,
+              floatCol: 2.2,
+              doubleCol: 2.22,
+              stringCol: "2",
+              dateCol: new Date(2),
+              dataCol: new ArrayBuffer(2),
+              objectCol: { doubleCol: 0 },
+              arrayCol: [{ doubleCol: 2 }],
+            },
+            //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
+            true,
+          );
+          const objects = this.realm.objects(AllPrimaryTypesSchema.name);
+          expect(objects.length).equals(2);
+          this.realm.create(
+            //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
+            AllPrimaryTypesSchema.name,
+            {
+              primaryCol: "0",
+              boolCol: false,
+              intCol: 2,
+              floatCol: 2.2,
+              doubleCol: 2.22,
+              stringCol: "2",
+              dateCol: new Date(2),
+              dataCol: new ArrayBuffer(2),
+              objectCol: null,
+              arrayCol: [{ doubleCol: 2 }],
+            },
+            true,
+          );
+          expect(objects.length).equals(2);
+          expect(obj0.stringCol).equals("2");
+          expect(obj0.boolCol).equals(false);
+          expect(obj0.intCol).equals(2);
+          expectDecimalEqual(obj0.floatCol, 2.2);
+          expectDecimalEqual(obj0.doubleCol, 2.22);
+          expect(obj0.dateCol.getTime()).equals(2);
+          expect(obj0.dataCol.byteLength).equals(2);
+          expect(obj0.objectCol).equals(null);
+          expect(obj0.arrayCol.length).equals(1);
+          //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
+          this.realm.create(AllPrimaryTypesSchema.name, { primaryCol: "0" }, true);
+          //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
+          this.realm.create(AllPrimaryTypesSchema.name, { primaryCol: "1" }, true);
+          expect(obj0.stringCol).equals("2");
+          expect(obj0.objectCol).equals(null);
+          expect(obj1.objectCol.doubleCol).equals(0);
+          this.realm.create(
+            //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
+            AllPrimaryTypesSchema.name,
+            {
+              primaryCol: "0",
+              stringCol: "3",
+              objectCol: { doubleCol: 0 },
+            },
+            true,
+          );
+          expect(obj0.stringCol).equals("3");
+          expect(obj0.boolCol).equals(false);
+          expect(obj0.intCol).equals(2);
+          expectDecimalEqual(obj0.floatCol, 2.2);
+          expectDecimalEqual(obj0.doubleCol, 2.22);
+          expect(obj0.dateCol.getTime()).equals(2);
+          expect(obj0.dataCol.byteLength).equals(2);
+          expect(obj0.objectCol.doubleCol).equals(0);
+          expect(obj0.arrayCol.length).equals(1);
+          //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
+          this.realm.create(AllPrimaryTypesSchema.name, { primaryCol: "0", objectCol: undefined }, true);
+          //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
+          this.realm.create(AllPrimaryTypesSchema.name, { primaryCol: "1", objectCol: null }, true);
+          expect(obj0.objectCol.doubleCol).equals(0);
+          expect(obj1.objectCol).equals(null);
+          // test with string primaries
+          const obj = this.realm.create<IStringPrimary>(StringPrimarySchema.name, {
+            primaryCol: "0",
+            valueCol: 0,
+          });
+          expect(obj.valueCol).equals(0);
+          this.realm.create(
+            //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
+            StringPrimarySchema.name,
+            {
+              primaryCol: "0",
+              valueCol: 1,
+            },
+            true,
+          );
+          expect(obj.valueCol).equals(1);
+        });
+      });
+      it("all default values are set correctly on object", async function (this: RealmContext) {
+        const createAndTestObject = () => {
+          const obj = this.realm.create<IDefaultValues>(DefaultValuesSchema.name, {});
+          const properties = DefaultValuesSchema.properties;
+
+          expect(obj.boolCol).equals(properties.boolCol.default);
+          expect(obj.intCol).equals(properties.intCol.default);
+          expectDecimalEqual(obj.floatCol, properties.floatCol.default);
+          expectDecimalEqual(obj.doubleCol, properties.doubleCol.default);
+          expect(obj.stringCol).equals(properties.stringCol.default);
+          expect(obj.dateCol.getTime()).equals(properties.dateCol.default.getTime());
+          expect(obj.dataCol.byteLength).equals(properties.dataCol.default.byteLength);
+          expect(obj.objectCol.doubleCol).equals(properties.objectCol.default.doubleCol);
+          expect(obj.nullObjectCol).equals(null);
+          expect(obj.arrayCol.length).equals(properties.arrayCol.default.length);
+          expect(obj.arrayCol[0].doubleCol).equals(properties.arrayCol.default[0].doubleCol);
+        };
+
+        this.realm.write(createAndTestObject);
+        this.realm.close();
+      });
+      it("creating an object after changing default values reflect changes", async function (this: RealmContext) {
+        let realm = new Realm({ schema: [ObjectSchema] });
+
+        const createAndTestObject = () => {
+          const object = realm.create<IObject>(ObjectSchema.name, {});
+          expect(object.intCol).equals(ObjectSchema.properties.intCol.default);
+        };
+
+        realm.write(createAndTestObject);
+
+        ObjectSchema.properties.intCol.default++;
+
+        realm = new Realm({ schema: [ObjectSchema] });
+        realm.write(createAndTestObject);
+      });
+      it("with constructors work", async function (this: RealmContext) {
+        let customCreated = 0;
+        class CustomObject extends Realm.Object {
+          constructor(realm: Realm) {
+            //@ts-expect-error TYPEBUG: Realm.Object expects values as second argument.
+            super(realm);
+            customCreated++;
+          }
+          static schema = {
+            name: "CustomObject",
+            properties: {
+              intCol: "int",
+            },
+          };
+        }
+        class InvalidObject extends Realm.Object {
+          static schema: Realm.ObjectSchema;
+        }
+
+        expect(() => new Realm({ schema: [InvalidObject] })).throws(
+          "Realm object constructor must have a 'schema' property.",
+        );
+
+        InvalidObject.schema = {
+          name: "InvalidObject",
+          properties: {
+            intCol: "int",
+          },
+        };
+        Object.setPrototypeOf(InvalidObject, Realm.Object);
+        let realm = new Realm({ schema: [CustomObject, InvalidObject] });
+
+        realm.write(() => {
+          let object = realm.create("CustomObject", { intCol: 1 });
+          expect(object).instanceof(CustomObject);
+          expect(Object.getPrototypeOf(object) == CustomObject.prototype).to.be.true;
+          expect(customCreated).equals(0);
+
+          // Should be able to create object by passing in constructor.
+          object = realm.create(CustomObject, { intCol: 2 });
+          expect(object).instanceof(CustomObject);
+          expect(Object.getPrototypeOf(object) == CustomObject.prototype).to.be.true;
+          expect(customCreated).equals(0);
+        });
+
+        realm.write(() => {
+          realm.create("InvalidObject", { intCol: 1 });
+        });
+
+        // Only the original constructor should be valid.
+        class InvalidCustomObject extends Realm.Object {
+          static schema: Realm.ObjectSchema;
+        }
+        InvalidCustomObject.schema = CustomObject.schema;
+
+        expect(() => {
+          realm.write(() => {
+            realm.create(InvalidCustomObject, { intCol: 1 });
+          });
+        }).throws("Constructor was not registered in the schema for this Realm");
+        realm.close();
+
+        realm = new Realm({ schema: [CustomObject, InvalidObject] });
+        const obj = realm.objects("CustomObject")[0];
+        expect(realm.objects("CustomObject")[0]).instanceof(CustomObject);
+        expect(realm.objects(CustomObject).length > 0).to.be.true;
         realm.close();
       });
+      it("with changing constructors", async function (this: RealmContext) {
+        class CustomObject extends Realm.Object {
+          static schema = {
+            name: "CustomObject",
+            properties: {
+              intCol: "int",
+            },
+          };
+        }
+
+        let realm = new Realm({ schema: [CustomObject] });
+        realm.write(() => {
+          const object = realm.create("CustomObject", { intCol: 1 });
+          expect(object).instanceof(CustomObject);
+        });
+
+        class NewCustomObject extends Realm.Object {
+          static schema: Realm.ObjectSchema;
+        }
+        NewCustomObject.schema = CustomObject.schema;
+
+        realm = new Realm({ schema: [NewCustomObject] });
+        realm.write(() => {
+          const object = realm.create("CustomObject", { intCol: 1 });
+          expect(object).instanceof(NewCustomObject);
+        });
+      });
+      it("createWithTemplate works", async function (this: RealmContext) {
+        this.realm.write(() => {
+          // Test all simple data types
+          const template = Realm.createTemplateObject(AllTypesSchema);
+          expect(Object.keys(template).length).equals(7);
+          let unmanagedObj = Object.assign(template, { boolCol: true, dataCol: new ArrayBuffer(1) });
+          const managedObj1 = this.realm.create<IAllTypes>(AllTypesSchema.name, unmanagedObj);
+          expect(managedObj1.boolCol).to.be.true;
+
+          // Default values
+          unmanagedObj = Realm.createTemplateObject(DefaultValuesSchema);
+          expect(Object.keys(unmanagedObj).length).equals(10);
+          const managedObj = this.realm.create<IDefaultValues>(DefaultValuesSchema.name, unmanagedObj);
+          expect(managedObj.boolCol).equals(true);
+          expect(managedObj.intCol).equals(-1);
+          expectDecimalEqual(managedObj.floatCol, -1.1);
+          expectDecimalEqual(managedObj.doubleCol, -1.11);
+          expect(managedObj.stringCol).equals("defaultString");
+          expect(managedObj.dateCol.getTime()).equals(1);
+          expect(managedObj.dataCol.byteLength).equals(1);
+          expect(managedObj.objectCol.doubleCol).equals(1);
+          expect(managedObj.nullObjectCol).equals(null);
+          expect(managedObj.arrayCol[0].doubleCol).equals(2);
+        });
+      });
+      it("creating objects without properties work", async function (this: RealmContext) {
+        this.realm.write(() => {
+          this.realm.create(ObjectWithoutPropertiesSchema.name, {});
+        });
+        this.realm.objects(ObjectWithoutPropertiesSchema.name);
+        this.realm.close();
+      });
     });
-    it("can open a realm with shouldCompactOnLaunch", () => {
-      let called = false;
-      const shouldCompact = () => {
-        called = true;
-        return true;
+  });
+
+  describe("static methods", () => {
+    describe("open", () => {
+      afterEach(() => {
+        Realm.clearTestState();
+      });
+
+      it("Can open a realm", () => {
+        const realm = new Realm({ schema: [TestObjectSchema], schemaVersion: 1 });
+        realm.write(() => {
+          realm.create("TestObject", [1]);
+        });
+        realm.close();
+
+        return Realm.open({ schema: [TestObjectSchema], schemaVersion: 2 }).then((realm) => {
+          const objects = realm.objects<ITestObject>("TestObject");
+          expect(objects.length).equals(1);
+          expect(objects[0].doubleCol).equals(1.0);
+          realm.close();
+        });
+      });
+
+      it("can open a realm with shouldCompactOnLaunch", () => {
+        let called = false;
+        const shouldCompact = () => {
+          called = true;
+          return true;
+        };
+
+        return Realm.open({ schema: [TestObjectSchema], shouldCompact }).then((realm) => {
+          expect(called).to.be.true;
+          realm.close();
+        });
+      });
+
+      it("with no config works", () => {
+        const realm = new Realm({ schema: [TestObjectSchema], schemaVersion: 1 });
+        realm.write(() => {
+          realm.create("TestObject", [1]);
+        });
+        realm.close();
+
+        //@ts-expect-error TYPEBUG: opening without a config works in legacy test but is not accepted by typesystem.
+        return Realm.open().then((realm) => {
+          const objects = realm.objects<ITestObject>("TestObject");
+          expect(objects.length).equals(1);
+          expect(objects[0].doubleCol).equals(1.0);
+          realm.close();
+        });
+      });
+    });
+    describe("exists", () => {
+      importAppBefore("with-db");
+      it("yields correct value on a local realm", () => {
+        const config = { schema: [TestObject] };
+
+        expect(Realm.exists(config)).to.be.false;
+        new Realm(config).close();
+        expect(Realm.exists(config)).to.be.true;
+      });
+      it.skipIf(environment.missingServerm, "yields correct value on a synced realm", function (this: AppContext) {
+        const credentials = Realm.Credentials.anonymous();
+
+        return this.app.logIn(credentials).then((user) => {
+          const config = {
+            schema: [TestObjectWithPkSchema],
+            sync: {
+              user,
+              partitionValue: "LoLo",
+            },
+          };
+          expect(Realm.exists(config)).to.be.false;
+          new Realm(config).close();
+          expect(Realm.exists(config)).to.be.true;
+        });
+      });
+    });
+    describe("objects", () => {
+      openRealmBeforeEach({ schema: [PersonObject, DefaultValuesSchema, TestObjectSchema] });
+      it("throws on invalid operations", function (this: RealmContext) {
+        this.realm.write(() => {
+          this.realm.create(PersonObject.schema.name, { name: "Ari", age: 10 });
+          this.realm.create(PersonObject.schema.name, { name: "Tim", age: 11 });
+          this.realm.create(PersonObject.schema.name, { name: "Bjarne", age: 12 });
+          this.realm.create(PersonObject.schema.name, { name: "Alex", age: 12, married: true });
+        });
+
+        // Should be able to pass constructor for getting objects.
+        const objects = this.realm.objects(PersonObject.schema.name);
+        expect(objects[0]).instanceof(PersonObject);
+
+        class InvalidPerson extends Realm.Object {
+          static schema = PersonObject.schema;
+        }
+
+        //@ts-expect-error object without specifying type
+        expect(() => this.realm.objects()).throws("objectType must be of type 'string', got (undefined)");
+        //@ts-expect-error object without specifying type
+        expect(() => this.realm.objects([])).throws("objectType must be of type 'string', got ()");
+        expect(() => this.realm.objects("InvalidClass")).throws("Object type 'InvalidClass' not found in schema.");
+        //@ts-expect-error testing too many arguments for objects
+        expect(() => this.realm.objects(PersonObject.schema.name, "truepredicate")).throws(
+          "Invalid arguments: at most 1 expected, but 2 supplied.",
+        );
+        expect(() => this.realm.objects(InvalidPerson)).throws(
+          "Constructor was not registered in the schema for this Realm",
+        );
+
+        const person = this.realm.objects<PersonObject>(PersonObject.schema.name)[0];
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        const listenerCallback = () => {};
+        this.realm.addListener("change", listenerCallback);
+
+        // The tests below assert that everthing throws when
+        // operating on a closed realm
+        this.realm.close();
+
+        expect(() => console.log("Name: ", person.name)).throws(
+          "Accessing object of type PersonObject which has been invalidated or deleted",
+        );
+
+        expect(() => this.realm.objects(PersonObject.schema.name)).throws("Cannot access realm that has been closed");
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        expect(() => this.realm.addListener("change", () => {})).throws("Cannot access realm that has been closed");
+        expect(() => this.realm.create(PersonObject.schema.name, { name: "Ari", age: 10 })).throws(
+          "Cannot access realm that has been closed",
+        );
+        expect(() => this.realm.delete(person)).throws("Cannot access realm that has been closed");
+        expect(() => this.realm.deleteAll()).throws("Cannot access realm that has been closed");
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        expect(() => this.realm.write(() => {})).throws("Cannot access realm that has been closed");
+        expect(() => this.realm.removeListener("change", listenerCallback)).throws(
+          "Cannot access realm that has been closed",
+        );
+        expect(() => this.realm.removeAllListeners()).throws("Cannot access realm that has been closed");
+      });
+    });
+    describe("deleteFile", () => {
+      beforeEach(() => {
+        Realm.clearTestState();
+      });
+
+      function expectDeletion(path?: string) {
+        // Create the Realm with a schema
+        const realm = new Realm({ path, schema: [PersonSchema, DogSchema] });
+        realm.close();
+        // Delete the Realm
+        Realm.deleteFile({ path });
+        // Re-open the Realm without a schema and expect it to be empty
+        const reopenedRealm = new Realm({ path });
+        expect(reopenedRealm.schema).deep.equals([]);
+      }
+
+      it("deletes the default Realm", () => {
+        expectDeletion();
+      });
+
+      // TODO: Fix the issue on Android that prevents this from passing
+      // @see https://github.com/realm/realm-js-private/issues/507
+
+      it.skipIf(environment.android, "deletes a Realm with a space in its path", () => {
+        expectDeletion("my realm.realm");
+      });
+    });
+  });
+
+  describe("indexed properties", () => {
+    openRealmBeforeEach({ schema: [IndexedTypesSchema] });
+    it("works", function (this: RealmContext) {
+      this.realm.write(() => {
+        this.realm.create(IndexedTypesSchema.name, {
+          boolCol: true,
+          intCol: 1,
+          stringCol: "1",
+          dateCol: new Date(1),
+        });
+      });
+
+      const NotIndexed = {
+        name: "NotIndexedObject",
+        properties: {
+          floatCol: { type: "float", indexed: false },
+        },
       };
 
-      return Realm.open({ schema: [TestObjectSchema], shouldCompact }).then((realm) => {
-        expect(called).to.be.true;
-        realm.close();
-      });
-    });
-    it("with no config works", () => {
-      const realm = new Realm({ schema: [TestObjectSchema], schemaVersion: 1 });
-      realm.write(() => {
-        realm.create("TestObject", [1]);
-      });
-      realm.close();
+      new Realm({ schema: [NotIndexed], path: "1.realm" });
 
-      //@ts-expect-error TYPEBUG: opening without a config works in legacy test but is not accepted by typesystem.
-      return Realm.open().then((realm) => {
-        const objects = realm.objects<ITestObject>("TestObject");
-        expect(objects.length).equals(1);
-        expect(objects[0].doubleCol).equals(1.0);
-        realm.close();
-      });
+      const IndexedSchema: Realm.ObjectSchema = {
+        name: "IndexedSchema",
+        properties: {},
+      };
+      expect(() => {
+        IndexedSchema.properties = { floatCol: { type: "float", indexed: true } };
+        new Realm({ schema: [IndexedSchema], path: "2.realm" });
+      }).throws("Property 'IndexedSchema.floatCol' of type 'float' cannot be indexed.");
+
+      expect(() => {
+        IndexedSchema.properties = { doubleCol: { type: "double", indexed: true } };
+        new Realm({ schema: [IndexedSchema], path: "3.realm" });
+      }).throws("Property 'IndexedSchema.doubleCol' of type 'double' cannot be indexed.");
+
+      expect(() => {
+        IndexedSchema.properties = { dataCol: { type: "data", indexed: true } };
+        new Realm({ schema: [IndexedSchema], path: "4.realm" });
+      }).throws("Property 'IndexedSchema.dataCol' of type 'data' cannot be indexed.");
+
+      // primary key
+      IndexedSchema.properties = { intCol: { type: "int", indexed: true } };
+      IndexedSchema.primaryKey = "intCol";
+
+      // Test this doesn't throw
+      new Realm({ schema: [IndexedSchema], path: "5.realm" });
     });
   });
+
   describe("stackTrace", () => {
     openRealmBeforeEach({ schema: [] });
+
     it("gives correct function and error message", function (this: RealmContext) {
       function failingFunction() {
         throw new Error("not implemented");
@@ -686,35 +1519,7 @@ describe("Realmtest", () => {
       }
     });
   });
-  // TODO wait for app merges
-  // describe.skipIf(environment.missingServer, "with sync", () => {
-  //   it("realm exists work", () => {
-  //     // Local Realms
-  //     const config = { schema: [TestObject] };
 
-  //     expect(Realm.exists(config)).to.be.false;
-  //     new Realm(config).close();
-  //     expect(Realm.exists(config)).to.be.true;
-
-  //     const appConfig = nodeRequire("./support/testConfig").integrationAppConfig;
-
-  //     const app = new Realm.App(appConfig);
-  //     const credentials = Realm.Credentials.anonymous();
-
-  //     return app.logIn(credentials).then((user) => {
-  //       const config = {
-  //         schema: [schemas.TestObjectWithPk],
-  //         sync: {
-  //           user,
-  //           partitionValue: "LoLo",
-  //         },
-  //       };
-  //       TestCase.assertFalse(Realm.exists(config));
-  //       new Realm(config).close();
-  //       TestCase.assertTrue(Realm.exists(config));
-  //     });
-  //   });
-  // });
   describe("data initialization", () => {
     afterEach(() => {
       Realm.clearTestState();
@@ -752,682 +1557,6 @@ describe("Realmtest", () => {
       const realm2 = new Realm(config);
       validateRealm(realm2);
       realm2.close();
-    });
-  });
-  describe("write method", () => {
-    openRealmBeforeEach({
-      schema: [
-        IntPrimarySchema,
-        TestObjectSchema,
-        AllTypesSchema,
-        LinkToAllTypesObjectSchema,
-        DefaultValuesSchema,
-        PersonObject,
-      ],
-    });
-
-    it("exceptions behave correctly", function (this: RealmContext) {
-      expect(() =>
-        this.realm.write(() => {
-          throw new Error("Inner exception message");
-        }),
-      ).throws("Inner exception message");
-
-      // writes should be possible after caught exception
-      this.realm.write(() => {
-        this.realm.create("TestObject", { doubleCol: 1 });
-      });
-      expect(1).equals(this.realm.objects("TestObject").length);
-
-      this.realm.write(() => {
-        // nested transactions not supported, ts-expect-error does not work here.
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        expect(() => this.realm.write(() => {})).throws("The Realm is already in a write transaction");
-      });
-    });
-
-    it("returns from write callback work", function (this: RealmContext) {
-      const foobar = this.realm.write(() => {
-        return { foo: "bar" };
-      });
-      expect(foobar.foo).equals("bar", "wrong foobar object property value");
-
-      const testObject = this.realm.write(() => {
-        return this.realm.create<ITestObject>(TestObjectSchema.name, { doubleCol: 1 });
-      });
-      // object was created
-      expect(1).equals(this.realm.objects(TestObjectSchema.name).length);
-      // object was returned
-      const objects = this.realm.objects<ITestObject>("TestObject");
-      expect(objects[0].doubleCol).equals(testObject.doubleCol, "wrong test object property value");
-    });
-    it("error message form invalid write is correct", function (this: RealmContext) {
-      expect(() => {
-        this.realm.write(() => {
-          const p1 = this.realm.create<PersonObject>(PersonObject.schema.name, { name: "Ari", age: 10 });
-          //@ts-expect-error assigning string to int
-          p1.age = "Ten";
-        });
-      }).throws("PersonObject.age must be of type 'number', got 'string' ('Ten')");
-    });
-  });
-  describe("create and update", () => {
-    openRealmBeforeEach({
-      schema: [
-        TestObjectSchema,
-        AllPrimaryTypesSchema,
-        StringPrimarySchema,
-        IntPrimarySchema,
-        OptionalStringSchema,
-        DefaultValuesSchema,
-        ObjectSchema,
-        AllTypesSchema,
-        LinkToAllTypesObjectSchema,
-        ObjectWithoutPropertiesSchema,
-        PersonObject,
-      ],
-    });
-    it("Creating object with wrong property types throw correct error message", function (this: RealmContext) {
-      expect(() => {
-        this.realm.write(() => {
-          this.realm.create(PersonObject.schema.name, { name: "Ari", age: "Ten" });
-        });
-      }).throws("PersonObject.age must be of type 'number', got 'string' ('Ten')");
-    });
-    it("create only works within transaction", function (this: RealmContext) {
-      expect(() => this.realm.create<ITestObject>(TestObjectSchema.name, { doubleCol: 1 })).throws(
-        "Cannot modify managed objects outside of a write transaction.",
-      );
-
-      this.realm.write(() => {
-        this.realm.create("TestObject", { doubleCol: 1 });
-        this.realm.create("TestObject", { doubleCol: 2 });
-      });
-
-      const objects = this.realm.objects<ITestObject>(TestObjectSchema.name);
-      expect(objects.length).equals(2, "wrong object count");
-      expect(objects[0].doubleCol).equals(1, "wrong object property value");
-      expect(objects[1].doubleCol).equals(2, "wrong object property value");
-    });
-
-    it("with invalid arguments throw", function (this: RealmContext) {
-      this.realm.write(() => {
-        //@ts-expect-error testing realm create with invalid arguments
-        expect(() => this.realm.create(TestObjectSchema.name, { doubleCol: 1 }, "foo")).throws(
-          "Unsupported 'updateMode'. Only 'never', 'modified' or 'all' is supported.",
-        );
-      });
-    });
-
-    it("create updates already existing object with new properties", function (this: RealmContext) {
-      this.realm.write(() => {
-        const objects = this.realm.objects(AllPrimaryTypesSchema.name);
-
-        // Create Initial object
-        const obj1 = this.realm.create(AllPrimaryTypesSchema.name, {
-          primaryCol: "33",
-          boolCol: false,
-          intCol: 1,
-          floatCol: 1.1,
-          doubleCol: 1.11,
-          stringCol: "1",
-          dateCol: new Date(1),
-          dataCol: new ArrayBuffer(1),
-          objectCol: { doubleCol: 1 },
-          arrayCol: [{ doubleCol: 1 }],
-        });
-
-        // Update object
-        const obj2 = this.realm.create(
-          AllPrimaryTypesSchema.name,
-          {
-            primaryCol: "33",
-            boolCol: true,
-            intCol: 2,
-            floatCol: 2.2,
-            doubleCol: 2.22,
-            stringCol: "2",
-            dateCol: new Date(2),
-            dataCol: new ArrayBuffer(2),
-            objectCol: { doubleCol: 2 },
-            arrayCol: [{ doubleCol: 2 }],
-          },
-          Realm.UpdateMode.All,
-        );
-
-        expect(objects.length).equals(1);
-        expect(obj2.stringCol).equals("2");
-        expect(obj2.boolCol).equals(true);
-        expect(obj2.intCol).equals(2);
-        expectDecimalEqual(obj2.floatCol, 2.2);
-        expectDecimalEqual(obj2.doubleCol, 2.22);
-        expect(obj2.dateCol.getTime()).equals(2);
-        expect(obj2.dataCol.byteLength).equals(2);
-        expect(obj2.objectCol.doubleCol).equals(2);
-        expect(obj2.arrayCol.length).equals(1);
-        expect(obj2.arrayCol[0].doubleCol).equals(2);
-      });
-    });
-
-    it("create updates already existing object with same properties", function (this: RealmContext) {
-      this.realm.write(() => {
-        const objects = this.realm.objects(AllPrimaryTypesSchema.name);
-        expect(objects.length).equals(0);
-        // Create Initial object
-        const obj1 = this.realm.create(AllPrimaryTypesSchema.name, {
-          primaryCol: "34",
-          boolCol: false,
-          intCol: 1,
-          floatCol: 1.1,
-          doubleCol: 1.11,
-          stringCol: "1",
-          dateCol: new Date(1),
-          dataCol: new ArrayBuffer(1),
-          objectCol: { doubleCol: 1 },
-          arrayCol: [{ doubleCol: 1 }],
-        });
-        // Update object
-        const obj2 = this.realm.create(
-          AllPrimaryTypesSchema.name,
-          {
-            primaryCol: "34",
-            boolCol: false,
-            intCol: 1,
-            floatCol: 1.1,
-            doubleCol: 1.11,
-            stringCol: "1",
-            dateCol: new Date(1),
-            dataCol: new ArrayBuffer(1),
-            objectCol: { doubleCol: 1 },
-            arrayCol: [{ doubleCol: 1 }],
-          },
-          Realm.UpdateMode.Modified,
-        );
-        expect(objects.length).equals(1);
-        expect(obj2.stringCol).equals("1");
-        expect(obj2.boolCol).equals(false);
-        expect(obj2.intCol).equals(1);
-        expectDecimalEqual(obj2.floatCol, 1.1);
-        expectDecimalEqual(obj2.doubleCol, 1.11);
-        expect(obj2.dateCol.getTime()).equals(1);
-        expect(obj2.dataCol.byteLength).equals(1);
-        expect(obj2.objectCol.doubleCol).equals(1);
-        expect(obj2.arrayCol.length).equals(1);
-        expect(obj2.arrayCol[0].doubleCol).equals(1);
-      });
-    });
-
-    it("diffed updates only trigger notificaitons for changed values", async function (this: RealmContext) {
-      type iAllPrimaryTypesChanges = [Realm.Collection<IAllPrimaryTypes>, CollectionChangeSet];
-      let resolve: ((value: iAllPrimaryTypesChanges) => void) | undefined;
-      this.realm.objects<IAllPrimaryTypes>(AllPrimaryTypesSchema.name).addListener((objects, changes) => {
-        resolve?.([objects, changes]);
-        resolve = undefined;
-      });
-
-      let [objects, changes] = await new Promise<iAllPrimaryTypesChanges>((r) => (resolve = r));
-      expect(changes.insertions.length).equals(0);
-      expect(objects.length).equals(0);
-
-      const template = Realm.createTemplateObject(AllPrimaryTypesSchema);
-
-      // First notification -> Object created
-      this.realm.write(() => {
-        // Create Initial object
-        this.realm.create(
-          AllPrimaryTypesSchema.name,
-          Object.assign(template, {
-            primaryCol: "35",
-            dataCol: new ArrayBuffer(1),
-            boolCol: false,
-          }),
-        );
-        this.realm.create(
-          AllPrimaryTypesSchema.name,
-          Object.assign(template, {
-            primaryCol: "36",
-            boolCol: false,
-          }),
-        );
-      });
-      [objects, changes] = await new Promise((r) => (resolve = r));
-      expect(changes.insertions.length).equals(2);
-      expect(objects[0].boolCol).equals(false);
-
-      this.realm.write(() => {
-        // Update object with a change in value.
-        this.realm.create(
-          AllPrimaryTypesSchema.name,
-          {
-            primaryCol: "35",
-            boolCol: true,
-          },
-          Realm.UpdateMode.Modified,
-        );
-      });
-      [objects, changes] = await new Promise((r) => (resolve = r));
-      expect(changes.newModifications.length).equals(1);
-      expect(objects[0].boolCol).equals(true);
-
-      this.realm.write(() => {
-        // Update object with no change in value
-        this.realm.create(
-          AllPrimaryTypesSchema.name,
-          {
-            primaryCol: "35",
-            boolCol: true,
-          },
-          Realm.UpdateMode.Modified,
-        );
-
-        // Update other object to ensure that notifications are triggered
-        this.realm.create(
-          AllPrimaryTypesSchema.name,
-          {
-            primaryCol: "36",
-            boolCol: true,
-          },
-          Realm.UpdateMode.All,
-        );
-      });
-      [objects, changes] = await new Promise((r) => (resolve = r));
-      expect(changes.newModifications.length).equals(1);
-      expect(changes.newModifications[0]).equals(1);
-
-      this.realm.write(() => {
-        // Update object with no change in value and no diffed update.
-        // This should still trigger a notification
-        this.realm.create(
-          AllPrimaryTypesSchema.name,
-          {
-            primaryCol: "35",
-            boolCol: true,
-          },
-          Realm.UpdateMode.All,
-        );
-      });
-      [objects, changes] = await new Promise((r) => (resolve = r));
-      expect(changes.newModifications.length).equals(1);
-      expect(changes.newModifications[0]).equals(0);
-      expect(objects[0].boolCol).equals(true);
-    });
-    it("partial default values are set correctly", async function (this: RealmContext) {
-      this.realm.write(() => {
-        this.realm.create(OptionalStringSchema.name, { name: "Alex" });
-        this.realm.create(OptionalStringSchema.name, { name: "Birger" }, Realm.UpdateMode.Modified);
-      });
-
-      const objs = this.realm.objects<IOptionalString>(OptionalStringSchema.name);
-
-      expect(objs[0]["name"]).equals("Alex");
-      expect(objs[0]["age"]).equals(0);
-
-      expect(objs[1]["name"]).equals("Birger");
-      expect(objs[1]["age"]).equals(0);
-
-      this.realm.close();
-    });
-    it("with primarykeys", async function (this: RealmContext) {
-      this.realm.write(() => {
-        const obj0 = this.realm.create<IIntPrimary>(IntPrimarySchema.name, {
-          primaryCol: 0,
-          valueCol: "val0",
-        });
-
-        expect(() => {
-          this.realm.create(IntPrimarySchema.name, {
-            primaryCol: 0,
-            valueCol: "val0",
-          });
-        }).throws("Attempting to create an object of type 'IntPrimaryObject' with an existing primary key value '0'.");
-
-        this.realm.create(
-          IntPrimarySchema.name,
-          {
-            primaryCol: 1,
-            valueCol: "val1",
-          },
-          Realm.UpdateMode.All,
-        );
-
-        const objects = this.realm.objects(IntPrimarySchema.name);
-        expect(objects.length).equals(2);
-
-        this.realm.create(
-          IntPrimarySchema.name,
-          {
-            primaryCol: 0,
-            valueCol: "newVal0",
-          },
-          Realm.UpdateMode.All,
-        );
-
-        expect(obj0.valueCol).equals("newVal0");
-        expect(objects.length).equals(2);
-
-        this.realm.create(IntPrimarySchema.name, { primaryCol: 0 }, Realm.UpdateMode.All);
-        expect(obj0.valueCol).equals("newVal0");
-      });
-    });
-    it("upsert works", async function (this: RealmContext) {
-      this.realm.write(() => {
-        const values = {
-          primaryCol: "0",
-          boolCol: true,
-          intCol: 1,
-          floatCol: 1.1,
-          doubleCol: 1.11,
-          stringCol: "1",
-          dateCol: new Date(1),
-          dataCol: new ArrayBuffer(1),
-          objectCol: { doubleCol: 1 },
-          arrayCol: [],
-        };
-        const obj0 = this.realm.create<IAllPrimaryTypes>(AllPrimaryTypesSchema.name, values);
-        expect(() => this.realm.create(AllPrimaryTypesSchema.name, values)).throws(
-          "Attempting to create an object of type 'AllPrimaryTypesObject' with an existing primary key value ''0''.",
-        );
-        const obj1 = this.realm.create<IAllPrimaryTypes>(
-          AllPrimaryTypesSchema.name,
-          {
-            primaryCol: "1",
-            boolCol: false,
-            intCol: 2,
-            floatCol: 2.2,
-            doubleCol: 2.22,
-            stringCol: "2",
-            dateCol: new Date(2),
-            dataCol: new ArrayBuffer(2),
-            objectCol: { doubleCol: 0 },
-            arrayCol: [{ doubleCol: 2 }],
-          },
-          //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
-          true,
-        );
-        const objects = this.realm.objects(AllPrimaryTypesSchema.name);
-        expect(objects.length).equals(2);
-        this.realm.create(
-          //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
-          AllPrimaryTypesSchema.name,
-          {
-            primaryCol: "0",
-            boolCol: false,
-            intCol: 2,
-            floatCol: 2.2,
-            doubleCol: 2.22,
-            stringCol: "2",
-            dateCol: new Date(2),
-            dataCol: new ArrayBuffer(2),
-            objectCol: null,
-            arrayCol: [{ doubleCol: 2 }],
-          },
-          true,
-        );
-        expect(objects.length).equals(2);
-        expect(obj0.stringCol).equals("2");
-        expect(obj0.boolCol).equals(false);
-        expect(obj0.intCol).equals(2);
-        expectDecimalEqual(obj0.floatCol, 2.2);
-        expectDecimalEqual(obj0.doubleCol, 2.22);
-        expect(obj0.dateCol.getTime()).equals(2);
-        expect(obj0.dataCol.byteLength).equals(2);
-        expect(obj0.objectCol).equals(null);
-        expect(obj0.arrayCol.length).equals(1);
-        //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
-        this.realm.create(AllPrimaryTypesSchema.name, { primaryCol: "0" }, true);
-        //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
-        this.realm.create(AllPrimaryTypesSchema.name, { primaryCol: "1" }, true);
-        expect(obj0.stringCol).equals("2");
-        expect(obj0.objectCol).equals(null);
-        expect(obj1.objectCol.doubleCol).equals(0);
-        this.realm.create(
-          //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
-          AllPrimaryTypesSchema.name,
-          {
-            primaryCol: "0",
-            stringCol: "3",
-            objectCol: { doubleCol: 0 },
-          },
-          true,
-        );
-        expect(obj0.stringCol).equals("3");
-        expect(obj0.boolCol).equals(false);
-        expect(obj0.intCol).equals(2);
-        expectDecimalEqual(obj0.floatCol, 2.2);
-        expectDecimalEqual(obj0.doubleCol, 2.22);
-        expect(obj0.dateCol.getTime()).equals(2);
-        expect(obj0.dataCol.byteLength).equals(2);
-        expect(obj0.objectCol.doubleCol).equals(0);
-        expect(obj0.arrayCol.length).equals(1);
-        //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
-        this.realm.create(AllPrimaryTypesSchema.name, { primaryCol: "0", objectCol: undefined }, true);
-        //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
-        this.realm.create(AllPrimaryTypesSchema.name, { primaryCol: "1", objectCol: null }, true);
-        expect(obj0.objectCol.doubleCol).equals(0);
-        expect(obj1.objectCol).equals(null);
-        // test with string primaries
-        const obj = this.realm.create<IStringPrimary>(StringPrimarySchema.name, {
-          primaryCol: "0",
-          valueCol: 0,
-        });
-        expect(obj.valueCol).equals(0);
-        this.realm.create(
-          //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
-          StringPrimarySchema.name,
-          {
-            primaryCol: "0",
-            valueCol: 1,
-          },
-          true,
-        );
-        expect(obj.valueCol).equals(1);
-      });
-    });
-    it("all default values are set correctly on object", async function (this: RealmContext) {
-      const createAndTestObject = () => {
-        const obj = this.realm.create<IDefaultValues>(DefaultValuesSchema.name, {});
-        const properties = DefaultValuesSchema.properties;
-
-        expect(obj.boolCol).equals(properties.boolCol.default);
-        expect(obj.intCol).equals(properties.intCol.default);
-        expectDecimalEqual(obj.floatCol, properties.floatCol.default);
-        expectDecimalEqual(obj.doubleCol, properties.doubleCol.default);
-        expect(obj.stringCol).equals(properties.stringCol.default);
-        expect(obj.dateCol.getTime()).equals(properties.dateCol.default.getTime());
-        expect(obj.dataCol.byteLength).equals(properties.dataCol.default.byteLength);
-        expect(obj.objectCol.doubleCol).equals(properties.objectCol.default.doubleCol);
-        expect(obj.nullObjectCol).equals(null);
-        expect(obj.arrayCol.length).equals(properties.arrayCol.default.length);
-        expect(obj.arrayCol[0].doubleCol).equals(properties.arrayCol.default[0].doubleCol);
-      };
-
-      this.realm.write(createAndTestObject);
-      this.realm.close();
-    });
-    it("creating an object after changing default values reflect changes", async function (this: RealmContext) {
-      let realm = new Realm({ schema: [ObjectSchema] });
-
-      const createAndTestObject = () => {
-        const object = realm.create<IObject>(ObjectSchema.name, {});
-        expect(object.intCol).equals(ObjectSchema.properties.intCol.default);
-      };
-
-      realm.write(createAndTestObject);
-
-      ObjectSchema.properties.intCol.default++;
-
-      realm = new Realm({ schema: [ObjectSchema] });
-      realm.write(createAndTestObject);
-    });
-    it("with constructors work", async function (this: RealmContext) {
-      let customCreated = 0;
-      class CustomObject extends Realm.Object {
-        constructor(realm: Realm) {
-          //@ts-expect-error TYPEBUG: Realm.Object expects values as second argument.
-          super(realm);
-          customCreated++;
-        }
-        static schema = {
-          name: "CustomObject",
-          properties: {
-            intCol: "int",
-          },
-        };
-      }
-      class InvalidObject extends Realm.Object {
-        static schema: Realm.ObjectSchema;
-      }
-
-      expect(() => new Realm({ schema: [InvalidObject] })).throws(
-        "Realm object constructor must have a 'schema' property.",
-      );
-
-      InvalidObject.schema = {
-        name: "InvalidObject",
-        properties: {
-          intCol: "int",
-        },
-      };
-      Object.setPrototypeOf(InvalidObject, Realm.Object);
-      let realm = new Realm({ schema: [CustomObject, InvalidObject] });
-
-      realm.write(() => {
-        let object = realm.create("CustomObject", { intCol: 1 });
-        expect(object).instanceof(CustomObject);
-        expect(Object.getPrototypeOf(object) == CustomObject.prototype).to.be.true;
-        expect(customCreated).equals(0);
-
-        // Should be able to create object by passing in constructor.
-        object = realm.create(CustomObject, { intCol: 2 });
-        expect(object).instanceof(CustomObject);
-        expect(Object.getPrototypeOf(object) == CustomObject.prototype).to.be.true;
-        expect(customCreated).equals(0);
-      });
-
-      realm.write(() => {
-        realm.create("InvalidObject", { intCol: 1 });
-      });
-
-      // Only the original constructor should be valid.
-      class InvalidCustomObject extends Realm.Object {
-        static schema: Realm.ObjectSchema;
-      }
-      InvalidCustomObject.schema = CustomObject.schema;
-
-      expect(() => {
-        realm.write(() => {
-          realm.create(InvalidCustomObject, { intCol: 1 });
-        });
-      }).throws("Constructor was not registered in the schema for this Realm");
-      realm.close();
-
-      realm = new Realm({ schema: [CustomObject, InvalidObject] });
-      const obj = realm.objects("CustomObject")[0];
-      expect(realm.objects("CustomObject")[0]).instanceof(CustomObject);
-      expect(realm.objects(CustomObject).length > 0).to.be.true;
-      realm.close();
-    });
-    it("with changing constructors", async function (this: RealmContext) {
-      class CustomObject extends Realm.Object {
-        static schema = {
-          name: "CustomObject",
-          properties: {
-            intCol: "int",
-          },
-        };
-      }
-
-      let realm = new Realm({ schema: [CustomObject] });
-      realm.write(() => {
-        const object = realm.create("CustomObject", { intCol: 1 });
-        expect(object).instanceof(CustomObject);
-      });
-
-      class NewCustomObject extends Realm.Object {
-        static schema: Realm.ObjectSchema;
-      }
-      NewCustomObject.schema = CustomObject.schema;
-
-      realm = new Realm({ schema: [NewCustomObject] });
-      realm.write(() => {
-        const object = realm.create("CustomObject", { intCol: 1 });
-        expect(object).instanceof(NewCustomObject);
-      });
-    });
-    it("createWithTemplate works", async function (this: RealmContext) {
-      this.realm.write(() => {
-        // Test all simple data types
-        const template = Realm.createTemplateObject(AllTypesSchema);
-        expect(Object.keys(template).length).equals(7);
-        let unmanagedObj = Object.assign(template, { boolCol: true, dataCol: new ArrayBuffer(1) });
-        const managedObj1 = this.realm.create<IAllTypes>(AllTypesSchema.name, unmanagedObj);
-        expect(managedObj1.boolCol).to.be.true;
-
-        // Default values
-        unmanagedObj = Realm.createTemplateObject(DefaultValuesSchema);
-        expect(Object.keys(unmanagedObj).length).equals(10);
-        const managedObj = this.realm.create<IDefaultValues>(DefaultValuesSchema.name, unmanagedObj);
-        expect(managedObj.boolCol).equals(true);
-        expect(managedObj.intCol).equals(-1);
-        expectDecimalEqual(managedObj.floatCol, -1.1);
-        expectDecimalEqual(managedObj.doubleCol, -1.11);
-        expect(managedObj.stringCol).equals("defaultString");
-        expect(managedObj.dateCol.getTime()).equals(1);
-        expect(managedObj.dataCol.byteLength).equals(1);
-        expect(managedObj.objectCol.doubleCol).equals(1);
-        expect(managedObj.nullObjectCol).equals(null);
-        expect(managedObj.arrayCol[0].doubleCol).equals(2);
-      });
-    });
-    it("creating objects without properties work", async function (this: RealmContext) {
-      this.realm.write(() => {
-        this.realm.create(ObjectWithoutPropertiesSchema.name, {});
-      });
-      this.realm.objects(ObjectWithoutPropertiesSchema.name);
-      this.realm.close();
-    });
-  });
-  describe("indexed properties", () => {
-    openRealmBeforeEach({ schema: [IndexedTypesSchema] });
-    it("isClosed works", function (this: RealmContext) {
-      this.realm.write(() => {
-        this.realm.create(IndexedTypesSchema.name, { boolCol: true, intCol: 1, stringCol: "1", dateCol: new Date(1) });
-      });
-
-      const NotIndexed = {
-        name: "NotIndexedObject",
-        properties: {
-          floatCol: { type: "float", indexed: false },
-        },
-      };
-
-      new Realm({ schema: [NotIndexed], path: "1.realm" });
-
-      const IndexedSchema: Realm.ObjectSchema = {
-        name: "IndexedSchema",
-        properties: {},
-      };
-      expect(() => {
-        IndexedSchema.properties = { floatCol: { type: "float", indexed: true } };
-        new Realm({ schema: [IndexedSchema], path: "2.realm" });
-      }).throws("Property 'IndexedSchema.floatCol' of type 'float' cannot be indexed.");
-
-      expect(() => {
-        IndexedSchema.properties = { doubleCol: { type: "double", indexed: true } };
-        new Realm({ schema: [IndexedSchema], path: "3.realm" });
-      }).throws("Property 'IndexedSchema.doubleCol' of type 'double' cannot be indexed.");
-
-      expect(() => {
-        IndexedSchema.properties = { dataCol: { type: "data", indexed: true } };
-        new Realm({ schema: [IndexedSchema], path: "4.realm" });
-      }).throws("Property 'IndexedSchema.dataCol' of type 'data' cannot be indexed.");
-
-      // primary key
-      IndexedSchema.properties = { intCol: { type: "int", indexed: true } };
-      IndexedSchema.primaryKey = "intCol";
-
-      // Test this doesn't throw
-      new Realm({ schema: [IndexedSchema], path: "5.realm" });
     });
   });
   describe("delete operations", () => {
@@ -1507,66 +1636,6 @@ describe("Realmtest", () => {
 
       expect(this.realm.objects(TestObjectSchema.name).length).equals(0);
       expect(() => this.realm.objects("IntPrimaryObject")).throws;
-    });
-  });
-  describe("objects method", () => {
-    openRealmBeforeEach({ schema: [PersonObject, DefaultValuesSchema, TestObjectSchema] });
-    it("throws on invalid operations", function (this: RealmContext) {
-      this.realm.write(() => {
-        this.realm.create(PersonObject.schema.name, { name: "Ari", age: 10 });
-        this.realm.create(PersonObject.schema.name, { name: "Tim", age: 11 });
-        this.realm.create(PersonObject.schema.name, { name: "Bjarne", age: 12 });
-        this.realm.create(PersonObject.schema.name, { name: "Alex", age: 12, married: true });
-      });
-
-      // Should be able to pass constructor for getting objects.
-      const objects = this.realm.objects(PersonObject.schema.name);
-      expect(objects[0]).instanceof(PersonObject);
-
-      class InvalidPerson extends Realm.Object {
-        static schema = PersonObject.schema;
-      }
-
-      //@ts-expect-error object without specifying type
-      expect(() => this.realm.objects()).throws("objectType must be of type 'string', got (undefined)");
-      //@ts-expect-error object without specifying type
-      expect(() => this.realm.objects([])).throws("objectType must be of type 'string', got ()");
-      expect(() => this.realm.objects("InvalidClass")).throws("Object type 'InvalidClass' not found in schema.");
-      //@ts-expect-error testing too many arguments for objects
-      expect(() => this.realm.objects(PersonObject.schema.name, "truepredicate")).throws(
-        "Invalid arguments: at most 1 expected, but 2 supplied.",
-      );
-      expect(() => this.realm.objects(InvalidPerson)).throws(
-        "Constructor was not registered in the schema for this Realm",
-      );
-
-      const person = this.realm.objects<PersonObject>(PersonObject.schema.name)[0];
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      const listenerCallback = () => {};
-      this.realm.addListener("change", listenerCallback);
-
-      // The tests below assert that everthing throws when
-      // operating on a closed realm
-      this.realm.close();
-
-      expect(() => console.log("Name: ", person.name)).throws(
-        "Accessing object of type PersonObject which has been invalidated or deleted",
-      );
-
-      expect(() => this.realm.objects(PersonObject.schema.name)).throws("Cannot access realm that has been closed");
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      expect(() => this.realm.addListener("change", () => {})).throws("Cannot access realm that has been closed");
-      expect(() => this.realm.create(PersonObject.schema.name, { name: "Ari", age: 10 })).throws(
-        "Cannot access realm that has been closed",
-      );
-      expect(() => this.realm.delete(person)).throws("Cannot access realm that has been closed");
-      expect(() => this.realm.deleteAll()).throws("Cannot access realm that has been closed");
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      expect(() => this.realm.write(() => {})).throws("Cannot access realm that has been closed");
-      expect(() => this.realm.removeListener("change", listenerCallback)).throws(
-        "Cannot access realm that has been closed",
-      );
-      expect(() => this.realm.removeAllListeners()).throws("Cannot access realm that has been closed");
     });
   });
   describe("objectsForPrimaryKey", () => {
