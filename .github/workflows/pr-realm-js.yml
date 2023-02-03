@@ -191,8 +191,10 @@ jobs:
           - { os: darwin, target: "test:main", runner: macos-latest, environment: electron }
           - { os: darwin, target: "test:renderer", runner: macos-latest, environment: electron }
           - { os: darwin, target: test, runner: macos-latest, environment: node }
-          - { os: android, target: "test:android", runner: macos-latest, environment: react-native, arch: "armeabi-v7a" }
-          - { os: ios, target: "test:ios", runner: macos-latest, environment: react-native, arch: "ios" }
+          - { os: android, target: "test:android", runner: macos-latest, environment: react-native, arch: "armeabi-v7a", engine: "hermes" }
+          - { os: android, target: "test:android", runner: macos-latest, environment: react-native, arch: "armeabi-v7a", engine: "jsc" }
+          - { os: ios, target: "test:ios", runner: macos-latest, environment: react-native, arch: "ios", engine: "hermes" }
+          - { os: ios, target: "test:ios", runner: macos-latest, environment: react-native, arch: "ios", engine: "jsc" }
           #- { os: ios, target: "test:catalyst", runner: macos-latest, environment: react-native, arch: "catalyst" }
     timeout-minutes: 60
     steps:
@@ -294,7 +296,14 @@ jobs:
       - name: Install pods
         if: ${{ matrix.variant.environment == 'react-native' && matrix.variant.os == 'ios'}}
         working-directory: integration-tests/environments/${{ matrix.variant.environment }}
+        env:
+          USE_HERMES: ${{ matrix.variant.engine == 'hermes' && '0' || '1' }}
         run: npx pod-install
+
+      - name: Set hermesEnabled
+        working-directory: integration-tests/environments/${{ matrix.variant.environment }}
+        if: ${{ matrix.variant.os == 'android' }}
+        run: echo "hermesEnabled=${{ matrix.variant.engine == 'hermes' }}\n" >> android/gradle.properties
 
       - name: Build tests
         run: npm run build --prefix integration-tests/tests
@@ -316,14 +325,14 @@ jobs:
         run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
-        if: ${{ (matrix.variant.os == 'ios') }}
+        if: ${{ matrix.variant.os == 'ios' }}
         env:
           MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.name }}
         timeout-minutes: 45
         run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
       - name: Setup Java Gradle cache for android test app
-        if: ${{ (matrix.variant.os == 'android') }}
+        if: ${{ matrix.variant.os == 'android' }}
         uses: actions/cache@v2
         with:
           path: |
@@ -334,7 +343,7 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Setup Android Emulator cache
-        if: ${{ (matrix.variant.os == 'android') }}
+        if: ${{ matrix.variant.os == 'android' }}
         uses: actions/cache@v3.0.4
         id: avd-cache
         with:
@@ -344,13 +353,13 @@ jobs:
           key: avd-29
 
       - uses: actions/setup-java@v3
-        if: ${{ (matrix.variant.os == 'android') }}
+        if: ${{ matrix.variant.os == 'android' }}
         with:
           distribution: 'zulu' # See 'Supported distributions' for available options
           java-version: '11'
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
-        if: ${{ (matrix.variant.os == 'android') }}
+        if: ${{ matrix.variant.os == 'android' }}
         env:
           MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.name }}
         timeout-minutes: 45
