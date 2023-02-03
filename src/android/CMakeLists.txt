@@ -100,6 +100,7 @@ if(REALM_JS_BUILD_CORE_FROM_SOURCE AND TARGET ObjectStore)
     target_compile_definitions(ObjectStore PUBLIC
         REALM_PLATFORM=Android
         REALM_ANDROID=1
+        REALM_ANDROID_ABI=${ANDROID_ABI}
     )
 endif()
 
