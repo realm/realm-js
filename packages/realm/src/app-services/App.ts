@@ -36,6 +36,28 @@ import {
 export type AppConfiguration = {
   id: string;
   baseUrl?: string;
+
+  /**
+   * This describes the local app, sent to the server when a user authenticates.
+   * Specifying this will enable the server to respond differently to specific versions of specific apps.
+   */
+  app?: LocalAppConfiguration;
+};
+
+/**
+ * This describes the local app, sent to the server when a user authenticates.
+ */
+export type LocalAppConfiguration = {
+  /**
+   * The name / id of the local app.
+   * Note: This should be the name or a bundle id of your app, not the Atlas App Services application.
+   */
+  name?: string;
+
+  /**
+   * The version of the local app.
+   */
+  version?: string;
 };
 
 export type AppChangeCallback = () => void;
@@ -109,7 +131,7 @@ export class App {
   constructor(configOrId: AppConfiguration | string) {
     const config: AppConfiguration = typeof configOrId === "string" ? { id: configOrId } : configOrId;
     assert.object(config, "config");
-    const { id, baseUrl } = config;
+    const { id, baseUrl, app } = config;
     assert.string(id, "id");
     // TODO: This used getSharedApp in the legacy SDK, but it's failing AppTests
     this.internal = binding.App.getUncachedApp(
@@ -119,6 +141,8 @@ export class App {
         platformVersion: App.PLATFORM_VERSION,
         sdkVersion: App.SDK_VERSION, // Used to be "RealmJS/" + SDK_VERSION
         transport: createNetworkTransport(),
+        localAppName: app?.name,
+        localAppVersion: app?.version,
         baseUrl,
       },
       {
