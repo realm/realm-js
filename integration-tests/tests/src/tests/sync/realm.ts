@@ -16,14 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Decimal128, ObjectId, ObjectID, UUID } from "bson";
 import { expect } from "chai";
-import { BSON, CollectionChangeSet } from "realm";
+import { CollectionChangeSet } from "realm";
 import { importAppBefore, openRealmBeforeEach } from "../../hooks";
 import { expectArraysEqual, expectDecimalEqual } from "../../utils/comparisons";
 import { sleep } from "../../utils/sleep";
 
-const pathSeparator = "/";
 const CarSchema = {
   name: "Car",
   properties: {
@@ -223,27 +221,6 @@ const ObjectWithoutPropertiesSchema = {
   properties: {},
 };
 
-const Decimal128ObjectSchema = {
-  name: "Decimal128Object",
-  properties: {
-    decimal128Col: "decimal128",
-  },
-};
-
-const ObjectIdObjectSchema = {
-  name: "ObjectIdObject",
-  properties: {
-    id: "objectId",
-  },
-};
-
-const UUIDObjectSchema = {
-  name: "uuid",
-  properties: {
-    id: "uuid",
-  },
-};
-
 const EmbeddedObjectSchemas: Realm.ObjectSchema[] = [
   {
     name: "Person",
@@ -285,14 +262,6 @@ const EmbeddedObjectSchemas: Realm.ObjectSchema[] = [
     },
   },
 ];
-
-const UUIDPkObjectSchema = {
-  name: "uuidpk",
-  primaryKey: "_id",
-  properties: {
-    _id: "uuid",
-  },
-};
 
 const PersonSchema = {
   name: "Person",
@@ -410,22 +379,6 @@ interface IObject {
 interface IDateObject {
   currentDate: Date;
   nullDate: Date | undefined;
-}
-
-interface IDecimal128Object {
-  decimal128Col: Decimal128;
-}
-
-interface IObjectIdObject {
-  id: ObjectId;
-}
-
-interface IUUIDObject {
-  id: UUID;
-}
-
-interface IUUIDPkObject {
-  _id: UUID;
 }
 
 class TestObject extends Realm.Object {
@@ -648,6 +601,7 @@ describe("Realmtest", () => {
         expect(this.realm.isClosed).to.be.true;
       });
     });
+
     describe("write", () => {
       openRealmBeforeEach({
         schema: [
@@ -695,6 +649,7 @@ describe("Realmtest", () => {
         const objects = this.realm.objects<ITestObject>("TestObject");
         expect(objects[0].doubleCol).equals(testObject.doubleCol, "wrong test object property value");
       });
+
       it("error message form invalid write is correct", function (this: RealmContext) {
         expect(() => {
           this.realm.write(() => {
@@ -705,6 +660,7 @@ describe("Realmtest", () => {
         }).throws("PersonObject.age must be of type 'number', got 'string' ('Ten')");
       });
     });
+
     describe("create and update", () => {
       openRealmBeforeEach({
         schema: [
@@ -721,6 +677,7 @@ describe("Realmtest", () => {
           PersonObject,
         ],
       });
+
       it("Creating object with wrong property types throw correct error message", function (this: RealmContext) {
         expect(() => {
           this.realm.write(() => {
@@ -728,6 +685,7 @@ describe("Realmtest", () => {
           });
         }).throws("PersonObject.age must be of type 'number', got 'string' ('Ten')");
       });
+
       it("create only works within transaction", function (this: RealmContext) {
         expect(() => this.realm.create<ITestObject>(TestObjectSchema.name, { doubleCol: 1 })).throws(
           "Cannot modify managed objects outside of a write transaction.",
@@ -945,6 +903,7 @@ describe("Realmtest", () => {
         expect(changes.newModifications[0]).equals(0);
         expect(objects[0].boolCol).equals(true);
       });
+
       it("partial default values are set correctly", async function (this: RealmContext) {
         this.realm.write(() => {
           this.realm.create(OptionalStringSchema.name, { name: "Alex" });
@@ -961,6 +920,7 @@ describe("Realmtest", () => {
 
         this.realm.close();
       });
+
       it("with primarykeys", async function (this: RealmContext) {
         this.realm.write(() => {
           const obj0 = this.realm.create<IIntPrimary>(IntPrimarySchema.name, {
@@ -1005,6 +965,7 @@ describe("Realmtest", () => {
           expect(obj0.valueCol).equals("newVal0");
         });
       });
+
       it("upsert works", async function (this: RealmContext) {
         this.realm.write(() => {
           const values = {
@@ -1119,6 +1080,7 @@ describe("Realmtest", () => {
           expect(obj.valueCol).equals(1);
         });
       });
+
       it("all default values are set correctly on object", async function (this: RealmContext) {
         const createAndTestObject = () => {
           const obj = this.realm.create<IDefaultValues>(DefaultValuesSchema.name, {});
@@ -1140,6 +1102,7 @@ describe("Realmtest", () => {
         this.realm.write(createAndTestObject);
         this.realm.close();
       });
+
       it("creating an object after changing default values reflect changes", async function (this: RealmContext) {
         let realm = new Realm({ schema: [ObjectSchema] });
 
@@ -1155,6 +1118,7 @@ describe("Realmtest", () => {
         realm = new Realm({ schema: [ObjectSchema] });
         realm.write(createAndTestObject);
       });
+
       it("with constructors work", async function (this: RealmContext) {
         let customCreated = 0;
         class CustomObject extends Realm.Object {
@@ -1223,6 +1187,7 @@ describe("Realmtest", () => {
         expect(realm.objects(CustomObject).length > 0).to.be.true;
         realm.close();
       });
+
       it("with changing constructors", async function (this: RealmContext) {
         class CustomObject extends Realm.Object {
           static schema = {
@@ -1250,6 +1215,7 @@ describe("Realmtest", () => {
           expect(object).instanceof(NewCustomObject);
         });
       });
+
       it("createWithTemplate works", async function (this: RealmContext) {
         this.realm.write(() => {
           // Test all simple data types
@@ -1275,6 +1241,7 @@ describe("Realmtest", () => {
           expect(managedObj.arrayCol[0].doubleCol).equals(2);
         });
       });
+
       it("creating objects without properties work", async function (this: RealmContext) {
         this.realm.write(() => {
           this.realm.create(ObjectWithoutPropertiesSchema.name, {});
@@ -1335,8 +1302,10 @@ describe("Realmtest", () => {
         });
       });
     });
+
     describe("exists", () => {
       importAppBefore("with-db");
+
       it("yields correct value on a local realm", () => {
         const config = { schema: [TestObject] };
 
@@ -1344,6 +1313,7 @@ describe("Realmtest", () => {
         new Realm(config).close();
         expect(Realm.exists(config)).to.be.true;
       });
+
       it.skipIf(environment.missingServerm, "yields correct value on a synced realm", function (this: AppContext) {
         const credentials = Realm.Credentials.anonymous();
 
@@ -1361,8 +1331,10 @@ describe("Realmtest", () => {
         });
       });
     });
+
     describe("objects", () => {
       openRealmBeforeEach({ schema: [PersonObject, DefaultValuesSchema, TestObjectSchema] });
+
       it("throws on invalid operations", function (this: RealmContext) {
         this.realm.write(() => {
           this.realm.create(PersonObject.schema.name, { name: "Ari", age: 10 });
@@ -1421,6 +1393,7 @@ describe("Realmtest", () => {
         expect(() => this.realm.removeAllListeners()).throws("Cannot access realm that has been closed");
       });
     });
+
     describe("deleteFile", () => {
       beforeEach(() => {
         Realm.clearTestState();
@@ -1452,6 +1425,7 @@ describe("Realmtest", () => {
 
   describe("indexed properties", () => {
     openRealmBeforeEach({ schema: [IndexedTypesSchema] });
+
     it("works", function (this: RealmContext) {
       this.realm.write(() => {
         this.realm.create(IndexedTypesSchema.name, {
@@ -1559,8 +1533,10 @@ describe("Realmtest", () => {
       realm2.close();
     });
   });
+
   describe("delete operations", () => {
     openRealmBeforeEach({ schema: [TestObjectSchema, IntPrimarySchema] });
+
     it("delete successfully removes elements and throws on invalid operations", function (this: RealmContext) {
       this.realm.write(() => {
         for (let i = 0; i < 10; i++) {
@@ -1598,6 +1574,7 @@ describe("Realmtest", () => {
         );
       });
     });
+
     it("deleteAll successfully removes elements and throws on invalid operations", function (this: RealmContext) {
       this.realm.write(() => {
         this.realm.create(TestObjectSchema.name, { doubleCol: 1 });
@@ -1617,6 +1594,7 @@ describe("Realmtest", () => {
       expect(this.realm.objects(TestObjectSchema.name).length).equals(0);
       expect(this.realm.objects(IntPrimarySchema.name).length).equals(0);
     });
+
     it("deleteAll removes remaining objects after deleteModel", function (this: RealmContext) {
       this.realm.write(() => {
         this.realm.create(TestObjectSchema.name, { doubleCol: 1 });
@@ -1638,8 +1616,10 @@ describe("Realmtest", () => {
       expect(() => this.realm.objects("IntPrimaryObject")).throws;
     });
   });
+
   describe("objectsForPrimaryKey", () => {
     openRealmBeforeEach({ schema: [IntPrimarySchema, StringPrimarySchema, TestObjectSchema] });
+
     it("lookups work and throws on invalid operations", function (this: RealmContext) {
       this.realm.write(() => {
         this.realm.create("IntPrimaryObject", { primaryCol: 0, valueCol: "val0" });
@@ -1680,8 +1660,10 @@ describe("Realmtest", () => {
       );
     });
   });
+
   describe("listener", () => {
     openRealmBeforeEach({ schema: [] });
+
     it("fires correctly from write transactions", function (this: RealmContext) {
       let notificationCount = 0;
       let notificationName;
@@ -1738,8 +1720,10 @@ describe("Realmtest", () => {
       expect(() => this.realm.write(() => {})).throws("expected error message");
     });
   });
+
   describe("schema", () => {
     openRealmBeforeEach({ schema: originalSchema });
+
     it("is properly initialized on new realm", function (this: RealmContext) {
       const schemaMap: Record<string, Realm.ObjectSchema | PersonObject> = {};
       originalSchema.forEach((objectSchema: Realm.ObjectSchema) => {
@@ -1818,6 +1802,7 @@ describe("Realmtest", () => {
         }
       }
     });
+
     it("adding schema updates realm", async () => {
       const realm1 = new Realm();
       expect(realm1.isEmpty).to.be.true;
@@ -1860,6 +1845,7 @@ describe("Realmtest", () => {
         expect(true).to.be.false;
       });
     });
+
     it("embedded objectschemas return correct types", () => {
       const realm = new Realm({ schema: EmbeddedObjectSchemas });
 
@@ -1893,6 +1879,7 @@ describe("Realmtest", () => {
       realm.close();
     });
   });
+
   describe.skipIf(environment.node, "copyBundledRealmFiles", () => {
     it("copies realm files", () => {
       const config = { path: "realm-bundle.realm", schema: [DateObjectSchema] };
@@ -1918,6 +1905,7 @@ describe("Realmtest", () => {
       expect(realm.objects<IDateObject>(DateObjectSchema.name)[0].currentDate.getTime()).equals(1);
       realm.close();
     });
+
     it("opening new bundled realm with dsiableFormatUpgrade throws", () => {
       const config = { path: "realm-bundle.realm" };
       if (Realm.exists(config)) {
@@ -1931,8 +1919,10 @@ describe("Realmtest", () => {
       }).throws("The Realm file format must be allowed to be upgraded in order to proceed.");
     });
   });
+
   describe("isEmpty property", () => {
     openRealmBeforeEach({ schema: [PersonObject] });
+
     it("reflects state of realm", function (this: RealmContext) {
       expect(this.realm.isEmpty).to.be.true;
 
@@ -1943,10 +1933,12 @@ describe("Realmtest", () => {
       expect(this.realm.isEmpty).to.be.true;
     });
   });
+
   describe("compaction", () => {
     afterEach(() => {
       Realm.clearTestState();
     });
+
     it("shouldCompact is called when creating a new realm", function (this: RealmContext) {
       let wasCalled = false;
       const count = 1000;
@@ -1973,6 +1965,7 @@ describe("Realmtest", () => {
       // we don't check if the file is smaller as we assume that Object Store does it
       realm2.close();
     });
+
     it("manual compact works", function (this: RealmContext) {
       const realm1 = new Realm({ schema: [StringOnlySchema] });
       realm1.write(() => {
@@ -1985,6 +1978,7 @@ describe("Realmtest", () => {
       expect(realm2.objects("StringOnlyObject").length).equals(1);
       realm2.close();
     });
+
     it("manual compact within write transaction throws", function (this: RealmContext) {
       const realm = new Realm({ schema: [StringOnlySchema] });
       realm.write(() => {
@@ -1995,6 +1989,7 @@ describe("Realmtest", () => {
       expect(realm.isEmpty).to.be.true;
       realm.close();
     });
+
     it("manual compact with multiple instances of same realm exist", function (this: RealmContext) {
       const realm1 = new Realm({ schema: [StringOnlySchema] });
       const realm2 = new Realm({ schema: [StringOnlySchema] });
@@ -2002,10 +1997,12 @@ describe("Realmtest", () => {
       expect(realm1.compact()).to.be.true;
     });
   });
+
   describe("deletefile", () => {
     afterEach(() => {
       Realm.clearTestState();
     });
+
     it("data is deleted on realm with defaultpath", function (this: RealmContext) {
       const config = { schema: [TestObjectSchema] };
       const realm = new Realm(config);
@@ -2023,6 +2020,7 @@ describe("Realmtest", () => {
       expect(realm2.objects("TestObject").length).equals(0);
       realm2.close();
     });
+
     it("data is deleted on realm with custom path", function (this: RealmContext) {
       const config = { schema: [TestObjectSchema], path: "test-realm-delete-file.realm" };
       const realm = new Realm(config);
@@ -2041,8 +2039,10 @@ describe("Realmtest", () => {
       realm2.close();
     });
   });
+
   describe("with sync", () => {
     importAppBefore("simple");
+
     it.skipIf(
       environment.missingServer,
       "data is deleted on realm with custom path",
@@ -2064,10 +2064,12 @@ describe("Realmtest", () => {
       },
     );
   });
+
   describe("deleteRealmIfMigrationNeeded", () => {
     afterEach(() => {
       Realm.clearTestState();
     });
+
     it("deletes file on version change", () => {
       const schema = [
         {
@@ -2111,6 +2113,7 @@ describe("Realmtest", () => {
       expect(realm.objects("TestObject").length).equals(1);
       realm.close();
     });
+
     it("deletes file on schema change", () => {
       const schema = [
         {
@@ -2181,6 +2184,7 @@ describe("Realmtest", () => {
       expect(realm.objects("TestObject").length).equals(1);
       realm.close();
     });
+
     it("throws on incompatible config", () => {
       const schema = [
         {
@@ -2204,131 +2208,6 @@ describe("Realmtest", () => {
           onMigration: function () {},
         });
       }).throws("Cannot include 'onMigration' when 'deleteRealmIfMigrationNeeded' is set.");
-    });
-  });
-  describe("decimal128", () => {
-    openRealmBeforeEach({ schema: [Decimal128ObjectSchema] });
-    it("simple numbers work", function (this: RealmContext) {
-      const numbers = [42, 3.1415, 6.022e23, -7, -100.2, 1.02e9];
-
-      numbers.forEach((number) => {
-        const d = Decimal128.fromString(number.toString());
-        this.realm.write(() => {
-          this.realm.create(Decimal128ObjectSchema.name, { decimal128Col: d });
-        });
-      });
-
-      const objects = this.realm.objects<IDecimal128Object>(Decimal128ObjectSchema.name);
-      expect(objects.length).equals(numbers.length);
-
-      const d128Col = objects[0].objectSchema().properties.decimal128Col as Realm.ObjectSchemaProperty;
-      expect(d128Col.type).equals("decimal128");
-
-      for (let i = 0; i < numbers.length; i++) {
-        const d128 = objects[i].decimal128Col;
-        expect(d128).instanceOf(BSON.Decimal128);
-        expect(d128.toString()).equals(numbers[i].toString().toUpperCase());
-      }
-    });
-    it("large numbers work", function (this: RealmContext) {
-      // Core doesn't support numbers like 9.99e+6143 yet.
-      const numbers = ["1.02e+6102", "-1.02e+6102", "1.02e-6102", /*"9.99e+6143",*/ "1e-6142"];
-
-      numbers.forEach((number) => {
-        const d = Decimal128.fromString(number);
-        this.realm.write(() => {
-          this.realm.create(Decimal128ObjectSchema.name, { decimal128Col: d });
-        });
-      });
-
-      const objects = this.realm.objects<IDecimal128Object>(Decimal128ObjectSchema.name);
-      expect(objects.length).equals(numbers.length);
-
-      for (let i = 0; i < numbers.length; i++) {
-        const d128 = objects[i]["decimal128Col"];
-        expect(d128).instanceOf(BSON.Decimal128);
-        expect(d128.toString()).equals(numbers[i].toString().toUpperCase());
-      }
-    });
-  });
-  describe("objectId", () => {
-    openRealmBeforeEach({ schema: [ObjectIdObjectSchema] });
-    it("can successfully store and retrieve objectIds", function (this: RealmContext) {
-      const values = ["0000002a9a7969d24bea4cf2", "0000002a9a7969d24bea4cf3"];
-      const oids: ObjectID[] = [];
-
-      values.forEach((v) => {
-        const oid = new ObjectId(v);
-        this.realm.write(() => {
-          this.realm.create(ObjectIdObjectSchema.name, { id: oid });
-        });
-        oids.push(oid);
-      });
-
-      const objects = this.realm.objects<IObjectIdObject>(ObjectIdObjectSchema.name);
-      expect(objects.length).equals(values.length);
-
-      const idCol = objects[0].objectSchema().properties.id as Realm.ObjectSchemaProperty;
-      expect(idCol.type).equals("objectId");
-
-      for (let i = 0; i < values.length; i++) {
-        const oid2 = objects[i]["id"];
-        expect(oid2).instanceof(BSON.ObjectId);
-        expect(oids[i].equals(oid2)).to.be.true;
-        expect(oid2.toHexString()).equals(oids[i].toHexString());
-      }
-    });
-    it("can fetch timestamps from when the objectId was created", function (this: RealmContext) {
-      const values = [1, 1000000000, 2000000000];
-      const oids: ObjectID[] = [];
-
-      values.forEach((v) => {
-        const oid = ObjectId.createFromTime(v);
-        this.realm.write(() => {
-          this.realm.create(ObjectIdObjectSchema.name, { id: oid });
-        });
-        oids.push(oid);
-      });
-
-      const objects = this.realm.objects<IObjectIdObject>(ObjectIdObjectSchema.name);
-      expect(objects.length).equals(values.length);
-
-      for (let i = 0; i < values.length; i++) {
-        const oid2 = objects[i]["id"];
-        expect(oid2).instanceof(BSON.ObjectId);
-        expect(oids[i].equals(oid2)).to.be.true;
-        expect(oid2.toHexString()).equals(oids[i].toHexString());
-        expect(oid2.getTimestamp().toISOString()).equals(oids[i].getTimestamp().toISOString());
-      }
-    });
-  });
-  describe("UUID", () => {
-    openRealmBeforeEach({ schema: [UUIDObjectSchema, UUIDPkObjectSchema] });
-    it("can successfully store and retrieve uuid", function (this: RealmContext) {
-      // Predefined uuid checks
-      const uuidStr = "af4f40c0-e833-4ab1-b026-484cdeadd782";
-      const uuid = new UUID(uuidStr);
-      const obj = this.realm.write(() => {
-        return this.realm.create<IUUIDObject>(UUIDObjectSchema.name, { id: uuid });
-      });
-
-      expect(this.realm.objects(UUIDObjectSchema.name).length).equals(1);
-
-      expect(obj.id).instanceof(BSON.UUID, "Roundtrip data is instance of UUID.");
-      expect(uuid.equals(obj.id)).equals(true);
-      expect(obj.id.toString()).equals(uuidStr, "Roundtrip string representation equals predefined input string.");
-    });
-    it("can retrieve object with uuid as primarykey", function (this: RealmContext) {
-      const uuidStr = "188a7e3b-26d4-44ba-91e2-844c1c73a963";
-      const uuid = new UUID(uuidStr);
-      this.realm.write(() => {
-        this.realm.create(UUIDPkObjectSchema.name, { _id: uuid });
-      });
-      const obj = this.realm.objectForPrimaryKey<IUUIDPkObject>(UUIDPkObjectSchema.name, uuid);
-      expect(obj).to.not.be.null;
-      expect(obj).to.not.be.undefined;
-      expect(obj?._id).instanceof(BSON.UUID, "Objects PK is instance of UUID.");
-      expect(obj?._id.toString()).equals(uuidStr, "Roundtrip string representation equals predefined input string.");
     });
   });
 });
