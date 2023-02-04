@@ -18,6 +18,7 @@ defaults:
 
 jobs:
   install:
+    name: Install Test on React Native ${{ toJSON(matrix) }}
     runs-on: macos-12
     timeout-minutes: 120
     strategy:
