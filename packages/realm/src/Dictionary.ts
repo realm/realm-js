@@ -233,20 +233,40 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
   }
 
   /**
- /**
-   * Add a key with a value or update value if key exists.
+   * Adds an element (or multiple ones) with the specified key and value to the dictionary or updates value if key exists.
+   * @param element The element to add
    * @throws {@link AssertionError} If not inside a write transaction or if value violates type constraints
    * @returns The dictionary
    * @since 10.6.0
    */
   // @ts-expect-error We're exposing methods in the end-users namespace of keys
-  set(element: { [key: string]: T }): this {
+  set(element: { [key: string]: T }): this;
+  /**
+   * Adds an element with the specified key and value to the dictionary or updates value if key exists.
+   * @param key The key of the element to add
+   * @param value The value of the element to add
+   * @throws {@link AssertionError} If not inside a write transaction or if value violates type constraints
+   * @returns The dictionary
+   * @since 12.0 //TODO Is this correct?
+   */
+  set(key: string, value: T): this;
+  /**
+   * Adds an element (or multiple ones) with the specified key and value to the dictionary or updates value if key exists.
+   * @param elementOrKey The element to add or the key of the element to add
+   * @param value The value of the element to add
+   * @throws {@link AssertionError} If not inside a write transaction or if value violates type constraints
+   * @returns The dictionary
+   * @since 10.6.0  //TODO Should also this be 12.0?
+   */
+  set(elementOrKey: string | { [key: string]: T }, value?: T): this {
     assert.inTransaction(this[REALM]);
     const internal = this[INTERNAL];
     const toBinding = this[HELPERS].toBinding;
-    for (const [key, value] of Object.entries(element)) {
-      internal.insertAny(key, toBinding(value, undefined));
+    const inputObj = typeof elementOrKey == "string" ? { [elementOrKey]: value } : elementOrKey;
+    for (const [key, val] of Object.entries(inputObj)) {
+      internal.insertAny(key, toBinding(val, undefined));
     }
+    return this;
   }
 
   /**
@@ -265,6 +285,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
     for (const k of keys) {
       internal.tryErase(k);
     }
+    return this;
   }
 
   /**
