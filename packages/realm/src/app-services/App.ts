@@ -30,8 +30,6 @@ import {
 
 /**
  * This describes the options used to create a Realm App instance.
- * @prop id - The id of the Atlas App Services application.
- * @prop baseUrl - The base URL of the Atlas App Services server.
  */
 export type AppConfiguration = {
   /**
@@ -40,7 +38,7 @@ export type AppConfiguration = {
   id: string;
 
   /**
-   * An optional URL to use as a prefix when requesting the Atlas App Services.
+   * An optional URL to use as a prefix when sending requests to the Atlas App Services server.
    */
   baseUrl?: string;
 
