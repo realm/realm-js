@@ -24,7 +24,7 @@ import os from "node:os";
 
 import { importAppBefore, authenticateUserBefore } from "../hooks";
 
-const getAbsolutePath = () => os.tmpdir() + path.sep + (new UUID()).toHexString();
+const getAbsolutePath = () => os.tmpdir() + path.sep + new UUID().toHexString();
 const getRelativePath = () => new UUID().toHexString();
 const getPartitionValue = () => new UUID().toHexString();
 
@@ -40,7 +40,7 @@ const schema = {
 describe("path configuration (local)", function () {
   it("relative path", function () {
     const filename = getRelativePath();
-    const realm = new Realm({ path: filename, schema: [ schema ] });
+    const realm = new Realm({ path: filename, schema: [schema] });
     expect(realm.path.endsWith(filename)).to.be.true;
     realm.close();
   });
@@ -65,7 +65,7 @@ describe.skipIf(environment.missingServer, "path configuration (partition based 
       sync: {
         partitionValue: getPartitionValue(),
         user: this.user,
-      }
+      },
     });
     expect(realm.path).to.equal(filename);
     realm.close();
@@ -79,7 +79,7 @@ describe.skipIf(environment.missingServer, "path configuration (partition based 
       sync: {
         partitionValue: getPartitionValue(),
         user: this.user,
-      }
+      },
     });
     expect(realm.path.endsWith(filename)).to.be.true;
     realm.close();
@@ -94,11 +94,11 @@ describe.skipIf(environment.skipFlexibleSync, "path configuration (flexible sync
     const filename = getAbsolutePath();
     const realm = await Realm.open({
       path: filename,
-      schema: [ schema ],
+      schema: [schema],
       sync: {
         flexible: true,
         user: this.user,
-      }
+      },
     });
     expect(realm.path).to.equal(filename);
     realm.close();
@@ -112,7 +112,7 @@ describe.skipIf(environment.skipFlexibleSync, "path configuration (flexible sync
       sync: {
         flexible: true,
         user: this.user,
-      }
+      },
     });
     expect(realm.path.endsWith(filename)).to.be.true;
     realm.close();
