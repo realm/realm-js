@@ -182,6 +182,9 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    */
   private [HELPERS]!: TypeHelpers;
 
+  /** @ts-expect-error We're exposing methods in the end-users namespace of keys */
+  [key: string]: T;
+
   *[Symbol.iterator]() {
     yield* this.entries();
   }
@@ -274,9 +277,4 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
       Object.entries(this).map(([k, v]) => [k, v instanceof RealmObject ? v.toJSON(k, cache) : v]),
     );
   }
-}
-
-export interface Dictionary<T = unknown> {
-  /** @ts-expect-error We're exposing methods in the end-users namespace of keys */
-  [key: string]: T;
 }
