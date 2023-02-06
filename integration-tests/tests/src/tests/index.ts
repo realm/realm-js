@@ -57,4 +57,4 @@ import "./types";
 import "./sync/client-reset";
 import "./sync/open-behavior";
 import "./sync/partition-values";
-import "./sync/session";
+import "./sync/sync-session";
