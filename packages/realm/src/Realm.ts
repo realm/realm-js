@@ -178,6 +178,8 @@ export class Realm {
   /** @deprecated Please use named imports */
   public static ConnectionState = ConnectionState;
   /** @deprecated Please use named imports */
+  public static Credentials = Credentials;
+  /** @deprecated Please use named imports */
   public static Dictionary = Dictionary;
   /** @deprecated Please use named imports */
   public static List = List;
@@ -1294,6 +1296,8 @@ export declare namespace Realm {
     ConnectionNotificationCallback,
     /** @deprecated Please use named imports */
     ConnectionStateType as ConnectionState,
+    /** @deprecated Please use named imports */
+    CredentialsType as Credentials,
     /** @deprecated Please use named imports */
     DefaultFunctionsFactory,
     /** @deprecated Please use named imports */
