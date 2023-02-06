@@ -25,8 +25,11 @@ export {
   BaseSubscriptionSet,
   BaseSyncConfiguration,
   BSON,
+  CanonicalObjectSchema,
+  /** @deprecated Got renamed to {@link CanonicalPropertySchema} */
   CanonicalObjectSchemaProperty,
   CanonicalPropertiesTypes,
+  CanonicalPropertySchema,
   ClientResetAfterCallback,
   ClientResetBeforeCallback,
   ClientResetConfig,
@@ -36,10 +39,7 @@ export {
   ClientResetMode,
   ClientResetRecoverOrDiscardUnsyncedChangesConfiguration,
   ClientResetRecoverUnsyncedChangesConfiguration,
-  /**
-   * This type got renamed to {@link ClientResetRecoverUnsyncedChangesConfiguration}
-   * @deprecated Please use named imports
-   */
+  /**  @deprecated Got renamed to {@link ClientResetRecoverUnsyncedChangesConfiguration} */
   ClientResetRecoverUnsyncedChangesConfiguration as ClientResetRecoveryConfiguration,
   Collection,
   CollectionChangeCallback,
@@ -64,14 +64,12 @@ export {
   MigrationCallback,
   MutableSubscriptionSet,
   NumericLogLevel,
-  /**
-   * This type got renamed to {@link RealmObjectConstructor}
-   * @deprecated Please use named imports
-   */
+  /** @deprecated Got renamed to {@link RealmObjectConstructor} */
   RealmObjectConstructor as ObjectClass,
   ObjectChangeCallback,
   ObjectChangeSet,
   ObjectSchema,
+  ObjectSchemaProperty,
   OpenRealmBehaviorConfiguration,
   OpenRealmBehaviorType,
   OpenRealmTimeOutBehavior,
@@ -85,8 +83,8 @@ export {
   ProgressRealmPromise,
   PropertiesTypes,
   PropertySchema,
-  ObjectSchemaProperty,
   PropertySchemaShorthand,
+  PropertyTypeName,
   ProviderType,
   Realm,
   RealmFunction,
@@ -104,9 +102,7 @@ export {
   SyncConfiguration,
   SyncError,
   SyncSession,
-  /**
-   * @deprecated Got renamed to {@link SyncSession} and please use named imports
-   */
+  /** @deprecated Got renamed to {@link SyncSession} */
   SyncSession as Session,
   Types,
   UpdateMode,
