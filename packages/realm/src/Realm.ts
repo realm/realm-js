@@ -67,6 +67,7 @@ import {
   LogLevel,
   MigrationCallback,
   MongoClient,
+  MutableSubscriptionSet,
   NumericLogLevel,
   ObjectChangeCallback,
   ObjectChangeSet,
@@ -1216,6 +1217,7 @@ type UserStateType = UserState;
 type BaseSubscriptionSetType = BaseSubscriptionSet;
 type LogLevelType = LogLevel;
 type NumericLogLevelType = NumericLogLevel;
+type MutableSubscriptionSetType = MutableSubscriptionSet;
 type PartitionValueType = PartitionValue;
 type SubscriptionOptionsType = SubscriptionOptions;
 type SubscriptionSetType = SubscriptionSet;
@@ -1321,15 +1323,6 @@ export declare namespace Realm {
     /** @deprecated Please use named imports */
     Mixed,
     /** @deprecated Please use named imports */
-    RealmFunction,
-    /** @deprecated Please use named imports */
-    RealmObjectConstructor,
-    /**
-     * This type got renamed to RealmObjectConstructor
-     * @deprecated Please use named imports
-     */
-    RealmObjectConstructor as ObjectClass,
-    /** @deprecated Please use named imports */
     ObjectChangeCallback,
     /** @deprecated Please use named imports */
     ObjectChangeSet,
@@ -1366,6 +1359,15 @@ export declare namespace Realm {
     PropertySchemaShorthand,
     /** @deprecated Please use named imports */
     ProviderTypeType as ProviderType,
+    /** @deprecated Please use named imports */
+    RealmFunction,
+    /** @deprecated Please use named imports */
+    RealmObjectConstructor,
+    /**
+     * This type got renamed to RealmObjectConstructor
+     * @deprecated Please use named imports
+     */
+    RealmObjectConstructor as ObjectClass,
     /** @deprecated Please use named imports */
     ResultsType as Results,
     /** @deprecated Please use named imports */
@@ -1410,6 +1412,8 @@ export declare namespace Realm {
       export type LogLevel = LogLevelType;
       /** @deprecated Please use named imports */
       export type NumericLogLevel = NumericLogLevelType;
+      /** @deprecated Please use named imports */
+      export type MutableSubscriptionSet = MutableSubscriptionSetType;
       /** @deprecated Please use named imports */
       export type PartitionValue = PartitionValueType;
       /** @deprecated Please use named imports */
