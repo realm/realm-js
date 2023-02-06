@@ -233,14 +233,14 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
   }
 
   /**
-   * Adds an element (or multiple ones) with the specified key and value to the dictionary or updates value if key exists.
-   * @param element The element to add
+   * Adds one or more elements with specified key and value to the dictionary or updates value if key exists.
+   * @param element The object of element(s) to add
    * @throws {@link AssertionError} If not inside a write transaction or if value violates type constraints
    * @returns The dictionary
    * @since 10.6.0
    */
   // @ts-expect-error We're exposing methods in the end-users namespace of keys
-  set(element: { [key: string]: T }): this;
+  set(elements: { [key: string]: T }): this;
   /**
    * Adds an element with the specified key and value to the dictionary or updates value if key exists.
    * @param key The key of the element to add
@@ -262,8 +262,8 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
     assert.inTransaction(this[REALM]);
     const internal = this[INTERNAL];
     const toBinding = this[HELPERS].toBinding;
-    const inputObj = typeof elementOrKey == "string" ? { [elementOrKey]: value } : elementOrKey;
-    for (const [key, val] of Object.entries(inputObj)) {
+    const elements = typeof elementOrKey == "string" ? { [elementOrKey]: value } : elementOrKey;
+    for (const [key, val] of Object.entries(elements)) {
       internal.insertAny(key, toBinding(val, undefined));
     }
     return this;
