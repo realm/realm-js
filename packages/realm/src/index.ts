@@ -18,44 +18,110 @@
 
 export {
   App,
+  AppChangeCallback,
+  AppConfiguration,
+  BaseConfiguration,
+  BaseObjectSchema,
+  BaseSubscriptionSet,
+  BaseSyncConfiguration,
   BSON,
+  CanonicalObjectSchemaProperty,
+  CanonicalPropertiesTypes,
+  ClientResetAfterCallback,
+  ClientResetBeforeCallback,
+  ClientResetConfig,
+  ClientResetDiscardUnsyncedChangesConfiguration,
+  ClientResetFallbackCallback,
+  ClientResetManualConfiguration,
   ClientResetMode,
+  ClientResetRecoverOrDiscardUnsyncedChangesConfiguration,
+  ClientResetRecoverUnsyncedChangesConfiguration,
+  /**
+   * This type got renamed to {@link ClientResetRecoverUnsyncedChangesConfiguration}
+   * @deprecated Please use named imports
+   */
+  ClientResetRecoverUnsyncedChangesConfiguration as ClientResetRecoveryConfiguration,
   Collection,
-  Credentials,
-  Dictionary,
-  List,
-  MutableSubscriptionSet,
-  OrderedCollection,
-  ProgressRealmPromise,
-  Realm,
-  RealmObject as Object,
-  RealmSet as Set,
-  Results,
-  SessionStopPolicy,
-  Subscription,
-  SubscriptionSet,
-  SubscriptionsState,
-  UpdateMode,
-  User,
-  Types,
-  flags,
-} from "./internal";
-
-export type {
   CollectionChangeCallback,
   CollectionChangeSet,
   Configuration,
+  ConfigurationWithoutSync,
+  ConfigurationWithSync,
+  ConnectionNotificationCallback,
+  ConnectionState,
+  Credentials,
+  DefaultFunctionsFactory,
+  DefaultUserProfileData,
+  Dictionary,
+  DictionaryChangeCallback,
+  DictionaryChangeSet,
+  ErrorCallback,
+  flags,
   FlexibleSyncConfiguration,
+  List,
+  LocalAppConfiguration,
+  LogLevel,
+  MigrationCallback,
+  MutableSubscriptionSet,
+  NumericLogLevel,
+  /**
+   * This type got renamed to {@link RealmObjectConstructor}
+   * @deprecated Please use named imports
+   */
+  RealmObjectConstructor as ObjectClass,
   ObjectChangeCallback,
   ObjectChangeSet,
   ObjectSchema,
-  PropertySchema,
+  OpenRealmBehaviorConfiguration,
+  OpenRealmBehaviorType,
+  OpenRealmTimeOutBehavior,
+  OrderedCollection,
   PartitionSyncConfiguration,
-  RealmEventName,
-  RealmListenerCallback,
+  PartitionValue,
+  PrimaryKey,
+  ProgressDirection,
+  ProgressMode,
+  ProgressNotificationCallback,
+  ProgressRealmPromise,
+  PropertiesTypes,
+  PropertySchema,
+  ObjectSchemaProperty,
+  PropertySchemaShorthand,
+  ProviderType,
+  Realm,
+  RealmFunction,
+  RealmObject as Object,
+  RealmObjectConstructor,
+  RealmSet as Set,
+  Results,
+  SessionState,
+  SessionStopPolicy,
+  SortDescriptor,
+  Subscription,
   SubscriptionOptions,
+  SubscriptionSet,
+  SubscriptionsState,
+  SyncConfiguration,
+  SyncError,
+  SyncSession,
+  /**
+   * @deprecated Got renamed to {@link SyncSession} and please use named imports
+   */
+  SyncSession as Session,
+  Types,
+  UpdateMode,
+  User,
+  UserChangeCallback,
+  UserState,
+  EmailPasswordAuth,
+  ApiKey,
+  ApiKeyAuth,
 } from "./internal";
 
+import { Realm, RealmObjectConstructor } from "./internal";
+
+export type Mixed = unknown;
+export type ObjectType = string | RealmObjectConstructor;
+
 // Exporting default for backwards compatibility
-import { Realm } from "./internal";
 export default Realm;
