@@ -120,6 +120,8 @@ const RECOVERY_FILE_PATH_KEY = "RECOVERY_FILE_PATH";
 
 /**
  * @deprecated Use the another {@link ClientResetMode} than {@link ClientResetMode.Manual}.
+ * @see https://github.com/realm/realm-js/blob/master/CHANGELOG.md#1110-2022-11-01
+ * @see https://github.com/realm/realm-js/issues/4135
  */
 export class ClientResetError extends SyncError {
   public name = "ClientReset";
