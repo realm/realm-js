@@ -37,7 +37,8 @@
     "build:watch": "rollup -c --watch"
   },
   "dependencies": {
-    "debug": "^4.3.4"
+    "debug": "^4.3.4",
+    "node-fetch": "^3.3.0"
   },
   "peerDependencies": {
     "bson": "^4",
