@@ -15,12 +15,11 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import http from "node:http";
-import https from "node:https";
+import fetch, { Response } from "node-fetch";
 
 import * as network from "../platform/network";
 
-import { assert, binding, extendDebug } from "../internal";
+import { binding, extendDebug } from "../internal";
 
 const debug = extendDebug("network");
 
@@ -32,67 +31,36 @@ const HTTP_METHOD: Record<binding.HttpMethod, string> = {
   [binding.HttpMethod.del]: "delete",
 };
 
-function flattenHeaders(headers: http.IncomingHttpHeaders) {
-  const result: Record<string, string> = {};
-  for (const key in headers) {
-    const value = headers[key];
-    if (typeof value === "string") {
-      result[key] = value;
-    } else if (Array.isArray(value)) {
-      // Notice: If multiple headers of the same key is returned from the server, the last entry win
-      const item = value.shift();
-      if (typeof item === "string") {
-        result[key] = item;
-      }
-    }
+async function extractBody(response: Response): Promise<string> {
+  const contentType = response.headers.get("content-type");
+  if (contentType === null) {
+    return "";
+  } else if (contentType === "application/json") {
+    return response.text();
+  } else {
+    throw new Error(`Server responded with an unexpected '${contentType}' content type`);
   }
-  return result;
 }
 
 network.inject({
   async fetch(request): Promise<network.Response> {
-    const options: http.RequestOptions = {
-      method: HTTP_METHOD[request.method],
-      timeout: Number(request.timeoutMs),
-      headers: request.headers,
-    };
-    debug("requesting", { url: request.url, body: request.body, usesRefreshToken: request.usesRefreshToken, options });
-    const requester = request.url.startsWith("https://") ? https.request : http.request;
-    return new Promise((resolve, reject) => {
-      try {
-        const req = requester(request.url, options, (res) => {
-          debug("responded", {
-            statusCode: res.statusCode,
-            statusMessage: res.statusMessage,
-            headers: res.headers,
-          });
-          let body = "";
-          res.setEncoding("utf8");
-          res.on("data", (chunk) => {
-            assert.string(chunk, "chunk");
-            body += chunk;
-          });
-          res.once("end", () => {
-            const { headers, statusCode } = res;
-            assert.number(statusCode, "response status code");
-            assert.object(headers, "headers");
-            resolve({
-              body,
-              headers: flattenHeaders(headers),
-              httpStatusCode: statusCode,
-              // TODO: Determine if we want to set this differently
-              customStatusCode: 0,
-            });
-          });
-          // Propagate any error though the promise
-          res.once("error", reject);
-        });
-        req.once("error", reject);
-        // Write the request body
-        req.end(request.body, "utf8");
-      } catch (err) {
-        reject(err);
-      }
+    debug("requesting", request);
+    const { url, method, body, ...rest } = request;
+    const response = await fetch(url, {
+      method: HTTP_METHOD[method],
+      ...rest,
+      // Binding uses empty string to signal a missing body
+      body: body || undefined,
     });
+    const result: network.Response = {
+      ...response,
+      body: await extractBody(response),
+      headers: Object.fromEntries(response.headers.entries()),
+      httpStatusCode: response.status,
+      // TODO: Determine if we want to set this differently
+      customStatusCode: 0,
+    };
+    debug("responded", result);
+    return result;
   },
 });
