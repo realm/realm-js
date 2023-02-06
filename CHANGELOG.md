@@ -4,7 +4,13 @@
 * None
 
 ### Enhancements
-* None
+* Add an overload to `Dictionary.set` method that takes two arguments, a `key` and a `value`. ([#4286](https://github.com/realm/realm-js/issues/4286))  
+Example usage:
+```typescript
+realm.write(() => {
+  item.dictionary.set("key", "value");
+});
+``` 
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
