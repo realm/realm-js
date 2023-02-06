@@ -29,6 +29,8 @@ declare function clearTimeout(timer: Timer): void;
 
 declare interface Console {
   log(...args: unknown[]): void;
+  warn(...args: unknown[]): void;
+  error(...args: unknown[]): void;
 }
 
 declare const console: Console;

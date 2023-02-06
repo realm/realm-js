@@ -119,10 +119,35 @@ export {
   UserTypeName,
 } from "./internal";
 
-import { Realm, RealmObjectConstructor } from "./internal";
+import { Realm, RealmObjectConstructor, safeGlobalThis } from "./internal";
 
 export type Mixed = unknown;
 export type ObjectType = string | RealmObjectConstructor;
 
 // Exporting default for backwards compatibility
 export default Realm;
+
+// Exporting a deprecated global for backwards compatibility
+const RealmConstructor = Realm;
+declare global {
+  /** @deprecated Will be removed in v13.0.0. Please use named imports */
+  export type Realm = typeof RealmConstructor;
+}
+
+// Patch the global at runtime
+let warnedAboutGlobalRealmUse = false;
+Object.defineProperty(safeGlobalThis, "Realm", {
+  get() {
+    if (!warnedAboutGlobalRealmUse) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        "Your app is relying on a Realm global, which will be removed in realm-js v13,\n",
+        "please update your code to ensure you import Realm via a named ESM-style import:\n\n",
+        'import { Realm } from "realm";\n',
+      );
+      warnedAboutGlobalRealmUse = true;
+    }
+    return RealmConstructor;
+  },
+  configurable: false,
+});
