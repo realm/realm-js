@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
+
 import { unwind } from "../ranges";
 
 describe("unwind range", () => {

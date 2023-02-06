@@ -18,8 +18,7 @@
 
 import { expect } from "chai";
 
-import { Realm, Results } from "../index";
-import { RealmObject } from "../Object";
+import { Realm, Object as RealmObject, Results } from "../index";
 import { RealmContext, closeRealm, generateTempRealmPath } from "./utils";
 
 type Person = { name: string; age: number; bestFriend: Person | null };
