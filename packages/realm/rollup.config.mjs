@@ -53,7 +53,7 @@ export default [
         tsconfig: "src/node/tsconfig.json",
       }),
     ],
-    external: ["bson", "debug", "node:module", "node:fs", "node:path", "node:http", "node:https"],
+    external: ["bson", "debug", "node-fetch", "node:module", "node:fs", "node:path"],
   },
   {
     input: "src/react-native/index.ts",
