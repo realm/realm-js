@@ -234,7 +234,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
 
   /**
    * Adds one or more elements with specified key and value to the dictionary or updates value if key exists.
-   * @param element The object of element(s) to add
+   * @param elements The object of element(s) to add
    * @throws {@link AssertionError} If not inside a write transaction or if value violates type constraints
    * @returns The dictionary
    * @since 10.6.0
@@ -251,18 +251,18 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    */
   set(key: string, value: T): this;
   /**
-   * Adds an element (or multiple ones) with the specified key and value to the dictionary or updates value if key exists.
-   * @param elementOrKey The element to add or the key of the element to add
+   * Adds one or more elements with the specified key and value to the dictionary or updates value if key exists.
+   * @param elementsOrKey The element to add or the key of the element to add
    * @param value The value of the element to add
    * @throws {@link AssertionError} If not inside a write transaction or if value violates type constraints
    * @returns The dictionary
    * @since 10.6.0  //TODO Should also this be 12.0?
    */
-  set(elementOrKey: string | { [key: string]: T }, value?: T): this {
+  set(elementsOrKey: string | { [key: string]: T }, value?: T): this {
     assert.inTransaction(this[REALM]);
     const internal = this[INTERNAL];
     const toBinding = this[HELPERS].toBinding;
-    const elements = typeof elementOrKey == "string" ? { [elementOrKey]: value } : elementOrKey;
+    const elements = typeof elementsOrKey == "string" ? { [elementsOrKey]: value } : elementsOrKey;
     for (const [key, val] of Object.entries(elements)) {
       internal.insertAny(key, toBinding(val, undefined));
     }
