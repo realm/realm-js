@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 export {
+  ApiKey,
+  ApiKeyAuth,
   App,
   AppChangeCallback,
   AppConfiguration,
@@ -44,6 +46,7 @@ export {
   Collection,
   CollectionChangeCallback,
   CollectionChangeSet,
+  CollectionPropertyTypeName,
   Configuration,
   ConfigurationWithoutSync,
   ConfigurationWithSync,
@@ -55,6 +58,7 @@ export {
   Dictionary,
   DictionaryChangeCallback,
   DictionaryChangeSet,
+  EmailPasswordAuth,
   ErrorCallback,
   flags,
   FlexibleSyncConfiguration,
@@ -77,6 +81,7 @@ export {
   PartitionSyncConfiguration,
   PartitionValue,
   PrimaryKey,
+  PrimitivePropertyTypeName,
   ProgressDirection,
   ProgressMode,
   ProgressNotificationCallback,
@@ -84,6 +89,7 @@ export {
   PropertiesTypes,
   PropertySchema,
   PropertySchemaShorthand,
+  PropertySchemaStrict,
   PropertyTypeName,
   ProviderType,
   Realm,
@@ -91,6 +97,7 @@ export {
   RealmObject as Object,
   RealmObjectConstructor,
   RealmSet as Set,
+  RelationshipPropertyTypeName,
   Results,
   SessionState,
   SessionStopPolicy,
@@ -109,9 +116,7 @@ export {
   User,
   UserChangeCallback,
   UserState,
-  EmailPasswordAuth,
-  ApiKey,
-  ApiKeyAuth,
+  UserTypeName,
 } from "./internal";
 
 import { Realm, RealmObjectConstructor } from "./internal";
