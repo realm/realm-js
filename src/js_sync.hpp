@@ -1426,7 +1426,14 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         }
 
         config.schema_mode = SchemaMode::AdditiveExplicit;
-        config.path = user->m_user->sync_manager()->path_for_realm(*(config.sync_config));
+        if (config.path.empty()) {
+            config.path = user->m_user->sync_manager()->path_for_realm(*(config.sync_config));
+        }
+        else {
+            if (config.path.find_first_of("/\\") != 0) { // leave absolute path untouched
+                config.path = user->m_user->sync_manager()->path_for_realm(*(config.sync_config), config.path);
+            }
+        }
     }
 }
 
