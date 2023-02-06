@@ -29,7 +29,9 @@ jobs:
           - { os: android, runner: ubuntu-latest, arch: x86, artifact-path: react-native/android/src/main/jniLibs }
           - { os: darwin, runner: macos-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
           - { os: darwin, runner: macos-latest, arch: arm64, artifact-path: prebuilds, test-node: true, test-electron: true }
-          - { os: ios, runner: macos-latest, arch: apple, artifact-path: react-native/ios/realm-js-ios.xcframework }
+          - { os: ios, runner: macos-latest, arch: simulator, artifact-path: react-native/ios/realm-js-ios.xcframework }
+          - { os: ios, runner: macos-latest, arch: catalyst, artifact-path: react-native/ios/realm-js-ios.xcframework }
+          - { os: ios, runner: macos-latest, arch: ios, artifact-path: react-native/ios/realm-js-ios.xcframework }
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -144,7 +146,7 @@ jobs:
       # build the c++ library for IOS
       - name: Build iOS
         if: ${{ (matrix.variant.os == 'ios') }}
-        run: npm run prebuild:ios
+        run: npm run prebuild:ios -- ${{matrix.variant.arch}}
 
       # build the c++ library for Android
       - name: Build Android
@@ -190,8 +192,8 @@ jobs:
           - { os: darwin, target: "test:renderer", runner: macos-latest, environment: electron }
           - { os: darwin, target: test, runner: macos-latest, environment: node }
           - { os: android, target: "test:android", runner: macos-latest, environment: react-native, arch: "armeabi-v7a" }
-          - { os: ios, target: "test:ios", runner: macos-latest, environment: react-native, arch: "apple" }
-          #- { os: ios, target: "test:catalyst", runner: macos-latest, environment: react-native, arch: "apple" }
+          - { os: ios, target: "test:ios", runner: macos-latest, environment: react-native, arch: "ios" }
+          #- { os: ios, target: "test:catalyst", runner: macos-latest, environment: react-native, arch: "catalyst" }
     timeout-minutes: 60
     steps:
       - name: Generate Cluster Differentiator
