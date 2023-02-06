@@ -1307,9 +1307,9 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                     ValueType client_reset_discard_value =
                         Object::get_property(ctx, client_reset_object, "onDiscard");
                     if (Value::is_undefined(ctx, client_reset_discard_value)) {
-                        auto realm = Value<T>::validated_to_object(ctx, Object<T>::get_global(ctx, "Realm"));
-                        auto default_on_discard_callback = Value<T>::validated_to_object(
-                            ctx, Object<T>::get_property(ctx, realm, "_defaultOnDiscardCallback"));
+                        auto realm = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
+                        auto default_on_discard_callback = Value::validated_to_object(
+                            ctx, Object::get_property(ctx, realm, "_defaultOnDiscardCallback"));
                         client_reset_discard_callback =
                             Value::validated_to_function(ctx, default_on_discard_callback);
                     }
@@ -1321,11 +1321,11 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                     ValueType client_reset_recovery_value =
                         Object::get_property(ctx, client_reset_object, "onRecovery");
                     if (Value::is_undefined(ctx, client_reset_recovery_value)) {
-                        auto realm = Value<T>::validated_to_object(ctx, Object<T>::get_global(ctx, "Realm"));
-                        auto default_on_recovery_callback = Value<T>::validated_to_object(
-                            ctx, Object<T>::get_property(ctx, realm, "_defaultOnRecoveryCallback"));
+                        auto realm = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
+                        auto default_on_recovery_callback = Value::validated_to_object(
+                            ctx, Object::get_property(ctx, realm, "_defaultOnRecoveryCallback"));
                         client_reset_recovery_callback =
-                            Value::validated_to_function(ctx, default_on_discard_callback);
+                            Value::validated_to_function(ctx, default_on_recovery_callback);
                     }
                     else {
                         client_reset_recovery_callback =
