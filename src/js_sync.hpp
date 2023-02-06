@@ -1303,22 +1303,34 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                 }
 
                 case realm::ClientResyncMode::RecoverOrDiscard: {
+                    FunctionType client_reset_discard_callback;
                     ValueType client_reset_discard_value =
                         Object::get_property(ctx, client_reset_object, "onDiscard");
                     if (Value::is_undefined(ctx, client_reset_discard_value)) {
-                        throw std::invalid_argument("'onDiscard' is required");
+                        auto realm = Value<T>::validated_to_object(ctx, Object<T>::get_global(ctx, "Realm"));
+                        auto default_on_discard_callback = Value<T>::validated_to_object(
+                            ctx, Object<T>::get_property(ctx, realm, "_defaultOnDiscardCallback"));
+                        client_reset_discard_callback =
+                            Value::validated_to_function(ctx, default_on_discard_callback);
+                    }
+                    else {
+                        client_reset_discard_callback = Value::validated_to_function(ctx, client_reset_discard_value);
                     }
 
+                    FunctionType client_reset_recovery_callback;
                     ValueType client_reset_recovery_value =
                         Object::get_property(ctx, client_reset_object, "onRecovery");
                     if (Value::is_undefined(ctx, client_reset_recovery_value)) {
-                        throw std::invalid_argument("'onRecovery' is required");
+                        auto realm = Value<T>::validated_to_object(ctx, Object<T>::get_global(ctx, "Realm"));
+                        auto default_on_recovery_callback = Value<T>::validated_to_object(
+                            ctx, Object<T>::get_property(ctx, realm, "_defaultOnRecoveryCallback"));
+                        client_reset_recovery_callback =
+                            Value::validated_to_function(ctx, default_on_discard_callback);
                     }
-
-                    FunctionType client_reset_discard_callback =
-                        Value::validated_to_function(ctx, client_reset_discard_value);
-                    FunctionType client_reset_recovery_callback =
-                        Value::validated_to_function(ctx, client_reset_recovery_value);
+                    else {
+                        client_reset_recovery_callback =
+                            Value::validated_to_function(ctx, client_reset_recovery_value);
+                    }
 
                     auto client_reset_after_handler =
                         util::EventLoopDispatcher<void(SharedRealm, ThreadSafeReference, bool)>(
