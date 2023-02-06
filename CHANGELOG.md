@@ -1,11 +1,12 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Converting flexible sync Realms to bundled and local realms is now supported. ([realm/realm-core#6076](https://github.com/realm/realm-core/pull/6076))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fixed possible segfault in sync client where async callback was using object after being deallocated. ([realm/realm-core#6053](https://github.com/realm/realm-core/issues/6053), since v10.11.0)
+* Fixed crash when using client reset with recovery and flexible sync with a single subscription ([#6070](https://github.com/realm/realm-core/issues/6070), since v10.19.5)
+* If `path` is defined in the configuration, it will used for synced Realms too. Relative paths will be appended to a default prefix (prefix is computed using app id and user id). Absolute paths are left untouched. (since v10.0.0)
 
 ### Compatibility
 * React Native >= v0.70.0
@@ -14,13 +15,11 @@
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Unpin Xcode version when building locally and upgrade the Xcode version used by GHA.
+* Upgraded Realm Core from v13.1.1 to v13.2.0. ([#5174](https://github.com/realm/realm-js/issues/5174) and [#5244](https://github.com/realm/realm-js/issues/5244))
+* Unpin Xcode version when building locally and upgrade the Xcode version used by Github Actions.
 * Enable tests for notifications on dictionary.
-* Automate releasing package on GHA
-* Enable ccache on windows x86 builds for pull requests
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Automate releasing package on Github Actions.
+* Upgrade OpenSSL v1.1.1n to v3.0.7. ([realm/realm-core#6097](https://github.com/realm/realm-core/pull/6097))
 
 ## 11.4.0 (2023-01-23)
 
@@ -477,7 +476,7 @@ realm.write(() => {
 
 ### Internal
 * Updated ccache build scripts to be location agnostic. ([#4764](https://github.com/realm/realm-js/pull/4764))
-* Upgraded Realm Core from v12.3.0 to v12.5.1. ([#4753](https://github.com/realm/realm-js/issues/4753 and [[#4763](https://github.com/realm/realm-js/issues/4763))
+* Upgraded Realm Core from v12.3.0 to v12.5.1. ([#4753](https://github.com/realm/realm-js/issues/4753) and [[#4763](https://github.com/realm/realm-js/issues/4763))
 * Upgraded React Native integration tests app to React Native v0.68.2. ([#4583](https://github.com/realm/realm-js/pull/4583))
 * Upgrading `react-native-fs` to avoid a peer dependency failure. ([#4709](https://github.com/realm/realm-js/pull/4709))
 * Upgraded React Native integration tests app to React Native v0.69.1. ([#4713](https://github.com/realm/realm-js/pull/4713))

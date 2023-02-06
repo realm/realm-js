@@ -45,7 +45,7 @@
 
 #include <realm/util/logger.hpp>
 #include <realm/util/uri.hpp>
-#include <realm/util/network.hpp>
+#include <realm/sync/network/network.hpp>
 #include <stdexcept>
 
 #if REALM_PLATFORM_NODE
@@ -495,7 +495,7 @@ public:
     }
 
     // This function is called on the sync client's event loop thread.
-    bool operator()(const std::string& server_address, util::network::Endpoint::port_type server_port,
+    bool operator()(const std::string& server_address, sync::network::Endpoint::port_type server_port,
                     const char* pem_data, size_t pem_size, int preverify_ok, int depth)
     {
         const std::string pem_certificate{pem_data, pem_size};
@@ -525,7 +525,7 @@ public:
     // main_loop_handler calls the user callback (m_func) and sends the return value
     // back to the sync client's event loop thread through a condition variable.
     static void main_loop_handler(SSLVerifyCallbackSyncThreadFunctor<T>* this_object,
-                                  const std::string& server_address, util::network::Endpoint::port_type server_port,
+                                  const std::string& server_address, sync::network::Endpoint::port_type server_port,
                                   const std::string& pem_certificate, int preverify_ok, int depth)
     {
         const Protected<typename T::GlobalContext>& ctx = this_object->m_ctx;
@@ -562,7 +562,7 @@ private:
     const Protected<typename T::GlobalContext> m_ctx;
     const Protected<typename T::Function> m_func;
     util::EventLoopDispatcher<void(SSLVerifyCallbackSyncThreadFunctor<T>* this_object,
-                                   const std::string& server_address, util::network::Endpoint::port_type server_port,
+                                   const std::string& server_address, sync::network::Endpoint::port_type server_port,
                                    const std::string& pem_certificate, int preverify_ok, int depth)>
         m_event_loop_dispatcher;
     bool m_ssl_certificate_callback_done = false;
@@ -1426,7 +1426,14 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
         }
 
         config.schema_mode = SchemaMode::AdditiveExplicit;
-        config.path = user->m_user->sync_manager()->path_for_realm(*(config.sync_config));
+        if (config.path.empty()) {
+            config.path = user->m_user->sync_manager()->path_for_realm(*(config.sync_config));
+        }
+        else {
+            if (config.path.find_first_of("/\\") != 0) { // leave absolute path untouched
+                config.path = user->m_user->sync_manager()->path_for_realm(*(config.sync_config), config.path);
+            }
+        }
     }
 }
 
