@@ -18,7 +18,7 @@ defaults:
 
 jobs:
   install:
-    name: Install Test on React Native ${{ toJSON(matrix) }}
+    name: Install Test on React Native
     runs-on: macos-12
     timeout-minutes: 120
     strategy:
@@ -53,6 +53,9 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
+      - id: set-summary
+        run: |
+          node -p "Object.entries(${{ toJSON(matrix) }}).map(([k,v]) => k + ': ' + v).join(', ')" >> $GITHUB_STEP_SUMMARY
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
