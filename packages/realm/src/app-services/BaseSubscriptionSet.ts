@@ -56,19 +56,6 @@ export enum SubscriptionsState {
 
 const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true, writable: false };
 const PROXY_HANDLER: ProxyHandler<BaseSubscriptionSet> = {
-  get(target, prop) {
-    if (Reflect.has(target, prop)) {
-      return Reflect.get(target, prop);
-    }
-    if (typeof prop === "string") {
-      const BASE = 10;
-      const index = Number.parseInt(prop, BASE);
-      // TODO: Consider catching an error from access out of bounds, instead of checking the length, to optimize for the hot path
-      if (index >= 0 && index < target.length) {
-        return target.get(index);
-      }
-    }
-  },
   ownKeys(target) {
     return Reflect.ownKeys(target).concat([...target.keys()].map(String));
   },
@@ -92,9 +79,11 @@ const PROXY_HANDLER: ProxyHandler<BaseSubscriptionSet> = {
  * Class representing the common functionality for the {@link SubscriptionSet} and
  * {@link MutableSubscriptionSet} classes.
  *
- * The {@link Subscription}s in a SubscriptionSet can be accessed as an array, e.g.
- * `realm.subscriptions[0]`. This array is readonly – SubscriptionSets can only be
- * modified inside a {@link SubscriptionSet.update} callback.
+ * SubscriptionSets can only be modified inside a {@link SubscriptionSet.update} callback.
+ *
+ * The SubscriptionSet is an iterable; thus, if absolutely needed, the contained
+ * {@link Subscription}s can be accessed in `for-of` loops or spread into an `Array`
+ * for access to the ECMAScript Array API, e.g. `[...realm.subscriptions][0]`.
  */
 export abstract class BaseSubscriptionSet {
   /**@internal */
@@ -164,18 +153,6 @@ export abstract class BaseSubscriptionSet {
   }
 
   /**
-   * Get a Subscription by index.
-   * (Needed by the ProxyHandler when the subscription set is accessed by index.)
-   *
-   * @param index The index.
-   * @returns The subscription.
-   * @internal
-   */
-  get(index: number): Subscription {
-    return new Subscription(this.internal.at(index));
-  }
-
-  /**
    * Find a subscription by name.
    *
    * @param name The name to search for.
@@ -203,11 +180,6 @@ export abstract class BaseSubscriptionSet {
   }
 
   /**
-   * Enables index accessing when combined with the proxy handler's `get()` method.
-   */
-  readonly [n: number]: Subscription;
-
-  /**
    * Makes the subscription set iterable.
    *
    * @returns Iterable of each value in the set.
@@ -224,6 +196,8 @@ export abstract class BaseSubscriptionSet {
 
   /**
    * Get an iterator that contains each index in the subscription set.
+   *
+   * @internal
    */
   *keys() {
     const size = this.length;
