@@ -2,6 +2,7 @@
 
 ### Enhancements
 * Converting flexible sync Realms to bundled and local realms is now supported. ([realm/realm-core#6076](https://github.com/realm/realm-core/pull/6076))
+* For client reset mode `onRecoveryOrDiscard`, the `onDiscard` and `onRecovery` callbacks now have simple default values. ([#5288](https://github.com/realm/realm-js/pull/5288), since v11.1.0)
 
 ### Fixed
 * Fixed possible segfault in sync client where async callback was using object after being deallocated. ([realm/realm-core#6053](https://github.com/realm/realm-core/issues/6053), since v10.11.0)
