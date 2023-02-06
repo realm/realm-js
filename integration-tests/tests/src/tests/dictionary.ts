@@ -94,8 +94,6 @@ describe("Dictionary", () => {
         key2: "value2",
       });
 
-      console.log("TEST");
-      console.log(item.dict);
       this.realm.write(() => item.dict.remove("key1").remove("key2"));
 
       expect(Object.keys(item.dict)).deep.equals([]);
