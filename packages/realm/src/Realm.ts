@@ -1194,7 +1194,7 @@ type ConnectionStateType = ConnectionState;
 type CredentialsType = Credentials;
 type DictionaryType<T> = Dictionary<T>;
 type ListType<T> = List<T>;
-type MixedType = unknown;
+type Mixed = unknown;
 type ObjectType = string | RealmObjectConstructor;
 type OpenRealmBehaviorTypeType = OpenRealmBehaviorType;
 type OpenRealmTimeOutBehaviorType = OpenRealmTimeOutBehavior;
@@ -1228,6 +1228,8 @@ type UUIDType = BSON.UUID;
 type ApiKeyType = ApiKey;
 type EmailPasswordAuthType = EmailPasswordAuth;
 type ApiKeyAuthType = ApiKeyAuth;
+
+type GlobalDate = Date;
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export declare namespace Realm {
@@ -1313,7 +1315,7 @@ export declare namespace Realm {
     /** @deprecated Please use named imports */
     MigrationCallback,
     /** @deprecated Please use named imports */
-    MixedType as Mixed,
+    Mixed,
     /** @deprecated Please use named imports */
     RealmFunction,
     /** @deprecated Please use named imports */
@@ -1458,5 +1460,40 @@ export declare namespace Realm {
      * @deprecated Got renamed to {@link PushClient} and please use named imports
      */
     export type Push = PushClient;
+  }
+
+  /** @deprecated Please use named imports */
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  export namespace Types {
+    /** @deprecated Please use named imports */
+    export type Bool = boolean;
+    /** @deprecated Please use named imports */
+    export type String = string;
+    /** @deprecated Please use named imports */
+    export type Int = number;
+    /** @deprecated Please use named imports */
+    export type Float = number;
+    /** @deprecated Please use named imports */
+    export type Double = number;
+    /** @deprecated Please use named imports */
+    export type Decimal128 = Realm.BSON.Decimal128;
+    /** @deprecated Please use named imports */
+    export type ObjectId = Realm.BSON.ObjectId;
+    /** @deprecated Please use named imports */
+    export type UUID = Realm.BSON.UUID;
+    /** @deprecated Please use named imports */
+    export type Date = GlobalDate;
+    /** @deprecated Please use named imports */
+    export type Data = ArrayBuffer;
+    /** @deprecated Please use named imports */
+    export type List<T> = Realm.List<T>;
+    /** @deprecated Please use named imports */
+    export type Set<T> = Realm.Set<T>;
+    /** @deprecated Please use named imports */
+    export type Dictionary<T> = Realm.Dictionary<T>;
+    /** @deprecated Please use named imports */
+    export type Mixed = unknown;
+    /** @deprecated Please use named imports */
+    export type LinkingObjects<ObjectTypeT, LinkingPropertyName> = Realm.Results<ObjectTypeT>;
   }
 }
