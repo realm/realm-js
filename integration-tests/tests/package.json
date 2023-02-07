@@ -11,9 +11,7 @@
   "private": true,
   "scripts": {
     "start": "npm start -- --watch",
-    "test": "concurrently --kill-others -P 'npm:app-importer' 'npm:mocha -- {@}' --",
-    "app-importer": "pwd && realm-app-importer serve ../realm-apps",
-    "mocha": "mocha src/index.ts",
+    "test": "mocha src/index.ts --",
     "lint": "eslint --ext .js,.ts ."
   },
   "peerDependencies": {
@@ -26,7 +24,6 @@
     "@types/jsrsasign": "^10.5.4",
     "@types/mocha": "^10.0.0",
     "@types/node": "^18.11.9",
-    "concurrently": "^7.6.0",
     "mocha": "^10.1.0",
     "node-fetch": "^3.2.10",
     "platform": "^1.3.6",

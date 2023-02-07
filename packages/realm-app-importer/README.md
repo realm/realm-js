@@ -102,3 +102,7 @@ We're using the `--as-template` flag to ask the CLI to not store any ids into th
 You might also need to specify a `--project-id` (equivalent with as group-id) in which the app was originally created.
 
 See [the Realm CLI documentation](https://docs.mongodb.com/realm/deploy/realm-cli-reference/) for more information.
+
+## Debugging the app-importer
+
+Run with the `DEBUG=realm:app-importer` environment to get valuable output when debugging issue with an app.

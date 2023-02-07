@@ -23,7 +23,7 @@ import dts from "rollup-plugin-dts";
 
 import pkg from "./package.json" assert { type: "json" };
 
-const external = ["abort-controller", "node-fetch", "path", "fs-extra", "glob", "deepmerge"];
+const external = ["abort-controller", "node-fetch", "path", "fs-extra", "glob", "deepmerge", "debug"];
 
 export default [
   {

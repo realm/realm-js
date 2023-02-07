@@ -21,6 +21,10 @@ import path from "path";
 import fs from "fs-extra";
 import glob from "glob";
 import deepmerge from "deepmerge";
+import createDebug from "debug";
+
+const debug = createDebug("realm:app-importer");
+
 import { Credentials } from "./sharedTypes";
 
 /**
@@ -182,12 +186,12 @@ export class AppImporter {
       process.on("exit", () => {
         // Remove any stitch configuration
         if (fs.existsSync(this.realmConfigPath)) {
-          console.log(`Deleting ${this.realmConfigPath}`);
+          debug(`Deleting ${this.realmConfigPath}`);
           fs.removeSync(this.realmConfigPath);
         }
         // If there is nothing the the apps directory, lets delete it
         if (fs.existsSync(this.appsDirectoryPath)) {
-          console.log(`Deleting ${this.appsDirectoryPath}`);
+          debug(`Deleting ${this.appsDirectoryPath}`);
           fs.removeSync(this.appsDirectoryPath);
         }
       });
@@ -226,8 +230,8 @@ export class AppImporter {
     await this.applyAppConfiguration(appPath, app._id, groupId);
 
     if (appId) {
-      console.log(`The application ${appId} was successfully deployed...`);
-      console.log(`${this.baseUrl}/groups/${groupId}/apps/${app._id}/dashboard`);
+      debug(`The application ${appId} was successfully deployed...`);
+      debug(`${this.baseUrl}/groups/${groupId}/apps/${app._id}/dashboard`);
     }
 
     return { appName, appId };
@@ -300,7 +304,7 @@ export class AppImporter {
 
   private applyReplacements(appPath: string, replacements: TemplateReplacements) {
     for (const [fileGlob, replacement] of Object.entries(replacements)) {
-      console.log(`Applying replacements to ${fileGlob}`);
+      debug(`Applying replacements to ${fileGlob} %O`, replacement);
       const files = glob.sync(fileGlob, { cwd: appPath });
       for (const relativeFilePath of files) {
         const filePath = path.resolve(appPath, relativeFilePath);
@@ -312,7 +316,7 @@ export class AppImporter {
   }
 
   private async applyAllowedRequestOrigins(origins: string[], appId: string, groupId: string) {
-    console.log("Applying allowed request origins: ", origins);
+    debug("Applying allowed request origins: ", origins);
     const originsUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/security/allowed_request_origins`;
     const response = await fetch(originsUrl, {
       method: "POST",
@@ -347,13 +351,13 @@ export class AppImporter {
     const valuesDir = path.join(appPath, "values");
 
     if (fs.existsSync(valuesDir)) {
-      console.log("Applying values...");
+      debug("Applying values...");
       const valuesDirs = fs.readdirSync(valuesDir);
       for (const valueFile of valuesDirs) {
         const configPath = path.join(valuesDir, valueFile);
         const config = this.loadJson(configPath);
 
-        console.log("creating new value: ", config);
+        debug("creating new value: ", config);
         const url = `${this.apiUrl}/groups/${groupId}/apps/${appId}/values`;
         const response = await fetch(url, {
           method: "POST",
@@ -375,7 +379,7 @@ export class AppImporter {
   private async configureServiceFromAppPath(appPath: string, appId: string, groupId: string) {
     const servicesDir = path.join(appPath, "services");
     if (fs.existsSync(servicesDir)) {
-      console.log("Applying services... ");
+      debug("Applying services... ");
       const serviceDirectories = fs.readdirSync(servicesDir);
 
       // It is possible for there to be multiple service directories
@@ -383,7 +387,7 @@ export class AppImporter {
         const configFilePath = path.join(servicesDir, serviceDir, "config.json");
         if (fs.existsSync(configFilePath)) {
           const config = this.loadJson(configFilePath);
-          console.log("Creating service: ", config.name);
+          debug("Creating service: ", config.name);
           const tmpConfig = { name: config.name, type: config.type, config: config.config };
           if (config.type === "mongodb-atlas") {
             tmpConfig.config = { clusterName: config.config.clusterName };
@@ -412,7 +416,7 @@ export class AppImporter {
             const serviceId = responseJson._id;
             // rules must be applied after the service is created
             if (fs.existsSync(rulesDir)) {
-              console.log("Applying rules...");
+              debug("Applying rules...");
               const ruleFiles = fs.readdirSync(rulesDir);
               for (const ruleFile of ruleFiles) {
                 const ruleFilePath = path.join(rulesDir, ruleFile);
@@ -460,14 +464,14 @@ export class AppImporter {
     const remoteFunctions = await this.getFunctions(appId, groupId);
 
     if (fs.existsSync(authProviderDir)) {
-      console.log("Applying auth providers...");
+      debug("Applying auth providers...");
       const authFileNames = fs.readdirSync(authProviderDir);
       const providers = await this.getAuthProviders(appId, groupId);
       for (const authFileName of authFileNames) {
         const authFilePath = path.join(authProviderDir, authFileName);
         const config = this.loadJson(authFilePath);
 
-        console.log("Applying ", config.name);
+        debug("Applying ", config.name);
 
         // Add the ID of the resetFunction to the configuration
         if (config?.config?.resetFunctionName) {
@@ -551,7 +555,7 @@ export class AppImporter {
     const functionsDir = path.join(appPath, "functions");
 
     if (fs.existsSync(functionsDir)) {
-      console.log("Applying functions...");
+      debug("Applying functions...");
       const functionDirs = fs.readdirSync(functionsDir);
       for (const functionDir of functionDirs) {
         const configPath = path.join(functionsDir, functionDir, "config.json");
@@ -561,7 +565,7 @@ export class AppImporter {
 
         delete config.id;
 
-        console.log("creating new function provider: ", config);
+        debug("creating new function provider: ", config);
         const url = `${this.apiUrl}/groups/${groupId}/apps/${appId}/functions`;
         const response = await fetch(url, {
           method: "POST",
@@ -781,7 +785,7 @@ export class AppImporter {
   }
 
   private async createSecret(groupId: string, internalAppId: string, name: string, value: string) {
-    console.log(`Creating "${name}" secret`);
+    debug(`Creating "${name}" secret`);
     if (!this.accessToken) {
       throw new Error("Login before calling this method");
     }
