@@ -2,13 +2,14 @@
   "name": "@realm/baas-test-server",
   "version": "0.1.0",
   "private": false,
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "tsm --enable-source-maps --no-warnings index.ts"
+    "start": "tsx index.ts"
   },
   "dependencies": {
     "chalk": "^4.1.2",
     "dotenv": "^16.0.2",
-    "tsm": "^2.2.2"
+    "tsx": "^3.12.2"
   }
 }
