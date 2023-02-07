@@ -32,9 +32,6 @@ import {
  * snapshot()}, however, will **not** live update
  * (and listener callbacks added through addListener()
  * will thus never be called).
- *
- * @extends Realm.Collection
- * @memberof Realm
  */
 export class Results<T = unknown> extends OrderedCollection<T> {
   /**

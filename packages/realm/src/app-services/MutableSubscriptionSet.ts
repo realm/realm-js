@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { BaseSubscriptionSet, Realm, Subscription, SubscriptionSet, assert, binding } from "../internal";
+import { BaseSubscriptionSet, Realm, Results, Subscription, SubscriptionSet, assert, binding } from "../internal";
 
 /**
  * Options for {@link MutableSubscriptionSet.add}.
@@ -60,16 +60,16 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
    * Add a query to the set of active subscriptions. The query will be joined via
    * an `OR` operator with any existing queries for the same type.
    *
-   * A query is represented by a {@link Realm.Results} instance returned from {@link Realm.objects},
+   * A query is represented by a {@link Results} instance returned from {@link Realm.objects},
    * for example: `mutableSubs.add(realm.objects("Cat").filtered("age > 10"));`.
    *
-   * @param query A {@link Realm.Results} instance representing the query to subscribe to.
+   * @param query A {@link Results} instance representing the query to subscribe to.
    * @param options An optional {@link SubscriptionOptions} object containing options to
    *  use when adding this subscription (e.g. to give the subscription a name).
    * @returns A `Subscription` instance for the new subscription.
    */
-  add(query: Realm.Results<unknown>, options?: SubscriptionOptions): Subscription {
-    assert.instanceOf(query, Realm.Results, "query");
+  add(query: Results<unknown>, options?: SubscriptionOptions): Subscription {
+    assert.instanceOf(query, Results, "query");
     if (options) {
       assertIsSubscriptionOptions(options);
     }
@@ -101,11 +101,11 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
   /**
    * Remove a subscription with the given query from the SubscriptionSet.
    *
-   * @param query A {@link Realm.Results} instance representing the query to remove a subscription to.
+   * @param query A {@link Results} instance representing the query to remove a subscription to.
    * @returns `true` if the subscription was removed, `false` if it was not found.
    */
-  remove(query: Realm.Results<unknown>): boolean {
-    assert.instanceOf(query, Realm.Results, "query");
+  remove(query: Results<unknown>): boolean {
+    assert.instanceOf(query, Results, "query");
 
     return this.internal.eraseByQuery(query.internal.query);
   }

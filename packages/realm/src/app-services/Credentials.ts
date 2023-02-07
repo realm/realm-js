@@ -81,7 +81,7 @@ export class Credentials {
   /**
    * Creates credentials from an API key.
    * @param key A string identifying the API key.
-   * @return {Credentials} An instance of `Credentials` that can be used in {@link Realm.App.logIn}.
+   * @return {Credentials} An instance of `Credentials` that can be used in {@link App.logIn}.
    */
   static apiKey(key: string): Credentials {
     return new Credentials(binding.AppCredentials.userApiKey(key));
@@ -90,7 +90,7 @@ export class Credentials {
   /**
    * Creates credentials based on an Apple login.
    * @param token An Apple authentication token, obtained by logging into Apple.
-   * @return {Credentials} An instance of `Credentials` that can be used in {@link Realm.App.logIn}.
+   * @return {Credentials} An instance of `Credentials` that can be used in {@link App.logIn}.
    */
   static apple(token: string): Credentials {
     return new Credentials(binding.AppCredentials.apple(token));
@@ -99,7 +99,7 @@ export class Credentials {
   /**
    * Creates credentials based on a Facebook login.
    * @param token A Facebook authentication token, obtained by logging into Facebook.
-   * @return {Credentials} An instance of `Credentials` that can be used in {@link Realm.App.logIn}.
+   * @return {Credentials} An instance of `Credentials` that can be used in {@link App.logIn}.
    */
   static facebook(token: string): Credentials {
     return new Credentials(binding.AppCredentials.facebook(token));
@@ -108,7 +108,7 @@ export class Credentials {
   /**
    * Creates credentials based on a Google login.
    * @param authObject An object with either an `authCode` or `idToken` property.
-   * @return {Credentials} An instance of `Credentials` that can be used in {@link Realm.App.logIn}.
+   * @return {Credentials} An instance of `Credentials` that can be used in {@link App.logIn}.
    */
   static google(authObject: object): Credentials {
     return new Credentials(binding.AppCredentials.googleAuth(authObject));
@@ -117,7 +117,7 @@ export class Credentials {
   /**
    * Creates credentials with a JSON Web Token (JWT) provider and user identifier.
    * @param token A string identifying the user. Usually an identity token or a username.
-   * @return {Credentials} An instance of `Credentials` that can be used in {@link Realm.App.logIn}.
+   * @return {Credentials} An instance of `Credentials` that can be used in {@link App.logIn}.
    */
   static jwt(token: string): Credentials {
     return new Credentials(binding.AppCredentials.custom(token));
@@ -126,7 +126,7 @@ export class Credentials {
   /**
    * Creates credentials with an Atlas App Services function and user identifier.
    * @param payload An object identifying the user. Usually an identity token or a username.
-   * @return {Credentials} An instance of `Credentials` that can be used in {@link Realm.App.logIn}.
+   * @return {Credentials} An instance of `Credentials` that can be used in {@link App.logIn}.
    */
   static function(payload: object): Credentials {
     return new Credentials(binding.AppCredentials.function(payload as Record<string, binding.EJson>));

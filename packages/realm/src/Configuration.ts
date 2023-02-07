@@ -27,14 +27,12 @@ import {
   validateSyncConfiguration,
 } from "./internal";
 
-// export type Configuration = ConfigurationWithSync | ConfigurationWithoutSync;
-export type Configuration = BaseConfiguration;
 /**
  * A function which can be called to migrate a Realm from one version of the schema to another.
  */
 export type MigrationCallback = (oldRealm: Realm, newRealm: Realm) => void;
 
-type BaseConfiguration = {
+export type BaseConfiguration = {
   path?: string;
   schema?: (RealmObjectConstructor<any> | ObjectSchema)[];
   schemaVersion?: number;
@@ -50,13 +48,15 @@ type BaseConfiguration = {
   onMigration?: MigrationCallback;
 };
 
-// type ConfigurationWithSync = BaseConfiguration & {
-//   sync: Record<string, unknown>;
-// };
+export type ConfigurationWithSync = BaseConfiguration & {
+  sync: SyncConfiguration;
+};
 
-// type ConfigurationWithoutSync = BaseConfiguration & {
-//   sync?: never;
-// };
+export type ConfigurationWithoutSync = BaseConfiguration & {
+  sync?: never;
+};
+
+export type Configuration = ConfigurationWithSync | ConfigurationWithoutSync;
 
 // export type PartitionValue = string | number | null | ObjectId | UUID;
 
@@ -123,7 +123,7 @@ type BaseConfiguration = {
 //    *
 //    * Example:
 //    * ```
-//    * const config: Realm.Configuration = {
+//    * const config: Configuration = {
 //    *   sync: {
 //    *     user,
 //    *     flexible: true,
@@ -146,9 +146,9 @@ type BaseConfiguration = {
 //     /**
 //      * Callback called with the {@link Realm} instance to allow you to setup the
 //      * initial set of subscriptions by calling `realm.subscriptions.update`.
-//      * See {@link Realm.App.Sync.SubscriptionSet.update} for more information.
+//      * See {@link SubscriptionSet.update} for more information.
 //      */
-//     update: (subs: Realm.App.Sync.MutableSubscriptionSet, realm: Realm) => void;
+//     update: (subs: MutableSubscriptionSet, realm: Realm) => void;
 //     /**
 //      * If `true`, the {@link update} callback will be rerun every time the Realm is
 //      * opened (e.g. every time a user opens your app), otherwise (by default) it
@@ -264,7 +264,9 @@ export function validateConfiguration(config: unknown): asserts config is Config
   if (encryptionKey !== undefined) {
     assert(
       encryptionKey instanceof ArrayBuffer || ArrayBuffer.isView(encryptionKey) || encryptionKey instanceof Int8Array,
-      `Expected 'encryptionKey' on realm configuration to be an ArrayBuffer, ArrayBufferView (Uint8Array), or Int8Array, got ${TypeAssertionError.deriveType(encryptionKey)}.`,
+      `Expected 'encryptionKey' on realm configuration to be an ArrayBuffer, ArrayBufferView (Uint8Array), or Int8Array, got ${TypeAssertionError.deriveType(
+        encryptionKey,
+      )}.`,
     );
   }
 }

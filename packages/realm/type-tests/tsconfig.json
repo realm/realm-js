@@ -3,13 +3,19 @@
   "compilerOptions": {
     "noEmit": true,
     "noResolve": false,
+    "esModuleInterop": true,
     "lib": [
       "ES2022",
-    ]
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "realm": ["../../.."],
+      "next-realm": [".."],
+    }
   },
   "exclude": [],
   "include": [
-    "../../types/index.d.ts",
+    "../..",
     "../src/types.d.ts",
     "type-tests.ts"
   ]

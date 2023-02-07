@@ -37,9 +37,6 @@ import {
  * If values in a Set are required to have some order, it must be implemented
  * by the developer by, for example, wrapping values in an object that holds
  * a user-supplied insertion order.
- *
- * @extends Realm.OrderedCollection
- * @memberof Realm
  */
 export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
   /** @internal */
@@ -91,7 +88,7 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
    * @throws {TypeError} If a `value` is not of a type which can be stored in
    *   the Set, or if an object being added to the Set does not match the for the Set.
    * @throws {@link Error} If not inside a write transaction.
-   * @returns The Realm.Set<T> itself, after adding the new value
+   * @returns The Set itself, after adding the new value
    */
   add(value: T): this {
     assert.inTransaction(this.realm);
