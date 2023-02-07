@@ -21,7 +21,7 @@
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const check = function (it: any) {
-  return it && it.Math == Math && it;
+  return it && it.Math === Math && it;
 };
 
 /** @internal */
@@ -30,14 +30,14 @@ export const safeGlobalThis: typeof globalThis & Record<string, unknown> =
   // eslint-disable-next-line no-restricted-globals
   check(typeof globalThis === "object" && globalThis) ||
   // @ts-expect-error We're relying on an identifier that might not be there
-  check(typeof window == "object" && window) ||
+  check(typeof window === "object" && window) ||
   // eslint-disable-next-line no-restricted-globals -- safe
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore allow `self`
-  check(typeof self == "object" && self) ||
+  check(typeof self === "object" && self) ||
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore allow `global`
-  check(typeof global == "object" && global) ||
+  check(typeof global === "object" && global) ||
   // eslint-disable-next-line no-new-func -- fallback
   (function () {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
