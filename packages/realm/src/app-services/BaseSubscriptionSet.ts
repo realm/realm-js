@@ -81,9 +81,9 @@ const PROXY_HANDLER: ProxyHandler<BaseSubscriptionSet> = {
  *
  * SubscriptionSets can only be modified inside a {@link SubscriptionSet.update} callback.
  *
- * The SubscriptionSet is an iterable; thus, if absolutely needed, the contained
- * {@link Subscription}s can be accessed in `for-of` loops or spread into an `Array`
- * for access to the ECMAScript Array API, e.g. `[...realm.subscriptions][0]`.
+ * The SubscriptionSet is an iterable; thus, the contained {@link Subscription}s can be
+ * accessed in `for-of` loops or spread into an `Array` for access to the ECMAScript
+ * Array API, e.g. `[...realm.subscriptions][0]`.
  */
 export abstract class BaseSubscriptionSet {
   /**@internal */
