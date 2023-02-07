@@ -22,14 +22,15 @@ import {
   ClassHelpers,
   Constructor,
   DefaultObject,
+  Dictionary,
   JSONCacheMap,
   ObjectChangeCallback,
   ObjectListeners,
+  OrderedCollection,
   Realm,
   RealmInsertionModel,
   RealmObjectConstructor,
   Results,
-  TypeAssertionError,
   assert,
   binding,
   flags,
@@ -294,11 +295,7 @@ export class RealmObject<T = DefaultObject> {
       if (typeof value == "function") {
         continue;
       }
-      if (
-        value instanceof Realm.Object ||
-        value instanceof Realm.OrderedCollection ||
-        value instanceof Realm.Dictionary
-      ) {
+      if (value instanceof RealmObject || value instanceof OrderedCollection || value instanceof Dictionary) {
         // recursively trigger `toJSON` for Realm instances with the same cache.
         result[key] = value.toJSON(key, cache);
       } else {
@@ -352,7 +349,7 @@ export class RealmObject<T = DefaultObject> {
     assert(collectionHelpers, "collection helpers");
     const tableView = this[INTERNAL].getBacklinkView(tableRef, columnKey);
     const results = binding.Results.fromTableView(this[REALM].internal, tableView);
-    return new Realm.Results(this[REALM], results, collectionHelpers);
+    return new Results(this[REALM], results, collectionHelpers);
   }
 
   /**
@@ -480,4 +477,5 @@ export class RealmObject<T = DefaultObject> {
 }
 
 //  We like to refer to this as "Realm.Object"
+// TODO: Determine if we want to revisit this if we're going away from a namespaced API
 Object.defineProperty(RealmObject, "name", { value: "Realm.Object" });

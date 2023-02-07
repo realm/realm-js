@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { ColKey, PropertyType, Realm, TableKey, TableType } from "../binding";
 import { expect } from "chai";
 import { inspect } from "util";
 
+import { ColKey, PropertyType, Realm, TableKey, TableType } from "../binding";
 import { CanonicalObjectSchema, CanonicalPropertySchema } from "../schema";
 import { fromBindingObjectSchema, fromBindingPropertySchema } from "../schema/from-binding";
 

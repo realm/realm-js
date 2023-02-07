@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
-  ApiKeyAuthClient,
+  ApiKeyAuth,
   App,
   Credentials,
   DefaultFunctionsFactory,
@@ -215,10 +215,10 @@ export class User<
   /**
    * Perform operations related to the API-key auth provider.
    */
-  get apiKeys(): ApiKeyAuthClient {
+  get apiKeys(): ApiKeyAuth {
     // TODO: Add memoization
     const internal = this.app.internal.userApiKeyProviderClient();
-    return new ApiKeyAuthClient(this.internal, internal);
+    return new ApiKeyAuth(this.internal, internal);
   }
 
   /**

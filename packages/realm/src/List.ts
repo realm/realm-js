@@ -18,6 +18,7 @@
 
 import {
   IllegalConstructorError,
+  ObjectSchema,
   OrderedCollection,
   OrderedCollectionHelpers,
   Realm,
@@ -33,9 +34,6 @@ type PartiallyWriteableArray<T> = Pick<Array<T>, "pop" | "push" | "shift" | "uns
  * Lists mostly behave like normal Javascript Arrays, except for that they can
  * only store values of a single type (indicated by the `type` and `optional`
  * properties of the List), and can only be modified inside a {@link Realm.write | write} transaction.
- *
- * @extends Realm.Collection
- * @memberof Realm
  */
 export class List<T = unknown> extends OrderedCollection<T> implements PartiallyWriteableArray<T> {
   /**
@@ -125,7 +123,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
    *
    * @param items Values to add to the list.
    * @throws {TypeError} If a `value` is not of a type which can be stored in
-   *   the list, or if an object being added to the list does not match the {@link Realm.ObjectSchema} for the list.
+   *   the list, or if an object being added to the list does not match the {@link ObjectSchema} for the list.
    *
    * @throws {@link AssertionError} If not inside a write transaction.
    * @returns A number equal to the new length of

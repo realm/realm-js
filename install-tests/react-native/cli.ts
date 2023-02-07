@@ -136,7 +136,7 @@ yargs(hideBin(process.argv))
       const env = getEnv({ newArchitecture, engine });
 
       console.log(`Initializing react-native@${reactNativeVersion} template into '${appPath}'`);
-      console.log("New achitecture is", newArchitecture ? "enabled" : "disabled");
+      console.log("New architecture is", newArchitecture ? "enabled" : "disabled");
 
       if (fs.existsSync(appPath) && force) {
         console.log("Deleting existing app directory! (because --force)");
