@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { nodeResolve } from "@rollup/plugin-node-resolve";
+import commonjs from "@rollup/plugin-commonjs";
 import typescript from "@rollup/plugin-typescript";
 import replace from "@rollup/plugin-replace";
 import dts from "rollup-plugin-dts";
@@ -30,11 +32,13 @@ export default [
         file: pkg.main,
         format: "cjs",
         sourcemap: true,
+        exports: "named",
       },
       {
         file: pkg.module,
         format: "esm",
         sourcemap: true,
+        exports: "named",
       },
     ],
     plugins: [
@@ -59,6 +63,11 @@ export default [
       sourcemap: true,
     },
     plugins: [
+      nodeResolve({
+        resolveOnly: ["path-browserify"],
+      }),
+      // We need to use `commonjs` because of "path-browserify"
+      commonjs(),
       replace({
         preventAssignment: true,
         delimiters: ["", ""],
@@ -70,7 +79,7 @@ export default [
         tsconfig: "src/react-native/tsconfig.json",
       }),
     ],
-    external: ["bson", "debug", "react-native", "path-browserify"],
+    external: ["bson", "debug", "react-native"],
   },
   {
     input: "src/index.ts",
