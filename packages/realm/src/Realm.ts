@@ -30,6 +30,7 @@ import {
   CanonicalObjectSchema,
   CanonicalObjectSchemaProperty,
   CanonicalPropertiesTypes,
+  CanonicalPropertySchema,
   ClassHelpers,
   ClassMap,
   ClientResetAfterCallback,
@@ -1257,8 +1258,10 @@ export declare namespace Realm {
     BSONType as BSON,
     /** @deprecated Please use named imports */
     CanonicalObjectSchema,
-    /** @deprecated Please use named imports */
+    /** @deprecated Will be removed in v13.0.0. Please use {@link CanonicalPropertySchema} as a named import */
     CanonicalObjectSchemaProperty,
+    /** @deprecated Please use named imports */
+    CanonicalPropertySchema,
     /** @deprecated Please use named imports */
     CanonicalPropertiesTypes,
     /** @deprecated Please use named imports */
