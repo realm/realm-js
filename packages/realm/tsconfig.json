@@ -11,6 +11,7 @@
       "ES2022"
     ],
     "types": [
+      "@realm/network-transport",
       "bson",
       "debug",
       "ms" // debug dependency

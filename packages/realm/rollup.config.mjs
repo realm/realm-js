@@ -42,6 +42,7 @@ export default [
       },
     ],
     plugins: [
+      nodeResolve(),
       replace({
         preventAssignment: true,
         delimiters: ["", ""],
@@ -64,7 +65,8 @@ export default [
     },
     plugins: [
       nodeResolve({
-        resolveOnly: ["path-browserify"],
+        mainFields: ["react-native", "module", "main"],
+        resolveOnly: ["@realm/network-transport", "path-browserify"],
       }),
       // We need to use `commonjs` because of "path-browserify"
       commonjs(),
