@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import "../../..";
-import * as lib from "../src";
+import * as Realm from "realm";
+import * as next from "next-realm";
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
@@ -32,11 +32,31 @@ declare class Person {
   // const realm: lib.Realm = new Realm();
 }
 {
-  const realm: Realm = new lib.Realm();
+  type IncompatibleProps =
+    // This is now @internal
+    | "_updateSchema"
+    // The syncSession.config.initialSubscriptions.update takes a Realm (which doesn't exactly match yet)
+    | "syncSession"
+    // The callback takes a Realm (which doesn't exactly match yet)
+    | "addListener"
+    | "removeListener"
+    // This method takes a config, which are slightly different - which will be tested in another test
+    | "writeCopyTo";
+  /*
+   */
+  type OldRealm = Omit<Realm, IncompatibleProps>;
+  type NextRealm = Omit<next.Realm, IncompatibleProps>;
+  const nextRealm = {} as NextRealm;
+  const oldRealm: OldRealm = nextRealm;
 }
 {
-  const config: lib.Configuration = {} as Realm.Configuration;
+  type OldRealmConfiguration = Realm.Configuration;
+  type NextRealmConfiguration = next.Realm.Configuration;
+  const nextConfig = {} as NextRealmConfiguration;
+  const oldConfig: OldRealmConfiguration = nextConfig;
 }
+
+/*
 {
   const config: Realm.Configuration = {} as lib.Configuration;
 }
@@ -69,3 +89,4 @@ declare class Person {
 {
   const user: Realm.User = null as unknown as lib.User;
 }
+*/

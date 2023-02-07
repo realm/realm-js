@@ -51,7 +51,7 @@ export type SecretApiKey = ApiKey & {
 /**
  * Authentication provider where users identify using an API-key.
  */
-export class ApiKeyAuthClient {
+export class ApiKeyAuth {
   /** @internal */
   private user: binding.SyncUser;
   /** @internal */

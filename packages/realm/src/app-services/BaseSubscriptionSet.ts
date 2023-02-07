@@ -16,7 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { MutableSubscriptionSet, Realm, Subscription, SubscriptionSet, assert, binding } from "../internal";
+import {
+  MutableSubscriptionSet,
+  Realm,
+  RealmObject,
+  Results,
+  Subscription,
+  SubscriptionSet,
+  assert,
+  binding,
+} from "../internal";
 
 /**
  * Enum representing the state of a {@link SubscriptionSet}.
@@ -191,12 +200,12 @@ export abstract class BaseSubscriptionSet {
   /**
    * Find a subscription by query. Will match both named and unnamed subscriptions.
    *
-   * @param query The query to search for, represented as a {@link Realm.Results} instance,
+   * @param query The query to search for, represented as a {@link Results} instance,
    *  e.g. `Realm.objects("Cat").filtered("age > 10")`.
    * @returns The subscription with the specified query, or `null` if the subscription is not found.
    */
-  findByQuery<Subscription>(query: Realm.Results<Subscription & Realm.Object>): Subscription | null {
-    assert.instanceOf(query, Realm.Results, "query");
+  findByQuery<Subscription>(query: Results<Subscription & RealmObject>): Subscription | null {
+    assert.instanceOf(query, Results, "query");
 
     const subscription = this.internal.findByQuery(query.internal.query);
     return subscription ? (new Subscription(subscription) as Subscription) : null; // TODO: Remove the type assertion into Subscription

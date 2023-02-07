@@ -20,8 +20,7 @@ import { expect } from "chai";
 import { inspect } from "node:util";
 import { Decimal128, ObjectId, UUID } from "bson";
 
-import { List, Realm, Object as RealmObject } from "../index";
-import { PropertySchema, PropertyTypeName } from "../schema";
+import { List, PropertySchema, PropertyTypeName, Realm, Object as RealmObject } from "../index";
 import { RealmContext, closeRealm, generateTempRealmPath } from "./utils";
 
 type ValueFunction<T = unknown> = (realm: Realm) => T;
@@ -75,10 +74,10 @@ function testNumber(value: unknown, input: number) {
 }
 
 function testObject(value: unknown, input: RealmObject) {
-  if (value instanceof Realm.Object) {
+  if (value instanceof RealmObject) {
     expect(value._objectKey()).equals(input._objectKey());
   } else {
-    throw new Error("Expected a Realm.Object");
+    throw new Error("Expected a RealmObject");
   }
 }
 
@@ -258,7 +257,7 @@ describe("Milestone #5", () => {
 
           it("is supported via property set", function (this: PropertyTestContext) {
             const [obj] = this.realm.objects("MyObject");
-            expect(obj).instanceOf(Realm.Object);
+            expect(obj).instanceOf(RealmObject);
             this.realm.write(() => {
               obj.prop = this.value;
             });
@@ -266,7 +265,7 @@ describe("Milestone #5", () => {
 
           it("is supported via property get", function (this: PropertyTestContext) {
             const [obj] = this.realm.objects("MyObject");
-            expect(obj).instanceOf(Realm.Object);
+            expect(obj).instanceOf(RealmObject);
             if (typeof expected === "function") {
               const result = expected(obj.prop, this.value);
               if (typeof result === "boolean") {

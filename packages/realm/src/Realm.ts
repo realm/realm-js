@@ -17,31 +17,81 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
-  ApiKeyAuthClient,
+  ApiKey,
+  ApiKeyAuth,
   App,
+  AppChangeCallback,
+  AppConfiguration,
   BSON,
+  BaseConfiguration,
+  BaseObjectSchema,
+  BaseSubscriptionSet,
+  BaseSyncConfiguration,
   CanonicalObjectSchema,
+  CanonicalObjectSchemaProperty,
+  CanonicalPropertiesTypes,
+  CanonicalPropertySchema,
   ClassHelpers,
   ClassMap,
+  ClientResetAfterCallback,
+  ClientResetBeforeCallback,
+  ClientResetConfig,
+  ClientResetDiscardUnsyncedChangesConfiguration,
+  ClientResetFallbackCallback,
+  ClientResetManualConfiguration,
+  ClientResetMode,
+  ClientResetRecoverOrDiscardUnsyncedChangesConfiguration,
+  ClientResetRecoverUnsyncedChangesConfiguration,
   Collection,
+  CollectionChangeCallback,
+  CollectionChangeSet,
   Configuration,
+  ConfigurationWithSync,
+  ConfigurationWithoutSync,
+  ConnectionNotificationCallback,
+  ConnectionState,
   Constructor,
   Credentials,
+  DefaultFunctionsFactory,
   DefaultObject,
+  DefaultUserProfileData,
   Dictionary,
-  EmailPasswordAuthClient,
+  DictionaryChangeCallback,
+  DictionaryChangeSet,
+  EmailPasswordAuth,
+  ErrorCallback,
   FlexibleSyncConfiguration,
   INTERNAL,
   InitialSubscriptions,
   List,
+  LocalAppConfiguration,
+  LogLevel,
   MigrationCallback,
+  MongoClient,
+  MutableSubscriptionSet,
+  NumericLogLevel,
+  ObjectChangeCallback,
+  ObjectChangeSet,
   ObjectSchema,
   ObjectSchemaProperty,
+  OpenRealmBehaviorConfiguration,
+  OpenRealmBehaviorType,
+  OpenRealmTimeOutBehavior,
   OrderedCollection,
+  PartitionSyncConfiguration,
+  PartitionValue,
+  PrimaryKey,
+  ProgressDirection,
+  ProgressMode,
+  ProgressNotificationCallback,
   ProgressRealmPromise,
+  PropertiesTypes,
   PropertySchema,
   PropertySchemaShorthand,
+  ProviderType,
+  PushClient,
   RealmEvent,
+  RealmFunction,
   RealmInsertionModel,
   RealmListenerCallback,
   RealmListeners,
@@ -49,12 +99,22 @@ import {
   RealmObjectConstructor,
   RealmSet,
   Results,
+  SessionState,
+  SessionStopPolicy,
+  SortDescriptor,
+  Subscription,
+  SubscriptionOptions,
   SubscriptionSet,
+  SubscriptionsState,
+  SyncConfiguration,
+  SyncError,
   SyncSession,
   TypeAssertionError,
   Types,
   UpdateMode,
   User,
+  UserChangeCallback,
+  UserState,
   assert,
   binding,
   extendDebug,
@@ -107,20 +167,56 @@ type InternalConfig = {
 };
 
 export class Realm {
-  public static Object = RealmObject;
-  public static Collection = Collection;
-  public static OrderedCollection = OrderedCollection;
-  public static Results = Results;
-  public static List = List;
-  public static Dictionary = Dictionary;
-  public static Set = RealmSet;
+  /** @deprecated Please use named imports */
   public static App = App;
-  public static UpdateMode = UpdateMode;
+  /** @deprecated Please use named imports */
+  public static Auth = { EmailPasswordAuth, ApiKeyAuth };
+  /** @deprecated Please use named imports */
   public static BSON = BSON;
-  public static Types = Types;
-  public static User = User;
+  /** @deprecated Please use named imports */
+  public static ClientResetMode = ClientResetMode;
+  /** @deprecated Please use named imports */
+  public static Collection = Collection;
+  /** @deprecated Please use named imports */
+  public static ConnectionState = ConnectionState;
+  /** @deprecated Please use named imports */
   public static Credentials = Credentials;
-  public static Auth = { EmailPasswordAuth: EmailPasswordAuthClient, ApiKeyAuth: ApiKeyAuthClient };
+  /** @deprecated Please use named imports */
+  public static Dictionary = Dictionary;
+  /** @deprecated Please use named imports */
+  public static List = List;
+  // TODO: Decide if we want to deprecate this as well
+  public static Object = RealmObject;
+  /** @deprecated Please use named imports */
+  public static OrderedCollection = OrderedCollection;
+  /** @deprecated Please use named imports */
+  public static OpenRealmBehaviorType = OpenRealmBehaviorType;
+  /** @deprecated Please use named imports */
+  public static OpenRealmTimeOutBehavior = OpenRealmTimeOutBehavior;
+  /** @deprecated Please use named imports */
+  public static ProgressDirection = ProgressDirection;
+  /** @deprecated Please use named imports */
+  public static ProgressMode = ProgressMode;
+  /** @deprecated Please use named imports */
+  public static ProviderType = ProviderType;
+  /** @deprecated Please use named imports */
+  public static Results = Results;
+  /** @deprecated Please use named imports */
+  public static SessionState = SessionState;
+  /** @deprecated Please use named imports */
+  public static SessionStopPolicy = SessionStopPolicy;
+  /** @deprecated Please use named imports */
+  public static Set = RealmSet;
+  /** @deprecated Please use named imports */
+  public static SyncError = SyncError;
+  /** @deprecated Please use named imports */
+  public static Types = Types;
+  /** @deprecated Please use named imports */
+  public static UpdateMode = UpdateMode;
+  /** @deprecated Please use named imports */
+  public static User = User;
+  /** @deprecated Please use named imports */
+  public static UserState = UserState;
 
   public static defaultPath = Realm.normalizePath("default.realm");
 
@@ -219,7 +315,7 @@ export class Realm {
    *
    * @param objectSchema Schema describing the object that should be created.
    */
-  public static createTemplateObject<T extends Record<string, unknown>>(objectSchema: Realm.ObjectSchema): T {
+  public static createTemplateObject<T extends Record<string, unknown>>(objectSchema: ObjectSchema): T {
     validateObjectSchema(objectSchema);
     const normalizedSchema = normalizeObjectSchema(objectSchema);
     const result: Record<string, unknown> = {};
@@ -636,7 +732,7 @@ export class Realm {
   // TODO: Support embedded objects
   // TODO: Rollback by deleting the object if any property assignment fails (fixing #2638)
   /**
-   * Create a new {@link Realm.Object} of the given type and with the specified properties. For objects marked asymmetric,
+   * Create a new {@link RealmObject} of the given type and with the specified properties. For objects marked asymmetric,
    * `undefined` is returned. The API for asymmetric objects is subject to changes in the future.
    * @param type The type of Realm object to create.
    * @param values Property values for all required properties without a
@@ -651,7 +747,7 @@ export class Realm {
    *       across devices are merged. For most use cases, the behavior will match the intuitive behavior of how
    *       changes should be merged, but if updating an entire object is considered an atomic operation, this mode
    *       should not be used.
-   * @returns A {@link Realm.Object} or `undefined` if the object is asymmetric.
+   * @returns A {@link RealmObject} or `undefined` if the object is asymmetric.
    */
   create<T = DefaultObject>(type: string, values: RealmInsertionModel<T>, mode?: UpdateMode.Never): RealmObject<T> & T;
   create<T = DefaultObject>(
@@ -678,7 +774,7 @@ export class Realm {
     }
     // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1260-L1321
     if (values instanceof RealmObject && !values[INTERNAL]) {
-      throw new Error("Cannot create an object from a detached Realm.Object instance");
+      throw new Error("Cannot create an object from a detached RealmObject instance");
     }
     if (!Object.values(UpdateMode).includes(mode)) {
       throw new Error("Unsupported 'updateMode'. Only 'never', 'modified' or 'all' is supported.");
@@ -752,11 +848,14 @@ export class Realm {
    * @param primaryKey The primary key value of the object to search for.
    * @throws {@link Error} If type passed into this method is invalid, or if the object type did
    *  not have a {@link primaryKey} specified in the schema, or if it was marked asymmetric.
-   * @returns A {@link Realm.Object} or `null` if no object is found.
+   * @returns A {@link RealmObject} or `null` if no object is found.
    * @since 0.14.0
    */
   objectForPrimaryKey<T = DefaultObject>(type: string, primaryKey: T[keyof T]): (RealmObject<T> & T) | null;
-  objectForPrimaryKey<T extends RealmObject>(type: Constructor<T>, primaryKey: T[keyof T]): T | null;
+  objectForPrimaryKey<T extends RealmObject = RealmObject & DefaultObject>(
+    type: Constructor<T>,
+    primaryKey: T[keyof T],
+  ): T | null;
   objectForPrimaryKey<T extends RealmObject>(type: string | Constructor<T>, primaryKey: unknown): T | null {
     // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1240-L1258
     const { objectSchema, properties, wrapObject } = this.classes.getHelpers(type);
@@ -791,7 +890,7 @@ export class Realm {
    * @param type The type of Realm object to search for.
    * @param objectKey The object key of the Realm object to search for.
    * @throws {@link Error} If type passed into this method is invalid or if the type is marked embedded or asymmetric.
-   * @returns A {@link Realm.Object} or `undefined` if the object key is not found.
+   * @returns A {@link RealmObject} or `undefined` if the object key is not found.
    * @internal
    */
   _objectForObjectKey<T = DefaultObject>(type: string, objectKey: string): (RealmObject<T> & T) | undefined;
@@ -823,11 +922,11 @@ export class Realm {
    * Returns all objects of the given {@link type} in the Realm.
    * @param type The type of Realm objects to retrieve.
    * @throws {@link Error} If type passed into this method is invalid or if the type is marked embedded or asymmetric.
-   * @returns Realm.Results that will live-update as objects are created, modified, and destroyed.
+   * @returns Results that will live-update as objects are created, modified, and destroyed.
    */
-  objects<T>(type: string): Results<RealmObject & T>;
-  objects<T extends RealmObject = RealmObject>(type: Constructor<T>): Results<T>;
-  objects<T extends RealmObject = RealmObject>(type: string | Constructor<T>): Results<T> {
+  objects<T = DefaultObject>(type: string): Results<RealmObject<T> & T>;
+  objects<T extends RealmObject = RealmObject & DefaultObject>(type: Constructor<T>): Results<T>;
+  objects<T extends RealmObject>(type: string | Constructor<T>): Results<T> {
     const { objectSchema, wrapObject } = this.classes.getHelpers(type);
     if (isEmbedded(objectSchema)) {
       throw new Error("You cannot query an embedded object.");
@@ -1029,7 +1128,7 @@ export class Realm {
    * @param schema The schema which the Realm should be updated to use.
    * @internal Consider passing a {@link schema} when constructing the {@link Realm} instead.
    */
-  _updateSchema(schema: Realm.ObjectSchema[]): void {
+  _updateSchema(schema: ObjectSchema[]): void {
     validateRealmSchema(schema);
     const normalizedSchema = normalizeRealmSchema(schema);
     const bindingSchema = toBindingSchema(normalizedSchema);
@@ -1080,50 +1179,334 @@ function isEmbedded(objectSchema: binding.ObjectSchema): boolean {
 }
 
 // Declare the Realm namespace for backwards compatibility
+// This declaration needs to happen in the same file which declares "Realm"
+// @see https://www.typescriptlang.org/docs/handbook/declaration-merging.html#merging-namespaces-with-classes-functions-and-enums
 
-// We need this alias because of https://github.com/Swatinem/rollup-plugin-dts/issues/223
-type CollectionType<T> = Collection<T>;
-type OrderedCollectionType<T> = OrderedCollection<T>;
-type ResultsType<T> = Results<T>;
-type ListType<T> = List<T>;
-type DictionaryType<T> = Dictionary<T>;
-type SetType<T> = RealmSet<T>;
+// We need these type aliases because of https://github.com/Swatinem/rollup-plugin-dts/issues/223
+
 type AppType = App;
-type UpdateModeType = UpdateMode;
-type ObjectSchemaType = ObjectSchema;
-type ObjectSchemaPropertyType = ObjectSchemaProperty;
-type PropertySchemaType = PropertySchema;
-type PropertySchemaShorthandType = PropertySchemaShorthand;
 type BSONType = typeof BSON;
+type ClientResetModeType = ClientResetMode;
+type CollectionType<
+  KeyType = unknown,
+  ValueType = unknown,
+  EntryType = [KeyType, ValueType],
+  T = ValueType,
+  ChangeCallbackType = unknown,
+> = Collection<KeyType, ValueType, EntryType, T, ChangeCallbackType>;
+type ConnectionStateType = ConnectionState;
+type CredentialsType = Credentials;
+type DictionaryType<T> = Dictionary<T>;
+type ListType<T> = List<T>;
+type Mixed = unknown;
+type ObjectType = string | RealmObjectConstructor;
+type OpenRealmBehaviorTypeType = OpenRealmBehaviorType;
+type OpenRealmTimeOutBehaviorType = OpenRealmTimeOutBehavior;
+type ProgressDirectionType = ProgressDirection;
+type ProgressModeType = ProgressMode;
+type ProviderTypeType = ProviderType;
+type ResultsType<T> = Results<T>;
+type SessionStateType = SessionState;
+type SessionStopPolicyType = SessionStopPolicy;
+type SetType<T> = RealmSet<T>;
+type SyncErrorType = SyncError;
 type TypesType = typeof Types;
-type UserType = typeof User;
-type CredentialsType = typeof Credentials;
-type ConfigurationType = Configuration;
-type FlexibleSyncConfigurationType = FlexibleSyncConfiguration;
+type UpdateModeType = UpdateMode;
+type UserType = User;
+type UserStateType = UserState;
+
+type BaseSubscriptionSetType = BaseSubscriptionSet;
+type LogLevelType = LogLevel;
+type NumericLogLevelType = NumericLogLevel;
+type MutableSubscriptionSetType = MutableSubscriptionSet;
+type PartitionValueType = PartitionValue;
+type SubscriptionOptionsType = SubscriptionOptions;
+type SubscriptionSetType = SubscriptionSet;
+type SubscriptionsStateType = SubscriptionsState;
+type SubscriptionType = Subscription;
+type SyncSessionType = SyncSession;
+
+type ObjectIdType = BSON.ObjectId;
+type Decimal128Type = BSON.Decimal128;
+type UUIDType = BSON.UUID;
+
+type ApiKeyType = ApiKey;
+type EmailPasswordAuthType = EmailPasswordAuth;
+type ApiKeyAuthType = ApiKeyAuth;
+
+type GlobalDate = Date;
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace Realm {
+export declare namespace Realm {
+  // TODO: Decide if we want to deprecate this as well
   export type Object<T = DefaultObject> = RealmObject<T>;
-  export type Collection<T = unknown> = CollectionType<T>;
-  export type OrderedCollection<T = unknown> = OrderedCollectionType<T>;
-  export type Results<T = unknown> = ResultsType<T>;
-  export type List<T = unknown> = ListType<T>;
-  export type Dictionary<T = unknown> = DictionaryType<T>;
-  export type Set<T = unknown> = SetType<T>;
-  export type App = AppType;
-  export type UpdateMode = UpdateModeType;
-  export type ObjectSchema = ObjectSchemaType;
-  /**
-   * @deprecated Will be removed in v13.0.0. Please use {@link PropertySchema}.
-   */
-  export type ObjectSchemaProperty = ObjectSchemaPropertyType;
-  export type PropertySchema = PropertySchemaType;
-  export type PropertySchemaShorthand = PropertySchemaShorthandType;
-  export type Mixed = unknown;
-  export type BSON = BSONType;
-  export type Types = TypesType;
-  export type User = UserType;
-  export type Credentials = CredentialsType;
-  export type Configuration = ConfigurationType;
-  export type FlexibleSyncConfiguration = FlexibleSyncConfigurationType;
+  export {
+    // Pure type exports below
+    /** @deprecated Please use named imports */
+    AppType as App,
+    /** @deprecated Please use named imports */
+    AppChangeCallback,
+    /** @deprecated Please use named imports */
+    AppConfiguration,
+    /** @deprecated Please use named imports */
+    BaseConfiguration,
+    /** @deprecated Please use named imports */
+    BaseObjectSchema,
+    /** @deprecated Please use named imports */
+    BaseSyncConfiguration,
+    /** @deprecated Please use named imports */
+    BSONType as BSON,
+    /** @deprecated Please use named imports */
+    CanonicalObjectSchema,
+    /** @deprecated Will be removed in v13.0.0. Please use {@link CanonicalPropertySchema} as a named import */
+    CanonicalObjectSchemaProperty,
+    /** @deprecated Please use named imports */
+    CanonicalPropertySchema,
+    /** @deprecated Please use named imports */
+    CanonicalPropertiesTypes,
+    /** @deprecated Please use named imports */
+    ClientResetModeType as ClientResetMode,
+    /** @deprecated Please use named imports */
+    ClientResetFallbackCallback,
+    /** @deprecated Please use named imports */
+    ClientResetBeforeCallback,
+    /** @deprecated Please use named imports */
+    ClientResetAfterCallback,
+    /** @deprecated Please use named imports */
+    ClientResetManualConfiguration,
+    /** @deprecated Please use named imports */
+    ClientResetDiscardUnsyncedChangesConfiguration,
+    /** @deprecated Please use named imports */
+    ClientResetRecoverUnsyncedChangesConfiguration,
+    /**
+     * This type got renamed to {@link ClientResetRecoverUnsyncedChangesConfiguration}
+     * @deprecated Please use named imports
+     */
+    ClientResetRecoverUnsyncedChangesConfiguration as ClientResetRecoveryConfiguration,
+    /** @deprecated Please use named imports */
+    ClientResetRecoverOrDiscardUnsyncedChangesConfiguration,
+    /** @deprecated Please use named imports */
+    ClientResetConfig,
+    /** @deprecated Please use named imports */
+    CollectionChangeCallback,
+    /** @deprecated Please use named imports */
+    CollectionChangeSet,
+    /** @deprecated Please use named imports */
+    CollectionType as Collection,
+    /** @deprecated Please use named imports */
+    ConfigurationWithoutSync,
+    /** @deprecated Please use named imports */
+    ConfigurationWithSync,
+    /** @deprecated Please use named imports */
+    Configuration,
+    /** @deprecated Please use named imports */
+    ConnectionNotificationCallback,
+    /** @deprecated Please use named imports */
+    ConnectionStateType as ConnectionState,
+    /** @deprecated Please use named imports */
+    CredentialsType as Credentials,
+    /** @deprecated Please use named imports */
+    DefaultFunctionsFactory,
+    /** @deprecated Please use named imports */
+    DefaultUserProfileData,
+    /** @deprecated Please use named imports */
+    DictionaryType as Dictionary,
+    /** @deprecated Please use named imports */
+    DictionaryChangeCallback,
+    /** @deprecated Please use named imports */
+    DictionaryChangeSet,
+    /** @deprecated Please use named imports */
+    ErrorCallback,
+    /** @deprecated Please use named imports */
+    FlexibleSyncConfiguration,
+    /** @deprecated Please use named imports */
+    ListType as List,
+    /** @deprecated Please use named imports */
+    LocalAppConfiguration,
+    /** @deprecated Please use named imports */
+    MigrationCallback,
+    /** @deprecated Please use named imports */
+    Mixed,
+    /** @deprecated Please use named imports */
+    ObjectChangeCallback,
+    /** @deprecated Please use named imports */
+    ObjectChangeSet,
+    /** @deprecated Please use named imports */
+    ObjectSchema,
+    /**
+     * @deprecated Will be removed in v13.0.0. Please use {@link PropertySchema}.
+     */
+    ObjectSchemaProperty,
+    /** @deprecated Please use named imports */
+    ObjectType,
+    /** @deprecated Please use named imports */
+    OpenRealmBehaviorConfiguration,
+    /** @deprecated Please use named imports */
+    OpenRealmBehaviorTypeType as OpenRealmBehaviorType,
+    /** @deprecated Please use named imports */
+    OpenRealmTimeOutBehaviorType as OpenRealmTimeOutBehavior,
+
+    /** @deprecated Please use named imports */
+    PartitionSyncConfiguration,
+    /** @deprecated Please use named imports */
+    PrimaryKey,
+    /** @deprecated Please use named imports */
+    ProgressDirectionType as ProgressDirection,
+    /** @deprecated Please use named imports */
+    ProgressModeType as ProgressMode,
+    /** @deprecated Please use named imports */
+    ProgressNotificationCallback,
+    /** @deprecated Please use named imports */
+    PropertiesTypes,
+    /** @deprecated Please use named imports */
+    PropertySchema,
+    /** @deprecated Please use named imports */
+    PropertySchemaShorthand,
+    /** @deprecated Please use named imports */
+    ProviderTypeType as ProviderType,
+    /** @deprecated Please use named imports */
+    RealmFunction,
+    /** @deprecated Please use named imports */
+    RealmObjectConstructor,
+    /**
+     * This type got renamed to RealmObjectConstructor
+     * @deprecated Please use named imports
+     */
+    RealmObjectConstructor as ObjectClass,
+    /** @deprecated Please use named imports */
+    ResultsType as Results,
+    /** @deprecated Please use named imports */
+    SessionStateType as SessionState,
+    /** @deprecated Please use named imports */
+    SessionStopPolicyType as SessionStopPolicy,
+    /** @deprecated Please use named imports */
+    SetType as Set,
+    // TODO: Add these once we've implemented the SSL config for the sync client
+    // SSLVerifyObject,
+    // SSLVerifyCallback,
+    // SSLConfiguration,
+    /** @deprecated Please use named imports */
+    SortDescriptor,
+    /** @deprecated Please use named imports */
+    SyncConfiguration,
+    /** @deprecated Please use named imports */
+    SyncErrorType as SyncError,
+    /** @deprecated Please use named imports */
+    TypesType as Types,
+    /** @deprecated Please use named imports */
+    UpdateModeType as UpdateMode,
+    /** @deprecated Please use named imports */
+    UserType as User,
+    /** @deprecated Please use named imports */
+    UserChangeCallback,
+    /** @deprecated Please use named imports */
+    UserStateType as UserState,
+  };
+
+  /** @deprecated Please use named imports */
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  export namespace App {
+    /** @deprecated Please use named imports */
+    export type Credentials = CredentialsType;
+    /** @deprecated Please use named imports */
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    export namespace Sync {
+      /** @deprecated Please use named imports */
+      export type BaseSubscriptionSet = BaseSubscriptionSetType;
+      /** @deprecated Please use named imports */
+      export type LogLevel = LogLevelType;
+      /** @deprecated Please use named imports */
+      export type NumericLogLevel = NumericLogLevelType;
+      /** @deprecated Please use named imports */
+      export type MutableSubscriptionSet = MutableSubscriptionSetType;
+      /** @deprecated Please use named imports */
+      export type PartitionValue = PartitionValueType;
+      /** @deprecated Please use named imports */
+      export type SubscriptionOptions = SubscriptionOptionsType;
+      /** @deprecated Please use named imports */
+      export type SubscriptionSet = SubscriptionSetType;
+      /** @deprecated Please use named imports */
+      export type SubscriptionsState = SubscriptionsStateType;
+      /** @deprecated Please use named imports */
+      export type Subscription = SubscriptionType;
+      /** @deprecated Please use named imports */
+      export type SyncSession = SyncSessionType;
+      /**
+       * @deprecated Got renamed to {@SyncSession} and please use named imports
+       */
+      export type Session = SyncSessionType;
+    }
+  }
+
+  /** @deprecated Please use named imports */
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  export namespace BSON {
+    /** @deprecated Please use named imports */
+    export type ObjectId = ObjectIdType;
+    /** @deprecated Please use named imports */
+    export type Decimal128 = Decimal128Type;
+    /** @deprecated Please use named imports */
+    export type UUID = UUIDType;
+  }
+
+  /** @deprecated Please use named imports */
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  export namespace Auth {
+    /**
+     * @deprecated Got renamed to {@link EmailPasswordAuth} and please use named imports
+     */
+    export type EmailPasswordAuth = EmailPasswordAuthType;
+    /** @deprecated Please use named imports */
+    export type ApiKey = ApiKeyType;
+    /**
+     * @deprecated Got renamed to {@link ApiKeyAuth} and please use named imports
+     */
+    export type ApiKeyAuth = ApiKeyAuthType;
+  }
+
+  /** @deprecated Please use named imports */
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  export namespace Services {
+    // TODO: Fill in once the MongoDB client has stabilized
+
+    /**
+     * @deprecated Got renamed to {@link PushClient} and please use named imports
+     */
+    export type Push = PushClient;
+  }
+
+  /** @deprecated Please use named imports */
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  export namespace Types {
+    /** @deprecated Please use named imports */
+    export type Bool = boolean;
+    /** @deprecated Please use named imports */
+    export type String = string;
+    /** @deprecated Please use named imports */
+    export type Int = number;
+    /** @deprecated Please use named imports */
+    export type Float = number;
+    /** @deprecated Please use named imports */
+    export type Double = number;
+    /** @deprecated Please use named imports */
+    export type Decimal128 = Realm.BSON.Decimal128;
+    /** @deprecated Please use named imports */
+    export type ObjectId = Realm.BSON.ObjectId;
+    /** @deprecated Please use named imports */
+    export type UUID = Realm.BSON.UUID;
+    /** @deprecated Please use named imports */
+    export type Date = GlobalDate;
+    /** @deprecated Please use named imports */
+    export type Data = ArrayBuffer;
+    /** @deprecated Please use named imports */
+    export type List<T> = Realm.List<T>;
+    /** @deprecated Please use named imports */
+    export type Set<T> = Realm.Set<T>;
+    /** @deprecated Please use named imports */
+    export type Dictionary<T> = Realm.Dictionary<T>;
+    /** @deprecated Please use named imports */
+    export type Mixed = unknown;
+    /** @deprecated Please use named imports */
+    export type LinkingObjects<ObjectTypeT, LinkingPropertyName> = Realm.Results<ObjectTypeT>;
+  }
 }

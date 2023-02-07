@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Realm } from "./internal";
+import { ObjectSchema, Realm } from "./internal";
 
 export enum RealmEvent {
   Change = "change",
@@ -24,7 +24,7 @@ export enum RealmEvent {
   BeforeNotify = "beforenotify",
 }
 
-export type RealmListenerCallback = (r: Realm, name: RealmEvent, schema?: Realm.ObjectSchema[]) => void;
+export type RealmListenerCallback = (r: Realm, name: RealmEvent, schema?: ObjectSchema[]) => void;
 
 // Temporary functions to work between event names and corresponding enums
 // TODO: We should update the external API to take a `RealmEvent` instead of a string.
@@ -42,7 +42,7 @@ class RealmListeners {
 
   // Combined callback which runs all listener callbacks in one call.
   callback(): void {
-    let schema: Realm.ObjectSchema[] | undefined;
+    let schema: ObjectSchema[] | undefined;
     if (this.eventType === RealmEvent.Schema) {
       schema = this.realm.schema;
     }

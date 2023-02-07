@@ -52,12 +52,14 @@ Timestamp.prototype.toDate = function () {
   return new Date(Number(this.seconds) * 1000 + this.nanoseconds / 1000_000);
 };
 
+/** @internal */
 export class InvalidObjKey extends TypeError {
   constructor(input: string) {
     super(`Cannot convert '${input}' to an ObjKey`);
   }
 }
 
+/** @internal */
 export function stringToObjKey(input: string): ObjKey {
   try {
     return BigInt(input) as unknown as ObjKey;
@@ -66,6 +68,7 @@ export function stringToObjKey(input: string): ObjKey {
   }
 }
 
+/** @internal */
 export function isEmptyObjKey(objKey: ObjKey) {
   // This relies on the JS representation of an ObjKey being a bigint
   return (objKey as unknown as bigint) === -1n;

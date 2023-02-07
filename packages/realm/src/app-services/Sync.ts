@@ -18,10 +18,15 @@
 
 import {
   App,
+  ConnectionState,
+  MutableSubscriptionSet,
   OpenRealmBehaviorConfiguration,
   OpenRealmBehaviorType,
   OpenRealmTimeOutBehavior,
   PartitionValue,
+  Subscription,
+  SubscriptionSet,
+  SubscriptionsState,
   SyncSession,
   User,
   assert,
@@ -29,8 +34,6 @@ import {
   toBindingSyncConfig,
   validateSyncConfiguration,
 } from "../internal";
-
-import * as internal from "../internal";
 
 export type LogLevel = "all" | "trace" | "debug" | "detail" | "info" | "warn" | "error" | "fatal" | "off";
 
@@ -63,29 +66,36 @@ function fromBindingLoggerLevel(arg: binding.LoggerLevel): NumericLogLevel {
   return arg as unknown as NumericLogLevel;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace Sync {
-  export const Session = SyncSession;
-  export const ConnectionState = internal.ConnectionState;
-  export const Subscription = internal.Subscription;
-  export const SubscriptionSet = internal.SubscriptionSet;
-  export const MutableSubscriptionSet = internal.MutableSubscriptionSet;
-  export const SubscriptionsState = internal.SubscriptionsState;
-  export type SubscriptionOptions = internal.SubscriptionOptions;
-  export function setLogLevel(app: App, level: LogLevel) {
+export class Sync {
+  /** @deprecated Please use named imports */
+  static Session = SyncSession;
+  /** @deprecated Please use named imports */
+  static ConnectionState = ConnectionState;
+  /** @deprecated Please use named imports */
+  static Subscription = Subscription;
+  /** @deprecated Please use named imports */
+  static SubscriptionSet = SubscriptionSet;
+  /** @deprecated Please use named imports */
+  static MutableSubscriptionSet = MutableSubscriptionSet;
+  /** @deprecated Please use named imports */
+  static SubscriptionsState = SubscriptionsState;
+  /** @deprecated Please use named imports */
+  static NumericLogLevel = NumericLogLevel;
+
+  static setLogLevel(app: App, level: LogLevel) {
     const numericLevel = toBindingLoggerLevel(level);
     app.internal.syncManager.setLogLevel(numericLevel);
   }
-  export function setLogger(app: App, logger: Logger) {
+  static setLogger(app: App, logger: Logger) {
     const factory = binding.Helpers.makeLoggerFactory((level, message) => {
       logger(fromBindingLoggerLevel(level), message);
     });
     app.internal.syncManager.setLoggerFactory(factory);
   }
-  export function getAllSyncSessions(user: User): SyncSession[] {
+  static getAllSyncSessions(user: User): SyncSession[] {
     throw new Error("Not yet implemented");
   }
-  export function getSyncSession(user: User, partitionValue: PartitionValue): SyncSession | null {
+  static getSyncSession(user: User, partitionValue: PartitionValue): SyncSession | null {
     validateSyncConfiguration({ user, partitionValue });
     const config = toBindingSyncConfig({ user, partitionValue });
     const path = user.app.internal.syncManager.pathForRealm(config);
@@ -97,32 +107,32 @@ export namespace Sync {
     }
   }
   // TODO: Consider breaking the API, turning this into a property
-  export function setUserAgent(app: App, userAgent: string) {
+  static setUserAgent(app: App, userAgent: string) {
     app.userAgent = userAgent;
   }
   // TODO: Consider breaking the API, turning this into an instance method
-  export function enableSessionMultiplexing(app: App) {
+  static enableSessionMultiplexing(app: App) {
     app.internal.syncManager.enableSessionMultiplexing();
   }
   // TODO: Consider breaking the API, turning this into an instance method
-  export function initiateClientReset(app: App, path: string) {
+  static initiateClientReset(app: App, path: string) {
     const success = app.internal.syncManager.immediatelyRunFileActions(path);
     // TODO: Consider a better error message
     assert(success, `Realm was not configured correctly. Client Reset could not be run for Realm at: ${path}`);
   }
   // TODO: Consider breaking the API, turning this into an instance method
   /** @internal */
-  export function _hasExistingSessions(app: App) {
+  static _hasExistingSessions(app: App) {
     return app.internal.syncManager.hasExistingSessions;
   }
   // TODO: Consider breaking the API, turning this into an instance method
-  export function reconnect(app: App) {
+  static reconnect(app: App) {
     app.internal.syncManager.reconnect();
   }
-  export const openLocalRealmBehavior: Readonly<OpenRealmBehaviorConfiguration> = {
+  static openLocalRealmBehavior: Readonly<OpenRealmBehaviorConfiguration> = {
     type: OpenRealmBehaviorType.OpenImmediately,
   };
-  export const downloadBeforeOpenBehavior: Readonly<OpenRealmBehaviorConfiguration> = {
+  static downloadBeforeOpenBehavior: Readonly<OpenRealmBehaviorConfiguration> = {
     type: OpenRealmBehaviorType.DownloadBeforeOpen,
     timeOut: 30 * 1000,
     timeOutBehavior: OpenRealmTimeOutBehavior.ThrowException,
