@@ -19,8 +19,6 @@
   "devDependencies": {
     "@realm/app-importer": "*",
     "@realm/mocha-reporter": "*",
-    "cmake-js": "^6.1.0",
-    "concurrently": "^6.0.2",
     "tsx": "^3.12.2"
   }
 }
