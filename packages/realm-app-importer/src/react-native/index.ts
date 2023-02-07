@@ -19,4 +19,4 @@ const AppImporter = {};
 const AppImporterOptions = {};
 
 export { AppImporter, AppImporterOptions };
-export { Credentials } from "../sharedTypes";
+export { Credentials } from "../types";

@@ -25,7 +25,7 @@ import createDebug from "debug";
 
 const debug = createDebug("realm:app-importer");
 
-import { Credentials } from "./sharedTypes";
+import { Credentials } from "./types";
 
 /**
  * First level keys are file globs and the values are objects that are spread over the content of the files matching the glob.

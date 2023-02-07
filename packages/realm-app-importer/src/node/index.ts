@@ -17,4 +17,4 @@
 ////////////////////////////////////////////////////////////////////////////
 
 export { AppImporter, AppImporterOptions } from "../AppImporter";
-export { Credentials } from "../sharedTypes";
+export { Credentials } from "../types";

@@ -24,7 +24,7 @@ import http from "http";
 import chalk from "chalk";
 
 import { AppImporter, ImportedApp } from "./AppImporter";
-import { Credentials } from "./sharedTypes";
+import { Credentials } from "./types";
 import { AppImportServer } from "./AppImportServer";
 
 /* eslint-disable no-console */
