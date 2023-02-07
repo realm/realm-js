@@ -42,7 +42,10 @@ export default [
       },
     ],
     plugins: [
-      nodeResolve(),
+      nodeResolve({
+        modulesOnly: true,
+        preferBuiltins: true,
+      }),
       replace({
         preventAssignment: true,
         delimiters: ["", ""],
