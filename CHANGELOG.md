@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Add an overload to `Dictionary.set` method that takes two arguments, a `key` and a `value`. ([#4286](https://github.com/realm/realm-js/issues/4286))  
 
 ### Fixed
 * Fix no notification for write transaction that contains only change to backlink property. ([realm/realm-core#4994](https://github.com/realm/realm-core/issues/4994), since v10.8.0)
