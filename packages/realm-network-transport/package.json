@@ -2,13 +2,13 @@
   "name": "@realm/network-transport",
   "version": "0.7.2",
   "description": "Implements cross-platform fetching used by Realm JS",
-  "main": "./dist/bundle.cjs.js",
-  "module": "./dist/bundle.es.js",
+  "main": "./dist/bundle.js",
+  "module": "./dist/bundle.mjs",
   "types": "./dist/bundle.d.ts",
-  "react-native": "./dist/bundle.react-native.es.js",
+  "react-native": "./dist/bundle.react-native.mjs",
   "browser": {
-    "./dist/bundle.cjs.js": "./dist/bundle.dom.cjs.js",
-    "./dist/bundle.es.js": "./dist/bundle.dom.es.js",
+    "./dist/bundle.js": "./dist/bundle.dom.js",
+    "./dist/bundle.mjs": "./dist/bundle.dom.mjs",
     "./dist/bundle.d.ts": "./dist/bundle.dom.d.ts"
   },
   "scripts": {
@@ -37,7 +37,7 @@
   "dependencies": {
     "@realm/common": "^0.1.4",
     "abort-controller": "^3.0.0",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^3.1.1"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^14.0.0",
