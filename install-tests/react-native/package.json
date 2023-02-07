@@ -2,7 +2,7 @@
   "name": "@realm/react-native-install-tests",
   "description": "See https://github.com/react-native-community/cli/issues/1493",
   "scripts": {
-    "cli": "tsm --no-warnings --enable-source-maps cli.ts",
+    "cli": "tsx cli.ts",
     "init": "npm run cli -- init",
     "test": "npm run cli -- test"
   },
@@ -10,7 +10,7 @@
     "@react-native-community/cli": "^9.3.1",
     "concurrently": "^7.5.0",
     "semver": "^7.3.8",
-    "tsm": "^2.2.2",
+    "tsx": "^3.12.2",
     "yargs": "^17.6.2"
   },
   "devDependencies": {
