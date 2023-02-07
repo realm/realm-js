@@ -18,6 +18,11 @@
 
 import { Collection, Dictionary, List, RealmObject } from "./internal";
 
+type AnyCollection = Collection<any, any, any, any, any>;
+type AnyDictionary = Dictionary<any>;
+type AnyList = List<any>;
+type AnyRealmObject = RealmObject<any>;
+
 type ExtractPropertyNamesOfType<T, PropType> = {
   [K in keyof T]: T[K] extends PropType ? K : never;
 }[keyof T];
@@ -26,7 +31,7 @@ type ExtractPropertyNamesOfType<T, PropType> = {
  * Exchanges properties defined as {@link List<T>} with an optional {@link Array<T | RealmInsertionModel<T>>}.
  */
 type RealmListsRemappedModelPart<T> = {
-  [K in ExtractPropertyNamesOfType<T, List>]?: T[K] extends List<infer GT>
+  [K in ExtractPropertyNamesOfType<T, AnyList>]?: T[K] extends List<infer GT>
     ? Array<GT | RealmInsertionModel<GT>>
     : never;
 };
@@ -35,7 +40,7 @@ type RealmListsRemappedModelPart<T> = {
  * Exchanges properties defined as {@link Dictionary<T>} with an optional key to mixed value object.
  */
 type RealmDictionaryRemappedModelPart<T> = {
-  [K in ExtractPropertyNamesOfType<T, Dictionary>]?: T[K] extends Dictionary<infer ValueType>
+  [K in ExtractPropertyNamesOfType<T, AnyDictionary>]?: T[K] extends Dictionary<infer ValueType>
     ? { [key: string]: ValueType }
     : never;
 };
@@ -43,18 +48,18 @@ type RealmDictionaryRemappedModelPart<T> = {
 /** Omits all properties of a model which are not defined by the schema */
 type OmittedRealmTypes<T> = Omit<
   T,
-  | keyof RealmObject
+  | keyof AnyRealmObject
   /* eslint-disable-next-line @typescript-eslint/ban-types */
   | ExtractPropertyNamesOfType<T, Function> // TODO: Figure out the use-case for this
-  | ExtractPropertyNamesOfType<T, Collection>
-  | ExtractPropertyNamesOfType<T, Dictionary>
+  | ExtractPropertyNamesOfType<T, AnyCollection>
+  | ExtractPropertyNamesOfType<T, AnyDictionary>
 >;
 
 /** Remaps realm types to "simpler" types (arrays and objects) */
 type RemappedRealmTypes<T> = RealmListsRemappedModelPart<T> & RealmDictionaryRemappedModelPart<T>;
 
 /**
- * Joins T stripped of all keys which value extends Realm.Collection and all inherited from Realm.Object,
- * with only the keys which value extends Realm.List, remapped as Arrays.
+ * Joins T stripped of all keys which value extends {@link Collection} and all inherited from {@link RealmObject},
+ * with only the keys which value extends {@link List}, remapped as Arrays.
  */
 export type RealmInsertionModel<T> = OmittedRealmTypes<T> & RemappedRealmTypes<T>;

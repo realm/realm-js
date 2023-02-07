@@ -1,2 +1,2 @@
-#!/usr/bin/env -S node --loader tsm --enable-source-maps --no-warnings --
+#!/usr/bin/env -S tsx --
 import "./src/cli";

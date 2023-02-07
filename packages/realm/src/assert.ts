@@ -20,7 +20,8 @@ import { AssertionError, DefaultObject, Realm, TypeAssertionError, binding } fro
 
 /**
  * Expects the condition to be truthy
- * @throws {@link Error} If the condition is not truthy. Throws either the {@link err} given as param
+ * @throws {@link Error} If the condition is not truthy. Throws either the {@link err} given as param if it's an {@link Error},
+ * an {@link AssertionError} wrapping {@link err} if it's a string or undefined, or uses the result of invoking {@link err} if it's a function.
  * @param condition The condition that must be truthy to avoid throwing.
  * @param err Optional message or error to throw.
  * Or a function producing this, which is useful to avoid computing the error message in case it's not needed.

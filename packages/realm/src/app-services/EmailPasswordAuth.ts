@@ -18,7 +18,7 @@
 
 import { binding } from "../internal";
 
-export class EmailPasswordAuthClient {
+export class EmailPasswordAuth {
   /** @internal */
   public internal: binding.UsernamePasswordProviderClient;
 

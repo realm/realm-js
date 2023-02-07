@@ -32,7 +32,7 @@ import {
  * The server will continuously evaluate the queries that the instance is subscribed to
  * and will send data that matches them, as well as remove data that no longer does.
  *
- * The set of subscriptions can only be modifed inside a {@link SubscriptionSet.update} callback,
+ * The set of subscriptions can only be modified inside a {@link SubscriptionSet.update} callback,
  * by calling methods on the corresponding {@link MutableSubscriptionSet} instance.
  */
 export class SubscriptionSet extends BaseSubscriptionSet {
@@ -58,7 +58,7 @@ export class SubscriptionSet extends BaseSubscriptionSet {
    * If `state` is {@link SubscriptionsState.Error}, the promise will be rejected immediately.
    *
    * @returns A promise which is resolved when synchronization is complete, or is
-   *  rejected if there is an error during synchronisation.
+   *  rejected if there is an error during synchronization.
    */
   async waitForSynchronization(): Promise<void> {
     try {
@@ -77,7 +77,7 @@ export class SubscriptionSet extends BaseSubscriptionSet {
    * Call this to make changes to this SubscriptionSet from inside the callback,
    * such as adding or removing subscriptions from the set.
    *
-   * The MutableSubscriptonSet argument can only be used from the callback and must
+   * The MutableSubscriptionSet argument can only be used from the callback and must
    * not be used after it returns.
    *
    * All changes done by the callback will be batched and sent to the server. You can either

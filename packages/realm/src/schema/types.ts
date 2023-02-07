@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
+  BSON,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Used by TS docs
   Realm,
   RealmObject,
@@ -33,6 +34,11 @@ export type RealmObjectConstructor<T extends RealmObject = RealmObject> = {
  * The names of the supported Realm property types.
  */
 export type PropertyTypeName = PrimitivePropertyTypeName | CollectionPropertyTypeName | RelationshipPropertyTypeName;
+
+/**
+ * Valid types for an object primary key.
+ */
+export type PrimaryKey = number | string | BSON.ObjectId | BSON.UUID;
 
 /**
  * The names of the supported Realm primitive property types.
@@ -72,18 +78,6 @@ export type UserTypeName = string;
 export type CanonicalRealmSchema = CanonicalObjectSchema[];
 
 /**
- * The canonical representation of the schema of a specific type of object.
- */
-export type CanonicalObjectSchema<T = DefaultObject> = {
-  name: string;
-  properties: Record<keyof T, CanonicalPropertySchema>;
-  primaryKey?: string;
-  embedded?: boolean;
-  asymmetric?: boolean;
-  ctor?: RealmObjectConstructor;
-};
-
-/**
  * @deprecated Will be removed in v13.0.0. Please use {@link CanonicalPropertySchema}.
  */
 export type CanonicalObjectSchemaProperty = CanonicalPropertySchema;
@@ -105,7 +99,7 @@ export type CanonicalPropertySchema = {
 /**
  * The schema for specifying the type of Realm object.
  */
-export type ObjectSchema = {
+export type BaseObjectSchema = {
   /**
    * The name of the Realm object type. The name must be unique across all objects
    * within the same Realm.
@@ -136,7 +130,22 @@ export type ObjectSchema = {
   /**
    * The properties and their types belonging to this object.
    */
+  properties: unknown;
+};
+
+/**
+ * The schema of a specific type of object.
+ */
+export type ObjectSchema = BaseObjectSchema & {
   properties: PropertiesTypes;
+};
+
+/**
+ * The canonical representation of the schema of a specific type of object.
+ */
+export type CanonicalObjectSchema<T = DefaultObject> = BaseObjectSchema & {
+  properties: CanonicalPropertiesTypes<keyof T>;
+  ctor?: RealmObjectConstructor;
 };
 
 /**
@@ -147,6 +156,8 @@ export type ObjectSchema = {
 export type PropertiesTypes = {
   [key: string]: PropertySchema | PropertySchemaShorthand;
 };
+
+export type CanonicalPropertiesTypes<K extends symbol | number | string = string> = Record<K, CanonicalPropertySchema>;
 
 /**
  * The shorthand string representation of a schema for specifying the type of a

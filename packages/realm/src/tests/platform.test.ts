@@ -18,9 +18,9 @@
 
 import { isAbsolute } from "node:path";
 import { existsSync } from "node:fs";
+import { expect } from "chai";
 
 import { Realm } from "../index";
-import { expect } from "chai";
 
 describe("platform specifics", () => {
   describe("default path", () => {

@@ -31,12 +31,12 @@ const REALM = Symbol("Dictionary#realm");
 const INTERNAL = Symbol("Dictionary#internal");
 const HELPERS = Symbol("Dictionary#helpers");
 
-type DictionaryChangeSet = {
+export type DictionaryChangeSet = {
   deletions: string[];
   modifications: string[];
   insertions: string[];
 };
-type DictionaryChangeCallback = (dictionary: Dictionary, changes: DictionaryChangeSet) => void;
+export type DictionaryChangeCallback = (dictionary: Dictionary, changes: DictionaryChangeSet) => void;
 
 const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true };
 const PROXY_HANDLER: ProxyHandler<Dictionary> = {
@@ -101,8 +101,6 @@ const PROXY_HANDLER: ProxyHandler<Dictionary> = {
  *
  * Dictionaries behave mostly like a JavaScript object i.e., as a key/value pair
  * where the key is a string.
- *
- * @memberof Realm
  */
 export class Dictionary<T = unknown> extends Collection<string, T, [string, T], [string, T], DictionaryChangeCallback> {
   /**
@@ -184,14 +182,14 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    */
   private [HELPERS]!: TypeHelpers;
 
-  // @ts-expect-error We're exposing methods in the end-users namespace of keys
+  /** @ts-expect-error We're exposing methods in the end-users namespace of keys */
   [key: string]: T;
 
   *[Symbol.iterator]() {
     yield* this.entries();
   }
 
-  // @ts-expect-error We're exposing methods in the end-users namespace of keys
+  /** @ts-expect-error We're exposing methods in the end-users namespace of keys */
   *keys() {
     const snapshot = this[INTERNAL].keys.snapshot();
     const size = snapshot.size();
@@ -202,7 +200,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
     }
   }
 
-  // @ts-expect-error We're exposing methods in the end-users namespace of keys
+  /** @ts-expect-error We're exposing methods in the end-users namespace of keys */
   *values() {
     const { fromBinding } = this[HELPERS];
     const snapshot = this[INTERNAL].values.snapshot();
@@ -213,7 +211,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
     }
   }
 
-  // @ts-expect-error We're exposing methods in the end-users namespace of keys
+  /** @ts-expect-error We're exposing methods in the end-users namespace of keys */
   *entries() {
     const { fromBinding } = this[HELPERS];
     const keys = this[INTERNAL].keys.snapshot();
@@ -227,12 +225,13 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
     }
   }
 
-  // @ts-expect-error We're exposing methods in the end-users namespace of keys
+  /** @ts-expect-error We're exposing methods in the end-users namespace of keys */
   isValid() {
     return this[INTERNAL].isValid;
   }
 
   /**
+<<<<<<< HEAD
    * Adds one or more elements with specified key and value to the dictionary or updates value if key exists.
    * @param elements The object of element(s) to add
    * @throws {@link AssertionError} If not inside a write transaction or if value violates type constraints
@@ -259,6 +258,14 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * @since 10.6.0
    */
   set(elementsOrKey: string | { [key: string]: T }, value?: T): this {
+=======
+   * Add a key with a value or update value if key exists.
+   * @throws {@link AssertionError} If not inside a write transaction or if value violates type constraints
+   * @returns The dictionary
+   * @since 10.6.0
+   * @ts-expect-error We're exposing methods in the end-users namespace of keys */
+  set(element: { [key: string]: T }): this {
+>>>>>>> bindgen
     assert.inTransaction(this[REALM]);
     const internal = this[INTERNAL];
     const toBinding = this[HELPERS].toBinding;
@@ -276,8 +283,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * @throws {@link AssertionError} If not inside a write transaction.
    * @returns The dictionary
    * @since 10.6.0
-   */
-  // @ts-expect-error We're exposing methods in the end-users namespace of keys
+   * @ts-expect-error We're exposing methods in the end-users namespace of keys */
   remove(key: string | string[]): this {
     assert.inTransaction(this[REALM]);
     const internal = this[INTERNAL];
@@ -293,8 +299,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * Use circular JSON serialization libraries such as [@ungap/structured-clone](https://www.npmjs.com/package/@ungap/structured-clone)
    * and [flatted](https://www.npmjs.com/package/flatted) to stringify Realm entities that have circular structures.
    * @returns A plain object.
-   **/
-  // @ts-expect-error We're exposing methods in the users value namespace
+   * @ts-expect-error We're exposing methods in the end-users namespace of keys */
   toJSON(_?: string, cache?: unknown): DefaultObject;
   /** @internal */
   toJSON(_?: string, cache = new JSONCacheMap()): DefaultObject {
