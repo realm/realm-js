@@ -60,6 +60,6 @@
     "@types/node-fetch": "^2.6.2",
     "@types/yargs": "^17.0.13",
     "rollup": "^3.2.5",
-    "rollup-plugin-dts": "^5.0.0"
+    "rollup-plugin-dts": "^5.1.1"
   }
 }
