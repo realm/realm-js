@@ -29,7 +29,9 @@ jobs:
           - { os: android, runner: ubuntu-latest, arch: x86, artifact-path: react-native/android/src/main/jniLibs }
           - { os: darwin, runner: macos-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
           - { os: darwin, runner: macos-latest, arch: arm64, artifact-path: prebuilds, test-node: true, test-electron: true }
-          - { os: ios, runner: macos-latest, arch: apple, artifact-path: react-native/ios/realm-js-ios.xcframework }
+          - { os: ios, runner: macos-latest, arch: simulator, artifact-path: react-native/ios/realm-js-ios.xcframework }
+          - { os: ios, runner: macos-latest, arch: catalyst, artifact-path: react-native/ios/realm-js-ios.xcframework }
+          - { os: ios, runner: macos-latest, arch: ios, artifact-path: react-native/ios/realm-js-ios.xcframework }
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -56,36 +58,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Cache prebuild artifacts
-        id: cache-prebuild
-        uses: actions/cache@v2
-        with:
-          path: ${{ matrix.variant.artifact-path }}
-          key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}-${{ env.cache-name }}-${{hashFiles('./src/**', './vendor/**')}}
-
       - name: MSVC Setup
         if: ${{ runner.os == 'Windows' }}
         uses: ilammy/msvc-dev-cmd@v1
-
-      - name: Get vcpkg submodule commit sha
-        if: ${{ runner.os == 'Windows' }}
-        id: vcpkg_cache_key
-        working-directory: vendor/realm-core/tools/vcpkg/ports
-        shell: bash
-        run: echo "::set-output name=commit::$(git rev-parse HEAD)"
-
-      - name: Setup Vcpkg
-        if: ${{ runner.os == 'Windows' }}
-        uses: friendlyanon/setup-vcpkg@v1
-        with:
-          path: vendor/realm-core/tools/vcpkg/ports
-          cache-key: vcpkg-windows-${{ matrix.variant.arch }}-${{ steps.vcpkg_cache_key.outputs.commit }}-${{ hashFiles('./vendor/realm-core/tools/vcpkg/vcpkg.json') }}
-          cache-restore-keys: vcpkg-windows-${{ matrix.variant.arch }}-${{ steps.vcpkg_cache_key.outputs.commit }}-${{ hashFiles('./vendor/realm-core/tools/vcpkg/vcpkg.json') }}
-
-      - name: Refetch Vcpkg
-        if: ${{ runner.os == 'Windows' }}
-        run: git fetch --unshallow
-        working-directory: vendor/realm-core/tools/vcpkg/ports
 
       # ninja-build is used by default if available and results in faster build times
       # On linux, electron requires a connected display.  We fake this by giving it a headless environment using xvfb
@@ -144,6 +119,11 @@ jobs:
         run: |
           cl_exe=$(which cl.exe)
           cl_dir=$(dirname "$cl_exe")
+          # For 32-bit it uses a different compiler than the one in the path
+          if [ ${{ matrix.variant.arch }} = ia32 ]; then
+              cl_dir=$(dirname "$cl_dir")/x86
+              cl_exe="$cl_dir/cl.exe"
+          fi
           cl_dir_windows="C:${cl_dir#/c}"
           mv -v "$cl_exe" "$cl_dir"/cl-real.exe
           cp -v "$cl_dir"/cl.exe.config "$cl_dir"/cl-real.exe.config
@@ -166,7 +146,7 @@ jobs:
       # build the c++ library for IOS
       - name: Build iOS
         if: ${{ (matrix.variant.os == 'ios') }}
-        run: npm run prebuild:ios
+        run: npm run prebuild:ios -- ${{matrix.variant.arch}}
 
       # build the c++ library for Android
       - name: Build Android
@@ -212,8 +192,8 @@ jobs:
           - { os: darwin, target: "test:renderer", runner: macos-latest, environment: electron }
           - { os: darwin, target: test, runner: macos-latest, environment: node }
           - { os: android, target: "test:android", runner: macos-latest, environment: react-native, arch: "armeabi-v7a" }
-          - { os: ios, target: "test:ios", runner: macos-latest, environment: react-native, arch: "apple" }
-          #- { os: ios, target: "test:catalyst", runner: macos-latest, environment: react-native, arch: "apple" }
+          - { os: ios, target: "test:ios", runner: macos-latest, environment: react-native, arch: "ios" }
+          #- { os: ios, target: "test:catalyst", runner: macos-latest, environment: react-native, arch: "catalyst" }
     timeout-minutes: 60
     steps:
       - name: Generate Cluster Differentiator

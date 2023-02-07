@@ -182,18 +182,20 @@ yargs(hideBin(process.argv))
         console.log("Skipping patch of Podfile to use JSC, relying on USE_HERMES env variable instead");
       }
 
-      // Store local Gradle properties for RN >=0.71.0
-      const localPropertiesPath = path.resolve(appPath, "android/local.properties");
+      // Store Gradle properties for RN >=0.71.0
+      const localPropertiesPath = path.resolve(appPath, "android/gradle.properties");
       const localProperties = {
         newArchEnabled: newArchitecture,
         hermesEnabled: engine === "hermes",
       };
-      const localPropertiesContent = Object.entries(localProperties)
-        .map(([k, v]) => `${k}=${v}`)
-        .join("\n");
+      const localPropertiesContent =
+        "\n# Install test overwrites below\n\n" +
+        Object.entries(localProperties)
+          .map(([k, v]) => `${k}=${v}`)
+          .join("\n");
 
-      console.log(`Writing local.properties to ${localPropertiesPath}`);
-      fs.writeFileSync(localPropertiesPath, localPropertiesContent);
+      console.log(`Appending gradle properties to ${localPropertiesPath}`);
+      fs.appendFileSync(localPropertiesPath, localPropertiesContent);
 
       if (!skipBundleInstall) {
         console.log(`Installing gem bundle (needed to pod-install for iOS)`);
@@ -288,7 +290,7 @@ yargs(hideBin(process.argv))
         // Await the response from the server or a timeout
         const actualMessage = await Promise.race([message, timeout]);
         console.log(`App sent "${actualMessage}"!`);
-        const expectedMessage = "Persons are Alice, Bob, Charlie";
+        const expectedMessage = "Persons are Alice, Bob, Charlie!";
         if (actualMessage === expectedMessage) {
           console.log("... which was expected ✅");
         } else {

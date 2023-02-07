@@ -20,17 +20,19 @@
 
 #include <realm/util/to_string.hpp>
 
-#include <string>
 #include <stdarg.h>
 #include <stdio.h>
+#include <string>
 
 #import <Foundation/Foundation.h>
+#include <mach/machine.h>
+#include <sys/sysctl.h>
 
 static NSString *error_description(NSError *error) {
-    if (NSError *underlyingError = error.userInfo[NSUnderlyingErrorKey]) {
-        return underlyingError.localizedDescription;
-    }
-    return error.localizedDescription;
+  if (NSError *underlyingError = error.userInfo[NSUnderlyingErrorKey]) {
+    return underlyingError.localizedDescription;
+  }
+  return error.localizedDescription;
 }
 
 namespace realm {
@@ -151,15 +153,33 @@ void remove_directory(const std::string &path)
     remove_file(path); // works for directories too
 }
 
-
-void print(const char* fmt, ...)
-{
-    va_list vl;
-    va_start(vl, fmt);
-    std::string format(fmt);
-    format.append("\n");
-    vprintf(format.c_str(), vl);
-    va_end(vl);
+void print(const char *fmt, ...) {
+  va_list vl;
+  va_start(vl, fmt);
+  std::string format(fmt);
+  format.append("\n");
+  vprintf(format.c_str(), vl);
+  va_end(vl);
 }
 
+std::string get_cpu_arch() {
+  std::size_t size;
+  cpu_type_t type;
+  size = sizeof(type);
+  sysctlbyname("hw.cputype", &type, &size, NULL, 0);
+
+  // values for cputype and cpusubtype defined in mach/machine.h
+  switch (type) {
+  case CPU_TYPE_X86:
+    return "x86";
+  case CPU_TYPE_X86_64:
+    return "x86_64";
+  case CPU_TYPE_ARM:
+    return "armeabi-armv7";
+  case CPU_TYPE_ARM64:
+    return "arm64";
+  default:
+    return "unknown";
+  }
+}
 }
