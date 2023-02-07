@@ -14,7 +14,7 @@
     "build": "rollup --config",
     "watch": "rollup -w --config",
     "lint": "eslint --ext .js,.ts .",
-    "prepare": "npm run build",
+    "prepare": "npm run generate-types && npm run build",
     "start": "./realm-app-importer.ts"
   },
   "files": [
