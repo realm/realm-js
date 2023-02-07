@@ -247,7 +247,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * @param value The value of the element to add
    * @throws {@link AssertionError} If not inside a write transaction or if value violates type constraints
    * @returns The dictionary
-   * @since 12.0 //TODO Is this correct?
+   * @since 12.0.0
    */
   set(key: string, value: T): this;
   /**
@@ -256,7 +256,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * @param value The value of the element to add
    * @throws {@link AssertionError} If not inside a write transaction or if value violates type constraints
    * @returns The dictionary
-   * @since 10.6.0  //TODO Should also this be 12.0?
+   * @since 10.6.0
    */
   set(elementsOrKey: string | { [key: string]: T }, value?: T): this {
     assert.inTransaction(this[REALM]);

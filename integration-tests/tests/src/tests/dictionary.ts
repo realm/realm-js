@@ -70,6 +70,9 @@ describe("Dictionary", () => {
         key3: "value3",
       });
 
+      //This is to verify that item.dict.key3 was not just an object property assignment
+      expect(Object.keys(item.dict).length).deep.equals(3);
+
       this.realm.write(() => {
         item.dict.set("key1", "value1New");
         item.dict.set({ key2: "value2New" });
@@ -82,6 +85,8 @@ describe("Dictionary", () => {
         key2: "value2New",
         key3: "value3New",
       });
+
+      expect(Object.keys(item.dict).length).deep.equals(3);
     });
 
     it("set/remove methods return the dictionary", function (this: RealmContext) {
@@ -97,7 +102,6 @@ describe("Dictionary", () => {
       this.realm.write(() => item.dict.remove("key1").remove("key2"));
 
       expect(Object.keys(item.dict)).deep.equals([]);
-      //expect(item.dict).deep.equals({}); //TODO Not sure why this does not work
     });
 
     const methodNames = [
