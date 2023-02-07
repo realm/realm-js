@@ -16,18 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding } from "../internal";
+import { DefaultNetworkTransport, FetchHeaders, FetchResponse, Method, Request } from "@realm/network-transport";
 
-export type Request = binding.Request_Relaxed;
-export type Response = binding.Response;
+import { extendDebug } from "../debug";
+
+export type { Method as RequestMethod, FetchHeaders, Request };
+
+const debug = extendDebug("network");
+const transport = new DefaultNetworkTransport();
 
 type NetworkType = {
-  fetch(request: Request): Promise<Response>;
+  fetch(request: Request): Promise<FetchResponse>;
 };
 
 export const network: NetworkType = {
-  fetch() {
-    throw new Error("Not supported on this platform");
+  async fetch(request) {
+    debug("Requesting %O", request);
+    const response = await transport.fetch(request);
+    debug("Responded %O", response);
+    return response;
   },
 };
 

@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import "./fs";
-import "./network";
 
 export * from "../index";
 import { Realm } from "../index";

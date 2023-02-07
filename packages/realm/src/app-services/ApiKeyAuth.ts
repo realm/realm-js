@@ -116,6 +116,8 @@ export class ApiKeyAuth {
    * @param keyId the id of the API key to disable
    */
   async disable(keyId: string) {
+    console.log("Starting disabling!");
     await this.internal.disableApiKey(new BSON.ObjectId(keyId), this.user);
+    console.log("Done disabling!");
   }
 }

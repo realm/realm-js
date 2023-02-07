@@ -51,6 +51,7 @@
   },
   "devDependencies": {
     "@realm/bindgen": "^0.1.0",
+    "@realm/network-transport": "^0.7.2",
     "@rollup/plugin-commonjs": "^23.0.2",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@rollup/plugin-replace": "^5.0.1",
