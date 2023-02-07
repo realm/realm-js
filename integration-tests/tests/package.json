@@ -10,7 +10,6 @@
   },
   "private": true,
   "scripts": {
-    "start": "npm start -- --watch",
     "test": "mocha src/index.ts --",
     "lint": "eslint --ext .js,.ts ."
   },
