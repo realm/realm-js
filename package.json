@@ -38,6 +38,7 @@
     "packages/realm",
     "packages/metro-config",
     "packages/mocha-reporter",
+    "packages/realm-network-transport",
     "packages/realm-app-importer",
     "integration-tests/baas-test-server",
     "integration-tests/environments/node",
