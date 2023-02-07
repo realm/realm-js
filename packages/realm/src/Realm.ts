@@ -1256,6 +1256,8 @@ export declare namespace Realm {
     /** @deprecated Please use named imports */
     BSONType as BSON,
     /** @deprecated Please use named imports */
+    CanonicalObjectSchema,
+    /** @deprecated Please use named imports */
     CanonicalObjectSchemaProperty,
     /** @deprecated Please use named imports */
     CanonicalPropertiesTypes,
