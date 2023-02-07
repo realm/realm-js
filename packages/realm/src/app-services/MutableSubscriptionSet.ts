@@ -49,7 +49,7 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
   // (`this.internal = internal` cannot be used in the constructor due to the proxy
   // handler in BaseSubscriptionSet making it non-writable.)
   /**@internal */
-  declare internal: binding.MutableSyncSubscriptionSet;
+  protected declare internal: binding.MutableSyncSubscriptionSet;
 
   /**@internal */
   constructor(/**@internal */ internal: binding.MutableSyncSubscriptionSet) {
