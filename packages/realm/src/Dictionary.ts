@@ -231,7 +231,6 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
   }
 
   /**
-<<<<<<< HEAD
    * Adds one or more elements with specified key and value to the dictionary or updates value if key exists.
    * @param elements The object of element(s) to add
    * @throws {@link AssertionError} If not inside a write transaction or if value violates type constraints
@@ -258,14 +257,6 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * @since 10.6.0
    */
   set(elementsOrKey: string | { [key: string]: T }, value?: T): this {
-=======
-   * Add a key with a value or update value if key exists.
-   * @throws {@link AssertionError} If not inside a write transaction or if value violates type constraints
-   * @returns The dictionary
-   * @since 10.6.0
-   * @ts-expect-error We're exposing methods in the end-users namespace of keys */
-  set(element: { [key: string]: T }): this {
->>>>>>> bindgen
     assert.inTransaction(this[REALM]);
     const internal = this[INTERNAL];
     const toBinding = this[HELPERS].toBinding;
