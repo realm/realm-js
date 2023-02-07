@@ -4,7 +4,8 @@
     "noResolve": false,
     "incremental": true,
     "types": [
-      "react-native"
+      "react-native",
+      "path-browserify"
     ]
   },
   "exclude": [
