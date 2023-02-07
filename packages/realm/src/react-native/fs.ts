@@ -15,10 +15,11 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+import { isAbsolute, join } from "path-browserify";
+
 import { inject } from "../platform/file-system";
 import { extendDebug } from "../debug";
 import { Helpers, JsPlatformHelpers } from "../binding";
-import { isAbsolute, join } from "path-browserify";
 
 const debug = extendDebug("fs");
 

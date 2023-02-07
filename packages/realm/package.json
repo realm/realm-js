@@ -37,8 +37,7 @@
     "build:watch": "rollup -c --watch"
   },
   "dependencies": {
-    "debug": "^4.3.4",
-    "path-browserify": "^1.0.1"
+    "debug": "^4.3.4"
   },
   "peerDependencies": {
     "bson": "^4",
@@ -61,6 +60,7 @@
     "@types/path-browserify": "^1.0.0",
     "chai": "^4.3.6",
     "mocha": "^10.1.0",
+    "path-browserify": "^1.0.1",
     "react-native": "^0.71.0-rc.5",
     "rollup-plugin-dts": "^5.0.0",
     "tsm": "^2.2.2"
