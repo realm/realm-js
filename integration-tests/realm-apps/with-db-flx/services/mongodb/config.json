@@ -1,5 +1,5 @@
 {
-  "name": "mongodb",
+  "name": "mongo-db",
   "type": "mongodb",
   "config": {
     "flexible_sync": {
