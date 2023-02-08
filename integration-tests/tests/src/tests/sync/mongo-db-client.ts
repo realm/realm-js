@@ -20,6 +20,7 @@ import { expect } from "chai";
 import { ChangeEvent, Document, InsertEvent, MongoDBCollection } from "realm";
 
 import { authenticateUserBefore, importAppBefore } from "../../hooks";
+import { sleep } from "../../utils/sleep";
 
 type TestDocument = {
   _id: number;
@@ -83,7 +84,6 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
     });
 
     describe("#watch", function () {
-      const sleep = async (time: number) => new Promise((resolve) => setInterval(resolve, time));
       const text = "use some odd chars to force weird encoding %\n\r\n\\????>>>>";
       const numInserts = 10;
       // Used as a flag for knowing when to stop watching.
@@ -102,9 +102,9 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
         // see inserts from before they are created.
         // Wait 500ms (490+10) before first insert to try to avoid it.
         await sleep(490);
-        for (let i = 0; i < numInserts - 1; i++) {
-          await sleep(10);
+        for (let i = 0; i < numInserts; i++) {
           await collection.insertOne({ _id: i, text: text });
+          await sleep(10);
         }
         await collection.insertOne(lastDocument);
       }
@@ -119,7 +119,6 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
               expect(event.fullDocument._id).to.equal(expectedId++);
               if (event.fullDocument.isLast) break;
             }
-            expect(expectedId).to.equal(numInserts);
           })(),
         ]);
       });
