@@ -79,7 +79,7 @@ describe("Partition-values", () => {
   describe("integer", () => {
     importAppBefore("pv-int-tests");
     authenticateUserBefore();
-    
+
     it("works", async function (this: Mocha.Context & AppContext & UserContext) {
       const realmConfigPrimary = createConfig(PvIntDog, this.user, 42);
       const realmConfigSecondary = createConfig(PvIntDog, this.user, 43);
