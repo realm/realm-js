@@ -16,9 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Document } from "bson";
-
-import { MongoDBCollection } from "../internal";
+import { Document, MongoDBCollection } from "../internal";
 
 /**
  * A remote MongoDB Service enabling access to a MongoDB Atlas cluster.

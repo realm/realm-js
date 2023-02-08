@@ -16,7 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Document } from "bson";
+import { Long, Timestamp } from "bson";
+
 import { DefaultFunctionsFactory, User, binding, createFactory } from "../internal";
 
 /**
@@ -87,6 +88,16 @@ type UpdateOptions = {
    */
   readonly arrayFilters?: Filter[];
 };
+
+/**
+ * A document from a MongoDB collection
+ */
+export interface Document<IdType = any> {
+  /**
+   * The id of the document.
+   */
+  _id: IdType;
+}
 
 /**
  * A new document with an optional _id defined.
@@ -160,22 +171,217 @@ type Update = Record<string, unknown>;
  */
 type AggregatePipelineStage = Record<string, unknown>;
 
-export class MongoDBCollection<T extends Document> {
-  public readonly name: string;
-  private functions: DefaultFunctionsFactory;
-
+/**
+ * An operation performed on a document.
+ */
+export type OperationType =
   /**
-   * Construct a remote collection of documents
+   * A document got inserted into the collection.
    */
-  /** @internal */
+  | "insert"
+  /**
+   * A document got deleted from the collection.
+   */
+  | "delete"
+  /**
+   * A document got replaced in the collection.
+   */
+  | "replace"
+  /**
+   * A document got updated in the collection.
+   */
+  | "update"
+  /**
+   * Occurs when a collection is dropped from a database.
+   */
+  | "drop"
+  /**
+   * Occurs when a collection is renamed.
+   */
+  | "rename"
+  /**
+   * Occurs when a database is dropped.
+   */
+  | "dropDatabase"
+  /**
+   * Invalidate events close the change stream cursor.
+   */
+  | "invalidate";
+
+/**
+ * The namespace of a document.
+ */
+type DocumentNamespace = {
+  /** The name of the database. */
+  db: string;
+  // database: string;
+  /** The name of the collection. */
+  coll: string;
+  // collection: string;
+};
+
+/**
+ * A detailed description of an update performed on a document.
+ */
+type UpdateDescription = {
+  /** Names of fields that got updated. */
+  updatedFields: Record<string, any>;
+  /** Names of fields that got removed. */
+  removedFields: string[];
+};
+
+/**
+ * Acts as the `resumeToken` for the `resumeAfter` parameter when resuming a change stream.
+ */
+type ChangeEventId = any;
+
+/**
+ * A document that contains the _id of the document created or modified by the insert, replace, delete, update operations (i.e. CRUD operations). For sharded collections, also displays the full shard key for the document. The _id field is not repeated if it is already a part of the shard key.
+ */
+type DocumentKey<IdType> = {
+  /** The id of the document. */
+  _id: IdType;
+} & Record<string, any>;
+
+/**
+ * A base change event containing the properties which apply across operation types.
+ */
+type BaseChangeEvent<T extends OperationType> = {
+  /** The id of the change event. */
+  _id: ChangeEventId;
+  /** The type of operation which was performed on the document. */
+  operationType: T;
+  /** The timestamp from the oplog entry associated with the event. */
+  clusterTime: Timestamp;
+  /**
+   * The transaction number.
+   * Only present if the operation is part of a multi-document transaction.
+   */
+  txnNumber?: Long;
+  /**
+   * The identifier for the session associated with the transaction.
+   * Only present if the operation is part of a multi-document transaction.
+   */
+  lsid?: Record<string, unknown>;
+};
+
+/**
+ * A document got inserted into the collection.
+ */
+type InsertEvent<T extends Document> = {
+  /** The namespace (database and collection) of the document got inserted into. */
+  ns: DocumentNamespace;
+  /** A document that contains the _id of the inserted document. */
+  documentKey: DocumentKey<T["_id"]>;
+  /** The new document created by the operation */
+  fullDocument: T;
+} & BaseChangeEvent<"insert">;
+
+/**
+ * A document got updated in the collection.
+ */
+type UpdateEvent<T extends Document> = {
+  /** The namespace (database and collection) of the updated document. */
+  ns: DocumentNamespace;
+  /** A document that contains the _id of the updated document. */
+  documentKey: DocumentKey<T["_id"]>;
+  /** A document describing the fields that were updated or removed. */
+  updateDescription: UpdateDescription;
+  /**
+   * For change streams opened with the `fullDocument: updateLookup` option, this will represents the most current majority-committed version of the document modified by the update operation.
+   */
+  fullDocument?: T;
+} & BaseChangeEvent<"update">;
+
+/**
+ * A document got replaced in the collection.
+ */
+type ReplaceEvent<T extends Document> = {
+  /** The namespace (database and collection) of the document got replaced within. */
+  ns: DocumentNamespace;
+  /** A document that contains the _id of the replaced document. */
+  documentKey: DocumentKey<T["_id"]>;
+  /** The document after the insert of the replacement document. */
+  fullDocument: T;
+} & BaseChangeEvent<"replace">;
+
+/**
+ * A document got deleted from the collection.
+ */
+type DeleteEvent<T extends Document> = {
+  /** The namespace (database and collection) which the document got deleted from. */
+  ns: DocumentNamespace;
+  /** A document that contains the _id of the deleted document. */
+  documentKey: DocumentKey<T["_id"]>;
+} & BaseChangeEvent<"delete">;
+
+/**
+ * Occurs when a collection is dropped from a database.
+ */
+type DropEvent = {
+  /** The namespace (database and collection) of the collection that got dropped. */
+  ns: DocumentNamespace;
+} & BaseChangeEvent<"drop">;
+
+/**
+ * Occurs when a collection is renamed.
+ */
+type RenameEvent = {
+  /** The original namespace (database and collection) that got renamed. */
+  ns: DocumentNamespace;
+  /** The namespace (database and collection) going forward. */
+  to: DocumentNamespace;
+} & BaseChangeEvent<"rename">;
+
+/**
+ * Occurs when a database is dropped.
+ */
+type DropDatabaseEvent = {
+  /** The namespace (specifying only the database name) of the database that got dropped. */
+  ns: Omit<DocumentNamespace, "coll">;
+} & BaseChangeEvent<"dropDatabase">;
+
+/**
+ * Invalidate events close the change stream cursor.
+ */
+type InvalidateEvent = BaseChangeEvent<"invalidate">;
+
+/**
+ * A change event communicated via a MongoDB change stream.
+ *
+ * @see https://docs.mongodb.com/manual/reference/change-events/
+ */
+type ChangeEvent<T extends Document> =
+  | InsertEvent<T>
+  | UpdateEvent<T>
+  | ReplaceEvent<T>
+  | DeleteEvent<T>
+  | DropEvent
+  | RenameEvent
+  | DropDatabaseEvent
+  | InvalidateEvent;
+
+/**
+ * A remote collection of documents in a MongoDB database.
+ */
+export class MongoDBCollection<T extends Document> {
+  private functions: DefaultFunctionsFactory; // TODO: This was public, but I don't think it should be available to the user?
+
+  /**@internal */
   constructor(
-    /** @internal */ private user: binding.SyncUser,
+    /**@internal */ private user: User<unknown, unknown, unknown>,
     public readonly serviceName: string,
     public readonly databaseName: string,
-    collectionName: string,
+    private readonly collectionName: string,
   ) {
-    this.functions = createFactory(User.get(user), serviceName);
-    this.name = collectionName;
+    this.functions = createFactory(user, serviceName);
+  }
+
+  /**
+   * The name of the collection.
+   */
+  get name(): string {
+    return this.collectionName;
   }
 
   /**
@@ -349,7 +555,8 @@ export class MongoDBCollection<T extends Document> {
   /**
    * Deletes multiple documents.
    *
-   * @param filter A filter applied to narrow down the result.
+   * @param filter A filter applied to narrow down the result. If omitted, it defaults
+   *  to `{}` which deletes all documents in the collection.
    * @returns The result.
    */
   deleteMany(filter: Filter = {}): Promise<DeleteResult> {
@@ -396,5 +603,58 @@ export class MongoDBCollection<T extends Document> {
       upsert: options.upsert,
       arrayFilters: options.arrayFilters,
     }) as Promise<UpdateResult<T["_id"]>>;
+  }
+
+  /**
+   * Create an asynchronous change stream to monitor this collection for changes.
+   *
+   * By default, yields all change events for this collection. You may specify at most one of
+   * the `filter` or `ids` options.
+   *
+   * Important Note: To use this on React Native, you must install:
+   *
+   * 1. Polyfills for `fetch`, `ReadableStream` and `TextDecoder`: https://www.npmjs.com/package/react-native-polyfill-globals
+   * 2. Babel plugin enabling async generator syntax: https://npmjs.com/package/@babel/plugin-proposal-async-generator-functions
+   *
+   * @param options.filter A filter for which change events you are interested in.
+   * @param options.ids A list of ids that you are interested in watching.
+   * @see https://docs.mongodb.com/manual/reference/change-events/
+   */
+  watch(options: { ids: T["_id"][]; filter: never }): AsyncGenerator<ChangeEvent<T>>;
+  watch(options: { ids: never; filter: Filter }): AsyncGenerator<ChangeEvent<T>>;
+  async *watch({
+    ids,
+    filter,
+  }: {
+    ids?: T["_id"][];
+    filter?: Filter;
+  } = {}): AsyncGenerator<ChangeEvent<T>> {
+    // ensureWatchDependencies();
+
+    const iterator = await this.user.callFunctionStreaming("watch", this.serviceName, {
+      database: this.databaseName,
+      collection: this.collectionName,
+      ids,
+      filter,
+    });
+    // this.user.app.internal.config.transport.sendRequestToServer(request, (response) => {
+    //   // ..
+    // });
+
+    const watchStream = binding.WatchStream.make();
+    for await (const chunk of iterator) {
+      if (!chunk) continue;
+
+      // console.log("\n\n == `chunk`:", chunk);
+      // console.log("\n\n == `chunk.buffer`:", chunk.buffer);
+
+      binding.Helpers.feedBuffer(watchStream, chunk.buffer);
+      while (watchStream.state === binding.WatchStreamState.HAVE_EVENT) {
+        yield watchStream.nextEvent() as unknown as ChangeEvent<T>;
+      }
+      if (watchStream.state === binding.WatchStreamState.HAVE_ERROR) {
+        throw watchStream.error;
+      }
+    }
   }
 }
