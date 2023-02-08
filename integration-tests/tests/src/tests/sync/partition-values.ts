@@ -20,6 +20,7 @@ import { expect } from "chai";
 import Realm from "realm";
 import { authenticateUserBefore } from "../../hooks/authenticate-user-before";
 import { importAppBefore } from "../../hooks/import-app-before";
+
 const PvIntDog = {
   name: "Dog",
   primaryKey: "_id",
@@ -78,11 +79,11 @@ describe("Partition-values", () => {
   describe("integer", () => {
     importAppBefore("pv-int-tests");
     authenticateUserBefore();
+    
     it("works", async function (this: Mocha.Context & AppContext & UserContext) {
       const realmConfigPrimary = createConfig(PvIntDog, this.user, 42);
       const realmConfigSecondary = createConfig(PvIntDog, this.user, 43);
 
-      console.log(realmConfigPrimary);
       // ensure clean starting point
       Realm.deleteFile(realmConfigPrimary);
 
