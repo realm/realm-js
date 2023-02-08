@@ -23,6 +23,7 @@
 
 /** @internal */
 export * from "./debug";
+export * from "./safeGlobalThis";
 
 /** @internal */
 export * from "./platform";
