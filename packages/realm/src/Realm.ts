@@ -62,10 +62,12 @@ import {
   ErrorCallback,
   FlexibleSyncConfiguration,
   INTERNAL,
+  IndexDecorator,
   InitialSubscriptions,
   List,
   LocalAppConfiguration,
   LogLevel,
+  MapToDecorator,
   MigrationCallback,
   MongoClient,
   MutableSubscriptionSet,
@@ -120,6 +122,8 @@ import {
   extendDebug,
   fromBindingRealmSchema,
   fs,
+  index,
+  mapTo,
   normalizeObjectSchema,
   normalizeRealmSchema,
   safeGlobalThis,
@@ -218,6 +222,10 @@ export class Realm {
   public static User = User;
   /** @deprecated Please use named imports */
   public static UserState = UserState;
+  /** @deprecated Please use named imports */
+  public static mapTo = mapTo;
+  /** @deprecated Please use named imports */
+  public static index = index;
 
   public static defaultPath = Realm.normalizePath("default.realm");
 
@@ -1198,7 +1206,9 @@ type CollectionType<
 type ConnectionStateType = ConnectionState;
 type CredentialsType = Credentials;
 type DictionaryType<T> = Dictionary<T>;
+type IndexDecoratorType = IndexDecorator;
 type ListType<T> = List<T>;
+type MapToDecoratorType = MapToDecorator;
 type Mixed = unknown;
 type ObjectType = string | RealmObjectConstructor;
 type OpenRealmBehaviorTypeType = OpenRealmBehaviorType;
@@ -1213,8 +1223,8 @@ type SetType<T> = RealmSet<T>;
 type SyncErrorType = SyncError;
 type TypesType = typeof Types;
 type UpdateModeType = UpdateMode;
-type UserType = User;
 type UserStateType = UserState;
+type UserType = User;
 
 type BaseSubscriptionSetType = BaseSubscriptionSet;
 type LogLevelType = LogLevel;
@@ -1322,9 +1332,13 @@ export declare namespace Realm {
     /** @deprecated Please use named imports */
     FlexibleSyncConfiguration,
     /** @deprecated Please use named imports */
+    IndexDecoratorType as IndexDecorator,
+    /** @deprecated Please use named imports */
     ListType as List,
     /** @deprecated Please use named imports */
     LocalAppConfiguration,
+    /** @deprecated Please use named imports */
+    MapToDecoratorType as MapToDecorator,
     /** @deprecated Please use named imports */
     MigrationCallback,
     /** @deprecated Please use named imports */

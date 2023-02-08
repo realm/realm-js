@@ -33,6 +33,7 @@ export * as binding from "./binding";
 export * from "./flags";
 export * from "./bson";
 export * from "./errors";
+export * from "./decorators";
 /** @internal */
 export * from "./assert";
 /** @internal */
