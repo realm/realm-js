@@ -42,7 +42,8 @@
     "chai": "4.3.6",
     "chai-as-promised": "^7.1.1",
     "concurrently": "^6.0.2",
-    "jsrsasign": "^10.6.1"
+    "jsrsasign": "^10.6.1",
+    "react-native-polyfill-globals": "^3.1.0"
   },
   "files": [
     "/src"

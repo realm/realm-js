@@ -24,6 +24,9 @@
  * @flow
  */
 
+// Polyfill needed for for `fetch`, `ReadableStream` and `TextDecoder`.
+import { polyfill } from "react-native-polyfill-globals";
+polyfill();
 import { Client } from "mocha-remote-client";
 import React, { Component } from "react";
 import { Button, Platform, StyleSheet, Text, View, NativeModules } from "react-native";
