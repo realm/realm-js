@@ -122,6 +122,7 @@ import {
   fs,
   normalizeObjectSchema,
   normalizeRealmSchema,
+  safeGlobalThis,
   toArrayBuffer,
   toBindingSchema,
   toBindingSyncConfig,
@@ -1236,6 +1237,7 @@ type ApiKeyAuthType = ApiKeyAuth;
 
 type GlobalDate = Date;
 
+// IMPORTANT: This needs to match the namespace below!
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export declare namespace Realm {
   // TODO: Decide if we want to deprecate this as well
@@ -1510,3 +1512,304 @@ export declare namespace Realm {
     export type LinkingObjects<ObjectTypeT, LinkingPropertyName> = Realm.Results<ObjectTypeT>;
   }
 }
+
+// Exporting a deprecated global for backwards compatibility
+const RealmConstructor = Realm;
+declare global {
+  /** @deprecated Will be removed in v13.0.0. Please use named imports */
+  export class Realm extends RealmConstructor {}
+  // IMPORTANT: This needs to match the namespace above!
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  export namespace Realm {
+    // TODO: Decide if we want to deprecate this as well
+    export type Object<T = DefaultObject> = RealmObject<T>;
+    export {
+      // Pure type exports below
+      /** @deprecated Please use named imports */
+      AppType as App,
+      /** @deprecated Please use named imports */
+      AppChangeCallback,
+      /** @deprecated Please use named imports */
+      AppConfiguration,
+      /** @deprecated Please use named imports */
+      BaseConfiguration,
+      /** @deprecated Please use named imports */
+      BaseObjectSchema,
+      /** @deprecated Please use named imports */
+      BaseSyncConfiguration,
+      /** @deprecated Please use named imports */
+      BSONType as BSON,
+      /** @deprecated Please use named imports */
+      CanonicalObjectSchema,
+      /** @deprecated Will be removed in v13.0.0. Please use {@link CanonicalPropertySchema} as a named import */
+      CanonicalObjectSchemaProperty,
+      /** @deprecated Please use named imports */
+      CanonicalPropertySchema,
+      /** @deprecated Please use named imports */
+      CanonicalPropertiesTypes,
+      /** @deprecated Please use named imports */
+      ClientResetModeType as ClientResetMode,
+      /** @deprecated Please use named imports */
+      ClientResetFallbackCallback,
+      /** @deprecated Please use named imports */
+      ClientResetBeforeCallback,
+      /** @deprecated Please use named imports */
+      ClientResetAfterCallback,
+      /** @deprecated Please use named imports */
+      ClientResetManualConfiguration,
+      /** @deprecated Please use named imports */
+      ClientResetDiscardUnsyncedChangesConfiguration,
+      /** @deprecated Please use named imports */
+      ClientResetRecoverUnsyncedChangesConfiguration,
+      /**
+       * This type got renamed to {@link ClientResetRecoverUnsyncedChangesConfiguration}
+       * @deprecated Please use named imports
+       */
+      ClientResetRecoverUnsyncedChangesConfiguration as ClientResetRecoveryConfiguration,
+      /** @deprecated Please use named imports */
+      ClientResetRecoverOrDiscardUnsyncedChangesConfiguration,
+      /** @deprecated Please use named imports */
+      ClientResetConfig,
+      /** @deprecated Please use named imports */
+      CollectionChangeCallback,
+      /** @deprecated Please use named imports */
+      CollectionChangeSet,
+      /** @deprecated Please use named imports */
+      CollectionType as Collection,
+      /** @deprecated Please use named imports */
+      ConfigurationWithoutSync,
+      /** @deprecated Please use named imports */
+      ConfigurationWithSync,
+      /** @deprecated Please use named imports */
+      Configuration,
+      /** @deprecated Please use named imports */
+      ConnectionNotificationCallback,
+      /** @deprecated Please use named imports */
+      ConnectionStateType as ConnectionState,
+      /** @deprecated Please use named imports */
+      CredentialsType as Credentials,
+      /** @deprecated Please use named imports */
+      DefaultFunctionsFactory,
+      /** @deprecated Please use named imports */
+      DefaultUserProfileData,
+      /** @deprecated Please use named imports */
+      DictionaryType as Dictionary,
+      /** @deprecated Please use named imports */
+      DictionaryChangeCallback,
+      /** @deprecated Please use named imports */
+      DictionaryChangeSet,
+      /** @deprecated Please use named imports */
+      ErrorCallback,
+      /** @deprecated Please use named imports */
+      FlexibleSyncConfiguration,
+      /** @deprecated Please use named imports */
+      ListType as List,
+      /** @deprecated Please use named imports */
+      LocalAppConfiguration,
+      /** @deprecated Please use named imports */
+      MigrationCallback,
+      /** @deprecated Please use named imports */
+      Mixed,
+      /** @deprecated Please use named imports */
+      ObjectChangeCallback,
+      /** @deprecated Please use named imports */
+      ObjectChangeSet,
+      /** @deprecated Please use named imports */
+      ObjectSchema,
+      /**
+       * @deprecated Will be removed in v13.0.0. Please use {@link PropertySchema}.
+       */
+      ObjectSchemaProperty,
+      /** @deprecated Please use named imports */
+      ObjectType,
+      /** @deprecated Please use named imports */
+      OpenRealmBehaviorConfiguration,
+      /** @deprecated Please use named imports */
+      OpenRealmBehaviorTypeType as OpenRealmBehaviorType,
+      /** @deprecated Please use named imports */
+      OpenRealmTimeOutBehaviorType as OpenRealmTimeOutBehavior,
+
+      /** @deprecated Please use named imports */
+      PartitionSyncConfiguration,
+      /** @deprecated Please use named imports */
+      PrimaryKey,
+      /** @deprecated Please use named imports */
+      ProgressDirectionType as ProgressDirection,
+      /** @deprecated Please use named imports */
+      ProgressModeType as ProgressMode,
+      /** @deprecated Please use named imports */
+      ProgressNotificationCallback,
+      /** @deprecated Please use named imports */
+      PropertiesTypes,
+      /** @deprecated Please use named imports */
+      PropertySchema,
+      /** @deprecated Please use named imports */
+      PropertySchemaShorthand,
+      /** @deprecated Please use named imports */
+      ProviderTypeType as ProviderType,
+      /** @deprecated Please use named imports */
+      RealmFunction,
+      /** @deprecated Please use named imports */
+      RealmObjectConstructor,
+      /**
+       * This type got renamed to RealmObjectConstructor
+       * @deprecated Please use named imports
+       */
+      RealmObjectConstructor as ObjectClass,
+      /** @deprecated Please use named imports */
+      ResultsType as Results,
+      /** @deprecated Please use named imports */
+      SessionStateType as SessionState,
+      /** @deprecated Please use named imports */
+      SessionStopPolicyType as SessionStopPolicy,
+      /** @deprecated Please use named imports */
+      SetType as Set,
+      // TODO: Add these once we've implemented the SSL config for the sync client
+      // SSLVerifyObject,
+      // SSLVerifyCallback,
+      // SSLConfiguration,
+      /** @deprecated Please use named imports */
+      SortDescriptor,
+      /** @deprecated Please use named imports */
+      SyncConfiguration,
+      /** @deprecated Please use named imports */
+      SyncErrorType as SyncError,
+      /** @deprecated Please use named imports */
+      TypesType as Types,
+      /** @deprecated Please use named imports */
+      UpdateModeType as UpdateMode,
+      /** @deprecated Please use named imports */
+      UserType as User,
+      /** @deprecated Please use named imports */
+      UserChangeCallback,
+      /** @deprecated Please use named imports */
+      UserStateType as UserState,
+    };
+
+    /** @deprecated Please use named imports */
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    export namespace App {
+      /** @deprecated Please use named imports */
+      export type Credentials = CredentialsType;
+      /** @deprecated Please use named imports */
+      // eslint-disable-next-line @typescript-eslint/no-namespace
+      export namespace Sync {
+        /** @deprecated Please use named imports */
+        export type BaseSubscriptionSet = BaseSubscriptionSetType;
+        /** @deprecated Please use named imports */
+        export type LogLevel = LogLevelType;
+        /** @deprecated Please use named imports */
+        export type NumericLogLevel = NumericLogLevelType;
+        /** @deprecated Please use named imports */
+        export type MutableSubscriptionSet = MutableSubscriptionSetType;
+        /** @deprecated Please use named imports */
+        export type PartitionValue = PartitionValueType;
+        /** @deprecated Please use named imports */
+        export type SubscriptionOptions = SubscriptionOptionsType;
+        /** @deprecated Please use named imports */
+        export type SubscriptionSet = SubscriptionSetType;
+        /** @deprecated Please use named imports */
+        export type SubscriptionsState = SubscriptionsStateType;
+        /** @deprecated Please use named imports */
+        export type Subscription = SubscriptionType;
+        /** @deprecated Please use named imports */
+        export type SyncSession = SyncSessionType;
+        /**
+         * @deprecated Got renamed to {@SyncSession} and please use named imports
+         */
+        export type Session = SyncSessionType;
+      }
+    }
+
+    /** @deprecated Please use named imports */
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    export namespace BSON {
+      /** @deprecated Please use named imports */
+      export type ObjectId = ObjectIdType;
+      /** @deprecated Please use named imports */
+      export type Decimal128 = Decimal128Type;
+      /** @deprecated Please use named imports */
+      export type UUID = UUIDType;
+    }
+
+    /** @deprecated Please use named imports */
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    export namespace Auth {
+      /**
+       * @deprecated Got renamed to {@link EmailPasswordAuth} and please use named imports
+       */
+      export type EmailPasswordAuth = EmailPasswordAuthType;
+      /** @deprecated Please use named imports */
+      export type ApiKey = ApiKeyType;
+      /**
+       * @deprecated Got renamed to {@link ApiKeyAuth} and please use named imports
+       */
+      export type ApiKeyAuth = ApiKeyAuthType;
+    }
+
+    /** @deprecated Please use named imports */
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    export namespace Services {
+      // TODO: Fill in once the MongoDB client has stabilized
+
+      /**
+       * @deprecated Got renamed to {@link PushClient} and please use named imports
+       */
+      export type Push = PushClient;
+    }
+
+    /** @deprecated Please use named imports */
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    export namespace Types {
+      /** @deprecated Please use named imports */
+      export type Bool = boolean;
+      /** @deprecated Please use named imports */
+      export type String = string;
+      /** @deprecated Please use named imports */
+      export type Int = number;
+      /** @deprecated Please use named imports */
+      export type Float = number;
+      /** @deprecated Please use named imports */
+      export type Double = number;
+      /** @deprecated Please use named imports */
+      export type Decimal128 = Realm.BSON.Decimal128;
+      /** @deprecated Please use named imports */
+      export type ObjectId = Realm.BSON.ObjectId;
+      /** @deprecated Please use named imports */
+      export type UUID = Realm.BSON.UUID;
+      /** @deprecated Please use named imports */
+      export type Date = GlobalDate;
+      /** @deprecated Please use named imports */
+      export type Data = ArrayBuffer;
+      /** @deprecated Please use named imports */
+      export type List<T> = Realm.List<T>;
+      /** @deprecated Please use named imports */
+      export type Set<T> = Realm.Set<T>;
+      /** @deprecated Please use named imports */
+      export type Dictionary<T> = Realm.Dictionary<T>;
+      /** @deprecated Please use named imports */
+      export type Mixed = unknown;
+      /** @deprecated Please use named imports */
+      export type LinkingObjects<ObjectTypeT, LinkingPropertyName> = Realm.Results<ObjectTypeT>;
+    }
+  }
+}
+
+// Patch the global at runtime
+let warnedAboutGlobalRealmUse = false;
+Object.defineProperty(safeGlobalThis, "Realm", {
+  get() {
+    if (!warnedAboutGlobalRealmUse) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        "Your app is relying on a Realm global, which will be removed in realm-js v13,\n",
+        "please update your code to ensure you import Realm via a named import:\n\n",
+        'import { Realm } from "realm"; // For ES Modules\n',
+        'const { Realm } = require("realm"); // For CommonJS\n',
+      );
+      warnedAboutGlobalRealmUse = true;
+    }
+    return RealmConstructor;
+  },
+  configurable: false,
+});
