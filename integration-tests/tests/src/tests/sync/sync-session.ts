@@ -101,7 +101,7 @@ function getSyncConfiguration(user: Realm.User, partition: any): Realm.Configura
 async function getSyncConfWithUser(app: Realm.App, partition: any) {
   const user = await app.logIn(Realm.Credentials.anonymous());
   const config = getSyncConfiguration(user, partition);
-  return { user, partition, config };
+  return { user, config };
 }
 
 function createObjects(user: Realm.User, partition: string): Promise<Realm> {
@@ -176,7 +176,7 @@ describe("SessionTest", () => {
 
     it("config with onMigration and sync set", async function (this: AppContext) {
       const partition = generatePartition();
-      const { user, config } = await getSyncConfWithUser(this.app, partition);
+      const { config } = await getSyncConfWithUser(this.app, partition);
       config.onMigration = () => {
         /* empty function */
       };
@@ -193,7 +193,7 @@ describe("SessionTest", () => {
     it("invalid sync user object", async function (this: AppContext) {
       // test if an invalid object is used as user
       const partition = generatePartition();
-      const { user, config } = await getSyncConfWithUser(this.app, partition);
+      const { config } = await getSyncConfWithUser(this.app, partition);
       //@ts-expect-error setting an invalid user object
       config.sync.user = { username: "John Doe" };
       try {
