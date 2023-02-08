@@ -10,6 +10,10 @@ if(DEFINED CMAKE_JS_VERSION)
         else()
             message(FATAL_ERROR "Unable to deduce vcpkg target triplet")
         endif()
+        if(MSVC AND CMAKE_JS_NODELIB_DEF AND CMAKE_JS_NODELIB_TARGET)
+            # Generate node.lib
+            execute_process(COMMAND ${CMAKE_AR} /def:${CMAKE_JS_NODELIB_DEF} /out:${CMAKE_JS_NODELIB_TARGET} ${CMAKE_STATIC_LINKER_FLAGS})
+        endif()
     elseif(APPLE)
       set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9")
       if(NODE_ARCH STREQUAL "arm64")
@@ -33,6 +37,8 @@ if(DEFINED CMAKE_JS_VERSION)
 endif()
 
 cmake_minimum_required(VERSION 3.21.3)
+cmake_policy(SET CMP0091 NEW)
+cmake_policy(SET CMP0042 NEW)
 project(RealmJS)
 
 # Use ccache if available
