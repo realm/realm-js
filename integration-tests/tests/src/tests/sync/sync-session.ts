@@ -140,11 +140,13 @@ async function seedDataWithExternalUser(
 
 describe("SessionTest", () => {
   importAppBefore("with-db");
+
   describe("invalid syncsessions", () => {
     it("local realm", () => {
       const realm = new Realm();
       expect(realm.syncSession).to.be.null;
     });
+
     it("config with undefined sync property", () => {
       const config = {
         sync: undefined,
@@ -153,6 +155,7 @@ describe("SessionTest", () => {
         expect(realm.syncSession).to.be.null;
       });
     });
+
     it("config with sync and inMemory set", async () => {
       const config = {
         sync: true,
@@ -168,6 +171,7 @@ describe("SessionTest", () => {
           });
       });
     });
+
     it("config with onMigration and sync set", async function (this: AppContext) {
       const partition = generatePartition();
       const { user, config } = await getSyncConfWithUser(this.app, partition);
@@ -184,6 +188,7 @@ describe("SessionTest", () => {
       });
       user.logOut();
     });
+
     it("invalid sync user provided", async function (this: AppContext) {
       // test if an invalid object is used as user
       const partition = generatePartition();
@@ -199,10 +204,12 @@ describe("SessionTest", () => {
       }
     });
   });
+
   describe("opening realm", () => {
     afterEach(() => {
       Realm.clearTestState();
     });
+
     it("contains synced data from other instance", async function (this: AppContext) {
       const expectedObjectsCount = 3;
       const partition = generatePartition();
@@ -221,6 +228,7 @@ describe("SessionTest", () => {
       expect(session?.state).equals("active");
       await user.logOut();
     });
+
     it("with destructive schema update throws", async function (this: AppContext) {
       const partition = generatePartition();
       await seedDataWithExternalUser(this.app, partition);
@@ -239,6 +247,7 @@ describe("SessionTest", () => {
         await user.logOut();
       }
     });
+
     it("with an already existing local realm", async function (this: AppContext) {
       const partition = generatePartition();
       const expectedObjectsCount = 3;
@@ -266,6 +275,7 @@ describe("SessionTest", () => {
       expect(session?.state).equals("active");
     });
   });
+
   describe("error handling", () => {
     it("can simulate an error", async function (this: AppContext) {
       const partition = generatePartition();
@@ -296,6 +306,7 @@ describe("SessionTest", () => {
       });
     });
   });
+
   describe("progress notification", () => {
     it("is called", async function (this: AppContext) {
       const partition = generatePartition();
@@ -312,6 +323,7 @@ describe("SessionTest", () => {
         }),
       ]).then(() => expect(progressCalled).to.be.true);
     });
+
     it("removing progress notification does not invoke callback again", async function (this: AppContext) {
       const partition = generatePartition();
       await seedDataWithExternalUser(this.app, partition);
@@ -358,6 +370,7 @@ describe("SessionTest", () => {
       user.logOut();
     });
   });
+
   describe("Logging", () => {
     it("can set custom logging function", async function (this: AppContext) {
       // setting a custom logging function must be done immediately after instantiating an app
@@ -387,6 +400,7 @@ describe("SessionTest", () => {
       realm.close();
     });
   });
+
   describe("Connection", () => {
     it("can add connectionNotification", async function (this: AppContext) {
       const partition = generatePartition();
@@ -408,6 +422,7 @@ describe("SessionTest", () => {
           });
         });
     });
+
     it("can remove connectionNotification", async function (this: AppContext) {
       const credentials = Realm.Credentials.anonymous();
       const partition = generatePartition();
@@ -435,6 +450,7 @@ describe("SessionTest", () => {
           });
         });
     });
+
     it("reflects correct connection state", async function (this: AppContext) {
       const partition = generatePartition();
       const credentials = Realm.Credentials.anonymous();
@@ -483,6 +499,7 @@ describe("SessionTest", () => {
         });
     });
   });
+
   describe("pausing and resuming synchronization", () => {
     it("can resume and pause synchronization", async function (this: AppContext) {
       const partition = generatePartition();
@@ -499,6 +516,7 @@ describe("SessionTest", () => {
       session?.resume();
       await waitForConnectionState(session, "connected");
     });
+
     it("can resume multiple times", async function (this: AppContext) {
       const partition = generatePartition();
       const { config } = await getSyncConfWithUser(this.app, partition);
@@ -515,6 +533,7 @@ describe("SessionTest", () => {
       await waitForConnectionState(session, "connected");
       expect(session.isConnected()).to.be.true;
     });
+
     it("multiple following pauses are treated as one", async function (this: AppContext) {
       const credentials = Realm.Credentials.anonymous();
       const user = await this.app.logIn(credentials);
@@ -534,6 +553,7 @@ describe("SessionTest", () => {
       expect(session.isConnected()).to.be.false;
     });
   });
+
   describe("upload and download data", () => {
     it("uploaded data from one user is propagated to another", async function (this: AppContext) {
       let realm2: Realm;
@@ -566,6 +586,7 @@ describe("SessionTest", () => {
           expect(1).equals(realm2.objects("Dog").length);
         });
     });
+
     it("timeout on download successfully throws", async function (this: AppContext) {
       const partition = generatePartition();
       let realm!: Realm;
@@ -586,6 +607,7 @@ describe("SessionTest", () => {
           },
         );
     });
+
     it("timeout on upload successfully throws", async function (this: AppContext) {
       let realm!: Realm;
       const partition = generatePartition();
@@ -607,6 +629,7 @@ describe("SessionTest", () => {
         );
     });
   });
+
   describe("reconnect", () => {
     it("smoketest", async function (this: AppContext) {
       const credentials = Realm.Credentials.anonymous();
@@ -623,6 +646,7 @@ describe("SessionTest", () => {
       });
     });
   });
+
   describe("hasExistingSessions", () => {
     it("starting and stopping syncsessions propagates to hasExistingSessions", async function (this: AppContext) {
       expect(Realm.App.Sync._hasExistingSessions(this.app)).to.be.false;
@@ -648,6 +672,7 @@ describe("SessionTest", () => {
       });
     });
   });
+
   describe("getSyncSession", () => {
     it("returns null on non existing session", async function (this: AppContext) {
       const partition = generatePartition();
@@ -656,6 +681,7 @@ describe("SessionTest", () => {
       expect(session).to.be.null;
       user.logOut();
     });
+
     it("successfully returns existing session", async function (this: AppContext) {
       const partition = generatePartition();
       const { user, config } = await getSyncConfWithUser(this.app, partition);
@@ -666,6 +692,7 @@ describe("SessionTest", () => {
       realm.close();
     });
   });
+
   describe("getAllSyncSession", () => {
     it("returns correct number of active sesions", async function (this: AppContext) {
       const partition = generatePartition();
@@ -684,6 +711,7 @@ describe("SessionTest", () => {
       realm.close();
     });
   });
+
   describe("sessionStopPolicy", () => {
     it("can only set valid properties", async function (this: AppContext) {
       const credentials = Realm.Credentials.anonymous();
@@ -715,6 +743,7 @@ describe("SessionTest", () => {
         user.logOut();
       });
     });
+
     it("stop policy immediately succesfully removes session when realm is out of scope", async function (this: AppContext) {
       const credentials = Realm.Credentials.anonymous();
       const partition = generatePartition();
@@ -736,6 +765,7 @@ describe("SessionTest", () => {
       });
     });
   });
+
   //TODO: move to partition-value.ts tests
   describe("partition values", () => {
     it("supports accepted value types", async function (this: AppContext) {
@@ -779,6 +809,7 @@ describe("SessionTest", () => {
       }
     });
   });
+
   it("rejects non accepted value types", async function (this: AppContext) {
     const testPartitionValues = [
       undefined,
@@ -796,6 +827,7 @@ describe("SessionTest", () => {
       expect(() => new Realm(config)).throws;
     }
   });
+
   describe("deleteModel", () => {
     it("throws when sync is active", async function (this: AppContext) {
       const partition = generatePartition();
@@ -815,6 +847,7 @@ describe("SessionTest", () => {
         });
     });
   });
+
   describe("writeCopyTo on synced realms", () => {
     it("can create encrypted copies", async function (this: AppContext) {
       /*
@@ -932,6 +965,7 @@ describe("SessionTest", () => {
 
       realm1.close();
     });
+
     it("has expected behaviour", async function (this: AppContext) {
       const credentials1 = await getRegisteredEmailPassCredentials(this.app);
       const credentials2 = await getRegisteredEmailPassCredentials(this.app);
@@ -1108,6 +1142,7 @@ describe("SessionTest", () => {
       realm1.close();
     });
   });
+
   describe("Realm conversions", () => {
     // TODO:  Realm.open() fails after export_to() of synced -> local
     it.skip("valid conversions", async function (this: AppContext) {
@@ -1323,6 +1358,7 @@ describe("SessionTest", () => {
         }
       }
     });
+
     it("invalid conversions throw", async function (this: AppContext) {
       // simple local realm
       const configLocal = {
