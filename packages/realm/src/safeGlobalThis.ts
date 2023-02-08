@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 // Exports a globalThis which is polyfilled for iOS 11/12
-// From https://github.com/zloirock/core-js/blob/master/packages/core-js/internals/global.js
+// From https://github.com/zloirock/core-js/blob/v3.27.2/packages/core-js/internals/global.js
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const check = function (it: any) {
