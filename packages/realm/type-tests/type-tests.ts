@@ -16,77 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import * as Realm from "realm";
-import * as next from "next-realm";
+import { Realm as Realm2 } from "../src/index";
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
+const realm = new Realm();
+const realm2: Realm = new Realm();
+const realm3 = new Realm2();
+const app = new Realm.App("");
+const app2 = new Realm2.App("");
+const realm4: Realm2 = new Realm2();
+declare const options: Realm2.App.Sync.SubscriptionOptions;
+declare const options2: Realm.App.Sync.SubscriptionOptions;
 
-declare class Person {
-  name: string;
-  age: number;
-}
+// Calling statics is supported
+Realm.deleteFile({});
 
-// Realm constructor
-
-{
-  // const realm: lib.Realm = new Realm();
-}
-{
-  type IncompatibleProps =
-    // This is now @internal
-    | "_updateSchema"
-    // The syncSession.config.initialSubscriptions.update takes a Realm (which doesn't exactly match yet)
-    | "syncSession"
-    // The callback takes a Realm (which doesn't exactly match yet)
-    | "addListener"
-    | "removeListener"
-    // This method takes a config, which are slightly different - which will be tested in another test
-    | "writeCopyTo";
-  /*
-   */
-  type OldRealm = Omit<Realm, IncompatibleProps>;
-  type NextRealm = Omit<next.Realm, IncompatibleProps>;
-  const nextRealm = {} as NextRealm;
-  const oldRealm: OldRealm = nextRealm;
-}
-{
-  type OldRealmConfiguration = Realm.Configuration;
-  type NextRealmConfiguration = next.Realm.Configuration;
-  const nextConfig = {} as NextRealmConfiguration;
-  const oldConfig: OldRealmConfiguration = nextConfig;
-}
-
-/*
-{
-  const config: Realm.Configuration = {} as lib.Configuration;
-}
-{
-  const realm = new lib.Realm();
-  const object: lib.Object = realm.objectForPrimaryKey("Person", "alice");
-}
-
-{
-  const object: Realm.Object<Person> = null as unknown as lib.Object<Person>;
-}
-
-{
-  const results: Realm.Results<Person> = null as unknown as lib.Results<Person>;
-}
-
-{
-  const list: Realm.List<Person> = null as unknown as lib.List<Person>;
-}
-
-{
-  type T = { foo: string; bar: number };
-  const dict: Realm.Dictionary<Person> = null as unknown as lib.Dictionary<Person>;
-}
-
-{
-  const app: Realm.App = null as unknown as lib.App;
-}
-
-{
-  const user: Realm.User = null as unknown as lib.User;
-}
-*/
+// Mixing enums is supported
+declare const state1: Realm.App.Sync.SubscriptionsState;
+const state2: Realm2.App.Sync.SubscriptionsState = state1;

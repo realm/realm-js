@@ -2,7 +2,7 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "noEmit": true,
-    "noResolve": false,
+    "noResolve": true,
     "esModuleInterop": true,
     "lib": [
       "ES2022",
@@ -15,8 +15,7 @@
   },
   "exclude": [],
   "include": [
-    "../..",
-    "../src/types.d.ts",
+    "../src/**/*.ts",
     "type-tests.ts"
   ]
 }
