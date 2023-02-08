@@ -2,6 +2,7 @@
 
 #include "realm/binary_data.hpp"
 #include "realm/object-store/object_store.hpp"
+#include "realm/object-store/sync/mongo_collection.hpp"
 #include "realm/object-store/sync/sync_session.hpp"
 #include "realm/object_id.hpp"
 #include "realm/query.hpp"
@@ -248,6 +249,10 @@ struct Helpers {
         const auto& query = results.get_query();
 
         return query.get_description() + ' ' + results.get_descriptor_ordering().get_description(query.get_table());
+    }
+
+    static void feed_buffer(app::WatchStream& ws, const BinaryData& buffer) {
+        ws.feed_buffer({ buffer.data(), buffer.size() });
     }
 };
 

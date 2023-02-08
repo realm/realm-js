@@ -19,6 +19,7 @@ headers:
   - "realm/object-store/sync/sync_manager.hpp"
   - "realm/object-store/sync/sync_session.hpp"
   - "realm/object-store/sync/sync_user.hpp"
+  - "realm/object-store/sync/mongo_collection.hpp"
   - "realm/object-store/util/bson/bson.hpp"
   - "platform.hpp"
 
@@ -288,6 +289,12 @@ enums:
       - Error
       - Superseded
       - AwaitingMark
+  WatchStreamState:
+    cppName: app::WatchStream::State
+    values:
+      - NEED_DATA
+      - HAVE_EVENT
+      - HAVE_ERROR
 
 constants:
   null_col_key:
@@ -622,6 +629,7 @@ classes:
       erase_subscription: '(subs: MutableSyncSubscriptionSet&, sub_to_remove: const SyncSubscription&) -> bool'
       # This is added due to DescriptorOrdering not being exposed
       get_results_description: '(results: const Results&) -> StringData'
+      feed_buffer: '(ws: WatchStream&, buffer: const BinaryData&)'
 
   ConstTableRef:
     needsDeref: true
@@ -1124,6 +1132,17 @@ classes:
       subscribe: '(observer: (app: IgnoreArgument<const App&>)) -> AppSubscriptionToken'
       unsubscribe: '(token: AppSubscriptionToken)'
       call_function: '(user: const SharedSyncUser&, name: std::string, args: EJsonArray, service_name: util::Optional<std::string>, cb: AsyncCallback<(result: Nullable<const EJson*>, err: util::Optional<AppError>)>)'
+      make_streaming_request: '(user: SharedSyncUser, name: std::string, args: bson::BsonArray, service_name: util::Optional<std::string>) -> Request'
+
+  WatchStream:
+    cppName: app::WatchStream
+    constructors:
+      make: ()
+    properties:
+      state: WatchStreamState
+      error: AppError
+    methods:
+      next_event: '() -> bson::BsonDocument'
 
   PushClient:
     cppName: app::PushClient
