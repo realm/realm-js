@@ -34,60 +34,38 @@ function flattenHeaders(headers: FetchHeaders) {
   return result;
 }
 
-/*
-async function extractBody(response: Response): Promise<string> {
-  const contentType = response.headers.get("content-type");
-  if (contentType === null) {
-    return "";
-  } else if (contentType === "application/json") {
-    return response.text();
-  } else {
-    throw new Error(`Server responded with an unexpected '${contentType}' content type`);
-  }
+export function toFetchRequest({ method, timeoutMs, body, headers, url }: binding.Request_Relaxed) {
+  return {
+    url,
+    headers,
+    method: HTTP_METHOD[method],
+    timeoutMs: Number(timeoutMs),
+    body: body !== "" ? body : undefined,
+  };
 }
-
-
-const HTTP_METHOD: Record<binding.HttpMethod, string> = {
-  [binding.HttpMethod.get]: "get",
-  [binding.HttpMethod.post]: "post",
-  [binding.HttpMethod.put]: "put",
-  [binding.HttpMethod.patch]: "patch",
-  [binding.HttpMethod.del]: "delete",
-};
-
-*/
 
 /** @internal */
 export function createNetworkTransport() {
-  return binding.Helpers.makeNetworkTransport(({ method, timeoutMs, body, headers, url }, callback) => {
-    // TODO: Determine if checking the method is even needed
-    network
-      .fetch({
-        url,
-        headers,
-        method: HTTP_METHOD[method],
-        timeoutMs: Number(timeoutMs),
-        body: body !== "" ? body : undefined,
-      })
-      .then(
-        async (response) => {
-          const headers = flattenHeaders(response.headers);
-          const contentType = headers["content-type"];
-          const body = contentType ? await response.text() : "";
-          callback({
-            customStatusCode: 0,
-            httpStatusCode: response.status,
-            headers,
-            body,
-          });
-        },
-        (err) => {
-          // Core will propagate any non-zero "custom status code" through to the caller
-          // The error message is passed through the body
-          const reason = err.message || "Unknown";
-          const body = `request to ${url} failed, reason: ${reason}`;
-          callback({ httpStatusCode: 0, headers: {}, customStatusCode: -1, body });
-        },
-      );
+  return binding.Helpers.makeNetworkTransport((request, callback) => {
+    network.fetch(toFetchRequest(request)).then(
+      async (response) => {
+        const headers = flattenHeaders(response.headers);
+        const contentType = headers["content-type"];
+        const body = contentType ? await response.text() : "";
+        callback({
+          customStatusCode: 0,
+          httpStatusCode: response.status,
+          headers,
+          body,
+        });
+      },
+      (err) => {
+        // Core will propagate any non-zero "custom status code" through to the caller
+        // The error message is passed through the body
+        const reason = err.message || "Unknown";
+        const body = `request to ${request.url} failed, reason: ${reason}`;
+        callback({ httpStatusCode: 0, headers: {}, customStatusCode: -1, body });
+      },
+    );
   });
 }
