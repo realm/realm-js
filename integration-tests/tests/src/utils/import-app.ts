@@ -92,7 +92,7 @@ export async function importApp(
 ): Promise<{ appId: string; baseUrl: string; databaseName: string }> {
   const { baseUrl, appImporterUrl } = getUrls();
 
-  const databaseName = generateDatabaseName();
+  const databaseName = appImporterIsRemote ? generateDatabaseName() : "test-database";
 
   if (!replacements) {
     replacements = getDefaultReplacements(name, databaseName);
