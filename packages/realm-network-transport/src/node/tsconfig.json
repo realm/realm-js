@@ -4,9 +4,6 @@
 		"types": [
 			"node-fetch",
 			"abort-controller"
-		],
-		"lib": [
-			"ES2015"
 		]
 	},
 	"exclude": [

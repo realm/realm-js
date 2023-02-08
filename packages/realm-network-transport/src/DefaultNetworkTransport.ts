@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { makeRequestBodyIterable } from "./IterableReadableStream";
 import type {
   NetworkTransport,
   Request,
@@ -44,6 +45,7 @@ export class DefaultNetworkTransport implements NetworkTransport {
     }
   }
 
+  /** @deprecated Not used by the `bindgen` SDK and can be deleted */
   public fetchWithCallbacks<RequestBody = unknown>(request: Request<RequestBody>, handler: ResponseHandler): void {
     // tslint:disable-next-line: no-console
     this.fetch(request)
@@ -68,12 +70,14 @@ export class DefaultNetworkTransport implements NetworkTransport {
     const { timeoutMs, url, ...rest } = request;
     const { signal, cancelTimeout } = this.createTimeoutSignal(timeoutMs);
     try {
-      // We'll await the response to catch throw our own error
-      return await DefaultNetworkTransport.fetch(url, {
+      // Awaiting the response to cancel timeout on errors
+      const response = await DefaultNetworkTransport.fetch(url, {
         ...DefaultNetworkTransport.extraFetchOptions,
         signal, // Used to signal timeouts
         ...rest,
       });
+      // Wraps the body of the request in an iterable interface
+      return makeRequestBodyIterable(response);
     } finally {
       // Whatever happens, cancel any timeout
       cancelTimeout();
