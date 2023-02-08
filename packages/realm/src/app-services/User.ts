@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Document } from "bson";
-
 import {
   ApiKeyAuth,
   App,
@@ -25,15 +23,18 @@ import {
   DefaultFunctionsFactory,
   DefaultObject,
   DefaultUserProfileData,
+  Document,
   Listeners,
   MongoDBCollection,
   MongoDBService,
   ProviderType,
   PushClient,
+  assert,
   binding,
   cleanArguments,
   createFactory,
   isProviderType,
+  network,
 } from "../internal";
 
 export type UserChangeCallback = () => void;
@@ -254,6 +255,26 @@ export class User<
   }
 
   /**
+   * TODO: Doc
+   *
+   * @internal
+   */
+  callFunctionStreaming(
+    functionName: string,
+    serviceName: string,
+    ...functionArgs: unknown[]
+  ): Promise<AsyncIterable<Uint8Array>> {
+    const request = this.app.internal.makeStreamingRequest(
+      this.internal,
+      functionName,
+      cleanArguments(functionArgs) as binding.EJson[],
+      serviceName,
+    );
+
+    return network.fetchStream(request);
+  }
+
+  /**
    * Refresh the access token and derive custom data from it.
    *
    * @returns The newly fetched custom data.
@@ -275,15 +296,19 @@ export class User<
   }
 
   /**
-   * Returns a connection to the MongoDB service.
+   * @param serviceName The name of the MongoDB service to connect to. (Default: "mongo-db")
+   * @returns A connection to the MongoDB service.
    *
    * @example
-   * let blueWidgets = user.mongoClient('myClusterName')
+   * let blueWidgets = user.mongoClient()
    *                       .db('myDb')
    *                       .collection('widgets')
    *                       .find({color: 'blue'});
    */
-  mongoClient(serviceName: string): MongoDBService {
+  mongoClient(serviceName = "mongo-db"): MongoDBService {
+    assert.string(serviceName, "serviceName");
+    assert(serviceName.length, "The MongoDB service name must contain at least 1 character.");
+
     return {
       get serviceName() {
         return serviceName;
@@ -294,7 +319,7 @@ export class User<
             return dbName;
           },
           collection: <T extends Document = Document>(collectionName: string) => {
-            return new MongoDBCollection<T>(this.internal, serviceName, dbName, collectionName);
+            return new MongoDBCollection<T>(this, serviceName, dbName, collectionName);
           },
         };
       },
