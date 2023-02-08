@@ -142,6 +142,8 @@ describe("SessionTest", () => {
   importAppBefore("with-db");
 
   describe("invalid syncsessions", () => {
+    afterEach(() => Realm.clearTestState());
+
     it("local realm", () => {
       const realm = new Realm();
       expect(realm.syncSession).to.be.null;
@@ -186,10 +188,9 @@ describe("SessionTest", () => {
             resolve();
           });
       });
-      user.logOut();
     });
 
-    it("invalid sync user provided", async function (this: AppContext) {
+    it("invalid sync user object", async function (this: AppContext) {
       // test if an invalid object is used as user
       const partition = generatePartition();
       const { user, config } = await getSyncConfWithUser(this.app, partition);
@@ -199,16 +200,12 @@ describe("SessionTest", () => {
         await Realm.open(config);
       } catch (e: any) {
         expect(e.message).contains("Option 'user' is not a Realm.User object.");
-      } finally {
-        await user.logOut();
       }
     });
   });
 
   describe("opening realm", () => {
-    afterEach(() => {
-      Realm.clearTestState();
-    });
+    afterEach(() => Realm.clearTestState());
 
     it("contains synced data from other instance", async function (this: AppContext) {
       const expectedObjectsCount = 3;
@@ -226,13 +223,12 @@ describe("SessionTest", () => {
       expect(session?.config.partitionValue).equals(config.sync?.partitionValue);
       expect(session?.config.user.id).equals(config.sync?.user.id);
       expect(session?.state).equals("active");
-      await user.logOut();
     });
 
     it("with destructive schema update throws", async function (this: AppContext) {
       const partition = generatePartition();
       await seedDataWithExternalUser(this.app, partition);
-      const { user, config } = await getSyncConfWithUser(this.app, partition);
+      const { config } = await getSyncConfWithUser(this.app, partition);
       const realm = await Realm.open(config);
       realm.close();
       // change the 'breed' property from 'string?' to 'string' to trigger a non-additive-only error.
@@ -243,8 +239,6 @@ describe("SessionTest", () => {
         await Realm.open(config);
       } catch (error: any) {
         expect(error.message).contain("The following changes cannot be made in additive-only schema mode:");
-      } finally {
-        await user.logOut();
       }
     });
 
@@ -277,6 +271,7 @@ describe("SessionTest", () => {
   });
 
   describe("error handling", () => {
+    afterEach(() => Realm.clearTestState());
     it("can simulate an error", async function (this: AppContext) {
       const partition = generatePartition();
       const credentials = Realm.Credentials.anonymous();
@@ -372,6 +367,7 @@ describe("SessionTest", () => {
   });
 
   describe("Logging", () => {
+    afterEach(() => Realm.clearTestState());
     it("can set custom logging function", async function (this: AppContext) {
       // setting a custom logging function must be done immediately after instantiating an app
       const app = new Realm.App(this.app.id);
@@ -395,13 +391,13 @@ describe("SessionTest", () => {
 
       const user = await app.logIn(credentials);
       const config = getSyncConfiguration(user, partition);
-      const realm = await Realm.open(config);
+      await Realm.open(config);
       await promisedLog;
-      realm.close();
     });
   });
 
   describe("Connection", () => {
+    afterEach(() => Realm.clearTestState());
     it("can add connectionNotification", async function (this: AppContext) {
       const partition = generatePartition();
       const credentials = Realm.Credentials.anonymous();
@@ -501,6 +497,7 @@ describe("SessionTest", () => {
   });
 
   describe("pausing and resuming synchronization", () => {
+    afterEach(() => Realm.clearTestState());
     it("can resume and pause synchronization", async function (this: AppContext) {
       const partition = generatePartition();
       const { config } = await getSyncConfWithUser(this.app, partition);
@@ -555,6 +552,7 @@ describe("SessionTest", () => {
   });
 
   describe("upload and download data", () => {
+    afterEach(() => Realm.clearTestState());
     it("uploaded data from one user is propagated to another", async function (this: AppContext) {
       let realm2: Realm;
       const partition = generatePartition();
@@ -631,6 +629,7 @@ describe("SessionTest", () => {
   });
 
   describe("reconnect", () => {
+    afterEach(() => Realm.clearTestState());
     it("smoketest", async function (this: AppContext) {
       const credentials = Realm.Credentials.anonymous();
       const partition = generatePartition();
@@ -642,12 +641,12 @@ describe("SessionTest", () => {
         // No real way to check if this works automatically.
         // This is just a smoke test, making sure the method doesn't crash outright.
         Realm.App.Sync.reconnect(this.app);
-        realm.close();
       });
     });
   });
 
   describe("hasExistingSessions", () => {
+    afterEach(() => Realm.clearTestState());
     it("starting and stopping syncsessions propagates to hasExistingSessions", async function (this: AppContext) {
       expect(Realm.App.Sync._hasExistingSessions(this.app)).to.be.false;
 
@@ -674,6 +673,7 @@ describe("SessionTest", () => {
   });
 
   describe("getSyncSession", () => {
+    afterEach(() => Realm.clearTestState());
     it("returns null on non existing session", async function (this: AppContext) {
       const partition = generatePartition();
       const user = await this.app.logIn(Realm.Credentials.anonymous());
@@ -694,6 +694,7 @@ describe("SessionTest", () => {
   });
 
   describe("getAllSyncSession", () => {
+    afterEach(() => Realm.clearTestState());
     it("returns correct number of active sesions", async function (this: AppContext) {
       const partition = generatePartition();
       const user = await this.app.logIn(Realm.Credentials.anonymous());
@@ -702,17 +703,16 @@ describe("SessionTest", () => {
       expect(sessions1.length).equals(0);
 
       const config = getSyncConfiguration(user, partition);
-      const realm = new Realm(config);
+      new Realm(config);
 
       const sessions2 = Realm.App.Sync.getAllSyncSessions(user);
       expect(sessions2.length).equals(1);
       expect(sessions2[0]).to.not.be.null;
-      user.logOut();
-      realm.close();
     });
   });
 
   describe("sessionStopPolicy", () => {
+    afterEach(() => Realm.clearTestState());
     it("can only set valid properties", async function (this: AppContext) {
       const credentials = Realm.Credentials.anonymous();
       const partition = generatePartition();
@@ -740,7 +740,6 @@ describe("SessionTest", () => {
         //@ts-expect-error internal field
         config4.sync._sessionStopPolicy = "foo";
         expect(() => new Realm(config4)).throws();
-        user.logOut();
       });
     });
 
@@ -757,7 +756,6 @@ describe("SessionTest", () => {
         {
           expect(Realm.App.Sync._hasExistingSessions(this.app)).to.be.false;
           const realm = new Realm(config);
-          const session = realm.syncSession;
           expect(Realm.App.Sync._hasExistingSessions(this.app)).to.be.true;
           realm.close();
         }
@@ -768,6 +766,7 @@ describe("SessionTest", () => {
 
   //TODO: move to partition-value.ts tests
   describe("partition values", () => {
+    afterEach(() => Realm.clearTestState());
     it("supports accepted value types", async function (this: AppContext) {
       const testPartitionValues = [
         generatePartition(), // string
@@ -829,6 +828,7 @@ describe("SessionTest", () => {
   });
 
   describe("deleteModel", () => {
+    afterEach(() => Realm.clearTestState());
     it("throws when sync is active", async function (this: AppContext) {
       const partition = generatePartition();
       return this.app
@@ -849,6 +849,7 @@ describe("SessionTest", () => {
   });
 
   describe("writeCopyTo on synced realms", () => {
+    afterEach(() => Realm.clearTestState());
     it("can create encrypted copies", async function (this: AppContext) {
       /*
     Test that we can create encrypted copies of a realm, and that only the
@@ -962,8 +963,6 @@ describe("SessionTest", () => {
         encryptedRealmCopy = new Realm(encryptedCopyConfig);
       }).throws;
       expect(encryptedRealmCopy).to.be.undefined;
-
-      realm1.close();
     });
 
     it("has expected behaviour", async function (this: AppContext) {
@@ -1138,12 +1137,11 @@ describe("SessionTest", () => {
       }
 
       expect(realm3).to.be.undefined;
-
-      realm1.close();
     });
   });
 
   describe("Realm conversions", () => {
+    afterEach(() => Realm.clearTestState());
     // TODO:  Realm.open() fails after export_to() of synced -> local
     it.skip("valid conversions", async function (this: AppContext) {
       const credentials = await getRegisteredEmailPassCredentials(this.app);
@@ -1414,8 +1412,6 @@ describe("SessionTest", () => {
           realm.writeCopyTo({ path: "outputPath", sync: "invalidProperty" });
         }).throws("Can only convert Realms outside a transaction");
       });
-
-      realm.close();
     });
   });
 });
