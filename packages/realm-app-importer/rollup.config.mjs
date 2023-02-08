@@ -19,10 +19,9 @@
 import typescript from "@rollup/plugin-typescript";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
+import dts from "rollup-plugin-dts";
 
 import pkg from "./package.json" assert { type: "json" };
-
-const external = ["abort-controller", "node-fetch", "path", "fs-extra", "glob", "deepmerge"];
 
 export default [
   {
@@ -39,7 +38,7 @@ export default [
         tsconfig: "src/node/tsconfig.json",
       }),
     ],
-    external,
+    external: ["abort-controller", "node-fetch", "path", "fs-extra", "glob", "deepmerge"],
   },
   {
     input: "src/react-native/index.ts",
@@ -57,18 +56,13 @@ export default [
     ],
   },
   {
-    input: "src/index.ts",
+    input: "types/generated/index.d.ts",
     output: [
       {
         file: pkg["types"],
         format: "es",
       },
     ],
-    plugins: [
-      typescript({
-        tsconfig: "tsconfig.types.json",
-      }),
-    ],
-    external,
+    plugins: [dts()],
   },
 ];
