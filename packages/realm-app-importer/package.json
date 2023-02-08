@@ -11,7 +11,7 @@
   },
   "scripts": {
     "generate-types": "tsc --project tsconfig.types.json --declaration --emitDeclarationOnly --declarationDir types/generated",
-    "build": "rollup --config",
+    "build": "npm run generate-types && rollup --config",
     "watch": "rollup -w --config",
     "lint": "eslint --ext .js,.ts .",
     "prepare": "npm run build",
