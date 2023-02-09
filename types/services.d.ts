@@ -60,7 +60,7 @@ declare namespace Realm {
 
     namespace MongoDB {
       /**
-       * Options passed when finding a signle document
+       * Options passed when finding a single document
        */
       interface FindOneOptions {
         /**
@@ -83,10 +83,15 @@ declare namespace Realm {
          * The maximum number of documents to return.
          */
         readonly limit?: number;
+
+        /**
+         * The number of documents to skip ahead in the query
+         */
+        readonly skip?: number;
       }
 
       /**
-       * Options passed when finding and modifying a signle document
+       * Options passed when finding and modifying a single document
        */
       interface FindOneAndModifyOptions extends FindOneOptions {
         /**
@@ -672,7 +677,7 @@ declare namespace Realm {
         status: string;
 
         /**
-         * The nummeric status code.
+         * The numeric status code.
          */
         statusCode: number;
 

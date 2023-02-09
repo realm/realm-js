@@ -48,7 +48,7 @@ export class MongoDBCollection<T extends Document> implements Realm.Services.Mon
    */
   private readonly collectionName: string;
 
-  private readonly serviceName: string;
+  private readonly serviceName: string; //TODO It seems we don't use those 2 variables?
   private readonly fetcher: Fetcher;
 
   /**
@@ -78,6 +78,7 @@ export class MongoDBCollection<T extends Document> implements Realm.Services.Mon
       project: options.projection,
       sort: options.sort,
       limit: options.limit,
+      skip: options.skip,
     });
   }
 
