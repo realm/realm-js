@@ -41,5 +41,6 @@ import "./tests/realm-constructor";
 import "./tests/schema";
 import "./tests/serialization";
 import "./tests/set";
+import "./tests/list";
 import "./tests/transaction";
 import "./tests/types";
