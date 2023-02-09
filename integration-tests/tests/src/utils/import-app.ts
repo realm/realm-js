@@ -54,7 +54,11 @@ function getCredentials(): Credentials {
 }
 
 function generateDatabaseName(): string {
-  return `test-database-${new BSON.ObjectID().toHexString()}`;
+  const { mongodbClusterName } = environment;
+  if (typeof mongodbClusterName === "string") {
+    return `test-database-${new BSON.ObjectID().toHexString()}`;
+  }
+  return "test-database";
 }
 
 export function getDefaultReplacements(name: string, databaseName: string): TemplateReplacements {
