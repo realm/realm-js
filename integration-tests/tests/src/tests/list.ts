@@ -16,11 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { BSON } from "realm";
+import { Realm, BSON } from "realm";
 import { expectArraysEqual, expectSimilar } from "../utils/comparisons";
 import { expect } from "chai";
 import { CanonicalObjectSchema } from "realm";
-import { openRealmBeforeEach } from "../hooks";
+import { openRealmBeforeEach, openRealmBefore } from "../hooks";
 import { select } from "../utils/select";
 
 const DATA1 = new Uint8Array([0x01]);
@@ -2092,6 +2092,104 @@ describe("Lists", () => {
 
         list.items.push(new TodoItem(this.realm, "Fix that bug"));
         this.realm.create(TodoItem, new TodoItem(this.realm, "Fix that bug"));
+      });
+    });
+  });
+
+  type Item<T = unknown> = { list: Realm.List<T> };
+
+  describe("with unconstrained (mixed) values", () => {
+    openRealmBefore({
+      schema: [
+        {
+          name: "Item",
+          properties: { list: { type: "list", objectType: "mixed" } },
+        },
+      ],
+    });
+
+    it("supports remove", function (this: RealmContext) {
+      const { list } = this.realm.write(() =>
+        this.realm.create<Item>("Item", {
+          list: [2, 5, 8, 14, 57],
+        }),
+      );
+
+      expect([...list]).deep.equals([2, 5, 8, 14, 57]);
+
+      this.realm.write(() => {
+        list.remove(0);
+      });
+
+      expect([...list]).deep.equals([5, 8, 14, 57]);
+
+      this.realm.write(() => {
+        list.remove(3);
+      });
+
+      expect([...list]).deep.equals([5, 8, 14]);
+
+      this.realm.write(() => {
+        expect(() => list.remove(-1)).to.throw("Index cannot be smaller than 0");
+        expect(() => list.remove(10)).to.throw("Index cannot be greater than the size of the list");
+      });
+    });
+
+    it("supports move", function (this: RealmContext) {
+      const { list } = this.realm.write(() =>
+        this.realm.create<Item>("Item", {
+          list: [2, 5, 8, 14, 57],
+        }),
+      );
+
+      expect([...list]).deep.equals([2, 5, 8, 14, 57]);
+
+      this.realm.write(() => {
+        list.move(0, 3);
+      });
+
+      expect([...list]).deep.equals([5, 8, 14, 2, 57]);
+
+      this.realm.write(() => {
+        list.move(2, 1);
+      });
+
+      expect([...list]).deep.equals([5, 14, 8, 2, 57]);
+
+      this.realm.write(() => {
+        expect(() => list.move(-1, 3)).to.throw("Indexes cannot be smaller than 0");
+        expect(() => list.move(3, -1)).to.throw("Indexes cannot be smaller than 0");
+        expect(() => list.move(1, 10)).to.throw("Indexes cannot be greater than the size of the list");
+        expect(() => list.move(10, 1)).to.throw("Indexes cannot be greater than the size of the list");
+      });
+    });
+
+    it("supports swap", function (this: RealmContext) {
+      const { list } = this.realm.write(() =>
+        this.realm.create<Item>("Item", {
+          list: [2, 5, 8, 14, 57],
+        }),
+      );
+
+      expect([...list]).deep.equals([2, 5, 8, 14, 57]);
+
+      this.realm.write(() => {
+        list.swap(0, 3);
+      });
+
+      expect([...list]).deep.equals([14, 5, 8, 2, 57]);
+
+      this.realm.write(() => {
+        list.swap(2, 1);
+      });
+
+      expect([...list]).deep.equals([14, 8, 5, 2, 57]);
+
+      this.realm.write(() => {
+        expect(() => list.swap(-1, 3)).to.throw("Indexes cannot be smaller than 0");
+        expect(() => list.swap(3, -1)).to.throw("Indexes cannot be smaller than 0");
+        expect(() => list.swap(1, 10)).to.throw("Indexes cannot be greater than the size of the list");
+        expect(() => list.swap(10, 1)).to.throw("Indexes cannot be greater than the size of the list");
       });
     });
   });
