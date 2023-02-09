@@ -54,9 +54,14 @@ type LoginResponse = {
 
 type AppConfig = {
   name: string;
+  sync?: SyncConfig;
   security?: {
     allowed_request_origins?: string[];
   };
+};
+
+type SyncConfig = {
+  development_mode_enabled?: boolean;
 };
 
 type ErrorResponse = {
@@ -200,7 +205,7 @@ export class AppImporter {
    * @returns A promise of an object containing the app id.
    */
   public async importApp(appTemplatePath: string, replacements: TemplateReplacements = {}): Promise<ImportedApp> {
-    const { name: appName, security } = this.loadAppConfigJson(appTemplatePath);
+    const { name: appName, sync, security } = this.loadAppConfigJson(appTemplatePath);
 
     await this.logIn();
 
@@ -223,7 +228,7 @@ export class AppImporter {
     }
 
     // Create the app service
-    await this.applyAppConfiguration(appPath, app._id, groupId);
+    await this.applyAppConfiguration(appPath, app._id, groupId, sync);
 
     if (appId) {
       console.log(`The application ${appId} was successfully deployed...`);
@@ -327,9 +332,8 @@ export class AppImporter {
     }
   }
 
-  private async enableDevelopmentMode(groupId: string, appId: string) {
+  private async applySyncConfig(groupId: string, appId: string, config: SyncConfig) {
     const configUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/sync/config`;
-    const config = { development_mode_enabled: true };
     const response = await fetch(configUrl, {
       method: "PUT",
       headers: {
@@ -339,7 +343,7 @@ export class AppImporter {
       body: JSON.stringify(config),
     });
     if (!response.ok) {
-      console.error("Could not apply development mode: ", config, configUrl, response.status, response.statusText);
+      console.error("Could not apply sync configuration: ", config, configUrl, response.status, response.statusText);
     }
   }
 
@@ -372,7 +376,7 @@ export class AppImporter {
     }
   }
 
-  private async configureServiceFromAppPath(appPath: string, appId: string, groupId: string) {
+  private async configureServiceFromAppPath(appPath: string, appId: string, groupId: string, syncConfig?: SyncConfig) {
     const servicesDir = path.join(appPath, "services");
     if (fs.existsSync(servicesDir)) {
       console.log("Applying services... ");
@@ -403,7 +407,9 @@ export class AppImporter {
           if (!response.ok) {
             console.warn("Could not create service: ", tmpConfig, serviceUrl, response.statusText);
           } else {
-            await this.enableDevelopmentMode(groupId, appId);
+            if (syncConfig) {
+              await this.applySyncConfig(groupId, appId, syncConfig);
+            }
             const rulesDir = path.join(servicesDir, serviceDir, "rules");
             const responseJson = await response.json();
             if (!isServiceResponse(responseJson)) {
@@ -602,7 +608,7 @@ export class AppImporter {
     }
   }
 
-  private async applyAppConfiguration(appPath: string, appId: string, groupId: string) {
+  private async applyAppConfiguration(appPath: string, appId: string, groupId: string, syncConfig?: SyncConfig) {
     // Create all secrets in parallel
     const secrets = this.loadSecretsJson(appPath);
     await Promise.all(
@@ -616,7 +622,7 @@ export class AppImporter {
 
     await this.configureValuesFromAppPath(appPath, appId, groupId);
 
-    await this.configureServiceFromAppPath(appPath, appId, groupId);
+    await this.configureServiceFromAppPath(appPath, appId, groupId, syncConfig);
 
     await this.configureFunctionsFromAppPath(appPath, appId, groupId);
 
