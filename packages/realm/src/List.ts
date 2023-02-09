@@ -279,4 +279,38 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     }
     return result;
   }
+
+  remove(index: number) {
+    assert.inTransaction(this.realm);
+    assert.number(index, "index");
+    const { internal } = this;
+
+    //TODO I am not sure exactly if we expect a no-op for out of bounds operations or an exception
+    assert(index >= 0, "Index cannot be smaller than 0");
+    assert(index < internal.size, "Index cannot be bigger than the size of the list");
+
+    internal.remove(index);
+  }
+
+  move(from: number, to: number) {
+    assert.inTransaction(this.realm);
+    assert.number(from, "index");
+    assert.number(to, "to");
+
+    //TODO Need to decide if out-of-bounds indexes will be a no-op or an exception
+    const { internal } = this;
+
+    internal.move(from, to);
+  }
+
+  swap(index1: number, index2: number) {
+    assert.inTransaction(this.realm);
+    assert.number(index1, "index1");
+    assert.number(index2, "index2");
+
+    //TODO Need to decide if out-of-bounds indexes will be a no-op or an exception
+    const { internal } = this;
+
+    internal.swap(index1, index2);
+  }
 }
