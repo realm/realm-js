@@ -164,7 +164,7 @@ jobs:
             ${{ matrix.variant.artifact-path }}
 
   integration-tests:
-    name: Integration tests (${{matrix.variant.target}}) for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
+    name: Integration tests (${{matrix.variant.target}}) for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }} ${{ matrix.variant.engine || '' }}
     needs: [build]
     env:
       REALM_DISABLE_ANALYTICS: 1
