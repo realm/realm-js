@@ -947,135 +947,135 @@ describe("Queries", () => {
         realm.close();
       });
     });
-  });
 
-  describe("Special cases", () => {
-    it("should work with malformed queries", () => {
-      const realm = new Realm({ schema: [NullableTypesObject] });
-      expect(() => {
-        realm.objects("NullableTypesObject").filtered("stringCol = $0");
-      }).throws("Request for argument at index 0 but no arguments are provided");
-    });
+    describe("Special cases", () => {
+      it("should work with malformed queries", () => {
+        const realm = new Realm({ schema: [NullableTypesObject] });
+        expect(() => {
+          realm.objects("NullableTypesObject").filtered("stringCol = $0");
+        }).throws("Request for argument at index 0 but no arguments are provided");
+      });
 
-    it("should support queries with UUID as primary key", () => {
-      const testStringUuids = [
-        "01b1a58a-bb92-47a2-a3aa-d9c735e6fd42",
-        "ab01fec2-55d5-4fac-9e04-980bff6a521d",
-        "6683f348-d441-4846-81aa-cc375b771032",
-      ];
-      const nonExistingStringUuid = "aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa";
+      it("should support queries with UUID as primary key", () => {
+        const testStringUuids = [
+          "01b1a58a-bb92-47a2-a3aa-d9c735e6fd42",
+          "ab01fec2-55d5-4fac-9e04-980bff6a521d",
+          "6683f348-d441-4846-81aa-cc375b771032",
+        ];
+        const nonExistingStringUuid = "aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa";
 
-      const primUuidSchema = {
-        name: "PrimNullableTypesObject",
-        primaryKey: "_id",
-        properties: {
-          _id: "uuid",
-          text: "string",
-        },
-      };
+        const primUuidSchema = {
+          name: "PrimNullableTypesObject",
+          primaryKey: "_id",
+          properties: {
+            _id: "uuid",
+            text: "string",
+          },
+        };
 
-      const realm = new Realm({ schema: [primUuidSchema] });
-      realm.write(() => {
+        const realm = new Realm({ schema: [primUuidSchema] });
+        realm.write(() => {
+          testStringUuids.forEach((uuidStr) => {
+            realm.create(primUuidSchema.name, { _id: new UUID(uuidStr), text: uuidStr });
+          });
+        });
+
+        // objectForPrimaryKey tests
+        const nonExisting = realm.objectForPrimaryKey(primUuidSchema.name, new UUID(nonExistingStringUuid));
+        expect(nonExisting).equals(
+          null,
+          `objectForPrimaryKey should return undefined for new UUID("${nonExistingStringUuid}")`,
+        );
+
         testStringUuids.forEach((uuidStr) => {
-          realm.create(primUuidSchema.name, { _id: new UUID(uuidStr), text: uuidStr });
+          const obj = realm.objectForPrimaryKey(primUuidSchema.name, new UUID(uuidStr));
+          expect(obj).not.equal(null, `objectForPrimaryKey should return a Realm.Object for new UUID("${uuidStr}")`);
+          //@ts-expect-error _id is part of schema.
+          expect(obj._id.toString()).equals(uuidStr);
+        });
+
+        // results.filtered tests
+        const emptyFiltered = realm.objects(primUuidSchema.name).filtered("_id == $0", new UUID(nonExistingStringUuid));
+        expect(emptyFiltered.length).equals(
+          0,
+          `filtered objects should contain 0 elements when filtered by new UUID("${nonExistingStringUuid}")`,
+        );
+
+        testStringUuids.forEach((uuidStr) => {
+          const filtered = realm.objects(primUuidSchema.name).filtered("_id == $0", new UUID(uuidStr));
+          expect(filtered.length).equals(1, `filtered objects should contain exactly 1 of new UUID("${uuidStr}")`);
         });
       });
 
-      // objectForPrimaryKey tests
-      const nonExisting = realm.objectForPrimaryKey(primUuidSchema.name, new UUID(nonExistingStringUuid));
-      expect(nonExisting).equals(
-        null,
-        `objectForPrimaryKey should return undefined for new UUID("${nonExistingStringUuid}")`,
-      );
+      it("should work with scientific notation numbers", () => {
+        class DecimalNumbersObject extends Realm.Object {
+          f!: Realm.Types.Float;
+          d!: Realm.Types.Double;
 
-      testStringUuids.forEach((uuidStr) => {
-        const obj = realm.objectForPrimaryKey(primUuidSchema.name, new UUID(uuidStr));
-        expect(obj).not.equal(null, `objectForPrimaryKey should return a Realm.Object for new UUID("${uuidStr}")`);
-        //@ts-expect-error _id is part of schema.
-        expect(obj._id.toString()).equals(uuidStr);
-      });
+          static schema = {
+            name: "DecimalNumbersObject",
+            properties: {
+              f: "float",
+              d: "double",
+            },
+          };
+        }
 
-      // results.filtered tests
-      const emptyFiltered = realm.objects(primUuidSchema.name).filtered("_id == $0", new UUID(nonExistingStringUuid));
-      expect(emptyFiltered.length).equals(
-        0,
-        `filtered objects should contain 0 elements when filtered by new UUID("${nonExistingStringUuid}")`,
-      );
+        const realm = new Realm({ schema: [DecimalNumbersObject] });
+        realm.write(() => {
+          realm.create<DecimalNumbersObject>("DecimalNumbersObject", { f: 10e-12, d: 5e10 });
+          realm.create<DecimalNumbersObject>("DecimalNumbersObject", { f: 12e-12, d: 3e10 });
+          realm.create<DecimalNumbersObject>("DecimalNumbersObject", { f: 10e-10, d: 8e10 });
+          realm.create<DecimalNumbersObject>("DecimalNumbersObject", { f: 10e-20, d: 8e32 });
+        });
+        const numbers = realm.objects(DecimalNumbersObject);
 
-      testStringUuids.forEach((uuidStr) => {
-        const filtered = realm.objects(primUuidSchema.name).filtered("_id == $0", new UUID(uuidStr));
-        expect(filtered.length).equals(1, `filtered objects should contain exactly 1 of new UUID("${uuidStr}")`);
+        expect(numbers.filtered("f == 10e-12 AND d == 5e10").length).equal(1);
+        expect(numbers.filtered("f == 10e-12 AND d == 5e9").length).equal(0);
+        expect(numbers.filtered("f == 6e-6").length).equal(0);
+        expect(numbers.filtered("d == 9e32").length).equal(0);
+
+        expect(numbers.filtered("f == 100e-13").length).equal(1);
+        expect(numbers.filtered("f > 10e-12").length).equal(2);
+        expect(numbers.filtered("f > 10e-50").length).equal(4);
+
+        expect(numbers.filtered("d > 8e32").length).equal(0);
+        expect(numbers.filtered("d >= 8e32").length).equal(1);
+
+        expect(numbers.filtered("(f > 10e-12 AND f <= 10e10) AND (d >= 3e10 AND d <= 8e10)").length).equal(2);
       });
     });
 
-    it("should work with scientific notation numbers", () => {
-      class DecimalNumbersObject extends Realm.Object {
-        f!: Realm.Types.Float;
-        d!: Realm.Types.Double;
+    describe("logical operators", () => {
+      it("primititive types - OR operator", () => {
+        const unicornString = "Here is a Unicorn 🦄 today";
+        const fooString = "foo";
 
-        static schema = {
-          name: "DecimalNumbersObject",
-          properties: {
-            f: "float",
-            d: "double",
-          },
-        };
-      }
+        expect(primitives.filtered(`s == "${unicornString}" OR s == "bar"`).length).equal(1);
+        expect(primitives.filtered("s == $0 OR s == $1", unicornString, "bar").length).equal(1);
 
-      const realm = new Realm({ schema: [DecimalNumbersObject] });
-      realm.write(() => {
-        realm.create<DecimalNumbersObject>("DecimalNumbersObject", { f: 10e-12, d: 5e10 });
-        realm.create<DecimalNumbersObject>("DecimalNumbersObject", { f: 12e-12, d: 3e10 });
-        realm.create<DecimalNumbersObject>("DecimalNumbersObject", { f: 10e-10, d: 8e10 });
-        realm.create<DecimalNumbersObject>("DecimalNumbersObject", { f: 10e-20, d: 8e32 });
+        expect(primitives.filtered(`s == "${unicornString}" OR s == "${fooString}"`).length).equal(2);
+        expect(primitives.filtered("s == $0 OR s == $1", unicornString, fooString).length).equal(2);
+
+        expect(primitives.filtered(`s == "${unicornString}" OR i == 44`).length).equal(1);
+        expect(primitives.filtered("s == $0 OR i == $1", unicornString, 44).length).equal(1);
+        expect(primitives.filtered("s == $0 OR i == $1", unicornString, 2).length).equal(2);
+        expect(primitives.filtered("s == $0 OR i == $1", unicornString, 3).length).equal(1);
       });
-      const numbers = realm.objects(DecimalNumbersObject);
 
-      expect(numbers.filtered("f == 10e-12 AND d == 5e10").length).equal(1);
-      expect(numbers.filtered("f == 10e-12 AND d == 5e9").length).equal(0);
-      expect(numbers.filtered("f == 6e-6").length).equal(0);
-      expect(numbers.filtered("d == 9e32").length).equal(0);
+      it("primititive types - AND operator", () => {
+        const unicornString = "Here is a Unicorn 🦄 today";
+        const fooString = "foo";
 
-      expect(numbers.filtered("f == 100e-13").length).equal(1);
-      expect(numbers.filtered("f > 10e-12").length).equal(2);
-      expect(numbers.filtered("f > 10e-50").length).equal(4);
+        expect(primitives.filtered(`s == "${unicornString}" AND s == "bar"`).length).equal(0);
+        expect(primitives.filtered("s == $0 AND s == $1", unicornString, "bar").length).equal(0);
 
-      expect(numbers.filtered("d > 8e32").length).equal(0);
-      expect(numbers.filtered("d >= 8e32").length).equal(1);
+        expect(primitives.filtered(`s == "${unicornString}" AND s == "${fooString}"`).length).equal(0);
+        expect(primitives.filtered("s == $0 AND s == $1", unicornString, fooString).length).equal(0);
 
-      expect(numbers.filtered("(f > 10e-12 AND f <= 10e10) AND (d >= 3e10 AND d <= 8e10)").length).equal(2);
-    });
-  });
-
-  describe("logical operators", () => {
-    it("primititive types - OR operator", () => {
-      const unicornString = "Here is a Unicorn 🦄 today";
-      const fooString = "foo";
-
-      expect(primitives.filtered(`s == "${unicornString}" OR s == "bar"`).length).equal(1);
-      expect(primitives.filtered("s == $0 OR s == $1", unicornString, "bar").length).equal(1);
-
-      expect(primitives.filtered(`s == "${unicornString}" OR s == "${fooString}"`).length).equal(2);
-      expect(primitives.filtered("s == $0 OR s == $1", unicornString, fooString).length).equal(2);
-
-      expect(primitives.filtered(`s == "${unicornString}" OR i == 44`).length).equal(1);
-      expect(primitives.filtered("s == $0 OR i == $1", unicornString, 44).length).equal(1);
-      expect(primitives.filtered("s == $0 OR i == $1", unicornString, 2).length).equal(2);
-      expect(primitives.filtered("s == $0 OR i == $1", unicornString, 3).length).equal(1);
-    });
-
-    it("primititive types - AND operator", () => {
-      const unicornString = "Here is a Unicorn 🦄 today";
-      const fooString = "foo";
-
-      expect(primitives.filtered(`s == "${unicornString}" AND s == "bar"`).length).equal(0);
-      expect(primitives.filtered("s == $0 AND s == $1", unicornString, "bar").length).equal(0);
-
-      expect(primitives.filtered(`s == "${unicornString}" AND s == "${fooString}"`).length).equal(0);
-      expect(primitives.filtered("s == $0 AND s == $1", unicornString, fooString).length).equal(0);
-
-      expect(primitives.filtered(`s == "${unicornString}" AND i == 44`).length).equal(1);
-      expect(primitives.filtered("s == $0 AND i == $1", unicornString, 44).length).equal(1);
+        expect(primitives.filtered(`s == "${unicornString}" AND i == 44`).length).equal(1);
+        expect(primitives.filtered("s == $0 AND i == $1", unicornString, 44).length).equal(1);
+      });
     });
   });
 });

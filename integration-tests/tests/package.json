@@ -13,7 +13,7 @@
     "test": "CONTEXT=appTemplatesPath=../realm-apps,$CONTEXT node start.js --exit",
     "test:performance": "CONTEXT=missingServer,performance,integration=false,$CONTEXT npm test",
     "app-importer": "realm-app-importer serve ../realm-apps",
-    "mocha": "mocha src/index.ts",
+    "mocha": "mocha --reporter @realm/mocha-reporter src/index.ts",
     "lint": "eslint --ext .js,.ts ."
   },
   "peerDependencies": {
@@ -21,6 +21,7 @@
     "realm": "*"
   },
   "devDependencies": {
+    "@realm/mocha-reporter": "*",
     "@thi.ng/bench": "^3.1.3",
     "@types/chai": "^4.1.7",
     "@types/chai-as-promised": "^7.1.4",
