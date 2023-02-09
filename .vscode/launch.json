@@ -71,6 +71,21 @@
         },
         {
             "type": "node",
+            "name": "Realm Integration Tests",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "cwd": "${workspaceFolder}/integration-tests/tests",
+            "runtimeExecutable": "npm",
+            "args": [
+                "run",
+                "test",
+                "--",
+                "--grep='${input:grepPattern}'"
+            ]
+        },
+        {
+            "type": "node",
             "request": "launch",
             "name": "Start Stitch in Docker",
             "cwd": "${workspaceRoot}/scripts",
@@ -247,6 +262,12 @@
             "type": "promptString",
             "default": "",
             "description": "PID of the app process"
+        },
+        {
+            "id": "grepPattern",
+            "type": "promptString",
+            "default": "",
+            "description": "Grep pattern for filtering by test description name"
         },
     ]
 }
