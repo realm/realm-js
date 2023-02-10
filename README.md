@@ -36,7 +36,7 @@ If you are using React Native, please also take a look the README for [@realm/re
 [TypeScript](https://www.typescriptlang.org/) is a popular alternative to pure JavaScript as it provide static typing. Our TypeScript support consists of two parts
 
 * Accurate TypeScript definitions
-  [`@realm/babel-plugin`](https://www.npmjs.com/package/@realm/babel-plugin) to transform TypeScript classes to Realm schemas. An example of a model class is:
+  [@realm/babel-plugin](https://www.npmjs.com/package/@realm/babel-plugin) to transform TypeScript classes to Realm schemas. An example of a model class is:
 
 ```typescript
 class Task extends Realm.Object<Task, "description"> {
@@ -55,7 +55,7 @@ class Task extends Realm.Object<Task, "description"> {
 
 ### Integration with React Native
 
-Realm is a general SDK which provide you persistence of objects and the capability of perform advanced queries on the objects. You can have a tighter integration with React Native by using [`@realm/react](https://www.npmjs.com/package/@realm/react).
+Realm is a general SDK which provide you persistence of objects and the capability of perform advanced queries on the objects. You can have a tighter integration with React Native by using [@realm/react](https://www.npmjs.com/package/@realm/react).
 
 Moreover, we have a [Flipper plugin](https://www.npmjs.com/package/realm-flipper-plugin) to help you inspect, query and modify your Realm files while debugging your app on a simulator or a physical device. The plugin is still in an early stage so expect rough edges.
 
