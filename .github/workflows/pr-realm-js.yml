@@ -144,9 +144,12 @@ jobs:
         run: npm run prebuild:node -- --arch=${{matrix.variant.arch}}
 
       # build the c++ library for IOS
+      # the Info.plist needs to be regenerated with all libraries in place
       - name: Build iOS
         if: ${{ (matrix.variant.os == 'ios') }}
-        run: npm run prebuild:ios -- ${{matrix.variant.arch}}
+        run: |
+          npm run prebuild:ios -- ${{matrix.variant.arch}}
+          rm -vf ${{ matrix.variant.artifact-path }}/Info.plist
 
       # build the c++ library for Android
       - name: Build Android
@@ -155,6 +158,8 @@ jobs:
         env:
           ANDROID_NDK: ${{ env.ANDROID_SDK_ROOT }}/ndk/${{ env.NDK_VERSION }}
 
+      # Due to a limitation in upload-artifact a redundant file is needed to force 
+      # preserving paths (https://github.com/actions/upload-artifact/issues/174) 
       - name: Upload prebuild artifact
         uses: actions/upload-artifact@v2
         with:
@@ -163,9 +168,37 @@ jobs:
             dependencies.list
             ${{ matrix.variant.artifact-path }}
 
+  ios-xcframework:
+    name: Generate Info.plist with all frameworks in place
+    needs: [build]
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: "recursive"
+
+      - name: Download prebuilds
+        uses: actions/download-artifact@v2
+        with:
+          name: realm-js-prebuilds
+
+      - name: Regenerate Info.plist
+        run: scripts/regen-info-plist.sh react-native/ios/realm-js-ios.xcframework
+
+      # Due to a limitation in upload-artifact a redundant file is needed to force 
+      # preserving paths (https://github.com/actions/upload-artifact/issues/174) 
+      - name: Upload prebuild artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: realm-js-prebuilds
+          path: |
+            dependencies.list
+            react-native/ios/realm-js-ios.xcframework/Info.plist
+
   integration-tests:
     name: Integration tests (${{matrix.variant.target}}) for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
-    needs: [build]
+    needs: [build, ios-xcframework]
     env:
       REALM_DISABLE_ANALYTICS: 1
       MOCHA_REMOTE_TIMEOUT: 60000
