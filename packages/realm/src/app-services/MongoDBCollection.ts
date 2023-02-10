@@ -18,7 +18,7 @@
 
 import { Long, Timestamp } from "bson";
 
-import { DefaultFunctionsFactory, User, binding, createFactory } from "../internal";
+import { DefaultFunctionsFactory, User, binding, createFactory, toArrayBuffer } from "../internal";
 
 /**
  * Options passed when finding a single document
@@ -606,7 +606,7 @@ export class MongoDBCollection<T extends Document> {
   }
 
   /**
-   * Create an asynchronous change stream to monitor this collection for changes.
+   * Creates an asynchronous change stream to monitor this collection for changes.
    *
    * By default, yields all change events for this collection. You may specify at most one of
    * the `filter` or `ids` options.
@@ -620,8 +620,9 @@ export class MongoDBCollection<T extends Document> {
    * @param options.ids A list of ids that you are interested in watching.
    * @see https://docs.mongodb.com/manual/reference/change-events/
    */
-  watch(options: { ids: T["_id"][]; filter: never }): AsyncGenerator<ChangeEvent<T>>;
-  watch(options: { ids: never; filter: Filter }): AsyncGenerator<ChangeEvent<T>>;
+  watch(): AsyncGenerator<ChangeEvent<T>>;
+  watch(options: { ids: T["_id"][]; filter?: never }): AsyncGenerator<ChangeEvent<T>>;
+  watch(options: { ids?: never; filter: Filter }): AsyncGenerator<ChangeEvent<T>>;
   async *watch({
     ids,
     filter,
@@ -629,8 +630,6 @@ export class MongoDBCollection<T extends Document> {
     ids?: T["_id"][];
     filter?: Filter;
   } = {}): AsyncGenerator<ChangeEvent<T>> {
-    // ensureWatchDependencies();
-
     const iterator = await this.user.callFunctionStreaming("watch", this.serviceName, {
       database: this.databaseName,
       collection: this.collectionName,
@@ -644,11 +643,9 @@ export class MongoDBCollection<T extends Document> {
     const watchStream = binding.WatchStream.make();
     for await (const chunk of iterator) {
       if (!chunk) continue;
-
-      // console.log("\n\n == `chunk`:", chunk);
-      // console.log("\n\n == `chunk.buffer`:", chunk.buffer);
-
-      binding.Helpers.feedBuffer(watchStream, chunk.buffer);
+      // TODO: Remove `toArrayBuffer()` once https://jira.mongodb.org/browse/RJS-2124 gets solved
+      const buffer = toArrayBuffer(chunk);
+      binding.Helpers.feedBuffer(watchStream, buffer);
       while (watchStream.state === binding.WatchStreamState.HAVE_EVENT) {
         yield watchStream.nextEvent() as unknown as ChangeEvent<T>;
       }
