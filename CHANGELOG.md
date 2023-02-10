@@ -32,7 +32,6 @@
 
 ### Internal
 * Upgraded Realm Core from v13.1.1 to v13.1.2. ([#5174](https://github.com/realm/realm-js/issues/5174))
-<<<<<<< HEAD
 * Switching from NDK 21 to NDK 23 for Android builds, and bumping the required CMake version to 3.21.4. Sizes of binaries are found below. ([#3905](https://github.com/realm/realm-js/issues/3905))
 
 | Architecture | NDK 21      | NDK 23      |
@@ -701,6 +700,8 @@ const Person = {
 
 ## 10.18.0 (2022-5-29)
 
+=======
+>>>>>>> 1537f98a8 (Initial commit)
 ### Enhancements
 * Switch to building xcframeworks with Xcode 13.1. Xcode 12 is no longer supported.
 * Added an `initialSubscriptions` option to the `sync` config, which allows users to specify a subscription update function to bootstrap a set of flexible sync subscriptions when the Realm is first opened (or every time the app runs, using the `rerunOnOpen` flag). (#4561[https://github.com/realm/realm-js/pull/4561])
