@@ -37,7 +37,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
   const collectionName = "test-collection";
 
   describe("User", function () {
-    it("returns a MongoDBService when calling 'mongoClient()'", async function (this: AppContext & Mocha.Context) {
+    it("returns a MongoDB service when calling 'mongoClient()'", async function (this: AppContext & Mocha.Context) {
       const service = this.app.currentUser?.mongoClient(serviceName);
       expect(service).to.be.an("object");
       expect(service).to.have.property("db");

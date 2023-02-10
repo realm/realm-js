@@ -25,8 +25,8 @@ import {
   DefaultUserProfileData,
   Document,
   Listeners,
+  MongoDB,
   MongoDBCollection,
-  MongoDBService,
   ProviderType,
   PushClient,
   assert,
@@ -309,7 +309,7 @@ export class User<
    *                       .collection('widgets')
    *                       .find({color: 'blue'});
    */
-  mongoClient(serviceName = "mongo-db"): MongoDBService {
+  mongoClient(serviceName = "mongo-db"): MongoDB {
     assert.string(serviceName, "serviceName");
     assert(serviceName.length, "The MongoDB service name must contain at least 1 character.");
 
@@ -317,13 +317,13 @@ export class User<
       get serviceName() {
         return serviceName;
       },
-      db: (dbName: string) => {
+      db: (databaseName: string) => {
         return {
           get name() {
-            return dbName;
+            return databaseName;
           },
           collection: <T extends Document = Document>(collectionName: string) => {
-            return new MongoDBCollection<T>(this, serviceName, dbName, collectionName);
+            return new MongoDBCollection<T>(this, serviceName, databaseName, collectionName);
           },
         };
       },

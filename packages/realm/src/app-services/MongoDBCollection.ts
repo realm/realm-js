@@ -21,9 +21,39 @@ import { Long, Timestamp } from "bson";
 import { DefaultFunctionsFactory, User, binding, createFactory, toArrayBuffer } from "../internal";
 
 /**
+ * A remote MongoDB service enabling access to an Atlas cluster.
+ */
+export type MongoDB = {
+  /**
+   * The name of the MongoDB service.
+   */
+  serviceName: string;
+  /**
+   * @param databaseName
+   * @returns The remote MongoDB database.
+   */
+  db(databaseName: string): MongoDBDatabase;
+};
+
+/**
+ * A remote MongoDB database enabling access to a collection of objects.
+ */
+export type MongoDBDatabase = {
+  /**
+   * The name of the MongoDB database.
+   */
+  name: string;
+  /**
+   * @param collectionName
+   * @returns The remote MongoDB collection.
+   */
+  collection<T extends Document>(collectionName: string): MongoDBCollection<T>;
+};
+
+/**
  * Options passed when finding a single document
  */
-type FindOneOptions = {
+export type FindOneOptions = {
   /**
    * Limits the fields to return for all matching documents.
    * See [Tutorial: Project Fields to Return from Query](https://docs.mongodb.com/manual/tutorial/project-fields-from-query-results/).
@@ -39,7 +69,7 @@ type FindOneOptions = {
 /**
  * Options passed when finding a multiple documents
  */
-type FindOptions = FindOneOptions & {
+export type FindOptions = FindOneOptions & {
   /**
    * The maximum number of documents to return.
    */
@@ -49,7 +79,7 @@ type FindOptions = FindOneOptions & {
 /**
  * Options passed when finding and modifying a single document
  */
-type FindOneAndModifyOptions = FindOneOptions & {
+export type FindOneAndModifyOptions = FindOneOptions & {
   /**
    * Optional. Default: false.
    * A boolean that, if true, indicates that MongoDB should insert a new document that matches the
@@ -68,7 +98,7 @@ type FindOneAndModifyOptions = FindOneOptions & {
 /**
  * Options passed when counting documents
  */
-type CountOptions = {
+export type CountOptions = {
   /**
    * The maximum number of documents to count.
    */
@@ -78,7 +108,7 @@ type CountOptions = {
 /**
  * Options passed when updating documents
  */
-type UpdateOptions = {
+export type UpdateOptions = {
   /**
    * When true, creates a new document if no document matches the query.
    */
@@ -92,22 +122,22 @@ type UpdateOptions = {
 /**
  * A document from a MongoDB collection
  */
-export interface Document<IdType = any> {
+export type Document<IdType = any> = {
   /**
    * The id of the document.
    */
   _id: IdType;
-}
+};
 
 /**
  * A new document with an optional _id defined.
  */
-type NewDocument<T extends Document> = Omit<T, "_id"> & Partial<Pick<T, "_id">>;
+export type NewDocument<T extends Document> = Omit<T, "_id"> & Partial<Pick<T, "_id">>;
 
 /**
  * Result of inserting one document
  */
-type InsertOneResult<IdType> = {
+export type InsertOneResult<IdType> = {
   /**
    * The id of the inserted document
    */
@@ -117,7 +147,7 @@ type InsertOneResult<IdType> = {
 /**
  * Result of inserting many documents
  */
-type InsertManyResult<IdType> = {
+export type InsertManyResult<IdType> = {
   /**
    * The ids of the inserted documents
    */
@@ -127,7 +157,7 @@ type InsertManyResult<IdType> = {
 /**
  * Result of deleting documents
  */
-type DeleteResult = {
+export type DeleteResult = {
   /**
    * The number of documents that were deleted.
    */
@@ -137,7 +167,7 @@ type DeleteResult = {
 /**
  * Result of updating documents
  */
-type UpdateResult<IdType> = {
+export type UpdateResult<IdType> = {
   /**
    * The number of documents that matched the filter.
    */
@@ -164,12 +194,12 @@ export type Filter = Record<string, unknown>;
 /**
  * An object specifying the update operations to perform when updating a document.
  */
-type Update = Record<string, unknown>;
+export type Update = Record<string, unknown>;
 
 /**
  * A stage of an aggregation pipeline.
  */
-type AggregatePipelineStage = Record<string, unknown>;
+export type AggregatePipelineStage = Record<string, unknown>;
 
 /**
  * An operation performed on a document.
@@ -211,7 +241,7 @@ export type OperationType =
 /**
  * The namespace of a document.
  */
-type DocumentNamespace = {
+export type DocumentNamespace = {
   /** The name of the database. */
   db: string;
   // database: string;
@@ -223,7 +253,7 @@ type DocumentNamespace = {
 /**
  * A detailed description of an update performed on a document.
  */
-type UpdateDescription = {
+export type UpdateDescription = {
   /** Names of fields that got updated. */
   updatedFields: Record<string, any>;
   /** Names of fields that got removed. */
@@ -233,12 +263,12 @@ type UpdateDescription = {
 /**
  * Acts as the `resumeToken` for the `resumeAfter` parameter when resuming a change stream.
  */
-type ChangeEventId = any;
+export type ChangeEventId = any;
 
 /**
  * A document that contains the _id of the document created or modified by the insert, replace, delete, update operations (i.e. CRUD operations). For sharded collections, also displays the full shard key for the document. The _id field is not repeated if it is already a part of the shard key.
  */
-type DocumentKey<IdType> = {
+export type DocumentKey<IdType> = {
   /** The id of the document. */
   _id: IdType;
 } & Record<string, any>;
@@ -246,7 +276,7 @@ type DocumentKey<IdType> = {
 /**
  * A base change event containing the properties which apply across operation types.
  */
-type BaseChangeEvent<T extends OperationType> = {
+export type BaseChangeEvent<T extends OperationType> = {
   /** The id of the change event. */
   _id: ChangeEventId;
   /** The type of operation which was performed on the document. */
@@ -280,7 +310,7 @@ export type InsertEvent<T extends Document> = {
 /**
  * A document got updated in the collection.
  */
-type UpdateEvent<T extends Document> = {
+export type UpdateEvent<T extends Document> = {
   /** The namespace (database and collection) of the updated document. */
   ns: DocumentNamespace;
   /** A document that contains the _id of the updated document. */
@@ -296,7 +326,7 @@ type UpdateEvent<T extends Document> = {
 /**
  * A document got replaced in the collection.
  */
-type ReplaceEvent<T extends Document> = {
+export type ReplaceEvent<T extends Document> = {
   /** The namespace (database and collection) of the document got replaced within. */
   ns: DocumentNamespace;
   /** A document that contains the _id of the replaced document. */
@@ -308,7 +338,7 @@ type ReplaceEvent<T extends Document> = {
 /**
  * A document got deleted from the collection.
  */
-type DeleteEvent<T extends Document> = {
+export type DeleteEvent<T extends Document> = {
   /** The namespace (database and collection) which the document got deleted from. */
   ns: DocumentNamespace;
   /** A document that contains the _id of the deleted document. */
@@ -318,7 +348,7 @@ type DeleteEvent<T extends Document> = {
 /**
  * Occurs when a collection is dropped from a database.
  */
-type DropEvent = {
+export type DropEvent = {
   /** The namespace (database and collection) of the collection that got dropped. */
   ns: DocumentNamespace;
 } & BaseChangeEvent<"drop">;
@@ -326,7 +356,7 @@ type DropEvent = {
 /**
  * Occurs when a collection is renamed.
  */
-type RenameEvent = {
+export type RenameEvent = {
   /** The original namespace (database and collection) that got renamed. */
   ns: DocumentNamespace;
   /** The namespace (database and collection) going forward. */
@@ -336,7 +366,7 @@ type RenameEvent = {
 /**
  * Occurs when a database is dropped.
  */
-type DropDatabaseEvent = {
+export type DropDatabaseEvent = {
   /** The namespace (specifying only the database name) of the database that got dropped. */
   ns: Omit<DocumentNamespace, "coll">;
 } & BaseChangeEvent<"dropDatabase">;
@@ -344,7 +374,7 @@ type DropDatabaseEvent = {
 /**
  * Invalidate events close the change stream cursor.
  */
-type InvalidateEvent = BaseChangeEvent<"invalidate">;
+export type InvalidateEvent = BaseChangeEvent<"invalidate">;
 
 /**
  * A change event communicated via a MongoDB change stream.
