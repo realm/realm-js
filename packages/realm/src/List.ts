@@ -318,7 +318,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
   }
 
   /**
-   * Swaps the positions of two elements of the list.
+   * Swaps the positions of the elements of the list at two indexes.
    *
    * @param index1 The index of the first element.
    * @param index2 The index of the second element.
