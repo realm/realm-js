@@ -78,11 +78,7 @@ export class App extends Component {
   }
 
   handleRerunNative = () => {
-    if (mode === "native") {
-      NativeModules.DevSettings.reload();
-    } else {
-      NativeModules.DevSettings.setIsDebuggingRemotely(false);
-    }
+    NativeModules.DevSettings.reload();
   };
 
   handleAbort = () => {
@@ -129,14 +125,9 @@ export class App extends Component {
 
   prepareTests() {
     this.client = new Client({
-      title: `React-Native on ${Platform.OS} (${mode} using ${engine})`,
+      title: `React-Native on ${Platform.OS} (using ${engine})`,
       tests: (context) => {
         /* eslint-env mocha */
-        if (typeof context.mode === "string" && context.mode !== mode) {
-          this.client.disconnect();
-          console.log(`Switching mode to '${context.mode}'`);
-          return;
-        }
         // Quick sanity check that "realm" is loadable at all
         require("realm");
         // Adding an async hook before each test to allow the UI to update
