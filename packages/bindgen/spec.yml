@@ -64,6 +64,7 @@ typeAliases:
   IndexRange: std::pair<count_t, count_t>
   AppCredentialsToken: std::string
   Email: std::string
+  SchemaVersion: int64_t # is uint64_t in C++ but -1 is used as a sentinel.
 
 templates: # value tells you how many arguments it takes ('*' means any number)
   util::Optional: 1
@@ -372,7 +373,7 @@ records:
         default: false
       schema: util::Optional<std::vector<ObjectSchema>>
       schema_version:
-        type: uint64_t
+        type: SchemaVersion
         default: -1
       schema_mode:
         type: SchemaMode
@@ -680,8 +681,8 @@ classes:
 
   ObjectStore:
     staticMethods:
-      get_schema_version: '(group: Group) -> uint64_t'
-      set_schema_version: '(group: Group, version: uint64_t)'
+      get_schema_version: '(group: Group) -> SchemaVersion'
+      set_schema_version: '(group: Group, version: SchemaVersion)'
       #    verify_no_migration_required: '(changes: std::vector<SchemaChange>)'
       #needs_migration: '(changes: std::vector<SchemaChange>) -> bool'
       #verify_valid_additive_changes:
@@ -692,7 +693,7 @@ classes:
       #verify_compatible_for_immutable_and_readonly: '(changes: std::vector<SchemaChange>)'
       #verify_no_changes_required: '(changes: std::vector<SchemaChange>)'
 
-      # apply_schema_changes: '(group: Transaction&, uint64_t: schema_version, target_schema: Schema&, target_schema_version: uint64_t, mode: SchemaMode, changes: std::vector<SchemaChange>, migration_function: () -> void)'
+      # apply_schema_changes: '(group: Transaction&, schema_version: SchemaVersion, target_schema: Schema&, target_schema_version: SchemaVersion, mode: SchemaMode, changes: std::vector<SchemaChange>, migration_function: () -> void)'
       # apply_additive_changes: '(group: Group&, changes: std::vector<SchemaChanges>, update_indexes: bool)'
       # table_for_object_type
       # table_for_Schema_type
@@ -790,12 +791,12 @@ classes:
         #   sig: '(thread: ThreadSafeReference, scheduler: std::shared_ptr<Scheduler>) -> SharedRealm'
       get_synchronized_realm: '(config: RealmConfig) -> SharedAsyncOpenTask'
       #make_shared_realm: '(config: Realm::Config, version: util::Optional<VersionID>, coordinator: std::shared_ptr<_impl::RealmCoordinator>) -> SharedRealm'
-      get_schema_version: '(config: const RealmConfig&) const -> uint64_t'
+      get_schema_version: '(config: const RealmConfig&) const -> SchemaVersion'
 
     properties:
       config: const RealmConfig&
       schema: const std::vector<ObjectSchema>&
-      schema_version: uint64_t
+      schema_version: SchemaVersion
       is_in_transaction: bool
       is_frozen: bool
       is_in_migration: bool
@@ -826,7 +827,7 @@ classes:
       read_group: () -> Group&
       duplicate: () -> TransactionRef
 
-      update_schema: '(schema: std::vector<ObjectSchema>, version: uint64_t, migration_function: Nullable<std::function<(old_realm: SharedRealm, new_realm: SharedRealm, new_schema_handle: IgnoreArgument<Schema&>) -> void>>, initialization_function: Nullable<std::function<(realm: SharedRealm) -> void>>, in_transaction: bool) -> void'
+      update_schema: '(schema: std::vector<ObjectSchema>, version: SchemaVersion, migration_function: Nullable<std::function<(old_realm: SharedRealm, new_realm: SharedRealm, new_schema_handle: IgnoreArgument<Schema&>) -> void>>, initialization_function: Nullable<std::function<(realm: SharedRealm) -> void>>, in_transaction: bool) -> void'
       enable_wait_for_change: ()
       wait_for_change: () -> bool
       wait_for_change_release: ()

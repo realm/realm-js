@@ -22,8 +22,8 @@ import { doJsPasses } from "../js-passes";
 
 export function generate({ spec: rawSpec, file }: TemplateContext): void {
   const spec = doJsPasses(bindModel(rawSpec));
-  let reactLines = []
-  let nodeLines = []
+  const reactLines = [];
+  const nodeLines = [];
   function both(content: string) {
     reactLines.push(content);
     nodeLines.push(content);
@@ -61,7 +61,32 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
   `);
 
   both(`
-    import { ObjectId, UUID, Decimal128, EJSON } from "bson";
+    const NativeBigIntSupport = Object.freeze({
+      add(a, b) { return a + b; },
+      equals(a, b) { return a == b; }, // using == rather than === to support number and string RHS!
+      isInt(a) { return typeof(a) === "bigint"; },
+      numToInt(a) { return BigInt(a); },
+      strToInt(a) { return BigInt(a); },
+      intToNum(a) { return Number(a); },
+    });
+  `);
+  nodeLines.push(`
+    export const Int64 = NativeBigIntSupport; // Node always supports BigInt
+  `);
+  reactLines.push(`
+    // Hermes supports BigInt, but JSC doesn't.
+    export const Int64 = global.HermesInternal ? NativeBigIntSupport : {
+      add(a, b) { return a.add(b); },
+      equals(a, b) { return a.equals(b); },
+      isInt(a) { return a instanceof Long; },
+      numToInt(a) { return Long.fromNumber(a); },
+      strToInt(a) { return Long.fromString(a); },
+      intToNum(a) { return a.toNumber(); },
+    }
+  `);
+
+  both(`
+    import { Long, ObjectId, UUID, Decimal128, EJSON } from "bson";
     import { Float } from "./core";
 
     export * from "./core";
@@ -91,6 +116,7 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
   `);
 
   const injectables = [
+    "Long",
     "ArrayBuffer",
     "Float",
     "ObjectId",
@@ -161,6 +187,6 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
 
   both(`nativeModule.injectInjectables({ ${injectables} });`);
 
-  file("native.mjs", "eslint")(nodeLines.join('\n'));
-  file("native-rn.mjs", "eslint")(reactLines.join('\n'));
+  file("native.mjs", "eslint")(nodeLines.join("\n"));
+  file("native-rn.mjs", "eslint")(reactLines.join("\n"));
 }
