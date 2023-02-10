@@ -35,6 +35,7 @@ const HTTP_METHOD: Record<binding.HttpMethod, Method> = {
   [binding.HttpMethod.get]: "GET",
   [binding.HttpMethod.post]: "POST",
   [binding.HttpMethod.put]: "PUT",
+  //@ts-expect-error TODO: DELETE THIS TS-EXPECT
   [binding.HttpMethod.patch]: "PATCH",
   [binding.HttpMethod.del]: "DELETE",
 };

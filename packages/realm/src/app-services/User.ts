@@ -228,8 +228,11 @@ export class User<
   }
 
   /**
-   * Call a remote Atlas Function by its name.
+   * Call a remote Atlas App Services function by its name.
    * Note: Consider using `functions[name]()` instead of calling this method.
+   *
+   * @param name Name of the function.
+   * @param args Arguments passed to the function.
    *
    * @example
    * // These are all equivalent:
@@ -241,8 +244,6 @@ export class User<
    * const doThing = user.functions.doThing;
    * await doThing(a1);
    * await doThing(a2);
-   * @param name Name of the function.
-   * @param args Arguments passed to the function.
    */
   callFunction(name: string, ...args: unknown[]): Promise<unknown> {
     return this.callFunctionOnService(name, undefined, args);
@@ -259,7 +260,7 @@ export class User<
    *
    * @internal
    */
-  callFunctionStreaming(
+  async callFunctionStreaming(
     functionName: string,
     serviceName: string,
     ...functionArgs: unknown[]
@@ -271,7 +272,10 @@ export class User<
       serviceName,
     );
 
-    return network.fetchStream(request);
+    const { body } = await network.fetch(request);
+    assert(body, "Expected a body in the response");
+
+    return body as AsyncIterable<Uint8Array>;
   }
 
   /**

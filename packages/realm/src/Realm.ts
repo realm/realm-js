@@ -69,7 +69,6 @@ import {
   LogLevel,
   MapToDecorator,
   MigrationCallback,
-  MongoClient,
   MutableSubscriptionSet,
   NumericLogLevel,
   ObjectChangeCallback,
