@@ -23,8 +23,8 @@ import { openRealmBefore } from "../hooks";
 
 type Item<T = unknown> = { list: Realm.List<T> };
 
-describe.only("List", () => {
-  describe.only("with unconstrained (mixed) values", () => {
+describe("List", () => {
+  describe("with unconstrained (mixed) values", () => {
     openRealmBefore({
       schema: [
         {
