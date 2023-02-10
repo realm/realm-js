@@ -159,7 +159,7 @@ type UpdateResult<IdType> = {
 /**
  * A filter applied to limit the documents being queried for.
  */
-type Filter = Record<string, unknown>;
+export type Filter = Record<string, unknown>;
 
 /**
  * An object specifying the update operations to perform when updating a document.
@@ -268,7 +268,7 @@ type BaseChangeEvent<T extends OperationType> = {
 /**
  * A document got inserted into the collection.
  */
-type InsertEvent<T extends Document> = {
+export type InsertEvent<T extends Document> = {
   /** The namespace (database and collection) of the document got inserted into. */
   ns: DocumentNamespace;
   /** A document that contains the _id of the inserted document. */
@@ -351,7 +351,7 @@ type InvalidateEvent = BaseChangeEvent<"invalidate">;
  *
  * @see https://docs.mongodb.com/manual/reference/change-events/
  */
-type ChangeEvent<T extends Document> =
+export type ChangeEvent<T extends Document> =
   | InsertEvent<T>
   | UpdateEvent<T>
   | ReplaceEvent<T>

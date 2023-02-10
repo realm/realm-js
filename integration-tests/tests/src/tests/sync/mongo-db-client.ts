@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { Document, MongoDBCollection, OperationType } from "realm";
+import { ChangeEvent, Document, InsertEvent, MongoDBCollection } from "realm";
 
 import { authenticateUserBefore, importAppBefore } from "../../hooks";
 
@@ -32,22 +32,21 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
   importAppBefore("with-db");
   authenticateUserBefore();
 
-  let collection: MongoDBCollection<TestDocument>;
   const serviceName = "mongo-db";
   const dbName = "test-database";
   const collectionName = "test-collection";
 
   describe("User", function () {
     it("returns a MongoDBService when calling 'mongoClient()'", async function (this: AppContext & Mocha.Context) {
-      expect(typeof serviceName === "string" && serviceName.length > 0).to.be.true;
-
-      const service = this.app?.currentUser?.mongoClient(serviceName as string);
-      expect(service).to.be.an("object").that.has.all.keys("serviceName", "db");
+      const service = this.app.currentUser?.mongoClient(serviceName);
+      expect(service).to.be.an("object");
+      expect(service).to.have.property("db");
       expect(service).to.have.property("serviceName", serviceName);
 
       const db = service?.db(dbName);
-      expect(db).to.be.an("object").that.has.all.keys("name", "collection");
+      expect(db).to.be.an("object");
       expect(db).to.have.property("name", dbName);
+      expect(db).to.have.property("collection");
 
       const collection = db?.collection(collectionName);
       expect(collection).to.be.an("object");
@@ -58,13 +57,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
   });
 
   describe("MongoDBCollection", function () {
-    // const insertedId1 = generateId();
-    // const insertedId2 = generateId();
-    // const insertedId3 = generateId();
-
-    // function generateId(): number {
-    //   return Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
-    // }
+    let collection: MongoDBCollection<TestDocument>;
 
     function getCollection<T extends Document = TestDocument>(currentUser: User | null): MongoDBCollection<T> {
       if (!currentUser) {
@@ -72,10 +65,6 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
       }
       return currentUser.mongoClient(serviceName).db(dbName).collection<T>(collectionName);
     }
-
-    // function insertThreeDocuments() {
-    //   return collection.insertMany([{ _id: insertedId1 }, { _id: insertedId2 }, { _id: insertedId3 }]);
-    // }
 
     function deleteAllDocuments() {
       return collection.deleteMany();
@@ -85,15 +74,11 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
       collection = getCollection(this.app.currentUser);
     });
 
-    after(async function () {
+    beforeEach(async function () {
       await deleteAllDocuments();
     });
 
-    // beforeEach(async function () {
-    //   await insertThreeDocuments();
-    // });
-
-    beforeEach(async function () {
+    after(async function () {
       await deleteAllDocuments();
     });
 
@@ -104,9 +89,11 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
       // Used as a flag for knowing when to stop watching.
       const lastDocument = { _id: numInserts, isLast: true };
 
-      function assertIsInsert(operationType: OperationType): asserts operationType is "insert" {
-        if (operationType !== "insert") {
-          throw new Error(`Expected an insert event, got ${operationType}.`);
+      function assertIsInsert<
+        T extends Document = TestDocument,
+      >(event: ChangeEvent<T>): asserts event is InsertEvent<T> {
+        if (event.operationType !== "insert") {
+          throw new Error(`Expected an insert event, got ${event}.`);
         }
       }
 
@@ -128,7 +115,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           (async () => {
             let expectedId = 0;
             for await (const event of collection.watch()) {
-              assertIsInsert(event.operationType);
+              assertIsInsert(event);
               expect(event.fullDocument._id).to.equal(expectedId++);
               if (event.fullDocument.isLast) break;
             }
@@ -142,10 +129,12 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           insertDocumentsOneByOne(),
           (async () => {
             const watchedId = 3;
-            const filter = { $or: [{ "fullDocument._id": watchedId, "fullDocument.text": text }, { "fullDocument.isLast": true }] };
+            const filter = {
+              $or: [{ "fullDocument._id": watchedId, "fullDocument.text": text }, { "fullDocument.isLast": true }],
+            };
             let seenIt = false;
             for await (const event of collection.watch({ filter })) {
-              assertIsInsert(event.operationType);
+              assertIsInsert(event);
               if (event.fullDocument.isLast) break;
               expect(event.fullDocument._id).to.equal(watchedId);
               seenIt = true;
@@ -159,10 +148,10 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
         await Promise.all([
           insertDocumentsOneByOne(),
           (async () => {
-            const watchedId = 5;
+            const watchedId = 3;
             let seenIt = false;
             for await (const event of collection.watch({ ids: [watchedId, lastDocument._id] })) {
-              assertIsInsert(event.operationType);
+              assertIsInsert(event);
               if (event.fullDocument.isLast) break;
               expect(event.fullDocument._id).to.equal(watchedId);
               seenIt = true;
@@ -174,6 +163,26 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
 
       it("throws when the user is logged out", async function (this: AppContext & Mocha.Context) {
         throw new Error("Test not yet implemented.");
+
+        await this.app.currentUser?.logOut();
+        const handleWatch = async () => {
+          try {
+            for await (const _ of collection.watch()) {
+              expect.fail("Expected 'watch()' to throw, but received a change stream.");
+            }
+          } catch (err) {
+            return err;
+          } finally {
+            // TODO:
+            // Should we log in again reset our `collection` variable in case other tests
+            // are run after this test?
+          }
+        };
+
+        const CODE_UNAUTHORIZED = 401;
+        const err = await handleWatch();
+        expect(err).to.be.an("object");
+        expect(err).to.have.property("code", CODE_UNAUTHORIZED);
       });
     });
   });
