@@ -32,7 +32,6 @@
 
 ### Internal
 * Upgraded Realm Core from v13.1.1 to v13.1.2. ([#5174](https://github.com/realm/realm-js/issues/5174))
-<<<<<<< HEAD
 * Switching from NDK 21 to NDK 23 for Android builds, and bumping the required CMake version to 3.21.4. Sizes of binaries are found below. ([#3905](https://github.com/realm/realm-js/issues/3905))
 
 | Architecture | NDK 21      | NDK 23      |
