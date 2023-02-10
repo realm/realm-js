@@ -21,7 +21,16 @@
 /* eslint-disable header/header */
 
 import { Decimal128 } from "bson";
-import { Realm, Float, PropertyType, Helpers, Results, SortDescriptor, List } from "../../realm/src/binding";
+import {
+  Int64,
+  Realm,
+  Float,
+  PropertyType,
+  Helpers,
+  Results,
+  SortDescriptor,
+  List,
+} from "../../realm/src/binding";
 
 import { strict as assert } from "assert";
 import * as util from "util";
@@ -31,7 +40,7 @@ util; // mark as used since it is useful for debugging.
 const realm = Realm.getSharedRealm({
   path: "/tmp/realm2.realm",
   inMemory: true,
-  schemaVersion: 1n,
+  schemaVersion: Int64.numToInt(1),
   schema: [
     {
       name: "Foo",
@@ -82,13 +91,13 @@ console.log(table.getColumnType(numCol));
 realm.beginTransaction();
 
 const obj1 = table.createObject();
-obj1.setAny(numCol, 1234n);
+obj1.setAny(numCol, Int64.numToInt(1234));
 obj1.setAny(strCol, "hello");
 obj1.setAny(fltCol, new Float(0.1234));
 obj1.setAny(decCol, new Decimal128("0.9876"));
 
 const obj2 = table.createObject();
-obj2.setAny(numCol, 9876n);
+obj2.setAny(numCol, Int64.numToInt(9876));
 obj2.setAny(strCol, "world");
 
 const obj3 = table.createObject();
@@ -109,11 +118,11 @@ const token = notifier.addCallback(
 );
 
 realm.beginTransaction();
-obj1.setAny(numCol, 12345n);
+obj1.setAny(numCol, Int64.numToInt(12345));
 realm.commitTransaction();
 
 realm.beginTransaction();
-obj1.setAny(numCol, 123456n);
+obj1.setAny(numCol, Int64.numToInt(123456));
 realm.commitTransaction();
 
 notifier.removeCallback(token);
@@ -157,7 +166,7 @@ for (const obj of table) {
 
 console.log("---");
 const kpMapping = Helpers.getKeypathMapping(realm);
-const query = table.query("num = $0", [[9876n]], kpMapping);
+const query = table.query("num = $0", [[Int64.numToInt(9876)]], kpMapping);
 console.log(query.count());
 const results = Helpers.resultsFromQuery(realm, query);
 {

@@ -71,18 +71,6 @@ assert.boolean = (value: unknown, target?: string): asserts value is boolean => 
   }
 };
 
-assert.bigInt = (value: unknown, target?: string): asserts value is bigint => {
-  if (typeof value !== "bigint") {
-    throw new TypeAssertionError("a bigint", value, target);
-  }
-};
-
-assert.numberOrBigInt = (value: unknown, target?: string): asserts value is number => {
-  if (typeof value !== "number" && typeof value !== "bigint") {
-    throw new TypeAssertionError("a number or bigint", value, target);
-  }
-};
-
 /* eslint-disable-next-line @typescript-eslint/ban-types */
 assert.function = (value: unknown, target?: string): asserts value is (...args: unknown[]) => unknown => {
   if (typeof value !== "function") {
