@@ -27,9 +27,11 @@
     "react": "18.2.0",
     "react-native": "0.71.0",
     "react-native-fs": "^2.20.0",
+    "react-native-polyfill-globals": "3.1.0",
     "react-native-progress": "^4.1.2",
     "realm": "*",
-    "@realm/app-importer": "*"
+    "@realm/app-importer": "*",
+    "text-encoding": "^0.7.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
