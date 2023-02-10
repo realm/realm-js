@@ -35,7 +35,7 @@ import {
   unwind,
 } from "./internal";
 
-const DEFAULT_COLUMN_KEY = 0n as unknown as binding.ColKey;
+const DEFAULT_COLUMN_KEY = binding.Int64.numToInt(0) as unknown as binding.ColKey;
 
 type PropertyType = string;
 export type SortDescriptor = string | [string, boolean];
@@ -410,8 +410,8 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     const result = this.results.min(columnKey);
     if (result instanceof Date || typeof result === "number" || typeof result === "undefined") {
       return result;
-    } else if (typeof result === "bigint") {
-      return Number(result);
+    } else if (binding.Int64.isInt(result)) {
+      return binding.Int64.intToNum(result);
     } else if (result instanceof binding.Float) {
       return result.value;
     } else if (result instanceof binding.Timestamp) {
@@ -439,8 +439,8 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     const result = this.results.max(columnKey);
     if (result instanceof Date || typeof result === "number" || typeof result === "undefined") {
       return result;
-    } else if (typeof result === "bigint") {
-      return Number(result);
+    } else if (binding.Int64.isInt(result)) {
+      return binding.Int64.intToNum(result);
     } else if (result instanceof binding.Float) {
       return result.value;
     } else if (result instanceof binding.Timestamp) {
@@ -467,8 +467,8 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     const result = this.results.sum(columnKey);
     if (typeof result === "number") {
       return result;
-    } else if (typeof result === "bigint") {
-      return Number(result);
+    } else if (binding.Int64.isInt(result)) {
+      return binding.Int64.intToNum(result);
     } else if (result instanceof binding.Float) {
       return result.value;
     } else {
@@ -493,8 +493,8 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     const result = this.results.average(columnKey);
     if (typeof result === "number" || typeof result === "undefined") {
       return result;
-    } else if (typeof result === "bigint") {
-      return Number(result);
+    } else if (binding.Int64.isInt(result)) {
+      return binding.Int64.intToNum(result);
     } else if (result instanceof binding.Float) {
       return result.value;
     } else {

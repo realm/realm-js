@@ -208,7 +208,7 @@ export function toBindingClientResetMode(resetMode: ClientResetMode): binding.Cl
 
 type ListenerToken = {
   internal: binding.SyncSession;
-  token: bigint;
+  token: binding.Int64;
 };
 
 /**

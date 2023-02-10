@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { IndexSet, ObjKey, Timestamp } from "../generated/ts/native.mjs";
+import { Int64, IndexSet, ObjKey, Timestamp } from "../generated/ts/native.mjs";
 
 /** @internal */
 export * from "../generated/ts/native.mjs"; // core types are transitively exported.
@@ -46,7 +46,7 @@ IndexSet.prototype.asIndexes = function* (this: IndexSet) {
 };
 
 Timestamp.fromDate = (d: Date) =>
-  Timestamp.make(BigInt(Math.floor(d.valueOf() / 1000)), (d.valueOf() % 1000) * 1000_000);
+  Timestamp.make(Int64.numToInt(Math.floor(d.valueOf() / 1000)), (d.valueOf() % 1000) * 1000_000);
 
 Timestamp.prototype.toDate = function () {
   return new Date(Number(this.seconds) * 1000 + this.nanoseconds / 1000_000);
@@ -62,7 +62,7 @@ export class InvalidObjKey extends TypeError {
 /** @internal */
 export function stringToObjKey(input: string): ObjKey {
   try {
-    return BigInt(input) as unknown as ObjKey;
+    return Int64.strToInt(input) as unknown as ObjKey;
   } catch {
     throw new InvalidObjKey(input);
   }
@@ -71,5 +71,5 @@ export function stringToObjKey(input: string): ObjKey {
 /** @internal */
 export function isEmptyObjKey(objKey: ObjKey) {
   // This relies on the JS representation of an ObjKey being a bigint
-  return (objKey as unknown as bigint) === -1n;
+  return Int64.equals(objKey as unknown as Int64, -1);
 }
