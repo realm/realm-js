@@ -54,6 +54,11 @@ describe.only("List", () => {
       });
 
       expect([...list]).deep.equals([5, 8, 14]);
+
+      this.realm.write(() => {
+        expect(() => list.remove(-1)).to.throw("Index cannot be smaller than 0");
+        expect(() => list.remove(10)).to.throw("Index cannot be greater than the size of the list");
+      });
     });
 
     it("supports move", function (this: RealmContext) {
@@ -76,6 +81,13 @@ describe.only("List", () => {
       });
 
       expect([...list]).deep.equals([5, 14, 8, 2, 57]);
+
+      this.realm.write(() => {
+        expect(() => list.move(-1, 3)).to.throw("Indexes cannot be smaller than 0");
+        expect(() => list.move(3, -1)).to.throw("Indexes cannot be smaller than 0");
+        expect(() => list.move(1, 10)).to.throw("Indexes cannot be greater than the size of the list");
+        expect(() => list.move(10, 1)).to.throw("Indexes cannot be greater than the size of the list");
+      });
     });
 
     it("supports swap", function (this: RealmContext) {
@@ -98,6 +110,13 @@ describe.only("List", () => {
       });
 
       expect([...list]).deep.equals([14, 8, 5, 2, 57]);
+
+      this.realm.write(() => {
+        expect(() => list.swap(-1, 3)).to.throw("Indexes cannot be smaller than 0");
+        expect(() => list.swap(3, -1)).to.throw("Indexes cannot be smaller than 0");
+        expect(() => list.swap(1, 10)).to.throw("Indexes cannot be greater than the size of the list");
+        expect(() => list.swap(10, 1)).to.throw("Indexes cannot be greater than the size of the list");
+      });
     });
   });
 });
