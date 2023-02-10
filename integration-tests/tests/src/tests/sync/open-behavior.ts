@@ -48,10 +48,13 @@ async function getRegisteredEmailPassCredentials(app: Realm.App) {
 
 describe("OpenBehaviour", function () {
   importAppBefore("with-db");
+  afterEach(() => Realm.clearTestState());
+
   it("static references are defined", () => {
     expect(Realm.App.Sync.openLocalRealmBehavior).to.not.be.undefined;
     expect(Realm.App.Sync.downloadBeforeOpenBehavior).to.not.be.undefined;
   });
+
   it("open synced realm with localRealmBehaviour", async function (this: AppContext) {
     // NOTE: this test no longer runs with a logged out user.
     // Reason: Error: User is no longer valid.
@@ -72,10 +75,8 @@ describe("OpenBehaviour", function () {
     const realm = await Realm.open(config);
 
     expect(realm.path).to.not.be.undefined;
-
-    realm.close();
-    await user.logOut();
   });
+
   it("reopening synced realm with localRealmBehaviour", async function (this: AppContext) {
     // NOTE: this test no longer runs with a logged out user.
     // Reason: Error: User is no longer valid.
@@ -113,10 +114,8 @@ describe("OpenBehaviour", function () {
     realm = await Realm.open(config2);
 
     expect(realm.objects(DogForSyncSchema.name).length).equals(1);
-
-    realm.close();
-    await user.logOut();
   });
+
   it("opening new synced realm with downloadBeforeOpen set", async function (this: AppContext) {
     const partitionValue = generatePartition();
     const user = await this.app.logIn(Realm.Credentials.anonymous());
@@ -136,10 +135,8 @@ describe("OpenBehaviour", function () {
     const realm = await Realm.open(config);
 
     expect(realm.isEmpty).to.be.true;
-
-    realm.close();
-    await user.logOut();
   });
+
   it("opening existing synced realm with downloadBeforeOpen set", async function (this: AppContext) {
     // 1. Open empty Realm
     // 2. Close Realm
@@ -159,9 +156,7 @@ describe("OpenBehaviour", function () {
           _sessionStopPolicy: "immediately",
         },
       };
-      const realm = await Realm.open(config);
-      realm.close();
-      await user.logOut();
+      await Realm.open(config);
     }
     {
       // Update realm with different (anonymous) user
@@ -180,8 +175,6 @@ describe("OpenBehaviour", function () {
         realm.create(DogForSyncSchema.name, { _id: new ObjectId(), name: "Milo" });
       });
       await realm.syncSession?.uploadAllLocalChanges();
-      realm.close();
-      await user.logOut();
     }
     {
       // Check that realm contains changes made (using the same user)
@@ -200,10 +193,9 @@ describe("OpenBehaviour", function () {
       expect(Realm.exists(config)).to.be.true;
       const realm = await Realm.open(config);
       expect(realm.objects(DogForSyncSchema.name).length).equals(1);
-      realm.close();
-      await user.logOut();
     }
   });
+
   it("opening new synced realm with downloadBeforeOpen set throws on timeout", async function (this: AppContext) {
     const partitionValue = generatePartition();
     const user = await this.app.logIn(Realm.Credentials.anonymous());
@@ -231,8 +223,8 @@ describe("OpenBehaviour", function () {
     } catch (e: any) {
       expect(e.message).contains("could not be downloaded in the allocated time");
     }
-    await user.logOut();
   });
+
   it("opening existing synced realm with downloadBeforeOpen set throws on timeout", async function (this: AppContext) {
     const partitionValue = generatePartition();
     const user = await this.app.logIn(Realm.Credentials.anonymous());
@@ -249,8 +241,7 @@ describe("OpenBehaviour", function () {
         },
       };
 
-      const realm = await Realm.open(config);
-      realm.close();
+      await Realm.open(config);
     }
 
     {
@@ -281,8 +272,8 @@ describe("OpenBehaviour", function () {
         expect(e.message).contains("could not be downloaded in the allocated time");
       }
     }
-    await user.logOut();
   });
+
   it("timeout when opening new synced realm with downloadBeforeOpen and openLocal set opens an empty local realm.", async function (this: AppContext) {
     // 1. Add data to server Realm from User 1
     // 2. Open Realm with User 2
@@ -340,12 +331,9 @@ describe("OpenBehaviour", function () {
       const realm = await Realm.open(config);
 
       expect(realm.objects(DogForSyncSchema.name).length).equals(0);
-
-      realm.close();
-
-      await user.logOut();
     }
   });
+
   it("timeout when opening an existing synced realm with downloadBeforeOpen and openLocal set opens an empty local realm.", async function (this: AppContext) {
     // 1. Open empty Realm
     // 2. Close Realm
@@ -424,11 +412,9 @@ describe("OpenBehaviour", function () {
       const realm = await Realm.open(config);
 
       expect(realm.objects(DogForSyncSchema.name).length).equals(0);
-
-      realm.close();
-      await user.logOut();
     }
   });
+
   it("timeout when opening synced realm with downloadBeforeOpen and openLocal set opens a local realm.", async function (this: AppContext) {
     // This is a regression test for the following issue:
     // https://github.com/realm/realm-js/issues/4453
@@ -492,12 +478,10 @@ describe("OpenBehaviour", function () {
       await user.logOut();
 
       // Wait for the timeout to run.  This used to crash, since it opens a local realm with a logged out user.
-      await new Promise<void>((resolve) => {
-        sleep(1000);
-        resolve();
-      });
+      await sleep(1000);
     }
   });
+
   it("opening realm inside canceled promise", async function (this: AppContext) {
     const user = await this.app.logIn(Realm.Credentials.anonymous());
     const partitionValue = generatePartition();
@@ -520,22 +504,19 @@ describe("OpenBehaviour", function () {
       return promise;
     });
 
-    openPromise
+    const unexpectedPromise = openPromise
       .then(() => {
-        expect(true).to.be.false("Realm was opened after being canceled.");
+        throw new Error("Realm was opened after being canceled.");
       })
       .catch((err) => {
-        expect(true).to.be.false("An error was thrown after open was canceled: " + err.message);
+        throw new Error("An error was thrown after open was canceled: " + err.message);
       });
 
-    // Wait for 1 second after canceling. The open promise should not emit any events in that period.
-    const timeOutPromise = new Promise<void>((resolve) => {
-      sleep(1000);
-      resolve();
-    });
+    const timeOut = await sleep(1000);
 
-    await Promise.race([openPromise, timeOutPromise]);
+    await Promise.race([unexpectedPromise, timeOut]);
   });
+
   it("canceling promise with multiple realm.open calls active", async function (this: AppContext) {
     const user = await this.app.logIn(Realm.Credentials.anonymous());
     const partitionValue = generatePartition();
@@ -559,11 +540,12 @@ describe("OpenBehaviour", function () {
 
     try {
       await openPromise2;
-      expect(true).to.be.false("openPromise2 should have been rejected..");
+      throw new Error("openPromise2 should have been rejected..");
     } catch (err: any) {
       expect(err.message).equals("Operation canceled");
     }
   });
+
   it("progress-listener should not fire events on canceled realm.open", async function (this: AppContext) {
     const user = await this.app.logIn(Realm.Credentials.anonymous());
     const partitionValue = generatePartition();
@@ -590,24 +572,21 @@ describe("OpenBehaviour", function () {
       return promise;
     });
 
-    openPromise
+    const unexpectedPromise = openPromise
       .then(() => {
-        expect(true).to.be.false("Realm was opened after being canceled.");
+        throw new Error("Realm was opened after being canceled.");
       })
       .catch((err) => {
-        expect(true).to.be.false("An error was thrown after open was canceled: " + err.message);
+        throw new Error("An error was thrown after open was canceled: " + err.message);
       });
 
     // Wait for 1 second after canceling. The open promise should not emit any events in that period.
-    const timeOutPromise = new Promise<void>((resolve) => {
-      sleep(1000);
-      resolve();
-    });
-
-    const any = Promise.race([timeOutPromise, openPromise]);
+    const timeOutPromise = await sleep(1000);
+    const any = Promise.race([timeOutPromise, unexpectedPromise]);
 
     return any.finally(() => user.logOut());
   });
+
   it("opening realm with invalid options throw", async function (this: AppContext) {
     const user = await this.app.logIn(Realm.Credentials.anonymous());
     const partitionValue = generatePartition();
@@ -653,6 +632,5 @@ describe("OpenBehaviour", function () {
         },
       }),
     ).throws;
-    await user.logOut();
   });
 });
