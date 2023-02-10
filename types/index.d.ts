@@ -869,11 +869,14 @@ declare namespace Realm {
          * Class representing the common functionality for the {@link SubscriptionSet} and
          * {@link MutableSubscriptionSet} classes.
          *
-         * The {@link Subscription}s in a SubscriptionSet can be accessed as an array, e.g.
-         * `realm.subscriptions[0]`. This array is readonly – SubscriptionSets can only be
-         * modified inside a {@link SubscriptionSet.update} callback.
+         * SubscriptionSets can only be modified inside a {@link SubscriptionSet.update} callback.
+         *
+         * The SubscriptionSet is an iterable; thus, if absolutely needed, the contained
+         * {@link Subscription}s can be accessed in `for-of` loops or spread into an `Array`
+         * for access to the ECMAScript Array API, e.g. `[...realm.subscriptions][0]`. Directly
+         * accessing the SubscriptionSet as an array is deprecated.
          */
-        interface BaseSubscriptionSet extends ReadonlyArray<Subscription> {
+        interface BaseSubscriptionSet extends DeprecatedReadonlyArray<Subscription> {
             new(): never; // This type isn't supposed to be constructed manually by end users.
 
             // /**
@@ -887,6 +890,11 @@ declare namespace Realm {
              * @returns `true` if there are no subscriptions in the set, `false` otherwise.
              */
             readonly isEmpty: boolean;
+
+            /**
+             * @returns The number of subscriptions in the set.
+             */
+            readonly length: number;
 
             /**
              * @returns The version of the SubscriptionSet. This is incremented every time an
@@ -1120,6 +1128,57 @@ type RemappedRealmTypes<T> =
  */
 type Unmanaged<T, RequiredProperties extends keyof OmittedRealmTypes<T> = never> =
     OmittedRealmTypesWithRequired<T, RequiredProperties> & RemappedRealmTypes<T>;
+
+/**
+ * ReadonlyArray with members marked as deprecated.
+ */
+interface DeprecatedReadonlyArray<T> extends ReadonlyArray<T> {
+    /**@deprecated */
+    toString(): string;
+    /**@deprecated */
+    toLocaleString(): string;
+    /**@deprecated */
+    concat(...items: ConcatArray<T>[]): T[];
+    /**@deprecated */
+    concat(...items: (T | ConcatArray<T>)[]): T[];
+    /**@deprecated */
+    join(separator?: string): string;
+    /**@deprecated */
+    slice(start?: number, end?: number): T[];
+    /**@deprecated */
+    indexOf(searchElement: T, fromIndex?: number): number;
+    /**@deprecated */
+    lastIndexOf(searchElement: T, fromIndex?: number): number;
+    /**@deprecated */
+    every<S extends T>(predicate: (value: T, index: number, array: readonly T[]) => value is S, thisArg?: any): this is readonly S[];
+    /**@deprecated */
+    every(predicate: (value: T, index: number, array: readonly T[]) => unknown, thisArg?: any): boolean;
+    /**@deprecated */
+    some(predicate: (value: T, index: number, array: readonly T[]) => unknown, thisArg?: any): boolean;
+    /**@deprecated */
+    forEach(callbackfn: (value: T, index: number, array: readonly T[]) => void, thisArg?: any): void;
+    /**@deprecated */
+    map<U>(callbackfn: (value: T, index: number, array: readonly T[]) => U, thisArg?: any): U[];
+    /**@deprecated */
+    filter<S extends T>(predicate: (value: T, index: number, array: readonly T[]) => value is S, thisArg?: any): S[];
+    /**@deprecated */
+    filter(predicate: (value: T, index: number, array: readonly T[]) => unknown, thisArg?: any): T[];
+    /**@deprecated */
+    reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: readonly T[]) => T): T;
+    /**@deprecated */
+    reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: readonly T[]) => T, initialValue: T): T;
+    /**@deprecated */
+    reduce<U>(callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: readonly T[]) => U, initialValue: U): U;
+    /**@deprecated */
+    reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: readonly T[]) => T): T;
+    /**@deprecated */
+    reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: readonly T[]) => T, initialValue: T): T;
+    /**@deprecated */
+    reduceRight<U>(callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: readonly T[]) => U, initialValue: U): U;
+
+    /**@deprecated */
+    readonly [n: number]: T;
+}
 
 declare class Realm {
     static defaultPath: string;

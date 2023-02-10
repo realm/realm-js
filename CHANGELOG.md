@@ -1,5 +1,12 @@
 ## vNext (TBD)
 
+### Deprecations
+* The ECMAScript Array APIs (such as `map`, `every`, access using indexing operator `[]`, etc.) on the `SubscriptionSet` types were deprecated.
+    * The existing methods will continue to work until the next major version.
+    * The following will **not** be removed from `BaseSubscriptionSet`:
+        * Being iterable (e.g using `for-of` loop).
+        * Being able to spread (e.g. `[...realm.subscriptions]`).
+
 ### Enhancements
 * Converting flexible sync Realms to bundled and local realms is now supported. ([realm/realm-core#6076](https://github.com/realm/realm-core/pull/6076))
 
