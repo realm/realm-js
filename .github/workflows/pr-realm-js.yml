@@ -233,20 +233,6 @@ jobs:
           #- { os: ios, target: "test:catalyst", runner: macos-latest, environment: react-native, arch: "catalyst" }
     timeout-minutes: 60
     steps:
-      - name: Generate Cluster Differentiator
-        id: differentiator
-        run: echo "::set-output name=name::${{matrix.variant.os}}-${{matrix.variant.target}}-${{matrix.variant.environment}}-${{env.GITHUB_RUN_ATTEMPT}}"
-
-      - uses: realm/ci-actions/mdb-realm/deployApps@fac1d6958f03d71de743305ce3ab27594efbe7b7
-        id: deploy-mdb-apps
-        with:
-          realmUrl: ${{ secrets.REALM_QA_BASE_URL }}
-          projectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
-          atlasUrl: ${{ secrets.ATLAS_QA_BASE_URL}}
-          apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
-          privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
-          differentiator: ${{ steps.differentiator.outputs.name }}
-
       - name: Checkout code
         uses: actions/checkout@v2
         with:
@@ -342,7 +328,7 @@ jobs:
 
       - name: Create Mocha Env
         id: mocha-env
-        run: echo "::set-output name=name::syncLogLevel=warn,realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ steps.deploy-mdb-apps.outputs.clusterName }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}"
+        run: echo "::set-output name=name::syncLogLevel=warn,realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ secrets.ATLAS_QA_DAILY_CLUSTER_NAME }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}"
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ (matrix.variant.os != 'android') && (matrix.variant.os != 'ios') }}
@@ -401,13 +387,3 @@ jobs:
           ndk: ${{ env.NDK_VERSION }}
           cmake: 3.22.1
           script: npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
-
-      - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56
-        if: ${{always()}}
-        with:
-          realmUrl: ${{ secrets.REALM_QA_BASE_URL }}
-          atlasUrl: ${{ secrets.ATLAS_QA_BASE_URL}}
-          projectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
-          apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
-          privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
-          differentiator: ${{ steps.differentiator.outputs.name }}
