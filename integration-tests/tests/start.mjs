@@ -17,9 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 /* eslint-env node */
-/* eslint-disable @typescript-eslint/no-var-requires */
 
-const concurrently = require("concurrently");
+import concurrently from "concurrently";
 
 // See https://github.com/kimmobrunfeldt/concurrently/issues/33#issuecomment-433084589
 
