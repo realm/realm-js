@@ -75,6 +75,9 @@ export function getDefaultReplacements(name: string): TemplateReplacements {
   if (typeof mongodbClusterName === "string") {
     config.name = `${name}-${mongodbClusterName}`;
     mongodbServiceConfig.type = "mongodb-atlas";
+    if (typeof mongodbServiceConfig.config !== "object") {
+      mongodbServiceConfig.config = {};
+    }
     mongodbServiceConfig.config.clusterName = mongodbClusterName;
   }
 
