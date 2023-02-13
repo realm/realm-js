@@ -92,7 +92,7 @@ export type ReadableStream = {
    * @see https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream/cancel
    */
   cancel: (reason?: string) => Promise<void>;
-};
+} & AsyncIterable<Uint8Array>;
 
 export type StreamReader = {
   /**
@@ -124,10 +124,9 @@ type FetchRequestInfo = FetchRequest | string;
 type FetchHeadersInit = FetchHeaders | string[][] | Record<string, string>;
 type FetchRequestCredentials = "include" | "omit" | "same-origin";
 type FetchRequestMode = "cors" | "navigate" | "no-cors" | "same-origin";
-type FetchReadableStream = ReadableStream;
 
 interface FetchBody {
-  readonly body: FetchReadableStream | null;
+  readonly body: ReadableStream | null;
   readonly bodyUsed: boolean;
   arrayBuffer(): Promise<ArrayBuffer>;
   blob(): Promise<unknown>;

@@ -21,15 +21,17 @@ import { FetchResponse, ReadableStream } from ".";
 const READABLE_STREAM_HANDLER: ProxyHandler<ReadableStream> = {
   get(target, prop, receiver) {
     if (prop === Symbol.asyncIterator) {
-      const reader = target.getReader();
-      return {
-        next() {
-          return reader.read();
-        },
-        async return() {
-          await reader.cancel();
-          return { done: true, value: null };
-        },
+      return () => {
+        const reader = target.getReader();
+        return {
+          next() {
+            return reader.read();
+          },
+          async return() {
+            await reader.cancel();
+            return { done: true, value: null };
+          },
+        };
       };
     }
     return Reflect.get(target, prop, receiver);
