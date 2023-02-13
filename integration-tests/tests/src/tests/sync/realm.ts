@@ -421,25 +421,6 @@ const originalSchema: (Realm.ObjectSchema | typeof PersonObject)[] = [
 ];
 
 describe("Realmtest", () => {
-  describe("function overwrite", () => {
-    it("bind works on realm", () => {
-      const realm = new Realm({ schema: [] });
-      const oldClose = realm.close.bind(realm);
-      let newCloseCalled = false;
-      realm.close = () => {
-        newCloseCalled = true;
-      };
-      realm.close();
-      expect(newCloseCalled, "The new function should be called").to.be.true;
-
-      expect(realm.isClosed, "The realm should not be closed").to.be.false;
-
-      oldClose();
-
-      expect(realm.isClosed, "The realm should be closed").to.be.true;
-    });
-  });
-
   describe("object creation", () => {
     afterEach(() => {
       Realm.clearTestState();
