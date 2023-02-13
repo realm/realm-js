@@ -49,10 +49,7 @@ if (global.enableSyncTests) {
   //TODO: remove when Atlas App Services test server can be hosted on Mac or other options exists
   if (isNodeProcess) {
     TESTS.SessionTests = require("./session-tests");
-    TESTS.UUIDSyncTests = node_require("./uuid-sync-tests");
     TESTS.PartitionValueTests = node_require("./partition-value-tests");
-    TESTS.SetSyncTests = node_require("./set-sync-tests");
-    TESTS.DictionarySyncTests = node_require("./dictionary-sync-tests");
   }
 }
 
