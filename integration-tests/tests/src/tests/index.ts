@@ -51,3 +51,4 @@ import "./transaction";
 import "./schema";
 import "./types";
 import "./sync/client-reset";
+import "./sync/open-behavior";
