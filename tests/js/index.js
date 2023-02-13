@@ -48,7 +48,6 @@ if (global.enableSyncTests) {
   //TODO: remove when Atlas App Services test server can be hosted on Mac or other options exists
   if (isNodeProcess) {
     TESTS.SessionTests = require("./session-tests");
-    TESTS.PartitionValueTests = node_require("./partition-value-tests");
   }
 }
 

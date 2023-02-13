@@ -56,3 +56,4 @@ import "./schema";
 import "./types";
 import "./sync/client-reset";
 import "./sync/open-behavior";
+import "./sync/partition-values";
