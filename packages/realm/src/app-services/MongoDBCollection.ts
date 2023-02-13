@@ -222,15 +222,15 @@ export type OperationType =
    */
   | "update"
   /**
-   * Occurs when a collection is dropped from a database.
+   * A collection got dropped from a database.
    */
   | "drop"
   /**
-   * Occurs when a collection is renamed.
+   * A collection got renamed.
    */
   | "rename"
   /**
-   * Occurs when a database is dropped.
+   * A database got dropped.
    */
   | "dropDatabase"
   /**
