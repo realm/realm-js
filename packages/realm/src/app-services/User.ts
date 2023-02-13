@@ -306,10 +306,8 @@ export class User<
    *                       .find({color: 'blue'});
    */
   mongoClient(serviceName = "mongo-db"): MongoDB {
-    if (serviceName !== undefined) {
-      assert.string(serviceName, "serviceName");
-      assert(serviceName.length, "The MongoDB service name must contain at least 1 character.");
-    }
+    assert.string(serviceName, "serviceName");
+    assert(serviceName.length, "The MongoDB service name must contain at least 1 character.");
 
     return {
       get serviceName() {
