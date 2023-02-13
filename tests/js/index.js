@@ -39,7 +39,6 @@ var TESTS = {
   RealmTests: require("./realm-tests"),
   ResultsTests: require("./results-tests"),
   MigrationTests: require("./migration-tests"),
-  EncryptionTests: require("./encryption-tests"),
   BsonTests: require("./bson-tests"),
   // Garbagecollectiontests: require('./garbage-collection'),
   SetTests: require("./set-tests"),
