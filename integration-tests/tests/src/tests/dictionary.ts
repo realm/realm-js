@@ -55,6 +55,55 @@ describe("Dictionary", () => {
       expect(item.dict instanceof Realm.Dictionary);
     });
 
+    it("can add/set values in multiple ways", function (this: RealmContext) {
+      const item = this.realm.write(() => {
+        const item = this.realm.create<Item>("Item", {});
+        item.dict.set("key1", "value1");
+        item.dict.set({ key2: "value2" });
+        item.dict.key3 = "value3";
+        return item;
+      });
+
+      expect(item.dict).deep.equals({
+        key1: "value1",
+        key2: "value2",
+        key3: "value3",
+      });
+
+      //This is to verify that item.dict.key3 was not just an object property assignment
+      expect(Object.keys(item.dict).length).deep.equals(3);
+
+      this.realm.write(() => {
+        item.dict.set("key1", "value1New");
+        item.dict.set({ key2: "value2New" });
+        item.dict.key3 = "value3New";
+        return item;
+      });
+
+      expect(item.dict).deep.equals({
+        key1: "value1New",
+        key2: "value2New",
+        key3: "value3New",
+      });
+
+      expect(Object.keys(item.dict).length).deep.equals(3);
+    });
+
+    it("set/remove methods return the dictionary", function (this: RealmContext) {
+      const item = this.realm.write(() => this.realm.create<Item>("Item", {}));
+
+      this.realm.write(() => item.dict.set("key1", "value1").set("key2", "value2"));
+
+      expect(item.dict).deep.equals({
+        key1: "value1",
+        key2: "value2",
+      });
+
+      this.realm.write(() => item.dict.remove("key1").remove("key2"));
+
+      expect(Object.keys(item.dict)).deep.equals([]);
+    });
+
     const methodNames = [
       // "get",
       "set",

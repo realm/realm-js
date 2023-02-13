@@ -1,6 +1,13 @@
 ## vNext (TBD)
 
 ### Enhancements
+* Add an overload to `Dictionary.set` method that takes two arguments, a `key` and a `value`. ([#4286](https://github.com/realm/realm-js/issues/4286))  
+Example usage:
+```typescript
+realm.write(() => {
+  item.dictionary.set("key", "value");
+});
+``` 
 * Added 3 new methods on lists ([#3324](https://github.com/realm/realm-js/issues/3324)):
   * `list.remove(index)`: removes the element of the list at the specified index.
   * `list.move(from, to)`: moves one element of the list from one index to another.

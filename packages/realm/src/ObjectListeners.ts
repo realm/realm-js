@@ -24,7 +24,7 @@ export type ObjectChangeCallback<T> = (object: RealmObject<T> & T, changes: Obje
 /** @internal */
 export class ObjectListeners<T> {
   /**
-   * Storage for the momoized, lacyly created object notifier.
+   * Storage for the memoized, lazily created object notifier.
    */
   private internal!: binding.ObjectNotifier | null;
 
@@ -44,7 +44,7 @@ export class ObjectListeners<T> {
           });
         } catch (err) {
           // Scheduling a throw on the event loop,
-          // since throwing synchroniously here would result in an abort in the calling C++
+          // since throwing synchronously here would result in an abort in the calling C++
           setImmediate(() => {
             throw err;
           });
@@ -59,7 +59,7 @@ export class ObjectListeners<T> {
   });
 
   /**
-   * A momoized, lacyly created object notifier.
+   * A memoized, lazily created object notifier.
    */
   private get notifier() {
     let notifier = this.internal;

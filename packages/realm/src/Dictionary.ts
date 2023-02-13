@@ -231,17 +231,38 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
   }
 
   /**
-   * Add a key with a value or update value if key exists.
+   * Adds one or more elements with specified key and value to the dictionary or updates value if key exists.
+   * @param elements The object of element(s) to add
    * @throws {@link AssertionError} If not inside a write transaction or if value violates type constraints
    * @returns The dictionary
    * @since 10.6.0
-   * @ts-expect-error We're exposing methods in the end-users namespace of keys */
-  set(element: { [key: string]: T }): this {
+   */
+  // @ts-expect-error We're exposing methods in the end-users namespace of keys
+  set(elements: { [key: string]: T }): this;
+  /**
+   * Adds an element with the specified key and value to the dictionary or updates value if key exists.
+   * @param key The key of the element to add
+   * @param value The value of the element to add
+   * @throws {@link AssertionError} If not inside a write transaction or if value violates type constraints
+   * @returns The dictionary
+   * @since 12.0.0
+   */
+  set(key: string, value: T): this;
+  /**
+   * Adds one or more elements with the specified key and value to the dictionary or updates value if key exists.
+   * @param elementsOrKey The element to add or the key of the element to add
+   * @param value The value of the element to add
+   * @throws {@link AssertionError} If not inside a write transaction or if value violates type constraints
+   * @returns The dictionary
+   * @since 10.6.0
+   */
+  set(elementsOrKey: string | { [key: string]: T }, value?: T): this {
     assert.inTransaction(this[REALM]);
     const internal = this[INTERNAL];
     const toBinding = this[HELPERS].toBinding;
-    for (const [key, value] of Object.entries(element)) {
-      internal.insertAny(key, toBinding(value, undefined));
+    const elements = typeof elementsOrKey == "string" ? { [elementsOrKey]: value } : elementsOrKey;
+    for (const [key, val] of Object.entries(elements)) {
+      internal.insertAny(key, toBinding(val, undefined));
     }
     return this;
   }
