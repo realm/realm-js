@@ -8,6 +8,10 @@ realm.write(() => {
   item.dictionary.set("key", "value");
 });
 ``` 
+* Added 3 new methods on lists ([#3324](https://github.com/realm/realm-js/issues/3324)):
+  * `list.remove(index)`: removes the element of the list at the specified index.
+  * `list.move(from, to)`: moves one element of the list from one index to another.
+  * `list.swap(index1, index2)`: swaps the positions of the elements of the list at two indexes.
 
 ### Fixed
 * Fix no notification for write transaction that contains only change to backlink property. ([realm/realm-core#4994](https://github.com/realm/realm-core/issues/4994), since v10.8.0)

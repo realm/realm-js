@@ -23,6 +23,7 @@
 
 /** @internal */
 export * from "./debug";
+export * from "./safeGlobalThis";
 
 /** @internal */
 export * from "./platform";
@@ -32,6 +33,7 @@ export * as binding from "./binding";
 export * from "./flags";
 export * from "./bson";
 export * from "./errors";
+export * from "./decorators";
 /** @internal */
 export * from "./assert";
 /** @internal */

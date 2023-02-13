@@ -279,4 +279,61 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     }
     return result;
   }
+
+  /**
+   * Removes the element of the list at the specified index.
+   *
+   * @param index The index of the element to remove.
+   * @throws {@link AssertionError} If not inside a write transaction or the input index is less than 0
+   * or greater than the size of the list.
+   */
+  remove(index: number) {
+    assert.inTransaction(this.realm);
+    assert.number(index, "index");
+
+    assert(index >= 0, "Index cannot be smaller than 0");
+    assert(index < this.internal.size, "Index cannot be greater than the size of the list");
+
+    this.internal.remove(index);
+  }
+
+  /**
+   * Moves one element of the list from one index to another.
+   *
+   * @param from The index of the element to move.
+   * @param to The destination index of the element.
+   * @throws {@link AssertionError} If not inside a write transaction or if any of the input indexes
+   * is less than 0 or greater than the size of the list.
+   */
+  move(from: number, to: number) {
+    assert.inTransaction(this.realm);
+    assert.number(from, "from");
+    assert.number(to, "to");
+
+    const size = this.internal.size;
+    assert(from >= 0 && to >= 0, "Indexes cannot be smaller than 0");
+    assert(from < size && to < size, "Indexes cannot be greater than the size of the list");
+
+    this.internal.move(from, to);
+  }
+
+  /**
+   * Swaps the positions of the elements of the list at two indexes.
+   *
+   * @param index1 The index of the first element.
+   * @param index2 The index of the second element.
+   * @throws {@link AssertionError} If not inside a write transaction or if any of the input indexes
+   * is less than 0 or greater than the size of the list.
+   */
+  swap(index1: number, index2: number) {
+    assert.inTransaction(this.realm);
+    assert.number(index1, "index1");
+    assert.number(index2, "index2");
+
+    const size = this.internal.size;
+    assert(index1 >= 0 && index2 >= 0, "Indexes cannot be smaller than 0");
+    assert(index1 < size && index2 < size, "Indexes cannot be greater than the size of the list");
+
+    this.internal.swap(index1, index2);
+  }
 }
