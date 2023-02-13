@@ -9,7 +9,9 @@ Here are all the tags Realm class methods are likely to have, **listed in the or
     - All methods that override built-in JS parent class methods (i.e. `forEach`, `map`) should avoid unnecesary comments (if reasonable) as they will likely already have built-in documentation that is inherited.
 
 - **Description**
-    - Description of the method should go first.
+    - Description of the method should go first. Use the 3rd person instead of the 2nd person.
+        - ✅ *Adds one element to the list*
+        - ❌ *Add one element to the list*
 - `@readonly`?
     - Include this tag if the field is read-only, this is only relevant for getter methods.
 - `@param {name} {description}`
