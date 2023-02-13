@@ -24,6 +24,16 @@ describe("Realm transactions", () => {
   openRealmBeforeEach({ schema: [PersonSchema] });
 
   describe("Manual transactions", () => {
+    it("can perform a manual transaction", function (this: RealmContext) {
+      expect(this.realm.isEmpty).to.be.true;
+
+      this.realm.beginTransaction();
+      this.realm.create(PersonSchema.name, { age: 42, name: "John doe" });
+      this.realm.commitTransaction();
+
+      expect(this.realm.objects(PersonSchema.name).length).equals(1);
+    });
+
     it("rolls back when cancelled", function (this: RealmContext) {
       const { realm } = this;
       realm.beginTransaction();
@@ -65,6 +75,14 @@ describe("Realm transactions", () => {
 
       realm.cancelTransaction();
       expect(persons.length).equals(0);
+    });
+
+    it("isInTransaction reflects state", function (this: RealmContext) {
+      expect(!this.realm.isInTransaction).to.be.true;
+      this.realm.beginTransaction();
+      expect(this.realm.isInTransaction).to.be.true;
+      this.realm.cancelTransaction();
+      expect(!this.realm.isInTransaction).to.be.true;
     });
   });
 });

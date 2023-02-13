@@ -21,8 +21,17 @@ import Realm from "realm";
 
 import { IPerson, PersonSchema, DogSchema } from "../schemas/person-and-dogs";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const RealmAsAny = Realm as any;
+class TestObject extends Realm.Object {
+  doubleCol!: number;
+  static schema: Realm.ObjectSchema = {
+    name: "TestObject",
+    properties: {
+      doubleCol: "double",
+    },
+  };
+}
+
+const pathSeparator = "/";
 
 describe("Realm#constructor", () => {
   beforeEach(() => {
@@ -34,10 +43,21 @@ describe("Realm#constructor", () => {
     expect(Realm instanceof Function).to.equal(true);
   });
 
-  it("creates a Realm instance", () => {
+  it("creates a Realm instance with default path", () => {
     const realm = new Realm();
     expect(realm instanceof Realm).to.equal(true);
     expect(realm.path).to.equal(Realm.defaultPath);
+  });
+
+  it("creates a Realm instance with custom path", () => {
+    const defaultDir = Realm.defaultPath.substring(0, Realm.defaultPath.lastIndexOf(pathSeparator) + 1);
+    const testPath = "test1.realm";
+    const realm = new Realm({ schema: [], path: testPath });
+    expect(realm.path).equals(defaultDir + testPath);
+
+    const testPath2 = "test2.realm";
+    const realm2 = new Realm({ schema: [], path: testPath2 });
+    expect(realm2.path).equals(defaultDir + testPath2);
   });
 
   it("creates a Realm instance with an empty schema", () => {
@@ -62,6 +82,29 @@ describe("Realm#constructor", () => {
     expect(realm2.path).to.equal(path.resolve(defaultPathDir, "temporary-2.realm"));
   });
 
+  it("picks up overriden default path", () => {
+    const defaultPath = Realm.defaultPath;
+    let defaultRealm = new Realm({ schema: [] });
+    expect(defaultRealm.path).equals(Realm.defaultPath);
+
+    try {
+      const newPath = `${Realm.defaultPath.substring(0, defaultPath.lastIndexOf(pathSeparator) + 1)}default2.realm`;
+      Realm.defaultPath = newPath;
+      defaultRealm = new Realm({ schema: [] });
+      expect(defaultRealm.path).equals(newPath, "should use updated default realm path");
+      expect(Realm.defaultPath).equals(newPath, "defaultPath should have been updated");
+    } finally {
+      Realm.defaultPath = defaultPath;
+    }
+  });
+
+  it("can set fifoFallbackPath property", () => {
+    // Object Store already tests the fallback logic
+    // So this is just a smoke test to ensure that setting the property from JS doesn't actually crash anything.
+    const defaultDir = Realm.defaultPath.substring(0, Realm.defaultPath.lastIndexOf(pathSeparator) + 1);
+    const realm = new Realm({ fifoFilesFallbackPath: defaultDir });
+  });
+
   describe("called with invalid arguments", () => {
     it("throws when called with an empty string", () => {
       expect(() => {
@@ -71,7 +114,8 @@ describe("Realm#constructor", () => {
 
     it("throws when called with two strings", () => {
       expect(() => {
-        new RealmAsAny("", "");
+        //@ts-expect-error constructing new realm with too many arguments.
+        new Realm("", "");
       }).to.throw("Invalid arguments when constructing 'Realm'");
     });
   });
@@ -90,19 +134,35 @@ describe("Realm#constructor", () => {
       // The first Realm instance is still considered closed
       expect(realm.isClosed).to.equal(true);
     });
+
+    it("data is preserved when reopening realm instance", () => {
+      // constructing realm with same path returns the same instance
+      let realm = new Realm({ schema: [TestObject] });
+      realm.write(() => {
+        realm.create(TestObject.schema.name, [1]);
+      });
+      realm.close();
+
+      realm = new Realm();
+      const objects = realm.objects<TestObject>(TestObject.schema.name);
+      expect(objects.length).equals(1);
+      expect(objects[0].doubleCol).equals(1.0);
+    });
   });
 
   describe("schema version", () => {
     it("initiates with schema version 0", () => {
       const realm = new Realm({ schema: [] });
       expect(realm.schemaVersion).to.equal(0);
+      expect(new Realm().schemaVersion).equals(0);
+      expect(new Realm({ schemaVersion: 0 }).schemaVersion).equals(0);
     });
 
     it("can reopen with the same version", () => {
       // Open it ...
       const realm = new Realm({ schema: [], schemaVersion: 0 });
       expect(realm.schemaVersion).to.equal(0);
-      // Re-open with a different version
+      // Re-open with same version
       const reopenedRealm = new Realm({ schema: [], schemaVersion: 0 });
       expect(reopenedRealm.schemaVersion).to.equal(0);
     });
@@ -163,31 +223,36 @@ describe("Realm#constructor", () => {
   describe("schema validation", () => {
     it("fails when passed an object", () => {
       expect(() => {
-        new RealmAsAny({ schema: {} });
+        //@ts-expect-error passing plain empty object to schema
+        new Realm({ schema: {} });
       }).throws("schema must be of type 'array', got");
     });
 
     it("fails when passed an array with non-objects", () => {
       expect(() => {
-        new RealmAsAny({ schema: [""] });
+        //@ts-expect-error can not pass plain string as schema
+        new Realm({ schema: [""] });
       }).throws("Failed to read ObjectSchema: JS value must be of type 'object', got");
     });
 
     it("fails when passed an array with empty object", () => {
       expect(() => {
-        new RealmAsAny({ schema: [{}] });
+        //@ts-expect-error passing array of empty object
+        new Realm({ schema: [{}] });
       }).throws("Failed to read ObjectSchema: name must be of type 'string', got ");
     });
 
     it("fails when passed an array with an object without 'properties'", () => {
       expect(() => {
-        new RealmAsAny({ schema: [{ name: "SomeObject" }] });
+        //@ts-expect-error object without properties
+        new Realm({ schema: [{ name: "SomeObject" }] });
       }).throws("Failed to read ObjectSchema: properties must be of type 'object', got ");
     });
 
     it("fails when passed an array with an object without 'name'", () => {
       expect(() => {
-        new RealmAsAny({ schema: [{ properties: {} }] });
+        //@ts-expect-error object without name
+        new Realm({ schema: [{ properties: {} }] });
       }).throws("Failed to read ObjectSchema: name must be of type 'string', got ");
     });
 
@@ -277,35 +342,74 @@ describe("Realm#constructor", () => {
     });
   });
 
-  // TODO: Next up is testRealmConstructorInMemory from realm-tests.js
-});
+  describe("in memory construction", () => {
+    it("data is shared among instances", () => {
+      // open in-memory realm instance
+      const realm1 = new Realm({ inMemory: true, schema: [TestObject] });
+      realm1.write(() => {
+        realm1.create("TestObject", [1]);
+      });
+      //@ts-expect-error TYPEBUG: isInMemory property does not exist
+      expect(realm1.isInMemory).to.be.true;
 
-// Testing static methods
+      // open a second instance of the same realm and check that they share data
+      const realm2 = new Realm({ inMemory: true });
+      const objects = realm2.objects<TestObject>(TestObject.schema.name);
+      expect(objects.length).equals(1);
+      expect(objects[0].doubleCol).equals(1.0);
+      //@ts-expect-error TYPEBUG: isInMemory property does not exist
+      expect(realm2.isInMemory).equals(true);
 
-describe("#deleteFile", () => {
-  beforeEach(() => {
-    Realm.clearTestState();
+      realm1.close();
+      realm2.close();
+    });
+
+    it("closing instance deletes data", () => {
+      // open in-memory realm instance
+      const realm1 = new Realm({ inMemory: true, schema: [TestObject] });
+      realm1.write(() => {
+        realm1.create("TestObject", [1]);
+      });
+      //@ts-expect-error TYPEBUG: isInMemory property does not exist
+      expect(realm1.isInMemory).to.be.true;
+      // Close realm (this should delete the realm since there are no more
+      // references to it).
+      realm1.close();
+      // Open the same in-memory realm again and verify that it is now empty
+      const realm2 = new Realm({ inMemory: true });
+      expect(realm2.schema.length).equals(0);
+
+      realm2.close();
+    });
+
+    it("throws when opening in-memory realm in persistent mode", () => {
+      const realm = new Realm({ inMemory: true, schema: [TestObject] });
+      // try to open the same realm in persistent mode (should fail as you cannot mix modes)
+      expect(() => new Realm({})).throws("already opened with different inMemory settings.");
+    });
   });
 
-  function expectDeletion(path?: string) {
-    // Create the Realm with a schema
-    const realm = new Realm({ path, schema: [PersonSchema, DogSchema] });
-    realm.close();
-    // Delete the Realm
-    Realm.deleteFile({ path });
-    // Re-open the Realm without a schema and expect it to be empty
-    const reopenedRealm = new Realm({ path });
-    expect(reopenedRealm.schema).deep.equals([]);
-  }
+  describe("constructing with readonly property set", () => {
+    it("throws when write transaction is started", () => {
+      //seed data
+      let realm = new Realm({ schema: [TestObject] });
+      realm.write(() => {
+        realm.create(TestObject.schema.name, [1]);
+      });
+      expect(realm.isReadOnly).to.be.false;
+      realm.close();
 
-  it("deletes the default Realm", () => {
-    expectDeletion();
-  });
+      // open same realm instance with readOnly mode
+      realm = new Realm({ readOnly: true });
+      expect(realm.schema.length).equals(1);
+      const objects = realm.objects<TestObject>(TestObject.schema.name);
+      expect(objects.length).equals(1);
+      expect(objects[0].doubleCol).equals(1.0);
+      expect(realm.isReadOnly).equals(true);
 
-  // TODO: Fix the issue on Android that prevents this from passing
-  // @see https://github.com/realm/realm-js-private/issues/507
-
-  it.skipIf(environment.android, "deletes a Realm with a space in its path", () => {
-    expectDeletion("my realm.realm");
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      expect(() => realm.write(() => {})).throws("Can't perform transactions on read-only Realms.");
+      realm.close();
+    });
   });
 });
