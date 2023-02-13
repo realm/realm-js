@@ -271,7 +271,7 @@ export class User<
     const { body } = await network.fetch(request);
     assert(body, "Expected a body in the response");
 
-    return body as AsyncIterable<Uint8Array>;
+    return body;
   }
 
   /**
@@ -306,8 +306,10 @@ export class User<
    *                       .find({color: 'blue'});
    */
   mongoClient(serviceName = "mongo-db"): MongoDB {
-    assert.string(serviceName, "serviceName");
-    assert(serviceName.length, "The MongoDB service name must contain at least 1 character.");
+    if (serviceName !== undefined) {
+      assert.string(serviceName, "serviceName");
+      assert(serviceName.length, "The MongoDB service name must contain at least 1 character.");
+    }
 
     return {
       get serviceName() {
