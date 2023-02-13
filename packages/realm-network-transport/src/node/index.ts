@@ -24,5 +24,5 @@ import { Fetch, AbortController } from "../types";
 import fetch from "node-fetch";
 import NodeAbortController from "abort-controller";
 
-DefaultNetworkTransport.fetch = fetch as unknown as Fetch; // TODO: Change to `fetch as Fetch`
+DefaultNetworkTransport.fetch = fetch as Fetch;
 DefaultNetworkTransport.AbortController = NodeAbortController as AbortController;

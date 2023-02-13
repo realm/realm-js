@@ -266,7 +266,9 @@ export type UpdateDescription = {
 export type ChangeEventId = any;
 
 /**
- * A document that contains the _id of the document created or modified by the insert, replace, delete, update operations (i.e. CRUD operations). For sharded collections, also displays the full shard key for the document. The _id field is not repeated if it is already a part of the shard key.
+ * A document that contains the _id of the document created or modified by the insert, replace,
+ * delete, update operations (i.e. CRUD operations). For sharded collections, also displays the full
+ * shard key for the document. The _id field is not repeated if it is already a part of the shard key.
  */
 export type DocumentKey<IdType> = {
   /** The id of the document. */
@@ -318,7 +320,8 @@ export type UpdateEvent<T extends Document> = {
   /** A document describing the fields that were updated or removed. */
   updateDescription: UpdateDescription;
   /**
-   * For change streams opened with the `fullDocument: updateLookup` option, this will represents the most current majority-committed version of the document modified by the update operation.
+   * For change streams opened with the `fullDocument: updateLookup` option, this will represent
+   * the most current majority-committed version of the document modified by the update operation.
    */
   fullDocument?: T;
 } & BaseChangeEvent<"update">;
@@ -395,7 +398,7 @@ export type ChangeEvent<T extends Document> =
  * A remote collection of documents in a MongoDB database.
  */
 export class MongoDBCollection<T extends Document> {
-  private functions: DefaultFunctionsFactory; // TODO: This was public, but I don't think it should be available to the user?
+  private functions: DefaultFunctionsFactory;
 
   /**@internal */
   constructor(
@@ -643,11 +646,11 @@ export class MongoDBCollection<T extends Document> {
    *
    * Important Note: To use this on React Native, you must install:
    *
-   * 1. Polyfills for `fetch`, `ReadableStream` and `TextDecoder`: https://www.npmjs.com/package/react-native-polyfill-globals
+   * 1. Polyfills for `fetch` and `ReadableStream`: https://www.npmjs.com/package/react-native-polyfill-globals
    * 2. Babel plugin enabling async generator syntax: https://npmjs.com/package/@babel/plugin-proposal-async-generator-functions
    *
-   * @param options.filter A filter for which change events you are interested in.
-   * @param options.ids A list of ids that you are interested in watching.
+   * @param options.filter A filter for which change events you want to watch.
+   * @param options.ids A list of document ids for which change events you want to watch.
    * @see https://docs.mongodb.com/manual/reference/change-events/
    */
   watch(): AsyncGenerator<ChangeEvent<T>>;
@@ -666,9 +669,6 @@ export class MongoDBCollection<T extends Document> {
       ids,
       filter,
     });
-    // this.user.app.internal.config.transport.sendRequestToServer(request, (response) => {
-    //   // ..
-    // });
 
     const watchStream = binding.WatchStream.make();
     for await (const chunk of iterator) {

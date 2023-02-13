@@ -250,16 +250,12 @@ export class User<
   }
 
   /** @internal */
-  callFunctionOnService(name: string, serviceName: string | undefined, ...args: unknown[]) {
+  callFunctionOnService(name: string, serviceName: string | undefined, ...args: unknown[]): Promise<unknown> {
     const cleanedArgs = cleanArguments(args);
     return this.app.internal.callFunction(this.internal, name, cleanedArgs as binding.EJson[], serviceName);
   }
 
-  /**
-   * TODO: Doc
-   *
-   * @internal
-   */
+  /** @internal */
   async callFunctionStreaming(
     functionName: string,
     serviceName: string,
