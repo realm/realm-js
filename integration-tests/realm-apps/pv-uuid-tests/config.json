@@ -1,6 +1,6 @@
 {
     "name": "pv-uuid-tests",
     "sync": {
-        "development_mode_enabled": false
+        "development_mode_enabled": true 
     }
 }

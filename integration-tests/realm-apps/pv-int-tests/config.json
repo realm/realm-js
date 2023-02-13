@@ -1,6 +1,6 @@
 {
     "name": "pv-int-tests",
     "sync": {
-        "development_mode_enabled": false
+        "development_mode_enabled": true 
     }
 }
