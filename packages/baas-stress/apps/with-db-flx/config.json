@@ -1,0 +1,7 @@
+{
+  "name": "with-db-flx",
+  "config_version": 20200603,
+  "sync": {
+    "development_mode_enabled": true
+  }
+}

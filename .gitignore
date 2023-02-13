@@ -41,6 +41,9 @@ build/
 /prebuilds/
 yarn.lock
 
+# Secrets
+.env
+
 # Emacs
 *~
 

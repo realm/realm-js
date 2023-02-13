@@ -1,0 +1,21 @@
+{
+  "name": "@realm/baas-stress",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Imports apps and syncs - a lot",
+  "bin": {
+    "./realm-baas-stress.ts": "./realm-baas-stress.ts"
+  },
+  "scripts": {
+    "start": "./realm-baas-stress.ts",
+    "stress": "./realm-baas-stress.ts stress"
+  },
+  "dependencies": {
+    "@commander-js/extra-typings": "^10.0.2",
+    "@realm/app-importer": "*",
+    "dotenv": "^16.0.3",
+    "node-fetch": "^3.3.0",
+    "realm": "*",
+    "tsx": "^3.12.3"
+  }
+}
