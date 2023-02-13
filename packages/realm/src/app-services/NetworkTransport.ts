@@ -16,15 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { FetchHeaders, Request, RequestMethod, assert, binding, network } from "../internal";
-
-const HTTP_METHOD: Record<binding.HttpMethod, RequestMethod> = {
-  [binding.HttpMethod.get]: "GET",
-  [binding.HttpMethod.post]: "POST",
-  [binding.HttpMethod.put]: "PUT",
-  [binding.HttpMethod.patch]: "PATCH",
-  [binding.HttpMethod.del]: "DELETE",
-};
+import { FetchHeaders, binding, network } from "../internal";
 
 function flattenHeaders(headers: FetchHeaders) {
   const result: Record<string, string> = {};
@@ -34,20 +26,10 @@ function flattenHeaders(headers: FetchHeaders) {
   return result;
 }
 
-export function toFetchRequest({ method, timeoutMs, body, headers, url }: binding.Request_Relaxed) {
-  return {
-    url,
-    headers,
-    method: HTTP_METHOD[method],
-    timeoutMs: Number(timeoutMs),
-    body: body !== "" ? body : undefined,
-  };
-}
-
 /** @internal */
 export function createNetworkTransport() {
   return binding.Helpers.makeNetworkTransport((request, callback) => {
-    network.fetch(toFetchRequest(request)).then(
+    network.fetch(request).then(
       async (response) => {
         const headers = flattenHeaders(response.headers);
         const contentType = headers["content-type"];

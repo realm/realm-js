@@ -17,4 +17,4 @@
 ////////////////////////////////////////////////////////////////////////////
 
 export { fs } from "./platform/file-system";
-export { network, RequestMethod, FetchHeaders, Request } from "./platform/network";
+export { network, FetchHeaders, Request } from "./platform/network";
