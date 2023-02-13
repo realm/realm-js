@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export type Method = "GET" | "POST" | "DELETE" | "PUT";
+export type Method = "GET" | "POST" | "DELETE" | "PUT" | "PATCH";
 
 export type Headers = { [name: string]: string };
 
@@ -73,16 +73,60 @@ export type AbortController = {
   abort(): void;
 };
 
+/**
+ * Minimal types for a ReadableStream.
+ * @todo Missing declarations for `constructor`, `pipeThrough`, `pipeTo` and `tee`.
+ */
+
+export type ReadableStream = {
+  /**
+   * Creates a reader and locks the stream to it.
+   * While the stream is locked, no other reader can be acquired until this one is released.
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream/getReader
+   */
+  getReader(): StreamReader;
+
+  /**
+   * Cancel is used when you've completely finished with the stream and don't need any more data from it, even if there are chunks enqueued waiting to be read.
+   * @return a Promise that resolves when the stream is canceled.
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream/cancel
+   */
+  cancel: (reason?: string) => Promise<void>;
+} & AsyncIterable<Uint8Array>;
+
+export type StreamReader = {
+  /**
+   * a Promise that fulfills when the stream closes, or rejects if the stream throws an error or the reader's lock is released.
+   */
+  closed: Promise<boolean>;
+  /**
+   * Cancel is used when you've completely finished with the stream and don't need any more data from it, even if there are chunks enqueued waiting to be read.
+   * @param reason A human-readable reason for the cancellation.
+   * @returns a Promise that resolves when the stream is canceled. Calling this method signals a loss of interest in the stream by a consumer.
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/ReadableStreamDefaultReader/cancel
+   */
+  cancel(reason?: string): Promise<string | undefined>;
+  /**
+   * @returns a Promise providing access to the next chunk in the stream's internal queue.
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/ReadableStreamDefaultReader/read
+   */
+  read<T>(): Promise<{ value: T; done: false } | { value: undefined; done: true }>;
+  /**
+   * Releases the reader's lock on the stream.
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/ReadableStreamDefaultReader/releaseLock
+   */
+  releaseLock(): void;
+} & AsyncIterable<Uint8Array>;
+
 // Environment independent Fetch API
 
 type FetchRequestInfo = FetchRequest | string;
 type FetchHeadersInit = FetchHeaders | string[][] | Record<string, string>;
 type FetchRequestCredentials = "include" | "omit" | "same-origin";
 type FetchRequestMode = "cors" | "navigate" | "no-cors" | "same-origin";
-type FetchReadableStream = unknown;
 
 interface FetchBody {
-  readonly body: FetchReadableStream | null;
+  readonly body: ReadableStream | null;
   readonly bodyUsed: boolean;
   arrayBuffer(): Promise<ArrayBuffer>;
   blob(): Promise<unknown>;

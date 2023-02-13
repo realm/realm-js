@@ -16,17 +16,38 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { binding, network } from "../internal";
+import { FetchHeaders, binding, network } from "../internal";
+
+function flattenHeaders(headers: FetchHeaders) {
+  const result: Record<string, string> = {};
+  headers.forEach((value: string, key: string) => {
+    result[key] = value;
+  });
+  return result;
+}
 
 /** @internal */
 export function createNetworkTransport() {
   return binding.Helpers.makeNetworkTransport((request, callback) => {
-    network.fetch(request).then(callback, (err) => {
-      // Core will propagate any non-zero "custom status code" through to the caller
-      // The error message is passed through the body
-      const reason = err.message || "Unknown";
-      const body = `request to ${request.url} failed, reason: ${reason}`;
-      callback({ httpStatusCode: 0, headers: {}, customStatusCode: -1, body });
-    });
+    network.fetch(request).then(
+      async (response) => {
+        const headers = flattenHeaders(response.headers);
+        const contentType = headers["content-type"];
+        const body = contentType ? await response.text() : "";
+        callback({
+          customStatusCode: 0,
+          httpStatusCode: response.status,
+          headers,
+          body,
+        });
+      },
+      (err) => {
+        // Core will propagate any non-zero "custom status code" through to the caller
+        // The error message is passed through the body
+        const reason = err.message || "Unknown";
+        const body = `request to ${request.url} failed, reason: ${reason}`;
+        callback({ httpStatusCode: 0, headers: {}, customStatusCode: -1, body });
+      },
+    );
   });
 }

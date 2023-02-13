@@ -16,18 +16,46 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { DefaultNetworkTransport, FetchHeaders, FetchResponse, Method, Request } from "@realm/network-transport";
+
+import { extendDebug } from "../debug";
 import { binding } from "../internal";
 
-export type Request = binding.Request_Relaxed;
-export type Response = binding.Response;
+export type { FetchHeaders, Request };
+
+const debug = extendDebug("network");
+const transport = new DefaultNetworkTransport();
 
 type NetworkType = {
-  fetch(request: Request): Promise<Response>;
+  fetch(request: Request): Promise<FetchResponse>;
+  fetch(request: binding.Request): Promise<FetchResponse>;
 };
 
+const HTTP_METHOD: Record<binding.HttpMethod, Method> = {
+  [binding.HttpMethod.get]: "GET",
+  [binding.HttpMethod.post]: "POST",
+  [binding.HttpMethod.put]: "PUT",
+  [binding.HttpMethod.patch]: "PATCH",
+  [binding.HttpMethod.del]: "DELETE",
+};
+
+function toFetchRequest({ method, timeoutMs, body, headers, url }: binding.Request_Relaxed) {
+  return {
+    url,
+    headers,
+    method: HTTP_METHOD[method],
+    timeoutMs: Number(timeoutMs),
+    body: body !== "" ? body : undefined,
+  };
+}
+
 export const network: NetworkType = {
-  fetch() {
-    throw new Error("Not supported on this platform");
+  async fetch(request) {
+    debug("Requesting %O", request);
+    const fetchRequest = typeof request.method === "string" ? request : toFetchRequest(request);
+    const response = await transport.fetch(fetchRequest);
+    debug("Responded %O", response);
+    return response;
   },
 };
 
