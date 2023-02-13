@@ -36,7 +36,6 @@ if (isNodeProcess && process.platform === "win32") {
 }
 
 var TESTS = {
-  RealmTests: require("./realm-tests"),
   ResultsTests: require("./results-tests"),
   MigrationTests: require("./migration-tests"),
   BsonTests: require("./bson-tests"),

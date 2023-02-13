@@ -51,6 +51,7 @@ import "./sync/user";
 import "./sync/dictionary";
 import "./sync/uuid";
 import "./sync/set";
+import "./sync/realm";
 import "./transaction";
 import "./schema";
 import "./types";
