@@ -347,10 +347,6 @@ export class AppImporter {
         if (fs.existsSync(configFilePath)) {
           const config = this.loadJson(configFilePath);
           console.log("Creating service: ", config.name);
-          const tmpConfig = { name: config.name, type: config.type, config: config.config };
-          if (config.type === "mongodb-atlas") {
-            tmpConfig.config = { clusterName: config.config.clusterName };
-          }
           const dbName = config.config.sync
             ? config.config.sync?.database_name
             : config.config.flexible_sync?.database_name;
@@ -364,7 +360,7 @@ export class AppImporter {
             body: JSON.stringify(config),
           });
           if (!response.ok) {
-            console.warn("Could not create service: ", tmpConfig, serviceUrl, response.statusText);
+            console.warn("Could not create service: ", config, serviceUrl, response.statusText);
           } else {
             if (syncConfig) {
               await this.applySyncConfig(groupId, appId, syncConfig);
@@ -379,9 +375,6 @@ export class AppImporter {
               for (const ruleFile of ruleFiles) {
                 const ruleFilePath = path.join(rulesDir, ruleFile);
                 const ruleConfig = this.loadJson(ruleFilePath);
-                if (dbName) {
-                  ruleConfig.database = dbName ?? "";
-                }
                 const schemaConfig = ruleConfig.schema || null;
                 if (schemaConfig) {
                   // Schema is not valid in a rule request, but is included when exporting an app from realm
