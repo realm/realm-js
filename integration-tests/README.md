@@ -118,6 +118,20 @@ This directory of the repository contains three sub-directories:
   - [Electron](./environments/electron/README.md)
 - [./realm-apps](./realm-apps): A directory of importable app configurations made available to the tests.
 
+### Working accross test environments
+
+There can be different expectations of code output depending on which platform it runs on. to address the differences you should use `tests/src/utils/select.ts`. An example would be where a specific error message is expected on reactNative but not elsewhere.
+
+```typescript
+await expect(app.logIn(credentials)).to.be.rejectedWith(
+  select({
+    reactNative: "Network request failed: Could not connect to the server",
+    default:
+      "request to http://localhost:9999/api/client/v2.0/app/smurf/location failed, reason: connect ECONNREFUSED",
+  }),
+);
+```
+
 ### How to write tests
 
 Because of limitations (see below), we need to explicitly require in the files defining the tests: To write a new test, simply add it in the relevant file in `test/src/tests/` or create a new file and make sure to require that from `test/src/index.ts`.
