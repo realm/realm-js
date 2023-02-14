@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { ChangeEvent, Document, InsertEvent, MongoDBCollection } from "realm";
+import { ChangeEvent, DeleteResult, Document, InsertEvent, MongoDBCollection } from "realm";
 
 import { authenticateUserBefore, importAppBefore } from "../../hooks";
 import { sleep } from "../../utils/sleep";
@@ -55,6 +55,20 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
       expect(collection).to.have.property("databaseName", dbName);
       expect(collection).to.have.property("serviceName", serviceName);
     });
+
+    it("throws when calling 'mongoClient()' with incorrect type", async function (this: AppContext & Mocha.Context) {
+      const notAString = 1;
+      //@ts-expect-error Testing incorrect type
+      expect(() => this.app.currentUser?.mongoClient(notAString)).to.throw(
+        `Expected 'serviceName' to be a string, got a number`,
+      );
+    });
+
+    it("throws when calling 'mongoClient()' with empty string", async function (this: AppContext & Mocha.Context) {
+      expect(() => this.app.currentUser?.mongoClient("")).to.throw(
+        "The MongoDB service name must contain at least 1 character",
+      );
+    });
   });
 
   describe("MongoDBCollection", function () {
@@ -67,7 +81,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
       return currentUser.mongoClient(serviceName).db(dbName).collection<T>(collectionName);
     }
 
-    function deleteAllDocuments() {
+    function deleteAllDocuments(): Promise<DeleteResult> {
       return collection.deleteMany();
     }
 
