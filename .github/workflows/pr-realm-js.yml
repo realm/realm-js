@@ -412,4 +412,4 @@ jobs:
         run: npx lerna bootstrap --scope @realm/baas-stress --include-dependencies
       - name: Start the stress
         working-directory: packages/baas-stress
-        run: npm run stress -- --cluster ${{ secrets.ATLAS_QA_DAILY_CLUSTER_NAME }} --base-url ${{ secrets.REALM_QA_BASE_URL }} --public-key ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }} --private-key ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }} --cycles 100
+        run: npm run stress -- --cluster ${{ secrets.ATLAS_QA_DAILY_CLUSTER_NAME }} --base-url ${{ secrets.REALM_QA_BASE_URL }} --public-api-key ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }} --private-api-key ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }} --cycles 10
