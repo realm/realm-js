@@ -227,7 +227,6 @@ describe("SessionTest", () => {
 
     it("with destructive schema update throws", async function (this: AppContext) {
       const partition = generatePartition();
-      await seedDataWithExternalUser(this.app, partition);
       const { config } = await getSyncConfWithUser(this.app, partition);
       const realm = await Realm.open(config);
       realm.close();
@@ -303,32 +302,31 @@ describe("SessionTest", () => {
   });
 
   describe("progress notification", () => {
+    afterEach(() => Realm.clearTestState());
     it("is called", async function (this: AppContext) {
       const partition = generatePartition();
-      await seedDataWithExternalUser(this.app, partition);
       const { config } = await getSyncConfWithUser(this.app, partition);
       let progressCalled = false;
-      Promise.race([
+      await Promise.race([
         Realm.open(config).progress(() => {
           progressCalled = true;
         }),
-        new Promise((_, reject) => {
-          sleep(5000);
-          reject();
+        new Promise(() => {
+          sleep(5000, false);
         }),
-      ]).then(() => expect(progressCalled).to.be.true);
+      ]);
+      expect(progressCalled).to.be.true;
     });
 
     it("removing progress notification does not invoke callback again", async function (this: AppContext) {
       const partition = generatePartition();
-      await seedDataWithExternalUser(this.app, partition);
       const { user, config } = await getSyncConfWithUser(this.app, partition);
       const realm = new Realm(config);
       let unregisterFunc: () => void;
       const writeDataFunc = () => {
         realm.write(() => {
           for (let i = 1; i <= 3; i++) {
-            realm.create("Dog", { _id: new ObjectId(), name: `Lassy ${i}` });
+            realm.create("Dog", { _id: new ObjectId(), name: `Lassy ${1}` });
           }
         });
       };
@@ -1402,7 +1400,7 @@ describe("SessionTest", () => {
       }).throws("'sync' property must be an object");
       expect(() => {
         realm.writeCopyTo({ path: "output", sync: { flexible: true, user } });
-      }).throws("Realm cannot be converted if flexible sync is enabled");
+      }).throws("Realm cannot be converted to a flexible sync realm unless flexible sync is already enabled");
       /*
        *  Test 2:  check that `writeCopyTo` can only be called at the right time
        */

@@ -22,6 +22,8 @@ declare function setTimeout(cb: () => void, ms: number): void;
  * @param ms For how long should the promise be pending?
  * @returns A promise that returns after `ms` milliseconds.
  */
-export function sleep(ms = 1000): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+export function sleep(ms = 1000, shouldResolve = true): Promise<void> {
+  return new Promise((resolve, reject) => {
+    setTimeout(shouldResolve ? resolve : reject, ms);
+  });
 }

@@ -8,7 +8,7 @@
       "partition": {
         "key": "partition",
         "type": "string",
-        "required": true,
+        "required": false,
         "permissions": {
           "read": true,
           "write": true
