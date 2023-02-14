@@ -1303,21 +1303,23 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                 }
 
                 case realm::ClientResyncMode::RecoverOrDiscard: {
-                    ValueType client_reset_after_value = Object::get_property(ctx, client_reset_object, "onDiscard");
-                    if (Value::is_undefined(ctx, client_reset_after_value)) {
-                        throw std::invalid_argument("'onDiscard' is required");
-                    }
-
-                    ValueType client_reset_recovery_value =
-                        Object::get_property(ctx, client_reset_object, "onRecovery");
-                    if (Value::is_undefined(ctx, client_reset_after_value)) {
-                        throw std::invalid_argument("'onRecovery' is required");
-                    }
+                    auto get_callback = [=](std::string callback_name, std::string default_callback_name) {
+                        ValueType callback_value = Object::get_property(ctx, client_reset_object, callback_name);
+                        if (Value::is_undefined(ctx, callback_value)) {
+                            auto realm = Value::validated_to_object(ctx, Object::get_global(ctx, "Realm"));
+                            auto default_callback_value = Value::validated_to_object(
+                                ctx, Object::get_property(ctx, realm, default_callback_name));
+                            return Value::validated_to_function(ctx, default_callback_value);
+                        }
+                        else {
+                            return Value::validated_to_function(ctx, callback_value);
+                        }
+                    };
 
                     FunctionType client_reset_discard_callback =
-                        Value::validated_to_function(ctx, client_reset_after_value);
+                        get_callback("onDiscard", "_defaultOnDiscardCallback");
                     FunctionType client_reset_recovery_callback =
-                        Value::validated_to_function(ctx, client_reset_recovery_value);
+                        get_callback("onRecovery", "_defaultOnRecoveryCallback");
 
                     auto client_reset_after_handler =
                         util::EventLoopDispatcher<void(SharedRealm, ThreadSafeReference, bool)>(

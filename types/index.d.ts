@@ -175,8 +175,8 @@ declare namespace Realm {
     interface ClientResetRecoveryOrDiscardConfiguration {
       mode: ClientResetMode.RecoverOrDiscardUnsyncedChanges;
       onBefore?: ClientResetBeforeCallback;
-      onRecovery: ClientResetAfterCallback;
-      onDiscard: ClientResetAfterCallback;
+      onRecovery?: ClientResetAfterCallback;
+      onDiscard?: ClientResetAfterCallback;
       onFallback?: ClientResetFallbackCallback;
     }
 
