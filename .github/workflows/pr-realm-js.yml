@@ -415,5 +415,6 @@ jobs:
         run: npx lerna bootstrap --scope @realm/node-tests --include-dependencies
       - name: Run the tests
         env:
+          MOCHA_REMOTE_TIMEOUT: 60000
           MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.name }}
         run: npm test --prefix integration-tests/environments/node
