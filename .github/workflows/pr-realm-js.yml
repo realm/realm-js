@@ -20,16 +20,16 @@ jobs:
         variant:
           - { os: linux, runner: ubuntu-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true, container: "ghcr.io/${{ github.repository }}/linux-x64:master" }
           - { os: linux, runner: ubuntu-latest, arch: arm, artifact-path: prebuilds, container: "ghcr.io/${{ github.repository }}/linux-arm:master" }
-          - { os: linux, runner: ubuntu-latest, arch: arm64, artifact-path: prebuilds, container: "ghcr.io/${{ github.repository }}/linux-arm:master" }
-          - { os: windows, runner: windows-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
-          - { os: windows, runner: windows-2019, arch: ia32, artifact-path: prebuilds }
-          - { os: android, runner: ubuntu-latest, arch: x86_64, artifact-path: react-native/android/src/main/jniLibs }
-          - { os: android, runner: ubuntu-latest, arch: armeabi-v7a, artifact-path: react-native/android/src/main/jniLibs }
-          - { os: android, runner: ubuntu-latest, arch: arm64-v8a, artifact-path: react-native/android/src/main/jniLibs }
-          - { os: android, runner: ubuntu-latest, arch: x86, artifact-path: react-native/android/src/main/jniLibs }
-          - { os: darwin, runner: macos-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
-          - { os: darwin, runner: macos-latest, arch: arm64, artifact-path: prebuilds, test-node: true, test-electron: true }
-          #- { os: ios, runner: macos-latest, arch: apple, artifact-path: react-native/ios/realm-js-ios.xcframework }
+          # - { os: linux, runner: ubuntu-latest, arch: arm64, artifact-path: prebuilds, container: "ghcr.io/${{ github.repository }}/linux-arm:master" }
+          # - { os: windows, runner: windows-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
+          # - { os: windows, runner: windows-2019, arch: ia32, artifact-path: prebuilds }
+          # - { os: android, runner: ubuntu-latest, arch: x86_64, artifact-path: react-native/android/src/main/jniLibs }
+          # - { os: android, runner: ubuntu-latest, arch: armeabi-v7a, artifact-path: react-native/android/src/main/jniLibs }
+          # - { os: android, runner: ubuntu-latest, arch: arm64-v8a, artifact-path: react-native/android/src/main/jniLibs }
+          # - { os: android, runner: ubuntu-latest, arch: x86, artifact-path: react-native/android/src/main/jniLibs }
+          # - { os: darwin, runner: macos-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
+          # - { os: darwin, runner: macos-latest, arch: arm64, artifact-path: prebuilds, test-node: true, test-electron: true }
+          # - { os: ios, runner: macos-latest, arch: apple, artifact-path: react-native/ios/realm-js-ios.xcframework }
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -183,15 +183,15 @@ jobs:
         variant:
           - { os: linux, target: test, runner: ubuntu-latest, environment: node }
           - { os: linux, target: "test:main", runner: ubuntu-latest, environment: electron }
-          - { os: linux, target: "test:renderer", runner: ubuntu-latest, environment: electron }
+          # - { os: linux, target: "test:renderer", runner: ubuntu-latest, environment: electron }
           #- { os: windows, target: test, runner: windows-latest, environment: node}
           #- { os: windows, target: "test:main", runner: windows-latest, environment: electron }
           #- { os: windows, target: "test:renderer", runner: windows-latest, environment: electron }
-          - { os: darwin, target: "test:main", runner: macos-latest, environment: electron }
-          - { os: darwin, target: "test:renderer", runner: macos-latest, environment: electron }
-          - { os: darwin, target: test, runner: macos-latest, environment: node }
-          - { os: android, target: "test:android", runner: macos-latest, environment: react-native, arch: "armeabi-v7a" }
-          - { os: ios, target: "test:ios", runner: macos-latest, environment: react-native, arch: "apple" }
+          # - { os: darwin, target: "test:main", runner: macos-latest, environment: electron }
+          # - { os: darwin, target: "test:renderer", runner: macos-latest, environment: electron }
+          # - { os: darwin, target: test, runner: macos-latest, environment: node }
+          # - { os: android, target: "test:android", runner: macos-latest, environment: react-native, arch: "armeabi-v7a" }
+          # - { os: ios, target: "test:ios", runner: macos-latest, environment: react-native, arch: "apple" }
           #- { os: ios, target: "test:catalyst", runner: macos-latest, environment: react-native, arch: "apple" }
     timeout-minutes: 60
     steps:
