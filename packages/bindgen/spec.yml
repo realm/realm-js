@@ -629,7 +629,7 @@ classes:
       erase_subscription: '(subs: MutableSyncSubscriptionSet&, sub_to_remove: const SyncSubscription&) -> bool'
       # This is added due to DescriptorOrdering not being exposed
       get_results_description: '(results: const Results&) -> StringData'
-      feed_buffer: '(ws: WatchStream&, buffer: const BinaryData&)'
+      feed_buffer: '(ws: WatchStream&, buffer: BinaryData)'
 
   ConstTableRef:
     needsDeref: true

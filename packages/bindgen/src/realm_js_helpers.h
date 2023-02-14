@@ -251,7 +251,7 @@ struct Helpers {
         return query.get_description() + ' ' + results.get_descriptor_ordering().get_description(query.get_table());
     }
 
-    static void feed_buffer(app::WatchStream& ws, const BinaryData& buffer) {
+    static void feed_buffer(app::WatchStream& ws, BinaryData buffer) {
         ws.feed_buffer({ buffer.data(), buffer.size() });
     }
 };
