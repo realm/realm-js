@@ -396,7 +396,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        agent: [1]
+        agent: [1,2,3,4,5]
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
