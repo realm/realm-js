@@ -30,4 +30,4 @@ fi
 (cd react-native/ios && xcrun agvtool new-version "$RELEASE_VERSION")
 
 # Update CHANGELOG
-sed -i '' "1s/.*/$RELEASE_VERSION Release notes ($(date '+%Y-%-m-%-d'))/" CHANGELOG.md
+sed -e "1s/.*/## $VERSION ($(date '+%Y-%-m-%-d'))/" -i CHANGELOG.md
