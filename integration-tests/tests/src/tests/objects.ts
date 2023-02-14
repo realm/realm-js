@@ -1099,12 +1099,12 @@ describe("Objectstest", () => {
       expect(() => {
         //@ts-expect-error TYPEBUG: __to_object does not exist on realm.
         this.realm.__to_object(null);
-      }).throws(TypeError);
+      }).throws("TypeError");
 
       expect(() => {
         //@ts-expect-error TYPEBUG: __to_object does not exist on realm.
         this.realm.__to_object(undefined);
-      }).throws(TypeError);
+      }).throws("TypeError");
     });
   });
 

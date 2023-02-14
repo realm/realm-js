@@ -19,6 +19,7 @@
 import { expect } from "chai";
 import Realm, { BSON } from "realm";
 import { openRealmBeforeEach } from "../hooks";
+import { select } from "../utils/select";
 const { Decimal128, ObjectId, UUID } = Realm.BSON;
 
 class TestObject extends Realm.Object {
@@ -185,11 +186,11 @@ describe("Results", () => {
       expect(() => {
         //@ts-expect-error Should be an invalid write to read-only object.
         objects[0] = { doubleCol: 0 };
-      }).throws("Cannot assign to read only index 0");
+      }).throws(select({ reactNative: "Cannot assign to index", default: "Cannot assign to read only index 0" }));
       expect(() => {
         //@ts-expect-error Should be an invalid write to read-only object.
         objects[1] = { doubleCol: 0 };
-      }).throws("Cannot assign to read only index 1");
+      }).throws(select({ reactNative: "Cannot assign to index", default: "Cannot assign to read only index 1" }));
       expect(() => {
         //@ts-expect-error Should be an invalid write to read-only object.
         objects.length = 0;
