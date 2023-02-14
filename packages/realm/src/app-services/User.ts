@@ -228,7 +228,7 @@ export class User<
   }
 
   /**
-   * Call a remote Atlas App Services function by its name.
+   * Call a remote Atlas App Services Function by its name.
    * Note: Consider using `functions[name]()` instead of calling this method.
    *
    * @param name Name of the function.
@@ -301,9 +301,9 @@ export class User<
    *
    * @example
    * let blueWidgets = user.mongoClient()
-   *                       .db('myDb')
-   *                       .collection('widgets')
-   *                       .find({color: 'blue'});
+   *                       .db("myDb")
+   *                       .collection<Widget>("widgets")
+   *                       .find({ color: "blue" });
    */
   mongoClient(serviceName = "mongo-db"): MongoDB {
     assert.string(serviceName, "serviceName");

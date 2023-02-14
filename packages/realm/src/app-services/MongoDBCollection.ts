@@ -29,14 +29,13 @@ export type MongoDB = {
    */
   serviceName: string;
   /**
-   * @param databaseName
    * @returns The remote MongoDB database.
    */
   db(databaseName: string): MongoDBDatabase;
 };
 
 /**
- * A remote MongoDB database enabling access to a collection of objects.
+ * A remote MongoDB database enabling access to collections of objects.
  */
 export type MongoDBDatabase = {
   /**
@@ -44,7 +43,6 @@ export type MongoDBDatabase = {
    */
   name: string;
   /**
-   * @param collectionName
    * @returns The remote MongoDB collection.
    */
   collection<T extends Document>(collectionName: string): MongoDBCollection<T>;
@@ -244,10 +242,8 @@ export type OperationType =
 export type DocumentNamespace = {
   /** The name of the database. */
   db: string;
-  // database: string;
   /** The name of the collection. */
   coll: string;
-  // collection: string;
 };
 
 /**
