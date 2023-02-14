@@ -1861,7 +1861,7 @@ describe("Realmtest", () => {
     });
   });
 
-  describe.skipIf(environment.node, "copyBundledRealmFiles", () => {
+  describe.skipIf(environment.node || environment.electron, "copyBundledRealmFiles", () => {
     it("copies realm files", () => {
       const config = { path: "realm-bundle.realm", schema: [DateObjectSchema] };
       if (Realm.exists(config)) {
