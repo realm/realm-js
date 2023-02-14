@@ -7,8 +7,8 @@
     "./realm-baas-stress.ts": "./realm-baas-stress.ts"
   },
   "scripts": {
-    "start": "./realm-baas-stress.ts",
-    "stress": "./realm-baas-stress.ts stress"
+    "start": "tsx realm-baas-stress.ts",
+    "stress": "tsx realm-baas-stress.ts stress"
   },
   "dependencies": {
     "@commander-js/extra-typings": "^10.0.2",
