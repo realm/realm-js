@@ -52,9 +52,10 @@ async function roundtripData({ appId, baseUrl }: RoundtripDataOptions) {
   const credentials = Credentials.anonymous();
   const user = await app.logIn(credentials);
 
-  console.log("Opening Realm");
+  const path = `./realms/${randomString()}.realm`;
+  console.log("Opening Realm", path);
   const config: Configuration = {
-    path: `./realms/${randomString()}.realm`,
+    path,
     schema: [{
       name: "Person",
       // TODO: File an issue on the missing errors when primary key is missing
