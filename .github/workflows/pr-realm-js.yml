@@ -396,7 +396,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        agent: [1, 2, 3, 4, 5]
+        agent: [1]
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
@@ -408,8 +408,12 @@ jobs:
         run: npx prebuild-install --tag-prefix= -r napi
         env:
           npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
+      - name: Create Mocha Env
+        id: mocha-env
+        run: echo "::set-output name=name::syncLogLevel=warn,realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ secrets.ATLAS_QA_DAILY_CLUSTER_NAME }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}"
       - name: Bootstrap lerna sub-packages
-        run: npx lerna bootstrap --scope @realm/baas-stress --include-dependencies
-      - name: Start the stress
-        working-directory: packages/baas-stress
-        run: npm run stress -- --cluster ${{ secrets.ATLAS_QA_DAILY_CLUSTER_NAME }} --base-url ${{ secrets.REALM_QA_BASE_URL }} --public-api-key ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }} --private-api-key ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }} --cycles 10
+        run: npx lerna bootstrap --scope @realm/node-tests --include-dependencies
+      - name: Run the tests
+        env:
+          MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.name }}
+        run: npm test --prefix integration-tests/environments/node
