@@ -22,7 +22,7 @@ import { ConnectionState, ObjectSchema } from "realm";
 import { importAppBefore } from "../../hooks";
 import { DogSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { generatePartition, randomVerifiableEmail } from "../../utils/generators";
-import { sleep } from "../../utils/sleep";
+import { sleep, timeout } from "../../utils/sleep";
 
 const DogForSyncSchema = {
   name: "Dog",
@@ -311,9 +311,7 @@ describe("SessionTest", () => {
         Realm.open(config).progress(() => {
           progressCalled = true;
         }),
-        new Promise(() => {
-          sleep(5000, false);
-        }),
+        timeout(5000),
       ]);
       expect(progressCalled).to.be.true;
     });
@@ -662,7 +660,7 @@ describe("SessionTest", () => {
             if (!Realm.App.Sync._hasExistingSessions(this.app)) {
               return;
             }
-            sleep(100);
+            await sleep(100);
           }
           throw new Error("Failed to cleanup session in time");
         };
