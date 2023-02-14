@@ -1,6 +1,3 @@
-## Developing with the Realm SDKs? We want to hear from you! [Take our short survey](https://mongodb.co1.qualtrics.com/jfe/form/SV_6fJwP5VUXddZmZg?Source=github)
-<br/>
-
 <picture>
     <source srcset="./logo-dark.svg" media="(prefers-color-scheme: dark)" alt="realm by MongoDB">
     <img src="./logo.svg" alt="realm by MongoDB">
