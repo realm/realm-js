@@ -125,6 +125,11 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
   authenticateUserBefore();
 
   describe("Configuration", () => {
+    afterEach(() => {
+      // These tests might cross-talk, as they're opening Realms that might not get closed
+      Realm.clearTestState();
+    });
+
     describe("flexible sync Realm config", function () {
       it("accepts a { flexible: true } option", function () {
         expect(() => {
