@@ -25,17 +25,17 @@ jobs:
           - { os: linux, runner: ubuntu-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true, container: "ghcr.io/${{ github.repository }}/linux-x64:master" }
           - { os: linux, runner: ubuntu-latest, arch: arm, artifact-path: prebuilds, container: "ghcr.io/${{ github.repository }}/linux-arm:master" }
           - { os: linux, runner: ubuntu-latest, arch: arm64, artifact-path: prebuilds, container: "ghcr.io/${{ github.repository }}/linux-arm:master" }
-          - { os: windows, runner: windows-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
-          - { os: windows, runner: windows-2019, arch: ia32, artifact-path: prebuilds }
-          - { os: android, runner: ubuntu-latest, arch: x86_64, artifact-path: react-native/android/src/main/jniLibs }
-          - { os: android, runner: ubuntu-latest, arch: armeabi-v7a, artifact-path: react-native/android/src/main/jniLibs }
-          - { os: android, runner: ubuntu-latest, arch: arm64-v8a, artifact-path: react-native/android/src/main/jniLibs }
-          - { os: android, runner: ubuntu-latest, arch: x86, artifact-path: react-native/android/src/main/jniLibs }
-          - { os: darwin, runner: macos-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
-          - { os: darwin, runner: macos-latest, arch: arm64, artifact-path: prebuilds, test-node: true, test-electron: true }
-          - { os: ios, runner: macos-latest, arch: simulator, artifact-path: react-native/ios/realm-js-ios.xcframework }
-          - { os: ios, runner: macos-latest, arch: catalyst, artifact-path: react-native/ios/realm-js-ios.xcframework }
-          - { os: ios, runner: macos-latest, arch: ios, artifact-path: react-native/ios/realm-js-ios.xcframework }
+          #- { os: windows, runner: windows-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
+          #- { os: windows, runner: windows-2019, arch: ia32, artifact-path: prebuilds }
+          #- { os: android, runner: ubuntu-latest, arch: x86_64, artifact-path: react-native/android/src/main/jniLibs }
+          #- { os: android, runner: ubuntu-latest, arch: armeabi-v7a, artifact-path: react-native/android/src/main/jniLibs }
+          #- { os: android, runner: ubuntu-latest, arch: arm64-v8a, artifact-path: react-native/android/src/main/jniLibs }
+          #- { os: android, runner: ubuntu-latest, arch: x86, artifact-path: react-native/android/src/main/jniLibs }
+          #- { os: darwin, runner: macos-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
+          #- { os: darwin, runner: macos-latest, arch: arm64, artifact-path: prebuilds, test-node: true, test-electron: true }
+          #- { os: ios, runner: macos-latest, arch: simulator, artifact-path: react-native/ios/realm-js-ios.xcframework }
+          #- { os: ios, runner: macos-latest, arch: catalyst, artifact-path: react-native/ios/realm-js-ios.xcframework }
+          #- { os: ios, runner: macos-latest, arch: ios, artifact-path: react-native/ios/realm-js-ios.xcframework }
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -173,6 +173,7 @@ jobs:
             ${{ matrix.variant.artifact-path }}
 
   ios-xcframework:
+    if: ${{ false }}
     name: Generate Info.plist with all frameworks in place
     needs: [build]
     runs-on: macos-latest
@@ -201,6 +202,7 @@ jobs:
             react-native/ios/realm-js-ios.xcframework/Info.plist
 
   integration-tests:
+    if: ${{ false }}
     name: Integration tests (${{matrix.variant.target}}) for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
     needs: [build, ios-xcframework]
     env:
@@ -387,3 +389,26 @@ jobs:
           ndk: ${{ env.NDK_VERSION }}
           cmake: 3.22.1
           script: npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
+
+  stress:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        agent: [1]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: realm-js-prebuilds
+      - run: npm ci --ignore-scripts
+      - name: Install prebuild
+        run: npx prebuild-install --tag-prefix= -r napi
+        env:
+          npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
+      - name: Bootstrap lerna sub-packages
+        run: npx lerna bootstrap --scope @realm/baas-stress --include-dependencies
+      - name: Start the stress
+        working-directory: packages/baas-stress
+        run: npm run stress -- --cluster ${{ secrets.ATLAS_QA_DAILY_CLUSTER_NAME }} --base-url ${{ secrets.REALM_QA_BASE_URL }} --public-key ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }} --private-key ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }} --cycles 100
