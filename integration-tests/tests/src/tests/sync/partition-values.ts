@@ -75,7 +75,9 @@ const createConfig = (schema: Realm.ObjectSchema, user: Realm.User, partitionVal
   },
 });
 
-describe("Partition-values", () => {
+describe("Partition-values", function () {
+  this.timeout(120_000);
+
   describe("integer", () => {
     importAppBefore("pv-int-tests");
     authenticateUserBefore();
@@ -115,6 +117,7 @@ describe("Partition-values", () => {
       realm3.close();
     });
   });
+
   describe("string", () => {
     importAppBefore("pv-string-tests");
     authenticateUserBefore();
@@ -153,6 +156,7 @@ describe("Partition-values", () => {
       realm3.close();
     });
   });
+
   describe("UUID", () => {
     importAppBefore("pv-uuid-tests");
     authenticateUserBefore();
@@ -191,6 +195,7 @@ describe("Partition-values", () => {
       realm3.close();
     });
   });
+
   describe("objectId", () => {
     importAppBefore("pv-objectid-tests");
     authenticateUserBefore();
