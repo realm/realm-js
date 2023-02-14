@@ -36,7 +36,7 @@ const TYPE_MAPPINGS: Record<binding.PropertyType, PropertyTypeName | null> = {
   [PropertyType.Mixed]: "mixed",
   [PropertyType.ObjectId]: "objectId",
   [PropertyType.Decimal]: "decimal128",
-  [PropertyType.UUID]: "uuid",
+  [PropertyType.Uuid]: "uuid",
   [PropertyType.Array]: "list",
   [PropertyType.Set]: "set",
   [PropertyType.Dictionary]: "dictionary",

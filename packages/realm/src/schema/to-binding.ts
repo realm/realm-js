@@ -36,7 +36,7 @@ export const TYPE_MAPPINGS: Record<PropertyTypeName, BindingPropertyType> = {
   mixed: BindingPropertyType.Mixed,
   objectId: BindingPropertyType.ObjectId,
   decimal128: BindingPropertyType.Decimal,
-  uuid: BindingPropertyType.UUID,
+  uuid: BindingPropertyType.Uuid,
   list: BindingPropertyType.Array,
   set: BindingPropertyType.Set,
   dictionary: BindingPropertyType.Dictionary,
