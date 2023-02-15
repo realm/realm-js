@@ -24,41 +24,18 @@
  * @param deleteRealmFile If false, do not delete the Realm file before reopening.
  * @param clearTestState If false, do not clear test state before reopening.
  */
-export function closeRealm(
-  realm: Realm,
-  config: Realm.Configuration,
-  deleteRealmFile = true,
-  clearTestState = true,
-): void {
+export function closeRealm(realm: Realm, deleteRealmFile = true, clearTestState = true): void {
+  const path = realm.path;
   realm.close();
 
   if (deleteRealmFile) {
-    Realm.deleteFile(config);
+    Realm.deleteFile({ path });
   }
 
   if (clearTestState) {
     // Clearing the test state to ensure the sync session gets completely reset and nothing is cached between tests
     Realm.clearTestState();
   }
-}
-
-/**
- * Close the Realm instance on the current `this` context
- *
- * @param this Mocha `this` context
- */
-export function closeThisRealm(this: Partial<RealmContext> & Mocha.Context): void {
-  if (!this.realm) {
-    throw new Error("Expected a 'realm' to close");
-  }
-  if (!this.config) {
-    throw new Error("Expected a 'config' to close");
-  }
-
-  closeRealm(this.realm, this.config);
-
-  delete this.realm;
-  delete this.config;
 }
 
 /**
@@ -73,6 +50,6 @@ export function closeThisRealm(this: Partial<RealmContext> & Mocha.Context): voi
  * @returns New re-opened Realm instance
  */
 export function closeAndReopenRealm(realm: Realm, config: Realm.Configuration, clearRealm = true): Promise<Realm> {
-  closeRealm(realm, config, clearRealm, clearRealm);
+  closeRealm(realm, clearRealm, clearRealm);
   return Realm.open(config);
 }
