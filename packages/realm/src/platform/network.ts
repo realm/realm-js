@@ -32,11 +32,11 @@ type NetworkType = {
 };
 
 const HTTP_METHOD: Record<binding.HttpMethod, Method> = {
-  [binding.HttpMethod.get]: "GET",
-  [binding.HttpMethod.post]: "POST",
-  [binding.HttpMethod.put]: "PUT",
-  [binding.HttpMethod.patch]: "PATCH",
-  [binding.HttpMethod.del]: "DELETE",
+  [binding.HttpMethod.Get]: "GET",
+  [binding.HttpMethod.Post]: "POST",
+  [binding.HttpMethod.Put]: "PUT",
+  [binding.HttpMethod.Patch]: "PATCH",
+  [binding.HttpMethod.Del]: "DELETE",
 };
 
 function toFetchRequest({ method, timeoutMs, body, headers, url }: binding.Request_Relaxed) {
