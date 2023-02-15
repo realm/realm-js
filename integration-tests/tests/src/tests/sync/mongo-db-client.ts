@@ -171,27 +171,17 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
       });
 
       it("throws when the user is logged out", async function (this: AppContext & Mocha.Context) {
-        throw new Error("Test not yet implemented.");
+        const user = this.app.currentUser;
+        expect(user).to.be.instanceOf(User);
+        await user?.logOut();
+        expect(this.app.currentUser).to.be.null;
 
-        await this.app.currentUser?.logOut();
-        const handleWatch = async () => {
-          try {
-            for await (const _ of collection.watch()) {
-              expect.fail("Expected 'watch()' to throw, but received a change stream.");
-            }
-          } catch (err) {
-            return err;
-          } finally {
-            // TODO:
-            // Should we log in again reset our `collection` variable in case other tests
-            // are run after this test?
+        const callWatch = async () => {
+          for await (const _ of collection.watch()) {
+            expect.fail("Expected 'watch()' to throw, but received a change stream.");
           }
         };
-
-        const CODE_UNAUTHORIZED = 401;
-        const err = await handleWatch();
-        expect(err).to.be.an("object");
-        expect(err).to.have.property("code", CODE_UNAUTHORIZED);
+        await expect(callWatch()).to.be.rejectedWith("Request failed: Unauthorized (401)");
       });
     });
   });
