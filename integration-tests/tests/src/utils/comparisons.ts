@@ -16,9 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Decimal128, ObjectId, UUID } from "bson";
+import { BSON } from "realm";
 import { expect } from "chai";
-type BSON = Decimal128 | ObjectId | UUID | null;
+type BSONType = BSON.Decimal128 | BSON.ObjectId | BSON.UUID | null;
 
 export function expectSimilar(type: string, val1: unknown, val2: unknown): void {
   if (val2 === null) {
@@ -34,7 +34,7 @@ export function expectSimilar(type: string, val1: unknown, val2: unknown): void 
     case "decimal128":
     case "objectId":
     case "uuid":
-      expectBSONEqual(val1 as BSON, val2 as BSON);
+      expectBSONEqual(val1 as BSONType, val2 as BSONType);
       break;
     case "data":
       expectArraysEqual(new Uint8Array(val1 as number), val2);
@@ -66,7 +66,7 @@ export function expectDateEqual(val1: Date, val2: Date): void {
   expect(val1 && val1.getTime()).equals(val2 && val2.getTime());
 }
 
-export function expectBSONEqual(val1: BSON, val2: BSON): void {
+export function expectBSONEqual(val1: BSONType, val2: BSONType): void {
   expect(val1 && val1.toString()).equals(val2 && val2.toString());
 }
 
@@ -100,7 +100,7 @@ export function expectArraysEqual(val1: any, val2: any): void {
     case "decimal128":
     case "objectId":
     case "uuid":
-      compare = (_i: number, a: BSON, b: BSON) => expectBSONEqual(a, b);
+      compare = (_i: number, a: BSONType, b: BSONType) => expectBSONEqual(a, b);
       break;
     default:
       compare = (_i: number, a: any, b: any) => expect(a).equals(b);

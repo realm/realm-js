@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { ObjectId } from "bson";
+import { BSON } from "realm";
 import { expect } from "chai";
 import { importAppBefore } from "../../hooks";
 import { generatePartition } from "../../utils/generators";
@@ -55,7 +55,7 @@ const DogForSyncSchema: Realm.ObjectSchema = {
 };
 
 interface IPersonForSyncSchema {
-  _id: ObjectId;
+  _id: BSON.ObjectId;
   age: number;
   dogs: IDogForSyncSchema[];
   firstName: string;
@@ -64,7 +64,7 @@ interface IPersonForSyncSchema {
 }
 
 interface IDogForSyncSchema {
-  _id: ObjectId;
+  _id: BSON.ObjectId;
   breed: string | undefined;
   name: string;
   realm_id: string | undefined;
@@ -275,12 +275,12 @@ describe("App", () => {
       realm.write(() => {
         const tmpDogs: IDogForSyncSchema[] = [];
         dogNames.forEach((n) => {
-          const dog = realm.create<IDogForSyncSchema>(DogForSyncSchema.name, { _id: new ObjectId(), name: n });
+          const dog = realm.create<IDogForSyncSchema>(DogForSyncSchema.name, { _id: new BSON.ObjectId(), name: n });
           tmpDogs.push(dog);
           return tmpDogs;
         });
         realm.create(PersonForSyncSchema.name, {
-          _id: new ObjectId(),
+          _id: new BSON.ObjectId(),
           age: 12,
           firstName: "John",
           lastName: "Smith",

@@ -15,7 +15,6 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import { Decimal128, ObjectID, ObjectId, UUID } from "bson";
 import { expect } from "chai";
 import Realm, { BSON } from "realm";
 import { openRealmBeforeEach } from "../hooks";
@@ -50,19 +49,19 @@ const UUIDPkObjectSchema = {
 };
 
 interface IDecimal128Object {
-  decimal128Col: Decimal128;
+  decimal128Col: BSON.Decimal128;
 }
 
 interface IObjectIdObject {
-  id: ObjectId;
+  id: BSON.ObjectId;
 }
 
 interface IUUIDObject {
-  id: UUID;
+  id: BSON.UUID;
 }
 
 interface IUUIDPkObject {
-  _id: UUID;
+  _id: BSON.UUID;
 }
 
 describe("BSON", () => {
@@ -82,7 +81,7 @@ describe("BSON", () => {
         const numbers = [42, 3.1415, 6.022e23, -7, -100.2, 1.02e9];
 
         numbers.forEach((number) => {
-          const d = Decimal128.fromString(number.toString());
+          const d = BSON.Decimal128.fromString(number.toString());
           this.realm.write(() => {
             this.realm.create(Decimal128ObjectSchema.name, { decimal128Col: d });
           });
@@ -105,7 +104,7 @@ describe("BSON", () => {
         const numbers = ["1.02e+6102", "-1.02e+6102", "1.02e-6102", /*"9.99e+6143",*/ "1e-6142"];
 
         numbers.forEach((number) => {
-          const d = Decimal128.fromString(number);
+          const d = BSON.Decimal128.fromString(number);
           this.realm.write(() => {
             this.realm.create(Decimal128ObjectSchema.name, { decimal128Col: d });
           });
@@ -125,10 +124,10 @@ describe("BSON", () => {
       openRealmBeforeEach({ schema: [ObjectIdObjectSchema] });
       it("can successfully store and retrieve objectIds", function (this: RealmContext) {
         const values = ["0000002a9a7969d24bea4cf2", "0000002a9a7969d24bea4cf3"];
-        const oids: ObjectID[] = [];
+        const oids: BSON.ObjectId[] = [];
 
         values.forEach((v) => {
-          const oid = new ObjectId(v);
+          const oid = new BSON.ObjectId(v);
           this.realm.write(() => {
             this.realm.create(ObjectIdObjectSchema.name, { id: oid });
           });
@@ -150,10 +149,10 @@ describe("BSON", () => {
       });
       it("can fetch timestamps from when the objectId was created", function (this: RealmContext) {
         const values = [1, 1000000000, 2000000000];
-        const oids: ObjectID[] = [];
+        const oids: BSON.ObjectId[] = [];
 
         values.forEach((v) => {
-          const oid = ObjectId.createFromTime(v);
+          const oid = BSON.ObjectId.createFromTime(v);
           this.realm.write(() => {
             this.realm.create(ObjectIdObjectSchema.name, { id: oid });
           });
@@ -172,32 +171,32 @@ describe("BSON", () => {
         }
       });
     });
-    describe("UUID", () => {
+    describe("BSON.UUID", () => {
       openRealmBeforeEach({ schema: [UUIDObjectSchema, UUIDPkObjectSchema] });
       it("can successfully store and retrieve uuid", function (this: RealmContext) {
         // Predefined uuid checks
         const uuidStr = "af4f40c0-e833-4ab1-b026-484cdeadd782";
-        const uuid = new UUID(uuidStr);
+        const uuid = new BSON.UUID(uuidStr);
         const obj = this.realm.write(() => {
           return this.realm.create<IUUIDObject>(UUIDObjectSchema.name, { id: uuid });
         });
 
         expect(this.realm.objects(UUIDObjectSchema.name).length).equals(1);
 
-        expect(obj.id).instanceof(BSON.UUID, "Roundtrip data is instance of UUID.");
+        expect(obj.id).instanceof(BSON.UUID, "Roundtrip data is instance of BSON.UUID.");
         expect(uuid.equals(obj.id)).equals(true);
         expect(obj.id.toString()).equals(uuidStr, "Roundtrip string representation equals predefined input string.");
       });
       it("can retrieve object with uuid as primarykey", function (this: RealmContext) {
         const uuidStr = "188a7e3b-26d4-44ba-91e2-844c1c73a963";
-        const uuid = new UUID(uuidStr);
+        const uuid = new BSON.UUID(uuidStr);
         this.realm.write(() => {
           this.realm.create(UUIDPkObjectSchema.name, { _id: uuid });
         });
         const obj = this.realm.objectForPrimaryKey<IUUIDPkObject>(UUIDPkObjectSchema.name, uuid);
         expect(obj).to.not.be.null;
         expect(obj).to.not.be.undefined;
-        expect(obj?._id).instanceof(BSON.UUID, "Objects PK is instance of UUID.");
+        expect(obj?._id).instanceof(BSON.UUID, "Objects PK is instance of BSON.UUID.");
         expect(obj?._id.toString()).equals(uuidStr, "Roundtrip string representation equals predefined input string.");
       });
     });

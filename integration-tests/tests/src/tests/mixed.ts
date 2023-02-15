@@ -16,8 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Realm from "realm";
-import { Decimal128, ObjectId, UUID } from "bson";
+import Realm, { BSON } from "realm";
 import { expect } from "chai";
 import { openRealmBefore } from "../hooks";
 
@@ -116,38 +115,38 @@ describe("Mixed", () => {
     });
 
     it("support complex primitive types", function (this: RealmContext) {
-      const d128 = Decimal128.fromString("6.022e23");
-      const oid = new ObjectId();
-      const uuid = new UUID();
+      const d128 = BSON.Decimal128.fromString("6.022e23");
+      const oid = new BSON.ObjectId();
+      const uuid = new BSON.UUID();
       const date = new Date();
 
       const data = this.realm.write(() =>
         this.realm.create<ISingle>(SingleSchema.name, { a: oid, b: uuid, c: d128, d: date }),
       );
 
-      expect(typeof data.a === typeof oid, "should be the same type ObjectId");
-      expect(String(data.a)).equals(oid.toString(), "should be the same ObjectId");
-      expect(String(data.b)).equals(uuid.toString(), "Should be the same UUID");
-      expect(String(data.c)).equals(d128.toString(), "Should be the same Decimal128");
+      expect(typeof data.a === typeof oid, "should be the same type BSON.ObjectId");
+      expect(String(data.a)).equals(oid.toString(), "should be the same BSON.ObjectId");
+      expect(String(data.b)).equals(uuid.toString(), "Should be the same BSON.UUID");
+      expect(String(data.c)).equals(d128.toString(), "Should be the same BSON.Decimal128");
       expect(String(data.d)).equals(date.toString(), "Should be the same Date");
     });
 
     it("support mixed mutability", function (this: RealmContext) {
-      const d128 = Decimal128.fromString("6.022e23");
-      const oid = new ObjectId();
-      const uuid = new UUID();
+      const d128 = BSON.Decimal128.fromString("6.022e23");
+      const oid = new BSON.ObjectId();
+      const uuid = new BSON.UUID();
       const date = new Date();
 
       const data = this.realm.write(() => this.realm.create<ISingle>(SingleSchema.name, { a: oid }));
-      expect(typeof data.a === typeof oid, "should be the same type ObjectId");
+      expect(typeof data.a === typeof oid, "should be the same type BSON.ObjectId");
       expect(String(data.a)).equals(oid.toString(), "should have the same content");
 
       this.realm.write(() => (data.a = uuid));
-      expect(typeof data.a === typeof uuid, "should be the same type UUID");
-      expect(String(data.a)).equals(uuid.toString(), "should have the same content UUID");
+      expect(typeof data.a === typeof uuid, "should be the same type BSON.UUID");
+      expect(String(data.a)).equals(uuid.toString(), "should have the same content BSON.UUID");
 
       this.realm.write(() => (data.a = d128));
-      expect(String(data.a)).equals(d128.toString(), "Should be the same Decimal128");
+      expect(String(data.a)).equals(d128.toString(), "Should be the same BSON.Decimal128");
 
       this.realm.write(() => (data.a = 12345678));
       expect(data.a).equals(12345678, "Should be the same 12345678");

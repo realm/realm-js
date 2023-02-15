@@ -16,11 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { ObjectId, UUID } from "bson";
 import { expect } from "chai";
-import Realm, { ClientResetMode, SessionStopPolicy } from "realm";
+import Realm, { ClientResetMode, SessionStopPolicy, BSON } from "realm";
 import { authenticateUserBefore, importAppBefore } from "../../hooks";
-import { DogSchema, IPerson, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
+import { DogSchema, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { expectClientResetError } from "../../utils/expect-sync-error";
 import { createPromiseHandle } from "../../utils/promise-handle";
 
@@ -41,7 +40,7 @@ function addSubscriptions(realm: Realm): void {
 }
 
 function getPartitionValue() {
-  return new UUID().toHexString();
+  return new BSON.UUID().toHexString();
 }
 
 async function triggerClientReset(app: Realm.App, user: Realm.User): Promise<void> {
@@ -231,7 +230,7 @@ async function waitSimulatedClientResetRecoverCallbacks(
     addSubscriptions(realm);
   }
   realm.write(() => {
-    realm.create(DogSchema.name, { _id: new ObjectId(), name: "Rex", age: 2 });
+    realm.create(DogSchema.name, { _id: new BSON.ObjectId(), name: "Rex", age: 2 });
   });
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const session = realm.syncSession!;

@@ -16,17 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { UUID } from "bson";
 import { expect } from "chai";
-import Realm from "realm";
+import Realm, { BSON } from "realm";
 import path from "node:path";
 import os from "node:os";
 
 import { importAppBefore, authenticateUserBefore } from "../hooks";
 
-const getAbsolutePath = () => os.tmpdir() + path.sep + new UUID().toHexString();
-const getRelativePath = () => new UUID().toHexString();
-const getPartitionValue = () => new UUID().toHexString();
+const getAbsolutePath = () => os.tmpdir() + path.sep + new BSON.UUID().toHexString();
+const getRelativePath = () => new BSON.UUID().toHexString();
+const getPartitionValue = () => new BSON.UUID().toHexString();
 
 const schema = {
   name: "MixedClass",

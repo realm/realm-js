@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { ObjectId } from "bson";
+import { BSON } from "realm";
 import { expect } from "chai";
 import Realm from "realm";
 import { openRealmBeforeEach } from "../hooks";
@@ -84,14 +84,14 @@ interface IPersonSchema {
 }
 
 interface INameSchema {
-  _id: ObjectId;
+  _id: BSON.ObjectId;
   family: string;
   given: string[];
   prefix: string[];
 }
 
 interface IParentSchema {
-  _id: ObjectId;
+  _id: BSON.ObjectId;
   id: number;
   name: Name[];
 }
@@ -115,7 +115,7 @@ class Person extends Realm.Object implements IPersonSchema {
 }
 
 class Name extends Realm.Object implements INameSchema {
-  _id!: ObjectId;
+  _id!: BSON.ObjectId;
   family!: string;
   given!: string[];
   prefix!: string[];
@@ -241,7 +241,7 @@ describe("Linking objects", () => {
       let parent: IParentSchema;
       this.realm.write(() => {
         parent = this.realm.create<IParentSchema>(ParentSchema.name, {
-          _id: new ObjectId("0000002a9a7969d24bea4cf5"),
+          _id: new BSON.ObjectId("0000002a9a7969d24bea4cf5"),
           id: 0,
         });
       });
@@ -251,12 +251,12 @@ describe("Linking objects", () => {
       let child!: Name;
       this.realm.write(() => {
         child = this.realm.create<INameSchema>(NameSchema.name, {
-          _id: new ObjectId("0000002a9a7969d24bea4cf6"),
+          _id: new BSON.ObjectId("0000002a9a7969d24bea4cf6"),
           family: "Johnson",
           given: ["Olivier"],
           prefix: [],
         });
-        this.realm.create("ParentObject", { _id: new ObjectId("0000002a9a7969d24bea4cf7"), id: 1, name: [child] });
+        this.realm.create("ParentObject", { _id: new BSON.ObjectId("0000002a9a7969d24bea4cf7"), id: 1, name: [child] });
       });
       expect(this.realm.objects(ParentSchema.name).length).equals(2);
       expect(this.realm.objects(NameSchema.name).length).equals(1);

@@ -17,7 +17,6 @@
     "lint": "eslint --ext .js,.ts ."
   },
   "peerDependencies": {
-    "bson": "^4",
     "realm": "*"
   },
   "devDependencies": {

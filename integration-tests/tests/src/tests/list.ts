@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Decimal128, ObjectId, UUID } from "bson";
+import { BSON } from "realm";
 import { expectArraysEqual, expectSimilar } from "../utils/comparisons";
 import { expect } from "chai";
 import { CanonicalObjectSchema } from "realm";
@@ -265,9 +265,9 @@ interface IPrimitiveArraysSchema {
   string: Realm.List<string>;
   date: Realm.List<Date>;
   data: Realm.List<ArrayBuffer>;
-  decimal128: Realm.List<Decimal128>;
-  objectId: Realm.List<ObjectId>;
-  uuid: Realm.List<UUID>;
+  decimal128: Realm.List<BSON.Decimal128>;
+  objectId: Realm.List<BSON.ObjectId>;
+  uuid: Realm.List<BSON.UUID>;
 
   optBool: Realm.List<boolean | null>;
   optInt: Realm.List<number | null>;
@@ -276,9 +276,9 @@ interface IPrimitiveArraysSchema {
   optString: Realm.List<string | null>;
   optDate: Realm.List<Date | null>;
   optData: Realm.List<ArrayBuffer | null>;
-  optDecimal128: Realm.List<Decimal128 | null>;
-  optObjectId: Realm.List<ObjectId | null>;
-  optUuid: Realm.List<UUID | null>;
+  optDecimal128: Realm.List<BSON.Decimal128 | null>;
+  optObjectId: Realm.List<BSON.ObjectId | null>;
+  optUuid: Realm.List<BSON.UUID | null>;
 }
 
 interface IPersonListSchema {
@@ -286,8 +286,8 @@ interface IPersonListSchema {
 }
 
 interface IUuidListSchema {
-  _id: UUID;
-  list: UUID[];
+  _id: BSON.UUID;
+  list: BSON.UUID[];
 }
 
 interface ITargetSchema {
@@ -318,14 +318,14 @@ interface INullableBasicTypesListSchema {
 }
 
 interface INameObjectSchema {
-  _id: ObjectId;
+  _id: BSON.ObjectId;
   family: string;
   given: string[];
   prefix: string[];
 }
 
 interface IParentObjectSchema {
-  _id: ObjectId;
+  _id: BSON.ObjectId;
   id: number;
   name: INameObjectSchema[];
 }
@@ -349,9 +349,9 @@ class PrimitiveArrays extends Realm.Object implements IPrimitiveArraysSchema {
   string!: Realm.List<string>;
   date!: Realm.List<Date>;
   data!: Realm.List<ArrayBuffer>;
-  decimal128!: Realm.List<Decimal128>;
-  objectId!: Realm.List<ObjectId>;
-  uuid!: Realm.List<UUID>;
+  decimal128!: Realm.List<BSON.Decimal128>;
+  objectId!: Realm.List<BSON.ObjectId>;
+  uuid!: Realm.List<BSON.UUID>;
 
   optBool!: Realm.List<boolean | null>;
   optInt!: Realm.List<number | null>;
@@ -360,9 +360,9 @@ class PrimitiveArrays extends Realm.Object implements IPrimitiveArraysSchema {
   optString!: Realm.List<string | null>;
   optDate!: Realm.List<Date | null>;
   optData!: Realm.List<ArrayBuffer | null>;
-  optDecimal128!: Realm.List<Decimal128 | null>;
-  optObjectId!: Realm.List<ObjectId | null>;
-  optUuid!: Realm.List<UUID | null>;
+  optDecimal128!: Realm.List<BSON.Decimal128 | null>;
+  optObjectId!: Realm.List<BSON.ObjectId | null>;
+  optUuid!: Realm.List<BSON.UUID | null>;
 }
 
 class TodoItem extends Realm.Object {
@@ -540,9 +540,12 @@ describe("Lists", () => {
           string: ["a", "b"],
           date: [new Date(1), new Date(2)],
           data: [DATA1, DATA2],
-          decimal128: [Decimal128.fromString("1"), Decimal128.fromString("2")],
-          objectId: [new ObjectId("0000002a9a7969d24bea4cf2"), new ObjectId("0000002a9a7969d24bea4cf3")],
-          uuid: [new UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"), new UUID("b7821fd0-38cf-4f94-8650-d0f5b6295ef4")],
+          decimal128: [BSON.Decimal128.fromString("1"), BSON.Decimal128.fromString("2")],
+          objectId: [new BSON.ObjectId("0000002a9a7969d24bea4cf2"), new BSON.ObjectId("0000002a9a7969d24bea4cf3")],
+          uuid: [
+            new BSON.UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"),
+            new BSON.UUID("b7821fd0-38cf-4f94-8650-d0f5b6295ef4"),
+          ],
 
           optBool: [true, null],
           optInt: [1, null],
@@ -551,9 +554,9 @@ describe("Lists", () => {
           optString: ["a", null],
           optDate: [new Date(1), null],
           optData: [DATA1, null],
-          optDecimal128: [Decimal128.fromString("1"), null],
-          optObjectId: [new ObjectId("0000002a9a7969d24bea4cf2"), null],
-          optUuid: [new UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"), null],
+          optDecimal128: [BSON.Decimal128.fromString("1"), null],
+          optObjectId: [new BSON.ObjectId("0000002a9a7969d24bea4cf2"), null],
+          optUuid: [new BSON.UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"), null],
         });
       });
       expect(obj?.arrayCol[0].doubleCol).equals(3);
@@ -599,12 +602,12 @@ describe("Lists", () => {
       expectSimilar("data", new Uint8Array(prim.data[1]), DATA2);
       expectSimilar("date", prim.date[0], new Date(1));
       expectSimilar("date", prim.date[1], new Date(2));
-      expectSimilar("decimal128", prim.decimal128[0], Decimal128.fromString("1"));
-      expectSimilar("decimal128", prim.decimal128[1], Decimal128.fromString("2"));
-      expectSimilar("objectId", prim.objectId[0], new ObjectId("0000002a9a7969d24bea4cf2"));
-      expectSimilar("objectId", prim.objectId[1], new ObjectId("0000002a9a7969d24bea4cf3"));
-      expectSimilar("uuid", prim.uuid[0], new UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"));
-      expectSimilar("uuid", prim.uuid[1], new UUID("b7821fd0-38cf-4f94-8650-d0f5b6295ef4"));
+      expectSimilar("decimal128", prim.decimal128[0], BSON.Decimal128.fromString("1"));
+      expectSimilar("decimal128", prim.decimal128[1], BSON.Decimal128.fromString("2"));
+      expectSimilar("objectId", prim.objectId[0], new BSON.ObjectId("0000002a9a7969d24bea4cf2"));
+      expectSimilar("objectId", prim.objectId[1], new BSON.ObjectId("0000002a9a7969d24bea4cf3"));
+      expectSimilar("uuid", prim.uuid[0], new BSON.UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"));
+      expectSimilar("uuid", prim.uuid[1], new BSON.UUID("b7821fd0-38cf-4f94-8650-d0f5b6295ef4"));
 
       expect(prim.optBool[0]).equals(true);
       expect(prim.optInt[0]).equals(1);
@@ -617,11 +620,11 @@ describe("Lists", () => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expectSimilar("date", prim.optDate[0]!, new Date(1));
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      expectSimilar("decimal128", prim.optDecimal128[0]!, Decimal128.fromString("1"));
+      expectSimilar("decimal128", prim.optDecimal128[0]!, BSON.Decimal128.fromString("1"));
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expectSimilar("decimal128", prim.optDecimal128[1]!, null);
-      expectSimilar("objectId", prim.optObjectId[0], new ObjectId("0000002a9a7969d24bea4cf2"));
-      expectSimilar("uuid", prim.optUuid[0], new UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"));
+      expectSimilar("objectId", prim.optObjectId[0], new BSON.ObjectId("0000002a9a7969d24bea4cf2"));
+      expectSimilar("uuid", prim.optUuid[0], new BSON.UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"));
       expectSimilar("uuid", prim.optUuid[1], null);
     });
     it("support setters", function (this: RealmContext) {
@@ -1252,21 +1255,21 @@ describe("Lists", () => {
       it("returns correct results", function (this: RealmContext) {
         this.realm.write(() => {
           this.realm.create(UuidListSchema.name, {
-            _id: new UUID("afe99de1-c52a-4c6d-8d5a-b9df38d61b41"),
+            _id: new BSON.UUID("afe99de1-c52a-4c6d-8d5a-b9df38d61b41"),
             list: [
-              new UUID("64ecbcf8-0738-4451-87cb-bb38562f2377"),
-              new UUID("06dbb9ee-8516-467a-9e1d-23d03d704537"),
-              new UUID("f6f41949-d27e-48c0-a391-c74f0498c5e6"),
+              new BSON.UUID("64ecbcf8-0738-4451-87cb-bb38562f2377"),
+              new BSON.UUID("06dbb9ee-8516-467a-9e1d-23d03d704537"),
+              new BSON.UUID("f6f41949-d27e-48c0-a391-c74f0498c5e6"),
             ],
           });
           this.realm.create(UuidListSchema.name, {
-            _id: new UUID("bd2050e8-f01c-4459-90d0-d16af35b9edc"),
+            _id: new BSON.UUID("bd2050e8-f01c-4459-90d0-d16af35b9edc"),
             list: [
-              new UUID("701fee43-e77b-4ab4-8224-0e0d8cedaafd"),
-              new UUID("adbb2635-b61b-4a59-8f03-e97e847a5a14"),
-              new UUID("f8aed1db-5b59-4f0f-9c9c-b48ea3cab73f"),
-              new UUID("f9a9ab69-c04d-4b1c-b96b-27f829505704"),
-              new UUID("5184ccf4-40f1-4748-a089-f64de6376907"),
+              new BSON.UUID("701fee43-e77b-4ab4-8224-0e0d8cedaafd"),
+              new BSON.UUID("adbb2635-b61b-4a59-8f03-e97e847a5a14"),
+              new BSON.UUID("f8aed1db-5b59-4f0f-9c9c-b48ea3cab73f"),
+              new BSON.UUID("f9a9ab69-c04d-4b1c-b96b-27f829505704"),
+              new BSON.UUID("5184ccf4-40f1-4748-a089-f64de6376907"),
             ],
           });
         });
@@ -1277,7 +1280,7 @@ describe("Lists", () => {
 
         const listDeepFilter = this.realm
           .objects<IUuidListSchema>(UuidListSchema.name)
-          .filtered("ANY list == $0", new UUID("64ecbcf8-0738-4451-87cb-bb38562f2377"));
+          .filtered("ANY list == $0", new BSON.UUID("64ecbcf8-0738-4451-87cb-bb38562f2377"));
         expect(listDeepFilter.length).equals(
           1,
           "'ANY list == uuid(64ecbcf8-0738-4451-87cb-bb38562f2377)' should only find one item",
@@ -1308,14 +1311,14 @@ describe("Lists", () => {
             data: [DATA3, DATA1, DATA2],
             date: [DATE3, DATE1, DATE2],
             objectId: [
-              new ObjectId("0000002a9a7969d24bea4cf2"),
-              new ObjectId("0000002a9a7969d24bea4cf3"),
-              new ObjectId("0000002a9a7969d24bea4cf4"),
+              new BSON.ObjectId("0000002a9a7969d24bea4cf2"),
+              new BSON.ObjectId("0000002a9a7969d24bea4cf3"),
+              new BSON.ObjectId("0000002a9a7969d24bea4cf4"),
             ],
             uuid: [
-              new UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"),
-              new UUID("c16d38bf-28f2-4a3a-9817-e0f45ffce68a"),
-              new UUID("b7821fd0-38cf-4f94-8650-d0f5b6295ef4"),
+              new BSON.UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"),
+              new BSON.UUID("c16d38bf-28f2-4a3a-9817-e0f45ffce68a"),
+              new BSON.UUID("b7821fd0-38cf-4f94-8650-d0f5b6295ef4"),
             ],
             optBool: [true, false, null],
             optInt: [3, 1, 2, null],
@@ -1325,15 +1328,15 @@ describe("Lists", () => {
             optData: [DATA3, DATA1, DATA2, null],
             optDate: [DATE3, DATE1, DATE2, null],
             optObjectId: [
-              new ObjectId("0000002a9a7969d24bea4cf2"),
-              new ObjectId("0000002a9a7969d24bea4cf4"),
-              new ObjectId("0000002a9a7969d24bea4cf3"),
+              new BSON.ObjectId("0000002a9a7969d24bea4cf2"),
+              new BSON.ObjectId("0000002a9a7969d24bea4cf4"),
+              new BSON.ObjectId("0000002a9a7969d24bea4cf3"),
               null,
             ],
             optUuid: [
-              new UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"),
-              new UUID("c16d38bf-28f2-4a3a-9817-e0f45ffce68a"),
-              new UUID("b7821fd0-38cf-4f94-8650-d0f5b6295ef4"),
+              new BSON.UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"),
+              new BSON.UUID("c16d38bf-28f2-4a3a-9817-e0f45ffce68a"),
+              new BSON.UUID("b7821fd0-38cf-4f94-8650-d0f5b6295ef4"),
               null,
             ],
           });
@@ -1396,50 +1399,50 @@ describe("Lists", () => {
         expectArraysEqual(prim.optDate.sorted(), [null, DATE1, DATE2, DATE3]);
 
         expectArraysEqual(prim.objectId.sorted(), [
-          new ObjectId("0000002a9a7969d24bea4cf2"),
-          new ObjectId("0000002a9a7969d24bea4cf3"),
-          new ObjectId("0000002a9a7969d24bea4cf4"),
+          new BSON.ObjectId("0000002a9a7969d24bea4cf2"),
+          new BSON.ObjectId("0000002a9a7969d24bea4cf3"),
+          new BSON.ObjectId("0000002a9a7969d24bea4cf4"),
         ]);
         expectArraysEqual(prim.objectId.sorted(true), [
-          new ObjectId("0000002a9a7969d24bea4cf4"),
-          new ObjectId("0000002a9a7969d24bea4cf3"),
-          new ObjectId("0000002a9a7969d24bea4cf2"),
+          new BSON.ObjectId("0000002a9a7969d24bea4cf4"),
+          new BSON.ObjectId("0000002a9a7969d24bea4cf3"),
+          new BSON.ObjectId("0000002a9a7969d24bea4cf2"),
         ]);
 
         expectArraysEqual(prim.uuid.sorted(), [
-          new UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"),
-          new UUID("b7821fd0-38cf-4f94-8650-d0f5b6295ef4"),
-          new UUID("c16d38bf-28f2-4a3a-9817-e0f45ffce68a"),
+          new BSON.UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"),
+          new BSON.UUID("b7821fd0-38cf-4f94-8650-d0f5b6295ef4"),
+          new BSON.UUID("c16d38bf-28f2-4a3a-9817-e0f45ffce68a"),
         ]);
         expectArraysEqual(prim.uuid.sorted(true), [
-          new UUID("c16d38bf-28f2-4a3a-9817-e0f45ffce68a"),
-          new UUID("b7821fd0-38cf-4f94-8650-d0f5b6295ef4"),
-          new UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"),
+          new BSON.UUID("c16d38bf-28f2-4a3a-9817-e0f45ffce68a"),
+          new BSON.UUID("b7821fd0-38cf-4f94-8650-d0f5b6295ef4"),
+          new BSON.UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"),
         ]);
 
         expectArraysEqual(prim.optObjectId.sorted(), [
           null,
-          new ObjectId("0000002a9a7969d24bea4cf2"),
-          new ObjectId("0000002a9a7969d24bea4cf3"),
-          new ObjectId("0000002a9a7969d24bea4cf4"),
+          new BSON.ObjectId("0000002a9a7969d24bea4cf2"),
+          new BSON.ObjectId("0000002a9a7969d24bea4cf3"),
+          new BSON.ObjectId("0000002a9a7969d24bea4cf4"),
         ]);
         expectArraysEqual(prim.optObjectId.sorted(true), [
-          new ObjectId("0000002a9a7969d24bea4cf4"),
-          new ObjectId("0000002a9a7969d24bea4cf3"),
-          new ObjectId("0000002a9a7969d24bea4cf2"),
+          new BSON.ObjectId("0000002a9a7969d24bea4cf4"),
+          new BSON.ObjectId("0000002a9a7969d24bea4cf3"),
+          new BSON.ObjectId("0000002a9a7969d24bea4cf2"),
           null,
         ]);
 
         expectArraysEqual(prim.optUuid.sorted(), [
           null,
-          new UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"),
-          new UUID("b7821fd0-38cf-4f94-8650-d0f5b6295ef4"),
-          new UUID("c16d38bf-28f2-4a3a-9817-e0f45ffce68a"),
+          new BSON.UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"),
+          new BSON.UUID("b7821fd0-38cf-4f94-8650-d0f5b6295ef4"),
+          new BSON.UUID("c16d38bf-28f2-4a3a-9817-e0f45ffce68a"),
         ]);
         expectArraysEqual(prim.optUuid.sorted(true), [
-          new UUID("c16d38bf-28f2-4a3a-9817-e0f45ffce68a"),
-          new UUID("b7821fd0-38cf-4f94-8650-d0f5b6295ef4"),
-          new UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"),
+          new BSON.UUID("c16d38bf-28f2-4a3a-9817-e0f45ffce68a"),
+          new BSON.UUID("b7821fd0-38cf-4f94-8650-d0f5b6295ef4"),
+          new BSON.UUID("a4078b20-7b0c-4de4-929c-4cc1c7d8345f"),
           null,
         ]);
       });
@@ -1828,16 +1831,16 @@ describe("Lists", () => {
       this.realm.write(() => {
         this.realm.create(ParentObjectSchema.name, {
           id: 1,
-          _id: new ObjectId(),
+          _id: new BSON.ObjectId(),
           name: [
-            { _id: new ObjectId(), family: "Larsen", given: ["Hans", "Jørgen"], prefix: [] },
-            { _id: new ObjectId(), family: "Hansen", given: ["Ib"], prefix: [] },
+            { _id: new BSON.ObjectId(), family: "Larsen", given: ["Hans", "Jørgen"], prefix: [] },
+            { _id: new BSON.ObjectId(), family: "Hansen", given: ["Ib"], prefix: [] },
           ],
         });
         this.realm.create(ParentObjectSchema.name, {
           id: 2,
-          _id: new ObjectId(),
-          name: [{ _id: new ObjectId(), family: "Petersen", given: ["Gurli", "Margrete"], prefix: [] }],
+          _id: new BSON.ObjectId(),
+          name: [{ _id: new BSON.ObjectId(), family: "Petersen", given: ["Gurli", "Margrete"], prefix: [] }],
         });
       });
 

@@ -15,11 +15,9 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import Realm from "realm";
+import Realm, { BSON } from "realm";
 import { expect } from "chai";
-const { Decimal128, UUID } = Realm.BSON;
 import { openRealmBeforeEach } from "../hooks";
-import { ObjectId } from "bson";
 import { IPerson, PersonSchema } from "../schemas/person-and-dogs";
 import { ContactSchema, IContact } from "../schemas/contact";
 
@@ -447,7 +445,7 @@ describe("Queries", () => {
       beforeEach(function (this: RealmContext) {
         this.realm.write(() => {
           [0, 1, 2].forEach((v) => {
-            this.realm.create(NullableTypesObject, { decimal128Col: Decimal128.fromString(`1000${v}`) });
+            this.realm.create(NullableTypesObject, { decimal128Col: BSON.Decimal128.fromString(`1000${v}`) });
           });
           this.realm.create(NullableTypesObject, { decimal128Col: undefined });
         });
@@ -476,11 +474,11 @@ describe("Queries", () => {
       beforeEach(function (this: RealmContext) {
         objects = this.realm.write(() => {
           return [
-            this.realm.create("NullableTypesObject", { objectIdCol: new ObjectId("6001c033600510df3bbfd864") }),
-            this.realm.create("NullableTypesObject", { objectIdCol: new ObjectId("6001c04b3bc6feeda9ef44f3") }),
-            this.realm.create("NullableTypesObject", { objectIdCol: new ObjectId("6001c05521acef4e39acfd6f") }),
-            this.realm.create("NullableTypesObject", { objectIdCol: new ObjectId("6001c05e73ac00af232fb7f6") }),
-            this.realm.create("NullableTypesObject", { objectIdCol: new ObjectId("6001c069c2f8b350ddeeceaa") }),
+            this.realm.create("NullableTypesObject", { objectIdCol: new BSON.ObjectId("6001c033600510df3bbfd864") }),
+            this.realm.create("NullableTypesObject", { objectIdCol: new BSON.ObjectId("6001c04b3bc6feeda9ef44f3") }),
+            this.realm.create("NullableTypesObject", { objectIdCol: new BSON.ObjectId("6001c05521acef4e39acfd6f") }),
+            this.realm.create("NullableTypesObject", { objectIdCol: new BSON.ObjectId("6001c05e73ac00af232fb7f6") }),
+            this.realm.create("NullableTypesObject", { objectIdCol: new BSON.ObjectId("6001c069c2f8b350ddeeceaa") }),
             this.realm.create("NullableTypesObject", { objectIdCol: undefined }),
             this.realm.create("NullableTypesObject", { objectIdCol: undefined }),
           ];
@@ -507,7 +505,7 @@ describe("Queries", () => {
         ]);
       });
 
-      // TODO: invalid query tests for ObjectId.
+      // TODO: invalid query tests for BSON.ObjectId.
     });
 
     describe("querying with uuid", () => {
@@ -515,11 +513,11 @@ describe("Queries", () => {
 
       beforeEach(function (this: RealmContext) {
         objects = this.realm.write(() => [
-          this.realm.create("NullableTypesObject", { uuidCol: new UUID("d1b186e1-e9e0-4768-a1a7-c492519d47ee") }),
-          this.realm.create("NullableTypesObject", { uuidCol: new UUID("08c35c66-69bd-4b28-8177-f9135553711f") }),
-          this.realm.create("NullableTypesObject", { uuidCol: new UUID("35f8f06b-dc77-4781-8b5e-9a09759db989") }),
-          this.realm.create("NullableTypesObject", { uuidCol: new UUID("39e2d5ce-087d-4d0c-a149-05acc74c53f1") }),
-          this.realm.create("NullableTypesObject", { uuidCol: new UUID("b521bc19-4e92-4e23-ae85-df937abfd89c") }),
+          this.realm.create("NullableTypesObject", { uuidCol: new BSON.UUID("d1b186e1-e9e0-4768-a1a7-c492519d47ee") }),
+          this.realm.create("NullableTypesObject", { uuidCol: new BSON.UUID("08c35c66-69bd-4b28-8177-f9135553711f") }),
+          this.realm.create("NullableTypesObject", { uuidCol: new BSON.UUID("35f8f06b-dc77-4781-8b5e-9a09759db989") }),
+          this.realm.create("NullableTypesObject", { uuidCol: new BSON.UUID("39e2d5ce-087d-4d0c-a149-05acc74c53f1") }),
+          this.realm.create("NullableTypesObject", { uuidCol: new BSON.UUID("b521bc19-4e92-4e23-ae85-df937abfd89c") }),
           this.realm.create("NullableTypesObject", { uuidCol: undefined }),
           this.realm.create("NullableTypesObject", { uuidCol: undefined }),
         ]);
@@ -545,7 +543,7 @@ describe("Queries", () => {
         ]);
       });
 
-      // TODO: invalid query tests for UUID.
+      // TODO: invalid query tests for BSON.UUID.
     });
 
     describe("compound queries", () => {
@@ -956,7 +954,7 @@ describe("Queries", () => {
         }).throws("Request for argument at index 0 but no arguments are provided");
       });
 
-      it("should support queries with UUID as primary key", () => {
+      it("should support queries with BSON.UUID as primary key", () => {
         const testStringUuids = [
           "01b1a58a-bb92-47a2-a3aa-d9c735e6fd42",
           "ab01fec2-55d5-4fac-9e04-980bff6a521d",
@@ -976,34 +974,39 @@ describe("Queries", () => {
         const realm = new Realm({ schema: [primUuidSchema] });
         realm.write(() => {
           testStringUuids.forEach((uuidStr) => {
-            realm.create(primUuidSchema.name, { _id: new UUID(uuidStr), text: uuidStr });
+            realm.create(primUuidSchema.name, { _id: new BSON.UUID(uuidStr), text: uuidStr });
           });
         });
 
         // objectForPrimaryKey tests
-        const nonExisting = realm.objectForPrimaryKey(primUuidSchema.name, new UUID(nonExistingStringUuid));
+        const nonExisting = realm.objectForPrimaryKey(primUuidSchema.name, new BSON.UUID(nonExistingStringUuid));
         expect(nonExisting).equals(
           null,
-          `objectForPrimaryKey should return undefined for new UUID("${nonExistingStringUuid}")`,
+          `objectForPrimaryKey should return undefined for new BSON.UUID("${nonExistingStringUuid}")`,
         );
 
         testStringUuids.forEach((uuidStr) => {
-          const obj = realm.objectForPrimaryKey(primUuidSchema.name, new UUID(uuidStr));
-          expect(obj).not.equal(null, `objectForPrimaryKey should return a Realm.Object for new UUID("${uuidStr}")`);
+          const obj = realm.objectForPrimaryKey(primUuidSchema.name, new BSON.UUID(uuidStr));
+          expect(obj).not.equal(
+            null,
+            `objectForPrimaryKey should return a Realm.Object for new BSON.UUID("${uuidStr}")`,
+          );
           //@ts-expect-error _id is part of schema.
           expect(obj._id.toString()).equals(uuidStr);
         });
 
         // results.filtered tests
-        const emptyFiltered = realm.objects(primUuidSchema.name).filtered("_id == $0", new UUID(nonExistingStringUuid));
+        const emptyFiltered = realm
+          .objects(primUuidSchema.name)
+          .filtered("_id == $0", new BSON.UUID(nonExistingStringUuid));
         expect(emptyFiltered.length).equals(
           0,
-          `filtered objects should contain 0 elements when filtered by new UUID("${nonExistingStringUuid}")`,
+          `filtered objects should contain 0 elements when filtered by new BSON.UUID("${nonExistingStringUuid}")`,
         );
 
         testStringUuids.forEach((uuidStr) => {
-          const filtered = realm.objects(primUuidSchema.name).filtered("_id == $0", new UUID(uuidStr));
-          expect(filtered.length).equals(1, `filtered objects should contain exactly 1 of new UUID("${uuidStr}")`);
+          const filtered = realm.objects(primUuidSchema.name).filtered("_id == $0", new BSON.UUID(uuidStr));
+          expect(filtered.length).equals(1, `filtered objects should contain exactly 1 of new BSON.UUID("${uuidStr}")`);
         });
       });
 

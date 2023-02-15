@@ -15,9 +15,8 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import { ObjectId, UUID } from "bson";
 import { expect } from "chai";
-import Realm from "realm";
+import Realm, { BSON } from "realm";
 import { authenticateUserBefore } from "../../hooks/authenticate-user-before";
 import { importAppBefore } from "../../hooks/import-app-before";
 import { generatePartition } from "../../utils/generators";
@@ -91,8 +90,8 @@ describe("Partition-values", () => {
         -12342908,
         -7482937500235834,
         -Number.MAX_SAFE_INTEGER,
-        new ObjectId("603fa0af4caa9c90ff6e126c"),
-        new UUID("f3287217-d1a2-445b-a4f7-af0520413b2a"),
+        new BSON.ObjectId("603fa0af4caa9c90ff6e126c"),
+        new BSON.UUID("f3287217-d1a2-445b-a4f7-af0520413b2a"),
         null,
         "",
       ];
@@ -111,8 +110,8 @@ describe("Partition-values", () => {
         const spv: any = realm.syncSession?.config.partitionValue;
 
         // BSON types have their own 'equals' comparer
-        if (spv instanceof ObjectId) {
-          expect(spv.equals(partition as ObjectId)).to.be.true;
+        if (spv instanceof BSON.ObjectId) {
+          expect(spv.equals(partition as BSON.ObjectId)).to.be.true;
         } else if (spv && spv.toUUID !== undefined) {
           expect(spv.toUUID().equals(partition)).to.be.true;
         } else {
@@ -137,7 +136,7 @@ describe("Partition-values", () => {
 
       const realm1 = await Realm.open(realmConfigPrimary);
       realm1.write(() => {
-        realm1.create("Dog", { _id: new ObjectId(), name: "King" });
+        realm1.create("Dog", { _id: new BSON.ObjectId(), name: "King" });
       });
 
       await realm1.syncSession?.uploadAllLocalChanges();
@@ -177,7 +176,7 @@ describe("Partition-values", () => {
 
       const realm1 = await Realm.open(realmConfigPrimary);
       realm1.write(() => {
-        realm1.create("Dog", { _id: new ObjectId(), name: "King" });
+        realm1.create("Dog", { _id: new BSON.ObjectId(), name: "King" });
       });
 
       await realm1.syncSession?.uploadAllLocalChanges();
@@ -209,15 +208,23 @@ describe("Partition-values", () => {
     authenticateUserBefore();
 
     it("works", async function (this: Mocha.Context & AppContext & UserContext) {
-      const realmConfigPrimary = createConfig(PvUuidDog, this.user, new UUID("57eade47-8406-4397-ab97-49abcc4d681f"));
-      const realmConfigSecondary = createConfig(PvUuidDog, this.user, new UUID("90d82df4-6037-4eb6-869b-a62f7af522b0"));
+      const realmConfigPrimary = createConfig(
+        PvUuidDog,
+        this.user,
+        new BSON.UUID("57eade47-8406-4397-ab97-49abcc4d681f"),
+      );
+      const realmConfigSecondary = createConfig(
+        PvUuidDog,
+        this.user,
+        new BSON.UUID("90d82df4-6037-4eb6-869b-a62f7af522b0"),
+      );
 
       // ensure clean starting point
       Realm.deleteFile(realmConfigPrimary);
 
       const realm1 = await Realm.open(realmConfigPrimary);
       realm1.write(() => {
-        realm1.create("Dog", { _id: new ObjectId(), name: "King" });
+        realm1.create("Dog", { _id: new BSON.ObjectId(), name: "King" });
       });
 
       await realm1.syncSession?.uploadAllLocalChanges();
@@ -249,14 +256,18 @@ describe("Partition-values", () => {
     authenticateUserBefore();
 
     it("works", async function (this: Mocha.Context & AppContext & UserContext) {
-      const realmConfigPrimary = createConfig(PvObjectIdDog, this.user, new ObjectId("606d8cdf33e41d1409245e60"));
-      const realmConfigSecondary = createConfig(PvObjectIdDog, this.user, new ObjectId("606d8cdf33e41d1409245e63"));
+      const realmConfigPrimary = createConfig(PvObjectIdDog, this.user, new BSON.ObjectId("606d8cdf33e41d1409245e60"));
+      const realmConfigSecondary = createConfig(
+        PvObjectIdDog,
+        this.user,
+        new BSON.ObjectId("606d8cdf33e41d1409245e63"),
+      );
 
       // ensure clean starting point
       Realm.deleteFile(realmConfigPrimary);
       const realm1 = await Realm.open(realmConfigPrimary);
       realm1.write(() => {
-        realm1.create("Dog", { _id: new ObjectId(), name: "King" });
+        realm1.create("Dog", { _id: new BSON.ObjectId(), name: "King" });
       });
 
       await realm1.syncSession?.uploadAllLocalChanges();

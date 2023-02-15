@@ -16,9 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { ObjectId } from "bson";
 import { expect } from "chai";
-import { ConnectionState, ObjectSchema } from "realm";
+import { ConnectionState, ObjectSchema, BSON } from "realm";
 import { importAppBefore } from "../../hooks";
 import { DogSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { getRegisteredEmailPassCredentials } from "../../utils/credentials";
@@ -98,7 +97,7 @@ function createObjects(user: Realm.User, partition: string): Promise<Realm> {
   const realm = new Realm(config);
   realm.write(() => {
     for (let i = 1; i <= 3; i++) {
-      realm.create("Dog", { _id: new ObjectId(), name: `Lassy ${i}` });
+      realm.create("Dog", { _id: new BSON.ObjectId(), name: `Lassy ${i}` });
     }
   });
 
@@ -312,7 +311,7 @@ describe("SessionTest", () => {
       const writeDataFunc = () => {
         realm.write(() => {
           for (let i = 1; i <= 3; i++) {
-            realm.create("Dog", { _id: new ObjectId(), name: `Lassy ${1}` });
+            realm.create("Dog", { _id: new BSON.ObjectId(), name: `Lassy ${1}` });
           }
         });
       };
@@ -550,7 +549,7 @@ describe("SessionTest", () => {
         })
         .then((realm1) => {
           realm1.write(() => {
-            realm1.create("Dog", { _id: new ObjectId(), name: "Lassy" });
+            realm1.create("Dog", { _id: new BSON.ObjectId(), name: "Lassy" });
           });
           return realm1.syncSession?.uploadAllLocalChanges(1000);
         })
@@ -817,7 +816,7 @@ describe("SessionTest", () => {
       realm1.write(() => {
         for (let i = 0; i < 25; i++) {
           realm1.create("Person", {
-            _id: new ObjectId(),
+            _id: new BSON.ObjectId(),
             age: i,
             firstName: "John",
             lastName: "Smith",
@@ -931,7 +930,7 @@ describe("SessionTest", () => {
       realm1.write(() => {
         for (let i = 0; i < 25; i++) {
           realm1.create("Person", {
-            _id: new ObjectId(),
+            _id: new BSON.ObjectId(),
             age: i,
             firstName: "John",
             lastName: "Smith",
@@ -956,7 +955,7 @@ describe("SessionTest", () => {
       realm1.write(() => {
         for (let i = 0; i < 25; i++) {
           realm1.create("Person", {
-            _id: new ObjectId(),
+            _id: new BSON.ObjectId(),
             age: i,
             firstName: "John",
             lastName: "Smith",
@@ -1021,7 +1020,7 @@ describe("SessionTest", () => {
       realm1.write(() => {
         for (let i = 0; i < 25; i++) {
           realm1.create("Person", {
-            _id: new ObjectId(),
+            _id: new BSON.ObjectId(),
             age: i,
             firstName: "John",
             lastName: "Smith",

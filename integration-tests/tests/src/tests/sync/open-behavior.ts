@@ -16,9 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { expect } from "chai";
-import Realm from "realm";
+import Realm, { BSON } from "realm";
 import { generatePartition, randomVerifiableEmail } from "../../utils/generators";
-import { ObjectId } from "bson";
 import { importAppBefore } from "../../hooks";
 import { sleep } from "../../utils/sleep";
 
@@ -97,7 +96,7 @@ describe("OpenBehaviour", function () {
 
     let realm = new Realm(config);
     realm.write(() => {
-      realm.create(DogForSyncSchema.name, { _id: new ObjectId(), name: "Bella" });
+      realm.create(DogForSyncSchema.name, { _id: new BSON.ObjectId(), name: "Bella" });
     });
     realm.close();
 
@@ -172,7 +171,7 @@ describe("OpenBehaviour", function () {
       };
       const realm = await Realm.open(config);
       realm.write(() => {
-        realm.create(DogForSyncSchema.name, { _id: new ObjectId(), name: "Milo" });
+        realm.create(DogForSyncSchema.name, { _id: new BSON.ObjectId(), name: "Milo" });
       });
       await realm.syncSession?.uploadAllLocalChanges();
     }
@@ -297,7 +296,7 @@ describe("OpenBehaviour", function () {
       const realm = await Realm.open(config);
 
       realm.write(() => {
-        realm.create(DogForSyncSchema.name, { _id: new ObjectId(), name: "Lola" });
+        realm.create(DogForSyncSchema.name, { _id: new BSON.ObjectId(), name: "Lola" });
       });
 
       await realm.syncSession?.uploadAllLocalChanges();
@@ -378,7 +377,7 @@ describe("OpenBehaviour", function () {
       const realm = await Realm.open(config);
 
       realm.write(() => {
-        realm.create(DogForSyncSchema.name, { _id: new ObjectId(), name: "Molly" });
+        realm.create(DogForSyncSchema.name, { _id: new BSON.ObjectId(), name: "Molly" });
       });
 
       await realm.syncSession?.uploadAllLocalChanges();
@@ -446,7 +445,7 @@ describe("OpenBehaviour", function () {
       const realm = await Realm.open(config);
 
       realm.write(() => {
-        realm.create(DogForSyncSchema.name, { _id: new ObjectId(), name: "Lola" });
+        realm.create(DogForSyncSchema.name, { _id: new BSON.ObjectId(), name: "Lola" });
       });
 
       await realm.syncSession?.uploadAllLocalChanges();
