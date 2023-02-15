@@ -8,7 +8,7 @@
         * Being able to spread (e.g. `[...realm.subscriptions]`).
 
 ### Enhancements
-* Converting flexible sync Realms to bundled and local realms is now supported. ([realm/realm-core#6076](https://github.com/realm/realm-core/pull/6076))
+* Converting flexible sync Realms to bundled and local Realms is now supported. ([realm/realm-core#6076](https://github.com/realm/realm-core/pull/6076))
 * For client reset mode `onRecoveryOrDiscard`, the `onDiscard` and `onRecovery` callbacks now have simple default values. ([#5288](https://github.com/realm/realm-js/pull/5288), since v11.1.0)
 
 ### Fixed
@@ -16,6 +16,13 @@
 * Fixed crash when using client reset with recovery and flexible sync with a single subscription ([#6070](https://github.com/realm/realm-core/issues/6070), since v10.19.5)
 * If `path` is defined in the configuration, it will used for synced Realms too. Relative paths will be appended to a default prefix (prefix is computed using app id and user id). Absolute paths are left untouched. (since v10.0.0)
 * Fixed a bug related to parsing the client reset configuration. ([#5288](https://github.com/realm/realm-js/pull/5288), since v11.1.0)
+* Client reset with recovery or discard local could fail if there were dangling links in lists that got ressurected while the list was being transferred from the fresh Realm. ([realm/realm-core#6292](https://github.com/realm/realm-core/issues/6292), since v10.10.0)
+* Sharing Realm files between a Catalyst app and Realm Studio did not properly synchronize access to the Realm file. ([realm/realm-core#6258](https://github.com/realm/realm-core/pull/6258), since v6.1.0)
+* When client reset with recovery is used and the recovery does not actually result in any new local commits, the sync client may have gotten stuck in a cycle with a `A fatal error occured during client reset: 'A previous 'Recovery' mode reset from <timestamp> did not succeed, giving up on 'Recovery' mode to prevent a cycle'` error message. ([realm/realm-core#6195](https://github.com/realm/realm-core/issues/6195), since v10.18.0)
+* Fixed diverging history in flexible sync if writes occur during bootstrap to objects that just came into view. ([realm/realm-core#5804](https://github.com/realm/realm-core/issues/5804), since v10.11.0)
+* If a client reset with recovery or discard local is interrupted while the "fresh" Realm is being downloaded, the sync client may crash with a `MultpleSyncAgents` exception ([realm/realm-core#6217](https://github.com/realm/realm-core/issues/6217), since v10.15.0)
+* Online compaction may cause a single commit to take a long time. ([realm/realm-core#6245](https://github.com/realm/realm-core/pull/6245), since v11.3.0-rc.0)
+
 
 ### Compatibility
 * React Native >= v0.70.0
@@ -25,8 +32,7 @@
 
 ### Internal
 * Upgrade Example to use React Native 0.71.1 ([#5438](https://github.com/realm/realm-js/pull/5438))
-* Upgraded Realm Core from v13.1.1 to v13.2.0. ([#5174](https://github.com/realm/realm-js/issues/5174) and [#5244](https://github.com/realm/realm-js/issues/5244))
-* Unpin Xcode version when building locally and upgrade the Xcode version used by Github Actions.
+* Upgraded Realm Core from v13.1.1 to v13.4.1. ([#5174](https://github.com/realm/realm-js/issues/5174), [#5244](https://github.com/realm/realm-js/issues/5244) and [#5419](https://github.com/realm/realm-js/issues/54* Unpin Xcode version when building locally and upgrade the Xcode version used by Github Actions.
 * Enable tests for notifications on dictionary.
 * Automate releasing package on Github Actions.
 * Upgrade OpenSSL v1.1.1n to v3.0.7. ([realm/realm-core#6097](https://github.com/realm/realm-core/pull/6097))

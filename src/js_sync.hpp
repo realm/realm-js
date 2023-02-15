@@ -873,7 +873,7 @@ void SessionClass<T>::pause(ContextType ctx, ObjectType this_object, Arguments& 
     args.validate_count(0);
     return_value.set(false);
     if (auto session = get_internal<T, SessionClass<T>>(ctx, this_object)->lock()) {
-        session->log_out();
+        session->force_close();
     }
 }
 
