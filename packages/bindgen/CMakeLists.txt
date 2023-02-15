@@ -124,7 +124,10 @@ file(GLOB_RECURSE TS_FILES
 list(FILTER TS_FILES EXCLUDE REGEX "templates/[^/]*\.ts$")
 list(FILTER TS_FILES EXCLUDE REGEX "tests/[^/]*\.ts$")
 
-set(SPEC_FILE ${CMAKE_CURRENT_SOURCE_DIR}/spec.yml)
+set(CORE_SPEC_FILE ${CMAKE_CURRENT_SOURCE_DIR}/spec.yml)
+set(JS_SPEC_FILE ${CMAKE_CURRENT_SOURCE_DIR}/js_spec.yml)
+set(SPEC_FILES ${CORE_SPEC_FILE} ${JS_SPEC_FILE})
+set(SPEC_ARGS --spec ${CORE_SPEC_FILE} --spec ${JS_SPEC_FILE})
 
 # Unfortunately this path is hard coded in the reader.
 # TODO 
@@ -158,11 +161,11 @@ add_custom_target(SpecJsonSchema DEPENDS ${SCHEMA_FILE})
 
 add_custom_command(
     OUTPUT ${GENERATED_TS_FILES}
-    COMMAND ${NODE_FORCE_COLOR} ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts --spec ${SPEC_FILE} --template typescript --output ${TYPESCRIPT_OUTPUT_DIR}
+    COMMAND ${NODE_FORCE_COLOR} ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template typescript --output ${TYPESCRIPT_OUTPUT_DIR}
     VERBATIM
     MAIN_DEPENDENCY src/templates/typescript.ts
     DEPENDS
-        ${SPEC_FILE}
+        ${SPEC_FILES}
         SpecJsonSchema
         ${TS_FILES}
 )
@@ -174,11 +177,11 @@ add_custom_target(TypeScript ALL DEPENDS ${GENERATED_TS_FILES} ${GENERATED_JS_FI
 # One issue we may run into when splitting is that they will need to be different files, otherwise ninja will get confused.
 add_custom_command(
     OUTPUT ${GENERATED_JS_FILES}
-    COMMAND ${NODE_FORCE_COLOR} ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts --spec ${SPEC_FILE} --template node-wrapper --output ${TYPESCRIPT_OUTPUT_DIR}
+    COMMAND ${NODE_FORCE_COLOR} ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template node-wrapper --output ${TYPESCRIPT_OUTPUT_DIR}
     VERBATIM
     MAIN_DEPENDENCY src/templates/node-wrapper.ts
     DEPENDS
-        ${SPEC_FILE}
+        ${SPEC_FILES}
         SpecJsonSchema
         ${TS_FILES}
 )
@@ -188,11 +191,11 @@ if(DEFINED CMAKE_JS_VERSION)
 
     add_custom_command(
         OUTPUT node_init.cpp
-        COMMAND ${NODE_FORCE_COLOR} ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts --spec ${SPEC_FILE} --template node --output ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND ${NODE_FORCE_COLOR} ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template node --output ${CMAKE_CURRENT_BINARY_DIR}
         VERBATIM
         MAIN_DEPENDENCY src/templates/node.ts
         DEPENDS
-            ${SPEC_FILE}
+            ${SPEC_FILES}
             SpecJsonSchema
             ${TS_FILES}
     )
@@ -203,11 +206,11 @@ else()
 
     add_custom_command(
         OUTPUT jsi_init.cpp
-        COMMAND ${NODE_FORCE_COLOR} ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts --spec ${SPEC_FILE} --template jsi --output ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND ${NODE_FORCE_COLOR} ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template jsi --output ${CMAKE_CURRENT_BINARY_DIR}
         VERBATIM
         MAIN_DEPENDENCY src/templates/jsi.ts
         DEPENDS
-            ${SPEC_FILE}
+            ${SPEC_FILES}
             SpecJsonSchema
             ${TS_FILES}
     )
