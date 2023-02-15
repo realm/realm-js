@@ -18,6 +18,7 @@
 import {
   BoundSpec,
   Class,
+  Enumerator,
   Field,
   InstanceMethod,
   Method,
@@ -99,6 +100,9 @@ declare module "./bound-model" {
   interface Field {
     readonly jsName: string;
   }
+  interface Enumerator {
+    readonly jsName: string;
+  }
   interface Class {
     iteratorMethodId(): string;
   }
@@ -121,6 +125,12 @@ Object.defineProperty(Method.prototype, "jsName", {
 Object.defineProperty(Field.prototype, "jsName", {
   get(this: Field) {
     return camelCase(this.name);
+  },
+});
+
+Object.defineProperty(Enumerator.prototype, "jsName", {
+  get(this: Enumerator) {
+    return pascalCase(this.name);
   },
 });
 
