@@ -17,9 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { ChangeEvent, DeleteResult, Document, InsertEvent, MongoDBCollection } from "realm";
+import { ChangeEvent, Credentials, DeleteResult, Document, InsertEvent, MongoDBCollection, User } from "realm";
 
-import { authenticateUserBefore, importAppBefore } from "../../hooks";
+import { importAppBefore } from "../../hooks";
 import { sleep } from "../../utils/sleep";
 
 type TestDocument = {
@@ -31,11 +31,32 @@ type TestDocument = {
 describe.skipIf(environment.missingServer, "MongoDB Client", function () {
   this.timeout(60_000); // TODO: Temporarily hardcoded until envs are set up.
   importAppBefore("with-db");
-  authenticateUserBefore();
 
+  let collection: MongoDBCollection<TestDocument>;
   const serviceName = "mongo-db";
-  const dbName = "test-database";
+  const dbName = "test-database"; // TODO: Change to randomly generated database name whenever AppImporter is refactored.
   const collectionName = "test-collection";
+
+  function getCollection<T extends Document = TestDocument>(currentUser: User | null): MongoDBCollection<T> {
+    if (!currentUser) {
+      throw new Error("A user must be authenticated before getting a MongoDB collection.");
+    }
+    return currentUser.mongoClient(serviceName).db(dbName).collection<T>(collectionName);
+  }
+
+  function deleteAllDocuments(): Promise<DeleteResult> {
+    return collection.deleteMany();
+  }
+
+  async function logIn(app: App): Promise<User> {
+    return app.currentUser ?? app.logIn(Credentials.anonymous());
+  }
+
+  beforeEach(async function (this: AppContext & Mocha.Context) {
+    const user = await logIn(this.app);
+    collection = getCollection(user);
+    await deleteAllDocuments();
+  });
 
   describe("User", function () {
     it("returns a MongoDB service when calling 'mongoClient()'", async function (this: AppContext & Mocha.Context) {
@@ -72,31 +93,6 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
   });
 
   describe("MongoDBCollection", function () {
-    let collection: MongoDBCollection<TestDocument>;
-
-    function getCollection<T extends Document = TestDocument>(currentUser: User | null): MongoDBCollection<T> {
-      if (!currentUser) {
-        throw new Error("A user must be authenticated before getting a MongoDB collection.");
-      }
-      return currentUser.mongoClient(serviceName).db(dbName).collection<T>(collectionName);
-    }
-
-    function deleteAllDocuments(): Promise<DeleteResult> {
-      return collection.deleteMany();
-    }
-
-    before(function (this: AppContext & Mocha.Context) {
-      collection = getCollection(this.app.currentUser);
-    });
-
-    beforeEach(async function () {
-      await deleteAllDocuments();
-    });
-
-    after(async function () {
-      await deleteAllDocuments();
-    });
-
     describe("#watch", function () {
       const text = "use some odd chars to force weird encoding %\n\r\n\\????>>>>";
       const numInserts = 10;
