@@ -760,51 +760,6 @@ describe("SessionTest", () => {
     });
   });
 
-  //TODO: move to partition-value.ts tests
-  describe("partition values", () => {
-    afterEach(() => Realm.clearTestState());
-    it("supports accepted value types", async function (this: AppContext) {
-      const testPartitionValues = [
-        generatePartition(), // string
-        Number.MAX_SAFE_INTEGER,
-        6837697641419457,
-        26123582,
-        0,
-        -12342908,
-        -7482937500235834,
-        -Number.MAX_SAFE_INTEGER,
-        new ObjectId("603fa0af4caa9c90ff6e126c"),
-        new UUID("f3287217-d1a2-445b-a4f7-af0520413b2a"),
-        null,
-        "",
-      ];
-
-      for (const partition of testPartitionValues) {
-        const { config } = await getSyncConfWithUser(this.app, partition);
-        expect(partition).equals(config.sync?.partitionValue);
-
-        // TODO: Update docker testing-setup to allow for multiple apps and test each type on a supported App.
-        // Note: This does NOT await errors from the server, as we currently have limitations in the docker-server-setup. All tests with with non-string fails server-side.
-        const realm = new Realm(config);
-        expect(realm).to.not.be.null;
-        expect(realm).to.not.be.undefined;
-
-        const spv: any = realm.syncSession?.config.partitionValue;
-
-        // BSON types have their own 'equals' comparer
-        if (spv instanceof ObjectId) {
-          expect(spv.equals(partition as ObjectId)).to.be.true;
-        } else if (spv && spv.toUUID !== undefined) {
-          expect(spv.toUUID().equals(partition)).to.be.true;
-        } else {
-          expect(spv).equals(partition);
-        }
-
-        realm.close();
-      }
-    });
-  });
-
   it("rejects non accepted value types", async function (this: AppContext) {
     const testPartitionValues = [
       undefined,
