@@ -281,7 +281,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
       fromBinding: defaultFromBinding,
     };
   },
-  [binding.PropertyType.UUID]({ optional }) {
+  [binding.PropertyType.Uuid]({ optional }) {
     return {
       toBinding: nullPassthrough((value) => {
         assert.instanceOf(value, BSON.UUID);

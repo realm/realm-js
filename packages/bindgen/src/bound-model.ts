@@ -621,8 +621,7 @@ export function bindModel(spec: Spec): BoundSpec {
     struct.fields = Object.entries(fields).map(([name, field]) => {
       const type = resolveTypes(field.type);
       // Optional and Nullable fields are never required.
-      const required =
-        field.default === undefined && !(type.isNullable() || type.isOptional());
+      const required = field.default === undefined && !(type.isNullable() || type.isOptional());
       return new Field(name, field.cppName ?? name, type, required, field.default);
     });
   }
