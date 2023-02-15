@@ -22,6 +22,7 @@
 #include <realm/object-store/impl/realm_coordinator.hpp>
 
 #if REALM_ENABLE_SYNC
+#include <realm/object-store/sync/app.hpp>
 #include <realm/object-store/sync/sync_manager.hpp>
 #include <realm/object-store/sync/sync_user.hpp>
 #endif
@@ -75,6 +76,7 @@ void clear_test_state()
     }
     s_test_files_path = util::make_temp_dir();
 #endif
+    realm::app::App::clear_cached_apps();
 #endif
 }
 
