@@ -23,7 +23,6 @@
 * If a client reset with recovery or discard local is interrupted while the "fresh" Realm is being downloaded, the sync client may crash with a `MultipleSyncAgents` exception ([realm/realm-core#6217](https://github.com/realm/realm-core/issues/6217), since v10.15.0)
 * Online compaction may cause a single commit to take a long time. ([realm/realm-core#6245](https://github.com/realm/realm-core/pull/6245), since v11.3.0-rc.0)
 
-
 ### Compatibility
 * React Native >= v0.70.0
 * Atlas App Services.
@@ -32,7 +31,8 @@
 
 ### Internal
 * Upgrade Example to use React Native 0.71.1 ([#5438](https://github.com/realm/realm-js/pull/5438))
-* Upgraded Realm Core from v13.1.1 to v13.4.1. ([#5174](https://github.com/realm/realm-js/issues/5174), [#5244](https://github.com/realm/realm-js/issues/5244) and [#5419](https://github.com/realm/realm-js/issues/54* Unpin Xcode version when building locally and upgrade the Xcode version used by Github Actions.
+* Upgraded Realm Core from v13.1.1 to v13.4.1. ([#5174](https://github.com/realm/realm-js/issues/5174), [#5244](https://github.com/realm/realm-js/issues/5244) and [#5419](https://github.com/realm/realm-js/issues/5419))
+* Unpin Xcode version when building locally and upgrade the Xcode version used by Github Actions.
 * Enable tests for notifications on dictionary.
 * Automate releasing package on Github Actions.
 * Upgrade OpenSSL v1.1.1n to v3.0.7. ([realm/realm-core#6097](https://github.com/realm/realm-core/pull/6097))
