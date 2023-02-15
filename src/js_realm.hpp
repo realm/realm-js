@@ -980,6 +980,7 @@ void RealmClass<T>::clear_test_state(ContextType ctx, ObjectType this_object, Ar
                                      ReturnValue& return_value)
 {
     args.validate_maximum(0);
+    AsyncOpenTaskClass<T>::cancel_tasks();
     js::clear_test_state();
 }
 
