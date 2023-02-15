@@ -1199,8 +1199,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
 
     std::shared_ptr<AsyncOpenTask> task = Realm::get_synchronized_realm(config);
 
-    realm::util::EventLoopDispatcher<RealmCallbackHandler> callback_handler([=,
-                                                                             args_count = args.count,
+    realm::util::EventLoopDispatcher<RealmCallbackHandler> callback_handler([=, args_count = args.count,
                                                                              defaults = std::move(defaults),
                                                                              constructors = std::move(constructors)](
                                                                                 ThreadSafeReference&& realm_ref,
@@ -1211,10 +1210,10 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
             return;
         }
         // Remove once we are done do avoid destroying the lambda's state while still running.
-        auto guard = util::make_scope_exit([&] () noexcept {
+        auto guard = util::make_scope_exit([&]() noexcept {
             AsyncOpenTaskClass<T>::tasks.erase(task);
         });
-        
+
         HANDLESCOPE(protected_ctx)
 
         if (error) {
@@ -1819,7 +1818,9 @@ public:
         {"cancel", wrap<cancel>},
     };
 
-    static inline std::map<std::shared_ptr<AsyncOpenTask>, util::UniqueFunction<void(ThreadSafeReference&&, std::exception_ptr)>> tasks;
+    static inline std::map<std::shared_ptr<AsyncOpenTask>,
+                           util::UniqueFunction<void(ThreadSafeReference&&, std::exception_ptr)>>
+        tasks;
 
     static inline void cancel_tasks()
     {
@@ -1852,7 +1853,7 @@ void AsyncOpenTaskClass<T>::cancel(ContextType ctx, ObjectType this_object, Argu
     if (callback != tasks.end()) {
         callback->second({}, err); // Removes the task from tasks map.
     }
-    
+
     task->cancel();
 }
 
