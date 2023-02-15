@@ -12,7 +12,7 @@ classes:
       ensure_directory_exists_for_file: '(file: const std::string&)'
       copy_bundled_realm_files: ()
       remove_realm_files_from_directory: '(directory: const std::string&)'
-        #remove_file: '(path: const std::string&)'
+      remove_file: '(path: const std::string&)'
       remove_directory: '(path: const std::string&)'
       # print: (const char* fmt, ...) # can't expose varargs directly. Could expose a fixed overload.
 
