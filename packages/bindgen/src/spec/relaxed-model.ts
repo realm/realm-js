@@ -51,8 +51,11 @@
 type SpecType = string; // TODO find some way to have this show up in hover docs.
 
 export type RelaxedSpec = {
-  /** Data used for converting the `Mixed` primitive type to and from C++ */
-  mixedInfo: MixedInfo; // Not optional
+  /**
+   * Data used for converting the `Mixed` primitive type to and from C++
+   * Required in base spec, disallowed in additional specs.
+   */
+  mixedInfo?: MixedInfo;
   /** Headers that need to be included to use the types described in this spec. */
   headers?: string[];
   /**
@@ -114,7 +117,10 @@ export type RelaxedSpec = {
    * NOTE: Currently the are resolved and erased during spec parsing so they never show up in the generated APIs.
    */
   typeAliases?: { [name: string]: SpecType };
-  /** Special handling for perf-sensitve "FooKey" types. RHS is underlying type. */
+  /**
+   * Special handling for perf-sensitve "FooKey" types. RHS is underlying type.
+   * Not allowed on extra specs.
+   */
   keyTypes?: { [name: string]: string };
   /**
    * For now, interfaces are basically identical to classes, but implicitly sharedPtrWrapped.

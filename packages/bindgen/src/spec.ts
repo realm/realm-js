@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import Ajv, { ErrorObject } from "ajv";
+import { strict as assert } from "assert";
 import chalk from "chalk";
 import fs from "fs";
 import yaml from "yaml";
@@ -30,8 +31,9 @@ import {
   InterfaceSpec,
   MethodSpec,
   RecordSpec,
-  Spec,
+  AnySpec,
   ValueType,
+  Spec,
 } from "./spec/model";
 import {
   RelaxedClassSpec,
@@ -70,7 +72,34 @@ const schemaFile = new URL("../generated/spec.schema.json", import.meta.url);
 const schemaJson = JSON.parse(fs.readFileSync(schemaFile, { encoding: "utf8" }));
 export const validate = ajv.compile<RelaxedSpec>(schemaJson);
 
-export function parseSpec(filePath: string): Spec {
+export function parseSpecs(specs: ReadonlyArray<string>): Spec {
+  const [base, ...extras] = specs;
+  const spec = parseSpec(base);
+  assert(spec.mixedInfo, "The base spec must have a 'mixedInfo' field");
+
+  for (const extraPath of extras) {
+    const extra = parseSpec(extraPath);
+    // TODO unusedDataTypes and extraCtors may need to be allowed here.
+    assert(extra.mixedInfo == undefined, "Extra specs must not have a 'mixedInfo' field");
+    assert.equal(Object.keys(extra.keyTypes).length, 0, "Extra specs must not have a 'keyTypes' field");
+
+    // TODO Right now we assume that extra specs are purely additive, but we don't check that they aren't
+    // using any type names from the base spec. It will "work" via replacement if the extra spec declares
+    // a type of the same "kind" as it was in the base spec, but will fail with a duplicate type otherwise.
+    // We should probably support replacing a class or record with a primitive and vice-versa.
+
+    spec.headers.push(...extra.headers);
+    spec.primitives.push(...extra.primitives);
+
+    for (const field of ["enums", "records", "classes", "constants", "typeAliases", "interfaces"] as const) {
+      Object.assign(spec[field], extra[field]);
+    }
+  }
+
+  return spec;
+}
+
+export function parseSpec(filePath: string): AnySpec {
   const text = fs.readFileSync(filePath, { encoding: "utf8" });
   const parsed = yaml.parse(text);
   const isValid = validate(parsed);
@@ -90,7 +119,7 @@ function mapObjectValues<T, U>(obj: Record<string, T>, fn: (value: T) => U) {
   return Object.fromEntries(Object.entries<T>(obj).map(([key, value]) => [key, fn(value)]));
 }
 
-export function normalizeSpec(spec: RelaxedSpec): Spec {
+export function normalizeSpec(spec: RelaxedSpec): AnySpec {
   return {
     headers: spec.headers || [],
     primitives: spec.primitives || [],
