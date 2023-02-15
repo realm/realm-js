@@ -17,17 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import chalk from "chalk";
-import { strict as assert } from "assert";
-import { Command, InvalidArgumentError } from "commander";
+import { Command, InvalidArgumentError } from "@commander-js/extra-typings";
 import fs from "fs";
 import path from "path";
 
 import { debug, enableDebugging } from "./debug";
 import { generate } from "./generator";
-import { InvalidSpecError, parseSpec, parseSpecs } from "./spec";
+import { InvalidSpecError, parseSpecs } from "./spec";
 import { importTemplate, Template, TEMPLATES_NAMES } from "./templates";
-
-const ROOT_DIR = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 
 type GenerateOptions = {
   spec: ReadonlyArray<string>;
@@ -66,10 +63,9 @@ export const program = new Command();
 program.name("realm-bindgen");
 
 const specOption = program
-  .createOption("-s, --spec <output>", "Path of the API specification")
+  .createOption("-s, --spec <spec...>", "Path of the API specification")
   .argParser((arg, previous: ReadonlyArray<string> = []) => [...previous, parseExistingFilePath(arg)])
   .makeOptionMandatory();
-specOption.variadic = true;
 
 const templateOption = program
   .createOption("-t, --template <template>", "Template to apply when generating")
@@ -93,13 +89,13 @@ program
   .addOption(outputOption)
   .addOption(debugOption)
   .action(async (args: GenerateOptions) => {
-    const { spec: specPath, template, output: outputPath, debug: isDebugging } = args;
+    const { spec: specPaths, template, output: outputPath, debug: isDebugging } = args;
     if (isDebugging) {
       enableDebugging();
       debug("Debugging enabled");
     }
     try {
-      const spec = parseSpecs(specPath);
+      const spec = parseSpecs(specPaths);
       generate({ spec, template: await template, outputPath });
       process.exit(0);
     } catch (err) {
@@ -113,13 +109,13 @@ program
   .addOption(specOption)
   .addOption(debugOption)
   .action((args: ValidateOptions) => {
-    const { spec: specPath, debug: isDebugging } = args;
+    const { spec: specPaths, debug: isDebugging } = args;
     if (isDebugging) {
       enableDebugging();
       debug("Debugging enabled");
     }
     try {
-      parseSpecs(specPath);
+      parseSpecs(specPaths);
       console.log(chalk.green("Validation passed!"));
       process.exit(0);
     } catch (err) {
