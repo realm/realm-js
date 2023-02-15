@@ -16,13 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { ObjectId, UUID } from "bson";
+import { ObjectId } from "bson";
 import { expect } from "chai";
 import { ConnectionState, ObjectSchema } from "realm";
 import { importAppBefore } from "../../hooks";
 import { DogSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { generatePartition, randomVerifiableEmail } from "../../utils/generators";
-import { sleep, timeout } from "../../utils/sleep";
+import { sleep, throwAfterTimeout } from "../../utils/sleep";
 
 const DogForSyncSchema = {
   name: "Dog",
@@ -311,7 +311,7 @@ describe("SessionTest", () => {
         Realm.open(config).progress(() => {
           progressCalled = true;
         }),
-        timeout(5000),
+        throwAfterTimeout(5000),
       ]);
       expect(progressCalled).to.be.true;
     });
