@@ -130,11 +130,16 @@
             "request": "launch",
             "name": "LLDB Debug Integration Tests",
             "program": "node",
+            "env": {
+                "CONTEXT": "appTemplatesPath=../realm-apps"
+            },
             "args": [
                 "--expose_gc",
-                "node_modules/mocha/bin/mocha",
+                "--enable-source-maps",
+                "--no-warnings",
                 "--require",
                 "ts-node/register/transpile-only",
+                "node_modules/mocha/lib/cli/cli.js",
                 "--require",
                 "src/node/inject-globals.ts",
                 "src/index.ts",
