@@ -14,7 +14,7 @@ AWS_ACCESS_KEY_ID=...
 AWS_SECRET_ACCESS_KEY=...
 ```
 
-Be sure to have `assisted_agg` downloaded and added to your PATH. More info about where to get it can be found in the BAAS repo.  
+Be sure to have `assisted_agg` (if on Mac) or `libmongo.so` (if on Linux) downloaded and added to your PATH. More info about where to get it can be found in the BAAS repo.  
 
 Run the `start` script, sit back and relax as a mongo server is started, BaaS is pulled, built and started with a proper configuration 🤞
 
