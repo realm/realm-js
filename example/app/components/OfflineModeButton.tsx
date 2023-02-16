@@ -1,8 +1,6 @@
 import React, {useState} from 'react';
 import {StyleSheet, Switch, Text, View} from 'react-native';
-import {TaskRealmContext} from '../models';
-
-const {useRealm} = TaskRealmContext;
+import {useRealm} from '@realm/react';
 
 export function OfflineModeButton() {
   const realm = useRealm();

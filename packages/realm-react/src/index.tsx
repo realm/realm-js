@@ -25,7 +25,7 @@ import { createRealmProvider } from "./RealmProvider";
 
 type RealmContext = {
   /**
-   * Returns a Context Provider component that is required to wrap any component using
+   * The Provider component that is required to wrap any component using
    * the Realm hooks.
    *
    * @example
@@ -37,7 +37,7 @@ type RealmContext = {
    *   };
    *
    *   return (
-   *     <RealmProvider path={"data.realm"} sync={syncConfig}>
+   *     <RealmProvider schema={[Task, User]} path={"data.realm"} sync={syncConfig}>
    *       <App/>
    *     </RealmProvider>
    *   )
@@ -52,9 +52,20 @@ type RealmContext = {
    */
   RealmProvider: ReturnType<typeof createRealmProvider>;
   /**
+   * Returns the instance of the {@link Realm} opened by the `RealmProvider`.
+   *
+   * @example
+   * ```
+   * const realm = useRealm();
+   * ```
+   *
+   * @returns a realm instance
+   */
+  useRealm: ReturnType<typeof createUseRealm>;
+  /**
    * Returns a {@link Realm.Collection} of {@link Realm.Object}s from a given type.
    * The hook will update on any changes to any object in the collection
-   * and return an empty array if the colleciton is empty.
+   * and return an empty array if the collection is empty.
    *
    * The result of this can be consumed directly by the `data` argument of any React Native
    * VirtualizedList or FlatList.  If the component used for the list's `renderItem` prop is {@link React.Memo}ized,
@@ -87,17 +98,6 @@ type RealmContext = {
    * @returns either the desired {@link Realm.Object} or `null` in the case of it being deleted or not existing.
    */
   useObject: ReturnType<typeof createUseObject>;
-  /**
-   * Returns the instance of the {@link Realm} configured by `createRealmContext`
-   *
-   * @example
-   * ```
-   * const realm = useRealm();
-   * ```
-   *
-   * @returns a realm instance
-   */
-  useRealm: ReturnType<typeof createUseRealm>;
 };
 
 /**
@@ -117,7 +117,7 @@ type RealmContext = {
  *  };
  *}
  *
- *const {userRealm, useQuery, useObject, RealmProvider} = createRealmContext({schema: [Task]});
+ *const {useRealm, useQuery, useObject, RealmProvider} = createRealmContext({schema: [Task]});
  * ```
  *
  * @param realmConfig - {@link Realm.Configuration} used to open the Realm
@@ -140,6 +140,82 @@ export const createRealmContext: (realmConfig?: Realm.Configuration) => RealmCon
     useObject,
   };
 };
+
+const defaultContext = createRealmContext();
+
+/**
+ * The Provider component that is required to wrap any component using
+ * the Realm hooks.
+ *
+ * @example
+ * ```
+ * const AppRoot = () => {
+ *   const syncConfig = {
+ *     flexible: true,
+ *     user: currentUser
+ *   };
+ *
+ *   return (
+ *     <RealmProvider schema={[Task, User]} path={"data.realm"} sync={syncConfig}>
+ *       <App/>
+ *     </RealmProvider>
+ *   )
+ * }
+ * ```
+ * @param props - The {@link Realm.Configuration} for this Realm, passed as props.
+ * By default, this is the main configuration for the Realm.
+ */
+export const RealmProvider = defaultContext.RealmProvider;
+
+/**
+ * Returns the instance of the {@link Realm} opened by the `RealmProvider`.
+ *
+ * @example
+ * ```
+ * const realm = useRealm();
+ * ```
+ *
+ * @returns a realm instance
+ */
+export const useRealm = defaultContext.useRealm;
+
+/**
+ * Returns a {@link Realm.Collection} of {@link Realm.Object}s from a given type.
+ * The hook will update on any changes to any object in the collection
+ * and return an empty array if the collection is empty.
+ *
+ * The result of this can be consumed directly by the `data` argument of any React Native
+ * VirtualizedList or FlatList.  If the component used for the list's `renderItem` prop is {@link React.Memo}ized,
+ * then only the modified object will re-render.
+ *
+ * @example
+ * ```
+ * const collection = useQuery(Object);
+ *
+ * // The methods `sorted` and `filtered` should be wrapped in a useMemo.
+ * const sortedCollection = useMemo(collection.sorted(), [collection]);
+ * ```
+ *
+ * @param type - The object type, depicted by a string or a class extending Realm.Object
+ * @returns a collection of realm objects or an empty array
+ */
+export const useQuery = defaultContext.useQuery;
+
+/**
+ * Returns a {@link Realm.Object} from a given type and value of primary key.
+ * The hook will update on any changes to the properties on the returned object
+ * and return null if it either doesn't exists or has been deleted.
+ *
+ * @example
+ * ```
+ * const object = useObject(ObjectClass, objectId);
+ * ```
+ *
+ * @param type - The object type, depicted by a string or a class extending {@link Realm.Object}
+ * @param primaryKey - The primary key of the desired object which will be retrieved using {@link Realm.objectForPrimaryKey}
+ * @returns either the desired {@link Realm.Object} or `null` in the case of it being deleted or not existing.
+ */
+export const useObject = defaultContext.useObject;
 
 export { Realm };
 export * from "./AppProvider";

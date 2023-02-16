@@ -26,16 +26,6 @@ import { useContext } from "react";
  * @returns useRealm - Hook that is used to gain access to the {@link Realm} instance
  */
 export const createUseRealm = (RealmContext: React.Context<Realm | null>) => {
-  /**
-   * Returns the instance of the {@link Realm} configured by `createRealmContext`
-   *
-   * @example
-   * ```
-   * const realm = useRealm();
-   * ```
-   *
-   * @returns a realm instance
-   */
   return function useRealm(): Realm {
     // This is the context setup by `createRealmContext`
     const context = useContext(RealmContext);
