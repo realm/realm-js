@@ -44,7 +44,10 @@
     "test": "mocha",
     "test:types": "tsc --project type-tests/tsconfig.json",
     "build": "rollup -c",
-    "build:watch": "rollup -c --watch"
+    "build:watch": "rollup -c --watch",
+    "build:node": "npm run build --prefix ../bindgen",
+    "build:android": "node ../../scripts/build-android.js",
+    "build:ios": "../../scripts/build-ios.sh"
   },
   "dependencies": {
     "debug": "^4.3.4",
