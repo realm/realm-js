@@ -45,6 +45,9 @@
     "test:types": "tsc --project type-tests/tsconfig.json",
     "build": "rollup -c",
     "build:watch": "rollup -c --watch",
+    "build:node": "npm run build --prefix ../bindgen",
+    "build:android": "node ../../scripts/build-android.js",
+    "build:ios": "../../scripts/build-ios.sh",
     "prebuild": "prebuild --runtime node -- --directory ../bindgen",
     "install": "prebuild-install --runtime node || echo 'Failed to download prebuild for Realm'"
   },
