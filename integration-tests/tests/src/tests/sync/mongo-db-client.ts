@@ -425,6 +425,22 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           expect(count).to.equal(4);
         });
       });
+
+      describe("#deleteOne", function () {
+        it("deletes specific document", async function (this: AppContext & Mocha.Context) {
+          await insertThreeDocuments();
+
+          const result = await collection.deleteOne({ _id: insertedId3 });
+          expect(result.deletedCount).to.equal(1);
+        });
+
+        it("does not delete any document if there are no matches", async function (this: AppContext & Mocha.Context) {
+          await insertThreeDocuments();
+
+          const result = await collection.deleteOne({ _id: nonExistentId });
+          expect(result.deletedCount).to.equal(0);
+        });
+      });
     });
 
     describe("#watch", function () {
