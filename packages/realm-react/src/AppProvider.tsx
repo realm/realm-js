@@ -75,7 +75,7 @@ export const useApp = <
   const app = useContext(AppContext);
 
   if (app === null) {
-    throw new Error("AppContext not found.  Did you wrap your app in AppProvider?");
+    throw new Error("No app found. Did you forget to wrap your component in an <AppProvider>?");
   }
   return app as Realm.App<FunctionsFactoryType, CustomDataType>;
 };

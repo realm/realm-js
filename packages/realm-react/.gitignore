@@ -1,5 +1,6 @@
 dist/
 default.realm.*
 testArtifacts/
+mongodb-realm/
 
 node_modules
