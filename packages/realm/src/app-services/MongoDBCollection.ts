@@ -456,7 +456,7 @@ export class MongoDBCollection<T extends Document> {
    * @param options Additional options to apply.
    * @returns The document found before updating it.
    */
-  findOneAndUpdate(filter: Filter = {}, update: Update, options: FindOneAndModifyOptions = {}): Promise<T | null> {
+  findOneAndUpdate(filter: Filter, update: Update, options: FindOneAndModifyOptions = {}): Promise<T | null> {
     return this.functions.findOneAndUpdate({
       database: this.databaseName,
       collection: this.name,
@@ -477,11 +477,7 @@ export class MongoDBCollection<T extends Document> {
    * @param options Additional options to apply.
    * @returns The document found before replacing it.
    */
-  findOneAndReplace(
-    filter: Filter = {},
-    replacement: unknown,
-    options: FindOneAndModifyOptions = {},
-  ): Promise<T | null> {
+  findOneAndReplace(filter: Filter, replacement: unknown, options: FindOneAndModifyOptions = {}): Promise<T | null> {
     return this.functions.findOneAndReplace({
       database: this.databaseName,
       collection: this.name,
