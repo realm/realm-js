@@ -268,9 +268,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
           async function openRealm(user: Realm.User, extraConfig: ExtraConfig = {}) {
             const config = getSuccessConfig(user, extraConfig);
-            const realm = await Realm.open(config);
-
-            return { realm, config };
+            return Realm.open(config);
           }
 
           async function testSuccess(
@@ -278,14 +276,14 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             extraConfig: Partial<FlexibleSyncConfiguration["initialSubscriptions"]> = {},
             closeRealmAfter = true,
           ) {
-            const { realm, config } = await openRealm(user, extraConfig);
+            const realm = await openRealm(user, extraConfig);
 
             try {
               expect(realm.subscriptions).to.have.length(1);
               expect(realm.subscriptions.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
             } finally {
               if (closeRealmAfter) {
-                closeRealm(realm, config);
+                closeRealm(realm);
               }
             }
 
@@ -293,12 +291,11 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           }
 
           it("returns a promise", async function (this: RealmContext) {
-            const result = openRealm(this.user, {});
+            const result = openRealm(this.user);
             try {
               expect(result).to.be.instanceOf(Promise);
             } finally {
-              const { realm, config } = await result;
-              closeRealm(realm, config);
+              closeRealm(await result);
             }
           });
 
@@ -311,7 +308,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             expect(realm.subscriptions).to.have.length(1);
             expect(realm.subscriptions.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
 
-            closeRealm(realm, config);
+            closeRealm(realm);
           });
 
           it("updates the subscriptions on first open if rerunOnOpen is undefined", async function (this: RealmContext) {
@@ -333,10 +330,10 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             await realm.subscriptions.update((subs) => subs.removeAll());
             realm.close();
 
-            const { realm: realm2, config } = await openRealm(this.user, {});
+            const realm2 = await openRealm(this.user);
             expect(realm2.subscriptions).to.have.length(0);
 
-            closeRealm(realm2, config);
+            closeRealm(realm2);
           });
 
           it("does not update the subscriptions on second open if rerunOnOpen is false", async function (this: RealmContext) {
@@ -346,10 +343,10 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             await realm.subscriptions.update((subs) => subs.removeAll());
             realm.close();
 
-            const { realm: realm2, config } = await openRealm(this.user, {});
+            const realm2 = await openRealm(this.user);
             expect(realm2.subscriptions).to.have.length(0);
 
-            closeRealm(realm2, config);
+            closeRealm(realm2);
           });
 
           it("does update the subscriptions on second open if rerunOnOpen is true", async function (this: RealmContext) {

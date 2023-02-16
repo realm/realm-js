@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { closeThisRealm } from "../utils/close-realm";
+import { closeRealm } from "../utils/close-realm";
 import { openRealm, OpenRealmConfiguration } from "../utils/open-realm";
 
 /**
@@ -39,6 +39,21 @@ export function openRealmHook(config: OpenRealmConfiguration = {}) {
       this.config = result.config;
     }
   };
+}
+
+/**
+ * Close the Realm instance on the current `this` context
+ *
+ * @param this Mocha `this` context
+ */
+export function closeThisRealm(this: Partial<RealmContext> & Mocha.Context): void {
+  // If opening the Realm fails or times out
+  if (this.realm) {
+    closeRealm(this.realm);
+  }
+  // Get rid of the Realm in any case
+  delete this.realm;
+  delete this.config;
 }
 
 export function openRealmBeforeEach(config: OpenRealmConfiguration = {}): void {
