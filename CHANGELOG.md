@@ -20,7 +20,7 @@
 * Sharing Realm files between a Catalyst app and Realm Studio did not properly synchronize access to the Realm file. ([realm/realm-core#6258](https://github.com/realm/realm-core/pull/6258), since v6.1.0)
 * When client reset with recovery is used and the recovery does not actually result in any new local commits, the sync client may have gotten stuck in a cycle with a `A fatal error occured during client reset: 'A previous 'Recovery' mode reset from <timestamp> did not succeed, giving up on 'Recovery' mode to prevent a cycle'` error message. ([realm/realm-core#6195](https://github.com/realm/realm-core/issues/6195), since v10.18.0)
 * Fixed diverging history in flexible sync if writes occur during bootstrap to objects that just came into view. ([realm/realm-core#5804](https://github.com/realm/realm-core/issues/5804), since v10.11.0)
-* If a client reset with recovery or discard local is interrupted while the "fresh" Realm is being downloaded, the sync client may crash with a `MultpleSyncAgents` exception ([realm/realm-core#6217](https://github.com/realm/realm-core/issues/6217), since v10.15.0)
+* If a client reset with recovery or discard local is interrupted while the "fresh" Realm is being downloaded, the sync client may crash with a `MultipleSyncAgents` exception ([realm/realm-core#6217](https://github.com/realm/realm-core/issues/6217), since v10.15.0)
 * Online compaction may cause a single commit to take a long time. ([realm/realm-core#6245](https://github.com/realm/realm-core/pull/6245), since v11.3.0-rc.0)
 
 
