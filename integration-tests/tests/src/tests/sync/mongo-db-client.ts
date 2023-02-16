@@ -318,6 +318,41 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           await expect(collection.insertOne({ _id: insertedId1 })).to.be.rejectedWith("Duplicate key error");
         });
       });
+
+      describe("#insertMany", function () {
+        it("inserts documents with ids", async function (this: AppContext & Mocha.Context) {
+          const result = await collection.insertMany([
+            { _id: insertedId1 },
+            { _id: insertedId2 },
+            { _id: insertedId3 },
+          ]);
+          expect(result.insertedIds).to.have.length(3);
+
+          const count = await collection.count();
+          expect(count).to.equal(3);
+        });
+
+        it("inserts documents without ids", async function (this: AppContext & Mocha.Context) {
+          const result = await collection.insertMany([
+            { text: insertedText },
+            { text: insertedText },
+            { text: insertedText },
+          ]);
+          expect(result.insertedIds).to.have.length(3);
+          for (const insertedId of result.insertedIds) {
+            expect(insertedId).to.be.instanceOf(BSON.ObjectId);
+          }
+
+          const count = await collection.count();
+          expect(count).to.equal(3);
+        });
+
+        it("throws if inserting document with existing id", async function (this: AppContext & Mocha.Context) {
+          await collection.insertMany([{ _id: insertedId1 }]);
+
+          await expect(collection.insertMany([{ _id: insertedId1 }])).to.be.rejectedWith("Duplicate key error");
+        });
+      });
     });
 
     describe("#watch", function () {
