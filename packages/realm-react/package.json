@@ -2,31 +2,35 @@
   "name": "@realm/react",
   "version": "0.4.3",
   "description": "React specific hooks and implementation helpers for Realm",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "source": "src/index.tsx",
   "scripts": {
-    "build": "tsc",
-    "start": "tsc --watch",
+    "build": "rollup -c",
+    "start": "rollup -c --watch",
     "test": "jest --forceExit",
-    "lint": "eslint --ext .tsx .",
+    "lint": "eslint --ext .tsx . && tsc --noEmit",
     "prepare": "rm -rf dist && npm run build"
   },
   "dependencies": {
-    "lodash": "^4.17.21",
-    "@realm/common": "^0.1.4"
+    "@realm/common": "^0.1.4",
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@babel/core": "^7.15.5",
+    "@babel/preset-env": "^7.20.2",
     "@babel/preset-typescript": "^7.15.0",
     "@babel/runtime": "^7.15.4",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-typescript": "^9.0.2",
     "@testing-library/jest-native": "^4.0.13",
     "@testing-library/react-native": "^11.2.0",
     "@types/jest": "^26.0.24",
-    "@types/lodash": "^4.14.176",
+    "@types/lodash-es": "^4.17.6",
     "@types/react": "^18.0.21",
     "@types/react-native": "^0.70.4",
-    "babel-jest": "^27.2.1",
+    "babel-jest": "^29.4.3",
     "babel-plugin-module-resolver": "^4.1.0",
     "eslint": "^7.30.0",
     "eslint-config-prettier": "^8.3.0",
@@ -39,7 +43,9 @@
     "react": "18.1.0",
     "react-native": "^0.70.1",
     "react-test-renderer": "18.1.0",
-    "realm": "^11.0.0"
+    "realm": "^11.0.0",
+    "rollup-plugin-dts": "^5.0.0",
+    "ts-jest": "^29.0.5"
   },
   "peerDependencies": {
     "react": ">=17.0.2",
