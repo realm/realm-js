@@ -87,7 +87,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
 
     it("throws when calling 'mongoClient()' with empty string", async function (this: AppContext & Mocha.Context) {
       expect(() => this.app.currentUser?.mongoClient("")).to.throw(
-        "The MongoDB service name must contain at least 1 character",
+        "Please provide the name of the MongoDB service to connect to",
       );
     });
   });

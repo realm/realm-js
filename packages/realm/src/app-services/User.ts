@@ -297,18 +297,18 @@ export class User<
   }
 
   /**
-   * @param serviceName The name of the MongoDB service to connect to. (Default: "mongo-db")
+   * @param serviceName The name of the MongoDB service to connect to.
    * @returns A connection to the MongoDB service.
    *
    * @example
-   * let blueWidgets = user.mongoClient()
+   * let blueWidgets = user.mongoClient("myService")
    *                       .db("myDb")
    *                       .collection<Widget>("widgets")
    *                       .find({ color: "blue" });
    */
-  mongoClient(serviceName = "mongo-db"): MongoDB {
+  mongoClient(serviceName: string): MongoDB {
     assert.string(serviceName, "serviceName");
-    assert(serviceName.length, "The MongoDB service name must contain at least 1 character.");
+    assert(serviceName.length, "Please provide the name of the MongoDB service to connect to.");
 
     return {
       get serviceName() {
