@@ -7,6 +7,7 @@
             "database_name": "pv-objectid-test_data",
             "partition": {
                 "key": "realm_id",
+                "required": true,
                 "type": "objectId",
                 "permissions": {
                     "read": true,

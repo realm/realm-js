@@ -8,6 +8,7 @@
             "partition": {
                 "key": "realm_id",
                 "type": "long",
+                "required": true,
                 "permissions": {
                     "read": true,
                     "write": true
@@ -17,6 +18,5 @@
     },
     "secret_config": {
         "uri": "BackingDB_uri"
-    },
-    "version": 1
+    }
 }

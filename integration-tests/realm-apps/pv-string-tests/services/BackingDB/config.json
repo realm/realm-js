@@ -7,6 +7,7 @@
             "database_name": "pv-string-test_data",
             "partition": {
                 "key": "realm_id",
+                "required": true,
                 "type": "string",
                 "permissions": {
                     "read": true,

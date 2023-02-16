@@ -28,7 +28,7 @@ const PvIntDog = {
     _id: "objectId",
     breed: "string?",
     name: "string",
-    realm_id: "int?",
+    realm_id: "int",
   },
 };
 
@@ -39,7 +39,7 @@ const PvStringDog = {
     _id: "objectId",
     breed: "string?",
     name: "string",
-    realm_id: "string?",
+    realm_id: "string",
   },
 };
 
@@ -50,7 +50,7 @@ const PvUuidDog = {
     _id: "objectId",
     breed: "string?",
     name: "string",
-    realm_id: "uuid?",
+    realm_id: "uuid",
   },
 };
 
@@ -61,7 +61,7 @@ const PvObjectIdDog = {
     _id: "objectId",
     breed: "string?",
     name: "string",
-    realm_id: "objectId?",
+    realm_id: "objectId",
   },
 };
 
@@ -81,15 +81,17 @@ describe("Partition-values", () => {
     authenticateUserBefore();
 
     it("works", async function (this: Mocha.Context & AppContext & UserContext) {
-      const realmConfigPrimary = createConfig(PvIntDog, this.user, 42);
-      const realmConfigSecondary = createConfig(PvIntDog, this.user, 43);
+      const syncedPartitionValue = 42;
+      const nonSyncedPartitionValue = 43;
+      const realmConfigPrimary = createConfig(PvIntDog, this.user, syncedPartitionValue);
+      const realmConfigSecondary = createConfig(PvIntDog, this.user, nonSyncedPartitionValue);
 
       // ensure clean starting point
       Realm.deleteFile(realmConfigPrimary);
 
       const realm1 = await Realm.open(realmConfigPrimary);
       realm1.write(() => {
-        realm1.create("Dog", { _id: new ObjectId(), name: "King" });
+        realm1.create("Dog", { _id: new ObjectId(), realm_id: syncedPartitionValue, name: "King" });
       });
 
       await realm1.syncSession?.uploadAllLocalChanges();
@@ -119,15 +121,17 @@ describe("Partition-values", () => {
     importAppBefore("pv-string-tests");
     authenticateUserBefore();
     it("works", async function (this: Mocha.Context & AppContext & UserContext) {
-      const realmConfigPrimary = createConfig(PvStringDog, this.user, "42");
-      const realmConfigSecondary = createConfig(PvStringDog, this.user, "43");
+      const syncedPartitionValue = "42";
+      const nonSyncedPartitionValue = "43";
+      const realmConfigPrimary = createConfig(PvStringDog, this.user, syncedPartitionValue);
+      const realmConfigSecondary = createConfig(PvStringDog, this.user, nonSyncedPartitionValue);
 
       // ensure clean starting point
       Realm.deleteFile(realmConfigPrimary);
 
       const realm1 = await Realm.open(realmConfigPrimary);
       realm1.write(() => {
-        realm1.create("Dog", { _id: new ObjectId(), name: "King" });
+        realm1.create("Dog", { _id: new ObjectId(), realm_id: syncedPartitionValue, name: "King" });
       });
 
       await realm1.syncSession?.uploadAllLocalChanges();
@@ -157,15 +161,17 @@ describe("Partition-values", () => {
     importAppBefore("pv-uuid-tests");
     authenticateUserBefore();
     it("works", async function (this: Mocha.Context & AppContext & UserContext) {
-      const realmConfigPrimary = createConfig(PvUuidDog, this.user, new UUID("57eade47-8406-4397-ab97-49abcc4d681f"));
-      const realmConfigSecondary = createConfig(PvUuidDog, this.user, new UUID("90d82df4-6037-4eb6-869b-a62f7af522b0"));
+      const syncedPartitionValue = new UUID("57eade47-8406-4397-ab97-49abcc4d681f");
+      const nonSyncedPartitionValue = new UUID("90d82df4-6037-4eb6-869b-a62f7af522b0");
+      const realmConfigPrimary = createConfig(PvUuidDog, this.user, syncedPartitionValue);
+      const realmConfigSecondary = createConfig(PvUuidDog, this.user, nonSyncedPartitionValue);
 
       // ensure clean starting point
       Realm.deleteFile(realmConfigPrimary);
 
       const realm1 = await Realm.open(realmConfigPrimary);
       realm1.write(() => {
-        realm1.create("Dog", { _id: new ObjectId(), name: "King" });
+        realm1.create("Dog", { _id: new ObjectId(), realm_id: syncedPartitionValue, name: "King" });
       });
 
       await realm1.syncSession?.uploadAllLocalChanges();
@@ -195,14 +201,16 @@ describe("Partition-values", () => {
     importAppBefore("pv-objectid-tests");
     authenticateUserBefore();
     it("works", async function (this: Mocha.Context & AppContext & UserContext) {
-      const realmConfigPrimary = createConfig(PvObjectIdDog, this.user, new ObjectId("606d8cdf33e41d1409245e60"));
-      const realmConfigSecondary = createConfig(PvObjectIdDog, this.user, new ObjectId("606d8cdf33e41d1409245e63"));
+      const syncedPartitionValue = new ObjectId("606d8cdf33e41d1409245e60");
+      const nonSyncedPartitionValue = new ObjectId("606d8cdf33e41d1409245e63");
+      const realmConfigPrimary = createConfig(PvObjectIdDog, this.user, syncedPartitionValue);
+      const realmConfigSecondary = createConfig(PvObjectIdDog, this.user, nonSyncedPartitionValue);
 
       // ensure clean starting point
       Realm.deleteFile(realmConfigPrimary);
       const realm1 = await Realm.open(realmConfigPrimary);
       realm1.write(() => {
-        realm1.create("Dog", { _id: new ObjectId(), name: "King" });
+        realm1.create("Dog", { _id: new ObjectId(), realm_id: syncedPartitionValue, name: "King" });
       });
 
       await realm1.syncSession?.uploadAllLocalChanges();
