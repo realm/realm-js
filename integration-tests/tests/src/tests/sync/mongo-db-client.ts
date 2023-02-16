@@ -150,6 +150,32 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           expect(docs).to.have.length(0);
         });
       });
+
+      describe("#findOne", function () {
+        it("returns specific document", async function (this: AppContext & Mocha.Context) {
+          await insertThreeDocuments();
+
+          const doc = await collection.findOne({ _id: insertedId3 });
+          expect(doc).to.be.an("object");
+          expect(doc?._id).to.equal(insertedId3);
+        });
+
+        it("returns first document using empty filter", async function (this: AppContext & Mocha.Context) {
+          await insertThreeDocuments();
+
+          const doc = await collection.findOne();
+          expect(doc).to.be.an("object").that.has.all.keys("_id", "text");
+        });
+
+        it("returns null if there are no matches", async function (this: AppContext & Mocha.Context) {
+          throw new Error("Hangs forever");
+
+          await insertThreeDocuments();
+
+          const doc = await collection.findOne({ _id: nonExistentId });
+          expect(doc).to.be.null;
+        });
+      });
     });
 
     describe("#watch", function () {
