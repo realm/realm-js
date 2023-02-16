@@ -365,6 +365,7 @@ export class AppImporter {
           });
           if (!response.ok) {
             console.warn("Could not create service: ", tmpConfig, serviceUrl, response.statusText);
+            console.warn("partition: ", tmpConfig.config.sync.partition);
           } else {
             if (syncConfig) {
               await this.applySyncConfig(groupId, appId, syncConfig);
