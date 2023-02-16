@@ -30,6 +30,16 @@
     ".": "./dist/bundle.mjs",
     "./scripts/submit-analytics": "./scripts/submit-analytics.mjs"
   },
+  "files": [
+    "dist",
+    "react-native/android",
+    "react-native/ios/realm-js-ios.xcframework",
+    "react-native/ios/realm-js-ios.xcframework/**/*.a",
+    "react-native/ios/RealmReact",
+    "scripts/submit-analytics.mjs",
+    "react-native.config.js",
+    "RealmJS.podspec"
+  ],
   "scripts": {
     "test": "mocha",
     "test:types": "tsc --project type-tests/tsconfig.json",
