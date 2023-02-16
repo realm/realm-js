@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { ChangeEvent, Credentials, DeleteResult, Document, InsertEvent, MongoDBCollection, User } from "realm";
+import { BSON, ChangeEvent, Credentials, DeleteResult, Document, InsertEvent, MongoDBCollection, User } from "realm";
 
 import { importAppBefore } from "../../hooks";
 import { sleep } from "../../utils/sleep";
@@ -93,6 +93,65 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
   });
 
   describe("MongoDBCollection", function () {
+    const insertedId1 = 1;
+    const insertedId2 = 2;
+    const insertedId3 = 3;
+    const insertedText = "Test document";
+    const nonExistentId = 100;
+
+    async function insertThreeDocuments(): Promise<void> {
+      const { insertedIds } = await collection.insertMany([
+        { _id: insertedId1, text: insertedText },
+        { _id: insertedId2, text: insertedText },
+        { _id: insertedId3, text: insertedText },
+      ]);
+      expect(insertedIds).to.have.length(3);
+    }
+
+    // THIS OUTER TEMPORARY SUITE IS FOR "GREPPING" WHEN RUNNING TESTS
+    describe("TEMPORARY DESCRIBE SUITE", function () {
+      console.log("\n\n\n==============\nTODO: REMOVE OUTER `DESCRIBE` SUITE\n==============\n\n\n"); // TODO: <-------
+
+      describe("#find", function () {
+        it("returns all documents", async function (this: AppContext & Mocha.Context) {
+          await insertThreeDocuments();
+
+          const docs = await collection.find();
+          expect(docs).to.have.length(3);
+          for (const doc of docs) {
+            expect(doc).to.have.all.keys("_id", "text");
+          }
+        });
+
+        it("returns all documents excluding a field using 'projection' option", async function (this: AppContext &
+          Mocha.Context) {
+          await insertThreeDocuments();
+
+          const docs = await collection.find({}, { projection: { text: false } });
+          expect(docs).to.have.length(3);
+          for (const doc of docs) {
+            expect(doc).to.have.property("_id");
+            expect(doc).to.not.have.property("text");
+          }
+        });
+
+        it("returns documents using query selector", async function (this: AppContext & Mocha.Context) {
+          await insertThreeDocuments();
+
+          const docs = await collection.find({ _id: { $gt: insertedId1 } });
+          expect(docs).to.have.length(2);
+          for (const doc of docs) {
+            expect(doc._id > insertedId1).to.be.true;
+          }
+        });
+
+        it("returns empty array if collection is empty", async function (this: AppContext & Mocha.Context) {
+          const docs = await collection.find();
+          expect(docs).to.have.length(0);
+        });
+      });
+    });
+
     describe("#watch", function () {
       const text = "use some odd chars to force weird encoding %\n\r\n\\????>>>>";
       const numInserts = 10;
