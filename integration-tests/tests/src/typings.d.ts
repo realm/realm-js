@@ -102,7 +102,3 @@ declare module "*.json" {
 declare module "realm/scripts/submit-analytics" {
   export function collectPlatformData(packagePath: string): Promise<Record<string, unknown>>;
 }
-
-declare module "react-native-polyfill-globals" {
-  export function polyfill(): void;
-}
