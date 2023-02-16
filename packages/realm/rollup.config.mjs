@@ -55,6 +55,8 @@ export default [
       }),
       typescript({
         tsconfig: "src/node/tsconfig.json",
+        noEmitOnError: true,
+        outputToFilesystem: true,
       }),
     ],
     external: ["bson", "debug", "node-fetch", "node:module", "node:fs", "node:path"],
@@ -82,6 +84,8 @@ export default [
       }),
       typescript({
         tsconfig: "src/react-native/tsconfig.json",
+        noEmitOnError: true,
+        outputToFilesystem: true,
       }),
     ],
     external: ["bson", "debug", "react-native"],
