@@ -20,6 +20,7 @@ const commandLineArgs = require("command-line-args");
 const fs = require("fs-extra");
 const path = require("path");
 const exec = require("child_process").execFileSync;
+const packageRoot = path.resolve(__dirname, "..");
 
 const NDK_VERSION = "23.1.7779620";
 
@@ -37,7 +38,7 @@ if (!fs.existsSync(ndkPath)) {
 }
 
 //simple validation of current directory.
-const rnDir = path.resolve(process.cwd(), "react-native");
+const rnDir = path.resolve(packageRoot, "react-native");
 if (!fs.existsSync(rnDir)) {
   console.error("This script needs to be run at the root dir of the project");
   process.exit(1);
@@ -65,7 +66,7 @@ if (options.arch) {
 const buildType = options.buildType;
 const cmakePath = process.platform === "win32" ? "cmake.exe" : "cmake";
 
-const buildPath = path.resolve(process.cwd(), "build-android");
+const buildPath = path.resolve(packageRoot, "build-android");
 if (options.clean) {
   if (fs.existsSync(buildPath)) {
     fs.removeSync(buildPath);
@@ -84,7 +85,6 @@ for (const arch of architectures) {
   }
 
   let args = [
-    cmakePath,
     "-GNinja",
     `-DANDROID_NDK=${ndkPath}`,
     `-DANDROID_ABI=${arch}`,
@@ -94,7 +94,7 @@ for (const arch of architectures) {
     "-DANDROID_NATIVE_API_LEVEL=16",
     `-DCMAKE_BUILD_TYPE=${buildType}`,
     "-DANDROID_STL=c++_shared",
-    process.cwd() + "/packages/bindgen",
+    path.resolve(packageRoot, "packages/bindgen"),
   ];
   exec(cmakePath, args, { cwd: archBuildDir, stdio: "inherit" });
 
@@ -107,7 +107,9 @@ generateVersionFile();
 
 function generateVersionFile() {
   const targetFile = path.resolve(
-    process.cwd(),
+    packageRoot,
+    "packages",
+    "realm",
     "react-native",
     "android",
     "src",
@@ -130,7 +132,7 @@ public class Version {
 }
 
 function getVersion() {
-  const depencenciesListFile = path.resolve(process.cwd(), "dependencies.list");
+  const depencenciesListFile = path.resolve(packageRoot, "dependencies.list");
   const contents = fs.readFileSync(depencenciesListFile, "UTF-8");
   const lines = contents.split(/\r?\n/);
   const versionValue = lines.find((line) => line.startsWith("VERSION="));
