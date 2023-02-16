@@ -162,8 +162,8 @@ jobs:
         env:
           ANDROID_NDK: ${{ env.ANDROID_SDK_ROOT }}/ndk/${{ env.NDK_VERSION }}
 
-      # Due to a limitation in upload-artifact a redundant file is needed to force 
-      # preserving paths (https://github.com/actions/upload-artifact/issues/174) 
+      # Due to a limitation in upload-artifact a redundant file is needed to force
+      # preserving paths (https://github.com/actions/upload-artifact/issues/174)
       - name: Upload prebuild artifact
         uses: actions/upload-artifact@v2
         with:
@@ -190,8 +190,8 @@ jobs:
       - name: Regenerate Info.plist
         run: scripts/regen-info-plist.sh react-native/ios/realm-js-ios.xcframework
 
-      # Due to a limitation in upload-artifact a redundant file is needed to force 
-      # preserving paths (https://github.com/actions/upload-artifact/issues/174) 
+      # Due to a limitation in upload-artifact a redundant file is needed to force
+      # preserving paths (https://github.com/actions/upload-artifact/issues/174)
       - name: Upload prebuild artifact
         uses: actions/upload-artifact@v2
         with:
@@ -237,7 +237,7 @@ jobs:
         id: differentiator
         run: echo "::set-output name=name::${{matrix.variant.os}}-${{matrix.variant.target}}-${{matrix.variant.environment}}-${{env.GITHUB_RUN_ATTEMPT}}"
 
-      - uses: realm/ci-actions/mdb-realm/deployApps@fac1d6958f03d71de743305ce3ab27594efbe7b7
+      - uses: realm/ci-actions/mdb-realm/deployApps@310eecac34e016ffc36d41b7607e97c39c4d70e8
         id: deploy-mdb-apps
         with:
           realmUrl: ${{ secrets.REALM_QA_BASE_URL }}
@@ -402,7 +402,7 @@ jobs:
           cmake: 3.22.1
           script: npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
-      - uses: realm/ci-actions/mdb-realm/cleanup@800a0234bcbe9073e7a07a66c864d54db3688e56
+      - uses: realm/ci-actions/mdb-realm/cleanup@310eecac34e016ffc36d41b7607e97c39c4d70e8
         if: ${{always()}}
         with:
           realmUrl: ${{ secrets.REALM_QA_BASE_URL }}

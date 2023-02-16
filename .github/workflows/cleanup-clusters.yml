@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Wipe all clusters and apps on dev
     steps:
-    - uses: realm/ci-actions/mdb-realm/deleteAllClusters@e7b65d7d587e1abc358968d7ff816cc0163906d2
+    - uses: realm/ci-actions/mdb-realm/deleteAllClusters@310eecac34e016ffc36d41b7607e97c39c4d70e8
       name: "on realm.dev"
       with:
         realmUrl: ${{ secrets.REALM_BASE_URL }}
