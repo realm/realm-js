@@ -410,4 +410,4 @@ jobs:
           projectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
           apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
           privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
-          clusterName: ${{ steps.differentiator.outputs.name }}
+          clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
