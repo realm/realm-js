@@ -498,7 +498,7 @@ export class MongoDBCollection<T extends Document> {
    * @returns The document found before deleting it.
    */
   findOneAndDelete(filter: Filter = {}, options: FindOneOptions = {}): Promise<T | null> {
-    return this.functions.findOneAndReplace({
+    return this.functions.findOneAndDelete({
       database: this.databaseName,
       collection: this.name,
       filter,

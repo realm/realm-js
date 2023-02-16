@@ -262,6 +262,38 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           }
         });
       });
+
+      describe("#findOneAndDelete", function () {
+        it("deletes specific document", async function (this: AppContext & Mocha.Context) {
+          await insertThreeDocuments();
+
+          const oldDoc = await collection.findOneAndDelete({ _id: insertedId3 });
+          expect(oldDoc).to.deep.equal({ _id: insertedId3, text: insertedText });
+
+          const count = await collection.count();
+          expect(count).to.equal(2);
+        });
+
+        it("returns null if there are no matches", async function (this: AppContext & Mocha.Context) {
+          throw new Error("Hangs forever");
+
+          await insertThreeDocuments();
+
+          const oldDoc = await collection.findOneAndDelete({ _id: nonExistentId });
+          expect(oldDoc).to.be.null;
+        });
+
+        it("does not delete any document if there are no matches", async function (this: AppContext & Mocha.Context) {
+          throw new Error("Hangs forever");
+
+          await insertThreeDocuments();
+
+          await collection.findOneAndDelete({ _id: nonExistentId });
+
+          const count = await collection.count();
+          expect(count).to.equal(3);
+        });
+      });
     });
 
     describe("#watch", function () {
