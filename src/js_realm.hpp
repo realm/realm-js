@@ -30,8 +30,11 @@
 #include "js_observable.hpp"
 #include "platform.hpp"
 #include "realm/binary_data.hpp"
+#include "realm/util/functional.hpp"
+#include <exception>
 #include <stdexcept>
 #include <string>
+#include <set>
 
 #if REALM_ENABLE_SYNC
 #include "js_sync.hpp"
@@ -977,10 +980,8 @@ void RealmClass<T>::clear_test_state(ContextType ctx, ObjectType this_object, Ar
                                      ReturnValue& return_value)
 {
     args.validate_maximum(0);
+    AsyncOpenTaskClass<T>::cancel_tasks();
     js::clear_test_state();
-#if REALM_ENABLE_SYNC
-    realm::app::App::clear_cached_apps();
-#endif
 }
 
 template <typename T>
@@ -1203,6 +1204,16 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
                                                                              constructors = std::move(constructors)](
                                                                                 ThreadSafeReference&& realm_ref,
                                                                                 std::exception_ptr error) {
+        if (AsyncOpenTaskClass<T>::tasks.count(task) == 0) {
+            // If missing, we have already been called and should do nothing.
+            // This can happen if the task is cancelled while the callback is scheduled on the event queue.
+            return;
+        }
+        // Remove once we are done do avoid destroying the lambda's state while still running.
+        auto guard = util::make_scope_exit([&]() noexcept {
+            AsyncOpenTaskClass<T>::tasks.erase(task);
+        });
+
         HANDLESCOPE(protected_ctx)
 
         if (error) {
@@ -1210,13 +1221,9 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
                 std::rethrow_exception(error);
             }
             catch (const std::exception& e) {
-                ObjectType object = Object::create_empty(protected_ctx);
-                Object::set_property(protected_ctx, object, "message", Value::from_string(protected_ctx, e.what()));
-                Object::set_property(protected_ctx, object, "errorCode", Value::from_number(protected_ctx, 1));
-
                 ValueType callback_arguments[2] = {
                     Value::from_undefined(protected_ctx),
-                    object,
+                    Object::create_error(protected_ctx, e.what()),
                 };
                 Function<T>::callback(protected_ctx, protected_callback, protected_this, 2, callback_arguments);
                 return;
@@ -1245,6 +1252,7 @@ void RealmClass<T>::async_open_realm(ContextType ctx, ObjectType this_object, Ar
         Function<T>::callback(protected_ctx, protected_callback, 2, callback_arguments);
     });
 
+    AsyncOpenTaskClass<T>::tasks.emplace(task, callback_handler);
     task->start(callback_handler);
     return_value.set(create_object<T, AsyncOpenTaskClass<T>>(ctx, new std::shared_ptr<AsyncOpenTask>(task)));
 }
@@ -1809,6 +1817,23 @@ public:
         {"addDownloadNotification", wrap<add_download_notification>},
         {"cancel", wrap<cancel>},
     };
+
+    static inline std::map<std::shared_ptr<AsyncOpenTask>,
+                           util::UniqueFunction<void(ThreadSafeReference&&, std::exception_ptr)>>
+        tasks;
+
+    static inline void cancel_tasks()
+    {
+        if (tasks.empty()) {
+            return;
+        }
+        const auto err = std::make_exception_ptr(std::runtime_error("Async open canceled"));
+        while (!tasks.empty()) {
+            auto& [task, callback] = *tasks.begin();
+            task->cancel();
+            callback({}, err); // Removes the task from tasks map.
+        }
+    }
 };
 
 template <typename T>
@@ -1822,6 +1847,13 @@ void AsyncOpenTaskClass<T>::cancel(ContextType ctx, ObjectType this_object, Argu
                                    ReturnValue& return_value)
 {
     std::shared_ptr<AsyncOpenTask> task = *get_internal<T, AsyncOpenTaskClass<T>>(ctx, this_object);
+
+    const auto err = std::make_exception_ptr(std::runtime_error("Async open canceled"));
+    const auto& callback = tasks.find(task);
+    if (callback != tasks.end()) {
+        callback->second({}, err); // Removes the task from tasks map.
+    }
+
     task->cancel();
 }
 
