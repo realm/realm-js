@@ -245,7 +245,7 @@ jobs:
           atlasUrl: ${{ secrets.ATLAS_QA_BASE_URL}}
           apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
           privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
-          differentiator: ${{ steps.differentiator.outputs.name }}
+          clusterName: ${{ steps.differentiator.outputs.name }}
 
       - name: Checkout code
         uses: actions/checkout@v2
@@ -410,4 +410,4 @@ jobs:
           projectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
           apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
           privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
-          differentiator: ${{ steps.differentiator.outputs.name }}
+          clusterName: ${{ steps.differentiator.outputs.name }}
