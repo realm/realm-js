@@ -162,8 +162,8 @@ jobs:
         env:
           ANDROID_NDK: ${{ env.ANDROID_SDK_ROOT }}/ndk/${{ env.NDK_VERSION }}
 
-      # Due to a limitation in upload-artifact a redundant file is needed to force 
-      # preserving paths (https://github.com/actions/upload-artifact/issues/174) 
+      # Due to a limitation in upload-artifact a redundant file is needed to force
+      # preserving paths (https://github.com/actions/upload-artifact/issues/174)
       - name: Upload prebuild artifact
         uses: actions/upload-artifact@v2
         with:
@@ -190,8 +190,8 @@ jobs:
       - name: Regenerate Info.plist
         run: scripts/regen-info-plist.sh react-native/ios/realm-js-ios.xcframework
 
-      # Due to a limitation in upload-artifact a redundant file is needed to force 
-      # preserving paths (https://github.com/actions/upload-artifact/issues/174) 
+      # Due to a limitation in upload-artifact a redundant file is needed to force
+      # preserving paths (https://github.com/actions/upload-artifact/issues/174)
       - name: Upload prebuild artifact
         uses: actions/upload-artifact@v2
         with:
@@ -246,7 +246,7 @@ jobs:
           atlasUrl: ${{ secrets.ATLAS_QA_BASE_URL}}
           apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
           privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
-          differentiator: ${{ steps.differentiator.outputs.name }}
+          clusterName: ${{ steps.differentiator.outputs.name }}
 
       - name: Checkout code
         uses: actions/checkout@v2
@@ -411,4 +411,4 @@ jobs:
           projectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
           apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
           privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
-          differentiator: ${{ steps.differentiator.outputs.name }}
+          clusterName: ${{ steps.differentiator.outputs.name }}
