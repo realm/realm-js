@@ -353,6 +353,42 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           await expect(collection.insertMany([{ _id: insertedId1 }])).to.be.rejectedWith("Duplicate key error");
         });
       });
+
+      describe("#updateOne", function () {
+        const updatedText = "Updated text";
+
+        it("updates specific document", async function (this: AppContext & Mocha.Context) {
+          await insertThreeDocuments();
+
+          const result = await collection.updateOne({ _id: insertedId3 }, { $set: { text: updatedText } });
+          expect(result).to.deep.equal({ matchedCount: 1, modifiedCount: 1 });
+        });
+
+        it("does not update any document if there are no matches", async function (this: AppContext & Mocha.Context) {
+          await insertThreeDocuments();
+
+          const result = await collection.updateOne({ _id: nonExistentId }, { $set: { text: updatedText } });
+          expect(result).to.deep.equal({ matchedCount: 0, modifiedCount: 0 });
+        });
+
+        it("inserts new document if no matches when using 'upsert'", async function (this: AppContext & Mocha.Context) {
+          await insertThreeDocuments();
+
+          const result = await collection.updateOne(
+            { _id: nonExistentId },
+            { $set: { text: updatedText } },
+            { upsert: true },
+          );
+          expect(result).to.deep.equal({
+            matchedCount: 0,
+            modifiedCount: 0,
+            upsertedId: nonExistentId,
+          });
+
+          const count = await collection.count();
+          expect(count).to.equal(4);
+        });
+      });
     });
 
     describe("#watch", function () {
