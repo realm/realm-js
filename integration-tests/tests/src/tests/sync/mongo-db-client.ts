@@ -33,7 +33,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
   importAppBefore("with-db");
 
   let collection: MongoDBCollection<TestDocument>;
-  const serviceName = "mongo-db";
+  const serviceName = "mongodb";
   const dbName = "test-database"; // TODO: Change to randomly generated database name whenever AppImporter is refactored.
   const collectionName = "test-collection";
 
