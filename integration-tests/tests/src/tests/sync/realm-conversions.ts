@@ -45,89 +45,26 @@ const PersonForSyncSchema = {
   },
 };
 
-describe("Realm conversions", () => {
+describe("Realm conversions", async () => {
   importAppBefore("with-db");
+
+  before(function (this: AppContext) {
+    this.encryptedKeyLocal = new Int8Array(64);
+    this.encryptedKeySync = new Int8Array(64);
+    for (let i = 0; i < 64; i++) {
+      this.encryptedKeyLocal[i] = 1;
+      this.encryptedKeySync[i] = 2;
+    }
+  });
+
   afterEach(() => Realm.clearTestState());
-
-  const addDogs = (realm: Realm, name: string) => {
-    realm.write(() => {
-      for (let i = 0; i < 5; i++) {
-        realm.create("Dog", {
-          _id: new BSON.ObjectId(),
-          breed: "Domestic Short Hair",
-          name: `${name} no. ${i}`,
-          partition: "foo",
-        });
-      }
-    });
-  };
-
-  before(async function (this: AppContext) {
-    this.encryptionKeySrc = new Int8Array(64);
-    for (let i = 0; i < 64; i++) {
-      this.encryptionKeySrc[i] = 1;
-    }
-    this.encryptionKeyDst = new Int8Array(64);
-    for (let i = 0; i < 64; i++) {
-      this.encryptionKeyDst[i] = 2;
-    }
-    this.credentials = await getRegisteredEmailPassCredentials(this.app);
-    this.credentials2 = await getRegisteredEmailPassCredentials(this.app);
-    this.user = await this.app.logIn(this.credentials);
-    this.user2 = await this.app.logIn(this.credentials2);
-  });
-
-  // Local realm that we will put a few dogs into
-  const configLocal: Realm.Configuration = {
-    schema: [PersonForSyncSchema, DogForSyncSchema],
-    path: "dogsLocal.realm",
-  };
-
-  it("local, unencrypted Realm -> local, unencrypted Realm", async function (this: AppContext) {
-    this.longTimeout();
-
-    // create five dogs in our local realm
-    const realmLocal = await Realm.open(configLocal);
-    addDogs(realmLocal, "Brutus");
-    realmLocal.close();
-
-    const configSrc = configLocal;
-    const configDst = configLocal;
-
-    configDst.path += `_test_local_unencrypted_local_encnrypted`;
-
-    const realmSrc = await Realm.open(configSrc);
-    realmSrc.writeCopyTo(configDst);
-    realmSrc.close();
-
-    const realmDst = await Realm.open(configDst);
-    expect(realmDst.objects("Dog").length).equals(5);
-    realmDst.close();
-
-    Realm.deleteFile(configDst);
-  });
-
-  it("automated local", async function (this: AppContext) {
-    this.longTimeout();
-
-    await expectConvertedRealm(
-      this,
-      {
-        encrypted: false,
-        sync: false,
-      },
-      {
-        encrypted: false,
-        sync: false,
-      },
-    );
-  });
 
   interface ConversionTestConfig {
     encrypted: boolean;
     sync: boolean;
   }
 
+  /** Returns a Realm Config from a given conversion test configuration. */
   async function getRealmConfig(
     context: AppContext,
     testConfig: ConversionTestConfig,
@@ -136,15 +73,16 @@ describe("Realm conversions", () => {
     let sync;
     let encryptionKey;
     if (testConfig.sync) {
+      const credentials = await getRegisteredEmailPassCredentials(context.app);
       sync = {
-        user: isDestination ? context.user2 : context.user,
+        user: await context.app.logIn(credentials),
         partitionValue: "foo",
         _sessionStopPolicy: "immediately" as Realm.SessionStopPolicy, // Make it safe to delete files after realm.close()
       };
     }
 
     if (testConfig.encrypted) {
-      encryptionKey = isDestination ? context.encryptionKeyDst : context.encryptionKeySrc;
+      encryptionKey = testConfig.sync ? context.encryptedKeySync : context.encryptedKeyLocal;
     }
 
     return {
@@ -157,41 +95,150 @@ describe("Realm conversions", () => {
     };
   }
 
-  async function expectConvertedRealm(
-    context: AppContext,
-    source: ConversionTestConfig,
-    destination: ConversionTestConfig,
-  ) {
-    const configSrc = await getRealmConfig(context, source);
-    const configDst = await getRealmConfig(context, destination, true);
+  async function itShouldConvertRealm(source: ConversionTestConfig, destination: ConversionTestConfig) {
+    const testConfigAsString = (testConfig: ConversionTestConfig) =>
+      `${testConfig.sync ? "synced" : "local"}, ${testConfig.encrypted ? "encrypted" : "unencrypted"}`;
 
-    const realmSrc = await Realm.open(configSrc);
-    addDogs(realmSrc, "Brutus");
-    if (source.sync) {
-      await realmSrc.syncSession?.uploadAllLocalChanges();
-      await realmSrc.syncSession?.downloadAllServerChanges();
-    }
-    realmSrc.writeCopyTo(configDst);
-    realmSrc.close();
+    it(`convert ${testConfigAsString(source)} -> ${testConfigAsString(
+      destination,
+    )}`, async function (this: AppContext) {
+      this.configSrc = await getRealmConfig(this, source);
+      this.configDst = await getRealmConfig(this, destination, true);
 
-    const realmDst = await Realm.open(configDst);
-    expect(realmDst.objects("Dog").length).equals(5);
-    if (destination.sync) {
-      expect(realmDst.syncSession).to.not.be.undefined;
-      expect(realmDst.syncSession).to.not.be.null;
-      await realmDst.syncSession?.downloadAllServerChanges();
-      await realmDst.syncSession?.uploadAllLocalChanges();
-    }
-    realmDst.close();
+      const realmSrc = await Realm.open(this.configSrc);
 
-    if (source.sync) {
-      await configSrc.sync?.user.logOut();
-    }
-    if (destination.sync) {
-      await configDst.sync?.user.logOut();
-    }
-    Realm.deleteFile(configDst);
+      expect(realmSrc.objects("Dog").length).equals(0);
+      realmSrc.write(() => {
+        for (let i = 0; i < 5; i++) {
+          realmSrc.create("Dog", {
+            _id: new BSON.ObjectId(),
+            breed: "Domestic Short Hair",
+            name: `Dog no. ${i}`,
+            partition: "foo",
+          });
+        }
+      });
+
+      if (source.sync) {
+        await realmSrc.syncSession?.uploadAllLocalChanges();
+        await realmSrc.syncSession?.downloadAllServerChanges();
+      }
+      realmSrc.writeCopyTo(this.configDst);
+      realmSrc.close();
+
+      this.realmDst = await Realm.open(this.configDst);
+
+      if (destination.sync) {
+        expect(this.realmDst.syncSession).to.not.be.undefined;
+        expect(this.realmDst.syncSession).to.not.be.null;
+        await this.realmDst.syncSession?.downloadAllServerChanges();
+        await this.realmDst.syncSession?.uploadAllLocalChanges();
+      }
+
+      expect(this.realmDst.objects("Dog").length).equals(5);
+
+      if (source.sync) {
+        // Clean up synced source Realm
+        const realmSrc = await Realm.open(this.configSrc);
+        realmSrc.write(() => realmSrc.deleteAll());
+        await realmSrc.syncSession?.uploadAllLocalChanges();
+        await this.configSrc.sync?.user.logOut();
+      }
+    });
   }
+
+  afterEach(async function (this: AppContext) {
+    // Clean up synced destination Realm
+    if (this) this.realmDst.write(() => this.realmDst.deleteAll());
+    await this.realmDst.syncSession?.uploadAllLocalChanges();
+    this.realmDst.close();
+
+    await this.configDst.sync?.user.logOut();
+  });
+
+  describe("from local realm to local realm", () => {
+    [
+      {
+        source: { encrypted: false, sync: false },
+        destination: { encrypted: false, sync: false },
+      },
+      {
+        source: { encrypted: false, sync: false },
+        destination: { encrypted: true, sync: false },
+      },
+      {
+        source: { encrypted: true, sync: false },
+        destination: { encrypted: false, sync: false },
+      },
+      {
+        source: { encrypted: true, sync: false },
+        destination: { encrypted: true, sync: false },
+      },
+    ].forEach(({ source, destination }) => itShouldConvertRealm(source, destination));
+  });
+
+  describe("from synced realm to local realm", () => {
+    [
+      {
+        source: { encrypted: false, sync: true },
+        destination: { encrypted: false, sync: false },
+      },
+      {
+        source: { encrypted: false, sync: true },
+        destination: { encrypted: true, sync: false },
+      },
+      {
+        source: { encrypted: true, sync: true },
+        destination: { encrypted: false, sync: false },
+      },
+      {
+        source: { encrypted: true, sync: true },
+        destination: { encrypted: true, sync: false },
+      },
+    ].forEach(({ source, destination }) => itShouldConvertRealm(source, destination));
+  });
+
+  describe("from local realm to synced realm", () => {
+    [
+      {
+        source: { encrypted: false, sync: false },
+        destination: { encrypted: false, sync: true },
+      },
+      {
+        source: { encrypted: false, sync: false },
+        destination: { encrypted: true, sync: true },
+      },
+      {
+        source: { encrypted: true, sync: false },
+        destination: { encrypted: false, sync: true },
+      },
+      {
+        source: { encrypted: true, sync: false },
+        destination: { encrypted: true, sync: true },
+      },
+    ].forEach(({ source, destination }) => itShouldConvertRealm(source, destination));
+  });
+
+  describe("from synced realm to synced realm", () => {
+    [
+      {
+        source: { encrypted: false, sync: true },
+        destination: { encrypted: false, sync: true },
+      },
+      {
+        source: { encrypted: false, sync: true },
+        destination: { encrypted: true, sync: true },
+      },
+      {
+        source: { encrypted: true, sync: true },
+        destination: { encrypted: false, sync: true },
+      },
+      {
+        source: { encrypted: true, sync: true },
+        destination: { encrypted: true, sync: true },
+      },
+    ].forEach(({ source, destination }) => itShouldConvertRealm(source, destination));
+  });
 });
 
 describe("foo", () => {
@@ -329,6 +376,20 @@ describe("foo", () => {
     });
     realmSynced.close();
 
+    // create five dogs in our synced realm
+    const realmSyncedEnc = await Realm.open(configSyncEnc);
+    realmSyncedEnc.write(() => {
+      for (let i = 0; i < 5; i++) {
+        realmSyncedEnc.create("Dog", {
+          _id: new BSON.ObjectId(),
+          breed: "Fancy Long Hair",
+          name: `Darletta no. ${i}`,
+          partition: "foo",
+        });
+      }
+    });
+    realmSyncedEnc.close();
+
     await user.logOut();
 
     // FIXME:
@@ -396,6 +457,10 @@ describe("foo", () => {
               await realmDst.syncSession?.downloadAllServerChanges();
               await realmDst.syncSession?.uploadAllLocalChanges();
             }
+            expect(realmDst.objects("Dog").length).equals(
+              10,
+              `\nTest ${testNo})  ${source}, ${srcEncryption}  -> ${destination}, ${dstEncryption}...\n`,
+            );
             realmDst.close();
 
             if (source == "synced") {
