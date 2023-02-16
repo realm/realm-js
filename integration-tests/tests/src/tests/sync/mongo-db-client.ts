@@ -294,6 +294,30 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           expect(count).to.equal(3);
         });
       });
+
+      describe("#insertOne", function () {
+        it("inserts document with id", async function (this: AppContext & Mocha.Context) {
+          const result = await collection.insertOne({ _id: insertedId1 });
+          expect(result.insertedId).to.equal(insertedId1);
+
+          const count = await collection.count();
+          expect(count).to.equal(1);
+        });
+
+        it("inserts document without id", async function (this: AppContext & Mocha.Context) {
+          const result = await collection.insertOne({ text: insertedText });
+          expect(result.insertedId).to.be.instanceOf(BSON.ObjectId);
+
+          const count = await collection.count();
+          expect(count).to.equal(1);
+        });
+
+        it("throws if inserting document with existing id", async function (this: AppContext & Mocha.Context) {
+          await collection.insertOne({ _id: insertedId1 });
+
+          await expect(collection.insertOne({ _id: insertedId1 })).to.be.rejectedWith("Duplicate key error");
+        });
+      });
     });
 
     describe("#watch", function () {
