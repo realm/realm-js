@@ -176,6 +176,49 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           expect(doc).to.be.null;
         });
       });
+
+      describe("#findOneAndUpdate", function () {
+        const updatedText = "Updated text";
+
+        it("updates specific document", async function (this: AppContext & Mocha.Context) {
+          await insertThreeDocuments();
+
+          const newDoc = await collection.findOneAndUpdate(
+            { _id: insertedId3 },
+            { $set: { text: updatedText } },
+            { returnNewDocument: true },
+          );
+          expect(newDoc).to.deep.equal({ _id: insertedId3, text: updatedText });
+        });
+
+        it("returns null if there are no matches", async function (this: AppContext & Mocha.Context) {
+          throw new Error("Hangs forever");
+
+          await insertThreeDocuments();
+
+          const newDoc = await collection.findOneAndUpdate(
+            { _id: nonExistentId },
+            { $set: { text: updatedText } },
+            { returnNewDocument: true },
+          );
+          expect(newDoc).to.be.null;
+        });
+
+        it("does not update any document if there are no matches", async function (this: AppContext & Mocha.Context) {
+          throw new Error("Hangs forever");
+
+          await insertThreeDocuments();
+
+          await collection.findOneAndUpdate({ _id: nonExistentId }, { $set: { text: updatedText } });
+
+          // Check that the original text is unchanged
+          const docs = await collection.find();
+          expect(docs).to.have.length(3);
+          for (const doc of docs) {
+            expect(doc.text).to.equal(insertedText);
+          }
+        });
+      });
     });
 
     describe("#watch", function () {
