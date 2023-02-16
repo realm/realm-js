@@ -389,6 +389,42 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           expect(count).to.equal(4);
         });
       });
+
+      describe("#updateMany", function () {
+        const updatedText = "Updated text";
+
+        it("updates documents using query selector", async function (this: AppContext & Mocha.Context) {
+          await insertThreeDocuments();
+
+          const result = await collection.updateMany({ _id: { $gt: insertedId1 } }, { $set: { text: updatedText } });
+          expect(result).to.deep.equal({ matchedCount: 2, modifiedCount: 2 });
+        });
+
+        it("does not update any document if there are no matches", async function (this: AppContext & Mocha.Context) {
+          await insertThreeDocuments();
+
+          const result = await collection.updateMany({ _id: { $gt: insertedId3 } }, { $set: { text: updatedText } });
+          expect(result).to.deep.equal({ matchedCount: 0, modifiedCount: 0 });
+        });
+
+        it("inserts new document if no matches when using 'upsert'", async function (this: AppContext & Mocha.Context) {
+          await insertThreeDocuments();
+
+          const result = await collection.updateMany(
+            { _id: nonExistentId },
+            { $set: { text: updatedText } },
+            { upsert: true },
+          );
+          expect(result).to.deep.equal({
+            matchedCount: 0,
+            modifiedCount: 0,
+            upsertedId: nonExistentId,
+          });
+
+          const count = await collection.count();
+          expect(count).to.equal(4);
+        });
+      });
     });
 
     describe("#watch", function () {
