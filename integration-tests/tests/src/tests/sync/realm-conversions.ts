@@ -59,19 +59,21 @@ describe("Realm conversions", async () => {
       }
     });
 
+    interface ConversionTestContext {
+      configSrc: Realm.Configuration;
+      configDst: Realm.Configuration;
+      encryptKeyLocal: Int8Array;
+      encryptKeySync: Int8Array;
+    }
+
     interface ConversionTestConfig {
       encrypted: boolean;
       sync: boolean;
     }
 
-    interface ConversionTestContext {
-      configSrc: Realm.Configuration;
-      configDst: Realm.Configuration;
-    }
-
     /** Returns a Realm Config from a given conversion test configuration. */
     async function getRealmConfig(
-      context: AppContext,
+      context: AppContext & ConversionTestContext,
       testConfig: ConversionTestConfig,
       isDestination?: boolean,
     ): Promise<Realm.Configuration> {
@@ -100,6 +102,10 @@ describe("Realm conversions", async () => {
       };
     }
 
+    /**
+     * Helper function to create tests that convert between local/synced, unencrypted/encrypted Realms.
+     * Adds 5 dogs to source Realm, runs a writeCopy to destination Realm and makes sure that all 5 dogs were copied.
+     */
     async function itShouldConvertRealm(source: ConversionTestConfig, destination: ConversionTestConfig) {
       const testConfigAsString = (testConfig: ConversionTestConfig) =>
         `${testConfig.sync ? "synced" : "local"}, ${testConfig.encrypted ? "encrypted" : "unencrypted"}`;
