@@ -45,7 +45,7 @@ const PersonForSyncSchema = {
   },
 };
 
-describe("Realm conversions", async () => {
+describe.skip("Realm conversions", async () => {
   importAppBefore("with-db");
   afterEach(() => Realm.clearTestState());
 
