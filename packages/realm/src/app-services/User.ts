@@ -23,13 +23,18 @@ import {
   DefaultFunctionsFactory,
   DefaultObject,
   DefaultUserProfileData,
+  Document,
   Listeners,
-  MongoClient,
+  MongoDB,
+  MongoDBCollection,
   ProviderType,
   PushClient,
+  assert,
   binding,
+  cleanArguments,
   createFactory,
   isProviderType,
+  network,
 } from "../internal";
 
 export type UserChangeCallback = () => void;
@@ -59,23 +64,6 @@ export interface UserIdentity {
    * The type of the provider associated with the identity.
    */
   providerType: ProviderType;
-}
-
-/** @internal */
-function cleanArguments(args: unknown[] | unknown): unknown[] | unknown {
-  if (Array.isArray(args)) {
-    return args.map((x) => cleanArguments(x));
-  }
-  if (args === null || typeof args != "object") {
-    return args;
-  }
-  const result: { [key: string]: unknown } = {};
-  for (const [k, v] of Object.entries(args)) {
-    if (typeof v !== "undefined") {
-      result[k] = cleanArguments(v);
-    }
-  }
-  return result;
 }
 
 type UserListenerToken = binding.SyncUserSubscriptionToken;
@@ -240,8 +228,11 @@ export class User<
   }
 
   /**
-   * Call a remote Atlas Function by its name.
+   * Call a remote Atlas App Services Function by its name.
    * Note: Consider using `functions[name]()` instead of calling this method.
+   *
+   * @param name Name of the function.
+   * @param args Arguments passed to the function.
    *
    * @example
    * // These are all equivalent:
@@ -253,17 +244,35 @@ export class User<
    * const doThing = user.functions.doThing;
    * await doThing(a1);
    * await doThing(a2);
-   * @param name Name of the function.
-   * @param args Arguments passed to the function.
    */
   callFunction(name: string, ...args: unknown[]): Promise<unknown> {
     return this.callFunctionOnService(name, undefined, args);
   }
 
   /** @internal */
-  callFunctionOnService(name: string, serviceName: string | undefined, ...args: unknown[]) {
+  callFunctionOnService(name: string, serviceName: string | undefined, ...args: unknown[]): Promise<unknown> {
     const cleanedArgs = cleanArguments(args);
     return this.app.internal.callFunction(this.internal, name, cleanedArgs as binding.EJson[], serviceName);
+  }
+
+  /** @internal */
+  async callFunctionStreaming(
+    functionName: string,
+    serviceName: string,
+    ...functionArgs: unknown[]
+  ): Promise<AsyncIterable<Uint8Array>> {
+    const request = this.app.internal.makeStreamingRequest(
+      this.internal,
+      functionName,
+      cleanArguments(functionArgs) as binding.EJson[],
+      serviceName,
+    );
+
+    const { body, ok, status, statusText } = await network.fetch(request);
+    assert(ok, `Request failed: ${statusText} (${status})`);
+    assert(body, "Expected a body in the response");
+
+    return body;
   }
 
   /**
@@ -288,26 +297,30 @@ export class User<
   }
 
   /**
-   * Returns a connection to the MongoDB service.
+   * @param serviceName The name of the MongoDB service to connect to.
+   * @returns A connection to the MongoDB service.
    *
    * @example
-   * let blueWidgets = user.mongoClient('myClusterName')
-   *                       .db('myDb')
-   *                       .collection('widgets')
-   *                       .find({color: 'blue'});
+   * let blueWidgets = user.mongoClient("myService")
+   *                       .db("myDb")
+   *                       .collection<Widget>("widgets")
+   *                       .find({ color: "blue" });
    */
-  mongoClient(serviceName: string): unknown {
+  mongoClient(serviceName: string): MongoDB {
+    assert.string(serviceName, "serviceName");
+    assert(serviceName.length, "Please provide the name of the MongoDB service to connect to.");
+
     return {
       get serviceName() {
         return serviceName;
       },
-      db: (dbName: string) => {
+      db: (databaseName: string) => {
         return {
           get name() {
-            return dbName;
+            return databaseName;
           },
-          collection: (collectionName: string) => {
-            return new MongoClient(this.internal, serviceName, dbName, collectionName);
+          collection: <T extends Document = Document>(collectionName: string) => {
+            return new MongoDBCollection<T>(this, serviceName, databaseName, collectionName);
           },
         };
       },

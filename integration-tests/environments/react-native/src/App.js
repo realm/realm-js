@@ -24,6 +24,12 @@
  * @flow
  */
 
+import { polyfill as polyfillReadableStream } from "react-native-polyfill-globals/src/readable-stream";
+polyfillReadableStream();
+import { polyfill as polyfillEncoding } from "react-native-polyfill-globals/src/encoding";
+polyfillEncoding();
+import { polyfill as polyfillFetch } from "react-native-polyfill-globals/src/fetch";
+polyfillFetch();
 import { Client } from "mocha-remote-client";
 import React, { Component } from "react";
 import { Button, Platform, StyleSheet, Text, View, NativeModules } from "react-native";
