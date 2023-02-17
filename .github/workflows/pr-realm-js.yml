@@ -52,7 +52,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - id: build-tests
-        uses: actions/build-tests
+        uses: actions/build-tests@v1
         with:
           if: ${{ contains(github.event.head_commit.message, '[fast]') }}
           os: ${{ matrix.variant.os }}
