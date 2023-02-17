@@ -147,7 +147,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
 
         it("returns empty array if collection is empty", async function (this: AppContext & Mocha.Context) {
           const docs = await collection.find();
-          expect(docs).to.have.length(0);
+          expect(docs).to.be.empty;
         });
       });
 
@@ -156,15 +156,14 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           await insertThreeDocuments();
 
           const doc = await collection.findOne({ _id: insertedId3 });
-          expect(doc).to.be.an("object");
-          expect(doc?._id).to.equal(insertedId3);
+          expect(doc).to.deep.equal({ _id: insertedId3, text: insertedText });
         });
 
         it("returns first document using empty filter", async function (this: AppContext & Mocha.Context) {
           await insertThreeDocuments();
 
           const doc = await collection.findOne();
-          expect(doc).to.be.an("object").that.has.all.keys("_id", "text");
+          expect(doc).to.deep.equal({ _id: insertedId1, text: insertedText });
         });
 
         it("returns null if there are no matches", async function (this: AppContext & Mocha.Context) {
@@ -413,7 +412,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
         it("does not update any document if there are no matches", async function (this: AppContext & Mocha.Context) {
           await insertThreeDocuments();
 
-          const result = await collection.updateMany({ _id: { $gt: insertedId3 } }, { $set: { text: updatedText } });
+          const result = await collection.updateMany({ _id: nonExistentId }, { $set: { text: updatedText } });
           expect(result).to.deep.equal({ matchedCount: 0, modifiedCount: 0 });
         });
 
@@ -477,7 +476,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
         it("does not delete any document if there are no matches", async function (this: AppContext & Mocha.Context) {
           await insertThreeDocuments();
 
-          const result = await collection.deleteMany({ _id: { $gt: insertedId3 } });
+          const result = await collection.deleteMany({ _id: nonExistentId });
           expect(result.deletedCount).to.equal(0);
         });
       });
