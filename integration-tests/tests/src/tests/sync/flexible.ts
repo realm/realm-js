@@ -125,6 +125,10 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
   authenticateUserBefore();
 
   describe("Configuration", () => {
+    afterEach(() => {
+      Realm.clearTestState();
+    });
+
     describe("flexible sync Realm config", function () {
       it("accepts a { flexible: true } option", function () {
         expect(() => {
