@@ -89,9 +89,9 @@ type MongodbServiceOptions = { name: string; databaseName: string; clusterName: 
 function generateMongoDBServiceConfig({ name, databaseName, clusterName }: MongodbServiceOptions) {
   if (clusterName) {
     return {
+      type: "mongodb-atlas",
       config: {
         clusterName,
-        type: "mongodb-atlas",
         readPreference: "primary",
         wireProtocolEnabled: false,
         ...generateSyncConfig({ name, databaseName }),
