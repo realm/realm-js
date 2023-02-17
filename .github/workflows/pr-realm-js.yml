@@ -10,6 +10,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # get-ci-args:
+  #   name: Get CI arguments
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: "Set flags from Commit"
+  #       env:
+  #         COMMIT_FAST_VAR: ${{ contains(github.event.head_commit.message, '[fast]') }}
+  #       run: |
+  #         if ${COMMIT_VAR} == true; then
+  #           echo "fast_run=true" >> $GITHUB_ENV
+  #         else
+  #           echo "fast_run=false" >> $GITHUB_ENV
+  #         fi
   build:
     name: Build for ${{ matrix.variant.os }} ${{ matrix.variant.arch }}
     runs-on: ${{ matrix.variant.runner }}
@@ -21,6 +34,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        shouldBeFastRun: ${{ contains(github.event.head_commit.message, '[fast]') }} 
         variant:
           - { os: linux, runner: ubuntu-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true, container: "ghcr.io/${{ github.repository }}/linux-x64:master" }
           - { os: linux, runner: ubuntu-latest, arch: arm, artifact-path: prebuilds, container: "ghcr.io/${{ github.repository }}/linux-arm:master" }
@@ -36,6 +50,23 @@ jobs:
           - { os: ios, runner: macos-latest, arch: simulator, artifact-path: react-native/ios/realm-js-ios.xcframework }
           - { os: ios, runner: macos-latest, arch: catalyst, artifact-path: react-native/ios/realm-js-ios.xcframework }
           - { os: ios, runner: macos-latest, arch: ios, artifact-path: react-native/ios/realm-js-ios.xcframework }
+        exclude:
+          - shouldBeFastRun: true
+            variant: 
+            - { os: windows, runner: windows-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true } 
+            - { os: linux, runner: ubuntu-latest, arch: arm, artifact-path: prebuilds, container: "ghcr.io/${{ github.repository }}/linux-arm:master" }
+            - { os: linux, runner: ubuntu-latest, arch: arm64, artifact-path: prebuilds, container: "ghcr.io/${{ github.repository }}/linux-arm:master" }
+            - { os: windows, runner: windows-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
+            - { os: windows, runner: windows-2019, arch: ia32, artifact-path: prebuilds }
+            - { os: android, runner: ubuntu-latest, arch: x86_64, artifact-path: react-native/android/src/main/jniLibs }
+            - { os: android, runner: ubuntu-latest, arch: armeabi-v7a, artifact-path: react-native/android/src/main/jniLibs }
+            - { os: android, runner: ubuntu-latest, arch: arm64-v8a, artifact-path: react-native/android/src/main/jniLibs }
+            - { os: android, runner: ubuntu-latest, arch: x86, artifact-path: react-native/android/src/main/jniLibs }
+            - { os: darwin, runner: macos-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
+            - { os: darwin, runner: macos-latest, arch: arm64, artifact-path: prebuilds, test-node: true, test-electron: true }
+            - { os: ios, runner: macos-latest, arch: simulator, artifact-path: react-native/ios/realm-js-ios.xcframework }
+            - { os: ios, runner: macos-latest, arch: catalyst, artifact-path: react-native/ios/realm-js-ios.xcframework }
+            - { os: ios, runner: macos-latest, arch: ios, artifact-path: react-native/ios/realm-js-ios.xcframework }  
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
