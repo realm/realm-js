@@ -1,13 +1,13 @@
 {
-    "name": "BackingDB",
+    "name": "mongodb",
     "type": "mongodb",
     "config": {
         "sync": {
             "state": "enabled",
-            "database_name": "pv-int-test_data",
+            "database_name": "pv-uuid-test_data",
             "partition": {
                 "key": "realm_id",
-                "type": "long",
+                "type": "uuid",
                 "permissions": {
                     "read": true,
                     "write": true
@@ -16,7 +16,7 @@
         }
     },
     "secret_config": {
-        "uri": "BackingDB_uri"
+        "uri": "mongodb_uri"
     },
     "version": 1
 }
