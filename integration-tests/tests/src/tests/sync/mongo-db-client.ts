@@ -480,6 +480,32 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           expect(result.deletedCount).to.equal(0);
         });
       });
+
+      describe("#count", function () {
+        it("returns total number of documents using empty filter", async function (this: AppContext & Mocha.Context) {
+          await insertThreeDocuments();
+
+          const count = await collection.count();
+          expect(count).to.equal(3);
+        });
+
+        it("returns number of documents using query selector", async function (this: AppContext & Mocha.Context) {
+          await insertThreeDocuments();
+
+          const count = await collection.count({ _id: { $gt: insertedId1 } });
+          expect(count).to.equal(2);
+        });
+
+        it("returns zero if collection is empty", async function (this: AppContext & Mocha.Context) {
+          const count = await collection.count();
+          expect(count).to.equal(0);
+        });
+
+        it("returns zero if there are no matches", async function (this: AppContext & Mocha.Context) {
+          const count = await collection.count({ _id: nonExistentId });
+          expect(count).to.equal(0);
+        });
+      });
     });
 
     describe("#watch", function () {

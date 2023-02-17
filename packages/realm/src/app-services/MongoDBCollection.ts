@@ -523,6 +523,13 @@ export class MongoDBCollection<T extends Document> {
 
   /**
    * Counts the number of documents in this collection matching the provided filter.
+   *
+   * Note: When calling this without a filter, you may receive inaccurate document counts
+   * as it returns results based on the collection's metadata, which may result in an
+   * approximate count. In particular:
+   *  * On a sharded cluster, the resulting count will not correctly filter out
+   *    {@link https://www.mongodb.com/docs/manual/reference/glossary/#std-term-orphaned-document orphaned documents}.
+   *  * After an unclean shutdown or file copy based initial sync, the count may be incorrect.
    */
   count(filter: Filter = {}, options: CountOptions = {}): Promise<number> {
     return this.functions.count({
