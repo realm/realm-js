@@ -56,4 +56,6 @@ import "./schema";
 import "./types";
 import "./sync/client-reset";
 import "./sync/open-behavior";
+import "./sync/realm-conversions";
 import "./sync/partition-values";
+import "./sync/sync-session";
