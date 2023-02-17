@@ -180,30 +180,35 @@ export class AppImporter {
     const groupId = await this.getGroupId();
     const app = await this.createApp(groupId, appName);
     const appId = app.client_app_id;
+    try {
+      // Determine the path of the new app
+      const appPath = path.resolve(this.appsDirectoryPath, appId);
 
-    // Determine the path of the new app
-    const appPath = path.resolve(this.appsDirectoryPath, appId);
+      // Copy over the app template
+      this.copyAppTemplate(appPath, appTemplatePath);
 
-    // Copy over the app template
-    this.copyAppTemplate(appPath, appTemplatePath);
+      // Apply any replacements to the files before importing from them
+      this.applyReplacements(appPath, replacements);
 
-    // Apply any replacements to the files before importing from them
-    this.applyReplacements(appPath, replacements);
+      // Apply allowed request origins if they exist
+      if (security?.allowed_request_origins) {
+        this.applyAllowedRequestOrigins(security.allowed_request_origins, app._id, groupId);
+      }
 
-    // Apply allowed request origins if they exist
-    if (security?.allowed_request_origins) {
-      this.applyAllowedRequestOrigins(security.allowed_request_origins, app._id, groupId);
+      // Create the app service
+      await this.applyAppConfiguration(appPath, app._id, groupId, sync);
+
+      if (appId) {
+        console.log(`The application ${appId} was successfully deployed...`);
+        console.log(`${this.baseUrl}/groups/${groupId}/apps/${app._id}/dashboard`);
+      }
+
+      return { appId };
+    } catch (err) {
+      console.log(`Something went wrong on import, cleaning up the app ${appId}`);
+      await this.deleteApp(appId);
+      throw err;
     }
-
-    // Create the app service
-    await this.applyAppConfiguration(appPath, app._id, groupId, sync);
-
-    if (appId) {
-      console.log(`The application ${appId} was successfully deployed...`);
-      console.log(`${this.baseUrl}/groups/${groupId}/apps/${app._id}/dashboard`);
-    }
-
-    return { appId };
   }
 
   public async deleteApp(clientAppId: string): Promise<void> {
