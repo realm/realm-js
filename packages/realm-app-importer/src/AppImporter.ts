@@ -360,7 +360,9 @@ export class AppImporter {
             body: JSON.stringify(config),
           });
           if (!response.ok) {
-            console.warn("Could not create service: ", config, serviceUrl, response.statusText);
+            throw new Error(
+              `Could not create service: ${JSON.stringify(config)}, ${serviceUrl}, ${response.statusText}`,
+            );
           } else {
             if (syncConfig) {
               await this.applySyncConfig(groupId, appId, syncConfig);
@@ -396,14 +398,11 @@ export class AppImporter {
                   body: JSON.stringify(ruleConfig),
                 });
                 if (!response.ok) {
-                  const result = await response.json();
-                  console.warn(
-                    "Could not create rule: ",
-                    ruleConfig,
-                    rulesUrl,
-                    response.statusText,
-                    result.error,
-                    result.body,
+                  const { error, body } = await response.json();
+                  const { statusText } = response;
+                  const configStr = JSON.stringify(ruleConfig);
+                  throw new Error(
+                    `"Could not create rule: ", ${configStr}, ${rulesUrl}, ${statusText}, ${error}, ${body}`,
                   );
                 }
               }
