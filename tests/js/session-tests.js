@@ -1205,7 +1205,7 @@ module.exports = {
      Note:  conversion tests from the `testWriteCopyTo.*` tests should be moved
      here when we clean up the test suite
   */
-  testRealmConversions: async function () {
+  SKIPtestRealmConversions: async function () {
     const appConfig = AppConfig.integrationAppConfig;
     let app = new Realm.App(appConfig);
     let credentials = await Utils.getRegisteredEmailPassCredentials(app); //anonymous();

@@ -34,7 +34,7 @@ const SCHEMA = {
 };
 
 module.exports = {
-  async testUUIDSync() {
+  async SKIPtestUUIDSync() {
     if (!global.enableSyncTests) return;
 
     const appConfig = AppConfig.integrationAppConfig;

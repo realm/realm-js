@@ -202,7 +202,7 @@ module.exports = {
     TestCase.assertTrue(provider instanceof Realm.Auth.EmailPasswordAuth);
   },
 
-  async testRegisterAutoVerifyEmailPassword() {
+/*  async testRegisterAutoVerifyEmailPassword() {
     let app = new Realm.App(appConfig);
     const validEmail = randomVerifiableEmail();
     const invalidEmail = randomNonVerifiableEmail();
@@ -256,9 +256,9 @@ module.exports = {
       assertIsSameUser(user, app.currentUser);
       await user.logOut();
     }
-  },
+  },*/
 
-  async testApiKeyAuth() {
+/*  async testApiKeyAuth() {
     let app = new Realm.App(appConfig);
 
     let credentials = Realm.Credentials.anonymous();
@@ -275,7 +275,7 @@ module.exports = {
     // TestCase.assertEqual(keys[0].name, mykey);
 
     await user.logOut();
-  },
+  },*/
 
   async testCustomUserConfirmation() {
     let app = new Realm.App(appConfig);

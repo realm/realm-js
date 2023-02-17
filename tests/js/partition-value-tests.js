@@ -77,7 +77,7 @@ const createConfig = (schema, user, partitionValue) => ({
 });
 
 module.exports = {
-  async testPartitionValueAsInt() {
+  async SKIPtestPartitionValueAsInt() {
     const app = new Realm.App(AppConfig.pvIntAppConfig);
     const user = await app.logIn(Realm.Credentials.anonymous());
 

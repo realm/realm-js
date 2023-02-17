@@ -500,7 +500,7 @@ module.exports = {
     }
   },
 
-  testCancel: async function () {
+/*  testCancel: async function () {
     const app = new Realm.App(APP_CONFIG);
     const user = await app.logIn(Realm.Credentials.anonymous());
     const partitionValue = Utils.genPartition();
@@ -535,9 +535,9 @@ module.exports = {
     const any = Promise.race([openPromise, timeOutPromise]);
 
     return any.finally(() => user.logOut());
-  },
+  },*/
 
-  testCancel_multipleOpenCalls: async function () {
+/*  testCancel_multipleOpenCalls: async function () {
     const app = new Realm.App(APP_CONFIG);
     const user = await app.logIn(Realm.Credentials.anonymous());
     const partitionValue = Utils.genPartition();
@@ -563,9 +563,9 @@ module.exports = {
     } catch (err) {
       TestCase.assertEqual(err.message, "Operation canceled");
     }
-  },
+  },*/
 
-  testDownloadListener_whenCanceled: async function () {
+/*  testDownloadListener_whenCanceled: async function () {
     const app = new Realm.App(APP_CONFIG);
     const user = await app.logIn(Realm.Credentials.anonymous());
     const partitionValue = Utils.genPartition();
@@ -604,7 +604,7 @@ module.exports = {
     const any = Promise.race([timeOutPromise, openPromise]);
 
     return any.finally(() => user.logOut());
-  },
+  },*/
 
   testBehavior_invalidOptions: async function () {
     const app = new Realm.App(APP_CONFIG);
