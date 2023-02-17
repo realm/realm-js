@@ -21,8 +21,15 @@ const SomeComponent = () => {
 >NOTE: If your app is using multiple Realms, then you should continue using `createRealmContext`
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* `useUser` is now typed to never returned `null` [#4973](https://github.com/realm/realm-js/issues/4973)
+  Example:
+	```
+	const user = useUser();
+	// before
+	console.log(user?.id); // Optional chaining required
+	// now
+	console.log(user.id); // No typing error
+	```
 
 ### Compatibility
 * React Native >= v0.70.0

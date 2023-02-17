@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useContext } from "react";
 import Realm from "realm";
 import { isEqual } from "lodash";
-import { useUser } from "./UserProvider";
+import { UserContext } from "./UserProvider";
 
 type PartialRealmConfiguration = Omit<Partial<Realm.Configuration>, "sync"> & {
   sync?: Partial<Realm.SyncConfiguration>;
@@ -75,7 +75,8 @@ export function createRealmProvider(
     );
 
     // Automatically set the user in the configuration if its been set.
-    const user = useUser();
+    // Grabbing directly from the context to avoid throwing an error if the user is not set.
+    const user = useContext(UserContext);
 
     // We increment `configVersion` when a config override passed as a prop
     // changes, which triggers a `useEffect` to re-open the Realm with the

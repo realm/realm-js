@@ -23,7 +23,7 @@ import { useApp } from "./AppProvider";
 /**
  * Create a context containing the Realm app.  Should be accessed with the useApp hook.
  */
-const UserContext = createContext<Realm.User | null>(null);
+export const UserContext = createContext<Realm.User | null>(null);
 
 type UserProviderProps = {
   // Optional fallback component to render when unauthenticated
@@ -79,8 +79,12 @@ export const useUser = <
   FunctionsFactoryType extends Realm.DefaultFunctionsFactory,
   CustomDataType extends SimpleObject,
   UserProfileDataType extends Realm.DefaultUserProfileData
->(): Realm.User<FunctionsFactoryType, CustomDataType, UserProfileDataType> | null => {
+>(): Realm.User<FunctionsFactoryType, CustomDataType, UserProfileDataType> => {
   const user = useContext(UserContext);
 
-  return user as Realm.User<FunctionsFactoryType, CustomDataType, UserProfileDataType> | null;
+  if (!user) {
+    throw new Error("No user found. Did you forget to wrap your component in a <UserProvider>?");
+  }
+
+  return user as Realm.User<FunctionsFactoryType, CustomDataType, UserProfileDataType>;
 };

@@ -26,7 +26,7 @@ export const AppSync: React.FC = () => {
   }, [realm, result]);
 
   const handleLogout = useCallback(() => {
-    user?.logOut();
+    user.logOut();
   }, [user]);
 
   return (
