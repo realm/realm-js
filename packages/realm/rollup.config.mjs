@@ -24,19 +24,21 @@ import dts from "rollup-plugin-dts";
 
 import pkg from "./package.json" assert { type: "json" };
 
+const mainExport = pkg.exports["."];
+
 export default [
   {
     input: "src/node/index.ts",
     output: [
       {
-        file: pkg.main,
-        format: "cjs",
+        file: mainExport.node,
+        format: "esm",
         sourcemap: true,
         exports: "named",
       },
       {
-        file: pkg.module,
-        format: "esm",
+        file: mainExport.require,
+        format: "cjs",
         sourcemap: true,
         exports: "named",
       },
@@ -64,7 +66,7 @@ export default [
   {
     input: "src/react-native/index.ts",
     output: {
-      file: pkg["react-native"],
+      file: mainExport["react-native"],
       format: "es",
       sourcemap: true,
     },
@@ -93,7 +95,7 @@ export default [
   {
     input: "src/index.ts",
     output: {
-      file: pkg.types,
+      file: mainExport.types,
       format: "es",
     },
     plugins: [
