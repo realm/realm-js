@@ -16,6 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import Realm, { Configuration } from "realm";
+
+function deriveConfig(realm: Realm): Configuration {
+  const { path, syncSession } = realm;
+  if (syncSession) {
+    return { sync: syncSession.config };
+  } else if (path) {
+    return { path };
+  } else {
+    return {};
+  }
+}
+
 /**
  * Close a Realm instance, and optionally delete its Realm file and clear the test state
  *
@@ -25,11 +38,11 @@
  * @param clearTestState If false, do not clear test state before reopening.
  */
 export function closeRealm(realm: Realm, deleteRealmFile = true, clearTestState = true): void {
-  const path = realm.path;
+  const config = deriveConfig(realm);
   realm.close();
 
   if (deleteRealmFile) {
-    Realm.deleteFile({ path });
+    Realm.deleteFile(config);
   }
 
   if (clearTestState) {
