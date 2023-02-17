@@ -63,6 +63,7 @@ export function createUseQuery(useRealm: () => Realm) {
       // key on the proxy object, so that we can check for this and get the original results
       // when passing the result of `useQuery` into the subscription mutation methods
       // (see `lib/mutable-subscription-set.js` for more details)
+      // TODO: We can remove this if `realm` becomes a peer dependency >= 12
       Object.defineProperty(collectionRef.current, symbols.PROXY_TARGET, {
         value: realm.objects(type),
         enumerable: false,
