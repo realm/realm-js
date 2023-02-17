@@ -36,6 +36,15 @@ export type Spec = ReplaceFields<
   }
 >;
 
+type AdditionalSpec = ReplaceFields<
+  Spec,
+  {
+    mixedInfo?: undefined;
+  }
+>;
+
+export type AnySpec = Spec | AdditionalSpec;
+
 export type EnumSpec = {
   cppName?: string;
   values: { [key: string]: number };

@@ -18,6 +18,7 @@
 import {
   BoundSpec,
   Class,
+  Enumerator,
   Field,
   InstanceMethod,
   Method,
@@ -38,12 +39,17 @@ export function doJsPasses(spec: BoundSpec) {
 function addSharedPtrMethods(spec: BoundSpec) {
   for (const cls of spec.classes) {
     if (cls.sharedPtrWrapped && !cls.base) {
+      // Note: using double rather than int64 because bigint can't polyfill == operations.
+      // Also all JS engines rely on there being <= 52 bits of virtual address because they
+      // stuff pointers into nan-boxed doubles anyway for performance. By the time we can't
+      // rely on the 52 bit limit (if that ever happens), I'm sure we will have good bigint
+      // support across all engines.
       cls.methods.push(
         new CustomProperty( //
           cls,
           "$addr",
-          spec.types.int64_t,
-          ({ self }) => `reinterpret_cast<int64_t>(&${self})`,
+          spec.types.double,
+          ({ self }) => `double(reinterpret_cast<intptr_t>(&${self}))`,
         ),
       );
 
@@ -99,6 +105,9 @@ declare module "./bound-model" {
   interface Field {
     readonly jsName: string;
   }
+  interface Enumerator {
+    readonly jsName: string;
+  }
   interface Class {
     iteratorMethodId(): string;
   }
@@ -121,6 +130,12 @@ Object.defineProperty(Method.prototype, "jsName", {
 Object.defineProperty(Field.prototype, "jsName", {
   get(this: Field) {
     return camelCase(this.name);
+  },
+});
+
+Object.defineProperty(Enumerator.prototype, "jsName", {
+  get(this: Enumerator) {
+    return pascalCase(this.name);
   },
 });
 

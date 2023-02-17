@@ -116,7 +116,7 @@ export function normalizeObjectSchema(arg: RealmObjectConstructor | ObjectSchema
 
   const { name, primaryKey, asymmetric, embedded, properties } = arg;
   assert(name.length > 0, "Invalid schema for unnamed object: 'name' must be specified.");
-  const primaryKeyFieldIsMissing = primaryKey && !Object.hasOwn(properties, primaryKey);
+  const primaryKeyFieldIsMissing = primaryKey && !Object.prototype.hasOwnProperty.call(properties, primaryKey);
   assert(
     !primaryKeyFieldIsMissing,
     `Invalid schema for object '${name}': '${primaryKey}' is set as the primary key field but was not found in 'properties'.`,
