@@ -61,36 +61,55 @@ function generateDatabaseName(): string {
   return "test-database";
 }
 
-export function getDefaultReplacements(name: string, databaseName: string): TemplateReplacements {
-  // When running on CI we connect through mongodb-atlas instead of local-mongodb
-  const { mongodbClusterName } = environment;
+type SyncConfigOptions = {
+  name: string;
+  databaseName: string;
+};
 
-  const config: Record<string, any> = {};
-  const mongodbServiceConfig: Record<string, any> = {};
-
-  if (name === "with-db" || name === "with-db-flx") {
-    mongodbServiceConfig.config = {
-      clusterName: mongodbClusterName,
-      readPreference: "primary",
-      wireProtocolEnabled: false,
-      [name === "with-db" ? "sync" : "flexible_sync"]: {
+function generateSyncConfig({ name, databaseName }: SyncConfigOptions) {
+  if (name === "with-db") {
+    return {
+      sync: {
         database_name: databaseName,
       },
     };
+  } else if (name === "with-db-flx") {
+    return {
+      flexible_sync: {
+        database_name: databaseName,
+      },
+    };
+  } else {
+    return {};
   }
+}
 
-  if (typeof mongodbClusterName === "string") {
-    config.name = `${name}-${mongodbClusterName}`;
-    mongodbServiceConfig.type = "mongodb-atlas";
-    if (typeof mongodbServiceConfig.config !== "object") {
-      mongodbServiceConfig.config = {};
-    }
-    mongodbServiceConfig.config.clusterName = mongodbClusterName;
+type MongodbServiceOptions = { name: string; databaseName: string; clusterName: string | undefined };
+
+function generateMongoDBServiceConfig({ name, databaseName, clusterName }: MongodbServiceOptions) {
+  if (clusterName) {
+    return {
+      config: {
+        clusterName,
+        type: "mongodb-atlas",
+        readPreference: "primary",
+        wireProtocolEnabled: false,
+        ...generateSyncConfig({ name, databaseName }),
+      },
+    };
+  } else {
+    return {
+      config: generateSyncConfig({ name, databaseName }),
+    };
   }
+}
+
+export function getDefaultReplacements(name: string, databaseName: string): TemplateReplacements {
+  // When running on CI we connect through mongodb-atlas instead of local-mongodb
+  const { mongodbClusterName: clusterName } = environment;
 
   return {
-    "config.json": config,
-    "services/mongodb/config.json": mongodbServiceConfig,
+    "services/mongodb/config.json": generateMongoDBServiceConfig({ name, databaseName, clusterName }),
     "services/mongodb/rules/*.json": {
       database: databaseName,
     },
