@@ -113,7 +113,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
       console.log("\n\n\n==============\nTODO: REMOVE OUTER `DESCRIBE` SUITE\n==============\n\n\n"); // TODO: <-------
 
       describe("#find", function () {
-        it("returns all documents", async function (this: AppContext & Mocha.Context) {
+        it("returns all documents using empty filter", async function (this: AppContext & Mocha.Context) {
           await insertThreeDocuments();
 
           const docs = await collection.find();
@@ -269,6 +269,16 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
 
           const oldDoc = await collection.findOneAndDelete({ _id: insertedId3 });
           expect(oldDoc).to.deep.equal({ _id: insertedId3, text: insertedText });
+
+          const count = await collection.count();
+          expect(count).to.equal(2);
+        });
+
+        it("deletes first returned document using empty filter", async function (this: AppContext & Mocha.Context) {
+          await insertThreeDocuments();
+
+          const oldDoc = await collection.findOneAndDelete();
+          expect(oldDoc).to.deep.equal({ _id: insertedId1, text: insertedText });
 
           const count = await collection.count();
           expect(count).to.equal(2);
@@ -434,6 +444,13 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           expect(result.deletedCount).to.equal(1);
         });
 
+        it("deletes first returned document using empty filter", async function (this: AppContext & Mocha.Context) {
+          await insertThreeDocuments();
+
+          const result = await collection.deleteOne();
+          expect(result.deletedCount).to.equal(1);
+        });
+
         it("does not delete any document if there are no matches", async function (this: AppContext & Mocha.Context) {
           await insertThreeDocuments();
 
@@ -443,6 +460,13 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
       });
 
       describe("#deleteMany", function () {
+        it("deletes all documents using empty filter", async function (this: AppContext & Mocha.Context) {
+          await insertThreeDocuments();
+
+          const result = await collection.deleteMany();
+          expect(result.deletedCount).to.equal(3);
+        });
+
         it("deletes documents using query selector", async function (this: AppContext & Mocha.Context) {
           await insertThreeDocuments();
 
