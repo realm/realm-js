@@ -1863,7 +1863,7 @@ describe("Realmtest", () => {
 
   describe.skipIf(environment.node || environment.electron, "copyBundledRealmFiles", () => {
     it("copies realm files", () => {
-      const config = { path: "realm-bundle.realm", schema: [DateObjectSchema] };
+      const config = { path: "bundled.realm", schema: [DateObjectSchema] };
       if (Realm.exists(config)) {
         Realm.deleteFile(config);
       }
@@ -1888,7 +1888,7 @@ describe("Realmtest", () => {
     });
 
     it("opening new bundled realm with disableFormatUpgrade throws", () => {
-      const config = { path: "realm-bundle.realm" };
+      const config = { path: "bundled.realm" };
       if (Realm.exists(config)) {
         Realm.deleteFile(config);
       }
@@ -1896,7 +1896,7 @@ describe("Realmtest", () => {
       expect(Realm.exists(config)).to.be.true;
 
       expect(() => {
-        new Realm({ path: "realm-bundle.realm", disableFormatUpgrade: true });
+        new Realm({ path: "bundled.realm", disableFormatUpgrade: true });
       }).throws("The Realm file format must be allowed to be upgraded in order to proceed.");
     });
   });
