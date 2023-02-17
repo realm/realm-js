@@ -1,6 +1,12 @@
 name: Deploy cluster
 on:
   workflow_dispatch:
+    inputs:
+      clusterSize:
+        type: choice
+        options:
+          - M10
+          - M20
   schedule:
     # We deploy three times per day,
     # to avoid downtime as the cluster gets deleted after 12 hours
@@ -18,7 +24,7 @@ jobs:
           projectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
           apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
           privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
-          clusterSize: M10
+          clusterSize: ${{ github.event.inputs.clusterSize || "M10" }}
       - name: Update GitHub secret
         run: gh secret set ATLAS_QA_DAILY_CLUSTER_NAME --body ${{ steps.deploy-cluster.outputs.clusterName }}
         env:
