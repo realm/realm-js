@@ -34,8 +34,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shouldBeFastRun:
-        - ${{ contains(github.event.head_commit.message, '[fast]') }} 
         variant:
           - { os: linux, runner: ubuntu-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true, container: "ghcr.io/${{ github.repository }}/linux-x64:master" }
           - { os: linux, runner: ubuntu-latest, arch: arm, artifact-path: prebuilds, container: "ghcr.io/${{ github.repository }}/linux-arm:master" }
@@ -51,149 +49,15 @@ jobs:
           - { os: ios, runner: macos-latest, arch: simulator, artifact-path: react-native/ios/realm-js-ios.xcframework }
           - { os: ios, runner: macos-latest, arch: catalyst, artifact-path: react-native/ios/realm-js-ios.xcframework }
           - { os: ios, runner: macos-latest, arch: ios, artifact-path: react-native/ios/realm-js-ios.xcframework }
-        exclude:
-
-          - shouldBeFastRun: true
-            variant: { os: ios, runner: macos-latest, arch: simulator, artifact-path: react-native/ios/realm-js-ios.xcframework }
-          - shouldBeFastRun: true
-            variant: { os: ios, runner: macos-latest, arch: ios, artifact-path: react-native/ios/realm-js-ios.xcframework }  
-          - shouldBeFastRun: true
-            variant: { os: ios, runner: macos-latest, arch: catalyst, artifact-path: react-native/ios/realm-js-ios.xcframework }
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: ./.github/workflows/build-tests.yml
         with:
-          submodules: "recursive"
-
-      - name: Setup node version
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
-
-      - name: Get NPM cache directory
-        id: npm-cache-dir
-        run: echo "::set-output name=dir::$(npm config get cache)"
-
-      - name: Restore NPM cache
-        id: npm-cache
-        uses: actions/cache@v2
-        with:
-          path: ${{ steps.npm-cache-dir.outputs.dir }}
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: MSVC Setup
-        if: ${{ runner.os == 'Windows' }}
-        uses: ilammy/msvc-dev-cmd@v1
-
-      # ninja-build is used by default if available and results in faster build times
-      # On linux, electron requires a connected display.  We fake this by giving it a headless environment using xvfb
-      # Relevant issue: https://github.com/juliangruber/browser-run/issues/147
-      - name: Linux Environment setup
-        if: ${{ (matrix.variant.runner == 'ubuntu-latest') && (matrix.variant.container == '') }}
-        run: sudo apt-get install ccache ninja-build
-
-      - name: Setup Java
-        if: ${{ matrix.variant.os == 'android' }}
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu' # See 'Supported distributions' for available options
-          java-version: '11'
-
-      - name: Setup Android SDK
-        if: ${{ matrix.variant.os == 'android' }}
-        uses: android-actions/setup-android@v2
-
-      - name: Install NDK
-        if: ${{ matrix.variant.os == 'android' }}
-        run: sdkmanager --install "ndk;${{ env.NDK_VERSION }}"
-
-      # The ccache installed by github doesn't want to be moved around. Let the ccache action download a new one.
-      - name: Remove pre-installed ccache
-        if: ${{ runner.os == 'Windows' }}
-        shell: bash
-        # There are two; remove both
-        run: |
-          rm -fv $(which ccache)
-          rm -fv $(which ccache)
-
-      - name: ccache
-        uses: hendrikmuhs/ccache-action@bd43b7f5fb36d5f97ef5c6cc818a2055b04f610a
-        with:
-          key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}
-          max-size: '2.0G'
-
-      - name: Prepend ccache executables to the PATH
-        if: ${{ runner.os != 'Windows' }}
-        run: |
-          echo "/usr/lib/ccache:/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
-
-      # in CI file timestamps change with every run so instead rely on file content hashing
-      # https://reactnative.dev/docs/build-speed#using-this-approach-on-a-ci
-      - name: Configure ccache
-        run: ccache --set-config="compiler_check=content"
-
-      - name: Install dependencies
-        # Ignoring scripts to prevent a prebuilt from getting fetched / built
-        run: npm ci --ignore-scripts
-
-      - name: Insert ccache executables
-        if: ${{ runner.os == 'Windows' }}
-        shell: bash
-        run: |
-          cl_exe=$(which cl.exe)
-          cl_dir=$(dirname "$cl_exe")
-          # For 32-bit it uses a different compiler than the one in the path
-          if [ ${{ matrix.variant.arch }} = ia32 ]; then
-              cl_dir=$(dirname "$cl_dir")/x86
-              cl_exe="$cl_dir/cl.exe"
-          fi
-          cl_dir_windows="C:${cl_dir#/c}"
-          mv -v "$cl_exe" "$cl_dir"/cl-real.exe
-          cp -v "$cl_dir"/cl.exe.config "$cl_dir"/cl-real.exe.config
-          ccache_exe=$(which ccache.exe)
-          cp -v "$ccache_exe" "$cl_dir"/cl.exe
-          ls -l "$cl_dir"
-          echo "CCACHE_COMPILER=$cl_dir_windows/cl-real.exe" >> $GITHUB_ENV
-          echo 'CCACHE_COMPILERTYPE=msvc' >> $GITHUB_ENV
-          echo 'CCACHE_STATSLOG=C:\Users\runneradmin\ccache\statslog.txt' >> $GITHUB_ENV
-          #echo 'CCACHE_LOGFILE=C:\Users\runneradmin\ccache\logfile.txt' >> $GITHUB_ENV
-          # This tells msbuild to compile only one file at a time; ccache needs that.
-          echo 'UseMultiToolTask=true' >> $GITHUB_ENV
-          echo 'VCPKG_KEEP_ENV_VARS=CCACHE_COMPILER;CCACHE_STATSLOG;CCACHE_LOGFILE;CCACHE_COMPILERTYPE;UseMultiToolTask' >> $GITHUB_ENV
-
-      # build the c++ library for standard targets
-      - name: Build node
-        if: ${{ (matrix.variant.os != 'ios') && (matrix.variant.os != 'android') }}
-        run: npm run prebuild:node -- --arch=${{matrix.variant.arch}}
-
-      # build the c++ library for IOS
-      # the Info.plist needs to be regenerated with all libraries in place
-      - name: Build iOS
-        if: ${{ (matrix.variant.os == 'ios') }}
-        run: |
-          npm run prebuild:ios -- ${{matrix.variant.arch}}
-          rm -vf ${{ matrix.variant.artifact-path }}/Info.plist
-
-      # build the c++ library for Android
-      - name: Build Android
-        if: ${{ (matrix.variant.os == 'android') }}
-        run: npm run prebuild:android -- --arch=${{matrix.variant.arch}}
-        env:
-          ANDROID_NDK: ${{ env.ANDROID_SDK_ROOT }}/ndk/${{ env.NDK_VERSION }}
-
-      # Due to a limitation in upload-artifact a redundant file is needed to force 
-      # preserving paths (https://github.com/actions/upload-artifact/issues/174) 
-      - name: Upload prebuild artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: realm-js-prebuilds
-          path: |
-            dependencies.list
-            ${{ matrix.variant.artifact-path }}
+          if: ${{ contains(github.event.head_commit.message, '[fast]') }}
+          os: ${{ matrix.variant.os }}
+          runner: ${{ matrix.variant.runner }}
+          arch: ${{ matrix.variant.arch}}
+          artifact-path: ${{ matrix.variant.artifact-path}}
+          container: ${{ matrix.variant.container}}
 
   ios-xcframework:
     name: Generate Info.plist with all frameworks in place
