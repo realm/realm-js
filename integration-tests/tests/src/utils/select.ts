@@ -16,12 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-type PlatformValues<T> = {
-  node?: T;
-  electron?: T;
-  reactNative?: T;
-  android?: T;
-  ios?: T;
+type PlatformValues<T> = Partial<Record<keyof KnownEnvironment, T>> & {
   default?: T;
 };
 
