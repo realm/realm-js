@@ -1,29 +1,24 @@
-on:
-  workflow_call:
-    inputs:
-      if:
-        description: 'Whether to run this job'
-        required: false
-        default: true
-        type: boolean
-      os:
-        required: true
-        type: string
-      arch:
-        required: true
-        type: string
-      runner:
-        required: true
-        type: string
-      container:
-        required: true
-        type: string
-jobs:
-  reusable-build:
-    name: Build for ${{ inputs.os }} ${{ inputs.arch }}
-    runs-on: ${{ inputs.runner }}
-    container: ${{ inputs.container }}
-    if: ${{ inputs.if }}
+name: "Build test"
+description: "Build action for integration tests"
+inputs:
+  if:
+    description: 'Whether to run this job'
+    required: false
+    default: "true"
+  os:
+    description: "OS of the system"
+    required: true
+  arch:
+    description: "Architecture"
+    required: true
+  runner:
+    description: "Runner"
+    required: true
+  container:
+    description: "Container"
+    required: true
+runs:
+    using: "composite"
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -38,6 +33,7 @@ jobs:
         cache-dependency-path: '**/package-lock.json'
 
     - name: Get NPM cache directory
+      shell: bash
       id: npm-cache-dir
       run: echo "::set-output name=dir::$(npm config get cache)"
 
@@ -58,6 +54,7 @@ jobs:
     # On linux, electron requires a connected display.  We fake this by giving it a headless environment using xvfb
     # Relevant issue: https://github.com/juliangruber/browser-run/issues/147
     - name: Linux Environment setup
+      shell: bash
       if: ${{ (inputs.runner == 'ubuntu-latest') && (inputs.container == '') }}
       run: sudo apt-get install ccache ninja-build
 
@@ -73,6 +70,7 @@ jobs:
       uses: android-actions/setup-android@v2
 
     - name: Install NDK
+      shell: bash
       if: ${{ inputs.os == 'android' }}
       run: sdkmanager --install "ndk;${{ env.NDK_VERSION }}"
 
@@ -92,6 +90,7 @@ jobs:
         max-size: '2.0G'
 
     - name: Prepend ccache executables to the PATH
+      shell: bash
       if: ${{ runner.os != 'Windows' }}
       run: |
         echo "/usr/lib/ccache:/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
@@ -99,9 +98,11 @@ jobs:
     # in CI file timestamps change with every run so instead rely on file content hashing
     # https://reactnative.dev/docs/build-speed#using-this-approach-on-a-ci
     - name: Configure ccache
+      shell: bash
       run: ccache --set-config="compiler_check=content"
 
     - name: Install dependencies
+      shell: bash
       # Ignoring scripts to prevent a prebuilt from getting fetched / built
       run: npm ci --ignore-scripts
 
@@ -132,12 +133,14 @@ jobs:
 
     # build the c++ library for standard targets
     - name: Build node
+      shell: bash
       if: ${{ (inputs.os != 'ios') && (inputs.os != 'android') }}
       run: npm run prebuild:node -- --arch=${{inputs.arch}}
 
     # build the c++ library for IOS
     # the Info.plist needs to be regenerated with all libraries in place
     - name: Build iOS
+      shell: bash
       if: ${{ (inputs.os == 'ios') }}
       run: |
         npm run prebuild:ios -- ${{inputs.arch}}
@@ -145,6 +148,7 @@ jobs:
 
     # build the c++ library for Android
     - name: Build Android
+      shell: bash
       if: ${{ (inputs.os == 'android') }}
       run: npm run prebuild:android -- --arch=${{inputs.arch}}
       env:
