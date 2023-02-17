@@ -1,8 +1,33 @@
-name: Deploy daily cluster
+name: Deploy cluster
 on:
   workflow_dispatch:
+  schedule:
+    # We deploy three times per day,
+    # to avoid downtime as the cluster gets deleted after 12 hours
+    - cron: '0 6,14,22 * * *' # 6:00, 14:00, 22:00 every day
 jobs:
   deploy-cluster:
     runs-on: ubuntu-latest
     steps:
-      - run: echo 'Tumbleweed'
+      - uses: actions/checkout@v3
+      - name: Deploy cluster
+        uses: realm/ci-actions/mdb-realm/deploy@043cc5a8446748b823957c6ea4d08e6e495ea996
+        id: deploy-cluster
+        with:
+          atlasUrl: ${{ secrets.ATLAS_QA_BASE_URL }}
+          projectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+          apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+          privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
+          clusterSize: M10
+      - name: Update GitHub secret
+        run: gh secret set ATLAS_QA_DAILY_CLUSTER_NAME --body ${{ steps.deploy-cluster.outputs.clusterName }}
+        env:
+          GH_TOKEN: ${{ secrets.REALM_CI_PAT }}
+      - name: Delete apps used > 24 hours ago
+        uses: realm/ci-actions/mdb-realm/deleteOldApps@kh/delete-old-apps
+        id: delete-old-apps
+        with:
+          atlasUrl: ${{ secrets.ATLAS_QA_BASE_URL }}
+          projectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+          apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+          privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}

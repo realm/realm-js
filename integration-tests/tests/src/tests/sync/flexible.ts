@@ -123,14 +123,12 @@ async function addSubscriptionAndSync<T>(
 describe.skipIf(environment.missingServer, "Flexible sync", function () {
   importAppBefore("with-db-flx");
   authenticateUserBefore();
-  openRealmBeforeEach({
-    schema: [FlexiblePersonSchema, DogSchema],
-    sync: {
-      flexible: true,
-    },
-  });
 
-  describe("Configuration", function () {
+  describe("Configuration", () => {
+    afterEach(() => {
+      Realm.clearTestState();
+    });
+
     describe("flexible sync Realm config", function () {
       it("accepts a { flexible: true } option", function () {
         expect(() => {
@@ -364,6 +362,14 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
   });
 
   describe("API", function () {
+    openRealmBeforeEach({
+      schema: [FlexiblePersonSchema, DogSchema],
+      sync: {
+        flexible: true,
+        _sessionStopPolicy: SessionStopPolicy.Immediately,
+      },
+    });
+
     // We use SessionStopPolicy.Immediately to prevent there being two Realms left open
     // when we get to the `getAllSyncSessions` test which running the suite
     describe("getAllSyncSessions", function () {
@@ -1393,7 +1399,15 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
     });
   });
 
-  describe("end-to-end synchronisation", function () {
+  describe("end-to-end synchronization", function () {
+    openRealmBeforeEach({
+      schema: [FlexiblePersonSchema, DogSchema],
+      sync: {
+        flexible: true,
+        _sessionStopPolicy: SessionStopPolicy.Immediately,
+      },
+    });
+
     /**
      * Add a Person object and wait for the change to be uploaded
      *

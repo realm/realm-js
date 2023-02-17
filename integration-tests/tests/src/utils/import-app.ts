@@ -53,33 +53,41 @@ function getCredentials(): Credentials {
 }
 
 export function getDefaultReplacements(name: string): TemplateReplacements {
+  // Generate a unique database name to limit crosstalk between runs
+  const databaseName = `test-database-${new BSON.ObjectID().toHexString()}`;
   // When running on CI we connect through mongodb-atlas instead of local-mongodb
   const { mongodbClusterName } = environment;
-  if (typeof mongodbClusterName === "string") {
-    const appName = `${name}-${mongodbClusterName}`;
-    const appNameReplacement = { "config.json": { name: appName } };
 
-    if (name === "with-db" || name === "with-db-flx") {
-      // Generate a unique database name to limit crosstalk between runs
-      const databaseName = `test-database-${new BSON.ObjectID().toHexString()}`;
-      return {
-        ...appNameReplacement,
-        "services/mongodb/config.json": {
-          type: "mongodb-atlas",
-          config: {
-            clusterName: mongodbClusterName,
-            readPreference: "primary",
-            wireProtocolEnabled: false,
-            [name === "with-db" ? "sync" : "flexible_sync"]: {
-              database_name: databaseName,
-            },
-          },
-        },
-      };
-    }
-    return appNameReplacement;
+  const config: Record<string, any> = {};
+  const mongodbServiceConfig: Record<string, any> = {};
+
+  if (name === "with-db" || name === "with-db-flx") {
+    mongodbServiceConfig.config = {
+      clusterName: mongodbClusterName,
+      readPreference: "primary",
+      wireProtocolEnabled: false,
+      [name === "with-db" ? "sync" : "flexible_sync"]: {
+        database_name: databaseName,
+      },
+    };
   }
-  return {};
+
+  if (typeof mongodbClusterName === "string") {
+    config.name = `${name}-${mongodbClusterName}`;
+    mongodbServiceConfig.type = "mongodb-atlas";
+    if (typeof mongodbServiceConfig.config !== "object") {
+      mongodbServiceConfig.config = {};
+    }
+    mongodbServiceConfig.config.clusterName = mongodbClusterName;
+  }
+
+  return {
+    "config.json": config,
+    "services/mongodb/config.json": mongodbServiceConfig,
+    "services/mongodb/rules/*.json": {
+      database: databaseName,
+    },
+  };
 }
 
 export async function importApp(
