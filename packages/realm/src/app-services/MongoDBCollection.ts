@@ -672,10 +672,10 @@ export class MongoDBCollection<T extends Document> {
       // TODO: Remove `toArrayBuffer()` once https://jira.mongodb.org/browse/RJS-2124 gets solved
       const buffer = toArrayBuffer(chunk);
       binding.Helpers.feedBuffer(watchStream, buffer);
-      while (watchStream.state === binding.WatchStreamState.HAVE_EVENT) {
+      while (watchStream.state === binding.WatchStreamState.HaveEvent) {
         yield watchStream.nextEvent() as unknown as ChangeEvent<T>;
       }
-      if (watchStream.state === binding.WatchStreamState.HAVE_ERROR) {
+      if (watchStream.state === binding.WatchStreamState.HaveError) {
         throw watchStream.error;
       }
     }
