@@ -57,7 +57,7 @@ jobs:
         workflow: pr-realm-js.yml
         commit: ${{ inputs.commit || github.sha }}
         path: ${{ github.workspace }}
-        workflow_conclusion: completed
+        workflow_conclusion: "" # Ignores workflow conclusion
         github_token: ${{ secrets.REALM_CI_PAT }}
         name: realm-js-prebuilds
 
