@@ -17,12 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
+  AggregatePipelineStage,
   ApiKey,
   ApiKeyAuth,
   App,
   AppChangeCallback,
   AppConfiguration,
   BSON,
+  BaseChangeEvent,
   BaseConfiguration,
   BaseObjectSchema,
   BaseSubscriptionSet,
@@ -31,6 +33,8 @@ import {
   CanonicalObjectSchemaProperty,
   CanonicalPropertiesTypes,
   CanonicalPropertySchema,
+  ChangeEvent,
+  ChangeEventId,
   ClassHelpers,
   ClassMap,
   ClientResetAfterCallback,
@@ -51,26 +55,45 @@ import {
   ConnectionNotificationCallback,
   ConnectionState,
   Constructor,
+  CountOptions,
   Credentials,
   DefaultFunctionsFactory,
   DefaultObject,
   DefaultUserProfileData,
+  DeleteEvent,
+  DeleteResult,
   Dictionary,
   DictionaryChangeCallback,
   DictionaryChangeSet,
+  Document,
+  DocumentKey,
+  DocumentNamespace,
+  DropDatabaseEvent,
+  DropEvent,
   EmailPasswordAuth,
   ErrorCallback,
+  Filter,
+  FindOneAndModifyOptions,
+  FindOneOptions,
+  FindOptions,
   FlexibleSyncConfiguration,
   INTERNAL,
   IndexDecorator,
   InitialSubscriptions,
+  InsertEvent,
+  InsertManyResult,
+  InsertOneResult,
+  InvalidateEvent,
   List,
   LocalAppConfiguration,
   LogLevel,
   MapToDecorator,
   MigrationCallback,
-  MongoClient,
+  MongoDB,
+  MongoDBCollection,
+  MongoDBDatabase,
   MutableSubscriptionSet,
+  NewDocument,
   NumericLogLevel,
   ObjectChangeCallback,
   ObjectChangeSet,
@@ -79,6 +102,7 @@ import {
   OpenRealmBehaviorConfiguration,
   OpenRealmBehaviorType,
   OpenRealmTimeOutBehavior,
+  OperationType,
   OrderedCollection,
   PartitionSyncConfiguration,
   PartitionValue,
@@ -100,6 +124,8 @@ import {
   RealmObject,
   RealmObjectConstructor,
   RealmSet,
+  RenameEvent,
+  ReplaceEvent,
   Results,
   SessionState,
   SessionStopPolicy,
@@ -113,7 +139,12 @@ import {
   SyncSession,
   TypeAssertionError,
   Types,
+  Update,
+  UpdateDescription,
+  UpdateEvent,
   UpdateMode,
+  UpdateOptions,
+  UpdateResult,
   User,
   UserChangeCallback,
   UserState,
@@ -1250,6 +1281,39 @@ type ApiKeyType = ApiKey;
 type EmailPasswordAuthType = EmailPasswordAuth;
 type ApiKeyAuthType = ApiKeyAuth;
 
+type AggregatePipelineStageType = AggregatePipelineStage;
+type BaseChangeEventType<T extends OperationType> = BaseChangeEvent<T>;
+type ChangeEventType<T extends Document> = ChangeEvent<T>;
+type ChangeEventIdType = ChangeEventId;
+type CountOptionsType = CountOptions;
+type DeleteEventType<T extends Document> = DeleteEvent<T>;
+type DeleteResultType = DeleteResult;
+type DocumentType<IdType> = Document<IdType>;
+type DocumentKeyType<IdType> = DocumentKey<IdType>;
+type DocumentNamespaceType = DocumentNamespace;
+type DropDatabaseEventType = DropDatabaseEvent;
+type DropEventType = DropEvent;
+type FilterType = Filter;
+type FindOneAndModifyOptionsType = FindOneAndModifyOptions;
+type FindOneOptionsType = FindOneOptions;
+type FindOptionsType = FindOptions;
+type InsertEventType<T extends Document> = InsertEvent<T>;
+type InsertManyResultType<IdType> = InsertManyResult<IdType>;
+type InsertOneResultType<IdType> = InsertOneResult<IdType>;
+type InvalidateEventType = InvalidateEvent;
+type MongoDBType = MongoDB;
+type MongoDBCollectionType<T extends Document> = MongoDBCollection<T>;
+type MongoDBDatabaseType = MongoDBDatabase;
+type NewDocumentType<T extends Document> = NewDocument<T>;
+type OperationTypeType = OperationType;
+type RenameEventType = RenameEvent;
+type ReplaceEventType<T extends Document> = ReplaceEvent<T>;
+type UpdateType = Update;
+type UpdateDescriptionType = UpdateDescription;
+type UpdateEventType<T extends Document> = UpdateEvent<T>;
+type UpdateOptionsType = UpdateOptions;
+type UpdateResultType<IdType> = UpdateResult<IdType>;
+
 type GlobalDate = Date;
 
 // IMPORTANT: This needs to match the namespace below!
@@ -1488,12 +1552,78 @@ export declare namespace Realm {
   /** @deprecated Please use named imports */
   // eslint-disable-next-line @typescript-eslint/no-namespace
   export namespace Services {
-    // TODO: Fill in once the MongoDB client has stabilized
-
+    /** @deprecated Please use named imports */
+    export type MongoDB = MongoDBType;
+    /** @deprecated Please use named imports */
+    export type MongoDBDatabase = MongoDBDatabaseType;
     /**
      * @deprecated Got renamed to {@link PushClient} and please use named imports
      */
     export type Push = PushClient;
+    /** @deprecated Please use named imports */
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    export namespace MongoDB {
+      /** @deprecated Please use named imports */
+      export type AggregatePipelineStage = AggregatePipelineStageType;
+      /** @deprecated Please use named imports */
+      export type BaseChangeEvent<T extends OperationType> = BaseChangeEventType<T>;
+      /** @deprecated Please use named imports */
+      export type ChangeEvent<T extends Document> = ChangeEventType<T>;
+      /** @deprecated Please use named imports */
+      export type ChangeEventId = ChangeEventIdType;
+      /** @deprecated Please use named imports */
+      export type CountOptions = CountOptionsType;
+      /** @deprecated Please use named imports */
+      export type DeleteEvent<T extends Document> = DeleteEventType<T>;
+      /** @deprecated Please use named imports */
+      export type DeleteResult = DeleteResultType;
+      /** @deprecated Please use named imports */
+      export type Document<IdType = any> = DocumentType<IdType>;
+      /** @deprecated Please use named imports */
+      export type DocumentKey<IdType> = DocumentKeyType<IdType>;
+      /** @deprecated Please use named imports */
+      export type DocumentNamespace = DocumentNamespaceType;
+      /** @deprecated Please use named imports */
+      export type DropDatabaseEvent = DropDatabaseEventType;
+      /** @deprecated Please use named imports */
+      export type DropEvent = DropEventType;
+      /** @deprecated Please use named imports */
+      export type Filter = FilterType;
+      /** @deprecated Please use named imports */
+      export type FindOneAndModifyOptions = FindOneAndModifyOptionsType;
+      /** @deprecated Please use named imports */
+      export type FindOneOptions = FindOneOptionsType;
+      /** @deprecated Please use named imports */
+      export type FindOptions = FindOptionsType;
+      /** @deprecated Please use named imports */
+      export type InsertEvent<T extends Document> = InsertEventType<T>;
+      /** @deprecated Please use named imports */
+      export type InsertManyResult<IdType> = InsertManyResultType<IdType>;
+      /** @deprecated Please use named imports */
+      export type InsertOneResult<IdType> = InsertOneResultType<IdType>;
+      /** @deprecated Please use named imports */
+      export type InvalidateEvent = InvalidateEventType;
+      /** @deprecated Please use named imports */
+      export type MongoDBCollection<T extends Document> = MongoDBCollectionType<T>;
+      /** @deprecated Please use named imports */
+      export type NewDocument<T extends Document> = NewDocumentType<T>;
+      /** @deprecated Please use named imports */
+      export type OperationType = OperationTypeType;
+      /** @deprecated Please use named imports */
+      export type RenameEvent = RenameEventType;
+      /** @deprecated Please use named imports */
+      export type ReplaceEvent<T extends Document> = ReplaceEventType<T>;
+      /** @deprecated Please use named imports */
+      export type Update = UpdateType;
+      /** @deprecated Please use named imports */
+      export type UpdateDescription = UpdateDescriptionType;
+      /** @deprecated Please use named imports */
+      export type UpdateEvent<T extends Document> = UpdateEventType<T>;
+      /** @deprecated Please use named imports */
+      export type UpdateOptions = UpdateOptionsType;
+      /** @deprecated Please use named imports */
+      export type UpdateResult<IdType> = UpdateResultType<IdType>;
+    }
   }
 
   /** @deprecated Please use named imports */
