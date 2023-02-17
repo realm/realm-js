@@ -65,9 +65,9 @@ export enum SessionState {
 
 function toBindingDirection(direction: ProgressDirection) {
   if (direction === ProgressDirection.Download) {
-    return binding.ProgressDirection.download;
+    return binding.ProgressDirection.Download;
   } else if (direction === ProgressDirection.Upload) {
-    return binding.ProgressDirection.upload;
+    return binding.ProgressDirection.Upload;
   } else {
     throw new Error(`Unexpected direction: ${direction}`);
   }
@@ -208,7 +208,7 @@ export function toBindingClientResetMode(resetMode: ClientResetMode): binding.Cl
 
 type ListenerToken = {
   internal: binding.SyncSession;
-  token: bigint;
+  token: binding.Int64;
 };
 
 /**

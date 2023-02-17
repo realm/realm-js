@@ -30,22 +30,26 @@ import {
   UpdateMode,
   assert,
   binding,
+  safeGlobalThis,
 } from "./internal";
 
-const TYPED_ARRAY_CONSTRUCTORS = new Set([
-  DataView,
-  Int8Array,
-  Uint8Array,
-  Uint8ClampedArray,
-  Int16Array,
-  Uint16Array,
-  Int32Array,
-  Uint32Array,
-  Float32Array,
-  Float64Array,
-  BigInt64Array,
-  BigUint64Array,
-]);
+const TYPED_ARRAY_CONSTRUCTORS = new Set(
+  [
+    DataView,
+    Int8Array,
+    Uint8Array,
+    Uint8ClampedArray,
+    Int16Array,
+    Uint16Array,
+    Int32Array,
+    Uint32Array,
+    Float32Array,
+    Float64Array,
+    // These will not be present on old versions of JSC without BigInt support.
+    safeGlobalThis.BigInt64Array,
+    safeGlobalThis.BigUint64Array,
+  ].filter((ctor) => ctor !== undefined),
+);
 
 export function toArrayBuffer(value: unknown, stringToBase64 = true) {
   if (typeof value === "string" && stringToBase64) {
@@ -125,8 +129,8 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
     return {
       toBinding: nullPassthrough((value) => {
         if (typeof value === "number") {
-          return BigInt(value);
-        } else if (typeof value === "bigint") {
+          return binding.Int64.numToInt(value);
+        } else if (binding.Int64.isInt(value)) {
           return value;
         } else {
           throw new TypeAssertionError("a number or bigint", value);
@@ -246,8 +250,8 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
     return {
       toBinding: mixedToBinding.bind(null, realm.internal),
       fromBinding(value) {
-        if (typeof value === "bigint") {
-          return Number(value);
+        if (binding.Int64.isInt(value)) {
+          return binding.Int64.intToNum(value);
         } else if (value instanceof binding.Timestamp) {
           return value.toDate();
         } else if (value instanceof binding.Float) {
@@ -281,7 +285,7 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
       fromBinding: defaultFromBinding,
     };
   },
-  [binding.PropertyType.UUID]({ optional }) {
+  [binding.PropertyType.Uuid]({ optional }) {
     return {
       toBinding: nullPassthrough((value) => {
         assert.instanceOf(value, BSON.UUID);

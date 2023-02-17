@@ -469,7 +469,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
         T extends Document = TestDocument,
       >(event: ChangeEvent<T>): asserts event is InsertEvent<T> {
         if (event.operationType !== "insert") {
-          throw new Error(`Expected an insert event, got ${event}.`);
+          throw new Error(`Expected an insert event, got ${event.operationType}.`);
         }
       }
 
@@ -479,75 +479,74 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
         // Wait 500ms (490+10) before first insert to try to avoid it.
         await sleep(490);
         for (let i = 0; i < numInserts; i++) {
-          await collection.insertOne({ _id: i, text: text });
+          await collection.insertOne({ _id: i, text });
           await sleep(10);
         }
         await collection.insertOne(lastDocument);
       }
 
       it("streams any inserted documents", async function (this: AppContext & Mocha.Context) {
-        await Promise.all([
-          insertDocumentsOneByOne(),
-          (async () => {
-            let expectedId = 0;
-            for await (const event of collection.watch()) {
-              assertIsInsert(event);
-              expect(event.fullDocument._id).to.equal(expectedId++);
-              if (event.fullDocument.isLast) break;
-            }
-          })(),
-        ]);
+        const startWatching = async () => {
+          let expectedId = 0;
+          for await (const event of collection.watch()) {
+            assertIsInsert(event);
+            expect(event.fullDocument._id).to.equal(expectedId++);
+            if (event.fullDocument.isLast) break;
+          }
+        };
+
+        await Promise.all([startWatching(), insertDocumentsOneByOne()]);
       });
 
       it("streams inserted documents using 'filter' option", async function (this: AppContext & Mocha.Context) {
-        await Promise.all([
-          insertDocumentsOneByOne(),
-          (async () => {
-            const watchedId = 3;
-            const filter = {
-              $or: [{ "fullDocument._id": watchedId, "fullDocument.text": text }, { "fullDocument.isLast": true }],
-            };
-            let seenIt = false;
-            for await (const event of collection.watch({ filter })) {
-              assertIsInsert(event);
-              if (event.fullDocument.isLast) break;
-              expect(event.fullDocument._id).to.equal(watchedId);
-              seenIt = true;
-            }
-            expect(seenIt).to.be.true;
-          })(),
-        ]);
+        const watchedId = 3;
+        const filter = {
+          $or: [{ "fullDocument._id": watchedId, "fullDocument.text": text }, { "fullDocument.isLast": true }],
+        };
+
+        const startWatching = async () => {
+          let seenIt = false;
+          for await (const event of collection.watch({ filter })) {
+            assertIsInsert(event);
+            if (event.fullDocument.isLast) break;
+            expect(event.fullDocument._id).to.equal(watchedId);
+            seenIt = true;
+          }
+          expect(seenIt).to.be.true;
+        };
+
+        await Promise.all([startWatching(), insertDocumentsOneByOne()]);
       });
 
       it("streams inserted documents using 'ids' option", async function (this: AppContext & Mocha.Context) {
-        await Promise.all([
-          insertDocumentsOneByOne(),
-          (async () => {
-            const watchedId = 3;
-            let seenIt = false;
-            for await (const event of collection.watch({ ids: [watchedId, lastDocument._id] })) {
-              assertIsInsert(event);
-              if (event.fullDocument.isLast) break;
-              expect(event.fullDocument._id).to.equal(watchedId);
-              seenIt = true;
-            }
-            expect(seenIt).to.be.true;
-          })(),
-        ]);
+        const watchedId = 3;
+        const ids = [watchedId, lastDocument._id];
+
+        const startWatching = async () => {
+          let seenIt = false;
+          for await (const event of collection.watch({ ids })) {
+            assertIsInsert(event);
+            if (event.fullDocument.isLast) break;
+            expect(event.fullDocument._id).to.equal(watchedId);
+            seenIt = true;
+          }
+          expect(seenIt).to.be.true;
+        };
+
+        await Promise.all([startWatching(), insertDocumentsOneByOne()]);
       });
 
       it("throws when the user is logged out", async function (this: AppContext & Mocha.Context) {
-        const user = this.app.currentUser;
-        expect(user).to.be.instanceOf(User);
-        await user?.logOut();
+        await this.app.currentUser?.logOut();
         expect(this.app.currentUser).to.be.null;
 
-        const callWatch = async () => {
+        const startWatching = async () => {
           for await (const _ of collection.watch()) {
             expect.fail("Expected 'watch()' to throw, but received a change stream.");
           }
         };
-        await expect(callWatch()).to.be.rejectedWith("Request failed: Unauthorized (401)");
+
+        await expect(startWatching()).to.be.rejectedWith("Request failed: Unauthorized (401)");
       });
     });
   });

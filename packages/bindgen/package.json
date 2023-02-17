@@ -16,12 +16,12 @@
     "rebuild": "cmake-js rebuild --debug"
   },
   "dependencies": {
+    "@commander-js/extra-typings": "^10.0.2",
     "@types/node": "^18.11.9",
     "ajv": "^8.11.0",
     "chalk": "^4.1.2",
     "change-case": "^4.1.2",
     "chevrotain": "^10.4.0",
-    "commander": "^9.4.1",
     "debug": "^4.3.4",
     "typescript-json-schema": "^0.55.0",
     "yaml": "^2.1.3"

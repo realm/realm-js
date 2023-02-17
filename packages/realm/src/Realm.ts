@@ -178,7 +178,6 @@ type ObjectSchemaExtra = {
 
 // Using a set of weak refs to avoid prevention of garbage collection
 const RETURNED_REALMS = new Set<binding.WeakRef<binding.Realm>>();
-const NOT_VERSIONED = 18446744073709551615n;
 
 export type RealmEventName = "change" | "schema" | "beforenotify";
 
@@ -340,11 +339,7 @@ export class Realm {
       path: absolutePath,
       encryptionKey: Realm.determineEncryptionKey(encryptionKey),
     });
-    if (schemaVersion === NOT_VERSIONED) {
-      return -1;
-    } else {
-      return Number(schemaVersion);
-    }
+    return binding.Int64.intToNum(schemaVersion);
   }
 
   /**
@@ -493,9 +488,7 @@ export class Realm {
         inMemory: inMemory === true,
         schemaMode: Realm.determineSchemaMode(config),
         schemaVersion: config.schema
-          ? typeof config.schemaVersion === "number"
-            ? BigInt(config.schemaVersion)
-            : 0n
+          ? binding.Int64.numToInt(typeof config.schemaVersion === "number" ? config.schemaVersion : 0)
           : undefined,
         migrationFunction: config.onMigration ? Realm.wrapMigration(schemaExtras, config.onMigration) : undefined,
         shouldCompactOnLaunchFunction: shouldCompact
@@ -867,7 +860,13 @@ export class Realm {
     binding.Helpers.deleteDataForObject(this.internal, name);
     if (!this.internal.isInMigration) {
       const newSchema = this.internal.schema.filter((objectSchema) => objectSchema.name !== name);
-      this.internal.updateSchema(newSchema, this.internal.schemaVersion + 1n, null, null, true);
+      this.internal.updateSchema(
+        newSchema,
+        binding.Int64.add(this.internal.schemaVersion, binding.Int64.numToInt(1)),
+        null,
+        null,
+        true,
+      );
     }
   }
 
@@ -1175,7 +1174,13 @@ export class Realm {
     if (!this.isInTransaction) {
       throw new Error("Can only create object schema within a transaction.");
     }
-    this.internal.updateSchema(bindingSchema, this.internal.schemaVersion + 1n, null, null, true);
+    this.internal.updateSchema(
+      bindingSchema,
+      binding.Int64.add(this.internal.schemaVersion, binding.Int64.numToInt(1)),
+      null,
+      null,
+      true,
+    );
     this.classes = new ClassMap(this, this.internal.schema, this.schema);
   }
 
@@ -1238,7 +1243,7 @@ type ConnectionStateType = ConnectionState;
 type CredentialsType = Credentials;
 type DictionaryType<T> = Dictionary<T>;
 type IndexDecoratorType = IndexDecorator;
-type ListType<T> = List<T>;
+type ListType<T = unknown> = List<T>;
 type MapToDecoratorType = MapToDecorator;
 type Mixed = unknown;
 type ObjectType = string | RealmObjectConstructor;
@@ -1247,10 +1252,10 @@ type OpenRealmTimeOutBehaviorType = OpenRealmTimeOutBehavior;
 type ProgressDirectionType = ProgressDirection;
 type ProgressModeType = ProgressMode;
 type ProviderTypeType = ProviderType;
-type ResultsType<T> = Results<T>;
+type ResultsType<T = unknown> = Results<T>;
 type SessionStateType = SessionState;
 type SessionStopPolicyType = SessionStopPolicy;
-type SetType<T> = RealmSet<T>;
+type SetType<T = unknown> = RealmSet<T>;
 type SyncErrorType = SyncError;
 type TypesType = typeof Types;
 type UpdateModeType = UpdateMode;

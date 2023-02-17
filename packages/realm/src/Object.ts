@@ -441,7 +441,7 @@ export class RealmObject<T = DefaultObject> {
       const value = this[INTERNAL].getAny(columnKey);
       if (value === null) {
         return "null";
-      } else if (typeof value === "bigint") {
+      } else if (binding.Int64.isInt(value)) {
         return "int";
       } else if (value instanceof binding.Float) {
         return "float";

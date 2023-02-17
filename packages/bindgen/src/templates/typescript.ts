@@ -42,10 +42,10 @@ const PRIMITIVES_MAPPING: Record<string, string> = {
   bool: "boolean",
   double: "number",
   float: "Float",
-  int64_t: "bigint",
+  int64_t: "Int64",
   int32_t: "number",
   count_t: "number",
-  uint64_t: "bigint",
+  uint64_t: "Int64",
   "std::string": "string",
   "std::string_view": "string",
   StringData: "string",
@@ -170,7 +170,7 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
   for (const e of spec.enums) {
     // Using const enum to avoid having to emit JS backing these
     coreOut(`export const enum ${e.jsName} {`);
-    coreOut(...e.enumerators.map(({ name, value }) => `${name} = ${value},\n`));
+    coreOut(...e.enumerators.map(({ jsName, value }) => `${jsName} = ${value},\n`));
     coreOut("};");
   }
   coreOut(`
@@ -197,6 +197,17 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
     export class WeakRef<T extends object> {
       constructor(obj: T);
       deref(): T | undefined;
+    }
+
+    export declare const enum Int64Type {} // This shouldn't need to be exported, but rollup complains if it isn't.
+    export type Int64 = Int64Type;
+    export const Int64: {
+      add(a: Int64, b: Int64): Int64;
+      equals(a: Int64, b: Int64 | number | string): boolean;
+      isInt(a: unknown): a is Int64;
+      numToInt(a: number): Int64;
+      strToInt(a: string): Int64;
+      intToNum(a: Int64): number;
     }
   `);
 

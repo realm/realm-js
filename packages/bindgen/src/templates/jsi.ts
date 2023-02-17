@@ -75,7 +75,7 @@ function pushRet<T, U extends T>(arr: T[], elem: U) {
 class JsiAddon extends CppClass {
   exports: string[] = [];
   classes: string[] = [];
-  injectables = ["ArrayBuffer", "Float", "UUID", "ObjectId", "Decimal128", "EJSON_parse", "EJSON_stringify"];
+  injectables = ["Long", "ArrayBuffer", "Float", "UUID", "ObjectId", "Decimal128", "EJSON_parse", "EJSON_stringify"];
   mem_inits: CppMemInit[] = [];
 
   props = new Set<string>();
@@ -88,6 +88,10 @@ class JsiAddon extends CppClass {
 
     this.members.push(new CppVar("jsi::Runtime&", "m_rt"));
     this.mem_inits.push(new CppMemInit("m_rt", "_env"));
+
+    // Looking for the HermesInternal global property was recommended on the RN discord to detect whether we are running on hermes.
+    this.members.push(new CppVar("const bool", "m_on_hermes"));
+    this.mem_inits.push(new CppMemInit("m_on_hermes", '_env.global().getProperty(_env, "HermesInternal").isObject()'));
 
     this.addMethod(
       new CppMethod("wrapString", "const std::string&", [new CppVar("std::string", "str")], {
@@ -227,9 +231,9 @@ function convertPrimToJsi(addon: JsiAddon, type: string, expr: string): string {
       return `jsi::Value(double(int64_t(${expr})))`;
 
     case "int64_t":
-      return `jsi::BigInt::fromInt64(_env, ${expr})`;
+      return `bigIntFromI64(_env, ${expr})`;
     case "uint64_t":
-      return `jsi::BigInt::fromUint64(_env, ${expr})`;
+      return `bigIntFromU64(_env, ${expr})`;
 
     case "StringData":
     case "std::string_view":
@@ -314,9 +318,9 @@ function convertPrimFromJsi(addon: JsiAddon, type: string, expr: string): string
       return `size_t(int64_t((${expr}).asNumber()))`;
 
     case "int64_t":
-      return `${expr}.asBigInt(_env).asInt64(_env)`;
+      return `bigIntToI64(_env, jsi::Value(_env, ${expr}))`;
     case "uint64_t":
-      return `${expr}.asBigInt(_env).asUint64(_env)`;
+      return `bigIntToU64(_env, jsi::Value(_env, ${expr}))`;
 
     case "std::string":
       return `(${expr}).asString(_env).utf8(_env)`;
@@ -921,6 +925,7 @@ class JsiCppDecls extends CppDecls {
                   ["ObjectId", "ObjectId"],
                   ["Decimal128", "Decimal128"],
                   ["UUID", "UUID"],
+                  ["int64_t", "Long"],
                 ]
                   .map(
                     ([typeName, jsName]) =>
@@ -946,6 +951,52 @@ class JsiCppDecls extends CppDecls {
           throw jsi::JSError(_env, "Can't convert " + val.toString(_env).utf8(_env) + " to Mixed");
         `,
       }),
+      new CppFunc("bigIntToI64", "int64_t", [new CppVar("jsi::Runtime&", env), new CppVar("auto&&", "val")], {
+        body: `
+          if (val.isBigInt())
+              return FWD(val).asBigInt(_env).asInt64(_env);
+
+          auto obj = FWD(val).asObject(_env);
+          auto high = uint32_t(obj.getProperty(_env, ${this.addon.getPropId("high")}).asNumber());
+          auto low = uint32_t(obj.getProperty(_env, ${this.addon.getPropId("low")}).asNumber());
+          return int64_t((uint64_t(high) << 32) | low);
+        `,
+      }),
+      new CppFunc("bigIntToU64", "uint64_t", [new CppVar("jsi::Runtime&", env), new CppVar("auto&&", "val")], {
+        body: `
+          if (val.isBigInt())
+              return FWD(val).asBigInt(_env).asUint64(_env);
+
+          auto obj = FWD(val).asObject(_env);
+          auto high = uint32_t(obj.getProperty(_env, ${this.addon.getPropId("high")}).asNumber());
+          auto low = uint32_t(obj.getProperty(_env, ${this.addon.getPropId("low")}).asNumber());
+          return (uint64_t(high) << 32) | low;
+        `,
+      }),
+      new CppFunc("bigIntFromI64", "jsi::Value", [new CppVar("jsi::Runtime&", env), new CppVar("int64_t", "val")], {
+        body: `
+          if (${this.addon.get()}->m_on_hermes)
+              return jsi::BigInt::fromInt64(_env, val);
+
+          return ${this.addon.accessCtor("Long")}.callAsConstructor(_env, {
+              jsi::Value(int(val)), // low
+              jsi::Value(int(val >> 32)), // high
+              jsi::Value(false), // unsigned
+          });
+        `,
+      }),
+      new CppFunc("bigIntFromU64", "jsi::Value", [new CppVar("jsi::Runtime&", env), new CppVar("uint64_t", "val")], {
+        body: `
+          if (${this.addon.get()}->m_on_hermes)
+              return jsi::BigInt::fromUint64(_env, val);
+
+          return ${this.addon.accessCtor("Long")}.callAsConstructor(_env, {
+              jsi::Value(int(val)), // low
+              jsi::Value(int(val >> 32)), // high
+              jsi::Value(true), // unsigned
+          });
+        `,
+      }),
     );
 
     // Hermes doesn't (always?) have WeakRef support so expose some helpers to let us emulate it.
@@ -962,8 +1013,8 @@ class JsiCppDecls extends CppDecls {
                 _env,
                 std::make_shared<WeakObjectWrapper>(_env, args[0].getObject(_env))
             );
-          `
-        })
+          `,
+        }),
       );
       this.free_funcs.push(
         this.addon.addFunc("lockWeakRef", {
@@ -976,8 +1027,8 @@ class JsiCppDecls extends CppDecls {
             if (!obj.isHostObject<WeakObjectWrapper>(_env))
                 throw jsi::JSError(_env, "expected a WeakObjectWrapper");
             return std::move(obj).getHostObject<WeakObjectWrapper>(_env)->ref.lock(_env);
-          `
-        })
+          `,
+        }),
       );
     }
 
