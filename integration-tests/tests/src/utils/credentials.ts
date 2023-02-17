@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2022 Realm Inc.
+// Copyright 2023 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,17 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-declare function setTimeout(cb: () => void, ms: number): void;
+import { Credentials } from "realm";
+import { randomVerifiableEmail } from "./generators";
 
-/**
- * @param ms For how long should the promise be pending?
- * @returns A promise that returns after `ms` milliseconds.
- */
-export function sleep(ms = 1000): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+export async function getRegisteredEmailPassCredentials(
+  app: Realm.App,
+): Promise<Credentials<Credentials.EmailPasswordPayload>> {
+  if (!app) {
+    throw new Error("No app supplied to 'getRegisteredEmailPassCredentials'");
+  }
 
-export async function throwAfterTimeout(ms = 1000) {
-  await sleep(ms);
-  throw new Error(`Timed out after ${ms}ms`);
+  const email = randomVerifiableEmail();
+  const password = "test1234567890";
+  // Create the user (see note in 'randomVerifiableEmail')
+  await app.emailPasswordAuth.registerUser({ email, password });
+
+  return Realm.Credentials.emailPassword(email, password);
 }

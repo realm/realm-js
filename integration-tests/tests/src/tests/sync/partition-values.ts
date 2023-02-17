@@ -20,6 +20,7 @@ import { expect } from "chai";
 import Realm from "realm";
 import { authenticateUserBefore } from "../../hooks/authenticate-user-before";
 import { importAppBefore } from "../../hooks/import-app-before";
+import { generatePartition } from "../../utils/generators";
 
 const PvIntDog = {
   name: "Dog",
@@ -76,6 +77,53 @@ const createConfig = (schema: Realm.ObjectSchema, user: Realm.User, partitionVal
 });
 
 describe("Partition-values", () => {
+  describe("setting partition value on config", () => {
+    importAppBefore("with-db");
+    afterEach(() => Realm.clearTestState());
+
+    it("can set accepted value types", async function (this: AppContext) {
+      const testPartitionValues = [
+        generatePartition(), // string
+        Number.MAX_SAFE_INTEGER,
+        6837697641419457,
+        26123582,
+        0,
+        -12342908,
+        -7482937500235834,
+        -Number.MAX_SAFE_INTEGER,
+        new ObjectId("603fa0af4caa9c90ff6e126c"),
+        new UUID("f3287217-d1a2-445b-a4f7-af0520413b2a"),
+        null,
+        "",
+      ];
+
+      for (const partition of testPartitionValues) {
+        const user = await this.app.logIn(Realm.Credentials.anonymous());
+        const config = createConfig(PvStringDog, user, partition);
+        expect(partition).equals(config.sync?.partitionValue);
+
+        // TODO: Update docker testing-setup to allow for multiple apps and test each type on a supported App.
+        // Note: This does NOT await errors from the server, as we currently have limitations in the docker-server-setup. All tests with with non-string fails server-side.
+        const realm = new Realm(config);
+        expect(realm).to.not.be.null;
+        expect(realm).to.not.be.undefined;
+
+        const spv: any = realm.syncSession?.config.partitionValue;
+
+        // BSON types have their own 'equals' comparer
+        if (spv instanceof ObjectId) {
+          expect(spv.equals(partition as ObjectId)).to.be.true;
+        } else if (spv && spv.toUUID !== undefined) {
+          expect(spv.toUUID().equals(partition)).to.be.true;
+        } else {
+          expect(spv).equals(partition);
+        }
+
+        realm.close();
+      }
+    });
+  });
+
   describe("integer", () => {
     importAppBefore("pv-int-tests");
     authenticateUserBefore();
@@ -115,9 +163,11 @@ describe("Partition-values", () => {
       realm3.close();
     });
   });
+
   describe("string", () => {
     importAppBefore("pv-string-tests");
     authenticateUserBefore();
+
     it("works", async function (this: Mocha.Context & AppContext & UserContext) {
       const realmConfigPrimary = createConfig(PvStringDog, this.user, "42");
       const realmConfigSecondary = createConfig(PvStringDog, this.user, "43");
@@ -153,9 +203,11 @@ describe("Partition-values", () => {
       realm3.close();
     });
   });
+
   describe("UUID", () => {
     importAppBefore("pv-uuid-tests");
     authenticateUserBefore();
+
     it("works", async function (this: Mocha.Context & AppContext & UserContext) {
       const realmConfigPrimary = createConfig(PvUuidDog, this.user, new UUID("57eade47-8406-4397-ab97-49abcc4d681f"));
       const realmConfigSecondary = createConfig(PvUuidDog, this.user, new UUID("90d82df4-6037-4eb6-869b-a62f7af522b0"));
@@ -191,9 +243,11 @@ describe("Partition-values", () => {
       realm3.close();
     });
   });
+
   describe("objectId", () => {
     importAppBefore("pv-objectid-tests");
     authenticateUserBefore();
+
     it("works", async function (this: Mocha.Context & AppContext & UserContext) {
       const realmConfigPrimary = createConfig(PvObjectIdDog, this.user, new ObjectId("606d8cdf33e41d1409245e60"));
       const realmConfigSecondary = createConfig(PvObjectIdDog, this.user, new ObjectId("606d8cdf33e41d1409245e63"));

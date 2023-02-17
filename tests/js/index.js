@@ -43,14 +43,6 @@ var TESTS = {
   SetTests: require("./set-tests"),
 };
 
-// If sync is enabled, run the sync tests
-if (global.enableSyncTests) {
-  //TODO: remove when Atlas App Services test server can be hosted on Mac or other options exists
-  if (isNodeProcess) {
-    TESTS.SessionTests = require("./session-tests");
-  }
-}
-
 // If on node, run the async tests
 if (isNodeProcess && process.platform !== "win32") {
   TESTS.AsyncTests = node_require("./async-tests");
