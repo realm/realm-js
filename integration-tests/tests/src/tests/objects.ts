@@ -26,6 +26,7 @@ import {
 import { openRealmBeforeEach } from "../hooks";
 import { expectArraysEqual, expectSimilar } from "../utils/comparisons";
 import jsrsasign from "jsrsasign";
+import { select } from "../utils/select";
 
 const RANDOM_DATA = new Uint8Array([
   0xd8,
@@ -1099,12 +1100,12 @@ describe("Objectstest", () => {
       expect(() => {
         //@ts-expect-error TYPEBUG: __to_object does not exist on realm.
         this.realm.__to_object(null);
-      }).throws(TypeError);
+      }).throws(select({ reactNative: "TypeError", default: "Cannot convert undefined or null to object" }));
 
       expect(() => {
         //@ts-expect-error TYPEBUG: __to_object does not exist on realm.
         this.realm.__to_object(undefined);
-      }).throws(TypeError);
+      }).throws(select({ reactNative: "TypeError", default: "Cannot convert undefined or null to object" }));
     });
   });
 

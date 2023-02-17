@@ -1861,7 +1861,7 @@ describe("Realmtest", () => {
     });
   });
 
-  describe.skipIf(environment.node, "copyBundledRealmFiles", () => {
+  describe.skipIf(environment.node || environment.electron, "copyBundledRealmFiles", () => {
     it("copies realm files", () => {
       const config = { path: "realm-bundle.realm", schema: [DateObjectSchema] };
       if (Realm.exists(config)) {
@@ -1887,7 +1887,7 @@ describe("Realmtest", () => {
       realm.close();
     });
 
-    it("opening new bundled realm with dsiableFormatUpgrade throws", () => {
+    it("opening new bundled realm with disableFormatUpgrade throws", () => {
       const config = { path: "realm-bundle.realm" };
       if (Realm.exists(config)) {
         Realm.deleteFile(config);

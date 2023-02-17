@@ -21,6 +21,7 @@ import { expect } from "chai";
 import { importAppBefore } from "../../hooks";
 import { generatePartition } from "../../utils/generators";
 import { getUrls } from "../../utils/import-app";
+import { select } from "../../utils/select";
 
 const TestObjectSchema: Realm.ObjectSchema = {
   name: "TestObject",
@@ -106,7 +107,11 @@ describe("App", () => {
 
       const credentials = Realm.Credentials.anonymous();
       await expect(app.logIn(credentials)).to.be.rejectedWith(
-        "request to http://localhost:9999/api/client/v2.0/app/smurf/location failed, reason: connect ECONNREFUSED",
+        select({
+          reactNative: "Network request failed: Could not connect to the server",
+          default:
+            "request to http://localhost:9999/api/client/v2.0/app/smurf/location failed, reason: connect ECONNREFUSED",
+        }),
       );
     });
 

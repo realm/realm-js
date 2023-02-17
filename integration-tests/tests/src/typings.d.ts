@@ -29,7 +29,7 @@ interface path {
 
 type Require = (id: string) => unknown;
 
-type Environment = Record<string, unknown> & {
+type KnownEnvironment = {
   /** Set the number of milliseconds to use for tests that require a long timeout. */
   longTimeout?: number;
   /** Set the name of the cluster, used when setting up the "mongodb-atlas" service on imported apps. */
@@ -104,6 +104,8 @@ type Environment = Record<string, unknown> & {
    * @deprecated Since we no longer support the legacy chrome debugger. */
   chromeDebugging?: true;
 };
+
+type Environment = KnownEnvironment & Record<string, unknown>;
 
 interface Global extends NodeJS.Global {
   title: string;
