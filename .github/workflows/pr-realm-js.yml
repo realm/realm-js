@@ -49,15 +49,16 @@ jobs:
           - { os: ios, runner: macos-latest, arch: simulator, artifact-path: react-native/ios/realm-js-ios.xcframework }
           - { os: ios, runner: macos-latest, arch: catalyst, artifact-path: react-native/ios/realm-js-ios.xcframework }
           - { os: ios, runner: macos-latest, arch: ios, artifact-path: react-native/ios/realm-js-ios.xcframework }
-    steps:
-      - uses: ./.github/workflows/build-tests.yml
-        with:
-          if: ${{ contains(github.event.head_commit.message, '[fast]') }}
-          os: ${{ matrix.variant.os }}
-          runner: ${{ matrix.variant.runner }}
-          arch: ${{ matrix.variant.arch}}
-          artifact-path: ${{ matrix.variant.artifact-path}}
-          container: ${{ matrix.variant.container}}
+    uses: ./.github/workflows/build-tests.yml
+    with:
+      if: ${{ contains(github.event.head_commit.message, '[fast]') }}
+      os: ${{ matrix.variant.os }}
+      runner: ${{ matrix.variant.runner }}
+      arch: ${{ matrix.variant.arch}}
+      artifact-path: ${{ matrix.variant.artifact-path}}
+      container: ${{ matrix.variant.container}}
+
+      
 
   ios-xcframework:
     name: Generate Info.plist with all frameworks in place
