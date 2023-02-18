@@ -31,8 +31,8 @@ const environment: Environment = {
     return null;
   },
 
-  platform: process.release.name || "node",
-  platformVersion: process.versions.node,
+  platform: process?.release?.name || "node",
+  platformVersion: process?.versions?.node || 'unknown',
 
   TextDecoder,
 };
