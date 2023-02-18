@@ -20,7 +20,6 @@ import { expect } from "chai";
 import { CollectionChangeSet } from "realm";
 import { importAppBefore, openRealmBeforeEach } from "../../hooks";
 import { expectArraysEqual, expectDecimalEqual } from "../../utils/comparisons";
-import { select } from "../../utils/select";
 import { sleep } from "../../utils/sleep";
 
 const CarSchema = {
@@ -438,7 +437,7 @@ describe("Realmtest", () => {
 
         const cars = realm.objects<ICar>(CarSchema.name);
         //@ts-expect-error TYPEBUG: indexing by string on results is not allowed typewise
-        expect(cars[""]).equals(select({ reactNative: {}, default: undefined }));
+        expect(cars[""] === undefined).to.be.true;
         const carZero = cars[0];
         expect(carZero.make).equals("Audi");
         expect(carZero.model).equals("A4");
@@ -519,7 +518,7 @@ describe("Realmtest", () => {
 
         const cars = realm.objects<ICarSchema>("Car");
         //@ts-expect-error TYPEBUG: indexation by string in results is not allowed by typesystem.
-        expect(cars[""]).equals(select({ reactNative: {}, default: undefined }));
+        expect(cars[""] === undefined).to.be.true;
         const carZero = cars[0];
         expect(carZero.make).equals("Audi");
         expect(carZero.model).equals("A4");

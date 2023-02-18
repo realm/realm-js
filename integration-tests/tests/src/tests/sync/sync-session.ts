@@ -150,7 +150,7 @@ describe("SessionTest", () => {
         sync: true,
         inMemory: true,
       };
-      return new Promise((resolve, reject) => {
+      return new Promise<void>((resolve, reject) => {
         //@ts-expect-error try config with mutually exclusive properties
         return Realm.open(config)
           .then(() => reject("opened realm with invalid configuration"))
@@ -167,7 +167,7 @@ describe("SessionTest", () => {
       config.onMigration = () => {
         /* empty function */
       };
-      await new Promise<void>((resolve, reject) => {
+      return new Promise<void>((resolve, reject) => {
         return Realm.open(config)
           .then(() => reject("opened realm with invalid configuration"))
           .catch((error) => {

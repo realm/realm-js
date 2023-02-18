@@ -565,9 +565,9 @@ describe("Lists", () => {
       expect(obj?.arrayCol[2]).equals(undefined, "1");
       expect(obj?.arrayCol[-1]).equals(undefined, "2");
       //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
-      expect(obj?.arrayCol[""]).equals(select({ reactNative: {}, default: undefined }), "3");
+      expect(obj?.arrayCol[""] === undefined).to.be.true;
       //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
-      expect(obj?.arrayCol["foo"]).equals(select({ reactNative: {}, default: undefined }), "4");
+      expect(obj?.arrayCol["foo"] === undefined).to.be.true;
 
       expect(obj.arrayCol1[0].doubleCol).equals(5);
       expect(obj.arrayCol1[1].doubleCol).equals(6);
