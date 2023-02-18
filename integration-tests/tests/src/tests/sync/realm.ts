@@ -437,6 +437,8 @@ describe("Realmtest", () => {
 
         const cars = realm.objects<ICar>(CarSchema.name);
         //@ts-expect-error TYPEBUG: indexing by string on results is not allowed typewise
+        console.log(cars[""]);
+        //@ts-expect-error TYPEBUG: indexing by string on results is not allowed typewise
         expect(cars[""] === undefined).to.be.true;
         const carZero = cars[0];
         expect(carZero.make).equals("Audi");
@@ -517,6 +519,12 @@ describe("Realmtest", () => {
         expect(car).instanceOf(Realm.Object, "car not an instance of Realm.Object");
 
         const cars = realm.objects<ICarSchema>("Car");
+        //@ts-expect-error TYPEBUG: indexation by string in results is not allowed by typesystem.
+        console.log(cars[""]);
+        //@ts-expect-error TYPEBUG: indexation by string in results is not allowed by typesystem.
+        console.log("model: " + cars[""].model);
+        //@ts-expect-error TYPEBUG: indexation by string in results is not allowed by typesystem.
+        console.log("make: " + cars[""].model);
         //@ts-expect-error TYPEBUG: indexation by string in results is not allowed by typesystem.
         expect(cars[""] === undefined).to.be.true;
         const carZero = cars[0];
