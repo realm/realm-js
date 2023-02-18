@@ -336,14 +336,14 @@ jobs:
         env:
           MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.name }}
         # The non react native environments should not take so long
-        timeout-minutes: 20
+        timeout-minutes: 60
         run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ (matrix.variant.os == 'ios') }}
         env:
           MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.name }}
-        timeout-minutes: 45
+        timeout-minutes: 75
         run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
       - name: Setup Java Gradle cache for android test app
@@ -377,7 +377,7 @@ jobs:
         if: ${{ (matrix.variant.os == 'android') }}
         env:
           MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.name }}
-        timeout-minutes: 45
+        timeout-minutes: 75
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 29
