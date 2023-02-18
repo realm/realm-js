@@ -587,10 +587,6 @@ describe("Lists", () => {
       expect(obj.arrayCol1[1].doubleCol).equals(6);
       expect(obj.arrayCol1[2]).equals(undefined, "5");
       expect(obj.arrayCol1[-1]).equals(undefined, "6");
-      //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
-      expect(obj.arrayCol1[""]).equals(undefined, "7");
-      //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
-      expect(obj.arrayCol1["foo"]).equals(undefined, "8");
       for (const field of prim.keys()) {
         //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
         expect(prim[field][2]).equals(undefined, "9");

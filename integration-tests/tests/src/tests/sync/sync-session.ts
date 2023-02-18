@@ -364,6 +364,7 @@ describe("SessionTest", () => {
       const promisedLog = new Promise((resolve) => {
         Realm.App.Sync.setLogLevel(app, logLevelStr);
         Realm.App.Sync.setLogger(app, (level, message) => {
+          console.log(message);
           if (level == logLevelNum && message.includes("Connection") && message.includes("Session")) {
             // we should, at some point, receive a log message that looks like
             // Connection[1]: Session[1]: client_reset_config = false, Realm exists = true, client reset = false
