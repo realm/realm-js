@@ -561,28 +561,28 @@ describe("Lists", () => {
       });
       expect(obj?.arrayCol[0].doubleCol).equals(3);
       expect(obj?.arrayCol[1].doubleCol).equals(4);
-      expect(obj?.arrayCol[2]).equals(undefined);
-      expect(obj?.arrayCol[-1]).equals(undefined);
+      expect(obj?.arrayCol[2]).equals(undefined, "1");
+      expect(obj?.arrayCol[-1]).equals(undefined, "2");
       //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
-      expect(obj?.arrayCol[""]).equals(undefined);
+      expect(obj?.arrayCol[""]).equals(select({ reactNative: {}, default: undefined }), "3");
       //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
-      expect(obj?.arrayCol["foo"]).equals(undefined);
+      expect(obj?.arrayCol["foo"]).equals(select({ reactNative: {}, default: undefined }), "4");
 
       expect(obj.arrayCol1[0].doubleCol).equals(5);
       expect(obj.arrayCol1[1].doubleCol).equals(6);
-      expect(obj.arrayCol1[2]).equals(undefined);
-      expect(obj.arrayCol1[-1]).equals(undefined);
+      expect(obj.arrayCol1[2]).equals(undefined, "5");
+      expect(obj.arrayCol1[-1]).equals(undefined, "6");
       //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
-      expect(obj.arrayCol1[""]).equals(undefined);
+      expect(obj.arrayCol1[""]).equals(undefined, "7");
       //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
-      expect(obj.arrayCol1["foo"]).equals(undefined);
+      expect(obj.arrayCol1["foo"]).equals(undefined, "8");
       for (const field of prim.keys()) {
         //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
-        expect(prim[field][2]).equals(undefined);
+        expect(prim[field][2]).equals(undefined, "9");
         //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
-        expect(prim[field][-1]).equals(undefined);
+        expect(prim[field][-1]).equals(undefined, "10");
         //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
-        expect(prim[field]["foo"]).equals(undefined);
+        expect(prim[field]["foo"]).equals(undefined, "11");
         if (field.includes("opt")) {
           //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
           expect(prim[field][1]).equals(null, `FIELD: ${field}`);
