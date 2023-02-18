@@ -22,6 +22,7 @@
 * Fixed diverging history in flexible sync if writes occur during bootstrap to objects that just came into view. ([realm/realm-core#5804](https://github.com/realm/realm-core/issues/5804), since v10.11.0)
 * If a client reset with recovery or discard local is interrupted while the "fresh" Realm is being downloaded, the sync client may crash with a `MultipleSyncAgents` exception ([realm/realm-core#6217](https://github.com/realm/realm-core/issues/6217), since v10.15.0)
 * Online compaction may cause a single commit to take a long time. ([realm/realm-core#6245](https://github.com/realm/realm-core/pull/6245), since v11.3.0-rc.0)
+* Use optional chaining to infer Node release and version to avoid crashes in non-node environments
 
 ### Compatibility
 * React Native >= v0.70.0
