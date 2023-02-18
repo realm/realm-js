@@ -24,14 +24,14 @@ type PlatformValues<T> = Partial<Record<keyof KnownEnvironment, T>> & {
  * @param platformValues containing value for each targeted platform.
  * @returns the value for the platform the test is running on.
  */
-export function select<T>(platformValues: PlatformValues<T>): T {
+export function select<T>(platformValues: PlatformValues<T>): any {
   for (const [key, value] of Object.entries(platformValues)) {
     if (environment[key]) {
       return value;
     }
   }
-  if (!platformValues.default) {
-    throw new Error("Given platform did not cover current environment and no default was set.");
+  if ("default" in platformValues) {
+    return platformValues.default;
   }
-  return platformValues.default;
+  throw new Error("Given platform did not cover current environment and no default was set.");
 }
