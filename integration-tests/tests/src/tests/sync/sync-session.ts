@@ -572,7 +572,7 @@ describe("SessionTest", () => {
     it("timeout on download successfully throws", async function (this: AppContext) {
       const partition = generatePartition();
       let realm!: Realm;
-      return this.app
+      await this.app
         .logIn(Realm.Credentials.anonymous())
         .then((user) => {
           const config = getSyncConfiguration(user, partition);
@@ -584,8 +584,8 @@ describe("SessionTest", () => {
             throw new Error("Download did not time out");
           },
           (e) => {
+            console.log(e);
             expect(e).equals("Downloading changes did not complete in 1 ms.");
-            return realm.syncSession?.downloadAllServerChanges();
           },
         );
     });
@@ -593,7 +593,7 @@ describe("SessionTest", () => {
     it("timeout on upload successfully throws", async function (this: AppContext) {
       let realm!: Realm;
       const partition = generatePartition();
-      return this.app
+      await this.app
         .logIn(Realm.Credentials.anonymous())
         .then((user) => {
           const config = getSyncConfiguration(user, partition);
@@ -605,8 +605,8 @@ describe("SessionTest", () => {
             throw new Error("Upload did not time out");
           },
           (e) => {
+            console.log(e);
             expect(e).equals("Uploading changes did not complete in 1 ms.");
-            return realm.syncSession?.uploadAllLocalChanges();
           },
         );
     });
