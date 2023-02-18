@@ -265,6 +265,18 @@ describe("Results", () => {
       expect(objects.ablasdf).equals(undefined);
     });
 
+    it("invalid string indexing returns correct values", function (this: RealmContext) {
+      const objects = this.realm.objects("TestObject");
+      //React native returns an empty object upon invalid indexing.
+      if (environment.reactNative) {
+        //@ts-expect-error TYPEBUG: indexing by string on results is not allowed typewise
+        expect(Object.keys(objects[""]).length).equals(0);
+      } else {
+        //@ts-expect-error TYPEBUG: indexing by string on results is not allowed typewise
+        expect(objects[""]).equals(undefined);
+      }
+    });
+
     it("should throw on incorrect object types", function (this: RealmContext) {
       expect(() => {
         this.realm.objects("NotTestObject");

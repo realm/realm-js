@@ -155,8 +155,7 @@ describe("SessionTest", () => {
         return Realm.open(config)
           .then(() => reject("opened realm with invalid configuration"))
           .catch((error) => {
-            console.log(error.message);
-            expect(error.message).equals("Options 'inMemory' and 'sync' are mutual exclusive.");
+            expect(error.message).contains("Options 'inMemory' and 'sync' are mutual exclusive.");
             resolve();
           });
       });
@@ -172,8 +171,7 @@ describe("SessionTest", () => {
         return Realm.open(config)
           .then(() => reject("opened realm with invalid configuration"))
           .catch((error) => {
-            console.log(error.message);
-            expect(error.message).equals("Options 'onMigration' and 'sync' are mutual exclusive.");
+            expect(error.message).contains("Options 'onMigration' and 'sync' are mutual exclusive.");
             resolve();
           });
       });

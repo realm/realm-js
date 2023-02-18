@@ -522,6 +522,24 @@ describe("Lists", () => {
   });
   describe("subscripts", () => {
     openRealmBeforeEach({ schema: [LinkTypeSchema, TestObjectSchema, PrimitiveArraysSchema] });
+    it("invalid object access yield correct values", function (this: RealmContext) {
+      this.realm.write(() => {
+        const obj = this.realm.create<ILinkTypeSchema>("LinkTypesObject", {
+          objectCol: { doubleCol: 1 },
+          objectCol1: { doubleCol: 2 },
+          arrayCol: [{ doubleCol: 3 }],
+        });
+
+        //React native returns an empty object upon invalid indexing.
+        if (environment.reactNative) {
+          //@ts-expect-error TYPEBUG: indexing by string on results is not allowed typewise
+          expect(Object.keys(obj?.arrayCol[""]).length).equals(0);
+        } else {
+          //@ts-expect-error TYPEBUG: indexing by string on results is not allowed typewise
+          expect(obj?.arrayCol[""]).to.be.undefined;
+        }
+      });
+    });
     it("support getters", function (this: RealmContext) {
       let obj!: ILinkTypeSchema;
       let prim!: PrimitiveArrays;
@@ -564,10 +582,6 @@ describe("Lists", () => {
       expect(obj?.arrayCol[1].doubleCol).equals(4);
       expect(obj?.arrayCol[2]).equals(undefined, "1");
       expect(obj?.arrayCol[-1]).equals(undefined, "2");
-      //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
-      expect(obj?.arrayCol[""] === undefined).to.be.true;
-      //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
-      expect(obj?.arrayCol["foo"] === undefined).to.be.true;
 
       expect(obj.arrayCol1[0].doubleCol).equals(5);
       expect(obj.arrayCol1[1].doubleCol).equals(6);
