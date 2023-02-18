@@ -22,6 +22,7 @@ import { importAppBefore } from "../../hooks";
 import { DogSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { getRegisteredEmailPassCredentials } from "../../utils/credentials";
 import { generatePartition } from "../../utils/generators";
+import { importApp } from "../../utils/import-app";
 import { sleep, throwAfterTimeout } from "../../utils/sleep";
 
 const DogForSyncSchema = {
@@ -353,7 +354,9 @@ describe("SessionTest", () => {
     afterEach(() => Realm.clearTestState());
     it("can set custom logging function", async function (this: AppContext) {
       // setting a custom logging function must be done immediately after instantiating an app
-      const app = new Realm.App(this.app.id);
+
+      const { appId, baseUrl } = await importApp("with-db");
+      const app = new Realm.App({ id: appId, baseUrl });
 
       const partition = generatePartition();
       const credentials = Realm.Credentials.anonymous();
