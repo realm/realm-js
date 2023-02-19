@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 11.5.0 (2023-02-19)
 
 ### Deprecations
 * The ECMAScript Array APIs (such as `map`, `every`, access using indexing operator `[]`, etc.) on the `SubscriptionSet` types were deprecated.
