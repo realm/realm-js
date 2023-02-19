@@ -31,11 +31,11 @@
 
 ### Internal
 * Upgrade Example to use React Native 0.71.1 ([#5438](https://github.com/realm/realm-js/pull/5438))
-* Upgraded Realm Core from v13.1.1 to v13.4.1. ([#5174](https://github.com/realm/realm-js/issues/5174), [#5244](https://github.com/realm/realm-js/issues/5244) and [#5419](https://github.com/realm/realm-js/issues/5419))
+* Upgraded Realm Core from v13.1.1 to v13.4.2. ([#5174](https://github.com/realm/realm-js/issues/5174), [#5244](https://github.com/realm/realm-js/issues/5244), [#5419](https://github.com/realm/realm-js/issues/5419) and [#5450](https://github.com/realm/realm-js/issues/5450))
 * Unpin Xcode version when building locally and upgrade the Xcode version used by Github Actions.
 * Enable tests for notifications on dictionary.
 * Automate releasing package on Github Actions.
-* Upgrade OpenSSL v1.1.1n to v3.0.7. ([realm/realm-core#6097](https://github.com/realm/realm-core/pull/6097))
+* Upgrade OpenSSL v1.1.1n to v3.0.8. ([realm/realm-core#6097](https://github.com/realm/realm-core/pull/6097) and [realm/realm-core#6305](https://github.com/realm/realm-core/pull/6305))
 
 ## 11.4.0 (2023-01-23)
 
