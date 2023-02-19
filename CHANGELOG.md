@@ -36,6 +36,7 @@
 * Enable tests for notifications on dictionary.
 * Automate releasing package on Github Actions.
 * Upgrade OpenSSL v1.1.1n to v3.0.8. ([realm/realm-core#6097](https://github.com/realm/realm-core/pull/6097) and [realm/realm-core#6305](https://github.com/realm/realm-core/pull/6305))
+* Enable releasing from a branch.
 
 ## 11.4.0 (2023-01-23)
 
