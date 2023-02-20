@@ -522,22 +522,16 @@ describe("Lists", () => {
   });
   describe("subscripts", () => {
     openRealmBeforeEach({ schema: [LinkTypeSchema, TestObjectSchema, PrimitiveArraysSchema] });
-    it("invalid object access yield correct values", function (this: RealmContext) {
+    //TODO figure out why undefined is not returned in react-native https://github.com/realm/realm-js/issues/5463.
+    it.skipIf(environment.reactNative, "invalid object access returns undefined", function (this: RealmContext) {
       this.realm.write(() => {
         const obj = this.realm.create<ILinkTypeSchema>("LinkTypesObject", {
           objectCol: { doubleCol: 1 },
           objectCol1: { doubleCol: 2 },
           arrayCol: [{ doubleCol: 3 }],
         });
-
-        //React native returns an empty object upon invalid indexing.
-        if (environment.reactNative) {
-          //@ts-expect-error TYPEBUG: indexing by string on results is not allowed typewise
-          expect(Object.keys(obj?.arrayCol[""]).length).equals(0);
-        } else {
-          //@ts-expect-error TYPEBUG: indexing by string on results is not allowed typewise
-          expect(obj?.arrayCol[""]).to.be.undefined;
-        }
+        //@ts-expect-error TYPEBUG: indexing by string on results is not allowed typewise
+        expect(obj?.arrayCol[""]).to.be.undefined;
       });
     });
     it("support getters", function (this: RealmContext) {

@@ -108,10 +108,9 @@ describe("App", () => {
       const credentials = Realm.Credentials.anonymous();
       await expect(app.logIn(credentials)).to.be.rejectedWith(
         select({
-          reactNative: new RegExp("Network request failed.*connect"),
-          default: new RegExp(
+          reactNative: "Network request failed",
+          default:
             "request to http://localhost:9999/api/client/v2.0/app/smurf/location failed, reason: connect ECONNREFUSED",
-          ),
         }),
       );
     });

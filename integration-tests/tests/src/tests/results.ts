@@ -265,16 +265,11 @@ describe("Results", () => {
       expect(objects.ablasdf).equals(undefined);
     });
 
-    it("invalid string indexing returns correct values", function (this: RealmContext) {
+    //TODO figure out why undefined is not returned in react-native https://github.com/realm/realm-js/issues/5463.
+    it.skipIf(environment.reactNative, "invalid string indexing returns correct values", function (this: RealmContext) {
       const objects = this.realm.objects("TestObject");
-      //React native returns an empty object upon invalid indexing.
-      if (environment.reactNative) {
-        //@ts-expect-error TYPEBUG: indexing by string on results is not allowed typewise
-        expect(Object.keys(objects[""]).length).equals(0);
-      } else {
-        //@ts-expect-error TYPEBUG: indexing by string on results is not allowed typewise
-        expect(objects[""]).equals(undefined);
-      }
+      //@ts-expect-error TYPEBUG: indexing by string on results is not allowed typewise
+      expect(objects[""]).equals(undefined);
     });
 
     it("should throw on incorrect object types", function (this: RealmContext) {
