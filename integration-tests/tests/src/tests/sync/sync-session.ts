@@ -151,7 +151,7 @@ describe("SessionTest", () => {
         sync: true,
         inMemory: true,
       };
-      return new Promise<void>((resolve, reject) => {
+      return new Promise((resolve, reject) => {
         //@ts-expect-error try config with mutually exclusive properties
         return Realm.open(config)
           .then(() => reject("opened realm with invalid configuration"))
@@ -367,7 +367,6 @@ describe("SessionTest", () => {
       const promisedLog = new Promise((resolve) => {
         Realm.App.Sync.setLogLevel(app, logLevelStr);
         Realm.App.Sync.setLogger(app, (level, message) => {
-          console.log(message);
           if (level == logLevelNum && message.includes("Connection") && message.includes("Session")) {
             // we should, at some point, receive a log message that looks like
             // Connection[1]: Session[1]: client_reset_config = false, Realm exists = true, client reset = false
@@ -575,7 +574,7 @@ describe("SessionTest", () => {
     it("timeout on download successfully throws", async function (this: AppContext) {
       const partition = generatePartition();
       let realm!: Realm;
-      await this.app
+      return this.app
         .logIn(Realm.Credentials.anonymous())
         .then((user) => {
           const config = getSyncConfiguration(user, partition);
@@ -587,7 +586,6 @@ describe("SessionTest", () => {
             throw new Error("Download did not time out");
           },
           (e) => {
-            console.log(e);
             expect(e).equals("Downloading changes did not complete in 1 ms.");
           },
         );
@@ -596,7 +594,7 @@ describe("SessionTest", () => {
     it("timeout on upload successfully throws", async function (this: AppContext) {
       let realm!: Realm;
       const partition = generatePartition();
-      await this.app
+      return this.app
         .logIn(Realm.Credentials.anonymous())
         .then((user) => {
           const config = getSyncConfiguration(user, partition);
@@ -608,7 +606,6 @@ describe("SessionTest", () => {
             throw new Error("Upload did not time out");
           },
           (e) => {
-            console.log(e);
             expect(e).equals("Uploading changes did not complete in 1 ms.");
           },
         );

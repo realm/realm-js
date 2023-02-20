@@ -503,7 +503,6 @@ describe.skipIf(environment.missingServer, "User", () => {
           expect(false, "This should be unreachable").to.be.true;
         }
       } catch (err: any) {
-        console.log("ERROR MESSAGE: " + err.message);
         expect(err.code).equals(401);
       }
     });
