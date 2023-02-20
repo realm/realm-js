@@ -166,7 +166,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           expect(doc).to.deep.equal({ _id: insertedId1, text: insertedText });
         });
 
-        it("returns null if there are no matches", async function (this: AppContext & Mocha.Context) {
+        it("returns null when there are no matches", async function (this: AppContext & Mocha.Context) {
           throw new Error("Hangs forever");
 
           await insertThreeDocuments();
@@ -190,7 +190,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           expect(newDoc).to.deep.equal({ _id: insertedId3, text: updatedText });
         });
 
-        it("returns null if there are no matches", async function (this: AppContext & Mocha.Context) {
+        it("returns null when there are no matches", async function (this: AppContext & Mocha.Context) {
           throw new Error("Hangs forever");
 
           await insertThreeDocuments();
@@ -203,7 +203,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           expect(newDoc).to.be.null;
         });
 
-        it("does not update any document if there are no matches", async function (this: AppContext & Mocha.Context) {
+        it("does not update any document when there are no matches", async function (this: AppContext & Mocha.Context) {
           throw new Error("Hangs forever");
 
           await insertThreeDocuments();
@@ -233,7 +233,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           expect(newDoc).to.deep.equal({ _id: insertedId3, text: updatedText });
         });
 
-        it("returns null if there are no matches", async function (this: AppContext & Mocha.Context) {
+        it("returns null when there are no matches", async function (this: AppContext & Mocha.Context) {
           throw new Error("Hangs forever");
 
           await insertThreeDocuments();
@@ -246,7 +246,8 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           expect(newDoc).to.be.null;
         });
 
-        it("does not replace any document if there are no matches", async function (this: AppContext & Mocha.Context) {
+        it("does not replace any document when there are no matches", async function (this: AppContext &
+          Mocha.Context) {
           throw new Error("Hangs forever");
 
           await insertThreeDocuments();
@@ -283,7 +284,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           expect(count).to.equal(2);
         });
 
-        it("returns null if there are no matches", async function (this: AppContext & Mocha.Context) {
+        it("returns null when there are no matches", async function (this: AppContext & Mocha.Context) {
           throw new Error("Hangs forever");
 
           await insertThreeDocuments();
@@ -292,7 +293,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           expect(oldDoc).to.be.null;
         });
 
-        it("does not delete any document if there are no matches", async function (this: AppContext & Mocha.Context) {
+        it("does not delete any document when there are no matches", async function (this: AppContext & Mocha.Context) {
           throw new Error("Hangs forever");
 
           await insertThreeDocuments();
@@ -373,7 +374,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           expect(result).to.deep.equal({ matchedCount: 1, modifiedCount: 1 });
         });
 
-        it("does not update any document if there are no matches", async function (this: AppContext & Mocha.Context) {
+        it("does not update any document when there are no matches", async function (this: AppContext & Mocha.Context) {
           await insertThreeDocuments();
 
           const result = await collection.updateOne({ _id: nonExistentId }, { $set: { text: updatedText } });
@@ -409,7 +410,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           expect(result).to.deep.equal({ matchedCount: 2, modifiedCount: 2 });
         });
 
-        it("does not update any document if there are no matches", async function (this: AppContext & Mocha.Context) {
+        it("does not update any document when there are no matches", async function (this: AppContext & Mocha.Context) {
           await insertThreeDocuments();
 
           const result = await collection.updateMany({ _id: nonExistentId }, { $set: { text: updatedText } });
@@ -450,7 +451,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           expect(result.deletedCount).to.equal(1);
         });
 
-        it("does not delete any document if there are no matches", async function (this: AppContext & Mocha.Context) {
+        it("does not delete any document when there are no matches", async function (this: AppContext & Mocha.Context) {
           await insertThreeDocuments();
 
           const result = await collection.deleteOne({ _id: nonExistentId });
@@ -473,7 +474,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           expect(result.deletedCount).to.equal(2);
         });
 
-        it("does not delete any document if there are no matches", async function (this: AppContext & Mocha.Context) {
+        it("does not delete any document when there are no matches", async function (this: AppContext & Mocha.Context) {
           await insertThreeDocuments();
 
           const result = await collection.deleteMany({ _id: nonExistentId });
@@ -501,7 +502,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           expect(count).to.equal(0);
         });
 
-        it("returns zero if there are no matches", async function (this: AppContext & Mocha.Context) {
+        it("returns zero when there are no matches", async function (this: AppContext & Mocha.Context) {
           const count = await collection.count({ _id: nonExistentId });
           expect(count).to.equal(0);
         });
