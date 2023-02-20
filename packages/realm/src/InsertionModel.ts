@@ -16,12 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Collection, Dictionary, List, RealmObject } from "./internal";
+import { Collection, Dictionary, List } from "./internal";
+import { AnyRealmObject } from "./Object";
 
 type AnyCollection = Collection<any, any, any, any, any>;
 type AnyDictionary = Dictionary<any>;
 type AnyList = List<any>;
-type AnyRealmObject = RealmObject<any>;
 
 type ExtractPropertyNamesOfType<T, PropType> = {
   [K in keyof T]: T[K] extends PropType ? K : never;
