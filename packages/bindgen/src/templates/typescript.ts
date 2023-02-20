@@ -254,6 +254,7 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
   out("// Classes");
   for (const cls of spec.classes) {
     out(`export class ${cls.jsName} ${cls.base ? `extends ${cls.base.jsName}` : ""} {`);
+    out(`private brandFor${cls.jsName};`);
     out(`${cls.subclasses.length == 0 ? "private" : "protected"} constructor();`);
     for (const meth of cls.methods) {
       if (meth instanceof Property) {
