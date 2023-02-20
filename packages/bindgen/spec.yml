@@ -430,8 +430,8 @@ records:
       client_resync_mode:
         type: ClientResetMode 
         default: ClientResyncMode::Manual;
-      notify_before_client_reset: 'Nullable<std::function<(before_frozen: std::shared_ptr<Realm>) off_thread -> void>>'
-      notify_after_client_reset: 'Nullable<std::function<(before_frozen: std::shared_ptr<Realm>, after: ThreadSafeReference, did_recover: bool) off_thread -> void>>'
+      notify_before_client_reset: 'Nullable<std::function<(before_frozen: SharedRealm) off_thread -> void>>'
+      notify_after_client_reset: 'Nullable<std::function<(before_frozen: SharedRealm, after: ThreadSafeReference, did_recover: bool) off_thread -> void>>'
 
   SyncSubscription:
     cppName: sync::Subscription
@@ -567,7 +567,7 @@ records:
     cppName: app::App::Config
     fields:
       app_id: std::string
-      transport: std::shared_ptr<GenericNetworkTransport>
+      transport: SharedGenericNetworkTransport
       base_url: util::Optional<std::string>
       local_app_name: util::Optional<std::string>
       local_app_version: util::Optional<std::string>
@@ -599,7 +599,7 @@ classes:
       has_binding_context: '(r: Realm) -> bool'
       set_binding_context: '(r: SharedRealm, methods: BindingContext)'
       get_or_create_object_with_primary_key: '(t: TableRef, pk: Mixed) -> std::pair<Obj, bool>'
-      make_network_transport: '(runRequest: (request: const Request&, callback: util::UniqueFunction<(response: Response&&)>&&) off_thread) -> std::shared_ptr<GenericNetworkTransport>'
+      make_network_transport: '(runRequest: (request: const Request&, callback: util::UniqueFunction<(response: Response&&)>&&) off_thread) -> SharedGenericNetworkTransport'
       delete_data_for_object: '(realm: SharedRealm, object_type: StringData)'
       is_empty_realm: '(realm: SharedRealm) -> bool'
       base64_decode: '(input: StringData) -> BinaryData'
@@ -776,7 +776,7 @@ classes:
         # - suffix: from_reference
         #   sig: '(thread: ThreadSafeReference) -> SharedRealm'
         # - suffix: from_reference_with_sched
-        #   sig: '(thread: ThreadSafeReference, scheduler: std::shared_ptr<Scheduler>) -> SharedRealm'
+        #   sig: '(thread: ThreadSafeReference, scheduler: SharedScheduler) -> SharedRealm'
       get_synchronized_realm: '(config: RealmConfig) -> SharedAsyncOpenTask'
       #make_shared_realm: '(config: Realm::Config, version: util::Optional<VersionID>, coordinator: std::shared_ptr<_impl::RealmCoordinator>) -> SharedRealm'
       get_schema_version: '(config: const RealmConfig&) const -> SchemaVersion'
@@ -796,7 +796,7 @@ classes:
       auto_refresh: bool
 
       can_deliver_notifications: bool
-      scheduler: std::shared_ptr<Scheduler>
+      scheduler: SharedScheduler
 
       is_closed: bool
 
@@ -913,7 +913,7 @@ classes:
       insert_embedded: '(ndx: count_t) -> Obj'
       set_any: '(list_ndx: count_t, value: Mixed)'
       filter: '(q: Query) const -> Results'
-      freeze: '(frozen_realm: std::shared_ptr<Realm> const&) const -> List'
+      freeze: '(frozen_realm: SharedRealm const&) const -> List'
 
       max:
         - '() const -> util::Optional<Mixed>'
@@ -989,7 +989,7 @@ classes:
           cppName: get<Obj> # TODO can't distinguish null from missing
       get_pair: '(ndx: count_t) const -> std::pair<StringData, Mixed>'
       contains: '(key: StringData) -> bool'
-      freeze: '(frozen_realm: std::shared_ptr<Realm> const&) const -> Dictionary'
+      freeze: '(frozen_realm: SharedRealm const&) const -> Dictionary'
       add_key_based_notification_callback: '(cb: (changes: DictionaryChangeSet), keyPaths: KeyPathArray) -> NotificationToken'
       insert_any: '(key: StringData, value: Mixed) -> std::pair<count_t, bool>'
       insert_embedded: '(key: StringData) -> Obj'
@@ -1128,8 +1128,8 @@ classes:
   PushClient:
     cppName: app::PushClient
     methods:
-      register_device: '(registration_token: const std::string&, sync_user: const std::shared_ptr<SyncUser>&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
-      deregister_device: '(sync_user: const std::shared_ptr<SyncUser>&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      register_device: '(registration_token: const std::string&, sync_user: const SharedSyncUser&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      deregister_device: '(sync_user: const SharedSyncUser&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
 
   UsernamePasswordProviderClient:
     cppName: app::App::UsernamePasswordProviderClient
@@ -1248,20 +1248,20 @@ classes:
           suffix: by_query
       commit: () -> SyncSubscriptionSet
       # not exposing import() or update_state()
-
-interfaces:
   Scheduler:
     cppName: util::Scheduler
+    sharedPtrWrapped: SharedScheduler
     methods:
       invoke: '(callback: () -> void)'
       is_on_thread: () const noexcept -> bool
       is_same_as: '(other: const Scheduler*) const noexcept -> bool'
       can_invoke: () const noexcept -> bool
     staticMethods:
-      make_frozen: '(version: VersionID) -> std::shared_ptr<Scheduler>'
-      make_default: '() -> std::shared_ptr<Scheduler>'
-      set_default_factory: '(factory: () -> std::shared_ptr<Scheduler>)'
+      make_frozen: '(version: VersionID) -> SharedScheduler'
+      make_default: '() -> SharedScheduler'
+      set_default_factory: '(factory: () -> SharedScheduler)'
   GenericNetworkTransport:
     cppName: app::GenericNetworkTransport
+    sharedPtrWrapped: SharedGenericNetworkTransport
     methods:
       send_request_to_server: '(request: Request&&, completionBlock: util::UniqueFunction<(response: const Response&)>&&)'
