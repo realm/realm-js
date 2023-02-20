@@ -366,13 +366,10 @@ function convertPrimFromJsi(addon: JsiAddon, type: string, expr: string): string
         })(${expr})`;
     }
 
+    case "ObjectId":
     case "UUID":
     case "Decimal128":
       return `${type}(${expr}.toString(_env).utf8(_env))`;
-
-    // TODO add a StringData overload to the ObjectId ctor in core so this can merge with above.
-    case "ObjectId":
-      return `${type}(${expr}.toString(_env).utf8(_env).c_str())`;
 
     case "EJson":
     case "EJsonObj":
