@@ -306,13 +306,10 @@ function convertPrimFromNode(addon: NodeAddon, type: string, expr: string): stri
         })(${expr})`;
     }
 
+    case "ObjectId":
     case "UUID":
     case "Decimal128":
       return `${type}(${convertPrimFromNode(addon, "std::string", `${expr}.ToString()`)})`;
-
-    // TODO add a StringData overload to the ObjectId ctor in core so this can merge with above.
-    case "ObjectId":
-      return `${type}(${convertPrimFromNode(addon, "std::string", `${expr}.ToString()`)}.c_str())`;
 
     case "EJson":
     case "EJsonObj":
