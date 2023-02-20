@@ -24,7 +24,6 @@ import yaml from "yaml";
 
 import {
   ClassSpec,
-  ConstantSpec,
   EnumSpec,
   FieldSpec,
   FunctionTypeSpec,
@@ -37,7 +36,6 @@ import {
 } from "./spec/model";
 import {
   RelaxedClassSpec,
-  RelaxedConstantSpec,
   RelaxedEnumSpec,
   RelaxedFieldSpec,
   RelaxedInterfaceSpec,
@@ -91,7 +89,7 @@ export function parseSpecs(specs: ReadonlyArray<string>): Spec {
     spec.headers.push(...extra.headers);
     spec.primitives.push(...extra.primitives);
 
-    for (const field of ["enums", "records", "classes", "constants", "typeAliases", "interfaces"] as const) {
+    for (const field of ["enums", "records", "classes", "typeAliases", "interfaces"] as const) {
       Object.assign(spec[field], extra[field]);
     }
   }
@@ -127,7 +125,6 @@ export function normalizeSpec(spec: RelaxedSpec): AnySpec {
     templates: spec.templates || {},
     mixedInfo: spec.mixedInfo,
     enums: mapObjectValues(spec.enums || {}, normalizeEnumSpec),
-    constants: mapObjectValues(spec.constants || {}, normalizeConstantSpec),
     opaqueTypes: spec.opaqueTypes || [],
     records: mapObjectValues(spec.records || {}, normalizeRecordSpec),
     classes: mapObjectValues(spec.classes || {}, normalizeClassSpec),
@@ -148,13 +145,6 @@ function normalizeTypeSpec(text: string) {
 function normalizeEnumSpec(spec: RelaxedEnumSpec): EnumSpec {
   if (!Array.isArray(spec.values)) return spec as EnumSpec;
   return { ...spec, values: Object.fromEntries(spec.values.map((n, i) => [n, i])) };
-}
-
-function normalizeConstantSpec(spec: RelaxedConstantSpec): ConstantSpec {
-  return {
-    type: normalizeTypeSpec(spec.type),
-    value: spec.value,
-  };
 }
 
 function normalizeRecordSpec(spec: RelaxedRecordSpec): RecordSpec {
