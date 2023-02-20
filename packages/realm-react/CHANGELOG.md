@@ -19,6 +19,7 @@ const SomeComponent = () => {
 }
 ```
 >NOTE: If your app is using multiple Realms, then you should continue using `createRealmContext`
+* `useQuery` can now have a filter applied within the hook. Use this when your filter does not change across re-renders. Applying the filter within the hook means that only changes found on filtered objects will trigger a re-render.
 
 ### Fixed
 * `useUser` is now typed to never returned `null` [#4973](https://github.com/realm/realm-js/issues/4973)

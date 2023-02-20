@@ -30,6 +30,8 @@ import { symbols } from "@realm/common";
 export function createUseQuery(useRealm: () => Realm) {
   return function useQuery<T>(
     type: string | ({ new (...args: any): T } & Realm.ObjectClass),
+    filter?: string,
+    filterArgs: any[] = [],
   ): Realm.Results<T & Realm.Object> {
     const realm = useRealm();
 
@@ -42,7 +44,7 @@ export function createUseQuery(useRealm: () => Realm) {
     // Wrap the cachedObject in useMemo, so we only replace it with a new instance if `primaryKey` or `type` change
     const { collection, tearDown } = useMemo(() => {
       return createCachedCollection({
-        collection: realm.objects(type),
+        collection: filter ? realm.objects(type).filtered(filter, ...filterArgs) : realm.objects(type),
         realm,
         updateCallback: forceRerender,
         updatedRef,
@@ -65,7 +67,7 @@ export function createUseQuery(useRealm: () => Realm) {
       // (see `lib/mutable-subscription-set.js` for more details)
       // TODO: We can remove this if `realm` becomes a peer dependency >= 12
       Object.defineProperty(collectionRef.current, symbols.PROXY_TARGET, {
-        value: realm.objects(type),
+        value: filter ? realm.objects(type).filtered(filter, ...filterArgs) : realm.objects(type),
         enumerable: false,
         configurable: false,
         writable: true,
