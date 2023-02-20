@@ -108,10 +108,8 @@ export type RelaxedSpec = {
    * [1] Note that in C++ there is no real difference between structs and classes, but this is using the
    */
   classes?: { [name: string]: RelaxedClassSpec };
-  /** TODO: These are unused, use them or remove them */
-  constants?: { [name: string]: RelaxedConstantSpec };
   /**
-   * Type aliases allow simplifying the spec by assigning a short name to a potenially complex type.
+   * Type aliases allow simplifying the spec by assigning a short name to a potentially complex type.
    * They can also be used to make it easier to change the type of many things at once.
    * They only exist in the spec file and do not need to exist in the C++ code.
    * NOTE: Currently the are resolved and erased during spec parsing so they never show up in the generated APIs.
@@ -126,7 +124,7 @@ export type RelaxedSpec = {
    * For now, interfaces are basically identical to classes, but implicitly sharedPtrWrapped.
    * The intent was that this would be for C++ types with virtual methods intended to be implemented by the SDK.
    * But this use case has been handled by functions on Helpers instead for now.
-   * TODO: Consider removing this distiction.
+   * TODO: Consider removing this distinction.
    * If we instead decide to actually implement it, need some way to mark pure virtual, plain virtual,
    * and non-virtual methods. Also may need to handle private virtual methods.
    */
@@ -154,9 +152,9 @@ export type MixedInfo = {
 
 type SupportsCppName = {
   /**
-   * Allows overiding the C++ name used when generating a binding.
+   * Allows overriding the C++ name used when generating a binding.
    * By default we will use the same name in the spec for the cppName, so you don't need to specify this when they match.
-   * This can be used both to simply change the name, or because the C++ entity can't be identifed by a simple identifier.
+   * This can be used both to simply change the name, or because the C++ entity can't be identified by a simple identifier.
    * Examples:
    *  - Can provide explicit template arguments for types and methods.
    *  - For types, this must be used types in namespaces or defined inside of classes.
@@ -171,17 +169,9 @@ export type RelaxedEnumSpec = SupportsCppName & {
    * The values in the enum, either as a list or map from name to value.
    * The list form implicitly starts at 0 and assigns numbers to remaining entries.
    * We automatically validate that the names map to the correct values in C++.
-   *
-   * TODO: remove the isFlag and flagMask fields. The are unused.
    */
   values: string[] | { [key: string]: number };
-} & (
-    | { isFlag?: false }
-    | {
-        isFlag: true;
-        flagMask: number;
-      }
-  );
+};
 
 export type RelaxedRecordSpec = SupportsCppName & {
   fields: { [name: string]: RelaxedFieldSpec };
@@ -208,7 +198,7 @@ export type RelaxedClassSpec = SupportsCppName & {
   /**
    * Marks the class as iterable using begin()/end() in C++.
    * Automatically mapped to whatever the "normal" iteration API is in the SDK language.
-   * Value is the type yeidled by the iterator (not the iterator type!).
+   * Value is the type yielded by the iterator (not the iterator type!).
    */
   iterable?: SpecType;
   /**
@@ -292,9 +282,3 @@ export type RelaxedMethodSpec =
        */
       suffix?: string;
     });
-
-/** TODO remove. This is unused */
-export type RelaxedConstantSpec = {
-  type: string;
-  value: string;
-};

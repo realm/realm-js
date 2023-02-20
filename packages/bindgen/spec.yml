@@ -139,8 +139,6 @@ enums:
       - Manual
 
   PropertyType:
-    isFlag: true
-    flagMask: 960
     values:
       Int: 0
       Bool: 1
@@ -295,11 +293,6 @@ enums:
       - NEED_DATA
       - HAVE_EVENT
       - HAVE_ERROR
-
-constants:
-  null_col_key:
-    type: int64_t
-    value: 0x7FFF_FFFF_FFFF_FFFF
 
 # These types are handled specially. They must be structs with a single fields named "value".
 keyTypes:

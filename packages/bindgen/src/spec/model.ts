@@ -28,7 +28,6 @@ export type Spec = ReplaceFields<
   {
     typeAliases: { [name: string]: TypeSpec };
     enums: { [name: string]: EnumSpec };
-    constants: { [name: string]: ConstantSpec };
     records: { [name: string]: RecordSpec };
     classes: { [name: string]: ClassSpec };
     interfaces: { [name: string]: InterfaceSpec };
@@ -48,17 +47,6 @@ export type AnySpec = Spec | AdditionalSpec;
 export type EnumSpec = {
   cppName?: string;
   values: { [key: string]: number };
-} & (
-  | { isFlag?: false }
-  | {
-      isFlag: true;
-      flagMask: number;
-    }
-);
-
-export type ConstantSpec = {
-  type: TypeSpec;
-  value: string;
 };
 
 export type RecordSpec = {
