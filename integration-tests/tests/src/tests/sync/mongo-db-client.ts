@@ -208,7 +208,8 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
 
           await insertThreeDocuments();
 
-          await collection.findOneAndUpdate({ _id: nonExistentId }, { $set: { text: updatedText } });
+          const oldDoc = await collection.findOneAndUpdate({ _id: nonExistentId }, { $set: { text: updatedText } });
+          expect(oldDoc).to.be.null;
 
           // Check that the original text is unchanged
           const docs = await collection.find();
@@ -255,12 +256,8 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
 
           await insertThreeDocuments();
 
-          const newDoc = await collection.findOneAndReplace(
-            { _id: nonExistentId },
-            { text: updatedText },
-            { returnNewDocument: true },
-          );
-          expect(newDoc).to.be.null;
+          const oldDoc = await collection.findOneAndReplace({ _id: nonExistentId }, { text: updatedText });
+          expect(oldDoc).to.be.null;
         });
 
         it("does not replace any document when there are no matches", async function (this: AppContext &
@@ -269,7 +266,8 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
 
           await insertThreeDocuments();
 
-          await collection.findOneAndReplace({ _id: nonExistentId }, { text: updatedText });
+          const oldDoc = await collection.findOneAndReplace({ _id: nonExistentId }, { text: updatedText });
+          expect(oldDoc).to.be.null;
 
           // Check that the original text is unchanged
           const docs = await collection.find();
@@ -315,7 +313,8 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
 
           await insertThreeDocuments();
 
-          await collection.findOneAndDelete({ _id: nonExistentId });
+          const oldDoc = await collection.findOneAndDelete({ _id: nonExistentId });
+          expect(oldDoc).to.be.null;
 
           const count = await collection.count();
           expect(count).to.equal(3);
