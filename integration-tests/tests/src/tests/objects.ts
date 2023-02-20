@@ -48,7 +48,7 @@ describe("Realm objects", () => {
       expect(firstPerson).deep.equals(john);
     });
 
-    it("can have it's properties read", () => {
+    it("can have its properties read", () => {
       const realm = new Realm({ schema: [PersonSchema] });
 
       const john = realm.write(() => {
@@ -156,6 +156,29 @@ describe("Realm objects", () => {
   });
 
   describe("Class Model", () => {
+    it("myTest", () => {
+      //TODO Give good name
+      const realm = new Realm({ schema: [Person] });
+
+      const john = realm.write(() => {
+        return new Person(realm, "John Doe", 42);
+      });
+
+      const mary = realm.write(() => {
+        return realm.create(Person, {
+          name: "Mary Ross",
+          age: 22,
+          friends: [john],
+        });
+      });
+
+      const linkedFriend = john.linkingObjects<Person>("Person", "friends")[0];
+      expect(linkedFriend.name).equals(mary.name);
+
+      const linkedFriend2 = john.linkingObjects(Person, "friends")[0];
+      expect(linkedFriend2.name).equals(mary.name);
+    });
+
     it("can be created", () => {
       const realm = new Realm({ schema: [Person] });
 

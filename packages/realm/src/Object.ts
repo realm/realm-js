@@ -228,7 +228,7 @@ export class RealmObject<T = DefaultObject> {
    * @param values The values of the object's properties at creation.
    */
   public constructor(realm: Realm, values: RealmInsertionModel<T>) {
-    return realm.create(this.constructor as RealmObjectConstructor, values) as unknown as this;
+    return (realm.create(this.constructor as RealmObjectConstructor, values) as unknown) as this;
   }
 
   /**
@@ -324,6 +324,8 @@ export class RealmObject<T = DefaultObject> {
     return this[REALM].getClassHelpers(this).canonicalObjectSchema as CanonicalObjectSchema<T>;
   }
 
+  //type Constructor<T = unknown> = { new (...args: any): T };
+
   /**
    * Returns all the objects that link to this object in the specified relationship.
    * @param objectType The type of the objects that link to this object's type.
@@ -332,16 +334,31 @@ export class RealmObject<T = DefaultObject> {
    * @returns The objects that link to this object.
    * @since 1.9.0
    */
-  linkingObjects<T>(objectType: string, propertyName: string): Results<T> {
+  linkingObjects<T>(
+    objectType: string | Constructor<RealmObject<T>>,
+    propertyName: string,
+  ): Results<T & RealmObject<T>> {
     const {
       objectSchema: { tableKey },
       properties,
     } = this[REALM].getClassHelpers(objectType);
     const tableRef = binding.Helpers.getTable(this[REALM].internal, tableKey);
     const property = properties.get(propertyName);
+
+    let objectTypeName: string;
+
+    if (typeof objectType != "string") {
+      assert.extends(objectType, RealmObject);
+      assert.object(objectType.schema, "schema static");
+      assert.string(objectType.schema.name, "name");
+      objectTypeName = objectType.schema.name;
+    } else {
+      objectTypeName = objectType;
+    }
+
     assert(
-      objectType === property.objectType,
-      () => `'${objectType}#${propertyName}' is not a relationship to '${this.objectSchema.name}'`,
+      objectTypeName === property.objectType,
+      () => `'${objectTypeName}#${propertyName}' is not a relationship to '${this.objectSchema.name}'`,
     );
 
     // Create the Result for the backlink view
