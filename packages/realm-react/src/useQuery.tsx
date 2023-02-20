@@ -21,6 +21,16 @@ import { useEffect, useReducer, useMemo, useRef } from "react";
 import { createCachedCollection } from "./cachedCollection";
 import { symbols } from "@realm/common";
 
+type RealmResults<T> = Realm.Results<T & Realm.Object>
+type RealmObjectType<T> = string | ({ new (...args: any): T } & Realm.ObjectClass);
+type UseQueryArgs<T> = [
+    RealmObjectType<T>,
+  ] | [
+    RealmObjectType<T>,
+    (collection: RealmResults<T>) => RealmResults<T>,
+    any[],
+  ];
+
 /**
  * Generates the `useQuery` hook from a given `useRealm` hook.
  *
@@ -29,25 +39,33 @@ import { symbols } from "@realm/common";
  */
 export function createUseQuery(useRealm: () => Realm) {
   return function useQuery<T>(
-    type: string | ({ new (...args: any): T } & Realm.ObjectClass),
-  ): Realm.Results<T & Realm.Object> {
+    ...[type, collectionCallback, dependencies]: UseQueryArgs<T>
+  ): RealmResults<T> {
     const realm = useRealm();
+
+    const collectionCallbackMemo = useMemo(() => {
+      if (!!collectionCallback) {
+        return collectionCallback;
+      }
+      return (collection: RealmResults<T>) => collection;
+    }, dependencies || []);
+
 
     // Create a forceRerender function for the cachedCollection to use as its updateCallback, so that
     // the cachedCollection can force the component using this hook to re-render when a change occurs.
     const [, forceRerender] = useReducer((x) => x + 1, 0);
-    const collectionRef = useRef<Realm.Results<T & Realm.Object>>();
+    const collectionRef = useRef<RealmResults<T>>();
     const updatedRef = useRef(true);
 
-    // Wrap the cachedObject in useMemo, so we only replace it with a new instance if `primaryKey` or `type` change
+    // Wrap the cachedObject in useMemo, so we only replace it with a new instance if `type` or `collectionCallbackMemo` change
     const { collection, tearDown } = useMemo(() => {
       return createCachedCollection({
-        collection: realm.objects(type),
+        collection: collectionCallbackMemo(realm.objects(type)),
         realm,
         updateCallback: forceRerender,
         updatedRef,
       });
-    }, [type, realm]);
+    }, [type, realm, collectionCallbackMemo]);
 
     // Invoke the tearDown of the cachedCollection when useQuery is unmounted
     useEffect(() => {
@@ -58,14 +76,14 @@ export function createUseQuery(useRealm: () => Realm) {
     // Also we are ensuring the type returned is Realm.Results, as this is known in this context
     if (updatedRef.current) {
       updatedRef.current = false;
-      collectionRef.current = new Proxy(collection as Realm.Results<T & Realm.Object>, {});
+      collectionRef.current = new Proxy(collection as RealmResults<T>, {});
       // Store the original, unproxied result as a non-enumerable field with a symbol
       // key on the proxy object, so that we can check for this and get the original results
       // when passing the result of `useQuery` into the subscription mutation methods
       // (see `lib/mutable-subscription-set.js` for more details)
       // TODO: We can remove this if `realm` becomes a peer dependency >= 12
       Object.defineProperty(collectionRef.current, symbols.PROXY_TARGET, {
-        value: realm.objects(type),
+        value: collectionCallbackMemo(realm.objects(type)),
         enumerable: false,
         configurable: false,
         writable: true,
@@ -73,6 +91,6 @@ export function createUseQuery(useRealm: () => Realm) {
     }
 
     // This will never not be defined, but the type system doesn't know that
-    return collectionRef.current as Realm.Results<T & Realm.Object>;
+    return collectionRef.current as RealmResults<T>;
   };
 }
