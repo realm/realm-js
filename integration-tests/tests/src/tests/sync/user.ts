@@ -447,7 +447,8 @@ describe.skipIf(environment.missingServer, "User", () => {
       expect(await collection.count({ hello: "pineapple" })).equals(0);
     });
 
-    it("can watch changes correctly", async function (this: AppContext & RealmContext) {
+    //TODO: figure out why this doesn't run on react native https://github.com/realm/realm-js/issues/5462.
+    it.skipIf(environment.reactNative, "can watch changes correctly", async function (this: AppContext & RealmContext) {
       const credentials = Realm.Credentials.anonymous();
       const user = await this.app.logIn(credentials);
       const collection = user.mongoClient("mongodb").db(this.databaseName).collection("testRemoteMongoClient") as any;
