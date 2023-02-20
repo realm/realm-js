@@ -217,6 +217,23 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
             expect(doc.text).to.equal(insertedText);
           }
         });
+
+        it("inserts new document if no matches when using 'upsert'", async function (this: AppContext & Mocha.Context) {
+          await insertThreeDocuments();
+
+          const newDoc = await collection.findOneAndUpdate(
+            { _id: nonExistentId },
+            { $set: { text: updatedText } },
+            {
+              returnNewDocument: true,
+              upsert: true,
+            },
+          );
+          expect(newDoc).to.deep.equal({ _id: nonExistentId, text: updatedText });
+
+          const count = await collection.count();
+          expect(count).to.equal(4);
+        });
       });
 
       describe("#findOneAndReplace", function () {
@@ -484,10 +501,13 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
 
       describe("#count", function () {
         it("returns total number of documents using empty filter", async function (this: AppContext & Mocha.Context) {
+          const countBefore = await collection.count();
+          expect(countBefore).to.equal(0);
+
           await insertThreeDocuments();
 
-          const count = await collection.count();
-          expect(count).to.equal(3);
+          const countAfter = await collection.count();
+          expect(countAfter).to.equal(3);
         });
 
         it("returns number of documents using query selector", async function (this: AppContext & Mocha.Context) {
@@ -495,11 +515,6 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
 
           const count = await collection.count({ _id: { $gt: insertedId1 } });
           expect(count).to.equal(2);
-        });
-
-        it("returns zero if collection is empty", async function (this: AppContext & Mocha.Context) {
-          const count = await collection.count();
-          expect(count).to.equal(0);
         });
 
         it("returns zero when there are no matches", async function (this: AppContext & Mocha.Context) {
