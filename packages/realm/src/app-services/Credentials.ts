@@ -110,8 +110,17 @@ export class Credentials {
    * @param authObject An object with either an `authCode` or `idToken` property.
    * @return {Credentials} An instance of `Credentials` that can be used in {@link App.logIn}.
    */
-  static google(authObject: object): Credentials {
-    return new Credentials(binding.AppCredentials.googleAuth(authObject));
+  static google(authObject: { authCode: string } | { idToken: string }): Credentials;
+  static google({ authCode, idToken }: { authCode?: string; idToken?: string }): Credentials {
+    let internal: binding.AppCredentials;
+    if (authCode !== undefined) {
+      assert(idToken === undefined, "Must not supply both an authCode or idToken field");
+      internal = binding.AppCredentials.googleAuth(binding.GoogleAuthCode.make(authCode));
+    } else {
+      assert(idToken !== undefined, "Must supply either an authCode or idToken field");
+      internal = binding.AppCredentials.googleId(binding.GoogleIdToken.make(idToken));
+    }
+    return new Credentials(internal);
   }
 
   /**
