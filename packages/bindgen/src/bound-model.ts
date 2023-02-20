@@ -333,7 +333,6 @@ export class Class extends NamedType {
   abstract = false;
   base?: Class;
   subclasses: Class[] = [];
-  isInterface = false;
   methods: Method[] = [];
   sharedPtrWrapped = false;
   needsDeref = false;
@@ -363,12 +362,6 @@ export class Class extends NamedType {
       yield* sub.decedents();
     }
   }
-}
-
-export class Interface extends Class {
-  readonly isInterface = true;
-  readonly sharedPtrWrapped = true;
-  readonly needsDeref = true;
 }
 
 export class Field {
@@ -462,7 +455,6 @@ export type Type =
   | Func
   | Template
   | Class
-  | Interface
   | Struct
   | Primitive
   | Opaque
@@ -577,16 +569,11 @@ export function bindModel(spec: Spec): BoundSpec {
     addType(name, Primitive);
   }
 
-  for (const [subtree, ctor] of [
-    ["classes", Class],
-    ["interfaces", Interface],
-  ] as const) {
-    for (const [name, { sharedPtrWrapped }] of Object.entries(spec[subtree])) {
-      const cls = addType<Class>(name, ctor);
-      if (sharedPtrWrapped) {
-        cls.sharedPtrWrapped = true;
-        addShared(sharedPtrWrapped, cls);
-      }
+  for (const [name, { sharedPtrWrapped }] of Object.entries(spec["classes"])) {
+    const cls = addType<Class>(name, Class);
+    if (sharedPtrWrapped) {
+      cls.sharedPtrWrapped = true;
+      addShared(sharedPtrWrapped, cls);
     }
   }
 
@@ -631,46 +618,41 @@ export function bindModel(spec: Spec): BoundSpec {
     keyType.type = resolveTypes(type);
   }
 
-  for (const subtree of ["classes", "interfaces"] as const) {
-    for (const [name, raw] of Object.entries(spec[subtree])) {
-      const cls = out.types[name] as Class;
-      cls.cppName = raw.cppName ?? name;
-      handleMethods(InstanceMethod, cls, raw.methods);
-      handleMethods(StaticMethod, cls, raw.staticMethods);
+  for (const [name, raw] of Object.entries(spec["classes"])) {
+    const cls = out.types[name] as Class;
+    cls.cppName = raw.cppName ?? name;
+    handleMethods(InstanceMethod, cls, raw.methods);
+    handleMethods(StaticMethod, cls, raw.staticMethods);
 
-      if (raw.base) {
-        const base = out.types[raw.base];
-        assert(base, `${name} has unknown base ${raw.base}`);
-        assert(base instanceof Class, `Bases must be classes, but ${raw.base} is a ${base.constructor.name}`);
-        cls.base = base;
-        base.subclasses.push(cls);
-      } else {
-        rootClasses.push(cls);
-      }
+    if (raw.base) {
+      const base = out.types[raw.base];
+      assert(base, `${name} has unknown base ${raw.base}`);
+      assert(base instanceof Class, `Bases must be classes, but ${raw.base} is a ${base.constructor.name}`);
+      cls.base = base;
+      base.subclasses.push(cls);
+    } else {
+      rootClasses.push(cls);
+    }
 
-      if (subtree == "classes") {
-        const rawCls = raw as ClassSpec;
-        cls.needsDeref = rawCls.needsDeref;
-        cls.abstract = rawCls.abstract;
+    cls.needsDeref = raw.needsDeref;
+    cls.abstract = raw.abstract;
 
-        if (rawCls.iterable) cls.iterable = resolveTypes(rawCls.iterable);
+    if (raw.iterable) cls.iterable = resolveTypes(raw.iterable);
 
-        // Constructors are exported to js as named static methods. The "real" js constructors
-        // are only used internally for attaching the C++ instance to a JS object.
-        cls.methods.push(
-          ...Object.entries(rawCls.constructors).flatMap(([name, rawSig]) => {
-            const sig = resolveTypes(rawSig);
-            // Constructors implicitly return the type of the class.
-            assert(sig.kind == "Func" && sig.ret.isVoid());
-            sig.ret = cls.sharedPtrWrapped ? new Template("std::shared_ptr", [cls]) : cls;
-            return new Constructor(cls, name, sig);
-          }),
-        );
+    // Constructors are exported to js as named static methods. The "real" js constructors
+    // are only used internally for attaching the C++ instance to a JS object.
+    cls.methods.push(
+      ...Object.entries(raw.constructors).flatMap(([name, rawSig]) => {
+        const sig = resolveTypes(rawSig);
+        // Constructors implicitly return the type of the class.
+        assert(sig.kind == "Func" && sig.ret.isVoid());
+        sig.ret = cls.sharedPtrWrapped ? new Template("std::shared_ptr", [cls]) : cls;
+        return new Constructor(cls, name, sig);
+      }),
+    );
 
-        for (const [name, type] of Object.entries(rawCls.properties ?? {})) {
-          cls.methods.push(new Property(cls, name, resolveTypes(type)));
-        }
-      }
+    for (const [name, type] of Object.entries(raw.properties ?? {})) {
+      cls.methods.push(new Property(cls, name, resolveTypes(type)));
     }
   }
 

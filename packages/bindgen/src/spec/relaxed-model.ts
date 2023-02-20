@@ -120,15 +120,6 @@ export type RelaxedSpec = {
    * Not allowed on extra specs.
    */
   keyTypes?: { [name: string]: string };
-  /**
-   * For now, interfaces are basically identical to classes, but implicitly sharedPtrWrapped.
-   * The intent was that this would be for C++ types with virtual methods intended to be implemented by the SDK.
-   * But this use case has been handled by functions on Helpers instead for now.
-   * TODO: Consider removing this distinction.
-   * If we instead decide to actually implement it, need some way to mark pure virtual, plain virtual,
-   * and non-virtual methods. Also may need to handle private virtual methods.
-   */
-  interfaces?: { [name: string]: RelaxedInterfaceSpec };
 };
 
 export type MixedInfo = {
@@ -232,22 +223,6 @@ export type RelaxedClassSpec = SupportsCppName & {
    * Note that these still call methods in C++. There is no way to expose fields on a class (unlike a record)!
    */
   properties?: { [name: string]: SpecType };
-};
-
-/** TODO merge interface and classes since the distinction was never implemented */
-export type RelaxedInterfaceSpec = SupportsCppName & {
-  /** The base class of this class. If omitted, this is treated as a root type. */
-  base?: string;
-  /**
-   * Marks types that are passed around inside of a std::shared_ptr.
-   * Injects a typeAlias with this name for std::shared_ptr<ThisClass>.
-   * When provided, objects bound to this type will hold a shared_ptr<T> rather than a unique by-value copy of this class.
-   */
-  sharedPtrWrapped?: string;
-  /** Static methods attached to this class. */
-  staticMethods?: { [name: string]: OverloadSet };
-  /** Instance methods on this class. (They were intended to be overridable by the SDK, but that isn't implemented) */
-  methods?: { [name: string]: OverloadSet };
 };
 
 /**

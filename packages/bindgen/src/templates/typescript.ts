@@ -134,7 +134,6 @@ function generateArguments(spec: BoundSpec, args: Arg[]) {
 }
 
 function generateMixedTypes(spec: BoundSpec) {
-  // TODO consider interface rather than type here.
   return `
     export type Mixed = null | ${spec.mixedInfo.getters
       .map(({ type }) => generateType(spec, type, Kind.Ret))

@@ -30,7 +30,6 @@ export type Spec = ReplaceFields<
     enums: { [name: string]: EnumSpec };
     records: { [name: string]: RecordSpec };
     classes: { [name: string]: ClassSpec };
-    interfaces: { [name: string]: InterfaceSpec };
     keyTypes: { [name: string]: TypeSpec };
   }
 >;
@@ -76,14 +75,6 @@ export type ClassSpec = {
   constructors: { [name: string]: FunctionTypeSpec };
   staticMethods: { [name: string]: MethodSpec[] };
   properties: { [name: string]: TypeSpec };
-  methods: { [name: string]: MethodSpec[] };
-};
-
-export type InterfaceSpec = {
-  cppName?: string;
-  base?: string;
-  sharedPtrWrapped?: string;
-  staticMethods: { [name: string]: MethodSpec[] };
   methods: { [name: string]: MethodSpec[] };
 };
 

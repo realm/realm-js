@@ -27,7 +27,6 @@ import {
   EnumSpec,
   FieldSpec,
   FunctionTypeSpec,
-  InterfaceSpec,
   MethodSpec,
   RecordSpec,
   AnySpec,
@@ -38,7 +37,6 @@ import {
   RelaxedClassSpec,
   RelaxedEnumSpec,
   RelaxedFieldSpec,
-  RelaxedInterfaceSpec,
   RelaxedMethodSpec,
   RelaxedRecordSpec,
   RelaxedSpec,
@@ -89,7 +87,7 @@ export function parseSpecs(specs: ReadonlyArray<string>): Spec {
     spec.headers.push(...extra.headers);
     spec.primitives.push(...extra.primitives);
 
-    for (const field of ["enums", "records", "classes", "typeAliases", "interfaces"] as const) {
+    for (const field of ["enums", "records", "classes", "typeAliases"] as const) {
       Object.assign(spec[field], extra[field]);
     }
   }
@@ -128,7 +126,6 @@ export function normalizeSpec(spec: RelaxedSpec): AnySpec {
     opaqueTypes: spec.opaqueTypes || [],
     records: mapObjectValues(spec.records || {}, normalizeRecordSpec),
     classes: mapObjectValues(spec.classes || {}, normalizeClassSpec),
-    interfaces: mapObjectValues(spec.interfaces || {}, normalizeInterfaceSpec),
     keyTypes: mapObjectValues(spec.keyTypes || {}, normalizeTypeSpec),
   };
 }
@@ -166,15 +163,6 @@ function normalizeClassSpec(spec: RelaxedClassSpec): ClassSpec {
     properties: mapObjectValues(spec.properties || {}, normalizeTypeSpec),
     methods: mapObjectValues(spec.methods || {}, normalizeMethodSpec),
     constructors: mapObjectValues(spec.constructors || {}, normalizeConstructor),
-  };
-}
-
-function normalizeInterfaceSpec(spec: RelaxedInterfaceSpec): InterfaceSpec {
-  return {
-    cppName: spec.cppName,
-    sharedPtrWrapped: spec.sharedPtrWrapped,
-    staticMethods: mapObjectValues(spec.staticMethods || {}, normalizeMethodSpec),
-    methods: mapObjectValues(spec.methods || {}, normalizeMethodSpec),
   };
 }
 
