@@ -139,6 +139,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       });
 
       it("can be constructed asynchronously", async function () {
+        this.longTimeout();
         const openRealm = async () => {
           await Realm.open({
             sync: { _sessionStopPolicy: SessionStopPolicy.Immediately, flexible: true, user: this.user },
