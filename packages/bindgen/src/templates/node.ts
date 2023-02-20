@@ -695,8 +695,6 @@ class NodeCppDecls extends CppDecls {
     }
 
     for (const cls of spec.classes) {
-      // TODO need to do extra work to enable JS implementation of interfaces
-
       assert(
         !cls.sharedPtrWrapped || (!cls.base && cls.subclasses.length == 0),
         `We don't support mixing sharedPtrWrapped and class hierarchies. ${cls.name} requires this.`,
