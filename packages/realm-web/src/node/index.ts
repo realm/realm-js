@@ -32,7 +32,7 @@ const environment: Environment = {
   },
 
   platform: process?.release?.name || "node",
-  platformVersion: process?.versions?.node || 'unknown',
+  platformVersion: process?.versions?.node || "unknown",
 
   TextDecoder,
 };
