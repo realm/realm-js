@@ -115,6 +115,7 @@ export type BaseSyncConfiguration = {
   /** @internal */
   _sessionStopPolicy?: SessionStopPolicy;
   clientReset?: ClientResetConfig;
+  cancelWaitOnNonFatalError?: boolean;
 };
 
 export type InitialSubscriptions = {
@@ -148,7 +149,16 @@ export type SyncConfiguration = FlexibleSyncConfiguration | PartitionSyncConfigu
 
 /** @internal */
 export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConfig_Relaxed {
-  const { user, flexible, partitionValue, onError, _sessionStopPolicy, customHttpHeaders, clientReset } = config;
+  const {
+    user,
+    flexible,
+    partitionValue,
+    onError,
+    _sessionStopPolicy,
+    customHttpHeaders,
+    clientReset,
+    cancelWaitOnNonFatalError,
+  } = config;
 
   return {
     user: user.internal,
@@ -159,6 +169,7 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
     customHttpHeaders,
     flxSyncRequested: !!flexible,
     ...parseClientResetConfig(clientReset, onError),
+    cancelWaitsOnNonfatalError: cancelWaitOnNonFatalError,
   };
 }
 
