@@ -167,7 +167,10 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
         });
 
         it("returns null when there are no matches", async function (this: AppContext & Mocha.Context) {
-          throw new Error("Hangs forever");
+          // TODO: Remove this line when we fix the bug regarding not catching the error
+          //       thrown by the callback passed to the bindings `make_network_transport()`
+          //       (see packages/realm/src/app-services/NetworkTransport.ts).
+          throw new Error("Hangs forever (can be fixed once bug is solved)");
 
           await insertThreeDocuments();
 
@@ -191,7 +194,10 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
         });
 
         it("returns null when there are no matches", async function (this: AppContext & Mocha.Context) {
-          throw new Error("Hangs forever");
+          // TODO: Remove this line when we fix the bug regarding not catching the error
+          //       thrown by the callback passed to the bindings `make_network_transport()`
+          //       (see packages/realm/src/app-services/NetworkTransport.ts).
+          throw new Error("Hangs forever (can be fixed once bug is solved)");
 
           await insertThreeDocuments();
 
@@ -204,7 +210,10 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
         });
 
         it("does not update any document when there are no matches", async function (this: AppContext & Mocha.Context) {
-          throw new Error("Hangs forever");
+          // TODO: Remove this line when we fix the bug regarding not catching the error
+          //       thrown by the callback passed to the bindings `make_network_transport()`
+          //       (see packages/realm/src/app-services/NetworkTransport.ts).
+          throw new Error("Hangs forever (can be fixed once bug is solved)");
 
           await insertThreeDocuments();
 
@@ -252,7 +261,10 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
         });
 
         it("returns null when there are no matches", async function (this: AppContext & Mocha.Context) {
-          throw new Error("Hangs forever");
+          // TODO: Remove this line when we fix the bug regarding not catching the error
+          //       thrown by the callback passed to the bindings `make_network_transport()`
+          //       (see packages/realm/src/app-services/NetworkTransport.ts).
+          throw new Error("Hangs forever (can be fixed once bug is solved)");
 
           await insertThreeDocuments();
 
@@ -262,7 +274,10 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
 
         it("does not replace any document when there are no matches", async function (this: AppContext &
           Mocha.Context) {
-          throw new Error("Hangs forever");
+          // TODO: Remove this line when we fix the bug regarding not catching the error
+          //       thrown by the callback passed to the bindings `make_network_transport()`
+          //       (see packages/realm/src/app-services/NetworkTransport.ts).
+          throw new Error("Hangs forever (can be fixed once bug is solved)");
 
           await insertThreeDocuments();
 
@@ -300,7 +315,10 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
         });
 
         it("returns null when there are no matches", async function (this: AppContext & Mocha.Context) {
-          throw new Error("Hangs forever");
+          // TODO: Remove this line when we fix the bug regarding not catching the error
+          //       thrown by the callback passed to the bindings `make_network_transport()`
+          //       (see packages/realm/src/app-services/NetworkTransport.ts).
+          throw new Error("Hangs forever (can be fixed once bug is solved)");
 
           await insertThreeDocuments();
 
@@ -309,7 +327,10 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
         });
 
         it("does not delete any document when there are no matches", async function (this: AppContext & Mocha.Context) {
-          throw new Error("Hangs forever");
+          // TODO: Remove this line when we fix the bug regarding not catching the error
+          //       thrown by the callback passed to the bindings `make_network_transport()`
+          //       (see packages/realm/src/app-services/NetworkTransport.ts).
+          throw new Error("Hangs forever (can be fixed once bug is solved)");
 
           await insertThreeDocuments();
 
