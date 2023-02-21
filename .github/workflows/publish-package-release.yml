@@ -101,7 +101,7 @@ jobs:
       id: get-version
       run: |
         pkgVersion=$(jq -r .version ${{env.PACKAGE_PATH}}/package.json)
-        echo "::set-output name=version::$pkgVersion"
+        echo "version=$pkgVersion" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Publish ${{env.RELEASE_TITLE}} v${{ steps.get-version.outputs.version }} on NPM
