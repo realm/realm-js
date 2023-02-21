@@ -19,6 +19,7 @@ import { Credentials } from "realm";
 
 export function authenticateUserBefore(): void {
   before(authenticateUserBefore.name, async function (this: AppContext & Partial<UserContext>) {
+    this.longTimeout();
     if (this.app) {
       this.user = this.app.currentUser || (await this.app.logIn(Credentials.anonymous()));
     } else {

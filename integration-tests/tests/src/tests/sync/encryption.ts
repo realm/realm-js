@@ -87,7 +87,8 @@ describe("Encryption", () => {
   describe("with sync", () => {
     importAppBefore("simple");
 
-    it("can set propery in config", async function (this: AppContext) {
+    it("can set property in config", async function (this: AppContext) {
+      this.longTimeout();
       const credentials = Realm.Credentials.anonymous();
       return this.app.logIn(credentials).then((user: Realm.User) => {
         new Realm({

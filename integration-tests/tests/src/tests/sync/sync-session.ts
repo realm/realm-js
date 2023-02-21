@@ -906,6 +906,7 @@ describe("SessionTest", () => {
     });
 
     it("has expected behaviour", async function (this: AppContext) {
+      this.longTimeout();
       const credentials1 = await getRegisteredEmailPassCredentials(this.app);
       const credentials2 = await getRegisteredEmailPassCredentials(this.app);
       const credentials3 = await getRegisteredEmailPassCredentials(this.app);
