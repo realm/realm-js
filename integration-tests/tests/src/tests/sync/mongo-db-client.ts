@@ -108,465 +108,455 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
       expect(insertedIds).to.have.length(3);
     }
 
-    // THIS OUTER TEMPORARY SUITE IS FOR "GREPPING" WHEN RUNNING TESTS
-    describe("TEMPORARY DESCRIBE SUITE", function () {
-      console.log("\n\n\n==============\nTODO: REMOVE OUTER `DESCRIBE` SUITE\n==============\n\n\n"); // TODO: <-------
+    describe("#find", function () {
+      it("returns all documents using empty filter", async function (this: AppContext & Mocha.Context) {
+        await insertThreeDocuments();
 
-      describe("#find", function () {
-        it("returns all documents using empty filter", async function (this: AppContext & Mocha.Context) {
-          await insertThreeDocuments();
-
-          const docs = await collection.find();
-          expect(docs).to.have.length(3);
-          for (const doc of docs) {
-            expect(doc).to.have.all.keys("_id", "text");
-          }
-        });
-
-        it("returns all documents excluding a field using 'projection' option", async function (this: AppContext &
-          Mocha.Context) {
-          await insertThreeDocuments();
-
-          const docs = await collection.find({}, { projection: { text: false } });
-          expect(docs).to.have.length(3);
-          for (const doc of docs) {
-            expect(doc).to.have.property("_id");
-            expect(doc).to.not.have.property("text");
-          }
-        });
-
-        it("returns documents using query selector", async function (this: AppContext & Mocha.Context) {
-          await insertThreeDocuments();
-
-          const docs = await collection.find({ _id: { $gt: insertedId1 } });
-          expect(docs).to.have.length(2);
-          for (const doc of docs) {
-            expect(doc._id > insertedId1).to.be.true;
-          }
-        });
-
-        it("returns empty array if collection is empty", async function (this: AppContext & Mocha.Context) {
-          const docs = await collection.find();
-          expect(docs).to.be.empty;
-        });
+        const docs = await collection.find();
+        expect(docs).to.have.length(3);
+        for (const doc of docs) {
+          expect(doc).to.have.all.keys("_id", "text");
+        }
       });
 
-      describe("#findOne", function () {
-        it("returns specific document", async function (this: AppContext & Mocha.Context) {
-          await insertThreeDocuments();
+      it("returns all documents excluding a field using 'projection' option", async function (this: AppContext &
+        Mocha.Context) {
+        await insertThreeDocuments();
 
-          const doc = await collection.findOne({ _id: insertedId3 });
-          expect(doc).to.deep.equal({ _id: insertedId3, text: insertedText });
-        });
-
-        it("returns first document using empty filter", async function (this: AppContext & Mocha.Context) {
-          await insertThreeDocuments();
-
-          const doc = await collection.findOne();
-          expect(doc).to.deep.equal({ _id: insertedId1, text: insertedText });
-        });
-
-        it("returns null when there are no matches", async function (this: AppContext & Mocha.Context) {
-          // TODO: Remove this line when we fix the bug regarding not catching the error
-          //       thrown by the callback passed to the bindings `make_network_transport()`
-          //       (see packages/realm/src/app-services/NetworkTransport.ts).
-          throw new Error("Hangs forever (can be fixed once bug is solved)");
-
-          await insertThreeDocuments();
-
-          const doc = await collection.findOne({ _id: nonExistentId });
-          expect(doc).to.be.null;
-        });
+        const docs = await collection.find({}, { projection: { text: false } });
+        expect(docs).to.have.length(3);
+        for (const doc of docs) {
+          expect(doc).to.have.property("_id");
+          expect(doc).to.not.have.property("text");
+        }
       });
 
-      describe("#findOneAndUpdate", function () {
-        const updatedText = "Updated text";
+      it("returns documents using query selector", async function (this: AppContext & Mocha.Context) {
+        await insertThreeDocuments();
 
-        it("updates specific document", async function (this: AppContext & Mocha.Context) {
-          await insertThreeDocuments();
-
-          const newDoc = await collection.findOneAndUpdate(
-            { _id: insertedId3 },
-            { $set: { text: updatedText } },
-            { returnNewDocument: true },
-          );
-          expect(newDoc).to.deep.equal({ _id: insertedId3, text: updatedText });
-        });
-
-        it("returns null when there are no matches", async function (this: AppContext & Mocha.Context) {
-          // TODO: Remove this line when we fix the bug regarding not catching the error
-          //       thrown by the callback passed to the bindings `make_network_transport()`
-          //       (see packages/realm/src/app-services/NetworkTransport.ts).
-          throw new Error("Hangs forever (can be fixed once bug is solved)");
-
-          await insertThreeDocuments();
-
-          const newDoc = await collection.findOneAndUpdate(
-            { _id: nonExistentId },
-            { $set: { text: updatedText } },
-            { returnNewDocument: true },
-          );
-          expect(newDoc).to.be.null;
-        });
-
-        it("does not update any document when there are no matches", async function (this: AppContext & Mocha.Context) {
-          // TODO: Remove this line when we fix the bug regarding not catching the error
-          //       thrown by the callback passed to the bindings `make_network_transport()`
-          //       (see packages/realm/src/app-services/NetworkTransport.ts).
-          throw new Error("Hangs forever (can be fixed once bug is solved)");
-
-          await insertThreeDocuments();
-
-          const oldDoc = await collection.findOneAndUpdate({ _id: nonExistentId }, { $set: { text: updatedText } });
-          expect(oldDoc).to.be.null;
-
-          // Check that the original text is unchanged
-          const docs = await collection.find();
-          expect(docs).to.have.length(3);
-          for (const doc of docs) {
-            expect(doc.text).to.equal(insertedText);
-          }
-        });
-
-        it("inserts new document if no matches when using 'upsert'", async function (this: AppContext & Mocha.Context) {
-          await insertThreeDocuments();
-
-          const newDoc = await collection.findOneAndUpdate(
-            { _id: nonExistentId },
-            { $set: { text: updatedText } },
-            {
-              returnNewDocument: true,
-              upsert: true,
-            },
-          );
-          expect(newDoc).to.deep.equal({ _id: nonExistentId, text: updatedText });
-
-          const count = await collection.count();
-          expect(count).to.equal(4);
-        });
+        const docs = await collection.find({ _id: { $gt: insertedId1 } });
+        expect(docs).to.have.length(2);
+        for (const doc of docs) {
+          expect(doc._id > insertedId1).to.be.true;
+        }
       });
 
-      describe("#findOneAndReplace", function () {
-        const updatedText = "Updated text";
+      it("returns empty array if collection is empty", async function (this: AppContext & Mocha.Context) {
+        const docs = await collection.find();
+        expect(docs).to.be.empty;
+      });
+    });
 
-        it("replaces specific document", async function (this: AppContext & Mocha.Context) {
-          await insertThreeDocuments();
+    describe("#findOne", function () {
+      it("returns specific document", async function (this: AppContext & Mocha.Context) {
+        await insertThreeDocuments();
 
-          const newDoc = await collection.findOneAndReplace(
-            { _id: insertedId3 },
-            { text: updatedText },
-            { returnNewDocument: true },
-          );
-          expect(newDoc).to.deep.equal({ _id: insertedId3, text: updatedText });
-        });
-
-        it("returns null when there are no matches", async function (this: AppContext & Mocha.Context) {
-          // TODO: Remove this line when we fix the bug regarding not catching the error
-          //       thrown by the callback passed to the bindings `make_network_transport()`
-          //       (see packages/realm/src/app-services/NetworkTransport.ts).
-          throw new Error("Hangs forever (can be fixed once bug is solved)");
-
-          await insertThreeDocuments();
-
-          const oldDoc = await collection.findOneAndReplace({ _id: nonExistentId }, { text: updatedText });
-          expect(oldDoc).to.be.null;
-        });
-
-        it("does not replace any document when there are no matches", async function (this: AppContext &
-          Mocha.Context) {
-          // TODO: Remove this line when we fix the bug regarding not catching the error
-          //       thrown by the callback passed to the bindings `make_network_transport()`
-          //       (see packages/realm/src/app-services/NetworkTransport.ts).
-          throw new Error("Hangs forever (can be fixed once bug is solved)");
-
-          await insertThreeDocuments();
-
-          const oldDoc = await collection.findOneAndReplace({ _id: nonExistentId }, { text: updatedText });
-          expect(oldDoc).to.be.null;
-
-          // Check that the original text is unchanged
-          const docs = await collection.find();
-          expect(docs).to.have.length(3);
-          for (const doc of docs) {
-            expect(doc.text).to.equal(insertedText);
-          }
-        });
+        const doc = await collection.findOne({ _id: insertedId3 });
+        expect(doc).to.deep.equal({ _id: insertedId3, text: insertedText });
       });
 
-      describe("#findOneAndDelete", function () {
-        it("deletes specific document", async function (this: AppContext & Mocha.Context) {
-          await insertThreeDocuments();
+      it("returns first document using empty filter", async function (this: AppContext & Mocha.Context) {
+        await insertThreeDocuments();
 
-          const oldDoc = await collection.findOneAndDelete({ _id: insertedId3 });
-          expect(oldDoc).to.deep.equal({ _id: insertedId3, text: insertedText });
-
-          const count = await collection.count();
-          expect(count).to.equal(2);
-        });
-
-        it("deletes first returned document using empty filter", async function (this: AppContext & Mocha.Context) {
-          await insertThreeDocuments();
-
-          const oldDoc = await collection.findOneAndDelete();
-          expect(oldDoc).to.deep.equal({ _id: insertedId1, text: insertedText });
-
-          const count = await collection.count();
-          expect(count).to.equal(2);
-        });
-
-        it("returns null when there are no matches", async function (this: AppContext & Mocha.Context) {
-          // TODO: Remove this line when we fix the bug regarding not catching the error
-          //       thrown by the callback passed to the bindings `make_network_transport()`
-          //       (see packages/realm/src/app-services/NetworkTransport.ts).
-          throw new Error("Hangs forever (can be fixed once bug is solved)");
-
-          await insertThreeDocuments();
-
-          const oldDoc = await collection.findOneAndDelete({ _id: nonExistentId });
-          expect(oldDoc).to.be.null;
-        });
-
-        it("does not delete any document when there are no matches", async function (this: AppContext & Mocha.Context) {
-          // TODO: Remove this line when we fix the bug regarding not catching the error
-          //       thrown by the callback passed to the bindings `make_network_transport()`
-          //       (see packages/realm/src/app-services/NetworkTransport.ts).
-          throw new Error("Hangs forever (can be fixed once bug is solved)");
-
-          await insertThreeDocuments();
-
-          const oldDoc = await collection.findOneAndDelete({ _id: nonExistentId });
-          expect(oldDoc).to.be.null;
-
-          const count = await collection.count();
-          expect(count).to.equal(3);
-        });
+        const doc = await collection.findOne();
+        expect(doc).to.deep.equal({ _id: insertedId1, text: insertedText });
       });
 
-      describe("#insertOne", function () {
-        it("inserts document with id", async function (this: AppContext & Mocha.Context) {
-          const result = await collection.insertOne({ _id: insertedId1 });
-          expect(result.insertedId).to.equal(insertedId1);
+      it("returns null when there are no matches", async function (this: AppContext & Mocha.Context) {
+        // TODO: Remove this line when we fix the bug regarding not catching the error
+        //       thrown by the callback passed to the bindings `make_network_transport()`
+        //       (see packages/realm/src/app-services/NetworkTransport.ts).
+        throw new Error("Hangs forever (can be fixed once bug is solved)");
 
-          const count = await collection.count();
-          expect(count).to.equal(1);
-        });
+        await insertThreeDocuments();
 
-        it("inserts document without id", async function (this: AppContext & Mocha.Context) {
-          const result = await collection.insertOne({ text: insertedText });
-          expect(result.insertedId).to.be.instanceOf(BSON.ObjectId);
+        const doc = await collection.findOne({ _id: nonExistentId });
+        expect(doc).to.be.null;
+      });
+    });
 
-          const count = await collection.count();
-          expect(count).to.equal(1);
-        });
+    describe("#findOneAndUpdate", function () {
+      const updatedText = "Updated text";
 
-        it("throws if inserting document with existing id", async function (this: AppContext & Mocha.Context) {
-          await collection.insertOne({ _id: insertedId1 });
+      it("updates specific document", async function (this: AppContext & Mocha.Context) {
+        await insertThreeDocuments();
 
-          await expect(collection.insertOne({ _id: insertedId1 })).to.be.rejectedWith("Duplicate key error");
-        });
+        const newDoc = await collection.findOneAndUpdate(
+          { _id: insertedId3 },
+          { $set: { text: updatedText } },
+          { returnNewDocument: true },
+        );
+        expect(newDoc).to.deep.equal({ _id: insertedId3, text: updatedText });
       });
 
-      describe("#insertMany", function () {
-        it("inserts documents with ids", async function (this: AppContext & Mocha.Context) {
-          const result = await collection.insertMany([
-            { _id: insertedId1 },
-            { _id: insertedId2 },
-            { _id: insertedId3 },
-          ]);
-          expect(result.insertedIds).to.have.length(3);
+      it("returns null when there are no matches", async function (this: AppContext & Mocha.Context) {
+        // TODO: Remove this line when we fix the bug regarding not catching the error
+        //       thrown by the callback passed to the bindings `make_network_transport()`
+        //       (see packages/realm/src/app-services/NetworkTransport.ts).
+        throw new Error("Hangs forever (can be fixed once bug is solved)");
 
-          const count = await collection.count();
-          expect(count).to.equal(3);
-        });
+        await insertThreeDocuments();
 
-        it("inserts documents without ids", async function (this: AppContext & Mocha.Context) {
-          const result = await collection.insertMany([
-            { text: insertedText },
-            { text: insertedText },
-            { text: insertedText },
-          ]);
-          expect(result.insertedIds).to.have.length(3);
-          for (const insertedId of result.insertedIds) {
-            expect(insertedId).to.be.instanceOf(BSON.ObjectId);
-          }
-
-          const count = await collection.count();
-          expect(count).to.equal(3);
-        });
-
-        it("throws if inserting document with existing id", async function (this: AppContext & Mocha.Context) {
-          await collection.insertMany([{ _id: insertedId1 }]);
-
-          await expect(collection.insertMany([{ _id: insertedId1 }])).to.be.rejectedWith("Duplicate key error");
-        });
+        const newDoc = await collection.findOneAndUpdate(
+          { _id: nonExistentId },
+          { $set: { text: updatedText } },
+          { returnNewDocument: true },
+        );
+        expect(newDoc).to.be.null;
       });
 
-      describe("#updateOne", function () {
-        const updatedText = "Updated text";
+      it("does not update any document when there are no matches", async function (this: AppContext & Mocha.Context) {
+        // TODO: Remove this line when we fix the bug regarding not catching the error
+        //       thrown by the callback passed to the bindings `make_network_transport()`
+        //       (see packages/realm/src/app-services/NetworkTransport.ts).
+        throw new Error("Hangs forever (can be fixed once bug is solved)");
 
-        it("updates specific document", async function (this: AppContext & Mocha.Context) {
-          await insertThreeDocuments();
+        await insertThreeDocuments();
 
-          const result = await collection.updateOne({ _id: insertedId3 }, { $set: { text: updatedText } });
-          expect(result).to.deep.equal({ matchedCount: 1, modifiedCount: 1 });
-        });
+        const oldDoc = await collection.findOneAndUpdate({ _id: nonExistentId }, { $set: { text: updatedText } });
+        expect(oldDoc).to.be.null;
 
-        it("does not update any document when there are no matches", async function (this: AppContext & Mocha.Context) {
-          await insertThreeDocuments();
-
-          const result = await collection.updateOne({ _id: nonExistentId }, { $set: { text: updatedText } });
-          expect(result).to.deep.equal({ matchedCount: 0, modifiedCount: 0 });
-        });
-
-        it("inserts new document if no matches when using 'upsert'", async function (this: AppContext & Mocha.Context) {
-          await insertThreeDocuments();
-
-          const result = await collection.updateOne(
-            { _id: nonExistentId },
-            { $set: { text: updatedText } },
-            { upsert: true },
-          );
-          expect(result).to.deep.equal({
-            matchedCount: 0,
-            modifiedCount: 0,
-            upsertedId: nonExistentId,
-          });
-
-          const count = await collection.count();
-          expect(count).to.equal(4);
-        });
+        // Check that the original text is unchanged
+        const docs = await collection.find();
+        expect(docs).to.have.length(3);
+        for (const doc of docs) {
+          expect(doc.text).to.equal(insertedText);
+        }
       });
 
-      describe("#updateMany", function () {
-        const updatedText = "Updated text";
+      it("inserts new document if no matches when using 'upsert'", async function (this: AppContext & Mocha.Context) {
+        await insertThreeDocuments();
 
-        it("updates documents using query selector", async function (this: AppContext & Mocha.Context) {
-          await insertThreeDocuments();
+        const newDoc = await collection.findOneAndUpdate(
+          { _id: nonExistentId },
+          { $set: { text: updatedText } },
+          {
+            returnNewDocument: true,
+            upsert: true,
+          },
+        );
+        expect(newDoc).to.deep.equal({ _id: nonExistentId, text: updatedText });
 
-          const result = await collection.updateMany({ _id: { $gt: insertedId1 } }, { $set: { text: updatedText } });
-          expect(result).to.deep.equal({ matchedCount: 2, modifiedCount: 2 });
-        });
+        const count = await collection.count();
+        expect(count).to.equal(4);
+      });
+    });
 
-        it("does not update any document when there are no matches", async function (this: AppContext & Mocha.Context) {
-          await insertThreeDocuments();
+    describe("#findOneAndReplace", function () {
+      const updatedText = "Updated text";
 
-          const result = await collection.updateMany({ _id: nonExistentId }, { $set: { text: updatedText } });
-          expect(result).to.deep.equal({ matchedCount: 0, modifiedCount: 0 });
-        });
+      it("replaces specific document", async function (this: AppContext & Mocha.Context) {
+        await insertThreeDocuments();
 
-        it("inserts new document if no matches when using 'upsert'", async function (this: AppContext & Mocha.Context) {
-          await insertThreeDocuments();
-
-          const result = await collection.updateMany(
-            { _id: nonExistentId },
-            { $set: { text: updatedText } },
-            { upsert: true },
-          );
-          expect(result).to.deep.equal({
-            matchedCount: 0,
-            modifiedCount: 0,
-            upsertedId: nonExistentId,
-          });
-
-          const count = await collection.count();
-          expect(count).to.equal(4);
-        });
+        const newDoc = await collection.findOneAndReplace(
+          { _id: insertedId3 },
+          { text: updatedText },
+          { returnNewDocument: true },
+        );
+        expect(newDoc).to.deep.equal({ _id: insertedId3, text: updatedText });
       });
 
-      describe("#deleteOne", function () {
-        it("deletes specific document", async function (this: AppContext & Mocha.Context) {
-          await insertThreeDocuments();
+      it("returns null when there are no matches", async function (this: AppContext & Mocha.Context) {
+        // TODO: Remove this line when we fix the bug regarding not catching the error
+        //       thrown by the callback passed to the bindings `make_network_transport()`
+        //       (see packages/realm/src/app-services/NetworkTransport.ts).
+        throw new Error("Hangs forever (can be fixed once bug is solved)");
 
-          const result = await collection.deleteOne({ _id: insertedId3 });
-          expect(result.deletedCount).to.equal(1);
-        });
+        await insertThreeDocuments();
 
-        it("deletes first returned document using empty filter", async function (this: AppContext & Mocha.Context) {
-          await insertThreeDocuments();
-
-          const result = await collection.deleteOne();
-          expect(result.deletedCount).to.equal(1);
-        });
-
-        it("does not delete any document when there are no matches", async function (this: AppContext & Mocha.Context) {
-          await insertThreeDocuments();
-
-          const result = await collection.deleteOne({ _id: nonExistentId });
-          expect(result.deletedCount).to.equal(0);
-        });
+        const oldDoc = await collection.findOneAndReplace({ _id: nonExistentId }, { text: updatedText });
+        expect(oldDoc).to.be.null;
       });
 
-      describe("#deleteMany", function () {
-        it("deletes all documents using empty filter", async function (this: AppContext & Mocha.Context) {
-          await insertThreeDocuments();
+      it("does not replace any document when there are no matches", async function (this: AppContext & Mocha.Context) {
+        // TODO: Remove this line when we fix the bug regarding not catching the error
+        //       thrown by the callback passed to the bindings `make_network_transport()`
+        //       (see packages/realm/src/app-services/NetworkTransport.ts).
+        throw new Error("Hangs forever (can be fixed once bug is solved)");
 
-          const result = await collection.deleteMany();
-          expect(result.deletedCount).to.equal(3);
-        });
+        await insertThreeDocuments();
 
-        it("deletes documents using query selector", async function (this: AppContext & Mocha.Context) {
-          await insertThreeDocuments();
+        const oldDoc = await collection.findOneAndReplace({ _id: nonExistentId }, { text: updatedText });
+        expect(oldDoc).to.be.null;
 
-          const result = await collection.deleteMany({ _id: { $gt: insertedId1 } });
-          expect(result.deletedCount).to.equal(2);
-        });
+        // Check that the original text is unchanged
+        const docs = await collection.find();
+        expect(docs).to.have.length(3);
+        for (const doc of docs) {
+          expect(doc.text).to.equal(insertedText);
+        }
+      });
+    });
 
-        it("does not delete any document when there are no matches", async function (this: AppContext & Mocha.Context) {
-          await insertThreeDocuments();
+    describe("#findOneAndDelete", function () {
+      it("deletes specific document", async function (this: AppContext & Mocha.Context) {
+        await insertThreeDocuments();
 
-          const result = await collection.deleteMany({ _id: nonExistentId });
-          expect(result.deletedCount).to.equal(0);
-        });
+        const oldDoc = await collection.findOneAndDelete({ _id: insertedId3 });
+        expect(oldDoc).to.deep.equal({ _id: insertedId3, text: insertedText });
+
+        const count = await collection.count();
+        expect(count).to.equal(2);
       });
 
-      describe("#count", function () {
-        it("returns total number of documents using empty filter", async function (this: AppContext & Mocha.Context) {
-          const countBefore = await collection.count();
-          expect(countBefore).to.equal(0);
+      it("deletes first returned document using empty filter", async function (this: AppContext & Mocha.Context) {
+        await insertThreeDocuments();
 
-          await insertThreeDocuments();
+        const oldDoc = await collection.findOneAndDelete();
+        expect(oldDoc).to.deep.equal({ _id: insertedId1, text: insertedText });
 
-          const countAfter = await collection.count();
-          expect(countAfter).to.equal(3);
-        });
-
-        it("returns number of documents using query selector", async function (this: AppContext & Mocha.Context) {
-          await insertThreeDocuments();
-
-          const count = await collection.count({ _id: { $gt: insertedId1 } });
-          expect(count).to.equal(2);
-        });
-
-        it("returns zero when there are no matches", async function (this: AppContext & Mocha.Context) {
-          const count = await collection.count({ _id: nonExistentId });
-          expect(count).to.equal(0);
-        });
+        const count = await collection.count();
+        expect(count).to.equal(2);
       });
 
-      describe("#aggregate", function () {
-        it("aggregates documents using multiple pipeline stages", async function (this: AppContext & Mocha.Context) {
-          await insertThreeDocuments();
+      it("returns null when there are no matches", async function (this: AppContext & Mocha.Context) {
+        // TODO: Remove this line when we fix the bug regarding not catching the error
+        //       thrown by the callback passed to the bindings `make_network_transport()`
+        //       (see packages/realm/src/app-services/NetworkTransport.ts).
+        throw new Error("Hangs forever (can be fixed once bug is solved)");
 
-          const result = await collection.aggregate([
-            // Filter all docs with `_id` > `insertedId1`.
-            { $match: { _id: { $gt: insertedId1 } } },
-            // Return a single doc (`_id: null`) with property `count` set to the number of filtered docs.
-            { $group: { _id: null, count: { $sum: 1 } } },
-            // Remove the `_id` field from the result.
-            { $project: { _id: false } },
-          ]);
-          expect(result).to.deep.equal([{ count: 2 }]);
+        await insertThreeDocuments();
 
-          // Note:
-          // If getting `Error: exec: "assisted_agg": executable file not found in $PATH`:
-          //  1) Download the file `assisted_agg` (if on Mac) or `libmongo.so` (if on Linux) and add it
-          //     to your PATH (see https://github.com/10gen/baas/blob/master/etc/docs/onboarding.md).
-          //  2) Load the PATH variable to the terminal window used for starting the BaaS server.
-          //  3) Allow the file to be executable (run: chmod +x your/path/to/assisted_agg).
-          //  4) When running the test again, Mac will block execution of the file. Then (for Mac) go
-          //     to `System Settings > Privacy & Security`, find blocked files, then allow `assisted_agg`.
-          //  5) Run the test.
+        const oldDoc = await collection.findOneAndDelete({ _id: nonExistentId });
+        expect(oldDoc).to.be.null;
+      });
+
+      it("does not delete any document when there are no matches", async function (this: AppContext & Mocha.Context) {
+        // TODO: Remove this line when we fix the bug regarding not catching the error
+        //       thrown by the callback passed to the bindings `make_network_transport()`
+        //       (see packages/realm/src/app-services/NetworkTransport.ts).
+        throw new Error("Hangs forever (can be fixed once bug is solved)");
+
+        await insertThreeDocuments();
+
+        const oldDoc = await collection.findOneAndDelete({ _id: nonExistentId });
+        expect(oldDoc).to.be.null;
+
+        const count = await collection.count();
+        expect(count).to.equal(3);
+      });
+    });
+
+    describe("#insertOne", function () {
+      it("inserts document with id", async function (this: AppContext & Mocha.Context) {
+        const result = await collection.insertOne({ _id: insertedId1 });
+        expect(result.insertedId).to.equal(insertedId1);
+
+        const count = await collection.count();
+        expect(count).to.equal(1);
+      });
+
+      it("inserts document without id", async function (this: AppContext & Mocha.Context) {
+        const result = await collection.insertOne({ text: insertedText });
+        expect(result.insertedId).to.be.instanceOf(BSON.ObjectId);
+
+        const count = await collection.count();
+        expect(count).to.equal(1);
+      });
+
+      it("throws if inserting document with existing id", async function (this: AppContext & Mocha.Context) {
+        await collection.insertOne({ _id: insertedId1 });
+
+        await expect(collection.insertOne({ _id: insertedId1 })).to.be.rejectedWith("Duplicate key error");
+      });
+    });
+
+    describe("#insertMany", function () {
+      it("inserts documents with ids", async function (this: AppContext & Mocha.Context) {
+        const result = await collection.insertMany([{ _id: insertedId1 }, { _id: insertedId2 }, { _id: insertedId3 }]);
+        expect(result.insertedIds).to.have.length(3);
+
+        const count = await collection.count();
+        expect(count).to.equal(3);
+      });
+
+      it("inserts documents without ids", async function (this: AppContext & Mocha.Context) {
+        const result = await collection.insertMany([
+          { text: insertedText },
+          { text: insertedText },
+          { text: insertedText },
+        ]);
+        expect(result.insertedIds).to.have.length(3);
+        for (const insertedId of result.insertedIds) {
+          expect(insertedId).to.be.instanceOf(BSON.ObjectId);
+        }
+
+        const count = await collection.count();
+        expect(count).to.equal(3);
+      });
+
+      it("throws if inserting document with existing id", async function (this: AppContext & Mocha.Context) {
+        await collection.insertMany([{ _id: insertedId1 }]);
+
+        await expect(collection.insertMany([{ _id: insertedId1 }])).to.be.rejectedWith("Duplicate key error");
+      });
+    });
+
+    describe("#updateOne", function () {
+      const updatedText = "Updated text";
+
+      it("updates specific document", async function (this: AppContext & Mocha.Context) {
+        await insertThreeDocuments();
+
+        const result = await collection.updateOne({ _id: insertedId3 }, { $set: { text: updatedText } });
+        expect(result).to.deep.equal({ matchedCount: 1, modifiedCount: 1 });
+      });
+
+      it("does not update any document when there are no matches", async function (this: AppContext & Mocha.Context) {
+        await insertThreeDocuments();
+
+        const result = await collection.updateOne({ _id: nonExistentId }, { $set: { text: updatedText } });
+        expect(result).to.deep.equal({ matchedCount: 0, modifiedCount: 0 });
+      });
+
+      it("inserts new document if no matches when using 'upsert'", async function (this: AppContext & Mocha.Context) {
+        await insertThreeDocuments();
+
+        const result = await collection.updateOne(
+          { _id: nonExistentId },
+          { $set: { text: updatedText } },
+          { upsert: true },
+        );
+        expect(result).to.deep.equal({
+          matchedCount: 0,
+          modifiedCount: 0,
+          upsertedId: nonExistentId,
         });
+
+        const count = await collection.count();
+        expect(count).to.equal(4);
+      });
+    });
+
+    describe("#updateMany", function () {
+      const updatedText = "Updated text";
+
+      it("updates documents using query selector", async function (this: AppContext & Mocha.Context) {
+        await insertThreeDocuments();
+
+        const result = await collection.updateMany({ _id: { $gt: insertedId1 } }, { $set: { text: updatedText } });
+        expect(result).to.deep.equal({ matchedCount: 2, modifiedCount: 2 });
+      });
+
+      it("does not update any document when there are no matches", async function (this: AppContext & Mocha.Context) {
+        await insertThreeDocuments();
+
+        const result = await collection.updateMany({ _id: nonExistentId }, { $set: { text: updatedText } });
+        expect(result).to.deep.equal({ matchedCount: 0, modifiedCount: 0 });
+      });
+
+      it("inserts new document if no matches when using 'upsert'", async function (this: AppContext & Mocha.Context) {
+        await insertThreeDocuments();
+
+        const result = await collection.updateMany(
+          { _id: nonExistentId },
+          { $set: { text: updatedText } },
+          { upsert: true },
+        );
+        expect(result).to.deep.equal({
+          matchedCount: 0,
+          modifiedCount: 0,
+          upsertedId: nonExistentId,
+        });
+
+        const count = await collection.count();
+        expect(count).to.equal(4);
+      });
+    });
+
+    describe("#deleteOne", function () {
+      it("deletes specific document", async function (this: AppContext & Mocha.Context) {
+        await insertThreeDocuments();
+
+        const result = await collection.deleteOne({ _id: insertedId3 });
+        expect(result.deletedCount).to.equal(1);
+      });
+
+      it("deletes first returned document using empty filter", async function (this: AppContext & Mocha.Context) {
+        await insertThreeDocuments();
+
+        const result = await collection.deleteOne();
+        expect(result.deletedCount).to.equal(1);
+      });
+
+      it("does not delete any document when there are no matches", async function (this: AppContext & Mocha.Context) {
+        await insertThreeDocuments();
+
+        const result = await collection.deleteOne({ _id: nonExistentId });
+        expect(result.deletedCount).to.equal(0);
+      });
+    });
+
+    describe("#deleteMany", function () {
+      it("deletes all documents using empty filter", async function (this: AppContext & Mocha.Context) {
+        await insertThreeDocuments();
+
+        const result = await collection.deleteMany();
+        expect(result.deletedCount).to.equal(3);
+      });
+
+      it("deletes documents using query selector", async function (this: AppContext & Mocha.Context) {
+        await insertThreeDocuments();
+
+        const result = await collection.deleteMany({ _id: { $gt: insertedId1 } });
+        expect(result.deletedCount).to.equal(2);
+      });
+
+      it("does not delete any document when there are no matches", async function (this: AppContext & Mocha.Context) {
+        await insertThreeDocuments();
+
+        const result = await collection.deleteMany({ _id: nonExistentId });
+        expect(result.deletedCount).to.equal(0);
+      });
+    });
+
+    describe("#count", function () {
+      it("returns total number of documents using empty filter", async function (this: AppContext & Mocha.Context) {
+        const countBefore = await collection.count();
+        expect(countBefore).to.equal(0);
+
+        await insertThreeDocuments();
+
+        const countAfter = await collection.count();
+        expect(countAfter).to.equal(3);
+      });
+
+      it("returns number of documents using query selector", async function (this: AppContext & Mocha.Context) {
+        await insertThreeDocuments();
+
+        const count = await collection.count({ _id: { $gt: insertedId1 } });
+        expect(count).to.equal(2);
+      });
+
+      it("returns zero when there are no matches", async function (this: AppContext & Mocha.Context) {
+        const count = await collection.count({ _id: nonExistentId });
+        expect(count).to.equal(0);
+      });
+    });
+
+    describe("#aggregate", function () {
+      it("aggregates documents using multiple pipeline stages", async function (this: AppContext & Mocha.Context) {
+        await insertThreeDocuments();
+
+        const result = await collection.aggregate([
+          // Filter all docs with `_id` > `insertedId1`.
+          { $match: { _id: { $gt: insertedId1 } } },
+          // Return a single doc (`_id: null`) with property `count` set to the number of filtered docs.
+          { $group: { _id: null, count: { $sum: 1 } } },
+          // Remove the `_id` field from the result.
+          { $project: { _id: false } },
+        ]);
+        expect(result).to.deep.equal([{ count: 2 }]);
+
+        // Note:
+        // If getting `Error: exec: "assisted_agg": executable file not found in $PATH`:
+        //  1) Download the file `assisted_agg` (if on Mac) or `libmongo.so` (if on Linux) and add it
+        //     to your PATH (see https://github.com/10gen/baas/blob/master/etc/docs/onboarding.md).
+        //  2) Load the PATH variable to the terminal window used for starting the BaaS server.
+        //  3) Allow the file to be executable (run: chmod +x your/path/to/assisted_agg).
+        //  4) When running the test again, Mac will block execution of the file. Then (for Mac) go
+        //     to `System Settings > Privacy & Security`, find blocked files, then allow `assisted_agg`.
+        //  5) Run the test.
       });
     });
 
