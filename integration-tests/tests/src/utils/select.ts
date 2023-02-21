@@ -30,8 +30,8 @@ export function select<T>(platformValues: PlatformValues<T>): T {
       return value;
     }
   }
-  if (!platformValues.default) {
-    throw new Error("Given platform did not cover current environment and no default was set.");
+  if ("default" in platformValues) {
+    return platformValues.default as T;
   }
-  return platformValues.default;
+  throw new Error("Given platform did not cover current environment and no default was set.");
 }

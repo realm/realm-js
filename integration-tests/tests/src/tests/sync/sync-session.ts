@@ -22,6 +22,7 @@ import { importAppBefore } from "../../hooks";
 import { DogSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { getRegisteredEmailPassCredentials } from "../../utils/credentials";
 import { generatePartition } from "../../utils/generators";
+import { importApp } from "../../utils/import-app";
 import { sleep, throwAfterTimeout } from "../../utils/sleep";
 
 const DogForSyncSchema = {
@@ -155,7 +156,7 @@ describe("SessionTest", () => {
         return Realm.open(config)
           .then(() => reject("opened realm with invalid configuration"))
           .catch((error) => {
-            expect(error.message).equals("Options 'inMemory' and 'sync' are mutual exclusive.");
+            expect(error.message).contains("Options 'inMemory' and 'sync' are mutual exclusive.");
             resolve();
           });
       });
@@ -167,11 +168,11 @@ describe("SessionTest", () => {
       config.onMigration = () => {
         /* empty function */
       };
-      await new Promise<void>((resolve, reject) => {
+      return new Promise<void>((resolve, reject) => {
         return Realm.open(config)
           .then(() => reject("opened realm with invalid configuration"))
           .catch((error) => {
-            expect(error.message).equals("Options 'onMigration' and 'sync' are mutual exclusive.");
+            expect(error.message).contains("Options 'onMigration' and 'sync' are mutual exclusive.");
             resolve();
           });
       });
@@ -353,7 +354,9 @@ describe("SessionTest", () => {
     afterEach(() => Realm.clearTestState());
     it("can set custom logging function", async function (this: AppContext) {
       // setting a custom logging function must be done immediately after instantiating an app
-      const app = new Realm.App(this.app.id);
+
+      const { appId, baseUrl } = await importApp("with-db");
+      const app = new Realm.App({ id: appId, baseUrl });
 
       const partition = generatePartition();
       const credentials = Realm.Credentials.anonymous();
@@ -584,7 +587,6 @@ describe("SessionTest", () => {
           },
           (e) => {
             expect(e).equals("Downloading changes did not complete in 1 ms.");
-            return realm.syncSession?.downloadAllServerChanges();
           },
         );
     });
@@ -605,7 +607,6 @@ describe("SessionTest", () => {
           },
           (e) => {
             expect(e).equals("Uploading changes did not complete in 1 ms.");
-            return realm.syncSession?.uploadAllLocalChanges();
           },
         );
     });

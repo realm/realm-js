@@ -541,7 +541,8 @@ describe("OpenBehaviour", function () {
       await openPromise2;
       throw new Error("openPromise2 should have been rejected..");
     } catch (err: any) {
-      expect(err.message).equals("Operation canceled");
+      //platforms either return "Operation canceled" or "Operation Canceled"
+      expect((err.message as string).toLowerCase()).equals("operation canceled");
     }
   });
 
