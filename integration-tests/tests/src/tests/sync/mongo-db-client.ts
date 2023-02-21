@@ -542,6 +542,32 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           expect(count).to.equal(0);
         });
       });
+
+      describe("#aggregate", function () {
+        it("aggregates documents using multiple pipeline stages", async function (this: AppContext & Mocha.Context) {
+          await insertThreeDocuments();
+
+          const result = await collection.aggregate([
+            // Filter all docs with `_id` > `insertedId1`.
+            { $match: { _id: { $gt: insertedId1 } } },
+            // Return a single doc (`_id: null`) with property `count` set to the number of filtered docs.
+            { $group: { _id: null, count: { $sum: 1 } } },
+            // Remove the `_id` field from the result.
+            { $project: { _id: false } },
+          ]);
+          expect(result).to.deep.equal([{ count: 2 }]);
+
+          // Note:
+          // If getting `Error: exec: "assisted_agg": executable file not found in $PATH`:
+          //  1) Download the file `assisted_agg` (if on Mac) or `libmongo.so` (if on Linux) and add it
+          //     to your PATH (see https://github.com/10gen/baas/blob/master/etc/docs/onboarding.md).
+          //  2) Load the PATH variable to the terminal window used for starting the BaaS server.
+          //  3) Allow the file to be executable (run: chmod +x your/path/to/assisted_agg).
+          //  4) When running the test again, Mac will block execution of the file. Then (for Mac) go
+          //     to `System Settings > Privacy & Security`, find blocked files, then allow `assisted_agg`.
+          //  5) Run the test.
+        });
+      });
     });
 
     describe("#watch", function () {
