@@ -7,6 +7,11 @@ on:
         description: Use this to provide a version, instead of deriving it from the changelog.
         required: false
         type: string
+      branch:
+        description: Use this to provide a branch, instead of the default master.
+        required: false
+        type: string
+        default: 'master'
 
 jobs:
   prepare-release:
@@ -14,6 +19,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.branch }}
 
       # action is at https://github.com/realm/ci-actions/tree/main/update-changelog
       - name: Update Changelog
