@@ -331,12 +331,12 @@ jobs:
 
       - name: Create Mocha Env
         id: mocha-env
-        run: echo "name=syncLogLevel=warn,longTimeout=${{ env.LONG_TIMEOUT }},realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ secrets.ATLAS_QA_DAILY_CLUSTER_NAME }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}" >> $GITHUB_OUTPUT
+        run: echo "mrc=syncLogLevel=warn,longTimeout=${{ env.LONG_TIMEOUT }},realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ secrets.ATLAS_QA_DAILY_CLUSTER_NAME }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}" >> $GITHUB_OUTPUT
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ (matrix.variant.os != 'android') && (matrix.variant.os != 'ios') }}
         env:
-          MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.name }}
+          MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.mrc }}
         # The non react native environments should not take so long
         timeout-minutes: 20
         run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
@@ -344,7 +344,7 @@ jobs:
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ (matrix.variant.os == 'ios') }}
         env:
-          MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.name }}
+          MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.mrc }}
         timeout-minutes: 45
         run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
@@ -378,7 +378,7 @@ jobs:
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ (matrix.variant.os == 'android') }}
         env:
-          MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.name }}
+          MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.mrc }}
         timeout-minutes: 45
         uses: reactivecircus/android-emulator-runner@v2
         with:
