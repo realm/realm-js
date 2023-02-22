@@ -14,7 +14,14 @@ AWS_ACCESS_KEY_ID=...
 AWS_SECRET_ACCESS_KEY=...
 ```
 
-Be sure to have `assisted_agg` (if on Mac) or `libmongo.so` (if on Linux) downloaded and added to your PATH. More info about where to get it can be found [in the BAAS repo](https://github.com/10gen/baas/blob/master/etc/docs/onboarding.md).
+A file called `assisted_agg` needs to be downloaded in order for MongoDB aggregation tests to run:
+1. Download the file `assisted_agg` (if on Mac) or `libmongo.so` (if on Linux) and add it
+   to your `PATH` (see [BaaS Local Environment Setup](https://github.com/10gen/baas/blob/master/etc/docs/onboarding.md)).
+2. Load the `PATH` variable to the terminal window used for starting the BaaS server.
+3. Allow the file to be executable (run: `chmod +x your/path/to/assisted_agg`).
+4. When running the test again, Mac will block execution of the file. Then (for Mac) go
+   to `System Settings > Privacy & Security`, find blocked files, then allow `assisted_agg`.
+5. Run the test.
 
 Run the `start` script, sit back and relax as a mongo server is started, BaaS is pulled, built and started with a proper configuration 🤞
 
