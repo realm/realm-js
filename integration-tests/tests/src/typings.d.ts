@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-type Realm = import("realm").Realm;
 type RealmObject = import("realm").Object;
 type App = import("realm").App;
 type User = import("realm").User;
