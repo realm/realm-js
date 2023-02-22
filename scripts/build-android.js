@@ -37,13 +37,6 @@ if (!fs.existsSync(ndkPath)) {
   process.exit(1);
 }
 
-//simple validation of current directory.
-const rnDir = path.resolve(packageRoot, "react-native");
-if (!fs.existsSync(rnDir)) {
-  console.error("This script needs to be run at the root dir of the project");
-  process.exit(1);
-}
-
 const buildTypes = ["Debug", "Release", "RelWithDebInfo", "MinSizeRel"];
 let architectures = ["x86", "armeabi-v7a", "arm64-v8a", "x86_64"];
 const optionDefinitions = [
