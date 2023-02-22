@@ -53,4 +53,6 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BAAS_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BAAS_AWS_SECRET_ACCESS_KEY }}
-          MONGODB_REALM_TEST_SERVER: "2022-06-15"
+          MDB_REALM_BASE_URL: ${{ secrets.REALM_QA_BASE_URL }}
+          MDB_REALM_PUBLIC_KEY: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+          MDB_REALM_PRIVATE_KEY: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}

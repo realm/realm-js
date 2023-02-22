@@ -18,15 +18,35 @@
 
 import path from "path";
 
-import { AppImporter } from "@realm/app-importer";
+import { AppImporter, Credentials } from "@realm/app-importer";
 
-const MDB_REALM_BASE_URL = process.env.MDB_REALM_BASE_URL || "http://localhost:9090";
-const MDB_REALM_USERNAME = process.env.MDB_REALM_USERNAME || "unique_user@domain.com";
-const MDB_REALM_PASSWORD = process.env.MDB_REALM_PASSWORD || "password";
+const {
+  MDB_REALM_BASE_URL = "http://localhost:9090",
+  MDB_REALM_USERNAME = "unique_user@domain.com",
+  MDB_REALM_PASSWORD = "password",
+  MDB_REALM_PUBLIC_KEY,
+  MDB_REALM_PRIVATE_KEY,
+} = process.env;
 
 const MDB_REALM_APP_ID = process.env.MDB_REALM_APP_ID;
 
 const MDB_REALM_SKIP_CLEANUP = process.env.MDB_REALM_SKIP_CLEANUP === "true";
+
+function buildCredentials(): Credentials {
+  if (MDB_REALM_PUBLIC_KEY && MDB_REALM_PRIVATE_KEY) {
+    return {
+      kind: "api-key",
+      publicKey: MDB_REALM_PUBLIC_KEY,
+      privateKey: MDB_REALM_PRIVATE_KEY,
+    };
+  } else {
+    return {
+      kind: "username-password",
+      username: MDB_REALM_USERNAME,
+      password: MDB_REALM_PASSWORD,
+    };
+  }
+}
 
 export async function importRealmApp() {
   // Create a new MongoDBRealmService
@@ -37,11 +57,7 @@ export async function importRealmApp() {
   } else {
     const importer = new AppImporter({
       baseUrl,
-      credentials: {
-        kind: "username-password",
-        username: MDB_REALM_USERNAME,
-        password: MDB_REALM_PASSWORD,
-      },
+      credentials: buildCredentials(),
       appsDirectoryPath: path.resolve(__dirname, "../imported-apps"),
       realmConfigPath: path.resolve(__dirname, "../realm-config"),
       cleanUp: !MDB_REALM_SKIP_CLEANUP,
