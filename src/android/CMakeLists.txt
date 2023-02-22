@@ -21,7 +21,7 @@ set_target_properties(realm-js-android PROPERTIES
     OUTPUT_NAME "realm"
     PREFIX "lib"
     SUFFIX ".so"
-    LIBRARY_OUTPUT_DIRECTORY "${PACKAGE_ROOT_DIR}/react-native/android/src/main/jniLibs/${ANDROID_ABI}"
+    LIBRARY_OUTPUT_DIRECTORY "${PACKAGE_ROOT_DIR}/packages/realm/react-native/android/src/main/jniLibs/${ANDROID_ABI}"
 )
 
 target_compile_definitions(realm-js-android PRIVATE
