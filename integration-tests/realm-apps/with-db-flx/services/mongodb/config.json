@@ -4,22 +4,7 @@
   "config": {
     "flexible_sync": {
       "state": "enabled",
-      "database_name": "test-database",
-      "queryable_fields_names": [
-        "age",
-        "name"
-      ],
-      "permissions": {
-        "rules": {},
-        "defaultRoles": [
-          {
-            "name": "all",
-            "applyWhen": {},
-            "read": true,
-            "write": true
-          }
-        ]
-      }
+      "database_name": "test-database"
     }
   },
   "secret_config": {

@@ -1,0 +1,14 @@
+{
+	"roles": [{
+			"name": "defaultRole",
+			"apply_when": {},
+			"document_filters": {
+					"read": true,
+					"write": true
+			},
+			"write": true,
+			"read": true,
+			"insert": true,
+			"delete": true
+	}]
+}
