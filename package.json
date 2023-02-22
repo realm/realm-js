@@ -60,7 +60,7 @@
     "build-changes:x64": "cmake-js build --debug --arch x64",
     "build-changes:arm": "cmake-js build --debug --arch arm64",
     "jenkins-build": "npm ci --ignore-scripts && prebuild",
-    "rebuild-changes": "cmake-js rebuild --debug && cd tests && npm install",
+    "rebuild-changes": "cmake-js rebuild --debug",
     "prebuild:android": "node scripts/build-android.js",
     "prebuild:ios": "scripts/build-ios.sh",
     "prebuild:node": "prebuild",
