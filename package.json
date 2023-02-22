@@ -76,6 +76,6 @@
       }
   },
   "devDependencies": {
-    "react-native": "0.71.0-rc.5"
+    "react-native": "0.71.0"
   }
 }
