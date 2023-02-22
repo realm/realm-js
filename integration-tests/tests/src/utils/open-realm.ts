@@ -16,15 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Realm, Configuration, SyncConfiguration, User, BSON } from "realm";
-
-// Either the sync property is left out (local Realm)
-export type LocalConfiguration = Omit<Configuration, "sync"> & { sync?: never };
-// Or the sync parameter is present
-export type SyncedConfiguration = Omit<Configuration, "sync"> & {
-  sync?: Partial<SyncConfiguration>;
-};
-export type OpenRealmConfiguration = LocalConfiguration | SyncedConfiguration;
+import { Realm, Configuration, User, BSON, ConfigurationWithSync, ConfigurationWithoutSync } from "realm";
 
 /**
  * Open a Realm for test usage with the specified config. By default this will use
@@ -35,14 +27,14 @@ export type OpenRealmConfiguration = LocalConfiguration | SyncedConfiguration;
  * @returns
  */
 export async function openRealm(
-  partialConfig: LocalConfiguration | SyncedConfiguration = {},
+  partialConfig: ConfigurationWithoutSync | Partial<ConfigurationWithSync> = {},
   user: User,
 ): Promise<{ config: Configuration; realm: Realm }> {
   const nonce = new BSON.ObjectId().toHexString();
   const path = `temp-${nonce}.realm`;
 
   if (!partialConfig.sync) {
-    const config = { ...partialConfig, path } as LocalConfiguration;
+    const config = { ...partialConfig, path } as ConfigurationWithoutSync;
     const realm = await Realm.open(config);
     return { config, realm };
   } else {
@@ -50,12 +42,13 @@ export async function openRealm(
       ...partialConfig,
       path,
       sync: {
-        user: user,
         ...(partialConfig.sync.flexible ? { flexible: true } : { partitionValue: nonce }),
-        _sessionStopPolicy: "immediately",
         ...partialConfig.sync,
+        user: user,
+        //@ts-expect-error Internal field
+        _sessionStopPolicy: "immediately",
       },
-    } as Configuration;
+    } as ConfigurationWithSync;
     const realm = await Realm.open(config);
 
     // Upload the schema, ensuring a valid connection. uploadAllLocalChanges
