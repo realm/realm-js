@@ -45,6 +45,7 @@ const transpilerBinPath = path.resolve(transpilerPath, "bin");
 const baasTmpPath = path.resolve(baasPath, "tmp");
 const dylibFilename = "libstitch_support.dylib";
 const dylibUsrLocalLibPath = "/usr/local/lib/" + dylibFilename;
+const assistedAggPath = path.resolve(baasPath, "assisted_agg");
 
 function sleep(ms = 1000) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -153,6 +154,17 @@ function ensureBaasDylib() {
     console.log(`Missing the ${dylibUsrLocalLibPath} - linking! (will ask for your sudo password)`);
     const existingPath = path.resolve(dylibPath, "lib", dylibFilename);
     execSync(`sudo ln -s '${existingPath}' '${dylibUsrLocalLibPath}'`);
+  }
+}
+
+function ensureBaasAssistedAgg() {
+  if (fs.existsSync(assistedAggPath)) {
+    // Ensure it's writeable
+    execSync(`chmod u+x "${assistedAggPath}"`);
+  } else {
+    throw new Error(
+      `Missing 'assisted_agg': Find its URL in https://github.com/10gen/baas/blob/master/etc/docs/onboarding.md and download it into ${baasPath}`,
+    );
   }
 }
 
@@ -267,7 +279,7 @@ function spawnBaaS() {
   execSync("go build -o baas_server cmd/server/main.go", { cwd: baasPath, stdio: "inherit" });
   spawn(chalk.blueBright("baas"), "./baas_server", ["--configFile", "./etc/configs/test_config.json"], {
     cwd: baasPath,
-    env: { ...process.env, PATH: process.env.PATH + ":" + transpilerBinPath },
+    env: { ...process.env, PATH: [process.env.PATH, path.dirname(assistedAggPath), transpilerBinPath].join(":") },
   });
 }
 
@@ -281,6 +293,7 @@ try {
   ensureBaasUIRepo();
 
   ensureBaasDylib();
+  ensureBaasAssistedAgg();
   ensureBaasTranspiler();
   ensureBaasUI();
   ensureBaasTmpDir();
