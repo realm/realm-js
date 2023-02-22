@@ -35,6 +35,7 @@ import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "..
 import { DogSchema, IPerson, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { closeAndReopenRealm, closeRealm } from "../../utils/close-realm";
 import { expectClientResetError } from "../../utils/expect-sync-error";
+import { createSyncConfig } from "../../utils/open-realm";
 
 const FlexiblePersonSchema = { ...PersonSchema, properties: { ...PersonSchema.properties, nonQueryable: "string?" } };
 
@@ -119,6 +120,16 @@ async function addSubscriptionAndSync<T>(
 
   return { subs, sub, query };
 }
+
+describe.only("CancelOnWait", function () {
+  importAppBefore("with-db-flx");
+  authenticateUserBefore();
+
+  it("Main test", async function () {
+    const config = createSyncConfig({}, this.user);
+    const result = await openRealm(config, this.user);
+  });
+});
 
 describe.skipIf(environment.missingServer, "Flexible sync", function () {
   this.timeout(60_000); // TODO: Temporarily hardcoded until envs are set up.

@@ -90,6 +90,7 @@ export async function importApp(
   name: string,
   replacements: TemplateReplacements = getDefaultReplacements(name),
 ): Promise<App> {
+  const timeout = 20000; //TODO Need to check how can I add this parameter to the method in an easy way (can't have named parameters in TS)
   const { baseUrl, appImporterUrl } = getUrls();
 
   if (appImporterIsRemote) {
@@ -124,7 +125,7 @@ export async function importApp(
 
     const { appId } = await importer.importApp(appTemplatePath, replacements);
 
-    return new App({ baseUrl, id: appId });
+    return new App({ baseUrl, id: appId, timeout });
   }
 }
 

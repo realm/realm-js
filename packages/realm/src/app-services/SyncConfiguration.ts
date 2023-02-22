@@ -253,10 +253,21 @@ function parseRecoverOrDiscardUnsyncedChanges(clientReset: ClientResetRecoverOrD
  */
 export function validateSyncConfiguration(config: unknown): asserts config is SyncConfiguration {
   assert.object(config, "'sync' on realm configuration", { allowArrays: false });
-  const { user, newRealmFileBehavior, existingRealmFileBehavior, onError, customHttpHeaders, clientReset, flexible } =
-    config;
+  const {
+    user,
+    newRealmFileBehavior,
+    existingRealmFileBehavior,
+    onError,
+    customHttpHeaders,
+    clientReset,
+    flexible,
+    cancelWaitOnNonFatalError,
+  } = config;
 
   assert.instanceOf(user, User, "'user' on realm sync configuration");
+  if (cancelWaitOnNonFatalError != undefined) {
+    assert.boolean(cancelWaitOnNonFatalError, "`cancelWaitOnNonFatalError` on sync configuration");
+  }
   if (newRealmFileBehavior !== undefined) {
     validateOpenRealmBehaviorConfiguration(newRealmFileBehavior, "newRealmFileBehavior");
   }
