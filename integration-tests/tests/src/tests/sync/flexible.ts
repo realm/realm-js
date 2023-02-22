@@ -216,6 +216,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
       it("accepts { flexible: undefined } and a partition value", function () {
         expect(() => {
+          //@ts-expect-error Should show an error when defining flexible field with partition value.
           new Realm({
             sync: {
               _sessionStopPolicy: SessionStopPolicy.Immediately,

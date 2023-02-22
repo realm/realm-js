@@ -25,6 +25,7 @@ import Realm, {
   App,
   Configuration,
   ConfigurationWithSync,
+  SyncError,
 } from "realm";
 import { authenticateUserBefore, importAppBefore } from "../../hooks";
 import { DogSchema, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
@@ -317,18 +318,20 @@ function getSchema(useFlexibleSync: boolean) {
       it(`handles manual simulated client resets with ${getPartialTestTitle(
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
-        await expectClientResetError(
-          {
-            schema: getSchema(useFlexibleSync),
-            sync: {
-              _sessionStopPolicy: SessionStopPolicy.Immediately,
-              ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
-              user: this.user,
-              clientReset: {
-                mode: ClientResetMode.Manual,
-              },
+        const config: ConfigurationWithSync = {
+          schema: getSchema(useFlexibleSync),
+          sync: {
+            //@ts-expect-error Internal field
+            _sessionStopPolicy: SessionStopPolicy.Immediately,
+            ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
+            user: this.user,
+            clientReset: {
+              mode: ClientResetMode.Manual,
             },
           },
+        };
+        await expectClientResetError(
+          config,
           this.user,
           (realm) => {
             if (useFlexibleSync) {
@@ -339,7 +342,7 @@ function getSchema(useFlexibleSync: boolean) {
             // @ts-ignore calling undocumented method _simulateError
             session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false); // 211 -> diverging histories
           },
-          (error) => {
+          (error: SyncError) => {
             expect(error.name).to.equal("ClientReset");
             expect(error.message).to.equal("Simulate Client Reset");
             expect(error.code).to.equal(211);

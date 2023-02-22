@@ -79,6 +79,7 @@ describe.skipIf(environment.missingServer, "Asymmetric sync", function () {
     it("an asymmetric schema cannot be queried through '_objectForObjectKey()'", function (this: RealmContext) {
       expect(() => {
         // A valid objectKey is not needed for this test
+        //@ts-expect-error Should not be correct usage
         this.realm._objectForObjectKey(PersonSchema.name, "12345");
       }).to.throw("You cannot query an asymmetric object.");
     });
