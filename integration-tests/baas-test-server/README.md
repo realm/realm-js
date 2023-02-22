@@ -21,7 +21,6 @@ A file called `assisted_agg` needs to be downloaded in order for MongoDB aggrega
 3. Allow the file to be executable (run: `chmod +x your/path/to/assisted_agg`).
 4. When running the test again, Mac will block execution of the file. Then (for Mac) go
    to `System Settings > Privacy & Security`, find blocked files, then allow `assisted_agg`.
-5. Run the test.
 
 Run the `start` script, sit back and relax as a mongo server is started, BaaS is pulled, built and started with a proper configuration 🤞
 
