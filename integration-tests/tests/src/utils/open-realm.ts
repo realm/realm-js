@@ -35,7 +35,7 @@ export type OpenRealmConfiguration = LocalConfiguration | SyncedConfiguration;
  * @returns
  */
 export async function openRealm(
-  partialConfig: LocalConfiguration | SyncedConfiguration = {},
+  partialConfig: LocalConfiguration | Partial<SyncedConfiguration> = {},
   user: User | undefined,
 ): Promise<{ config: Configuration; realm: Realm }> {
   if (!partialConfig.sync) {
