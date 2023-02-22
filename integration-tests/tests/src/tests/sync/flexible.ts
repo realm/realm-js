@@ -29,7 +29,14 @@
 // fraction too long.
 
 import { expect } from "chai";
-import { BSON, ClientResetMode, FlexibleSyncConfiguration, Realm, SessionStopPolicy } from "realm";
+import {
+  BSON,
+  ClientResetMode,
+  ConfigurationWithSync,
+  FlexibleSyncConfiguration,
+  Realm,
+  SessionStopPolicy,
+} from "realm";
 
 import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "../../hooks";
 import { DogSchema, IPerson, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
@@ -135,17 +142,29 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
     describe("flexible sync Realm config", function () {
       it("accepts a { flexible: true } option", function () {
         expect(() => {
-          new Realm({
-            sync: { _sessionStopPolicy: SessionStopPolicy.Immediately, flexible: true, user: this.user },
-          });
+          const config: ConfigurationWithSync = {
+            sync: {
+              flexible: true,
+              user: this.user,
+              //@ts-expect-error Internal field
+              _sessionStopPolicy: SessionStopPolicy.Immediately,
+            },
+          };
+          new Realm(config);
         }).to.not.throw();
       });
 
       it("can be constructed asynchronously", async function () {
         const openRealm = async () => {
-          await Realm.open({
-            sync: { _sessionStopPolicy: SessionStopPolicy.Immediately, flexible: true, user: this.user },
-          });
+          const config: ConfigurationWithSync = {
+            sync: {
+              flexible: true,
+              user: this.user,
+              //@ts-expect-error Internal field
+              _sessionStopPolicy: SessionStopPolicy.Immediately,
+            },
+          };
+          await Realm.open(config);
         };
 
         await expect(openRealm()).to.not.be.rejected;
@@ -183,6 +202,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
       it("accepts { flexible: undefined } and a partition value", function () {
         expect(() => {
+          //@ts-expect-error Should show an error when defining flexible field with partition value.
           new Realm({
             sync: {
               _sessionStopPolicy: SessionStopPolicy.Immediately,
@@ -202,6 +222,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           return {
             schema: [FlexiblePersonSchema, DogSchema],
             sync: {
+              //@ts-expect-error Internal field
               _sessionStopPolicy: SessionStopPolicy.Immediately,
               flexible: true,
               user,

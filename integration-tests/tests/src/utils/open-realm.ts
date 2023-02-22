@@ -16,7 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Realm, Configuration, User, BSON, ConfigurationWithSync, ConfigurationWithoutSync } from "realm";
+import {
+  Realm,
+  Configuration,
+  User,
+  BSON,
+  ConfigurationWithSync,
+  ConfigurationWithoutSync,
+  SyncConfiguration,
+} from "realm";
+
+type ConfigurationWithSyncPartial = Omit<ConfigurationWithSync, "sync"> & {
+  sync: Partial<SyncConfiguration>;
+};
+
+export type OpenRealmConfiguration = ConfigurationWithoutSync | ConfigurationWithSyncPartial;
 
 /**
  * Open a Realm for test usage with the specified config. By default this will use
@@ -27,7 +41,7 @@ import { Realm, Configuration, User, BSON, ConfigurationWithSync, ConfigurationW
  * @returns
  */
 export async function openRealm(
-  partialConfig: ConfigurationWithoutSync | Partial<ConfigurationWithSync> = {},
+  partialConfig: OpenRealmConfiguration = {},
   user: User,
 ): Promise<{ config: Configuration; realm: Realm }> {
   const nonce = new BSON.ObjectId().toHexString();

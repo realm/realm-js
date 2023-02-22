@@ -65,6 +65,7 @@ describe("Realm Listeners", () => {
       });
 
       this.realm.write(() => {
+        //@ts-expect-error Internal method
         this.realm._updateSchema([...this.realm.schema, { name: "MyClass", properties: { myField: "string" } }]);
       });
     });
@@ -125,6 +126,7 @@ describe("Realm Listeners", () => {
         }
       });
       this.realm.write(() => {
+        //@ts-expect-error Internal method
         this.realm._updateSchema([...this.realm.schema, { name: "MyClass", properties: { myField: "string" } }]);
       });
       this.realm.write(() => {
@@ -167,6 +169,7 @@ describe("Realm Listeners", () => {
         this.realm.create("Person", { age: 3, name: "Tom" });
       });
       this.realm.write(() => {
+        //@ts-expect-error Internal method
         this.realm._updateSchema([...this.realm.schema, { name: "MyClass", properties: { myField: "string" } }]);
       });
     });
