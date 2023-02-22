@@ -363,8 +363,7 @@ describe("Dictionary", () => {
       expect(stringifiedAndParsed).deep.equals({ dict: values });
     });
 
-    // TODO: Unskip once https://github.com/realm/realm-core/issues/4805 is fixed
-    it.skip("throws a meaningful error if accessed after deletion", function (this: RealmContext) {
+    it("throws a meaningful error if accessed after deletion", function (this: RealmContext) {
       this.realm.write(() => {
         const item = this.realm.create<Item>("Item", {});
         const dict = item.dict;
