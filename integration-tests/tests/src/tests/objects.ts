@@ -31,7 +31,7 @@ describe("Realm objects", () => {
   });
 
   describe("Methods", () => {
-    it("linkingObject works with both string and type input", () => {
+    it("linkingObjects works with both string and type input", () => {
       const realm = new Realm({ schema: [Person] });
 
       const john = realm.write(() => {
