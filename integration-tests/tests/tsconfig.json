@@ -9,7 +9,7 @@
 		"resolveJsonModule": true,
 		"outDir": "dist",
 		"lib": [
-			"es2018"
+			"es2020"
 		],
 		"types": [
 			"@realm/network-transport",
