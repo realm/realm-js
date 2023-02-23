@@ -42,14 +42,14 @@ describe("Enums", function () {
       expect(SessionStopPolicy.Never).equals("never");
     });
   });
-  describe("OpenRealmBehaviourType", function () {
+  describe("OpenRealmBehaviorType", function () {
     it("is accessible", function () {
       expect(OpenRealmBehaviorType).to.be.an("object");
       expect(OpenRealmBehaviorType.DownloadBeforeOpen).equals("downloadBeforeOpen");
       expect(OpenRealmBehaviorType.OpenImmediately).equals("openImmediately");
     });
   });
-  describe("OpenRealmTimeOutBehaviour", function () {
+  describe("OpenRealmTimeOutBehavior", function () {
     it("is accessible", function () {
       expect(OpenRealmTimeOutBehavior).to.be.an("object");
       expect(OpenRealmTimeOutBehavior.OpenLocalRealm).equals("openLocalRealm");
