@@ -28,8 +28,7 @@ import {
 describe("Enums", function () {
   describe("ConnectionState", function () {
     it("is accessible", function () {
-      expect(ConnectionState).to.be.an("object");
-      expect(ConnectionState).to.deep.equals({
+      expect(ConnectionState).to.deep.equal({
         Disconnected: "disconnected",
         Connecting: "connecting",
         Connected: "connected",
@@ -38,7 +37,6 @@ describe("Enums", function () {
   });
   describe("SessionStopPolicy", function () {
     it("is accessible", function () {
-      expect(SessionStopPolicy).to.be.an("object");
       expect(SessionStopPolicy).to.deep.equal({
         AfterUpload: "after-upload",
         Immediately: "immediately",
@@ -48,7 +46,6 @@ describe("Enums", function () {
   });
   describe("OpenRealmBehaviorType", function () {
     it("is accessible", function () {
-      expect(OpenRealmBehaviorType).to.be.an("object");
       expect(OpenRealmBehaviorType).to.deep.equal({
         DownloadBeforeOpen: "downloadBeforeOpen",
         OpenImmediately: "openImmediately",
@@ -57,7 +54,6 @@ describe("Enums", function () {
   });
   describe("OpenRealmTimeOutBehavior", function () {
     it("is accessible", function () {
-      expect(OpenRealmTimeOutBehavior).to.be.an("object");
       expect(OpenRealmTimeOutBehavior).to.deep.equal({
         OpenLocalRealm: "openLocalRealm",
         ThrowException: "throwException",
@@ -66,8 +62,7 @@ describe("Enums", function () {
   });
   describe("NumericLogLevel", function () {
     it("is accessible", function () {
-      expect(NumericLogLevel).to.be.an("object");
-      expect(NumericLogLevel).to.deep.equals({
+      expect(NumericLogLevel).to.deep.equal({
         "0": "All",
         "1": "Trace",
         "2": "Debug",
