@@ -266,14 +266,10 @@ struct Helpers {
         ws.feed_buffer({buffer.data(), buffer.size()});
     }
 
-    // (1) Take the JS-wrapped version of the callback as the argument.
-    //     This callback will (when invoked) call the user-provided callback for validating certificates.
     static auto make_ssl_verify_callback(std::function<bool(const std::string& server_address, int server_port,
                                          std::string_view pem_data, int preverify_ok, int depth)> callback) {
-        // (2) Return the CPP (Core-friendly) version of the callback (stored in the binding).
         return [callback = std::move(callback)](const std::string& server_address, uint16_t server_port,
                                                 const char* pem_data, size_t pem_size, int preverify_ok, int depth) {
-            // (3) When the CPP callback is invoked, invoke the JS-wrapped callback and return its result.
             return callback(server_address, server_port, { pem_data, pem_size }, preverify_ok, depth);
         };
     }
