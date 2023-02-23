@@ -106,12 +106,46 @@ export type ClientResetConfig =
   | ClientResetRecoverUnsyncedChangesConfiguration
   | ClientResetRecoverOrDiscardUnsyncedChangesConfiguration;
 
+export type SSLConfiguration = {
+  /**
+   * Indicates if SSL certificates must be validated. Default is `true`.
+   */
+  validate?: boolean;
+  /**
+   * The path where to find trusted SSL certificates.
+   */
+  certificatePath?: string;
+  /**
+   * A callback function used to accept or reject the server's SSL certificate.
+   */
+  validateCertificates?: SSLVerifyCallback;
+};
+
+export type SSLVerifyCallback = (sslVerifyObject: SSLVerifyObject) => boolean;
+
+type SSLVerifyCallbackWithListArguments = (
+  serverAddress: string,
+  serverPort: number,
+  pemCertificate: string,
+  preverifyOk: number, // Acts as `SSLVerifyObject.acceptedByOpenSSL`
+  depth: number,
+) => boolean;
+
+export type SSLVerifyObject = {
+  serverAddress: string;
+  serverPort: number;
+  pemCertificate: string;
+  acceptedByOpenSSL: boolean;
+  depth: number;
+};
+
 export type BaseSyncConfiguration = {
   user: User;
   newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
   existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
   onError?: ErrorCallback;
   customHttpHeaders?: Record<string, string>;
+  ssl?: SSLConfiguration;
   /** @internal */
   _sessionStopPolicy?: SessionStopPolicy;
   clientReset?: ClientResetConfig;
@@ -156,6 +190,7 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
     onError,
     _sessionStopPolicy,
     customHttpHeaders,
+    ssl,
     clientReset,
     cancelWaitsOnNonFatalError,
   } = config;
@@ -167,10 +202,21 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
       ? toBindingStopPolicy(_sessionStopPolicy)
       : binding.SyncSessionStopPolicy.AfterChangesUploaded,
     customHttpHeaders,
+    clientValidateSsl: ssl?.validate,
+    sslTrustCertificatePath: ssl?.certificatePath,
+    sslVerifyCallback: ssl?.validateCertificates
+      ? binding.Helpers.makeSslVerifyCallback(toSSLVerifyCallbackWithListArguments(ssl.validateCertificates))
+      : undefined,
     flxSyncRequested: !!flexible,
     ...parseClientResetConfig(clientReset, onError),
     cancelWaitsOnNonfatalError: cancelWaitsOnNonFatalError,
   };
+}
+
+/** @internal */
+function toSSLVerifyCallbackWithListArguments(verifyCallback: SSLVerifyCallback): SSLVerifyCallbackWithListArguments {
+  return (serverAddress: string, serverPort: number, pemCertificate: string, preverifyOk: number, depth: number) =>
+    verifyCallback({ serverAddress, serverPort, pemCertificate, acceptedByOpenSSL: !!preverifyOk, depth });
 }
 
 /** @internal */
