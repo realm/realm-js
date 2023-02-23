@@ -1,7 +1,6 @@
 ## vNext (TBD)
 
 ### Enhancements
-
 * Added an overload to `Object.linkingObject` method that takes type of the linking object as an input instead of its string name ([#5326](https://github.com/realm/realm-js/issues/5326))  
 Example usage:
 ```typescript

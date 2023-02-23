@@ -327,8 +327,6 @@ export class RealmObject<T = DefaultObject> {
     return this[REALM].getClassHelpers(this).canonicalObjectSchema as CanonicalObjectSchema<T>;
   }
 
-  //type Constructor<T = unknown> = { new (...args: any): T };
-
   /**
    * Returns all the objects that link to this object in the specified relationship.
    * @param objectType The type of the objects that link to this object's type.
