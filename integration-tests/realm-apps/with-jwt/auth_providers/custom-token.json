@@ -1,0 +1,32 @@
+{
+    "name": "custom-token",
+    "type": "custom-token",
+    "config": {
+        "audience": "",
+        "signingAlgorithm": "HS256",
+        "useJWKURI": false
+    },
+    "secret_config": {
+        "signingKeys": [
+            "jwt-secret"
+        ]
+    },
+    "disabled": false,
+    "metadata_fields": [
+        {
+            "required": true,
+            "name": "mySecretField",
+            "field_name": "secret"
+        },
+        {
+            "required": false,
+            "name": "id",
+            "field_name": "id"
+        },
+        {
+            "required": false,
+            "name": "license",
+            "field_name": "license"
+        }
+    ]
+}

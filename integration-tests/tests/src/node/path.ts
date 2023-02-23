@@ -16,17 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { UUID } from "bson";
 import { expect } from "chai";
-import Realm from "realm";
+import Realm, { BSON } from "realm";
 import path from "node:path";
 import os from "node:os";
 
 import { importAppBefore, authenticateUserBefore } from "../hooks";
 
-const getAbsolutePath = () => os.tmpdir() + path.sep + new UUID().toHexString();
-const getRelativePath = () => new UUID().toHexString();
-const getPartitionValue = () => new UUID().toHexString();
+const getAbsolutePath = () => os.tmpdir() + path.sep + new BSON.UUID().toHexString();
+const getRelativePath = () => "testFiles" + path.sep + new BSON.UUID().toHexString();
+const getPartitionValue = () => new BSON.UUID().toHexString();
 
 const schema = {
   name: "MixedClass",
@@ -43,6 +42,7 @@ describe("path configuration (local)", function () {
     const realm = new Realm({ path: filename, schema: [schema] });
     expect(realm.path.endsWith(filename)).to.be.true;
     realm.close();
+    Realm.deleteFile({ path: filename });
   });
 
   it("absolute path", function () {
@@ -50,6 +50,7 @@ describe("path configuration (local)", function () {
     const realm = new Realm({ path: filename, schema: [schema] });
     expect(realm.path).to.equal(filename);
     realm.close();
+    Realm.deleteFile({ path: filename });
   });
 });
 
@@ -69,6 +70,7 @@ describe.skipIf(environment.missingServer, "path configuration (partition based 
     });
     expect(realm.path).to.equal(filename);
     realm.close();
+    Realm.deleteFile({ path: filename });
   });
 
   it("relative path", async function () {
@@ -83,6 +85,7 @@ describe.skipIf(environment.missingServer, "path configuration (partition based 
     });
     expect(realm.path.endsWith(filename)).to.be.true;
     realm.close();
+    Realm.deleteFile({ path: filename });
   });
 });
 
@@ -91,6 +94,7 @@ describe.skipIf(environment.skipFlexibleSync, "path configuration (flexible sync
   authenticateUserBefore();
 
   it("absolute path", async function () {
+    this.longTimeout();
     const filename = getAbsolutePath();
     const realm = await Realm.open({
       path: filename,
@@ -102,9 +106,11 @@ describe.skipIf(environment.skipFlexibleSync, "path configuration (flexible sync
     });
     expect(realm.path).to.equal(filename);
     realm.close();
+    Realm.deleteFile({ path: filename });
   });
 
   it("relative path", async function () {
+    this.longTimeout();
     const filename = getRelativePath();
     const realm = await Realm.open({
       path: filename,
@@ -116,5 +122,6 @@ describe.skipIf(environment.skipFlexibleSync, "path configuration (flexible sync
     });
     expect(realm.path.endsWith(filename)).to.be.true;
     realm.close();
+    Realm.deleteFile({ path: filename });
   });
 });

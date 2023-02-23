@@ -18,7 +18,13 @@ To install this environment, run the following command from the root directory o
 npx lerna bootstrap --scope @realm/react-native-tests --include-dependencies
 ```
 
-This will run `pod install` (in `./ios`) for you.
+For iOS environments run 
+
+```bash
+npx pod-install 
+```
+
+within the `integration-tests/environments/react-native` directory.
 
 ## Running the tests
 

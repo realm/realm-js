@@ -24,7 +24,8 @@ describe.skipIf(environment.missingServer, "importApp utility", function () {
   this.slow(2000);
 
   it("can import an app", async () => {
-    const app = await importApp("simple");
+    const { appId, baseUrl } = await importApp("simple");
+    const app = new App({ id: appId, baseUrl });
     expect(app).instanceOf(App);
     expect(app.id.startsWith("simple")).to.be.true;
   }).timeout(2 * 60 * 1000); // This may take a long time when running against a real server

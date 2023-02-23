@@ -29,7 +29,7 @@ interface path {
 
 type Require = (id: string) => unknown;
 
-type Environment = Record<string, unknown> & {
+type KnownEnvironment = {
   /** Set the number of milliseconds to use for tests that require a long timeout. */
   longTimeout?: number;
   /** Set the name of the cluster, used when setting up the "mongodb-atlas" service on imported apps. */
@@ -105,6 +105,8 @@ type Environment = Record<string, unknown> & {
   chromeDebugging?: true;
 };
 
+type Environment = KnownEnvironment & Record<string, unknown>;
+
 interface Global extends NodeJS.Global {
   title: string;
   fs: fs;
@@ -148,7 +150,7 @@ declare namespace Mocha {
 }
 
 // Mocha contexts made available by hooks
-type AppContext = { app: Realm.App } & Mocha.Context;
+type AppContext = { app: Realm.App; databaseName: string } & Mocha.Context;
 type UserContext = { user: Realm.User } & Mocha.Context;
 type RealmContext = {
   realm: Realm;

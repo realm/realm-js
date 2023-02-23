@@ -38,7 +38,6 @@ ErrorUtils.setGlobalHandler((err, isFatal) => {
   throw err;
 });
 
-const mode = typeof DedicatedWorkerGlobalScope === "undefined" ? "native" : "chrome-debugging";
 const engine = global.HermesInternal ? "hermes" : "jsc";
 
 export class App extends Component {
@@ -60,7 +59,6 @@ export class App extends Component {
     const progress = totalTests > 0 ? currentTestIndex / totalTests : 0;
     return (
       <View style={styles.container}>
-        <Text style={styles.mode}>{this.modeMessage}</Text>
         <Text style={styles.status}>{this.statusMessage}</Text>
         <Circle
           showsText
@@ -74,30 +72,13 @@ export class App extends Component {
         />
         <Text style={styles.details}>{this.statusDetails}</Text>
         <Button title="Run tests natively" disabled={status === "running"} onPress={this.handleRerunNative} />
-        <Button
-          title="Run tests in Chrome debugging mode"
-          disabled={status === "running"}
-          onPress={this.handleRerunChromeDebugging}
-        />
         <Button title="Abort running the tests" disabled={status !== "running"} onPress={this.handleAbort} />
       </View>
     );
   }
 
   handleRerunNative = () => {
-    if (mode === "native") {
-      NativeModules.DevSettings.reload();
-    } else {
-      NativeModules.DevSettings.setIsDebuggingRemotely(false);
-    }
-  };
-
-  handleRerunChromeDebugging = () => {
-    if (mode === "chrome-debugging") {
-      NativeModules.DevSettings.reload();
-    } else {
-      NativeModules.DevSettings.setIsDebuggingRemotely(true);
-    }
+    NativeModules.DevSettings.reload();
   };
 
   handleAbort = () => {
@@ -133,16 +114,6 @@ export class App extends Component {
     }
   }
 
-  get modeMessage() {
-    if (mode === "native") {
-      return "Running natively on device";
-    } else if (mode === "chrome-debugging") {
-      return "Running in Chrome debugging mode";
-    } else {
-      return "Unknown mode";
-    }
-  }
-
   get statusColor() {
     const { status, failures } = this.state;
     if (status === "ended") {
@@ -154,15 +125,9 @@ export class App extends Component {
 
   prepareTests() {
     this.client = new Client({
-      title: `React-Native on ${Platform.OS} (${mode} using ${engine})`,
+      title: `React-Native on ${Platform.OS} (using ${engine})`,
       tests: (context) => {
         /* eslint-env mocha */
-        if (typeof context.mode === "string" && context.mode !== mode) {
-          this.client.disconnect();
-          NativeModules.DevSettings.setIsDebuggingRemotely(context.mode === "chrome-debugging");
-          console.log(`Switching mode to '${context.mode}'`);
-          return;
-        }
         // Quick sanity check that "realm" is loadable at all
         require("realm");
         // Adding an async hook before each test to allow the UI to update
@@ -178,7 +143,6 @@ export class App extends Component {
           reactNative: Platform.OS,
           android: Platform.OS === "android",
           ios: Platform.OS === "ios",
-          chromeDebugging: mode === "chrome-debugging",
         };
         // Make the tests reinitializable, to allow test running on changes to the "realm" package
         // Probing the existance of `getModules` as this only exists in debug mode

@@ -180,30 +180,35 @@ export class AppImporter {
     const groupId = await this.getGroupId();
     const app = await this.createApp(groupId, appName);
     const appId = app.client_app_id;
+    try {
+      // Determine the path of the new app
+      const appPath = path.resolve(this.appsDirectoryPath, appId);
 
-    // Determine the path of the new app
-    const appPath = path.resolve(this.appsDirectoryPath, appId);
+      // Copy over the app template
+      this.copyAppTemplate(appPath, appTemplatePath);
 
-    // Copy over the app template
-    this.copyAppTemplate(appPath, appTemplatePath);
+      // Apply any replacements to the files before importing from them
+      this.applyReplacements(appPath, replacements);
 
-    // Apply any replacements to the files before importing from them
-    this.applyReplacements(appPath, replacements);
+      // Apply allowed request origins if they exist
+      if (security?.allowed_request_origins) {
+        this.applyAllowedRequestOrigins(security.allowed_request_origins, app._id, groupId);
+      }
 
-    // Apply allowed request origins if they exist
-    if (security?.allowed_request_origins) {
-      this.applyAllowedRequestOrigins(security.allowed_request_origins, app._id, groupId);
+      // Create the app service
+      await this.applyAppConfiguration(appPath, app._id, groupId, sync);
+
+      if (appId) {
+        console.log(`The application ${appId} was successfully deployed...`);
+        console.log(`${this.baseUrl}/groups/${groupId}/apps/${app._id}/dashboard`);
+      }
+
+      return { appId };
+    } catch (err) {
+      console.log(`Something went wrong on import, cleaning up the app ${appId}`);
+      await this.deleteApp(appId);
+      throw err;
     }
-
-    // Create the app service
-    await this.applyAppConfiguration(appPath, app._id, groupId, sync);
-
-    if (appId) {
-      console.log(`The application ${appId} was successfully deployed...`);
-      console.log(`${this.baseUrl}/groups/${groupId}/apps/${app._id}/dashboard`);
-    }
-
-    return { appId };
   }
 
   public async deleteApp(clientAppId: string): Promise<void> {
@@ -346,10 +351,7 @@ export class AppImporter {
         const configFilePath = path.join(servicesDir, serviceDir, "config.json");
         if (fs.existsSync(configFilePath)) {
           const config = this.loadJson(configFilePath);
-          console.log("Creating service: ", config.name);
-          const dbName = config.config.sync
-            ? config.config.sync?.database_name
-            : config.config.flexible_sync?.database_name;
+
           const serviceUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/services`;
           const response = await fetch(serviceUrl, {
             method: "POST",
@@ -360,7 +362,9 @@ export class AppImporter {
             body: JSON.stringify(config),
           });
           if (!response.ok) {
-            console.warn("Could not create service: ", config, serviceUrl, response.statusText);
+            throw new Error(
+              `Could not create service: ${JSON.stringify(config)}, ${serviceUrl}, ${response.statusText}`,
+            );
           } else {
             if (syncConfig) {
               await this.applySyncConfig(groupId, appId, syncConfig);
@@ -386,7 +390,11 @@ export class AppImporter {
                   // Relationships is not valid in a rule request, but is included when exporting an app from realm
                   delete ruleConfig.relationships;
                 }
-                const rulesUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/services/${serviceId}/rules`;
+                const rulesUrl =
+                  config.type === "mongodb" || config.type === "mongodb-atlas"
+                    ? `${this.apiUrl}/groups/${groupId}/apps/${appId}/services/${serviceId}/default_rule`
+                    : `${this.apiUrl}/groups/${groupId}/apps/${appId}/services/${serviceId}/rules`;
+
                 const response = await fetch(rulesUrl, {
                   method: "POST",
                   headers: {
@@ -396,14 +404,11 @@ export class AppImporter {
                   body: JSON.stringify(ruleConfig),
                 });
                 if (!response.ok) {
-                  const result = await response.json();
-                  console.warn(
-                    "Could not create rule: ",
-                    ruleConfig,
-                    rulesUrl,
-                    response.statusText,
-                    result.error,
-                    result.body,
+                  const { error, body } = await response.json();
+                  const { statusText } = response;
+                  const configStr = JSON.stringify(ruleConfig);
+                  throw new Error(
+                    `"Could not create rule: ", ${configStr}, ${rulesUrl}, ${statusText}, ${error}, ${body}`,
                   );
                 }
               }

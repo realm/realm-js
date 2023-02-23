@@ -139,6 +139,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       });
 
       it("can be constructed asynchronously", async function () {
+        this.longTimeout();
         const openRealm = async () => {
           await Realm.open({
             sync: { _sessionStopPolicy: SessionStopPolicy.Immediately, flexible: true, user: this.user },
@@ -652,6 +653,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         });
 
         it("returns a query's subscription by reference", async function (this: RealmContext) {
+          this.longTimeout();
           const { subs, sub, query } = await addSubscriptionForPersonAndSync(this.realm);
 
           expect(subs.findByQuery(query)).to.deep.equal(sub);
@@ -929,6 +931,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           });
 
           it("returns a promise which resolves when the subscriptions are synchronised", async function (this: RealmContext) {
+            this.longTimeout();
             const subs = this.realm.subscriptions;
             await subs.update((mutableSubs) => {
               mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name));
@@ -965,6 +968,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         });
 
         it("handles multiple updates in a single batch", async function (this: RealmContext) {
+          this.longTimeout();
           const { subs, query } = await addSubscriptionForPersonAndSync(this.realm);
 
           await subs.update((mutableSubs) => {
@@ -1057,6 +1061,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         });
 
         it("does not add a second identical subscription with no name", async function (this: RealmContext) {
+          this.longTimeout();
           addSubscriptionForPerson(this.realm);
           const { subs } = await addSubscriptionForPersonAndSync(this.realm);
 
@@ -1064,6 +1069,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         });
 
         it("does add a second identical subscription with a different name", async function (this: RealmContext) {
+          this.longTimeout();
           addSubscriptionForPerson(this.realm, { name: "test1" });
           const { subs } = await addSubscriptionForPersonAndSync(this.realm, { name: "test2" });
 
@@ -1111,6 +1117,8 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         });
 
         it("allows an anonymous and a named subscription for the same query to exist", async function (this: RealmContext) {
+          this.longTimeout();
+
           const { sub } = addSubscription(
             this.realm,
             this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"),

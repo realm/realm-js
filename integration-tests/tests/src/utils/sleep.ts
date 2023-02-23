@@ -25,3 +25,8 @@ declare function setTimeout(cb: () => void, ms: number): void;
 export function sleep(ms = 1000): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+export async function throwAfterTimeout(ms = 1000) {
+  await sleep(ms);
+  throw new Error(`Timed out after ${ms}ms`);
+}

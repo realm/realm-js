@@ -25,7 +25,8 @@ export type ErrorResponse = { message: string; appId: never };
 export type ImportResponse = { appId: string; message: never };
 export type Response = ImportResponse | ErrorResponse;
 
-function getUrls() {
+//TODO should be moved to a separate file as it doesn't directly have anything to do with importing an app.
+export function getUrls() {
   // Try reading the app importer URL out of the environment, it might not be accessiable via localhost
   const { appImporterUrl, realmBaseUrl } = environment;
   return {
@@ -52,49 +53,77 @@ function getCredentials(): Credentials {
   };
 }
 
-export function getDefaultReplacements(name: string): TemplateReplacements {
-  // Generate a unique database name to limit crosstalk between runs
-  const databaseName = `test-database-${new BSON.ObjectID().toHexString()}`;
-  // When running on CI we connect through mongodb-atlas instead of local-mongodb
+function generateDatabaseName(): string {
   const { mongodbClusterName } = environment;
+  if (typeof mongodbClusterName === "string") {
+    return `test-database-${new BSON.ObjectID().toHexString()}`;
+  }
+  return "test-database";
+}
 
-  const config: Record<string, any> = {};
-  const mongodbServiceConfig: Record<string, any> = {};
+type SyncConfigOptions = {
+  name: string;
+  databaseName: string;
+};
 
-  if (name === "with-db" || name === "with-db-flx") {
-    mongodbServiceConfig.config = {
-      clusterName: mongodbClusterName,
-      readPreference: "primary",
-      wireProtocolEnabled: false,
-      [name === "with-db" ? "sync" : "flexible_sync"]: {
+function generateSyncConfig({ name, databaseName }: SyncConfigOptions) {
+  if (name === "with-db") {
+    return {
+      sync: {
         database_name: databaseName,
       },
     };
+  } else if (name === "with-db-flx") {
+    return {
+      flexible_sync: {
+        database_name: databaseName,
+      },
+    };
+  } else {
+    return {};
   }
+}
 
-  if (typeof mongodbClusterName === "string") {
-    config.name = `${name}-${mongodbClusterName}`;
-    mongodbServiceConfig.type = "mongodb-atlas";
-    if (typeof mongodbServiceConfig.config !== "object") {
-      mongodbServiceConfig.config = {};
-    }
-    mongodbServiceConfig.config.clusterName = mongodbClusterName;
+type MongodbServiceOptions = { name: string; databaseName: string; clusterName: string | undefined };
+
+function generateMongoDBServiceConfig({ name, databaseName, clusterName }: MongodbServiceOptions) {
+  if (clusterName) {
+    return {
+      type: "mongodb-atlas",
+      config: {
+        clusterName,
+        readPreference: "primary",
+        wireProtocolEnabled: false,
+        ...generateSyncConfig({ name, databaseName }),
+      },
+    };
+  } else {
+    return {
+      config: generateSyncConfig({ name, databaseName }),
+    };
   }
+}
+
+export function getDefaultReplacements(name: string, databaseName: string): TemplateReplacements {
+  // When running on CI we connect through mongodb-atlas instead of local-mongodb
+  const { mongodbClusterName: clusterName } = environment;
 
   return {
-    "config.json": config,
-    "services/mongodb/config.json": mongodbServiceConfig,
-    "services/mongodb/rules/*.json": {
-      database: databaseName,
-    },
+    "services/mongodb/config.json": generateMongoDBServiceConfig({ name, databaseName, clusterName }),
   };
 }
 
 export async function importApp(
   name: string,
-  replacements: TemplateReplacements = getDefaultReplacements(name),
-): Promise<App> {
+  replacements?: TemplateReplacements,
+): Promise<{ appId: string; baseUrl: string; databaseName: string }> {
   const { baseUrl, appImporterUrl } = getUrls();
+
+  const databaseName = generateDatabaseName();
+
+  if (!replacements) {
+    replacements = getDefaultReplacements(name, databaseName);
+  }
 
   if (appImporterIsRemote) {
     const response = await fetch(appImporterUrl, {
@@ -104,7 +133,7 @@ export async function importApp(
 
     const json = await response.json<Response>();
     if (response.ok && typeof json.appId === "string") {
-      return new App({ baseUrl, id: json.appId });
+      return { appId: json.appId, baseUrl, databaseName };
     } else if (typeof json.message === "string") {
       throw new Error(`Failed to import: ${json.message}`);
     } else {
@@ -128,7 +157,7 @@ export async function importApp(
 
     const { appId } = await importer.importApp(appTemplatePath, replacements);
 
-    return new App({ baseUrl, id: appId });
+    return { appId, baseUrl, databaseName };
   }
 }
 

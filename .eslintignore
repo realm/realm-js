@@ -7,13 +7,11 @@ build/
 node_modules/
 vendor/
 
-/tests/test-runners/
 /object-server-for-testing/
 
 # The sub-packages have their own linting
 /integration-tests/
 /install-tests/
 /packages/
-/tests/ReactTestApp/
 /templates/
 /example/

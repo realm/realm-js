@@ -1,0 +1,22 @@
+{
+    "name": "mongodb",
+    "type": "mongodb",
+    "config": {
+        "sync": {
+            "state": "enabled",
+            "database_name": "pv-objectid-test_data",
+            "partition": {
+                "key": "realm_id",
+                "type": "objectId",
+                "permissions": {
+                    "read": true,
+                    "write": true
+                }
+            }
+        }
+    },
+    "secret_config": {
+        "uri": "mongodb_uri"
+    },
+    "version": 1
+}
