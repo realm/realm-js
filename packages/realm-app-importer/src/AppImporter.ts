@@ -390,7 +390,10 @@ export class AppImporter {
                   // Relationships is not valid in a rule request, but is included when exporting an app from realm
                   delete ruleConfig.relationships;
                 }
-                const rulesUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/services/${serviceId}/default_rule`;
+                const rulesUrl =
+                  config.type === "mongodb" || config.type === "mongodb-atlas"
+                    ? `${this.apiUrl}/groups/${groupId}/apps/${appId}/services/${serviceId}/default_rule`
+                    : `${this.apiUrl}/groups/${groupId}/apps/${appId}/services/${serviceId}/rules`;
 
                 const response = await fetch(rulesUrl, {
                   method: "POST",

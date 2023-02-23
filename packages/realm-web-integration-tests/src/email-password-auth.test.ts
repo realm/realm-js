@@ -129,7 +129,7 @@ describe("EmailPasswordAuth", () => {
     } catch (err) {
       // We expect this to throw, since password resets via functions fail with this app configuration
       expect(err).instanceOf(MongoDBRealmError);
-      expect((err as MongoDBRealmError).error).equals(`failed to reset password for user ${email}`);
+      expect((err as MongoDBRealmError).error).equals(`failed to reset password for user "${email}"`);
     }
   });
 });
