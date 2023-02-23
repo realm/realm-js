@@ -30,6 +30,42 @@ describe("Realm objects", () => {
     Realm.clearTestState();
   });
 
+  describe("Methods", () => {
+    it("linkingObject works with both string and type input", () => {
+      const realm = new Realm({ schema: [Person] });
+
+      const john = realm.write(() => {
+        return new Person(realm, "John Doe", 42);
+      });
+
+      const lucy = realm.write(() => {
+        return realm.create(Person, {
+          name: "Lucy Dallas",
+          age: 32,
+          friends: [john],
+        });
+      });
+
+      const mary = realm.write(() => {
+        return realm.create(Person, {
+          name: "Mary Ross",
+          age: 22,
+          friends: [john],
+        });
+      });
+
+      const linkingObjectsWithString = john.linkingObjects<IPerson>("Person", "friends").sorted("name");
+      expect(linkingObjectsWithString.length).equals(2);
+      expect(linkingObjectsWithString[0].name).equals(lucy.name);
+      expect(linkingObjectsWithString[1].name).equals(mary.name);
+
+      const linkingObjectsWithType = john.linkingObjects(Person, "friends").sorted("name");
+      expect(linkingObjectsWithType.length).equals(2);
+      expect(linkingObjectsWithType[0].name).equals(lucy.name);
+      expect(linkingObjectsWithType[1].name).equals(mary.name);
+    });
+  });
+
   describe("Interface & object literal", () => {
     it("can be created", () => {
       const realm = new Realm({ schema: [PersonSchema] });
@@ -156,29 +192,6 @@ describe("Realm objects", () => {
   });
 
   describe("Class Model", () => {
-    it("myTest", () => {
-      //TODO Give good name
-      const realm = new Realm({ schema: [Person] });
-
-      const john = realm.write(() => {
-        return new Person(realm, "John Doe", 42);
-      });
-
-      const mary = realm.write(() => {
-        return realm.create(Person, {
-          name: "Mary Ross",
-          age: 22,
-          friends: [john],
-        });
-      });
-
-      const linkedFriend = john.linkingObjects<IPerson>("Person", "friends")[0];
-      expect(linkedFriend.name).equals(mary.name);
-
-      const linkedFriend2 = john.linkingObjects(Person, "friends")[0];
-      expect(linkedFriend2.name).equals(mary.name);
-    });
-
     it("can be created", () => {
       const realm = new Realm({ schema: [Person] });
 
@@ -196,7 +209,7 @@ describe("Realm objects", () => {
       expect(firstPerson).instanceOf(Person);
     });
 
-    it("can have it's properties read", () => {
+    it("can have its properties read", () => {
       const realm = new Realm({ schema: [Person] });
       realm.write(() => {
         const john = realm.create(Person, {

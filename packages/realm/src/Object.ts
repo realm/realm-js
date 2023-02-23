@@ -51,6 +51,9 @@ type CreationContext = {
   createObj?: ObjCreator;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyRealmObject = RealmObject<any>;
+
 export const KEY_ARRAY = Symbol("Object#keys");
 export const KEY_SET = Symbol("Object#keySet");
 export const REALM = Symbol("Object#realm");
@@ -228,7 +231,7 @@ export class RealmObject<T = DefaultObject> {
    * @param values The values of the object's properties at creation.
    */
   public constructor(realm: Realm, values: RealmInsertionModel<T>) {
-    return (realm.create(this.constructor as RealmObjectConstructor, values) as unknown) as this;
+    return realm.create(this.constructor as RealmObjectConstructor, values) as unknown as this;
   }
 
   /**
@@ -335,8 +338,8 @@ export class RealmObject<T = DefaultObject> {
    * @since 1.9.0
    */
   linkingObjects<T = DefaultObject>(objectType: string, propertyName: string): Results<RealmObject<T> & T>;
-  linkingObjects<T extends RealmObject>(objectType: Constructor<T>, propertyName: string): Results<T>;
-  linkingObjects<T extends RealmObject>(objectType: string | Constructor<T>, propertyName: string): Results<T> {
+  linkingObjects<T extends AnyRealmObject>(objectType: Constructor<T>, propertyName: string): Results<T>;
+  linkingObjects<T extends AnyRealmObject>(objectType: string | Constructor<T>, propertyName: string): Results<T> {
     const { objectSchema: linkedObjectSchema, properties } = this[REALM].getClassHelpers(objectType);
     const tableRef = binding.Helpers.getTable(this[REALM].internal, linkedObjectSchema.tableKey);
     const property = properties.get(propertyName);

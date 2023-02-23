@@ -37,7 +37,7 @@ export const PersonSchema: Realm.ObjectSchema = {
   },
 };
 
-export class Person extends Realm.Object<Person> {
+export class Person extends Realm.Object {
   name!: string;
   age!: number;
   friends!: Realm.List<Person>;
