@@ -24,7 +24,7 @@ export interface IPerson {
   _id: Realm.BSON.ObjectId;
   name: string;
   age: number;
-  friends: Realm.List<IPerson>;
+  friends: Realm.List<Person>;
   dogs: Realm.Collection<IDog>;
 }
 

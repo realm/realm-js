@@ -36,14 +36,19 @@ import {
   FlexibleSyncConfiguration,
   Realm,
   SessionStopPolicy,
+  SyncError,
 } from "realm";
 
 import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "../../hooks";
-import { DogSchema, IPerson, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
+import { Dog, IPerson, Person, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { closeAndReopenRealm, closeRealm } from "../../utils/close-realm";
 import { expectClientResetError } from "../../utils/expect-sync-error";
 
-const FlexiblePersonSchema = { ...PersonSchema, properties: { ...PersonSchema.properties, nonQueryable: "string?" } };
+class FlexiblePerson extends Person {
+  nonQeuryable?: string;
+
+  static schema = { ...PersonSchema, properties: { ...PersonSchema.properties, nonQueryable: "string?" } };
+}
 
 type AddSubscriptionResult<T> = {
   subs: Realm.App.Sync.SubscriptionSet;
@@ -62,8 +67,8 @@ type AddSubscriptionResult<T> = {
 function addSubscriptionForPerson(
   realm: Realm,
   options: Realm.App.Sync.SubscriptionOptions | undefined = undefined,
-): AddSubscriptionResult<IPerson> {
-  return addSubscription<IPerson>(realm, realm.objects(FlexiblePersonSchema.name), options);
+): AddSubscriptionResult<FlexiblePerson> {
+  return addSubscription<FlexiblePerson>(realm, realm.objects(FlexiblePerson), options);
 }
 
 /**
@@ -77,8 +82,8 @@ function addSubscriptionForPerson(
 async function addSubscriptionForPersonAndSync(
   realm: Realm,
   options: Realm.App.Sync.SubscriptionOptions | undefined = undefined,
-): Promise<AddSubscriptionResult<IPerson>> {
-  return addSubscriptionAndSync<IPerson>(realm, realm.objects(FlexiblePersonSchema.name), options);
+): Promise<AddSubscriptionResult<FlexiblePerson>> {
+  return addSubscriptionAndSync<FlexiblePerson>(realm, realm.objects(FlexiblePerson), options);
 }
 
 /**
@@ -132,7 +137,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
   importAppBefore("with-db-flx");
   authenticateUserBefore();
   openRealmBeforeEach({
-    schema: [FlexiblePersonSchema, DogSchema],
+    schema: [FlexiblePerson, Dog],
     sync: {
       flexible: true,
     },
@@ -220,7 +225,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           initialSubscriptions: Realm.FlexibleSyncConfiguration["initialSubscriptions"],
         ): Realm.Configuration {
           return {
-            schema: [FlexiblePersonSchema, DogSchema],
+            schema: [FlexiblePerson, Dog],
             sync: {
               //@ts-expect-error Internal field
               _sessionStopPolicy: SessionStopPolicy.Immediately,
@@ -284,7 +289,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           function getSuccessConfig(user: Realm.User, extraConfig: ExtraConfig = {}) {
             return getConfig(user, {
               update: (subs, realm) => {
-                subs.add(realm.objects(FlexiblePersonSchema.name));
+                subs.add(realm.objects(FlexiblePerson));
               },
               ...extraConfig,
             });
@@ -407,7 +412,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       });
 
       it("throws an error if the Realm does not have a sync config", function (this: RealmContext) {
-        const realm = new Realm({ schema: [FlexiblePersonSchema] });
+        const realm = new Realm({ schema: [FlexiblePerson] });
         expect(() => realm.subscriptions).to.throw(
           "`subscriptions` can only be accessed if flexible sync is enabled, but sync is currently disabled for your app. Add a flexible sync config when opening the Realm, for example: { sync: { user, flexible: true } }",
         );
@@ -415,7 +420,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
       it("throws an error if the Realm has a partition based sync config", function (this: RealmContext) {
         const realm = new Realm({
-          schema: [FlexiblePersonSchema],
+          schema: [FlexiblePerson],
           sync: { user: this.user, partitionValue: "test" },
         });
         expect(() => realm.subscriptions).to.throw(
@@ -452,7 +457,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
       it("has an objectType", function (this: RealmContext) {
         const { sub } = addSubscriptionForPerson(this.realm);
-        expect(sub.objectType).to.equal(FlexiblePersonSchema.name);
+        expect(sub.objectType).to.equal(FlexiblePerson.schema.name);
       });
 
       it("has a default queryString", function (this: RealmContext) {
@@ -461,22 +466,19 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       });
 
       it("has a specified queryString", function (this: RealmContext) {
-        const { sub } = addSubscription(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"));
+        const { sub } = addSubscription(this.realm, this.realm.objects(FlexiblePerson).filtered("age > 10"));
         expect(sub.queryString).to.equal("age > 10");
       });
 
       it("contains interpolated arguments in the queryString", function (this: RealmContext) {
-        const { sub } = addSubscription(
-          this.realm,
-          this.realm.objects(FlexiblePersonSchema.name).filtered("age > $0", 10),
-        );
+        const { sub } = addSubscription(this.realm, this.realm.objects(FlexiblePerson).filtered("age > $0", 10));
         expect(sub.queryString).to.equal("age > 10");
       });
 
       it("does not include sort in the query string", function (this: RealmContext) {
         const { sub } = addSubscription(
           this.realm,
-          this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10").sorted("name"),
+          this.realm.objects(FlexiblePerson).filtered("age > 10").sorted("name"),
         );
         expect(sub.queryString).to.equal("age > 10");
       });
@@ -519,7 +521,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         it("does not throw if querying a not explicitly queryable field (ONLY VALID IN DEV MODE)", async function (this: RealmContext) {
           const { subs } = addSubscription(
             this.realm,
-            this.realm.objects(FlexiblePersonSchema.name).filtered("nonQueryable == 'test'"),
+            this.realm.objects(FlexiblePerson).filtered("nonQueryable == 'test'"),
           );
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Pending);
 
@@ -533,7 +535,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         it.skip("is rejected if there is an error synchronising subscriptions", async function (this: RealmContext) {
           const { subs } = addSubscription(
             this.realm,
-            this.realm.objects(FlexiblePersonSchema.name).filtered("nonQueryable == 'test'"),
+            this.realm.objects(FlexiblePerson).filtered("nonQueryable == 'test'"),
           );
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Pending);
 
@@ -549,7 +551,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         it.skip("is rejected if subscriptions are already in an error state", async function (this: RealmContext) {
           const { subs } = addSubscription(
             this.realm,
-            this.realm.objects(FlexiblePersonSchema.name).filtered("nonQueryable == 'test'"),
+            this.realm.objects(FlexiblePerson).filtered("nonQueryable == 'test'"),
           );
 
           await expect(subs.waitForSynchronization()).to.be.rejectedWith(
@@ -614,7 +616,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(subs.isEmpty).to.be.true;
 
           await subs.update((mutableSubs) => {
-            sub = mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name));
+            sub = mutableSubs.add(this.realm.objects(FlexiblePerson));
           });
 
           expect(subs.isEmpty).to.be.false;
@@ -644,11 +646,8 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       describe("array-like access", function () {
         async function addThreeSubscriptions(this: RealmContext) {
           addSubscriptionForPerson(this.realm);
-          await addSubscriptionAndSync(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"));
-          return await addSubscriptionAndSync(
-            this.realm,
-            this.realm.objects(FlexiblePersonSchema.name).filtered("age < 50"),
-          );
+          await addSubscriptionAndSync(this.realm, this.realm.objects(FlexiblePerson).filtered("age > 10"));
+          return await addSubscriptionAndSync(this.realm, this.realm.objects(FlexiblePerson).filtered("age < 50"));
         }
 
         it("returns an empty array if there are no subscriptions", function (this: RealmContext) {
@@ -660,6 +659,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           const { subs } = await addSubscriptionForPersonAndSync(this.realm);
 
           expect(subs).to.have.length(1);
+          //@ts-expect-error Should not be able to index
           expect(subs[0]).to.be.undefined;
         });
 
@@ -694,7 +694,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           const snapshot = subs;
           expect(snapshot).to.have.length(1);
 
-          await addSubscriptionAndSync(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"));
+          await addSubscriptionAndSync(this.realm, this.realm.objects(FlexiblePerson).filtered("age > 10"));
 
           expect(snapshot).to.have.length(1);
         });
@@ -714,7 +714,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
       describe("#find", function () {
         it("returns null if the query is not subscribed to", function (this: RealmContext) {
-          expect(this.realm.subscriptions.findByQuery(this.realm.objects(FlexiblePersonSchema.name))).to.be.null;
+          expect(this.realm.subscriptions.findByQuery(this.realm.objects(FlexiblePerson))).to.be.null;
         });
 
         it("returns a query's subscription by reference", async function (this: RealmContext) {
@@ -724,21 +724,21 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         });
 
         it("returns a filtered query's subscription", async function (this: RealmContext) {
-          const query = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
+          const query = this.realm.objects(FlexiblePerson).filtered("age > 10");
           const { subs, sub } = await addSubscriptionAndSync(this.realm, query);
 
           expect(subs.findByQuery(query)).to.deep.equal(sub);
         });
 
         it("returns a sorted query's subscription", async function (this: RealmContext) {
-          const query = this.realm.objects(FlexiblePersonSchema.name).sorted("age");
+          const query = this.realm.objects(FlexiblePerson).sorted("age");
           const { subs, sub } = await addSubscriptionAndSync(this.realm, query);
 
           expect(subs.findByQuery(query)).to.deep.equal(sub);
         });
 
         it("returns a filtered and sorted query's subscription", async function (this: RealmContext) {
-          const query = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10").sorted("age");
+          const query = this.realm.objects(FlexiblePerson).filtered("age > 10").sorted("age");
           const { subs, sub } = await addSubscriptionAndSync(this.realm, query);
 
           expect(subs.findByQuery(query)).to.deep.equal(sub);
@@ -747,7 +747,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         it("returns the subscription for a query which has an identical RQL representation (it does not need to be the same exact object)", async function (this: RealmContext) {
           const { subs, sub } = await addSubscriptionForPersonAndSync(this.realm);
 
-          expect(subs.findByQuery(this.realm.objects(FlexiblePersonSchema.name))).to.deep.equal(sub);
+          expect(subs.findByQuery(this.realm.objects(FlexiblePerson))).to.deep.equal(sub);
         });
       });
 
@@ -768,10 +768,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         //       (This is due to non queryable fields now being queryable since BaaS automatically adds them when in Dev Mode)
         it.skip("is Error if there is an error during synchronisation", async function (this: RealmContext) {
           await expect(
-            addSubscriptionAndSync(
-              this.realm,
-              this.realm.objects(FlexiblePersonSchema.name).filtered("nonQueryable == 'test'"),
-            ),
+            addSubscriptionAndSync(this.realm, this.realm.objects(FlexiblePerson).filtered("nonQueryable == 'test'")),
           ).to.be.rejectedWith(
             'Client provided query with bad syntax: unsupported query for table "Person": key "nonQueryable" is not a queryable field',
           );
@@ -783,10 +780,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         //       (This is due to non queryable fields now being queryable since BaaS automatically adds them when in Dev Mode)
         it.skip("is Error if there are two errors in a row", async function (this: RealmContext) {
           await expect(
-            addSubscriptionAndSync(
-              this.realm,
-              this.realm.objects(FlexiblePersonSchema.name).filtered("nonQueryable == 'test'"),
-            ),
+            addSubscriptionAndSync(this.realm, this.realm.objects(FlexiblePerson).filtered("nonQueryable == 'test'")),
           ).to.be.rejectedWith(
             'Client provided query with bad syntax: unsupported query for table "Person": key "nonQueryable" is not a queryable field',
           );
@@ -794,10 +788,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(this.realm.subscriptions.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
 
           await expect(
-            addSubscriptionAndSync(
-              this.realm,
-              this.realm.objects(FlexiblePersonSchema.name).filtered("nonQueryable == 'test'"),
-            ),
+            addSubscriptionAndSync(this.realm, this.realm.objects(FlexiblePerson).filtered("nonQueryable == 'test'")),
           ).to.be.rejectedWith(
             'Client provided query with bad syntax: unsupported query for table "Person": key "nonQueryable" is not a queryable field',
           );
@@ -844,10 +835,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         //       (This is due to non queryable fields now being queryable since BaaS automatically adds them when in Dev Mode)
         it.skip("contains the error message if there was an error synchronising subscriptions", async function (this: RealmContext) {
           await expect(
-            addSubscriptionAndSync(
-              this.realm,
-              this.realm.objects(FlexiblePersonSchema.name).filtered("nonQueryable == 'test'"),
-            ),
+            addSubscriptionAndSync(this.realm, this.realm.objects(FlexiblePerson).filtered("nonQueryable == 'test'")),
           ).to.be.rejected;
 
           expect(this.realm.subscriptions.error).to.equal(
@@ -859,10 +847,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         //       (This is due to non queryable fields now being queryable since BaaS automatically adds them when in Dev Mode)
         it.skip("is null if there was an error but it was subsequently corrected", async function (this: RealmContext) {
           await expect(
-            addSubscriptionAndSync(
-              this.realm,
-              this.realm.objects(FlexiblePersonSchema.name).filtered("nonQueryable == 'test'"),
-            ),
+            addSubscriptionAndSync(this.realm, this.realm.objects(FlexiblePerson).filtered("nonQueryable == 'test'")),
           ).to.be.rejected;
 
           expect(this.realm.subscriptions.error).to.equal(
@@ -872,7 +857,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           await expect(
             this.realm.subscriptions.update((mutableSubs) => {
               mutableSubs.removeAll();
-              mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name));
+              mutableSubs.add(this.realm.objects(FlexiblePerson));
             }),
           ).to.be.fulfilled;
 
@@ -883,10 +868,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         //       (This is due to non queryable fields now being queryable since BaaS automatically adds them when in Dev Mode)
         it.skip("still contains the erroring subscription in the set if there was an error synchronising", async function (this: RealmContext) {
           await expect(
-            addSubscriptionAndSync(
-              this.realm,
-              this.realm.objects(FlexiblePersonSchema.name).filtered("nonQueryable == 'test'"),
-            ),
+            addSubscriptionAndSync(this.realm, this.realm.objects(FlexiblePerson).filtered("nonQueryable == 'test'")),
           ).to.be.rejected;
 
           expect(this.realm.subscriptions).to.have.length(1);
@@ -902,7 +884,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             const subsAsMutable = subscriptionInfo.subs as Realm.App.Sync.MutableSubscriptionSet;
 
             const calls = [
-              () => subsAsMutable.add(this.realm.objects(FlexiblePersonSchema.name)),
+              () => subsAsMutable.add(this.realm.objects(FlexiblePerson)),
               () => subsAsMutable.remove(subscriptionInfo.query),
               () => subsAsMutable.removeByName("test"),
               () => subsAsMutable.removeSubscription(subscriptionInfo.sub),
@@ -922,7 +904,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
             expect(
               subs.update(async () => {
-                mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name));
+                mutableSubs.add(this.realm.objects(FlexiblePerson));
               }),
             ).to.be.rejectedWith(/Wrong transactional state.*/);
           });
@@ -937,7 +919,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             });
 
             expect(() => {
-              mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name));
+              mutableSubs.add(this.realm.objects(FlexiblePerson));
             }).throws(/Wrong transactional state.*/);
           });
 
@@ -965,7 +947,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         it("mutates the SubscriptionSet instance", async function (this: RealmContext) {
           const subs = this.realm.subscriptions;
           await subs.update((mutableSubs) => {
-            mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name));
+            mutableSubs.add(this.realm.objects(FlexiblePerson));
           });
 
           expect(subs).to.have.length(1);
@@ -975,7 +957,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           const subs = this.realm.subscriptions;
           const subs2 = this.realm.subscriptions;
           await subs.update((mutableSubs) => {
-            mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name));
+            mutableSubs.add(this.realm.objects(FlexiblePerson));
           });
 
           expect(subs2).to.have.length(0);
@@ -987,7 +969,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           it("returns a promise", async function (this: RealmContext) {
             const subs = this.realm.subscriptions;
             const result = subs.update((mutableSubs) => {
-              mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name));
+              mutableSubs.add(this.realm.objects(FlexiblePerson));
             });
 
             expect(result).to.be.an.instanceOf(Promise);
@@ -997,7 +979,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           it("returns a promise which resolves when the subscriptions are synchronised", async function (this: RealmContext) {
             const subs = this.realm.subscriptions;
             await subs.update((mutableSubs) => {
-              mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name));
+              mutableSubs.add(this.realm.objects(FlexiblePerson));
             });
 
             expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
@@ -1010,7 +992,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
             await expect(
               subs.update((mutableSubs) => {
-                mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name).filtered("nonQueryable == 'test'"));
+                mutableSubs.add(this.realm.objects(FlexiblePerson).filtered("nonQueryable == 'test'"));
               }),
             ).to.be.rejectedWith(
               'Client provided query with bad syntax: unsupported query for table "Person": key "nonQueryable" is not a queryable field',
@@ -1023,7 +1005,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         it("does not wait for subscriptions to be in a Complete state", async function (this: RealmContext) {
           const subs = this.realm.subscriptions;
           const result = subs.update((mutableSubs) => {
-            mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name));
+            mutableSubs.add(this.realm.objects(FlexiblePerson));
           });
 
           expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Pending);
@@ -1035,22 +1017,22 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
           await subs.update((mutableSubs) => {
             mutableSubs.remove(query);
-            mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name).filtered("age < 10"));
-            mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name).filtered("age > 20"));
-            mutableSubs.add(this.realm.objects(DogSchema.name).filtered("age > 30"));
+            mutableSubs.add(this.realm.objects(FlexiblePerson).filtered("age < 10"));
+            mutableSubs.add(this.realm.objects(FlexiblePerson).filtered("age > 20"));
+            mutableSubs.add(this.realm.objects(Dog).filtered("age > 30"));
           });
 
           expect(subs).to.have.length(3);
 
           const subsCopy = [...subs];
           expect(subsCopy[0].queryString).to.equal("age < 10");
-          expect(subsCopy[0].objectType).to.equal(FlexiblePersonSchema.name);
+          expect(subsCopy[0].objectType).to.equal(FlexiblePerson.schema.name);
 
           expect(subsCopy[1].queryString).to.equal("age > 20");
-          expect(subsCopy[1].objectType).to.equal(FlexiblePersonSchema.name);
+          expect(subsCopy[1].objectType).to.equal(FlexiblePerson.schema.name);
 
           expect(subsCopy[2].queryString).to.equal("age > 30");
-          expect(subsCopy[2].objectType).to.equal(DogSchema.name);
+          expect(subsCopy[2].objectType).to.equal(Dog.schema.name);
         });
 
         it("handles multiple updates in multiple batches", async function (this: RealmContext) {
@@ -1058,25 +1040,25 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
           await subs.update((mutableSubs) => {
             mutableSubs.remove(query);
-            mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name).filtered("age < 10"));
+            mutableSubs.add(this.realm.objects(FlexiblePerson).filtered("age < 10"));
           });
 
           await subs.update((mutableSubs) => {
-            mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name).filtered("age > 20"));
-            mutableSubs.add(this.realm.objects(DogSchema.name).filtered("age > 30"));
+            mutableSubs.add(this.realm.objects(FlexiblePerson).filtered("age > 20"));
+            mutableSubs.add(this.realm.objects(Dog).filtered("age > 30"));
           });
 
           expect(subs).to.have.length(3);
 
           const subsCopy = [...subs];
           expect(subsCopy[0].queryString).to.equal("age < 10");
-          expect(subsCopy[0].objectType).to.equal(FlexiblePersonSchema.name);
+          expect(subsCopy[0].objectType).to.equal(FlexiblePerson.schema.name);
 
           expect(subsCopy[1].queryString).to.equal("age > 20");
-          expect(subsCopy[1].objectType).to.equal(FlexiblePersonSchema.name);
+          expect(subsCopy[1].objectType).to.equal(FlexiblePerson.schema.name);
 
           expect(subsCopy[2].queryString).to.equal("age > 30");
-          expect(subsCopy[2].objectType).to.equal(DogSchema.name);
+          expect(subsCopy[2].objectType).to.equal(Dog.schema.name);
         });
 
         // TODO: Enable test when we can find another way of triggering a `SubscriptionsState.Error`.
@@ -1086,9 +1068,9 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
           await expect(
             subs.update((mutableSubs) => {
-              mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name).filtered("age < 10"));
-              mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name).filtered("nonQueryable == 'test'"));
-              mutableSubs.add(this.realm.objects(DogSchema.name).filtered("age > 30"));
+              mutableSubs.add(this.realm.objects(FlexiblePerson).filtered("age < 10"));
+              mutableSubs.add(this.realm.objects(FlexiblePerson).filtered("nonQueryable == 'test'"));
+              mutableSubs.add(this.realm.objects(Dog).filtered("age > 30"));
             }),
           ).to.be.rejected;
 
@@ -1110,7 +1092,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           /*const { subs } = addSubscriptionForPerson(this.realm);
 
           const result = await subs.update((mutableSubs) => {
-            return mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name).filtered("age < 10"));
+            return mutableSubs.add(this.realm.objects(FlexiblePerson).filtered("age < 10"));
           });
 
           expect(result).to.be.an.instanceOf(Realm.App.Sync.Subscription);
@@ -1149,27 +1131,24 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         });
 
         it("adds a second subscription with the same object type and a different filter", async function (this: RealmContext) {
-          addSubscription(this.realm, this.realm.objects(FlexiblePersonSchema.name));
-          await addSubscriptionAndSync(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"));
+          addSubscription(this.realm, this.realm.objects(FlexiblePerson));
+          await addSubscriptionAndSync(this.realm, this.realm.objects(FlexiblePerson).filtered("age > 10"));
 
           expect(this.realm.subscriptions).to.have.lengthOf(2);
         });
 
         it("does not add a second subscription with the same query and a different sort", async function (this: RealmContext) {
-          addSubscription(this.realm, this.realm.objects(FlexiblePersonSchema.name));
-          const { subs } = await addSubscriptionAndSync(
-            this.realm,
-            this.realm.objects(FlexiblePersonSchema.name).sorted("name"),
-          );
+          addSubscription(this.realm, this.realm.objects(FlexiblePerson));
+          const { subs } = await addSubscriptionAndSync(this.realm, this.realm.objects(FlexiblePerson).sorted("name"));
 
           expect(subs).to.have.lengthOf(1);
         });
 
         it("updates an existing subscription with the same name and different query", async function (this: RealmContext) {
-          addSubscription(this.realm, this.realm.objects(FlexiblePersonSchema.name), { name: "test" });
+          addSubscription(this.realm, this.realm.objects(FlexiblePerson), { name: "test" });
           const { subs } = await addSubscriptionAndSync(
             this.realm,
-            this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"),
+            this.realm.objects(FlexiblePerson).filtered("age > 10"),
             {
               name: "test",
             },
@@ -1180,16 +1159,12 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         });
 
         it("allows an anonymous and a named subscription for the same query to exist", async function (this: RealmContext) {
-          const { sub } = addSubscription(
-            this.realm,
-            this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"),
-            {
-              name: "test",
-            },
-          );
+          const { sub } = addSubscription(this.realm, this.realm.objects(FlexiblePerson).filtered("age > 10"), {
+            name: "test",
+          });
           const { subs } = await addSubscriptionAndSync(
             this.realm,
-            this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"),
+            this.realm.objects(FlexiblePerson).filtered("age > 10"),
           );
 
           expect(subs).to.have.lengthOf(2);
@@ -1206,7 +1181,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
         describe("#throwOnUpdate", function () {
           it("does not throw and does not add a new subscription if a subscription with the same name and same query is added, and throwOnUpdate is true", async function (this: RealmContext) {
-            const query = this.realm.objects(DogSchema.name);
+            const query = this.realm.objects(Dog);
             const { subs } = addSubscription(this.realm, query, { name: "test" });
 
             await expect(
@@ -1220,7 +1195,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
           it("is rejected and does not add the subscription if a subscription with the same name but different query is added, and throwOnUpdate is true", async function (this: RealmContext) {
             const { subs } = addSubscriptionForPerson(this.realm, { name: "test" });
-            const query = this.realm.objects(DogSchema.name);
+            const query = this.realm.objects(Dog);
 
             await expect(
               subs.update((mutableSubs) => {
@@ -1235,7 +1210,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
           async function testThrowOnUpdateFalse(realm: Realm, addOptions: Realm.App.Sync.SubscriptionOptions = {}) {
             const { subs } = addSubscriptionForPerson(realm, { name: "test" });
-            const query = realm.objects(DogSchema.name);
+            const query = realm.objects(Dog);
 
             await expect(
               subs.update((mutableSubs) => {
@@ -1266,7 +1241,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         });
 
         it("returns true and removes the subscription if the subscription is found", async function (this: RealmContext) {
-          addSubscription(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"));
+          addSubscription(this.realm, this.realm.objects(FlexiblePerson).filtered("age > 10"));
           const { subs } = addSubscriptionForPerson(this.realm, { name: "test" });
 
           expect(subs).to.have.length(2);
@@ -1282,8 +1257,8 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
       describe("#remove", function () {
         it("returns false and does not remove any subscriptions if the subscription for the query is not found", async function (this: RealmContext) {
-          const query = this.realm.objects(FlexiblePersonSchema.name);
-          const query2 = this.realm.objects(DogSchema.name);
+          const query = this.realm.objects(FlexiblePerson);
+          const query2 = this.realm.objects(Dog);
 
           const { subs } = addSubscription(this.realm, query);
 
@@ -1295,7 +1270,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         });
 
         it("returns true and removes the subscription for the query if it is found", async function (this: RealmContext) {
-          addSubscription(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"));
+          addSubscription(this.realm, this.realm.objects(FlexiblePerson).filtered("age > 10"));
           const { subs, query } = addSubscriptionForPerson(this.realm);
 
           expect(subs).to.have.length(2);
@@ -1309,17 +1284,17 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         });
 
         it("removes multiple subscriptions", async function (this: RealmContext) {
-          addSubscription(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("age > 15"));
-          addSubscription(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("name == 'John'"));
-          addSubscription(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("name BEGINSWITH 'A'"));
+          addSubscription(this.realm, this.realm.objects(FlexiblePerson).filtered("age > 15"));
+          addSubscription(this.realm, this.realm.objects(FlexiblePerson).filtered("name == 'John'"));
+          addSubscription(this.realm, this.realm.objects(FlexiblePerson).filtered("name BEGINSWITH 'A'"));
 
           const subs = this.realm.subscriptions;
 
           expect(subs).to.have.length(3);
 
           await subs.update((mutableSubs) => {
-            mutableSubs.remove(this.realm.objects(FlexiblePersonSchema.name).filtered("name == 'John'"));
-            mutableSubs.remove(this.realm.objects(FlexiblePersonSchema.name).filtered("name BEGINSWITH 'A'"));
+            mutableSubs.remove(this.realm.objects(FlexiblePerson).filtered("name == 'John'"));
+            mutableSubs.remove(this.realm.objects(FlexiblePerson).filtered("name BEGINSWITH 'A'"));
           });
 
           expect(subs).to.have.length(1);
@@ -1333,7 +1308,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
           // Add a second sub to check we don't delete them all
           subs.update((mutableSubs) => {
-            mutableSubs.add(this.realm.objects(DogSchema.name));
+            mutableSubs.add(this.realm.objects(Dog));
           });
 
           // Remove the first sub
@@ -1349,7 +1324,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         });
 
         it("returns true and removes the subscription if the subscription is found", async function (this: RealmContext) {
-          addSubscription(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"));
+          addSubscription(this.realm, this.realm.objects(FlexiblePerson).filtered("age > 10"));
           const { subs, sub } = addSubscriptionForPerson(this.realm);
 
           expect(subs).to.have.length(2);
@@ -1400,7 +1375,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
         it("removes all subscriptions and returns the number of subscriptions removed", async function (this: RealmContext) {
           addSubscriptionForPerson(this.realm);
-          await addSubscriptionAndSync(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"));
+          await addSubscriptionAndSync(this.realm, this.realm.objects(FlexiblePerson).filtered("age > 10"));
 
           await this.realm.subscriptions.update((mutableSubs) => {
             expect(mutableSubs.removeAll()).to.equal(2);
@@ -1415,7 +1390,8 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           const { subs } = addSubscriptionForPerson(this.realm);
 
           await subs.update((mutableSubs) => {
-            expect(mutableSubs.removeByObjectType(DogSchema.name)).to.equal(0);
+            // TODO: should this not support removeByObjectType(Dog)?
+            expect(mutableSubs.removeByObjectType(Dog.schema.name)).to.equal(0);
           });
 
           expect(subs.isEmpty).to.be.false;
@@ -1423,15 +1399,15 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
         it("removes all subscriptions for the object type and returns the number of subscriptions removed", async function (this: RealmContext) {
           addSubscriptionForPerson(this.realm);
-          addSubscription(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"));
-          const { subs } = addSubscription(this.realm, this.realm.objects(DogSchema.name));
+          addSubscription(this.realm, this.realm.objects(FlexiblePerson).filtered("age > 10"));
+          const { subs } = addSubscription(this.realm, this.realm.objects(Dog));
 
           await subs.update((mutableSubs) => {
-            expect(mutableSubs.removeByObjectType(FlexiblePersonSchema.name)).to.equal(2);
+            expect(mutableSubs.removeByObjectType(FlexiblePerson.schema.name)).to.equal(2);
           });
 
           expect(subs).to.have.length(1);
-          expect([...subs][0].objectType).to.equal(DogSchema.name);
+          expect([...subs][0].objectType).to.equal(Dog.schema.name);
         });
       });
 
@@ -1477,7 +1453,11 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
      */
     async function addPersonAndWaitForUpload(realm: Realm): Promise<{ person: IPerson; id: BSON.ObjectId }> {
       const person = realm.write(function () {
-        return realm.create<IPerson>(FlexiblePersonSchema.name, { _id: new BSON.ObjectId(), name: "Tom", age: 36 });
+        return realm.create<FlexiblePerson>(FlexiblePerson, {
+          _id: new BSON.ObjectId(),
+          name: "Tom",
+          age: 36,
+        });
       });
 
       // Save the values we want to return, as this could be invalid after uploading, depending on the flexible sync criteria
@@ -1514,7 +1494,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       const { id } = await addPersonAndWaitForUpload(realm);
 
       const newRealm = await closeAndReopenRealm(realm, config);
-      expect(newRealm.objectForPrimaryKey(FlexiblePersonSchema.name, id)).to.be.null;
+      expect(newRealm.objectForPrimaryKey(FlexiblePerson, id)).to.be.null;
 
       await newRealm.subscriptions.update((mutableSubs) => subsUpdateFn(mutableSubs, newRealm));
 
@@ -1526,12 +1506,12 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         this.realm,
         this.config,
         (mutableSubs, realm) => {
-          mutableSubs.add(realm.objects(FlexiblePersonSchema.name));
+          mutableSubs.add(realm.objects(FlexiblePerson));
         },
       );
 
-      expect(newRealm.objectForPrimaryKey(FlexiblePersonSchema.name, id)).to.not.be.null;
-      expect(newRealm.objectForPrimaryKey(FlexiblePersonSchema.name, id)).to.not.be.null;
+      expect(newRealm.objectForPrimaryKey(FlexiblePerson, id)).to.not.be.null;
+      expect(newRealm.objectForPrimaryKey(FlexiblePerson, id)).to.not.be.null;
     });
 
     it("syncs added items to a subscribed collection with a filter", async function (this: RealmContext) {
@@ -1539,11 +1519,11 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         this.realm,
         this.config,
         (mutableSubs, realm) => {
-          mutableSubs.add(realm.objects(FlexiblePersonSchema.name).filtered("age > 30"));
+          mutableSubs.add(realm.objects(FlexiblePerson).filtered("age > 30"));
         },
       );
 
-      expect(newRealm.objectForPrimaryKey(FlexiblePersonSchema.name, id)).to.not.be.null;
+      expect(newRealm.objectForPrimaryKey(FlexiblePerson, id)).to.not.be.null;
     });
 
     it("does not sync added items not matching the filter", async function (this: RealmContext) {
@@ -1551,11 +1531,11 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         this.realm,
         this.config,
         (mutableSubs, realm) => {
-          mutableSubs.add(realm.objects(FlexiblePersonSchema.name).filtered("age < 30"));
+          mutableSubs.add(realm.objects(FlexiblePerson).filtered("age < 30"));
         },
       );
 
-      expect(newRealm.objectForPrimaryKey(FlexiblePersonSchema.name, id)).to.be.null;
+      expect(newRealm.objectForPrimaryKey(FlexiblePerson, id)).to.be.null;
     });
 
     // TODO: Probably remove this as it is testing old functionality
@@ -1564,18 +1544,18 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         this.realm,
         this.config,
         (mutableSubs, realm) => {
-          mutableSubs.add(realm.objects(FlexiblePersonSchema.name).filtered("age < 30"));
+          mutableSubs.add(realm.objects(FlexiblePerson).filtered("age < 30"));
         },
       );
-      expect(newRealm.objectForPrimaryKey(FlexiblePersonSchema.name, id)).to.be.null;
+      expect(newRealm.objectForPrimaryKey(FlexiblePerson, id)).to.be.null;
 
       const subs = newRealm.subscriptions;
       await subs.update((mutableSubs) => {
-        mutableSubs.add(newRealm.objects(FlexiblePersonSchema.name).filtered("age > 30"));
+        mutableSubs.add(newRealm.objects(FlexiblePerson).filtered("age > 30"));
       });
 
       newRealm.addListener("change", () => {
-        expect(newRealm.objectForPrimaryKey(FlexiblePersonSchema.name, id)).to.not.be.null;
+        expect(newRealm.objectForPrimaryKey(FlexiblePerson, id)).to.not.be.null;
       });
     });
 
@@ -1585,19 +1565,19 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         this.realm,
         this.config,
         (mutableSubs, realm) => {
-          mutableSubs.add(realm.objects(FlexiblePersonSchema.name).filtered("age < 30"));
+          mutableSubs.add(realm.objects(FlexiblePerson).filtered("age < 30"));
         },
       );
-      expect(newRealm.objectForPrimaryKey(FlexiblePersonSchema.name, id)).to.be.null;
+      expect(newRealm.objectForPrimaryKey(FlexiblePerson, id)).to.be.null;
 
       const subs = newRealm.subscriptions;
       await subs.update((mutableSubs) => {
         mutableSubs.removeAll();
-        mutableSubs.add(newRealm.objects(FlexiblePersonSchema.name).filtered("age > 30"));
+        mutableSubs.add(newRealm.objects(FlexiblePerson).filtered("age > 30"));
       });
 
       newRealm.addListener("change", () => {
-        expect(newRealm.objectForPrimaryKey(FlexiblePersonSchema.name, id)).to.not.be.null;
+        expect(newRealm.objectForPrimaryKey(FlexiblePerson, id)).to.not.be.null;
       });
     });
 
@@ -1606,11 +1586,11 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         this.realm,
         this.config,
         (mutableSubs, realm) => {
-          mutableSubs.add(realm.objects(FlexiblePersonSchema.name).filtered("age < 40"), { name: "test" });
-          mutableSubs.add(realm.objects(FlexiblePersonSchema.name).filtered("age > 50"));
+          mutableSubs.add(realm.objects(FlexiblePerson).filtered("age < 40"), { name: "test" });
+          mutableSubs.add(realm.objects(FlexiblePerson).filtered("age > 50"));
         },
       );
-      expect(newRealm.objectForPrimaryKey(FlexiblePersonSchema.name, id)).to.not.be.null;
+      expect(newRealm.objectForPrimaryKey(FlexiblePerson, id)).to.not.be.null;
 
       const subs = newRealm.subscriptions;
       await subs.update((mutableSubs) => {
@@ -1618,7 +1598,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       });
 
       newRealm.addListener("change", () => {
-        expect(newRealm.objectForPrimaryKey(FlexiblePersonSchema.name, id)).to.be.null;
+        expect(newRealm.objectForPrimaryKey(FlexiblePerson, id)).to.be.null;
       });
     });
 
@@ -1627,10 +1607,10 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         this.realm,
         this.config,
         (mutableSubs, realm) => {
-          mutableSubs.add(realm.objects(FlexiblePersonSchema.name));
+          mutableSubs.add(realm.objects(FlexiblePerson));
         },
       );
-      expect(newRealm.objectForPrimaryKey(FlexiblePersonSchema.name, id)).to.not.be.null;
+      expect(newRealm.objectForPrimaryKey(FlexiblePerson, id)).to.not.be.null;
 
       const subs = newRealm.subscriptions;
       await subs.update((mutableSubs) => {
@@ -1638,7 +1618,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       });
 
       newRealm.addListener("change", () => {
-        expect(newRealm.objectForPrimaryKey(FlexiblePersonSchema.name, id)).to.be.null;
+        expect(newRealm.objectForPrimaryKey(FlexiblePerson, id)).to.be.null;
       });
     });
 
@@ -1647,18 +1627,18 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         this.realm,
         this.config,
         (mutableSubs, realm) => {
-          mutableSubs.add(realm.objects(FlexiblePersonSchema.name).filtered("age > 30"));
+          mutableSubs.add(realm.objects(FlexiblePerson).filtered("age > 30"));
         },
       );
-      expect(newRealm.objectForPrimaryKey(FlexiblePersonSchema.name, id)).to.not.be.null;
+      expect(newRealm.objectForPrimaryKey(FlexiblePerson, id)).to.not.be.null;
 
       const subs = newRealm.subscriptions;
       await subs.update((mutableSubs) => {
         mutableSubs.removeAll();
-        mutableSubs.add(newRealm.objects(FlexiblePersonSchema.name).filtered("age < 30"));
+        mutableSubs.add(newRealm.objects(FlexiblePerson).filtered("age < 30"));
       });
 
-      expect(newRealm.objectForPrimaryKey(FlexiblePersonSchema.name, id)).to.be.null;
+      expect(newRealm.objectForPrimaryKey(FlexiblePerson, id)).to.be.null;
     });
 
     // TODO test more complex integration scenarios, e.g. links, embedded objects, collections, complex queries
@@ -1667,7 +1647,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       it("throw an exception if items are added without a subscription", function (this: RealmContext) {
         this.realm.write(() => {
           expect(() => {
-            this.realm.create<IPerson>(FlexiblePersonSchema.name, {
+            this.realm.create<FlexiblePerson>(FlexiblePerson, {
               _id: new BSON.ObjectId(),
               name: "Tom",
               age: 36,
@@ -1677,10 +1657,10 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       });
 
       it("deletes the item if an item not matching the filter is created", async function (this: RealmContext) {
-        await addSubscriptionAndSync(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("age < 30"));
+        await addSubscriptionAndSync(this.realm, this.realm.objects(FlexiblePerson).filtered("age < 30"));
 
         this.realm.write(() => {
-          this.realm.create<IPerson>(FlexiblePersonSchema.name, {
+          this.realm.create<FlexiblePerson>(FlexiblePerson, {
             _id: new BSON.ObjectId(),
             name: "Tom Old",
             age: 99,
@@ -1688,7 +1668,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         });
 
         await this.realm.syncSession?.downloadAllServerChanges();
-        expect(this.realm.objects(FlexiblePersonSchema.name)).to.have.length(0);
+        expect(this.realm.objects(FlexiblePerson)).to.have.length(0);
       });
 
       it("throw an exception if you remove a subscription without waiting for server acknowledgement, then modify objects that were only matched by the now removed subscription", async function (this: RealmContext) {
@@ -1702,7 +1682,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
         this.realm.write(() => {
           expect(() => {
-            this.realm.create<IPerson>(FlexiblePersonSchema.name, {
+            this.realm.create<FlexiblePerson>(FlexiblePerson, {
               _id: new BSON.ObjectId(),
               name: "Tom",
               age: 36,
@@ -1715,10 +1695,10 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         const realm = this.realm;
 
         const action = async () => {
-          await addSubscriptionAndSync(realm, realm.objects(FlexiblePersonSchema.name).filtered("age < 40"));
+          await addSubscriptionAndSync(realm, realm.objects(FlexiblePerson).filtered("age < 40"));
 
           const person = realm.write(() => {
-            return realm.create<IPerson>(FlexiblePersonSchema.name, {
+            return realm.create<FlexiblePerson>(FlexiblePerson, {
               _id: new BSON.ObjectId(),
               name: "Tom",
               age: 36,
@@ -1738,8 +1718,9 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       it("handles manual client resets with flexible sync enabled", async function (this: RealmContext) {
         await expectClientResetError(
           {
-            schema: [FlexiblePersonSchema, DogSchema],
+            schema: [FlexiblePerson, Dog],
             sync: {
+              //@ts-expect-error Internal field
               _sessionStopPolicy: SessionStopPolicy.Immediately,
               flexible: true,
               user: this.user,
@@ -1755,7 +1736,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             // @ts-ignore calling undocumented method _simulateError
             session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false); // 211 -> diverging histories
           },
-          (error) => {
+          (error: SyncError) => {
             expect(error.name).to.equal("ClientReset");
             expect(error.message).to.equal("Simulate Client Reset");
             expect(error.code).to.equal(211);
