@@ -29,45 +29,64 @@ describe("Enums", function () {
   describe("ConnectionState", function () {
     it("is accessible", function () {
       expect(ConnectionState).to.be.an("object");
-      expect(ConnectionState.Disconnected).equals("disconnected");
-      expect(ConnectionState.Connecting).equals("connecting");
-      expect(ConnectionState.Connected).equals("connected");
+      expect(ConnectionState).to.deep.equals({
+        Disconnected: "disconnected",
+        Connecting: "connecting",
+        Connected: "connected",
+      });
     });
   });
   describe("SessionStopPolicy", function () {
     it("is accessible", function () {
       expect(SessionStopPolicy).to.be.an("object");
-      expect(SessionStopPolicy.AfterUpload).equals("after-upload");
-      expect(SessionStopPolicy.Immediately).equals("immediately");
-      expect(SessionStopPolicy.Never).equals("never");
+      expect(SessionStopPolicy).to.deep.equal({
+        AfterUpload: "after-upload",
+        Immediately: "immediately",
+        Never: "never",
+      });
     });
   });
   describe("OpenRealmBehaviorType", function () {
     it("is accessible", function () {
       expect(OpenRealmBehaviorType).to.be.an("object");
-      expect(OpenRealmBehaviorType.DownloadBeforeOpen).equals("downloadBeforeOpen");
-      expect(OpenRealmBehaviorType.OpenImmediately).equals("openImmediately");
+      expect(OpenRealmBehaviorType).to.deep.equal({
+        DownloadBeforeOpen: "downloadBeforeOpen",
+        OpenImmediately: "openImmediately",
+      });
     });
   });
   describe("OpenRealmTimeOutBehavior", function () {
     it("is accessible", function () {
       expect(OpenRealmTimeOutBehavior).to.be.an("object");
-      expect(OpenRealmTimeOutBehavior.OpenLocalRealm).equals("openLocalRealm");
-      expect(OpenRealmTimeOutBehavior.ThrowException).equals("throwException");
+      expect(OpenRealmTimeOutBehavior).to.deep.equal({
+        OpenLocalRealm: "openLocalRealm",
+        ThrowException: "throwException",
+      });
     });
   });
   describe("NumericLogLevel", function () {
     it("is accessible", function () {
       expect(NumericLogLevel).to.be.an("object");
-      expect(NumericLogLevel.All).equals(0);
-      expect(NumericLogLevel.Trace).equals(1);
-      expect(NumericLogLevel.Debug).equals(2);
-      expect(NumericLogLevel.Detail).equals(3);
-      expect(NumericLogLevel.Info).equals(4);
-      expect(NumericLogLevel.Warn).equals(5);
-      expect(NumericLogLevel.Error).equals(6);
-      expect(NumericLogLevel.Fatal).equals(7);
-      expect(NumericLogLevel.Off).equals(8);
+      expect(NumericLogLevel).to.deep.equals({
+        "0": "All",
+        "1": "Trace",
+        "2": "Debug",
+        "3": "Detail",
+        "4": "Info",
+        "5": "Warn",
+        "6": "Error",
+        "7": "Fatal",
+        "8": "Off",
+        All: 0,
+        Trace: 1,
+        Debug: 2,
+        Detail: 3,
+        Info: 4,
+        Warn: 5,
+        Error: 6,
+        Fatal: 7,
+        Off: 8,
+      });
     });
   });
 });
