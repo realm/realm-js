@@ -37,11 +37,12 @@ jobs:
 
     - name: Get NPM cache directory
       id: npm-cache-dir
-      run: echo "::set-output name=dir::$(npm config get cache)"
+      shell: bash
+      run: echo "dir=$(npm config get cache)" >> $GITHUB_OUTPUT
 
     - name: Restore NPM cache
       id: npm-cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ${{ steps.npm-cache-dir.outputs.dir }}
         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -57,7 +58,7 @@ jobs:
         workflow: pr-realm-js.yml
         commit: ${{ inputs.commit || github.sha }}
         path: ${{ github.workspace }}
-        workflow_conclusion: completed
+        workflow_conclusion: "" # Ignores workflow conclusion
         github_token: ${{ secrets.REALM_CI_PAT }}
         name: realm-js-prebuilds
 
@@ -65,10 +66,10 @@ jobs:
       id: get-version
       run: |
         pkgVersion=$(jq -r .version package.json)
-        echo "::set-output name=version::$pkgVersion"
+        echo "version=$pkgVersion" >> $GITHUB_OUTPUT
         prerelease=false
         if [ '${{ inputs.tag }}' != latest ]; then prerelease=true; fi
-        echo "::set-output name=prerelease::$prerelease"
+        echo "prerelease=$prerelease" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Set up S3cmd and configure AWS credentials

@@ -38,12 +38,12 @@ jobs:
           - { os: ios, runner: macos-latest, arch: ios, artifact-path: react-native/ios/realm-js-ios.xcframework }
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: "recursive"
 
       - name: Setup node version
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: '16'
           cache: 'npm'
@@ -51,11 +51,12 @@ jobs:
 
       - name: Get NPM cache directory
         id: npm-cache-dir
-        run: echo "::set-output name=dir::$(npm config get cache)"
+        shell: bash
+        run: echo "dir=$(npm config get cache)" >> $GITHUB_OUTPUT
 
       - name: Restore NPM cache
         id: npm-cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{ steps.npm-cache-dir.outputs.dir }}
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -98,7 +99,7 @@ jobs:
           rm -fv $(which ccache)
 
       - name: ccache
-        uses: hendrikmuhs/ccache-action@bd43b7f5fb36d5f97ef5c6cc818a2055b04f610a
+        uses: hendrikmuhs/ccache-action@v1
         with:
           key: ${{ runner.os }}-${{ matrix.variant.os }}-${{ matrix.variant.arch }}
           max-size: '2.0G'
@@ -165,7 +166,7 @@ jobs:
       # Due to a limitation in upload-artifact a redundant file is needed to force 
       # preserving paths (https://github.com/actions/upload-artifact/issues/174) 
       - name: Upload prebuild artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: realm-js-prebuilds
           path: |
@@ -178,12 +179,12 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: "recursive"
 
       - name: Download prebuilds
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: realm-js-prebuilds
 
@@ -193,7 +194,7 @@ jobs:
       # Due to a limitation in upload-artifact a redundant file is needed to force 
       # preserving paths (https://github.com/actions/upload-artifact/issues/174) 
       - name: Upload prebuild artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: realm-js-prebuilds
           path: |
@@ -235,12 +236,12 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: "recursive"
 
       - name: Setup node version
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: '16'
           cache: 'npm'
@@ -248,11 +249,12 @@ jobs:
 
       - name: Get NPM cache directory
         id: npm-cache-dir
-        run: echo "::set-output name=dir::$(npm config get cache)"
+        shell: bash
+        run: echo "dir=$(npm config get cache)" >> $GITHUB_OUTPUT
 
       - name: Restore NPM cache
         id: npm-cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{ steps.npm-cache-dir.outputs.dir }}
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -262,7 +264,7 @@ jobs:
       - name: Restore React Native cache
         if: ${{ matrix.variant.environment == 'react-native' }}
         id: lerna-cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: '**/Pods'
           key: ${{ runner.os }}-${{matrix.variant.environment}}-${{ hashFiles('**/Podfile.lock', './src/**', './vendor/**') }}
@@ -298,7 +300,7 @@ jobs:
           echo "wrapper=xvfb-run" >> $GITHUB_ENV
 
       - name: Download prebuilds
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: realm-js-prebuilds
 
@@ -327,14 +329,14 @@ jobs:
         if: ${{ (matrix.variant.os == 'ios') }}
         run: open -a ${{ env.DEVELOPER_DIR }}/Contents/Developer/Applications/Simulator.app/Contents/MacOS/Simulator
 
-      - name: Create Mocha Env
+      - name: Create Mocha Remote Context
         id: mocha-env
-        run: echo "::set-output name=name::syncLogLevel=warn,longTimeout=${{ env.LONG_TIMEOUT }},realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ secrets.ATLAS_QA_DAILY_CLUSTER_NAME }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}"
+        run: echo "context=syncLogLevel=warn,longTimeout=${{ env.LONG_TIMEOUT }},realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ secrets.ATLAS_QA_DAILY_CLUSTER_NAME }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}" >> $GITHUB_OUTPUT
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ (matrix.variant.os != 'android') && (matrix.variant.os != 'ios') }}
         env:
-          MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.name }}
+          MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.context }}
         # The non react native environments should not take so long
         timeout-minutes: 60
         run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
@@ -342,13 +344,13 @@ jobs:
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ (matrix.variant.os == 'ios') }}
         env:
-          MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.name }}
+          MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.context }}
         timeout-minutes: 75
         run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
       - name: Setup Java Gradle cache for android test app
         if: ${{ (matrix.variant.os == 'android') }}
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.gradle/caches
@@ -359,7 +361,7 @@ jobs:
 
       - name: Setup Android Emulator cache
         if: ${{ (matrix.variant.os == 'android') }}
-        uses: actions/cache@v3.0.4
+        uses: actions/cache@v3
         id: avd-cache
         with:
           path: |
@@ -376,7 +378,7 @@ jobs:
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ (matrix.variant.os == 'android') }}
         env:
-          MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.name }}
+          MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.context }}
         timeout-minutes: 75
         uses: reactivecircus/android-emulator-runner@v2
         with:

@@ -8,10 +8,10 @@ jobs:
     steps:
 
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Setup node version
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
         node-version: 16
         cache: 'npm'
@@ -30,7 +30,7 @@ jobs:
         templates/scripts/bump_template_versions.sh
         cd templates/react-native-template-realm-js
         pkgVersion=$(npm pkg get version)
-        echo "::set-output name=version::$pkgVersion"
+        echo "version=$pkgVersion" >> $GITHUB_OUTPUT
 
     - name: Create react native templates PR
       uses: peter-evans/create-pull-request@7380612b49221684fefa025244f2ef4008ae50ad #! 3.10.1
