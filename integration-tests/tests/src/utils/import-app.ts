@@ -110,9 +110,6 @@ export function getDefaultReplacements(name: string, databaseName: string): Temp
 
   return {
     "services/mongodb/config.json": generateMongoDBServiceConfig({ name, databaseName, clusterName }),
-    "services/mongodb/rules/*.json": {
-      database: databaseName,
-    },
   };
 }
 

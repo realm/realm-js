@@ -351,10 +351,7 @@ export class AppImporter {
         const configFilePath = path.join(servicesDir, serviceDir, "config.json");
         if (fs.existsSync(configFilePath)) {
           const config = this.loadJson(configFilePath);
-          console.log("Creating service: ", config.name);
-          const dbName = config.config.sync
-            ? config.config.sync?.database_name
-            : config.config.flexible_sync?.database_name;
+
           const serviceUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/services`;
           const response = await fetch(serviceUrl, {
             method: "POST",
@@ -393,7 +390,11 @@ export class AppImporter {
                   // Relationships is not valid in a rule request, but is included when exporting an app from realm
                   delete ruleConfig.relationships;
                 }
-                const rulesUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/services/${serviceId}/rules`;
+                const rulesUrl =
+                  config.type === "mongodb" || config.type === "mongodb-atlas"
+                    ? `${this.apiUrl}/groups/${groupId}/apps/${appId}/services/${serviceId}/default_rule`
+                    : `${this.apiUrl}/groups/${groupId}/apps/${appId}/services/${serviceId}/rules`;
+
                 const response = await fetch(rulesUrl, {
                   method: "POST",
                   headers: {
