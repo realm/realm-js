@@ -334,31 +334,16 @@ export class RealmObject<T = DefaultObject> {
    * @returns The objects that link to this object.
    * @since 1.9.0
    */
-  linkingObjects<T>(
-    objectType: string | Constructor<RealmObject<T>>,
-    propertyName: string,
-  ): Results<T & RealmObject<T>> {
-    const {
-      objectSchema: { tableKey },
-      properties,
-    } = this[REALM].getClassHelpers(objectType);
-    const tableRef = binding.Helpers.getTable(this[REALM].internal, tableKey);
+  linkingObjects<T = DefaultObject>(objectType: string, propertyName: string): Results<RealmObject<T> & T>;
+  linkingObjects<T extends RealmObject>(objectType: Constructor<T>, propertyName: string): Results<T>;
+  linkingObjects<T extends RealmObject>(objectType: string | Constructor<T>, propertyName: string): Results<T> {
+    const { objectSchema: linkedObjectSchema, properties } = this[REALM].getClassHelpers(objectType);
+    const tableRef = binding.Helpers.getTable(this[REALM].internal, linkedObjectSchema.tableKey);
     const property = properties.get(propertyName);
 
-    let objectTypeName: string;
-
-    if (typeof objectType != "string") {
-      assert.extends(objectType, RealmObject);
-      assert.object(objectType.schema, "schema static");
-      assert.string(objectType.schema.name, "name");
-      objectTypeName = objectType.schema.name;
-    } else {
-      objectTypeName = objectType;
-    }
-
     assert(
-      objectTypeName === property.objectType,
-      () => `'${objectTypeName}#${propertyName}' is not a relationship to '${this.objectSchema.name}'`,
+      linkedObjectSchema.name === property.objectType,
+      () => `'${linkedObjectSchema.name}#${propertyName}' is not a relationship to '${this.objectSchema.name}'`,
     );
 
     // Create the Result for the backlink view

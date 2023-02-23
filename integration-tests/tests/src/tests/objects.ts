@@ -172,7 +172,7 @@ describe("Realm objects", () => {
         });
       });
 
-      const linkedFriend = john.linkingObjects<Person>("Person", "friends")[0];
+      const linkedFriend = john.linkingObjects<IPerson>("Person", "friends")[0];
       expect(linkedFriend.name).equals(mary.name);
 
       const linkedFriend2 = john.linkingObjects(Person, "friends")[0];
