@@ -28,46 +28,46 @@ import {
 describe("Enums", function () {
   describe("ConnectionState", function () {
     it("is accessible", function () {
-      expect(typeof ConnectionState === "object");
-      expect(typeof ConnectionState.Disconnected === "string");
-      expect(typeof ConnectionState.Connecting === "string");
-      expect(typeof ConnectionState.Connecting === "string");
+      expect(ConnectionState).to.be.an("object");
+      expect(ConnectionState.Disconnected).equals("disconnected");
+      expect(ConnectionState.Connecting).equals("connecting");
+      expect(ConnectionState.Connected).equals("connected");
     });
   });
   describe("SessionStopPolicy", function () {
     it("is accessible", function () {
-      expect(typeof SessionStopPolicy === "object");
-      expect(typeof SessionStopPolicy.AfterUpload === "string");
-      expect(typeof SessionStopPolicy.Immediately === "string");
-      expect(typeof SessionStopPolicy.Never === "string");
+      expect(SessionStopPolicy).to.be.an("object");
+      expect(SessionStopPolicy.AfterUpload).equals("after-upload");
+      expect(SessionStopPolicy.Immediately).equals("immediately");
+      expect(SessionStopPolicy.Never).equals("never");
     });
   });
   describe("OpenRealmBehaviourType", function () {
     it("is accessible", function () {
-      expect(typeof OpenRealmBehaviorType === "object");
-      expect(typeof OpenRealmBehaviorType.DownloadBeforeOpen === "string");
-      expect(typeof OpenRealmBehaviorType.OpenImmediately === "string");
+      expect(OpenRealmBehaviorType).to.be.an("object");
+      expect(OpenRealmBehaviorType.DownloadBeforeOpen).equals("downloadBeforeOpen");
+      expect(OpenRealmBehaviorType.OpenImmediately).equals("openImmediately");
     });
   });
   describe("OpenRealmTimeOutBehaviour", function () {
     it("is accessible", function () {
-      expect(typeof OpenRealmTimeOutBehavior === "object");
-      expect(typeof OpenRealmTimeOutBehavior.OpenLocalRealm === "string");
-      expect(typeof OpenRealmTimeOutBehavior.ThrowException === "string");
+      expect(OpenRealmTimeOutBehavior).to.be.an("object");
+      expect(OpenRealmTimeOutBehavior.OpenLocalRealm).equals("openLocalRealm");
+      expect(OpenRealmTimeOutBehavior.ThrowException).equals("throwException");
     });
   });
   describe("NumericLogLevel", function () {
     it("is accessible", function () {
-      expect(typeof NumericLogLevel === "object");
-      expect(typeof NumericLogLevel.All === "number");
-      expect(typeof NumericLogLevel.Debug === "number");
-      expect(typeof NumericLogLevel.Detail === "number");
-      expect(typeof NumericLogLevel.Error === "number");
-      expect(typeof NumericLogLevel.Fatal === "number");
-      expect(typeof NumericLogLevel.Info === "number");
-      expect(typeof NumericLogLevel.Off === "number");
-      expect(typeof NumericLogLevel.Trace === "number");
-      expect(typeof NumericLogLevel.Warn === "number");
+      expect(NumericLogLevel).to.be.an("object");
+      expect(NumericLogLevel.All).equals(0);
+      expect(NumericLogLevel.Trace).equals(1);
+      expect(NumericLogLevel.Debug).equals(2);
+      expect(NumericLogLevel.Detail).equals(3);
+      expect(NumericLogLevel.Info).equals(4);
+      expect(NumericLogLevel.Warn).equals(5);
+      expect(NumericLogLevel.Error).equals(6);
+      expect(NumericLogLevel.Fatal).equals(7);
+      expect(NumericLogLevel.Off).equals(8);
     });
   });
 });
