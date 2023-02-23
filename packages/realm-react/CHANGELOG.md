@@ -19,6 +19,7 @@ const SomeComponent = () => {
 }
 ```
 >NOTE: If your app is using multiple Realms, then you should continue using `createRealmContext`
+* Allow `useQuery` to be passed a `query` function where `sorted` and `filtered` methods can be called
 
 ### Fixed
 * `useUser` is now typed to never returned `null` [#4973](https://github.com/realm/realm-js/issues/4973)
