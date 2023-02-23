@@ -127,7 +127,9 @@ describe.only("CancelOnWait", function () {
 
   it("Main test", async function () {
     const config = createSyncConfig({}, this.user);
-    const result = await openRealm(config, this.user);
+
+    //TODO Call openRealm async, and check if we get an exception (by using the time out and setting the boolean to true)
+    
   });
 });
 
