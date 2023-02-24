@@ -93,7 +93,7 @@ export class Sync {
     app.internal.syncManager.setLoggerFactory(factory);
   }
   static getAllSyncSessions(user: User): SyncSession[] {
-    throw new Error("Not yet implemented");
+    return user.internal.allSessions.map((session) => new SyncSession(session));
   }
   static getSyncSession(user: User, partitionValue: PartitionValue): SyncSession | null {
     validateSyncConfiguration({ user, partitionValue });
