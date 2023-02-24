@@ -1,14 +1,18 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "types": ["node"],
     "noResolve": false,
-    "incremental": true
+    "incremental": true,
+    "types": [],
+    "lib": [
+      "DOM",
+      "ES2022"
+    ]
   },
   "exclude": [
     "../tests/",
+    "../node/",
     "../react-native/",
-    "../browser/",
     "../../type-tests/"
   ],
 }
