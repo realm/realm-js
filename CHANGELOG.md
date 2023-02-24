@@ -8,6 +8,7 @@
 
 ### Fixed
 * Fixed enums which was accidentally exported on the `Realm` namespace without a backing implementation. ([#5493](https://github.com/realm/realm-js/pull/5493), since v11.0.0)
+* Fix regression in connection parameters. ([5252#discussion_r1115071101](https://github.com/realm/realm-js/pull/5252#discussion_r1115071101), since v11.5.0)
 
 ### Compatibility
 * React Native >= v0.70.0
@@ -499,7 +500,6 @@ realm.write(() => {
 * APIs are backwards compatible with all previous releases of Realm JavaScript in the 10.5.x series.
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
-<<<<<<< HEAD
 ### Internal
 * Upgraded Realm Core from v12.5.1 to v12.6.0. ([#4865](https://github.com/realm/realm-js/issues/4865))
 * Updated C++ `clang-format` version to match newer MacOS default ([#4869](https://github.com/realm/realm-js/pull/4869))
@@ -755,8 +755,6 @@ const Person = {
 
 ## 10.18.0 (2022-5-29)
 
-=======
->>>>>>> 1537f98a8 (Initial commit)
 ### Enhancements
 * Switch to building xcframeworks with Xcode 13.1. Xcode 12 is no longer supported.
 * Added an `initialSubscriptions` option to the `sync` config, which allows users to specify a subscription update function to bootstrap a set of flexible sync subscriptions when the Realm is first opened (or every time the app runs, using the `rerunOnOpen` flag). (#4561[https://github.com/realm/realm-js/pull/4561])
