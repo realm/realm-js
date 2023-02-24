@@ -108,6 +108,36 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
       expect(insertedIds).to.have.length(3);
     }
 
+    async function expectToFindDoc(doc: TestDocument, { expectedCount }: { expectedCount: number }): Promise<void> {
+      const result = await collection.findOne({ _id: doc._id });
+      expect(result).to.deep.equal(doc);
+
+      const count = await collection.count();
+      expect(count).to.equal(expectedCount);
+    }
+
+    async function expectToNotFindDoc(doc: TestDocument, { expectedCount }: { expectedCount: number }): Promise<void> {
+      const result = await collection.findOne({ _id: doc._id });
+      expect(result).to.be.null;
+
+      const count = await collection.count();
+      expect(count).to.equal(expectedCount);
+    }
+
+    async function expectTextToBeUnchanged({
+      text,
+      expectedCount,
+    }: {
+      text: string;
+      expectedCount: number;
+    }): Promise<void> {
+      const docs = await collection.find();
+      expect(docs).to.have.length(expectedCount);
+      for (const doc of docs) {
+        expect(doc.text).to.equal(text);
+      }
+    }
+
     describe("#find", function () {
       it("returns all documents using empty filter", async function (this: AppContext & Mocha.Context) {
         await insertThreeDocuments();
@@ -201,12 +231,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
         const oldDoc = await collection.findOneAndUpdate({ _id: nonExistentId }, { $set: { text: updatedText } });
         expect(oldDoc).to.be.null;
 
-        // Check that the original text is unchanged
-        const docs = await collection.find();
-        expect(docs).to.have.length(3);
-        for (const doc of docs) {
-          expect(doc.text).to.equal(insertedText);
-        }
+        await expectTextToBeUnchanged({ text: insertedText, expectedCount: 3 });
       });
 
       it("inserts new document if no matches when using 'upsert'", async function (this: AppContext & Mocha.Context) {
@@ -254,12 +279,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
         const oldDoc = await collection.findOneAndReplace({ _id: nonExistentId }, { text: updatedText });
         expect(oldDoc).to.be.null;
 
-        // Check that the original text is unchanged
-        const docs = await collection.find();
-        expect(docs).to.have.length(3);
-        for (const doc of docs) {
-          expect(doc.text).to.equal(insertedText);
-        }
+        await expectTextToBeUnchanged({ text: insertedText, expectedCount: 3 });
       });
     });
 
@@ -270,8 +290,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
         const oldDoc = await collection.findOneAndDelete({ _id: insertedId3 });
         expect(oldDoc).to.deep.equal({ _id: insertedId3, text: insertedText });
 
-        const count = await collection.count();
-        expect(count).to.equal(2);
+        await expectToNotFindDoc({ _id: insertedId3 }, { expectedCount: 2 });
       });
 
       it("deletes first returned document using empty filter", async function (this: AppContext & Mocha.Context) {
@@ -280,8 +299,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
         const oldDoc = await collection.findOneAndDelete();
         expect(oldDoc).to.deep.equal({ _id: insertedId1, text: insertedText });
 
-        const count = await collection.count();
-        expect(count).to.equal(2);
+        await expectToNotFindDoc({ _id: insertedId1 }, { expectedCount: 2 });
       });
 
       it("returns null when there are no matches", async function (this: AppContext & Mocha.Context) {
@@ -307,8 +325,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
         const result = await collection.insertOne({ _id: insertedId1 });
         expect(result.insertedId).to.equal(insertedId1);
 
-        const count = await collection.count();
-        expect(count).to.equal(1);
+        await expectToFindDoc({ _id: insertedId1 }, { expectedCount: 1 });
       });
 
       it("inserts document without id", async function (this: AppContext & Mocha.Context) {
@@ -365,6 +382,8 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
 
         const result = await collection.updateOne({ _id: insertedId3 }, { $set: { text: updatedText } });
         expect(result).to.deep.equal({ matchedCount: 1, modifiedCount: 1 });
+
+        await expectToFindDoc({ _id: insertedId3, text: updatedText }, { expectedCount: 3 });
       });
 
       it("does not update any document when there are no matches", async function (this: AppContext & Mocha.Context) {
@@ -372,6 +391,8 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
 
         const result = await collection.updateOne({ _id: nonExistentId }, { $set: { text: updatedText } });
         expect(result).to.deep.equal({ matchedCount: 0, modifiedCount: 0 });
+
+        await expectTextToBeUnchanged({ text: insertedText, expectedCount: 3 });
       });
 
       it("inserts new document if no matches when using 'upsert'", async function (this: AppContext & Mocha.Context) {
@@ -388,8 +409,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           upsertedId: nonExistentId,
         });
 
-        const count = await collection.count();
-        expect(count).to.equal(4);
+        await expectToFindDoc({ _id: nonExistentId, text: updatedText }, { expectedCount: 4 });
       });
     });
 
@@ -401,6 +421,9 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
 
         const result = await collection.updateMany({ _id: { $gt: insertedId1 } }, { $set: { text: updatedText } });
         expect(result).to.deep.equal({ matchedCount: 2, modifiedCount: 2 });
+
+        await expectToFindDoc({ _id: insertedId2, text: updatedText }, { expectedCount: 3 });
+        await expectToFindDoc({ _id: insertedId3, text: updatedText }, { expectedCount: 3 });
       });
 
       it("does not update any document when there are no matches", async function (this: AppContext & Mocha.Context) {
@@ -408,6 +431,8 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
 
         const result = await collection.updateMany({ _id: nonExistentId }, { $set: { text: updatedText } });
         expect(result).to.deep.equal({ matchedCount: 0, modifiedCount: 0 });
+
+        await expectTextToBeUnchanged({ text: insertedText, expectedCount: 3 });
       });
 
       it("inserts new document if no matches when using 'upsert'", async function (this: AppContext & Mocha.Context) {
@@ -424,8 +449,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
           upsertedId: nonExistentId,
         });
 
-        const count = await collection.count();
-        expect(count).to.equal(4);
+        await expectToFindDoc({ _id: nonExistentId, text: updatedText }, { expectedCount: 4 });
       });
     });
 
@@ -435,6 +459,8 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
 
         const result = await collection.deleteOne({ _id: insertedId3 });
         expect(result.deletedCount).to.equal(1);
+
+        await expectToNotFindDoc({ _id: insertedId3 }, { expectedCount: 2 });
       });
 
       it("deletes first returned document using empty filter", async function (this: AppContext & Mocha.Context) {
@@ -442,6 +468,8 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
 
         const result = await collection.deleteOne();
         expect(result.deletedCount).to.equal(1);
+
+        await expectToNotFindDoc({ _id: insertedId1 }, { expectedCount: 2 });
       });
 
       it("does not delete any document when there are no matches", async function (this: AppContext & Mocha.Context) {
@@ -449,6 +477,9 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
 
         const result = await collection.deleteOne({ _id: nonExistentId });
         expect(result.deletedCount).to.equal(0);
+
+        const count = await collection.count();
+        expect(count).to.equal(3);
       });
     });
 
@@ -458,6 +489,9 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
 
         const result = await collection.deleteMany();
         expect(result.deletedCount).to.equal(3);
+
+        const count = await collection.count();
+        expect(count).to.equal(0);
       });
 
       it("deletes documents using query selector", async function (this: AppContext & Mocha.Context) {
@@ -465,6 +499,9 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
 
         const result = await collection.deleteMany({ _id: { $gt: insertedId1 } });
         expect(result.deletedCount).to.equal(2);
+
+        const count = await collection.count();
+        expect(count).to.equal(1);
       });
 
       it("does not delete any document when there are no matches", async function (this: AppContext & Mocha.Context) {
@@ -472,6 +509,9 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
 
         const result = await collection.deleteMany({ _id: nonExistentId });
         expect(result.deletedCount).to.equal(0);
+
+        const count = await collection.count();
+        expect(count).to.equal(3);
       });
     });
 
