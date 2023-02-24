@@ -40,6 +40,7 @@ import "./tests/objects";
 import "./tests/queries";
 import "./tests/realm-constructor";
 import "./tests/schema";
+import "./tests/enums";
 import "./tests/serialization";
 import "./tests/set";
 import "./tests/list";
