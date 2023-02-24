@@ -1,7 +1,12 @@
 ## vNext (TBD)
 
 ### Enhancements
-* Add an overload to `Dictionary.set` method that takes two arguments, a `key` and a `value`. ([#4286](https://github.com/realm/realm-js/issues/4286))  
+* Added an overload to `Object.linkingObjects` method that takes type of the linking object as an input instead of its string name ([#5326](https://github.com/realm/realm-js/issues/5326))  
+Example usage:
+```typescript
+let linkedObjects = john.linkingObjects(Person, "friends");
+``` 
+* Added an overload to `Dictionary.set` method that takes two arguments, a `key` and a `value`. ([#4286](https://github.com/realm/realm-js/issues/4286))
 Example usage:
 ```typescript
 realm.write(() => {

@@ -22,27 +22,49 @@
     "email": "help@realm.io",
     "url": "https://realm.io"
   },
-  "main": "dist/bundle.js",
-  "module": "dist/bundle.mjs",
-  "react-native": "dist/bundle.react-native.mjs",
-  "types": "dist/bundle.d.ts",
   "exports": {
-    ".": "./dist/bundle.mjs",
-    "./scripts/submit-analytics": "./scripts/submit-analytics.mjs"
+    ".": {
+      "types": "./dist/bundle.d.ts",
+      "node": "./dist/bundle.node.mjs",
+      "require": "./dist/bundle.node.js",
+      "react-native": "./dist/bundle.react-native.mjs"
+    },
+    "./scripts/submit-analytics": "./scripts/submit-analytics.mjs",
+    "./react-native.config.js": "./react-native.config.js"
   },
+  "main": "./dist/bundle.node.js",
+  "module": "./dist/bundle.node.mjs",
+  "types": "./dist/bundle.d.ts",
+  "react-native": "./dist/bundle.react-native.mjs",
+  "files": [
+    "dist",
+    "react-native/android",
+    "react-native/ios/realm-js-ios.xcframework",
+    "react-native/ios/realm-js-ios.xcframework/**/*.a",
+    "react-native/ios/RealmReact",
+    "scripts/submit-analytics.mjs",
+    "react-native.config.js",
+    "RealmJS.podspec"
+  ],
   "scripts": {
     "test": "mocha",
     "test:types": "tsc --project type-tests/tsconfig.json",
     "build": "rollup -c",
-    "build:watch": "rollup -c --watch"
+    "build:watch": "rollup -c --watch",
+    "build:node": "npm run build --prefix ../bindgen",
+    "build:android": "node ../../scripts/build-android.js",
+    "build:ios": "../../scripts/build-ios.sh",
+    "prebuild": "prebuild --runtime node -- --directory ../bindgen",
+    "install": "prebuild-install --runtime node || echo 'Failed to download prebuild for Realm'"
   },
   "dependencies": {
     "debug": "^4.3.4",
-    "node-fetch": "^3.3.0"
+    "node-fetch": "^3.3.0",
+    "prebuild-install": "^7.1.1"
   },
   "peerDependencies": {
     "bson": "^4",
-    "react-native": "^0.70.0"
+    "react-native": "^0.71.0"
   },
   "peerDependenciesMeta": {
     "react-native": {
@@ -61,9 +83,11 @@
     "@types/node": "^18.11.9",
     "@types/path-browserify": "^1.0.0",
     "chai": "^4.3.6",
+    "cmake-js": "^7.1.1",
     "mocha": "^10.1.0",
     "path-browserify": "^1.0.1",
-    "react-native": "^0.71.0-rc.5",
+    "prebuild": "^11.0.4",
+    "react-native": "^0.71.0",
     "rollup-plugin-dts": "^5.0.0",
     "tsm": "^2.2.2"
   },
@@ -71,5 +95,12 @@
     "type": "git",
     "url": "https://github.com/realm/realm-js.git",
     "directory": "packages/realm"
+  },
+  "binary": {
+    "module_name": "realm",
+    "module_path": "generated/ts",
+    "host": "https://static.realm.io",
+    "package_name": "realm-v{version}-napi-v6-{platform}-{arch}.tar.gz",
+    "remote_path": "realm-js-prebuilds/{version}"
   }
 }

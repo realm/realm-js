@@ -19,7 +19,7 @@
 import { DefaultNetworkTransport, FetchHeaders, FetchResponse, Method, Request } from "@realm/network-transport";
 
 import { extendDebug } from "../debug";
-import { binding } from "../internal";
+import * as binding from "../binding";
 
 export type { FetchHeaders, Request };
 

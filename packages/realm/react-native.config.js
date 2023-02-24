@@ -23,7 +23,7 @@ module.exports = {
   dependency: {
     platforms: {
       android: {
-        sourceDir: "../../react-native/android",
+        sourceDir: "react-native/android",
       },
       ios: {},
     },
