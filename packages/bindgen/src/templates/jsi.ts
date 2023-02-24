@@ -287,7 +287,7 @@ function convertPrimToJsi(addon: JsiAddon, type: string, expr: string): string {
     case "std::exception_ptr":
       return `toJsiException(_env, ${expr})`;
     case "std::error_code":
-      return `toJsiErrorCode(_env, ${expr})`;
+      return `toJsiException(_env, ${expr})`;
     case "Status":
       return `([&] (const Status& status) {
                 REALM_ASSERT(!status.is_ok()); // should only get here with errors

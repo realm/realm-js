@@ -29,7 +29,8 @@ const check = function (it: any) {
 export const safeGlobalThis: typeof globalThis & Record<string, unknown> =
   // eslint-disable-next-line no-restricted-globals
   check(typeof globalThis === "object" && globalThis) ||
-  // @ts-expect-error We're relying on an identifier that might not be there
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore We're relying on an identifier that might not be there
   check(typeof window === "object" && window) ||
   // eslint-disable-next-line no-restricted-globals -- safe
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment

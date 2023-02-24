@@ -572,9 +572,10 @@ records:
       local_app_name: util::Optional<std::string>
       local_app_version: util::Optional<std::string>
       default_request_timeout_ms: util::Optional<uint64_t>
-      platform: std::string
-      platform_version: std::string
-      sdk_version: std::string
+      # TODO update, below properties lives in 'DeviceInfo' https://github.com/realm/realm-core/compare/64ede25410adb4d0447aed23f0d94cf61e431b58...master?diff=split
+      # platform: std::string
+      # platform_version: std::string
+      # sdk_version: std::string
 
 opaqueTypes:
   - Schema
@@ -800,7 +801,7 @@ classes:
 
       is_closed: bool
 
-      audit_context: Nullable<AuditInterface*>
+      # audit_context: Nullable<AuditInterface*>
 
       sync_session: Nullable<SharedSyncSession>
       get_latest_subscription_set: SyncSubscriptionSet
@@ -1207,7 +1208,7 @@ classes:
       revive_if_needed: ()
       handle_reconnect: ()
       close: ()
-      log_out: ()
+      force_close: ()
       shutdown_and_wait: ()
       update_configuration: '(config: SyncConfig)'
 

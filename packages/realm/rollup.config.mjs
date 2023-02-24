@@ -93,6 +93,31 @@ export default [
     external: ["bson", "debug", "react-native"],
   },
   {
+    input: ["src/browser/index.ts"],
+    output: {
+      file: pkg.browser,
+      format: "es",
+      sourcemap: true,
+    },
+    plugins: [
+      nodeResolve({
+        mainFields: ["browser", "module", "main"],
+        resolveOnly: ["@realm/network-transport", "path-browserify"],
+      }),
+      replace({
+        preventAssignment: true,
+        delimiters: ["", ""],
+        values: {
+          '"../generated/ts/native.mjs"': '"../generated/ts/native-browser.mjs"',
+        },
+      }),
+      typescript({
+        tsconfig: "src/browser/tsconfig.json",
+      }),
+    ],
+    external: ["bson", "debug"],
+  },
+  {
     input: "src/index.ts",
     output: {
       file: mainExport.types,

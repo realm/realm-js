@@ -24,7 +24,7 @@ import {
   User,
   assert,
   binding,
-  createNetworkTransport,
+  // createNetworkTransport,
   fs,
 } from "../internal";
 
@@ -140,23 +140,24 @@ export class App {
     const { id, baseUrl, app } = config;
     assert.string(id, "id");
     // TODO: This used getSharedApp in the legacy SDK, but it's failing AppTests
-    this.internal = binding.App.getUncachedApp(
-      {
-        appId: id,
-        platform: App.PLATFORM_OS,
-        platformVersion: App.PLATFORM_VERSION,
-        sdkVersion: App.SDK_VERSION, // Used to be "RealmJS/" + SDK_VERSION
-        transport: createNetworkTransport(),
-        localAppName: app?.name,
-        localAppVersion: app?.version,
-        baseUrl,
-      },
-      {
-        baseFilePath: fs.getDefaultDirectoryPath(),
-        metadataMode: binding.MetadataMode.NoEncryption,
-        userAgentBindingInfo: this.userAgent,
-      },
-    );
+    this.internal = binding.App.getCachedApp(id);
+    // this.internal = binding.App.getUncachedApp(
+    //   {
+    //     appId: id,
+    //     // platform: App.PLATFORM_OS,
+    //     // platformVersion: App.PLATFORM_VERSION,
+    //     // sdkVersion: App.SDK_VERSION, // Used to be "RealmJS/" + SDK_VERSION
+    //     transport: createNetworkTransport(),
+    //     localAppName: app?.name,
+    //     localAppVersion: app?.version,
+    //     baseUrl,
+    //   },
+    //   {
+    //     baseFilePath: fs.getDefaultDirectoryPath(),
+    //     metadataMode: binding.MetadataMode.NoEncryption,
+    //     userAgentBindingInfo: this.userAgent,
+    //   },
+    // );
   }
 
   /**

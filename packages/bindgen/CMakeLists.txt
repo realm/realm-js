@@ -144,6 +144,7 @@ set(GENERATED_TS_FILES
 set(GENERATED_JS_FILES
     ${TYPESCRIPT_OUTPUT_DIR}/native.mjs
     ${TYPESCRIPT_OUTPUT_DIR}/native-rn.mjs
+    ${TYPESCRIPT_OUTPUT_DIR}/native-browser.mjs
 )
 
 add_custom_command(
@@ -193,7 +194,7 @@ if(DEFINED CMAKE_JS_VERSION)
         OUTPUT node_init.cpp
         COMMAND ${NODE_FORCE_COLOR} ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template node --output ${CMAKE_CURRENT_BINARY_DIR}
         VERBATIM
-        MAIN_DEPENDENCY src/templates/node.ts
+        MAIN_DEPENDENCY src/templates/browser.ts
         DEPENDS
             ${SPEC_FILES}
             SpecJsonSchema
@@ -201,6 +202,30 @@ if(DEFINED CMAKE_JS_VERSION)
     )
 
     target_sources(realm-js PRIVATE node_init.cpp ${CMAKE_JS_SRC} ../../src/node/platform.cpp)
+
+elseif(EMSCRIPTEN)    
+    include(browser.cmake)
+
+    add_custom_command(
+        OUTPUT browser_init.cpp
+        COMMAND ${NODE_FORCE_COLOR} ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts --spec ${SPEC_FILE} --template browser --output ${CMAKE_CURRENT_BINARY_DIR}
+        VERBATIM
+        MAIN_DEPENDENCY src/templates/browser.ts
+        DEPENDS
+            ${SPEC_FILE}
+            SpecJsonSchema
+            ${TS_FILES}
+    )
+
+    target_sources(realm-js PRIVATE browser_init.cpp ${CMAKE_JS_SRC} ../../src/browser/platform.cpp)
+
+    add_custom_command(
+        TARGET realm-js-wasm
+        COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_CURRENT_BINARY_DIR}/realm-js-wasm.js ${CMAKE_CURRENT_BINARY_DIR}/realm-js-wasm.wasm
+                ${TYPESCRIPT_OUTPUT_DIR}        
+    )
+
 else()
     include(jsi.cmake)
 
