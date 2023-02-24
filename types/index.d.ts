@@ -650,7 +650,7 @@ declare namespace Realm {
 
     type ErrorCallback = (session: App.Sync.Session, error: SyncError | ClientResetError) => void;
 
-    const enum SessionStopPolicy {
+    enum SessionStopPolicy {
         AfterUpload = "after-upload",
         Immediately = "immediately",
         Never = "never"
@@ -662,12 +662,12 @@ declare namespace Realm {
         readonly timeOutBehavior?: OpenRealmTimeOutBehavior;
     }
 
-    const enum OpenRealmBehaviorType {
+    enum OpenRealmBehaviorType {
         DownloadBeforeOpen = 'downloadBeforeOpen',
         OpenImmediately = "openImmediately"
     }
 
-    const enum OpenRealmTimeOutBehavior {
+    enum OpenRealmTimeOutBehavior {
         OpenLocalRealm = 'openLocalRealm',
         ThrowException = 'throwException'
     }
