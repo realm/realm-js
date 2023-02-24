@@ -155,7 +155,7 @@ export class App {
         localAppName: app?.name,
         localAppVersion: app?.version,
         baseUrl,
-        defaultRequestTimeoutMs: timeout ? binding.Int64.numToInt(timeout) : undefined,  //TODO Check if it makes sense
+        defaultRequestTimeoutMs: timeout ? binding.Int64.numToInt(timeout) : undefined,
       },
       {
         baseFilePath: fs.getDefaultDirectoryPath(),
