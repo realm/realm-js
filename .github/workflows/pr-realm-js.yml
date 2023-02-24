@@ -163,8 +163,8 @@ jobs:
         env:
           ANDROID_NDK: ${{ env.ANDROID_SDK_ROOT }}/ndk/${{ env.NDK_VERSION }}
 
-      # Due to a limitation in upload-artifact a redundant file is needed to force 
-      # preserving paths (https://github.com/actions/upload-artifact/issues/174) 
+      # Due to a limitation in upload-artifact a redundant file is needed to force
+      # preserving paths (https://github.com/actions/upload-artifact/issues/174)
       - name: Upload prebuild artifact
         uses: actions/upload-artifact@v3
         with:
@@ -191,8 +191,8 @@ jobs:
       - name: Regenerate Info.plist
         run: scripts/regen-info-plist.sh react-native/ios/realm-js-ios.xcframework
 
-      # Due to a limitation in upload-artifact a redundant file is needed to force 
-      # preserving paths (https://github.com/actions/upload-artifact/issues/174) 
+      # Due to a limitation in upload-artifact a redundant file is needed to force
+      # preserving paths (https://github.com/actions/upload-artifact/issues/174)
       - name: Upload prebuild artifact
         uses: actions/upload-artifact@v3
         with:
@@ -219,6 +219,7 @@ jobs:
     runs-on: ${{ matrix.variant.runner }}
     strategy:
       fail-fast: false
+      max-parallel: 3
       matrix:
         variant:
           - { os: linux, target: test, runner: ubuntu-latest, environment: node }
