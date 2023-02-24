@@ -51,6 +51,9 @@ type CreationContext = {
   createObj?: ObjCreator;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyRealmObject = RealmObject<any>;
+
 export const KEY_ARRAY = Symbol("Object#keys");
 export const KEY_SET = Symbol("Object#keySet");
 export const REALM = Symbol("Object#realm");
@@ -332,16 +335,16 @@ export class RealmObject<T = DefaultObject> {
    * @returns The objects that link to this object.
    * @since 1.9.0
    */
-  linkingObjects<T>(objectType: string, propertyName: string): Results<T> {
-    const {
-      objectSchema: { tableKey },
-      properties,
-    } = this[REALM].getClassHelpers(objectType);
-    const tableRef = binding.Helpers.getTable(this[REALM].internal, tableKey);
+  linkingObjects<T = DefaultObject>(objectType: string, propertyName: string): Results<RealmObject<T> & T>;
+  linkingObjects<T extends AnyRealmObject>(objectType: Constructor<T>, propertyName: string): Results<T>;
+  linkingObjects<T extends AnyRealmObject>(objectType: string | Constructor<T>, propertyName: string): Results<T> {
+    const { objectSchema: linkedObjectSchema, properties } = this[REALM].getClassHelpers(objectType);
+    const tableRef = binding.Helpers.getTable(this[REALM].internal, linkedObjectSchema.tableKey);
     const property = properties.get(propertyName);
+
     assert(
-      objectType === property.objectType,
-      () => `'${objectType}#${propertyName}' is not a relationship to '${this.objectSchema.name}'`,
+      linkedObjectSchema.name === property.objectType,
+      () => `'${linkedObjectSchema.name}#${propertyName}' is not a relationship to '${this.objectSchema.name}'`,
     );
 
     // Create the Result for the backlink view
