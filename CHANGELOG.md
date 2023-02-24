@@ -45,6 +45,8 @@
 ### Internal
 * Upgraded Realm Core from v13.9.0 to v13.10.1. ([#5784](https://github.com/realm/realm-js/issues/5784) and [#5793](https://github.com/realm/realm-js/issues/5793))
 * Bump the sync protocol version to v8. ([realm/realm-core#6549](https://github.com/realm/realm-core/pull/6549))
+* Aligning analytics with other Realm SDKs. You can still disable by setting environment variable `REALM_DISABLE_ANALYTICS`, and you can print out want is submitted by setting `REALM_PRINT_ANALYTICS`.
+
 
 ## 11.8.0 (2023-04-12)
 NOTE: Since the file format of the Realm auxiliary files have been changed, it is required to use Realm Studio v14.0.0 to open Realm files produced by this release.
@@ -107,9 +109,6 @@ NOTE: Since the file format of the Realm auxiliary files have been changed, it i
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
 * Test
 
 ## 11.5.2 (2023-03-14)
@@ -134,26 +133,6 @@ NOTE: Since the file format of the Realm auxiliary files have been changed, it i
 * Upgraded Realm Core from v13.4.2 to v13.6.0. ([#5495](https://github.com/realm/realm-js/issues/5495))
 * All exceptions thrown out of Realm Core are now of type `Exception`.
 
-## 11.5.1-alpha.0 (2023-02-21)
-
-### Deprecations
-* None
-
-### Enhancements
-* None
-
-### Fixed
-* None
-
-### Compatibility
-* React Native >= v0.71.0
-* Atlas App Services.
-* Realm Studio v13.0.0.
-* File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
-
-### Internal
-Using Realm Core v13.4.2.
-
 ## 11.5.1 (2023-02-26)
 
 ### Fixed
@@ -166,10 +145,10 @@ Using Realm Core v13.4.2.
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
- Using Realm Core v13.4.2.
+* Using Realm Core v13.4.2.
 
 ## 11.5.1-alpha.0 (2023-02-21)
-
+NOTE: This release is for internal testing only.
 ### Fixed
 * None
 

@@ -44,6 +44,7 @@
 const fs = require("fs");
 const fse = require("fs-extra");
 const path = require("path");
+const { execSync } = require("child_process");
 const commandLineArgs = require("command-line-args");
 
 let doLog; // placeholder for logger function
@@ -123,6 +124,40 @@ function getRealmVersion() {
 }
 
 /**
+ * Reads and parses `dependencies.list`.
+ * Each line has be form "KEY=VALUE", and we to find "REALM_CORE_VERSION"
+ *
+ * @returns the Realm Core version as a string
+ */
+function getRealmCoreVersion() {
+  const dependenciesListPath = path.resolve(__dirname, "../dependencies.list");
+  const dependenciesList = fse
+    .readFileSync(dependenciesListPath)
+    .toString()
+    .split("\n")
+    .map((s) => s.split("="));
+  return dependenciesList.find((e) => e[0] === "REALM_CORE_VERSION")[0];
+}
+
+/**
+ * Determines if `npm` or `yarn` is used.
+ *
+ * @returns An array with two elements: method and version
+ */
+function getInstallationMethod() {
+  const root = getProjectRoot();
+  if (fse.exists(path.resolve(root, "yarn.lock"))) {
+    const yarnVersion = execSync("yarn --version").toString().trim();
+    return ["yarn", yarnVersion];
+  }
+  if (fse.exists(path.resolve(root, "package-lock.json"))) {
+    const npmVersion = execSync("npm --version").toString().trim();
+    return ["npm", npmVersion];
+  }
+  return ["unknown", "unknown"];
+}
+
+/**
  * Collect analytics data from the runtime system
  * @param {Object} packageJson The app's package.json parsed as an object
  * @returns {Object} Analytics payload
@@ -138,6 +173,7 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
   }
 
   const realmVersion = getRealmVersion();
+  const realmCoreVersion = getRealmCoreVersion();
 
   let framework = "node.js";
   let frameworkVersion = process.version;
@@ -195,22 +231,35 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
     }
   }
 
+  // JavaScript or TypeScript - we don't consider Flow as a programming language
+  let language = "javascript";
+  if (packageJson.devDependencies && packageJson.devDependencies["typescript"]) {
+    language = "typescript";
+  }
+
+  const installatioMethod = getInstallationMethod();
+
   return {
     token: "ce0fac19508f6c8f20066d345d360fd0",
-    "JS Analytics Version": 2,
+    "JS Analytics Version": 3,
     distinct_id: identifier,
     "Anonymized Machine Identifier": identifier,
     "Anonymized Application ID": sha256(__dirname),
     "Realm Version": realmVersion,
     Binding: "javascript",
     Version: packageJson.version,
-    Language: "javascript",
+    Language: language,
     Framework: framework,
     "Framework Version": frameworkVersion,
-    "JavaScript Engine": jsEngine,
     "Host OS Type": os.platform(),
     "Host OS Version": os.release(),
+    "Host CPU Arch": os.arch(),
     "Node.js version": process.version,
+    "Core Version": realmCoreVersion,
+    "Sync Enabled": true,
+    "Installation Method": installatioMethod[0],
+    "Installation Method Version": installatioMethod[1],
+    "Runtime Engine": jsEngine,
   };
 }
 
@@ -237,6 +286,13 @@ async function submitAnalytics(dryRun) {
   if (isAnalyticsDisabled()) {
     doLog("Analytics is disabled");
     return;
+  }
+
+  if ("REALM_PRINT_ANALYTICS" in process.env) {
+    console.log("REALM ANALYTICS");
+    Object.keys(data).forEach((key) => {
+      console.log(`  ${key}: ${data[key]}`);
+    });
   }
 
   return new Promise((resolve, reject) => {

@@ -152,6 +152,8 @@ Currently the following information is reported:
  * Node.js version number.
  * An anonymous machine identifier and hashed application path to aggregate the other information on.
 
+You can see all submitted data by setting environment variable `REALM_PRINT_ANALYTICS`.
+
 ## Code of Conduct
 
 This project adheres to the [MongoDB Code of Conduct](https://www.mongodb.com/community-code-of-conduct).
