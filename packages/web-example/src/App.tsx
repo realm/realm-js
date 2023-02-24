@@ -1,5 +1,4 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 
 import { App as RealmApp } from "realm";
@@ -10,8 +9,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>Your app has id = {realmApp.id}</p>
+        <p>Realm app id = {realmApp.id}</p>
       </header>
     </div>
   );
