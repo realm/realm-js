@@ -310,6 +310,7 @@ class SyncSessionErrorBase {
 public:
     virtual typename T::Function func() = 0;
     virtual void operator()(std::shared_ptr<SyncSession>, SyncError){};
+
 protected:
     static typename T::Object create_error_object(typename T::Context ctx, const SyncError& error)
     {
@@ -881,10 +882,11 @@ void SessionClass<T>::wait_for_completion(Direction direction, ContextType ctx, 
                 HANDLESCOPE(ctx);
                 std::vector<typename T::Value> arguments;
                 if (!status.is_ok()) {
-                    arguments.push_back(Object::create_obj(ctx, {
-                        {"message", Value::from_string(ctx, status.reason())},
-                        {"errorCode", Value::from_string(ctx, status.code_string())},
-                    }));
+                    arguments.push_back(
+                        Object::create_obj(ctx, {
+                                                    {"message", Value::from_string(ctx, status.reason())},
+                                                    {"errorCode", Value::from_string(ctx, status.code_string())},
+                                                }));
                 }
                 Function<T>::callback(ctx, callback, arguments.size(), arguments.data());
             });

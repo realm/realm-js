@@ -257,7 +257,8 @@ void ResultsClass<T>::get_index(ContextType ctx, ObjectType object, uint32_t ind
     auto results = get_internal<T, ResultsClass<T>>(ctx, object);
     if (index >= results->size()) {
         return_value.set_undefined();
-    } else {
+    }
+    else {
         NativeAccessor<T> accessor(ctx, *results);
         return_value.set(results->get(accessor, index));
     }
