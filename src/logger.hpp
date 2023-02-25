@@ -70,7 +70,7 @@ class IOSLogger {
 };
 #endif
 
-class SyncLoggerDelegator : public util::RootLogger {
+class SyncLoggerDelegator : public util::Logger {
 public:
     SyncLoggerDelegator() = delete;
     SyncLoggerDelegator(Delegated&& delegate)

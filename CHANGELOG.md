@@ -8,6 +8,31 @@
 
 ### Fixed
 * It is not allowed to specify `deleteRealmIfMigrationIsNeeded` and sync. This can lead to error messages like `Schema validation failed due to the following errors`. ([#5548](https://github.com/realm/realm-js/issues/5548), v10.12.0)
+* Fixed enums which was accidentally exported on the `Realm` namespace without a backing implementation. ([#5493](https://github.com/realm/realm-js/pull/5493), since v11.0.0)
+* Converting local Realm to synced Realm crashes if an embedded object is null. ([#5389](https://github.com/realm/realm-js/issues/5389), since v10.13.0)
+* Fixed performance degradation on subqueries. ([realm/realm-core#6327](https://github.com/realm/realm-core/issues/6327), since v6.0.0)
+* Fixed crash if secure transport returns an error with a non-zero length. It can be observed as `Reading failed: Premature end of input` in the log. ([realm/realm-core#5435](https://github.com/realm/realm-core/issues/5435), since v10.0.0)
+
+### Compatibility
+* React Native >= v0.71.0
+* Atlas App Services.
+* Realm Studio v13.0.0.
+* File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Internal
+* Upgraded Realm Core from v13.4.2 to v13.6.0. ([#5495](https://github.com/realm/realm-js/issues/5495))
+* All exceptions thrown out of Realm Core are now of type `Exception`. 
+
+## 11.5.1-alpha.0 (2023-02-21)
+
+### Deprecations
+* None
+
+### Enhancements
+* None
+
+### Fixed
+* None
 
 ### Compatibility
 * React Native >= v0.70.0
@@ -16,9 +41,7 @@
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+Using Realm Core v13.4.2.
 
 ## 11.5.1 (2023-02-26)
 
