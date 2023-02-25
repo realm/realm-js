@@ -666,7 +666,10 @@ describe("Lists", () => {
         );
         //@ts-expect-error can not assign an array to a list of objects.
         expect(() => (array[0] = array)).throws(Error, "Missing value for property 'TestObject.doubleCol'");
-        expect(() => (array[2] = { doubleCol: 1 })).throws(Error, "Requested index 2 greater than max 1");
+        expect(() => (array[2] = { doubleCol: 1 })).throws(
+          Error,
+          "Requested index 2 calling set() on list 'LinkTypesObject.arrayCol' when max is 1",
+        );
         expect(() => (array[-1] = { doubleCol: 1 })).throws(Error, "Index -1 cannot be less than zero.");
 
         //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
@@ -866,9 +869,9 @@ describe("Lists", () => {
       });
 
       //@ts-expect-error throws on modification outside of transaction.
-      expect(() => (obj.arrayCol = [])).throws("Cannot modify managed objects outside of a write transaction.");
+      expect(() => (obj.arrayCol = [])).throws("Cannot modify managed List outside of a write transaction.");
       //@ts-expect-error throws on modification outside of transaction.
-      expect(() => (prim.bool = [])).throws("Cannot modify managed objects outside of a write transaction.");
+      expect(() => (prim.bool = [])).throws("Cannot modify managed List outside of a write transaction.");
     });
   });
   describe("operations", () => {
@@ -950,7 +953,7 @@ describe("Lists", () => {
         expect(() => array.pop(1)).throws(Error, "Invalid argument");
       });
 
-      expect(() => array.pop()).throws("Cannot modify managed objects outside of a write transaction.");
+      expect(() => array.pop()).throws("Cannot modify managed List outside of a write transaction.");
     });
     it("supports unshift", function (this: RealmContext) {
       let array!: Realm.List<ITestObjectSchema>;
@@ -1003,7 +1006,7 @@ describe("Lists", () => {
         expect(() => array.shift(1)).throws("Invalid argument");
       });
 
-      expect(() => array.shift()).throws("Cannot modify managed objects outside of a write transaction.");
+      expect(() => array.shift()).throws("Cannot modify managed List outside of a write transaction.");
     });
     it("supports splice", function (this: RealmContext) {
       let array!: Realm.List<ITestObjectSchema>;
@@ -1738,8 +1741,8 @@ describe("Lists", () => {
         expectSimilar(list.type, list.max(), list[2]);
 
         if (list.type === "date") {
-          expect(() => list.sum()).throws(Error, "Cannot sum 'date' array: operation not supported");
-          expect(() => list.avg()).throws(Error, "Cannot avg 'date' array: operation not supported");
+          expect(() => list.sum()).throws(Error, "Operation 'sum' not supported for date list 'PrimitiveArrays.date'");
+          expect(() => list.avg()).throws(Error, "Operation 'avg' not supported for date list 'PrimitiveArrays.date'");
           continue;
         }
 
@@ -1775,7 +1778,10 @@ describe("Lists", () => {
       // bool, string & data columns don't support 'min'
       ["bool", "string", "data"].forEach((colName) => {
         expect(() => object.list.min(colName + "Col")).throws(
-          `Cannot min property '${colName}Col': operation not supported for '${colName}' properties`,
+          `Operation 'min' not supported for ${colName.substr(
+            0,
+            colName.length - 3,
+          )}? property 'NullableBasicTypesObject.${colName}'`,
         );
       });
 

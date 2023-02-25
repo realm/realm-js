@@ -752,7 +752,12 @@ describe("Results", () => {
       ["boolCol", "stringCol", "dataCol"].forEach((colName) => {
         expect(() => {
           results.min(colName);
-        }).throws(`Cannot min property '${colName}'`);
+        }).throws(
+          `Operation 'min' not supported for ${colName.substr(
+            0,
+            colName.length - 3,
+          )}? property 'NullableBasicTypesObject.${colName}'`,
+        );
       });
 
       // bool, string & data columns don't support 'max'
