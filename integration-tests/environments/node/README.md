@@ -6,7 +6,7 @@ Currently this directory consists of:
 To install this environment, run the following command from the root directory of repository:
 
 ```bash
-npx lerna bootstrap --scope realm-node-tests --include-dependencies
+npx lerna bootstrap --scope @realm/node-tests --include-dependencies
 ```
 
 ## Running the tests
