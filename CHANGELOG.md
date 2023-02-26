@@ -1,10 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
-
-### Enhancements
-* None
+## 11.5.1-alpha.1 (2023-02-26)
 
 ### Fixed
 * Fixed enums which was accidentally exported on the `Realm` namespace without a backing implementation. ([#5493](https://github.com/realm/realm-js/pull/5493), since v11.0.0)
