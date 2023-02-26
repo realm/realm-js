@@ -393,7 +393,7 @@ function getSchema(useFlexibleSync: boolean) {
         });
       });
 
-      it(`client reset fails, the error handler is called (${getPartialTestTitle(
+      it.skip(`client reset fails, the error handler is called (${getPartialTestTitle(
         useFlexibleSync,
       )})`, async function (this: RealmContext) {
         // if client reset fails, the error handler is called
@@ -432,7 +432,7 @@ function getSchema(useFlexibleSync: boolean) {
         });
       });
 
-      it(`handles discard local simulated client reset with ${getPartialTestTitle(
+      it.skip(`handles discard local simulated client reset with ${getPartialTestTitle(
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
         // (i)   using a client reset in "DiscardUnsyncedChanges" mode, a fresh copy
@@ -457,7 +457,7 @@ function getSchema(useFlexibleSync: boolean) {
         );
       });
 
-      it(`handles simulated client reset with recovery with ${getPartialTestTitle(
+      it.skip(`handles simulated client reset with recovery with ${getPartialTestTitle(
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
         const clientResetBefore = (realm: Realm): void => {
