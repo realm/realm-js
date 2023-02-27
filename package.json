@@ -112,7 +112,11 @@
   },
   "workspaces": [
     "packages/bindgen",
-    "packages/realm"
+    "packages/realm",
+    "packages/realm-app-importer",
+    "packages/realm-network-transport",
+    "packages/mocha-reporter",
+    "integration-tests/tests"
   ],
   "devDependencies": {
     "@babel/runtime": "^7.16.3",
