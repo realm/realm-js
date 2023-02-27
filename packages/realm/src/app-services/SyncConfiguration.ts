@@ -115,7 +115,7 @@ export type BaseSyncConfiguration = {
   /** @internal */
   _sessionStopPolicy?: SessionStopPolicy;
   clientReset?: ClientResetConfig;
-  cancelWaitOnNonFatalError?: boolean;
+  cancelWaitsOnNonFatalError?: boolean;
 };
 
 export type InitialSubscriptions = {
@@ -157,7 +157,7 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
     _sessionStopPolicy,
     customHttpHeaders,
     clientReset,
-    cancelWaitOnNonFatalError,
+    cancelWaitsOnNonFatalError,
   } = config;
 
   return {
@@ -169,7 +169,7 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
     customHttpHeaders,
     flxSyncRequested: !!flexible,
     ...parseClientResetConfig(clientReset, onError),
-    cancelWaitsOnNonfatalError: cancelWaitOnNonFatalError,
+    cancelWaitsOnNonfatalError: cancelWaitsOnNonFatalError,
   };
 }
 

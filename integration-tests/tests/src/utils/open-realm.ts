@@ -88,6 +88,7 @@ export function createLocalConfig(partialConfig: LocalConfiguration = {}): Confi
   return { ...partialConfig, path };
 }
 
+//TODO When bindgen is rebased on master, it could be worth moving this method to /src/utils/generators.ts that deals with generating random values
 function getRandomPathAndNonce(): { path: string; nonce: string } {
   const nonce = new BSON.ObjectId().toHexString();
   return {

@@ -133,7 +133,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         //This needs to be revisited when:
         //- https://github.com/realm/realm-core/issues/6301 is fixed. At the moment core rejects all the "non sensible" timeouts, and we need to set a very low one to simulate reliably a connection issue
         //- We expose `SyncClientConfig.timeouts`(https://github.com/realm/realm-core/blob/e83515f014ff53b0d27c59b73773d33b4252e891/src/realm/object-store/sync/sync_manager.hpp#L97) so that we can set the timeouts properly.
-        const config = createSyncConfig({ sync: { cancelWaitOnNonFatalError: true, flexible: true } }, this.user);
+        const config = createSyncConfig({ sync: { cancelWaitsOnNonFatalError: true, flexible: true } }, this.user);
 
         const openRealm = async () => {
           await Realm.open(config);
