@@ -30,6 +30,7 @@ import "./tests/sync/mixed";
 import "./tests/sync/sync-as-local";
 import "./tests/sync/upload-delete-download";
 import "./tests/sync/mongo-db-client";
+import "./tests/sync/ssl";
 
 import "./tests/bson";
 import "./tests/class-models";
