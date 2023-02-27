@@ -15,6 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+import { strict as assert } from "assert";
 import { bindModel, Property } from "../bound-model";
 import { TemplateContext } from "../context";
 
@@ -94,21 +95,27 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
     // Copied from lib/utils.js.
     // TODO consider importing instead.
     // Might be slightly faster to make dedicated wrapper for 1 and 2 argument forms, but unlikely to be worth it.
-    function _promisify(func) {
+    function _promisify(nullAllowed, func) {
       return new Promise((resolve, reject) => {
         func((...cbargs) => {
-          if (cbargs.length < 1 || cbargs.length > 2) throw Error("invalid cbargs length " + cbargs.length);
-          let error = cbargs[cbargs.length - 1];
-          if (error) {
-            reject(error);
-          } else if (cbargs.length == 2) {
-            const result = cbargs[0];
-            if (result === null || result === undefined) {
-              throw new Error("Unexpected null or undefined successful result");
+          // Any errors in this function should flow into the Promise chain, rather than out to the caller,
+          // since callers of async callbacks aren't expecting exceptions.
+          try {
+            if (cbargs.length < 1 || cbargs.length > 2) throw Error("invalid cbargs length " + cbargs.length);
+            let error = cbargs[cbargs.length - 1];
+            if (error) {
+              reject(error);
+            } else if (cbargs.length == 2) {
+              const result = cbargs[0];
+              if (!nullAllowed && (result === null || result === undefined)) {
+                throw new Error("Unexpected null or undefined successful result");
+              }
+              resolve(result);
+            } else {
+              resolve();
             }
-            resolve(result);
-          } else {
-            resolve();
+          } catch (err) {
+            reject(err);
           }
         });
       });
@@ -167,7 +174,17 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
         asyncSig ? "_cb" : [],
       ].flat();
       let call = `${native}(${args})`;
-      if (asyncSig) call = `_promisify(_cb => ${call})`;
+      if (asyncSig) {
+        // JS can't distinguish between a `const EJson*` that is nullptr (which can't happen), and
+        // one that points to the string "null" because both become null by the time they reach JS.
+        // In order to allow the latter (which does happen! E.g. the promise from `response.text()`
+        // can resolve to `"null"`) we need a special case here.
+        // TODO see if there is a better approach.
+        assert(asyncSig.ret.isTemplate("AsyncResult"));
+        const ret = asyncSig.ret.args[0];
+        const nullAllowed = !!(ret.is("Pointer") && ret.type.kind == "Const" && ret.type.type.isPrimitive("EJson"));
+        call = `_promisify(${nullAllowed}, _cb => ${call})`;
+      }
       body += `
         ${method.isStatic ? "static" : ""}
         ${method instanceof Property ? "get" : ""}
