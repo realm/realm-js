@@ -208,7 +208,7 @@ elseif(EMSCRIPTEN)
 
     add_custom_command(
         OUTPUT browser_init.cpp
-        COMMAND ${NODE_FORCE_COLOR} ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts --spec ${SPEC_FILE} --template browser --output ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND ${NODE_FORCE_COLOR} ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template browser --output ${CMAKE_CURRENT_BINARY_DIR}
         VERBATIM
         MAIN_DEPENDENCY src/templates/browser.ts
         DEPENDS

@@ -62,6 +62,13 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
     // We know that node always has real WeakRefs so just use them.
     export const WeakRef = global.WeakRef;
   `);
+  browserLines.push(`
+    /*global window, FinalizationRegistry*/
+    import Module from "./realm-js-wasm.js";
+    const nativeModule = await Module(); // loading WASM 
+    // We know that node always has real WeakRefs so just use them.
+    export const WeakRef = window.WeakRef;
+  `);
 
   all(`
     const NativeBigIntSupport = Object.freeze({
@@ -73,6 +80,7 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
       intToNum(a) { return Number(a); },
     });
   `);
+
   nodeLines.push(`
     export const Int64 = NativeBigIntSupport; // Node always supports BigInt
   `);
@@ -87,14 +95,7 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
       intToNum(a) { return a.toNumber(); },
     }
   `);
-
-  browserLines.push(`
-    /*global window, FinalizationRegistry*/
-    import Module from "./realm-js-wasm.js";
-    const nativeModule = await Module(); // loading WASM 
-    // We know that node always has real WeakRefs so just use them.
-    export const WeakRef = window.WeakRef;
-  `);
+  browserLines.push(`export const Int64 = NativeBigIntSupport;`);
 
   all(`
     import { Long, ObjectId, UUID, Decimal128, EJSON } from "bson";

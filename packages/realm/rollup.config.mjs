@@ -110,7 +110,7 @@ export default [
         preventAssignment: true,
         delimiters: ["", ""],
         values: {
-          '"../generated/ts/native.mjs"': '"./browser/binding-mock.mjs"',
+          '"../generated/ts/native.mjs"': '"../generated/ts/native-browser.mjs"',
         },
       }),
       typescript({
