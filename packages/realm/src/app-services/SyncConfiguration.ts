@@ -198,6 +198,7 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
   return {
     user: user.internal,
     partitionValue: flexible ? undefined : EJSON.stringify(partitionValue),
+    flxSyncRequested: !!flexible,
     stopPolicy: _sessionStopPolicy
       ? toBindingStopPolicy(_sessionStopPolicy)
       : binding.SyncSessionStopPolicy.AfterChangesUploaded,
@@ -207,7 +208,6 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
     sslVerifyCallback: ssl?.validateCertificates
       ? binding.Helpers.makeSslVerifyCallback(toSSLVerifyCallbackWithListArguments(ssl.validateCertificates))
       : undefined,
-    flxSyncRequested: !!flexible,
     ...parseClientResetConfig(clientReset, onError),
     cancelWaitsOnNonfatalError: cancelWaitsOnNonFatalError,
   };
@@ -305,6 +305,7 @@ export function validateSyncConfiguration(config: unknown): asserts config is Sy
     existingRealmFileBehavior,
     onError,
     customHttpHeaders,
+    ssl,
     clientReset,
     flexible,
     cancelWaitOnNonFatalError: cancelWaitsOnNonFatalError,
@@ -328,6 +329,9 @@ export function validateSyncConfiguration(config: unknown): asserts config is Sy
     for (const key in customHttpHeaders) {
       assert.string(customHttpHeaders[key], "all property values of 'customHttpHeaders' on realm sync configuration");
     }
+  }
+  if (ssl !== undefined) {
+    validateSSLConfiguration(ssl);
   }
   if (clientReset !== undefined) {
     validateClientResetConfiguration(clientReset);
@@ -361,6 +365,22 @@ function validateOpenRealmBehaviorConfiguration(
         config.timeOutBehavior === OpenRealmTimeOutBehavior.ThrowException,
       `'${target}.timeOutBehavior' on realm sync configuration must be either '${OpenRealmTimeOutBehavior.OpenLocalRealm}' or '${OpenRealmTimeOutBehavior.ThrowException}'.`,
     );
+  }
+}
+
+/**
+ * Validate the fields of a user-provided SSL configuration.
+ */
+function validateSSLConfiguration(config: unknown): asserts config is SSLConfiguration {
+  assert.object(config, "'ssl' on realm sync configuration");
+  if (config.validate !== undefined) {
+    assert.boolean(config.validate, "'ssl.validate' on realm sync configuration");
+  }
+  if (config.certificatePath !== undefined) {
+    assert.string(config.certificatePath, "'ssl.certificatePath' on realm sync configuration");
+  }
+  if (config.validateCertificates !== undefined) {
+    assert.function(config.validateCertificates, "'ssl.validateCertificates' on realm sync configuration");
   }
 }
 
