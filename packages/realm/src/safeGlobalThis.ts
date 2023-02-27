@@ -19,6 +19,8 @@
 // Exports a globalThis which is polyfilled for iOS 11/12
 // From https://github.com/zloirock/core-js/blob/v3.27.2/packages/core-js/internals/global.js
 
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const check = function (it: any) {
   return it && it.Math === Math && it;
@@ -29,19 +31,15 @@ const check = function (it: any) {
 export const safeGlobalThis: typeof globalThis & Record<string, unknown> =
   // eslint-disable-next-line no-restricted-globals
   check(typeof globalThis === "object" && globalThis) ||
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore We're relying on an identifier that might not be there
   check(typeof window === "object" && window) ||
   // eslint-disable-next-line no-restricted-globals -- safe
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore allow `self`
   check(typeof self === "object" && self) ||
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore allow `global`
   check(typeof global === "object" && global) ||
   // eslint-disable-next-line no-new-func -- fallback
   (function () {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore allow `this`
     return this;
   })() ||

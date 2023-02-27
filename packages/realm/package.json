@@ -27,7 +27,8 @@
       "types": "./dist/bundle.d.ts",
       "node": "./dist/bundle.node.mjs",
       "require": "./dist/bundle.node.js",
-      "react-native": "./dist/bundle.react-native.mjs"
+      "react-native": "./dist/bundle.react-native.mjs",
+      "browser": "./dist/bundle.browser.mjs"
     },
     "./scripts/submit-analytics": "./scripts/submit-analytics.mjs",
     "./react-native.config.js": "./react-native.config.js"
@@ -36,6 +37,7 @@
   "module": "./dist/bundle.node.mjs",
   "types": "./dist/bundle.d.ts",
   "react-native": "./dist/bundle.react-native.mjs",
+  "browser": "./dist/bundle.browser.mjs",
   "files": [
     "dist",
     "react-native/android",

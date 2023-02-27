@@ -3,11 +3,16 @@
   "compilerOptions": {
     "noResolve": false,
     "incremental": true,
-    "lib": ["DOM",  "ES2022"]
+    "types": [],
+    "lib": [
+      "DOM",
+      "ES2022"
+    ]
   },
   "exclude": [
     "../tests/",
     "../node/",
+    "../react-native/",
     "../../type-tests/"
   ],
 }

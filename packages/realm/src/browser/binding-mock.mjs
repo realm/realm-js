@@ -15,8 +15,26 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import "./fs";
 
-export * from "../index";
-import { Realm } from "../index";
-export default Realm;
+// TODO: Delete me and update the path in the replace plugin used on the browser target of the Rollup config.
+
+console.log("Loaded the mocked binding");
+
+export const Int64 = {
+  numToInt(value) {
+    return BigInt(value);
+  },
+};
+export class IndexSet {}
+export const ObjKey = {};
+export class Timestamp {}
+export class App {
+  static getUncachedApp(config) {
+    return { config };
+  }
+}
+export class Helpers {
+  static makeNetworkTransport() {
+    return {};
+  }
+}
