@@ -261,12 +261,12 @@ export function validateSyncConfiguration(config: unknown): asserts config is Sy
     customHttpHeaders,
     clientReset,
     flexible,
-    cancelWaitOnNonFatalError,
+    cancelWaitOnNonFatalError: cancelWaitsOnNonFatalError,
   } = config;
 
   assert.instanceOf(user, User, "'user' on realm sync configuration");
-  if (cancelWaitOnNonFatalError != undefined) {
-    assert.boolean(cancelWaitOnNonFatalError, "`cancelWaitOnNonFatalError` on sync configuration");
+  if (cancelWaitsOnNonFatalError !== undefined) {
+    assert.boolean(cancelWaitsOnNonFatalError, "'cancelWaitOnNonFatalError' on sync configuration");
   }
   if (newRealmFileBehavior !== undefined) {
     validateOpenRealmBehaviorConfiguration(newRealmFileBehavior, "newRealmFileBehavior");

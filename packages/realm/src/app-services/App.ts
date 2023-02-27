@@ -144,6 +144,9 @@ export class App {
     assert.object(config, "config");
     const { id, baseUrl, app, timeout } = config;
     assert.string(id, "id");
+    if (timeout !== undefined) {
+      assert.number(timeout, "timeout");
+    }
     // TODO: This used getSharedApp in the legacy SDK, but it's failing AppTests
     this.internal = binding.App.getUncachedApp(
       {
