@@ -892,11 +892,11 @@ export class Realm {
    * @since 0.14.0
    */
   objectForPrimaryKey<T = DefaultObject>(type: string, primaryKey: T[keyof T]): (RealmObject<T> & T) | null;
-  objectForPrimaryKey<T extends RealmObject = RealmObject & DefaultObject>(
+  objectForPrimaryKey<T extends AnyRealmObject = RealmObject & DefaultObject>(
     type: Constructor<T>,
     primaryKey: T[keyof T],
   ): T | null;
-  objectForPrimaryKey<T extends RealmObject>(type: string | Constructor<T>, primaryKey: unknown): T | null {
+  objectForPrimaryKey<T extends AnyRealmObject>(type: string | Constructor<T>, primaryKey: unknown): T | null {
     // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1240-L1258
     const { objectSchema, properties, wrapObject } = this.classes.getHelpers(type);
     if (!objectSchema.primaryKey) {

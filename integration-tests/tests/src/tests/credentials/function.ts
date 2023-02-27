@@ -17,8 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 import { expect } from "chai";
 import { Credentials, User } from "realm";
-import { serialize } from "v8";
-import { EJSON } from "bson";
 
 import { importAppBefore } from "../../hooks";
 
