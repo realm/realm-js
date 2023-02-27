@@ -456,7 +456,7 @@ export class MongoDBCollection<T extends Document> {
    * @param options Additional options to apply.
    * @returns The document found before updating it.
    */
-  findOneAndUpdate(filter: Filter = {}, update: Update, options: FindOneAndModifyOptions = {}): Promise<T | null> {
+  findOneAndUpdate(filter: Filter, update: Update, options: FindOneAndModifyOptions = {}): Promise<T | null> {
     return this.functions.findOneAndUpdate({
       database: this.databaseName,
       collection: this.name,
@@ -477,11 +477,7 @@ export class MongoDBCollection<T extends Document> {
    * @param options Additional options to apply.
    * @returns The document found before replacing it.
    */
-  findOneAndReplace(
-    filter: Filter = {},
-    replacement: unknown,
-    options: FindOneAndModifyOptions = {},
-  ): Promise<T | null> {
+  findOneAndReplace(filter: Filter, replacement: unknown, options: FindOneAndModifyOptions = {}): Promise<T | null> {
     return this.functions.findOneAndReplace({
       database: this.databaseName,
       collection: this.name,
@@ -502,7 +498,7 @@ export class MongoDBCollection<T extends Document> {
    * @returns The document found before deleting it.
    */
   findOneAndDelete(filter: Filter = {}, options: FindOneOptions = {}): Promise<T | null> {
-    return this.functions.findOneAndReplace({
+    return this.functions.findOneAndDelete({
       database: this.databaseName,
       collection: this.name,
       filter,
@@ -527,6 +523,13 @@ export class MongoDBCollection<T extends Document> {
 
   /**
    * Counts the number of documents in this collection matching the provided filter.
+   *
+   * Note: When calling this without a filter, you may receive inaccurate document counts
+   * as it returns results based on the collection's metadata, which may result in an
+   * approximate count. In particular:
+   *  * On a sharded cluster, the resulting count will not correctly filter out
+   *    {@link https://www.mongodb.com/docs/manual/reference/glossary/#std-term-orphaned-document orphaned documents}.
+   *  * After an unclean shutdown or file copy based initial sync, the count may be incorrect.
    */
   count(filter: Filter = {}, options: CountOptions = {}): Promise<number> {
     return this.functions.count({
