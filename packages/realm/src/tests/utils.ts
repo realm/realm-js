@@ -18,6 +18,7 @@
 
 import path from "node:path";
 import fs from "node:fs";
+import { fileURLToPath } from "node:url";
 
 import type { Realm } from "../index";
 
@@ -27,7 +28,7 @@ export function generateRandomInteger() {
   return Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 }
 
-export const REALMS_DIR = new URL("realms", import.meta.url).pathname;
+export const REALMS_DIR = fileURLToPath(new URL("realms", import.meta.url));
 export const REALMS_TEMP_DIR = path.resolve(REALMS_DIR, "temp");
 if (!fs.existsSync(REALMS_TEMP_DIR)) {
   fs.mkdirSync(REALMS_TEMP_DIR, { recursive: true });

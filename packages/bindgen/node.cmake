@@ -16,6 +16,7 @@ set_target_properties(realm-js-node PROPERTIES
 set_target_properties(realm-js-node PROPERTIES
     # Need a dummy generator expression to avoid adding in the config name
     LIBRARY_OUTPUT_DIRECTORY "${TYPESCRIPT_OUTPUT_DIR}/$<0:dummy_genex>"
+    RUNTIME_OUTPUT_DIRECTORY "${TYPESCRIPT_OUTPUT_DIR}/$<0:dummy_genex>"
 )
 
 if(WIN32)
@@ -27,6 +28,7 @@ if(WIN32)
     find_package(OpenSSL REQUIRED)
     target_link_libraries(realm-js-node OpenSSL::SSL)
     target_link_options(realm-js-node PRIVATE "/WHOLEARCHIVE:libssl.lib")
+    target_compile_definitions(realm-js PRIVATE WIN32_LEAN_AND_MEAN)
 endif()
 
 target_compile_definitions(realm-js PRIVATE
