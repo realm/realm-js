@@ -789,13 +789,17 @@ export class Realm {
     values: Partial<T> | Partial<RealmInsertionModel<T>>,
     mode: UpdateMode.All | UpdateMode.Modified | boolean,
   ): RealmObject<T> & T;
-  create<T extends AnyRealmObject>(type: Constructor<T>, values: RealmInsertionModel<T>, mode?: UpdateMode.Never): T;
-  create<T extends AnyRealmObject>(
+  create<T extends AnyRealmObject = RealmObject & DefaultObject>(
+    type: Constructor<T>,
+    values: RealmInsertionModel<T>,
+    mode?: UpdateMode.Never,
+  ): T;
+  create<T extends AnyRealmObject = RealmObject & DefaultObject>(
     type: Constructor<T>,
     values: Partial<T> | Partial<RealmInsertionModel<T>>,
     mode: UpdateMode.All | UpdateMode.Modified | boolean,
   ): T;
-  create<T extends AnyRealmObject>(
+  create<T extends AnyRealmObject = RealmObject & DefaultObject>(
     type: string | Constructor<T>,
     values: DefaultObject,
     mode: UpdateMode | boolean = UpdateMode.Never,
