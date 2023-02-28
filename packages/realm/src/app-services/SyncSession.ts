@@ -212,6 +212,16 @@ type ListenerToken = {
 };
 
 /**
+ * With the current properties available through Core, it it's possible to construct an app from a user nor sync session internal.
+ * TODO: Refactor to pass an app instance through to all places that constructs a SyncSession.
+ */
+const mockApp = new Proxy({} as App, {
+  get() {
+    throw new Error("Using user.app of a user returned through syncSession.config is not supported");
+  },
+});
+
+/**
  * Progress listeners are shared across instances of the SyncSession, making it possible to deregister a listener on another session
  * TODO: Consider adding a check to verify that the callback is removed from the correct SyncSession (although that would break the API)
  */
@@ -272,9 +282,10 @@ export class SyncSession {
     this._internal = null;
   }
 
-  // TODO: Return the `error_handler` and `custom_http_headers`
+  // TODO: Return the `error_handler`
+  // TODO: Figure out a way to avoid passing a mocked app instance when constructing the User.
   get config(): SyncConfiguration {
-    const user = new User(this.internal.user, {} as unknown as App);
+    const user = new User(this.internal.user, mockApp);
     const { partitionValue, flxSyncRequested, customHttpHeaders } = this.internal.config;
     if (flxSyncRequested) {
       return { user, flexible: true, customHttpHeaders };
