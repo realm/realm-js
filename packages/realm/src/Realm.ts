@@ -1495,10 +1495,6 @@ export declare namespace Realm {
     SessionStopPolicyType as SessionStopPolicy,
     /** @deprecated Please use named imports */
     SetType as Set,
-    // TODO: Add these once we've implemented the SSL config for the sync client
-    // SSLVerifyObject,
-    // SSLVerifyCallback,
-    // SSLConfiguration,
     /** @deprecated Please use named imports */
     SortDescriptor,
     /** @deprecated Please use named imports */
