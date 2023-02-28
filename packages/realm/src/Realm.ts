@@ -822,7 +822,7 @@ export class Realm {
   /**
    * Deletes the provided Realm object, or each one inside the provided collection.
    */
-  delete(subject: RealmObject | RealmObject[] | List | Results): void {
+  delete<T = DefaultObject>(subject: RealmObject<T> | RealmObject<T>[] | List<T> | Results<T>): void {
     assert.inTransaction(this, "Can only delete objects within a transaction.");
     assert.object(subject, "subject");
     if (subject instanceof RealmObject) {

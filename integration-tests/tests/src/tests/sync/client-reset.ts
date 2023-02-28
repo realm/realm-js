@@ -18,7 +18,18 @@
 
 import { ObjectId, UUID } from "bson";
 import { expect } from "chai";
-import { Realm, ClientResetMode, SessionStopPolicy } from "realm";
+import {
+  Realm,
+  ClientResetMode,
+  SessionStopPolicy,
+  User,
+  App,
+  Configuration,
+  MutableSubscriptionSet,
+  ConfigurationWithSync,
+  Session,
+  SyncError,
+} from "realm";
 import { authenticateUserBefore, importAppBefore } from "../../hooks";
 import { DogSchema, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { expectClientResetError } from "../../utils/expect-sync-error";
@@ -34,7 +45,7 @@ const FlexibleDogSchema = { ...DogSchema, properties: { ...DogSchema.properties,
  */
 function addSubscriptions(realm: Realm): void {
   const subs = realm.subscriptions;
-  subs.update((mutableSubs: Realm.App.Sync.MutableSubscriptionSet) => {
+  subs.update((mutableSubs: MutableSubscriptionSet) => {
     mutableSubs.add(realm.objects(FlexiblePersonSchema.name));
     mutableSubs.add(realm.objects(FlexibleDogSchema.name));
   });
@@ -59,7 +70,7 @@ async function waitServerSideClientResetDiscardUnsyncedChangesCallbacks(
   const resetHandle = createPromiseHandle();
   let afterCalled = false;
   let beforeCalled = false;
-  const config: Configuration = {
+  const config: ConfigurationWithSync = {
     schema,
     sync: {
       user,
@@ -107,7 +118,7 @@ async function waitServerSideClientResetRecoveryCallbacks(
   let afterCalled = false;
   let beforeCalled = false;
 
-  const config: Configuration = {
+  const config: ConfigurationWithSync = {
     schema,
     sync: {
       user,
@@ -154,7 +165,7 @@ async function waitSimulatedClientResetDiscardUnsyncedChangesCallbacks(
   let afterCalled = false;
   let beforeCalled = false;
 
-  const config: Configuration = {
+  const config: ConfigurationWithSync = {
     schema,
     sync: {
       user,
@@ -204,7 +215,7 @@ async function waitSimulatedClientResetRecoverCallbacks(
   let afterCalled = false;
   let beforeCalled = false;
 
-  const config: Configuration = {
+  const config: ConfigurationWithSync = {
     schema,
     sync: {
       user,
@@ -286,7 +297,7 @@ function getSchema(useFlexibleSync: boolean) {
       it(`manual client reset requires either error handler, client reset callback or both (${getPartialTestTitle(
         useFlexibleSync,
       )} sync)`, async function (this: RealmContext) {
-        const config: Configuration = {
+        const config: ConfigurationWithSync = {
           schema: getSchema(useFlexibleSync),
           sync: {
             // @ts-expect-error this setting is not for users to consume
@@ -305,18 +316,20 @@ function getSchema(useFlexibleSync: boolean) {
       it(`handles manual simulated client resets with ${getPartialTestTitle(
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
-        await expectClientResetError(
-          {
-            schema: getSchema(useFlexibleSync),
-            sync: {
-              _sessionStopPolicy: SessionStopPolicy.Immediately,
-              ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
-              user: this.user,
-              clientReset: {
-                mode: ClientResetMode.Manual,
-              },
+        const config: ConfigurationWithSync = {
+          schema: getSchema(useFlexibleSync),
+          sync: {
+            //@ts-expect-error Internal field
+            _sessionStopPolicy: SessionStopPolicy.Immediately,
+            ...(useFlexibleSync ? { flexible: true } : { partitionValue: getPartitionValue() }),
+            user: this.user,
+            clientReset: {
+              mode: ClientResetMode.Manual,
             },
           },
+        };
+        await expectClientResetError(
+          config,
           this.user,
           (realm) => {
             if (useFlexibleSync) {
@@ -327,7 +340,7 @@ function getSchema(useFlexibleSync: boolean) {
             // @ts-ignore calling undocumented method _simulateError
             session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false); // 211 -> diverging histories
           },
-          (error) => {
+          (error: SyncError) => {
             expect(error.name).to.equal("ClientReset");
             expect(error.message).to.equal("Simulate Client Reset");
             expect(error.code).to.equal(211);
@@ -338,8 +351,8 @@ function getSchema(useFlexibleSync: boolean) {
       it(`handles manual simulated client resets by callback with ${getPartialTestTitle(
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
-        return new Promise<void>((resolve, _) => {
-          const config: Configuration = {
+        return new Promise<void>((resolve) => {
+          const config: ConfigurationWithSync = {
             schema: getSchema(useFlexibleSync),
             sync: {
               // @ts-expect-error this setting is not for users to consume
@@ -348,7 +361,7 @@ function getSchema(useFlexibleSync: boolean) {
               user: this.user,
               clientReset: {
                 mode: ClientResetMode.Manual,
-                onManual: (session: Realm.App.Sync.Session, path: string) => {
+                onManual: (session: Session, path: string) => {
                   expect(session).to.be.not.null;
                   expect(path).to.not.empty;
                   resolve();
@@ -372,7 +385,7 @@ function getSchema(useFlexibleSync: boolean) {
         useFlexibleSync,
       )} sync enabled`, async function (this: RealmContext) {
         return new Promise((resolve, reject) => {
-          const config: Configuration = {
+          const config: ConfigurationWithSync = {
             schema: getSchema(useFlexibleSync),
             sync: {
               // @ts-expect-error this setting is not for users to consume

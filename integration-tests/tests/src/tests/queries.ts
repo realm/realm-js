@@ -76,8 +76,11 @@ describe("Realm Query Language", () => {
         t: new Date("2004-02-26T10:15:02"),
       });
     });
+    //@ts-expect-error Test about to change
     persons = realm.objects<IPerson>(PersonSchema.name);
+    //@ts-expect-error Test about to change
     contacts = realm.objects<IContact>(ContactSchema.name);
+    //@ts-expect-error Test about to change
     primitives = realm.objects<IPrimitive>(PrimitiveSchema.name);
   });
 
