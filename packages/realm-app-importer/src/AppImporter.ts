@@ -422,42 +422,52 @@ export class AppImporter {
               const ruleFiles = fs.readdirSync(rulesDir);
               for (const ruleFile of ruleFiles) {
                 const ruleFilePath = path.join(rulesDir, ruleFile);
-                const config = this.loadJson(ruleFilePath);
-                const schemaConfig = config.schema || null;
-                if (schemaConfig) {
-                  // Schema is not valid in a rule request, but is included when exporting an app from realm
-                  delete config.schema;
-                }
-
-                const relationshipsConfig = config.relationships || null;
-                if (relationshipsConfig) {
-                  // Relationships is not valid in a rule request, but is included when exporting an app from realm
-                  delete config.relationships;
-                }
-                const url =
-                  config.type === "mongodb" || config.type === "mongodb-atlas"
-                    ? `${this.apiUrl}/groups/${groupId}/apps/${appId}/services/${serviceId}/default_rule`
-                    : `${this.apiUrl}/groups/${groupId}/apps/${appId}/services/${serviceId}/rules`;
-
-                const response = await fetch(url, {
-                  method: "POST",
-                  headers: {
-                    Authorization: `Bearer ${this.accessToken}`,
-                    "content-type": "application/json",
-                  },
-                  body: JSON.stringify(config),
-                });
-                if (!response.ok) {
-                  const json = await response.json();
-                  const error = isErrorResponse(json) ? json.error : "No error message";
-                  const configStr = JSON.stringify(config);
-                  throw new Error(`Could not create rule: ${error} - ${configStr}`);
-                }
+                const ruleConfig = this.loadJson(ruleFilePath);
+                this.createRule(appId, groupId, serviceId, config.type, ruleConfig);
               }
             }
           }
         }
       }
+    }
+  }
+
+  private async createRule(
+    appId: string,
+    groupId: string,
+    serviceId: string,
+    serviceType: string,
+    config: Record<string, unknown>,
+  ) {
+    const schemaConfig = config.schema || null;
+    if (schemaConfig) {
+      // Schema is not valid in a rule request, but is included when exporting an app from realm
+      delete config.schema;
+    }
+
+    const relationshipsConfig = config.relationships || null;
+    if (relationshipsConfig) {
+      // Relationships is not valid in a rule request, but is included when exporting an app from realm
+      delete config.relationships;
+    }
+    const url =
+      serviceType === "mongodb" || serviceType === "mongodb-atlas"
+        ? `${this.apiUrl}/groups/${groupId}/apps/${appId}/services/${serviceId}/default_rule`
+        : `${this.apiUrl}/groups/${groupId}/apps/${appId}/services/${serviceId}/rules`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(config),
+    });
+    if (!response.ok) {
+      const json = await response.json();
+      const error = isErrorResponse(json) ? json.error : "No error message";
+      const configStr = JSON.stringify(config);
+      throw new Error(`Could not create rule: ${error} (${url} ${configStr})`);
     }
   }
 
