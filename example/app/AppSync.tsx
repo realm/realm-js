@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import {useApp, useUser} from '@realm/react';
 import {Pressable, StyleSheet, Text} from 'react-native';
 
@@ -15,15 +15,21 @@ export const AppSync: React.FC = () => {
   const realm = useRealm();
   const user = useUser();
   const app = useApp();
-  const result = useQuery(Task);
-
-  const tasks = useMemo(() => result.sorted('createdAt'), [result]);
+  const [showDone, setShowDone] = React.useState(false);
+  const tasks = useQuery(
+    Task,
+    collection =>
+      showDone
+        ? collection.sorted('createdAt')
+        : collection.filtered('isComplete == false').sorted('createdAt'),
+    [showDone],
+  );
 
   useEffect(() => {
     realm.subscriptions.update(mutableSubs => {
       mutableSubs.add(result);
     });
-  }, [realm, result]);
+  }, [realm, tasks]);
 
   const handleLogout = useCallback(() => {
     user.logOut();
@@ -32,7 +38,12 @@ export const AppSync: React.FC = () => {
   return (
     <>
       <Text style={styles.idText}>Syncing with app id: {app.id}</Text>
-      <TaskManager tasks={tasks} userId={user?.id} />
+      <TaskManager
+        tasks={tasks}
+        userId={user?.id}
+        setShowDone={setShowDone}
+        showDone={showDone}
+      />
       <Pressable style={styles.authButton} onPress={handleLogout}>
         <Text
           style={styles.authButtonText}>{`Logout ${user?.profile.email}`}</Text>
