@@ -5,7 +5,7 @@
   "main": "./dist/index.js",
   "scripts": {
     "build": "tsc ",
-    "prepare": "rm -rf dist && npm run build",
+    "prepare": "node -e \"require('fs-extra').emptyDir('dist');\" && npm run build",
     "start": "tsc -w"
   },
   "files": [

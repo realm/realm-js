@@ -18,10 +18,11 @@
 
 import { readdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { TemplateContext } from "./context";
 
-const TEMPLATES_DIR = resolve(dirname(new URL(import.meta.url).pathname), "templates");
+const TEMPLATES_DIR = resolve(dirname(fileURLToPath(new URL(import.meta.url))), "templates");
 
 export type Template = (context: TemplateContext) => void;
 
@@ -30,7 +31,8 @@ export const TEMPLATES_NAMES = readdirSync(TEMPLATES_DIR).map((fileName) => file
 export async function importTemplate(name: string): Promise<Template> {
   if (TEMPLATES_NAMES.includes(name)) {
     const templatePath = resolve(TEMPLATES_DIR, `${name}.ts`);
-    const template = (await import(templatePath)) as { generate: Template };
+    const templateUrl = pathToFileURL(templatePath).toString();
+    const template = (await import(templateUrl)) as { generate: Template };
     if (typeof template !== "object" || typeof template.generate !== "function") {
       throw new Error("Expected template to export a 'generate' function");
     }

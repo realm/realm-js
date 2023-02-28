@@ -61,6 +61,7 @@ export function format(formatterName: FormatterName, cwd: string, filePaths: str
         cwd,
         encoding: "utf8",
         stdio: "inherit",
+        shell: true,
       });
       if (result.error) throw result.error;
       if (result.status) {
