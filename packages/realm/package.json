@@ -54,7 +54,7 @@
     "build:node": "npm run build --prefix ../bindgen",
     "build:android": "node ../../scripts/build-android.js",
     "build:ios": "../../scripts/build-ios.sh",
-    "prebuild": "prebuild --runtime node -- --directory ../bindgen",
+    "build:node:prebuild": "prebuild --runtime node -- --directory ../bindgen",
     "install": "prebuild-install --runtime node || echo 'Failed to download prebuild for Realm'"
   },
   "dependencies": {
