@@ -10,12 +10,11 @@
   },
   "private": true,
   "scripts": {
-    "start": "CONTEXT=appTemplatesPath=../realm-apps,$CONTEXT node start.mjs --watch",
+    "start": "CONTEXT=appTemplatesPath=../realm-apps,$CONTEXT npm run mocha -- --watch",
     "start:missing-server": "CONTEXT=missingServer,$CONTEXT npm start",
     "start:performance": "CONTEXT=missingServer,performance,integration=false,$CONTEXT npm start",
-    "test": "CONTEXT=appTemplatesPath=../realm-apps,$CONTEXT node start.mjs --exit",
+    "test": "CONTEXT=appTemplatesPath=../realm-apps,$CONTEXT npm run mocha -- --exit",
     "test:performance": "CONTEXT=missingServer,performance,integration=false,$CONTEXT npm test",
-    "app-importer": "realm-app-importer serve ../realm-apps",
     "mocha": "mocha --reporter @realm/mocha-reporter src/index.ts",
     "lint": "eslint --ext .js,.ts ."
   },
