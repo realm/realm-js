@@ -60,7 +60,7 @@ function isErrorResponse(arg: unknown): arg is ErrorResponse {
 function generateDatabaseName(): string {
   const { mongodbClusterName } = environment;
   if (typeof mongodbClusterName === "string") {
-    return `test-database-${new BSON.ObjectID().toHexString()}`;
+    return `test-database-${new BSON.ObjectId().toHexString()}`;
   }
   return "test-database";
 }
