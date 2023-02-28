@@ -23,11 +23,6 @@ import { flags } from "realm";
 // TODO: Refactor tests to disable this
 flags.ALLOW_VALUES_ARRAYS = true;
 
-/**
- * Use the `longTimeout` context variable to override this.
- */
-const DEFAULT_LONG_TIMEOUT = 30 * 1000; // 30s
-
 import "./setup-globals";
 
 afterEach(() => {
@@ -39,27 +34,6 @@ afterEach(() => {
 
 import "./utils/import-app.test.ts";
 import "./utils/chai-plugin.test.ts";
-
-describe("Test Harness", function (this: Mocha.Suite) {
-  /**
-   * @see [typings.d.ts](./typings.d.ts) for documentation.
-   */
-  function longTimeout(this: Mocha.Context | Mocha.Suite) {
-    this.timeout(environment.longTimeout || DEFAULT_LONG_TIMEOUT); // 30 seconds
-  }
-
-  // Patching the Suite and Context with a longTimeout method
-  // We cannot simply `import { Suite, Context } from "mocha"` here,
-  // since Mocha Remote client brings its own classes
-  const Suite = this.constructor as typeof Mocha.Suite;
-  const Context = this.ctx.constructor as typeof Mocha.Context;
-  Suite.prototype.longTimeout = longTimeout;
-  Context.prototype.longTimeout = longTimeout;
-
-  // Test importing an app
-  require("./utils/import-app.test");
-  require("./utils/chai-plugin.test");
-});
 
 import "./tests";
 import "./performance-tests";
