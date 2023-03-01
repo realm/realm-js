@@ -157,9 +157,14 @@ declare namespace Mocha {
 // Mocha contexts made available by hooks
 type AppContext = { app: App; databaseName: string } & Mocha.Context;
 type UserContext = { user: User } & Mocha.Context;
+type CloseRealmOptions = { deleteFile: boolean; clearTestState: boolean; reopen: boolean };
 type RealmContext = {
   realm: Realm;
-  config: Configuration;
+  /**
+   * Close a Realm instance, optionally deleting the file, clearing test state or reopening it afterwards.
+   * Defaults to deleting the Realm file and clearing test state.
+   */
+  closeRealm(options?: Partial<CloseRealmOptions>): Promise<void>;
 } & Mocha.Context;
 type RealmObjectContext<T = Record<string, unknown>> = {
   object: RealmObject & T;
