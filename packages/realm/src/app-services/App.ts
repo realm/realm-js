@@ -47,6 +47,11 @@ export type AppConfiguration = {
    * Specifying this will enable the server to respond differently to specific versions of specific apps.
    */
   app?: LocalAppConfiguration;
+
+  /**
+   * The timeout for requests (in milliseconds)
+   */
+  timeout?: number;
 };
 
 /**
@@ -137,8 +142,11 @@ export class App {
   constructor(configOrId: AppConfiguration | string) {
     const config: AppConfiguration = typeof configOrId === "string" ? { id: configOrId } : configOrId;
     assert.object(config, "config");
-    const { id, baseUrl, app } = config;
+    const { id, baseUrl, app, timeout } = config;
     assert.string(id, "id");
+    if (timeout !== undefined) {
+      assert.number(timeout, "timeout");
+    }
     // TODO: This used getSharedApp in the legacy SDK, but it's failing AppTests
     this.internal = binding.App.getUncachedApp(
       {
@@ -150,6 +158,7 @@ export class App {
         localAppName: app?.name,
         localAppVersion: app?.version,
         baseUrl,
+        defaultRequestTimeoutMs: timeout ? binding.Int64.numToInt(timeout) : undefined,
       },
       {
         baseFilePath: fs.getDefaultDirectoryPath(),
