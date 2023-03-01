@@ -219,11 +219,8 @@ elseif(EMSCRIPTEN)
 
     target_sources(realm-js PRIVATE browser_init.cpp ../../src/browser/platform.cpp)
 
-    add_custom_command(
-        TARGET realm-js-wasm
-        COMMAND ${CMAKE_COMMAND} -E copy
-                ${CMAKE_CURRENT_BINARY_DIR}/realm-js-wasm.js ${CMAKE_CURRENT_BINARY_DIR}/realm-js-wasm.wasm
-                ${TYPESCRIPT_OUTPUT_DIR}        
+    set_target_properties(realm-js-wasm PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${TYPESCRIPT_OUTPUT_DIR}
     )
 
 else()
