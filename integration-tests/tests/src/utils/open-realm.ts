@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Realm, Configuration, SyncConfiguration, User, BSON, ConfigurationWithSync } from "realm";
+import { Realm, Configuration, SyncConfiguration, User, BSON } from "realm";
 
 // Either the sync property is left out (local Realm)
 export type LocalConfiguration = Omit<Configuration, "sync"> & { sync?: never };
