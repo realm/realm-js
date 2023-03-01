@@ -432,7 +432,10 @@ records:
         default: ClientResyncMode::Manual;
       notify_before_client_reset: 'Nullable<std::function<(before_frozen: SharedRealm) off_thread -> void>>'
       notify_after_client_reset: 'Nullable<std::function<(before_frozen: SharedRealm, after: ThreadSafeReference, did_recover: bool) off_thread -> void>>'
-
+      cancel_waits_on_nonfatal_error:
+        type: bool
+        default: false
+        
   SyncSubscription:
     cppName: sync::Subscription
     fields:

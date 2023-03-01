@@ -4,6 +4,7 @@
 * None
 
 ### Enhancements
+* Added configuration option `SyncConfiguration.cancelWaitsOnNonFatalError`. Set to true, all async operations (such as opening the Realm with `Realm.open`) will fail when a non-fatal error, such as a timeout, occurs.  
 * Added an overload to `Object.linkingObjects` method that takes type of the linking object as an input instead of its string name ([#5326](https://github.com/realm/realm-js/issues/5326))  
 Example usage:
 ```typescript

@@ -115,6 +115,7 @@ export type BaseSyncConfiguration = {
   /** @internal */
   _sessionStopPolicy?: SessionStopPolicy;
   clientReset?: ClientResetConfig;
+  cancelWaitsOnNonFatalError?: boolean;
 };
 
 export type InitialSubscriptions = {
@@ -148,7 +149,16 @@ export type SyncConfiguration = FlexibleSyncConfiguration | PartitionSyncConfigu
 
 /** @internal */
 export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConfig_Relaxed {
-  const { user, flexible, partitionValue, onError, _sessionStopPolicy, customHttpHeaders, clientReset } = config;
+  const {
+    user,
+    flexible,
+    partitionValue,
+    onError,
+    _sessionStopPolicy,
+    customHttpHeaders,
+    clientReset,
+    cancelWaitsOnNonFatalError,
+  } = config;
 
   return {
     user: user.internal,
@@ -159,6 +169,7 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
     customHttpHeaders,
     flxSyncRequested: !!flexible,
     ...parseClientResetConfig(clientReset, onError),
+    cancelWaitsOnNonfatalError: cancelWaitsOnNonFatalError,
   };
 }
 
@@ -242,10 +253,21 @@ function parseRecoverOrDiscardUnsyncedChanges(clientReset: ClientResetRecoverOrD
  */
 export function validateSyncConfiguration(config: unknown): asserts config is SyncConfiguration {
   assert.object(config, "'sync' on realm configuration", { allowArrays: false });
-  const { user, newRealmFileBehavior, existingRealmFileBehavior, onError, customHttpHeaders, clientReset, flexible } =
-    config;
+  const {
+    user,
+    newRealmFileBehavior,
+    existingRealmFileBehavior,
+    onError,
+    customHttpHeaders,
+    clientReset,
+    flexible,
+    cancelWaitOnNonFatalError: cancelWaitsOnNonFatalError,
+  } = config;
 
   assert.instanceOf(user, User, "'user' on realm sync configuration");
+  if (cancelWaitsOnNonFatalError !== undefined) {
+    assert.boolean(cancelWaitsOnNonFatalError, "'cancelWaitOnNonFatalError' on sync configuration");
+  }
   if (newRealmFileBehavior !== undefined) {
     validateOpenRealmBehaviorConfiguration(newRealmFileBehavior, "newRealmFileBehavior");
   }
