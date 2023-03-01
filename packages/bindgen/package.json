@@ -14,7 +14,7 @@
     "generate:spec-schema": "typescript-json-schema tsconfig.json RelaxedSpec --include src/spec/relaxed-model.ts --out generated/spec.schema.json --required",
     "build": "cmake-js build --debug",
     "rebuild": "cmake-js rebuild --debug",
-    "build-browser": "emcmake cmake -B build.browser -G Ninja && cd build.browser && ninja"
+    "build-browser": "emcmake cmake -B build.browser -G Ninja && cmake --build build.browser"
   },
   "dependencies": {
     "@commander-js/extra-typings": "^10.0.2",
