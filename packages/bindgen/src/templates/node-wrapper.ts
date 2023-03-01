@@ -66,6 +66,7 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
     /*global window, FinalizationRegistry*/
     import Module from "./realm-js-wasm.js";
     const nativeModule = await Module(); // loading WASM 
+    nativeModule.browserInit();
     // We know that node always has real WeakRefs so just use them.
     export const WeakRef = window.WeakRef;
   `);
@@ -185,7 +186,7 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
         ...params,
         asyncSig ? "_cb" : [],
       ].flat();
-      let call = `${native}(${args})`;
+      let call = `${native}([${args}])`;
       if (asyncSig) call = `_promisify(_cb => ${call})`;
       const promisify_definition = `
         ${method.isStatic ? "static" : ""}

@@ -131,7 +131,7 @@ function convertPrimToEmscripten(addon: BrowserAddon, type: string, expr: string
       return `((void)(${expr}), emscripten::val::undefined())`;
 
     case "bool":
-      return `emscripten::val(${expr})`;
+      return `emscripten::val(bool(${expr}))`;
 
     case "float":
       return `${addon.accessCtor("Float")}(${convertPrimToEmscripten(addon, "double", expr)})`;
@@ -173,12 +173,12 @@ function convertPrimToEmscripten(addon: BrowserAddon, type: string, expr: string
     case "UUID":
     case "Decimal128":
       //TODO FIXME return `${type}((${expr}.as<std::string>().c_str()))`;
-      return `${addon.accessCtor(type)}(${convertPrimToEmscripten(addon, "std::string", `${expr}.to_string()`)})`;
+      return `${addon.accessCtor(type)}.new_(${convertPrimToEmscripten(addon, "std::string", `${expr}.to_string()`)})`;
 
     case "EJson":
     case "EJsonObj":
     case "EJsonArray":
-      return `${addon.accessCtor("EJSON_parse")}(${convertPrimToEmscripten(addon, "std::string", expr)})`;
+      return `${addon.accessCtor("EJSON_parse")}.new_(${convertPrimToEmscripten(addon, "std::string", expr)})`;
 
     case "bson::BsonArray":
     case "bson::BsonDocument":
@@ -225,7 +225,8 @@ function convertPrimFromEmscripten(addon: BrowserAddon, type: string, expr: stri
 
     case "count_t":
       // NOTE: using Int64 here is important to correctly handle -1.0 aka npos.
-      return `size_t((${expr}).as<int64_t>())`;
+      // FIXME should use int64_t
+      return `size_t((${expr}).as<int>())`;
 
     case "int64_t":
       return `${expr}.as<int64_t>()`;
@@ -275,7 +276,7 @@ function convertPrimFromEmscripten(addon: BrowserAddon, type: string, expr: stri
     case "EJson":
     case "EJsonObj":
     case "EJsonArray":
-      return convertPrimFromEmscripten(addon, "std::string", `${addon.accessCtor("EJSON_stringify")}(${expr})`);
+      return convertPrimFromEmscripten(addon, "std::string", `${addon.accessCtor("EJSON_stringify")}.new_(${expr})`);
 
     case "bson::BsonArray":
     case "bson::BsonDocument":
@@ -630,7 +631,7 @@ class BrowserCppDecls extends CppDecls {
                         if (!field.isUndefined()) {
                             // Make functions on structs behave like bound methods.
                             if (field.instanceof(emscripten::val::global("Function")))
-                                field = field["bind"](val);
+                                field = field.call<emscripten::val>("bind", val);
                             out.${field.cppName} = ${convertFromEmscripten(this.addon, field.type, "field")};
                         } else if constexpr (${field.required ? "true" : "false"}) {
                             emscripten::val("${struct.jsName}::${field.jsName} is required").throw_();
@@ -721,7 +722,7 @@ class BrowserCppDecls extends CppDecls {
                 ${nullCheck}
                 return emscripten::val(${this.addon.accessCtor(
                   cls,
-                )}(emscripten::val(reinterpret_cast<std::uintptr_t>(new auto(std::move(val))))));
+                )}.new_(emscripten::val(reinterpret_cast<std::uintptr_t>(new auto(std::move(val))))));
               `,
           }),
         );
@@ -816,16 +817,29 @@ class BrowserCppDecls extends CppDecls {
 
   outputDefsTo(out: (...parts: string[]) => void) {
     super.outputDefsTo(out);
+    out(`
+    void browser_init()
+    {
+      if (!RealmAddon::self) {
+          RealmAddon::self = std::make_unique<RealmAddon>();    
+      }
+    }
+    void injectExternalTypes(emscripten::val val)
+    {
+        RealmAddon::self->injectInjectables(val);
+    }
+    `);
 
     this.boundSpec.classes.forEach((c) => {
       out(`
         void ${c.jsName}_deleter(emscripten::val pointer) {
-          delete reinterpret_cast<${c.cppName}*>(pointer.as<std::uintptr_t>());
+          // FIXME reenable when investigating currently causing 'Uncaught RuntimeError: memory access out of bounds' 
+          // delete reinterpret_cast<${c.cppName}*>(pointer.as<std::uintptr_t>());
         }        
       `);
     });
 
-    // export free functions   via embind
+    // export free functions via embind
     out(`\nEMSCRIPTEN_BINDINGS(realm_c_api) {`);
     this.free_funcs
       .filter((free_func: CppFunc) => {
@@ -847,6 +861,10 @@ class BrowserCppDecls extends CppDecls {
       console.log(`CPP_NAME= ${c.cppName} c.jsName= ${c.jsName}`);
       out(`\nfunction("${c.jsName}_deleter", &${c.jsName}_deleter);`);
     });
+
+    out(`\nemscripten::function("browserInit", &browser_init);`);
+    out(`\nfunction("injectInjectables", &injectExternalTypes);`);
+
     out("\n}");
   }
 }

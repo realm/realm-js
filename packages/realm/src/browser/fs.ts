@@ -27,19 +27,20 @@ inject({
     return join(...segments);
   },
   removeFile(path) {
-    throw new Error("Not supported on this platform");
+    // throw new Error("Not supported on this platform");
   },
   removeDirectory(path) {
-    throw new Error("Not supported on this platform");
+    // throw new Error("Not supported on this platform");
   },
   getDefaultDirectoryPath() {
     return "/fake-root";
   },
   exists(path) {
-    throw new Error("Not supported on this platform");
+    return false;
+    // throw new Error("Not supported on this platform");
   },
   copyBundledRealmFiles() {
-    throw new Error("Not supported on this platform");
+    // throw new Error("Not supported on this platform");
   },
   /*
   readDirectory(path) {
@@ -47,6 +48,6 @@ inject({
   },
   */
   removeRealmFilesFromDirectory(path) {
-    throw new Error("Not supported on this platform");
+    // throw new Error("Not supported on this platform");
   },
 });

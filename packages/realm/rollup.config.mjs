@@ -21,6 +21,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import typescript from "@rollup/plugin-typescript";
 import replace from "@rollup/plugin-replace";
 import dts from "rollup-plugin-dts";
+import copy from "rollup-plugin-copy";
 
 import pkg from "./package.json" assert { type: "json" };
 
@@ -117,6 +118,9 @@ export default [
         tsconfig: "src/browser/tsconfig.json",
         noEmitOnError: true,
         outputToFilesystem: true,
+      }),
+      copy({
+        targets: [{ src: "./generated/ts/realm-js-wasm.wasm", dest: "./dist/" }],
       }),
     ],
     external: ["bson", "debug"],
