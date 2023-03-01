@@ -217,7 +217,7 @@ elseif(EMSCRIPTEN)
             ${TS_FILES}
     )
 
-    target_sources(realm-js PRIVATE browser_init.cpp ${CMAKE_JS_SRC} ../../src/browser/platform.cpp)
+    target_sources(realm-js PRIVATE browser_init.cpp ../../src/browser/platform.cpp)
 
     add_custom_command(
         TARGET realm-js-wasm
