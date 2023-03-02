@@ -25,8 +25,8 @@ describe.skipIf(environment.missingServer, "Type roundtrip of set object", () =>
   authenticateUserBefore();
 
   class SetObject extends Realm.Object {
-    _id!: Realm.Types.Int;
-    numbers!: Realm.Set<Realm.Types.Int>;
+    declare _id: Realm.Types.Int;
+    declare numbers: Realm.Set<Realm.Types.Int>;
 
     static schema = {
       name: "SyncedNumbers",

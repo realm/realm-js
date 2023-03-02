@@ -35,8 +35,8 @@ export const ContactSchema: Realm.ObjectSchema = {
 };
 
 export class Contact extends Realm.Object implements IContact {
-  name!: string;
-  phones!: Realm.List<string>;
+  declare name: string;
+  declare phones: Realm.List<string>;
 
   static schema: Realm.ObjectSchema = ContactSchema;
 }

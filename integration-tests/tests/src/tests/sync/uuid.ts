@@ -26,10 +26,10 @@ describe.skipIf(environment.missingServer, "Type roundtrip of UUID object", () =
   const { UUID } = Realm.BSON;
 
   class UUIDObject extends Realm.Object {
-    _id!: Realm.Types.UUID;
-    mandatory!: Realm.Types.UUID;
-    optional?: Realm.Types.UUID;
-    list?: Realm.List<Realm.Types.UUID>;
+    declare _id: Realm.Types.UUID;
+    declare mandatory: Realm.Types.UUID;
+    declare optional?: Realm.Types.UUID;
+    declare list?: Realm.List<Realm.Types.UUID>;
 
     static schema = {
       name: "UUIDObject",
