@@ -38,7 +38,7 @@ export type PropertyTypeName = PrimitivePropertyTypeName | CollectionPropertyTyp
 /**
  * Valid types for an object primary key.
  */
-export type PrimaryKey = number | string | BSON.ObjectId | BSON.UUID;
+export type PrimaryKey = null | number | string | BSON.ObjectId | BSON.UUID;
 
 /**
  * The names of the supported Realm primitive property types.
