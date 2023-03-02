@@ -18,11 +18,7 @@
 import Realm from "realm";
 import { useEffect, useReducer, useMemo, useRef } from "react";
 import { CachedObject, createCachedObject } from "./cachedObject";
-
-// In order to make @realm/react work with older version of realms
-// This pulls the type for PrimaryKey out of the call signature of `objectForPrimaryKey`
-// TODO: If we depend on a new version of Realm for @realm/react, we can just use Realm.PrimaryKey
-type PrimaryKey = Parameters<typeof Realm.prototype.objectForPrimaryKey>[1];
+import { CollectionCallback, isString } from "./helper";
 
 /**
  * Generates the `useObject` hook from a given `useRealm` hook.
@@ -31,10 +27,12 @@ type PrimaryKey = Parameters<typeof Realm.prototype.objectForPrimaryKey>[1];
  * @returns useObject - Hook that is used to gain access to a single Realm object from a primary key
  */
 export function createUseObject(useRealm: () => Realm) {
-  return function useObject<T>(
+  function useObject<T>(type: string, primaryKey: T[keyof T]): (T & Realm.Object<T>) | null;
+  function useObject<T extends Realm.Object>(type: { new (...args: any): T }, primaryKey: T[keyof T]): T | null;
+  function useObject<T extends Realm.Object>(
     type: string | { new (...args: any): T },
-    primaryKey: PrimaryKey,
-  ): (T & Realm.Object<T>) | null {
+    primaryKey: T[keyof T],
+  ): T | null {
     const realm = useRealm();
 
     // Create a forceRerender function for the cachedObject to use as its updateCallback, so that
@@ -42,12 +40,14 @@ export function createUseObject(useRealm: () => Realm) {
     const [, forceRerender] = useReducer((x) => x + 1, 0);
 
     // Get the original object from the realm, so we can check if it exists
-    const originalObject = realm.objectForPrimaryKey<unknown>(type, primaryKey);
+    const originalObject = isString(type)
+      ? realm.objectForPrimaryKey(type, primaryKey)
+      : realm.objectForPrimaryKey(type, primaryKey);
 
     // Store the primaryKey as a ref, since when it is an objectId or UUID, it will be a new instance on every render
     const primaryKeyRef = useRef(primaryKey);
 
-    const collectionRef = useRef(realm.objects(type));
+    const collectionRef = useRef(isString(type) ? realm.objects(type) : realm.objects(type));
 
     const objectRef = useRef<T & Realm.Object<T>>();
     const updatedRef = useRef(true);
@@ -107,7 +107,7 @@ export function createUseObject(useRealm: () => Realm) {
     // If the object doesn't exist, listen for insertions to the collection and force a rerender if the inserted object has the correct primary key
     useEffect(() => {
       const collection = collectionRef.current;
-      const collectionListener: Realm.CollectionChangeCallback<T & Realm.Object> = (_, changes) => {
+      const collectionListener: CollectionCallback = (_, changes) => {
         const primaryKeyProperty = collection?.[0]?.objectSchema()?.primaryKey;
         for (const index of changes.insertions) {
           const object = collection[index];
@@ -146,8 +146,10 @@ export function createUseObject(useRealm: () => Realm) {
       updatedRef.current = false;
     }
     // This will never be undefined, but the type system doesn't know that
-    return objectRef.current as T & Realm.Object<T>;
-  };
+    return objectRef.current as T;
+  }
+
+  return useObject;
 }
 
 // This is a helper function that determines if two primary keys are equal.  It will also handle the case where the primary key is an ObjectId or UUID

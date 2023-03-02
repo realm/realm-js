@@ -34,13 +34,16 @@
     "CMakeLists.txt"
   ],
   "workspaces": [
+    "example",
     "packages/bindgen",
     "packages/realm",
     "packages/metro-config",
+    "packages/realm-common",
     "packages/mocha-reporter",
     "packages/realm-network-transport",
     "packages/realm-app-importer",
     "packages/realm-network-transport",
+    "packages/realm-react",
     "packages/mocha-reporter",
     "integration-tests/baas-test-server",
     "integration-tests/environments/node",

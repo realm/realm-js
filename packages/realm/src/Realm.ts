@@ -1227,7 +1227,10 @@ function isEmbedded(objectSchema: binding.ObjectSchema): boolean {
 
 // We need these type aliases because of https://github.com/Swatinem/rollup-plugin-dts/issues/223
 
-type AppType = App;
+type AppType<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType = DefaultObject> = App<
+  FunctionsFactoryType,
+  CustomDataType
+>;
 type BSONType = typeof BSON;
 type ClientResetModeType = ClientResetMode;
 type CollectionType<
@@ -1258,7 +1261,11 @@ type SyncErrorType = SyncError;
 type TypesType = typeof Types;
 type UpdateModeType = UpdateMode;
 type UserStateType = UserState;
-type UserType = User;
+type UserType<
+  FunctionsFactoryType = DefaultFunctionsFactory,
+  CustomDataType = DefaultObject,
+  UserProfileDataType = DefaultUserProfileData,
+> = User<FunctionsFactoryType, CustomDataType, UserProfileDataType>;
 
 type BaseSubscriptionSetType = BaseSubscriptionSet;
 type LogLevelType = LogLevel;

@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import Realm from "realm";
+import { CollectionCallback } from "./helper";
 
 const numericRegEx = /^-?\d+$/;
 
@@ -30,7 +31,7 @@ type CachedCollectionArgs<T> = {
   /**
    * The {@link Realm.Collection} to proxy
    */
-  collection: Realm.Collection<T>;
+  collection: Realm.List<T> | Realm.Results<T>;
   /**
    * The {@link Realm} instance
    */
@@ -73,15 +74,15 @@ type CachedCollectionArgs<T> = {
  * @param args {@link CachedCollectionArgs} object arguments
  * @returns Proxy object wrapping the collection
  */
-export function createCachedCollection<T extends Realm.Object>({
+export function createCachedCollection<T extends Realm.Object<any>>({
   collection,
   realm,
   updateCallback,
   updatedRef,
   objectCache = new Map(),
   isDerived = false,
-}: CachedCollectionArgs<T>): { collection: Realm.Collection<T>; tearDown: () => void } {
-  const cachedCollectionHandler: ProxyHandler<Realm.Collection<T & Realm.Object>> = {
+}: CachedCollectionArgs<T>): { collection: Realm.Results<T> | Realm.List<T>; tearDown: () => void } {
+  const cachedCollectionHandler: ProxyHandler<Realm.Results<T> | Realm.List<T>> = {
     get: function (target, key) {
       // Pass functions through
       const value = Reflect.get(target, key);
@@ -140,10 +141,7 @@ export function createCachedCollection<T extends Realm.Object>({
 
   const cachedCollectionResult = new Proxy(collection, cachedCollectionHandler);
 
-  const listenerCallback: Realm.CollectionChangeCallback<(T & Realm.Object) | (unknown & Realm.Object)> = (
-    listenerCollection,
-    changes,
-  ) => {
+  const listenerCallback: CollectionCallback = (listenerCollection, changes) => {
     if (changes.deletions.length > 0 || changes.insertions.length > 0 || changes.newModifications.length > 0) {
       // TODO: There is currently no way to rebuild the cache key from the changes array for deleted object.
       // Until it is possible, we clear the cache on deletions.

@@ -66,6 +66,8 @@ export interface UserIdentity {
   providerType: ProviderType;
 }
 
+export type AnyUser = User<any, any, any>;
+
 type UserListenerToken = binding.SyncUserSubscriptionToken;
 
 export class User<
@@ -92,9 +94,13 @@ export class User<
   });
 
   /** @internal */
-  public static get(internal: binding.SyncUser) {
+  public static get<
+    FunctionsFactoryType = DefaultFunctionsFactory,
+    CustomDataType = DefaultObject,
+    UserProfileDataType = DefaultUserProfileData,
+  >(internal: binding.SyncUser) {
     // TODO: Use a WeakRef to memoize the SDK object
-    return new User(internal, App.get(internal));
+    return new User<FunctionsFactoryType, CustomDataType, UserProfileDataType>(internal, App.get(internal));
   }
 
   /** @internal */

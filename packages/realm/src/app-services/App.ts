@@ -17,7 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
+  AnyUser,
   Credentials,
+  DefaultFunctionsFactory,
   EmailPasswordAuth,
   Listeners,
   Sync,
@@ -75,7 +77,7 @@ export type AppChangeCallback = () => void;
 type AppListenerToken = binding.AppSubscriptionToken;
 
 // TODO: Ensure this doesn't leak
-const appByUserId = new Map<string, App>();
+const appByUserId = new Map<string, App<any, any>>();
 
 /**
  * The class represents an Atlas App Services Application.
@@ -84,7 +86,7 @@ const appByUserId = new Map<string, App>();
  * const app = new App({ id: "my-app-qwert" });
  * ```
  */
-export class App {
+export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType = Record<string, unknown>> {
   // TODO: Ensure these are injected by the platform
   /** @internal */
   public static PLATFORM_CONTEXT = "unknown-context";
@@ -187,12 +189,12 @@ export class App {
     return new EmailPasswordAuth(internal);
   }
 
-  public get currentUser(): User | null {
+  public get currentUser(): User<FunctionsFactoryType, CustomDataType> | null {
     const currentUser = this.internal.currentUser;
     return currentUser ? User.get(currentUser) : null;
   }
 
-  public get allUsers(): User[] {
+  public get allUsers(): User<FunctionsFactoryType, CustomDataType>[] {
     return this.internal.allUsers.map((user) => User.get(user));
   }
 
@@ -200,11 +202,11 @@ export class App {
     throw new Error("Not yet implemented");
   }
 
-  public async removeUser(user: User) {
+  public async removeUser(user: AnyUser) {
     await this.internal.removeUser(user.internal);
   }
 
-  public async deleteUser(user: User) {
+  public async deleteUser(user: AnyUser) {
     await this.internal.deleteUser(user.internal);
   }
 
