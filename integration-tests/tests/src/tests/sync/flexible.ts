@@ -1477,7 +1477,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             await addSubscriptionForPersonAndSync(this.realm);
             expect(this.realm.subscriptions).to.have.length(1);
 
-            await this.closeRealm({ deleteFile: false, reopen: true });
+            await this.closeRealm({ deleteFile: false, clearTestState: false, reopen: true });
 
             expect(this.realm.subscriptions).to.have.length(1);
             await this.realm.subscriptions.waitForSynchronization();
