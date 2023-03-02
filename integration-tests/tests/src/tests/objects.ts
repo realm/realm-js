@@ -943,13 +943,13 @@ describe("Realm.Object", () => {
       expect(obj.getPropertyType("dataCol")).equals("data");
       expect(obj.getPropertyType("objectCol")).equals("<TestObject>");
 
-      expect(obj.getPropertyType("boolArrayCol")).equals("array<bool>");
-      expect(obj.getPropertyType("floatArrayCol")).equals("array<float>");
-      expect(obj.getPropertyType("doubleArrayCol")).equals("array<double>");
-      expect(obj.getPropertyType("stringArrayCol")).equals("array<string>");
-      expect(obj.getPropertyType("dateArrayCol")).equals("array<date>");
-      expect(obj.getPropertyType("dataArrayCol")).equals("array<data>");
-      expect(obj.getPropertyType("objectArrayCol")).equals("array<TestObject>");
+      expect(obj.getPropertyType("boolArrayCol")).equals("list<bool>");
+      expect(obj.getPropertyType("floatArrayCol")).equals("list<float>");
+      expect(obj.getPropertyType("doubleArrayCol")).equals("list<double>");
+      expect(obj.getPropertyType("stringArrayCol")).equals("list<string>");
+      expect(obj.getPropertyType("dateArrayCol")).equals("list<date>");
+      expect(obj.getPropertyType("dataArrayCol")).equals("list<data>");
+      expect(obj.getPropertyType("objectArrayCol")).equals("list<TestObject>");
 
       expect(mixedNull.getPropertyType("value")).equals("null");
       expect(mixedInt.getPropertyType("value")).equals("double"); // see comment above
