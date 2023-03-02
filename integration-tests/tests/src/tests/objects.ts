@@ -322,7 +322,7 @@ interface IAllTypes {
   linkingObjectsCol: IAllTypes[];
 }
 
-describe("Objectstest", () => {
+describe("Realm.Object", () => {
   describe("Methods", () => {
     it("linkingObjects works with both string and type input", () => {
       const realm = new Realm({ schema: [Person] });
