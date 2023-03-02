@@ -31,4 +31,8 @@ export namespace BSON {
   export type Decimal128 = bson.Decimal128;
   export const UUID = bson.UUID;
   export type UUID = bson.UUID;
+  export const Binary = bson.Binary;
+  export type Binary = bson.Binary;
+  export const EJSON = bson.EJSON;
+  export type EJSON = typeof bson.EJSON;
 }
