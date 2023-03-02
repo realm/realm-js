@@ -16,10 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-// Used as a key by Realm React in `useQuery`, to store the original object
-// which is being proxied, for compatibility with JSC pre-v11 (#4541)
-export const PROXY_TARGET = Symbol("PROXY_TARGET");
-
 // Used to indicate that an object is a proxied Realm.Dictionary, to allow us
 // to correctly detect Dictionaries in toJSON when using JSC pre-v11 (#4674)
 export const IS_PROXIED_DICTIONARY = Symbol("IS_PROXIED_DICTIONARY");

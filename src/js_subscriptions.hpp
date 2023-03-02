@@ -582,9 +582,9 @@ public:
         {"findByQuery", wrap<SubscriptionSetClass<T>::find_by_query>},
 
         // Mutable-only methods
-        {"_add", wrap<add>},
+        {"add", wrap<add>},
         {"removeByName", wrap<remove_by_name>},
-        {"_remove", wrap<remove>},
+        {"remove", wrap<remove>},
         {"removeSubscription", wrap<remove_subscription>},
         {"removeAll", wrap<remove_all>},
         {"removeByObjectType", wrap<remove_by_object_type>},

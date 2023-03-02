@@ -14,7 +14,6 @@
     "prepare": "rm -rf dist && npm run build"
   },
   "dependencies": {
-    "@realm/common": "^0.1.4",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
