@@ -31,11 +31,12 @@ export function assert(
   err?: string | Error | (() => undefined | string | Error),
 ): asserts condition {
   if (!condition) {
-    const errValue = typeof err === "function" ? err() : err;
-    if (errValue instanceof Error) {
+    // Call any function to generate the error lazily
+    err = typeof err === "function" ? err() : err;
+    if (err instanceof Error) {
       throw err;
     } else if (typeof err === "string" || typeof err === "undefined") {
-      throw new AssertionError(errValue);
+      throw new AssertionError(err);
     } else {
       throw new Error("Expected err to be an Err, string, undefined or a function returning either.");
     }
