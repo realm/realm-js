@@ -844,60 +844,50 @@ describe("Objectstest", () => {
 
     it("supports link type", function (this: Mocha.Context & RealmContext) {
       this.realm.write(() => {
-        this.realm.create("PrimaryInt", { pk: 1, value: 2 });
-        this.realm.create("PrimaryInt", { pk: 2, value: 4 });
-        this.realm.create("PrimaryOptionalInt", { pk: 1, value: 2 });
-        this.realm.create("PrimaryOptionalInt", { pk: 2, value: 4 });
-        this.realm.create("PrimaryOptionalInt", { pk: null, value: 6 });
-        this.realm.create("PrimaryString", { pk: "a", value: 2 });
-        this.realm.create("PrimaryString", { pk: "b", value: 4 });
-        this.realm.create("PrimaryString", { pk: null, value: 6 });
-
         const obj = this.realm.create<ILink>("Links", {});
 
-        //@ts-expect-error private method
-        obj._setLink("intLink", 3);
         expect(obj.intLink).equals(null);
-        //@ts-expect-error private method
-        obj._setLink("intLink", 1);
+        obj.intLink = this.realm.create("PrimaryInt", { pk: 1, value: 2 });
         expect(obj.intLink.value).equals(2);
-        //@ts-expect-error private method
-        obj._setLink("intLink", 2);
+        obj.intLink = this.realm.create("PrimaryInt", { pk: 2, value: 4 });
         expect(obj.intLink.value).equals(4);
-        //@ts-expect-error private method
-        obj._setLink("intLink", 3);
+        // TODO: Investigate if we could ensure that the type of object links are always nullable
+        // @ts-expect-error Object links are always nullable
+        obj.intLink = null;
         expect(obj.intLink).equals(null);
 
-        //@ts-expect-error private method
-        obj._setLink("optIntLink", 3);
+        // TODO: Investigate if we could ensure that the type of object links are always nullable
+        // @ts-expect-error Object links are always nullable
+        obj.optIntLink = null;
         expect(obj.optIntLink).equals(null);
-        //@ts-expect-error private method
-        obj._setLink("optIntLink", 1);
+        obj.optIntLink = this.realm.create("PrimaryOptionalInt", { pk: 1, value: 2 });
         expect(obj.optIntLink.value).equals(2);
-        //@ts-expect-error private method
-        obj._setLink("optIntLink", 2);
+        obj.optIntLink = this.realm.create("PrimaryOptionalInt", { pk: 2, value: 4 });
         expect(obj.optIntLink.value).equals(4);
-        //@ts-expect-error private method
-        obj._setLink("optIntLink", null);
+        // TODO: Investigate if we can still pass "null" to optional int properties
+        // @ts-expect-error Passing in null was supported in the previous SDK
+        obj.optIntLink = this.realm.create("PrimaryOptionalInt", { pk: null, value: 6 });
         expect(obj.optIntLink.value).equals(6);
-        //@ts-expect-error private method
-        obj._setLink("optIntLink", 3);
+        // TODO: Investigate if we could ensure that the type of object links are always nullable
+        // @ts-expect-error Object links are always nullable
+        obj.optIntLink = null;
         expect(obj.optIntLink).equals(null);
 
-        //@ts-expect-error private method
-        obj._setLink("stringLink", "c");
+        // TODO: Investigate if we could ensure that the type of object links are always nullable
+        // @ts-expect-error Object links are always nullable
+        obj.stringLink = null;
         expect(obj.stringLink).equals(null);
-        //@ts-expect-error private method
-        obj._setLink("stringLink", "a");
+        obj.stringLink = this.realm.create("PrimaryString", { pk: "a", value: 2 });
         expect(obj.stringLink.value).equals(2);
-        //@ts-expect-error private method
-        obj._setLink("stringLink", "b");
+        obj.stringLink = this.realm.create("PrimaryString", { pk: "b", value: 4 });
         expect(obj.stringLink.value).equals(4);
-        //@ts-expect-error private method
-        obj._setLink("stringLink", null);
+        // TODO: Investigate if we can still pass "null" to optional string properties
+        // @ts-expect-error Passing in null was supported in the previous SDK
+        obj.stringLink = this.realm.create("PrimaryString", { pk: null, value: 6 });
         expect(obj.stringLink.value).equals(6);
-        //@ts-expect-error private method
-        obj._setLink("stringLink", "c");
+        // TODO: Investigate if we could ensure that the type of object links are always nullable
+        // @ts-expect-error Object links are always nullable
+        obj.stringLink = null;
         expect(obj.stringLink).equals(null);
       });
     });
