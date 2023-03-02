@@ -184,6 +184,26 @@ describe("normalizePropertySchema", () => {
       },
       { isPrimaryKey: true },
     );
+
+    itNormalizes(
+      "string?",
+      {
+        type: "string",
+        indexed: true,
+        optional: true,
+      },
+      { isPrimaryKey: true },
+    );
+
+    itNormalizes(
+      "mixed?",
+      {
+        type: "mixed",
+        indexed: true,
+        optional: true,
+      },
+      { isPrimaryKey: true },
+    );
   });
 
   // ------------------------------------------------------------------------
@@ -248,14 +268,6 @@ describe("normalizePropertySchema", () => {
       "linkingObjects",
       "To define an inverse relationship, use { type: 'linkingObjects', objectType: 'MyObjectType', property: 'myObjectTypesProperty' }",
     );
-
-    // -------------------------
-    // Indexed & Primary Keys
-    // -------------------------
-
-    itThrowsWhenNormalizing("string?", "Optional properties cannot be used as a primary key.", { isPrimaryKey: true });
-
-    itThrowsWhenNormalizing("mixed", "Optional properties cannot be used as a primary key.", { isPrimaryKey: true });
   });
 
   // ------------------------------------------------------------------------
@@ -687,6 +699,44 @@ describe("normalizePropertySchema", () => {
       },
       { isPrimaryKey: false },
     );
+
+    itNormalizes(
+      {
+        type: "string",
+        optional: true,
+      },
+      {
+        type: "string",
+        indexed: true,
+        optional: true,
+      },
+      { isPrimaryKey: true },
+    );
+
+    itNormalizes(
+      {
+        type: "mixed",
+      },
+      {
+        type: "mixed",
+        indexed: true,
+        optional: true,
+      },
+      { isPrimaryKey: true },
+    );
+
+    itNormalizes(
+      {
+        type: "mixed",
+        optional: true,
+      },
+      {
+        type: "mixed",
+        indexed: true,
+        optional: true,
+      },
+      { isPrimaryKey: true },
+    );
   });
 
   // ------------------------------------------------------------------------
@@ -696,6 +746,7 @@ describe("normalizePropertySchema", () => {
   describe("using invalid object notation", () => {
     itThrowsWhenNormalizing(
       {
+        // @ts-expect-error Passing in the wrong type
         type: "",
       },
       "'type' must be specified",
@@ -740,6 +791,7 @@ describe("normalizePropertySchema", () => {
 
     itThrowsWhenNormalizing(
       {
+        // @ts-expect-error Passing in the wrong type
         type: "Person",
       },
       "If you meant to define a relationship, use { type: 'object', objectType: 'Person' } or { type: 'linkingObjects', objectType: 'Person', property: 'The Person property' }",
@@ -862,6 +914,7 @@ describe("normalizePropertySchema", () => {
 
     itThrowsWhenNormalizing(
       {
+        // @ts-expect-error Passing in the wrong type
         type: "int?",
       },
       "Cannot use shorthand '?' in 'type' or 'objectType' when defining property objects",
@@ -869,6 +922,7 @@ describe("normalizePropertySchema", () => {
 
     itThrowsWhenNormalizing(
       {
+        // @ts-expect-error Passing in the wrong type
         type: "int?[]",
       },
       "Cannot use shorthand '[]' and '?' in 'type' or 'objectType' when defining property objects",
@@ -901,23 +955,6 @@ describe("normalizePropertySchema", () => {
     // -------------------------
     // Indexed & Primary Keys
     // -------------------------
-
-    itThrowsWhenNormalizing(
-      {
-        type: "string",
-        optional: true,
-      },
-      "Optional properties cannot be used as a primary key.",
-      { isPrimaryKey: true },
-    );
-
-    itThrowsWhenNormalizing(
-      {
-        type: "mixed",
-      },
-      "Optional properties cannot be used as a primary key.",
-      { isPrimaryKey: true },
-    );
 
     itThrowsWhenNormalizing(
       {
