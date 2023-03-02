@@ -18,6 +18,7 @@
 
 import {
   AggregatePipelineStage,
+  AnyRealmObject,
   ApiKey,
   ApiKeyAuth,
   App,
@@ -786,13 +787,17 @@ export class Realm {
     values: Partial<T> | Partial<RealmInsertionModel<T>>,
     mode: UpdateMode.All | UpdateMode.Modified | boolean,
   ): RealmObject<T> & T;
-  create<T extends RealmObject>(type: Constructor<T>, values: RealmInsertionModel<T>, mode?: UpdateMode.Never): T;
-  create<T extends RealmObject>(
+  create<T extends AnyRealmObject = RealmObject & DefaultObject>(
+    type: Constructor<T>,
+    values: RealmInsertionModel<T>,
+    mode?: UpdateMode.Never,
+  ): T;
+  create<T extends AnyRealmObject = RealmObject & DefaultObject>(
     type: Constructor<T>,
     values: Partial<T> | Partial<RealmInsertionModel<T>>,
     mode: UpdateMode.All | UpdateMode.Modified | boolean,
   ): T;
-  create<T extends RealmObject>(
+  create<T extends AnyRealmObject = RealmObject & DefaultObject>(
     type: string | Constructor<T>,
     values: DefaultObject,
     mode: UpdateMode | boolean = UpdateMode.Never,
@@ -889,11 +894,11 @@ export class Realm {
    * @since 0.14.0
    */
   objectForPrimaryKey<T = DefaultObject>(type: string, primaryKey: T[keyof T]): (RealmObject<T> & T) | null;
-  objectForPrimaryKey<T extends RealmObject = RealmObject & DefaultObject>(
+  objectForPrimaryKey<T extends AnyRealmObject = RealmObject & DefaultObject>(
     type: Constructor<T>,
     primaryKey: T[keyof T],
   ): T | null;
-  objectForPrimaryKey<T extends RealmObject>(type: string | Constructor<T>, primaryKey: unknown): T | null {
+  objectForPrimaryKey<T extends AnyRealmObject>(type: string | Constructor<T>, primaryKey: unknown): T | null {
     // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1240-L1258
     const { objectSchema, properties, wrapObject } = this.classes.getHelpers(type);
     if (!objectSchema.primaryKey) {
@@ -962,8 +967,8 @@ export class Realm {
    * @returns Results that will live-update as objects are created, modified, and destroyed.
    */
   objects<T = DefaultObject>(type: string): Results<RealmObject<T> & T>;
-  objects<T extends RealmObject = RealmObject & DefaultObject>(type: Constructor<T>): Results<T>;
-  objects<T extends RealmObject>(type: string | Constructor<T>): Results<T> {
+  objects<T extends AnyRealmObject = RealmObject & DefaultObject>(type: Constructor<T>): Results<T>;
+  objects<T extends AnyRealmObject>(type: string | Constructor<T>): Results<T> {
     const { objectSchema, wrapObject } = this.classes.getHelpers(type);
     if (isEmbedded(objectSchema)) {
       throw new Error("You cannot query an embedded object.");
