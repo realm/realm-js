@@ -5,4 +5,4 @@ includeBuild('../../../../node_modules/react-native-gradle-plugin')
 
 // Manually linking the Realm package to the root project
 include ':realm'
-project(':realm').projectDir = new File(settingsDir, '../../../../react-native/android')
+project(':realm').projectDir = new File(settingsDir, '../../../../packages/realm/react-native/android')
