@@ -34,6 +34,7 @@ afterEach(() => {
 
 import "./utils/import-app.test.ts";
 import "./utils/chai-plugin.test.ts";
+import "./mocha-internals.test.ts";
 
 import "./tests";
 import "./performance-tests";

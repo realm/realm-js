@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { BSON } from "realm";
+import { Realm, BSON } from "realm";
 import { expect } from "chai";
 import { importAppBefore } from "../../hooks";
 import { getRegisteredEmailPassCredentials } from "../../utils/credentials";
@@ -84,7 +84,8 @@ describe.skip("Realm conversions", async () => {
         sync = {
           user: await context.app.logIn(credentials),
           partitionValue: "foo",
-          _sessionStopPolicy: "immediately" as Realm.SessionStopPolicy, // Make it safe to delete files after realm.close()
+          // @ts-expect-error This is an internal API
+          _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
         };
       }
 
