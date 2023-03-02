@@ -16,7 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { closeRealm } from "../utils/close-realm";
+import Realm from "realm";
+
 import { openRealm, OpenRealmConfiguration } from "../utils/open-realm";
 
 /**
@@ -35,9 +36,32 @@ export function openRealmHook(config: OpenRealmConfiguration = {}) {
     if (this.realm) {
       throw new Error("Unexpected realm on context, use only one openRealmBefore per test");
     } else {
-      const result = await openRealm(config, this.user);
-      this.realm = result.realm;
-      this.config = result.config;
+      this.closeRealm = async () => {
+        console.warn("🤷 Skipped closing a Realm that failed to open");
+      };
+      const { realm, config: actualConfig } = await openRealm(config, this.user);
+      this.realm = realm;
+      this.closeRealm = async ({
+        clearTestState = true,
+        deleteFile = true,
+        reopen = false,
+      }: Partial<CloseRealmOptions>) => {
+        if (this.realm && !this.realm.isClosed) {
+          this.realm.close();
+        }
+        // Get rid of the Realm in any case
+        delete this.realm;
+        if (deleteFile) {
+          Realm.deleteFile(actualConfig);
+        }
+        if (clearTestState) {
+          Realm.clearTestState();
+        }
+        if (reopen) {
+          const { realm } = await openRealm(actualConfig, this.user);
+          this.realm = realm;
+        }
+      };
     }
   };
 }
@@ -47,14 +71,10 @@ export function openRealmHook(config: OpenRealmConfiguration = {}) {
  *
  * @param this Mocha `this` context
  */
-export function closeThisRealm(this: Partial<RealmContext> & Mocha.Context): void {
-  // If opening the Realm fails or times out
-  if (this.realm) {
-    closeRealm(this.realm);
-  }
-  // Get rid of the Realm in any case
-  delete this.realm;
-  delete this.config;
+export function closeThisRealm(this: RealmContext & Mocha.Context): void {
+  this.closeRealm({ clearTestState: true, deleteFile: true });
+  // Clearing the test state to ensure the sync session gets completely reset and nothing is cached between tests
+  Realm.clearTestState();
 }
 
 export function openRealmBeforeEach(config: OpenRealmConfiguration = {}): void {

@@ -73,8 +73,8 @@ export function createSyncConfig(partialConfig: SyncedConfiguration = {}, user: 
   const { path, nonce } = getRandomPathAndNonce();
 
   return {
-    ...partialConfig,
     path,
+    ...partialConfig,
     sync: {
       user: user,
       ...(partialConfig.sync?.flexible ? { flexible: true } : { partitionValue: nonce }),
@@ -87,7 +87,7 @@ export function createSyncConfig(partialConfig: SyncedConfiguration = {}, user: 
 export function createLocalConfig(partialConfig: LocalConfiguration = {}): Configuration {
   const path = getRandomPathAndNonce().path;
 
-  return { ...partialConfig, path };
+  return { path, ...partialConfig };
 }
 
 //TODO When bindgen is rebased on master, it could be worth moving this method to /src/utils/generators.ts that deals with generating random values

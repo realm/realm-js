@@ -50,19 +50,3 @@ export function closeRealm(realm: Realm, deleteRealmFile = true, clearTestState 
     Realm.clearTestState();
   }
 }
-
-/**
- * Close a Realm instance then re-open it. By default this will delete the Realm file in
- * between, but you can specify that we should reopen the same file without deleting.
- *
- * @param realm Realm instance
- * @param config Realm config
- * @param clearRealm If false, do not clear the Realm (delete file and clear test state) before
- * reopening. This will result in the same Realm file being reopened, as the nonce is stored on
- * the config. Useful for testing if something has been persisted between sessions. Defaults to true.
- * @returns New re-opened Realm instance
- */
-export function closeAndReopenRealm(realm: Realm, config: Realm.Configuration, clearRealm = true): Promise<Realm> {
-  closeRealm(realm, clearRealm, clearRealm);
-  return Realm.open(config);
-}
