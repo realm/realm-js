@@ -797,7 +797,7 @@ export class Realm {
     values: Partial<T> | Partial<RealmInsertionModel<T>>,
     mode: UpdateMode.All | UpdateMode.Modified | boolean,
   ): T;
-  create<T extends AnyRealmObject = RealmObject & DefaultObject>(
+  create<T extends AnyRealmObject>(
     type: string | Constructor<T>,
     values: DefaultObject,
     mode: UpdateMode | boolean = UpdateMode.Never,
