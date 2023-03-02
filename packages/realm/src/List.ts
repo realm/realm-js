@@ -99,6 +99,10 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     return this.internal.size;
   }
 
+  set length(value: number) {
+    throw new Error("Cannot assign to read only property 'length'");
+  }
+
   /**
    * Remove the **last** value from the list and return it.
    * @throws {@link AssertionError} If not inside a write transaction.

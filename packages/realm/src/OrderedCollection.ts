@@ -75,11 +75,12 @@ const PROXY_HANDLER: ProxyHandler<OrderedCollection> = {
       const index = Number.parseInt(prop, 10);
       // TODO: Consider catching an error from access out of bounds, instead of checking the length, to optimize for the hot path
       // TODO: Do we expect an upper bound check on the index when setting?
-      if (!Number.isNaN(index) && index >= 0) {
+      if (Number.isInteger(index)) {
+        if (index < 0) {
+          throw new Error(`Index ${index} cannot be less than zero.`);
+        }
         target.set(index, value);
         return true;
-      } else if (index < 0) {
-        throw new Error(`Index ${index} cannot be less than zero.`);
       }
     }
     return Reflect.set(target, prop, value, receiver);
@@ -244,6 +245,10 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
 
   get length(): number {
     return this.results.size();
+  }
+
+  set length(value: number) {
+    throw new Error("Cannot assign to read only property 'length'");
   }
 
   get type(): PropertyType {
