@@ -1,6 +1,12 @@
 ## vNext (TBD)
 
 ### Enhancements
+* Add sync log configuration to AppProvider ([#5517](https://github.com/realm/realm-js/issue/5517))
+  Usage example:
+	```tsx
+	// logger includes a default that prints level and message
+	<AppProvider id={appId} logLevel={'trace'} logger={(level, message) => console.log(`[${level}]: ${message}`)}>
+	```
 * Create a default context so the `RealmProvider`, `useQuery`, `useRealm`, and `useObject` can be directly imported from `@realm/react` ([#5292](https://github.com/realm/realm-js/issue/5292))
   Usage example:
 ```tsx
