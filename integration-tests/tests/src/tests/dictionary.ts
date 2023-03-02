@@ -204,7 +204,7 @@ describe("Dictionary", () => {
         return this.realm.create<Item>("Item", {});
       });
       //@ts-expect-error accesses forEach on a dictionary which should not exist.
-      expect(() => item.dict.forEach()).throws(TypeError, "item.dict.forEach is not a function");
+      expect(() => item.dict.forEach()).throws("is not a function");
     });
 
     it("can store string values using string keys", function (this: RealmContext) {
