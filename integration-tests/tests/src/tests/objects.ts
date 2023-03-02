@@ -973,7 +973,7 @@ describe("Objectstest", () => {
       // property that does not exist
       expect(() => {
         obj.getPropertyType("foo");
-      }).throws("No such property: foo");
+      }).throws("Property 'foo' does not exist on 'AllTypesObject' objects");
     });
   });
 
