@@ -20,6 +20,7 @@ import Realm from "realm";
 import { useEffect, useReducer, useMemo, useRef } from "react";
 import { createCachedCollection } from "./cachedCollection";
 import { symbols } from "@realm/common";
+import { getObjects } from "./helpers";
 
 /**
  * Generates the `useQuery` hook from a given `useRealm` hook.
@@ -28,9 +29,9 @@ import { symbols } from "@realm/common";
  * @returns useObject - Hook that is used to gain access to a {@link Realm.Collection}
  */
 export function createUseQuery(useRealm: () => Realm) {
-  return function useQuery<T>(
-    type: string | ({ new (...args: any): T } & Realm.ObjectClass),
-  ): Realm.Results<T & Realm.Object> {
+  function useQuery<T>(type: string): Realm.Results<T & Realm.Object<T>>;
+  function useQuery<T extends Realm.Object>(type: { new (...args: any): T }): Realm.Results<T>;
+  function useQuery<T extends Realm.Object>(type: string | { new (...args: any): T }): Realm.Results<T> {
     const realm = useRealm();
 
     // Create a forceRerender function for the cachedCollection to use as its updateCallback, so that
@@ -41,8 +42,8 @@ export function createUseQuery(useRealm: () => Realm) {
 
     // Wrap the cachedObject in useMemo, so we only replace it with a new instance if `primaryKey` or `type` change
     const { collection, tearDown } = useMemo(() => {
-      return createCachedCollection({
-        collection: realm.objects(type),
+      return createCachedCollection<T>({
+        collection: getObjects(realm, type),
         realm,
         updateCallback: forceRerender,
         updatedRef,
@@ -58,14 +59,13 @@ export function createUseQuery(useRealm: () => Realm) {
     // Also we are ensuring the type returned is Realm.Results, as this is known in this context
     if (updatedRef.current) {
       updatedRef.current = false;
-      collectionRef.current = new Proxy(collection as Realm.Results<T & Realm.Object>, {});
-      // Store the original, unproxied result as a non-enumerable field with a symbol
+      collectionRef.current = new Proxy(collection as Realm.Results<T & Realm.Object>, {}); // Store the original, unproxied result as a non-enumerable field with a symbol
       // key on the proxy object, so that we can check for this and get the original results
       // when passing the result of `useQuery` into the subscription mutation methods
       // (see `lib/mutable-subscription-set.js` for more details)
       // TODO: We can remove this if `realm` becomes a peer dependency >= 12
       Object.defineProperty(collectionRef.current, symbols.PROXY_TARGET, {
-        value: realm.objects(type),
+        value: getObjects(realm, type),
         enumerable: false,
         configurable: false,
         writable: true,
@@ -73,6 +73,7 @@ export function createUseQuery(useRealm: () => Realm) {
     }
 
     // This will never not be defined, but the type system doesn't know that
-    return collectionRef.current as Realm.Results<T & Realm.Object>;
-  };
+    return collectionRef.current as Realm.Results<T>;
+  }
+  return useQuery;
 }
