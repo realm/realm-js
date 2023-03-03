@@ -268,11 +268,11 @@ export class User<
       serviceName,
     );
 
-    const { body, ok, status, statusText } = await network.fetch(request);
-    assert(ok, `Request failed: ${statusText} (${status})`);
-    assert(body, "Expected a body in the response");
+    const response = await network.fetch(request);
+    assert(response.ok, () => `Request failed: ${response.statusText} (${response.status})`);
+    assert(response.body, "Expected a body in the response");
 
-    return body;
+    return response.body;
   }
 
   /**
