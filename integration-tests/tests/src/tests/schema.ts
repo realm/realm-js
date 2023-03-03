@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { Realm } from "realm";
+import { BSON, Realm } from "realm";
 
 describe("Realm schema", () => {
   describe("Default property values", () => {
@@ -30,6 +30,32 @@ describe("Realm schema", () => {
         schema: [
           {
             name: "Test",
+            properties: {
+              dynamic: {
+                type: "int",
+                default: () => 42,
+              },
+            },
+          },
+        ],
+      });
+
+      const test = realm.write(() => {
+        return realm.create<Test>("Test", {});
+      });
+
+      expect(test.dynamic).to.equal(42);
+    });
+    it("can take a function as a default property value for a primary key", () => {
+      interface Test {
+        dynamic?: number;
+      }
+
+      const realm = new Realm({
+        schema: [
+          {
+            name: "Test",
+            primaryKey: "dynamic",
             properties: {
               dynamic: {
                 type: "int",

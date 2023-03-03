@@ -185,7 +185,11 @@ export class RealmObject<T = DefaultObject> {
     const table = binding.Helpers.getTable(realm.internal, tableKey);
     if (primaryKey) {
       const primaryKeyHelpers = properties.get(primaryKey);
-      const primaryKeyValue = values[primaryKey];
+      const defaultValue = primaryKeyHelpers.default;
+      let primaryKeyValue = values[primaryKey];
+      if (!primaryKeyValue && typeof defaultValue !== "undefined") {
+        primaryKeyValue = typeof defaultValue === "function" ? defaultValue() : defaultValue;
+      }
       const pk = primaryKeyHelpers.toBinding(
         // Fallback to default value if the provided value is undefined or null
         typeof primaryKeyValue !== "undefined" && primaryKeyValue !== null
