@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { makeRequestBodyIterable } from "./IterableReadableStream";
+import { deriveStatusText } from "./status-text";
 import type {
   NetworkTransport,
   Request,
@@ -35,6 +36,29 @@ export class DefaultNetworkTransport implements NetworkTransport {
   public static DEFAULT_HEADERS = {
     "Content-Type": "application/json",
   };
+
+  private static createTimeoutSignal(timeoutMs: number | undefined) {
+    if (typeof timeoutMs === "number") {
+      const controller = new DefaultNetworkTransport.AbortController();
+      // Call abort after a specific number of milliseconds
+      const timeout = setTimeout(() => {
+        controller.abort();
+      }, timeoutMs);
+      return {
+        signal: controller.signal,
+        cancelTimeout: () => {
+          clearTimeout(timeout);
+        },
+      };
+    } else {
+      return {
+        signal: undefined,
+        cancelTimeout: () => {
+          /* No-op */
+        },
+      };
+    }
+  }
 
   constructor() {
     if (!DefaultNetworkTransport.fetch) {
@@ -68,7 +92,7 @@ export class DefaultNetworkTransport implements NetworkTransport {
 
   public async fetch<RequestBody = unknown>(request: Request<RequestBody>): Promise<FetchResponse> {
     const { timeoutMs, url, ...rest } = request;
-    const { signal, cancelTimeout } = this.createTimeoutSignal(timeoutMs);
+    const { signal, cancelTimeout } = DefaultNetworkTransport.createTimeoutSignal(timeoutMs);
     try {
       // Awaiting the response to cancel timeout on errors
       const response = await DefaultNetworkTransport.fetch(url, {
@@ -76,34 +100,17 @@ export class DefaultNetworkTransport implements NetworkTransport {
         signal, // Used to signal timeouts
         ...rest,
       });
+      // A bug in the React Native fetch polyfill leaves the statusText empty
+      if (response.statusText === "") {
+        const statusText = deriveStatusText(response.status);
+        // @ts-expect-error Assigning to a read-only property
+        response.statusText = statusText;
+      }
       // Wraps the body of the request in an iterable interface
       return makeRequestBodyIterable(response);
     } finally {
       // Whatever happens, cancel any timeout
       cancelTimeout();
-    }
-  }
-
-  private createTimeoutSignal(timeoutMs: number | undefined) {
-    if (typeof timeoutMs === "number") {
-      const controller = new DefaultNetworkTransport.AbortController();
-      // Call abort after a specific number of milliseconds
-      const timeout = setTimeout(() => {
-        controller.abort();
-      }, timeoutMs);
-      return {
-        signal: controller.signal,
-        cancelTimeout: () => {
-          clearTimeout(timeout);
-        },
-      };
-    } else {
-      return {
-        signal: undefined,
-        cancelTimeout: () => {
-          /* No-op */
-        },
-      };
     }
   }
 }
