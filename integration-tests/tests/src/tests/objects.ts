@@ -153,9 +153,9 @@ const DefaultValuesSchema = {
     stringCol: { type: "string", default: "defaultString" },
     dateCol: { type: "date", default: new Date(1.111) },
     dataCol: { type: "data", default: new ArrayBuffer(1) },
-    objectCol: { type: "TestObject", default: { doubleCol: 1 } },
-    nullObjectCol: { type: "TestObject", default: null },
-    arrayCol: { type: "TestObject[]", default: [{ doubleCol: 2 }] },
+    objectCol: { type: "object", objectType: "TestObject", default: { doubleCol: 1 } },
+    nullObjectCol: { type: "object", objectType: "TestObject", default: null },
+    arrayCol: { type: "list", objectType: "TestObject", default: [{ doubleCol: 2 }] },
   },
 };
 
