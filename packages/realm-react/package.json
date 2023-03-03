@@ -43,13 +43,13 @@
     "react": "18.1.0",
     "react-native": "^0.70.1",
     "react-test-renderer": "18.1.0",
-    "realm": "^11.0.0",
+    "realm": "12.0.0-rc.0",
     "rollup-plugin-dts": "^5.0.0",
     "ts-jest": "^29.0.5"
   },
   "peerDependencies": {
     "react": ">=17.0.2",
-    "realm": "^11.0.0-rc || ^11.0.0"
+    "realm": "^12.0.0 || ^12.0.0-rc || ^11.0.0-rc || ^11.0.0"
   },
   "optionalDependencies": {
     "@babel/runtime": ">=7",
