@@ -81,13 +81,6 @@ if (NOT MSVC)
     endif()
 endif()
 
-if(APPLE)
-    if(NOT DEFINED CMAKE_JS_VERSION)
-        # https://developer.apple.com/forums/thread/716965
-        add_cxx_flag_if_supported(-fno-objc-msgsend-selector-stubs)
-    endif()
-endif()
-
 option(REALM_JS_BUILD_CORE_FROM_SOURCE "Build Realm Core from source, as opposed to downloading prebuilt binaries" ON)
 if(REALM_JS_BUILD_CORE_FROM_SOURCE)
     set(REALM_BUILD_LIB_ONLY ON)
