@@ -16,8 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import Realm from "realm";
-export function isString(value: unknown): value is string {
-  return typeof value === "string";
+
+export function getObjectForPrimaryKey<T extends Realm.Object>(
+  realm: Realm,
+  type: string | { new (...args: any): T },
+  primaryKey: T[keyof T],
+) {
+  return typeof type === "string"
+    ? realm.objectForPrimaryKey(type, primaryKey)
+    : realm.objectForPrimaryKey(type, primaryKey);
+}
+
+export function getObjects<T extends Realm.Object>(
+  realm: Realm,
+  type: string | { new (...args: any): T },
+): Realm.Results<T> {
+  return (typeof type === "string" ? realm.objects(type) : realm.objects(type)) as Realm.Results<T>;
 }
 
 export type CollectionCallback = Parameters<typeof Realm.Results.prototype.addListener>[0];
