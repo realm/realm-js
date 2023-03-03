@@ -17,60 +17,47 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { BSON, Realm } from "realm";
+import { openRealmBefore } from "../hooks";
+
+interface Test {
+  primary?: number;
+  value?: number;
+}
 
 describe("Realm schema", () => {
   describe("Default property values", () => {
-    it("can take a function as a default property value", () => {
-      interface Test {
-        dynamic?: number;
-      }
-
-      const realm = new Realm({
-        schema: [
-          {
-            name: "Test",
-            properties: {
-              dynamic: {
-                type: "int",
-                default: () => 42,
-              },
+    openRealmBefore({
+      schema: [
+        {
+          name: "Test",
+          primaryKey: "primary",
+          properties: {
+            primary: {
+              type: "int",
+              default: () => 42,
+            },
+            value: {
+              type: "int",
+              default: () => 13,
             },
           },
-        ],
-      });
-
-      const test = realm.write(() => {
-        return realm.create<Test>("Test", {});
-      });
-
-      expect(test.dynamic).to.equal(42);
+        },
+      ],
     });
-    it("can take a function as a default property value for a primary key", () => {
-      interface Test {
-        dynamic?: number;
-      }
-
-      const realm = new Realm({
-        schema: [
-          {
-            name: "Test",
-            primaryKey: "dynamic",
-            properties: {
-              dynamic: {
-                type: "int",
-                default: () => 42,
-              },
-            },
-          },
-        ],
-      });
-
+    it("can take a function as a default property value", function (this: RealmContext) {
+      const { realm } = this;
       const test = realm.write(() => {
         return realm.create<Test>("Test", {});
       });
 
-      expect(test.dynamic).to.equal(42);
+      expect(test.primary).to.equal(42);
+      expect(test.value).to.equal(13);
+
+      const staticTest = realm.write(() => {
+        return realm.create<Test>("Test", { primary: 0, value: 0 });
+      });
+      expect(staticTest.primary).to.equal(0);
+      expect(staticTest.value).to.equal(0);
     });
   });
 });

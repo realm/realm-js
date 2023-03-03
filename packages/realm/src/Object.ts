@@ -187,7 +187,7 @@ export class RealmObject<T = DefaultObject> {
       const primaryKeyHelpers = properties.get(primaryKey);
       const defaultValue = primaryKeyHelpers.default;
       let primaryKeyValue = values[primaryKey];
-      if (!primaryKeyValue && typeof defaultValue !== "undefined") {
+      if (primaryKeyValue === undefined && typeof defaultValue !== "undefined") {
         primaryKeyValue = typeof defaultValue === "function" ? defaultValue() : defaultValue;
       }
       const pk = primaryKeyHelpers.toBinding(
