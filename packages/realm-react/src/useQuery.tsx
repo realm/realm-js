@@ -20,7 +20,7 @@ import Realm from "realm";
 import { useEffect, useReducer, useMemo, useRef } from "react";
 import { createCachedCollection } from "./cachedCollection";
 import { symbols } from "@realm/common";
-import { isString } from "./helper";
+import { getObjects } from "./helpers";
 
 /**
  * Generates the `useQuery` hook from a given `useRealm` hook.
@@ -43,7 +43,7 @@ export function createUseQuery(useRealm: () => Realm) {
     // Wrap the cachedObject in useMemo, so we only replace it with a new instance if `primaryKey` or `type` change
     const { collection, tearDown } = useMemo(() => {
       return createCachedCollection<T>({
-        collection: (isString(type) ? realm.objects(type) : realm.objects(type)) as Realm.Results<T>,
+        collection: getObjects(realm, type),
         realm,
         updateCallback: forceRerender,
         updatedRef,
@@ -65,7 +65,7 @@ export function createUseQuery(useRealm: () => Realm) {
       // (see `lib/mutable-subscription-set.js` for more details)
       // TODO: We can remove this if `realm` becomes a peer dependency >= 12
       Object.defineProperty(collectionRef.current, symbols.PROXY_TARGET, {
-        value: (isString(type) ? realm.objects(type) : realm.objects(type)) as Realm.Results<T>,
+        value: getObjects(realm, type),
         enumerable: false,
         configurable: false,
         writable: true,

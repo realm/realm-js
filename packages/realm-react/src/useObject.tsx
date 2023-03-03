@@ -18,7 +18,7 @@
 import Realm from "realm";
 import { useEffect, useReducer, useMemo, useRef } from "react";
 import { CachedObject, createCachedObject } from "./cachedObject";
-import { CollectionCallback, isString } from "./helper";
+import { CollectionCallback, getObjectForPrimaryKey, getObjects } from "./helpers";
 
 /**
  * Generates the `useObject` hook from a given `useRealm` hook.
@@ -40,14 +40,12 @@ export function createUseObject(useRealm: () => Realm) {
     const [, forceRerender] = useReducer((x) => x + 1, 0);
 
     // Get the original object from the realm, so we can check if it exists
-    const originalObject = isString(type)
-      ? realm.objectForPrimaryKey(type, primaryKey)
-      : realm.objectForPrimaryKey(type, primaryKey);
+    const originalObject = getObjectForPrimaryKey(realm, type, primaryKey);
 
     // Store the primaryKey as a ref, since when it is an objectId or UUID, it will be a new instance on every render
     const primaryKeyRef = useRef(primaryKey);
 
-    const collectionRef = useRef(isString(type) ? realm.objects(type) : realm.objects(type));
+    const collectionRef = useRef(getObjects(realm, type));
 
     const objectRef = useRef<T & Realm.Object<T>>();
     const updatedRef = useRef(true);

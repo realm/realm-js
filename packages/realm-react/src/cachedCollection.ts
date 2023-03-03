@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import Realm from "realm";
-import { CollectionCallback } from "./helper";
+import { CollectionCallback } from "./helpers";
 
 const numericRegEx = /^-?\d+$/;
 
