@@ -16,6 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+/**
+ * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+ */
 const HTTP_STATUS_TEXTS: Record<number, string | undefined> = {
   100: "Continue",
   101: "Switching Protocols",
