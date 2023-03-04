@@ -5,7 +5,8 @@ env:
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: []
+    workflows:
+      - Disabled for now
       # - Pull request build and test
     types:
       - in_progress
