@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Start Ngrok
-        run: docker run --detach --network host --env NGROK_AUTHTOKEN ngrok/ngrok http --subdomain ${{ env.NGROK_SUBDOMAIN }} 8080
+        run: docker run --detach --network host --env NGROK_AUTHTOKEN ngrok/ngrok http --subdomain ${{ env.NGROK_SUBDOMAIN }} 9090
         env:
           NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
       - name: Preparing server entrypoint
