@@ -22,20 +22,20 @@ jobs:
       fail-fast: false
       matrix:
         variant:
-          - { os: linux, runner: ubuntu-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true, container: "ghcr.io/${{ github.repository }}/linux-x64:main" }
-          - { os: linux, runner: ubuntu-latest, arch: arm, artifact-path: prebuilds, container: "ghcr.io/${{ github.repository }}/linux-arm:main" }
-          - { os: linux, runner: ubuntu-latest, arch: arm64, artifact-path: prebuilds, container: "ghcr.io/${{ github.repository }}/linux-arm:main" }
-          - { os: windows, runner: windows-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
-          - { os: windows, runner: windows-2019, arch: ia32, artifact-path: prebuilds }
-          - { os: android, runner: ubuntu-latest, arch: x86_64, artifact-path: react-native/android/src/main/jniLibs }
-          - { os: android, runner: ubuntu-latest, arch: armeabi-v7a, artifact-path: react-native/android/src/main/jniLibs }
-          - { os: android, runner: ubuntu-latest, arch: arm64-v8a, artifact-path: react-native/android/src/main/jniLibs }
-          - { os: android, runner: ubuntu-latest, arch: x86, artifact-path: react-native/android/src/main/jniLibs }
-          - { os: darwin, runner: macos-latest, arch: x64, artifact-path: prebuilds, test-node: true, test-electron: true }
-          - { os: darwin, runner: macos-latest, arch: arm64, artifact-path: prebuilds, test-node: true, test-electron: true }
-          - { os: ios, runner: macos-latest, arch: simulator, artifact-path: react-native/ios/realm-js-ios.xcframework }
-          - { os: ios, runner: macos-latest, arch: catalyst, artifact-path: react-native/ios/realm-js-ios.xcframework }
-          - { os: ios, runner: macos-latest, arch: ios, artifact-path: react-native/ios/realm-js-ios.xcframework }
+          - { os: linux, runner: ubuntu-latest, arch: x64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true, container: "ghcr.io/${{ github.repository }}/linux-x64:main" }
+          - { os: linux, runner: ubuntu-latest, arch: arm, artifact-path: packages/realm/prebuilds, container: "ghcr.io/${{ github.repository }}/linux-arm:main" }
+          - { os: linux, runner: ubuntu-latest, arch: arm64, artifact-path: packages/realm/prebuilds, container: "ghcr.io/${{ github.repository }}/linux-arm:main" }
+          - { os: windows, runner: windows-latest, arch: x64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
+          - { os: windows, runner: windows-2019, arch: ia32, artifact-path: packages/realm/prebuilds }
+          - { os: android, runner: ubuntu-latest, arch: x86_64, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
+          - { os: android, runner: ubuntu-latest, arch: armeabi-v7a, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
+          - { os: android, runner: ubuntu-latest, arch: arm64-v8a, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
+          - { os: android, runner: ubuntu-latest, arch: x86, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
+          - { os: darwin, runner: macos-latest, arch: x64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
+          - { os: darwin, runner: macos-latest, arch: arm64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
+          - { os: ios, runner: macos-latest, arch: simulator, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
+          - { os: ios, runner: macos-latest, arch: catalyst, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
+          - { os: ios, runner: macos-latest, arch: ios, artifact-path: packages/realm/react-native/ios/realm-js-ios.xcframework }
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -146,20 +146,20 @@ jobs:
       # build the c++ library for standard targets
       - name: Build node
         if: ${{ (matrix.variant.os != 'ios') && (matrix.variant.os != 'android') }}
-        run: npm run prebuild:node -- --arch=${{matrix.variant.arch}}
+        run: npm run build:node:prebuild --workspace realm -- --arch=${{matrix.variant.arch}}
 
       # build the c++ library for IOS
       # the Info.plist needs to be regenerated with all libraries in place
       - name: Build iOS
         if: ${{ (matrix.variant.os == 'ios') }}
         run: |
-          npm run prebuild:ios -- ${{matrix.variant.arch}}
+          npm run build:ios --workspace realm -- ${{matrix.variant.arch}}
           rm -vf ${{ matrix.variant.artifact-path }}/Info.plist
 
       # build the c++ library for Android
       - name: Build Android
         if: ${{ (matrix.variant.os == 'android') }}
-        run: npm run prebuild:android -- --arch=${{matrix.variant.arch}}
+        run: npm run build:android --workspace realm -- --arch=${{matrix.variant.arch}}
 
       # Due to a limitation in upload-artifact a redundant file is needed to force
       # preserving paths (https://github.com/actions/upload-artifact/issues/174)
@@ -187,7 +187,7 @@ jobs:
           name: realm-js-prebuilds
 
       - name: Regenerate Info.plist
-        run: scripts/regen-info-plist.sh react-native/ios/realm-js-ios.xcframework
+        run: scripts/regen-info-plist.sh packages/realm/react-native/ios/realm-js-ios.xcframework
 
       # Due to a limitation in upload-artifact a redundant file is needed to force
       # preserving paths (https://github.com/actions/upload-artifact/issues/174)
@@ -197,7 +197,7 @@ jobs:
           name: realm-js-prebuilds
           path: |
             dependencies.list
-            react-native/ios/realm-js-ios.xcframework/Info.plist
+            packages/realm/react-native/ios/realm-js-ios.xcframework/Info.plist
 
   integration-tests:
     name: Integration tests (${{matrix.variant.target}}) for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
@@ -242,8 +242,8 @@ jobs:
       - name: Setup node version
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
-          cache: 'npm'
+          node-version: 16
+          cache: npm
           cache-dependency-path: '**/package-lock.json'
 
       - name: Get NPM cache directory
@@ -262,7 +262,6 @@ jobs:
 
       - name: Restore React Native cache
         if: ${{ matrix.variant.environment == 'react-native' }}
-        id: lerna-cache
         uses: actions/cache@v3
         with:
           path: '**/Pods'
@@ -311,18 +310,12 @@ jobs:
         if: ${{ matrix.variant.environment == 'node' || matrix.variant.environment == 'electron' }}
         run: npx prebuild-install --tag-prefix= -r napi
         env:
-          npm_config_realm_local_prebuilds: ${{github.workspace}}/prebuilds
-
-      - name: Bootstrap lerna sub-packages
-        run: npx lerna bootstrap --scope @realm/${{ matrix.variant.environment }}-tests --include-dependencies
+          npm_config_realm_local_prebuilds: ${{github.workspace}}/packages/realm/prebuilds
 
       - name: Install pods
         if: ${{ matrix.variant.environment == 'react-native' && matrix.variant.os == 'ios'}}
         working-directory: integration-tests/environments/${{ matrix.variant.environment }}
         run: npx pod-install
-
-      - name: Build tests
-        run: npm run build --prefix integration-tests/tests
 
       - name: Invoke the simulator (making subsequent "open -a Simulator" calls work)
         if: ${{ (matrix.variant.os == 'ios') }}
@@ -345,7 +338,7 @@ jobs:
         env:
           MOCHA_REMOTE_CONTEXT: ${{ steps.mocha-env.outputs.context }}
         timeout-minutes: 75
-        run: ${{ env.wrapper }} npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
+        run: npm run ${{ matrix.variant.target}} --prefix integration-tests/environments/${{ matrix.variant.environment }}
 
       - name: Setup Java Gradle cache for android test app
         if: ${{ (matrix.variant.os == 'android') }}
