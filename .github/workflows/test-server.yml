@@ -1,0 +1,38 @@
+name: Run test server
+env:
+  SERVER_TAG: latest
+  NGROK_SUBDOMAIN: realm-js-test-server-${{ github.event.workflow_run.id || github.run_id }}-${{ github.event.workflow_run.run_attempt || github.run_attempt }}
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: []
+      # - Pull request build and test
+    types:
+      - in_progress
+jobs:
+  server:
+    name: Run test server
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Start Ngrok
+        run: docker run --detach --network host --env NGROK_AUTHTOKEN ngrok/ngrok http --subdomain ${{ env.NGROK_SUBDOMAIN }} 8080
+        env:
+          NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
+      - name: Preparing server entrypoint
+        # Writes an entrypoint script, which will patch the test-config to use the right hostnames, before it starts the server
+        run: |
+          echo '#!/bin/bash' >> patch-and-run.sh
+          echo 'NGROK_HOSTNAME=${{ env.NGROK_SUBDOMAIN }}.ngrok.io' >> patch-and-run.sh
+          # Replace localhost:9090 with the Ngrok hostname, "http" with "https" and "ws" with "wss"
+          echo 'sed -i -e "s/http:\/\/localhost:9090/https:\/\/${NGROK_HOSTNAME}/g" -e "s/ws:\/\/localhost:9090/wss:\/\/${NGROK_HOSTNAME}/g" /stitch/test_config.json' >> patch-and-run.sh
+          echo 'cat /stitch/test_config.json' >> patch-and-run.sh
+          # Start the server
+          echo '/run.sh' >> patch-and-run.sh
+          chmod u+x patch-and-run.sh
+      - name: Start server
+        run: docker run --detach --publish 9090:9090 --volume `pwd`/patch-and-run.sh:/patch-and-run.sh --entrypoint /patch-and-run.sh ghcr.io/realm/ci/mongodb-realm-test-server:${{ env.SERVER_TAG }}
+      - name: Wait for triggering run to complete
+        run: gh run watch ${{ github.event.workflow_run.id }}
+        env:
+          GH_TOKEN: ${{ github.token }}
