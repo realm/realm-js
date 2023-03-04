@@ -31,9 +31,15 @@ jobs:
           # Start the server
           echo '/run.sh' >> patch-and-run.sh
           chmod u+x patch-and-run.sh
+      - name: Docker Login
+        uses: azure/docker-login@v1
+        with:
+          login-server: ghcr.io
+          username: realm-ci
+          password: ${{ secrets.REALM_CI_GITHUB_API_KEY }}
       - name: Start server
         run: docker run --detach --publish 9090:9090 --volume `pwd`/patch-and-run.sh:/patch-and-run.sh --entrypoint /patch-and-run.sh ghcr.io/realm/ci/mongodb-realm-test-server:${{ env.SERVER_TAG }}
       - name: Wait for triggering run to complete
-        run: gh run watch ${{ github.event.workflow_run.id }}
+        run: gh run watch ${{ github.event.workflow_run.id || github.run_id }}
         env:
           GH_TOKEN: ${{ github.token }}
