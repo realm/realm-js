@@ -1,11 +1,9 @@
 name: Install test (React Native)
 
 on:
-  # Any change to these files
   push:
     paths:
-      - install-tests/react-native/**
-      - .github/workflows/install-test-react-native.yml
+      - 'install-tests/react-native/**'
   # Every monday at 7:00 CET
   schedule:
     - cron: "0 6 * * 1"
