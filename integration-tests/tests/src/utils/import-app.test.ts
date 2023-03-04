@@ -18,16 +18,20 @@
 import { App } from "realm";
 import { expect } from "chai";
 
-import { importApp } from "./import-app";
+import { deleteApp, importApp } from "./import-app";
 
 describe.skipIf(environment.missingServer, "importApp utility", function () {
   this.slow(2000);
 
-  it("can import an app", async () => {
+  it("can import and delete an app", async () => {
     const { appId, baseUrl } = await importApp("simple");
-    const app = new App({ id: appId, baseUrl });
-    expect(app).instanceOf(App);
-    expect(app.id.startsWith("simple")).to.be.true;
+    try {
+      const app = new App({ id: appId, baseUrl });
+      expect(app).instanceOf(App);
+      expect(app.id.startsWith("simple")).to.be.true;
+    } finally {
+      await deleteApp(appId);
+    }
   }).timeout(2 * 60 * 1000); // This may take a long time when running against a real server
 
   it("throws on unexpected app names", async () => {
