@@ -1,9 +1,6 @@
 name: Install test (React Native)
 
 on:
-  push:
-    paths:
-      - 'install-tests/react-native/**'
   # Every monday at 7:00 CET
   schedule:
     - cron: "0 6 * * 1"
