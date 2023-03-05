@@ -5,7 +5,7 @@
 #include <type_traits>
 
 namespace realm::js {
-    extern std::function<void()> flush_ui_queue;
+extern std::function<void()> flush_ui_queue;
 }
 namespace realm::js::JSI {
 namespace {
@@ -152,7 +152,7 @@ public:
 
     auto operator()(auto&&... args) const
         // TODO replace with this once stdlib has concepts.
-        //requires std::invocable<Func, decltype(FWD(args))...>
+        // requires std::invocable<Func, decltype(FWD(args))...>
         requires std::is_invocable_v<Func, decltype(FWD(args))...>
     {
         return (*m_func)(FWD(args)...);
@@ -178,7 +178,7 @@ public:
 
     auto operator()(auto&&... args) const
         // TODO replace with this once stdlib has concepts.
-        //requires std::invocable<Func, decltype(FWD(args))...>
+        // requires std::invocable<Func, decltype(FWD(args))...>
         requires std::is_invocable_v<Func, decltype(FWD(args))...>
     {
         return m_func(FWD(args)...);

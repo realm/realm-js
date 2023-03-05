@@ -19,7 +19,6 @@ import { expect } from "chai";
 import { Credentials, User } from "realm";
 import { importAppBefore } from "../../hooks";
 
-
 //These tests are adopted from api-key-auth.test.ts in the realm-web-integration-tests directory.
 describe.skipIf(environment.missingServer, "api-key credentials", () => {
   importAppBefore("with-api-key");
