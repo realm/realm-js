@@ -4,11 +4,24 @@
   "private": true,
   "main": "src/index.ts",
   "scripts": {
-    "start": "mocha --file harness/node.ts src/**/*.test.ts --watch",
+    "start": "wireit",
     "lint": "eslint --ext .js,.ts .",
-    "build": "webpack --mode production",
-    "test": "ts-node harness/dev.ts",
-    "test:github": "ts-node harness/github.ts"
+    "test": "wireit",
+    "test:github": "wireit"
+  },
+  "wireit": {
+    "start": {
+      "command": "mocha --file harness/node.ts src/**/*.test.ts --watch",
+      "dependencies": ["../realm-web:build"]
+    },
+    "test": {
+      "command": "tsx harness/dev.ts",
+      "dependencies": ["../realm-web:build"]
+    },
+    "test:github": {
+      "command": "tsx harness/github.ts",
+      "dependencies": ["../realm-web:build"]
+    }
   },
   "dependencies": {
     "chai": "^4.3.6",

@@ -7,11 +7,21 @@
   "types": "dist/index.d.ts",
   "source": "src/index.tsx",
   "scripts": {
-    "build": "rollup -c",
-    "start": "rollup -c --watch",
+    "build": "wireit",
+    "start": "npm run build -- --watch",
     "test": "jest --forceExit",
-    "lint": "eslint --ext .tsx .",
-    "prepare": "rm -rf dist && npm run build"
+    "lint": "eslint --ext .tsx . && tsc --noEmit"
+  },
+  "wireit": {
+    "build": {
+      "command": "rollup --config",
+      "dependencies": [
+        "../realm:build",
+        "../realm-common:build"
+      ],
+      "files": ["rollup.config.mjs", "src/**/*.ts", "src/**/*.tsx"],
+      "output": ["dist"]
+    }
   },
   "dependencies": {
     "@realm/common": "^0.1.4",

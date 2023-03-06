@@ -11,11 +11,22 @@
     "./dist/bundle.d.ts": "./dist/bundle.dom.d.ts"
   },
   "scripts": {
-    "generate-types": "tsc --project tsconfig.types.json --declaration --emitDeclarationOnly --declarationDir types/generated",
-    "build": "npm run generate-types && rollup --config",
+    "build": "wireit",
     "lint": "eslint --ext .js,.ts .",
-    "test": "mocha 'src/**/*.test.ts'",
-    "prepare": "npm run build"
+    "test": "mocha 'src/**/*.test.ts'"
+  },
+  "wireit": {
+    "build": {
+      "command": "rollup --config",
+      "dependencies": ["generate-types"],
+      "files": ["rollup.config.mjs", "src/**/*.ts"],
+      "output": ["dist/**"]
+    },
+    "generate-types": {
+      "command": "tsc --project tsconfig.types.json --declaration --emitDeclarationOnly --declarationDir types/generated",
+      "files": ["src/**/*.ts"],
+      "output": ["types/generated/**/*.d.ts"]
+    }
   },
   "files": [
     "dist"

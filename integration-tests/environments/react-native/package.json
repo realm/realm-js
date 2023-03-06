@@ -3,19 +3,97 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "react-native start",
+    "start": "wireit",
+    "test": "wireit",
+    "test:android": "wireit",
+    "test:ios": "wireit",
+    "test:catalyst": "wireit",
+    "watch:ios": "wireit",
+    "watch:catalyst": "wireit",
+    "watch:android": "wireit",
+    "common": "wireit",
     "lint": "eslint .",
-    "test": "npm run test:android && npm run test:ios",
-    "test:ios": "PLATFORM=ios WATCH=false MODE=native npm run common",
-    "test:catalyst": "PLATFORM=catalyst WATCH=false MODE=native npm run common",
-    "test:android": "PLATFORM=android WATCH=false MODE=native npm run common",
-    "watch:ios": "PLATFORM=ios WATCH=true MODE=native npm run common",
-    "watch:catalyst": "PLATFORM=catalyst WATCH=true MODE=native npm run common",
-    "watch:android": "PLATFORM=android WATCH=true MODE=native npm run common",
-    "common": "mocha-remote --template @realm/mocha-reporter --context mode=$MODE,appImporterIsRemote,$MOCHA_REMOTE_CONTEXT --watch $WATCH -- concurrently --kill-others-on-fail npm:metro npm:runner npm:app-importer",
     "app-importer": "realm-app-importer serve ../../realm-apps",
     "metro": "react-native start --reset-cache",
     "runner": "node harness/runner.js"
+  },
+  "wireit": {
+    "start": {
+      "command": "react-native start",
+      "dependencies": [
+        "../../tests:build-dependencies"
+      ]
+    },
+    "test": {
+      "command": "npm run test:android && npm run test:ios"
+    },
+    "pod-install": {
+      "command": "pod-install || (bundle install && cd ios && bundle exec pod install)",
+      "files": [
+        "ios/Podfile",
+        "../../../packages/realm/react-native/ios/realm-js-ios.xcframework"
+      ]
+    },
+    "common": {
+      "command": "mocha-remote --template @realm/mocha-reporter --context appImporterIsRemote,$MOCHA_REMOTE_CONTEXT --watch $WATCH -- concurrently --kill-others-on-fail npm:metro npm:runner npm:app-importer",
+      "dependencies": [
+        "../../tests:build-dependencies"
+      ]
+    },
+    "test:android": {
+      "command": "npm run common",
+      "env": {
+        "PLATFORM": "android",
+        "WATCH": "false"
+      }
+    },
+    "test:ios": {
+      "command": "npm run common",
+      "dependencies": [
+        "pod-install"
+      ],
+      "env": {
+        "PLATFORM": "ios",
+        "WATCH": "false"
+      }
+    },
+    "test:catalyst": {
+      "command": "npm run common",
+      "dependencies": [
+        "pod-install"
+      ],
+      "env": {
+        "PLATFORM": "catalyst",
+        "WATCH": "false"
+      }
+    },
+    "watch:android": {
+      "command": "npm run common",
+      "env": {
+        "PLATFORM": "android",
+        "WATCH": "true"
+      }
+    },
+    "watch:ios": {
+      "command": "npm run common",
+      "dependencies": [
+        "pod-install"
+      ],
+      "env": {
+        "PLATFORM": "ios",
+        "WATCH": "true"
+      }
+    },
+    "watch:catalyst": {
+      "command": "npm run common",
+      "dependencies": [
+        "pod-install"
+      ],
+      "env": {
+        "PLATFORM": "catalyst",
+        "WATCH": "true"
+      }
+    }
   },
   "dependencies": {
     "@react-native-community/art": "^1.2.0",

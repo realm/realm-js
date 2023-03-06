@@ -49,13 +49,61 @@
   "scripts": {
     "test": "mocha",
     "test:types": "tsc --project type-tests/tsconfig.json",
-    "build": "rollup -c",
-    "build:watch": "rollup -c --watch",
-    "build:node": "npm run build --prefix ../bindgen",
-    "build:android": "node ../../scripts/build-android.js",
-    "build:ios": "../../scripts/build-ios.sh",
+    "build": "wireit",
+    "bundle": "wireit",
+    "build:node": "wireit",
+    "build:android": "wireit",
+    "build:ios": "wireit",
     "build:node:prebuild": "prebuild --runtime node -- --directory ../bindgen",
     "install": "prebuild-install --runtime node || echo 'Failed to download prebuild for Realm'"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "bundle",
+        "build:node",
+        "build:android",
+        "build:ios"
+      ]
+    },
+    "bundle": {
+      "command": "rollup --config",
+      "dependencies": [
+        "../realm-network-transport:build",
+        "build:bindgen"
+      ],
+      "files": ["rollup.config.mjs", "src/**/*.ts", "tsconfig.json", "src/**/tsconfig.json"],
+      "output": ["dist/bundle.*.js", "dist/bundle.*.mjs"]
+    },
+    "build:bindgen": {
+      "command": "npm run build --prefix ../bindgen",
+      "files": ["../../src/node/**", "../bindgen/src/**/*.ts", "../bindgen/src/**/*.h"],
+      "output": [
+        "generated/ts/core.ts",
+        "generated/ts/native.d.mts",
+        "generated/ts/native.mjs",
+        "generated/ts/native-rn.mjs"
+      ]
+    },
+    "build:node": {
+      "dependencies": [
+        "build:bindgen"
+      ]
+    },
+    "build:android": {
+      "command": "node ../../scripts/build-android.js",
+      "files": ["../../src/android/**", "../bindgen/src/**/*.ts", "../bindgen/src/**/*.h"],
+      "output": [
+        "react-native/android/src/main/jniLibs/**"
+      ]
+    },
+    "build:ios": {
+      "command": "../../scripts/build-ios.sh",
+      "files": ["../../src/ios/**", "../bindgen/src/**/*.ts", "../bindgen/src/**/*.h"],
+      "output": [
+        "react-native/ios/realm-js-ios.xcframework"
+      ]
+    }
   },
   "dependencies": {
     "debug": "^4.3.4",
@@ -88,8 +136,7 @@
     "path-browserify": "^1.0.1",
     "prebuild": "^11.0.4",
     "react-native": "^0.71.0",
-    "rollup-plugin-dts": "^5.0.0",
-    "tsm": "^2.2.2"
+    "rollup-plugin-dts": "^5.0.0"
   },
   "repository": {
     "type": "git",

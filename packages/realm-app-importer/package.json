@@ -10,12 +10,25 @@
     "realm-app-importer": "./realm-app-importer.ts"
   },
   "scripts": {
-    "generate-types": "tsc --project tsconfig.types.json --declaration --emitDeclarationOnly --declarationDir types/generated",
-    "build": "npm run generate-types && rollup --config",
-    "watch": "rollup -w --config",
+    "build": "wireit",
     "lint": "eslint --ext .js,.ts .",
-    "prepare": "npm run build",
     "start": "./realm-app-importer.ts"
+  },
+  "wireit": {
+    "build": {
+      "command": "rollup --config",
+      "files": ["rollup.config.mjs", "src/**/*.ts", "src/**/tsconfig.json"],
+      "output": ["dist/**/*.js", "dist/**/*.d.ts"],
+      "dependencies": [
+        "generate-types",
+        "../realm-network-transport:build"
+      ]
+    },
+    "generate-types": {
+      "command": "tsc --project tsconfig.types.json --declaration --emitDeclarationOnly --declarationDir types/generated",
+      "files": ["src/**/*.ts"],
+      "output": ["types/generated/**/*.d.ts"]
+    }
   },
   "files": [
     "dist",
@@ -40,13 +53,13 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
+    "@realm/network-transport": "*",
     "body-parser": "^1.20.1",
     "chalk": "^4.1.2",
     "deepmerge": "^4.2.2",
     "fs-extra": "^10.1.0",
     "glob": "^8.0.3",
     "node-fetch": "^3.2.10",
-    "@realm/network-transport": "*",
     "yargs": "^17.6.0"
   },
   "devDependencies": {
