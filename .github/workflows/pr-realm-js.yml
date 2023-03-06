@@ -63,6 +63,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
+      - name: Restore Wireit cache
+        uses: google/wireit@setup-github-actions-caching/v1
+
       - name: MSVC Setup
         if: ${{ runner.os == 'Windows' }}
         uses: ilammy/msvc-dev-cmd@v1
@@ -260,6 +263,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
+      - name: Restore Wireit cache
+        uses: google/wireit@setup-github-actions-caching/v1
+
       - name: Restore React Native cache
         if: ${{ matrix.variant.environment == 'react-native' }}
         uses: actions/cache@v3
@@ -311,11 +317,6 @@ jobs:
         run: npx prebuild-install --tag-prefix= -r napi
         env:
           npm_config_realm_local_prebuilds: ${{github.workspace}}/packages/realm/prebuilds
-
-      - name: Install pods
-        if: ${{ matrix.variant.environment == 'react-native' && matrix.variant.os == 'ios'}}
-        working-directory: integration-tests/environments/${{ matrix.variant.environment }}
-        run: npx pod-install
 
       - name: Invoke the simulator (making subsequent "open -a Simulator" calls work)
         if: ${{ (matrix.variant.os == 'ios') }}
