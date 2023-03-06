@@ -1,10 +1,5 @@
 # This file is based on src/node/CMakeLists.txt
 
-if(DEFINED CMAKE_JS_VERSION)
-    list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../cmake")
-    include(NodeJSTargets)
-endif()
-
 add_library(realm-js-node SHARED)
 
 set_target_properties(realm-js-node PROPERTIES
