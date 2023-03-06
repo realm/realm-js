@@ -117,8 +117,8 @@ integration-tests/**/.lock
 /packages/realm/react-native/android/src/main/jniLibs/
 /packages/realm/react-native/ios/realm-js-ios.xcframework/
 
-# Turbo repo caches
-.turbo
+# Wireit repo caches
+.wireit
 
 # TypeScript build info
 *.tsbuildinfo
