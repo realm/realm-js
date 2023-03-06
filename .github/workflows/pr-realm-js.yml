@@ -63,7 +63,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Restore Wireit cache
+      - name: Setup Wireit cache
         uses: google/wireit@setup-github-actions-caching/v1
 
       - name: MSVC Setup
