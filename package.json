@@ -4,6 +4,22 @@
   "private": true,
   "license": "apache-2.0",
   "homepage": "https://realm.io",
+  "scripts": {
+    "build": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "./packages/realm:build",
+        "./packages/babel-plugin:build",
+        "./packages/mocha-reporter:build",
+        "./packages/realm-react:build",
+        "./packages/realm-tools:build",
+        "./packages/realm-web:build",
+        "./integration-tests/tests:build"
+      ]
+    }
+  },
   "keywords": [
     "database",
     "db",
@@ -37,18 +53,20 @@
     "example",
     "packages/bindgen",
     "packages/realm",
-    "packages/metro-config",
+    "packages/realm-web",
+    "packages/realm-react",
     "packages/realm-common",
-    "packages/mocha-reporter",
     "packages/realm-network-transport",
     "packages/realm-app-importer",
-    "packages/realm-network-transport",
-    "packages/realm-react",
+    "packages/realm-tools",
+    "packages/metro-config",
     "packages/mocha-reporter",
-    "integration-tests/baas-test-server",
+    "packages/realm-web-integration-tests",
+    "integration-tests/tests",
     "integration-tests/environments/node",
+    "integration-tests/environments/electron",
     "integration-tests/environments/react-native",
-    "integration-tests/tests"
+    "integration-tests/baas-test-server"
   ],
   "dependencies": {
     "@react-native-community/eslint-config": "^3.1.0",
@@ -68,16 +86,16 @@
     "node-addon-api": "^5.0.0",
     "rollup": "^3.15.0",
     "tsx": "^3.12.2",
-    "turbo": "^1.6.3",
-    "typescript": "^4.9.3"
+    "typescript": "^4.9.3",
+    "wireit": "^0.9.5"
   },
   "peerDependencies": {
-      "jsc-android": "250231.0.0"
+    "jsc-android": "250231.0.0"
   },
   "overrides": {
-      "react-native": {
-          "jsc-android": "250231.0.0"
-      }
+    "react-native": {
+      "jsc-android": "250231.0.0"
+    }
   },
   "devDependencies": {
     "react-native": "0.71.0"

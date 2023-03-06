@@ -12,14 +12,30 @@
   },
   "scripts": {
     "prepack": "npm run build",
-    "prepare": "npm run update-types",
-    "update-types": "ts-node --project scripts/tsconfig.json scripts/update-types.ts",
-    "generate-types": "tsc --project src/dom/tsconfig.json --declaration --emitDeclarationOnly --declarationDir types/generated",
-    "build": "npm run generate-types && rollup --config",
+    "build": "wireit",
     "start": "npm run build -- --watch",
     "lint": "eslint --ext .js,.ts .",
     "test": "mocha 'src/tests/**/*.test.ts'",
     "postversion": "ts-node --project scripts/tsconfig.json scripts/postversion.ts"
+  },
+  "wireit": {
+    "build": {
+      "command": "rollup --config",
+      "dependencies": ["update-types", "generate-types"],
+      "files": ["rollup.config.mjs", "src/**/*.ts", "src/**/tsconfig.json", "tsconfig.json", "types"],
+      "output": ["dist"]
+    },
+    "generate-types": {
+      "command": "tsc --project src/dom/tsconfig.json --declaration --emitDeclarationOnly --declarationDir types/generated",
+      "dependencies": ["update-types"],
+      "files": ["src/**/*.ts", "src/**/tsconfig.json", "tsconfig.json"],
+      "output": ["types/generated"]
+    },
+    "update-types": {
+      "command": "ts-node --project scripts/tsconfig.json scripts/update-types.ts",
+      "files": ["../../types"],
+      "output": ["types/realm"]
+    }
   },
   "files": [
     "dist",

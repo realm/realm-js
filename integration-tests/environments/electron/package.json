@@ -10,13 +10,30 @@
   "private": true,
   "main": "app/main.js",
   "scripts": {
+    "test": "wireit",
+    "test:main": "wireit",
+    "test:renderer": "wireit",
     "lint": "eslint .",
-    "package": "electron-builder --dir",
-    "runner:main": "node runner.js main",
-    "runner:renderer": "node runner.js renderer",
-    "test": "npm run test:main && npm run test:renderer",
-    "test:main": "mocha-remote --reporter @realm/mocha-reporter --id main npm run runner:main",
-    "test:renderer": "mocha-remote --reporter @realm/mocha-reporter --id renderer npm run runner:renderer"
+    "package": "electron-builder --dir"
+  },
+  "wireit": {
+    "test": {
+      "command": "npm run test:main && npm run test:renderer"
+    },
+    "test:main": {
+      "command": "mocha-remote --reporter @realm/mocha-reporter --id main node runner.js main",
+      "dependencies": [
+        "../../tests:build",
+        "../../../packages/realm-app-importer:build"
+      ]
+    },
+    "test:renderer": {
+      "command": "mocha-remote --reporter @realm/mocha-reporter --id main node runner.js renderer",
+      "dependencies": [
+        "../../tests:build",
+        "../../../packages/realm-app-importer:build"
+      ]
+    }
   },
   "devDependencies": {
     "@realm/mocha-reporter": "*",
