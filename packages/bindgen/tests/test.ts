@@ -1,4 +1,4 @@
-#!/usr/bin/env -S node --loader tsm --enable-source-maps --no-warnings --
+#!/usr/bin/env -S node --loader tsx --
 
 ////////////////////////////////////////////////////////////////////////////
 //
@@ -21,16 +21,7 @@
 /* eslint-disable header/header */
 
 import { Decimal128 } from "bson";
-import {
-  Int64,
-  Realm,
-  Float,
-  PropertyType,
-  Helpers,
-  Results,
-  SortDescriptor,
-  List,
-} from "../../realm/src/binding";
+import { Int64, Realm, Float, PropertyType, Helpers, Results, SortDescriptor, List } from "../../realm/src/binding";
 
 import { strict as assert } from "assert";
 import * as util from "util";
