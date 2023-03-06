@@ -121,17 +121,11 @@
     },
     "build:android": {
       "command": "node ../../scripts/build-android.js",
-      "files": ["../../src/android/**", "../bindgen/src/**/*.ts", "../bindgen/src/**/*.h"],
-      "output": [
-        "react-native/android/src/main/jniLibs/**"
-      ]
+      "files": ["../../src/android/**", "../bindgen/src/**/*.ts", "../bindgen/src/**/*.h"]
     },
     "build:ios": {
       "command": "../../scripts/build-ios.sh",
-      "files": ["../../src/ios/**", "../bindgen/src/**/*.ts", "../bindgen/src/**/*.h"],
-      "output": [
-        "react-native/ios/realm-js-ios.xcframework"
-      ]
+      "files": ["../../src/ios/**", "../bindgen/src/**/*.ts", "../bindgen/src/**/*.h"]
     }
   },
   "dependencies": {
