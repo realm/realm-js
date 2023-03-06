@@ -40,6 +40,7 @@ export default [
       commonjs(),
       typescript({
         tsconfig: "src/node/tsconfig.json",
+        noEmitOnError: true,
       }),
     ],
     external: [],
