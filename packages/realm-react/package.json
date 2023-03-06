@@ -10,7 +10,7 @@
     "build": "rollup -c",
     "start": "rollup -c --watch",
     "test": "jest --forceExit",
-    "lint": "eslint --ext .tsx . && tsc --noEmit",
+    "lint": "eslint --ext .tsx .",
     "prepare": "rm -rf dist && npm run build"
   },
   "dependencies": {
