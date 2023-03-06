@@ -53,9 +53,13 @@
     "build": "wireit",
     "bundle": "wireit",
     "build:node": "wireit",
+    "build:node:prebuild": "wireit",
+    "build:node:prebuild:arm": "wireit",
+    "build:node:prebuild:arm64": "wireit",
+    "build:node:prebuild:x64": "wireit",
+    "build:node:prebuild:ia32": "wireit",
     "build:android": "wireit",
     "build:ios": "wireit",
-    "build:node:prebuild": "prebuild --runtime node -- --directory ../bindgen",
     "install": "prebuild-install --runtime node || echo 'Failed to download prebuild for Realm'"
   },
   "wireit": {
@@ -90,6 +94,30 @@
       "dependencies": [
         "build:bindgen"
       ]
+    },
+    "build:node:prebuild": {
+      "command": "prebuild --runtime node --arch $PREBUILD_ARCH -- --directory ../bindgen",
+      "env": {
+        "PREBUILD_ARCH": {
+          "external": true
+        }
+      }
+    },
+    "build:node:prebuild:arm": {
+      "command": "npm run build:node:prebuild",
+      "env": { "PREBUILD_ARCH": "arm" }
+    },
+    "build:node:prebuild:arm64": {
+      "command": "npm run build:node:prebuild",
+      "env": { "PREBUILD_ARCH": "arm64" }
+    },
+    "build:node:prebuild:x64": {
+      "command": "npm run build:node:prebuild",
+      "env": { "PREBUILD_ARCH": "x64" }
+    },
+    "build:node:prebuild:ia32": {
+      "command": "npm run build:node:prebuild",
+      "env": { "PREBUILD_ARCH": "ia32" }
     },
     "build:android": {
       "command": "node ../../scripts/build-android.js",

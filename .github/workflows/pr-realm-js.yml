@@ -149,7 +149,7 @@ jobs:
       # build the c++ library for standard targets
       - name: Build node
         if: ${{ (matrix.variant.os != 'ios') && (matrix.variant.os != 'android') }}
-        run: npm run build:node:prebuild --workspace realm -- --arch=${{matrix.variant.arch}}
+        run: npm run build:node:prebuild:${{matrix.variant.arch}} --workspace realm
 
       # build the c++ library for IOS
       # the Info.plist needs to be regenerated with all libraries in place
