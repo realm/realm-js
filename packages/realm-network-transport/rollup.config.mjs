@@ -40,6 +40,7 @@ export default [
       commonjs(),
       typescript({
         tsconfig: "src/node/tsconfig.json",
+        noEmitOnError: true,
       }),
     ],
     external: ["abort-controller", "node-fetch"],
@@ -59,8 +60,12 @@ export default [
     plugins: [
       typescript({
         tsconfig: "src/dom/tsconfig.json",
+        noEmitOnError: true,
       }),
-      nodeResolve({ browser: true }),
+      nodeResolve({
+        browser: true,
+        resolveOnly: ["@realm/common"],
+      }),
     ],
   },
   {
@@ -72,10 +77,15 @@ export default [
       },
     ],
     plugins: [
+      nodeResolve({
+        mainFields: ["react-native", "browser", "module", "main"],
+        exportConditions: ["react-native", "browser", "module", "main"],
+        resolveOnly: ["@realm/common"],
+      }),
       typescript({
         tsconfig: "src/react-native/tsconfig.json",
+        noEmitOnError: true,
       }),
-      nodeResolve(),
     ],
   },
   {

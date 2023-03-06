@@ -5,6 +5,7 @@
   "main": "./dist/bundle.cjs.js",
   "module": "./dist/bundle.es.js",
   "types": "./dist/bundle.d.ts",
+  "react-native": "./dist/bundle.dom.es.js",
   "browser": {
     "./dist/bundle.cjs.js": "./dist/bundle.dom.cjs.js",
     "./dist/bundle.es.js": "./dist/bundle.dom.es.js",
