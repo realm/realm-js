@@ -22,6 +22,7 @@ REALM_NOINLINE inline void toEmscriptenException(const std::exception_ptr& e) no
         std::rethrow_exception(e);
     }
     catch (const std::exception& e) {
+        // TODO throw an actual Error object (maybe using EM_JS)
         return emscripten::val(e.what()).throw_();
     }
     catch (...) {

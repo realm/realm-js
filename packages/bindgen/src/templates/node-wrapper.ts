@@ -159,6 +159,8 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
     if (!cls.base) {
       // Only root classes get symbols and constructors
       all(`const ${symb} = Symbol("Realm.${cls.jsName}.external_pointer");`);
+      // TODO consider using this pattern https://github.com/realm/realm-js/pull/5497#discussion_r1121482122
+      //      to do the finalization registry for every class.
       browserLines.push(
         `const _${cls.jsName}_registery = new FinalizationRegistry(nativeModule.${cls.jsName}_deleter);`,
       );
@@ -168,7 +170,7 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
     }
 
     // This will override the extractor from the base class to do a more specific type check.
-    const extract_definition = `
+    const extractDefinition = `
       static _extract(self) {
         if (!(self instanceof ${cls.jsName}))
           throw new TypeError("Expected a ${cls.jsName}");
@@ -178,8 +180,8 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
         return out;
       };
     `;
-    body += extract_definition;
-    body_browser += extract_definition;
+    body += extractDefinition;
+    body_browser += extractDefinition;
 
     for (const method of cls.methods) {
       // Eagerly bind the name once from the native module.
@@ -205,14 +207,14 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
         const nullAllowed = !!(ret.is("Pointer") && ret.type.kind == "Const" && ret.type.type.isPrimitive("EJson"));
         call = `_promisify(${nullAllowed}, _cb => ${call})`;
       }
-      const promisify_definition = `
+      const method_definition = `
         ${method.isStatic ? "static" : ""}
         ${method instanceof Property ? "get" : ""}
         ${method.jsName}(${params}) {
           return ${call};
         }`;
-      body += promisify_definition;
-      body_browser += promisify_definition;
+      body += method_definition;
+      body_browser += method_definition;
     }
 
     if (cls.iterable) {

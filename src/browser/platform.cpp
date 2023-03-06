@@ -53,12 +53,5 @@ void JsPlatformHelpers::remove_file(const std::string&)
 {
     throw std::runtime_error("Realm for browser does not support this method.");
 }
-void JsPlatformHelpers::print(const char* fmt, ...)
-{
-    va_list vl;
-    va_start(vl, fmt);
-    printf(fmt, vl);
-    va_end(vl);
-}
 
 } // namespace realm

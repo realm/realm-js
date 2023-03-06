@@ -53,7 +53,7 @@
     "example",
     "packages/bindgen",
     "packages/realm",
-    "packages/realm-web",
+    "packages/web-example",
     "packages/realm-react",
     "packages/realm-common",
     "packages/realm-network-transport",

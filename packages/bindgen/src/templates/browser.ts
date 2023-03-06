@@ -46,8 +46,13 @@ function tryWrap(body: string) {
 }
 
 class CppNodeFunc extends CppFunc {
-  constructor(private addon: BrowserAddon, name: string, props?: CppFuncProps) {
-    super(name, "emscripten::val", [emscripten_call_args], props);
+  constructor(private addon: BrowserAddon, name: string, numberOfArgs: number, props?: CppFuncProps) {
+    // TODO generate signature with exact number of args (numberOfArgs)
+    const vars = new Array<CppVar>(numberOfArgs);
+    for (let i = 0; i < numberOfArgs; i++) {
+      vars[i] = new CppVar("const emscripten::val", `arg${i}`);
+    }
+    super(name, "emscripten::val", vars, props);
   }
 
   definition() {
@@ -93,9 +98,8 @@ class BrowserAddon extends CppClass {
     );
   }
 
-  addFunc(name: string, props?: CppFuncProps) {
-    this.exports[name] = `Napi::Function::New<${name}>("${name}")`;
-    return new CppNodeFunc(this, name, props);
+  addFunc(name: string, numberOfArgs: number, props?: CppFuncProps) {
+    return new CppNodeFunc(this, name, numberOfArgs, props);
   }
 
   addClass(cls: Class) {
@@ -385,7 +389,7 @@ function convertToEmscripten(addon: BrowserAddon, type: Type, expr: string): str
                       return ${c(
                         type.ret,
                         `cb(${type.args
-                          .map((arg, i) => convertFromEmscripten(addon, arg.type, `args[${i}]`))
+                          .map((arg, i) => convertFromEmscripten(addon, arg.type, `arg${i}`))
                           .join(", ")})`,
                       )};
                   `)}
@@ -664,7 +668,7 @@ class BrowserCppDecls extends CppDecls {
       const derivedType = cls.sharedPtrWrapped ? `std::shared_ptr<${cls.cppName}>` : cls.cppName;
       const ptr = (expr: string) => `reinterpret_cast<${baseType}*>(${expr}.as<std::uintptr_t>())`;
       const casted = (expr: string) => (cls.base ? `static_cast<${derivedType}*>(${ptr(expr)})` : ptr(expr));
-      const self = `(${cls.needsDeref ? "**" : "*"}${casted("args[0]")})`;
+      const self = `(${cls.needsDeref ? "**" : "*"}${casted("arg0")})`;
 
       const selfCheck = (isStatic: boolean) => {
         return "";
@@ -672,14 +676,11 @@ class BrowserCppDecls extends CppDecls {
 
       for (const method of cls.methods) {
         const argOffset = method.isStatic ? 0 : 1; // `this` takes arg 0 if not static
-        const args = method.sig.args.map((a, i) => convertFromEmscripten(this.addon, a.type, `args[${i + argOffset}]`));
-
+        const args = method.sig.args.map((a, i) => convertFromEmscripten(this.addon, a.type, `arg${i + argOffset}`));
+        // console.log(`GENERATING method = ${method.id} length = ${method.sig.args.length + argOffset}\n`);
         this.free_funcs.push(
-          this.addon.addFunc(method.id, {
+          this.addon.addFunc(method.id, method.sig.args.length + argOffset, {
             body: `
-              assert(args.isArray());
-              if (args["length"].as<int>() != ${args.length + argOffset})
-                emscripten::val("expected ${args.length} arguments").throw_();
               ${selfCheck(method.isStatic)}
               return ${convertToEmscripten(this.addon, method.sig.ret, method.call({ self }, ...args))};
             `,
@@ -858,7 +859,6 @@ class BrowserCppDecls extends CppDecls {
       });
 
     this.boundSpec.classes.forEach((c) => {
-      console.log(`CPP_NAME= ${c.cppName} c.jsName= ${c.jsName}`);
       out(`\nfunction("${c.jsName}_deleter", &${c.jsName}_deleter);`);
     });
 
