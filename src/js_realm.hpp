@@ -32,7 +32,6 @@
 #include "realm/binary_data.hpp"
 #include "realm/util/functional.hpp"
 #include <exception>
-#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <set>
