@@ -910,9 +910,7 @@ describe("Realmtest", () => {
               primaryCol: 0,
               valueCol: "val0",
             });
-          }).throws(
-            "Attempting to create an object of type 'IntPrimaryObject' with an existing primary key value '0'",
-          );
+          }).throws("Attempting to create an object of type 'IntPrimaryObject' with an existing primary key value '0'");
 
           this.realm.create(
             IntPrimarySchema.name,
