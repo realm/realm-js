@@ -764,21 +764,36 @@ describe("Results", () => {
       ["boolCol", "stringCol", "dataCol"].forEach((colName) => {
         expect(() => {
           results.max(colName);
-        }).throws(`Cannot max property '${colName}'`);
+        }).throws(
+          `Operation 'max' not supported for ${colName.substr(
+            0,
+            colName.length - 3,
+          )}? property 'NullableBasicTypesObject.${colName}'`,
+        );
       });
 
       // bool, string, date & data columns don't support 'avg'
       ["boolCol", "stringCol", "dateCol", "dataCol"].forEach((colName) => {
         expect(() => {
           results.avg(colName);
-        }).throws(`Cannot avg property '${colName}'`);
+        }).throws(
+          `Operation 'average' not supported for ${colName.substr(
+            0,
+            colName.length - 3,
+          )}? property 'NullableBasicTypesObject.${colName}'`,
+        );
       });
 
       // bool, string, date & data columns don't support 'sum'
       ["boolCol", "stringCol", "dateCol", "dataCol"].forEach((colName) => {
         expect(() => {
           results.sum(colName);
-        }).throws(`Cannot sum property '${colName}'`);
+        }).throws(
+          `Operation 'sum' not supported for ${colName.substr(
+            0,
+            colName.length - 3,
+          )}? property 'NullableBasicTypesObject.${colName}'`,
+        );
       });
     });
 

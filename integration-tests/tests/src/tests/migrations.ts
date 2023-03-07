@@ -437,7 +437,7 @@ describe("Migrations", () => {
           expect(() => {
             // Deleting a model which is target of linkingObjects results in an exception
             newRealm.deleteModel("Person");
-          }).throws("Table is target of cross-table link columns");
+          }).throws("Cannot remove class_Person that is");
         },
       });
 

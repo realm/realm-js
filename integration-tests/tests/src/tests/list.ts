@@ -1718,6 +1718,7 @@ describe("Lists", () => {
       expect(objectEmptyList.list.min("dateCol")).to.be.undefined;
       expect(objectEmptyList.list.max("dateCol")).to.be.undefined;
     });
+
     it("supports primitive list aggregation functions", function (this: RealmContext) {
       let object!: IPrimitiveArraysSchema;
       this.realm.write(() => {
@@ -1741,8 +1742,15 @@ describe("Lists", () => {
         expectSimilar(list.type, list.max(), list[2]);
 
         if (list.type === "date") {
-          expect(() => list.sum()).throws(Error, "Operation 'sum' not supported for date list 'PrimitiveArrays.date'");
-          expect(() => list.avg()).throws(Error, "Operation 'avg' not supported for date list 'PrimitiveArrays.date'");
+          const optional = prop.startsWith("opt") ? "?" : "";
+          expect(() => list.sum()).throws(
+            Error,
+            `Operation 'sum' not supported for date${optional} list 'PrimitiveArrays.${prop}'`,
+          );
+          expect(() => list.avg()).throws(
+            Error,
+            `Operation 'average' not supported for date${optional} list 'PrimitiveArrays.${prop}'`,
+          );
           continue;
         }
 
@@ -1752,9 +1760,13 @@ describe("Lists", () => {
         expectSimilar(list.type, list.avg(), avg);
       }
 
-      expect(() => object.bool.min()).throws(Error, "Cannot min 'bool' array: operation not supported");
+      expect(() => object.bool.min()).throws(
+        Error,
+        "Operation 'min' not supported for bool list 'PrimitiveArrays.bool'",
+      );
       expect(() => object.int.min("foo")).throws(Error, "Invalid arguments: at most 0 expected, but 1 supplied");
     });
+
     it("throws on unsupported aggregate operations", function (this: RealmContext) {
       const N = 5;
 
@@ -1778,34 +1790,32 @@ describe("Lists", () => {
       // bool, string & data columns don't support 'min'
       ["bool", "string", "data"].forEach((colName) => {
         expect(() => object.list.min(colName + "Col")).throws(
-          `Operation 'min' not supported for ${colName.substr(
-            0,
-            colName.length - 3,
-          )}? property 'NullableBasicTypesObject.${colName}'`,
+          `Operation 'min' not supported for ${colName}? property 'NullableBasicTypesObject.${colName}Col'`,
         );
       });
 
       // bool, string & data columns don't support 'max'
       ["bool", "string", "data"].forEach((colName) => {
         expect(() => object.list.max(colName + "Col")).throws(
-          `Cannot max property '${colName}Col': operation not supported for '${colName}' properties`,
+          `Operation 'max' not supported for ${colName}? property 'NullableBasicTypesObject.${colName}Col'`,
         );
       });
 
       // bool, string, date & data columns don't support 'avg'
       ["bool", "string", "date", "data"].forEach((colName) => {
         expect(() => object.list.avg(colName + "Col")).throws(
-          `Cannot avg property '${colName}Col': operation not supported for '${colName}' properties`,
+          `Operation 'average' not supported for ${colName}? property 'NullableBasicTypesObject.${colName}Col'`,
         );
       });
 
       // bool, string, date & data columns don't support 'sum'
       ["bool", "string", "date", "data"].forEach((colName) => {
         expect(() => object.list.sum(colName + "Col")).throws(
-          `Cannot sum property '${colName}Col': operation not supported for '${colName}' properties`,
+          `Operation 'sum' not supported for ${colName}? property 'NullableBasicTypesObject.${colName}Col'`,
         );
       });
     });
+
     it("throws on aggregate on non existing property", function (this: RealmContext) {
       let object!: IPersonListSchema;
       this.realm.write(() => {

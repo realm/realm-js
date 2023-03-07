@@ -222,8 +222,9 @@ describe("App", () => {
       const credentials = Realm.Credentials.emailPassword("me", "secret");
       let didFail = false;
       const user = await this.app.logIn(credentials).catch((err) => {
+        expect(err.name).equals("AppError");
         expect(err.message).equals("invalid username/password");
-        expect(err.code).equals(50);
+        expect(err.code).equals("InvalidPassword");
         didFail = true;
       });
       expect(user).to.be.undefined;

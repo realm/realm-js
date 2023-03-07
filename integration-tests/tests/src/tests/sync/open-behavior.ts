@@ -541,8 +541,7 @@ describe("OpenBehaviour", function () {
       await openPromise2;
       throw new Error("openPromise2 should have been rejected..");
     } catch (err: any) {
-      //platforms either return "Operation canceled" or "Operation Canceled"
-      expect((err.message as string).toLowerCase()).equals("operation canceled");
+      expect(err.message).equals("Sync session became inactive");
     }
   });
 
