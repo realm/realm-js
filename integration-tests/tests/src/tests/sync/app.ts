@@ -234,18 +234,24 @@ describe("App", () => {
   describe("with sync", () => {
     importAppBefore("with-db");
 
-    it("migration while sync is enabled throws", async function (this: Mocha.Context & AppContext & RealmContext) {
-      const user = await this.app.logIn(Realm.Credentials.anonymous());
-      const config = {
-        schema: [TestObjectSchema],
-        sync: { user, partitionValue: '"Lolo"' },
-        deleteRealmIfMigrationNeeded: true,
-      };
-      //@ts-expect-error deleteRealmIfMigrationNeeded is not a field on a syncConfiguration.
-      expect(() => new Realm(config)).throws(
-        "Cannot set 'deleteRealmIfMigrationNeeded' when sync is enabled ('sync.partitionValue' is set).",
-      );
-      await user.logOut();
+    [true, false].forEach((useFlexibleSync) => {
+      it(`migration while sync is enabled throws (${
+        useFlexibleSync ? "FLX" : "PBS"
+      })`, async function (this: Mocha.Context & AppContext & RealmContext) {
+        const user = await this.app.logIn(Realm.Credentials.anonymous());
+        const config = {
+          schema: [TestObjectSchema],
+          sync: { user, ...(useFlexibleSync ? { flexible: true } : { partitionValue: '"Lolo"' }) },
+          deleteRealmIfMigrationNeeded: true,
+        };
+        //@ts-expect-error deleteRealmIfMigrationNeeded is not a field on a syncConfiguration.
+        expect(() => new Realm(config)).throws(
+          `Cannot set 'deleteRealmIfMigrationNeeded' when sync is enabled (${
+            useFlexibleSync ? "'sync.flexible'" : "'sync.partitionValue'"
+          } is set).`,
+        );
+        await user.logOut();
+      });
     });
 
     it("MongoDB Realm sync works", async function (this: Mocha.Context & AppContext & RealmContext) {
