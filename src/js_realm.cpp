@@ -59,9 +59,9 @@ void clear_test_state()
 #if REALM_ENABLE_SYNC
 #if REALM_ANDROID
     s_test_files_path = realm::default_realm_file_directory();
-    auto ros_dir = s_test_files_path + "/realm-object-server";
-    if (util::File::exists(ros_dir)) {
-        util::remove_dir_recursive(s_test_files_path + "/realm-object-server");
+    auto baas_dir = s_test_files_path + "/mongodb-realm";
+    if (util::File::exists(baas_dir)) {
+        util::try_remove_dir_recursive(baas_dir);
     }
 #else
     auto remove_test_files = [] {
