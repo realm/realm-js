@@ -16,6 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export { deviceInfo } from "./platform/device-info";
-export { fs } from "./platform/file-system";
-export { network, FetchHeaders, Request } from "./platform/network";
+import { DeviceInfo } from "../binding";
+
+type DeviceInfoType = {
+  create(): DeviceInfo;
+};
+
+export const deviceInfo: DeviceInfoType = {
+  create() {
+    throw new Error("Not supported on this platform");
+  },
+};
+
+export function inject(injected: DeviceInfoType) {
+  Object.freeze(Object.assign(deviceInfo, injected));
+}

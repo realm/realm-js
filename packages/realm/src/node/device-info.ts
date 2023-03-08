@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2022 Realm Inc.
+// Copyright 2023 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,28 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export { deviceInfo } from "./platform/device-info";
-export { fs } from "./platform/file-system";
-export { network, FetchHeaders, Request } from "./platform/network";
+import os from "node:os";
+
+import pkg from "realm/package.json";
+
+import { inject } from "../platform/device-info";
+
+inject({
+  create() {
+    return {
+      sdk: "JS",
+      sdkVersion: pkg.version,
+
+      platform: os.type(),
+      platformVersion: os.release(),
+
+      deviceName: "unknown",
+      deviceVersion: "unknown",
+
+      cpuArch: os.arch(),
+
+      frameworkName: typeof process.versions.electron === "string" ? "Electron" : "Node.js",
+      frameworkVersion: process.versions.electron || process.version,
+    };
+  },
+});

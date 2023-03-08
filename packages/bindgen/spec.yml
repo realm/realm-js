@@ -566,6 +566,19 @@ records:
       headers: std::map<std::string, std::string>
       body: std::string
 
+  DeviceInfo:
+    cppName: app::App::Config::DeviceInfo
+    fields:
+      platform: std::string
+      platform_version: std::string
+      sdk_version: std::string
+      sdk: std::string
+      cpu_arch: std::string
+      device_name: std::string
+      device_version: std::string
+      framework_name: std::string
+      framework_version: std::string
+
   AppConfig:
     cppName: app::App::Config
     fields:
@@ -575,9 +588,7 @@ records:
       local_app_name: util::Optional<std::string>
       local_app_version: util::Optional<std::string>
       default_request_timeout_ms: util::Optional<uint64_t>
-      platform: std::string
-      platform_version: std::string
-      sdk_version: std::string
+      device_info: DeviceInfo
 
 opaqueTypes:
   - Schema

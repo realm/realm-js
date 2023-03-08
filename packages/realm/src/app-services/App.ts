@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { DeviceInfo } from "../binding";
 import {
   AnyUser,
   Credentials,
@@ -27,6 +28,7 @@ import {
   assert,
   binding,
   createNetworkTransport,
+  deviceInfo,
   fs,
 } from "../internal";
 
@@ -87,20 +89,15 @@ const appByUserId = new Map<string, App<any, any>>();
  * ```
  */
 export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType = Record<string, unknown>> {
-  // TODO: Ensure these are injected by the platform
-  /** @internal */
-  public static PLATFORM_CONTEXT = "unknown-context";
-  /** @internal */
-  public static PLATFORM_OS = "unknown-os";
-  /** @internal */
-  public static PLATFORM_VERSION = "0.0.0";
-  /** @internal */
-  public static SDK_VERSION = "0.0.0";
-
   /** @deprecated Please use named imports */
   public static Sync = Sync;
   /** @deprecated Please use named imports */
   public static Credentials = Credentials;
+
+  /** @internal */
+  public static deviceInfo = deviceInfo.create();
+  /** @internal */
+  public static userAgent = `RealmJS/${App.deviceInfo.sdkVersion} (${App.deviceInfo.platform}, v${App.deviceInfo.platformVersion})`;
 
   /** @internal */
   public static get(userInternal: binding.SyncUser) {
@@ -113,8 +110,6 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
 
   /** @internal */
   public internal: binding.App;
-
-  public userAgent = `RealmJS/${App.SDK_VERSION} (${App.PLATFORM_CONTEXT}, ${App.PLATFORM_OS}, v${App.PLATFORM_VERSION})`;
 
   private listeners = new Listeners<AppChangeCallback, AppListenerToken>({
     add: (callback: () => void): AppListenerToken => {
@@ -153,9 +148,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
     this.internal = binding.App.getUncachedApp(
       {
         appId: id,
-        platform: App.PLATFORM_OS,
-        platformVersion: App.PLATFORM_VERSION,
-        sdkVersion: App.SDK_VERSION, // Used to be "RealmJS/" + SDK_VERSION
+        deviceInfo: App.deviceInfo,
         transport: createNetworkTransport(),
         localAppName: app?.name,
         localAppVersion: app?.version,
@@ -165,7 +158,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
       {
         baseFilePath: fs.getDefaultDirectoryPath(),
         metadataMode: binding.MetadataMode.NoEncryption,
-        userAgentBindingInfo: this.userAgent,
+        userAgentBindingInfo: App.userAgent,
       },
     );
   }

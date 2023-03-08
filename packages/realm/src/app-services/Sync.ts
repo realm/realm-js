@@ -108,7 +108,7 @@ export class Sync {
   }
   // TODO: Consider breaking the API, turning this into a property
   static setUserAgent(app: App, userAgent: string) {
-    app.userAgent = userAgent;
+    app.internal.syncManager.setUserAgent(userAgent);
   }
   // TODO: Consider breaking the API, turning this into an instance method
   static enableSessionMultiplexing(app: App) {

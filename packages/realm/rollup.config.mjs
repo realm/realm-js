@@ -18,6 +18,7 @@
 
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
+import json from "@rollup/plugin-json";
 import typescript from "@rollup/plugin-typescript";
 import replace from "@rollup/plugin-replace";
 import dts from "rollup-plugin-dts";
@@ -55,6 +56,7 @@ export default [
           '"./realm.node"': '"../generated/ts/realm.node"',
         },
       }),
+      json(),
       typescript({
         tsconfig: "src/node/tsconfig.json",
         noEmitOnError: true,
@@ -85,6 +87,7 @@ export default [
           '"../generated/ts/native.mjs"': '"../generated/ts/native-rn.mjs"',
         },
       }),
+      json(),
       typescript({
         tsconfig: "src/react-native/tsconfig.json",
         noEmitOnError: true,

@@ -50,7 +50,7 @@ public:
     static void remove_directory(const std::string& path);
 
     // the CPU architecture
-    std::string get_cpu_arch();
+    static std::string get_cpu_arch();
 
     // print something
     static void print(const char* fmt, ...);

@@ -3,7 +3,8 @@
   "compilerOptions": {
     "types": ["node"],
     "noResolve": false,
-    "incremental": true
+    "incremental": true,
+    "resolveJsonModule": true
   },
   "exclude": [
     "../tests/",
