@@ -57,6 +57,13 @@ void clear_test_state()
     realm::_impl::RealmCoordinator::clear_all_caches();
     realm::remove_realm_files_from_directory(realm::default_realm_file_directory());
 #if REALM_ENABLE_SYNC
+#if REALM_ANDROID
+    s_test_files_path = realm::default_realm_file_directory();
+    auto ros_dir = s_test_files_path + "/realm-object-server";
+    if (util::File::exists(ros_dir)) {
+        util::remove_dir_recursive(s_test_files_path + "/realm-object-server");
+    }
+#else
     auto remove_test_files = [] {
         if (!s_test_files_path.empty()) {
             util::try_remove_dir_recursive(s_test_files_path);
@@ -68,6 +75,7 @@ void clear_test_state()
         atexit(remove_test_files);
     }
     s_test_files_path = util::make_temp_dir();
+#endif
     realm::app::App::clear_cached_apps();
 #endif
 }
