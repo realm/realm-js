@@ -1891,7 +1891,7 @@ describe("Realmtest", () => {
 
       expect(() => {
         new Realm({ path: "bundled.realm", disableFormatUpgrade: true });
-      }).throws("The Realm file format must be allowed to be upgraded in order to proceed.");
+      }).throws(/Database upgrade required but prohibited/);
     });
   });
 
