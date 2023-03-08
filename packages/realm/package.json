@@ -96,7 +96,7 @@
       ]
     },
     "build:node:prebuild": {
-      "command": "prebuild --runtime node --arch $PREBUILD_ARCH -- --directory ../bindgen",
+      "command": "cross-env prebuild --runtime node --arch $PREBUILD_ARCH -- --directory ../bindgen",
       "env": {
         "PREBUILD_ARCH": {
           "external": true
@@ -156,6 +156,7 @@
     "@types/path-browserify": "^1.0.0",
     "chai": "^4.3.6",
     "cmake-js": "^7.1.1",
+    "cross-env": "^7.0.3",
     "mocha": "^10.1.0",
     "path-browserify": "^1.0.1",
     "prebuild": "^11.0.4",
