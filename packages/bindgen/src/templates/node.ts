@@ -226,8 +226,8 @@ function convertPrimToNode(addon: NodeAddon, type: string, expr: string): string
     case "AppError":
       // This matches old JS SDK. The C++ type will be changing as part of the unify error handleing project.
       return `([&] (const app::AppError& err) {
-                auto jsErr =  Napi::Error::New(${env}, err.message).Value();
-                jsErr.Set("code", double(err.error_code.value()));
+                auto jsErr =  Napi::Error::New(${env}, err.what()).Value();
+                jsErr.Set("code", double(err.code()));
                 return jsErr;
               }(${expr}))`;
     case "std::exception_ptr":

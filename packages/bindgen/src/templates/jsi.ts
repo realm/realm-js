@@ -280,8 +280,8 @@ function convertPrimToJsi(addon: JsiAddon, type: string, expr: string): string {
     case "AppError":
       // This matches old JS SDK. The C++ type will be changing as part of the unify error handleing project.
       return `([&] (const app::AppError& err) {
-                auto jsErr = jsi::JSError(_env, err.message).value().getObject(_env);
-                jsErr.setProperty(_env, ${addon.getPropId("code")}, double(err.error_code.value()));
+                auto jsErr = jsi::JSError(_env, err.what()).value().getObject(_env);
+                jsErr.setProperty(_env, ${addon.getPropId("code")}, double(err.code()));
                 return jsErr;
               }(${expr}))`;
     case "std::exception_ptr":
