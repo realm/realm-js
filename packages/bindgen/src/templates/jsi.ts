@@ -289,9 +289,12 @@ function convertPrimToJsi(addon: JsiAddon, type: string, expr: string): string {
     case "std::error_code":
       return `toJsiErrorCode(_env, ${expr})`;
     case "Status":
-      return `([&] (const Status& status) {
-                REALM_ASSERT(!status.is_ok()); // should only get here with errors
-                return jsi::JSError(_env, status.reason()).value().getObject(_env);
+      return `([&] (const Status& status) -> jsi::Value {
+                if (status.is_ok()) {
+                  return jsi::Value::undefined();
+                } else {
+                  return jsi::JSError(_env, status.reason()).value().getObject(_env);
+                }
               }(${expr}))`;
   }
   assert.fail(`unexpected primitive type '${type}'`);
