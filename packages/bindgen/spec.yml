@@ -1221,7 +1221,7 @@ classes:
       revive_if_needed: ()
       handle_reconnect: ()
       close: ()
-      log_out: ()
+      force_close: ()
       shutdown_and_wait: ()
       update_configuration: '(config: SyncConfig)'
 
