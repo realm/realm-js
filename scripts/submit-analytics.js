@@ -44,7 +44,6 @@
 const fs = require("fs");
 const fse = require("fs-extra");
 const path = require("path");
-const https = require("https");
 const commandLineArgs = require("command-line-args");
 
 let doLog; // placeholder for logger function
@@ -220,6 +219,7 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
  * @param  {boolean} dryRun if true, collect data but don't submit
  */
 async function submitAnalytics(dryRun) {
+  const https = require("https");
   const data = await collectPlatformData();
   const payload = {
     webHook: {
