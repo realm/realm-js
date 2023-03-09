@@ -11,19 +11,19 @@ That being said, the following should be considered along with the code changes:
   * `npm run lint`
 * Add comments explaining any non-obvious changes
 * If you are making changes to the interfaces, please update the tsdoc blocks as well
-* Please consult the general [realm-js contribution guide](https://github.com/realm/realm-js/blob/master/CONTRIBUTING.md)
+* Please consult the general [realm-js contribution guide](https://github.com/realm/realm-js/blob/main/CONTRIBUTING.md)
 
 
 ## Building and Running the Tests
-`realm-js` is a monorepo that uses `lerna` to dynamically link dependencies.  In the case of `@realm/react`, the `realm` library is linked into the package.  Therefore, one must build `realm` in order to run the `@realm/react` tests.  There is already a [guide for building realm](https://github.com/realm/realm-js/blob/master/contrib/building.md), but an abridged version is provided here.
+`realm-js` is a monorepo that uses `lerna` to dynamically link dependencies.  In the case of `@realm/react`, the `realm` library is linked into the package.  Therefore, one must build `realm` in order to run the `@realm/react` tests.  There is already a [guide for building realm](https://github.com/realm/realm-js/blob/main/contrib/building.md), but an abridged version is provided here.
 
-It is assumed you are already setup to run a `react-native` project and are on a mac (if not see the [guide for building realm](https://github.com/realm/realm-js/blob/master/contrib/building.md)), so a good amount of the required [pre-req steps](https://github.com/realm/realm-js/blob/master/contrib/building.md#setup-instructions-for-macos) are already accomplished.  One requirement is `cmake`, which can be installed with:
+It is assumed you are already setup to run a `react-native` project and are on a mac (if not see the [guide for building realm](https://github.com/realm/realm-js/blob/main/contrib/building.md)), so a good amount of the required [pre-req steps](https://github.com/realm/realm-js/blob/main/contrib/building.md#setup-instructions-for-macos) are already accomplished.  One requirement is `cmake`, which can be installed with:
 
 ```
 brew install cocoapods cmake
 ```
 
-That should be enough to get started.  If you are making changes to c++ code then I recommend setting up [`ccache`](https://github.com/realm/realm-js/blob/master/contrib/building.md#ccache), but if not, feel free to skip that step.
+That should be enough to get started.  If you are making changes to c++ code then I recommend setting up [`ccache`](https://github.com/realm/realm-js/blob/main/contrib/building.md#ccache), but if not, feel free to skip that step.
 
 The rest of the steps are as follows.
 

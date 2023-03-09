@@ -974,7 +974,7 @@ Based on Realm JS v10.13.0: See changelog below for details on enhancements and 
 * Fixed documentation publishing. ([#4276](https://github.com/realm/realm-js/pull/4276))
 * Enabled mixed tests for flexible sync. ([#4279](https://github.com/realm/realm-js/pull/4279))
 * Fixed an issue where some references were not updated from `Subscriptions` to `SubscriptionSet`. ([#4298](https://github.com/realm/realm-js/pull/4298))
-* Submitting [analytics](https://github.com/realm/realm-js/blob/master/README.md#analytics) as a postinstall script.
+* Submitting [analytics](https://github.com/realm/realm-js/blob/main/README.md#analytics) as a postinstall script.
 
 ## 10.20.0-beta.1 (2022-1-27)
 

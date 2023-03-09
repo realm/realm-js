@@ -105,7 +105,7 @@ We have TypeScript and JavaScript templates to help you get started using Realm.
 
 ## Contributing
 
-See [CONTRIBUTING.md](https://github.com/realm/realm-js/blob/master/CONTRIBUTING.md) for more details!
+See [CONTRIBUTING.md](https://github.com/realm/realm-js/blob/main/CONTRIBUTING.md) for more details!
 
 ## Known issues
 

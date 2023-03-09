@@ -36,7 +36,7 @@ To test the template locally, run it like any other React Native app: `npm i && 
 
 ## 🔀 Setting up sync
 
-See https://github.com/realm/realm-js/blob/master/templates/docs/sync-setup.md for instructions.
+See https://github.com/realm/realm-js/blob/main/templates/docs/sync-setup.md for instructions.
 ## 📝 Notes
 - [React Native docs](https://reactnative.dev/docs/getting-started)
 - [React Hooks](https://reactjs.org/docs/hooks-intro.html)

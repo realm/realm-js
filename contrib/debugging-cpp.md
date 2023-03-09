@@ -88,23 +88,23 @@ To run all tests, simply leave the filter at the default (`.`).
 
 Visual Studio Code with the [CodeLLDB](https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb) extension provides a good experience for debugging C++ code using the `lldb` debugger.
 
-The [launch.json](https://github.com/realm/realm-js/blob/master/.vscode/launch.json) file contains various useful debugger launch configurations which attach `lldb` to the `node` process so that breakpoints can be set and exceptions can be caught. These profiles can be seected from the list in the top right of the "Run and Debug" pane in VS Code.
+The [launch.json](https://github.com/realm/realm-js/blob/main/.vscode/launch.json) file contains various useful debugger launch configurations which attach `lldb` to the `node` process so that breakpoints can be set and exceptions can be caught. These profiles can be seected from the list in the top right of the "Run and Debug" pane in VS Code.
 
-All the launch configurations are configured to [compile Realm JS in debug mode](https://github.com/realm/realm-js/blob/master/.vscode/launch.json#L98) before starting the debug session, so you do not need to remember to compile between sessions.
+All the launch configurations are configured to [compile Realm JS in debug mode](https://github.com/realm/realm-js/blob/main/.vscode/launch.json#L98) before starting the debug session, so you do not need to remember to compile between sessions.
 
 ### Configuration: LLDB Debug Unit Tests
 
-This configuration will run the [unit tests](https://github.com/realm/realm-js/tree/master/tests) with `lldb` attached. By default, it will ask for the filter for the run each time you invoke it. If you are debugging a specific test, it can save time if you temporarily hardcode the filter: https://github.com/realm/realm-js/blob/master/.vscode/launch.json#L88.
+This configuration will run the [unit tests](https://github.com/realm/realm-js/tree/master/tests) with `lldb` attached. By default, it will ask for the filter for the run each time you invoke it. If you are debugging a specific test, it can save time if you temporarily hardcode the filter: https://github.com/realm/realm-js/blob/main/.vscode/launch.json#L88.
 
 ### Configuration: LLDB Debug Integration Tests
 
-This configuration will run the [integration tests](https://github.com/realm/realm-js/tree/master/tests) with `lldb` attached. By default, it will ask for the grep pattern for the run each time you invoke it. If you are debugging a specific test, it can save time if you temporarily hardcode the filter: https://github.com/realm/realm-js/blob/master/.vscode/launch.json#L117.
+This configuration will run the [integration tests](https://github.com/realm/realm-js/tree/master/tests) with `lldb` attached. By default, it will ask for the grep pattern for the run each time you invoke it. If you are debugging a specific test, it can save time if you temporarily hardcode the filter: https://github.com/realm/realm-js/blob/main/.vscode/launch.json#L117.
 
-A pre-requisite for running these tests is to start the [https://github.com/realm/realm-js/blob/master/packages/realm-app-importer](`realm-app-importer`) script in a terminal, by running: `npx lerna bootstrap --scope @realm/integration-tests --include-dependencies && cd integration-tests/tests && npm run app-importer` – this is usually started automatically when you run the tests, but as we need to connect `lldb` directly to the `node` instance that is running the tests, you need to start it manually.
+A pre-requisite for running these tests is to start the [https://github.com/realm/realm-js/blob/main/packages/realm-app-importer](`realm-app-importer`) script in a terminal, by running: `npx lerna bootstrap --scope @realm/integration-tests --include-dependencies && cd integration-tests/tests && npm run app-importer` – this is usually started automatically when you run the tests, but as we need to connect `lldb` directly to the `node` instance that is running the tests, you need to start it manually.
 
 ### Configuration: LLDB Node REPL
 
-This configuration starts a `node` REPL with the debugger attached. This allows you to easily evaluate statements and jump into the C++ debugger. If you are running the same commands over and over, you may want to save these to a temporary `.js` file and add this file's path to the `args` in https://github.com/realm/realm-js/blob/master/.vscode/launch.json#L98, so that `node` runs this script instead of a REPL.
+This configuration starts a `node` REPL with the debugger attached. This allows you to easily evaluate statements and jump into the C++ debugger. If you are running the same commands over and over, you may want to save these to a temporary `.js` file and add this file's path to the `args` in https://github.com/realm/realm-js/blob/main/.vscode/launch.json#L98, so that `node` runs this script instead of a REPL.
 
 ### Configuration: LLDB Attach to Process
 
@@ -148,7 +148,7 @@ It can sometimes be useful to use a debug version of Node. This allows you to vi
 
 ### Using a debug version of Node
 
-To use a debug version of Node, change the path to `node` for the `lldb` launch configuration you are using to point to the debug version you compiled above, e.g. change https://github.com/realm/realm-js/blob/master/.vscode/launch.json#L103 to `"program": "/Users/my_name/dev/node-v16.13.2/out/Debug/node"`. You should now get full source code in stack traces.
+To use a debug version of Node, change the path to `node` for the `lldb` launch configuration you are using to point to the debug version you compiled above, e.g. change https://github.com/realm/realm-js/blob/main/.vscode/launch.json#L103 to `"program": "/Users/my_name/dev/node-v16.13.2/out/Debug/node"`. You should now get full source code in stack traces.
 
 You can also open the Node source directory in VS Code and use the launch config from https://joyeecheung.github.io/blog/2018/12/31/tips-and-tricks-node-core/ (which has some other useful tips) if you wish to go deeper into the Node source code.
 

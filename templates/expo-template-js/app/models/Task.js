@@ -1,7 +1,7 @@
 // This JS version of the Task model shows how to create Realm objects by
 // defining a schema on the class, which is required if your project does not
 // use TypeScript. If you are using TypeScript, we recommend using
-// `@realm/babel-plugin` (https://github.com/realm/realm-js/blob/master/packages/babel-plugin/),
+// `@realm/babel-plugin` (https://github.com/realm/realm-js/blob/main/packages/babel-plugin/),
 // which allows you to define your models using TypeScript syntax.
 //
 // See `Task.ts` in the Realm example app for an example of using the plugin.
