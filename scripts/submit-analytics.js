@@ -44,6 +44,7 @@
 const fs = require("fs");
 const fse = require("fs-extra");
 const path = require("path");
+const https = require("https");
 const commandLineArgs = require("command-line-args");
 
 let doLog; // placeholder for logger function
@@ -215,30 +216,9 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
 }
 
 /**
- * Send collected analytics data to Realm's servers over HTTPS
- * @param  {Object} payload analytics info
+ * Collect and Send analytics data to MongoDB over HTTPS
+ * @param  {boolean} dryRun if true, collect data but don't submit
  */
-async function dispatchAnalytics(payload) {
-  const https = require("https");
-
-  return new Promise((resolve, reject) => {
-    const requestUrl = getAnalyticsRequestUrl(payload);
-
-    https
-      .get(requestUrl, (res) => {
-        resolve({
-          statusCode: res.statusCode,
-          statusMessage: res.statusMessage,
-        });
-      })
-      .on("error", (error) => {
-        const message = error && error.message ? error.message : error;
-        const err = new Error(`Failed to dispatch analytics: ${message}`);
-        reject(err);
-      });
-  });
-}
-
 async function submitAnalytics(dryRun) {
   const data = await collectPlatformData();
   const payload = {
@@ -259,7 +239,25 @@ async function submitAnalytics(dryRun) {
     return;
   }
 
-  await Promise.all([dispatchAnalytics(payload)]);
+  return new Promise((resolve, reject) => {
+    // node 19 turns on keep-alive by default and it will make the https.get() to hang
+    // https://github.com/realm/realm-js/issues/5136
+    https.globalAgent = new https.Agent({ keepAlive: false });
+    const requestUrl = getAnalyticsRequestUrl(payload);
+
+    https
+      .get(requestUrl, (res) => {
+        resolve({
+          statusCode: res.statusCode,
+          statusMessage: res.statusMessage,
+        });
+      })
+      .on("error", (error) => {
+        const message = error && error.message ? error.message : error;
+        const err = new Error(`Failed to dispatch analytics: ${message}`);
+        reject(err);
+      });
+  });
 }
 
 const optionDefinitions = [
