@@ -1,11 +1,16 @@
 {
 	"extends": "./tsconfig.json",
 	"compilerOptions": {
-		"types": [],
-		"emitDeclarationOnly": true
+		"types": [
+			"node"
+		],
+		"declaration": true,
+		"emitDeclarationOnly": true,
+		"declarationDir": "types/generated"
 	},
 	"exclude": [
 		"src/node/index.ts",
-		"src/react-native/index.ts"
+		"src/react-native/index.ts",
+		"src/test/**"
 	]
 }

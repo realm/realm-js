@@ -1,0 +1,9 @@
+{
+  "node-option": [
+    "loader=tsx",
+    "expose_gc",
+    "enable-source-maps",
+    "no-warnings"
+  ],
+  "spec": "src/test/*.ts"
+}

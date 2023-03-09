@@ -1,21 +1,23 @@
 {
   "name": "@realm/app-importer",
   "version": "0.1.0",
-  "description": "Wrapping the Stitch CLI to import an app from a template (w. secrets)",
+  "description": "Wrapping the App Services Admin API, to provide cross-platform app importing",
   "type": "module",
   "main": "./dist/bundle.es.js",
   "types": "./dist/index.d.ts",
   "react-native": "./dist/bundle.react-native.es.js",
-  "bin": {
-    "realm-app-importer": "./realm-app-importer.ts"
-  },
   "scripts": {
+    "test": "wireit",
     "build": "wireit",
     "openapi:generate": "wireit",
     "openapi:link": "wireit",
     "lint": "eslint --ext .js,.ts ."
   },
   "wireit": {
+    "test": {
+      "command": "mocha",
+      "dependencies": ["build"]
+    },
     "build": {
       "command": "rollup --config",
       "files": ["rollup.config.mjs", "src/**/*.ts", "src/**/tsconfig.json"],
@@ -66,8 +68,7 @@
   },
   "files": [
     "dist",
-    "templates",
-    "realm-app-importer"
+    "templates"
   ],
   "author": {
     "name": "Realm",
@@ -106,6 +107,7 @@
     "@types/node": "^18",
     "@types/node-fetch": "^2.6.2",
     "@types/yargs": "^17.0.13",
+    "mocha": "^10.1.0",
     "rollup": "^3.2.5",
     "rollup-plugin-dts": "^5.0.0"
   }

@@ -5,10 +5,11 @@
 			"node-fetch"
 		],
 		"lib": [
-			"ES2015"
+			"es2021"
 		]
 	},
 	"exclude": [
-		"../react-native/*"
+		"../react-native/*",
+		"../test/*"
 	]
 }
