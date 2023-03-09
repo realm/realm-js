@@ -14,7 +14,7 @@ If you don't have an app to import, read the section on "exporting" below.
 
 Ensure you have this CLI installed in your project as a dev-dependency.
 
-    npm install realm-app-importer --save-dev
+    npm install @realm/app-importer --save-dev
 
 When you have a templated app that you want to download (stored in ./my-app-template for example), run
 

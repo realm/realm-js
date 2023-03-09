@@ -40,7 +40,7 @@
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:build",
         "../../../packages/realm-network-transport:build",
-        "../../../packages/realm-app-importer:build"
+        "../../../packages/app-importer:build"
       ]
     },
     "test:android": {

@@ -100,8 +100,6 @@ This configuration will run the [unit tests](https://github.com/realm/realm-js/t
 
 This configuration will run the [integration tests](https://github.com/realm/realm-js/tree/main/tests) with `lldb` attached. By default, it will ask for the grep pattern for the run each time you invoke it. If you are debugging a specific test, it can save time if you temporarily hardcode the filter: https://github.com/realm/realm-js/blob/main/.vscode/launch.json#L117.
 
-A pre-requisite for running these tests is to start the [https://github.com/realm/realm-js/blob/main/packages/realm-app-importer](`realm-app-importer`) script in a terminal, by running: `npx lerna bootstrap --scope @realm/integration-tests --include-dependencies && cd integration-tests/tests && npm run app-importer` – this is usually started automatically when you run the tests, but as we need to connect `lldb` directly to the `node` instance that is running the tests, you need to start it manually.
-
 ### Configuration: LLDB Node REPL
 
 This configuration starts a `node` REPL with the debugger attached. This allows you to easily evaluate statements and jump into the C++ debugger. If you are running the same commands over and over, you may want to save these to a temporary `.js` file and add this file's path to the `args` in https://github.com/realm/realm-js/blob/main/.vscode/launch.json#L98, so that `node` runs this script instead of a REPL.

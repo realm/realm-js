@@ -72,7 +72,7 @@
     "packages/realm-react",
     "packages/realm-common",
     "packages/realm-network-transport",
-    "packages/realm-app-importer",
+    "packages/app-importer",
     "packages/realm-tools",
     "packages/metro-config",
     "packages/mocha-reporter",

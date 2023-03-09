@@ -8,7 +8,7 @@ on:
       - "packages/realm-web-integration-tests/**"
       - "packages/realm-network-transport/**"
       - "packages/realm-common/**"
-      - "packages/realm-app-importer/**"
+      - "packages/app-importer/**"
       # Changing types might also affect Realm Web
       - "types/**"
       # No need to run when updating documentation
