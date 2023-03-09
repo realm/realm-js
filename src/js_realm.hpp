@@ -681,6 +681,10 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
                     throw std::invalid_argument("Cannot set 'deleteRealmIfMigrationNeeded' when sync is enabled "
                                                 "('sync.partitionValue' is set).");
                 }
+                if (config.sync_config && config.sync_config->flx_sync_requested) {
+                    throw std::invalid_argument("Cannot set 'deleteRealmIfMigrationNeeded' when sync is enabled "
+                                                "('sync.flexible' is set).");
+                }
 
                 config.schema_mode = SchemaMode::SoftResetFile;
             }
