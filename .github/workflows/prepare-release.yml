@@ -8,10 +8,10 @@ on:
         required: false
         type: string
       branch:
-        description: Use this to provide a branch, instead of the default master.
+        description: Use this to provide a branch, instead of the default main branch.
         required: false
         type: string
-        default: 'master'
+        default: main
 
 jobs:
   prepare-release:
