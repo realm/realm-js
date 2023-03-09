@@ -56,7 +56,7 @@
     "url": "https://github.com/realm/realm-js.git",
     "directory": "packages/realm-web"
   },
-  "homepage": "https://github.com/realm/realm-js/tree/master/packages/realm-web#readme",
+  "homepage": "https://github.com/realm/realm-js/tree/main/packages/realm-web#readme",
   "bugs": {
     "url": "https://github.com/realm/realm-js/issues"
   },
