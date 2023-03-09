@@ -234,6 +234,8 @@ describe("App", () => {
 
   describe("with sync", () => {
     importAppBefore("with-db");
+    beforeEach(() => Realm.clearTestState());
+    afterEach(() => Realm.clearTestState());
 
     [true, false].forEach((useFlexibleSync) => {
       it(`migration while sync is enabled throws (${
@@ -242,7 +244,11 @@ describe("App", () => {
         const user = await this.app.logIn(Realm.Credentials.anonymous());
         const config = {
           schema: [TestObjectSchema],
-          sync: { user, ...(useFlexibleSync ? { flexible: true } : { partitionValue: '"Lolo"' }) },
+          sync: {
+            user,
+            ...(useFlexibleSync ? { flexible: true } : { partitionValue: '"Lolo"' }),
+            _sessionStopPolicy: "immediately",
+          },
           deleteRealmIfMigrationNeeded: true,
         };
         //@ts-expect-error deleteRealmIfMigrationNeeded is not a field on a syncConfiguration.

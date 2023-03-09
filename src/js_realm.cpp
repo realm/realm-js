@@ -57,13 +57,7 @@ void clear_test_state()
     realm::_impl::RealmCoordinator::clear_all_caches();
     realm::remove_realm_files_from_directory(realm::default_realm_file_directory());
 #if REALM_ENABLE_SYNC
-#if REALM_ANDROID
-    s_test_files_path = realm::default_realm_file_directory();
-    auto baas_dir = s_test_files_path + "/mongodb-realm";
-    if (util::File::exists(baas_dir)) {
-        util::try_remove_dir_recursive(baas_dir);
-    }
-#else
+#if !REALM_ANDROID
     auto remove_test_files = [] {
         if (!s_test_files_path.empty()) {
             util::try_remove_dir_recursive(s_test_files_path);
