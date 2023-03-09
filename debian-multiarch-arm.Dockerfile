@@ -16,9 +16,6 @@ RUN apt-get install -y \
         libz-dev:arm64 \
         libasio-dev \
         ninja-build \
-        nodejs \
-        libnode-dev:armhf \
-        libnode-dev:arm64 \
         ninja-build \
         npm \
         ccache \
