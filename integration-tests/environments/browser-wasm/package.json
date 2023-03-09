@@ -1,0 +1,38 @@
+{
+  "name": "@realm/browser-tests",
+  "version": "0.0.1",
+  "description": "Realm JS tests running in a Browser environment (WASM)",
+  "private": true,
+  "scripts": {
+    "test": "npx ts-node ./src/harness/dev.ts"
+  },
+  "dependencies": {
+    "chai": "^4.3.6",
+    "js-base64": "^3.7.2",
+    "jwt-encode": "^1.0.1",
+    "mocha": "^8.3.2",
+    "mocha-remote": "^1.6.0",
+    "puppeteer": "^14.3.0",
+    "realm": "^12.0.0-rc.0",
+    "webpack": "^5.73.0",
+    "webpack-dev-server": "^4.9.2"
+  },
+  "peerDependencies": {
+    "mocha-remote-client": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.1",
+    "@types/fs-extra": "^9.0.13",
+    "@types/mocha": "^8",
+    "@types/node-fetch": "^2.6.1",
+    "@types/puppeteer": "^5.4.6",
+    "@types/webpack": "^5.28.0",
+    "@types/webpack-env": "^1.17.0",
+    "circular-dependency-plugin": "^5.2.2",
+    "fs-extra": "^10.1.0",
+    "html-webpack-plugin": "^5.5.0",
+    "node-fetch": "^3.2.5",
+    "ts-loader": "^9.3.0",
+    "webpack-cli": "^4.9.2"
+  }
+}

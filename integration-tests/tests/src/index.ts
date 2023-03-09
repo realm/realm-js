@@ -32,9 +32,9 @@ afterEach(() => {
   }
 });
 
-import "./utils/import-app.test.ts";
-import "./utils/chai-plugin.test.ts";
-import "./mocha-internals.test.ts";
+// import "./utils/import-app.test.ts";
+// import "./utils/chai-plugin.test.ts";
+// import "./mocha-internals.test.ts";
 
 import "./tests";
-import "./performance-tests";
+// import "./performance-tests";

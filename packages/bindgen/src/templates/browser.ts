@@ -18,7 +18,7 @@
 import { strict as assert } from "assert";
 
 import { TemplateContext } from "../context";
-import { CppVar, CppFunc, CppFuncProps, CppCtor, CppMethod, CppClass, CppDecls } from "../cpp";
+import { CppVar, CppFunc, CppFuncProps, CppMethod, CppClass, CppDecls } from "../cpp";
 import {
   bindModel,
   BoundSpec,

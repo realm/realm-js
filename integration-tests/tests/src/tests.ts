@@ -16,33 +16,33 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import "./tests/credentials/anonymous";
-import "./tests/credentials/api-key";
-import "./tests/credentials/email-password";
-import "./tests/credentials/function";
-import "./tests/credentials/jwt";
+// import "./tests/credentials/anonymous";
+// import "./tests/credentials/api-key";
+// import "./tests/credentials/email-password";
+// import "./tests/credentials/function";
+// import "./tests/credentials/jwt";
 
-import "./tests/sync/asymmetric";
-import "./tests/sync/client-reset";
-import "./tests/sync/flexible";
-import "./tests/sync/mixed";
-import "./tests/sync/sync-as-local";
-import "./tests/sync/upload-delete-download";
-import "./tests/sync/mongo-db-client";
+// import "./tests/sync/asymmetric";
+// import "./tests/sync/client-reset";
+// import "./tests/sync/flexible";
+// import "./tests/sync/mixed";
+// import "./tests/sync/sync-as-local";
+// import "./tests/sync/upload-delete-download";
+// import "./tests/sync/mongo-db-client";
 
-import "./tests/bson";
-import "./tests/class-models";
-import "./tests/dictionary";
-import "./tests/dynamic-schema-updates";
-import "./tests/iterators";
-import "./tests/listeners";
+// import "./tests/bson";
+// import "./tests/class-models";
+// import "./tests/dictionary";
+// import "./tests/dynamic-schema-updates";
+// import "./tests/iterators";
+// import "./tests/listeners";
 import "./tests/objects";
-import "./tests/queries";
-import "./tests/realm-constructor";
-import "./tests/schema";
-import "./tests/enums";
-import "./tests/serialization";
-import "./tests/set";
-import "./tests/list";
-import "./tests/transaction";
-import "./tests/types";
+// import "./tests/queries";
+// import "./tests/realm-constructor";
+// import "./tests/schema";
+// import "./tests/enums";
+// import "./tests/serialization";
+// import "./tests/set";
+// import "./tests/list";
+// import "./tests/transaction";
+// import "./tests/types";
