@@ -1,0 +1,2603 @@
+openapi: "3.0.1"
+info:
+  description: ""
+  version: "3.0"
+  title: "|stitch| API"
+servers:
+  - url: "https://stitch.mongodb.com/api/admin/v3.0"
+    description: "The root API resource and starting point for the |stitch| API."
+paths:
+  /auth/providers:
+    get:
+      tags: ['admin']
+      operationId: 'getAdminAuthProviders'
+      summary: 'Enumerate available |stitch-short| administration authentication providers.'
+      responses:
+        '200':
+          description: 'Successfully enumerated available authentication providers.'
+          content:
+            application/json:
+              schema:
+                type: array
+                description: An array of authentication providers.
+                items:
+                  $ref: "#/components/schemas/ProviderSummary"
+      security: []
+
+  /auth/providers/{provider}/login:
+    post:
+      tags: ['admin']
+      operationId: 'adminLogin'
+      summary: |
+        Authenticate as a |stitch-short| administrator. Use
+        :ref:`get-/auth/providers` to list the
+        available authentication providers.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username: {type: string}
+                apiKey: {type: string}
+              required: [username, apiKey]
+      responses:
+        '200':
+          description: "Authentication was successful."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: |
+                      An access token you may provide in the
+                      ``Authorization`` header of API requests.
+                      :ref:`stitch-api-authentication` demonstrates how to
+                      use this token.
+                  refresh_token:
+                    type: string
+                    description: |
+                      A refresh token you may provide in the ``Authorization``
+                      header of :ref:`post-/auth/session` to obtain a new
+                      ``access_token`` for the current user session.
+                  user_id:
+                    type: string
+                    description: The unique _id value of the MongoDB Cloud user.
+                  device_id:
+                    type: string
+      security: []
+    parameters:
+      - name: provider
+        description: "The authentication provider to use."
+        in: path
+        required: true
+        schema: {$ref: "#/components/schemas/ProviderType"}
+
+  /auth/profile:
+    get:
+      tags: ['admin']
+      operationId: "getAdminProfile"
+      summary: "Get information about the currently logged in user."
+      responses:
+        '200':
+          description: "The profile was successfully retrieved."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StitchProfile'
+
+  /auth/session:
+    delete:
+      tags: ['admin']
+      operationId: adminDeleteSession
+      summary: "Delete a |stitch-short| access token."
+      responses:
+        '204':
+          description: "Successfully deleted."
+    post:
+      tags: ['admin']
+      operationId: adminCreateSession
+      summary: |
+        Obtain a |stitch-short| access token.
+      responses:
+        '201':
+          description: "Successfully created."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token: {type: string}
+      security:
+        - refreshAuth: []
+
+  /groups/{groupID}/apps/{appID}/services/{serviceId}/commands/build_info:
+    get:
+      tags: ['admin']
+      operationId: "getBuildInfo"
+      summary: "Get information about the underlying Atlas mongod."
+      requestBody:
+        description: "An empty object."
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+      responses:
+        '200':
+          description: "The build information was successfully retrieved."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuildInfo'
+
+  /groups/{groupId}/apps:
+    get:
+      tags: ["apps"]
+      operationId: "adminListApplications"
+      summary: |
+        List all |stitch-short| applications within an |atlas|
+        :atlas:`project/group </tutorial/manage-projects/>`.
+      parameters:
+        - name: product
+          in: query
+          description: |
+            The MongoDB product for which applications should be listed.
+            
+            Valid values:
+            
+            - ``atlas``
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Successfully listed."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Application"
+    post:
+      tags: ["apps"]
+      operationId: "adminCreateApplication"
+      summary: "Create a new |stitch-short| application."
+      parameters:
+        - name: defaults
+          in: query
+          description: "Whether or not to create a default application."
+          required: false
+          schema:
+            type: boolean
+      requestBody:
+        description: "The application to create."
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewApplication'
+      responses:
+        '201':
+          description: "The application was successfully created."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+
+  /groups/{groupId}/apps/{appId}:
+    get:
+      tags: ["apps"]
+      operationId: "adminGetApplication"
+      summary: "Retrieve an application definition."
+      responses:
+        '200':
+          description: "The application was successfully retrieved."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+    delete:
+      tags: ["apps"]
+      operationId: "adminDeleteApplication"
+      summary: "Delete an application."
+      responses:
+        '204':
+          description: "The application was successfully deleted."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+
+  /groups/{groupId}/apps/{appId}/export:
+    get:
+      tags: ["apps"]
+      operationId: "adminExportApplication"
+      summary: ":ref:`Export <export-stitch-app>` an application as a zip file."
+      responses:
+        '200':
+          description: "The application was successfully exported."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+
+  # Triggers
+
+  /groups/{groupId}/apps/{appId}/triggers:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+
+    post:
+      tags: ["triggers"]
+      operationId: "adminCreateTrigger"
+      summary: "Create a trigger."
+      requestBody:
+        description: The trigger to create.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TriggerRequest'
+      responses:
+        "201":
+          description: "Successfully created."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerResponse'
+              example:
+                name: myTrigger
+                type: DATABASE
+                function_id: "5ae8a0c88f25b9dc5cabb21f"
+                config:
+                  operation_types:
+                    - "INSERT"
+                    - "UPDATE"
+                    - "DELETE"
+                    - "REPLACE"
+                  database: "HR"
+                  collection: "employees"
+                  service_id: "5adeb649b8b998486770ae7c"
+                  match: {}
+                  full_document: true
+
+    get:
+      tags: ["triggers"]
+      operationId: "adminListTriggers"
+      summary: "List all triggers."
+      responses:
+        "200":
+          description: "Successfully listed triggers."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TriggerResponse"
+                ## We currently don't support rendering proper arrays of objects
+                ## ^^ This hack displays one item from the list of results instead.
+                ## The commented code below is the proper way to do this.
+                # schema:
+                #   type: array
+                #   items:
+                #     type: object
+                #     $ref: "#/components/schemas/TriggerResponse"
+
+  /groups/{groupId}/apps/{appId}/triggers/{triggerId}:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/TriggerId"
+
+    put:
+      tags: ["triggers"]
+      operationId: "adminUpdateTrigger"
+      summary: "Update a trigger."
+      requestBody:
+        description: The trigger to update.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TriggerRequest'
+      responses:
+        "204":
+          description: "Successfully updated the trigger."
+        "409":
+          description: "Encountered an error while updating the trigger."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    get:
+      tags: ["triggers"]
+      operationId: "adminGetTrigger"
+      summary: "Retrieve the configuration for a specific trigger."
+      responses:
+        "200":
+          description: "Successfully retrieved trigger."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TriggerResponse"
+
+    delete:
+      tags: ["triggers"]
+      operationId: "adminDeleteTrigger"
+      summary: "Delete a trigger."
+      responses:
+        "200":
+          description: "Successfully deleted the trigger."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+
+  /groups/{groupId}/apps/{appId}/triggers/{triggerId}/resume:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/TriggerId"
+
+    put:
+      tags: ["triggers"]
+      operationId: "adminResumeTrigger"
+      summary: "Resume a suspended trigger."
+      requestBody:
+        description: "An empty object."
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+
+      responses:
+        "204":
+          description: "Successfully resumed the trigger."
+        "404":
+          description: "Trigger not found."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: A description of the error that Stitch encountered.
+
+  # Values
+
+  /groups/{groupId}/apps/{appId}/values:
+    get:
+      tags: ["values"]
+      operationId: "adminListValues"
+      summary: "List all :doc:`values </values>` defined in an application."
+      responses:
+        '200':
+          description: ":doc:`values </values>` were successfully enumerated."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ValueSummary"
+    post:
+      tags: ["values"]
+      operationId: "adminCreateValue"
+      summary: "Define a :doc:`Value </values>` in an application."
+      requestBody:
+        description: "The value to create."
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewValue"
+      responses:
+        '201':
+          description: "The :doc:`value </values>` was successfully defined."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewValue"
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+
+  /groups/{groupId}/apps/{appId}/values/{valueId}:
+    get:
+      tags: ["values"]
+      operationId: "adminGetValue"
+      summary: "Retrieve a :doc:`value </values>` definition from an application."
+      responses:
+        '200':
+          description: "Successfully retrieved the value."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Value"
+    delete:
+      tags: ["values"]
+      operationId: "adminDeleteValue"
+      summary: "Delete a :doc:`value </values>` defined in an application."
+      responses:
+        '204':
+          description: "Successfully deleted the value."
+    put:
+      tags: ["values"]
+      operationId: "adminUpdateValue"
+      summary: "Update a :doc:`value </values>` definition in an application."
+      responses:
+        '200':
+          description: "Successfully updated the value."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NewValue"
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/ValueId"
+
+  /groups/{groupId}/apps/{appId}/services:
+    get:
+      tags: ["services"]
+      operationId: "adminListServices"
+      summary: "List all :ref:`services <services>` within an application."
+      responses:
+        '200':
+          description: "Successfully listed services."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Service"
+    post:
+      tags: ["services"]
+      operationId: "adminCreateService"
+      summary: "Create a :ref:`service <services>`."
+      responses:
+        '201':
+          description: "Successfully created the service."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewService"
+        409:
+          description: There is already a service with the given ``name``.
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+
+  /groups/{groupId}/apps/{appId}/services/{serviceId}:
+    get:
+      tags: ["services"]
+      operationId: "adminGetService"
+      summary: "Retrieve a :ref:`service <services>`."
+      responses:
+        '200':
+          description: "The service was successfully deleted."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Service"
+    delete:
+      tags: ["services"]
+      operationId: "adminDeleteService"
+      summary: "Delete a :ref:`service <services>`."
+      responses:
+        '204':
+          description: "The service was successfully deleted."
+    patch:
+      tags: ["services"]
+      operationId: "adminUpdateService"
+      summary: "Update a :ref:`service <services>`."
+      responses:
+        '200':
+          description: "Successfully updated."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/ServiceId"
+
+  /groups/{groupId}/apps/{appId}/services/{serviceId}/commands/{commandName}:
+    post:
+      tags: ["services"]
+      operationId: "adminRunCommand"
+      summary: "Run a command associated with a :ref:`service <services>`."
+      responses:
+        '200':
+          description: "Successfully executed."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/ServiceId"
+      - $ref: "#/components/parameters/CommandName"
+
+  /groups/{groupId}/apps/{appId}/services/{serviceId}/config:
+    get:
+      tags: ["services"]
+      operationId: "adminGetServiceConfig"
+      summary: "Retrieve a :ref:`service's <services>` configuration."
+      responses:
+        '200':
+          description: "Successfully retrieved."
+    patch:
+      tags: ["services"]
+      operationId: "adminUpdateServiceConfig"
+      summary: "Update a :ref:`service's <services>` configuration."
+      responses:
+        '200':
+          description: "Successfully updated."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/ServiceId"
+
+  /groups/{groupId}/apps/{appId}/services/{serviceId}/rules:
+    get:
+      tags: ["services", "rules"]
+      operationId: "adminListRules"
+      summary: "List :ref:`rules <mongodb-rules>`."
+      responses:
+        '200':
+          description: "Successfully listed."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Rule"
+    post:
+      tags: ["services", "rules"]
+      operationId: "adminCreateRule"
+      summary: "Create a :ref:`rule <mongodb-rules>`."
+      requestBody:
+        required: true
+        description: The rule to create.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Rule"
+      responses:
+        '201':
+          description: "Successfully created."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id: {type: string}
+                  name: {type: string}
+        409:
+          description: There is already a rule with the given ``name``.
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/ServiceId"
+
+  /groups/{groupId}/apps/{appId}/services/{serviceId}/rules/{ruleId}:
+    get:
+      tags: ["services", "rules"]
+      operationId: "adminGetRule"
+      summary: "Retrieve a :ref:`rule <mongodb-rules>`."
+      responses:
+        '200':
+          description: "Successfully retrieved."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Rule"
+    delete:
+      tags: ["services", "rules"]
+      operationId: "adminDeleteRule"
+      summary: "Delete a :ref:`rule <mongodb-rules>`."
+      responses:
+        '204':
+          description: "Successfully deleted."
+    put:
+      tags: ["services", "rules"]
+      operationId: "adminUpdateRule"
+      summary: "Update a :ref:`rule <mongodb-rules>`."
+      requestBody:
+        required: true
+        description: The new state of the rule.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Rule"
+      responses:
+        '200':
+          description: "Successfully updated."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/ServiceId"
+      - $ref: "#/components/parameters/RuleId"
+
+  /groups/{groupId}/apps/{appId}/services/{serviceId}/commands/generate_schema:
+    post:
+      tags: ["services"]
+      operationId: "adminGenerateSchema"
+      summary: "Sample a subset of documents in a collection to generate a JSON schema."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [database_name, collection_name, limit]
+              properties:
+                database_name:
+                  type: string
+                  description: The name of the database that contains the collection.
+                collection_name:
+                  type: string
+                  description: The name of the collection to sample and generate a schema for.
+                limit:
+                  type: integer
+                  description: The maximum number of documents to include in the sample.
+      responses:
+        '200':
+          description: "Successfully generated schema"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  schema:
+                    type: object
+                    description: The generated JSON schema
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/ServiceId"
+
+  /groups/{groupId}/apps/{appId}/services/{serviceId}/incoming_webhooks:
+    get:
+      tags: ["services", "webhooks"]
+      operationId: "adminListWebhooks"
+      summary: "List :ref:`webhooks <service-webhooks>`."
+      responses:
+        '200':
+          description: "Successfully listed incoming webhooks."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncomingWebhook'
+    post:
+      tags: ["services", "webhooks"]
+      operationId: "adminCreateWebhook"
+      summary: "Create a :ref:`webhook <service-webhooks>`."
+      requestBody:
+        description: "The webhook to create."
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IncomingWebhook'
+      responses:
+        '201':
+          description: "Successfully created."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/ServiceId"
+
+  /groups/{groupId}/apps/{appId}/services/{serviceId}/incoming_webhooks/{incomingWebhookId}:
+    get:
+      tags: ["services", "webhooks"]
+      operationId: "adminGetWebhook"
+      summary: "Retrieve a :ref:`webhook <service-webhooks>`."
+      responses:
+        '200':
+          description: "Successfully retrieved."
+    delete:
+      tags: ["services", "webhooks"]
+      operationId: "adminDeleteWebhook"
+      summary: "Delete a :ref:`webhook <service-webhooks>`."
+      responses:
+        '204':
+          description: "Successfully deleted."
+    put:
+      tags: ["services", "webhooks"]
+      operationId: "adminUpdateWebhook"
+      summary: "Update a :ref:`webhook <service-webhooks>`."
+      requestBody:
+        required: true
+        description: The updated state of the webhook.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IncomingWebhook'
+      responses:
+        '200':
+          description: "Successfully updated."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/ServiceId"
+      - $ref: "#/components/parameters/IncomingWebhookId"
+
+  /groups/{groupId}/apps/{appId}/push/notifications:
+    get:
+      tags: ["notifications"]
+      operationId: "adminListNotifications"
+      summary: "List :ref:`push notifications <push-notifications>`."
+      parameters:
+        - name: state
+          in: query
+          description: Only list notifications with the given state.
+          required: false
+          schema: {$ref: "#/components/schemas/MessageState"}
+      responses:
+        '200':
+          description: "Successfully listed."
+          content:
+            application/json:
+              schema:
+                items: {$ref: "#/components/schemas/Message"}
+    post:
+      tags: ["notifications"]
+      operationId: "adminCreateNotification"
+      summary: "Create a :ref:`push notification <push-notifications>`."
+      requestBody:
+        required: true
+        description: The notification to create.
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/NewMessage"}
+      responses:
+        '201':
+          description: "Successfully created."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+
+  /groups/{groupId}/apps/{appId}/push/notifications/{messageId}:
+    get:
+      tags: ["notifications"]
+      operationId: "adminGetMessage"
+      summary: "Retrieve a :ref:`push notification <push-notifications>` message."
+      responses:
+        '200':
+          description: "Successfully retrieved."
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Message"}
+    delete:
+      tags: ["notifications"]
+      operationId: "adminDeleteMessage"
+      summary: "Delete a :ref:`push notification <push-notifications>` message."
+      responses:
+        '204':
+          description: "Successfully deleted."
+    put:
+      tags: ["notifications"]
+      operationId: "adminUpdateMessage"
+      summary: "Update a :ref:`push notification <push-notifications>` message."
+      responses:
+        '200':
+          description: "Successfully updated."
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Message"}
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/MessageId"
+
+  /groups/{groupId}/apps/{appId}/push/notifications/{messageId}/type:
+    put:
+      tags: ["notifications"]
+      operationId: "adminSetMessageType"
+      summary: "Set a :ref:`push notification's <push-notifications>` type."
+      responses:
+        '200':
+          description: "Successfully set."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/MessageId"
+
+  /groups/{groupId}/apps/{appId}/push/notifications/{messageId}/send:
+    post:
+      tags: ["notifications"]
+      operationId: "adminSendMessage"
+      summary: "Send a :ref:`push notification <push-notifications>`."
+      responses:
+        '200':
+          description: "Successfully sent."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/MessageId"
+
+  /groups/{groupId}/apps/{appId}/users:
+    get:
+      tags: ["users"]
+      operationId: "adminListUsers"
+      summary: "List :ref:`users <users>`."
+      responses:
+        '200':
+          description: "Successfully listed."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+    post:
+      tags: ["users"]
+      operationId: "adminCreateUser"
+      summary: "Create a :ref:`user <users>`."
+      requestBody:
+        required: true
+        description: The user to create
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: {type: string}
+                password: {type: string}
+              required: [email, password]
+      responses:
+        '201':
+          description: "Successfully created."
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/User"}
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+
+  /groups/{groupId}/apps/{appId}/users/{uid}:
+    get:
+      tags: ["users"]
+      operationId: "adminGetUser"
+      summary: "Retrieve a :ref:`user <users>`."
+      responses:
+        '200':
+          description: "Successfully retrieved."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    delete:
+      tags: ["users"]
+      operationId: "adminDeleteUser"
+      summary: "Delete a :ref:`user <users>`."
+      responses:
+        '204':
+          description: "Successfully deleted."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/Uid"
+
+  /groups/{groupId}/apps/{appId}/users/{uid}/devices:
+    get:
+      tags: ["users"]
+      operationId: "adminListDevices"
+      summary: "List a user's devices."
+      responses:
+        '200':
+          description: "Successfully listed."
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {type: object}
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/Uid"
+
+  /groups/{groupId}/apps/{appId}/users/{uid}/logout:
+    put:
+      tags: ["users"]
+      operationId: "adminUserLogout"
+      summary: "Revoke all of a :ref:`user <users>`'s sessions."
+      responses:
+        '204':
+          description: "Successfully revoked."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/Uid"
+
+  /groups/{groupId}/apps/{appId}/users/{uid}/enable:
+    put:
+      tags: ["users"]
+      operationId: "adminEnableUser"
+      summary: "Enable a :ref:`user <users>`."
+      responses:
+        '204':
+          description: "Successfully enabled."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/Uid"
+
+  /groups/{groupId}/apps/{appId}/users/{uid}/disable:
+    put:
+      tags: ["users"]
+      operationId: "adminDisableUser"
+      summary: "Disable a :ref:`user <users>`."
+      responses:
+        '204':
+          description: "Successfully disabled."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/Uid"
+
+  /groups/{groupId}/apps/{appId}/user_registrations/by_email/{email}:
+    delete:
+      tags: ["users"]
+      operationId: "adminDeletePendingUser"
+      summary: "Delete a pending :ref:`user <users>`."
+      responses:
+        '204':
+          description: "Successfully deleted."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/Email"
+
+  /groups/{groupId}/apps/{appId}/user_registrations/by_email/{email}/send_confirm:
+    post:
+      tags: ["email"]
+      operationId: "adminSendConfirmationEmail"
+      summary: "Send a :doc:`confirmation email </authentication/userpass>`."
+      responses:
+        '200':
+          description: "Successfully sent."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/Email"
+
+  /groups/{groupId}/apps/{appId}/user_registrations/by_email/{email}/confirm:
+    post:
+      tags: ["email"]
+      operationId: "adminConfirmPendingUser"
+      summary: "Confirm a pending :ref:`user <users>`."
+      responses:
+        '204':
+          description: "Successfully confirmed."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/Email"
+
+  /groups/{groupId}/apps/{appId}/user_registrations/by_email/{email}/run_confirm:
+    post:
+      tags: ["email"]
+      operationId: "adminRerunPendingUserConfirmation"
+      summary: "Re-runs a pending :ref:`user's <users>` :ref:`confirmation workflow <auth-confirmation>`."
+      responses:
+        '202':
+          description: "Successfully re-ran confirmation workflow."
+        '400':
+          description: "User is already confirmed or Email/Password authentication is not enabled."
+        '404':
+          description: "User does not exist."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/Email"
+
+  /groups/{groupId}/apps/{appId}/debug/execute_function:
+    post:
+      tags: ["functions"]
+      operationId: "adminExecuteFunction"
+      summary: "Execute a :ref:`function <functions>` for testing."
+      responses:
+        '201':
+          description: "Successfully executed."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+
+  /groups/{groupId}/apps/{appId}/debug/execute_function_source:
+    post:
+      tags: ["functions"]
+      operationId: "adminExecuteFunctionSource"
+      summary: "Execute a :ref:`function <functions>`'s source code for testing."
+      parameters:
+        - name: user_id
+          in: query
+          description: The user as which to execute the function.
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        description: The source to execute.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                eval_source: {type: string}
+                source: {type: string}
+              required: [eval_source, source]
+      responses:
+        '200':
+          description: "Successfully executed."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                 error: {type: object}
+                 logs: {}
+                 result: {type: object}
+                 stats:
+                  properties:
+                    execution_time: {type: string}
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+
+  /groups/{groupId}/apps/{appId}/auth_providers:
+    get:
+      tags: ["authproviders"]
+      operationId: "adminListAuthProviders"
+      summary: "List :ref:`authentication <stitch-authentication>` providers within a |stitch-short| application."
+      responses:
+        '200':
+          description: "Successfully listed."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProviderSummary"
+    post:
+      tags: ["authproviders"]
+      operationId: "adminCreateAuthProvider"
+      summary: "Create an :ref:`authentication <stitch-authentication>` provider."
+      requestBody:
+        required: true
+        description: ""
+        content:
+          application/json:
+            schema:
+              {$ref: "#/components/schemas/NewProvider"}
+      responses:
+        '201':
+          description: "Successfully created."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+
+  /groups/{groupId}/apps/{appId}/auth_providers/{providerId}:
+    get:
+      tags: ["authproviders"]
+      operationId: "adminGetAuthProvider"
+      summary: "Retrieve information about one of an application's :ref:`authentication <stitch-authentication>` providers"
+      responses:
+        '200':
+          description: "Successfully retrieved."
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/FullProvider"}
+    delete:
+      tags: ["authproviders"]
+      operationId: "adminDeleteAuthProvider"
+      summary: "Delete an :ref:`authentication <stitch-authentication>` provider."
+      responses:
+        '204':
+          description: "Successfully deleted."
+    patch:
+      tags: ["authproviders"]
+      operationId: "adminUpdateAuthProvider"
+      summary: "Update an :ref:`authentication <stitch-authentication>` provider."
+      requestBody:
+        required: true
+        description: ""
+        content:
+          application/json:
+            schema:
+              {$ref: "#/components/schemas/FullProvider"}
+      responses:
+        '204':
+          description: "Successfully updated."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/ProviderId"
+
+  /groups/{groupId}/apps/{appId}/auth_providers/{providerId}/disable:
+    put:
+      tags: ["authproviders"]
+      operationId: "adminDisableAuthProvider"
+      summary: "Disable an :ref:`authentication <stitch-authentication>` provider."
+      responses:
+        '204':
+          description: "Successfully disabled."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/ProviderId"
+
+  /groups/{groupId}/apps/{appId}/auth_providers/{providerId}/enable:
+    put:
+      tags: ["authproviders"]
+      operationId: "adminEnableAuthProvider"
+      summary: "Enable an :ref:`authentication <stitch-authentication>` provider."
+      responses:
+        '204':
+          description: "Successfully enabled."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/ProviderId"
+
+  /groups/{groupId}/apps/{appId}/security/allowed_request_origins:
+    get:
+      tags: ["security"]
+      operationId: "adminListAllowedRequestOrigins"
+      summary: |
+        List the allowed `HTTP origins <https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Origin>`__
+        from which |stitch-short| should allow requests.
+      responses:
+        '200':
+          description: "Successfully listed."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+    post:
+      tags: ["security"]
+      operationId: "adminSetAllowedRequestOrigins"
+      summary: |
+        Set the allowed `HTTP origins <https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Origin>`__
+        from which |stitch-short| should allow requests.
+      requestBody:
+        required: true
+        description: |
+          A list of HTTP origins.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                description: An HTTP origin. Must be of the form ``<scheme>://<host>[:port]``.
+                type: string
+      responses:
+        '204':
+          description: "The allowed HTTP origins were successfully set."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+
+  /groups/{groupId}/apps/{appId}/logs:
+    get:
+      tags: ["logs"]
+      operationId: "adminGetLogs"
+      summary: "Retrieve |stitch-short| logs."
+      parameters:
+        - name: co_id
+          in: query
+          description: Return only log messages associated with the given request ID.
+          schema: {type: string}
+          required: False
+        - name: errors_only
+          in: query
+          description: Whether to only return errors.
+          schema: {type: boolean}
+          required: False
+        - name: user_id
+          in: query
+          schema: {type: string}
+          description: Return only log messages associated with the given ``user_id``.
+          required: False
+        - name: start_date
+          in: query
+          schema: {type: string}
+          description: The date and time in ISO 8601 at which to begin returning results, exclusive.
+          required: False
+        - name: end_date
+          in: query
+          schema: {type: string}
+          description: The date and time in ISO 8601 at which to cease returning results, inclusive.
+          required: False
+        - name: skip
+          in: query
+          schema: {type: integer}
+          description: The offset number of matching log entries to skip before including them in the response.
+          required: False
+          default: 0
+      responses:
+        '200':
+          description: "Successfully retrieved."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  logs:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _id: {type: string}
+                        co_id: {type: string}
+                        domain_id: {type: string}
+                        app_id: {$ref: "#/components/parameters/AppId"}
+                        group_id: {$ref: "#/components/parameters/GroupId"}
+                        request_url: {type: string}
+                        request_method: {type: string}
+                        started: {type: string}
+                        completed: {type: string}
+                        error: {type: string}
+                        error_code: {type: string}
+                        status: {type: integer}
+                  nextEndDate:
+                    type: string
+                    required: False
+                    description:
+                      The end date and time of the next page of log entries in ISO 8601 format.
+                      Stitch paginates the result sets of queries that match more than 100 log
+                      entries and includes this field in paginated responses. To get the next
+                      page of up to 100 entries, pass this value as the ``end_date`` parameter
+                      in a subsequent request.
+                  nextSkip:
+                    type: integer
+                    required: False
+                    description:
+                      The offset into the next page of log entries in ISO 8601 format.
+                      Stitch paginates the result sets of queries that match more than 100 log
+                      entries and includes this field in paginated responses where the first
+                      entry on the next page has the same timestamp as the last entry on this page.
+                      To get the next page of up to 100 entries, pass this value, if it is present,
+                      as the ``skip`` parameter in a subsequent request.
+
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+
+  /groups/{groupId}/apps/{appId}/api_keys:
+    get:
+      tags: ["apikeys"]
+      operationId: "adminListApiKeys"
+      summary: "List :doc:`API keys </authentication/api-key>` associated with a |stitch-short| application."
+      responses:
+        '200':
+          description: "The API keys were successfully listed."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    _id: {type: string}
+                    name: {type: string}
+                    disabled: {type: boolean}
+    post:
+      tags: ["apikeys"]
+      operationId: "adminCreateApiKey"
+      summary: "Create a new :doc:`API key </authentication/api-key>`."
+      requestBody:
+        description: "The API key to create."
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: {type: string}
+              required: [name]
+      responses:
+        '201':
+          description: "The API key was successfully created."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiKey"
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+
+  /groups/{groupId}/apps/{appId}/api_keys/{apiKeyId}:
+    get:
+      tags: ["apikeys"]
+      operationId: "adminGetApiKey"
+      summary: "Retrieve information about an :doc:`API key </authentication/api-key>`."
+      responses:
+        '200':
+          description: "The API key was successfully retrieved."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiKeyResponse"
+    delete:
+      tags: ["apikeys"]
+      operationId: "adminDeleteApiKey"
+      summary: "Delete an :doc:`API key </authentication/api-key>`."
+      responses:
+        '204':
+          description: "The API key was successfully deleted."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/ApiKeyId"
+
+  /groups/{groupId}/apps/{appId}/api_keys/{apiKeyId}/enable:
+    put:
+      tags: ["apikeys"]
+      operationId: "adminEnableApiKey"
+      summary: "Enable an :doc:`API key </authentication/api-key>`."
+      responses:
+        '204':
+          description: "The API key was successfully enabled."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/ApiKeyId"
+
+  /groups/{groupId}/apps/{appId}/api_keys/{apiKeyId}/disable:
+    put:
+      tags: ["apikeys"]
+      operationId: "adminDisableApiKey"
+      summary: "Disable an :doc:`API key </authentication/api-key>`."
+      responses:
+        '204':
+          description: "The API key was successfully disabled."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/ApiKeyId"
+
+  /secrets:
+    get:
+      tags: ["secrets"]
+      operationId: "adminGetAllSecrets"
+      summary: "List :doc:`Secrets </values/define-a-secret>` associated with a |stitch-short| application."
+      responses:
+        '200':
+          description: "The Secrets were successfully listed."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id: {type: string}
+                    name: {type: string}
+    post:
+      tags: ["secrets"]
+      operationId: "adminCreateASecret"
+      summary: "Create a new :doc:`Secret </values/define-a-secret>`."
+      requestBody:
+        description: "The Secret to create."
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: {type: string}
+                value: {type: string}
+              required: [name, value]
+      responses:
+        '201':
+          description: "The Secret was successfully created."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id: {type: string}
+                  name: {type: string}
+
+  /secrets/{secretId}:
+    put:
+      tags: ["secrets"]
+      operationId: "adminModifyASecret"
+      summary: "Modify a :doc:`Secret </values/define-a-secret>` associated with a |stitch-short| application."
+      requestBody:
+        description: "The modified value of the Secret."
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                _id: {type: string}
+                name: {type: string}
+                value: {type: string}
+              required: [name, value]
+      responses:
+        '200':
+          description: "The Secret was successfully modified."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id: {type: string}
+                    name: {type: string}
+                    value: {type: string}
+                  required: [_id, name, value]
+    parameters:
+      - $ref: "#/components/parameters/SecretId"
+
+  /groups/{groupId}/apps/{appId}/functions:
+    get:
+      tags: ["functions"]
+      operationId: "adminListFunctions"
+      summary: "List :ref:`functions <functions>`."
+      responses:
+        '200':
+          description: "Successfully listed."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id: {type: string}
+                    name: {type: string}
+    post:
+      tags: ["functions"]
+      operationId: "adminCreateFunction"
+      summary: "Create a new :ref:`function <functions>`."
+      requestBody:
+        description: "The function to create"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewFunction"
+      responses:
+        '201':
+          description: "The function was successfully created."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewFunction"
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+
+  /groups/{groupId}/apps/{appId}/functions/{functionId}:
+    get:
+      tags: ["functions"]
+      operationId: "adminGetFunction"
+      summary: "Retrieve a :ref:`function <functions>`."
+      responses:
+        '200':
+          description: "The function was successfully retrieved."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Function"
+    delete:
+      tags: ["functions"]
+      operationId: "adminDeleteFunction"
+      summary: "Delete a :ref:`function <functions>`."
+      responses:
+        '204':
+          description: "The function was successfully deleted."
+    put:
+      tags: ["functions"]
+      operationId: "adminUpdateFunction"
+      summary: "Update a :ref:`function <functions>`."
+      responses:
+        '200':
+          description: "The function was successfully updated."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewFunction"
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/FunctionId"
+
+  /dependencies:
+    get:
+      tags: ["dependencies"]
+      operationId: "adminGetAllDependencies"
+      summary: "List :ref:`external dependencies <external-dependencies>` uploaded to the |stitch-short| application."
+      responses:
+        '200':
+          description: "The function was successfully retrieved."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DependenciesSummary"
+
+  /groups/{groupId}/apps/{appId}/deployments:
+    get:
+      tags: ["deploy"]
+      operationId: "adminListDeployments"
+      summary: |
+        Return the 100 most recent application deployments.
+      responses:
+        '200':
+          description: "Successfully listed."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Deployment"
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+  /groups/{groupId}/apps/{appId}/drafts:
+    get:
+      tags: ["deploy"]
+      operationId: "adminListDeploymentDrafts"
+      summary: |
+        Return the current application deployment draft, if applicable.
+      responses:
+        '200':
+          description: "Successfully listed."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeploymentDraft"
+    post:
+      tags: ["deploy"]
+      operationId: "adminCreateDeploymentDraft"
+      summary: |
+        Create a new application deployment draft, if none exists.
+      responses:
+        '200':
+          description: "Successfully created draft."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeploymentDraft"
+        '409':
+          description: "Draft already exists"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+  /groups/{groupId}/apps/{appId}/drafts/{draftId}:
+    delete:
+      tags: ["deploy"]
+      operationId: "adminDiscardDraft"
+      summary: |
+        Discard the specified application deployment draft.
+      responses:
+        '204':
+          description: "The draft was successfully discarded."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/DraftId"
+  /groups/{groupId}/apps/{appId}/drafts/{draftId}/deployment:
+    post:
+      tags: ["deploy"]
+      operationId: "adminDeployDraft"
+      summary: |
+        Deploy the specified application deployment draft.
+      responses:
+        '201':
+          description: "The draft was successfully deployed."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/DraftId"
+  /groups/{groupId}/apps/{appId}/drafts/{draftId}/diff:
+    get:
+      tags: ["deploy"]
+      operationId: "adminDeployDraftDiff"
+      summary: |
+        Return a diff between the currently deployed application and the
+        specified draft.
+      responses:
+        '200':
+          description: "Successfully diffed draft."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Diff"
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/DraftId"
+
+  /groups/{groupId}/apps/{appId}/hosting/assets:
+    get:
+      tags: ["hosting"]
+      operationId: "adminGetAllHostedAssets"
+      summary: |
+        List all hosted assets.
+      responses:
+        '200':
+          description: "Successfully listed hosted files."
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/HostedAssetMetadata" }
+    post:
+      tags: ["hosting"]
+      operationId: "adminMoveCopyHostedAsset"
+      summary: Move or copy a hosted asset to a new resource path.
+      requestBody:
+        description: "The hosted asset file and its metadata. (Must use ``Content-Type: multipart/mixed``)"
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                move_from:
+                  type: string
+                  description: |
+                    The current resource path of the asset to move.
+                    Must be used with ``move_to``.
+                move_to:
+                  type: string
+                  description: |
+                    The resource path to which the asset will move.
+                    Must be used with ``move_from``.
+                copy_from:
+                  type: string
+                  description: |
+                    The current resource path of the asset to copy.
+                    Must be used with ``copy_to``.
+                copy_to:
+                  type: string
+                  description: |
+                    The resource path to which the asset will be copied.
+                    Must be used with ``copy_from``.
+      responses:
+        '204':
+          description: "Successfully moved/copied the hosted asset."
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+
+  /groups/{groupId}/apps/{appId}/hosting/assets/asset:
+    get:
+      tags: ["hosting"]
+      operationId: "adminGetHostedAsset"
+      summary: |
+        Retrieve metadata for a specific hosted asset
+      parameters:
+        - $ref: "#/components/parameters/AssetResourcePath"
+        - $ref: "#/components/parameters/AssetResourcePathPrefix"
+      responses:
+        '200':
+          description: "Successfully retrieved metadata for the hosted file."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/HostedAssetMetadata" }
+        '404':
+          description: "Asset not found."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    put:
+      tags: ["hosting"]
+      operationId: "adminUploadHostedAsset"
+      summary: |
+        Upload or replace an asset at a specific resource path.
+      parameters:
+        - $ref: "#/components/parameters/AssetResourcePath"
+      requestBody:
+        description: "The hosted asset file and its metadata. (Must use ``Content-Type: multipart/mixed``)"
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                meta:
+                  type: object
+                  $ref: "#/components/schemas/AssetMetadata"
+                  required: [meta, file]
+                  description: |
+                    An asset metadata document (encoded as JSON).
+                    
+                    .. code-block:: json
+                       
+                       {
+                         "path": "<Asset Resource Path>",
+                         "hash": "<Asset MD5 Checksum Hash>",
+                         "size": <File size in bytes>,
+                         "attrs": [
+                           {
+                             "name": "<Metadata Attribute Name>",
+                             "value": "<Metadata Attribute Value>",
+                           }
+                         ]
+                       }
+                file:
+                  type: string
+                  format: binary
+                  description: The asset file to upload (encoded as binary).
+      responses:
+        '204':
+          description: "Successfully added/replaced the hosted asset."
+        '400':
+          description: "Bad Request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    $ref: "#/components/schemas/Error"
+    patch:
+      tags: ["hosting"]
+      operationId: "adminUpdateHostedAsset"
+      summary: |
+        Update the metadata attributes of a hosted asset at a specific resource path.
+      parameters:
+        - $ref: "#/components/parameters/AssetResourcePath"
+      responses:
+        '204':
+          description: "Successfully updated the hosted asset."
+        '400':
+          description: "Bad Request."
+      requestBody:
+        description: |
+          The new metadata attributes for the hosted asset. These
+          attributes replace all existing attributes for the file.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                attributes:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/MetadataAttribute"
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+
+components:
+  parameters:
+    AssetResourcePath:
+      name: path
+      in: query
+      description: The resource path of a hosted asset.
+      required: true
+      schema:
+        type: string
+    AssetResourcePathPrefix:
+      name: prefix
+      in: query
+      description: Return only those assets where the resource path begins with the specified prefix.
+      required: false
+      schema:
+        type: string
+    GroupId:
+      name: "groupId"
+      description: "An |atlas| :atlas:`Project/Group ID </tutorial/manage-projects/>`."
+      in: "path"
+      required: true
+      schema:
+        type: "string"
+    AppId:
+      name: "appId"
+      description: |
+        The ObjectID of your application.
+        :ref:`stitch-api-project-and-application-ids` demonstrates how
+        to find this value.
+      in: "path"
+      required: true
+      schema:
+        type: "string"
+    FunctionId:
+      name: "functionId"
+      description: "Function ID"
+      in: "path"
+      required: true
+      schema:
+        type: "string"
+    ServiceId:
+      name: "serviceId"
+      description: "Service ID"
+      in: "path"
+      required: true
+      schema:
+        type: "string"
+    SecretId:
+      name: "secretId"
+      description: "Secret ID"
+      in: "path"
+      required: true
+      schema:
+        type: "string"
+    CommandName:
+      name: "commandName"
+      description: "Command name"
+      in: "path"
+      required: true
+      schema:
+        type: "string"
+    ValueId:
+      name: "valueId"
+      description: "Value ID"
+      in: "path"
+      required: true
+      schema:
+        type: "string"
+    DraftId:
+      name: "draftId"
+      description: "Draft ID"
+      in: "path"
+      required: true
+      schema:
+        type: "string"
+    RuleId:
+      name: "ruleId"
+      description: "Rule ID"
+      in: "path"
+      required: true
+      schema:
+        type: "string"
+    IncomingWebhookId:
+      name: "incomingWebhookId"
+      description: "Incoming webhook ID"
+      in: "path"
+      required: true
+      schema:
+        type: "string"
+    Email:
+      name: "email"
+      description: "Email address"
+      in: "path"
+      required: true
+      schema:
+        type: "string"
+    MessageId:
+      name: "messageId"
+      description: "Message ID"
+      in: "path"
+      required: true
+      schema:
+        type: "string"
+    Uid:
+      name: "uid"
+      description: "UID"
+      in: "path"
+      required: true
+      schema:
+        type: "string"
+    ProviderId:
+      name: "providerId"
+      description: "Provider ID"
+      in: "path"
+      required: true
+      schema:
+        type: "string"
+    ApiKeyId:
+      name: "apiKeyId"
+      description: "API Key ID"
+      in: "path"
+      required: true
+      schema:
+        type: "string"
+    TriggerId:
+      name: "triggerId"
+      description: |
+        The ObjectID of the trigger.
+      in: "path"
+      required: true
+      schema:
+        type: "string"
+  schemas:
+    ApiKey:
+      type: object
+      properties:
+        _id: {type: string}
+        key: {type: string}
+        name: {type: string}
+        disabled: {type: string}
+    ApiKeyResponse:
+      type: object
+      properties:
+        _id: {type: string}
+        name: {type: string}
+        disabled: {type: string}
+    Application:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: The application's unique internal ID.
+        client_app_id:
+          type: string
+          description: The application's public App ID.
+        name:
+          type: string
+          description: The name of the application.
+        location:
+          type: string
+          description: The application's deployment region.
+        deployment_model:
+          type: string
+          description: The application's deployment model.
+        domain_id:
+          type: string
+        group_id: {$ref: "#/components/parameters/GroupId"}
+    BuildInfo:
+      type: object
+      properties:
+        version:
+          type: string
+          description: |
+            Human-readable version information about the mongod
+            instance. This string will take the format
+            ``<major>.<minor>.<patch>``.
+        gitVersion:
+          type: string
+          description: |
+            The commit identifier that identifies the state of the code
+            use to build the mongod.
+        versionArray:
+          type: array
+          description: |
+            An array that conveys version information about the mongod
+            instance. See version for a more readable version of this
+            string.
+          items:
+            type: integer
+        javascriptEngine:
+          type: string
+          description: |
+            A string that reports the JavaScript engine used in the
+            mongod instance. By default, this is ``mozjs`` after version
+            ``3.2``, and previously ``V8``.
+        bits:
+          type: string
+          description: |
+            A number that reflects the target processor architecture
+            of the mongod binary.
+        debug:
+          type: boolean
+          description: |
+            A boolean that reflects whether or not the ``mongod``
+            instance was built with debugging options.
+        maxBsonObjectSize:
+          type: integer
+          description: |
+            A number that reports the
+            :manual:`Maximum BSON Document Size
+            </reference/limits/#BSON-Document-Size>`
+    DependenciesSummary:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: The dependency collection's unique internal ID.
+        location:
+          type: string
+          description: The application's deployment region.
+        user_id:
+          type: string
+          description: |
+            The unique ``_id`` value of the MongoDB Cloud user that
+            uploaded the dependency collection.
+        last_modified:
+          type: integer
+          description: |
+              The time at which the dependencies were uploaded
+              in :wikipedia:`Unix time <Unix_time>` (number of seconds
+              since January 1, 1970 at 00:00 UTC).
+        dependencies_list:
+          type: array
+          description: |
+            An array of documents that each describe a
+            dependency uploaded to the application.
+          items: {$ref: "#/components/schemas/Dependency"}
+    Dependency:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the uploaded dependency.
+        version:
+          type: string
+          description: The version of the uploaded dependency.
+    DeploymentDraft:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: The unique ID of the draft.
+        user_id:
+          type: string
+          description: The unique _id value of the MongoDB Cloud user that created the draft.
+        app:
+          $ref: "#/components/schemas/Application"
+    Deployment:
+      type: object
+      properties:
+        _id:
+          type: "string"
+          description: The unique ID of the deployment.
+        app_id:
+          type: "string"
+          description: The unique _id value of the Stitch app.
+        draft_id:
+          type: "string"
+          description: The unique _id value of the deployment draft associated with the deployment, if applicable.
+        user_id:
+          type: string
+          description: The unique _id value of the MongoDB Cloud user that deployed the draft.
+        deployed_at:
+          type: "integer"
+          description: The time at which the deployment was made. Represented as the number of seconds since January 1, 1970.
+        origin:
+          type: "string"
+          description: The deployment method used to create the deployment.
+        commit:
+          type: "string"
+          description: The commit hash of the deployment (Automatic GitHub Deployment)
+        status:
+          type: "string"
+          description: A message that indicates whether or not the deployment was successful.
+        status_error_message:
+          type: "string"
+          description: The error message of the error that caused the deployment to fail, if applicable.
+        diff_url:
+          type: "string"
+          description: A link to the diff of changes in the deployment (Automatic GitHub Deployment)
+    Diff:
+      type: object
+      properties:
+        diffs:
+          type: array
+          description: A list where each item is the line-by-line diff for a specific configuration file.
+          items:
+            type: string
+        hosting_files_diff:
+          type: object
+          description: The filenames of hosted files that have been added, removed, or modified.
+          properties:
+            added:
+              type: array
+              items:
+                type: string
+                description: A list where each element is the name of a file that was added in the draft.
+            deleted:
+              type: array
+              items:
+                type: string
+                description: A list where each element is the name of a file that was deleted in the draft.
+            modified:
+              type: array
+              items:
+                type: string
+                description: A list where each element is the name of a file that was changed in the draft.
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: A message that describes the error.
+        error_code:
+          type: string
+          description: The error type.
+    NewApplication:
+      type: object
+      properties:
+        name: {type: string}
+      required: [name]
+    Service:
+      type: object
+      properties:
+        _id: {type: string}
+        name: {type: string}
+        type: {type: string}
+        version: {type: integer}
+    NewService:
+      type: object
+      properties:
+        name: {type: string}
+        type: {type: string}
+        config: {type: object}
+      required: [name, type]
+    Rule:
+      type: object
+      properties:
+        name: {type: string}
+        actions:
+          items: {type: string}
+        when: {type: object}
+      required:
+        - name
+        - when
+    IncomingWebhook:
+      type: object
+      properties:
+        name: {type: string}
+        function_source: {type: string}
+        respond_result: {type: boolean}
+        options:
+          type: object
+          properties:
+            secret: {type: string}
+            secretAsQueryParam: {type: boolean}
+      required:
+        - name
+        - function_source
+        - respond_result
+    UserProvider:
+      type: object
+      properties:
+        id: {type: string}
+        provider_type: {$ref: "#/components/schemas/ProviderType"}
+        provider_id: {type: string}
+    ProviderSummary:
+      type: object
+      properties:
+        _id: {type: string}
+        name: {type: string}
+        type: {$ref: "#/components/schemas/ProviderType"}
+        disabled: {type: boolean}
+    FullProvider:
+      type: object
+      properties:
+        _id: {type: string}
+        name: {type: string}
+        type: {$ref: "#/components/schemas/ProviderType"}
+        disabled: {type: boolean}
+        config: {type: object}
+    NewProvider:
+      type: object
+      properties:
+        name: {type: string}
+        type: {$ref: "#/components/schemas/ProviderType"}
+        disabled: {type: boolean}
+        config: {type: object}
+      required: [name, type, disabled]
+    StitchProfile:
+      type: object
+      properties:
+        user_id: {type: string}
+        domain_id: {type: string}
+        identities:
+          type: array
+          items: {$ref: "#/components/schemas/ProviderSummary"}
+        data:
+          type: object
+          properties:
+            email: {type: string}
+            name: {type: string}
+        type: {$ref: "#/components/schemas/ProfileType"}
+        roles:
+          type: array
+          items:
+            type: object
+            properties:
+              role_name: {type: string}
+              group_id: {$ref: "#/components/parameters/GroupId"}
+    NewFunction:
+      type: object
+      properties:
+        can_evaluate:
+          type: object
+          description: |
+            A JSON expression that evaluates to ``true`` if the Function
+            is allowed to run in response to an incoming request.
+        name:
+          type: string
+          description: |
+            A unique name for the Function.
+        private:
+          type: boolean
+          description: |
+            If ``true``, the function is hidden from client
+            applications. You can still call a private function from
+            JSON expressions and other functions, including incoming
+            webhooks and triggers.
+        source:
+          type: string
+          description: |
+            The stringified source code for the function. The code must
+            be valid ES6.
+      required: [can_evaluate, name, private, source]
+    Function:
+      type: object
+      properties:
+        _id: {type: string}
+        can_evaluate:
+          type: object
+          description: |
+            A JSON expression that evaluates to ``true`` if the Function
+            is allowed to run in response to an incoming request.
+        name:
+          type: string
+          description: |
+            A unique name for the Function.
+        private:
+          type: boolean
+          description: |
+            If ``true``, the function is hidden from client
+            applications. You can still call a private function from
+            JSON expressions and other functions, including incoming
+            webhooks and triggers.
+        source:
+          type: string
+          description: |
+            The stringified source code for the function. The code must
+            be valid ES6.
+    ValueSummary:
+      type: object
+      properties:
+        _id: {type: string}
+        name: {type: string}
+        private: {type: boolean}
+    NewValue:
+      type: object
+      properties:
+        name: {type: string}
+        private: {type: boolean}
+        value: {}
+      required: [name, private, value]
+    Value:
+      type: object
+      properties:
+        _id: {type: string}
+        name: {type: string}
+        private: {type: boolean}
+        value: {}
+    ProviderType:
+      type: string
+      enum:
+        - mongodb-cloud
+        - local
+    ProfileType:
+      type: string
+      enum:
+        - normal
+        - server
+        - system
+        - unknown
+    MessageState:
+      type: string
+      enum:
+        - sent
+        - draft
+    NewMessage:
+      type: object
+      properties:
+        label: {type: string}
+        message: {type: string}
+        topic: {type: string}
+        state: {$ref: "#/components/schemas/MessageState"}
+      required:
+        - label
+        - message
+        - state
+        - topic
+    Message:
+      type: object
+      properties:
+        _id: {type: string}
+        appID: {type: string}
+        label: {type: string}
+        message: {type: string}
+        topic: {type: string}
+        created: {type: string}
+        sent: {type: string}
+        state: {$ref: "#/components/schemas/MessageState"}
+    User:
+      type: object
+      properties:
+        _id: {type: string}
+        identities:
+          items: {$ref: "#/components/schemas/UserProvider"}
+        type: {type: string}
+        creation_date: {type: integer}
+        last_authentication_date: {type: integer}
+        disabled: {type: boolean}
+        data: {type: object}
+    TriggerResponse:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: The unique ID of the trigger.
+        name:
+          type: string
+          description: The name of the trigger.
+        type:
+          type: string
+          description: The type of the trigger.
+        function_id:
+          type: string
+          description: The ID of the function associated with the trigger.
+        function_name:
+          type: string
+          description: The name of the function associated with the trigger.
+        disabled:
+          type: boolean
+          description: If true, the trigger is disabled and will not fire.
+    TriggerRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          required: true
+          description: The name of the trigger.
+        type:
+          type: string
+          required: true
+          description: The type of the trigger.
+          enum: ["DATABASE", "AUTHENTICATION"]
+        function_id:
+          type: string
+          required: true
+          description: The ID of the function associated with the trigger.
+        disabled:
+          type: boolean
+          description: |
+            | Default: ``false``
+            | If true, the trigger is disabled.
+        config:
+          type: object
+          description: An object that defines configuration values for the trigger.
+          required:
+            - database
+            - collection
+            - operation_types
+            - operation_type
+            - service_id
+            - providers
+          properties:
+            operation_types:
+              ## This value really should be a proper array per the OpenApi3 spec.
+              ## It should also use openapi3 ``oneOf`` to distinguish between trigger types.
+              ## Unfortunately we don't currently support either of these :(.
+              ## This behavior would need to be added to the sphinx-openapi directive.
+              type: array
+              items:
+                type: string
+              description: |
+                | **Required for Database Triggers**
+                | Minimum Items: 1
+                | The :ref:`database event operation types
+                  <database-events>` to listen for.
+
+                | Valid values:
+
+                - ``INSERT``
+                - ``UPDATE``
+                - ``REPLACE``
+                - ``DELETE``
+            operation_type:
+              type: string
+              description: |
+                | **Required for Authentication Triggers**
+                | The :ref:`authentication operation type
+                  <authentication-event-operation-types>` to listen for.
+
+                | Valid values:
+
+                - ``LOGIN``
+                - ``CREATE``
+                - ``DELETE``
+            providers:
+              type: string
+              description: |
+                | **Only Available for Authentication Triggers**
+                | A list of one or more :doc:`authentication provider
+                  </authentication/providers>` id values. The trigger
+                  will only listen for authentication events produced by
+                  these providers.
+            database:
+              type: string
+              description: |
+                | **Required for Database Triggers**
+                | The name of the MongoDB database that contains the watched collection.
+            collection:
+              type: string
+              description: |
+                | **Required for Database Triggers**
+                | The name of the MongoDB collection that the trigger watches for change events.
+                  The collection must be part of the specified database.
+            service_id:
+              type: string
+              description: |
+                | **Required for Database Triggers**
+                | The ID of the MongoDB Service associated with the trigger.
+            match:
+              type: object
+              description: |
+                | **Only Available for Database Triggers**
+                | A :manual:`$match </reference/operator/aggregation/match>`
+                  expression document that |stitch-short| includes in
+                  the underlying change stream pipeline for the trigger.
+                  This is useful when you want to filter change events
+                  beyond their operation type. The trigger will only
+                  fire if the expression evaluates to true for a given
+                  change event.
+            full_document:
+              type: boolean
+              description: |
+                | **Only Available for Database Triggers**
+                | If true, indicates that ``UPDATE`` change events should include the most current
+                  :manual:`majority-committed </reference/read-concern-majority/>` version of the
+                  modified document in the ``fullDocument`` field.
+            schedule:
+              type: string
+              description: |
+                | **Only Available for Scheduled Triggers**
+                | A :doc:`cron expression </triggers/cron-expressions>` that defines the trigger schedule.
+        event_processors:
+          type: object
+          description: |
+            | An object where each field name is an event processor ID and each
+              value is an object that configures its corresponding event
+              processor.
+
+              The following event processors are supported:
+
+              - ``AWS_EVENTBRIDGE``
+              
+              .. example
+                 
+                 The following object configures a trigger to :doc:`send events to AWS
+                 Eventbridge </triggers/eventbridge>`.
+
+                 .. code-block:: json
+                    
+                    "event_processors": {
+                      "AWS_EVENTBRIDGE": {
+                        "type": "AWS_EVENTBRIDGE",
+                        "config": {
+                          "account_id": "012345678901",
+                          "region": "us-east-1"
+                        }
+                      }
+                    }
+
+    MetadataAttribute:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The :doc:`metadata attribute </hosting/file-metadata-attributes>` name.
+        value:
+          type: string
+          description: The :doc:`metadata attribute </hosting/file-metadata-attributes>` value.
+    AssetMetadata:
+      type: object
+      properties:
+        path:
+          type: string
+          description: The resource path of the asset
+        size:
+          type: integer
+          description: The size of the asset in bytes
+        attrs:
+          type: array
+          description: |
+            An array of documents that each describe a :doc:`metadata
+            attribute </hosting/file-metadata-attributes>` that applies
+            to the asset.
+          items: {$ref: "#/components/schemas/MetadataAttribute"}
+        hash:
+          type: string
+          description: The MD5 checksum hash for the asset
+    HostedAssetMetadata:
+      type: object
+      properties:
+        appId:
+          type: string
+          description: The unique App ID of the Stitch application that is hosting the file.
+        last_modified:
+          type: integer
+          description: |
+            The time at which the hosted asset was last modified in
+            :wikipedia:`Unix time <Unix_time>` (number of seconds since
+            January 1, 1970 at 00:00 UTC).
+        url:
+          type: string
+          description: The full URL of the hosted asset.
+        path:
+          type: string
+          description: The resource path of the hosted asset
+        size:
+          type: integer
+          description: The size of the hosted asset in bytes
+        attrs:
+          type: array
+          description: |
+            An array of documents that each describe a :doc:`metadata
+            attribute </hosting/file-metadata-attributes>` that applies
+            to the asset.
+          items: {$ref: "#/components/schemas/MetadataAttribute"}
+        hash:
+          type: string
+          description: The MD5 checksum hash for the hosted asset
+  securitySchemes:
+    tokenAuth:
+      type: http
+      scheme: bearer
+      description: |
+        The authorization token provided in the ``access_token`` field of
+        the :ref:`post-/auth/providers/{provider}/login` and
+        :ref:`post-/auth/session` API endpoints.
+    refreshAuth:
+      type: http
+      scheme: bearer
+      description: |
+        The authorization token provided in the ``refresh_token`` field of
+        the :ref:`post-/auth/providers/{provider}/login` API endpoint.
+
+
+tags:
+  - name: admin
+    description: "|stitch-short| Administrator APIs"
+  - name: apikeys
+    description: "API Key APIs"
+  - name: secrets
+    description: "Secrets APIs"
+  - name: apps
+    description: "Application-level APIs"
+  - name: authproviders
+    description: "Auth Provider APIs"
+  - name: email
+    description: "Email APIs"
+  - name: functions
+    description: "Functions APIs"
+  - name: logs
+    description: "Logging APIs"
+  - name: notifications
+    description: "Notifications APIs"
+  - name: rules
+    description: "Rules APIs"
+  - name: security
+    description: "Security APIs"
+  - name: services
+    description: "Services APIs"
+  - name: users
+    description: "Users APIs"
+  - name: values
+    description: "Values APIs"
+  - name: webhooks
+    description: "Incoming Webhook APIs"
+  - name: triggers
+    description: "Event Trigger APIs"
+  - name: hosting
+    description: "Static File Hosting APIs"
+  - name: deploy
+    description: "Application Deployment APIs"
+  - name: dependencies
+    description: "Dependency APIs"
+
+security:
+  - tokenAuth: []

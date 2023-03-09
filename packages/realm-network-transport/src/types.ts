@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export type Method = "GET" | "POST" | "DELETE" | "PUT" | "PATCH";
+export type Method = "GET" | "POST" | "DELETE" | "PUT" | "PATCH" | "OPTIONS" | "HEAD";
 
 export type Headers = { [name: string]: string };
 

@@ -11,8 +11,9 @@
   },
   "scripts": {
     "build": "wireit",
-    "lint": "eslint --ext .js,.ts .",
-    "start": "./realm-app-importer.ts"
+    "openapi:generate": "wireit",
+    "openapi:link": "wireit",
+    "lint": "eslint --ext .js,.ts ."
   },
   "wireit": {
     "build": {
@@ -25,12 +26,42 @@
       ]
     },
     "generate-types": {
-      "command": "tsc --project tsconfig.types.json --declaration --emitDeclarationOnly --declarationDir types/generated",
-      "dependencies": [
-        "../realm-network-transport:build"
-      ],
+      "command": "tsc --project tsconfig.types.json",
       "files": ["src/**/*.ts"],
-      "output": ["types/generated/**/*.d.ts"]
+      "output": ["types/generated/**/*.d.ts"],
+      "dependencies": [
+        "openapi:generate",
+        "../realm-network-transport:build"
+      ]
+    },
+    "openapi:clone": {
+      "command": "git clone --branch parameter-components git@github.com:kraenhansen/openapi-typescript-codegen.git || echo 'Already cloned'",
+      "files": ["./openapi-typescript-codegen/src"],
+      "output": []
+    },
+    "openapi:install": {
+      "command": "npm install --prefix openapi-typescript-codegen",
+      "dependencies": ["openapi:clone"],
+      "files": ["./openapi-typescript-codegen/package-lock.json"],
+      "output": []
+    },
+    "openapi:build": {
+      "command": "npm run build --prefix openapi-typescript-codegen",
+      "dependencies": ["openapi:install"],
+      "files": ["./openapi-typescript-codegen/src"],
+      "output": ["./openapi-typescript-codegen/dist"]
+    },
+    "openapi:link": {
+      "command": "ln -nsf ../openapi-typescript-codegen node_modules/openapi-typescript-codegen",
+      "dependencies": ["openapi:build"],
+      "files": ["./openapi-typescript-codegen/dist"],
+      "output": []
+    },
+    "openapi:generate": {
+      "command": "openapi --useUnionTypes --input ./src/api/openapi-admin-v3.yaml --output ./src/api/generated --request ./src/api/request-patch.ts",
+      "dependencies": ["openapi:link"],
+      "files": ["./src/api/openapi-admin-v3.yaml", "./src/api/request-patch.ts"],
+      "output": ["./src/api/generated"]
     }
   },
   "files": [
