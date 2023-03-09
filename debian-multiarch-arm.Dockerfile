@@ -1,4 +1,4 @@
-FROM debian:10
+FROM debian:11
 
 RUN dpkg --add-architecture armhf && apt-get update
 RUN dpkg --add-architecture arm64 && apt-get update
@@ -16,9 +16,6 @@ RUN apt-get install -y \
         libz-dev:arm64 \
         libasio-dev \
         ninja-build \
-        nodejs \
-        libnode-dev:armhf \
-        libnode-dev:arm64 \
         ninja-build \
         npm \
         ccache \
