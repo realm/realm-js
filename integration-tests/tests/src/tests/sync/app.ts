@@ -18,7 +18,7 @@
 
 import { BSON } from "realm";
 import { expect } from "chai";
-import { importAppBefore } from "../../hooks";
+import { authenticateUserBefore, importAppBefore } from "../../hooks";
 import { generatePartition } from "../../utils/generators";
 import { getUrls } from "../../utils/import-app";
 import { select } from "../../utils/select";
@@ -234,18 +234,16 @@ describe("App", () => {
 
   describe("with sync", () => {
     importAppBefore("with-db");
-    beforeEach(() => Realm.clearTestState());
-    afterEach(() => Realm.clearTestState());
+    authenticateUserBefore();
 
     [true, false].forEach((useFlexibleSync) => {
       it(`migration while sync is enabled throws (${
         useFlexibleSync ? "FLX" : "PBS"
       })`, async function (this: Mocha.Context & AppContext & RealmContext) {
-        const user = await this.app.logIn(Realm.Credentials.anonymous());
         const config = {
           schema: [TestObjectSchema],
           sync: {
-            user,
+            user: this.user,
             ...(useFlexibleSync ? { flexible: true } : { partitionValue: '"Lolo"' }),
             _sessionStopPolicy: "immediately",
           },
@@ -257,7 +255,6 @@ describe("App", () => {
             useFlexibleSync ? "'sync.flexible'" : "'sync.partitionValue'"
           } is set).`,
         );
-        await user.logOut();
       });
     });
 
@@ -265,29 +262,27 @@ describe("App", () => {
       const dogNames = ["King", "Rex"]; // must be sorted
       let nCalls = 0;
 
-      const credentials = Realm.Credentials.anonymous();
-      const user = await this.app.logIn(credentials);
-      const partition = generatePartition();
-      const realmConfig = {
+      const partitionValue = generatePartition();
+      const realmConfig: Realm.Configuration = {
         schema: [PersonForSyncSchema, DogForSyncSchema],
         shouldCompact: () => {
           nCalls++;
           return true;
         },
         sync: {
-          user: user,
-          partitionValue: partition,
+          user: this.user,
+          partitionValue,
+          //@ts-expect-error TYPEBUG: cannot access const enum at runtime
           _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
         },
       };
-      //@ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
       Realm.deleteFile(realmConfig);
-      //@ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
       const realm = await Realm.open(realmConfig);
       expect(nCalls).equals(1);
       realm.write(() => {
         const tmpDogs: IDogForSyncSchema[] = [];
         dogNames.forEach((n) => {
+          console.log("FISK 4", n);
           const dog = realm.create<IDogForSyncSchema>(DogForSyncSchema.name, { _id: new BSON.ObjectId(), name: n });
           tmpDogs.push(dog);
           return tmpDogs;
@@ -305,10 +300,8 @@ describe("App", () => {
       expect(realm.objects("Dog").length).equals(2);
       realm.close();
 
-      //@ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
       Realm.deleteFile(realmConfig);
 
-      //@ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
       const realm2 = await Realm.open(realmConfig);
       expect(nCalls).equals(2);
       await realm2.syncSession?.downloadAllServerChanges();
@@ -322,7 +315,6 @@ describe("App", () => {
       expect(persons.length).equals(1);
       expect(persons[0].dogs.length).equals(dogNames.length);
       realm2.close();
-      await user.logOut();
     });
   });
 });
