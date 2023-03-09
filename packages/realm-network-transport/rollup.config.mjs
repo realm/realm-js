@@ -29,15 +29,14 @@ export default [
     output: [
       {
         file: pkg.main,
-        format: "cjs",
+        format: "es",
       },
       {
-        file: pkg.module,
-        format: "es",
+        file: pkg.require,
+        format: "cjs",
       },
     ],
     plugins: [
-      commonjs(),
       typescript({
         tsconfig: "src/node/tsconfig.json",
         noEmitOnError: true,
@@ -50,11 +49,11 @@ export default [
     output: [
       {
         file: pkg.browser[pkg.main],
-        format: "cjs",
+        format: "es",
       },
       {
-        file: pkg.browser[pkg.module],
-        format: "es",
+        file: pkg.browser[pkg.require],
+        format: "cjs",
       },
     ],
     plugins: [
