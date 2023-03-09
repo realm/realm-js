@@ -216,7 +216,7 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
 }
 
 /**
- * Collect and Send analytics data to MongoDB over HTTPS
+ * Collect and send analytics data to MongoDB over HTTPS
  * @param  {boolean} dryRun if true, collect data but don't submit
  */
 async function submitAnalytics(dryRun) {
@@ -242,11 +242,10 @@ async function submitAnalytics(dryRun) {
   return new Promise((resolve, reject) => {
     // node 19 turns on keep-alive by default and it will make the https.get() to hang
     // https://github.com/realm/realm-js/issues/5136
-    https.globalAgent = new https.Agent({ keepAlive: false });
     const requestUrl = getAnalyticsRequestUrl(payload);
 
     https
-      .get(requestUrl, (res) => {
+      .get(requestUrl, { agent: new https.Agent({ keepAlive: false }) }, (res) => {
         resolve({
           statusCode: res.statusCode,
           statusMessage: res.statusMessage,

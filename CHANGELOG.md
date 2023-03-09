@@ -8,7 +8,7 @@
 
 ### Fixed
 * It is not allowed to specify `deleteRealmIfMigrationIsNeeded` and sync. This can lead to error messages like `Schema validation failed due to the following errors`. ([#5548](https://github.com/realm/realm-js/issues/5548), v10.12.0)
-* Installation will hang when using Node 19. ([#5136](https://github.com/realm/realm-js/issues/5136), since v10.13.0)
+* Installation will no longer hang when using Node 19. ([#5136](https://github.com/realm/realm-js/issues/5136), since v10.13.0)
 
 ### Compatibility
 * React Native >= v0.70.0
