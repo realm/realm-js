@@ -8,6 +8,7 @@
 
 ### Fixed
 * It is not allowed to specify `deleteRealmIfMigrationIsNeeded` and sync. This can lead to error messages like `Schema validation failed due to the following errors`. ([#5548](https://github.com/realm/realm-js/issues/5548), v10.12.0)
+* Installation will no longer hang when using Node 19. ([#5136](https://github.com/realm/realm-js/issues/5136), since v10.13.0)
 * Fixed enums which was accidentally exported on the `Realm` namespace without a backing implementation. ([#5493](https://github.com/realm/realm-js/pull/5493), since v11.0.0)
 * Converting local Realm to synced Realm crashes if an embedded object is null. ([#5389](https://github.com/realm/realm-js/issues/5389), since v10.13.0)
 * Fixed performance degradation on subqueries. ([realm/realm-core#6327](https://github.com/realm/realm-core/issues/6327), since v6.0.0)
@@ -36,7 +37,7 @@
 * None
 
 ### Compatibility
-* React Native >= v0.70.0
+* React Native >= v0.71.0
 * Atlas App Services.
 * Realm Studio v13.0.0.
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
