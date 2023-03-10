@@ -7,6 +7,7 @@
 * None
 
 ### Fixed
+* Suppress omitting `objcMsgsend` stubs to ensure backward compatibility with Xcode 13. It can be observed as `Undefined symbols for architecture arm64: "_objc_msgSend$allBundles", referenced from: realm::copy_bundled_realm_files() in librealm-js-ios.a(platform.o)` when using a React Native app for iOS. ([#5511](https://github.com/realm/realm-js/issues/5511), since v11.5.1)
 * It is not allowed to specify `deleteRealmIfMigrationIsNeeded` and sync. This can lead to error messages like `Schema validation failed due to the following errors`. ([#5548](https://github.com/realm/realm-js/issues/5548), v10.12.0)
 * Installation will no longer hang when using Node 19. ([#5136](https://github.com/realm/realm-js/issues/5136), since v10.13.0)
 * Fixed enums which was accidentally exported on the `Realm` namespace without a backing implementation. ([#5493](https://github.com/realm/realm-js/pull/5493), since v11.0.0)

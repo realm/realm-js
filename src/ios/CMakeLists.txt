@@ -1,3 +1,6 @@
+# https://developer.apple.com/forums/thread/716965
+add_cxx_flag_if_supported(-fno-objc-msgsend-selector-stubs)
+
 add_library(realm-js-ios STATIC
     platform.mm
 )
