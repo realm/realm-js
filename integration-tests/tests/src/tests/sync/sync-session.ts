@@ -982,7 +982,7 @@ describe("SessionTest", () => {
       // we haven't uploaded our recent changes -- we're not allowed to copy
       expect(() => {
         realm1.writeCopyTo(outputConfig2);
-      }).throws("Could not write file as not all client changes are integrated in server");
+      }).throws("All client changes must be integrated in server before writing copy");
 
       // log back in and upload the changes we made locally
       user1 = await this.app.logIn(credentials1);

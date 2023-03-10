@@ -381,6 +381,13 @@ WrappedObject<ClassType>::WrappedObject(const Napi::CallbackInfo& info)
         copy_object(env, e.m_value, error);
         throw error;
     }
+    catch (const realm::Exception& e) {
+        Napi::Error error = Napi::Error::New(info.Env(), e.what());
+        std::string_view code_string = e.code_string();
+        error.Set("name", "RealmError");
+        error.Set("code", Napi::String::New(info.Env(), code_string.data(), code_string.size()));
+        throw error;
+    }
     catch (const std::exception& e) {
         throw Napi::Error::New(env, e.what());
     }
@@ -1502,6 +1509,14 @@ class ObjectWrap<node::Types, ClassType> : public node::ObjectWrap<ClassType> {}
     {                                                                                                                \
         Napi::Error error = Napi::Error::New(info.Env(), e.what());                                                  \
         copy_object(env, e.m_value, error);                                                                          \
+        throw error;                                                                                                 \
+    }                                                                                                                \
+    catch (const realm::Exception& e)                                                                                \
+    {                                                                                                                \
+        Napi::Error error = Napi::Error::New(info.Env(), e.what());                                                  \
+        std::string_view code_string = e.code_string();                                                              \
+        error.Set("name", "RealmError");                                                                             \
+        error.Set("code", Napi::String::New(info.Env(), code_string.data(), code_string.size()));                    \
         throw error;                                                                                                 \
     }                                                                                                                \
     catch (const std::exception& e)                                                                                  \

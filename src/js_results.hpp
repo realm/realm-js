@@ -255,8 +255,13 @@ template <typename T>
 void ResultsClass<T>::get_index(ContextType ctx, ObjectType object, uint32_t index, ReturnValue& return_value)
 {
     auto results = get_internal<T, ResultsClass<T>>(ctx, object);
-    NativeAccessor<T> accessor(ctx, *results);
-    return_value.set(results->get(accessor, index));
+    if (index >= results->size()) {
+        return_value.set_undefined();
+    }
+    else {
+        NativeAccessor<T> accessor(ctx, *results);
+        return_value.set(results->get(accessor, index));
+    }
 }
 
 template <typename T>
@@ -313,9 +318,6 @@ void ResultsClass<T>::index_of(ContextType ctx, Fn& fn, Arguments& args, ReturnV
     size_t ndx;
     try {
         ndx = fn(args[0]);
-    }
-    catch (realm::Results::IncorrectTableException&) {
-        throw std::runtime_error("Object type does not match the type contained in result");
     }
     catch (NonRealmObjectException&) {
         ndx = realm::not_found;

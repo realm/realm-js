@@ -910,9 +910,7 @@ describe("Realmtest", () => {
               primaryCol: 0,
               valueCol: "val0",
             });
-          }).throws(
-            "Attempting to create an object of type 'IntPrimaryObject' with an existing primary key value '0'.",
-          );
+          }).throws("Attempting to create an object of type 'IntPrimaryObject' with an existing primary key value '0'");
 
           this.realm.create(
             IntPrimarySchema.name,
@@ -959,7 +957,7 @@ describe("Realmtest", () => {
           };
           const obj0 = this.realm.create<IAllPrimaryTypes>(AllPrimaryTypesSchema.name, values);
           expect(() => this.realm.create(AllPrimaryTypesSchema.name, values)).throws(
-            "Attempting to create an object of type 'AllPrimaryTypesObject' with an existing primary key value ''0''.",
+            "Attempting to create an object of type 'AllPrimaryTypesObject' with an existing primary key value ''0''",
           );
           const obj1 = this.realm.create<IAllPrimaryTypes>(
             AllPrimaryTypesSchema.name,
@@ -1625,7 +1623,7 @@ describe("Realmtest", () => {
       expect(() => this.realm.objectForPrimaryKey()).throws("objectType must be of type 'string', got (undefined)");
       //@ts-expect-error objectForprimaryKey without key
       expect(() => this.realm.objectForPrimaryKey("IntPrimaryObject")).throws(
-        "Invalid null value for non-nullable primary key.",
+        "Invalid null value for non-nullable primary key 'IntPrimaryObject.primaryCol'.",
       );
       expect(() => this.realm.objectForPrimaryKey("InvalidClass", 0)).throws(
         "Object type 'InvalidClass' not found in schema.",
@@ -1893,7 +1891,7 @@ describe("Realmtest", () => {
 
       expect(() => {
         new Realm({ path: "bundled.realm", disableFormatUpgrade: true });
-      }).throws("The Realm file format must be allowed to be upgraded in order to proceed.");
+      }).throws(/Database upgrade required but prohibited/);
     });
   });
 

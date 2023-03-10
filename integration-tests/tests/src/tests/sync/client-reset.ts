@@ -276,6 +276,7 @@ function getSchema(useFlexibleSync: boolean) {
       this.longTimeout(); // client reset with flexible sync can take quite some time
       importAppBefore(useFlexibleSync ? "with-db-flx" : "with-db");
       authenticateUserBefore();
+      afterEach(() => Realm.clearTestState());
 
       it(`manual client reset requires either error handler, client reset callback or both (${getPartialTestTitle(
         useFlexibleSync,
