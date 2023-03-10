@@ -32,7 +32,7 @@ This will:
 - Update the versions in the CHANGELOG.md and README.md
 - Commit and create a tag.
 
-When you've verified this an you're ready to release, simply push (with tags) to the master branch and let CI complete the build, test and publish of the package.
+When you've verified this an you're ready to release, simply push (with tags) to the main branch and let CI complete the build, test and publish of the package.
 
 ```
 git push --tags

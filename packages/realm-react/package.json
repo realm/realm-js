@@ -87,7 +87,7 @@
     "url": "https://github.com/realm/realm-js.git",
     "directory": "packages/realm-react"
   },
-  "homepage": "https://github.com/realm/realm-js/tree/master/packages/realm-react#readme",
+  "homepage": "https://github.com/realm/realm-js/tree/main/packages/realm-react#readme",
   "bugs": {
     "url": "https://github.com/realm/realm-js/issues"
   },

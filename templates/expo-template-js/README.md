@@ -54,7 +54,7 @@ npm run start
 
 ## 🔀 Setting up sync
 
-See https://github.com/realm/realm-js/blob/master/templates/docs/sync-setup.md for instructions.
+See https://github.com/realm/realm-js/blob/main/templates/docs/sync-setup.md for instructions.
 
 ## ☁️ Build in the cloud
 
@@ -65,4 +65,4 @@ See https://github.com/realm/realm-js/blob/master/templates/docs/sync-setup.md f
 - [React Hooks](https://reactjs.org/docs/hooks-intro.html)
 - [Setting Up Realm Sync](https://docs.mongodb.com/realm/sdk/react-native/quick-start/)
 - [Realm JS Documentation](https://docs.mongodb.com/realm/sdk/react-native/)
-- [@realm/react Readme](https://github.com/realm/realm-js/tree/master/packages/realm-react#readme)
+- [@realm/react Readme](https://github.com/realm/realm-js/tree/main/packages/realm-react#readme)

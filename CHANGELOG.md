@@ -33,9 +33,7 @@ realm.write(() => {
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Renamed our `master` branch to `main`.
 
 ## 11.5.1 (2023-02-26)
 
@@ -974,7 +972,7 @@ Based on Realm JS v10.13.0: See changelog below for details on enhancements and 
 * Fixed documentation publishing. ([#4276](https://github.com/realm/realm-js/pull/4276))
 * Enabled mixed tests for flexible sync. ([#4279](https://github.com/realm/realm-js/pull/4279))
 * Fixed an issue where some references were not updated from `Subscriptions` to `SubscriptionSet`. ([#4298](https://github.com/realm/realm-js/pull/4298))
-* Submitting [analytics](https://github.com/realm/realm-js/blob/master/README.md#analytics) as a postinstall script.
+* Submitting [analytics](https://github.com/realm/realm-js/blob/main/README.md#analytics) as a postinstall script.
 
 ## 10.20.0-beta.1 (2022-1-27)
 
