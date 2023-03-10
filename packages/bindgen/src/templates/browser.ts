@@ -138,7 +138,7 @@ function convertPrimToEmscripten(addon: BrowserAddon, type: string, expr: string
       return `emscripten::val(bool(${expr}))`;
 
     case "float":
-      return `${addon.accessCtor("Float")}(${convertPrimToEmscripten(addon, "double", expr)})`;
+      return `${addon.accessCtor("Float")}.new_(${convertPrimToEmscripten(addon, "double", expr)})`;
 
     case "double":
     case "int32_t":
@@ -222,7 +222,7 @@ function convertPrimFromEmscripten(addon: BrowserAddon, type: string, expr: stri
     case "double":
       return `(${expr}).as<double>()`;
     case "float":
-      return `(${expr}).as<float>()`;
+      return `(${expr}["value"]).as<float>()`;
 
     case "int32_t":
       return `(${expr}).as<int>()`;
@@ -764,18 +764,17 @@ class BrowserCppDecls extends CppDecls {
               if (emscripten::val::global("Number")["isInteger"](val).as<bool>()) {
                 return ${convertFromEmscripten(this.addon, spec.types["int32_t"], "val")};
               } else {
-                return ${convertFromEmscripten(this.addon, spec.types["float"], "val")};
+                return val.as<float>();
               }            
 
           } else if (strcmp("bigint", type) == 0) {
-              // TODO support via toString and std::stoll() ?
-              emscripten::val("bigint not supported yet").throw_();
+             return val.as<int64_t>(); 
               
           } else if (strcmp("object", type) == 0) {
               if(val.isNull()) {
                 return Mixed();
               }
-              if (val.isArray()) {
+              if (val.instanceof(emscripten::val::global("ArrayBuffer"))) {
                 return ${convertFromEmscripten(this.addon, spec.types["BinaryData"], "val")};
               }
               ${

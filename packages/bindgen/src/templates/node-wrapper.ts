@@ -195,7 +195,7 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
         ...params,
         asyncSig ? "_cb" : [],
       ].flat();
-      let call = `${native}([${args}])`;
+      let call = `${native}(${args})`;
       if (asyncSig) {
         // JS can't distinguish between a `const EJson*` that is nullptr (which can't happen), and
         // one that points to the string "null" because both become null by the time they reach JS.
