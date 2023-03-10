@@ -453,7 +453,7 @@ public:
         }
         return obj;
     }
-    static ObjectType create_error(ContextType ctx, std::string message);
+    static ObjectType create_error(ContextType ctx, const std::string& message);
 
     static ObjectType create_array(ContextType, uint32_t, const ValueType[]);
     static ObjectType create_array(ContextType ctx, const std::vector<ValueType>& values)
@@ -725,7 +725,7 @@ inline typename T::Value Value<T>::from_timestamp(typename T::Context ctx, Times
 }
 
 template <typename T>
-inline typename T::Object Object<T>::create_error(ContextType ctx, const std::string message)
+inline typename T::Object Object<T>::create_error(ContextType ctx, const std::string& message)
 {
     using Value = Value<T>;
     using Function = Function<T>;
@@ -736,8 +736,10 @@ inline typename T::Object Object<T>::create_error(ContextType ctx, const std::st
 template <typename T>
 inline typename T::Object Object<T>::create_from_app_error(ContextType ctx, const app::AppError& error)
 {
-    auto obj = Object::create_error(ctx, error.message);
-    Object::set_property(ctx, obj, "code", Value<T>::from_number(ctx, error.error_code.value()));
+    auto obj = Object::create_error(ctx, std::string(error.reason()));
+    Object::set_property(ctx, obj, "name", Value<T>::from_string(ctx, "AppError"));
+    Object::set_property(ctx, obj, "logs", Value<T>::from_string(ctx, error.link_to_server_logs));
+    Object::set_property(ctx, obj, "code", Value<T>::from_string(ctx, error.code_string()));
     return obj;
 }
 

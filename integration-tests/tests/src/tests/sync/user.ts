@@ -215,6 +215,7 @@ describe.skipIf(environment.missingServer, "User", () => {
       beforeEach(() => {
         removeExistingUsers();
       });
+
       it("can fetch allUsers with email password", async function (this: AppContext & RealmContext) {
         let all = this.app.allUsers;
         const userIDs = Object.keys(all);
@@ -228,7 +229,6 @@ describe.skipIf(environment.missingServer, "User", () => {
         }
         expect(loggedInUsers).equals(0, "Noone to begin with");
 
-        const credentials = Realm.Credentials.anonymous();
         const user1 = await registerAndLogInEmailUser(this.app);
         all = this.app.allUsers;
         expect(Object.keys(all).length).equals(1, "One user");
@@ -304,8 +304,9 @@ describe.skipIf(environment.missingServer, "User", () => {
         // cannot log in - user doesn't exist
         let didFail = false;
         const user2 = await this.app.logIn(Realm.Credentials.emailPassword(validEmail, validPassword)).catch((err) => {
+          expect(err.name).equals("AppError");
           expect(err.message).equals("invalid username/password");
-          expect(err.code).equals(50);
+          expect(err.code).equals("InvalidPassword");
           didFail = true;
         });
         expect(user2).to.be.undefined;

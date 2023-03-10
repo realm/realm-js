@@ -620,6 +620,9 @@ bool RealmClass<T>::get_realm_config(ContextType ctx, size_t argc, const ValueTy
         ValueType value = arguments[0];
         if (Value::is_string(ctx, value)) {
             config.path = Value::validated_to_string(ctx, value, "path");
+            if (config.path.empty()) {
+                throw std::invalid_argument("'path' cannot be the empty string");
+            }
         }
         else if (Value::is_object(ctx, value)) {
             ObjectType object = Value::validated_to_object(ctx, value);

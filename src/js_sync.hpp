@@ -129,7 +129,7 @@ public:
     using ProgressHandler = void(uint64_t transferred_bytes, uint64_t transferrable_bytes);
     using StateHandler = void(SyncSession::State old_state, SyncSession::State new_state);
     using ConnectionHandler = void(SyncSession::ConnectionState new_state, SyncSession::ConnectionState old_state);
-    using DownloadUploadCompletionHandler = void(std::error_code error);
+    using DownloadUploadCompletionHandler = void(Status status);
 
     static FunctionType create_constructor(ContextType);
 
@@ -310,6 +310,28 @@ class SyncSessionErrorBase {
 public:
     virtual typename T::Function func() = 0;
     virtual void operator()(std::shared_ptr<SyncSession>, SyncError){};
+
+protected:
+    static typename T::Object create_error_object(typename T::Context ctx, const SyncError& error)
+    {
+        std::string name = "SyncError";
+        auto error_object = Object<T>::create_error(ctx, std::string(error.reason()));
+
+        Object<T>::set_property(ctx, error_object, "name", Value<T>::from_string(ctx, name));
+        Object<T>::set_property(ctx, error_object, "isFatal", Value<T>::from_boolean(ctx, error.is_fatal));
+        Object<T>::set_property(ctx, error_object, "category",
+                                Value<T>::from_string(ctx, error.get_category().name()));
+        Object<T>::set_property(ctx, error_object, "code",
+                                Value<T>::from_number(ctx, error.get_system_error().value()));
+
+        auto user_info = Object<T>::create_empty(ctx);
+        for (auto& kvp : error.user_info) {
+            Object<T>::set_property(ctx, user_info, kvp.first, Value<T>::from_string(ctx, kvp.second));
+        }
+        Object<T>::set_property(ctx, error_object, "userInfo", user_info);
+
+        return error_object;
+    }
 };
 
 template <typename T>
@@ -383,26 +405,9 @@ public:
             Function<T>::callback(m_ctx, m_client_reset_func, 2, arguments);
         }
         else {
-            std::string name = "Error";
-            auto error_object = Object<T>::create_empty(m_ctx);
-
-            Object<T>::set_property(m_ctx, error_object, "name", Value<T>::from_string(m_ctx, name));
-            Object<T>::set_property(m_ctx, error_object, "message", Value<T>::from_string(m_ctx, error.message));
-            Object<T>::set_property(m_ctx, error_object, "isFatal", Value<T>::from_boolean(m_ctx, error.is_fatal));
-            Object<T>::set_property(m_ctx, error_object, "category",
-                                    Value<T>::from_string(m_ctx, error.error_code.category().name()));
-            Object<T>::set_property(m_ctx, error_object, "code",
-                                    Value<T>::from_number(m_ctx, error.error_code.value()));
-
-            auto user_info = Object<T>::create_empty(m_ctx);
-            for (auto& kvp : error.user_info) {
-                Object<T>::set_property(m_ctx, user_info, kvp.first, Value<T>::from_string(m_ctx, kvp.second));
-            }
-            Object<T>::set_property(m_ctx, error_object, "userInfo", user_info);
-
             typename T::Value arguments[] = {
                 create_object<T, SessionClass<T>>(m_ctx, new WeakSession(session)),
-                error_object,
+                SyncSessionErrorBase<T>::create_error_object(m_ctx, error),
             };
 
             Function<T>::callback(m_ctx, m_func, 2, arguments);
@@ -439,8 +444,7 @@ public:
     {
         HANDLESCOPE(m_ctx);
 
-        std::string name = "Error";
-        auto error_object = Object<T>::create_empty(m_ctx);
+        auto error_object = SyncSessionErrorBase<T>::create_error_object(m_ctx, error);
 
         if (error.is_client_reset_requested()) {
             auto config_object = Object<T>::create_empty(m_ctx);
@@ -449,21 +453,8 @@ public:
                 Value<T>::from_string(m_ctx, error.user_info[SyncError::c_recovery_file_path_key]));
             Object<T>::set_property(m_ctx, config_object, "readOnly", Value<T>::from_boolean(m_ctx, true));
             Object<T>::set_property(m_ctx, error_object, "config", config_object);
-            name = "ClientReset";
+            Object<T>::set_property(m_ctx, error_object, "name", Value<T>::from_string(m_ctx, "ClientReset"));
         }
-
-        Object<T>::set_property(m_ctx, error_object, "name", Value<T>::from_string(m_ctx, name));
-        Object<T>::set_property(m_ctx, error_object, "message", Value<T>::from_string(m_ctx, error.message));
-        Object<T>::set_property(m_ctx, error_object, "isFatal", Value<T>::from_boolean(m_ctx, error.is_fatal));
-        Object<T>::set_property(m_ctx, error_object, "category",
-                                Value<T>::from_string(m_ctx, error.error_code.category().name()));
-        Object<T>::set_property(m_ctx, error_object, "code", Value<T>::from_number(m_ctx, error.error_code.value()));
-
-        auto user_info = Object<T>::create_empty(m_ctx);
-        for (auto& kvp : error.user_info) {
-            Object<T>::set_property(m_ctx, user_info, kvp.first, Value<T>::from_string(m_ctx, kvp.second));
-        }
-        Object<T>::set_property(m_ctx, error_object, "userInfo", user_info);
 
         typename T::Value arguments[] = {
             create_object<T, SessionClass<T>>(m_ctx, new WeakSession(session)),
@@ -887,15 +878,17 @@ void SessionClass<T>::wait_for_completion(Direction direction, ContextType ctx, 
 
         util::EventLoopDispatcher<DownloadUploadCompletionHandler> completion_handler(
             [ctx = Protected(Context<T>::get_global_context(ctx)),
-             callback = Protected(ctx, callback)](std::error_code error) {
+             callback = Protected(ctx, callback)](Status status) {
                 HANDLESCOPE(ctx);
-                Function<T>::callback(
-                    ctx, callback,
-                    {!error ? Value::from_undefined(ctx)
-                            : Object::create_obj(ctx, {
-                                                          {"message", Value::from_string(ctx, error.message())},
-                                                          {"errorCode", Value::from_number(ctx, error.value())},
-                                                      })});
+                std::vector<typename T::Value> arguments;
+                if (!status.is_ok()) {
+                    arguments.push_back(
+                        Object::create_obj(ctx, {
+                                                    {"message", Value::from_string(ctx, status.reason())},
+                                                    {"errorCode", Value::from_string(ctx, status.code_string())},
+                                                }));
+                }
+                Function<T>::callback(ctx, callback, arguments.size(), arguments.data());
             });
 
         switch (direction) {

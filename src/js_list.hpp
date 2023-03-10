@@ -153,8 +153,13 @@ template <typename T>
 void ListClass<T>::get_index(ContextType ctx, ObjectType object, uint32_t index, ReturnValue& return_value)
 {
     auto list = get_internal<T, ListClass<T>>(ctx, object);
-    NativeAccessor<T> accessor(ctx, *list);
-    return_value.set(list->get(accessor, index));
+    if (index >= list->size()) {
+        return_value.set_undefined();
+    }
+    else {
+        NativeAccessor<T> accessor(ctx, *list);
+        return_value.set(list->get(accessor, index));
+    }
 }
 
 template <typename T>
