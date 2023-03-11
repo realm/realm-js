@@ -53,6 +53,7 @@
     "example",
     "packages/bindgen",
     "packages/realm",
+    "packages/realm-web",
     "packages/web-example",
     "packages/realm-react",
     "packages/realm-common",
@@ -66,8 +67,8 @@
     "integration-tests/environments/node",
     "integration-tests/environments/electron",
     "integration-tests/environments/react-native",
-    "integration-tests/environments/browser-wasm",
-    "integration-tests/tests"
+    "integration-tests/baas-test-server",
+    "integration-tests/environments/browser-wasm"
   ],
   "dependencies": {
     "@react-native-community/eslint-config": "^3.1.0",

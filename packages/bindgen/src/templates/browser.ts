@@ -146,7 +146,7 @@ function convertPrimToEmscripten(addon: BrowserAddon, type: string, expr: string
 
     case "count_t":
       // NOTE: using int64_t cast here to get -1.0 for size_t(-1), aka npos.
-      return `emscripten::val(int64_t(${expr}))`;
+      return `emscripten::val(${expr})`;
 
     case "int64_t":
     case "uint64_t":
