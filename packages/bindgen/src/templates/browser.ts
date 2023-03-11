@@ -156,15 +156,19 @@ function convertPrimToEmscripten(addon: BrowserAddon, type: string, expr: string
     case "std::string_view":
     case "std::string":
       return `([&] (auto&& sd) {
-                return emscripten::val(std::string(sd.data()));
+                if(sd.size() == 0) {
+                    return emscripten::val("");    
+                } else {
+                  return emscripten::val(std::string(sd.data(), sd.size()));
+                }                 
             }(${expr}))`;
 
-    case "EncryptionKey": //TODO throw Error("EncryptionKey is not supported. Encryption is not supported in WASM");    
+    case "EncryptionKey": //TODO throw Error("EncryptionKey is not supported. Encryption is not supported in WASM");
       return "emscripten::val()";
     case "OwnedBinaryData":
     case "BinaryData":
       return `([&] (const auto& bd) -> emscripten::val {
-                return emscripten::val(bd.data());
+                return emscripten::val(emscripten::typed_memory_view(bd.size(), bd.data()));
             }(${expr}))`;
 
     case "Mixed":
@@ -238,7 +242,8 @@ function convertPrimFromEmscripten(addon: BrowserAddon, type: string, expr: stri
       return `${expr}.as<uint64_t>()`;
 
     case "std::string":
-      return `(${expr}).as<std::string>()`;
+      //TODO is this optimal? retruning a std::string used inside a `List<String>` sometimes yield garbage content(already reclaimed?)
+      return `(${expr}).as<std::string>().c_str()`;
 
     case "StringData":
     case "std::string_view":
@@ -254,7 +259,7 @@ function convertPrimFromEmscripten(addon: BrowserAddon, type: string, expr: stri
             })(${expr})`;
 
     case "EncryptionKey": //TODO assert.fail("Encryption is not supported in WASM.");
-        return "std::vector<char>()";
+      return "std::vector<char>()";
     case "Mixed":
       return `NODE_TO_Mixed(${expr})`;
     case "QueryArg": {
@@ -729,7 +734,16 @@ class BrowserCppDecls extends CppDecls {
         );
       }
     }
-
+    // FIXME double return 0 when using emscripten::val.get_double(), we fall back to get_float()
+    assert(
+      spec.mixedInfo.getters.find((get) => {
+        if (get.dataType === "Double") {
+          get.getter = "get_float";
+          return true;
+        }
+        return false;
+      }) != undefined,
+    );
     this.free_funcs.push(
       new CppFunc("NODE_FROM_Mixed", "emscripten::val", [new CppVar("Mixed", "val")], {
         body: `
@@ -754,7 +768,7 @@ class BrowserCppDecls extends CppDecls {
         body: `
           const char* type = val.typeOf().as<std::string>().c_str();
           if (strcmp("string", type) == 0) {
-            return ${convertFromEmscripten(this.addon, spec.types["StringData"], "val")};
+            return strdup(${convertFromEmscripten(this.addon, spec.types["StringData"], "val")});
 
           } else if (strcmp("boolean", type) == 0) {
             return ${convertFromEmscripten(this.addon, spec.types["bool"], "val")};
