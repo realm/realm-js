@@ -1,6 +1,8 @@
 {
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
+		"strict": true,
+		"strictPropertyInitialization": true,
 		"target": "es2022",
 		"module": "es2022",
 		"moduleResolution": "node",

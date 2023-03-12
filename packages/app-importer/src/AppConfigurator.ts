@@ -16,28 +16,47 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { AdminService } from "./api";
+import { AtlasAppServicesClient, AtlasAppServicesOptions } from "./api";
 
-type Credentials = { publicKey: string; privateKey: string };
-
-type AppConfiguratorOptions = {
-  credentials: Credentials;
-};
+export type AppConfiguratorConfig = {
+  groupId?: string;
+} & AtlasAppServicesOptions;
 
 export class AppConfigurator {
-  constructor(private config: AppConfiguratorOptions) {}
+  private client: AtlasAppServicesClient;
+  private groupId: string | undefined;
+  private static DEFAULT_APP_NAME = "app";
 
-  private authenticated = false;
-  private async ensureAuthentication() {
-    if (!this.authenticated) {
-      const { publicKey, privateKey } = this.config.credentials;
-      AdminService.adminLogin("mongodb-cloud", { username: publicKey, apiKey: privateKey });
-      this.authenticated = true;
+  constructor(private config: AppConfiguratorConfig) {
+    this.client = new AtlasAppServicesClient(config);
+    if (config.groupId) {
+      this.groupId = config.groupId;
     }
   }
 
-  public async test() {
-    const providers = await AdminService.getAdminAuthProviders();
-    console.log(providers);
+  async test() {
+    const providers = await this.client.getAdminAuthProviders();
+    console.log({ providers });
+  }
+
+  async importApp(name = AppConfigurator.DEFAULT_APP_NAME) {
+    const groupId = await this.ensureGroupId();
+    const app = await this.client.adminCreateApplication(groupId, {
+      name,
+    });
+    console.log({ app });
+  }
+
+  private async ensureGroupId(): Promise<string> {
+    if (this.groupId) {
+      return this.groupId;
+    }
+    const { roles = [] } = await this.client.getAdminProfile();
+    const [groupId] = [...new Set(roles.map((role) => role.groupId).filter((groupId) => typeof groupId === "string"))];
+    if (typeof groupId !== "string") {
+      throw new Error("Expected the user to be associated with exactly one group");
+    }
+    this.groupId = groupId;
+    return groupId;
   }
 }

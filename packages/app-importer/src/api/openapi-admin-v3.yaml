@@ -2,7 +2,7 @@ openapi: "3.0.1"
 info:
   description: ""
   version: "3.0"
-  title: "|stitch| API"
+  title: "Atlas App Services API"
 servers:
   - url: "https://stitch.mongodb.com/api/admin/v3.0"
     description: "The root API resource and starting point for the |stitch| API."
@@ -22,7 +22,7 @@ paths:
                 description: An array of authentication providers.
                 items:
                   $ref: "#/components/schemas/ProviderSummary"
-      security: []
+      security: [{}]
 
   /auth/providers/{provider}/login:
     post:
@@ -114,7 +114,7 @@ paths:
       security:
         - refreshAuth: []
 
-  /groups/{groupID}/apps/{appID}/services/{serviceId}/commands/build_info:
+  /groups/{groupId}/apps/{appId}/services/{serviceId}/commands/build_info:
     get:
       tags: ['admin']
       operationId: "getBuildInfo"
@@ -134,6 +134,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BuildInfo'
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/AppId"
+      - $ref: "#/components/parameters/ServiceId"
 
   /groups/{groupId}/apps:
     get:
@@ -741,6 +745,7 @@ paths:
           content:
             application/json:
               schema:
+                type: array
                 items: {$ref: "#/components/schemas/Message"}
     post:
       tags: ["notifications"]
@@ -1037,12 +1042,13 @@ paths:
               schema:
                 type: object
                 properties:
-                 error: {type: object}
-                 logs: {}
-                 result: {type: object}
-                 stats:
-                  properties:
-                    execution_time: {type: string}
+                  error: {type: object}
+                  logs: {}
+                  result: {type: object}
+                  stats:
+                    type: object
+                    properties:
+                      execution_time: {type: string}
     parameters:
       - $ref: "#/components/parameters/GroupId"
       - $ref: "#/components/parameters/AppId"
@@ -1218,7 +1224,6 @@ paths:
           schema: {type: integer}
           description: The offset number of matching log entries to skip before including them in the response.
           required: False
-          default: 0
       responses:
         '200':
           description: "Successfully retrieved."
@@ -1246,7 +1251,6 @@ paths:
                         status: {type: integer}
                   nextEndDate:
                     type: string
-                    required: False
                     description:
                       The end date and time of the next page of log entries in ISO 8601 format.
                       Stitch paginates the result sets of queries that match more than 100 log
@@ -1255,7 +1259,6 @@ paths:
                       in a subsequent request.
                   nextSkip:
                     type: integer
-                    required: False
                     description:
                       The offset into the next page of log entries in ISO 8601 format.
                       Stitch paginates the result sets of queries that match more than 100 log
@@ -1281,6 +1284,7 @@ paths:
               schema:
                 type: array
                 items:
+                  type: object
                   properties:
                     _id: {type: string}
                     name: {type: string}
@@ -1716,11 +1720,10 @@ paths:
           application/json:
             schema:
               type: object
+              required: [meta, file]
               properties:
                 meta:
-                  type: object
                   $ref: "#/components/schemas/AssetMetadata"
-                  required: [meta, file]
                   description: |
                     An asset metadata document (encoded as JSON).
                     
@@ -1792,6 +1795,7 @@ components:
       required: true
       schema:
         type: string
+      x-ms-parameter-location: method
     AssetResourcePathPrefix:
       name: prefix
       in: query
@@ -1799,6 +1803,7 @@ components:
       required: false
       schema:
         type: string
+      x-ms-parameter-location: method
     GroupId:
       name: "groupId"
       description: "An |atlas| :atlas:`Project/Group ID </tutorial/manage-projects/>`."
@@ -1806,6 +1811,7 @@ components:
       required: true
       schema:
         type: "string"
+      x-ms-parameter-location: method
     AppId:
       name: "appId"
       description: |
@@ -1816,6 +1822,7 @@ components:
       required: true
       schema:
         type: "string"
+      x-ms-parameter-location: method
     FunctionId:
       name: "functionId"
       description: "Function ID"
@@ -1823,6 +1830,7 @@ components:
       required: true
       schema:
         type: "string"
+      x-ms-parameter-location: method
     ServiceId:
       name: "serviceId"
       description: "Service ID"
@@ -1830,6 +1838,7 @@ components:
       required: true
       schema:
         type: "string"
+      x-ms-parameter-location: method
     SecretId:
       name: "secretId"
       description: "Secret ID"
@@ -1837,6 +1846,7 @@ components:
       required: true
       schema:
         type: "string"
+      x-ms-parameter-location: method
     CommandName:
       name: "commandName"
       description: "Command name"
@@ -1844,6 +1854,7 @@ components:
       required: true
       schema:
         type: "string"
+      x-ms-parameter-location: method
     ValueId:
       name: "valueId"
       description: "Value ID"
@@ -1851,6 +1862,7 @@ components:
       required: true
       schema:
         type: "string"
+      x-ms-parameter-location: method
     DraftId:
       name: "draftId"
       description: "Draft ID"
@@ -1858,6 +1870,7 @@ components:
       required: true
       schema:
         type: "string"
+      x-ms-parameter-location: method
     RuleId:
       name: "ruleId"
       description: "Rule ID"
@@ -1865,6 +1878,7 @@ components:
       required: true
       schema:
         type: "string"
+      x-ms-parameter-location: method
     IncomingWebhookId:
       name: "incomingWebhookId"
       description: "Incoming webhook ID"
@@ -1872,6 +1886,7 @@ components:
       required: true
       schema:
         type: "string"
+      x-ms-parameter-location: method
     Email:
       name: "email"
       description: "Email address"
@@ -1879,6 +1894,7 @@ components:
       required: true
       schema:
         type: "string"
+      x-ms-parameter-location: method
     MessageId:
       name: "messageId"
       description: "Message ID"
@@ -1886,6 +1902,7 @@ components:
       required: true
       schema:
         type: "string"
+      x-ms-parameter-location: method
     Uid:
       name: "uid"
       description: "UID"
@@ -1893,6 +1910,7 @@ components:
       required: true
       schema:
         type: "string"
+      x-ms-parameter-location: method
     ProviderId:
       name: "providerId"
       description: "Provider ID"
@@ -1900,6 +1918,7 @@ components:
       required: true
       schema:
         type: "string"
+      x-ms-parameter-location: method
     ApiKeyId:
       name: "apiKeyId"
       description: "API Key ID"
@@ -1907,6 +1926,7 @@ components:
       required: true
       schema:
         type: "string"
+      x-ms-parameter-location: method
     TriggerId:
       name: "triggerId"
       description: |
@@ -1915,6 +1935,7 @@ components:
       required: true
       schema:
         type: "string"
+      x-ms-parameter-location: method
   schemas:
     ApiKey:
       type: object
@@ -2347,19 +2368,20 @@ components:
           description: If true, the trigger is disabled and will not fire.
     TriggerRequest:
       type: object
+      required:
+        - name
+        - type
+        - function_id
       properties:
         name:
           type: string
-          required: true
           description: The name of the trigger.
         type:
           type: string
-          required: true
           description: The type of the trigger.
           enum: ["DATABASE", "AUTHENTICATION"]
         function_id:
           type: string
-          required: true
           description: The ID of the function associated with the trigger.
         disabled:
           type: boolean

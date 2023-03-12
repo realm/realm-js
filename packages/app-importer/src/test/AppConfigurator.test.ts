@@ -20,7 +20,10 @@ import { AppConfigurator } from "../AppConfigurator";
 
 describe("AppConfigurator", () => {
   it("deploys", async () => {
-    const configurator = new AppConfigurator({ credentials: { publicKey: "..", privateKey: ".." } });
-    // await configurator.deploy({ name: "my-app" });
+    const configurator = new AppConfigurator({
+      credentials: { publicKey: "..", privateKey: ".." },
+    });
+    // await configurator.importApp();
+    await configurator.test();
   });
 });

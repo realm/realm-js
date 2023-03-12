@@ -9,8 +9,7 @@
   "scripts": {
     "test": "wireit",
     "build": "wireit",
-    "openapi:generate": "wireit",
-    "openapi:link": "wireit",
+    "autorest:generate": "wireit",
     "lint": "eslint --ext .js,.ts ."
   },
   "wireit": {
@@ -24,6 +23,7 @@
       "output": ["dist/**/*.js", "dist/**/*.d.ts"],
       "dependencies": [
         "generate-types",
+        "autorest:generate",
         "../realm-network-transport:build"
       ]
     },
@@ -32,38 +32,14 @@
       "files": ["src/**/*.ts"],
       "output": ["types/generated/**/*.d.ts"],
       "dependencies": [
-        "openapi:generate",
+        "autorest:generate",
         "../realm-network-transport:build"
       ]
     },
-    "openapi:clone": {
-      "command": "git clone --branch parameter-components git@github.com:kraenhansen/openapi-typescript-codegen.git || echo 'Already cloned'",
-      "files": ["./openapi-typescript-codegen/src"],
-      "output": []
-    },
-    "openapi:install": {
-      "command": "npm install --prefix openapi-typescript-codegen",
-      "dependencies": ["openapi:clone"],
-      "files": ["./openapi-typescript-codegen/package-lock.json"],
-      "output": []
-    },
-    "openapi:build": {
-      "command": "npm run build --prefix openapi-typescript-codegen",
-      "dependencies": ["openapi:install"],
-      "files": ["./openapi-typescript-codegen/src"],
-      "output": ["./openapi-typescript-codegen/dist"]
-    },
-    "openapi:link": {
-      "command": "ln -nsf ../openapi-typescript-codegen node_modules/openapi-typescript-codegen",
-      "dependencies": ["openapi:build"],
-      "files": ["./openapi-typescript-codegen/dist"],
-      "output": []
-    },
-    "openapi:generate": {
-      "command": "openapi --useUnionTypes --input ./src/api/openapi-admin-v3.yaml --output ./src/api/generated --request ./src/api/request-patch.ts",
-      "dependencies": ["openapi:link"],
-      "files": ["./src/api/openapi-admin-v3.yaml", "./src/api/request-patch.ts"],
-      "output": ["./src/api/generated"]
+    "autorest:generate": {
+      "command": "autorest src/api/autorest.yaml",
+      "files": ["src/api/*.yaml"],
+      "output": ["src/api/generated"]
     }
   },
   "files": [
@@ -88,6 +64,9 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
+    "@azure/core-auth": "^1.4.0",
+    "@azure/core-client": "^1.7.2",
+    "@azure/core-rest-pipeline": "^1.10.2",
     "@realm/network-transport": "*",
     "body-parser": "^1.20.1",
     "chalk": "^4.1.2",
@@ -107,6 +86,7 @@
     "@types/node": "^18",
     "@types/node-fetch": "^2.6.2",
     "@types/yargs": "^17.0.13",
+    "autorest": "^3.6.3",
     "mocha": "^10.1.0",
     "rollup": "^3.2.5",
     "rollup-plugin-dts": "^5.0.0"

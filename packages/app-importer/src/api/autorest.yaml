@@ -1,0 +1,7 @@
+typescript: true
+input-file: ./openapi-admin-v3.yaml
+output-folder: ./generated
+generate-metadata: false
+# security:
+#  - Anonymous
+#  - 

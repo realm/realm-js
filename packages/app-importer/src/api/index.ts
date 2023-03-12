@@ -16,25 +16,38 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export {
-  AdminService,
-  ApikeysService,
-  AppsService,
-  AuthprovidersService,
-  CancelablePromise,
-  DependenciesService,
-  DeployService,
-  EmailService,
-  FunctionsService,
-  HostingService,
-  LogsService,
-  NotificationsService,
-  RulesService,
-  SecretsService,
-  SecurityService,
-  ServicesService,
-  TriggersService,
-  UsersService,
-  ValuesService,
-  WebhooksService,
-} from "./generated";
+export * from "./generated/src/models";
+export * from "./generated/src/models/parameters";
+
+import * as generated from "./generated/src/atlasAppServicesAPI";
+import { AtlasAppServicesAPIOptionalParams } from "./generated/src/models";
+
+export type AtlasAppServicesCredentials = {
+  publicKey: string;
+  privateKey: string;
+};
+
+export type AtlasAppServicesOptions = {
+  baseUrl?: string;
+  credentials: AtlasAppServicesCredentials;
+} & Omit<AtlasAppServicesAPIOptionalParams, "credential" | "baseUri" | "endpoint">;
+
+export class AtlasAppServicesClient extends generated.AtlasAppServicesAPI {
+  private static DEFAULT_BASE_URL = "http://localhost:9090";
+  constructor({ credentials, baseUrl = AtlasAppServicesClient.DEFAULT_BASE_URL, ...options }: AtlasAppServicesOptions) {
+    super(
+      {
+        getToken: async () => {
+          console.log("Use", credentials, "to authenticate");
+          // const providers = await this.getAdminAuthProviders();
+          return null;
+        },
+      },
+      {
+        allowInsecureConnection: baseUrl.startsWith("http://"),
+        ...options,
+        endpoint: baseUrl + "/api/admin/v3.0",
+      },
+    );
+  }
+}
