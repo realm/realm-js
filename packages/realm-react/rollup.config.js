@@ -32,7 +32,7 @@ export default [
         sourcemap: true,
       },
     ],
-    plugins: [nodeResolve(), typescript()],
+    plugins: [nodeResolve(), typescript({ noEmitOnError: true })],
     external: ["realm", "react", "@realm/common", "lodash"],
   },
   {

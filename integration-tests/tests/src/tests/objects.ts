@@ -153,9 +153,9 @@ const DefaultValuesSchema = {
     stringCol: { type: "string", default: "defaultString" },
     dateCol: { type: "date", default: new Date(1.111) },
     dataCol: { type: "data", default: new ArrayBuffer(1) },
-    objectCol: { type: "TestObject", default: { doubleCol: 1 } },
-    nullObjectCol: { type: "TestObject", default: null },
-    arrayCol: { type: "TestObject[]", default: [{ doubleCol: 2 }] },
+    objectCol: { type: "object", objectType: "TestObject", default: { doubleCol: 1 } },
+    nullObjectCol: { type: "object", objectType: "TestObject", default: null },
+    arrayCol: { type: "list", objectType: "TestObject", default: [{ doubleCol: 2 }] },
   },
 };
 
@@ -322,7 +322,7 @@ interface IAllTypes {
   linkingObjectsCol: IAllTypes[];
 }
 
-describe("Objectstest", () => {
+describe("Realm.Object", () => {
   describe("Methods", () => {
     it("linkingObjects works with both string and type input", () => {
       const realm = new Realm({ schema: [Person] });
@@ -376,137 +376,13 @@ describe("Objectstest", () => {
         const [firstPerson] = persons;
         expect(firstPerson).deep.equals(john);
       });
-    });
 
-    it("can have it's properties read", function (this: Mocha.Context & RealmContext) {
-      const john = this.realm.write(() => {
-        return this.realm.create<IPerson>(PersonSchema.name, {
-          name: "John Doe",
-          age: 42,
-        });
-      });
-
-      expect(john.name).equals("John Doe");
-      expect(john.age).equals(42);
-    });
-
-    it("can be fetched with objectForPrimaryKey", () => {
-      const realm = new Realm({ schema: [PersonSchemaWithId] });
-      const _id = new Realm.BSON.ObjectId();
-
-      realm.write(() => {
-        realm.create<PersonWithId>(PersonSchemaWithId.name, {
-          _id,
-          name: "John Doe",
-          age: 42,
-        });
-      });
-
-      const john = realm.objectForPrimaryKey<IPersonWithId>(PersonSchemaWithId.name, _id);
-      if (!john) throw new Error("Object not found");
-
-      expect(john).instanceOf(Realm.Object);
-      expect(john._id.equals(_id)).equals(true);
-      expect(john.name).equals("John Doe");
-      expect(john.age).equals(42);
-    });
-
-    it("can be updated", () => {
-      const realm = new Realm({ schema: [PersonSchemaWithId] });
-      const _id = new Realm.BSON.ObjectId();
-
-      const john = realm.write(() => {
-        return realm.create<IPersonWithId>(PersonSchemaWithId.name, {
-          _id,
-          name: "John Doe",
-          age: 42,
-        });
-      });
-
-      expect(john._id.equals(_id)).equals(true);
-      expect(john.name).equals("John Doe");
-      expect(john.age).equals(42);
-
-      realm.write(() => {
-        realm.create<IPersonWithId>(PersonSchemaWithId.name, { _id, age: 43 }, Realm.UpdateMode.All);
-      });
-
-      expect(john._id.equals(_id)).equals(true);
-      expect(john.name).equals("John Doe");
-      expect(john.age).equals(43);
-
-      const update: Partial<IPersonWithId> = {
-        _id,
-        name: "Mr. John Doe",
-      };
-
-      realm.write(() => {
-        realm.create<IPersonWithId>(PersonSchemaWithId.name, update, Realm.UpdateMode.Modified);
-      });
-
-      expect(john._id.equals(_id)).equals(true);
-      expect(john.name).equals("Mr. John Doe");
-      expect(john.age).equals(43);
-
-      expect(() =>
-        realm.write(() => {
-          realm.create<IPersonWithId>(
-            PersonSchemaWithId.name,
-            { _id, name: "John Doe", age: 42 },
-            Realm.UpdateMode.Never,
-          );
-        }),
-      ).throws(
-        `Attempting to create an object of type '${PersonSchemaWithId.name}' with an existing primary key value '${_id}'.`,
-      );
-
-      // Expect only one instance of 'PersonSchemaWithId' in db after all updates
-      const persons = realm.objects(PersonSchemaWithId.name);
-      expect(persons.length).equals(1);
-    });
-
-    it("can return a value on write", () => {
-      const realm = new Realm({ schema: [PersonSchema] });
-
-      const john = realm.write(() => {
-        return realm.create<IPerson>(PersonSchema.name, {
-          name: "John Doe",
-          age: 42,
-        });
-      });
-
-      // Expect John to be the one and only result
-      const persons = realm.objects(PersonSchema.name);
-      expect(persons.length).equals(1);
-      const [firstPerson] = persons;
-      expect(firstPerson).deep.equals(john);
-    });
-  });
-
-  describe("Class Model", () => {
-    it("can be created", () => {
-      const realm = new Realm({ schema: [Person] });
-
-      const john = realm.write(() => {
-        return realm.create(Person, {
-          name: "John Doe",
-          age: 42,
-        });
-      });
-      // Expect John to be the one and only result
-      const persons = realm.objects(Person);
-      expect(persons.length).equals(1);
-      const [firstPerson] = persons;
-      expect(firstPerson).deep.equals(john);
-      expect(firstPerson).instanceOf(Person);
-    });
-
-    it("can have its properties read", () => {
-      const realm = new Realm({ schema: [Person] });
-      realm.write(() => {
-        const john = realm.create(Person, {
-          name: "John Doe",
-          age: 42,
+      it("can have it's properties read", function (this: Mocha.Context & RealmContext) {
+        const john = this.realm.write(() => {
+          return this.realm.create<IPerson>(PersonSchema.name, {
+            name: "John Doe",
+            age: 42,
+          });
         });
 
         expect(john.name).equals("John Doe");
@@ -968,60 +844,50 @@ describe("Objectstest", () => {
 
     it("supports link type", function (this: Mocha.Context & RealmContext) {
       this.realm.write(() => {
-        this.realm.create("PrimaryInt", { pk: 1, value: 2 });
-        this.realm.create("PrimaryInt", { pk: 2, value: 4 });
-        this.realm.create("PrimaryOptionalInt", { pk: 1, value: 2 });
-        this.realm.create("PrimaryOptionalInt", { pk: 2, value: 4 });
-        this.realm.create("PrimaryOptionalInt", { pk: null, value: 6 });
-        this.realm.create("PrimaryString", { pk: "a", value: 2 });
-        this.realm.create("PrimaryString", { pk: "b", value: 4 });
-        this.realm.create("PrimaryString", { pk: null, value: 6 });
-
         const obj = this.realm.create<ILink>("Links", {});
 
-        //@ts-expect-error private method
-        obj._setLink("intLink", 3);
         expect(obj.intLink).equals(null);
-        //@ts-expect-error private method
-        obj._setLink("intLink", 1);
+        obj.intLink = this.realm.create("PrimaryInt", { pk: 1, value: 2 });
         expect(obj.intLink.value).equals(2);
-        //@ts-expect-error private method
-        obj._setLink("intLink", 2);
+        obj.intLink = this.realm.create("PrimaryInt", { pk: 2, value: 4 });
         expect(obj.intLink.value).equals(4);
-        //@ts-expect-error private method
-        obj._setLink("intLink", 3);
+        // TODO: Investigate if we could ensure that the type of object links are always nullable
+        // @ts-expect-error Object links are always nullable
+        obj.intLink = null;
         expect(obj.intLink).equals(null);
 
-        //@ts-expect-error private method
-        obj._setLink("optIntLink", 3);
+        // TODO: Investigate if we could ensure that the type of object links are always nullable
+        // @ts-expect-error Object links are always nullable
+        obj.optIntLink = null;
         expect(obj.optIntLink).equals(null);
-        //@ts-expect-error private method
-        obj._setLink("optIntLink", 1);
+        obj.optIntLink = this.realm.create("PrimaryOptionalInt", { pk: 1, value: 2 });
         expect(obj.optIntLink.value).equals(2);
-        //@ts-expect-error private method
-        obj._setLink("optIntLink", 2);
+        obj.optIntLink = this.realm.create("PrimaryOptionalInt", { pk: 2, value: 4 });
         expect(obj.optIntLink.value).equals(4);
-        //@ts-expect-error private method
-        obj._setLink("optIntLink", null);
+        // TODO: Investigate if we can still pass "null" to optional int properties
+        // @ts-expect-error Passing in null was supported in the previous SDK
+        obj.optIntLink = this.realm.create("PrimaryOptionalInt", { pk: null, value: 6 });
         expect(obj.optIntLink.value).equals(6);
-        //@ts-expect-error private method
-        obj._setLink("optIntLink", 3);
+        // TODO: Investigate if we could ensure that the type of object links are always nullable
+        // @ts-expect-error Object links are always nullable
+        obj.optIntLink = null;
         expect(obj.optIntLink).equals(null);
 
-        //@ts-expect-error private method
-        obj._setLink("stringLink", "c");
+        // TODO: Investigate if we could ensure that the type of object links are always nullable
+        // @ts-expect-error Object links are always nullable
+        obj.stringLink = null;
         expect(obj.stringLink).equals(null);
-        //@ts-expect-error private method
-        obj._setLink("stringLink", "a");
+        obj.stringLink = this.realm.create("PrimaryString", { pk: "a", value: 2 });
         expect(obj.stringLink.value).equals(2);
-        //@ts-expect-error private method
-        obj._setLink("stringLink", "b");
+        obj.stringLink = this.realm.create("PrimaryString", { pk: "b", value: 4 });
         expect(obj.stringLink.value).equals(4);
-        //@ts-expect-error private method
-        obj._setLink("stringLink", null);
+        // TODO: Investigate if we can still pass "null" to optional string properties
+        // @ts-expect-error Passing in null was supported in the previous SDK
+        obj.stringLink = this.realm.create("PrimaryString", { pk: null, value: 6 });
         expect(obj.stringLink.value).equals(6);
-        //@ts-expect-error private method
-        obj._setLink("stringLink", "c");
+        // TODO: Investigate if we could ensure that the type of object links are always nullable
+        // @ts-expect-error Object links are always nullable
+        obj.stringLink = null;
         expect(obj.stringLink).equals(null);
       });
     });
@@ -1077,13 +943,13 @@ describe("Objectstest", () => {
       expect(obj.getPropertyType("dataCol")).equals("data");
       expect(obj.getPropertyType("objectCol")).equals("<TestObject>");
 
-      expect(obj.getPropertyType("boolArrayCol")).equals("array<bool>");
-      expect(obj.getPropertyType("floatArrayCol")).equals("array<float>");
-      expect(obj.getPropertyType("doubleArrayCol")).equals("array<double>");
-      expect(obj.getPropertyType("stringArrayCol")).equals("array<string>");
-      expect(obj.getPropertyType("dateArrayCol")).equals("array<date>");
-      expect(obj.getPropertyType("dataArrayCol")).equals("array<data>");
-      expect(obj.getPropertyType("objectArrayCol")).equals("array<TestObject>");
+      expect(obj.getPropertyType("boolArrayCol")).equals("list<bool>");
+      expect(obj.getPropertyType("floatArrayCol")).equals("list<float>");
+      expect(obj.getPropertyType("doubleArrayCol")).equals("list<double>");
+      expect(obj.getPropertyType("stringArrayCol")).equals("list<string>");
+      expect(obj.getPropertyType("dateArrayCol")).equals("list<date>");
+      expect(obj.getPropertyType("dataArrayCol")).equals("list<data>");
+      expect(obj.getPropertyType("objectArrayCol")).equals("list<TestObject>");
 
       expect(mixedNull.getPropertyType("value")).equals("null");
       expect(mixedInt.getPropertyType("value")).equals("double"); // see comment above
@@ -1097,7 +963,7 @@ describe("Objectstest", () => {
       // property that does not exist
       expect(() => {
         obj.getPropertyType("foo");
-      }).throws("No such property: foo");
+      }).throws("Property 'foo' does not exist on 'AllTypesObject' objects");
     });
   });
 

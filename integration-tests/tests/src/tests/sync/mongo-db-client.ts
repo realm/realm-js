@@ -565,7 +565,8 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
       });
     });
 
-    describe("#watch", function () {
+    // TODO: Remove the skip once https://github.com/react-native-community/fetch/issues/13 (text streaming broken on Android) gets resolved
+    describe.skipIf(environment.android, "#watch", function () {
       const text = "use some odd chars to force weird encoding %\n\r\n\\????>>>>";
       const numInserts = 10;
       // Used as a flag for knowing when to stop watching.

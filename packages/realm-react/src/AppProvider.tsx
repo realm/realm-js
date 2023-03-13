@@ -70,7 +70,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children, appRef, ...a
  */
 export const useApp = <
   FunctionsFactoryType extends Realm.DefaultFunctionsFactory,
-  CustomDataType extends SimpleObject
+  CustomDataType extends Record<string, unknown>,
 >(): Realm.App<FunctionsFactoryType, CustomDataType> => {
   const app = useContext(AppContext);
 

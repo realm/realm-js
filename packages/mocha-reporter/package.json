@@ -4,9 +4,14 @@
   "description": "A custom reporter for mocha",
   "main": "./dist/index.js",
   "scripts": {
-    "build": "tsc ",
-    "prepare": "node -e \"require('fs-extra').emptyDir('dist');\" && npm run build",
-    "start": "tsc -w"
+    "build": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "command": "tsc",
+      "files": ["src/**/*.ts", "tsconfig.json"],
+      "output": ["dist/**/*.js", "dist/**/*.d.ts"]
+    }
   },
   "files": [
     "dist"

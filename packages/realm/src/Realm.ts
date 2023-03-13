@@ -18,7 +18,6 @@
 
 import {
   AggregatePipelineStage,
-  AnyRealmObject,
   ApiKey,
   ApiKeyAuth,
   App,
@@ -787,17 +786,13 @@ export class Realm {
     values: Partial<T> | Partial<RealmInsertionModel<T>>,
     mode: UpdateMode.All | UpdateMode.Modified | boolean,
   ): RealmObject<T> & T;
-  create<T extends AnyRealmObject = RealmObject & DefaultObject>(
-    type: Constructor<T>,
-    values: RealmInsertionModel<T>,
-    mode?: UpdateMode.Never,
-  ): T;
-  create<T extends AnyRealmObject = RealmObject & DefaultObject>(
+  create<T extends RealmObject>(type: Constructor<T>, values: RealmInsertionModel<T>, mode?: UpdateMode.Never): T;
+  create<T extends RealmObject>(
     type: Constructor<T>,
     values: Partial<T> | Partial<RealmInsertionModel<T>>,
     mode: UpdateMode.All | UpdateMode.Modified | boolean,
   ): T;
-  create<T extends AnyRealmObject>(
+  create<T extends RealmObject>(
     type: string | Constructor<T>,
     values: DefaultObject,
     mode: UpdateMode | boolean = UpdateMode.Never,
@@ -894,11 +889,11 @@ export class Realm {
    * @since 0.14.0
    */
   objectForPrimaryKey<T = DefaultObject>(type: string, primaryKey: T[keyof T]): (RealmObject<T> & T) | null;
-  objectForPrimaryKey<T extends AnyRealmObject = RealmObject & DefaultObject>(
+  objectForPrimaryKey<T extends RealmObject = RealmObject & DefaultObject>(
     type: Constructor<T>,
     primaryKey: T[keyof T],
   ): T | null;
-  objectForPrimaryKey<T extends AnyRealmObject>(type: string | Constructor<T>, primaryKey: unknown): T | null {
+  objectForPrimaryKey<T extends RealmObject>(type: string | Constructor<T>, primaryKey: unknown): T | null {
     // Implements https://github.com/realm/realm-js/blob/v11/src/js_realm.hpp#L1240-L1258
     const { objectSchema, properties, wrapObject } = this.classes.getHelpers(type);
     if (!objectSchema.primaryKey) {
@@ -967,8 +962,8 @@ export class Realm {
    * @returns Results that will live-update as objects are created, modified, and destroyed.
    */
   objects<T = DefaultObject>(type: string): Results<RealmObject<T> & T>;
-  objects<T extends AnyRealmObject = RealmObject & DefaultObject>(type: Constructor<T>): Results<T>;
-  objects<T extends AnyRealmObject>(type: string | Constructor<T>): Results<T> {
+  objects<T extends RealmObject = RealmObject & DefaultObject>(type: Constructor<T>): Results<T>;
+  objects<T extends RealmObject>(type: string | Constructor<T>): Results<T> {
     const { objectSchema, wrapObject } = this.classes.getHelpers(type);
     if (isEmbedded(objectSchema)) {
       throw new Error("You cannot query an embedded object.");
@@ -1232,7 +1227,10 @@ function isEmbedded(objectSchema: binding.ObjectSchema): boolean {
 
 // We need these type aliases because of https://github.com/Swatinem/rollup-plugin-dts/issues/223
 
-type AppType = App;
+type AppType<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType = DefaultObject> = App<
+  FunctionsFactoryType,
+  CustomDataType
+>;
 type BSONType = typeof BSON;
 type ClientResetModeType = ClientResetMode;
 type CollectionType<
@@ -1263,7 +1261,11 @@ type SyncErrorType = SyncError;
 type TypesType = typeof Types;
 type UpdateModeType = UpdateMode;
 type UserStateType = UserState;
-type UserType = User;
+type UserType<
+  FunctionsFactoryType = DefaultFunctionsFactory,
+  CustomDataType = DefaultObject,
+  UserProfileDataType = DefaultUserProfileData,
+> = User<FunctionsFactoryType, CustomDataType, UserProfileDataType>;
 
 type BaseSubscriptionSetType = BaseSubscriptionSet;
 type LogLevelType = LogLevel;

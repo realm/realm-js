@@ -6,10 +6,12 @@
   "main": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./node": "./src/node/index.ts"
+    "./node": "./src/node/index.ts",
+    "./electron": "./dist/index.js"
   },
   "private": true,
   "scripts": {
+    "build": "wireit",
     "start": "CONTEXT=appTemplatesPath=../realm-apps,$CONTEXT npm run mocha -- --watch",
     "start:missing-server": "CONTEXT=missingServer,$CONTEXT npm start",
     "start:performance": "CONTEXT=missingServer,performance,integration=false,$CONTEXT npm start",
@@ -18,10 +20,24 @@
     "mocha": "mocha --reporter @realm/mocha-reporter src/index.ts",
     "lint": "eslint --ext .js,.ts ."
   },
+  "wireit": {
+    "build": {
+      "command": "tsc",
+      "dependencies": ["build-dependencies"]
+    },
+    "build-dependencies": {
+      "dependencies": [
+        "../../packages/realm:build",
+        "../../packages/mocha-reporter:build",
+        "../../packages/realm-app-importer:build"
+      ]
+    }
+  },
   "peerDependencies": {
     "realm": "*"
   },
   "devDependencies": {
+    "@realm/app-importer": "*",
     "@realm/mocha-reporter": "*",
     "@thi.ng/bench": "^3.1.16",
     "@types/chai": "^4.3.3",
@@ -33,8 +49,7 @@
     "mocha": "^10.1.0",
     "node-fetch": "^3.2.10",
     "platform": "^1.3.6",
-    "realm": "*",
-    "@realm/app-importer": "*"
+    "realm": "*"
   },
   "dependencies": {
     "@thi.ng/bench": "^3.1.16",

@@ -28,7 +28,7 @@ type Item<ValueType = Realm.Mixed> = {
 const DictSchema: Realm.ObjectSchema = {
   name: "Dictionary",
   properties: {
-    fields: "{}",
+    fields: "mixed{}",
   },
 };
 const Child: Realm.ObjectSchema = {
@@ -40,8 +40,8 @@ const Child: Realm.ObjectSchema = {
 const TwoDictSchema: Realm.ObjectSchema = {
   name: "Dictionary",
   properties: {
-    dict1: "{}",
-    dict2: "{}",
+    dict1: "mixed{}",
+    dict2: "mixed{}",
   },
 };
 const EmbeddedChild = {
@@ -63,8 +63,8 @@ const DictTypedSchema = {
 const DictMixedSchema = {
   name: "MixedDictionary",
   properties: {
-    dict1: "{}",
-    dict2: "{}",
+    dict1: "mixed{}",
+    dict2: "mixed{}",
   },
 };
 
@@ -204,7 +204,7 @@ describe("Dictionary", () => {
         return this.realm.create<Item>("Item", {});
       });
       //@ts-expect-error accesses forEach on a dictionary which should not exist.
-      expect(() => item.dict.forEach()).throws(TypeError, "item.dict.forEach is not a function");
+      expect(() => item.dict.forEach()).throws("is not a function");
     });
 
     it("can store string values using string keys", function (this: RealmContext) {

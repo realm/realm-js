@@ -247,10 +247,6 @@ function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): Can
     optional = false;
   }
 
-  if (info.isPrimaryKey) {
-    assert(!optional, errMessage(info, "Optional properties cannot be used as a primary key."));
-  }
-
   const normalizedSchema: CanonicalPropertySchema = {
     name: info.propertyName,
     type: type as PropertyTypeName,
@@ -317,7 +313,6 @@ function normalizePropertySchemaObject(info: PropertyInfoUsingObject): Canonical
   }
 
   if (info.isPrimaryKey) {
-    assert(!optional, errMessage(info, "Optional properties cannot be used as a primary key."));
     assert(indexed !== false, errMessage(info, "Primary keys must always be indexed."));
     indexed = true;
   }

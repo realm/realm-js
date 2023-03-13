@@ -181,6 +181,9 @@ declare namespace Chai {
   }
 }
 
+/** Calls the callback on the next tick of the event loop */
+declare function setImmediate(cb: () => void): void;
+
 interface Console {
   error(message?: unknown, ...optionalParams: unknown[]): void;
   log(message?: unknown, ...optionalParams: unknown[]): void;

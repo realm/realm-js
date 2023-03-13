@@ -4,9 +4,16 @@
   "description": "Realm JS tests running in a Node.js environment",
   "private": true,
   "scripts": {
-    "start": "tsx index.mjs",
-    "test": "mocha-remote --reporter @realm/mocha-reporter npm start",
-    "lint": "eslint ."
+    "test": "wireit",
+    "lint": "eslint --ext js,mjs ."
+  },
+  "wireit": {
+    "test": {
+      "command": "mocha-remote --reporter @realm/mocha-reporter tsx index.mjs",
+      "dependencies": [
+        "../../tests:build-dependencies"
+      ]
+    }
   },
   "dependencies": {
     "@realm/integration-tests": "*",

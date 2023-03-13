@@ -1,10 +1,7 @@
 {
-  "extension": [
-    "ts",
-    "js"
-  ],
-  "require": [
-    "ts-node/register/transpile-only"
-  ],
+  "loader": "tsx",
+  "enable-source-maps": true,
+  "no-warnings": true,
+  "spec": "src/**/*.test.ts",
   "slow": 1000
 }
