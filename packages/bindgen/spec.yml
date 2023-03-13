@@ -666,6 +666,11 @@ classes:
       get_backlink_count: '() const -> count_t'
       get_backlink_view: '(src_table: TableRef, src_col_key: ColKey) -> TableView'
       create_and_set_linked_object: '(column: ColKey) -> Obj'
+      add_int: # NOTE: ignoring ability to chain calls (TODO Maybe we should add it?)
+        - '(column: ColKey, value: int64_t) const'
+        - sig: '(column: StringData, value: int64_t) const'
+          suffix: 'by_name'
+      
 
   Transaction:
     sharedPtrWrapped: TransactionRef
