@@ -29,6 +29,7 @@
       "dependencies": [
         "../../packages/realm:build",
         "../../packages/mocha-reporter:build",
+        "../../packages/realm-network-transport:build",
         "../../packages/realm-app-importer:build"
       ]
     }

@@ -37,11 +37,16 @@
     "common": {
       "command": "mocha-remote --template @realm/mocha-reporter --context appImporterIsRemote,$MOCHA_REMOTE_CONTEXT --watch $WATCH -- concurrently --kill-others-on-fail npm:metro npm:runner npm:app-importer",
       "dependencies": [
-        "../../tests:build-dependencies"
+        "../../../packages/mocha-reporter:build",
+        "../../../packages/realm-network-transport:build",
+        "../../../packages/realm-app-importer:build"
       ]
     },
     "test:android": {
       "command": "npm run common",
+      "dependencies": [
+        "../../../packages/realm:build:android"
+      ],
       "env": {
         "PLATFORM": "android",
         "WATCH": "false"
@@ -50,7 +55,8 @@
     "test:ios": {
       "command": "npm run common",
       "dependencies": [
-        "pod-install"
+        "pod-install",
+        "../../../packages/realm:build:ios"
       ],
       "env": {
         "PLATFORM": "ios",
@@ -60,7 +66,8 @@
     "test:catalyst": {
       "command": "npm run common",
       "dependencies": [
-        "pod-install"
+        "pod-install",
+        "../../../packages/realm:build:ios"
       ],
       "env": {
         "PLATFORM": "catalyst",
@@ -69,6 +76,9 @@
     },
     "watch:android": {
       "command": "npm run common",
+      "dependencies": [
+        "../../../packages/realm:build:android"
+      ],
       "env": {
         "PLATFORM": "android",
         "WATCH": "true"
@@ -77,7 +87,8 @@
     "watch:ios": {
       "command": "npm run common",
       "dependencies": [
-        "pod-install"
+        "pod-install",
+        "../../../packages/realm:build:ios"
       ],
       "env": {
         "PLATFORM": "ios",
@@ -87,7 +98,8 @@
     "watch:catalyst": {
       "command": "npm run common",
       "dependencies": [
-        "pod-install"
+        "pod-install",
+        "../../../packages/realm:build:ios"
       ],
       "env": {
         "PLATFORM": "catalyst",
