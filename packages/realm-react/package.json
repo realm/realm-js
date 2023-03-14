@@ -16,7 +16,8 @@
     "build": {
       "command": "rollup --config",
       "dependencies": [
-        "../realm:build",
+        "../realm:bundle",
+        "../realm:build:node",
         "../realm-common:build"
       ],
       "files": ["rollup.config.mjs", "src/**/*.ts", "src/**/*.tsx"],
