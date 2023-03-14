@@ -11,19 +11,9 @@
   "scripts": {
     "start": "./realm-bindgen.ts",
     "test": "mocha",
-    "generate:spec-schema": "wireit",
-    "build": "wireit",
-    "rebuild": "wireit"
+    "generate:spec-schema": "wireit"
   },
   "wireit": {
-    "build": {
-      "command": "cmake-js build --debug",
-      "dependencies": ["../..:submodules"]
-    },
-    "rebuild": {
-      "command": "cmake-js rebuild --debug",
-      "dependencies": ["../..:submodules"]
-    },
     "generate:spec-schema": {
       "command": "typescript-json-schema tsconfig.json RelaxedSpec --include src/spec/relaxed-model.ts --out generated/spec.schema.json --required",
       "files": ["src/spec/relaxed-model.ts"],
