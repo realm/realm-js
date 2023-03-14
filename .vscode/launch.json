@@ -5,73 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Build Realm Android",
-            "cwd": "${workspaceFolder}",
-            "program": "${workspaceFolder}/scripts/build-android.js",
-            "args": [
-                "--arch=x86"
-            ],
-            "request": "launch",
-            "type": "node"
-        },
-        {
-            "name": "(gdb) Launch",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "node",
-            "args": [
-                "--expose_gc",
-                "${workspaceRoot}/node_modules/jasmine/bin/jasmine.js",
-                "spec/unit_tests.js",
-                "--filter=."
-            ],
-            "stopAtEntry": false,
-            "cwd": "${workspaceRoot}/tests",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ]
+            "type": "node",
+            "request": "attach",
+            "name": "Node: Attach to process",
+            "presentation": {
+                "hidden": true
+            }
         },
         {
             "type": "node",
-            "request": "launch",
-            "name": "Debug Node Unit Tests (rebuild)",
-            "preLaunchTask": "Build Node Tests",
-            "cwd": "${workspaceRoot}/tests",
-            "console": "integratedTerminal",
-            "program": "${workspaceRoot}/node_modules/jasmine/bin/jasmine.js",
-            "runtimeArgs": [
-                "--expose_gc"
-            ],
-            "args": [
-                "spec/unit_tests.js",
-                "--filter=${input:testFilter}"
-            ]
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Debug Node Unit Tests",
-            "cwd": "${workspaceRoot}/tests",
-            "console": "integratedTerminal",
-            "program": "${workspaceRoot}/node_modules/jasmine/bin/jasmine.js",
-            "runtimeArgs": [
-                "--expose_gc"
-            ],
-            "args": [
-                "spec/unit_tests.js",
-                "--filter=${input:testFilter}"
-            ]
-        },
-        {
-            "type": "node",
-            "name": "Realm Integration Tests",
+            "presentation": {
+                "group": "realm"
+            },
+            "name": "Node: Integration tests",
             "request": "launch",
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
@@ -85,28 +31,16 @@
             ]
         },
         {
-            "type": "node",
-            "request": "launch",
-            "name": "Start Stitch in Docker",
-            "cwd": "${workspaceRoot}/scripts",
-            "preLaunchTask": "start_stitch"
-        },
-        {
-            "type": "node",
-            "request": "attach",
-            "name": "Attach to Port",
-            "protocol": "inspector",
-            "address": "localhost",
-            "port": 5858
-        },
-        {
             "type": "lldb",
+            "presentation": {
+                "group": "realm"
+            },
             "request": "attach",
-            "name": "LLDB Attach to Process",
+            "name": "LLDB: Attach to process",
             "pid": "${command:pickProcess}"
         },
         {
-            "name": "LLDB Attach to Android Emulator",
+            "name": "LLDB: Attach to Android Emulator",
             "type": "lldb",
             "request": "attach",
             "pid": "${input:pid}",
@@ -115,20 +49,6 @@
                 "platform connect connect://localhost:9123",
                 "settings set target.inherit-env false",
             ],
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "LLDB Debug Unit Tests",
-            "program": "node",
-            "args": [
-                "--expose_gc",
-                "${workspaceFolder}/node_modules/jasmine/bin/jasmine.js",
-                "spec/unit_tests.js",
-                "--filter=${input:testFilter}"
-            ],
-            "cwd": "${workspaceFolder}/tests",
-            "preLaunchTask": "Build Node Tests"
         },
         {
             "type": "lldb",
@@ -143,14 +63,15 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "LLDB Debug Integration Tests",
+            "name": "LLDB: Integration tests",
             "program": "node",
             "cwd": "${workspaceRoot}/integration-tests/tests",
             "env": {
                 "CONTEXT": "appTemplatesPath=../realm-apps"
             },
             "args": [
-                "--loader=tsm",
+                "--inspect",
+                "--loader=tsx",
                 "--expose_gc",
                 "--enable-source-maps",
                 "--no-warnings",
@@ -166,13 +87,16 @@
         },
         {
             "type": "node",
+            "presentation": {
+                "group": "realm"
+            },
             "request": "launch",
-            "name": "Debug Integration Tests (JS)",
+            "name": "Node: Debug integration tests",
             "cwd": "${workspaceFolder}/integration-tests/tests",
             "console": "integratedTerminal",
             "program": "${workspaceRoot}/node_modules/mocha/lib/cli/cli.js",
             "runtimeArgs": [
-                "--loader=tsm",
+                "--loader=tsx",
                 "--expose_gc",
                 "--enable-source-maps",
                 "--no-warnings"
@@ -189,15 +113,18 @@
         },
         {
             "type": "lldb",
-            "name": "LLDB Realm React Tests",
+            "presentation": {
+                "group": "realm/react"
+            },
+            "name": "LLDB: Realm React Tests",
             "request": "launch",
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
-            "disableOptimisticBPs": true,
             "cwd": "${workspaceFolder}/packages/realm-react",
             "program": "node",
             "args": [
-                "node_modules/.bin/jest",
+                "--inspect",
+                "${workspaceFolder}/node_modules/.bin/jest",
                 "--runInBand",
                 "--watchAll=false",
                 "--testNamePattern=${input:testNamePattern}"
@@ -205,7 +132,7 @@
         },
         {
             "type": "node",
-            "name": "Realm React Tests",
+            "name": "Node: Realm React Tests",
             "request": "launch",
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
@@ -250,17 +177,25 @@
     ],
     "compounds": [
         {
-            "name": "Start Server + Debug",
+            "name": "LLDB & Node: Integration tests",
+            "presentation": {
+                "group": "realm",
+                "order": 1
+            },
             "configurations": [
-                "Start Stitch in Docker",
-                "Debug Node Unit Tests (rebuild)"
+                "Node: Attach to process",
+                "LLDB: Integration tests"
             ]
         },
         {
-            "name": "Debug GDB + NodeJS",
+            "name": "LLDB & Node: @realm/react",
+            "presentation": {
+                "group": "realm/react",
+                "order": 2
+            },
             "configurations": [
-                "(gdb) Launch",
-                "Attach to Port"
+                "Node: Attach to process",
+                "LLDB: Realm React Tests"
             ]
         }
     ],
