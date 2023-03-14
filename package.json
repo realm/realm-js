@@ -11,7 +11,9 @@
   },
   "wireit": {
     "submodules": {
-      "command": "git submodule update --init --recursive"
+      "command": "git submodule update --init --recursive",
+      "files": [".git/modules/vendor/realm-core/HEAD"],
+      "output": ["vendor/realm-core"]
     },
     "build": {
       "dependencies": [
