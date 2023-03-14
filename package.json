@@ -10,8 +10,12 @@
     "lint:cpp:fix": "find src packages/bindgen/src -name '*.cpp' -or -name '*.h' -or -name '*.hpp' | xargs clang-format -i"
   },
   "wireit": {
+    "submodules": {
+      "command": "git submodule update --init --recursive"
+    },
     "build": {
       "dependencies": [
+        "submodules",
         "./packages/realm:build",
         "./packages/babel-plugin:build",
         "./packages/mocha-reporter:build",

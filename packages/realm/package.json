@@ -82,6 +82,7 @@
     },
     "build:bindgen": {
       "command": "npm run build --prefix ../bindgen",
+      "dependencies": ["../..:submodules"],
       "files": ["../../src/node/**", "../bindgen/src/**/*.ts", "../bindgen/src/**/*.h"],
       "output": [
         "generated/ts/core.ts",
@@ -91,9 +92,7 @@
       ]
     },
     "build:node": {
-      "dependencies": [
-        "build:bindgen"
-      ]
+      "dependencies": ["build:bindgen"]
     },
     "build:node:prebuild": {
       "command": "cross-env prebuild --runtime napi --arch $PREBUILD_ARCH -- --directory ../bindgen",
@@ -121,10 +120,12 @@
     },
     "build:android": {
       "command": "node ../../scripts/build-android.js",
+      "dependencies": ["../..:submodules"],
       "files": ["../../src/android/**", "../bindgen/src/**/*.ts", "../bindgen/src/**/*.h"]
     },
     "build:ios": {
       "command": "../../scripts/build-ios.sh",
+      "dependencies": ["../..:submodules"],
       "files": ["../../src/ios/**", "../bindgen/src/**/*.ts", "../bindgen/src/**/*.h"]
     }
   },
