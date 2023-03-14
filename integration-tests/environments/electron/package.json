@@ -23,6 +23,7 @@
     "test:main": {
       "command": "mocha-remote --reporter @realm/mocha-reporter --id main node runner.js main",
       "dependencies": [
+        "../../../packages/realm:bundle",
         "../../../packages/realm:build:node",
         "../../../packages/mocha-reporter:build",
         "../../../packages/realm-network-transport:build",
@@ -32,6 +33,7 @@
     "test:renderer": {
       "command": "mocha-remote --reporter @realm/mocha-reporter --id main node runner.js renderer",
       "dependencies": [
+        "../../../packages/realm:bundle",
         "../../../packages/realm:build:node",
         "../../../packages/mocha-reporter:build",
         "../../../packages/realm-network-transport:build",

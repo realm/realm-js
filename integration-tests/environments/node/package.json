@@ -11,6 +11,7 @@
     "test": {
       "command": "mocha-remote --reporter @realm/mocha-reporter tsx index.mjs",
       "dependencies": [
+        "../../../packages/realm:bundle",
         "../../../packages/realm:build:node",
         "../../../packages/mocha-reporter:build",
         "../../../packages/realm-network-transport:build",

@@ -58,6 +58,7 @@
   "workspaces": [
     "example",
     "packages/bindgen",
+    "packages/babel-plugin",
     "packages/realm",
     "packages/realm-web",
     "packages/realm-react",
