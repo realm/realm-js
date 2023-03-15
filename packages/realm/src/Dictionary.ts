@@ -108,7 +108,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * @internal
    * @param internal The internal representation of the dictionary.
    */
-  constructor(/** @internal */ realm: Realm, internal: binding.Dictionary, helpers: TypeHelpers) {
+  constructor(realm: Realm, internal: binding.Dictionary, helpers: TypeHelpers) {
     if (arguments.length === 0 || !(internal instanceof binding.Dictionary)) {
       throw new IllegalConstructorError("Dictionary");
     }
