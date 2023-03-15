@@ -778,7 +778,7 @@ classes:
       sum: '(column: ColKey) -> util::Optional<Mixed>'
       clear: ()
 
-      add_notification_callback: '(cb: (changes: const CollectionChangeSet&), keyPaths: KeyPathArray) -> NotificationToken'
+      add_notification_callback: '(cb: (changes: const CollectionChangeSet&), keyPaths: util::Optional<KeyPathArray>) -> NotificationToken'
 
   Realm:
     sharedPtrWrapped: SharedRealm
@@ -863,7 +863,7 @@ classes:
     constructors:
       make: '(realm: SharedRealm, table: TableKey, obj: ObjKey)'
     methods:
-      add_callback: '(cb: (changes: ObjectChangeSet), keyPaths: KeyPathArray) -> uint64_t'
+      add_callback: '(cb: (changes: ObjectChangeSet), keyPaths: util::Optional<KeyPathArray>) -> uint64_t'
       remove_callback: '(token: uint64_t)'
 
   NotificationToken:
@@ -909,7 +909,7 @@ classes:
         - '(order: SortDescriptor) const -> Results'
         - sig: '(keyPaths: std::vector<std::pair<std::string, bool>> const&) const -> Results'
           suffix: 'by_name'
-      add_notification_callback: '(cb: (changes: const CollectionChangeSet&), keyPaths: KeyPathArray) -> NotificationToken'
+      add_notification_callback: '(cb: (changes: const CollectionChangeSet&), keyPaths: util::Optional<KeyPathArray>) -> NotificationToken'
 
   List:
     base: Collection
