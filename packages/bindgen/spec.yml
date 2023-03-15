@@ -287,12 +287,12 @@ enums:
       - Error
       - Superseded
       - AwaitingMark
-  WatchStreamState:
-    cppName: app::WatchStream::State
-    values:
-      - NEED_DATA
-      - HAVE_EVENT
-      - HAVE_ERROR
+  # WatchStreamState:
+  #   cppName: app::WatchStream::State
+  #   values:
+  #     - NEED_DATA
+  #     - HAVE_EVENT
+  #     - HAVE_ERROR
 
 # These types are handled specially. They must be structs with a single fields named "value".
 keyTypes:
@@ -570,14 +570,15 @@ records:
     cppName: app::App::Config
     fields:
       app_id: std::string
-      transport: SharedGenericNetworkTransport
+      # transport: SharedGenericNetworkTransport
       base_url: util::Optional<std::string>
       local_app_name: util::Optional<std::string>
       local_app_version: util::Optional<std::string>
       default_request_timeout_ms: util::Optional<uint64_t>
-      platform: std::string
-      platform_version: std::string
-      sdk_version: std::string
+      # TODO update, below properties lives in 'DeviceInfo' https://github.com/realm/realm-core/compare/64ede25410adb4d0447aed23f0d94cf61e431b58...master?diff=split
+      # platform: std::string
+      # platform_version: std::string
+      # sdk_version: std::string
 
 opaqueTypes:
   - Schema
@@ -602,7 +603,7 @@ classes:
       has_binding_context: '(r: Realm) -> bool'
       set_binding_context: '(r: SharedRealm, methods: BindingContext)'
       get_or_create_object_with_primary_key: '(t: TableRef, pk: Mixed) -> std::pair<Obj, bool>'
-      make_network_transport: '(runRequest: (request: const Request&, callback: util::UniqueFunction<(response: Response&&)>&&) off_thread) -> SharedGenericNetworkTransport'
+      # make_network_transport: '(runRequest: (request: const Request&, callback: util::UniqueFunction<(response: Response&&)>&&) off_thread) -> SharedGenericNetworkTransport'
       delete_data_for_object: '(realm: SharedRealm, object_type: StringData)'
       is_empty_realm: '(realm: SharedRealm) -> bool'
       base64_decode: '(input: StringData) -> BinaryData'
@@ -613,7 +614,7 @@ classes:
       erase_subscription: '(subs: MutableSyncSubscriptionSet&, sub_to_remove: const SyncSubscription&) -> bool'
       # This is added due to DescriptorOrdering not being exposed
       get_results_description: '(results: const Results&) -> StringData'
-      feed_buffer: '(ws: WatchStream&, buffer: BinaryData)'
+      # feed_buffer: '(ws: WatchStream&, buffer: BinaryData)'
 
   ConstTableRef:
     needsDeref: true
@@ -803,7 +804,7 @@ classes:
 
       is_closed: bool
 
-      audit_context: Nullable<AuditInterface*>
+      # audit_context: Nullable<AuditInterface*>
 
       sync_session: Nullable<SharedSyncSession>
       get_latest_subscription_set: SyncSubscriptionSet
@@ -1119,15 +1120,15 @@ classes:
       call_function: '(user: const SharedSyncUser&, name: std::string, args: EJsonArray, service_name: util::Optional<std::string>, cb: AsyncCallback<(result: Nullable<const EJson*>, err: util::Optional<AppError>)>)'
       make_streaming_request: '(user: SharedSyncUser, name: std::string, args: bson::BsonArray, service_name: util::Optional<std::string>) -> Request'
 
-  WatchStream:
-    cppName: app::WatchStream
-    constructors:
-      make: ()
-    properties:
-      state: WatchStreamState
-      error: AppError
-    methods:
-      next_event: '() -> bson::BsonDocument'
+  # WatchStream:
+  #   cppName: app::WatchStream
+  #   constructors:
+  #     make: ()
+  #   properties:
+  #     state: WatchStreamState
+  #     error: AppError
+  #   methods:
+  #     next_event: '() -> bson::BsonDocument'
 
   PushClient:
     cppName: app::PushClient
@@ -1210,7 +1211,7 @@ classes:
       revive_if_needed: ()
       handle_reconnect: ()
       close: ()
-      log_out: ()
+      force_close: ()
       shutdown_and_wait: ()
       update_configuration: '(config: SyncConfig)'
 
@@ -1264,8 +1265,8 @@ classes:
       make_frozen: '(version: VersionID) -> SharedScheduler'
       make_default: '() -> SharedScheduler'
       set_default_factory: '(factory: () -> SharedScheduler)'
-  GenericNetworkTransport:
-    cppName: app::GenericNetworkTransport
-    sharedPtrWrapped: SharedGenericNetworkTransport
-    methods:
-      send_request_to_server: '(request: Request&&, completionBlock: util::UniqueFunction<(response: const Response&)>&&)'
+  # GenericNetworkTransport:
+  #   cppName: app::GenericNetworkTransport
+  #   sharedPtrWrapped: SharedGenericNetworkTransport
+  #   methods:
+  #     send_request_to_server: '(request: Request&&, completionBlock: util::UniqueFunction<(response: const Response&)>&&)'

@@ -325,7 +325,7 @@ export class SyncSession {
   }
 
   pause() {
-    this.internal.logOut();
+    this.internal.forceClose();
   }
 
   resume() {

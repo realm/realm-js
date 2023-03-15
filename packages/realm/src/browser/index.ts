@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2020 Realm Inc.
+// Copyright 2023 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,26 +15,8 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+import "./fs";
 
-console.log("Loading Realm Integration Tests");
-
-import { flags } from "realm";
-
-// TODO: Refactor tests to disable this
-flags.ALLOW_VALUES_ARRAYS = true;
-
-import "./setup-globals";
-
-afterEach(() => {
-  // Trigger garbage collection after every test, if exposed by the environment.
-  if (typeof global.gc === "function") {
-    global.gc();
-  }
-});
-
-// import "./utils/import-app.test.ts";
-// import "./utils/chai-plugin.test.ts";
-// import "./mocha-internals.test.ts";
-
-import "./tests";
-// import "./performance-tests";
+export * from "../index";
+import { Realm } from "../index";
+export default Realm;

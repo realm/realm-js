@@ -13,7 +13,8 @@
     "test": "mocha",
     "generate:spec-schema": "wireit",
     "build": "wireit",
-    "rebuild": "wireit"
+    "rebuild": "wireit",
+    "build-browser": "wireit"
   },
   "wireit": {
     "build": {
@@ -26,6 +27,9 @@
       "command": "typescript-json-schema tsconfig.json RelaxedSpec --include src/spec/relaxed-model.ts --out generated/spec.schema.json --required",
       "files": ["src/spec/relaxed-model.ts"],
       "output": ["generated/spec.schema.json"]
+    }, 
+    "build-browser": {
+      "command": "emcmake cmake -B build.browser -G Ninja && cmake --build build.browser"
     }
   },
   "dependencies": {

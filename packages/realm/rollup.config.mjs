@@ -21,6 +21,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import typescript from "@rollup/plugin-typescript";
 import replace from "@rollup/plugin-replace";
 import dts from "rollup-plugin-dts";
+import copy from "rollup-plugin-copy";
 
 import pkg from "./package.json" assert { type: "json" };
 
@@ -92,6 +93,38 @@ export default [
       }),
     ],
     external: ["bson", "debug", "react-native"],
+  },
+  {
+    input: "src/browser/index.ts",
+    output: {
+      file: mainExport.browser,
+      format: "es",
+      sourcemap: true,
+    },
+    plugins: [
+      nodeResolve({
+        mainFields: ["browser", "module", "main"],
+        resolveOnly: ["@realm/network-transport", "path-browserify"],
+      }),
+      // We need to use `commonjs` because of "path-browserify"
+      commonjs(),
+      replace({
+        preventAssignment: true,
+        delimiters: ["", ""],
+        values: {
+          '"../generated/ts/native.mjs"': '"../generated/ts/native-browser.mjs"',
+        },
+      }),
+      typescript({
+        tsconfig: "src/browser/tsconfig.json",
+        noEmitOnError: true,
+        outputToFilesystem: true,
+      }),
+      copy({
+        targets: [{ src: "./generated/ts/realm-js-wasm.wasm", dest: "./dist/" }],
+      }),
+    ],
+    external: ["bson", "debug"],
   },
   {
     input: "src/index.ts",
