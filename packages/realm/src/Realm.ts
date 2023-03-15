@@ -558,6 +558,10 @@ export class Realm {
   private beforeNotifyListeners = new RealmListeners(this, RealmEvent.BeforeNotify);
   private schemaListeners = new RealmListeners(this, RealmEvent.Schema);
 
+  /**
+   * Create a new {@link Realm} instance, at the default path.
+   * @throws {@link Error} When an incompatible synced Realm is opened.
+   */
   constructor();
   /**
    * Create a new {@link Realm} instance at the provided {@link path}.
