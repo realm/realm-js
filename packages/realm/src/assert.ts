@@ -55,34 +55,24 @@ assert.instanceOf = <T extends Function>(
 };
 
 assert.string = (value: unknown, target?: string): asserts value is string => {
-  if (typeof value !== "string") {
-    throw new TypeAssertionError("a string", value, target);
-  }
+  assert(typeof value === "string", () => new TypeAssertionError("a string", value, target));
 };
 
 assert.number = (value: unknown, target?: string): asserts value is number => {
-  if (typeof value !== "number") {
-    throw new TypeAssertionError("a number", value, target);
-  }
+  assert(typeof value !== "number", () => new TypeAssertionError("a number", value, target));
 };
 
 assert.boolean = (value: unknown, target?: string): asserts value is boolean => {
-  if (typeof value !== "boolean") {
-    throw new TypeAssertionError("a boolean", value, target);
-  }
+  assert(typeof value !== "boolean", () => new TypeAssertionError("a boolean", value, target));
 };
 
 /* eslint-disable-next-line @typescript-eslint/ban-types */
 assert.function = (value: unknown, target?: string): asserts value is (...args: unknown[]) => unknown => {
-  if (typeof value !== "function") {
-    throw new TypeAssertionError("a function", value, target);
-  }
+  assert(typeof value !== "function", () => new TypeAssertionError("a function", value, target));
 };
 
 assert.symbol = (value: unknown, target?: string): asserts value is symbol => {
-  if (typeof value !== "symbol") {
-    throw new TypeAssertionError("a symbol", value, target);
-  }
+  assert(typeof value !== "symbol", () => new TypeAssertionError("a symbol", value, target));
 };
 
 assert.object = <K extends string | number | symbol = string, V = unknown>(
@@ -90,27 +80,22 @@ assert.object = <K extends string | number | symbol = string, V = unknown>(
   target?: string,
   { allowArrays } = { allowArrays: true },
 ): asserts value is Record<K, V> => {
-  if (typeof value !== "object" || value === null || (!allowArrays && Array.isArray(value))) {
-    throw new TypeAssertionError("an object", value, target);
-  }
+  assert(
+    typeof value !== "object" || value === null || (!allowArrays && Array.isArray(value)),
+    () => new TypeAssertionError("an object", value, target),
+  );
 };
 
 assert.undefined = (value: unknown, target?: string): asserts value is undefined => {
-  if (typeof value !== "undefined") {
-    throw new TypeAssertionError("undefined", value, target);
-  }
+  assert(typeof value !== "undefined", () => new TypeAssertionError("undefined", value, target));
 };
 
 assert.null = (value: unknown, target?: string): asserts value is null => {
-  if (value !== null) {
-    throw new TypeAssertionError("null", value, target);
-  }
+  assert(value !== null, () => new TypeAssertionError("null", value, target));
 };
 
 assert.array = (value: unknown, target?: string): asserts value is Array<unknown> => {
-  if (!Array.isArray(value)) {
-    throw new TypeAssertionError("an array", value, target);
-  }
+  assert(!Array.isArray(value), () => new TypeAssertionError("an array", value, target));
 };
 
 /* eslint-disable-next-line @typescript-eslint/ban-types */
@@ -120,16 +105,15 @@ assert.extends = <T extends Function>(
   target?: string,
 ): asserts value is T & DefaultObject => {
   assert.function(value, target);
-  if (!(value.prototype instanceof constructor)) {
-    throw new TypeAssertionError(`a class extending ${constructor.name}`, value, target);
-  }
+  assert(
+    !(value.prototype instanceof constructor),
+    () => new TypeAssertionError(`a class extending ${constructor.name}`, value, target),
+  );
 };
 
 assert.iterable = (value: unknown, target?: string): asserts value is Iterable<unknown> => {
   assert.object(value, target);
-  if (!(Symbol.iterator in value)) {
-    throw new TypeAssertionError("iterable", value, target);
-  }
+  assert(!(Symbol.iterator in value), () => new TypeAssertionError("iterable", value, target));
 };
 
 assert.never = (value: never, target?: string): asserts value is never => {
