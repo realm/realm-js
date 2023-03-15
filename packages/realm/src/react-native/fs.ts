@@ -38,6 +38,10 @@ inject({
     debug("removeDirectory", path);
     JsPlatformHelpers.removeDirectory(path);
   },
+  ensureDirectoryForFile(path) {
+    debug("ensureDirectoryForFile", path);
+    JsPlatformHelpers.ensureDirectoryExistsForFile(path);
+  },
   getDefaultDirectoryPath() {
     return JsPlatformHelpers.defaultRealmFileDirectory();
   },

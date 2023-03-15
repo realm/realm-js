@@ -425,6 +425,9 @@ export class Realm {
     fs.copyBundledRealmFiles();
   }
 
+  /**
+   * TODO: Consider breaking this by ensuring a ".realm" suffix (coordinating with other SDK teams in the process)
+   */
   private static normalizePath(path: string | undefined): string {
     if (typeof path === "undefined") {
       return Realm.defaultPath;
@@ -437,12 +440,20 @@ export class Realm {
     }
   }
 
+  /**
+   * @note When the path is relative and the config contains a sync object, Core will replace any existing file extension
+   * or add the ".realm" suffix.
+   */
   private static determinePath(config: Configuration): string {
-    if (config.path || !config.sync || config.openSyncedRealmLocally) {
-      return Realm.normalizePath(config.path);
+    if (config.sync && !config.openSyncedRealmLocally) {
+      if (config.path && fs.isAbsolutePath(config.path)) {
+        return Realm.normalizePath(config.path);
+      } else {
+        const bindingSyncConfig = toBindingSyncConfig(config.sync);
+        return config.sync.user.internal.syncManager.pathForRealm(bindingSyncConfig, config.path);
+      }
     } else {
-      const bindingSyncConfig = toBindingSyncConfig(config.sync);
-      return config.sync.user.internal.syncManager.pathForRealm(bindingSyncConfig);
+      return Realm.normalizePath(config.path);
     }
   }
 
@@ -596,6 +607,7 @@ export class Realm {
       debug("open", bindingConfig);
       this.schemaExtras = schemaExtras;
 
+      fs.ensureDirectoryForFile(bindingConfig.path);
       this.internal = internalConfig.internal ?? binding.Realm.getSharedRealm(bindingConfig);
 
       binding.Helpers.setBindingContext(this.internal, {

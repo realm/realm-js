@@ -40,17 +40,19 @@ describe("path configuration (local)", function () {
   it("relative path", function () {
     const filename = getRelativePath();
     const realm = new Realm({ path: filename, schema: [schema] });
-    expect(realm.path.endsWith(filename)).to.be.true;
+    const realmPath = realm.path;
+    expect(realmPath.endsWith(filename)).to.be.true;
     realm.close();
-    Realm.deleteFile({ path: filename });
+    Realm.deleteFile({ path: realmPath });
   });
 
   it("absolute path", function () {
     const filename = getAbsolutePath();
     const realm = new Realm({ path: filename, schema: [schema] });
-    expect(realm.path).to.equal(filename);
+    const realmPath = realm.path;
+    expect(realmPath).to.equal(filename);
     realm.close();
-    Realm.deleteFile({ path: filename });
+    Realm.deleteFile({ path: realmPath });
   });
 });
 
@@ -69,6 +71,7 @@ describe.skipIf(environment.missingServer, "path configuration (partition based 
       },
     });
     expect(realm.path).to.equal(filename);
+    expect(Realm.exists({ path: filename })).to.be.true;
     realm.close();
     Realm.deleteFile({ path: filename });
   });
@@ -83,9 +86,11 @@ describe.skipIf(environment.missingServer, "path configuration (partition based 
         user: this.user,
       },
     });
-    expect(realm.path.endsWith(filename)).to.be.true;
+    // Realm Core will add a ".realm" suffix and url encode the path, if path is relative and sync is configured
+    const realmPath = realm.path;
+    expect(Realm.exists({ path: realmPath })).to.be.true;
     realm.close();
-    Realm.deleteFile({ path: filename });
+    Realm.deleteFile({ path: realmPath });
   });
 });
 
@@ -105,6 +110,7 @@ describe.skipIf(environment.skipFlexibleSync, "path configuration (flexible sync
       },
     });
     expect(realm.path).to.equal(filename);
+    expect(Realm.exists({ path: filename })).to.be.true;
     realm.close();
     Realm.deleteFile({ path: filename });
   });
@@ -120,8 +126,10 @@ describe.skipIf(environment.skipFlexibleSync, "path configuration (flexible sync
         user: this.user,
       },
     });
-    expect(realm.path.endsWith(filename)).to.be.true;
+    // Realm Core will add a ".realm" suffix and url encode the path, if path is relative and sync is configured
+    const realmPath = realm.path;
+    expect(Realm.exists({ path: realmPath })).to.be.true;
     realm.close();
-    Realm.deleteFile({ path: filename });
+    Realm.deleteFile({ path: realmPath });
   });
 });

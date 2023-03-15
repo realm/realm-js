@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { existsSync, readdirSync, rmSync, unlinkSync } from "node:fs";
-import { isAbsolute, join } from "node:path";
+import { existsSync, mkdirSync, readdirSync, rmSync, unlinkSync } from "node:fs";
+import { dirname, isAbsolute, join } from "node:path";
 
 import { inject } from "../platform/file-system";
 import { extendDebug } from "../debug";
@@ -40,6 +40,10 @@ inject({
   removeDirectory(path) {
     debug("removeDirectory", path);
     rmSync(path, { recursive: true, force: true });
+  },
+  ensureDirectoryForFile(path) {
+    const parentPath = dirname(path);
+    mkdirSync(parentPath, { recursive: true });
   },
   getDefaultDirectoryPath() {
     return process.cwd();
