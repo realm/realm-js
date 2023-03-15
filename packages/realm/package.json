@@ -48,7 +48,7 @@
     "RealmJS.podspec"
   ],
   "scripts": {
-    "test": "mocha",
+    "test": "wireit",
     "test:types": "tsc --project type-tests/tsconfig.json",
     "build": "wireit",
     "bundle": "wireit",
@@ -65,6 +65,10 @@
     "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'"
   },
   "wireit": {
+    "test": {
+      "command": "mocha",
+      "dependencies": ["build:node"]
+    },
     "build": {
       "dependencies": [
         "bundle",
