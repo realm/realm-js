@@ -16,9 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import pkg from "realm/package.json";
-
 import { Platform } from "react-native";
+
+import { version } from "realm/package.json";
 
 import { inject } from "../platform/device-info";
 import { JsPlatformHelpers } from "../binding";
@@ -62,7 +62,7 @@ inject({
   create() {
     return {
       sdk: "JS",
-      sdkVersion: pkg.version,
+      sdkVersion: version,
 
       platform: Platform.OS,
       // Android reports a number ...
