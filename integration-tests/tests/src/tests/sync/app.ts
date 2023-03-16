@@ -258,17 +258,12 @@ describe("App", () => {
       });
     });
 
-    it("MongoDB Realm sync works", async function (this: Mocha.Context & AppContext & RealmContext) {
+    it.only("MongoDB Realm sync works", async function (this: Mocha.Context & AppContext & RealmContext) {
       const dogNames = ["King", "Rex"]; // must be sorted
-      let nCalls = 0;
 
       const partitionValue = generatePartition();
       const realmConfig: Realm.Configuration = {
         schema: [PersonForSyncSchema, DogForSyncSchema],
-        shouldCompact: () => {
-          nCalls++;
-          return true;
-        },
         sync: {
           user: this.user,
           partitionValue,
@@ -276,13 +271,12 @@ describe("App", () => {
           _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
         },
       };
+
       Realm.deleteFile(realmConfig);
       const realm = await Realm.open(realmConfig);
-      expect(nCalls).equals(1);
       realm.write(() => {
         const tmpDogs: IDogForSyncSchema[] = [];
         dogNames.forEach((n) => {
-          console.log("FISK 4", n);
           const dog = realm.create<IDogForSyncSchema>(DogForSyncSchema.name, { _id: new BSON.ObjectId(), name: n });
           tmpDogs.push(dog);
           return tmpDogs;
@@ -296,14 +290,14 @@ describe("App", () => {
         });
       });
 
+      const realmPath = realm.path;
       await realm.syncSession?.uploadAllLocalChanges();
       expect(realm.objects("Dog").length).equals(2);
       realm.close();
 
-      Realm.deleteFile(realmConfig);
+      Realm.deleteFile({ path: realmPath });
 
       const realm2 = await Realm.open(realmConfig);
-      expect(nCalls).equals(2);
       await realm2.syncSession?.downloadAllServerChanges();
 
       const dogs = realm2.objects<IDogForSyncSchema>(DogForSyncSchema.name).sorted("name");

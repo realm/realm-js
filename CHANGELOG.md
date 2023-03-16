@@ -1,10 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
-
-### Enhancements
-* None
+## 11.5.2 (2023-03-14)
 
 ### Fixed
 * Suppress omitting `objcMsgsend` stubs to ensure backward compatibility with Xcode 13. It can be observed as `Undefined symbols for architecture arm64: "_objc_msgSend$allBundles", referenced from: realm::copy_bundled_realm_files() in librealm-js-ios.a(platform.o)` when using a React Native app for iOS. ([#5511](https://github.com/realm/realm-js/issues/5511), since v11.5.1)
