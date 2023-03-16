@@ -258,7 +258,7 @@ describe("App", () => {
       });
     });
 
-    it.only("MongoDB Realm sync works", async function (this: Mocha.Context & AppContext & RealmContext) {
+    it("MongoDB Realm sync works", async function (this: Mocha.Context & AppContext & RealmContext) {
       const dogNames = ["King", "Rex"]; // must be sorted
 
       const partitionValue = generatePartition();
