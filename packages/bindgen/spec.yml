@@ -1191,7 +1191,7 @@ classes:
       set_timeouts: '(timeouts: SyncClientTimeouts)'
       reconnect: ()
       wait_for_sessions_to_terminate: ()
-      path_for_realm: '(config: SyncConfig) -> StringData'
+      path_for_realm: '(config: SyncConfig, custom_file_name: util::Optional<std::string>) -> StringData'
       get_existing_active_session: '(path: const std::string&) -> SharedSyncSession'
 
   ThreadSafeReference: {}

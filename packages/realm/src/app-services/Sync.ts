@@ -98,7 +98,7 @@ export class Sync {
   static getSyncSession(user: User, partitionValue: PartitionValue): SyncSession | null {
     validateSyncConfiguration({ user, partitionValue });
     const config = toBindingSyncConfig({ user, partitionValue });
-    const path = user.app.internal.syncManager.pathForRealm(config);
+    const path = user.app.internal.syncManager.pathForRealm(config, undefined);
     const session = user.internal.sessionForOnDiskPath(path);
     if (session) {
       return new SyncSession(session);
