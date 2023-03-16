@@ -656,7 +656,10 @@ describe("Lists", () => {
         expect(() => (array[0] = prim)).throws(Error, "Missing value for property 'doubleCol'");
         //@ts-expect-error can not assign an array to a list of objects.
         expect(() => (array[0] = array)).throws(Error, "Missing value for property 'doubleCol'");
-        expect(() => (array[2] = { doubleCol: 1 })).throws(Error, "Requested index 2 greater than max 1");
+        expect(() => (array[2] = { doubleCol: 1 })).throws(
+          Error,
+          "Requested index 2 calling set() on list 'LinkTypesObject.arrayCol' when max is 1",
+        );
         expect(() => (array[-1] = { doubleCol: 1 })).throws(Error, "Index -1 cannot be less than zero.");
 
         //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
@@ -1719,8 +1722,13 @@ describe("Lists", () => {
         expectSimilar(list.type, list.max(), list[2]);
 
         if (list.type === "date") {
-          expect(() => list.sum()).throws(Error, "Cannot sum 'date' array: operation not supported");
-          expect(() => list.avg()).throws(Error, "Cannot avg 'date' array: operation not supported");
+          const optional = prop.startsWith("opt") ? "?" : "";
+          expect(() => list.sum()).throws(
+            `Operation 'sum' not supported for date${optional} list 'PrimitiveArrays.${prop}'`,
+          );
+          expect(() => list.avg()).throws(
+            `Operation 'average' not supported for date${optional} list 'PrimitiveArrays.${prop}'`,
+          );
           continue;
         }
 
@@ -1730,7 +1738,7 @@ describe("Lists", () => {
         expectSimilar(list.type, list.avg(), avg);
       }
 
-      expect(() => object.bool.min()).throws(Error, "Cannot min 'bool' array: operation not supported");
+      expect(() => object.bool.min()).throws("Operation 'min' not supported for bool list 'PrimitiveArrays.bool'");
       expect(() => object.int.min("foo")).throws(Error, "Cannot get property named 'foo' on a list of primitives");
     });
     it("throws on unsupported aggregate operations", function (this: RealmContext) {
@@ -1756,28 +1764,28 @@ describe("Lists", () => {
       // bool, string & data columns don't support 'min'
       ["bool", "string", "data"].forEach((colName) => {
         expect(() => object.list.min(colName + "Col")).throws(
-          `Cannot min property '${colName}Col': operation not supported for '${colName}' properties`,
+          `Operation 'min' not supported for ${colName}? property 'NullableBasicTypesObject.${colName}Col'`,
         );
       });
 
       // bool, string & data columns don't support 'max'
       ["bool", "string", "data"].forEach((colName) => {
         expect(() => object.list.max(colName + "Col")).throws(
-          `Cannot max property '${colName}Col': operation not supported for '${colName}' properties`,
+          `Operation 'max' not supported for ${colName}? property 'NullableBasicTypesObject.${colName}Col'`,
         );
       });
 
       // bool, string, date & data columns don't support 'avg'
       ["bool", "string", "date", "data"].forEach((colName) => {
         expect(() => object.list.avg(colName + "Col")).throws(
-          `Cannot avg property '${colName}Col': operation not supported for '${colName}' properties`,
+          `Operation 'average' not supported for ${colName}? property 'NullableBasicTypesObject.${colName}Col'`,
         );
       });
 
       // bool, string, date & data columns don't support 'sum'
       ["bool", "string", "date", "data"].forEach((colName) => {
         expect(() => object.list.sum(colName + "Col")).throws(
-          `Cannot sum property '${colName}Col': operation not supported for '${colName}' properties`,
+          `Operation 'sum' not supported for ${colName}? property 'NullableBasicTypesObject.${colName}Col'`,
         );
       });
     });

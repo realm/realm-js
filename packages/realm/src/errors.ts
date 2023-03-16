@@ -100,18 +100,20 @@ export function fromBindingSyncError(error: binding.SyncError) {
 }
 
 export class SyncError extends Error {
-  public name = "Error";
+  public name = "SyncError";
   public code: number;
   public category: string;
   public isFatal: boolean;
+  public userInfo: Record<string, string>;
 
   /** @internal */
   constructor(error: binding.SyncError) {
-    super(error.message);
-    const { errorCode } = error;
-    this.code = errorCode.code;
-    this.category = errorCode.category;
+    super(error.simpleMessage);
+    const { systemError } = error;
+    this.code = systemError.code;
+    this.category = systemError.category;
     this.isFatal = error.isFatal;
+    this.userInfo = error.userInfo;
   }
 }
 

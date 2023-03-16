@@ -129,7 +129,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
             throw err;
           });
         }
-      }, []);
+      }, undefined);
     });
     // Wrap in a proxy to trap ownKeys and get, enabling the spread operator
     const proxied = new Proxy(this, PROXY_HANDLER as ProxyHandler<this>);

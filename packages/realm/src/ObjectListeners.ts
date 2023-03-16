@@ -49,7 +49,7 @@ export class ObjectListeners<T> {
             throw err;
           });
         }
-      }, []);
+      }, undefined);
       // Get an actual NotificationToken for the bigint value
       return binding.NotificationToken.forObject(this.notifier, token);
     },

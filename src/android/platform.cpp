@@ -115,7 +115,7 @@ void JsPlatformHelpers::print(const char* fmt, ...)
     va_end(vl);
 }
 
-std::string get_cpu_arch()
+std::string JsPlatformHelpers::get_cpu_arch()
 {
 #if defined(__arm__)
     return "armeabi-v7a";

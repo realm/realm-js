@@ -209,7 +209,7 @@ void JsPlatformHelpers::print(const char* fmt, ...)
 }
 
 // this should never be called
-std::string get_cpu_arch()
+std::string JsPlatformHelpers::get_cpu_arch()
 {
     return "unknown";
 }

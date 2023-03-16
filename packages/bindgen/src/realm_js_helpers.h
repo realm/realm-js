@@ -213,7 +213,7 @@ struct Helpers {
         };
     }
 
-    static void simulate_sync_error(SyncSession &session, int code, StringData message, StringData type, bool is_fatal) {
+    static void simulate_sync_error(SyncSession &session, const int& code, const std::string& message, const std::string& type, bool is_fatal) {
         std::error_code error_code(code, type == "realm::sync::ProtocolError"
                                                  ? realm::sync::protocol_error_category()
                                                  : realm::sync::client_error_category());

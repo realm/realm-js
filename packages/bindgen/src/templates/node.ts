@@ -226,8 +226,8 @@ function convertPrimToNode(addon: NodeAddon, type: string, expr: string): string
     case "AppError":
       // This matches old JS SDK. The C++ type will be changing as part of the unify error handleing project.
       return `([&] (const app::AppError& err) {
-                auto jsErr =  Napi::Error::New(${env}, err.message).Value();
-                jsErr.Set("code", double(err.error_code.value()));
+                auto jsErr =  Napi::Error::New(${env}, err.what()).Value();
+                jsErr.Set("code", double(err.code()));
                 return jsErr;
               }(${expr}))`;
     case "std::exception_ptr":
@@ -235,9 +235,12 @@ function convertPrimToNode(addon: NodeAddon, type: string, expr: string): string
     case "std::error_code":
       return `toNodeErrorCode(${env}, ${expr})`;
     case "Status":
-      return `([&] (const Status& status) {
-                REALM_ASSERT(!status.is_ok()); // should only get here with errors
-                return Napi::Error::New(${env}, status.reason()).Value();
+      return `([&] (const Status& status) -> Napi::Value {
+                if (status.is_ok()) {
+                  return ${env}.Undefined();
+                } else {
+                  return Napi::Error::New(${env}, status.reason()).Value();
+                }
               }(${expr}))`;
   }
   assert.fail(`unexpected primitive type '${type}'`);

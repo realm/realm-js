@@ -527,9 +527,10 @@ records:
 
   SyncError:
    fields:
-     error_code: std::error_code
+     system_error:
+       type: std::error_code
+       cppName: get_system_error()
      is_fatal: bool
-     message: StringData
      simple_message: StringData
      logURL: StringData
      user_info: std::unordered_map<StringData, StringData>
@@ -566,6 +567,19 @@ records:
       headers: std::map<std::string, std::string>
       body: std::string
 
+  DeviceInfo:
+    cppName: app::App::Config::DeviceInfo
+    fields:
+      platform: std::string
+      platform_version: std::string
+      sdk_version: std::string
+      sdk: std::string
+      cpu_arch: std::string
+      device_name: std::string
+      device_version: std::string
+      framework_name: std::string
+      framework_version: std::string
+
   AppConfig:
     cppName: app::App::Config
     fields:
@@ -575,9 +589,7 @@ records:
       local_app_name: util::Optional<std::string>
       local_app_version: util::Optional<std::string>
       default_request_timeout_ms: util::Optional<uint64_t>
-      platform: std::string
-      platform_version: std::string
-      sdk_version: std::string
+      device_info: DeviceInfo
 
 opaqueTypes:
   - Schema
@@ -607,7 +619,7 @@ classes:
       is_empty_realm: '(realm: SharedRealm) -> bool'
       base64_decode: '(input: StringData) -> BinaryData'
       make_logger_factory: '(log: (level: LoggerLevel, message: const std::string&) off_thread) -> LoggerFactory'
-      simulate_sync_error: '(session: SyncSession&, code: int, message: StringData, type: StringData, is_fatal: bool)'
+      simulate_sync_error: '(session: SyncSession&, code: const int&, message: const std::string&, type: const std::string&, is_fatal: bool)'
       consume_thread_safe_reference_to_shared_realm: '(tsr: ThreadSafeReference) -> SharedRealm'
       file_exists: '(path: StringData) -> bool'
       erase_subscription: '(subs: MutableSyncSubscriptionSet&, sub_to_remove: const SyncSubscription&) -> bool'
@@ -767,7 +779,7 @@ classes:
       sum: '(column: ColKey) -> util::Optional<Mixed>'
       clear: ()
 
-      add_notification_callback: '(cb: (changes: const CollectionChangeSet&), keyPaths: KeyPathArray) -> NotificationToken'
+      add_notification_callback: '(cb: (changes: const CollectionChangeSet&), keyPaths: util::Optional<KeyPathArray>) -> NotificationToken'
 
   Realm:
     sharedPtrWrapped: SharedRealm
@@ -852,7 +864,7 @@ classes:
     constructors:
       make: '(realm: SharedRealm, table: TableKey, obj: ObjKey)'
     methods:
-      add_callback: '(cb: (changes: ObjectChangeSet), keyPaths: KeyPathArray) -> uint64_t'
+      add_callback: '(cb: (changes: ObjectChangeSet), keyPaths: util::Optional<KeyPathArray>) -> uint64_t'
       remove_callback: '(token: uint64_t)'
 
   NotificationToken:
@@ -898,7 +910,7 @@ classes:
         - '(order: SortDescriptor) const -> Results'
         - sig: '(keyPaths: std::vector<std::pair<std::string, bool>> const&) const -> Results'
           suffix: 'by_name'
-      add_notification_callback: '(cb: (changes: const CollectionChangeSet&), keyPaths: KeyPathArray) -> NotificationToken'
+      add_notification_callback: '(cb: (changes: const CollectionChangeSet&), keyPaths: util::Optional<KeyPathArray>) -> NotificationToken'
 
   List:
     base: Collection
@@ -1201,8 +1213,8 @@ classes:
       config: SyncConfig
       full_realm_url: util::Optional<std::string>
     methods:
-      wait_for_upload_completion: '(callback: AsyncCallback<(err: Nullable<std::error_code>) off_thread>)'
-      wait_for_download_completion: '(callback: AsyncCallback<(err: Nullable<std::error_code>) off_thread>)'
+      wait_for_upload_completion: '(callback: AsyncCallback<(err: Status) off_thread>)'
+      wait_for_download_completion: '(callback: AsyncCallback<(err: Status) off_thread>)'
       register_progress_notifier: '(callback: (transferred_bytes: uint64_t, transferrable_bytes: uint64_t) off_thread, direction: ProgressDirection, is_streaming: bool) -> uint64_t'
       unregister_progress_notifier: '(token: uint64_t)'
       register_connection_change_callback: '(callback: (old_state: SyncSessionConnectionState, new_state: SyncSessionConnectionState) off_thread) -> uint64_t'
@@ -1210,7 +1222,7 @@ classes:
       revive_if_needed: ()
       handle_reconnect: ()
       close: ()
-      log_out: ()
+      force_close: ()
       shutdown_and_wait: ()
       update_configuration: '(config: SyncConfig)'
 

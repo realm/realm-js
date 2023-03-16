@@ -57,7 +57,8 @@ export class Subscription {
    * If no name was set, this will be `null`.
    */
   get name(): string | null {
-    return this.internal.name || null;
+    const result = this.internal.name;
+    return result === undefined ? null : result;
   }
 
   /**
