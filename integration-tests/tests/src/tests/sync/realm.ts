@@ -18,7 +18,7 @@
 
 import { expect } from "chai";
 import { CollectionChangeSet } from "realm";
-import { importAppBefore, openRealmBeforeEach } from "../../hooks";
+import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "../../hooks";
 import { expectArraysEqual, expectDecimalEqual } from "../../utils/comparisons";
 import { sleep } from "../../utils/sleep";
 
@@ -1289,7 +1289,7 @@ describe("Realmtest", () => {
         expect(Realm.exists(config)).to.be.true;
       });
 
-      it.skipIf(environment.missingServerm, "yields correct value on a synced realm", function (this: AppContext) {
+      it.skipIf(environment.missingServer, "yields correct value on a synced realm", function (this: AppContext) {
         const credentials = Realm.Credentials.anonymous();
 
         return this.app.logIn(credentials).then((user) => {
@@ -2038,6 +2038,33 @@ describe("Realmtest", () => {
         });
       },
     );
+  });
+
+  [true, false].forEach((flexible) => {
+    describe.skipIf(environment.missingServer, "compact synced Realms when opening", () => {
+      importAppBefore(flexible ? "with-db-flx" : "with-db");
+      authenticateUserBefore();
+
+      it(`compact on launch for synced Realm (flexible = ${flexible})`, async function (this: RealmContext &
+        AppContext) {
+        this.longTimeout();
+        let called = false;
+        const config: Realm.Configuration = {
+          schema: [TestObjectWithPkSchema],
+          shouldCompact: () => {
+            called = true;
+            return true;
+          },
+          sync: {
+            user: this.user,
+            ...(flexible ? { flexible: true } : { partitionValue: '"Lolo"' }),
+          },
+        };
+        const realm = await Realm.open(config);
+        expect(called).to.be.true;
+        realm.close();
+      });
+    });
   });
 
   describe("deleteRealmIfMigrationNeeded", () => {
