@@ -71,7 +71,8 @@ struct Helpers {
         auto ordering = query.get_ordering();
         if (ordering) {
             return results.filter(std::move(query)).apply_ordering(std::move(*ordering));
-        } else {
+        }
+        else {
             return results.filter(std::move(query));
         }
     }
@@ -166,16 +167,19 @@ struct Helpers {
         return std::make_shared<Impl>(FWD(runRequest));
     }
 
-    static void delete_data_for_object(const SharedRealm& realm, StringData object_type) {
-        auto &group = realm->read_group();
+    static void delete_data_for_object(const SharedRealm& realm, StringData object_type)
+    {
+        auto& group = realm->read_group();
         ObjectStore::delete_data_for_object(group, object_type);
     }
 
-    static bool is_empty_realm(const SharedRealm& realm) {
+    static bool is_empty_realm(const SharedRealm& realm)
+    {
         return ObjectStore::is_empty(realm->read_group());
     }
 
-    static OwnedBinaryData base64_decode(StringData input) {
+    static OwnedBinaryData base64_decode(StringData input)
+    {
         size_t max_size = util::base64_decoded_size(input.size());
         std::unique_ptr<char[]> data(new char[max_size]);
         if (auto size = util::base64_decode(input, data.get(), max_size)) {
@@ -213,26 +217,31 @@ struct Helpers {
         };
     }
 
-    static void simulate_sync_error(SyncSession &session, const int& code, const std::string& message, const std::string& type, bool is_fatal) {
-        std::error_code error_code(code, type == "realm::sync::ProtocolError"
-                                                 ? realm::sync::protocol_error_category()
-                                                 : realm::sync::client_error_category());
-        SyncError error {error_code, message, is_fatal};
-        error.server_requests_action = code == 211 ? sync::ProtocolErrorInfo::Action::ClientReset : sync::ProtocolErrorInfo::Action::Warning;
+    static void simulate_sync_error(SyncSession& session, const int& code, const std::string& message,
+                                    const std::string& type, bool is_fatal)
+    {
+        std::error_code error_code(code, type == "realm::sync::ProtocolError" ? realm::sync::protocol_error_category()
+                                                                              : realm::sync::client_error_category());
+        SyncError error{error_code, message, is_fatal};
+        error.server_requests_action =
+            code == 211 ? sync::ProtocolErrorInfo::Action::ClientReset : sync::ProtocolErrorInfo::Action::Warning;
         SyncSession::OnlyForTesting::handle_error(session, error);
     }
 
     // This is entirely because ThreadSafeReference is a move-only type, and those are hard to expose to JS.
     // Instead, we are exposing a function that takes a mutable lvalue reference and moves from it.
-    static SharedRealm consume_thread_safe_reference_to_shared_realm(ThreadSafeReference& tsr) {
+    static SharedRealm consume_thread_safe_reference_to_shared_realm(ThreadSafeReference& tsr)
+    {
         return Realm::get_shared_realm(std::move(tsr));
     }
 
-    static bool file_exists(const StringData& path) {
+    static bool file_exists(const StringData& path)
+    {
         return realm::util::File::exists(path);
     }
 
-    static bool erase_subscription(sync::MutableSubscriptionSet& subs, const sync::Subscription& sub_to_remove) {
+    static bool erase_subscription(sync::MutableSubscriptionSet& subs, const sync::Subscription& sub_to_remove)
+    {
         auto it = std::find_if(subs.begin(), subs.end(), [&](const auto& sub) {
             return sub.id == sub_to_remove.id;
         });
@@ -245,14 +254,16 @@ struct Helpers {
         return true;
     }
 
-    static std::string get_results_description(const Results& results) {
+    static std::string get_results_description(const Results& results)
+    {
         const auto& query = results.get_query();
 
         return query.get_description() + ' ' + results.get_descriptor_ordering().get_description(query.get_table());
     }
 
-    static void feed_buffer(app::WatchStream& ws, BinaryData buffer) {
-        ws.feed_buffer({ buffer.data(), buffer.size() });
+    static void feed_buffer(app::WatchStream& ws, BinaryData buffer)
+    {
+        ws.feed_buffer({buffer.data(), buffer.size()});
     }
 };
 
@@ -301,9 +312,11 @@ private:
 
 class ThreadConfinementChecker {
 public:
-    void assertOnSameThread() const noexcept {
+    void assertOnSameThread() const noexcept
+    {
         REALM_ASSERT_RELEASE(std::this_thread::get_id() == m_constructed_on);
     }
+
 private:
     const std::thread::id m_constructed_on = std::this_thread::get_id();
 };

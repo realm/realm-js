@@ -18,7 +18,7 @@
 
 import os from "node:os";
 
-import pkg from "realm/package.json";
+import { version } from "realm/package.json";
 
 import { inject } from "../platform/device-info";
 
@@ -26,7 +26,7 @@ inject({
   create() {
     return {
       sdk: "JS",
-      sdkVersion: pkg.version,
+      sdkVersion: version,
 
       platform: os.type(),
       platformVersion: os.release(),

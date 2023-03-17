@@ -48,17 +48,27 @@
     "RealmJS.podspec"
   ],
   "scripts": {
-    "test": "mocha",
+    "test": "wireit",
     "test:types": "tsc --project type-tests/tsconfig.json",
     "build": "wireit",
     "bundle": "wireit",
+    "build:bindgen": "wireit",
+    "rebuild:bindgen": "wireit",
     "build:node": "wireit",
+    "build:node:prebuild": "wireit",
+    "build:node:prebuild:arm": "wireit",
+    "build:node:prebuild:arm64": "wireit",
+    "build:node:prebuild:x64": "wireit",
+    "build:node:prebuild:ia32": "wireit",
     "build:android": "wireit",
     "build:ios": "wireit",
-    "build:node:prebuild": "prebuild --runtime node -- --directory ../bindgen",
-    "install": "prebuild-install --runtime node || echo 'Failed to download prebuild for Realm'"
+    "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'"
   },
   "wireit": {
+    "test": {
+      "command": "mocha",
+      "dependencies": ["build:node"]
+    },
     "build": {
       "dependencies": [
         "bundle",
@@ -77,8 +87,9 @@
       "output": ["dist/bundle.*.js", "dist/bundle.*.mjs"]
     },
     "build:bindgen": {
-      "command": "npm run build --prefix ../bindgen",
-      "files": ["../../src/node/**", "../bindgen/src/**/*.ts", "../bindgen/src/**/*.h"],
+      "command": "cmake-js build --debug --directory ../bindgen",
+      "files": ["../bindgen/spec.yml", "../bindgen/src/**/*.ts", "../bindgen/src/**/*.h"],
+      "dependencies": ["../..:submodules"],
       "output": [
         "generated/ts/core.ts",
         "generated/ts/native.d.mts",
@@ -86,24 +97,46 @@
         "generated/ts/native-rn.mjs"
       ]
     },
+    "rebuild:bindgen": {
+      "command": "cmake-js rebuild --debug --directory ../bindgen",
+      "dependencies": ["../..:submodules"]
+    },
     "build:node": {
-      "dependencies": [
-        "build:bindgen"
-      ]
+      "dependencies": ["build:bindgen"]
+    },
+    "build:node:prebuild": {
+      "command": "cross-env prebuild --runtime napi --arch $PREBUILD_ARCH -- --directory ../bindgen",
+      "env": {
+        "PREBUILD_ARCH": {
+          "external": true
+        }
+      }
+    },
+    "build:node:prebuild:arm": {
+      "command": "npm run build:node:prebuild",
+      "env": { "PREBUILD_ARCH": "arm" }
+    },
+    "build:node:prebuild:arm64": {
+      "command": "npm run build:node:prebuild",
+      "env": { "PREBUILD_ARCH": "arm64" }
+    },
+    "build:node:prebuild:x64": {
+      "command": "npm run build:node:prebuild",
+      "env": { "PREBUILD_ARCH": "x64" }
+    },
+    "build:node:prebuild:ia32": {
+      "command": "npm run build:node:prebuild",
+      "env": { "PREBUILD_ARCH": "ia32" }
     },
     "build:android": {
       "command": "node ../../scripts/build-android.js",
-      "files": ["../../src/android/**", "../bindgen/src/**/*.ts", "../bindgen/src/**/*.h"],
-      "output": [
-        "react-native/android/src/main/jniLibs/**"
-      ]
+      "dependencies": ["../..:submodules"],
+      "files": ["../../src/android/**", "../bindgen/src/**/*.ts", "../bindgen/src/**/*.h"]
     },
     "build:ios": {
       "command": "../../scripts/build-ios.sh",
-      "files": ["../../src/ios/**", "../bindgen/src/**/*.ts", "../bindgen/src/**/*.h"],
-      "output": [
-        "react-native/ios/realm-js-ios.xcframework"
-      ]
+      "dependencies": ["../..:submodules"],
+      "files": ["../../src/ios/**", "../bindgen/src/**/*.ts", "../bindgen/src/**/*.h"]
     }
   },
   "dependencies": {
@@ -133,7 +166,8 @@
     "@types/node": "^18.11.9",
     "@types/path-browserify": "^1.0.0",
     "chai": "^4.3.6",
-    "cmake-js": "^7.1.1",
+    "cmake-js": "6.3.2",
+    "cross-env": "^7.0.3",
     "mocha": "^10.1.0",
     "path-browserify": "^1.0.1",
     "prebuild": "^11.0.4",
@@ -149,7 +183,7 @@
     "module_name": "realm",
     "module_path": "generated/ts",
     "host": "https://static.realm.io",
-    "package_name": "realm-v{version}-napi-v6-{platform}-{arch}.tar.gz",
-    "remote_path": "realm-js-prebuilds/{version}"
+    "remote_path": "realm-js-prebuilds/{version}",
+    "napi_versions": [6]
   }
 }
