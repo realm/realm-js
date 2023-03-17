@@ -9,8 +9,14 @@
   "wireit": {
     "build": {
       "command": "tsc",
-      "files": ["src/**/*.ts", "tsconfig.json"],
-      "output": ["dist/**/*.js", "dist/**/*.d.ts"]
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "dist/**/*.js",
+        "dist/**/*.d.ts"
+      ]
     }
   },
   "files": [

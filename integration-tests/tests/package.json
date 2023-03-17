@@ -1,67 +1,69 @@
 {
 	"name": "@realm/integration-tests",
-  "version": "0.1.0",
-  "description": "A set of tests that can run in different environments",
-  "type": "module",
-  "main": "src/index.ts",
-  "exports": {
-    ".": "./src/index.ts",
-    "./node": "./src/node/index.ts",
-    "./electron": "./dist/index.js"
-  },
-  "private": true,
-  "scripts": {
-    "build": "wireit",
-    "start": "CONTEXT=appTemplatesPath=../realm-apps,$CONTEXT npm run mocha -- --watch",
-    "start:missing-server": "CONTEXT=missingServer,$CONTEXT npm start",
-    "start:performance": "CONTEXT=missingServer,performance,integration=false,$CONTEXT npm start",
-    "test": "CONTEXT=appTemplatesPath=../realm-apps,$CONTEXT npm run mocha -- --exit",
-    "test:performance": "CONTEXT=missingServer,performance,integration=false,$CONTEXT npm test",
-    "mocha": "mocha --reporter @realm/mocha-reporter src/index.ts",
-    "lint": "eslint --ext .js,.ts ."
-  },
-  "wireit": {
-    "build": {
-      "command": "tsc",
-      "dependencies": ["build-dependencies"]
-    },
-    "build-dependencies": {
-      "dependencies": [
-        "../../packages/realm:bundle",
-        "../../packages/realm:build:node",
-        "../../packages/mocha-reporter:build",
-        "../../packages/realm-network-transport:build",
-        "../../packages/realm-app-importer:build"
-      ]
-    }
-  },
-  "peerDependencies": {
-    "realm": "*"
-  },
-  "devDependencies": {
-    "@realm/app-importer": "*",
-    "@realm/mocha-reporter": "*",
-    "@thi.ng/bench": "^3.1.16",
-    "@types/chai": "^4.3.3",
-    "@types/chai-as-promised": "^7.1.5",
-    "@types/jsrsasign": "^10.5.4",
-    "@types/mocha": "^10.0.0",
-    "@types/node": "^18.11.9",
-    "concurrently": "^6.5.1",
-    "mocha": "^10.1.0",
-    "node-fetch": "^3.2.10",
-    "platform": "^1.3.6",
-    "realm": "*"
-  },
-  "dependencies": {
-    "@thi.ng/bench": "^3.1.16",
-    "@realm/network-transport": "^0.7.2",
-    "chai": "4.3.6",
-    "chai-as-promised": "^7.1.1",
-    "concurrently": "^6.0.2",
-    "jsrsasign": "^10.6.1"
-  },
-  "files": [
-    "/src"
-  ]
+	"version": "0.1.0",
+	"description": "A set of tests that can run in different environments",
+	"type": "module",
+	"main": "src/index.ts",
+	"exports": {
+		".": "./src/index.ts",
+		"./node": "./src/node/index.ts",
+		"./electron": "./dist/index.js"
+	},
+	"private": true,
+	"scripts": {
+		"build": "wireit",
+		"start": "CONTEXT=appTemplatesPath=../realm-apps,$CONTEXT npm run mocha -- --watch",
+		"start:missing-server": "CONTEXT=missingServer,$CONTEXT npm start",
+		"start:performance": "CONTEXT=missingServer,performance,integration=false,$CONTEXT npm start",
+		"test": "CONTEXT=appTemplatesPath=../realm-apps,$CONTEXT npm run mocha -- --exit",
+		"test:performance": "CONTEXT=missingServer,performance,integration=false,$CONTEXT npm test",
+		"mocha": "mocha --reporter @realm/mocha-reporter src/index.ts",
+		"lint": "eslint --ext .js,.ts ."
+	},
+	"wireit": {
+		"build": {
+			"command": "tsc",
+			"dependencies": [
+				"build-dependencies"
+			]
+		},
+		"build-dependencies": {
+			"dependencies": [
+				"../../packages/realm:bundle",
+				"../../packages/realm:build:node",
+				"../../packages/mocha-reporter:build",
+				"../../packages/realm-network-transport:build",
+				"../../packages/realm-app-importer:build"
+			]
+		}
+	},
+	"peerDependencies": {
+		"realm": "*"
+	},
+	"devDependencies": {
+		"@realm/app-importer": "*",
+		"@realm/mocha-reporter": "*",
+		"@thi.ng/bench": "^3.1.16",
+		"@types/chai": "^4.3.3",
+		"@types/chai-as-promised": "^7.1.5",
+		"@types/jsrsasign": "^10.5.4",
+		"@types/mocha": "^10.0.0",
+		"@types/node": "^18.11.9",
+		"concurrently": "^6.5.1",
+		"mocha": "^10.1.0",
+		"node-fetch": "^3.2.10",
+		"platform": "^1.3.6",
+		"realm": "*"
+	},
+	"dependencies": {
+		"@thi.ng/bench": "^3.1.16",
+		"@realm/network-transport": "^0.7.2",
+		"chai": "4.3.6",
+		"chai-as-promised": "^7.1.1",
+		"concurrently": "^6.0.2",
+		"jsrsasign": "^10.6.1"
+	},
+	"files": [
+		"/src"
+	]
 }

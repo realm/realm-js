@@ -16,8 +16,12 @@
   "wireit": {
     "generate:spec-schema": {
       "command": "typescript-json-schema tsconfig.json RelaxedSpec --include src/spec/relaxed-model.ts --out generated/spec.schema.json --required",
-      "files": ["src/spec/relaxed-model.ts"],
-      "output": ["generated/spec.schema.json"]
+      "files": [
+        "src/spec/relaxed-model.ts"
+      ],
+      "output": [
+        "generated/spec.schema.json"
+      ]
     }
   },
   "dependencies": {
@@ -40,6 +44,8 @@
     "mocha": "^10.1.0"
   },
   "binary": {
-    "napi_versions": [6]
+    "napi_versions": [
+      6
+    ]
   }
 }

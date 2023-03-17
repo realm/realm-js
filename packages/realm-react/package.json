@@ -20,8 +20,14 @@
         "../realm:build:node",
         "../realm-common:build"
       ],
-      "files": ["rollup.config.mjs", "src/**/*.ts", "src/**/*.tsx"],
-      "output": ["dist"]
+      "files": [
+        "rollup.config.mjs",
+        "src/**/*.ts",
+        "src/**/*.tsx"
+      ],
+      "output": [
+        "dist"
+      ]
     }
   },
   "dependencies": {
