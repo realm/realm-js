@@ -278,7 +278,8 @@ function findDecoratorCall(
 function visitRealmClassProperty(path: NodePath<types.ClassProperty>) {
   const keyPath = path.get("key");
   const valuePath = path.get("value");
-  const decoratorsPath: NodePath<types.Decorator>[] = path.get("decorators");
+  // TODO: Avoid this type assertion
+  const decoratorsPath = path.get("decorators") as NodePath<types.Decorator>[];
 
   const indexDecorator = findDecoratorIdentifier(decoratorsPath, "index");
   if (indexDecorator) {
