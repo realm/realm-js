@@ -10,6 +10,31 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  bundle:
+    name: Bundle TypeScript
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          submodules: "recursive"
+      - name: Setup node version
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: npm
+      - name: Install dependencies
+        # Ignoring scripts to prevent a prebuilt from getting fetched / built
+        run: npm ci --ignore-scripts
+      - name: Bundle all packages
+        run: npm run bundle
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: realm-js-bundles
+          path: |
+            packages/*/dist
+
   build:
     name: Build for ${{ matrix.variant.os }} ${{ matrix.variant.arch }}
     runs-on: ${{ matrix.variant.runner }}
@@ -47,7 +72,6 @@ jobs:
         with:
           node-version: 16
           cache: npm
-          cache-dependency-path: package-lock.json
 
       - name: Get NPM cache directory
         id: npm-cache-dir
@@ -204,7 +228,7 @@ jobs:
 
   integration-tests:
     name: Integration tests (${{matrix.variant.target}}) for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
-    needs: [build, ios-xcframework]
+    needs: [bundle, build, ios-xcframework]
     env:
       REALM_DISABLE_ANALYTICS: 1
       MOCHA_REMOTE_TIMEOUT: 60000
@@ -247,7 +271,6 @@ jobs:
         with:
           node-version: 16
           cache: npm
-          cache-dependency-path: package-lock.json
 
       - name: Get NPM cache directory
         id: npm-cache-dir
@@ -302,6 +325,11 @@ jobs:
         run: |
           sudo apt-get install xvfb
           echo "wrapper=xvfb-run" >> $GITHUB_ENV
+
+      - name: Download bundles
+        uses: actions/download-artifact@v3
+        with:
+          name: realm-js-bundles
 
       - name: Download prebuilds
         uses: actions/download-artifact@v3
