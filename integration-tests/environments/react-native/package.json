@@ -8,10 +8,13 @@
     "test:android": "wireit",
     "test:ios": "wireit",
     "test:catalyst": "wireit",
+    "test:ci:android": "wireit",
+    "test:ci:ios": "wireit",
     "watch:ios": "wireit",
     "watch:catalyst": "wireit",
     "watch:android": "wireit",
     "common": "wireit",
+    "common:ci": "wireit",
     "lint": "eslint .",
     "app-importer": "realm-app-importer serve ../../realm-apps",
     "metro": "react-native start --reset-cache",
@@ -42,6 +45,24 @@
         "../../../packages/realm-network-transport:build",
         "../../../packages/realm-app-importer:build"
       ]
+    },
+    "common:ci": {
+      "command": "mocha-remote --template @realm/mocha-reporter --context appImporterIsRemote,$MOCHA_REMOTE_CONTEXT -- concurrently --kill-others-on-fail npm:metro npm:runner npm:app-importer"
+    },
+    "test:ci:android": {
+      "command": "npm run common:ci",
+      "env": {
+        "PLATFORM": "android"
+      }
+    },
+    "test:ci:ios": {
+      "command": "npm run common:ci",
+      "dependencies": [
+        "pod-install"
+      ],
+      "env": {
+        "PLATFORM": "ios"
+      }
     },
     "test:android": {
       "command": "npm run common",

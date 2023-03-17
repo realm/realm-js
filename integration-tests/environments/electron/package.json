@@ -13,6 +13,9 @@
     "test": "wireit",
     "test:main": "wireit",
     "test:renderer": "wireit",
+    "test:ci": "wireit",
+    "test:ci:main": "wireit",
+    "test:ci:renderer": "wireit",
     "lint": "eslint .",
     "package": "electron-builder --dir"
   },
@@ -39,6 +42,15 @@
         "../../../packages/realm-network-transport:build",
         "../../../packages/realm-app-importer:build"
       ]
+    },
+    "test:ci": {
+      "command": "npm run test:ci:main && npm run test:ci:renderer"
+    },
+    "test:ci:main": {
+      "command": "mocha-remote --reporter @realm/mocha-reporter --id main node runner.js main"
+    },
+    "test:ci:renderer": {
+      "command": "mocha-remote --reporter @realm/mocha-reporter --id main node runner.js renderer"
     }
   },
   "devDependencies": {
