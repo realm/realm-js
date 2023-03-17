@@ -6,6 +6,7 @@
   "homepage": "https://realm.io",
   "scripts": {
     "build": "wireit",
+    "bundle": "wireit",
     "lint:cpp": "find src packages/bindgen/src -name '*.cpp' -or -name '*.h' -or -name '*.hpp' | xargs clang-format --dry-run --Werror",
     "lint:cpp:fix": "find src packages/bindgen/src -name '*.cpp' -or -name '*.h' -or -name '*.hpp' | xargs clang-format -i"
   },
@@ -18,13 +19,18 @@
     "build": {
       "dependencies": [
         "submodules",
-        "./packages/realm:build",
+        "bundle",
+        "./packages/realm:build"
+      ]
+    },
+    "bundle": {
+      "dependencies": [
+        "./packages/realm:bundle",
         "./packages/babel-plugin:build",
         "./packages/mocha-reporter:build",
         "./packages/realm-react:build",
         "./packages/realm-tools:build",
-        "./packages/realm-web:build",
-        "./integration-tests/tests:build"
+        "./packages/realm-web:build"
       ]
     }
   },
