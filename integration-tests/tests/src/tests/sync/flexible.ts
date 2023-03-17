@@ -33,6 +33,7 @@ import {
   BSON,
   ClientResetMode,
   ConfigurationWithSync,
+  ErrorCallback,
   FlexibleSyncConfiguration,
   Realm,
   SessionStopPolicy,
@@ -152,6 +153,41 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         };
 
         await expect(openRealm()).to.be.rejected;
+      });
+
+      //TODO Remove only
+      it.only("works with compensating writes", async function () {
+        //TODO This needs to close the realm afterward. Need to check how to do that
+        //TODO I could add a new type of error so that we can get all te necessary info, maybe similar to what has been done for client reset error
+        let errorCallbackCalled = false;
+
+        const errorCallback: ErrorCallback = (session, error) => {
+          errorCallbackCalled = true;
+          expect(error.code).to.equal(231);
+          expect(error.isFatal).to.be.false;
+          console.log(error);
+        };
+
+        const realm = await Realm.open({
+          schema: [FlexiblePersonSchema, DogSchema],
+          sync: {
+            flexible: true,
+            user: this.user,
+            onError: errorCallback,
+          },
+        });
+
+        await realm.subscriptions.update((mutableSubs) => {
+          mutableSubs.add(realm.objects(FlexiblePersonSchema.name).filtered("age < 30"));
+        });
+
+        realm.write(function () {
+          return realm.create<IPerson>(FlexiblePersonSchema.name, { _id: new BSON.ObjectId(), name: "Tom", age: 36 });
+        });
+
+        await realm?.syncSession?.uploadAllLocalChanges();
+
+        expect(errorCallbackCalled).to.be.true;
       });
 
       it("accepts a { flexible: true } option", function () {
