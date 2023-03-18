@@ -24,6 +24,8 @@
 
 #include "../platform.hpp"
 
+static std::string s_default_realm_directory;
+
 namespace realm {
 
 class UVException : public std::runtime_error {
@@ -44,9 +46,19 @@ struct FileSystemRequest : uv_fs_t {
     }
 };
 
+void set_default_realm_file_directory(std::string dir)
+{
+    s_default_realm_directory = dir;
+}
+
 // taken from Node.js: function Cwd in node.cc
 std::string default_realm_file_directory()
 {
+
+    if (!s_default_realm_directory.empty()) {
+        return s_default_realm_directory;
+    }
+
 #ifdef _WIN32
     /* MAX_PATH is in characters, not bytes. Make sure we have enough headroom. */
     char buf[MAX_PATH * 4];

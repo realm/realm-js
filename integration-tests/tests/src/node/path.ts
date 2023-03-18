@@ -20,14 +20,16 @@ import { expect } from "chai";
 import Realm, { BSON } from "realm";
 import path from "node:path";
 import os from "node:os";
+import { existsSync, rmSync } from "node:fs";
 
 import { importAppBefore, authenticateUserBefore } from "../hooks";
+import { importApp } from "../utils/import-app";
 
 const getAbsolutePath = () => os.tmpdir() + path.sep + new BSON.UUID().toHexString();
 const getRelativePath = () => "testFiles" + path.sep + new BSON.UUID().toHexString();
 const getPartitionValue = () => new BSON.UUID().toHexString();
 
-const schema = {
+const Schema = {
   name: "MixedClass",
   primaryKey: "_id",
   properties: {
@@ -36,10 +38,12 @@ const schema = {
   },
 };
 
+const FlexibleSchema = { ...Schema, properties: { ...Schema.properties, nonQueryable: "string?" } };
+
 describe("path configuration (local)", function () {
   it("relative path", function () {
     const filename = getRelativePath();
-    const realm = new Realm({ path: filename, schema: [schema] });
+    const realm = new Realm({ path: filename, schema: [Schema] });
     expect(realm.path.endsWith(filename)).to.be.true;
     realm.close();
     Realm.deleteFile({ path: filename });
@@ -47,10 +51,36 @@ describe("path configuration (local)", function () {
 
   it("absolute path", function () {
     const filename = getAbsolutePath();
-    const realm = new Realm({ path: filename, schema: [schema] });
+    const realm = new Realm({ path: filename, schema: [Schema] });
     expect(realm.path).to.equal(filename);
     realm.close();
     Realm.deleteFile({ path: filename });
+  });
+});
+
+describe.skipIf(environment.missingServer, `app configuration of root directory (flexible sync)`, async function () {
+  const { appId, baseUrl } = await importApp("with-db-flx");
+
+  it.only("directory and file created where expected", async function () {
+    const tmpdir = getAbsolutePath();
+    expect(fs.exists(tmpdir)).to.be.false;
+
+    const app = new Realm.App({ id: appId, baseUrl, syncRootDirectory: tmpdir });
+    const user = await app.logIn(Realm.Credentials.anonymous());
+
+    const realm = await Realm.open({
+      schema: [FlexibleSchema],
+      sync: {
+        flexible: true,
+        user,
+      },
+    });
+
+    expect(existsSync(tmpdir)).to.be.true;
+    expect(realm.path.startsWith(tmpdir));
+
+    realm.close();
+    rmSync(tmpdir, { recursive: true });
   });
 });
 
@@ -62,7 +92,7 @@ describe.skipIf(environment.missingServer, "path configuration (partition based 
     const filename = getAbsolutePath();
     const realm = await Realm.open({
       path: filename,
-      schema: [schema],
+      schema: [Schema],
       sync: {
         partitionValue: getPartitionValue(),
         user: this.user,
@@ -77,7 +107,7 @@ describe.skipIf(environment.missingServer, "path configuration (partition based 
     const filename = getRelativePath();
     const realm = await Realm.open({
       path: filename,
-      schema: [schema],
+      schema: [Schema],
       sync: {
         partitionValue: getPartitionValue(),
         user: this.user,
@@ -98,7 +128,7 @@ describe.skipIf(environment.skipFlexibleSync, "path configuration (flexible sync
     const filename = getAbsolutePath();
     const realm = await Realm.open({
       path: filename,
-      schema: [schema],
+      schema: [FlexibleSchema],
       sync: {
         flexible: true,
         user: this.user,
@@ -114,7 +144,7 @@ describe.skipIf(environment.skipFlexibleSync, "path configuration (flexible sync
     const filename = getRelativePath();
     const realm = await Realm.open({
       path: filename,
-      schema: [schema],
+      schema: [FlexibleSchema],
       sync: {
         flexible: true,
         user: this.user,
