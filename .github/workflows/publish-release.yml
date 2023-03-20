@@ -52,7 +52,7 @@ jobs:
     - name: Install node modules
       run: npm ci --ignore-scripts
 
-    - name: Download prebuild PR artifacts
+    - name: Download prebuild artifacts from PR
       uses: dawidd6/action-download-artifact@d0f291cf39bd21965ea9c4c6e210fc355c3844ed
       with:
         workflow: pr-realm-js.yml
@@ -61,6 +61,16 @@ jobs:
         workflow_conclusion: "" # Ignores workflow conclusion
         github_token: ${{ secrets.REALM_CI_PAT }}
         name: realm-js-prebuilds
+
+    - name: Download bundle artifacts from PR
+      uses: dawidd6/action-download-artifact@d0f291cf39bd21965ea9c4c6e210fc355c3844ed
+      with:
+        workflow: pr-realm-js.yml
+        commit: ${{ inputs.commit || github.sha }}
+        path: ${{ github.workspace }}
+        workflow_conclusion: "" # Ignores workflow conclusion
+        github_token: ${{ secrets.REALM_CI_PAT }}
+        name: realm-js-bundles
 
     - name: Read version
       id: get-version
