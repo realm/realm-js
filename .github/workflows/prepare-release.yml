@@ -41,13 +41,6 @@ jobs:
       - name: Update dependencies.list
         run: sed -i 's/^VERSION=.*/VERSION=${{ steps.update-changelog.outputs.new-version }}/' dependencies.list
 
-      - name: Update xcode project
-        uses: jacobtomlinson/gha-find-replace@0dfd0777cc234ef6947ec1f20873c632114c4167 #! 0.1.4
-        with:
-          find: 'CURRENT_PROJECT_VERSION = [^;]*'
-          replace: 'CURRENT_PROJECT_VERSION = ${{ steps.update-changelog.outputs.new-version }}'
-          include: react-native/ios/RealmReact.xcodeproj/project.pbxproj
-
       - name: Create Release PR
         uses: peter-evans/create-pull-request@7380612b49221684fefa025244f2ef4008ae50ad #! 3.10.1
         with:
