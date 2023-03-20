@@ -32,6 +32,8 @@ const BAAS_REPO = "git@github.com:10gen/baas.git";
 const BAAS_UI_REPO = "git@github.com:10gen/baas-ui.git";
 const MONGODB_PORT = 26000;
 const MONGODB_URL = `mongodb://localhost:${MONGODB_PORT}`;
+const ASSISTED_AGG_URL =
+  "https://stitch-artifacts.s3.amazonaws.com/stitch-mongo-libs/stitch_mongo_libs_osx_patch_df9a68d900d7faddcee16bf0f532437da815a1c3_63289ac95623436dd66f7056_22_09_19_16_37_32/assisted_agg";
 
 dotenv.config();
 
@@ -158,14 +160,12 @@ function ensureBaasDylib() {
 }
 
 function ensureBaasAssistedAgg() {
-  if (fs.existsSync(assistedAggPath)) {
-    // Ensure it's writeable
-    execSync(`chmod u+x "${assistedAggPath}"`);
-  } else {
-    throw new Error(
-      `Missing 'assisted_agg': Find its URL in https://github.com/10gen/baas/blob/master/etc/docs/onboarding.md and download it into ${baasPath}`,
-    );
+  if (!fs.existsSync(assistedAggPath)) {
+    console.log("Missing assisted_agg - downloading!");
+    execSync(`curl -s "${ASSISTED_AGG_URL}" --output assisted_agg`, { cwd: baasPath, stdio: "inherit" });
   }
+  // Ensure it's writeable
+  execSync(`chmod u+x "${assistedAggPath}"`);
 }
 
 function ensureBaasTranspiler() {
