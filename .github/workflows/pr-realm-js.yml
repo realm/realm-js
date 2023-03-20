@@ -28,11 +28,14 @@ jobs:
         run: npm ci --ignore-scripts
       - name: Bundle all packages
         run: npm run bundle
+      # Due to a limitation in upload-artifact a redundant file is needed to force
+      # preserving paths (https://github.com/actions/upload-artifact/issues/174)
       - name: Upload dist artifacts
         uses: actions/upload-artifact@v3
         with:
           name: realm-js-bundles
           path: |
+            README.md
             packages/*/dist
 
   build:
@@ -195,7 +198,7 @@ jobs:
         with:
           name: realm-js-prebuilds
           path: |
-            dependencies.list
+            README.md
             ${{ matrix.variant.artifact-path }}
 
   ios-xcframework:
