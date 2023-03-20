@@ -28,6 +28,7 @@
         "./packages/realm:bundle",
         "./packages/babel-plugin:build",
         "./packages/mocha-reporter:build",
+        "./packages/realm-app-importer:build",
         "./packages/realm-react:build",
         "./packages/realm-tools:build",
         "./packages/realm-web:build"
