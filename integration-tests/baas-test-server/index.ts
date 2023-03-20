@@ -23,6 +23,9 @@ import chalk from "chalk";
 import dotenv from "dotenv";
 import assert from "node:assert";
 import { Socket } from "node:net";
+import streamChain from "stream-chain";
+import streamJson from "stream-json";
+import streamValues from "stream-json/streamers/StreamValues";
 
 const MONGO_CONTAINER_NAME = "mongo";
 const STITCH_SUPPORT_URL =
@@ -34,6 +37,8 @@ const MONGODB_PORT = 26000;
 const MONGODB_URL = `mongodb://localhost:${MONGODB_PORT}`;
 const ASSISTED_AGG_URL =
   "https://stitch-artifacts.s3.amazonaws.com/stitch-mongo-libs/stitch_mongo_libs_osx_patch_df9a68d900d7faddcee16bf0f532437da815a1c3_63289ac95623436dd66f7056_22_09_19_16_37_32/assisted_agg";
+
+const DEFAULT_STDIO: Array<cp.IOType> = ["inherit", "inherit", "inherit"];
 
 dotenv.config();
 
@@ -56,6 +61,10 @@ function sleep(ms = 1000) {
 function registerExitListeners(logPrefix: string, child: cp.ChildProcess) {
   function killChild() {
     console.log(logPrefix, chalk.dim(`Sending SIGKILL to pid ${child.pid}`));
+    // Avoid calling it more than once
+    process.off("SIGINT", killChild);
+    process.off("exit", killChild);
+    // Kill the child process
     child.kill("SIGKILL");
   }
 
@@ -63,9 +72,54 @@ function registerExitListeners(logPrefix: string, child: cp.ChildProcess) {
   process.on("exit", killChild);
 }
 
-function spawn(logPrefix: string, command: string, args: string[] = [], options: cp.SpawnOptions = {}) {
-  const child = cp.spawn(command, args, { ...options, stdio: ["inherit", "inherit", "inherit"] });
+function transformMongoJson({ value }: { value: unknown }): string {
+  if (typeof value === "object" && value !== null) {
+    const severity = "s" in value && typeof value.s === "string" ? value.s : "?";
+    const msg = "msg" in value && typeof value.msg === "string" ? value.msg : "";
+    const context = "c" in value && typeof value.c === "string" ? value.c : "-";
+
+    const severityPrefix = chalk.dim(`[${severity}]`);
+    const contextSuffix = context !== "-" ? chalk.dim(`(${context})`) : "";
+    return `${severityPrefix} ${msg} ${contextSuffix}\n`;
+  } else {
+    throw new Error("Expected a stream of JSON objects");
+  }
+}
+
+function spawn(
+  logPrefix: string,
+  command: string,
+  args: string[] = [],
+  options: cp.SpawnOptions = {},
+  transformJson?: ({ value }: { value: unknown }) => string,
+) {
+  const child = cp.spawn(command, args, { ...options, stdio: ["inherit", "pipe", "inherit"] });
+  console.log(logPrefix, `Spawned '${command} ${args.join(" ")}' (pid = ${child.pid})`);
   registerExitListeners(logPrefix, child);
+  const addPrefix = (chunk: Buffer | string) => {
+    const content = typeof chunk === "string" ? chunk : chunk.toString();
+    // Prefix every line with the log prefix
+    const lines = content
+      .trim()
+      .split("\n")
+      .map((line) => `${logPrefix} ${line}`)
+      .join("\n");
+    return lines + "\n";
+  };
+  const pipeline = streamChain.chain(
+    transformJson
+      ? [
+          streamJson.parser({ jsonStreaming: true }),
+          streamValues.streamValues(),
+          transformJson,
+          addPrefix,
+          process.stdout,
+        ]
+      : [addPrefix, process.stdout],
+    {},
+  );
+  pipeline.on("error", (err) => console.error(err));
+  child.stdout.pipe(pipeline);
 }
 
 function ensureOsAndArch() {
@@ -86,7 +140,7 @@ function ensureDocker() {
   } catch (err) {
     // Clone the baas repository
     execSync("git clone --depth=1 --branch kh/translator-pkg-upgraded git@github.com:kraenhansen/baas.git baas", {
-      stdio: "inherit",
+      stdio: DEFAULT_STDIO,
     });
   }
 }
@@ -107,7 +161,7 @@ function ensureBaasRepo() {
     if (err instanceof Error && err.message.includes("ENOENT")) {
       // Clone the baas repository
       execSync(`git clone --depth=1 ${BAAS_REPO} baas`, {
-        stdio: "inherit",
+        stdio: DEFAULT_STDIO,
       });
     } else {
       throw err;
@@ -128,7 +182,7 @@ function ensureBaasUIRepo() {
       // Clone the baas ui repository
       execSync(`git clone --depth=1 ${BAAS_UI_REPO} app`, {
         cwd: staticPath,
-        stdio: "inherit",
+        stdio: DEFAULT_STDIO,
       });
     } else {
       throw err;
@@ -150,7 +204,10 @@ function ensureBaasDylib() {
     console.log("Missing the etc/dylib - downloading!");
     fs.mkdirSync(dylibPath, { recursive: true });
     // Download and untar
-    execSync(`curl -s "${STITCH_SUPPORT_URL}" | tar xvfz - --strip-components=1`, { cwd: dylibPath, stdio: "inherit" });
+    execSync(`curl -s "${STITCH_SUPPORT_URL}" | tar xvfz - --strip-components=1`, {
+      cwd: dylibPath,
+      stdio: DEFAULT_STDIO,
+    });
   }
   if (!fs.existsSync(dylibUsrLocalLibPath)) {
     console.log(`Missing the ${dylibUsrLocalLibPath} - linking! (will ask for your sudo password)`);
@@ -162,17 +219,17 @@ function ensureBaasDylib() {
 function ensureBaasAssistedAgg() {
   if (!fs.existsSync(assistedAggPath)) {
     console.log("Missing assisted_agg - downloading!");
-    execSync(`curl -s "${ASSISTED_AGG_URL}" --output assisted_agg`, { cwd: baasPath, stdio: "inherit" });
+    execSync(`curl -s "${ASSISTED_AGG_URL}" --output assisted_agg`, { cwd: baasPath, stdio: DEFAULT_STDIO });
   }
-  // Ensure it's writeable
+  // Ensure it's executable
   execSync(`chmod u+x "${assistedAggPath}"`);
 }
 
 function ensureBaasTranspiler() {
   if (!fs.existsSync(transpilerBinPath)) {
     console.log("Missing the etc/transpiler binary - building!");
-    execSync("yarn", { cwd: transpilerPath, stdio: "inherit" });
-    execSync("yarn build", { cwd: transpilerPath, stdio: "inherit" });
+    execSync("yarn", { cwd: transpilerPath, stdio: DEFAULT_STDIO });
+    execSync("yarn build", { cwd: transpilerPath, stdio: DEFAULT_STDIO });
   }
 }
 
@@ -190,7 +247,7 @@ function ensureBaasUI() {
   if (!fs.existsSync(distPath)) {
     console.log("Missing the UI dist - building!");
     patchBaasUIPackageJson();
-    execSync("yarn && yarn build", { cwd: staticAppPath, stdio: "inherit" });
+    execSync("yarn && yarn build", { cwd: staticAppPath, stdio: DEFAULT_STDIO });
   }
 }
 
@@ -209,7 +266,7 @@ function ensureBaasAwsCredentials() {
 }
 
 function ensureNoMongoDB() {
-  execSync(`docker rm -f ${MONGO_CONTAINER_NAME}`);
+  execSync(`docker rm -f ${MONGO_CONTAINER_NAME}`, { stdio: "ignore" });
 }
 
 async function connectToServer(port: number) {
@@ -236,50 +293,60 @@ async function waitForServer(port: number) {
 }
 
 async function spawnMongoDB() {
-  spawn(chalk.greenBright("mongo"), "docker", [
-    "run",
-    "--name",
-    MONGO_CONTAINER_NAME,
-    // Setting hostname to localhost to enable connecting without a direct connection
-    "--hostname",
-    "localhost",
-    "-it",
-    "--rm",
-    "--publish",
-    `${MONGODB_PORT}:${MONGODB_PORT}`,
-    "mongo",
-    "mongod",
-    "--replSet",
-    "local",
-    "--port",
-    MONGODB_PORT.toString(),
-    // Ask it to bind to localhost too
-    "--bind_ip",
-    "localhost",
-  ]);
+  spawn(
+    chalk.greenBright("mongo"),
+    "docker",
+    [
+      "run",
+      "--name",
+      MONGO_CONTAINER_NAME,
+      // Setting hostname to localhost to enable connecting without a direct connection
+      "--hostname",
+      "localhost",
+      "--interactive",
+      "--rm",
+      "--publish",
+      `${MONGODB_PORT}:${MONGODB_PORT}`,
+      "mongo",
+      "mongod",
+      "--replSet",
+      "local",
+      "--port",
+      MONGODB_PORT.toString(),
+      // Ask it to bind to localhost too
+      "--bind_ip",
+      "localhost",
+    ],
+    {},
+    transformMongoJson,
+  );
   // Wait for the server to appear
   await waitForServer(MONGODB_PORT);
   console.log("MongoDB is ready! 🚀 Initializing mongo replicasets");
-  execSync(`docker exec ${MONGO_CONTAINER_NAME} mongosh ${MONGODB_URL} --eval 'rs.initiate()'`, {
-    stdio: "inherit",
-  });
+  execSync(
+    `docker exec ${MONGO_CONTAINER_NAME} mongosh ${MONGODB_URL} --quiet --eval 'disableTelemetry(); rs.initiate()'`,
+    {
+      stdio: DEFAULT_STDIO,
+    },
+  );
 }
 
 function ensureBaasAdminUser() {
   // Create a user
   execSync(
     `go run cmd/auth/user.go addUser -domainID 000000000000000000000000 -mongoURI ${MONGODB_URL} -salt 'DQOWene1723baqD!_@#' -id 'unique_user@domain.com' -password 'password'`,
-    { cwd: baasPath, stdio: "inherit" },
+    { cwd: baasPath, stdio: DEFAULT_STDIO },
   );
 }
 
 function spawnBaaS() {
   // Build and run the BaaS binary - we're doing this over "go run" because that doesn't propagate a kill signal
   // Build a binary
-  execSync("go build -o baas_server cmd/server/main.go", { cwd: baasPath, stdio: "inherit" });
+  console.log("Building BaaS server", { transpilerBinPath });
+  execSync("go build -o baas_server cmd/server/main.go", { cwd: baasPath, stdio: DEFAULT_STDIO });
   spawn(chalk.blueBright("baas"), "./baas_server", ["--configFile", "./etc/configs/test_config.json"], {
     cwd: baasPath,
-    env: { ...process.env, PATH: [process.env.PATH, path.dirname(assistedAggPath), transpilerBinPath].join(":") },
+    env: { ...process.env, PATH: [path.dirname(assistedAggPath), transpilerBinPath, process.env.PATH].join(":") },
   });
 }
 

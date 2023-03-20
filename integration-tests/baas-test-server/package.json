@@ -8,8 +8,12 @@
     "start": "tsx index.ts"
   },
   "dependencies": {
+    "@types/stream-chain": "^2.0.1",
+    "@types/stream-json": "^1.7.3",
     "chalk": "^4.1.2",
     "dotenv": "^16.0.2",
+    "stream-chain": "^2.2.5",
+    "stream-json": "^1.7.5",
     "tsx": "^3.12.2"
   }
 }
