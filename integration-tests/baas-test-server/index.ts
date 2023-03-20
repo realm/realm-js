@@ -279,7 +279,7 @@ function spawnBaaS() {
   execSync("go build -o baas_server cmd/server/main.go", { cwd: baasPath, stdio: "inherit" });
   spawn(chalk.blueBright("baas"), "./baas_server", ["--configFile", "./etc/configs/test_config.json"], {
     cwd: baasPath,
-    env: { ...process.env, PATH: [process.env.PATH, path.dirname(assistedAggPath), transpilerBinPath].join(":") },
+    env: { ...process.env, PATH: [path.dirname(assistedAggPath), transpilerBinPath, process.env.PATH].join(":") },
   });
 }
 
