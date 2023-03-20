@@ -91,7 +91,7 @@ jobs:
         secret_key: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}
 
     - name: Upload prebuilds to S3
-      run: s3cmd put --recursive --acl-public prebuilds/realm-* s3://${{ secrets.PREBUILDS_S3_BUCKET_NAME }}/${{ steps.get-version.outputs.version }}/
+      run: s3cmd put --recursive --acl-public packages/realm/prebuilds/realm-* s3://${{ secrets.PREBUILDS_S3_BUCKET_NAME }}/${{ steps.get-version.outputs.version }}/
 
     - name: Publish realm v${{ steps.get-version.outputs.version }} on NPM
       run: npm publish --tag '${{ inputs.tag}}'
