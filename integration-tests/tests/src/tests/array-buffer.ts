@@ -124,6 +124,6 @@ describe("ArrayBuffer type", () => {
   it("handles wrong input", function (this: RealmContext) {
     expect(() => {
       this.realm.write(() => this.realm.create(SingleSchema.name, { a: {} }));
-    }).throws(Error, "PrimitiveData.a must be of type 'binary?', got 'object' ([object Object])");
+    }).throws("Expected value to be an instance of ArrayBuffer, got an object");
   });
 });

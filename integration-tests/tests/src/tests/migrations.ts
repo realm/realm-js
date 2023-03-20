@@ -89,7 +89,7 @@ describe("Migrations", () => {
       expect(function () {
         //@ts-expect-error This is an invalid function.
         new Realm({ schema: [], schemaVersion: 2, onMigration: "invalid", inMemory: true });
-      }).throws("onMigration must be of type 'function'");
+      }).throws("Expected 'onMigration' on realm configuration to be a function, got a string");
     });
 
     it("should propogate exceptions", () => {
@@ -437,7 +437,7 @@ describe("Migrations", () => {
           expect(() => {
             // Deleting a model which is target of linkingObjects results in an exception
             newRealm.deleteModel("Person");
-          }).throws("Table is target of cross-table link columns");
+          }).throws("Cannot remove class_Person that is target of outside links");
         },
       });
 

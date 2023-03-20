@@ -173,16 +173,13 @@ describe("Linking objects", () => {
         person = this.realm.create<IPersonSchema>(PersonSchema.name, { name: "Person 1", age: 50 });
       });
       expect(() => person.linkingObjects("NoSuchSchema", "noSuchProperty")).throws(
-        Error,
-        "Could not find schema for type 'NoSuchSchema'",
+        "Object type 'NoSuchSchema' not found in schema.",
       );
       expect(() => person.linkingObjects("PersonObject", "noSuchProperty")).throws(
-        Error,
-        "Type 'PersonObject' does not contain property 'noSuchProperty'",
+        "Property 'noSuchProperty' does not exist on 'PersonObject' objects",
       );
       expect(() => person.linkingObjects("PersonObject", "name")).throws(
-        Error,
-        "'PersonObject.name' is not a relationship to 'PersonObject'",
+        "'PersonObject#name' is not a relationship to 'PersonObject'",
       );
       let olivier: Person;
       let oliviersParents: Realm.Results<IPersonSchema>;
