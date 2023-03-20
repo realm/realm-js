@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { ConnectionState, ObjectSchema, BSON } from "realm";
+import { Realm, ConnectionState, ObjectSchema, BSON } from "realm";
 import { importAppBefore } from "../../hooks";
 import { DogSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { getRegisteredEmailPassCredentials } from "../../utils/credentials";
@@ -184,11 +184,9 @@ describe("SessionTest", () => {
       const { config } = await getSyncConfWithUser(this.app, partition);
       //@ts-expect-error setting an invalid user object
       config.sync.user = { username: "John Doe" };
-      try {
-        await Realm.open(config);
-      } catch (e: any) {
-        expect(e.message).contains("Expected 'user' to be an instance of User, got an object");
-      }
+      await expect(Realm.open(config)).rejectedWith(
+        "Expected 'user' on realm sync configuration to be an instance of User, got an object",
+      );
     });
 
     it("propagates custom http headers", async function (this: AppContext) {
@@ -586,21 +584,13 @@ describe("SessionTest", () => {
     it("timeout on download successfully throws", async function (this: AppContext) {
       const partition = generatePartition();
       let realm!: Realm;
-      return this.app
-        .logIn(Realm.Credentials.anonymous())
-        .then((user) => {
+      await expect(
+        this.app.logIn(Realm.Credentials.anonymous()).then((user) => {
           const config = getSyncConfiguration(user, partition);
           realm = new Realm(config);
           return realm.syncSession?.downloadAllServerChanges(1);
-        })
-        .then(
-          () => {
-            throw new Error("Download did not time out");
-          },
-          (e) => {
-            expect(e).equals("Downloading changes did not complete in 1 ms.");
-          },
-        );
+        }),
+      ).is.rejectedWith("Downloading changes did not complete in 1 ms.");
     });
 
     it("timeout on upload successfully throws", async function (this: AppContext) {

@@ -143,10 +143,10 @@ const IndexedTypesSchema = {
     intCol: { type: "int", indexed: true },
     stringCol: { type: "string", indexed: true },
     dateCol: { type: "date", indexed: true },
-    optBoolCol: { type: "bool?", indexed: true },
-    optIntCol: { type: "int?", indexed: true },
-    optStringCol: { type: "string?", indexed: true },
-    optDateCol: { type: "date?", indexed: true },
+    optBoolCol: { type: "bool", optional: true, indexed: true },
+    optIntCol: { type: "int", optional: true, indexed: true },
+    optStringCol: { type: "string", optional: true, indexed: true },
+    optDateCol: { type: "date", optional: true, indexed: true },
   },
 };
 
@@ -160,9 +160,9 @@ const DefaultValuesSchema = {
     stringCol: { type: "string", default: "defaultString" },
     dateCol: { type: "date", default: new Date(1.111) },
     dataCol: { type: "data", default: new ArrayBuffer(1) },
-    objectCol: { type: "TestObject", default: { doubleCol: 1 } },
-    nullObjectCol: { type: "TestObject", default: null },
-    arrayCol: { type: "TestObject[]", default: [{ doubleCol: 2 }] },
+    objectCol: { type: "object", objectType: "TestObject", default: { doubleCol: 1 } },
+    nullObjectCol: { type: "object", objectType: "TestObject", default: null },
+    arrayCol: { type: "list", objectType: "TestObject", default: [{ doubleCol: 2 }] },
   },
 };
 
@@ -2228,7 +2228,7 @@ describe("Realmtest", () => {
           // eslint-disable-next-line @typescript-eslint/no-empty-function
           onMigration: function () {},
         });
-      }).throws("Cannot include 'onMigration' when 'deleteRealmIfMigrationNeeded' is set.");
+      }).throws("Cannot set 'deleteRealmIfMigrationNeeded' when 'onMigration' is set.");
     });
   });
 });
