@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "test": "wireit",
-    "test:ci": "wireit",
+    "test:ci": "mocha-remote --reporter @realm/mocha-reporter tsx index.mjs",
     "lint": "eslint --ext js,mjs ."
   },
   "wireit": {
@@ -18,9 +18,6 @@
         "../../../packages/realm-network-transport:build",
         "../../../packages/realm-app-importer:build"
       ]
-    },
-    "test:ci": {
-      "command": "mocha-remote --reporter @realm/mocha-reporter tsx index.mjs"
     }
   },
   "dependencies": {
