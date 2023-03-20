@@ -194,7 +194,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    */
   public set(index: number, value: T): void;
   public set() {
-    throw new Error(`Assigning into a ${this.constructor.name} is not support`);
+    throw new Error(`Assigning into a ${this.constructor.name} is not supported`);
   }
 
   /**
