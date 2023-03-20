@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { Mixed } from ".";
 import {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Used by TS docs
   ClientResetMode,
@@ -92,7 +93,9 @@ export class TimeoutError extends Error {
 
 /** @internal */
 export function fromBindingSyncError(error: binding.SyncError) {
-  if (error.isClientResetRequested) {
+  if (error.systemError.code == 231) {
+    return new CompensatingWriteError(error);
+  } else if (error.isClientResetRequested) {
     return new ClientResetError(error);
   } else {
     return new SyncError(error);
@@ -117,7 +120,7 @@ export class SyncError extends Error {
   }
 }
 
-const ORIGINAL_FILE_PATH_KEY = "ORIGINAL_FILE_PATH";
+const ORIGINAL_FILE_PATH_KEY = "ORIGINAL_FILE_PATH"; //TODO This is never used, do we need it?
 const RECOVERY_FILE_PATH_KEY = "RECOVERY_FILE_PATH";
 
 /**
@@ -136,5 +139,33 @@ export class ClientResetError extends SyncError {
       path: error.userInfo[RECOVERY_FILE_PATH_KEY],
       readOnly: true,
     };
+  }
+}
+
+//TODO Add docs
+export class CompensatingWriteError extends SyncError {
+  public compensatingWrites: CompensatingWriteErrorInfo[] = [];
+
+  /** @internal */
+  constructor(error: binding.SyncError) {
+    super(error);
+    if (error.compensatingWritesInfo) {
+      error.compensatingWritesInfo.forEach((element) => {
+        this.compensatingWrites.push(new CompensatingWriteErrorInfo(element));
+      });
+    }
+  }
+}
+
+export class CompensatingWriteErrorInfo {
+  public objectName: string;
+  public reason: string;
+  public primaryKey: Mixed;
+
+  /** @internal */
+  constructor(info: binding.CompensatingWriteErrorInfo) {
+    this.objectName = info.objectName;
+    this.reason = info.reason;
+    this.primaryKey = info.primaryKey;
   }
 }

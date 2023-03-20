@@ -37,11 +37,13 @@ import {
   FlexibleSyncConfiguration,
   Realm,
   SessionStopPolicy,
+  CompensatingWriteError,
+  CompensatingWriteErrorInfo,
   SyncConfiguration,
 } from "realm";
 
 import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "../../hooks";
-import { DogSchema, IPerson, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
+import { DogSchema, IPerson, PersonSchema, IDog } from "../../schemas/person-and-dog-with-object-ids";
 import { closeRealm } from "../../utils/close-realm";
 import { expectClientResetError } from "../../utils/expect-sync-error";
 import { createSyncConfig } from "../../utils/open-realm";
@@ -161,10 +163,32 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         //TODO I could add a new type of error so that we can get all te necessary info, maybe similar to what has been done for client reset error
         let errorCallbackCalled = false;
 
+        const person1Id = new BSON.ObjectId("0000002a9a7969d24bea4cf5");
+        const person2Id = new BSON.ObjectId("0000002a9a7969d24bea4cf6");
+        const dogId = new BSON.ObjectId("0000002a9a7969d24bea4cf7");
+
         const errorCallback: ErrorCallback = (session, error) => {
           errorCallbackCalled = true;
+          expect(error).instanceOf(CompensatingWriteError);
           expect(error.code).to.equal(231);
           expect(error.isFatal).to.be.false;
+
+          const cpe = error as CompensatingWriteError;
+
+          expect(cpe.compensatingWrites.length).to.equal(3);
+
+          const compensatingWrites = cpe.compensatingWrites.sort((a, b) =>
+            (a.primaryKey as BSON.ObjectId).toString().localeCompare((b.primaryKey as BSON.ObjectId).toString()),
+          );
+
+          expect((compensatingWrites[0].primaryKey as BSON.ObjectId).equals(person1Id)).to.be.true;
+          expect((compensatingWrites[1].primaryKey as BSON.ObjectId).equals(person2Id)).to.be.true;
+          expect((compensatingWrites[2].primaryKey as BSON.ObjectId).equals(dogId)).to.be.true;
+
+          expect(compensatingWrites[0].objectName).to.equal(FlexiblePersonSchema.name);
+          expect(compensatingWrites[1].objectName).to.equal(FlexiblePersonSchema.name);
+          expect(compensatingWrites[2].objectName).to.equal(DogSchema.name);
+
           console.log(error);
         };
 
@@ -179,14 +203,25 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
         await realm.subscriptions.update((mutableSubs) => {
           mutableSubs.add(realm.objects(FlexiblePersonSchema.name).filtered("age < 30"));
+          mutableSubs.add(realm.objects(DogSchema.name).filtered("age > 5"));
         });
 
         realm.write(function () {
-          return realm.create<IPerson>(FlexiblePersonSchema.name, { _id: new BSON.ObjectId(), name: "Tom", age: 36 });
+          //Outside of subscriptions
+          const person1 = realm.create<IPerson>(FlexiblePersonSchema.name, { _id: person1Id, name: "Tom", age: 36 });
+          realm.create<IPerson>(FlexiblePersonSchema.name, { _id: person2Id, name: "Maria", age: 44 });
+          realm.create<IDog>(DogSchema.name, { _id: dogId, name: "Puppy", age: 1, owner: person1 });
+
+          //In subscription queries
+          realm.create<IPerson>(FlexiblePersonSchema.name, { _id: new BSON.ObjectId(), name: "Luigi", age: 20 });
+          realm.create<IPerson>(FlexiblePersonSchema.name, { _id: new BSON.ObjectId(), name: "Mario", age: 22 });
+          realm.create<IDog>(DogSchema.name, { _id: new BSON.ObjectId(), name: "Oldy", age: 6, owner: person1 });
         });
 
         await realm?.syncSession?.uploadAllLocalChanges();
 
+        await this.timeout;
+        //TODO How to wait a little for this?...
         expect(errorCallbackCalled).to.be.true;
       });
 
