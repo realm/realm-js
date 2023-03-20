@@ -66,6 +66,7 @@
     "packages/realm-react",
     "packages/realm-common",
     "packages/realm-network-transport",
+    "packages/babel-preset",
     "packages/realm-app-importer",
     "packages/realm-tools",
     "packages/metro-config",

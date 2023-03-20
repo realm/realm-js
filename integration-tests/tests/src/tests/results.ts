@@ -23,7 +23,7 @@ import { select } from "../utils/select";
 const { Decimal128, ObjectId, UUID } = Realm.BSON;
 
 class TestObject extends Realm.Object {
-  doubleCol!: Realm.Types.Double;
+  declare doubleCol: Realm.Types.Double;
   static schema = {
     name: "TestObject",
     properties: {
@@ -391,11 +391,12 @@ describe("Results", () => {
 
   describe("Filtering and sorting", () => {
     class PersonObject extends Realm.Object {
-      name!: string;
-      age!: Realm.Types.Double;
-      married!: boolean;
-      children!: Realm.List<PersonObject>;
-      parents!: Realm.List<PersonObject>;
+      declare name: string;
+      declare age: Realm.Types.Double;
+      declare married: boolean;
+      declare children: Realm.List<PersonObject>;
+      declare parents: Realm.List<PersonObject>;
+
       static schema = {
         name: "PersonObject",
         properties: {

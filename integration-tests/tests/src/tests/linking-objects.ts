@@ -107,18 +107,18 @@ interface ICountrySchema {
 }
 
 class Person extends Realm.Object implements IPersonSchema {
-  name!: string;
-  age!: number;
-  married!: boolean;
-  children!: Realm.List<IPersonSchema>;
-  parents!: Realm.Collection<IPersonSchema>;
+  declare name: string;
+  declare age: number;
+  declare married: boolean;
+  declare children: Realm.List<IPersonSchema>;
+  declare parents: Realm.Collection<IPersonSchema>;
 }
 
 class Name extends Realm.Object implements INameSchema {
-  _id!: BSON.ObjectId;
-  family!: string;
-  given!: string[];
-  prefix!: string[];
+  declare _id: BSON.ObjectId;
+  declare family: string;
+  declare given: string[];
+  declare prefix: string[];
 }
 
 describe("Linking objects", () => {

@@ -336,27 +336,27 @@ interface IMultiListObjectSchema {
 }
 
 class PrimitiveArrays extends Realm.Object implements IPrimitiveArraysSchema {
-  bool!: Realm.List<boolean>;
-  int!: Realm.List<number>;
-  float!: Realm.List<number>;
-  double!: Realm.List<number>;
-  string!: Realm.List<string>;
-  date!: Realm.List<Date>;
-  data!: Realm.List<ArrayBuffer>;
-  decimal128!: Realm.List<BSON.Decimal128>;
-  objectId!: Realm.List<BSON.ObjectId>;
-  uuid!: Realm.List<BSON.UUID>;
+  declare bool: Realm.List<boolean>;
+  declare int: Realm.List<number>;
+  declare float: Realm.List<number>;
+  declare double: Realm.List<number>;
+  declare string: Realm.List<string>;
+  declare date: Realm.List<Date>;
+  declare data: Realm.List<ArrayBuffer>;
+  declare decimal128: Realm.List<BSON.Decimal128>;
+  declare objectId: Realm.List<BSON.ObjectId>;
+  declare uuid: Realm.List<BSON.UUID>;
 
-  optBool!: Realm.List<boolean | null>;
-  optInt!: Realm.List<number | null>;
-  optFloat!: Realm.List<number | null>;
-  optDouble!: Realm.List<number | null>;
-  optString!: Realm.List<string | null>;
-  optDate!: Realm.List<Date | null>;
-  optData!: Realm.List<ArrayBuffer | null>;
-  optDecimal128!: Realm.List<BSON.Decimal128 | null>;
-  optObjectId!: Realm.List<BSON.ObjectId | null>;
-  optUuid!: Realm.List<BSON.UUID | null>;
+  declare optBool: Realm.List<boolean | null>;
+  declare optInt: Realm.List<number | null>;
+  declare optFloat: Realm.List<number | null>;
+  declare optDouble: Realm.List<number | null>;
+  declare optString: Realm.List<string | null>;
+  declare optDate: Realm.List<Date | null>;
+  declare optData: Realm.List<ArrayBuffer | null>;
+  declare optDecimal128: Realm.List<BSON.Decimal128 | null>;
+  declare optObjectId: Realm.List<BSON.ObjectId | null>;
+  declare optUuid: Realm.List<BSON.UUID | null>;
 }
 
 class TodoItem extends Realm.Object {

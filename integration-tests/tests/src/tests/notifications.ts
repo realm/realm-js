@@ -21,7 +21,7 @@ import Realm from "realm";
 import { openRealmBeforeEach } from "../hooks";
 
 class ListObject extends Realm.Object {
-  list!: Realm.List<TestObject>;
+  declare list: Realm.List<TestObject>;
   static schema = {
     name: "ListObject",
     properties: {
@@ -31,7 +31,7 @@ class ListObject extends Realm.Object {
 }
 
 class TestObject extends Realm.Object {
-  doubleCol!: Realm.Types.Double;
+  declare doubleCol: Realm.Types.Double;
   static schema = {
     name: "TestObject",
     properties: {
@@ -41,7 +41,7 @@ class TestObject extends Realm.Object {
 }
 
 class StringOnlyObject extends Realm.Object {
-  stringCol!: Realm.Types.String;
+  declare stringCol: Realm.Types.String;
   static schema = {
     name: "StringOnlyObject",
     properties: {

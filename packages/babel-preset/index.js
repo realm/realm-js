@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2021 Realm Inc.
+// Copyright 2023 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,6 +15,23 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-module.exports = {
-  presets: ["module:metro-react-native-babel-preset", "@realm"],
+
+/* eslint-env node */
+
+module.exports = () => {
+  return {
+    // TODO: Add @realm/babel-plugin here
+    overrides: [
+      {
+        plugins: [
+          [
+            require("@babel/plugin-transform-flow-strip-types"),
+            {
+              allowDeclareFields: true,
+            },
+          ],
+        ],
+      },
+    ],
+  };
 };

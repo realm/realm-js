@@ -26,10 +26,10 @@ describe.skipIf(environment.missingServer, "Type roundtrip of UUID object", () =
   authenticateUserBefore();
 
   class DictionaryObject extends Realm.Object {
-    _id!: Realm.Types.Int;
-    columnStringDictionary!: Realm.Dictionary<string>;
-    columnIntegerDictionary!: Realm.Dictionary<Realm.Types.Int>;
-    columnFloatDictionary!: Realm.Dictionary<Realm.Types.Float>;
+    declare _id: Realm.Types.Int;
+    declare columnStringDictionary: Realm.Dictionary<string>;
+    declare columnIntegerDictionary: Realm.Dictionary<Realm.Types.Int>;
+    declare columnFloatDictionary: Realm.Dictionary<Realm.Types.Float>;
 
     static schema = {
       name: "DictionaryObject",

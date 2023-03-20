@@ -35,16 +35,16 @@ interface INullableTypesObject {
 }
 
 class NullableTypesObject extends Realm.Object implements INullableTypesObject {
-  boolCol?: boolean;
-  intCol?: Realm.Types.Int;
-  floatCol?: Realm.Types.Float;
-  doubleCol?: Realm.Types.Double;
-  stringCol?: Realm.Types.String;
-  dateCol?: Realm.Types.Date;
-  dataCol?: Realm.Types.Data;
-  decimal128Col?: Realm.Types.Decimal128;
-  objectIdCol?: Realm.Types.ObjectId;
-  uuidCol?: Realm.Types.UUID;
+  declare boolCol?: boolean;
+  declare intCol?: Realm.Types.Int;
+  declare floatCol?: Realm.Types.Float;
+  declare doubleCol?: Realm.Types.Double;
+  declare stringCol?: Realm.Types.String;
+  declare dateCol?: Realm.Types.Date;
+  declare dataCol?: Realm.Types.Data;
+  declare decimal128Col?: Realm.Types.Decimal128;
+  declare objectIdCol?: Realm.Types.ObjectId;
+  declare uuidCol?: Realm.Types.UUID;
 
   static schema = {
     name: "NullableTypesObject",
@@ -581,7 +581,7 @@ describe("Queries", () => {
   describe("Object and list types", () => {
     describe("querying objects with linked objects", () => {
       class LinkObject extends Realm.Object {
-        linkCol?: { intCol: number };
+        declare linkCol?: { intCol: number };
         static schema = { name: "LinkObject", properties: { linkCol: "IntObject" } };
       }
       let objects: LinkObject[];
@@ -1012,8 +1012,8 @@ describe("Queries", () => {
 
       it("should work with scientific notation numbers", () => {
         class DecimalNumbersObject extends Realm.Object {
-          f!: Realm.Types.Float;
-          d!: Realm.Types.Double;
+          declare f: Realm.Types.Float;
+          declare d: Realm.Types.Double;
 
           static schema = {
             name: "DecimalNumbersObject",

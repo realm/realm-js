@@ -1,0 +1,6 @@
+{
+  "name": "@realm/babel-preset",
+  "version": "0.1.0",
+  "type": "commonjs",
+  "main": "./index.js"
+}

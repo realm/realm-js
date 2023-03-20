@@ -38,10 +38,10 @@ export const PersonSchema: Realm.ObjectSchema = {
 };
 
 export class Person extends Realm.Object<Person> {
-  name!: string;
-  age!: number;
-  friends!: Realm.List<Person>;
-  dogs!: Realm.Collection<Dog>;
+  declare name: string;
+  declare age: number;
+  declare friends: Realm.List<Person>;
+  declare dogs: Realm.Collection<Dog>;
 
   constructor(realm: Realm, name: string, age: number) {
     super(realm, { name, age });
@@ -66,9 +66,9 @@ export const DogSchema: Realm.ObjectSchema = {
 };
 
 export class Dog extends Realm.Object<Dog> {
-  name!: string;
-  age!: number;
-  owner!: Person;
+  declare name: string;
+  declare age: number;
+  declare owner: Person;
 
   constructor(realm: Realm, name: string, age: number, owner: Person) {
     super(realm, { name, age, owner });

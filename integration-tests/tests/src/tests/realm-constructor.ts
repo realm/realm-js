@@ -22,7 +22,7 @@ import { Realm } from "realm";
 import { IPerson, PersonSchema, DogSchema } from "../schemas/person-and-dogs";
 
 class TestObject extends Realm.Object {
-  doubleCol!: number;
+  declare doubleCol: number;
   static schema: Realm.ObjectSchema = {
     name: "TestObject",
     properties: {

@@ -382,7 +382,7 @@ interface IDateObject {
 }
 
 class TestObject extends Realm.Object {
-  doubleCol!: number;
+  declare doubleCol: number;
   static schema: Realm.ObjectSchema = {
     name: "TestObject",
     properties: {
@@ -392,11 +392,11 @@ class TestObject extends Realm.Object {
 }
 
 class PersonObject extends Realm.Object {
-  name!: string;
-  age!: number;
-  married!: boolean;
-  children!: PersonObject[];
-  parents!: PersonObject[];
+  declare name: string;
+  declare age: number;
+  declare married: boolean;
+  declare children: PersonObject[];
+  declare parents: PersonObject[];
   static schema: Realm.ObjectSchema = {
     name: "PersonObject",
     properties: {
