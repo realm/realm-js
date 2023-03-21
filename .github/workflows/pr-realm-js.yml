@@ -345,7 +345,7 @@ jobs:
 
       - name: Install prebuild
         if: ${{ matrix.variant.environment == 'node' || matrix.variant.environment == 'electron' }}
-        run: npx --workspace realm prebuild-install --runtime napi
+        run: npx --workspace realm prebuild-install --runtime napi --verbose
         env:
           npm_config_realm_local_prebuilds: ${{github.workspace}}/packages/realm/prebuilds
 
