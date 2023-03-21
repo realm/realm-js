@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
+## 12.0.0-alpha.0 (2023-03-21)
 
 ### Enhancements
 * Added configuration option `SyncConfiguration.cancelWaitsOnNonFatalError`. Set to true, all async operations (such as opening the Realm with `Realm.open`) will fail when a non-fatal error, such as a timeout, occurs.  
