@@ -226,7 +226,7 @@ jobs:
         with:
           name: realm-js-prebuilds
           path: |
-            dependencies.list
+            README.md
             packages/realm/react-native/ios/realm-js-ios.xcframework/Info.plist
 
   integration-tests:
