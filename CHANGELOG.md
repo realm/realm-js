@@ -19,6 +19,7 @@
 <!-- * Either mention core version or upgrade -->
 <!-- * Using Realm Core vX.Y.Z -->
 <!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Test
 
 ## 11.5.2 (2023-03-14)
 
