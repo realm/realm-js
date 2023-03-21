@@ -53,17 +53,6 @@
     "email": "help@realm.io",
     "url": "https://realm.io"
   },
-  "files": [
-    "cmake",
-    "lib",
-    "types",
-    "react-native",
-    "scripts",
-    "dependencies.list",
-    "react-native.config.js",
-    "RealmJS.podspec",
-    "CMakeLists.txt"
-  ],
   "workspaces": [
     "example",
     "packages/bindgen",
