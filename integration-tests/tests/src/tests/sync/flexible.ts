@@ -447,8 +447,6 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             },
           });
 
-          console.log(realm.path);
-
           await realm.subscriptions.update((mutableSubs) => {
             mutableSubs.add(realm.objects(FlexiblePersonSchema.name).filtered("age < 30"));
             mutableSubs.add(realm.objects(DogSchema.name).filtered("age > 5"));
