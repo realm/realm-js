@@ -151,7 +151,7 @@ export class CompensatingWriteError extends SyncError {
   /**
    * The array of compensating writes performed by the server.
    */
-  public compensatingWrites: CompensatingWriteErrorInfo[] = [];
+  public infos: CompensatingWriteErrorInfo[] = [];
 
   /** @internal */
   constructor(error: binding.SyncError) {
@@ -165,28 +165,21 @@ export class CompensatingWriteError extends SyncError {
 }
 
 /**
- * A class containing the details of a compensating write performed by the server.
+ * The details of a compensating write performed by the server.
  */
-export class CompensatingWriteErrorInfo {
+export type CompensatingWriteInfo = {
   /**
    * The type of the object affected by the compensating write.
    */
-  public objectName: string;
+  objectName: string;
 
   /**
    * The reason for the compensating write.
    */
-  public reason: string;
+  reason: string;
 
   /**
    * The primary key of the object affected by the compensating write.
    */
-  public primaryKey: Mixed;
-
-  /** @internal */
-  constructor(info: binding.CompensatingWriteErrorInfo) {
-    this.objectName = info.objectName;
-    this.reason = info.reason;
-    this.primaryKey = info.primaryKey;
-  }
+  primaryKey: Mixed;
 }
