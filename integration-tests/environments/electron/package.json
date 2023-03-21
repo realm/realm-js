@@ -13,6 +13,8 @@
     "test": "wireit",
     "test:main": "wireit",
     "test:renderer": "wireit",
+    "test:ci:main": "mocha-remote --reporter @realm/mocha-reporter --id main node runner.js main",
+    "test:ci:renderer": "mocha-remote --reporter @realm/mocha-reporter --id main node runner.js renderer",
     "lint": "eslint .",
     "package": "electron-builder --dir"
   },

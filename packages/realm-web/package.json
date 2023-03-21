@@ -27,7 +27,7 @@
     },
     "generate-types": {
       "command": "tsc --project src/dom/tsconfig.json --declaration --emitDeclarationOnly --declarationDir types/generated",
-      "dependencies": ["update-types"],
+      "dependencies": ["update-types", "../realm-common:build", "../realm-network-transport:build"],
       "files": ["src/**/*.ts", "src/**/tsconfig.json", "tsconfig.json"],
       "output": ["types/generated"]
     },

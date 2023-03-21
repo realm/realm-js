@@ -9,9 +9,16 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "wireit",
     "lint": "eslint --ext .js,.ts .",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "wireit": {
+    "build": {
+      "command": "tsc -p tsconfig.build.json",
+      "files": ["tsconfig.build.json", "tsconfig.json", "src"],
+      "output": ["dist"]
+    }
   },
   "repository": {
     "type": "git",

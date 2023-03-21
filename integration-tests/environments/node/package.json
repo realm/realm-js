@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "test": "wireit",
+    "test:ci": "mocha-remote --reporter @realm/mocha-reporter tsx index.mjs",
     "lint": "eslint --ext js,mjs ."
   },
   "wireit": {

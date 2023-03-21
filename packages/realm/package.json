@@ -54,6 +54,8 @@
     "bundle": "wireit",
     "build:bindgen": "wireit",
     "rebuild:bindgen": "wireit",
+    "build:bindgen:typescript": "wireit",
+    "build:bindgen:node-wrapper": "wireit",
     "build:node": "wireit",
     "build:node:prebuild": "wireit",
     "build:node:prebuild:arm": "wireit",
@@ -81,7 +83,8 @@
       "command": "rollup --config",
       "dependencies": [
         "../realm-network-transport:build",
-        "build:bindgen"
+        "build:bindgen:typescript",
+        "build:bindgen:node-wrapper"
       ],
       "files": ["rollup.config.mjs", "src/**/*.ts", "tsconfig.json", "src/**/tsconfig.json"],
       "output": ["dist/bundle.*.js", "dist/bundle.*.mjs"]
@@ -96,6 +99,14 @@
         "generated/ts/native.mjs",
         "generated/ts/native-rn.mjs"
       ]
+    },
+    "build:bindgen:typescript": {
+      "command": "realm-bindgen --spec ../bindgen/spec.yml --spec ../bindgen/js_spec.yml --template typescript --output ./generated/ts",
+      "dependencies": ["../..:submodules", "../bindgen:generate:spec-schema"]
+    },
+    "build:bindgen:node-wrapper": {
+      "command": "realm-bindgen --spec ../bindgen/spec.yml --spec ../bindgen/js_spec.yml --template node-wrapper --output ./generated/ts",
+      "dependencies": ["../..:submodules", "../bindgen:generate:spec-schema"]
     },
     "rebuild:bindgen": {
       "command": "cmake-js rebuild --debug --directory ../bindgen",
