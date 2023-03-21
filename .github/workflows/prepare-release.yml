@@ -30,16 +30,8 @@ jobs:
           version: ${{ inputs.version }} 
           changelog: ${{ github.workspace }}/CHANGELOG.md
 
-      - name: Update package.json
-        run: |
-          jq '.version="${{ steps.update-changelog.outputs.new-version }}"' package.json > package.tmp
-          mv package.tmp package.json
-
-      - name: Update package-lock.json
-        run: npm install --ignore-scripts
-
-      - name: Update dependencies.list
-        run: sed -i 's/^VERSION=.*/VERSION=${{ steps.update-changelog.outputs.new-version }}/' dependencies.list
+      - name: Update version
+        run: npm version ${{ steps.update-changelog.outputs.new-version }} --workspace realm
 
       - name: Create Release PR
         uses: peter-evans/create-pull-request@7380612b49221684fefa025244f2ef4008ae50ad #! 3.10.1
