@@ -415,7 +415,9 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
               "Client attempted a write that is outside of permissions or query filters; it has been reverted",
             );
 
-            const cpe = error as CompensatingWriteError;
+            if (!(error instanceof CompensatingWriteError)) {
+              throw new Error("Expected a CompensatingWriteError");
+            }
 
             expect(cpe.compensatingWrites.length).to.equal(3);
 
@@ -452,7 +454,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             mutableSubs.add(realm.objects(DogSchema.name).filtered("age > 5"));
           });
 
-          realm.write(function () {
+          realm.write(() => {
             //Outside subscriptions
             const tom = realm.create<IPerson>(FlexiblePersonSchema.name, {
               _id: person1Id,

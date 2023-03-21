@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Mixed } from ".";
+import { Mixed } from "./internal";
 import {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Used by TS docs
   ClientResetMode,
