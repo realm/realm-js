@@ -171,8 +171,9 @@
     "mocha": "^10.1.0",
     "path-browserify": "^1.0.1",
     "prebuild": "^11.0.4",
-    "react-native": "^0.71.0",
-    "rollup-plugin-dts": "^5.0.0"
+    "react-native": "0.71.4",
+    "rollup-plugin-dts": "^5.0.0",
+    "tsm": "^2.2.2"
   },
   "repository": {
     "type": "git",

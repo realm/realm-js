@@ -19,7 +19,7 @@ export const TaskList: React.FC<TaskListProps> = ({
   return (
     <View style={styles.listContainer}>
       <FlatList
-        data={tasks}
+        data={tasks} // Spread the Realm results into an array until the 0.71.4 release
         keyExtractor={task => task._id.toString()}
         renderItem={({item}) => (
           <TaskItem
