@@ -142,8 +142,15 @@ export class ClientResetError extends SyncError {
   }
 }
 
-//TODO Add docs
+/**
+ * An error class that indicates that one or more object changes have been reverted by the server.
+ * This can happen when the client creates/updates objects that do not match any subscription, or performs writes on
+ * an object it didn't have permission to.
+ */
 export class CompensatingWriteError extends SyncError {
+  /**
+   * The array of compensating writes performed by the server.
+   */
   public compensatingWrites: CompensatingWriteErrorInfo[] = [];
 
   /** @internal */
@@ -157,9 +164,23 @@ export class CompensatingWriteError extends SyncError {
   }
 }
 
+/**
+ * A class containing the details of a compensating write performed by the server.
+ */
 export class CompensatingWriteErrorInfo {
+  /**
+   * The type of the object affected by the compensating write.
+   */
   public objectName: string;
+
+  /**
+   * The reason for the compensating write.
+   */
   public reason: string;
+
+  /**
+   * The primary key of the object affected by the compensating write.
+   */
   public primaryKey: Mixed;
 
   /** @internal */
