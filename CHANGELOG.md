@@ -4,6 +4,8 @@
 * None
 
 ### Enhancements
+* Added new error class `CompensatingWriteError`, that that indicates that one or more object changes have been reverted by the server ([#5599](https://github.com/realm/realm-js/pull/5599)). 
+This can happen when the client creates/updates objects that do not match any subscription, or performs writes on an object it didn't have permission to. ()
 * Added configuration option `SyncConfiguration.cancelWaitsOnNonFatalError`. Set to true, all async operations (such as opening the Realm with `Realm.open`) will fail when a non-fatal error, such as a timeout, occurs.  
 * Added an overload to `Object.linkingObjects` method that takes type of the linking object as an input instead of its string name ([#5326](https://github.com/realm/realm-js/issues/5326))  
 Example usage:
