@@ -61,7 +61,7 @@ describe("path configuration (local)", function () {
 describe.skipIf(environment.missingServer, `app configuration of root directory (flexible sync)`, async function () {
   const { appId, baseUrl } = await importApp("with-db-flx");
 
-  it.only("directory and file created where expected", async function () {
+  it("directory and file created where expected", async function () {
     const tmpdir = getAbsolutePath();
     expect(fs.exists(tmpdir)).to.be.false;
 
