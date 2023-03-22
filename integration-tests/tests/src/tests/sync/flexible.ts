@@ -405,7 +405,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       const person2Id = new BSON.ObjectId("0000002a9a7969d24bea4cf6");
       const dogId = new BSON.ObjectId("0000002a9a7969d24bea4cf7");
 
-      const promise = new Promise<void>((resolve, _) => {
+      await new Promise<void>((resolve, _) => {
         (async () => {
           const errorCallback: ErrorCallback = (_, error) => {
             expect(error.code).to.equal(231);
@@ -476,8 +476,6 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           await realm?.syncSession?.uploadAllLocalChanges();
         })();
       });
-
-      await promise;
     });
   });
 
