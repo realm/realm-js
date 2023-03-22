@@ -78,8 +78,9 @@ assert.symbol = (value: unknown, target?: string): asserts value is symbol => {
 
 assert.primaryKey = (value: unknown, target?: string): asserts value is PrimaryKey => {
   assert(
-    value == null ||
-      typeof value in ["number", "string"] ||
+    value === null ||
+      typeof value === "number" ||
+      typeof value === "string" ||
       value instanceof BSON.UUID ||
       value instanceof BSON.ObjectId,
     () => new TypeAssertionError("a primary key", value, target),

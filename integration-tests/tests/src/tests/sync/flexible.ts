@@ -399,7 +399,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
   });
 
   describe("Sync Errors", () => {
-    it.only("compensating writes", async function () {
+    it("compensating writes", async function () {
       const person1Id = new BSON.ObjectId("0000002a9a7969d24bea4cf5");
       const person2Id = new BSON.ObjectId("0000002a9a7969d24bea4cf6");
       const dogId = new BSON.ObjectId("0000002a9a7969d24bea4cf7");
@@ -472,7 +472,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         realm.create<IDog>(DogSchema.name, { _id: new BSON.ObjectId(), name: "Oldy", age: 6, owner: luigi });
       });
 
-      await realm?.syncSession?.uploadAllLocalChanges();
+      await realm.syncSession?.uploadAllLocalChanges();
       await callbackHandle;
     });
   });
