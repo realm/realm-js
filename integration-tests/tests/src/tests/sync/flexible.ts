@@ -38,8 +38,6 @@ import {
   Realm,
   SessionStopPolicy,
   CompensatingWriteError,
-  CompensatingWriteErrorInfo,
-  SyncConfiguration,
 } from "realm";
 
 import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "../../hooks";
@@ -47,6 +45,7 @@ import { DogSchema, IPerson, PersonSchema, IDog } from "../../schemas/person-and
 import { closeRealm } from "../../utils/close-realm";
 import { expectClientResetError } from "../../utils/expect-sync-error";
 import { createSyncConfig } from "../../utils/open-realm";
+import { createPromiseHandle } from "../../utils/promise-handle";
 
 const FlexiblePersonSchema = { ...PersonSchema, properties: { ...PersonSchema.properties, nonQueryable: "string?" } };
 
@@ -399,83 +398,82 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
     });
   });
 
-  describe("Errors", () => {
-    it("raises compensating writes errors", async function () {
+  describe("Sync Errors", () => {
+    it.only("compensating writes", async function () {
       const person1Id = new BSON.ObjectId("0000002a9a7969d24bea4cf5");
       const person2Id = new BSON.ObjectId("0000002a9a7969d24bea4cf6");
       const dogId = new BSON.ObjectId("0000002a9a7969d24bea4cf7");
 
-      await new Promise<void>((resolve, _) => {
-        (async () => {
-          const errorCallback: ErrorCallback = (_, error) => {
-            expect(error.code).to.equal(231);
-            expect(error.isFatal).to.be.false;
-            expect(error.message).to.contain(
-              "Client attempted a write that is outside of permissions or query filters; it has been reverted",
-            );
+      const callbackHandle = createPromiseHandle();
 
-            if (!(error instanceof CompensatingWriteError)) {
-              throw new Error("Expected a CompensatingWriteError");
-            }
+      const errorCallback: ErrorCallback = (_, error) => {
+        expect(error.code).to.equal(231);
+        expect(error.isFatal).to.be.false;
+        expect(error.message).to.contain(
+          "Client attempted a write that is outside of permissions or query filters; it has been reverted",
+        );
 
-            expect(error.infos.length).to.equal(3);
+        if (!(error instanceof CompensatingWriteError)) {
+          throw new Error("Expected a CompensatingWriteError");
+        }
 
-            const compensatingWrites = error.infos.sort((a, b) =>
-              (a.primaryKey as BSON.ObjectId).toString().localeCompare((b.primaryKey as BSON.ObjectId).toString()),
-            );
+        expect(error.writeErrors.length).to.equal(3);
 
-            expect((compensatingWrites[0].primaryKey as BSON.ObjectId).equals(person1Id)).to.be.true;
-            expect((compensatingWrites[1].primaryKey as BSON.ObjectId).equals(person2Id)).to.be.true;
-            expect((compensatingWrites[2].primaryKey as BSON.ObjectId).equals(dogId)).to.be.true;
+        const compensatingWrites = error.writeErrors.sort((a, b) =>
+          (a.primaryKey as BSON.ObjectId).toString().localeCompare((b.primaryKey as BSON.ObjectId).toString()),
+        );
 
-            expect(compensatingWrites[0].objectName).to.equal(FlexiblePersonSchema.name);
-            expect(compensatingWrites[1].objectName).to.equal(FlexiblePersonSchema.name);
-            expect(compensatingWrites[2].objectName).to.equal(DogSchema.name);
+        expect((compensatingWrites[0].primaryKey as BSON.ObjectId).equals(person1Id)).to.be.true;
+        expect((compensatingWrites[1].primaryKey as BSON.ObjectId).equals(person2Id)).to.be.true;
+        expect((compensatingWrites[2].primaryKey as BSON.ObjectId).equals(dogId)).to.be.true;
 
-            expect(compensatingWrites[0].reason).to.contain("object is outside of the current query view");
-            expect(compensatingWrites[1].reason).to.contain("object is outside of the current query view");
-            expect(compensatingWrites[2].reason).to.contain("object is outside of the current query view");
+        expect(compensatingWrites[0].objectName).to.equal(FlexiblePersonSchema.name);
+        expect(compensatingWrites[1].objectName).to.equal(FlexiblePersonSchema.name);
+        expect(compensatingWrites[2].objectName).to.equal(DogSchema.name);
 
-            resolve();
-          };
+        expect(compensatingWrites[0].reason).to.contain("object is outside of the current query view");
+        expect(compensatingWrites[1].reason).to.contain("object is outside of the current query view");
+        expect(compensatingWrites[2].reason).to.contain("object is outside of the current query view");
 
-          const realm = await Realm.open({
-            schema: [FlexiblePersonSchema, DogSchema],
-            sync: {
-              flexible: true,
-              user: this.user,
-              onError: errorCallback,
-            },
-          });
+        callbackHandle.resolve();
+      };
 
-          await realm.subscriptions.update((mutableSubs) => {
-            mutableSubs.add(realm.objects(FlexiblePersonSchema.name).filtered("age < 30"));
-            mutableSubs.add(realm.objects(DogSchema.name).filtered("age > 5"));
-          });
-
-          realm.write(() => {
-            //Outside subscriptions
-            const tom = realm.create<IPerson>(FlexiblePersonSchema.name, {
-              _id: person1Id,
-              name: "Tom",
-              age: 36,
-            });
-            realm.create<IPerson>(FlexiblePersonSchema.name, { _id: person2Id, name: "Maria", age: 44 });
-            realm.create<IDog>(DogSchema.name, { _id: dogId, name: "Puppy", age: 1, owner: tom });
-
-            //Inside subscriptions
-            const luigi = realm.create<IPerson>(FlexiblePersonSchema.name, {
-              _id: new BSON.ObjectId(),
-              name: "Luigi",
-              age: 20,
-            });
-            realm.create<IPerson>(FlexiblePersonSchema.name, { _id: new BSON.ObjectId(), name: "Mario", age: 22 });
-            realm.create<IDog>(DogSchema.name, { _id: new BSON.ObjectId(), name: "Oldy", age: 6, owner: luigi });
-          });
-
-          await realm?.syncSession?.uploadAllLocalChanges();
-        })();
+      const realm = await Realm.open({
+        schema: [FlexiblePersonSchema, DogSchema],
+        sync: {
+          flexible: true,
+          user: this.user,
+          onError: errorCallback,
+        },
       });
+
+      await realm.subscriptions.update((mutableSubs) => {
+        mutableSubs.add(realm.objects(FlexiblePersonSchema.name).filtered("age < 30"));
+        mutableSubs.add(realm.objects(DogSchema.name).filtered("age > 5"));
+      });
+
+      realm.write(() => {
+        //Outside subscriptions
+        const tom = realm.create<IPerson>(FlexiblePersonSchema.name, {
+          _id: person1Id,
+          name: "Tom",
+          age: 36,
+        });
+        realm.create<IPerson>(FlexiblePersonSchema.name, { _id: person2Id, name: "Maria", age: 44 });
+        realm.create<IDog>(DogSchema.name, { _id: dogId, name: "Puppy", age: 1, owner: tom });
+
+        //Inside subscriptions
+        const luigi = realm.create<IPerson>(FlexiblePersonSchema.name, {
+          _id: new BSON.ObjectId(),
+          name: "Luigi",
+          age: 20,
+        });
+        realm.create<IPerson>(FlexiblePersonSchema.name, { _id: new BSON.ObjectId(), name: "Mario", age: 22 });
+        realm.create<IDog>(DogSchema.name, { _id: new BSON.ObjectId(), name: "Oldy", age: 6, owner: luigi });
+      });
+
+      await realm?.syncSession?.uploadAllLocalChanges();
+      await callbackHandle;
     });
   });
 

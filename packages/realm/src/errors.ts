@@ -20,7 +20,8 @@ import {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Used by TS docs
   ClientResetMode,
   Configuration,
-  Mixed,
+  PrimaryKey,
+  assert,
   binding,
 } from "./internal";
 
@@ -150,15 +151,15 @@ export class CompensatingWriteError extends SyncError {
   /**
    * The array of information about each object that caused the compensating write.
    */
-  public infos: CompensatingWriteInfo[] = [];
+  public writeErrors: CompensatingWriteInfo[] = [];
 
   /** @internal */
   constructor(error: binding.SyncError) {
     super(error);
-    if (error.compensatingWritesInfo) {
-      error.compensatingWritesInfo.forEach((element) => {
-        this.infos.push({ objectName: element.objectName, reason: element.reason, primaryKey: element.primaryKey });
-      });
+    for (const write of error.compensatingWritesInfo) {
+      const primaryKey = write.primaryKey;
+      assert.primaryKey(primaryKey);
+      this.writeErrors.push({ objectName: write.objectName, reason: write.reason, primaryKey: primaryKey });
     }
   }
 }
@@ -180,5 +181,5 @@ export type CompensatingWriteInfo = {
   /**
    * The primary key of the object that caused the compensating write.
    */
-  primaryKey: Mixed;
+  primaryKey: PrimaryKey;
 };
