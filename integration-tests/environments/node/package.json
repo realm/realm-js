@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "test": "wireit",
+    "test:ci": "mocha-remote --reporter @realm/mocha-reporter tsx index.mjs",
     "lint": "eslint --ext js,mjs ."
   },
   "wireit": {
@@ -23,8 +24,8 @@
     "@realm/integration-tests": "*",
     "mocha-cli": "^1.0.1",
     "mocha-github-actions-reporter": "^0.2.3",
-    "mocha-remote-cli": "^1.6.0",
-    "mocha-remote-client": "^1.6.0",
+    "mocha-remote-cli": "^1.6.1",
+    "mocha-remote-client": "^1.6.1",
     "realm": "*"
   },
   "devDependencies": {

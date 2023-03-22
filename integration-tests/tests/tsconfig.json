@@ -3,6 +3,7 @@
 		"target": "es2022",
 		"module": "es2022",
 		"moduleResolution": "node",
+		"useDefineForClassFields": false,
 		"strict": true,
 		"strictFunctionTypes": false,
 		"esModuleInterop": true,

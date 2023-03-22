@@ -52,7 +52,7 @@ jobs:
     - name: Install node modules
       run: npm ci --ignore-scripts
 
-    - name: Download prebuild PR artifacts
+    - name: Download prebuild artifacts from PR
       uses: dawidd6/action-download-artifact@d0f291cf39bd21965ea9c4c6e210fc355c3844ed
       with:
         workflow: pr-realm-js.yml
@@ -61,6 +61,16 @@ jobs:
         workflow_conclusion: "" # Ignores workflow conclusion
         github_token: ${{ secrets.REALM_CI_PAT }}
         name: realm-js-prebuilds
+
+    - name: Download bundle artifacts from PR
+      uses: dawidd6/action-download-artifact@d0f291cf39bd21965ea9c4c6e210fc355c3844ed
+      with:
+        workflow: pr-realm-js.yml
+        commit: ${{ inputs.commit || github.sha }}
+        path: ${{ github.workspace }}
+        workflow_conclusion: "" # Ignores workflow conclusion
+        github_token: ${{ secrets.REALM_CI_PAT }}
+        name: realm-js-bundles
 
     - name: Read version
       id: get-version
@@ -81,7 +91,7 @@ jobs:
         secret_key: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}
 
     - name: Upload prebuilds to S3
-      run: s3cmd put --recursive --acl-public prebuilds/realm-* s3://${{ secrets.PREBUILDS_S3_BUCKET_NAME }}/${{ steps.get-version.outputs.version }}/
+      run: s3cmd put --recursive --acl-public packages/realm/prebuilds/realm-* s3://${{ secrets.PREBUILDS_S3_BUCKET_NAME }}/${{ steps.get-version.outputs.version }}/
 
     - name: Publish realm v${{ steps.get-version.outputs.version }} on NPM
       run: npm publish --tag '${{ inputs.tag}}'

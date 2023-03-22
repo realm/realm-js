@@ -20,6 +20,9 @@ const commandLineArgs = require("command-line-args");
 const fs = require("fs-extra");
 const path = require("path");
 const exec = require("child_process").execFileSync;
+
+const { version } = require("realm/package.json");
+
 const packageRoot = path.resolve(__dirname, "..");
 
 const NDK_VERSION = "23.1.7779620";
@@ -69,6 +72,7 @@ if (options.clean) {
 
 fs.ensureDirSync(buildPath, { recursive: true });
 
+/*
 for (const arch of architectures) {
   console.log(`\nBuilding Realm JS Android for ${arch} (${buildType})`);
   console.log("=======================================");
@@ -96,6 +100,7 @@ for (const arch of architectures) {
   args = ["--build", "."];
   exec(cmakePath, args, { cwd: archBuildDir, stdio: "inherit" });
 }
+*/
 
 generateVersionFile();
 
@@ -114,7 +119,6 @@ function generateVersionFile() {
     "react",
     "Version.java",
   );
-  const version = getVersion();
   const versionFileContents = `package io.realm.react;
 
 public class Version {
@@ -123,23 +127,6 @@ public class Version {
 `;
 
   fs.writeFileSync(targetFile, versionFileContents);
-}
-
-function getVersion() {
-  const depencenciesListFile = path.resolve(packageRoot, "dependencies.list");
-  const contents = fs.readFileSync(depencenciesListFile, "UTF-8");
-  const lines = contents.split(/\r?\n/);
-  const versionValue = lines.find((line) => line.startsWith("VERSION="));
-  if (!versionValue) {
-    throw new Error("Realm version not found. Invalid dependencies.list file");
-  }
-
-  const version = versionValue.split("=")[1];
-  if (!version) {
-    throw new Error("Realm version not found. Invalid version value in dependencies.list file");
-  }
-
-  return version;
 }
 
 function validateBuildType(buildTypeOption) {

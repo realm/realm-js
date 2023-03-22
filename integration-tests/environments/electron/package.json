@@ -13,6 +13,8 @@
     "test": "wireit",
     "test:main": "wireit",
     "test:renderer": "wireit",
+    "test:ci:main": "mocha-remote --reporter @realm/mocha-reporter --id main node runner.js main",
+    "test:ci:renderer": "mocha-remote --reporter @realm/mocha-reporter --id main node runner.js renderer",
     "lint": "eslint .",
     "package": "electron-builder --dir"
   },
@@ -50,13 +52,13 @@
     "electron-builder": "^22.10.5",
     "mocha-github-actions-reporter": "^0.2.3",
     "mocha-junit-reporter": "^2.0.0",
-    "mocha-remote-cli": "^1.6.0"
+    "mocha-remote-cli": "^1.6.1"
   },
   "dependencies": {
     "@realm/integration-tests": "*",
     "fs-extra": "^9.1.0",
     "mocha": "^8.3.2",
-    "mocha-remote-client": "^1.6.0",
+    "mocha-remote-client": "^1.6.1",
     "@realm/app-importer": "*"
   },
   "build": {

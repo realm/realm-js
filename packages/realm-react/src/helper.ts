@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2022 Realm Inc.
+// Copyright 2023 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,9 +15,23 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import "./fs";
-import "./device-info";
+import Realm from "realm";
 
-export * from "../index";
-import { Realm } from "../index";
-export default Realm;
+export function getObjectForPrimaryKey<T extends Realm.Object>(
+  realm: Realm,
+  type: string | { new (...args: any): T },
+  primaryKey: T[keyof T],
+) {
+  return typeof type === "string"
+    ? realm.objectForPrimaryKey(type, primaryKey)
+    : realm.objectForPrimaryKey(type, primaryKey);
+}
+
+export function getObjects<T extends Realm.Object>(
+  realm: Realm,
+  type: string | { new (...args: any): T },
+): Realm.Results<T> {
+  return (typeof type === "string" ? realm.objects(type) : realm.objects(type)) as Realm.Results<T>;
+}
+
+export type CollectionCallback = Parameters<typeof Realm.Results.prototype.addListener>[0];

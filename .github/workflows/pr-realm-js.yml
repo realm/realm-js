@@ -10,6 +10,34 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  bundle:
+    name: Bundle TypeScript
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          submodules: "recursive"
+      - name: Setup node version
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: npm
+      - name: Install dependencies
+        # Ignoring scripts to prevent a prebuilt from getting fetched / built
+        run: npm ci --ignore-scripts
+      - name: Bundle all packages
+        run: npm run bundle
+      # Due to a limitation in upload-artifact a redundant file is needed to force
+      # preserving paths (https://github.com/actions/upload-artifact/issues/174)
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: realm-js-bundles
+          path: |
+            README.md
+            packages/*/dist
+
   build:
     name: Build for ${{ matrix.variant.os }} ${{ matrix.variant.arch }}
     runs-on: ${{ matrix.variant.runner }}
@@ -47,7 +75,6 @@ jobs:
         with:
           node-version: 16
           cache: npm
-          cache-dependency-path: package-lock.json
 
       - name: Get NPM cache directory
         id: npm-cache-dir
@@ -171,7 +198,7 @@ jobs:
         with:
           name: realm-js-prebuilds
           path: |
-            dependencies.list
+            README.md
             ${{ matrix.variant.artifact-path }}
 
   ios-xcframework:
@@ -199,12 +226,12 @@ jobs:
         with:
           name: realm-js-prebuilds
           path: |
-            dependencies.list
+            README.md
             packages/realm/react-native/ios/realm-js-ios.xcframework/Info.plist
 
   integration-tests:
     name: Integration tests (${{matrix.variant.target}}) for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
-    needs: [build, ios-xcframework]
+    needs: [bundle, build, ios-xcframework]
     env:
       REALM_DISABLE_ANALYTICS: 1
       MOCHA_REMOTE_TIMEOUT: 60000
@@ -223,18 +250,18 @@ jobs:
       max-parallel: 3
       matrix:
         variant:
-          - { os: linux, target: test, runner: ubuntu-latest, environment: node }
-          - { os: linux, target: "test:main", runner: ubuntu-latest, environment: electron }
-          - { os: linux, target: "test:renderer", runner: ubuntu-latest, environment: electron }
-          #- { os: windows, target: test, runner: windows-latest, environment: node}
-          #- { os: windows, target: "test:main", runner: windows-latest, environment: electron }
-          #- { os: windows, target: "test:renderer", runner: windows-latest, environment: electron }
-          - { os: darwin, target: "test:main", runner: macos-latest, environment: electron }
-          - { os: darwin, target: "test:renderer", runner: macos-latest, environment: electron }
-          - { os: darwin, target: test, runner: macos-latest, environment: node }
-          - { os: android, target: "test:android", runner: macos-latest, environment: react-native, arch: "armeabi-v7a" }
-          - { os: ios, target: "test:ios", runner: macos-latest, environment: react-native, arch: "ios" }
-          #- { os: ios, target: "test:catalyst", runner: macos-latest, environment: react-native, arch: "catalyst" }
+          - { os: linux, target: "test:ci", runner: ubuntu-latest, environment: node }
+          - { os: linux, target: "test:ci:main", runner: ubuntu-latest, environment: electron }
+          - { os: linux, target: "test:ci:renderer", runner: ubuntu-latest, environment: electron }
+          #- { os: windows, target: "test:ci", runner: windows-latest, environment: node}
+          #- { os: windows, target: "test:ci:main", runner: windows-latest, environment: electron }
+          #- { os: windows, target: "test:ci:renderer", runner: windows-latest, environment: electron }
+          - { os: darwin, target: "test:ci:main", runner: macos-latest, environment: electron }
+          - { os: darwin, target: "test:ci:renderer", runner: macos-latest, environment: electron }
+          - { os: darwin, target: "test:ci", runner: macos-latest, environment: node }
+          - { os: android, target: "test:ci:android", runner: macos-latest, environment: react-native, arch: "armeabi-v7a" }
+          - { os: ios, target: "test:ci:ios", runner: macos-latest, environment: react-native, arch: "ios" }
+          #- { os: ios, target: "test:ci:catalyst", runner: macos-latest, environment: react-native, arch: "catalyst" }
     timeout-minutes: 60
     steps:
       - name: Checkout code
@@ -247,7 +274,6 @@ jobs:
         with:
           node-version: 16
           cache: npm
-          cache-dependency-path: package-lock.json
 
       - name: Get NPM cache directory
         id: npm-cache-dir
@@ -303,6 +329,11 @@ jobs:
           sudo apt-get install xvfb
           echo "wrapper=xvfb-run" >> $GITHUB_ENV
 
+      - name: Download bundles
+        uses: actions/download-artifact@v3
+        with:
+          name: realm-js-bundles
+
       - name: Download prebuilds
         uses: actions/download-artifact@v3
         with:
@@ -314,7 +345,7 @@ jobs:
 
       - name: Install prebuild
         if: ${{ matrix.variant.environment == 'node' || matrix.variant.environment == 'electron' }}
-        run: npx --workspace realm prebuild-install --runtime napi
+        run: npx --workspace realm prebuild-install --runtime napi --verbose
         env:
           npm_config_realm_local_prebuilds: ${{github.workspace}}/packages/realm/prebuilds
 

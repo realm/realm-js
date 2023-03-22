@@ -54,6 +54,8 @@
     "bundle": "wireit",
     "build:bindgen": "wireit",
     "rebuild:bindgen": "wireit",
+    "build:bindgen:typescript": "wireit",
+    "build:bindgen:node-wrapper": "wireit",
     "build:node": "wireit",
     "build:node:prebuild": "wireit",
     "build:node:prebuild:arm": "wireit",
@@ -67,7 +69,9 @@
   "wireit": {
     "test": {
       "command": "mocha",
-      "dependencies": ["build:node"]
+      "dependencies": [
+        "build:node"
+      ]
     },
     "build": {
       "dependencies": [
@@ -81,15 +85,30 @@
       "command": "rollup --config",
       "dependencies": [
         "../realm-network-transport:build",
-        "build:bindgen"
+        "build:bindgen:typescript",
+        "build:bindgen:node-wrapper"
       ],
-      "files": ["rollup.config.mjs", "src/**/*.ts", "tsconfig.json", "src/**/tsconfig.json"],
-      "output": ["dist/bundle.*.js", "dist/bundle.*.mjs"]
+      "files": [
+        "rollup.config.mjs",
+        "src/**/*.ts",
+        "tsconfig.json",
+        "src/**/tsconfig.json"
+      ],
+      "output": [
+        "dist/bundle.*.js",
+        "dist/bundle.*.mjs"
+      ]
     },
     "build:bindgen": {
       "command": "cmake-js build --debug --directory ../bindgen",
-      "files": ["../bindgen/spec.yml", "../bindgen/src/**/*.ts", "../bindgen/src/**/*.h"],
-      "dependencies": ["../..:submodules"],
+      "files": [
+        "../bindgen/spec.yml",
+        "../bindgen/src/**/*.ts",
+        "../bindgen/src/**/*.h"
+      ],
+      "dependencies": [
+        "../..:submodules"
+      ],
       "output": [
         "generated/ts/core.ts",
         "generated/ts/native.d.mts",
@@ -97,12 +116,30 @@
         "generated/ts/native-rn.mjs"
       ]
     },
+    "build:bindgen:typescript": {
+      "command": "realm-bindgen --spec ../bindgen/spec.yml --spec ../bindgen/js_spec.yml --template typescript --output ./generated/ts",
+      "dependencies": [
+        "../..:submodules",
+        "../bindgen:generate:spec-schema"
+      ]
+    },
+    "build:bindgen:node-wrapper": {
+      "command": "realm-bindgen --spec ../bindgen/spec.yml --spec ../bindgen/js_spec.yml --template node-wrapper --output ./generated/ts",
+      "dependencies": [
+        "../..:submodules",
+        "../bindgen:generate:spec-schema"
+      ]
+    },
     "rebuild:bindgen": {
       "command": "cmake-js rebuild --debug --directory ../bindgen",
-      "dependencies": ["../..:submodules"]
+      "dependencies": [
+        "../..:submodules"
+      ]
     },
     "build:node": {
-      "dependencies": ["build:bindgen"]
+      "dependencies": [
+        "build:bindgen"
+      ]
     },
     "build:node:prebuild": {
       "command": "cross-env prebuild --runtime napi --arch $PREBUILD_ARCH -- --directory ../bindgen",
@@ -114,29 +151,49 @@
     },
     "build:node:prebuild:arm": {
       "command": "npm run build:node:prebuild",
-      "env": { "PREBUILD_ARCH": "arm" }
+      "env": {
+        "PREBUILD_ARCH": "arm"
+      }
     },
     "build:node:prebuild:arm64": {
       "command": "npm run build:node:prebuild",
-      "env": { "PREBUILD_ARCH": "arm64" }
+      "env": {
+        "PREBUILD_ARCH": "arm64"
+      }
     },
     "build:node:prebuild:x64": {
       "command": "npm run build:node:prebuild",
-      "env": { "PREBUILD_ARCH": "x64" }
+      "env": {
+        "PREBUILD_ARCH": "x64"
+      }
     },
     "build:node:prebuild:ia32": {
       "command": "npm run build:node:prebuild",
-      "env": { "PREBUILD_ARCH": "ia32" }
+      "env": {
+        "PREBUILD_ARCH": "ia32"
+      }
     },
     "build:android": {
       "command": "node ../../scripts/build-android.js",
-      "dependencies": ["../..:submodules"],
-      "files": ["../../src/android/**", "../bindgen/src/**/*.ts", "../bindgen/src/**/*.h"]
+      "dependencies": [
+        "../..:submodules"
+      ],
+      "files": [
+        "../../src/android/**",
+        "../bindgen/src/**/*.ts",
+        "../bindgen/src/**/*.h"
+      ]
     },
     "build:ios": {
       "command": "../../scripts/build-ios.sh",
-      "dependencies": ["../..:submodules"],
-      "files": ["../../src/ios/**", "../bindgen/src/**/*.ts", "../bindgen/src/**/*.h"]
+      "dependencies": [
+        "../..:submodules"
+      ],
+      "files": [
+        "../../src/ios/**",
+        "../bindgen/src/**/*.ts",
+        "../bindgen/src/**/*.h"
+      ]
     }
   },
   "dependencies": {
@@ -171,8 +228,9 @@
     "mocha": "^10.1.0",
     "path-browserify": "^1.0.1",
     "prebuild": "^11.0.4",
-    "react-native": "^0.71.0",
-    "rollup-plugin-dts": "^5.0.0"
+    "react-native": "0.71.4",
+    "rollup-plugin-dts": "^5.0.0",
+    "tsm": "^2.2.2"
   },
   "repository": {
     "type": "git",
@@ -184,6 +242,8 @@
     "module_path": "generated/ts",
     "host": "https://static.realm.io",
     "remote_path": "realm-js-prebuilds/{version}",
-    "napi_versions": [6]
+    "napi_versions": [
+      6
+    ]
   }
 }
