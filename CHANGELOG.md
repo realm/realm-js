@@ -1,10 +1,82 @@
-## vNext (TBD)
+## 12.0.0-alpha.0 (2023-03-21)
 
-### Deprecations
-* None
+This is the first pre-release of the next major version of our SDK.
+Please read more and discuss in the dedicated discussion: https://github.com/realm/realm-js/discussions/5416
+
+### Breaking changes
+
+Although this is a complete rewrite of our SDK, we've strived to keep breakages to a minimum and expect our users to upgrade from v11 without any significant changes to their code-base.
+
+* In an effort to align with EcmaScript modules, we’re adopting a pattern of named exports on the "root" of the package namespace. This change also affects how our library is imported on CommonJS / Node.js: Before, we exported our constructor directly from the package (`module.export = Realm` style), which would allow CommonJS runtimes like Node.js to import us using a simple assignment:
+```javascript
+const Realm = require("realm"); // this commonjs style - won’t work anymore
+```
+
+From now on, users need to consume us using a named import, like this:
+
+```javascript
+const { Realm } = require("realm"); // commonjs style
+
+import { Realm } from "realm"; // esm style
+import * as realm from "realm"; // esm namespaced style for more explicit usage like realm.List and realm.Object
+import Realm from "realm"; // esm style - consuming our "default" export
+```
+* Similarly we’re deprecating our namespaced API (the long chaining of identifiers, such as Realm.App.Sync.setLogLevel) in favor of the shorter named exports. Our main motivation is that it has proven very verbose and hard to maintain in our new SDK. Also, since the inception of the Realm JS API (which predates ES Modules), we believe the community has moved towards a preference for simple named exports. We would love your feedback on this decision - please comment on [the discussion](https://github.com/realm/realm-js/discussions/5416) for the v12 release.
+* The entire BSON package used to be re-exported as Realm.BSON, to simplify the new SDK we want to export only the BSON types that our SDK database component supports (ObjectId, Decimal128 and UUID). See [#4934](https://github.com/realm/realm-js/issues/4934).
+* We're now reusing code to perform assertions and although this is strictly not a breaking change, since we haven't historically documented error messages, you should probably revisit any code in your app which relies on matching on specific error messages.
+* `Results`, `List` and `Set` used to inherit directly from `Collection` but now inherits from an abstract `OrderedCollection`, which extends `Collection`.
+* In order to better guide users toward correct usage and understanding of the Realm property types, users must now be explicit about the property type when declaring object schemas. Additionally, mixing shorthand (string) and object representation for the property type is no longer permitted. (See the `PropertySchema` and `PropertySchemaShorthand` types.)
+```javascript
+// Example object schema
+const TaskSchema = {
+  name: "Task",
+  properties: {
+    description: /* property schema (shorthand or object form) */,
+  },
+};
+
+// Explicitness
+"[]"          // Bad (previously parsed as implicit "mixed")
+"mixed[]"     // Good
+
+{ type: "list" }                              // Bad
+{ type: "list", objectType: "mixed" }         // Good
+
+// Mixing shorthand and object form
+{ type: "int[]" }                             // Bad
+"int[]"                                       // Good
+{ type: "list", objectType: "int" }           // Good
+
+{ type: "int?" }                              // Bad
+"int?"                                        // Good
+{ type: "int", optional: true }               // Good
+
+// Specifying object types
+{ type: "SomeType" }                          // Bad
+"SomeType"                                    // Good
+{ type: "object", objectType: "SomeType" }    // Good
+
+{ type: "object[]", objectType: "SomeType" }  // Bad
+"SomeType[]"                                  // Good
+{ type: "list", objectType: "SomeType" }      // Good
+
+{ type: "linkingObjects", objectType: "SomeType", property: "someProperty" } // Good
+```
+* To prevent modifying end-users' class-based model classes, we’re now wrapping class-based models in our own model. Objects will still pass `instanceof SomeClass` checks, however, code which is directly using prototype or constructor comparisons will fail:
+```javascript
+Object.getPrototypeOf(object) == CustomObject.prototype // No longer works
+object.constructor == CustomObject // No longer works
+```
+* Symbols used to be accepted as keys in a dictionary, where they were coerced to strings prior to performing lookup. This was undocumented behaviour that makes little sense in practice (and arguably defeats the main purpose of the JS `Symbol` type). In the new SDK, using a Symbol as a key in a dictionary will throw.
+* As a part of migrating to NAPI (since ~ v6), we saw no performant way to support getting property names of a Realm.Object via the standard Object.keys(obj). As a side-effect we stopped supporting the object spread operator `{...obj}` and introduced `Realm.Object#keys()`, `Realm.Object#entries()` and `Realm.Object#toJSON()` methods were introduced as a workaround. The new SDK wraps its accessor objects in a Proxy trapping the ownKeys operation which enables calls to the standard `Object.keys(obj)` and the spread operator `{...obj}` to work correctly, with minimal performance impact on normal accesses. Therefore, we are deprecating the APIs with the @deprecation annotation and a `console.warn` when calling RealmObject#keys() and RealmObject#entries(). RealmObject#toJSON still serves the purpose of producing a circularly referencing object graph. We would love the community's feedback on this!
+* The [push service](https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/) has already been deprecated on the Atlas server. We've deprecated this on v11 and removed it from v12.
+* We’ve decided to remove numeric indexing and “array methods” from the SubscriptionSet, since (a) the team saw little actual use-case for it, (b) it would bloat our SDK code, and (c) there is a simple workaround if needed (spreading into an array `[...realm.subscriptions]`). (The property `length` is available.) Again, something we would love feedback on.
+* No longer exporting the `ObjectPropsType`, `UserMap`, `UserType`, `BaseFunctionsFactory`, `AuthProviders`, `PropertyType`, `HTTP`, `*Details` interfaces of the `EmailPasswordAuthClient` and `AuthError` types, since they weren't  used internally and not expected to be used by users. Moreover, most of these are very simple to type out for any user relying on it. Similarly, the `DictionaryBase` type was introduced to help work around an issue (declaring string index accessors on a class with methods) in our declarations. We consider it an internal detail that got introduced as part of our public API by accident; thus, we ask users to use the `Dictionary` type directly. We also decided to rename the `Session` class to `SyncSession` since it’s now exported directly on the package namespace. `Session` will still be available (but deprecated) as `Realm.Sync.Session`. We’re no longer using the `*Payload` types (they were only used by Realm Web) and we don’t expect end-users to be relying directly on these, hence they will be deleted.
+* The return values of Object#getPropertyType was changed to return `"list"` instead of `"array"`.
 
 ### Enhancements
-* Added configuration option `SyncConfiguration.cancelWaitsOnNonFatalError`. Set to true, all async operations (such as opening the Realm with `Realm.open`) will fail when a non-fatal error, such as a timeout, occurs.  
+* The new SDK supports operations like `Object.keys(obj)` and the spread operator `{...obj}` on `RealmObject`s. We still recommend explicitly only accessing the fields you need rather than using spreads. Spreads eagerly access all fields in the object, which can have significant performance costs if some fields are not actually needed. ([#1299](https://github.com/realm/realm-js/issues/1299), [#2640](https://github.com/realm/realm-js/issues/2640), [#2844](https://github.com/realm/realm-js/issues/2844))
+* Added configuration option `SyncConfiguration.cancelWaitsOnNonFatalError`, which defaults to false. When set to true, all async operations (such as opening the Realm using `Realm.open()`) will fail when a non-fatal error, such as a timeout, occurs.
 * Added an overload to `Object.linkingObjects` method that takes type of the linking object as an input instead of its string name ([#5326](https://github.com/realm/realm-js/issues/5326))  
 Example usage:
 ```typescript
@@ -23,16 +95,16 @@ realm.write(() => {
   * `list.swap(index1, index2)`: swaps the positions of the elements of the list at two indexes.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * None
 
 ### Compatibility
-* React Native >= v0.70.0
+* React Native >= v0.71.4
 * Atlas App Services.
 * Realm Studio v13.0.0.
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
+* Re-implemented the entire SDK leveraging code generation for the binding between NAPI / JSI and Realm Core.
 * Renamed our `master` branch to `main`.
 
 ## 11.5.1 (2023-02-26)
