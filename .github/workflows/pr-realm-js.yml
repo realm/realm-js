@@ -147,6 +147,8 @@ jobs:
       - name: Build node
         if: ${{ (matrix.variant.os != 'ios') && (matrix.variant.os != 'android') }}
         run: npm run prebuild:node -- --arch=${{matrix.variant.arch}}
+        env:
+          CCACHE_DISABLE: 1
 
       # build the c++ library for IOS
       # the Info.plist needs to be regenerated with all libraries in place
