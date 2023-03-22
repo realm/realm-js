@@ -144,7 +144,7 @@ export class ClientResetError extends SyncError {
 /**
  * An error class that indicates that one or more object changes have been reverted by the server.
  * This can happen when the client creates/updates objects that do not match any subscription, or performs writes on
- * an object it didn't have permission to.
+ * an object it didn't have permission to access.
  */
 export class CompensatingWriteError extends SyncError {
   /**
