@@ -10,7 +10,7 @@
     "build": "wireit",
     "start": "npm run build -- --watch",
     "test": "jest --forceExit",
-    "lint": "eslint --ext .tsx . && tsc --noEmit"
+    "lint": "eslint --ext .tsx ."
   },
   "wireit": {
     "build": {

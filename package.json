@@ -7,6 +7,7 @@
   "scripts": {
     "build": "wireit",
     "bundle": "wireit",
+    "lint": "wireit",
     "lint:cpp": "find src packages/bindgen/src -name '*.cpp' -or -name '*.h' -or -name '*.hpp' | xargs clang-format --dry-run --Werror",
     "lint:cpp:fix": "find src packages/bindgen/src -name '*.cpp' -or -name '*.h' -or -name '*.hpp' | xargs clang-format -i"
   },
@@ -32,6 +33,12 @@
         "./packages/realm-react:build",
         "./packages/realm-tools:build",
         "./packages/realm-web:build"
+      ]
+    },
+    "lint": {
+      "command": "npm run lint --workspaces --if-present",
+      "dependencies": [
+        "./packages/babel-plugin:build"
       ]
     }
   },
