@@ -77,8 +77,9 @@ export enum UserType {
 export class User<
   FunctionsFactoryType = Realm.DefaultFunctionsFactory,
   CustomDataType = SimpleObject,
-  UserProfileDataType = Realm.DefaultUserProfileData
-> implements Realm.User<FunctionsFactoryType, CustomDataType, UserProfileDataType> {
+  UserProfileDataType = Realm.DefaultUserProfileData,
+> implements Realm.User<FunctionsFactoryType, CustomDataType, UserProfileDataType>
+{
   /**
    * The app that this user is associated with.
    */
@@ -114,7 +115,7 @@ export class User<
    * @param parameters Parameters of the user.
    */
   public constructor(parameters: HydratableUserParameters | UserParameters) {
-    this.app = (parameters.app as App<unknown, unknown>) as App<FunctionsFactoryType, CustomDataType>;
+    this.app = parameters.app as App<unknown, unknown> as App<FunctionsFactoryType, CustomDataType>;
     this.id = parameters.id;
     this.storage = new UserStorage(this.app.storage, this.id);
     if ("accessToken" in parameters && "refreshToken" in parameters && "providerType" in parameters) {
@@ -138,7 +139,7 @@ export class User<
       }
     }
     this.fetcher = this.app.fetcher.clone({
-      userContext: { currentUser: (this as unknown) as User },
+      userContext: { currentUser: this as unknown as User },
     });
     this.apiKeys = new ApiKeyAuth(this.fetcher);
     this.functions = FunctionsFactory.create(this.fetcher) as FunctionsFactoryType & Realm.BaseFunctionsFactory;
@@ -277,7 +278,7 @@ export class User<
 
   /** @inheritdoc */
   public async linkCredentials(credentials: Credentials): Promise<void> {
-    const response = await this.app.authenticator.authenticate(credentials, (this as unknown) as User);
+    const response = await this.app.authenticator.authenticate(credentials, this as unknown as User);
     // Sanity check the response
     if (this.id !== response.userId) {
       const details = `got user id ${response.userId} expected ${this.id}`;
