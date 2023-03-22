@@ -156,10 +156,9 @@ export class CompensatingWriteError extends SyncError {
   /** @internal */
   constructor(error: binding.SyncError) {
     super(error);
-    for (const write of error.compensatingWritesInfo) {
-      const primaryKey = write.primaryKey;
+    for (const { objectName, primaryKey, reason } of error.compensatingWritesInfo) {
       assert.primaryKey(primaryKey);
-      this.writes.push({ objectName: write.objectName, reason: write.reason, primaryKey: primaryKey });
+      this.writes.push({ objectName, reason, primaryKey });
     }
   }
 }
