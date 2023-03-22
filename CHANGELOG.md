@@ -1,13 +1,10 @@
-## vNext (TBD)
+## 12.0.0-alpha.1 (2023-03-22)
 
-### Deprecations
-* None
-
-### Enhancements
-* None
+This is a pre-release of the next major version of our SDK.
+Please read more and discuss in the dedicated discussion: https://github.com/realm/realm-js/discussions/5416
+See the release notes of previous pre-releases below for a complete picture of the changes introduced since v11.
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
 * Importing using `require` from Node.js would throw because it would accidentally import the ESM bundle. ([#5607](https://github.com/realm/realm-js/issues/5607), since v12.0.0-alpha.0)
 
 
@@ -15,11 +12,6 @@
 * React Native >= v0.71.0
 * Realm Studio v13.0.0.
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
-
-### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
 
 ## 12.0.0-alpha.0 (2023-03-21)
 
