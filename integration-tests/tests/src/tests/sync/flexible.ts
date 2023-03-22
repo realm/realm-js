@@ -417,9 +417,9 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           throw new Error("Expected a CompensatingWriteError");
         }
 
-        expect(error.writeErrors.length).to.equal(3);
+        expect(error.writes.length).to.equal(3);
 
-        const compensatingWrites = error.writeErrors.sort((a, b) =>
+        const compensatingWrites = error.writes.sort((a, b) =>
           (a.primaryKey as BSON.ObjectId).toString().localeCompare((b.primaryKey as BSON.ObjectId).toString()),
         );
 

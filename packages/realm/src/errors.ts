@@ -151,7 +151,7 @@ export class CompensatingWriteError extends SyncError {
   /**
    * The array of information about each object that caused the compensating write.
    */
-  public writeErrors: CompensatingWriteInfo[] = [];
+  public writes: CompensatingWriteInfo[] = [];
 
   /** @internal */
   constructor(error: binding.SyncError) {
@@ -159,7 +159,7 @@ export class CompensatingWriteError extends SyncError {
     for (const write of error.compensatingWritesInfo) {
       const primaryKey = write.primaryKey;
       assert.primaryKey(primaryKey);
-      this.writeErrors.push({ objectName: write.objectName, reason: write.reason, primaryKey: primaryKey });
+      this.writes.push({ objectName: write.objectName, reason: write.reason, primaryKey: primaryKey });
     }
   }
 }
