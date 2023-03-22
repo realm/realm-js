@@ -16,6 +16,7 @@
   "wireit": {
     "build": {
       "command": "tsc -p tsconfig.build.json",
+      "dependencies": ["../realm:bundle"],
       "files": ["tsconfig.build.json", "tsconfig.json", "src"],
       "output": ["dist"]
     }
