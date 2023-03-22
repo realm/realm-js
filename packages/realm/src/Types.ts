@@ -18,8 +18,6 @@
 
 import { BSON, Dictionary, List, RealmSet, Results } from "./internal";
 
-export type Mixed = unknown;
-
 const RealmDictionary = Dictionary;
 type RealmDictionary<T> = Dictionary<T>;
 
