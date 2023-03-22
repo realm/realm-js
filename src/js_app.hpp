@@ -252,7 +252,6 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
     config.device_info.framework_name = framework_name;
     config.device_info.framework_version = framework_version;
 
-    // ensure_directory_exists_for_file(client_config.base_file_path);
     util::try_make_dir(client_config.base_file_path);
     set_default_realm_file_directory(client_config.base_file_path);
 
