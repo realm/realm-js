@@ -1,1 +1,1 @@
-# Example App for Measuring Performance of Realm Web Sync
+# Tiny Example App for Measuring Performance of Realm Web Sync
