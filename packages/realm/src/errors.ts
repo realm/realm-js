@@ -168,7 +168,7 @@ export class CompensatingWriteError extends SyncError {
  */
 export type CompensatingWriteInfo = {
   /**
-   * The type of the object affected by the compensating write.
+   * The type of the object that caused the compensating write.
    */
   objectName: string;
 
@@ -178,7 +178,7 @@ export type CompensatingWriteInfo = {
   reason: string;
 
   /**
-   * The primary key of the object affected by the compensating write.
+   * The primary key of the object that caused the compensating write.
    */
   primaryKey: Mixed;
 };
