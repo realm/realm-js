@@ -94,7 +94,7 @@ jobs:
       run: s3cmd put --recursive --acl-public packages/realm/prebuilds/realm-* s3://${{ secrets.PREBUILDS_S3_BUCKET_NAME }}/${{ steps.get-version.outputs.version }}/
 
     - name: Publish realm v${{ steps.get-version.outputs.version }} on NPM
-      run: npm publish --tag '${{ inputs.tag}}'
+      run: npm publish --workspace realm --tag '${{ inputs.tag}}'
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
