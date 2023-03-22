@@ -19,7 +19,7 @@
 <!-- * Either mention core version or upgrade -->
 <!-- * Using Realm Core vX.Y.Z -->
 <!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
-* Test
+* Disable ccache for node.js builds. ([#5602](https://github.com/realm/realm-js/pull/5602))
 
 ## 11.5.2 (2023-03-14)
 
