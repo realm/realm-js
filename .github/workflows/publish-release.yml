@@ -75,7 +75,7 @@ jobs:
     - name: Read version
       id: get-version
       run: |
-        pkgVersion=$(jq -r .version package.json)
+        pkgVersion=$(jq -r .version packages/realm/package.json)
         echo "version=$pkgVersion" >> $GITHUB_OUTPUT
         prerelease=false
         if [ '${{ inputs.tag }}' != latest ]; then prerelease=true; fi
