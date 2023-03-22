@@ -16,11 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Mixed } from "./internal";
 import {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Used by TS docs
   ClientResetMode,
   Configuration,
+  Mixed,
   binding,
 } from "./internal";
 
@@ -120,7 +120,6 @@ export class SyncError extends Error {
   }
 }
 
-const ORIGINAL_FILE_PATH_KEY = "ORIGINAL_FILE_PATH"; //TODO This is never used, do we need it?
 const RECOVERY_FILE_PATH_KEY = "RECOVERY_FILE_PATH";
 
 /**
@@ -151,14 +150,14 @@ export class CompensatingWriteError extends SyncError {
   /**
    * The array of compensating writes performed by the server.
    */
-  public infos: CompensatingWriteErrorInfo[] = [];
+  public infos: CompensatingWriteInfo[] = [];
 
   /** @internal */
   constructor(error: binding.SyncError) {
     super(error);
     if (error.compensatingWritesInfo) {
       error.compensatingWritesInfo.forEach((element) => {
-        this.compensatingWrites.push(new CompensatingWriteErrorInfo(element));
+        this.infos.push({ objectName: element.objectName, reason: element.reason, primaryKey: element.primaryKey });
       });
     }
   }
@@ -182,4 +181,4 @@ export type CompensatingWriteInfo = {
    * The primary key of the object affected by the compensating write.
    */
   primaryKey: Mixed;
-}
+};

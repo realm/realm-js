@@ -52,7 +52,7 @@ export {
   CollectionChangeSet,
   CollectionPropertyTypeName,
   CompensatingWriteError,
-  CompensatingWriteErrorInfo,
+  CompensatingWriteInfo,
   Configuration,
   ConfigurationWithoutSync,
   ConfigurationWithSync,

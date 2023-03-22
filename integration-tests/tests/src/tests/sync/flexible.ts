@@ -408,7 +408,6 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       const promise = new Promise<void>((resolve, _) => {
         (async () => {
           const errorCallback: ErrorCallback = (_, error) => {
-            expect(error).instanceOf(CompensatingWriteError);
             expect(error.code).to.equal(231);
             expect(error.isFatal).to.be.false;
             expect(error.message).to.contain(
@@ -419,9 +418,9 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
               throw new Error("Expected a CompensatingWriteError");
             }
 
-            expect(cpe.compensatingWrites.length).to.equal(3);
+            expect(error.compensatingWrites.length).to.equal(3);
 
-            const compensatingWrites = cpe.compensatingWrites.sort((a, b) =>
+            const compensatingWrites = error.compensatingWrites.sort((a, b) =>
               (a.primaryKey as BSON.ObjectId).toString().localeCompare((b.primaryKey as BSON.ObjectId).toString()),
             );
 
