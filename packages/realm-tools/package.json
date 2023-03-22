@@ -41,7 +41,7 @@
   ],
   "license": "Apache-2.0",
   "dependencies": {
-    "realm": ">=10",
+    "realm": "*",
     "ts-command-line-args": "^2.2.1"
   },
   "devDependencies": {

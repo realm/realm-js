@@ -22,21 +22,21 @@
     "email": "help@realm.io",
     "url": "https://realm.io"
   },
+  "main": "./dist/bundle.node.js",
+  "module": "./dist/bundle.node.mjs",
+  "types": "./dist/bundle.d.ts",
+  "react-native": "./dist/bundle.react-native.mjs",
   "exports": {
     ".": {
       "types": "./dist/bundle.d.ts",
-      "node": "./dist/bundle.node.mjs",
       "require": "./dist/bundle.node.js",
+      "node": "./dist/bundle.node.mjs",
       "react-native": "./dist/bundle.react-native.mjs"
     },
     "./scripts/submit-analytics": "./scripts/submit-analytics.mjs",
     "./react-native.config.js": "./react-native.config.js",
     "./package.json": "./package.json"
   },
-  "main": "./dist/bundle.node.js",
-  "module": "./dist/bundle.node.mjs",
-  "types": "./dist/bundle.d.ts",
-  "react-native": "./dist/bundle.react-native.mjs",
   "files": [
     "dist",
     "react-native/android",
@@ -198,7 +198,7 @@
   },
   "dependencies": {
     "debug": "^4.3.4",
-    "node-fetch": "^3.3.0",
+    "node-fetch": "^2.6.9",
     "prebuild-install": "^7.1.1"
   },
   "peerDependencies": {
