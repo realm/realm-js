@@ -93,7 +93,7 @@ export class TimeoutError extends Error {
 
 /** @internal */
 export function fromBindingSyncError(error: binding.SyncError) {
-  if (error.systemError.code == 231) {
+  if (error.systemError.code === 231) {
     return new CompensatingWriteError(error);
   } else if (error.isClientResetRequested) {
     return new ClientResetError(error);
@@ -148,7 +148,7 @@ export class ClientResetError extends SyncError {
  */
 export class CompensatingWriteError extends SyncError {
   /**
-   * The array of compensating writes performed by the server.
+   * The array of information about each object that caused the compensating write.
    */
   public infos: CompensatingWriteInfo[] = [];
 
