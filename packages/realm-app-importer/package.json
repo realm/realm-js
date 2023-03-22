@@ -62,7 +62,7 @@
     "deepmerge": "^4.2.2",
     "fs-extra": "^10.1.0",
     "glob": "^8.0.3",
-    "node-fetch": "^3.2.10",
+    "node-fetch": "^2.6.9",
     "yargs": "^17.6.0"
   },
   "devDependencies": {

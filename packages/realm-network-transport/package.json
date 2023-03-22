@@ -48,7 +48,7 @@
   "dependencies": {
     "@realm/common": "^0.1.4",
     "abort-controller": "^3.0.0",
-    "node-fetch": "^3.1.1"
+    "node-fetch": "^2.6.9"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^23.0.2",

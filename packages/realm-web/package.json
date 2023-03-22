@@ -85,7 +85,7 @@
     "chai": "^4.2.0",
     "fs-extra": "^10.0.0",
     "mocha": "^5.2.0",
-    "node-fetch": "^3.2.10",
+    "node-fetch": "^2.6.9",
     "@realm/network-transport": "^0.7.2",
     "rollup-plugin-dts": "^1.4.0",
     "rollup-plugin-node-builtins": "^2.1.2"
