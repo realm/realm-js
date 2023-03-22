@@ -17,6 +17,6 @@ jobs:
       - name: Install root package dependencies
         run: npm ci --ignore-scripts
       - name: Run linting of subpackages
-        run: npm run lint --workspaces --if-present
+        run: npm run lint
       - name: Run linting of C++ code
         run: npm run lint:cpp
