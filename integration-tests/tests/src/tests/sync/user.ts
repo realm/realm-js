@@ -23,7 +23,6 @@ import {
   randomVerifiableEmail,
 } from "../../utils/generators";
 import { KJUR } from "jsrsasign";
-import { sleep } from "../../utils/sleep";
 
 function expectIsUSer(user: Realm.User) {
   expect(user).to.not.be.undefined;
@@ -435,92 +434,6 @@ describe.skipIf(environment.missingServer, "User", () => {
       expect(await user.functions.sumFunc(1, 2, 3)).equals(6);
 
       await expect(user.functions.error()).to.be.rejectedWith("function not found: 'error'");
-    });
-  });
-
-  describe("mongo client", () => {
-    importAppBefore("with-db");
-    it("can perform operations on a collection via the client", async function (this: AppContext & RealmContext) {
-      const credentials = Realm.Credentials.anonymous();
-      const user = await this.app.logIn(credentials);
-
-      const mongo = user.mongoClient("mongodb");
-      //@ts-expect-error TYPEBUG: serviceName is a missing property on MongoDB interface
-      expect(mongo.serviceName).equals("mongodb");
-      const database = mongo.db(this.databaseName);
-      //@ts-expect-error TYPEBUG: name is a missing property on MongoDBDatabase interface
-      expect(database.name).equals(this.databaseName);
-
-      const collection = database.collection("testRemoteMongoClient");
-      //@ts-expect-error TYPEBUG: name is a missing property on MongoDBCollection interface
-      expect(collection.name).equals("testRemoteMongoClient");
-
-      await collection.deleteMany({});
-      await collection.insertOne({ hello: "world" });
-      expect(await collection.count({})).equals(1);
-      expect(await collection.count({ hello: "world" })).equals(1);
-      expect(await collection.count({ hello: "pineapple" })).equals(0);
-    });
-
-    //TODO: figure out why this doesn't run on react native https://github.com/realm/realm-js/issues/5462.
-    it.skipIf(environment.reactNative, "can watch changes correctly", async function (this: AppContext & RealmContext) {
-      const credentials = Realm.Credentials.anonymous();
-      const user = await this.app.logIn(credentials);
-      const collection = user.mongoClient("mongodb").db(this.databaseName).collection("testRemoteMongoClient") as any;
-
-      await collection.deleteMany({});
-
-      const str = "use some odd chars to force weird encoding %\n\r\n\\????>>>>";
-      await Promise.all([
-        (async () => {
-          // There is a race with creating the watch() streams, since they won't
-          // see inserts from before they are created.
-          // Wait 500ms (490+10) before first insert to try to avoid it.
-          await sleep(490);
-          for (let i = 0; i < 10; i++) {
-            await sleep(10);
-            await collection.insertOne({ _id: i, hello: "world", str });
-          }
-          await collection.insertOne({ _id: "done", done: true }); // break other sides out of loop
-        })(),
-        (async () => {
-          let expected = 0;
-          for await (const event of collection.watch()) {
-            if (event.fullDocument.done) break;
-            expect(event.fullDocument._id).equals(expected++);
-          }
-          expect(expected).equals(10);
-        })(),
-        (async () => {
-          const filter = { $or: [{ "fullDocument._id": 3, "fullDocument.str": str }, { "fullDocument.done": true }] };
-          let seenIt = false;
-          for await (const event of collection.watch({ filter })) {
-            if (event.fullDocument.done) break;
-            expect(event.fullDocument._id).equals(3);
-            seenIt = true;
-          }
-          expect(seenIt, "seenIt for filter").to.be.true;
-        })(),
-        (async () => {
-          let seenIt = false;
-          for await (const event of collection.watch({ ids: [5, "done"] })) {
-            if (event.fullDocument.done) break;
-            expect(event.fullDocument._id).equals(5);
-            seenIt = true;
-          }
-          expect(seenIt).to.be.true;
-        })(),
-      ]);
-
-      // Test failure of initial request by logging out.
-      await user.logOut();
-      try {
-        for await (const _ of collection.watch()) {
-          expect(false, "This should be unreachable").to.be.true;
-        }
-      } catch (err: any) {
-        expect(err.code).equals(401);
-      }
     });
   });
 });
