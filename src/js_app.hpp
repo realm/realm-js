@@ -34,6 +34,7 @@
 #include "js_network_transport.hpp"
 #include "js_email_password_auth.hpp"
 #include "realm/object-store/sync/subscribable.hpp"
+#include "realm/util/file.hpp"
 
 
 using SharedApp = std::shared_ptr<realm::app::App>;
@@ -170,6 +171,7 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
     static const String config_app = "app";
     static const String config_app_name = "name";
     static const String config_app_version = "version";
+    static const String config_base_file_path = "baseFilePath";
 
     args.validate_count(1);
 
@@ -177,6 +179,11 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
 
     std::string id;
     realm::app::App::Config config;
+
+    SyncClientConfig client_config;
+    client_config.metadata_mode = SyncManager::MetadataMode::NoEncryption;
+    client_config.user_agent_binding_info = get_user_agent();
+    client_config.base_file_path = default_realm_file_directory(); // this may be changed
 
     if (Value::is_object(ctx, args[0])) {
         ObjectType config_object = Value::validated_to_object(ctx, args[0]);
@@ -217,6 +224,11 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
                     std::optional<std::string>(Value::validated_to_string(ctx, config_app_version_value, "version"));
             }
         }
+
+        ValueType base_file_path_value = Object::get_property(ctx, config_object, config_base_file_path);
+        if (!Value::is_undefined(ctx, base_file_path_value)) {
+            client_config.base_file_path = Value::validated_to_string(ctx, base_file_path_value);
+        }
     }
     else if (Value::is_string(ctx, args[0])) {
         config.app_id = Value::validated_to_string(ctx, args[0]);
@@ -238,13 +250,8 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
     config.device_info.framework_name = framework_name;
     config.device_info.framework_version = framework_version;
 
-    auto realm_file_directory = default_realm_file_directory();
-    ensure_directory_exists_for_file(realm_file_directory);
-
-    SyncClientConfig client_config;
-    client_config.base_file_path = realm_file_directory;
-    client_config.metadata_mode = SyncManager::MetadataMode::NoEncryption;
-    client_config.user_agent_binding_info = get_user_agent();
+    util::try_make_dir(client_config.base_file_path);
+    set_default_realm_file_directory(client_config.base_file_path);
 
     SharedApp app = app::App::get_shared_app(config, client_config);
 
