@@ -14,7 +14,7 @@ function useRealm(app: Realm.App) {
   const [syncItems, setSyncItems] = useState<Results<SyncItem> | null>(null);
   const observableRef = useRef<Results<SyncItem> | null>(null);
 
-  const logIn = async () => {
+  const logIn = async (): Promise<void> => {
     try {
       setUser(await app.logIn(Realm.Credentials.anonymous()));
     } catch (err: any) {
@@ -23,11 +23,13 @@ function useRealm(app: Realm.App) {
   };
 
   // Temporarily fetching objects to see if it's syncing.
-  const fetchItems = () => {
+  const fetchItems = (): void => {
     const realm = realmRef.current;
     if (realm) {
       const items = realm.objects(SyncItem);
       items.addListener(() => {
+        // Check the console to see if it's syncing.
+        console.log("Collection listener called.");
         setSyncItems(realm.objects(SyncItem));
       });
       observableRef.current = items;
@@ -35,7 +37,7 @@ function useRealm(app: Realm.App) {
     }
   };
 
-  const openRealm = async () => {
+  const openRealm = async (): Promise<void> => {
     try {
       const config: ConfigurationWithSync = {
         schema: [SyncItem],
@@ -56,7 +58,7 @@ function useRealm(app: Realm.App) {
     }
   };
 
-  const closeRealm = () => {
+  const closeRealm = (): void => {
     observableRef.current?.removeAllListeners();
     observableRef.current = null;
 
