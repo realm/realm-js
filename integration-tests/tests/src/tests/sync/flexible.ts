@@ -400,9 +400,13 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
   describe("Sync Errors", () => {
     it("compensating writes", async function () {
-      const person1Id = new BSON.ObjectId("0000002a9a7969d24bea4cf5");
-      const person2Id = new BSON.ObjectId("0000002a9a7969d24bea4cf6");
-      const dogId = new BSON.ObjectId("0000002a9a7969d24bea4cf7");
+      const objectIds = [new BSON.ObjectId(), new BSON.ObjectId(), new BSON.ObjectId()].sort((a, b) =>
+        a.toString().localeCompare(b.toString()),
+      );
+
+      const person1Id = objectIds[0];
+      const person2Id = objectIds[1];
+      const dogId = objectIds[2];
 
       const callbackHandle = createPromiseHandle();
 
@@ -473,7 +477,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       });
 
       await realm.syncSession?.uploadAllLocalChanges();
-      await callbackHandle;
+      await callbackHandle.promise;
     });
   });
 
