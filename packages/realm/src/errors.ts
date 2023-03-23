@@ -20,6 +20,8 @@ import {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Used by TS docs
   ClientResetMode,
   Configuration,
+  PrimaryKey,
+  assert,
   binding,
 } from "./internal";
 
@@ -92,7 +94,9 @@ export class TimeoutError extends Error {
 
 /** @internal */
 export function fromBindingSyncError(error: binding.SyncError) {
-  if (error.isClientResetRequested) {
+  if (error.systemError.code === 231) {
+    return new CompensatingWriteError(error);
+  } else if (error.isClientResetRequested) {
     return new ClientResetError(error);
   } else {
     return new SyncError(error);
@@ -117,7 +121,6 @@ export class SyncError extends Error {
   }
 }
 
-const ORIGINAL_FILE_PATH_KEY = "ORIGINAL_FILE_PATH";
 const RECOVERY_FILE_PATH_KEY = "RECOVERY_FILE_PATH";
 
 /**
@@ -138,3 +141,44 @@ export class ClientResetError extends SyncError {
     };
   }
 }
+
+/**
+ * An error class that indicates that one or more object changes have been reverted by the server.
+ * This can happen when the client creates/updates objects that do not match any subscription, or performs writes on
+ * an object it didn't have permission to access.
+ */
+export class CompensatingWriteError extends SyncError {
+  /**
+   * The array of information about each object that caused the compensating write.
+   */
+  public writes: CompensatingWriteInfo[] = [];
+
+  /** @internal */
+  constructor(error: binding.SyncError) {
+    super(error);
+    for (const { objectName, primaryKey, reason } of error.compensatingWritesInfo) {
+      assert.primaryKey(primaryKey);
+      this.writes.push({ objectName, reason, primaryKey });
+    }
+  }
+}
+
+/**
+ * The details of a compensating write performed by the server.
+ */
+export type CompensatingWriteInfo = {
+  /**
+   * The type of the object that caused the compensating write.
+   */
+  objectName: string;
+
+  /**
+   * The reason for the compensating write.
+   */
+  reason: string;
+
+  /**
+   * The primary key of the object that caused the compensating write.
+   */
+  primaryKey: PrimaryKey;
+};

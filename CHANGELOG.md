@@ -4,7 +4,8 @@
 * None
 
 ### Enhancements
-* None
+* Added a new error class `CompensatingWriteError` which indicates that one or more object changes have been reverted by the server. 
+This can happen when the client creates/updates objects that do not match any subscription, or performs writes on an object it didn't have permission to access. ([#5599](https://github.com/realm/realm-js/pull/5599))
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)

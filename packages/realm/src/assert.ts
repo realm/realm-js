@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { AssertionError, DefaultObject, Realm, TypeAssertionError, binding } from "./internal";
+import { AssertionError, BSON, DefaultObject, PrimaryKey, Realm, TypeAssertionError, binding } from "./internal";
 
 /**
  * Expects the condition to be truthy
@@ -74,6 +74,17 @@ assert.function = (value: unknown, target?: string): asserts value is (...args: 
 
 assert.symbol = (value: unknown, target?: string): asserts value is symbol => {
   assert(typeof value === "symbol", () => new TypeAssertionError("a symbol", value, target));
+};
+
+assert.primaryKey = (value: unknown, target?: string): asserts value is PrimaryKey => {
+  assert(
+    value === null ||
+      typeof value === "number" ||
+      typeof value === "string" ||
+      value instanceof BSON.UUID ||
+      value instanceof BSON.ObjectId,
+    () => new TypeAssertionError("a primary key", value, target),
+  );
 };
 
 assert.object = <K extends string | number | symbol = string, V = unknown>(

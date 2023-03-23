@@ -32,7 +32,7 @@ export function createPromiseHandle<T = void>(): PromiseHandle<T> {
     reject = arg1;
   });
   if (!resolve || !reject) {
-    throw new Error("Expected promise executor to be called synchroniously");
+    throw new Error("Expected promise executor to be called synchronously");
   }
   return { promise, resolve, reject };
 }

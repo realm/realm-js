@@ -51,6 +51,8 @@ export {
   CollectionChangeCallback,
   CollectionChangeSet,
   CollectionPropertyTypeName,
+  CompensatingWriteError,
+  CompensatingWriteInfo,
   Configuration,
   ConfigurationWithoutSync,
   ConfigurationWithSync,

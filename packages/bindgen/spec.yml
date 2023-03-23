@@ -546,8 +546,7 @@ records:
      # server_requests_action:
      #   type: sync::ProtocolErrorInfo::Action
      #   default: sync::ProtocolErrorInfo::Action::NoAction
-     # compensating_writes_info: std::vector<sync::CompensatingWriteErrorInfo>
-
+     compensating_writes_info: std::vector<CompensatingWriteErrorInfo>
 
   Request:
     cppName: app::Request
@@ -590,6 +589,13 @@ records:
       local_app_version: util::Optional<std::string>
       default_request_timeout_ms: util::Optional<uint64_t>
       device_info: DeviceInfo
+
+  CompensatingWriteErrorInfo:
+   cppName: sync::CompensatingWriteErrorInfo
+   fields:
+     object_name: std::string
+     reason: std::string
+     primary_key: Mixed
 
 opaqueTypes:
   - Schema
