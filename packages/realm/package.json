@@ -106,7 +106,9 @@
       "files": [
         "../bindgen/spec.yml",
         "../bindgen/js_spec.yml",
-        "../bindgen/src"
+        "../bindgen/src",
+        "!../bindgen/src/templates",
+        "../bindgen/src/templates/typescript.ts"
       ],
       "output": [
         "generated/ts/core.ts",
@@ -122,7 +124,9 @@
       "files": [
         "../bindgen/spec.yml",
         "../bindgen/js_spec.yml",
-        "../bindgen/src"
+        "../bindgen/src",
+        "!../bindgen/src/templates",
+        "../bindgen/src/templates/node-wrapper.ts"
       ],
       "output": [
         "generated/ts/native.mjs",
