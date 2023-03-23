@@ -19,8 +19,4 @@ export class Task extends Realm.Object<Task> {
   userId!: string;
 
   static primaryKey = '_id';
-
-  constructor(realm: Realm, description: string, userId?: string) {
-    super(realm, {description, userId: userId || '_SYNC_DISABLED_'});
-  }
 }

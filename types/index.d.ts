@@ -1293,8 +1293,8 @@ declare class Realm {
      * @param  {Realm.UpdateMode} mode? If not provided, `Realm.UpdateMode.Never` is used.
      * @returns T
      */
-    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: Unmanaged<T>, mode?: Realm.UpdateMode.Never): T;
-    create<T extends Realm.Object>(type: {new(...arg: any[]): T; }, properties: Partial<T> | Partial<Unmanaged<T>>, mode: Realm.UpdateMode.All | Realm.UpdateMode.Modified): T;
+    create<T extends Realm.Object<any>>(type: {new(...arg: any[]): T; }, properties: Unmanaged<T>, mode?: Realm.UpdateMode.Never): T;
+    create<T extends Realm.Object<any>>(type: {new(...arg: any[]): T; }, properties: Partial<T> | Partial<Unmanaged<T>>, mode: Realm.UpdateMode.All | Realm.UpdateMode.Modified): T;
 
     /**
      * @param  {Realm.Object|Realm.Object[]|Realm.List<any>|Realm.Results<any>|any} object

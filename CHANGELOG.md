@@ -7,8 +7,7 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fix type error when using `realm.create` in combination with class base models. (since v11.0.0)
 
 ### Compatibility
 * React Native >= v0.71.0
@@ -41,7 +40,7 @@
 
 ### Internal
 * Upgraded Realm Core from v13.4.2 to v13.6.0. ([#5495](https://github.com/realm/realm-js/issues/5495))
-* All exceptions thrown out of Realm Core are now of type `Exception`. 
+* All exceptions thrown out of Realm Core are now of type `Exception`.
 
 ## 11.5.1-alpha.0 (2023-02-21)
 
