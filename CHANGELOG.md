@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
+## 11.6.0 (2023-03-23)
 
 ### Enhancements
 * Added configuration option `App.baseFilePath` which controls where synced Realms and metadata is stored.
