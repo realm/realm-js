@@ -63,8 +63,8 @@ function App() {
     observableRef.current = null;
 
     const realm = realmRef.current;
-    if (!realm?.isClosed) {
-      realm?.close();
+    if (realm && !realm.isClosed) {
+      realm.close();
     }
     realmRef.current = null;
     setUser(null);
