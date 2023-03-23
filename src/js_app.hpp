@@ -183,6 +183,7 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
     SyncClientConfig client_config;
     client_config.metadata_mode = SyncManager::MetadataMode::NoEncryption;
     client_config.user_agent_binding_info = get_user_agent();
+    client_config.base_file_path = default_realm_file_directory(); // this may be changed
 
     if (Value::is_object(ctx, args[0])) {
         ObjectType config_object = Value::validated_to_object(ctx, args[0]);
@@ -227,9 +228,6 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
         ValueType base_file_path_value = Object::get_property(ctx, config_object, config_base_file_path);
         if (!Value::is_undefined(ctx, base_file_path_value)) {
             client_config.base_file_path = Value::validated_to_string(ctx, base_file_path_value);
-        }
-        else {
-            client_config.base_file_path = default_realm_file_directory();
         }
     }
     else if (Value::is_string(ctx, args[0])) {
