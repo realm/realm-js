@@ -10,24 +10,24 @@
     "realm-app-importer": "./realm-app-importer.ts"
   },
   "scripts": {
-    "build": "wireit",
+    "bundle": "wireit",
     "lint": "eslint --ext .js,.ts .",
     "start": "./realm-app-importer.ts"
   },
   "wireit": {
-    "build": {
+    "bundle": {
       "command": "rollup --config",
       "files": ["rollup.config.mjs", "src/**/*.ts", "src/**/tsconfig.json"],
       "output": ["dist/**/*.js", "dist/**/*.d.ts"],
       "dependencies": [
         "generate-types",
-        "../realm-network-transport:build"
+        "../realm-network-transport:bundle"
       ]
     },
     "generate-types": {
       "command": "tsc --project tsconfig.types.json --declaration --emitDeclarationOnly --declarationDir types/generated",
       "dependencies": [
-        "../realm-network-transport:build"
+        "../realm-network-transport:bundle"
       ],
       "files": ["src/**/*.ts"],
       "output": ["types/generated/**/*.d.ts"]

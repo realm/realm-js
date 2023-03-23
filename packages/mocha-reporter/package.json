@@ -4,10 +4,10 @@
   "description": "A custom reporter for mocha",
   "main": "./dist/index.js",
   "scripts": {
-    "build": "wireit"
+    "bundle": "wireit"
   },
   "wireit": {
-    "build": {
+    "bundle": {
       "command": "tsc",
       "files": ["src/**/*.ts", "tsconfig.json"],
       "output": ["dist/**/*.js", "dist/**/*.d.ts"]
