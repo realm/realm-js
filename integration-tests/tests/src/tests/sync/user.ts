@@ -317,7 +317,7 @@ describe.skipIf(environment.missingServer, "User", () => {
           .logIn(Realm.Credentials.emailPassword({ email: validEmail, password: validPassword }))
           .catch((err) => {
             expect(err.message).equals("invalid username/password");
-            expect(err.code).equals(50);
+            expect(err.code).equals(4349);
             didFail = true;
           });
         expect(user2).to.be.undefined;
