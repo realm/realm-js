@@ -150,7 +150,9 @@ export function validatePropertySchema(
   const invalidKeysUsed = filterInvalidKeys(propertySchema, PROPERTY_SCHEMA_KEYS);
   assert(
     !invalidKeysUsed.length,
-    `Unexpected field(s) found on the schema for property '${propertyName}' on '${objectName}': '${invalidKeysUsed.join("', '")}'.`,
+    `Unexpected field(s) found on the schema for property '${propertyName}' on '${objectName}': '${invalidKeysUsed.join(
+      "', '",
+    )}'.`,
   );
 }
 

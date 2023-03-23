@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Int64, IndexSet, ObjKey, Timestamp } from "../generated/ts/native.mjs";
+import { IndexSet, Int64, ObjKey, Timestamp } from "../generated/ts/native.mjs";
 
 /** @internal */
 export * from "../generated/ts/native.mjs"; // core types are transitively exported.
