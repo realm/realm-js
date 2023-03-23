@@ -12,8 +12,6 @@ npm i
 
 ## Run
 
-From the `node/` directory, run:
-
 ```sh
 npm start
 ```

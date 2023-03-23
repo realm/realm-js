@@ -3,9 +3,10 @@ import React, { useEffect, useRef, useState } from "react";
 import Realm, { ClientResetMode, ConfigurationWithSync, /*Credentials,*/ Results, User } from "realm";
 
 import { getApp } from "./app-services/app";
-import { partition } from "./app-services/config.json";
+import config from "./app-services/config.json";
 import { SyncItem } from "./models/SyncItem";
 
+const { partition } = config;
 const app = getApp();
 
 function App() {

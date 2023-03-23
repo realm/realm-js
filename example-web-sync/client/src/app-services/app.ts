@@ -1,7 +1,8 @@
 import { App } from "realm";
 
-import { appId } from "./config.json";
+import config from "./config.json";
 
+const { appId } = config;
 let app: App;
 export function getApp(): App {
   if (!app) {
