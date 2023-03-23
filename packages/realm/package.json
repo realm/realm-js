@@ -50,6 +50,7 @@
   "scripts": {
     "test": "wireit",
     "test:types": "tsc --project type-tests/tsconfig.json",
+    "lint": "eslint --ext .js,.mjs,.ts .",
     "build": "wireit",
     "bundle": "wireit",
     "build:bindgen": "wireit",
