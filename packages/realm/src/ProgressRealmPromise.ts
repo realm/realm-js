@@ -80,7 +80,16 @@ export class ProgressRealmPromise implements Promise<Realm> {
         this.handle.resolve(realm);
       } else if (openBehavior === OpenRealmBehaviorType.DownloadBeforeOpen) {
         const { bindingConfig } = Realm.transformConfig(config);
+        // Construct an async open task
         this.task = binding.Realm.getSynchronizedRealm(bindingConfig);
+        // If the promise handle gets rejected, we should cancel the open task
+        // to avoid consuming a thread safe reference which is no longer registered
+        this.handle.promise.catch(() => {
+          if (this.task) {
+            this.task.cancel();
+          }
+        });
+
         this.task
           .start()
           .then(async (tsr) => {
