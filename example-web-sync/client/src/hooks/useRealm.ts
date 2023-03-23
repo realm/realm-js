@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
-import Realm, { ClientResetMode, ConfigurationWithSync, /*Credentials,*/ Results, User } from "realm";
+import Realm, { ClientResetMode, ConfigurationWithSync, Results, User } from "realm";
 
-import config from "../app-services/config.json";
+import config from "../config/app-services.json";
 import { SyncItem } from "../models/SyncItem";
 
 const { partition } = config;
@@ -10,8 +10,7 @@ function useRealm(app: Realm.App) {
   const [user, setUser] = useState<User | null>(() => app.currentUser);
   const realmRef = useRef<Realm | null>(null);
 
-  // Temporarily saving synced objects to see if it's syncing.
-  const [syncItems, setSyncItems] = useState<Results<SyncItem> | null>(null);
+  // Temporary
   const observableRef = useRef<Results<SyncItem> | null>(null);
 
   const logIn = async (): Promise<void> => {
@@ -27,13 +26,10 @@ function useRealm(app: Realm.App) {
     const realm = realmRef.current;
     if (realm) {
       const items = realm.objects(SyncItem);
-      items.addListener(() => {
-        // Check the console to see if it's syncing.
-        console.log("Collection listener called.");
-        setSyncItems(realm.objects(SyncItem));
+      items.addListener((collection) => {
+        console.log("Num items:", collection.length);
       });
       observableRef.current = items;
-      setSyncItems(items);
     }
   };
 
@@ -72,7 +68,6 @@ function useRealm(app: Realm.App) {
 
   return {
     user,
-    syncItems,
     logIn,
     openRealm,
     closeRealm,

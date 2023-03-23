@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from "react";
+import React, { DependencyList, useEffect, useRef } from "react";
 
-function useAnimationFrame<DependencyT>(nextUpdate: () => void, dependency?: DependencyT) {
+function useAnimationFrame(nextUpdate: () => void, dependencies: DependencyList = []) {
   const frameRef = useRef(0);
 
   const animate = (): void => {
@@ -12,7 +12,7 @@ function useAnimationFrame<DependencyT>(nextUpdate: () => void, dependency?: Dep
     frameRef.current = requestAnimationFrame(animate);
 
     return () => cancelAnimationFrame(frameRef.current);
-  }, [dependency]);
+  }, dependencies);
 }
 
 export default useAnimationFrame;

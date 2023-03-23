@@ -1,34 +1,32 @@
 import React, { useEffect, useState } from "react";
+import Realm from "realm";
 
 import useAnimationFrame from "./hooks/useAnimationFrame";
 import useRealm from "./hooks/useRealm";
-import { getApp } from "./app-services/app";
+import config from "./config/app-services.json";
 import "./App.css";
 
-const app = getApp();
+const { appId } = config;
+const app = new Realm.App({ id: appId });
 
 const ANIMATION_SCALE_STEP = 0.05;
-const MAX_ANIMATION_SCALE = 8;
+const MAX_ANIMATION_SCALE = 10;
 const MIN_ANIMATION_SCALE = 1;
 
 const enum ScaleDirection { Up, Down };
 
 function App() {
   const [animation, setAnimation] = useState({ scale: MIN_ANIMATION_SCALE, direction: ScaleDirection.Up });
+  const { user, logIn, openRealm, closeRealm } = useRealm(app);
 
-  const {
-    user,
-    logIn,
-    openRealm,
-    closeRealm,
-  } = useRealm(app);
-
+  // The user gets logged in only when the component mounts.
   useEffect(() => {
     if (!user) {
       logIn();
     }
-  }, []); // Don't add `user` to the dependency array.
+  }, [/* Don't add `user` to this dependency array */]);
 
+  // The realm is only opened once a user has been logged in.
   useEffect(() => {
     if (!user) {
       return;
@@ -59,7 +57,7 @@ function App() {
     else {
       animation.scale === MIN_ANIMATION_SCALE ? scaleUp() : scaleDown();
     }
-  }, animation.scale);
+  }, [animation.scale]);
 
   return (
     <div className="App">
