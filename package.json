@@ -38,7 +38,7 @@
     "lint": {
       "command": "npm run lint --workspaces --if-present",
       "dependencies": [
-        "./packages/babel-plugin:build"
+        "./packages/babel-plugin:bundle"
       ]
     }
   },
