@@ -145,7 +145,7 @@
                 "--",
                 "--runInBand",
                 "--watchAll=false",
-                "--testNamePattern=${input:testNamePattern}"
+                "--testNamePattern='${input:testNamePattern}'"
             ]
         },
         {

@@ -1836,6 +1836,20 @@ describe("Lists", () => {
           _id: new BSON.ObjectId(),
           name: [{ _id: new BSON.ObjectId(), family: "Petersen", given: ["Gurli", "Margrete"], prefix: [] }],
         });
+
+        // Test that we can push a created object on a list
+        const name = this.realm.create<INameObjectSchema>(NameObjectLocalSchema.name, {
+          _id: new BSON.ObjectId(),
+          family: "Petersen",
+          given: ["Gurli", "Margrete"],
+          prefix: [],
+        });
+        const person = this.realm.create<IParentObjectSchema>(ParentObjectSchema.name, {
+          id: 3,
+          _id: new BSON.ObjectId(),
+          name: [],
+        });
+        person.name.push(name);
       });
 
       const objects = this.realm.objects<IParentObjectSchema>(ParentObjectSchema.name).sorted([["id", false]]);

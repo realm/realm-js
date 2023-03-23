@@ -83,9 +83,9 @@ export function createCachedCollection<T extends Realm.Object<any>>({
   isDerived = false,
 }: CachedCollectionArgs<T>): { collection: Realm.Results<T> | Realm.List<T>; tearDown: () => void } {
   const cachedCollectionHandler: ProxyHandler<Realm.Results<T> | Realm.List<T>> = {
-    get: function (target, key) {
+    get: function (target, key, receiver) {
       // Pass functions through
-      const value = Reflect.get(target, key);
+      const value = Reflect.get(target, key, receiver);
       if (typeof value === "function") {
         if (key === "sorted" || key === "filtered") {
           return (...args: unknown[]) => {
@@ -101,7 +101,7 @@ export function createCachedCollection<T extends Realm.Object<any>>({
             return newCol;
           };
         }
-        return value.bind(target);
+        return value;
       }
 
       // If the key is not numeric, pass it through
