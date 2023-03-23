@@ -65,7 +65,7 @@ describe.skipIf(environment.missingServer, `app configuration of root directory 
     const tmpdir = getAbsolutePath();
     expect(fs.exists(tmpdir)).to.be.false;
 
-    const app = new Realm.App({ id: appId, baseUrl, syncRootDirectory: tmpdir });
+    const app = new Realm.App({ id: appId, baseUrl, baseFilePath: tmpdir });
     const user = await app.logIn(Realm.Credentials.anonymous());
 
     const realm = await Realm.open({

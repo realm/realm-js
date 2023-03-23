@@ -4,7 +4,7 @@
 * None
 
 ### Enhancements
-* Added configuration option `App.syncRootDirectory` which controls where synced Realms and metadata is stored.
+* Added configuration option `App.baseFilePath` which controls where synced Realms and metadata is stored.
 
 ### Fixed
 * Fix type error when using `realm.create` in combination with class base models. (since v11.0.0)

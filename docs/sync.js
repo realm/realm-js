@@ -24,7 +24,7 @@
  * @property {string} id - The id of the Atlas App Services application.
  * @property {string} [baseUrl] - The base URL of the Atlas App Services server.
  * @property {number} [timeout] - General timeout (in millisecs) for requests.
- * @property {string} [syncRootDirectory] - Specify where synced Realms and metadata is stored. If not specified, the current work directory is used.
+ * @property {string} [baseFilePath] - Specify where synced Realms and metadata is stored. If not specified, the current work directory is used.
  * @property {Realm.App~LocalAppConfiguration} [app] - local app configuration
  */
 

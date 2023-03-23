@@ -358,7 +358,7 @@ declare namespace Realm {
     /**
      * An optional path to a directory where synced Realms are stored.
      */
-    syncRootDirectory?: string;
+    baseFilePath?: string;
 
     /**
      * This describes the local app, sent to the server when a user authenticates.
