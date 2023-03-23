@@ -10,6 +10,7 @@
     "bundle": "wireit",
     "start": "npm run build -- --watch",
     "test": "jest --forceExit",
+    "test": "wireit",
     "lint": "eslint --ext .tsx ."
   },
   "wireit": {
@@ -21,6 +22,14 @@
       ],
       "files": ["rollup.config.mjs", "src/**/*.ts", "src/**/*.tsx"],
       "output": ["dist"]
+    },
+    "test": {
+      "command": "jest --forceExit",
+      "dependencies": [
+        "../realm:bundle",
+        "../realm:build:node",
+        "../realm-common:build"
+      ]
     }
   },
   "dependencies": {
