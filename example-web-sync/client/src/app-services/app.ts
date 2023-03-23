@@ -1,11 +1,11 @@
-import Realm from "realm";
+import { App } from "realm";
 
 import { appId } from "./config.json";
 
-let app: Realm.App;
-export function getApp(): Realm.App {
+let app: App;
+export function getApp(): App {
   if (!app) {
-  app = new Realm.App({ id: appId/*, app: { version: "4" }*/ });
+    app = new App({ id: appId });
   }
 
   return app;
