@@ -12,14 +12,14 @@
     "./dist/bundle.d.ts": "./dist/bundle.dom.d.ts"
   },
   "scripts": {
-    "build": "wireit",
+    "bundle": "wireit",
     "lint": "eslint --ext .js,.ts .",
     "test": "mocha 'src/**/*.test.ts'"
   },
   "wireit": {
-    "build": {
+    "bundle": {
       "command": "rollup --config",
-      "dependencies": ["generate-types", "../realm-common:build"],
+      "dependencies": ["generate-types", "../realm-common:bundle"],
       "files": ["rollup.config.mjs", "src/**/*.ts"],
       "output": ["dist/**"]
     },

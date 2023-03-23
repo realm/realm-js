@@ -12,15 +12,15 @@
   "wireit": {
     "start": {
       "command": "mocha --file harness/node.ts src/**/*.test.ts --watch",
-      "dependencies": ["../realm-web:build"]
+      "dependencies": ["../realm-web:bundle"]
     },
     "test": {
       "command": "tsx harness/dev.ts",
-      "dependencies": ["../realm-web:build"]
+      "dependencies": ["../realm-web:bundle"]
     },
     "test:github": {
       "command": "tsx harness/github.ts",
-      "dependencies": ["../realm-web:build"]
+      "dependencies": ["../realm-web:bundle"]
     }
   },
   "dependencies": {

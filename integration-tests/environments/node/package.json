@@ -15,9 +15,9 @@
       "dependencies": [
         "../../../packages/realm:bundle",
         "../../../packages/realm:build:node",
-        "../../../packages/mocha-reporter:build",
-        "../../../packages/realm-network-transport:build",
-        "../../../packages/realm-app-importer:build"
+        "../../../packages/mocha-reporter:bundle",
+        "../../../packages/realm-network-transport:bundle",
+        "../../../packages/realm-app-importer:bundle"
       ]
     },
     "test:commonjs": {
@@ -25,9 +25,9 @@
       "dependencies": [
         "../../../packages/realm:bundle",
         "../../../packages/realm:build:node",
-        "../../../packages/mocha-reporter:build",
-        "../../../packages/realm-network-transport:build",
-        "../../../packages/realm-app-importer:build"
+        "../../../packages/mocha-reporter:bundle",
+        "../../../packages/realm-network-transport:bundle",
+        "../../../packages/realm-app-importer:bundle"
       ]
     }
   },

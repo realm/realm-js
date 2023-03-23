@@ -27,12 +27,12 @@
     "bundle": {
       "dependencies": [
         "./packages/realm:bundle",
-        "./packages/babel-plugin:build",
-        "./packages/mocha-reporter:build",
-        "./packages/realm-app-importer:build",
-        "./packages/realm-react:build",
-        "./packages/realm-tools:build",
-        "./packages/realm-web:build"
+        "./packages/babel-plugin:bundle",
+        "./packages/mocha-reporter:bundle",
+        "./packages/realm-app-importer:bundle",
+        "./packages/realm-react:bundle",
+        "./packages/realm-web:bundle",
+        "./packages/realm-tools:build"
       ]
     },
     "lint": {

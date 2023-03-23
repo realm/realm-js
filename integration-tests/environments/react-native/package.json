@@ -42,9 +42,9 @@
       "command": "mocha-remote --template @realm/mocha-reporter --context appImporterIsRemote,$MOCHA_REMOTE_CONTEXT --watch $WATCH -- concurrently --kill-others-on-fail npm:metro npm:runner npm:app-importer",
       "dependencies": [
         "../../../packages/realm:bundle",
-        "../../../packages/mocha-reporter:build",
-        "../../../packages/realm-network-transport:build",
-        "../../../packages/realm-app-importer:build"
+        "../../../packages/mocha-reporter:bundle",
+        "../../../packages/realm-network-transport:bundle",
+        "../../../packages/realm-app-importer:bundle"
       ]
     },
     "test:android": {

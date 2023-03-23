@@ -5,11 +5,11 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "wireit",
+    "bundle": "wireit",
     "test": "jest"
   },
   "wireit": {
-    "build": {
+    "bundle": {
       "command": "tsc -p tsconfig.build.json",
       "files": ["tsconfig.build.json", "tsconfig.json", "src"],
       "output": ["dist"]

@@ -12,14 +12,14 @@
   },
   "scripts": {
     "prepack": "npm run build",
-    "build": "wireit",
+    "bundle": "wireit",
     "start": "npm run build -- --watch",
     "lint": "eslint --ext .js,.ts .",
     "test": "mocha 'src/tests/**/*.test.ts'",
     "postversion": "ts-node --project scripts/tsconfig.json scripts/postversion.ts"
   },
   "wireit": {
-    "build": {
+    "bundle": {
       "command": "rollup --config",
       "dependencies": ["update-types", "generate-types"],
       "files": ["rollup.config.mjs", "src/**/*.ts", "src/**/tsconfig.json", "tsconfig.json", "types"],
@@ -27,7 +27,7 @@
     },
     "generate-types": {
       "command": "tsc --project src/dom/tsconfig.json --declaration --emitDeclarationOnly --declarationDir types/generated",
-      "dependencies": ["update-types", "../realm-common:build", "../realm-network-transport:build"],
+      "dependencies": ["update-types", "../realm-common:bundle", "../realm-network-transport:bundle"],
       "files": ["src/**/*.ts", "src/**/tsconfig.json", "tsconfig.json"],
       "output": ["types/generated"]
     },
