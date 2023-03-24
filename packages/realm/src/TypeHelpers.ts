@@ -210,7 +210,11 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
     const { wrapObject } = helpers;
     return {
       toBinding: nullPassthrough((value, createObj) => {
-        if (value instanceof helpers.constructor) {
+        if (
+          value instanceof RealmObject &&
+          value.constructor.name === objectType &&
+          value[REALM].internal.$addr === realm.internal.$addr
+        ) {
           return value[INTERNAL];
         } else {
           // TODO: Consider exposing a way for calling code to disable object creation
