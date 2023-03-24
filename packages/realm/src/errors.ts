@@ -120,7 +120,8 @@ export class SyncError extends Error {
   public category: string;
 
   /**
-   * The URL to the associated server log, if available.
+   * The URL to the associated server log, if available. The string will be empty
+   * if the sync error is not initiated by the server.
    */
   public logUrl: string;
 
