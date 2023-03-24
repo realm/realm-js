@@ -35,7 +35,14 @@ static NSString *error_description(NSError *error) {
   return error.localizedDescription;
 }
 
+static std::string s_default_realm_directory;
+
 namespace realm {
+
+void set_default_realm_file_directory(std::string dir)
+{
+    s_default_realm_directory = dir;
+}
 
 std::string default_realm_file_directory()
 {
