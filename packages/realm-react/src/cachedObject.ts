@@ -65,6 +65,7 @@ export function createCachedObject({ object, realm, updateCallback, updatedRef }
   const listCaches = new Map();
   const listTearDowns: Array<() => void> = [];
   // If the object doesn't exist, just return it with an noop tearDown
+  //
   if (object === null) {
     return { object, tearDown: () => undefined };
   }
@@ -85,12 +86,8 @@ export function createCachedObject({ object, realm, updateCallback, updatedRef }
   // of type `Realm.List`, and returns a `cachedCollection` wrapping those properties
   // to allow changes in the list to trigger re-renders
   const cachedObjectHandler: ProxyHandler<Realm.Object> = {
-    get: function (target, key) {
-      const value = Reflect.get(target, key);
-      // Pass methods through
-      if (typeof value === "function") {
-        return value.bind(target);
-      }
+    get: function (target, key, receiver) {
+      const value = Reflect.get(target, key, receiver);
 
       // If its a Realm.List we need to add a proxy cache around it
       if (value instanceof Realm.List && value.type === "object") {
