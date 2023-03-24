@@ -194,8 +194,6 @@ const ItemList: React.FC<{ list: Realm.List<ListItem> }> = React.memo(({ list })
   );
 });
 
-let lastList: any = null;
-
 const TestComponent: React.FC<{ testID?: string; renderItems?: boolean; targetPrimaryKey: Realm.BSON.ObjectId }> = ({
   testID,
   renderItems,
@@ -208,8 +206,6 @@ const TestComponent: React.FC<{ testID?: string; renderItems?: boolean; targetPr
   // This useEffect is to test that the list object reference is not changing when
   // the component is re-rendered.
   useEffect(() => {
-    console.log("List changed", objectChangeCounter.mock.calls.length, list, list?.items.length, lastList === list);
-    lastList = list;
     objectChangeCounter();
   }, [list]);
 
