@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Realm, BSON } from "realm";
+import { Realm, BSON, List } from "realm";
 import { expectArraysEqual, expectSimilar } from "../utils/comparisons";
 import { expect } from "chai";
 import { CanonicalObjectSchema } from "realm";
@@ -1210,6 +1210,41 @@ describe("Lists", () => {
         ];
       });
       expect(object.list.isEmpty()).to.be.false;
+    });
+  });
+  describe("operations (using string primary keys)", () => {
+    type Person = { name: string; friends: List<Person> };
+    openRealmBeforeEach({
+      schema: [{ name: "Person", primaryKey: "name", properties: { name: "string", friends: "Person[]" } }],
+    });
+    it("supports unshift", function (this: RealmContext) {
+      const alice = this.realm.write(() => this.realm.create<Person>("Person", { name: "Alice" }));
+      const bob = this.realm.write(() => this.realm.create<Person>("Person", { name: "Bob" }));
+      this.realm.write(() => {
+        const charlie = this.realm.create<Person>("Person", { name: "Charlie" });
+        alice.friends.unshift(bob, charlie);
+      });
+      expect(alice).primaryKey.equals("Alice");
+      expect(alice.friends).primaryKeys.deep.equals(["Bob", "Charlie"]);
+    });
+  });
+  describe("operations (using ObjectId primary keys)", () => {
+    type Person = { _id: BSON.ObjectId; friends: List<Person> };
+    openRealmBeforeEach({
+      schema: [{ name: "Person", primaryKey: "_id", properties: { _id: "objectId", friends: "Person[]" } }],
+    });
+    it("supports unshift", function (this: RealmContext) {
+      const aliceId = new BSON.ObjectId();
+      const bobId = new BSON.ObjectId();
+      const charlieId = new BSON.ObjectId();
+      const alice = this.realm.write(() => this.realm.create<Person>("Person", { _id: aliceId }));
+      const bob = this.realm.write(() => this.realm.create<Person>("Person", { _id: bobId }));
+      this.realm.write(() => {
+        const charlie = this.realm.create<Person>("Person", { _id: charlieId });
+        alice.friends.unshift(bob, charlie);
+      });
+      expect(alice._id).primaryKey.deep.equals(aliceId);
+      expect(alice.friends).primaryKeys.deep.equals([bobId, charlieId]);
     });
   });
   describe("filters", () => {
