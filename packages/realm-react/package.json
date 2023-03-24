@@ -28,7 +28,7 @@
       "dependencies": [
         "../realm:bundle",
         "../realm:build:node",
-        "../realm-common:build"
+        "../realm-common:bundle"
       ]
     }
   },
