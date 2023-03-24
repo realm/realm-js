@@ -129,6 +129,11 @@ export class SyncError extends Error {
    */
   public userInfo: Record<string, string>;
 
+  /**
+   * @deprecated Check the error message instead.
+   */
+  public isFatal: boolean;
+
   /** @internal */
   constructor(error: binding.SyncError) {
     super(error.simpleMessage);
@@ -137,6 +142,7 @@ export class SyncError extends Error {
     this.category = systemError.category;
     this.logUrl = error.logUrl;
     this.userInfo = error.userInfo;
+    this.isFatal = error.isFatal;
   }
 }
 
