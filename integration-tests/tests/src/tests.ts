@@ -46,3 +46,4 @@ import "./tests/set";
 import "./tests/list";
 import "./tests/transaction";
 import "./tests/types";
+import "./tests/proxied-objects";
