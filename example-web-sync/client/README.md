@@ -1,4 +1,4 @@
-# Tiny Example App for Measuring Performance of Realm Web Sync
+# React App for Measuring Performance of Realm Web Sync
 
 ## Prerequisites
 

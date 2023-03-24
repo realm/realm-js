@@ -17,14 +17,14 @@ const enum ScaleDirection { Up, Down };
 
 function App() {
   const [animation, setAnimation] = useState({ scale: MIN_ANIMATION_SCALE, direction: ScaleDirection.Up });
-  const { user, logIn, openRealm, closeRealm } = useRealm(app);
+  const { user, updatedValue, logIn, openRealm, closeRealm } = useRealm(app);
 
   // The user gets logged in only when the component mounts.
   useEffect(() => {
     if (!user) {
       logIn();
     }
-  }, [/* Don't add `user` to this dependency array */]);
+  }, [/* Leave empty */]);
 
   // The realm is only opened once a user has been logged in.
   useEffect(() => {
@@ -53,14 +53,16 @@ function App() {
   useAnimationFrame(() => {
     if (animation.direction === ScaleDirection.Up) {
       animation.scale === MAX_ANIMATION_SCALE ? scaleDown() : scaleUp();
-    }
-    else {
+    } else {
       animation.scale === MIN_ANIMATION_SCALE ? scaleUp() : scaleDown();
     }
   }, [animation.scale]);
 
   return (
     <div className="App">
+      <div className="sync-info">
+        <p>Updated value: {updatedValue}</p>
+      </div>
       <div className="animation-container">
         <div
           className="animation"

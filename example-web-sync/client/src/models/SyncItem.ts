@@ -1,8 +1,13 @@
 import Realm, { BSON } from "realm";
 
 export class SyncItem extends Realm.Object {
-  constructor(realm: Realm, public _id: BSON.ObjectId, public _partition: string) {
-    super(realm, { _id, _partition });
+  constructor(
+    realm: Realm,
+    public _id: BSON.ObjectId,
+    public _partition: string,
+    public fieldToUpdate: number
+  ) {
+    super(realm, { _id, _partition, fieldToUpdate });
   }
 
   static schema = {
@@ -11,6 +16,7 @@ export class SyncItem extends Realm.Object {
     properties: {
       _id: "objectId",
       _partition: "string",
+      fieldToUpdate: "double",
     },
   };
 }

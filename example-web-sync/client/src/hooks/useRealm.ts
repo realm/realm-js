@@ -8,6 +8,7 @@ const { partition } = config;
 
 function useRealm(app: Realm.App) {
   const [user, setUser] = useState<User | null>(() => app.currentUser);
+  const [updatedValue, setUpdatedValue] = useState(0);
   const realmRef = useRef<Realm | null>(null);
 
   // Temporary
@@ -26,8 +27,10 @@ function useRealm(app: Realm.App) {
     const realm = realmRef.current;
     if (realm) {
       const items = realm.objects(SyncItem);
-      items.addListener((collection) => {
-        console.log("Num items:", collection.length);
+      items.addListener((collection, changes) => {
+        if (changes.newModifications.length) {
+          setUpdatedValue(collection[changes.newModifications[0]].fieldToUpdate);
+        }
       });
       observableRef.current = items;
     }
@@ -68,6 +71,7 @@ function useRealm(app: Realm.App) {
 
   return {
     user,
+    updatedValue,
     logIn,
     openRealm,
     closeRealm,
