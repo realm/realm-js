@@ -22,7 +22,7 @@ import { Realm, List } from "realm";
 import { openRealmBefore, openRealmBeforeEach } from "../hooks";
 import { createLocalConfig } from "../utils/open-realm";
 
-describe("Cross realm operations", () => {
+describe("SharedRealm operations", () => {
   describe("object deletion", () => {
     openRealmBefore({ schema: [{ name: "Person", properties: { name: "string" } }] });
 
