@@ -176,7 +176,13 @@ type RealmObjectContext<T = Record<string, unknown>> = {
 // Added by the "utils/chai-plugin.ts"
 declare namespace Chai {
   interface Assertion {
+    /**
+     * Maps the current value from a Realm.Object to its primary key value.
+     */
     primaryKey: Assertion;
+    /**
+     * Maps the current array or collection of Realm.Object to an array of their primary key values.
+     */
     primaryKeys: Assertion;
   }
 }
