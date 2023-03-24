@@ -407,19 +407,16 @@ describe("useObject: rendering objects with a Realm.List property", () => {
     it("will return the same reference when state changes", async () => {
       const { getByTestId } = await setupTest();
 
+      const objectChangesBefore = objectChangeCounter.mock.calls.length;
       // Force a rerender
       const rerenderButton = getByTestId("rerenderObjectButton");
 
-      // We expect the object to be re-rendered 3 times, once for the initial render, once for the
-      // object itself coming into existence, and once adding list of items to the list
-      const expectedCount = 3;
-
       // Update the state twice to ensure the object reference is the same and we don't have a false positive
       fireEvent.press(rerenderButton);
-      expect(objectChangeCounter).toHaveBeenCalledTimes(expectedCount);
+      expect(objectChangeCounter).toHaveBeenCalledTimes(objectChangesBefore);
 
       fireEvent.press(rerenderButton);
-      expect(objectChangeCounter).toHaveBeenCalledTimes(expectedCount);
+      expect(objectChangeCounter).toHaveBeenCalledTimes(objectChangesBefore);
     });
   });
 
@@ -579,17 +576,14 @@ describe("useObject: rendering objects with a Realm.List property", () => {
   it("will return the same reference when state changes", async () => {
     const { getByTestId } = await setupTest();
 
+    const objectChangesBefore = objectChangeCounter.mock.calls.length;
     // Force a rerender
     const rerenderButton = getByTestId("rerenderListButton");
 
-    // We expect the object to be re-rendered 2 times, once for the initial render
-    // and once for adding list of items to the list
-    const expectedCount = 2;
-
     // Update the state twice to ensure the object reference is the same and we don't have a false positive
     fireEvent.press(rerenderButton);
-    expect(objectChangeCounter).toHaveBeenCalledTimes(expectedCount);
+    expect(objectChangeCounter).toHaveBeenCalledTimes(objectChangesBefore);
     fireEvent.press(rerenderButton);
-    expect(objectChangeCounter).toHaveBeenCalledTimes(expectedCount);
+    expect(objectChangeCounter).toHaveBeenCalledTimes(objectChangesBefore);
   });
 });
