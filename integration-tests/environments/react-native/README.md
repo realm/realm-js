@@ -21,7 +21,8 @@ npx lerna bootstrap --scope @realm/react-native-tests --include-dependencies
 For iOS environments run 
 
 ```bash
-npx pod-install 
+bundle install
+cd ios && bundle exec pod install
 ```
 
 within the `integration-tests/environments/react-native` directory.
