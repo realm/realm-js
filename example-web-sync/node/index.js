@@ -36,7 +36,7 @@ async function openRealm() {
   }
 }
 
-function deleteDummyData() {
+function deleteData() {
   if (realm) {
     realm.write(() => {
       realm.deleteAll();
@@ -44,27 +44,41 @@ function deleteDummyData() {
   }
 }
 
-function addDummyData() {
+function addData() {
   if (realm) {
-    const NUM_ITEMS = 1000;
+    const NUM_ITEMS = 100;
     realm.write(() => {
       for (let i = 0; i < NUM_ITEMS; i++) {
         realm.create(SyncItemSchema.name, {
           _id: new Realm.BSON.ObjectId(),
           _partition: partition,
+          fieldToUpdate: 0,
         });
       }
     });
   }
 }
 
+function updateData() {
+  if (realm) {
+    const items = realm.objects(SyncItemSchema.name);
+    // Updating data one-by-one instead of in a single batch.
+    for (let item of items) {
+      realm.write(() => {
+        item.fieldToUpdate = Math.floor(Math.random() * 10_000);
+      });
+    }
+  }
+}
+
 async function main() {
   await logIn();
   await openRealm();
-  deleteDummyData();
+  deleteData();
+  addData();
 
-  console.log("Adding data..");
-  addDummyData();
+  console.log("Updating data..");
+  updateData();
   console.log("Done!");
 
   if (realm && !realm.isClosed) {

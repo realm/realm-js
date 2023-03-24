@@ -4,5 +4,6 @@ export const SyncItemSchema = {
   properties: {
     _id: "objectId",
     _partition: "string",
+    fieldToUpdate: "double",
   },
 };
