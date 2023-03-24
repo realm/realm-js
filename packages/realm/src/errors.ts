@@ -110,17 +110,17 @@ export class SyncError extends Error {
   public name = "SyncError";
 
   /**
-   * A numeric code representing the error.
+   * The error code that represents this error.
    */
   public code: number;
 
   /**
-   * A string representing the error category.
+   * The category of this error.
    */
   public category: string;
 
   /**
-   * The URL to the associated server log, if any.
+   * The URL to the associated server log, if available.
    */
   public logUrl: string;
 
