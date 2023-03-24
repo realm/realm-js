@@ -530,7 +530,7 @@ records:
      system_error:
        type: std::error_code
        cppName: get_system_error()
-     is_fatal: bool
+     # is_fatal: bool //Should not be exposed to SDK
      simple_message: StringData
      logURL: StringData
      user_info: std::unordered_map<StringData, StringData>
