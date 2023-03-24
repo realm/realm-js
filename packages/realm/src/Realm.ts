@@ -117,6 +117,7 @@ import {
   PropertySchemaShorthand,
   ProviderType,
   PushClient,
+  REALM,
   RealmEvent,
   RealmFunction,
   RealmInsertionModel,
@@ -837,10 +838,11 @@ export class Realm {
   /**
    * Deletes the provided Realm object, or each one inside the provided collection.
    */
-  delete(subject: RealmObject | RealmObject[] | List | Results): void {
+  delete(subject: AnyRealmObject | AnyRealmObject[] | List | Results): void {
     assert.inTransaction(this, "Can only delete objects within a transaction.");
     assert.object(subject, "subject");
     if (subject instanceof RealmObject) {
+      assert.isSameRealm(subject[REALM].internal, this.internal, "Can't delete an object from another Realm");
       const { objectSchema } = this.classes.getHelpers(subject);
       const obj = subject[INTERNAL];
       assert.isValid(
@@ -856,6 +858,7 @@ export class Realm {
     } else if (Array.isArray(subject) || Symbol.iterator in subject) {
       for (const object of subject) {
         assert.instanceOf(object, RealmObject);
+        assert.isSameRealm(object[REALM].internal, this.internal, "Can't delete an object from another Realm");
         const { objectSchema } = this.classes.getHelpers(object);
         const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
         table.removeObject(object[INTERNAL].key);
