@@ -48,6 +48,9 @@ std::string default_realm_file_directory()
 {
     std::string ret;
     @autoreleasepool {
+        if (!s_default_realm_directory.empty()) {
+            return s_default_realm_directory;
+        }
 #if TARGET_OS_IPHONE
         // On iOS the Documents directory isn't user-visible, so put files there
         NSString *path = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
