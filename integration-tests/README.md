@@ -203,7 +203,6 @@ If you find a need to change these, copy them to your testfile instead of extend
 
 These tests have been designed for increased developer experience and productivity over completeness. Which means that the environments are not consuming the Realm JS package exactly like an end user would, but we gain the ability watch and rerun tests as files change on the filesystem.
 
-- We need to move or rewrite more tests from `../tests/js` into the `./tests` directory.
 - All environments are not getting tested on all their available platforms on CI:
   - Electron is not running tests on Windows nor MacOS - and the tests running on Linux is running an intermediary version of the app, before it gets packaged, which might produce false negative results.
   - React Native tests are not running in React Native "release" mode.
