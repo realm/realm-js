@@ -7,8 +7,7 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Added a missing (internal) method on iOS. Building a React Native app will failed with the error `Undefined symbol: realm::set_default_realm_file_directory(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >)`. ([#5633](https://github.com/realm/realm-js/issues/5633), since v11.6.0)
 
 ### Compatibility
 * React Native >= v0.71.0
