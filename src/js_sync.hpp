@@ -46,6 +46,7 @@
 #include <realm/util/logger.hpp>
 #include <realm/util/uri.hpp>
 #include <realm/sync/network/network.hpp>
+#include <realm/sync/client_base.hpp>
 #include <stdexcept>
 
 #if REALM_PLATFORM_NODE
@@ -687,11 +688,11 @@ void SessionClass<T>::simulate_error(ContextType ctx, ObjectType this_object, Ar
         std::error_code error_code(err_code, type == "realm::sync::ProtocolError"
                                                  ? realm::sync::protocol_error_category()
                                                  : realm::sync::client_error_category());
-        SyncError sync_error(error_code, message, is_fatal);
+        realm::sync::SessionErrorInfo sync_error_info(error_code, message, is_fatal);
         // the action depends on the error code (err_code); 211 is used for simulating client reset
-        sync_error.server_requests_action =
+        sync_error_info.server_requests_action =
             err_code == 211 ? sync::ProtocolErrorInfo::Action::ClientReset : sync::ProtocolErrorInfo::Action::Warning;
-        SyncSession::OnlyForTesting::handle_error(*session, std::move(sync_error));
+        SyncSession::OnlyForTesting::handle_error(*session, std::move(sync_error_info));
     }
 }
 

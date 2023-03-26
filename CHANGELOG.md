@@ -1,23 +1,30 @@
 ## vNext (TBD)
 
 ### Deprecations
-* None
+* `Realm.App.Configuration#baseFilePath` will be renamed in an upcoming major version. ([#5630](https://github.com/realm/realm-js/issues/5630))
 
 ### Enhancements
-* None
-
+* Performance improvement for the following queries ([realm/realm-core#6376](https://github.com/realm/realm-core/issues/6376)):
+  * Significant (~75%) improvement when counting (`Realm.Results#length`) the number of exact matches (with no other query conditions) on a `string`/`int`/`uuid`/`objectId` property that has an index. This improvement will be especially noticiable if there are a large number of results returned (duplicate values).
+  * Significant (~99%) improvement when querying for an exact match on a `date` property that has an index.
+  * Significant (~99%) improvement when querying for a case insensitive match on a `mixed` property that has an index.
+  * Moderate (~25%) improvement when querying for an exact match on a `bool` property that has an index.
+  * Small (~5%) improvement when querying for a case insensitive match on a `mixed` property that does not have an index.
 ### Fixed
 * Added a missing (internal) method on iOS. Building a React Native app will failed with the error `Undefined symbol: realm::set_default_realm_file_directory(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >)`. ([#5633](https://github.com/realm/realm-js/issues/5633), since v11.6.0)
+* Fixed a crash when querying a `mixed` property with a string operator (`contains`/`like`/`beginswith`/`endswith`) or with case insensitivity. ([realm/realm-core#6376](https://github.com/realm/realm-core/issues/6376, since v10.5.0)
+* Querying for equality of a string on an indexed `mixed` property was returning case insensitive matches. For example querying for `myIndexedMixed == "Foo"` would incorrectly match on values of `"foo"` or `"FOO"`. ([realm/realm-core#6376](https://github.com/realm/realm-core/issues/6376), since v10.5.0)
+* Adding an index to a `mixed` property on a non-empty class/objectType would crash with an assertion. ([realm/realm-core#6376](https://github.com/realm/realm-core/issues/6376), since v10.5.0)
+* `Realm.App.Sync#pause()` could hold a reference to the database open after shutting down the sync session, preventing users from being able to delete the Realm. ([realm/realm-core#6372](https://github.com/realm/realm-core/issues/6372), since v11.5.0)
+* Fixed a bug that may have resulted in `Realm.Results` and `Realm.List` being in different orders on different devices. Moreover, some cases of the error message `Invalid prior_size` may have be fixed too. ([realm/realm-core#6191](https://github.com/realm/realm-core/issues/6191), since v10.15.0)
 
 ### Compatibility
-* React Native >= v0.71.0
+* React Native >= v0.71.4
 * Realm Studio v13.0.0.
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v13.6.0 to v13.8.0. ([#5640](https://github.com/realm/realm-js/issues/5640))
 
 ## 11.6.0 (2023-03-23)
 
