@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 11.7.0 (2023-03-26)
 
 ### Deprecations
 * `Realm.App.Configuration#baseFilePath` will be renamed in an upcoming major version. ([#5630](https://github.com/realm/realm-js/issues/5630))
