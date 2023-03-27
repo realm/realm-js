@@ -222,10 +222,10 @@ struct Helpers {
     {
         std::error_code error_code(code, type == "realm::sync::ProtocolError" ? realm::sync::protocol_error_category()
                                                                               : realm::sync::client_error_category());
-        SyncError error{error_code, message, is_fatal};
+        sync::SessionErrorInfo error{error_code, message, is_fatal};
         error.server_requests_action =
             code == 211 ? sync::ProtocolErrorInfo::Action::ClientReset : sync::ProtocolErrorInfo::Action::Warning;
-        SyncSession::OnlyForTesting::handle_error(session, error);
+        SyncSession::OnlyForTesting::handle_error(session, std::move(error));
     }
 
     // This is entirely because ThreadSafeReference is a move-only type, and those are hard to expose to JS.

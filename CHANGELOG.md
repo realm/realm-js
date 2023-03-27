@@ -6,10 +6,20 @@
 ### Enhancements
 * Added a new error class `CompensatingWriteError` which indicates that one or more object changes have been reverted by the server. 
 This can happen when the client creates/updates objects that do not match any subscription, or performs writes on an object it didn't have permission to access. ([#5599](https://github.com/realm/realm-js/pull/5599))
+* Performance improvement for the following queries ([realm/realm-core#6376](https://github.com/realm/realm-core/issues/6376)):
+  * Significant (~75%) improvement when counting (`Realm.Results#length`) the number of exact matches (with no other query conditions) on a `string`/`int`/`uuid`/`objectId` property that has an index. This improvement will be especially noticiable if there are a large number of results returned (duplicate values).
+  * Significant (~99%) improvement when querying for an exact match on a `date` property that has an index.
+  * Significant (~99%) improvement when querying for a case insensitive match on a `mixed` property that has an index.
+  * Moderate (~25%) improvement when querying for an exact match on a `bool` property that has an index.
+  * Small (~5%) improvement when querying for a case insensitive match on a `mixed` property that does not have an index.
 
 ### Fixed
 * Fixed passing RealmObject instances between shared Realms. ([#5634](https://github.com/realm/realm-js/pull/5634), since v12.0.0-alpha.0)
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* Fixed a crash when querying a `mixed` property with a string operator (`contains`/`like`/`beginswith`/`endswith`) or with case insensitivity. ([realm/realm-core#6376](https://github.com/realm/realm-core/issues/6376, since v10.5.0)
+* Querying for equality of a string on an indexed `mixed` property was returning case insensitive matches. For example querying for `myIndexedMixed == "Foo"` would incorrectly match on values of `"foo"` or `"FOO"`. ([realm/realm-core#6376](https://github.com/realm/realm-core/issues/6376), since v10.5.0)
+* Adding an index to a `mixed` property on a non-empty class/objectType would crash with an assertion. ([realm/realm-core#6376](https://github.com/realm/realm-core/issues/6376), since v10.5.0)
+* `Realm.App.Sync#pause()` could hold a reference to the database open after shutting down the sync session, preventing users from being able to delete the Realm. ([realm/realm-core#6372](https://github.com/realm/realm-core/issues/6372), since v11.5.0)
+* Fixed a bug that may have resulted in `Realm.Results` and `Realm.List` being in different orders on different devices. Moreover, some cases of the error message `Invalid prior_size` may have be fixed too. ([realm/realm-core#6191](https://github.com/realm/realm-core/issues/6191), since v10.15.0)
 
 ### Compatibility
 * React Native >= v0.71.0
@@ -18,6 +28,7 @@ This can happen when the client creates/updates objects that do not match any su
 
 ### Internal
 * Fixed linting issues and running linting on CI.
+* Upgraded Realm Core from v13.6.0 to v13.8.0. ([#5638](https://github.com/realm/realm-js/pull/5638))
 <!-- * Either mention core version or upgrade -->
 <!-- * Using Realm Core vX.Y.Z -->
 <!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->

@@ -633,6 +633,16 @@ classes:
       get_results_description: '(results: const Results&) -> StringData'
       feed_buffer: '(ws: WatchStream&, buffer: BinaryData)'
 
+  Logger:
+    cppName: util::Logger
+    sharedPtrWrapped: SharedLogger
+    properties:
+      get_default_logger: SharedLogger
+      get_default_level_threshold: LoggerLevel
+    staticMethods:
+      set_default_logger: '(logger: SharedLogger)'
+      set_default_level_threshold: '(level: LoggerLevel)'
+
   ConstTableRef:
     needsDeref: true
     iterable: Obj
