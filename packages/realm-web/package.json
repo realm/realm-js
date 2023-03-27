@@ -82,7 +82,7 @@
     "@types/mocha": "^7.0.1",
     "@types/node": "^13.7.6",
     "abort-controller": "^3.0.0",
-    "chai": "^4.2.0",
+    "chai": "4.3.6",
     "fs-extra": "^10.0.0",
     "mocha": "^5.2.0",
     "node-fetch": "^2.6.9",

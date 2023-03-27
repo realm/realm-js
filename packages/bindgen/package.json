@@ -35,7 +35,7 @@
     "@types/chai": "^4.3.3",
     "@types/debug": "^4.1.7",
     "@types/mocha": "^10.0.0",
-    "chai": "^4.3.6",
+    "chai": "4.3.6",
     "cmake-js": "6.3.2",
     "mocha": "^10.1.0"
   },
