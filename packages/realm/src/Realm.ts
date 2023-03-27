@@ -1217,6 +1217,7 @@ export class Realm {
   private handleInitialSubscriptions(initialSubscriptions: InitialSubscriptions, realmExists: boolean): void {
     const shouldUpdateSubscriptions = initialSubscriptions.rerunOnOpen || !realmExists;
     if (shouldUpdateSubscriptions) {
+      debug("handling initial subscriptions, %O", { rerunOnOpen: initialSubscriptions.rerunOnOpen, realmExists });
       this.subscriptions.updateNoWait(initialSubscriptions.update);
     }
   }
