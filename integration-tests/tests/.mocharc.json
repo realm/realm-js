@@ -5,6 +5,7 @@
     "enable-source-maps",
     "no-warnings"
   ],
+  "reporter": "@realm/mocha-reporter",
   "require": "src/node/inject-globals.ts",
   "spec": "src/index.ts"
 }
