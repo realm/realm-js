@@ -49,6 +49,7 @@ inject({
     return process.cwd();
   },
   exists(path) {
+    debug("exists", path);
     return existsSync(path);
   },
   copyBundledRealmFiles() {
