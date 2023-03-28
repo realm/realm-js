@@ -87,9 +87,12 @@ function describeTypeRead({ type, value, schema = [] }: TestParameters) {
 
 const cases: Array<TestParameters | [Realm.PropertySchemaShorthand | Realm.PropertySchema, Value]> = [
   ["bool", true],
+  [{ type: "bool", optional: false }, true],
   ["int", 123],
+  [{ type: "int", optional: false }, 123],
   ["float", 123.456],
   ["double", 123.456],
+  [{ type: "double", optional: false }, 123.456],
   ["string", "Hello!"],
   ["decimal128", new Realm.BSON.Decimal128("123")],
   ["objectId", new Realm.BSON.ObjectId("0000002a9a7969d24bea4cf4")],
