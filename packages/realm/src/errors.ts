@@ -103,12 +103,37 @@ export function fromBindingSyncError(error: binding.SyncError) {
   }
 }
 
+/**
+ * An class describing a sync error.
+ */
 export class SyncError extends Error {
   public name = "SyncError";
+
+  /**
+   * The error code that represents this error.
+   */
   public code: number;
+
+  /**
+   * The category of this error.
+   */
   public category: string;
-  public isFatal: boolean;
+
+  /**
+   * The URL to the associated server log, if available. The string will be empty
+   * if the sync error is not initiated by the server.
+   */
+  public logUrl: string;
+
+  /**
+   * A record of extra user information associated with this error.
+   */
   public userInfo: Record<string, string>;
+
+  /**
+   * @deprecated Check the error message instead.
+   */
+  public isFatal: boolean;
 
   /** @internal */
   constructor(error: binding.SyncError) {
@@ -116,8 +141,9 @@ export class SyncError extends Error {
     const { systemError } = error;
     this.code = systemError.code;
     this.category = systemError.category;
-    this.isFatal = error.isFatal;
+    this.logUrl = error.logUrl;
     this.userInfo = error.userInfo;
+    this.isFatal = error.isFatal;
   }
 }
 

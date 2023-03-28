@@ -4,6 +4,7 @@
 * None
 
 ### Enhancements
+* Exposed `SyncError.logUrl` which contains the URL to the server log related to the sync error. ([#5609](https://github.com/realm/realm-js/issues/5609))
 * Added a new error class `CompensatingWriteError` which indicates that one or more object changes have been reverted by the server. 
 This can happen when the client creates/updates objects that do not match any subscription, or performs writes on an object it didn't have permission to access. ([#5599](https://github.com/realm/realm-js/pull/5599))
 * Performance improvement for the following queries ([realm/realm-core#6376](https://github.com/realm/realm-core/issues/6376)):
