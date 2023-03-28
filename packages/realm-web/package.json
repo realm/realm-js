@@ -80,7 +80,7 @@
     "@types/fs-extra": "^8.1.0",
     "@types/js-base64": "^3.3.1",
     "@types/mocha": "^7.0.1",
-    "@types/node": "^13.7.6",
+    "@types/node": "^18.15.10",
     "abort-controller": "^3.0.0",
     "chai": "4.3.6",
     "fs-extra": "^10.0.0",

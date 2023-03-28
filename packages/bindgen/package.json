@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@commander-js/extra-typings": "^10.0.2",
-    "@types/node": "^18.11.9",
+    "@types/node": "^18.15.10",
     "ajv": "^8.11.0",
     "chalk": "^4.1.2",
     "change-case": "^4.1.2",
