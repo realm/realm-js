@@ -217,7 +217,7 @@
     "@rollup/plugin-typescript": "^9.0.2",
     "@types/chai": "^4.3.3",
     "@types/mocha": "^10.0.0",
-    "@types/node": "^18.11.9",
+    "@types/node": "^18.15.10",
     "@types/path-browserify": "^1.0.0",
     "chai": "4.3.6",
     "cmake-js": "6.3.2",

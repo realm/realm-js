@@ -56,7 +56,7 @@
     "@rollup/plugin-typescript": "^9.0.2",
     "@types/chai": "^4.2.10",
     "@types/mocha": "^5",
-    "@types/node-fetch": "^2.5.7",
+    "@types/node-fetch": "^2.6.2",
     "chai": "4.3.6",
     "mocha": "^5.2.0",
     "rollup-plugin-dts": "^5.0.0"

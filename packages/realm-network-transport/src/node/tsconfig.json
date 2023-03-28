@@ -1,7 +1,9 @@
 {
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
+		"noResolve": false,
 		"types": [
+			"node",
 			"node-fetch",
 			"abort-controller"
 		]
