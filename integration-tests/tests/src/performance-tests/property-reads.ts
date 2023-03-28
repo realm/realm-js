@@ -95,16 +95,13 @@ const cases: Array<TestParameters | [Realm.PropertySchemaShorthand | Realm.Prope
   ["date", new Date("2000-01-01")],
   ["data", new Uint8Array([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09])],
   {
-    type: "Car",
+    type: { type: "object", objectType: "Car" },
     schema: [{ name: "Car", properties: { model: "string" } }],
     value: (realm: Realm) => realm.create("Car", { model: "VW Touran" }),
   },
-  // List of bool
-  ["bool[]", []],
-  // Set of bool
-  ["bool<>", []],
-  // Dictionary of bool
-  ["bool{}", {}],
+  [{ type: "list", objectType: "bool" }, []],
+  [{ type: "set", objectType: "bool" }, []],
+  [{ type: "dictionary", objectType: "bool" }, {}],
 ];
 
 describe.skipIf(environment.performance !== true, "Property read performance", () => {
