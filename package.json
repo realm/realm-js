@@ -42,19 +42,10 @@
       ]
     }
   },
-  "keywords": [
-    "database",
-    "db",
-    "react",
-    "react-native",
-    "persistence",
-    "localstorage",
-    "sqlite",
-    "asyncstorage",
-    "rocksdb",
-    "leveldb",
-    "realm"
-  ],
+  "engines": {
+    "node": "^18",
+    "npm": "^8"
+  },
   "author": {
     "name": "Realm",
     "email": "help@realm.io",

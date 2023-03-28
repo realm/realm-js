@@ -33,7 +33,6 @@
   },
   "dependencies": {
     "@realm/integration-tests": "*",
-    "mocha-cli": "^1.0.1",
     "mocha-github-actions-reporter": "^0.2.3",
     "mocha-remote-cli": "^1.6.1",
     "mocha-remote-client": "^1.6.1",
