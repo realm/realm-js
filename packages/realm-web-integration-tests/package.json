@@ -27,7 +27,6 @@
     "chai": "4.3.6",
     "js-base64": "^3.7.2",
     "jwt-encode": "^1.0.1",
-    "mocha": "^8.3.2",
     "mocha-remote-cli": "^1.6.1",
     "mocha-remote-server": "^1.6.0",
     "puppeteer": "^14.3.0",

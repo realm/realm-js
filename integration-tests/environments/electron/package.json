@@ -57,7 +57,6 @@
   "dependencies": {
     "@realm/integration-tests": "*",
     "fs-extra": "^9.1.0",
-    "mocha": "^8.3.2",
     "mocha-remote-client": "^1.6.1",
     "@realm/app-importer": "*"
   },
