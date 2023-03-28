@@ -24,13 +24,15 @@ type Value = ((realm: Realm) => unknown) | unknown;
 
 function getTypeName(type: Realm.PropertySchemaShorthand | Realm.PropertySchema) {
   if (typeof type === "object") {
+    const prefix = type.optional ? "optional " : "";
     if (type.objectType) {
-      return `${type.type}<${type.objectType}>`;
+      return prefix + `${type.type}<${type.objectType}>`;
     } else {
-      return type.type;
+      return prefix + type.type;
     }
   } else {
-    return type;
+    // All strings get `optional: true` added to them.
+    return `optional ${type}`;
   }
 }
 
@@ -61,7 +63,7 @@ function describeTypeRead({ type, value, schema = [] }: TestParameters) {
 
   describePerformance(`reading property of type '${typeName}'`, {
     schema: [defaultSchema, ...schema],
-    benchmarkTitle: `reads ${type}`,
+    benchmarkTitle: `reads ${typeName}`,
     before(this: Partial<RealmObjectContext> & RealmContext & Mocha.Context) {
       this.realm.write(() => {
         this.object = this.realm.create(objectSchemaName, {
