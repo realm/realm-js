@@ -24,7 +24,7 @@ declare module "node" {
       // https://nodejs.org/api/webstreams.html#readablestreamcancelreason
       cancel(reason?: any): Promise<void>;
       // https://nodejs.org/api/webstreams.html#readablestreamgetreaderoptions
-      getReader(options?: object): unknown;
+      getReader(options?: { mode?: string }): unknown;
     }
   }
 }
