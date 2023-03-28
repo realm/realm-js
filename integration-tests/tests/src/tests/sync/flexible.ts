@@ -399,6 +399,8 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
   });
 
   describe("Sync Errors", () => {
+    afterEach(Realm.clearTestState);
+
     it("compensating writes", async function () {
       const objectIds = [new BSON.ObjectId(), new BSON.ObjectId(), new BSON.ObjectId()].sort((a, b) =>
         a.toString().localeCompare(b.toString()),
