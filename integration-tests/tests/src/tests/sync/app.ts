@@ -16,14 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { BSON, ObjectSchema, Realm, App, Credentials, SyncConfiguration } from "realm";
+import { BSON } from "realm";
 import { expect } from "chai";
 import { importAppBefore } from "../../hooks";
 import { generatePartition } from "../../utils/generators";
 import { getUrls } from "../../utils/import-app";
 import { select } from "../../utils/select";
 
-const TestObjectSchema: ObjectSchema = {
+const TestObjectSchema: Realm.ObjectSchema = {
   primaryKey: "_id",
   name: "TestObject",
   properties: {
@@ -32,7 +32,7 @@ const TestObjectSchema: ObjectSchema = {
   },
 };
 
-const PersonForSyncSchema: ObjectSchema = {
+const PersonForSyncSchema: Realm.ObjectSchema = {
   name: "Person",
   primaryKey: "_id",
   properties: {
@@ -45,7 +45,7 @@ const PersonForSyncSchema: ObjectSchema = {
   },
 };
 
-const DogForSyncSchema: ObjectSchema = {
+const DogForSyncSchema: Realm.ObjectSchema = {
   name: "Dog",
   primaryKey: "_id",
   properties: {
@@ -72,7 +72,7 @@ interface IDogForSyncSchema {
   realm_id: string | undefined;
 }
 
-describe("App", () => {
+describe.only("App", () => {
   describe("instantiation", function () {
     afterEach(async () => {
       Realm.clearTestState();
@@ -82,32 +82,32 @@ describe("App", () => {
 
     it("from config", () => {
       //even if "id" is not an existing app we can still instantiate a new Realm.
-      const app = new App(missingAppConfig); //TODO Fix all of these things
-      expect(app).instanceOf(App);
+      const app = new Realm.App(missingAppConfig); //TODO Fix all of these things
+      expect(app).instanceOf(Realm.App);
     });
 
     it("from string", () => {
       //even if "id" is not an existing app we can still instantiate a new Realm.
-      const app = new App(missingAppConfig.id);
-      expect(app).instanceOf(App);
+      const app = new Realm.App(missingAppConfig.id);
+      expect(app).instanceOf(Realm.App);
       expect(app.id).equals(missingAppConfig.id);
     });
 
     it("throws on undefined app", function () {
       //@ts-expect-error creating an app without a config should fail
-      expect(() => new App()).throws("Expected 'config' to be an object, got undefined");
+      expect(() => new Realm.App()).throws("Expected 'config' to be an object, got undefined");
     });
 
     it("throws on invalid input", function () {
       //@ts-expect-error creating an app with an invalid config should fail
-      expect(() => new App(1234)).throws("Expected 'config' to be an object, got a number");
+      expect(() => new Realm.App(1234)).throws("Expected 'config' to be an object, got a number");
     });
 
     it("logging in throws on invalid baseURL", async function () {
       const invalidUrlConf = { id: missingAppConfig.id, baseUrl: "http://localhost:9999" };
-      const app = new App(invalidUrlConf);
+      const app = new Realm.App(invalidUrlConf);
 
-      const credentials = Credentials.anonymous();
+      const credentials = Realm.Credentials.anonymous();
       await expect(app.logIn(credentials)).to.be.rejectedWith(
         select({
           reactNative: "Network request failed",
@@ -118,16 +118,16 @@ describe("App", () => {
     });
 
     it("logging in throws on non existing app", async function () {
-      const app = new App(missingAppConfig);
-      const credentials = Credentials.anonymous();
+      const app = new Realm.App(missingAppConfig);
+      const credentials = Realm.Credentials.anonymous();
       await expect(app.logIn(credentials)).to.be.rejectedWith("cannot find app using Client App ID 'smurf'");
     });
 
     it("get returns cached app", () => {
-      const app = App.get(missingAppConfig.id);
-      const cachedApp = App.get(missingAppConfig.id);
+      const app = Realm.App.get(missingAppConfig.id);
+      const cachedApp = Realm.App.get(missingAppConfig.id);
 
-      expect(app).instanceOf(App);
+      expect(app).instanceOf(Realm.App);
       expect(app).equals(cachedApp);
     });
   });
@@ -138,8 +138,8 @@ describe("App", () => {
     it("logins successfully ", async function (this: Mocha.Context & AppContext & RealmContext) {
       let user;
       try {
-        expect(this.app).instanceOf(App);
-        const credentials = Credentials.anonymous();
+        expect(this.app).instanceOf(Realm.App);
+        const credentials = Realm.Credentials.anonymous();
         user = await this.app.logIn(credentials);
         expect(user).instanceOf(Realm.User);
         expect(user.deviceId).to.not.be.null;
@@ -150,7 +150,7 @@ describe("App", () => {
     });
 
     it("logout and allUsers works", async function (this: Mocha.Context & AppContext & RealmContext) {
-      const credentials = Credentials.anonymous();
+      const credentials = Realm.Credentials.anonymous();
       let users = this.app.allUsers;
       const nUsers = Object.keys(users).length;
 
@@ -166,7 +166,7 @@ describe("App", () => {
     it("currentUser works", async function (this: Mocha.Context & AppContext & RealmContext) {
       expect(this.app.currentUser).to.be.null;
 
-      const credentials = Credentials.anonymous();
+      const credentials = Realm.Credentials.anonymous();
 
       const user1 = await this.app.logIn(credentials);
       const user2 = this.app.currentUser;
@@ -178,7 +178,7 @@ describe("App", () => {
 
     it("changeListeners works", async function (this: Mocha.Context & AppContext & RealmContext) {
       let eventListenerCalls = 0;
-      expect(this.app).instanceOf(App);
+      expect(this.app).instanceOf(Realm.App);
 
       const listenerEvent = () => {
         eventListenerCalls += 1;
@@ -186,13 +186,13 @@ describe("App", () => {
 
       this.app.addListener(listenerEvent);
 
-      let credentials = Credentials.anonymous();
+      let credentials = Realm.Credentials.anonymous();
       let user = await this.app.logIn(credentials);
       expect(eventListenerCalls).equals(1);
 
       await user.logOut();
       expect(eventListenerCalls).equals(2);
-      credentials = Credentials.anonymous();
+      credentials = Realm.Credentials.anonymous();
 
       user = await this.app.logIn(credentials);
       expect(eventListenerCalls).equals(3);
@@ -228,8 +228,8 @@ describe("App", () => {
   describe("with email-password auth", () => {
     importAppBefore("with-email-password");
     it("throws on login with non existing user ", async function (this: Mocha.Context & AppContext & RealmContext) {
-      expect(this.app).instanceOf(App);
-      const credentials = Credentials.emailPassword("me", "secret");
+      expect(this.app).instanceOf(Realm.App);
+      const credentials = Realm.Credentials.emailPassword("me", "secret");
       let didFail = false;
       const user = await this.app.logIn(credentials).catch((err) => {
         expect(err.message).equals("invalid username/password");
@@ -245,8 +245,8 @@ describe("App", () => {
     importAppBefore("with-db");
 
     it("migration while sync is enabled throws", async function (this: Mocha.Context & AppContext & RealmContext) {
-      const user = await this.app.logIn(Credentials.anonymous());
-      const config: SyncConfiguration = {
+      const user = await this.app.logIn(Realm.Credentials.anonymous());
+      const config = {
         schema: [TestObjectSchema],
         sync: { user, partitionValue: '"Lolo"' },
         deleteRealmIfMigrationNeeded: true,
@@ -262,7 +262,7 @@ describe("App", () => {
       const dogNames = ["King", "Rex"]; // must be sorted
       let nCalls = 0;
 
-      const credentials = Credentials.anonymous();
+      const credentials = Realm.Credentials.anonymous();
       const user = await this.app.logIn(credentials);
       const partition = generatePartition();
       const realmConfig = {
@@ -277,7 +277,9 @@ describe("App", () => {
           _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
         },
       };
+      //@ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
       Realm.deleteFile(realmConfig);
+      //@ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
       const realm = await Realm.open(realmConfig);
       expect(nCalls).equals(1);
       realm.write(() => {
@@ -300,8 +302,10 @@ describe("App", () => {
       expect(realm.objects("Dog").length).equals(2);
       realm.close();
 
+      //@ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
       Realm.deleteFile(realmConfig);
 
+      //@ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
       const realm2 = await Realm.open(realmConfig);
       expect(nCalls).equals(2);
       await realm2.syncSession?.downloadAllServerChanges();
