@@ -1766,16 +1766,17 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         it("deletes the item if an item not matching the filter is created", async function (this: RealmContext) {
           await addSubscriptionAndSync(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("age < 30"));
 
-          this.realm.write(() => {
+          const tom = this.realm.write(() =>
             this.realm.create<IPerson>(FlexiblePersonSchema.name, {
               _id: new BSON.ObjectId(),
               name: "Tom Old",
               age: 99,
-            });
-          });
+            }),
+          );
 
+          expect(tom.isValid()).equals(true);
           await this.realm.syncSession?.downloadAllServerChanges();
-          expect(this.realm.objects(FlexiblePersonSchema.name)).to.have.length(0);
+          expect(tom.isValid()).equals(false);
         });
 
         it("throw an exception if you remove a subscription without waiting for server acknowledgement, then modify objects that were only matched by the now removed subscription", async function (this: RealmContext) {
