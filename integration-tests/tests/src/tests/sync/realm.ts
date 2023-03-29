@@ -1764,7 +1764,7 @@ describe("Realmtest", () => {
       const normalizeProperty = (val: Realm.ObjectSchemaProperty | string) => {
         let prop: Realm.ObjectSchemaProperty | string;
         if (typeof val !== "string" && !(val instanceof String)) {
-          prop = val;
+          prop = { ...val };
           prop.optional = val.optional || false;
           prop.indexed = val.indexed || false;
         } else {
