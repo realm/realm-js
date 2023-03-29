@@ -961,7 +961,7 @@ export class Realm {
     try {
       const objKey = binding.stringToObjKey(objectKey);
       const obj = table.tryGetObject(objKey);
-      const result = wrapObject(obj) as T;
+      const result = obj && (wrapObject(obj) as T);
       return result === null ? undefined : result;
     } catch (err) {
       if (err instanceof binding.InvalidObjKey) {
