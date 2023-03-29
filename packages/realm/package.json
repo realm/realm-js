@@ -74,7 +74,8 @@
     "test": {
       "command": "mocha",
       "dependencies": [
-        "build:node"
+        "build:node",
+        "../realm-network-transport:bundle"
       ]
     },
     "bundle": {
