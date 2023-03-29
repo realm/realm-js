@@ -86,9 +86,9 @@ type AppListenerToken = binding.AppSubscriptionToken;
  */
 export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType = Record<string, unknown>> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private static appById = new Map<string, App<any, any>>();
+  private static appById = new Map<string, binding.WeakRef<App<any, any>>>();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private static appByUserId = new Map<string, App<any, any>>();
+  private static appByUserId = new Map<string, binding.WeakRef<App<any, any>>>();
 
   /**
    * Get or create a singleton Realm App from an id.
