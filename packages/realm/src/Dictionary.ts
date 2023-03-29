@@ -57,7 +57,7 @@ const PROXY_HANDLER: ProxyHandler<Dictionary> = {
       internal.insertAny(prop, toBinding(value, undefined));
       return true;
     } else {
-      assert(typeof prop != "symbol", "Symbols cannot be used as keys of a dictionary");
+      assert(typeof prop !== "symbol", "Symbols cannot be used as keys of a dictionary");
       return false;
     }
   },
@@ -257,7 +257,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * @since 10.6.0
    */
   set(elementsOrKey: string | { [key: string]: T }, value?: T): this {
-    const elements = typeof elementsOrKey == "object" ? elementsOrKey : { [elementsOrKey]: value };
+    const elements = typeof elementsOrKey === "object" ? elementsOrKey : { [elementsOrKey]: value };
     assert(Object.getOwnPropertySymbols(elements).length === 0, "Symbols cannot be used as keys of a dictionary");
     assert.inTransaction(this[REALM]);
     const internal = this[INTERNAL];
