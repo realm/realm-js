@@ -176,11 +176,11 @@ describe("Dictionary", () => {
         expect(() => {
           //@ts-expect-error We need to verify using a symbol as a key throws
           item.dict.set(sym, "value1");
-        }).to.throw("Input key cannot be a symbol");
+        }).to.throw("Symbols cannot be used as keys of a dictionary");
 
         expect(() => {
           item.dict.set({ [sym]: "value2" });
-        }).to.throw("Input object cannot contain symbol keys");
+        }).to.throw("Symbols cannot be used as keys of a dictionary");
 
         expect(() => {
           //@ts-expect-error We need to verify using a symbol as a key throws
