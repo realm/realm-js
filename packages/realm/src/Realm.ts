@@ -274,12 +274,12 @@ export class Realm {
     }
     Realm.internals.clear();
     binding.RealmCoordinator.clearAllCaches();
+    binding.App.clearCachedApps();
+    SyncSession.resetAllInternals();
 
     // Delete all Realm files in the default directory
     const defaultDirectoryPath = fs.getDefaultDirectoryPath();
     fs.removeRealmFilesFromDirectory(defaultDirectoryPath);
-
-    binding.App.clearCachedApps();
   }
 
   /**

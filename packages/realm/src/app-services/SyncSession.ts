@@ -25,6 +25,7 @@ import {
   ClientResetFallbackCallback,
   ClientResetMode,
   ErrorCallback,
+  IterableWeakRefs,
   Listeners,
   PartitionValue,
   Realm,
@@ -262,6 +263,19 @@ const CONNECTION_LISTENERS = new Listeners<ConnectionNotificationCallback, Liste
 });
 
 export class SyncSession {
+  private static instances = new IterableWeakRefs<SyncSession>();
+
+  /**
+   * Resets the internal shared pointer of all instances returned since this message was last called.
+   * @internal
+   */
+  public static resetAllInternals() {
+    for (const session of SyncSession.instances) {
+      session.resetInternal();
+    }
+    SyncSession.instances.clear();
+  }
+
   /** @internal */
   private _internal: binding.SyncSession | null;
   /** @internal */
@@ -273,6 +287,7 @@ export class SyncSession {
   /** @internal */
   constructor(internal: binding.SyncSession) {
     this._internal = internal;
+    SyncSession.instances.add(this);
   }
 
   /**@internal*/
@@ -280,6 +295,8 @@ export class SyncSession {
     if (!this._internal) return;
     this._internal.$resetSharedPtr();
     this._internal = null;
+    // No need to remember this instance, now that we've already resat the internal
+    SyncSession.instances.delete(this);
   }
 
   // TODO: Return the `error_handler`
