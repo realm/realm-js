@@ -135,12 +135,9 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
   this.timeout(60_000); // TODO: Temporarily hardcoded until envs are set up.
   importAppBefore("with-db-flx");
   authenticateUserBefore();
+  afterEach(Realm.clearTestState);
 
   describe("Configuration", () => {
-    afterEach(() => {
-      Realm.clearTestState();
-    });
-
     describe("flexible sync Realm config", function () {
       it.skip("respects cancelWaitOnNonFatalError", async function () {
         this.timeout(2_000);
@@ -399,8 +396,6 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
   });
 
   describe("Sync Errors", () => {
-    afterEach(Realm.clearTestState);
-
     it("compensating writes", async function () {
       const objectIds = [new BSON.ObjectId(), new BSON.ObjectId(), new BSON.ObjectId()].sort((a, b) =>
         a.toString().localeCompare(b.toString()),
