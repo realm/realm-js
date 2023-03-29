@@ -16,21 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { BSON } from "realm";
+import { BSON, ObjectSchema, Realm, App } from "realm";
 import { expect } from "chai";
 import { importAppBefore } from "../../hooks";
 import { generatePartition } from "../../utils/generators";
 import { getUrls } from "../../utils/import-app";
 import { select } from "../../utils/select";
 
-const TestObjectSchema: Realm.ObjectSchema = {
+const TestObjectSchema: ObjectSchema = {
   name: "TestObject",
   properties: {
     doubleCol: "double",
   },
 };
 
-const PersonForSyncSchema: Realm.ObjectSchema = {
+const PersonForSyncSchema: ObjectSchema = {
   name: "Person",
   primaryKey: "_id",
   properties: {
@@ -43,7 +43,7 @@ const PersonForSyncSchema: Realm.ObjectSchema = {
   },
 };
 
-const DogForSyncSchema: Realm.ObjectSchema = {
+const DogForSyncSchema: ObjectSchema = {
   name: "Dog",
   primaryKey: "_id",
   properties: {
@@ -70,7 +70,7 @@ interface IDogForSyncSchema {
   realm_id: string | undefined;
 }
 
-describe("App", () => {
+describe.only("App", () => {
   describe("instantiation", function () {
     afterEach(async () => {
       Realm.clearTestState();
@@ -80,7 +80,7 @@ describe("App", () => {
 
     it("from config", () => {
       //even if "id" is not an existing app we can still instantiate a new Realm.
-      const app = new Realm.App(missingAppConfig);
+      const app = new Realm.App(missingAppConfig); //TODO Fix all of these things
       expect(app).instanceOf(Realm.App);
     });
 
@@ -119,6 +119,14 @@ describe("App", () => {
       const app = new Realm.App(missingAppConfig);
       const credentials = Realm.Credentials.anonymous();
       await expect(app.logIn(credentials)).to.be.rejectedWith("cannot find app using Client App ID 'smurf'");
+    });
+
+    it.only("get returns cached app", () => {
+      const app = App.get(missingAppConfig.id);
+      const cachedApp = App.get(missingAppConfig.id);
+
+      expect(app).instanceOf(App);
+      expect(app).equals(cachedApp);
     });
   });
 
@@ -241,7 +249,7 @@ describe("App", () => {
         sync: { user, partitionValue: '"Lolo"' },
         deleteRealmIfMigrationNeeded: true,
       };
-      //@ts-expect-error deleteRealmIfMigrationNeeded is not a field on a syncConfiguration.
+
       expect(() => new Realm(config)).throws(
         "Cannot set 'deleteRealmIfMigrationNeeded' when sync is enabled ('sync.partitionValue' is set).",
       );

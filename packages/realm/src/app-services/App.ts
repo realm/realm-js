@@ -78,9 +78,6 @@ export type AppChangeCallback = () => void;
 
 type AppListenerToken = binding.AppSubscriptionToken;
 
-// TODO: Ensure this doesn't leak
-const appByUserId = new Map<string, App<any, any>>();
-
 /**
  * The class represents an Atlas App Services Application.
  *
@@ -89,6 +86,38 @@ const appByUserId = new Map<string, App<any, any>>();
  * ```
  */
 export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType = Record<string, unknown>> {
+  private static appById = new Map<string, App<any, any>>();
+  private static appByUserId = new Map<string, App<any, any>>();
+
+  /**
+   * Get or create a singleton Realm App from an id.
+   * Calling this function multiple times with the same id will return the same instance.
+   *
+   * @deprecated Use App.get.
+   * @param id The Realm App id visible from the Atlas App Services UI or a configuration.
+   * @returns The Realm App instance.
+   */
+  public static getApp(id: string): App {
+    return this.get(id);
+  }
+
+  /**
+   * Get or create a singleton Realm App from an id.
+   * Calling this function multiple times with the same id will return the same instance.
+   *
+   * @param id The Realm App id visible from the Atlas App Services UI or a configuration.
+   * @returns The Realm App instance.
+   */
+  public static get(id: string): App {
+    const cachedApp = this.appById.get(id);
+    if (cachedApp) {
+      return cachedApp;
+    }
+    const newApp = new App(id);
+    this.appById.set(id, newApp);
+    return newApp;
+  }
+
   /** @deprecated Please use named imports */
   public static Sync = Sync;
   /** @deprecated Please use named imports */
@@ -100,8 +129,8 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
   public static userAgent = `RealmJS/${App.deviceInfo.sdkVersion} (${App.deviceInfo.platform}, v${App.deviceInfo.platformVersion})`;
 
   /** @internal */
-  public static get(userInternal: binding.SyncUser) {
-    const app = appByUserId.get(userInternal.identity);
+  public static getAppForUser(userInternal: binding.SyncUser): App {
+    const app = this.appByUserId.get(userInternal.identity);
     if (!app) {
       throw new Error(`Cannot determine which app is associated with user (id = ${userInternal.identity})`);
     }
@@ -172,7 +201,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
 
   public async logIn(credentials: Credentials) {
     const userInternal = await this.internal.logInWithCredentials(credentials.internal);
-    appByUserId.set(userInternal.identity, this);
+    App.appByUserId.set(userInternal.identity, this);
     return new User(userInternal, this);
   }
 

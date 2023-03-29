@@ -100,7 +100,7 @@ export class User<
     UserProfileDataType = DefaultUserProfileData,
   >(internal: binding.SyncUser) {
     // TODO: Use a WeakRef to memoize the SDK object
-    return new User<FunctionsFactoryType, CustomDataType, UserProfileDataType>(internal, App.get(internal));
+    return new User<FunctionsFactoryType, CustomDataType, UserProfileDataType>(internal, App.getAppForUser(internal));
   }
 
   /** @internal */
