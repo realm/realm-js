@@ -594,23 +594,14 @@ describe("SessionTest", () => {
     });
 
     it("timeout on upload successfully throws", async function (this: AppContext) {
-      let realm!: Realm;
       const partition = generatePartition();
-      return this.app
-        .logIn(Realm.Credentials.anonymous())
-        .then((user) => {
+      expect(
+        this.app.logIn(Realm.Credentials.anonymous()).then((user) => {
           const config = getSyncConfiguration(user, partition);
-          realm = new Realm(config);
+          const realm = new Realm(config);
           return realm.syncSession?.uploadAllLocalChanges(1);
-        })
-        .then(
-          () => {
-            throw new Error("Upload did not time out");
-          },
-          (e) => {
-            expect(e).equals("Uploading changes did not complete in 1 ms.");
-          },
-        );
+        }),
+      ).rejectedWith("Uploading changes did not complete in 1 ms.");
     });
   });
 
