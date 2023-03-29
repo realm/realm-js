@@ -79,7 +79,6 @@ export type PropertyHelpers = TypeHelpers &
 const defaultGet =
   ({ typeHelpers: { fromBinding }, columnKey }: PropertyOptions) =>
   (obj: binding.Obj) => {
-    assert.isValid(obj); // TODO may be able to remove this, but need to ensure core will error in all cases when this is false.
     return fromBinding(obj.getAny(columnKey));
   };
 
