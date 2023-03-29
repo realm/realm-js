@@ -183,7 +183,7 @@ describe("Dictionary", () => {
         }).to.throw("Symbols cannot be used as keys of a dictionary");
 
         expect(() => {
-          //@ts-expect-error We need to verify using a symbol as a key throws
+          //@ts-expect-error Testing invalid key.
           item.dict[sym] = "value3";
         }).to.throw("Symbols cannot be used as keys of a dictionary");
       });
