@@ -57,6 +57,7 @@ const PROXY_HANDLER: ProxyHandler<Dictionary> = {
       internal.insertAny(prop, toBinding(value, undefined));
       return true;
     } else {
+      assert(typeof prop != "symbol", "Symbols cannot be used as keys of a dictionary");
       return false;
     }
   },
@@ -232,34 +233,37 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
 
   /**
    * Adds one or more elements with specified key and value to the dictionary or updates value if key exists.
-   * @param elements The object of element(s) to add
-   * @throws {@link AssertionError} If not inside a write transaction or if value violates type constraints
-   * @returns The dictionary
+   * @param elements The object of element(s) to add.
+   * @throws {@link AssertionError} If not inside a write transaction, input object contains symbol keys or if any value violates types constraints.
+   * @returns The dictionary.
    * @since 10.6.0
    * @ts-expect-error We're exposing methods in the end-users namespace of keys */
   set(elements: { [key: string]: T }): this;
   /**
    * Adds an element with the specified key and value to the dictionary or updates value if key exists.
-   * @param key The key of the element to add
-   * @param value The value of the element to add
-   * @throws {@link AssertionError} If not inside a write transaction or if value violates type constraints
-   * @returns The dictionary
+   * @param key The key of the element to add.
+   * @param value The value of the element to add.
+   * @throws {@link AssertionError} If not inside a write transaction, key is a symbol or if value violates type constraints.
+   * @returns The dictionary.
    * @since 12.0.0
    */
   set(key: string, value: T): this;
   /**
    * Adds one or more elements with the specified key and value to the dictionary or updates value if key exists.
-   * @param elementsOrKey The element to add or the key of the element to add
-   * @param value The value of the element to add
-   * @throws {@link AssertionError} If not inside a write transaction or if value violates type constraints
+   * @param elementsOrKey The element to add or the key of the element to add.
+   * @param value The value of the element to add.
+   * @throws {@link AssertionError} If not inside a write transaction, if using symbol as keys, or if any value violates type constraints
    * @returns The dictionary
    * @since 10.6.0
    */
   set(elementsOrKey: string | { [key: string]: T }, value?: T): this {
+    assert(typeof elementsOrKey != "symbol", "Input key cannot be a symbol");
+    const elements = typeof elementsOrKey == "string" ? { [elementsOrKey]: value } : elementsOrKey;
+    assert(Object.getOwnPropertySymbols(elements).length == 0, "Input object cannot contain symbol keys");
     assert.inTransaction(this[REALM]);
     const internal = this[INTERNAL];
     const toBinding = this[HELPERS].toBinding;
-    const elements = typeof elementsOrKey == "string" ? { [elementsOrKey]: value } : elementsOrKey;
+
     for (const [key, val] of Object.entries(elements)) {
       internal.insertAny(key, toBinding(val, undefined));
     }

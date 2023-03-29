@@ -167,6 +167,26 @@ describe("Dictionary", () => {
       expect(Object.keys(item.dict).length).deep.equals(3);
     });
 
+    it("throws when using Symbol as key", function (this: RealmContext) {
+      const sym = Symbol("testSymbol");
+
+      this.realm.write(() => {
+        const item = this.realm.create<Item>("Item", {});
+
+        expect(() => {
+          item.dict.set(sym, "value1");
+        }).to.throw("Input key cannot be a symbol");
+
+        expect(() => {
+          item.dict.set({ [sym]: "value2" });
+        }).to.throw("Input object cannot contain symbol keys");
+
+        expect(() => {
+          item.dict[sym] = "value3";
+        }).to.throw("Symbols cannot be used as keys of a dictionary");
+      });
+    });
+
     it("set/remove methods return the dictionary", function (this: RealmContext) {
       const item = this.realm.write(() => this.realm.create<Item>("Item", {}));
 
