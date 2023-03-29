@@ -76,16 +76,12 @@ export type PropertyHelpers = TypeHelpers &
     objectType?: string;
   };
 
-const defaultGet = ({ typeHelpers: { fromBinding }, columnKey, optional }: PropertyOptions) =>
-  optional
-    ? (obj: binding.Obj) => {
-        assert.isValid(obj);
-        return obj.isNull(columnKey) ? null : fromBinding(obj.getAny(columnKey));
-      }
-    : (obj: binding.Obj) => {
-        assert.isValid(obj);
-        return fromBinding(obj.getAny(columnKey));
-      };
+const defaultGet =
+  ({ typeHelpers: { fromBinding }, columnKey }: PropertyOptions) =>
+  (obj: binding.Obj) => {
+    assert.isValid(obj); // TODO may be able to remove this, but need to ensure core will error in all cases when this is false.
+    return fromBinding(obj.getAny(columnKey));
+  };
 
 const defaultSet =
   ({ realm, typeHelpers: { toBinding }, columnKey }: PropertyOptions) =>
@@ -114,7 +110,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     assert(options.optional, "Objects are always nullable");
     return {
       get(this: PropertyHelpers, obj) {
-        return obj.isNull(columnKey) ? null : fromBinding(obj.getLinkedObject(columnKey));
+        return fromBinding(obj.getLinkedObject(columnKey));
       },
       set: embedded ? embeddedSet(options) : defaultSet(options),
     };
