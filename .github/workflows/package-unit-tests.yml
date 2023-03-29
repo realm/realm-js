@@ -17,6 +17,7 @@ on:
 jobs:
   unit-tests-linux:
     strategy:
+      fail-fast: false
       matrix:
         workspace:
           - realm
