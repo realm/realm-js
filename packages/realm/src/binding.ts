@@ -16,8 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { IndexSet, Int64, ObjKey, Timestamp } from "../generated/ts/native.mjs";
-import { binding } from "./internal.js";
+import { IndexSet, Int64, Logger, LoggerLevel, ObjKey, Timestamp } from "../generated/ts/native.mjs";
 
 /** @internal */
 export * from "../generated/ts/native.mjs"; // core types are transitively exported.
@@ -76,4 +75,4 @@ export function isEmptyObjKey(objKey: ObjKey) {
 }
 
 // Silence logs from core by default
-binding.Logger.setDefaultLevelThreshold(binding.LoggerLevel.Off);
+Logger.setDefaultLevelThreshold(LoggerLevel.Off);
