@@ -478,7 +478,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
     });
   });
 
-  describe("With realm opened before", function () {
+  describe("with realm opened before", function () {
     openRealmBeforeEach({
       schema: [FlexiblePersonSchema, DogSchema],
       sync: {
