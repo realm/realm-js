@@ -83,7 +83,10 @@ export type TypeOptions = {
 // "Only Realm instances are supported." (which should probably have been "RealmObject")
 // instead of relying on the binding to throw.
 export function mixedToBinding(realm: binding.Realm, value: unknown): binding.MixedArg {
-  if (typeof value === "undefined") {
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean" || value === null) {
+    // Fast track pass through for the most commonly used types
+    return value;
+  } else if (typeof value === "undefined") {
     return null;
   } else if (value instanceof Date) {
     return binding.Timestamp.fromDate(value);
