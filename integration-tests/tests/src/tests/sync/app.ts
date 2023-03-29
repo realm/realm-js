@@ -82,7 +82,7 @@ describe("App", () => {
 
     it("from config", () => {
       //even if "id" is not an existing app we can still instantiate a new Realm.
-      const app = new Realm.App(missingAppConfig); //TODO Fix all of these things
+      const app = new Realm.App(missingAppConfig);
       expect(app).instanceOf(Realm.App);
     });
 
