@@ -72,7 +72,7 @@ interface IDogForSyncSchema {
   realm_id: string | undefined;
 }
 
-describe.only("App", () => {
+describe("App", () => {
   describe("instantiation", function () {
     afterEach(async () => {
       Realm.clearTestState();

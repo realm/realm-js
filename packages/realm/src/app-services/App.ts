@@ -110,12 +110,12 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
    * @returns The Realm App instance.
    */
   public static get(id: string): App {
-    const cachedApp = this.appById.get(id);
+    const cachedApp = this.appById.get(id)?.deref();
     if (cachedApp) {
       return cachedApp;
     }
     const newApp = new App(id);
-    this.appById.set(id, newApp);
+    this.appById.set(id, new binding.WeakRef(newApp));
     return newApp;
   }
 
@@ -131,7 +131,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
 
   /** @internal */
   public static getAppForUser(userInternal: binding.SyncUser): App {
-    const app = this.appByUserId.get(userInternal.identity);
+    const app = this.appByUserId.get(userInternal.identity)?.deref();
     if (!app) {
       throw new Error(`Cannot determine which app is associated with user (id = ${userInternal.identity})`);
     }
@@ -202,7 +202,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
 
   public async logIn(credentials: Credentials) {
     const userInternal = await this.internal.logInWithCredentials(credentials.internal);
-    App.appByUserId.set(userInternal.identity, this);
+    App.appByUserId.set(userInternal.identity, new binding.WeakRef(this));
     return new User(userInternal, this);
   }
 
