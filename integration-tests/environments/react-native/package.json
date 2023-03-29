@@ -39,6 +39,7 @@
           "cascade": false
         }
       ],
+      "clean": "if-file-deleted",
       "files": [
         "ios/Podfile"
       ],
