@@ -370,17 +370,20 @@ describe.skipIf(environment.missingServer, "User", () => {
       expect(user.apiKeys instanceof Realm.Auth.ApiKeyAuth).to.be.true;
 
       // TODO: Enable when fixed: Disabling this test since the CI stitch integration returns cryptic error.
-      const apikey = await user.apiKeys.create("mykey");
+      const key = await user.apiKeys.create("mykey");
+      expect(key._id).is.string;
+      expect(key.name).equals("mykey");
+      expect(key.disabled).equals(false);
+      expect(key.key).is.string;
+
       const keys = await user.apiKeys.fetchAll();
-      expect(Array.isArray(keys)).to.be.true;
-
-      expect(keys.length).equals(1);
-
-      //@ts-expect-error TYPEBUG: Realm.Auth.ApiKey expects an _id field while on the other hand this key only has a id field.
-      expect(keys[0].id).to.not.be.null;
-      //@ts-expect-error TYPEBUG: Realm.Auth.ApiKey expects an _id field while on the other hand this key only has a id field.
-      expect(keys[0].id).to.not.be.undefined;
-      expect(keys[0].name).equals("mykey");
+      expect(keys).deep.equals([
+        {
+          _id: key._id,
+          name: key.name,
+          disabled: key.disabled,
+        },
+      ]);
 
       await user.logOut();
     });
