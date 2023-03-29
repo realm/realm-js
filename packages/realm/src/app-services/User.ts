@@ -66,6 +66,7 @@ export interface UserIdentity {
   providerType: ProviderType;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AnyUser = User<any, any, any>;
 
 type UserListenerToken = binding.SyncUserSubscriptionToken;

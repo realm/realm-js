@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { DeviceInfo } from "../binding";
 import {
   AnyUser,
   Credentials,
@@ -86,7 +85,9 @@ type AppListenerToken = binding.AppSubscriptionToken;
  * ```
  */
 export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType = Record<string, unknown>> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private static appById = new Map<string, App<any, any>>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private static appByUserId = new Map<string, App<any, any>>();
 
   /**
