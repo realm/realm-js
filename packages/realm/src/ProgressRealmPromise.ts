@@ -154,6 +154,7 @@ export class ProgressRealmPromise implements Promise<Realm> {
   cancel(): void {
     if (this.task) {
       this.task.cancel();
+      this.task.$resetSharedPtr();
       this.task = null;
     }
     this.timeoutPromise?.cancel();
