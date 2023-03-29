@@ -66,17 +66,17 @@ for platform in "${PLATFORMS[@]}"; do
         ios)
             DESTINATIONS+=(-destination 'generic/platform=iOS')
             LIBRARIES+=(-library ./out/$CONFIGURATION-iphoneos/librealm-js-ios.a -headers ./_include)
-            BUILD_LIB_CMDS+=("xcrun libtool -static -o ./out/$CONFIGURATION-iphoneos/librealm-js-ios.a ./out/$CONFIGURATION-iphoneos/*.a")
+            BUILD_LIB_CMDS+=("xcrun libtool -static -D -o ./out/$CONFIGURATION-iphoneos/librealm-js-ios.a ./out/$CONFIGURATION-iphoneos/*.a")
         ;;
         catalyst)
             DESTINATIONS+=(-destination 'platform=macOS,arch=x86_64,variant=Mac Catalyst')
             LIBRARIES+=(-library ./out/$CONFIGURATION-maccatalyst/librealm-js-ios.a -headers ./_include)
-            BUILD_LIB_CMDS+=("xcrun libtool -static -o ./out/$CONFIGURATION-maccatalyst/librealm-js-ios.a ./out/$CONFIGURATION-maccatalyst/*.a")
+            BUILD_LIB_CMDS+=("xcrun libtool -static -D -o ./out/$CONFIGURATION-maccatalyst/librealm-js-ios.a ./out/$CONFIGURATION-maccatalyst/*.a")
         ;;
         simulator)
             DESTINATIONS+=(-destination 'generic/platform=iOS Simulator')
             LIBRARIES+=(-library ./out/$CONFIGURATION-iphonesimulator/librealm-js-ios.a -headers ./_include)
-            BUILD_LIB_CMDS+=("xcrun libtool -static -o ./out/$CONFIGURATION-iphonesimulator/librealm-js-ios.a ./out/$CONFIGURATION-iphonesimulator/*.a")
+            BUILD_LIB_CMDS+=("xcrun libtool -static -D -o ./out/$CONFIGURATION-iphonesimulator/librealm-js-ios.a ./out/$CONFIGURATION-iphonesimulator/*.a")
         ;;
         *)
             echo "${platform} not supported"
