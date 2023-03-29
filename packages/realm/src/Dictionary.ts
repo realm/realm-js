@@ -257,9 +257,8 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * @since 10.6.0
    */
   set(elementsOrKey: string | { [key: string]: T }, value?: T): this {
-    assert(typeof elementsOrKey != "symbol", "Input key cannot be a symbol");
-    const elements = typeof elementsOrKey == "string" ? { [elementsOrKey]: value } : elementsOrKey;
-    assert(Object.getOwnPropertySymbols(elements).length == 0, "Input object cannot contain symbol keys");
+    const elements = typeof elementsOrKey == "object" ? elementsOrKey : { [elementsOrKey]: value };
+    assert(Object.getOwnPropertySymbols(elements).length === 0, "Symbols cannot be used as keys of a dictionary");
     assert.inTransaction(this[REALM]);
     const internal = this[INTERNAL];
     const toBinding = this[HELPERS].toBinding;
