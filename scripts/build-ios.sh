@@ -37,6 +37,8 @@ while getopts ":c:" opt; do
     esac
 done
 
+echo "Configuration: ${CONFIGURATION}"
+
 shift $((OPTIND-1))
 PLATFORMS=($@)
 
