@@ -16,11 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { PropertyTypeName } from "realm";
+
 type SourceCode = { source: string };
 
 export type PropertyTestOptions = {
   name: string;
-  type: string;
+  type: PropertyTypeName;
   objectType: string | undefined;
   default: SourceCode | undefined | unknown;
   optional: boolean;
@@ -127,12 +129,12 @@ function unionUndefined(type: string | undefined, optional: OptionalVariant) {
 // TODO: Consider generating variants for optional properties where both question mark and undefined before/after type are used
 export function generatePropertyVariants(options: PropertyTestOptions): PropertyVariant[] {
   const variants: PropertyVariant[] = [];
-  const typeVariants = generateTypeNameVariants(options.type);
+  const typeVariants = generateTypeNameVariants(options.type !== "object" ? options.type : options.objectType);
   if (DEFAULT_INFERABLE_TYPES.has(options.type) && typeof options.default !== "undefined") {
     typeVariants.push(undefined);
   }
   for (const type of typeVariants) {
-    for (const typeArgument of generateTypeNameVariants(options.objectType)) {
+    for (const typeArgument of generateTypeNameVariants(options.type !== "object" ? options.objectType : undefined)) {
       for (const optional of generateOptionalVariants(options)) {
         if (
           typeof type === "undefined" &&
