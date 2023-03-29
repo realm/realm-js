@@ -129,12 +129,12 @@ function unionUndefined(type: string | undefined, optional: OptionalVariant) {
 // TODO: Consider generating variants for optional properties where both question mark and undefined before/after type are used
 export function generatePropertyVariants(options: PropertyTestOptions): PropertyVariant[] {
   const variants: PropertyVariant[] = [];
-  const typeVariants = generateTypeNameVariants(options.type !== "object" ? options.type : options.objectType);
+  const typeVariants = generateTypeNameVariants(options.type === "object" ? options.objectType : options.type);
   if (DEFAULT_INFERABLE_TYPES.has(options.type) && typeof options.default !== "undefined") {
     typeVariants.push(undefined);
   }
   for (const type of typeVariants) {
-    for (const typeArgument of generateTypeNameVariants(options.type !== "object" ? options.objectType : undefined)) {
+    for (const typeArgument of generateTypeNameVariants(options.type === "object" ? undefined : options.objectType)) {
       for (const optional of generateOptionalVariants(options)) {
         if (
           typeof type === "undefined" &&
