@@ -18,6 +18,7 @@
 
 import {
   Configuration,
+  IterableWeakSet,
   OpenRealmBehaviorType,
   OpenRealmTimeOutBehavior,
   ProgressNotificationCallback,
@@ -58,6 +59,8 @@ function determineBehavior(config: Configuration, realmExists: boolean): OpenBeh
 
 export class ProgressRealmPromise implements Promise<Realm> {
   /** @internal */
+  private static instances = new IterableWeakSet<ProgressRealmPromise>();
+  /** @internal */
   private task: binding.AsyncOpenTask | null = null;
   /** @internal */
   private listeners = new Set<ProgressNotificationCallback>();
@@ -68,6 +71,11 @@ export class ProgressRealmPromise implements Promise<Realm> {
 
   /** @internal */
   constructor(config: Configuration) {
+    ProgressRealmPromise.instances.add(this);
+    this.handle.promise.finally(() => {
+      // No need to remember this instance, now that we've already cancelled the task
+      ProgressRealmPromise.instances.delete(this);
+    });
     try {
       validateConfiguration(config);
       // Calling `Realm.exists()` before `binding.Realm.getSynchronizedRealm()` is necessary to capture
@@ -135,10 +143,16 @@ export class ProgressRealmPromise implements Promise<Realm> {
   }
 
   cancel(): void {
-    this.task?.cancel();
+    if (this.task) {
+      this.task.cancel();
+      this.task = null;
+    }
     this.timeoutPromise?.cancel();
     // Clearing all listeners to avoid accidental progress notifications
     this.listeners.clear();
+    // Tell anything awaiting the promise
+    const err = new Error("Async open canceled");
+    this.handle.reject(err);
   }
 
   progress(callback: ProgressNotificationCallback): this {
