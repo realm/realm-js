@@ -252,8 +252,8 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * Adds one or more elements with the specified key and value to the dictionary or updates value if key exists.
    * @param elementsOrKey The element to add or the key of the element to add.
    * @param value The value of the element to add.
-   * @throws {@link AssertionError} If not inside a write transaction, if using symbol as keys, or if any value violates type constraints
-   * @returns The dictionary
+   * @throws {@link AssertionError} If not inside a write transaction, if using symbol as keys, or if any value violates type constraints.
+   * @returns The dictionary.
    * @since 10.6.0
    */
   set(elementsOrKey: string | { [key: string]: T }, value?: T): this {
