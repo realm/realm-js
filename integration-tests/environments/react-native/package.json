@@ -50,6 +50,9 @@
       "env": {
         "USE_HERMES": {
           "external": true
+        },
+        "RCT_NEW_ARCH_ENABLED": {
+          "external": true
         }
       }
     },
@@ -70,6 +73,9 @@
       ],
       "env": {
         "USE_HERMES": {
+          "external": true
+        },
+        "RCT_NEW_ARCH_ENABLED": {
           "external": true
         }
       }
