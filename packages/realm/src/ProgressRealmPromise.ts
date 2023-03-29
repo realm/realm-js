@@ -60,6 +60,15 @@ function determineBehavior(config: Configuration, realmExists: boolean): OpenBeh
 export class ProgressRealmPromise implements Promise<Realm> {
   /** @internal */
   private static instances = new IterableWeakSet<ProgressRealmPromise>();
+  /**
+   * Cancels all unresolved `ProgressRealmPromise` instances.
+   * @internal
+   */
+  public static cancelAll() {
+    for (const promise of ProgressRealmPromise.instances) {
+      promise.cancel();
+    }
+  }
   /** @internal */
   private task: binding.AsyncOpenTask | null = null;
   /** @internal */

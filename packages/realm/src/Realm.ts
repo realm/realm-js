@@ -280,6 +280,7 @@ export class Realm {
     fs.removeRealmFilesFromDirectory(defaultDirectoryPath);
 
     binding.App.clearCachedApps();
+    ProgressRealmPromise.cancelAll();
   }
 
   /**
