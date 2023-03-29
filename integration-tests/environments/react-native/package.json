@@ -41,7 +41,8 @@
       ],
       "clean": "if-file-deleted",
       "files": [
-        "ios/Podfile"
+        "ios/Podfile",
+        "../../../packages/realm/react-native/ios/realm-js-ios.xcframework"
       ],
       "output": [
         "ios/Pods",
@@ -65,7 +66,8 @@
         }
       ],
       "files": [
-        "ios/Podfile"
+        "ios/Podfile",
+        "../../../packages/realm/react-native/ios/realm-js-ios.xcframework"
       ],
       "output": [
         "ios/Pods",
