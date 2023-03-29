@@ -174,6 +174,7 @@ describe("Dictionary", () => {
         const item = this.realm.create<Item>("Item", {});
 
         expect(() => {
+          //@ts-expect-error We need to verify using a symbol as a key throws
           item.dict.set(sym, "value1");
         }).to.throw("Input key cannot be a symbol");
 
@@ -182,6 +183,7 @@ describe("Dictionary", () => {
         }).to.throw("Input object cannot contain symbol keys");
 
         expect(() => {
+          //@ts-expect-error We need to verify using a symbol as a key throws
           item.dict[sym] = "value3";
         }).to.throw("Symbols cannot be used as keys of a dictionary");
       });
