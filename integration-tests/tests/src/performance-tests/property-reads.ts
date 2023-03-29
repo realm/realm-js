@@ -31,8 +31,7 @@ function getTypeName(type: Realm.PropertySchemaShorthand | Realm.PropertySchema)
       return prefix + type.type;
     }
   } else {
-    // All strings get `optional: true` added to them.
-    return `optional ${type}`;
+    return type;
   }
 }
 
@@ -51,13 +50,7 @@ function describeTypeRead({ type, value, schema = [] }: TestParameters) {
   const defaultSchema = {
     name: objectSchemaName,
     properties: {
-      [propertyName]:
-        typeof type === "object"
-          ? type
-          : {
-              type,
-              optional: true,
-            },
+      [propertyName]: type,
     },
   };
 
@@ -86,27 +79,27 @@ function describeTypeRead({ type, value, schema = [] }: TestParameters) {
 }
 
 const cases: Array<TestParameters | [Realm.PropertySchemaShorthand | Realm.PropertySchema, Value]> = [
+  ["bool?", true],
   ["bool", true],
-  [{ type: "bool", optional: false }, true],
+  ["int?", 123],
   ["int", 123],
-  [{ type: "int", optional: false }, 123],
   ["float", 123.456],
+  ["double?", 123.456],
   ["double", 123.456],
-  [{ type: "double", optional: false }, 123.456],
-  ["string", "Hello!"],
-  ["decimal128", new Realm.BSON.Decimal128("123")],
-  ["objectId", new Realm.BSON.ObjectId("0000002a9a7969d24bea4cf4")],
-  ["uuid", new Realm.BSON.UUID()],
-  ["date", new Date("2000-01-01")],
-  ["data", new Uint8Array([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09])],
+  ["string?", "Hello!"],
+  ["decimal128?", new Realm.BSON.Decimal128("123")],
+  ["objectId?", new Realm.BSON.ObjectId("0000002a9a7969d24bea4cf4")],
+  ["uuid?", new Realm.BSON.UUID()],
+  ["date?", new Date("2000-01-01")],
+  ["data?", new Uint8Array([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09])],
   {
-    type: { type: "object", objectType: "Car" },
+    type: "Car",
     schema: [{ name: "Car", properties: { model: "string" } }],
     value: (realm: Realm) => realm.create("Car", { model: "VW Touran" }),
   },
-  [{ type: "list", objectType: "bool" }, []],
-  [{ type: "set", objectType: "bool" }, []],
-  [{ type: "dictionary", objectType: "bool" }, {}],
+  ["bool?[]", []],
+  ["bool?<>", []],
+  ["bool?{}", {}],
 ];
 
 describe.skipIf(environment.performance !== true, "Property read performance", () => {
