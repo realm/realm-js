@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { BSON, ObjectSchema, Realm, App, Credentials } from "realm";
+import { BSON, ObjectSchema, Realm, App, Credentials, SyncConfiguration } from "realm";
 import { expect } from "chai";
 import { importAppBefore } from "../../hooks";
 import { generatePartition } from "../../utils/generators";
@@ -24,8 +24,10 @@ import { getUrls } from "../../utils/import-app";
 import { select } from "../../utils/select";
 
 const TestObjectSchema: ObjectSchema = {
+  primaryKey: "_id",
   name: "TestObject",
   properties: {
+    _id: "objectId",
     doubleCol: "double",
   },
 };
@@ -70,7 +72,7 @@ interface IDogForSyncSchema {
   realm_id: string | undefined;
 }
 
-describe.only("App", () => {
+describe("App", () => {
   describe("instantiation", function () {
     afterEach(async () => {
       Realm.clearTestState();
@@ -231,7 +233,7 @@ describe.only("App", () => {
       let didFail = false;
       const user = await this.app.logIn(credentials).catch((err) => {
         expect(err.message).equals("invalid username/password");
-        expect(err.code).equals(50);
+        expect(err.code).equals(4349);
         didFail = true;
       });
       expect(user).to.be.undefined;
@@ -244,14 +246,14 @@ describe.only("App", () => {
 
     it("migration while sync is enabled throws", async function (this: Mocha.Context & AppContext & RealmContext) {
       const user = await this.app.logIn(Credentials.anonymous());
-      const config = {
+      const config: SyncConfiguration = {
         schema: [TestObjectSchema],
         sync: { user, partitionValue: '"Lolo"' },
         deleteRealmIfMigrationNeeded: true,
       };
 
       expect(() => new Realm(config)).throws(
-        "Cannot set 'deleteRealmIfMigrationNeeded' when sync is enabled ('sync.partitionValue' is set).",
+        "The realm configuration options 'deleteRealmIfMigrationNeeded' and 'sync' cannot both be defined.",
       );
       await user.logOut();
     });
