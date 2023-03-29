@@ -99,7 +99,14 @@ export function mixedToBinding(realm: binding.Realm, value: unknown): binding.Mi
   } else if (Array.isArray(value)) {
     throw new TypeError("A mixed property cannot contain an array of values.");
   } else {
-    return value as binding.Mixed;
+    // Convert typed arrays to an `ArrayBuffer`
+    for (const TypedArray of TYPED_ARRAY_CONSTRUCTORS) {
+      if (value instanceof TypedArray) {
+        return value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength);
+      }
+    }
+    // Rely on the binding for any other value
+    return value as binding.MixedArg;
   }
 }
 
