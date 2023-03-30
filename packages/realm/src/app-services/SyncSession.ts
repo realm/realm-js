@@ -295,8 +295,6 @@ export class SyncSession {
     if (!this._internal) return;
     this._internal.$resetSharedPtr();
     this._internal = null;
-    // No need to remember this instance, now that we've already resat the internal
-    SyncSession.instances.delete(this);
   }
 
   // TODO: Return the `error_handler`

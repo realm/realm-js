@@ -24,38 +24,27 @@ import { binding } from "./internal";
  */
 export class IterableWeakRefs<T extends object> {
   private internal: Set<binding.WeakRef<T>>;
-  constructor(values?: readonly T[] | null) {
-    this.internal = new Set(values ? values.map((value) => new binding.WeakRef(value)) : undefined);
-  }
-
-  /**
-   * Deletes all weak references that no longer points to an object
-   */
-  clean() {
-    for (const ref of this.internal) {
-      if (!ref.deref()) {
-        this.internal.delete(ref);
-      }
-    }
+  constructor() {
+    this.internal = new Set();
   }
 
   add(value: T) {
+    // This is a good time to get rid of entries that has been GC'ed
+    this.clean();
     this.internal.add(new binding.WeakRef(value));
     return this;
   }
 
-  clear() {
-    this.internal.clear();
-  }
-
-  delete(value: T): boolean {
-    // This is a good time to get rid of entries that has been GC'ed
+  delete(value: T) {
     this.clean();
     const ref = this.find(value);
     if (ref) {
-      return this.internal.delete(ref);
+      this.internal.delete(ref);
     }
-    return false;
+  }
+
+  clear() {
+    this.internal.clear();
   }
 
   *[Symbol.iterator](): IterableIterator<T> {
@@ -74,6 +63,17 @@ export class IterableWeakRefs<T extends object> {
     for (const ref of this.internal) {
       if (ref.deref() === value) {
         return ref;
+      }
+    }
+  }
+
+  /**
+   * Deletes all weak references that no longer points to an object
+   */
+  private clean() {
+    for (const ref of this.internal) {
+      if (!ref.deref()) {
+        this.internal.delete(ref);
       }
     }
   }
