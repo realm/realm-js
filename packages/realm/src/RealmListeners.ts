@@ -42,7 +42,8 @@ class RealmListeners {
 
   // Combined callback which runs all listener callbacks in one call.
   notify(schema?: CanonicalRealmSchema): void {
-    for (const callback of this.listeners) {
+    // Spreading to an array to avoid firing listeners that gets added from another listener
+    for (const callback of [...this.listeners]) {
       callback(this.realm, this.eventType, schema);
     }
   }
