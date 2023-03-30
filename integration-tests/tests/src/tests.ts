@@ -22,6 +22,7 @@ import "./tests/credentials/email-password";
 import "./tests/credentials/function";
 import "./tests/credentials/jwt";
 
+import "./tests/sync/app";
 import "./tests/sync/asymmetric";
 import "./tests/sync/client-reset";
 import "./tests/sync/flexible";

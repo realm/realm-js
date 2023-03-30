@@ -24,8 +24,10 @@ import { getUrls } from "../../utils/import-app";
 import { select } from "../../utils/select";
 
 const TestObjectSchema: Realm.ObjectSchema = {
+  primaryKey: "_id",
   name: "TestObject",
   properties: {
+    _id: "objectId",
     doubleCol: "double",
   },
 };
@@ -119,6 +121,14 @@ describe("App", () => {
       const app = new Realm.App(missingAppConfig);
       const credentials = Realm.Credentials.anonymous();
       await expect(app.logIn(credentials)).to.be.rejectedWith("cannot find app using Client App ID 'smurf'");
+    });
+
+    it("get returns cached app", () => {
+      const app = Realm.App.get(missingAppConfig.id);
+      const cachedApp = Realm.App.get(missingAppConfig.id);
+
+      expect(app).instanceOf(Realm.App);
+      expect(app).equals(cachedApp);
     });
   });
 
@@ -223,7 +233,7 @@ describe("App", () => {
       let didFail = false;
       const user = await this.app.logIn(credentials).catch((err) => {
         expect(err.message).equals("invalid username/password");
-        expect(err.code).equals(50);
+        expect(err.code).equals(4349);
         didFail = true;
       });
       expect(user).to.be.undefined;
@@ -241,9 +251,9 @@ describe("App", () => {
         sync: { user, partitionValue: '"Lolo"' },
         deleteRealmIfMigrationNeeded: true,
       };
-      //@ts-expect-error deleteRealmIfMigrationNeeded is not a field on a syncConfiguration.
+
       expect(() => new Realm(config)).throws(
-        "Cannot set 'deleteRealmIfMigrationNeeded' when sync is enabled ('sync.partitionValue' is set).",
+        "The realm configuration options 'deleteRealmIfMigrationNeeded' and 'sync' cannot both be defined.",
       );
       await user.logOut();
     });
