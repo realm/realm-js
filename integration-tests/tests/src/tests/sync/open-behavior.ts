@@ -46,6 +46,7 @@ async function getRegisteredEmailPassCredentials(app: Realm.App) {
 }
 
 describe("OpenBehaviour", function () {
+  this.longTimeout();
   importAppBefore("with-db");
   afterEach(() => Realm.clearTestState());
 
@@ -536,14 +537,7 @@ describe("OpenBehaviour", function () {
     const openPromise2 = Realm.open(config);
 
     openPromise1.cancel(); // Will cancel both promise 1 and 2 at the native level.
-
-    try {
-      await openPromise2;
-      throw new Error("openPromise2 should have been rejected..");
-    } catch (err: any) {
-      //platforms either return "Operation canceled" or "Operation Canceled"
-      expect((err.message as string).toLowerCase()).equals("operation canceled");
-    }
+    await expect(openPromise2).rejectedWith("Async open canceled");
   });
 
   it("progress-listener should not fire events on canceled realm.open", async function (this: AppContext) {
