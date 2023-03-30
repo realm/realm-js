@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <memory>
 #include <optional>
 
 #include "js_class.hpp"
@@ -34,12 +35,16 @@
 #include <realm/object-store/sync/sync_user.hpp>
 #include <realm/object-store/sync/app.hpp>
 #include <realm/object-store/util/bson/bson.hpp>
+#include <type_traits>
 #include "js_types.hpp"
 #include "platform.hpp"
 
 
 namespace realm {
 namespace js {
+
+template <typename T>
+class AppClass;
 
 using SharedUser = std::shared_ptr<realm::SyncUser>;
 using SharedApp = std::shared_ptr<realm::app::App>;
@@ -518,16 +523,20 @@ void UserClass<T>::add_listener(ContextType ctx, ObjectType this_object, Argumen
 {
     args.validate_count(1);
     auto callback = Value::validated_to_function(ctx, args[0]);
-    auto user = get_internal<T, UserClass<T>>(ctx, this_object);
+    auto this_user = get_internal<T, UserClass<T>>(ctx, this_object);
     Protected<FunctionType> protected_callback(ctx, callback);
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(Context::get_global_context(ctx));
 
-    auto token = std::move(user->m_user->subscribe([=](const realm::SyncUser&) {
-        Function::callback(protected_ctx, protected_callback, 0, {});
+    auto token = std::move(this_user->m_user->subscribe([=](const realm::SyncUser& user) {
+        HANDLESCOPE(protected_ctx);
+        ValueType arguments[1] = {
+            UserClass<T>::create_instance(protected_ctx, const_cast<realm::SyncUser&>(user).shared_from_this(), nullptr)
+        };
+        Function::callback(protected_ctx, protected_callback, 1, arguments);
     }));
 
-    NotificationBucket::emplace(user->m_notification_handle, std::move(protected_callback), std::move(token));
+    NotificationBucket::emplace(this_user->m_notification_handle, std::move(protected_callback), std::move(token));
 }
 
 /**

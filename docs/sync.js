@@ -228,7 +228,7 @@ class App {
   /**
    * Adds a listener that will be fired on various user events.
    * This includes login, logout, switching users, linking users and refreshing custom data.
-   * @param {function} callback
+   * @param {function: (app) => void} callback(app)
    */
   addListener(callback) {}
 
@@ -854,7 +854,7 @@ class User {
   /**
    * Adds a listener that will be fired on various user related events.
    * This includes auth token refresh, refresh token refresh, refresh custom user data, and logout.
-   * @param {function} callback
+   * @param {function: (user) => void} callback
    */
   addListener(callback) {}
 

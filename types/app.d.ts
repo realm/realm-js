@@ -250,7 +250,7 @@ declare namespace Realm {
     static apple(idToken: string): Credentials<Credentials.ApplePayload>;
   }
 
-  type AppChangeCallback = () => void;
+  type AppChangeCallback = (app: App) => void;
 
   /**
    * An Atlas App Services App.
@@ -383,7 +383,7 @@ declare namespace Realm {
     version?: string;
   }
 
-  type UserChangeCallback = () => void;
+  type UserChangeCallback = (user: Realm.User) => void;
 
   /**
    * Representation of an authenticated user of an app.

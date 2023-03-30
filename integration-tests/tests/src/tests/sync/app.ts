@@ -170,7 +170,8 @@ describe("App", () => {
       let eventListenerCalls = 0;
       expect(this.app).instanceOf(Realm.App);
 
-      const listenerEvent = () => {
+      const listenerEvent = (app: Realm.App) => {
+        expect(app).instanceOf(Realm.App);
         eventListenerCalls += 1;
       };
 

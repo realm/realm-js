@@ -4,7 +4,9 @@
 * None
 
 ### Enhancements
-* None
+* Expanded `Realm.App` and `Realm.User` listeners to include parameters in the callbacks. ([#5597](https://github.com/realm/realm-js/issues/5597))
+  * `Realm.App.addListener((app) => { /* ... */ })`
+  * `Realm.User.addListener((user) => { /* ... */ })`
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)

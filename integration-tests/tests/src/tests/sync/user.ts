@@ -152,6 +152,25 @@ describe.skipIf(environment.missingServer, "User", () => {
         expect(this.app.currentUser).to.be.null;
       });
 
+      it("change listener works", async function (this: AppContext & RealmContext) {
+        const credentials = Realm.Credentials.anonymous();
+
+        let called = false;
+        const localUser = await this.app.logIn(credentials);
+
+        const listener = (user: Realm.User) => {
+          expect(user instanceof Realm.User).to.be.true;
+          expect(user.isLoggedIn).to.be.false;
+          expectIsSameUser(user, localUser);
+          called = true;
+        };
+        localUser.addListener(listener);
+
+        await localUser.logOut();
+        localUser.removeListener(listener);
+        expect(called).to.be.true;
+      });
+
       it("can fetch customData", async function (this: AppContext & RealmContext) {
         const credentials = Realm.Credentials.anonymous();
         const user = await this.app.logIn(credentials);

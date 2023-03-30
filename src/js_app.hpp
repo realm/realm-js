@@ -430,16 +430,18 @@ void AppClass<T>::add_listener(ContextType ctx, ObjectType this_object, Argument
 {
     args.validate_count(1);
     auto callback = Value::validated_to_function(ctx, args[0], "callback");
-    auto app = get_internal<T, AppClass<T>>(ctx, this_object);
+    auto this_app = get_internal<T, AppClass<T>>(ctx, this_object);
     Protected<FunctionType> protected_callback(ctx, callback);
     Protected<ObjectType> protected_this(ctx, this_object);
     Protected<typename T::GlobalContext> protected_ctx(Context::get_global_context(ctx));
 
-    auto token = std::move(app->m_app->subscribe([=](const realm::app::App&) {
-        Function::callback(protected_ctx, protected_callback, 0, {});
+    auto token = std::move(this_app->m_app->subscribe([=](const realm::app::App& app) {
+        HANDLESCOPE(protected_ctx);
+        ValueType arguments[] = {AppClass<T>::create_instance(protected_ctx, app::App::get_cached_app(app.config().app_id))};
+        Function::callback(protected_ctx, protected_callback, 1, arguments);
     }));
 
-    NotificationBucket::emplace(app->m_notification_handle, std::move(protected_callback), std::move(token));
+    NotificationBucket::emplace(this_app->m_notification_handle, std::move(protected_callback), std::move(token));
 }
 
 /**
