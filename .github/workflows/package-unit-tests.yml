@@ -1,4 +1,4 @@
-name: Package Unit Tests
+name: Unit tests
 
 env:
   REALM_DISABLE_ANALYTICS: 1
@@ -8,8 +8,7 @@ on:
   pull_request:
     paths:
       # Source code
-      - "packages/realm-network-transport/**"
-      - "packages/realm-common/**"
+      - "packages/**"
       # No need to run when updating documentation
       - "!**.md"
       # Run this on updates to the workflow
@@ -17,7 +16,16 @@ on:
 
 jobs:
   unit-tests-linux:
-    name: Unit tests on Linux
+    strategy:
+      fail-fast: false
+      matrix:
+        workspace:
+          - realm
+          - '@realm/bindgen'
+          - '@realm/network-transport'
+          - '@realm/babel-plugin'
+          - '@realm/react'
+    name: ${{ matrix.workspace }} unit tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -25,13 +33,8 @@ jobs:
           submodules: "recursive"
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
-          registry-url: https://registry.npmjs.org/
-      - name: Install npm v7
-        run: npm install -g npm@8
+          node-version: 18
       # Install the root package to get dev-dependencies
       # (--ignore-scripts to avoid downloading or building the native module)
       - run: npm ci --ignore-scripts
-      - run: npm run lerna:bootstrap -- --scope '{@realm/network-transport,@realm/common}' --include-dependencies
-      - run: npm test --prefix packages/realm-network-transport
-      - run: npm test --prefix packages/realm-common
+      - run: npm test --workspace ${{ matrix.workspace }}

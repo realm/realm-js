@@ -74,7 +74,10 @@
     "test": {
       "command": "mocha",
       "dependencies": [
-        "build:node"
+        "build:node",
+        "bindgen:generate:typescript",
+        "bindgen:generate:wrappers",
+        "../realm-network-transport:bundle"
       ]
     },
     "bundle": {
