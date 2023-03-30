@@ -41,3 +41,13 @@ declare const console: Console;
 declare module "buffer" {
   type Buffer = Uint8Array;
 }
+
+/** @deprecated React Native doesn't provide this, use our `binding.WeakRef` polyfill instead. */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+declare interface WeakRef<T extends object> {}
+/** @deprecated React Native doesn't provide this */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+declare interface WeakRefConstructor {
+  /** @deprecated React Native doesn't provide this */
+  new <T extends object>(target: T): WeakRef<T>;
+}
