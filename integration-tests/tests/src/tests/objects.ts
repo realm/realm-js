@@ -1063,6 +1063,10 @@ describe("Realm.Object", () => {
         expect(obj.isValid()).to.be.true;
         this.realm.delete(obj);
         expect(obj.isValid()).to.be.false;
+        // Reading a column from deleted object should fail
+        expect(() => obj.doubleCol).to.throw("No object with key");
+        // Writing to a column from deleted object should fail
+        expect(() => (obj.doubleCol = 0)).to.throw("No object with key");
         return obj;
       });
 
