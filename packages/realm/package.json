@@ -75,6 +75,8 @@
       "command": "mocha",
       "dependencies": [
         "build:node",
+        "bindgen:generate:typescript",
+        "bindgen:generate:wrappers",
         "../realm-network-transport:bundle"
       ]
     },
