@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { Realm, ConnectionState, ObjectSchema, BSON } from "realm";
+import { Realm, ConnectionState, ObjectSchema, BSON, User, SyncConfiguration } from "realm";
 import { importAppBefore } from "../../hooks";
 import { DogSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { getRegisteredEmailPassCredentials } from "../../utils/credentials";
@@ -137,29 +137,22 @@ describe("SessionTest", () => {
       expect(realm.syncSession).to.be.null;
     });
 
-    it("config with undefined sync property", () => {
+    it("config with undefined sync property", async () => {
       const config = {
         sync: undefined,
       };
-      Realm.open(config).then((realm) => {
+      await Realm.open(config).then((realm) => {
         expect(realm.syncSession).to.be.null;
       });
     });
 
     it("config with sync and inMemory set", async () => {
-      const config = {
-        sync: true,
-        inMemory: true,
-      };
-      return new Promise((resolve, reject) => {
-        //@ts-expect-error try config with mutually exclusive properties
-        return Realm.open(config)
-          .then(() => reject("opened realm with invalid configuration"))
-          .catch((error) => {
-            expect(error.message).contains("Options 'inMemory' and 'sync' are mutual exclusive.");
-            resolve();
-          });
-      });
+      await expect(
+        Realm.open({
+          sync: {} as SyncConfiguration,
+          inMemory: true,
+        }),
+      ).rejectedWith("The realm configuration options 'inMemory' and 'sync' cannot both be defined.");
     });
 
     it("config with onMigration and sync set", async function (this: AppContext) {
@@ -168,14 +161,9 @@ describe("SessionTest", () => {
       config.onMigration = () => {
         /* empty function */
       };
-      return new Promise<void>((resolve, reject) => {
-        return Realm.open(config)
-          .then(() => reject("opened realm with invalid configuration"))
-          .catch((error) => {
-            expect(error.message).contains("Options 'onMigration' and 'sync' are mutually exclusive");
-            resolve();
-          });
-      });
+      await expect(Realm.open(config)).rejectedWith(
+        "The realm configuration options 'onMigration' and 'sync' cannot both be defined.",
+      );
     });
 
     it("invalid sync user object", async function (this: AppContext) {
