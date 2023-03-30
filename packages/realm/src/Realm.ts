@@ -272,7 +272,7 @@ export class Realm {
         realm.close();
       }
     }
-    this.internals.clear();
+    Realm.internals.clear();
     binding.RealmCoordinator.clearAllCaches();
 
     // Delete all Realm files in the default directory
