@@ -618,15 +618,15 @@ export class Realm {
       binding.Helpers.setBindingContext(this.internal, {
         didChange: (r) => {
           r.verifyOpen();
-          this.changeListeners.callback();
+          this.changeListeners.notify();
         },
         schemaDidChange: (r) => {
           r.verifyOpen();
-          this.schemaListeners.callback();
+          this.schemaListeners.notify(this.schema);
         },
         beforeNotify: (r) => {
           r.verifyOpen();
-          this.beforeNotifyListeners.callback();
+          this.beforeNotifyListeners.notify();
         },
       });
       Realm.internals.add(this.internal);
