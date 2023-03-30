@@ -19,10 +19,10 @@
 import { binding } from "./internal";
 
 /**
- * Implements an iterable `WeakSet`.
+ * An internal iterable set of {@link binding.WeakRef} objects wrapping objects of type {@link T}.
  * @internal
  */
-export class IterableWeakSet<T extends object> implements Set<T> {
+export class IterableWeakSet<T extends object> {
   private internal: Set<binding.WeakRef<T>>;
   constructor(values?: readonly T[] | null) {
     this.internal = new Set(values ? values.map((value) => new binding.WeakRef(value)) : undefined);
@@ -37,24 +37,6 @@ export class IterableWeakSet<T extends object> implements Set<T> {
         this.internal.delete(ref);
       }
     }
-  }
-
-  get size() {
-    return this.internal.size;
-  }
-
-  get [Symbol.toStringTag]() {
-    return IterableWeakSet.name;
-  }
-
-  forEach(cb: (value: T, value2: T, set: Set<T>) => void, thisArg?: unknown) {
-    this.internal.forEach((valueRef, valueRef2) => {
-      const value = valueRef.deref();
-      const value2 = valueRef2.deref();
-      if (value && value2) {
-        cb.call(thisArg, value, value2, this);
-      }
-    }, this);
   }
 
   add(value: T) {
@@ -76,42 +58,12 @@ export class IterableWeakSet<T extends object> implements Set<T> {
     return false;
   }
 
-  has(value: T): boolean {
-    const ref = this.find(value);
-    return ref ? true : false;
-  }
-
-  *entries(): IterableIterator<[T, T]> {
-    for (const [valueRef, valueRef2] of this.internal.entries()) {
-      const value = valueRef.deref();
-      const value2 = valueRef2.deref();
-      if (value && value2) {
-        yield [value, value2];
-      }
-    }
-  }
-
-  *keys(): IterableIterator<T> {
-    for (const keyRef of this.internal.keys()) {
-      const key = keyRef.deref();
-      if (key) {
-        yield key;
-      }
-    }
-  }
-
-  *values(): IterableIterator<T> {
-    for (const valueRef of this.internal.values()) {
+  *[Symbol.iterator](): IterableIterator<T> {
+    for (const valueRef of this.internal) {
       const value = valueRef.deref();
       if (value) {
         yield value;
       }
-    }
-  }
-
-  *[Symbol.iterator](): IterableIterator<T> {
-    for (const value of this.values()) {
-      yield value;
     }
   }
 
