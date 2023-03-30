@@ -344,7 +344,7 @@ export class RealmObject<T = DefaultObject> {
 
     assert(
       linkedObjectSchema.name === property.objectType,
-      () => `'${linkedObjectSchema.name}#${propertyName}' is not a relationship to '${this.objectSchema.name}'`,
+      () => `'${linkedObjectSchema.name}#${propertyName}' is not a relationship to '${this.objectSchema().name}'`,
     );
 
     // Create the Result for the backlink view
