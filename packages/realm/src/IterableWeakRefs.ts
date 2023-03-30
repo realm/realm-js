@@ -22,7 +22,7 @@ import { binding } from "./internal";
  * An internal iterable set of {@link binding.WeakRef} objects wrapping objects of type {@link T}.
  * @internal
  */
-export class IterableWeakSet<T extends object> {
+export class IterableWeakRefs<T extends object> {
   private internal: Set<binding.WeakRef<T>>;
   constructor(values?: readonly T[] | null) {
     this.internal = new Set(values ? values.map((value) => new binding.WeakRef(value)) : undefined);
