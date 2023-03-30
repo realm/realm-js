@@ -14,8 +14,12 @@
   "wireit": {
     "submodules": {
       "command": "git submodule update --init --recursive",
-      "files": [".git/modules/vendor/realm-core/HEAD"],
-      "output": ["vendor/realm-core"]
+      "files": [
+        ".git/modules/vendor/realm-core/HEAD"
+      ],
+      "output": [
+        "vendor/realm-core"
+      ]
     },
     "build": {
       "dependencies": [
@@ -101,6 +105,8 @@
     }
   },
   "devDependencies": {
-    "react-native": "0.71.4"
+    "react-native": "0.71.4",
+    "typedoc": "^0.23.28",
+    "typedoc-plugin-extras": "^2.3.2"
   }
 }

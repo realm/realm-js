@@ -1,4 +1,15 @@
 {
   "entryPoints": ["src/index.ts"],
-  "tsconfig": "./tsconfig.json"
+  "tsconfig": "./tsconfig.json",
+  "excludeInternal": true,
+  "customCss": "./typedoc/styles.css",
+  "media": "../../media",
+  "name": "Realm JavaScript",
+  "includeVersion": true,
+  "sourceLinkTemplate": "https://github.com/realm/realm-js/blob/{gitRevision}/{path}#L{line}",
+  "navigationLinks": {
+    "GitHub Repo": "https://github.com/realm/realm-js/",
+    "SDK Documentation": "https://www.mongodb.com/docs/realm/sdk/node/"
+  },
+  "favicon": "../../media/favicon.ico"
 }
