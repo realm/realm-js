@@ -21,5 +21,9 @@ export const flags = {
    * When enabled, objects can be created by providing an array of values (in the order that they were declared in the object schema) in addition to of an object of property values.
    */
   ALLOW_VALUES_ARRAYS: false,
+  /**
+   * When enabled, accessing the `Realm` without first importing it from the Realm package, will throw.
+   * Helps finding places where the app is depending on the now deprecated way of using the package.
+   */
   THROW_ON_GLOBAL_REALM: false,
 };
