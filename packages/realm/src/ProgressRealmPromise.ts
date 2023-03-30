@@ -18,7 +18,7 @@
 
 import {
   Configuration,
-  IterableWeakSet,
+  IterableWeakRefs,
   OpenRealmBehaviorType,
   OpenRealmTimeOutBehavior,
   ProgressNotificationCallback,
@@ -59,7 +59,7 @@ function determineBehavior(config: Configuration, realmExists: boolean): OpenBeh
 
 export class ProgressRealmPromise implements Promise<Realm> {
   /** @internal */
-  private static instances = new IterableWeakSet<ProgressRealmPromise>();
+  private static instances = new IterableWeakRefs<ProgressRealmPromise>();
   /**
    * Cancels all unresolved `ProgressRealmPromise` instances.
    * @internal
