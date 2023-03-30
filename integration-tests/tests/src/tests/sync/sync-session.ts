@@ -920,6 +920,7 @@ describe("SessionTest", () => {
             age: i,
             firstName: "John",
             lastName: "Smith",
+            partition,
           });
         }
       });
@@ -945,6 +946,7 @@ describe("SessionTest", () => {
             age: i,
             firstName: "John",
             lastName: "Smith",
+            partition,
           });
         }
       });
@@ -966,7 +968,7 @@ describe("SessionTest", () => {
       // we haven't uploaded our recent changes -- we're not allowed to copy
       expect(() => {
         realm1.writeCopyTo(outputConfig2);
-      }).throws("Could not write file as not all client changes are integrated in server");
+      }).throws("All client changes must be integrated in server before writing copy");
 
       // log back in and upload the changes we made locally
       user1 = await this.app.logIn(credentials1);
@@ -1010,6 +1012,7 @@ describe("SessionTest", () => {
             age: i,
             firstName: "John",
             lastName: "Smith",
+            partition,
           });
         }
       });
@@ -1046,7 +1049,7 @@ describe("SessionTest", () => {
           clientReset: {
             //@ts-expect-error TYPEBUG: enum not exposed in realm namespace
             mode: "manual",
-            onManual: () => console.log("error"),
+            onManual: (...args) => console.log("error", args),
           },
         },
         schema: [PersonForSyncSchema, DogForSyncSchema],
