@@ -29,14 +29,11 @@ export class IterableWeakRefs<T extends object> {
   }
 
   add(value: T) {
-    // This is a good time to get rid of entries that has been GC'ed
-    this.clean();
     this.internal.add(new binding.WeakRef(value));
     return this;
   }
 
   delete(value: T) {
-    this.clean();
     const ref = this.find(value);
     if (ref) {
       this.internal.delete(ref);
@@ -48,10 +45,13 @@ export class IterableWeakRefs<T extends object> {
   }
 
   *[Symbol.iterator](): IterableIterator<T> {
-    for (const valueRef of this.internal) {
-      const value = valueRef.deref();
+    for (const ref of this.internal) {
+      const value = ref.deref();
       if (value) {
         yield value;
+      } else {
+        // Clean up as we go, since we're already doing a linear scan here
+        this.internal.delete(ref);
       }
     }
   }
@@ -61,18 +61,11 @@ export class IterableWeakRefs<T extends object> {
    */
   private find(value: T) {
     for (const ref of this.internal) {
-      if (ref.deref() === value) {
+      const other = ref.deref();
+      if (other === value) {
         return ref;
-      }
-    }
-  }
-
-  /**
-   * Deletes all weak references that no longer points to an object
-   */
-  private clean() {
-    for (const ref of this.internal) {
-      if (!ref.deref()) {
+      } else if (!other) {
+        // Clean up as we go, since we're already doing a linear scan here
         this.internal.delete(ref);
       }
     }
