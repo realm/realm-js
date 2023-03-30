@@ -135,7 +135,9 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
   this.timeout(60_000); // TODO: Temporarily hardcoded until envs are set up.
   importAppBefore("with-db-flx");
   authenticateUserBefore();
-  afterEach(Realm.clearTestState);
+  afterEach(() => {
+    Realm.clearTestState();
+  });
 
   describe("Configuration", () => {
     describe("flexible sync Realm config", function () {
