@@ -268,7 +268,7 @@ export class Realm {
    */
   public static clearTestState(): void {
     // Close any realms not already closed
-    for (const realm of this.internals) {
+    for (const realm of Realm.internals) {
       if (realm && !realm.isClosed) {
         realm.close();
       }
