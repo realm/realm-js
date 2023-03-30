@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2020 Realm Inc.
+// Copyright 2023 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,26 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-console.log("Loading Realm Integration Tests");
+import { expect } from "chai";
+import { createPromiseHandle } from "./promise-handle";
 
-import { flags } from "realm";
+describe("PromiseHandle", () => {
+  it("resolves", async () => {
+    const handle = createPromiseHandle<string>();
+    handle.resolve("value");
+    expect(handle).eventually.equals("value");
+  });
 
-// TODO: Refactor tests to disable this
-flags.ALLOW_VALUES_ARRAYS = true;
-
-import "./setup-globals";
-
-afterEach(() => {
-  // Trigger garbage collection after every test, if exposed by the environment.
-  if (typeof global.gc === "function") {
-    global.gc();
-  }
+  it("rejects", async () => {
+    const handle = createPromiseHandle();
+    handle.reject(new Error("err"));
+    expect(handle).rejectedWith("err");
+  });
 });
-
-import "./utils/import-app.test.ts";
-import "./utils/chai-plugin.test.ts";
-import "./utils/promise-handle.test.ts";
-import "./mocha-internals.test.ts";
-
-import "./tests";
-import "./performance-tests";
