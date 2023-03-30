@@ -18,11 +18,10 @@
 
 type ResolveType<T> = (value: T | PromiseLike<T>) => void;
 type RejectType = (reason?: any) => void;
-type PromiseHandle<T> = {
-  promise: Promise<T>;
+export type PromiseHandle<T> = {
   resolve: ResolveType<T>;
   reject: RejectType;
-};
+} & Promise<T>;
 
 export function createPromiseHandle<T = void>(): PromiseHandle<T> {
   let resolve: ResolveType<T> | null = null;
@@ -34,5 +33,18 @@ export function createPromiseHandle<T = void>(): PromiseHandle<T> {
   if (!resolve || !reject) {
     throw new Error("Expected promise executor to be called synchronously");
   }
-  return { promise, resolve, reject };
+  return {
+    [Symbol.toStringTag]: "PromiseHandle",
+    resolve,
+    reject,
+    then(onResolve, onReject) {
+      return promise.then(onResolve, onReject);
+    },
+    catch(onReject) {
+      return promise.catch(onReject);
+    },
+    finally(onFinally) {
+      return promise.finally(onFinally);
+    },
+  };
 }

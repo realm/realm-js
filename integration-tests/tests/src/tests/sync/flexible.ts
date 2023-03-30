@@ -476,7 +476,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       });
 
       await realm.syncSession?.uploadAllLocalChanges();
-      await callbackHandle.promise;
+      await callbackHandle;
     });
   });
 
