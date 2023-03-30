@@ -130,7 +130,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
   public static userAgent = `RealmJS/${App.deviceInfo.sdkVersion} (${App.deviceInfo.platform}, v${App.deviceInfo.platformVersion})`;
 
   /** @internal */
-  public static getAppForUser(userInternal: binding.SyncUser): App {
+  public static getAppByUser(userInternal: binding.SyncUser): App {
     const app = this.appByUserId.get(userInternal.identity)?.deref();
     if (!app) {
       throw new Error(`Cannot determine which app is associated with user (id = ${userInternal.identity})`);
