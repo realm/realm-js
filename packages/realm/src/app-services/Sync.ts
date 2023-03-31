@@ -82,6 +82,7 @@ export class Sync {
   /** @deprecated Please use named imports */
   static NumericLogLevel = NumericLogLevel;
 
+  //TODO Need to deprecate this and related methods
   static setLogLevel(app: App, level: LogLevel) {
     const numericLevel = toBindingLoggerLevel(level);
     app.internal.syncManager.setLogLevel(numericLevel);

@@ -75,4 +75,20 @@ export function isEmptyObjKey(objKey: ObjKey) {
 }
 
 // Silence logs from core by default
-Logger.setDefaultLevelThreshold(LoggerLevel.Off);
+Logger.setDefaultLevelThreshold(LoggerLevel.Off); //TODO This is what I need to use
+/**
+ * This is what I need to use
+ * Need to find a way to create a shared logger
+ *
+ * For that I need to create a new method in the helper make_logger and I need to modify make_logger_factory to use this too
+ * Also they need to be marked as off_thread (?). Need to check how to do this
+ *
+ * console.error(error, fatal)
+ * console.warn(warn)
+ * console.log for everything down
+ *
+ * warn as the default level
+ *
+ * static methods on Realm (setDefaultLogger, setLoggerLever) --Maybe?
+ * There's a discussion about it
+ */
