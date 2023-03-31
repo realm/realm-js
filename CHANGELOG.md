@@ -19,6 +19,7 @@
 <!-- * Either mention core version or upgrade -->
 <!-- * Using Realm Core vX.Y.Z -->
 <!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Turning off the new Realm Core logger. A better solution will be provided in version 12.
 
 ## 11.7.0 (2023-03-26)
 
