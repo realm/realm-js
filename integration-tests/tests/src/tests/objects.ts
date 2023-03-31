@@ -1064,9 +1064,9 @@ describe("Realm.Object", () => {
         this.realm.delete(obj);
         expect(obj.isValid()).to.be.false;
         // Reading a column from deleted object should fail
-        expect(() => obj.doubleCol).to.throw("No object with key");
+        expect(() => obj.doubleCol).to.throw("Accessing object which has been invalidated or deleted");
         // Writing to a column from deleted object should fail
-        expect(() => (obj.doubleCol = 0)).to.throw("No object with key");
+        expect(() => (obj.doubleCol = 0)).to.throw("Accessing object which has been invalidated or deleted");
         return obj;
       });
 
