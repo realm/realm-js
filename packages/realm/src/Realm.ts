@@ -154,6 +154,7 @@ import {
   assert,
   binding,
   extendDebug,
+  flags,
   fromBindingRealmSchema,
   fs,
   index,
@@ -1966,33 +1967,23 @@ declare global {
   }
 }
 
-function getCallstack() {
-  try {
-    throw new Error("Finding calling stack");
-  } catch (err) {
-    const stack = err instanceof Error ? err.stack || "" : "";
-    return stack
-      .split("\n")
-      .map((line) => line.trim())
-      .filter((line) => line.startsWith("at"))
-      .splice(1); // Skipping this function
-  }
-}
-
 // Patch the global at runtime
 let warnedAboutGlobalRealmUse = false;
 Object.defineProperty(safeGlobalThis, "Realm", {
   get() {
-    if (!warnedAboutGlobalRealmUse) {
-      // Skipping this function
-      const frame: string | undefined = getCallstack()[1];
+    if (flags.THROW_ON_GLOBAL_REALM) {
+      throw new Error(
+        "Accessed global Realm, please update your code to ensure you import Realm via a named import:\nimport { Realm } from 'realm';",
+      );
+    } else if (!warnedAboutGlobalRealmUse) {
       // eslint-disable-next-line no-console
       console.warn(
-        "Your app is relying on a Realm global, which will be removed in realm-js v13,\n",
-        "please update your code to ensure you import Realm via a named import:\n\n",
+        "Your app is relying on a Realm global, which will be removed in realm-js v13, please update your code to ensure you import Realm via a named import:\n\n",
         'import { Realm } from "realm"; // For ES Modules\n',
         'const { Realm } = require("realm"); // For CommonJS\n\n',
-        frame ? `This is happening ${frame}\n` : "Can't determine caller.\n",
+        "To determine where, put this in the top of your index file:\n",
+        `import { flags } from "realm";\n`,
+        `flags.THROW_ON_GLOBAL_REALM = true`,
       );
       warnedAboutGlobalRealmUse = true;
     }
