@@ -90,5 +90,5 @@ Logger.setDefaultLevelThreshold(LoggerLevel.Off); //TODO This is what I need to 
  * warn as the default level
  *
  * static methods on Realm (setDefaultLogger, setLoggerLever) --Maybe?
- * There's a discussion about it
+ * at same level as clearTestState
  */
