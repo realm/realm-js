@@ -6,13 +6,17 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "bundle": "wireit",
-    "test": "jest"
+    "test": "wireit"
   },
   "wireit": {
     "bundle": {
       "command": "tsc -p tsconfig.build.json",
       "files": ["tsconfig.build.json", "tsconfig.json", "src"],
       "output": ["dist"]
+    },
+    "test": {
+      "command": "jest",
+      "dependencies": ["../realm:bundle"]
     }
   },
   "keywords": [

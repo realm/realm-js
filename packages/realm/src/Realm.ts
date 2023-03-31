@@ -85,6 +85,7 @@ import {
   InsertManyResult,
   InsertOneResult,
   InvalidateEvent,
+  IterableWeakRefs,
   List,
   LocalAppConfiguration,
   LogLevel,
@@ -178,9 +179,6 @@ type ObjectSchemaExtra = {
   // objectTypes: Record<string, unknown>;
 };
 
-// Using a set of weak refs to avoid prevention of garbage collection
-const RETURNED_REALMS = new Set<binding.WeakRef<binding.Realm>>();
-
 export type RealmEventName = "change" | "schema" | "beforenotify";
 
 /**
@@ -261,19 +259,20 @@ export class Realm {
 
   public static defaultPath = Realm.normalizePath("default.realm");
 
+  private static internals = new IterableWeakRefs<binding.Realm>();
+
   /**
    * Clears the state by closing and deleting any Realm in the default directory and logout all users.
    * @private Not a part of the public API: It's primarily used from the library's tests.
    */
   public static clearTestState(): void {
     // Close any realms not already closed
-    for (const weakRealm of RETURNED_REALMS) {
-      const realm = weakRealm.deref();
+    for (const realm of this.internals) {
       if (realm && !realm.isClosed) {
         realm.close();
       }
     }
-    RETURNED_REALMS.clear();
+    Realm.internals.clear();
     binding.RealmCoordinator.clearAllCaches();
 
     // Delete all Realm files in the default directory
@@ -629,7 +628,7 @@ export class Realm {
           this.beforeNotifyListeners.callback();
         },
       });
-      RETURNED_REALMS.add(new binding.WeakRef(this.internal));
+      Realm.internals.add(this.internal);
     } else {
       const { internal, schemaExtras } = internalConfig;
       assert.instanceOf(internal, binding.Realm, "internal");
@@ -961,7 +960,7 @@ export class Realm {
     try {
       const objKey = binding.stringToObjKey(objectKey);
       const obj = table.tryGetObject(objKey);
-      const result = wrapObject(obj) as T;
+      const result = obj && (wrapObject(obj) as T);
       return result === null ? undefined : result;
     } catch (err) {
       if (err instanceof binding.InvalidObjKey) {

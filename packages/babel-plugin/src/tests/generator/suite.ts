@@ -16,12 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { PropertySchema } from "realm";
+import { PropertySchema, PropertyTypeName } from "realm";
 import { generatePropertyCode, generatePropertyVariants, PropertyTestOptions } from "./variants";
 import { extractSchema, transformProperty } from "./transform";
 
 type PropertySuiteOptions = {
-  type: string;
+  type: PropertyTypeName;
   objectTypes?: (undefined | string)[];
   defaults?: ({ source: string } | unknown)[];
   optionals?: boolean[];

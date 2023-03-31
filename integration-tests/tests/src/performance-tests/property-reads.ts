@@ -24,10 +24,11 @@ type Value = ((realm: Realm) => unknown) | unknown;
 
 function getTypeName(type: Realm.PropertySchemaShorthand | Realm.PropertySchema) {
   if (typeof type === "object") {
+    const prefix = type.optional ? "optional " : "";
     if (type.objectType) {
-      return `${type.type}<${type.objectType}>`;
+      return prefix + `${type.type}<${type.objectType}>`;
     } else {
-      return type.type;
+      return prefix + type.type;
     }
   } else {
     return type;
@@ -49,19 +50,13 @@ function describeTypeRead({ type, value, schema = [] }: TestParameters) {
   const defaultSchema = {
     name: objectSchemaName,
     properties: {
-      [propertyName]:
-        typeof type === "object"
-          ? type
-          : {
-              type,
-              optional: true,
-            },
+      [propertyName]: type,
     },
   };
 
   describePerformance(`reading property of type '${typeName}'`, {
     schema: [defaultSchema, ...schema],
-    benchmarkTitle: `reads ${type}`,
+    benchmarkTitle: `reads ${typeName}`,
     before(this: Partial<RealmObjectContext> & RealmContext & Mocha.Context) {
       this.realm.write(() => {
         this.object = this.realm.create(objectSchemaName, {
@@ -84,27 +79,27 @@ function describeTypeRead({ type, value, schema = [] }: TestParameters) {
 }
 
 const cases: Array<TestParameters | [Realm.PropertySchemaShorthand | Realm.PropertySchema, Value]> = [
+  ["bool?", true],
   ["bool", true],
+  ["int?", 123],
   ["int", 123],
   ["float", 123.456],
+  ["double?", 123.456],
   ["double", 123.456],
-  ["string", "Hello!"],
-  ["decimal128", new Realm.BSON.Decimal128("123")],
-  ["objectId", new Realm.BSON.ObjectId("0000002a9a7969d24bea4cf4")],
-  ["uuid", new Realm.BSON.UUID()],
-  ["date", new Date("2000-01-01")],
-  ["data", new Uint8Array([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09])],
+  ["string?", "Hello!"],
+  ["decimal128?", new Realm.BSON.Decimal128("123")],
+  ["objectId?", new Realm.BSON.ObjectId("0000002a9a7969d24bea4cf4")],
+  ["uuid?", new Realm.BSON.UUID()],
+  ["date?", new Date("2000-01-01")],
+  ["data?", new Uint8Array([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09])],
   {
     type: "Car",
     schema: [{ name: "Car", properties: { model: "string" } }],
     value: (realm: Realm) => realm.create("Car", { model: "VW Touran" }),
   },
-  // List of bool
-  ["bool[]", []],
-  // Set of bool
-  ["bool<>", []],
-  // Dictionary of bool
-  ["bool{}", {}],
+  ["bool?[]", []],
+  ["bool?<>", []],
+  ["bool?{}", {}],
 ];
 
 describe.skipIf(environment.performance !== true, "Property read performance", () => {

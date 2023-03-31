@@ -76,16 +76,11 @@ export type PropertyHelpers = TypeHelpers &
     objectType?: string;
   };
 
-const defaultGet = ({ typeHelpers: { fromBinding }, columnKey, optional }: PropertyOptions) =>
-  optional
-    ? (obj: binding.Obj) => {
-        assert.isValid(obj);
-        return obj.isNull(columnKey) ? null : fromBinding(obj.getAny(columnKey));
-      }
-    : (obj: binding.Obj) => {
-        assert.isValid(obj);
-        return fromBinding(obj.getAny(columnKey));
-      };
+const defaultGet =
+  ({ typeHelpers: { fromBinding }, columnKey }: PropertyOptions) =>
+  (obj: binding.Obj) => {
+    return fromBinding(obj.getAny(columnKey));
+  };
 
 const defaultSet =
   ({ realm, typeHelpers: { toBinding }, columnKey }: PropertyOptions) =>
@@ -114,7 +109,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     assert(options.optional, "Objects are always nullable");
     return {
       get(this: PropertyHelpers, obj) {
-        return obj.isNull(columnKey) ? null : fromBinding(obj.getLinkedObject(columnKey));
+        return fromBinding(obj.getLinkedObject(columnKey));
       },
       set: embedded ? embeddedSet(options) : defaultSet(options),
     };

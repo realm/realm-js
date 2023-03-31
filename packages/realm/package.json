@@ -65,6 +65,9 @@
     "build:node:prebuild:ia32": "wireit",
     "build:android": "wireit",
     "build:ios": "wireit",
+    "build:ios:simulator": "wireit",
+    "build:ios:ios": "wireit",
+    "build:ios:catalyst": "wireit",
     "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'",
     "docs": "npx typedoc"
   },
@@ -72,7 +75,10 @@
     "test": {
       "command": "mocha",
       "dependencies": [
-        "build:node"
+        "build:node",
+        "bindgen:generate:typescript",
+        "bindgen:generate:wrappers",
+        "../realm-network-transport:bundle"
       ]
     },
     "bundle": {
@@ -192,7 +198,7 @@
       ]
     },
     "build:ios": {
-      "command": "../../scripts/build-ios.sh",
+      "command": "../../scripts/build-ios.sh -c ${CONFIGURATION:=Debug} ${PLATFORMS}",
       "dependencies": [
         "../..:submodules"
       ],
@@ -200,7 +206,33 @@
         "../../src/ios/**",
         "../bindgen/src/**/*.ts",
         "../bindgen/src/**/*.h"
-      ]
+      ],
+      "env": {
+        "PLATFORMS": {
+          "external": true
+        },
+        "CONFIGURATION": {
+          "external": true
+        }
+      }
+    },
+    "build:ios:simulator": {
+      "command": "npm run build:ios",
+      "env": {
+        "PLATFORMS": "simulator"
+      }
+    },
+    "build:ios:ios": {
+      "command": "npm run build:ios",
+      "env": {
+        "PLATFORMS": "ios"
+      }
+    },
+    "build:ios:catalyst": {
+      "command": "npm run build:ios",
+      "env": {
+        "PLATFORMS": "catalyst"
+      }
     }
   },
   "dependencies": {

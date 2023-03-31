@@ -230,7 +230,8 @@ describe("Babel plugin", () => {
     });
 
     describeProperty("link", {
-      type: "Person",
+      type: "object",
+      objectTypes: ["Person"],
     });
 
     // LinkingObjects has sufficiently unique syntax that we test it manually

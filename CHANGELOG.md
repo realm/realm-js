@@ -15,6 +15,7 @@ This can happen when the client creates/updates objects that do not match any su
   * Small (~5%) improvement when querying for a case insensitive match on a `mixed` property that does not have an index.
 
 ### Fixed
+* Fixed bootstrapping the native module on Android. Seen as Exception in HostObject::get for prop 'Realm': java.lang.NoClassDefFoundError: io.realm.react.RealmReactModule. ([#5666](https://github.com/realm/realm-js/issues/5666), since v12.0.0-alpha.0)
 * Fixed passing RealmObject instances between shared Realms. ([#5634](https://github.com/realm/realm-js/pull/5634), since v12.0.0-alpha.0)
 * Fixed a crash when querying a `mixed` property with a string operator (`contains`/`like`/`beginswith`/`endswith`) or with case insensitivity. ([realm/realm-core#6376](https://github.com/realm/realm-core/issues/6376, since v10.5.0)
 * Querying for equality of a string on an indexed `mixed` property was returning case insensitive matches. For example querying for `myIndexedMixed == "Foo"` would incorrectly match on values of `"foo"` or `"FOO"`. ([realm/realm-core#6376](https://github.com/realm/realm-core/issues/6376), since v10.5.0)
