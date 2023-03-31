@@ -127,4 +127,4 @@ integration-tests/**/.lock
 .rollup.cache/
 
 # Generated docs
-**/docs/**
+/packages/realm/docs/

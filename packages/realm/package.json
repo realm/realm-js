@@ -69,9 +69,15 @@
     "build:ios:ios": "wireit",
     "build:ios:catalyst": "wireit",
     "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'",
-    "docs": "npx typedoc"
+    "docs": "wireit"
   },
   "wireit": {
+    "docs": {
+      "command": "typedoc",
+      "dependencies": [
+        "bundle"
+      ]
+    },
     "test": {
       "command": "mocha",
       "dependencies": [
