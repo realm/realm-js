@@ -515,11 +515,11 @@ describe("Results", () => {
       expect(() => {
         //@ts-expect-error Expected to be an invalid sorted argument.
         objects.sorted(1);
-      }).throws("Expected either a property name and optional bool or an array of descriptors");
+      }).throws("Expected 'argument' to be property name and optional bool or an array of descriptors, got a number");
       expect(() => {
         //@ts-expect-error Expected to be an invalid sorted argument.
         objects.sorted([1]);
-      }).throws("A string was expected");
+      }).throws("Expected 'descriptor[0]' to be string or array with two elements [string, boolean], got a number");
 
       expect(() => {
         objects.sorted("fish");
@@ -531,7 +531,7 @@ describe("Results", () => {
       expect(() => {
         //@ts-expect-error Expected to be an invalid sorted argument.
         objects.sorted(["valueCol", "primaryCol"], true);
-      }).throws("Second argument is not allowed if passed an array of sort descriptors");
+      }).throws("Expected second 'argument' to be undefined, got a boolean");
 
       realm.close();
     });

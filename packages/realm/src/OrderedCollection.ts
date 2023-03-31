@@ -592,12 +592,21 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   sorted(descriptor: string, reverse?: boolean): Results<T>;
   sorted(arg0: boolean | SortDescriptor[] | string = "self", arg1?: boolean): Results<T> {
     if (Array.isArray(arg0)) {
-      assert(typeof arg1 === "undefined", "Second argument is not allowed if passed an array of sort descriptors");
+      assert.undefined(arg1, "second 'argument'");
       const { results: parent, realm, helpers } = this;
       // Map optional "reversed" to "ascending" (expected by the binding)
-      const descriptors = arg0.map<[string, boolean]>((arg) =>
-        typeof arg === "string" ? [arg, true] : [arg[0], !arg[1]],
-      );
+      const descriptors = arg0.map<[string, boolean]>((arg, i) => {
+        if (typeof arg === "string") {
+          return [arg, true];
+        } else if (Array.isArray(arg)) {
+          const [property, direction] = arg;
+          assert.string(property, "property");
+          assert.boolean(direction, "direction");
+          return [property, !direction];
+        } else {
+          throw new TypeAssertionError("string or array with two elements [string, boolean]", arg, `descriptor[${i}]`);
+        }
+      });
       // TODO: Call `parent.sort`, avoiding property name to column key conversion to speed up performance here.
       const results = parent.sortByNames(descriptors);
       return new Results(realm, results, helpers);
@@ -606,7 +615,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     } else if (typeof arg0 === "boolean") {
       return this.sorted([["self", arg0]]);
     } else {
-      throw new Error("Expected either a property name and optional bool or an array of descriptors");
+      throw new TypeAssertionError("property name and optional bool or an array of descriptors", arg0, "argument");
     }
   }
 
