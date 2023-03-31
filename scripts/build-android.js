@@ -72,7 +72,6 @@ if (options.clean) {
 
 fs.ensureDirSync(buildPath, { recursive: true });
 
-/*
 for (const arch of architectures) {
   console.log(`\nBuilding Realm JS Android for ${arch} (${buildType})`);
   console.log("=======================================");
@@ -100,7 +99,6 @@ for (const arch of architectures) {
   args = ["--build", "."];
   exec(cmakePath, args, { cwd: archBuildDir, stdio: "inherit" });
 }
-*/
 
 generateVersionFile();
 
