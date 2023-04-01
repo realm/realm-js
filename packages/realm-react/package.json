@@ -4,7 +4,7 @@
   "description": "React specific hooks and implementation helpers for Realm",
   "type": "module",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "types": "src/index.tsx",
   "source": "src/index.tsx",
   "scripts": {
     "bundle": "wireit",
@@ -20,7 +20,7 @@
         "../realm:bundle",
         "../realm-common:bundle"
       ],
-      "files": ["rollup.config.mjs", "src/**/*.ts", "src/**/*.tsx"],
+      "files": ["rollup.config.js", "src/**/*.ts", "src/**/*.tsx"],
       "output": ["dist"]
     },
     "test": {
@@ -77,7 +77,7 @@
     "dist",
     "types/realm",
     "LICENSE",
-    "lib",
+    "src",
     "package.json"
   ],
   "keywords": [

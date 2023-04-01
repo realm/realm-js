@@ -35,17 +35,4 @@ export default [
     plugins: [nodeResolve(), typescript({ noEmitOnError: true })],
     external: ["realm", "react", "@realm/common", "lodash"],
   },
-  {
-    input: "src/index.tsx",
-    output: {
-      file: pkg.types,
-      format: "es",
-    },
-    plugins: [
-      dts({
-        respectExternal: true,
-      }),
-    ],
-    external: ["realm", "react", "@realm/common", "lodash"],
-  },
 ];
