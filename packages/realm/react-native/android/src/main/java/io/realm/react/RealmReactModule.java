@@ -25,6 +25,7 @@ import android.util.Log;
 import com.facebook.react.bridge.JavaScriptContextHolder;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
+import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.react.turbomodule.core.CallInvokerHolderImpl;
 import com.facebook.soloader.SoLoader;
 
@@ -41,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Locale;
 
+@ReactModule(name = RealmReactModule.NAME)
 class RealmReactModule extends ReactContextBaseJavaModule {
     public static final String NAME = "Realm";
     private static boolean sentAnalytics = false;
