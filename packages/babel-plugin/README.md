@@ -243,6 +243,6 @@ This plugin does not change the behaviour of `Realm.Object`, which cannot be con
 To generate the output for your model (let's say it's located in `./models/task.ts`) you can run the babel transpiler manually on the file:
 
 ```
-npm install --save-dev @babel/cli
+npm install --save-dev @babel/cli @babel/preset-typescript
 npx babel --presets @babel/preset-typescript --plugins @realm/babel-plugin ./models/task.ts
 ```
