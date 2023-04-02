@@ -30,11 +30,12 @@
   },
   "license": "apache-2.0",
   "devDependencies": {
+    "@babel/core": "^7.21.3",
+    "@babel/cli": "^7.21.0",
     "@babel/plugin-proposal-decorators": "^7.17.9",
     "@babel/preset-typescript": "^7.16.7",
     "@types/babel__core": "^7.1.19",
     "@types/jest": "^27.4.1",
-    "babel": "^6.23.0",
     "jest": "^27.5.1",
     "realm": "*",
     "ts-jest": "^27.1.4",
