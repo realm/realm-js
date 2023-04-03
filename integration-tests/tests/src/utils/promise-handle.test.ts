@@ -18,17 +18,26 @@
 
 import { expect } from "chai";
 import { createPromiseHandle } from "./promise-handle";
+import { sleep } from "./sleep";
 
 describe("PromiseHandle", () => {
   it("resolves", async () => {
     const handle = createPromiseHandle<string>();
     handle.resolve("value");
-    expect(handle).eventually.equals("value");
+    await expect(handle).eventually.equals("value");
+  });
+
+  it("resolves asynchronously", async () => {
+    const handle = createPromiseHandle<string>();
+    const expectation = expect(handle).eventually.equals("value");
+    await sleep(10);
+    handle.resolve("value");
+    await expectation;
   });
 
   it("rejects", async () => {
     const handle = createPromiseHandle();
     handle.reject(new Error("err"));
-    expect(handle).rejectedWith("err");
+    await expect(handle).rejectedWith("err");
   });
 });
