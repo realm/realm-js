@@ -267,8 +267,9 @@ export class Realm {
    * @private Not a part of the public API: It's primarily used from the library's tests.
    */
   public static clearTestState(): void {
+    assert(flags.CLEAN_TEST_STATE, "Set the flag.CLEAN_TEST_STATE = true before calling this.");
     // Close any realms not already closed
-    for (const realm of this.internals) {
+    for (const realm of Realm.internals) {
       if (realm && !realm.isClosed) {
         realm.close();
       }
@@ -614,6 +615,9 @@ export class Realm {
 
       fs.ensureDirectoryForFile(bindingConfig.path);
       this.internal = internalConfig.internal ?? binding.Realm.getSharedRealm(bindingConfig);
+      if (flags.CLEAN_TEST_STATE) {
+        Realm.internals.add(this.internal);
+      }
 
       binding.Helpers.setBindingContext(this.internal, {
         didChange: (r) => {
@@ -629,7 +633,6 @@ export class Realm {
           this.beforeNotifyListeners.callback();
         },
       });
-      Realm.internals.add(this.internal);
     } else {
       const { internal, schemaExtras } = internalConfig;
       assert.instanceOf(internal, binding.Realm, "internal");
