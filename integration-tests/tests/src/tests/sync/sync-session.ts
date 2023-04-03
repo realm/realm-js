@@ -141,9 +141,8 @@ describe("SessionTest", () => {
       const config = {
         sync: undefined,
       };
-      await Realm.open(config).then((realm) => {
-        expect(realm.syncSession).to.be.null;
-      });
+      const realm = await Realm.open(config);
+      expect(realm.syncSession).to.be.null;
     });
 
     it("config with sync and inMemory set", async () => {
