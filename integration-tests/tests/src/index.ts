@@ -38,6 +38,7 @@ import "./utils/chai-plugin.test";
 import "./utils/listener-stub.test";
 import "./utils/promise-handle.test";
 import "./utils/sequence.test";
+import "./utils/mock-function.test";
 import "./mocha-internals.test";
 
 import "./tests";
