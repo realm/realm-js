@@ -42,26 +42,19 @@ public class RealmReactPackage extends TurboReactPackage implements ReactPackage
 
     @Override
     public ReactModuleInfoProvider getReactModuleInfoProvider() {
-        Class<? extends NativeModule>[] moduleList =
-                new Class[] {
-                        RealmReactModule.class, RealmReactModule.class,
-                };
-
         final Map<String, ReactModuleInfo> reactModuleInfoMap = new HashMap<>();
-        for (Class<? extends NativeModule> moduleClass : moduleList) {
-            ReactModule reactModule = moduleClass.getAnnotation(ReactModule.class);
+        ReactModule reactModule = RealmReactModule.class.getAnnotation(ReactModule.class);
 
-            reactModuleInfoMap.put(
-                    reactModule.name(),
-                    new ReactModuleInfo(
-                            reactModule.name(),
-                            moduleClass.getName(),
-                            false,
-                            reactModule.needsEagerInit(),
-                            reactModule.hasConstants(),
-                            reactModule.isCxxModule(),
-                            TurboModule.class.isAssignableFrom(moduleClass)));
-        }
+        reactModuleInfoMap.put(
+                reactModule.name(),
+                new ReactModuleInfo(
+                        reactModule.name(),
+                        RealmReactModule.class.getName(),
+                        false,
+                        reactModule.needsEagerInit(),
+                        reactModule.hasConstants(),
+                        reactModule.isCxxModule(),
+                        TurboModule.class.isAssignableFrom(RealmReactModule.class)));
 
         return new ReactModuleInfoProvider() {
             @Override
