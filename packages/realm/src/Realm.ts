@@ -259,7 +259,7 @@ export class Realm {
 
   public static defaultPath = Realm.normalizePath("default.realm");
 
-  private static internals = new Set<binding.Realm>();
+  private static internals = new Set<binding.WeakRef<binding.Realm>>();
 
   /**
    * Clears the state by closing and deleting any Realm in the default directory and logout all users.
@@ -268,19 +268,20 @@ export class Realm {
   public static clearTestState(): void {
     assert(flags.CLEAN_TEST_STATE, "Set the flag.CLEAN_TEST_STATE = true before calling this.");
     // Close any realms not already closed
-    for (const realm of Realm.internals) {
+    for (const realmRef of Realm.internals) {
+      const realm = realmRef.deref();
       if (realm && !realm.isClosed) {
         realm.close();
       }
     }
     Realm.internals.clear();
     binding.RealmCoordinator.clearAllCaches();
+    binding.App.clearCachedApps();
+    SyncSession.resetAllInternals();
 
     // Delete all Realm files in the default directory
     const defaultDirectoryPath = fs.getDefaultDirectoryPath();
     fs.removeRealmFilesFromDirectory(defaultDirectoryPath);
-
-    binding.App.clearCachedApps();
   }
 
   /**

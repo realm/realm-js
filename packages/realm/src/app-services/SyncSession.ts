@@ -34,6 +34,7 @@ import {
   User,
   assert,
   binding,
+  flags,
   fromBindingSyncError,
 } from "../internal";
 
@@ -262,6 +263,23 @@ const CONNECTION_LISTENERS = new Listeners<ConnectionNotificationCallback, Liste
 });
 
 export class SyncSession {
+  private static instances = new Set<binding.WeakRef<SyncSession>>();
+
+  /**
+   * Resets the internal shared pointer of all instances returned since this message was last called.
+   * @internal
+   */
+  public static resetAllInternals() {
+    assert(flags.CLEAN_TEST_STATE, "Set the flag.CLEAN_TEST_STATE = true before calling this.");
+    for (const sessionRef of SyncSession.instances) {
+      const session = sessionRef.deref();
+      if (session) {
+        session.resetInternal();
+      }
+    }
+    SyncSession.instances.clear();
+  }
+
   /** @internal */
   private _internal: binding.SyncSession | null;
   /** @internal */
@@ -273,6 +291,9 @@ export class SyncSession {
   /** @internal */
   constructor(internal: binding.SyncSession) {
     this._internal = internal;
+    if (flags.CLEAN_TEST_STATE) {
+      SyncSession.instances.add(new binding.WeakRef(this));
+    }
   }
 
   /**@internal*/
