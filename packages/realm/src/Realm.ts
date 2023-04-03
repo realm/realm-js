@@ -85,7 +85,6 @@ import {
   InsertManyResult,
   InsertOneResult,
   InvalidateEvent,
-  IterableWeakRefs,
   List,
   LocalAppConfiguration,
   LogLevel,
@@ -260,7 +259,7 @@ export class Realm {
 
   public static defaultPath = Realm.normalizePath("default.realm");
 
-  private static internals = new IterableWeakRefs<binding.Realm>();
+  private static internals = new Set<binding.Realm>();
 
   /**
    * Clears the state by closing and deleting any Realm in the default directory and logout all users.
