@@ -957,6 +957,8 @@ export class Realm {
       throw new Error("You cannot query an asymmetric object.");
     }
 
+    assert.numericString(objectKey);
+
     const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
     try {
       const objKey = binding.stringToObjKey(objectKey);
