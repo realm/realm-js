@@ -955,9 +955,9 @@ class JsiCppDecls extends CppDecls {
               return FWD(val).asBigInt(_env).asInt64(_env);
 
           auto obj = FWD(val).asObject(_env);
-          auto high = uint32_t(obj.getProperty(_env, ${this.addon.getPropId("high")}).asNumber());
-          auto low = uint32_t(obj.getProperty(_env, ${this.addon.getPropId("low")}).asNumber());
-          return int64_t((uint64_t(high) << 32) | low);
+          auto high = uint32_t(int32_t(obj.getProperty(_env, ${this.addon.getPropId("high")}).asNumber()));
+          auto low = uint32_t(int32_t(obj.getProperty(_env, ${this.addon.getPropId("low")}).asNumber()));
+          return (int64_t(high) << 32) | low;
         `,
       }),
       new CppFunc("bigIntToU64", "uint64_t", [new CppVar("jsi::Runtime&", env), new CppVar("auto&&", "val")], {
@@ -966,8 +966,8 @@ class JsiCppDecls extends CppDecls {
               return FWD(val).asBigInt(_env).asUint64(_env);
 
           auto obj = FWD(val).asObject(_env);
-          auto high = uint32_t(obj.getProperty(_env, ${this.addon.getPropId("high")}).asNumber());
-          auto low = uint32_t(obj.getProperty(_env, ${this.addon.getPropId("low")}).asNumber());
+          auto high = uint32_t(int32_t(obj.getProperty(_env, ${this.addon.getPropId("high")}).asNumber()));
+          auto low = uint32_t(int32_t(obj.getProperty(_env, ${this.addon.getPropId("low")}).asNumber()));
           return (uint64_t(high) << 32) | low;
         `,
       }),
