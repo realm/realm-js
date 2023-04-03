@@ -28,7 +28,7 @@ import { CollectionCallback, getObjectForPrimaryKey, getObjects } from "./helper
  */
 export function createUseObject(useRealm: () => Realm) {
   function useObject<T>(type: string, primaryKey: T[keyof T]): (T & Realm.Object<T>) | null;
-  function useObject<T extends Realm.Object>(type: { new (...args: any): T }, primaryKey: T[keyof T]): T | null;
+  function useObject<T extends Realm.Object<any>>(type: { new (...args: any): T }, primaryKey: T[keyof T]): T | null;
   function useObject<T extends Realm.Object>(
     type: string | { new (...args: any): T },
     primaryKey: T[keyof T],

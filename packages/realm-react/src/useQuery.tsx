@@ -30,7 +30,7 @@ import { getObjects } from "./helpers";
  */
 export function createUseQuery(useRealm: () => Realm) {
   function useQuery<T>(type: string): Realm.Results<T & Realm.Object<T>>;
-  function useQuery<T extends Realm.Object>(type: { new (...args: any): T }): Realm.Results<T>;
+  function useQuery<T extends Realm.Object<any>>(type: { new (...args: any): T }): Realm.Results<T>;
   function useQuery<T extends Realm.Object>(type: string | { new (...args: any): T }): Realm.Results<T> {
     const realm = useRealm();
 
