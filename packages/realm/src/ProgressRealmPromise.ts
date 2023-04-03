@@ -101,11 +101,7 @@ export class ProgressRealmPromise implements Promise<Realm> {
         this.task = binding.Realm.getSynchronizedRealm(bindingConfig);
         // If the promise handle gets rejected, we should cancel the open task
         // to avoid consuming a thread safe reference which is no longer registered
-        this.handle.promise.catch(() => {
-          if (this.task) {
-            this.task.cancel();
-          }
-        });
+        this.handle.promise.catch(() => this.task?.cancel());
 
         this.createTimeoutPromise(config, { openBehavior, timeOut, timeOutBehavior });
 
@@ -185,8 +181,8 @@ export class ProgressRealmPromise implements Promise<Realm> {
         // Make failing the timeout, resolve the promise
         this.timeoutPromise.catch((err) => {
           if (err instanceof TimeoutError) {
-            const realm = new Realm(config);
             this.cancelAndResetTask();
+            const realm = new Realm(config);
             this.handle.resolve(realm);
           } else {
             this.handle.reject(err);

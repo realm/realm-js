@@ -63,7 +63,7 @@ assert.number = (value: unknown, target?: string): asserts value is number => {
   assert(typeof value === "number", () => new TypeAssertionError("a number", value, target));
 };
 
-assert.numericString = (value: unknown, target?: string): asserts value is number => {
+assert.numericString = (value: unknown, target?: string) => {
   assert.string(value);
   assert(/^-?\d+$/.test(value), () => new TypeAssertionError("a numeric string", value, target));
 };
