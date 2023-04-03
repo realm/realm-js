@@ -32,7 +32,7 @@ export class PropertyMap {
   private initialized = false;
   private mapping: Record<string, PropertyHelpers | undefined> = {};
   /**
-   * Note: Cannot key by the binding.ColKey directly, as this is `Long` on JSC (which does not compare equal)
+   * Note: Cannot key by the binding.ColKey directly, as this is `Long` on JSC (which does not pass equality checks like `bigint` does)
    */
   private nameByColumnKeyString: Map<string, string> = new Map();
   private _names: string[] = [];

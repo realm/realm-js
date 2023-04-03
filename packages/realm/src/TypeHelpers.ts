@@ -86,7 +86,7 @@ export function mixedToBinding(realm: binding.Realm, value: unknown): binding.Mi
   if (typeof value === "string" || typeof value === "number" || typeof value === "boolean" || value === null) {
     // Fast track pass through for the most commonly used types
     return value;
-  } else if (typeof value === "undefined") {
+  } else if (value === undefined) {
     return null;
   } else if (value instanceof Date) {
     return binding.Timestamp.fromDate(value);
