@@ -85,7 +85,6 @@ import {
   InsertManyResult,
   InsertOneResult,
   InvalidateEvent,
-  IterableWeakRefs,
   List,
   LocalAppConfiguration,
   LogLevel,
@@ -260,27 +259,30 @@ export class Realm {
 
   public static defaultPath = Realm.normalizePath("default.realm");
 
-  private static internals = new IterableWeakRefs<binding.Realm>();
+  private static internals = new Set<binding.WeakRef<binding.Realm>>();
 
   /**
    * Clears the state by closing and deleting any Realm in the default directory and logout all users.
    * @private Not a part of the public API: It's primarily used from the library's tests.
    */
   public static clearTestState(): void {
+    assert(flags.CLEAN_TEST_STATE, "Set the flag.CLEAN_TEST_STATE = true before calling this.");
     // Close any realms not already closed
-    for (const realm of Realm.internals) {
+    for (const realmRef of Realm.internals) {
+      const realm = realmRef.deref();
       if (realm && !realm.isClosed) {
         realm.close();
       }
     }
     Realm.internals.clear();
     binding.RealmCoordinator.clearAllCaches();
+    binding.App.clearCachedApps();
+    ProgressRealmPromise.cancelAll();
+    SyncSession.resetAllInternals();
 
     // Delete all Realm files in the default directory
     const defaultDirectoryPath = fs.getDefaultDirectoryPath();
     fs.removeRealmFilesFromDirectory(defaultDirectoryPath);
-
-    binding.App.clearCachedApps();
   }
 
   /**
@@ -614,6 +616,9 @@ export class Realm {
 
       fs.ensureDirectoryForFile(bindingConfig.path);
       this.internal = internalConfig.internal ?? binding.Realm.getSharedRealm(bindingConfig);
+      if (flags.CLEAN_TEST_STATE) {
+        Realm.internals.add(new binding.WeakRef(this.internal));
+      }
 
       binding.Helpers.setBindingContext(this.internal, {
         didChange: (r) => {
@@ -629,7 +634,6 @@ export class Realm {
           this.beforeNotifyListeners.notify();
         },
       });
-      Realm.internals.add(this.internal);
     } else {
       const { internal, schemaExtras } = internalConfig;
       assert.instanceOf(internal, binding.Realm, "internal");
