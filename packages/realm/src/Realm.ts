@@ -617,7 +617,7 @@ export class Realm {
       fs.ensureDirectoryForFile(bindingConfig.path);
       this.internal = internalConfig.internal ?? binding.Realm.getSharedRealm(bindingConfig);
       if (flags.CLEAN_TEST_STATE) {
-        Realm.internals.add(this.internal);
+        Realm.internals.add(new binding.WeakRef(this.internal));
       }
 
       binding.Helpers.setBindingContext(this.internal, {
