@@ -1500,19 +1500,16 @@ describe("Realmtest", () => {
     openRealmBeforeEach({ schema: [] });
 
     it("gives correct function and error message", function (this: RealmContext) {
-      function failingFunction() {
-        throw new Error("not implemented");
-      }
-
       try {
-        this.realm.write(() => {
-          failingFunction();
+        this.realm.write(function failingFunction() {
+          throw new Error("boom");
         });
-      } catch (e: any) {
-        expect(e.stack).not.equals(undefined, "e.stack should not be undefined");
-        expect(e.stack).not.equals(null, "e.stack should not be null");
-        expect(e.stack.indexOf("at failingFunction (") !== -1).to.be.true;
-        expect(e.stack.indexOf("not implemented") !== -1).to.be.true;
+      } catch (e) {
+        expect(e).instanceOf(Error);
+        if (e instanceof Error) {
+          expect(e.message).contains("boom");
+          expect(e.stack).contains("failingFunction");
+        }
       }
     });
   });
