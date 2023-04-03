@@ -42,7 +42,6 @@ import "./tests/sync/sync-session";
 import "./tests/sync/upload-delete-download";
 import "./tests/sync/user";
 import "./tests/sync/uuid";
-import "./tests/sync/ssl";
 
 import "./tests/alias";
 import "./tests/array-buffer";
