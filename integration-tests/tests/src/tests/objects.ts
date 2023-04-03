@@ -1113,10 +1113,11 @@ describe("Realm.Object", () => {
       const freeKey = obj._objectKey();
       //@ts-expect-error uses private method.
       const obj1 = this.realm._objectForObjectKey(AgeSchema.name, "1" + freeKey);
-      //@ts-expect-error uses private method.
-      const obj2 = this.realm._objectForObjectKey(AgeSchema.name, "invalid int64_t");
       expect(obj1).to.be.undefined;
-      expect(obj2).to.be.undefined;
+      expect(() => {
+        //@ts-expect-error uses private method.
+        this.realm._objectForObjectKey(AgeSchema.name, "invalid int64_t");
+      }).throws("Expected value to be a numeric string, got a string");
     });
 
     it("modifying object fetched from key propagates", async function (this: Mocha.Context & RealmContext) {
