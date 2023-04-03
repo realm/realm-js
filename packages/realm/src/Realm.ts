@@ -277,6 +277,7 @@ export class Realm {
     Realm.internals.clear();
     binding.RealmCoordinator.clearAllCaches();
     binding.App.clearCachedApps();
+    ProgressRealmPromise.cancelAll();
     SyncSession.resetAllInternals();
 
     // Delete all Realm files in the default directory

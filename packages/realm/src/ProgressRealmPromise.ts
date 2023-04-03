@@ -28,6 +28,7 @@ import {
   TimeoutPromise,
   assert,
   binding,
+  flags,
   validateConfiguration,
 } from "./internal";
 
@@ -58,6 +59,21 @@ function determineBehavior(config: Configuration, realmExists: boolean): OpenBeh
 
 export class ProgressRealmPromise implements Promise<Realm> {
   /** @internal */
+  private static instances = new Set<binding.WeakRef<ProgressRealmPromise>>();
+  /**
+   * Cancels all unresolved `ProgressRealmPromise` instances.
+   * @internal
+   */
+  public static cancelAll() {
+    for (const promiseRef of ProgressRealmPromise.instances) {
+      const promise = promiseRef.deref();
+      if (promise) {
+        promise.cancel();
+      }
+    }
+    ProgressRealmPromise.instances.clear();
+  }
+  /** @internal */
   private task: binding.AsyncOpenTask | null = null;
   /** @internal */
   private listeners = new Set<ProgressNotificationCallback>();
@@ -68,6 +84,9 @@ export class ProgressRealmPromise implements Promise<Realm> {
 
   /** @internal */
   constructor(config: Configuration) {
+    if (flags.CLEAN_TEST_STATE) {
+      ProgressRealmPromise.instances.add(new binding.WeakRef(this));
+    }
     try {
       validateConfiguration(config);
       // Calling `Realm.exists()` before `binding.Realm.getSynchronizedRealm()` is necessary to capture
@@ -135,10 +154,17 @@ export class ProgressRealmPromise implements Promise<Realm> {
   }
 
   cancel(): void {
-    this.task?.cancel();
+    if (this.task) {
+      this.task.cancel();
+      this.task.$resetSharedPtr();
+      this.task = null;
+    }
     this.timeoutPromise?.cancel();
     // Clearing all listeners to avoid accidental progress notifications
     this.listeners.clear();
+    // Tell anything awaiting the promise
+    const err = new Error("Async open canceled");
+    this.handle.reject(err);
   }
 
   progress(callback: ProgressNotificationCallback): this {
