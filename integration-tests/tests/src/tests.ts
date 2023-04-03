@@ -25,7 +25,6 @@ import "./tests/credentials/jwt";
 import "./tests/sync/app";
 import "./tests/sync/asymmetric";
 import "./tests/sync/client-reset";
-import "./tests/sync/client-reset";
 import "./tests/sync/dictionary";
 import "./tests/sync/encryption";
 import "./tests/sync/flexible";
