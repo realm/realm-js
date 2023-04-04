@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "noResolve": false,
+    "incremental": true,
+    "resolveJsonModule": true
+  },
+  "exclude": [
+    "../tests/",
+    "../react-native/",
+    "../../type-tests/"
+  ],
+}

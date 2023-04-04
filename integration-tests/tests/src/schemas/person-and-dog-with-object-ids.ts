@@ -18,7 +18,7 @@
 
 /* tslint:disable max-classes-per-file */
 
-import Realm from "realm";
+import { Realm } from "realm";
 
 export interface IPerson {
   _id: Realm.BSON.ObjectId;
@@ -39,7 +39,7 @@ export const PersonSchema: Realm.ObjectSchema = {
   },
 };
 
-export class Person extends Realm.Object implements IPerson {
+export class Person extends Realm.Object<Person> implements IPerson {
   _id!: Realm.BSON.ObjectId;
   name!: string;
   age!: number;
@@ -67,7 +67,7 @@ export const DogSchema: Realm.ObjectSchema = {
   },
 };
 
-export class Dog extends Realm.Object implements IDog {
+export class Dog extends Realm.Object<Dog> implements IDog {
   _id!: Realm.BSON.ObjectId;
   name!: string;
   age!: number;

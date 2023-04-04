@@ -81,7 +81,7 @@ const listRenderCounter = jest.fn();
 const objectChangeCounter = jest.fn();
 const listChangeCounter = jest.fn();
 
-let testRealm: Realm = new Realm(configuration);
+const testRealm: Realm = new Realm(configuration);
 
 const testCollection = [...new Array(100)].map(() => {
   const id = new Realm.BSON.ObjectId();
@@ -89,10 +89,7 @@ const testCollection = [...new Array(100)].map(() => {
 });
 
 const useRealm = () => {
-  testRealm = new Realm(configuration);
-  const realm = useRef(testRealm);
-
-  return realm.current;
+  return testRealm;
 };
 
 const useObject = createUseObject(useRealm);
@@ -113,11 +110,13 @@ const parentObjectId = new Realm.BSON.ObjectId();
 const SetupComponent = ({ children }: { children: JSX.Element }): JSX.Element | null => {
   const realm = useRealm();
 
+  /*
   useEffect(() => {
     return () => {
       realm.close();
     };
   }, [realm]);
+  */
 
   const [setupComplete, setSetupComplete] = useState(false);
   useEffect(() => {

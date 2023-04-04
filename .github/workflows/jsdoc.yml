@@ -17,6 +17,8 @@ env:
   REALM_DISABLE_ANALYTICS: 1
 jobs:
   jsdoc:
+    # Skipping this for now - until we've choosen a way to generate documentation for v12
+    if: ${{ false }}
     name: JSDoc
     runs-on: ubuntu-latest
     steps:
@@ -25,10 +27,7 @@ jobs:
           submodules: "recursive"
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
-          registry-url: https://registry.npmjs.org/
-      - name: Install npm v7
-        run: npm install -g npm@8
+          node-version: 18
       # Install the root package (--ignore-scripts to avoid downloading or building the native module)
       - name: Install root package dependencies
         run: npm ci --ignore-scripts

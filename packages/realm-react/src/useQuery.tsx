@@ -27,9 +27,9 @@ import { createCachedCollection } from "./cachedCollection";
  * @returns useObject - Hook that is used to gain access to a {@link Realm.Collection}
  */
 export function createUseQuery(useRealm: () => Realm) {
-  return function useQuery<T>(
-    type: string | ({ new (...args: any): T } & Realm.ObjectClass),
-  ): Realm.Results<T & Realm.Object> {
+  function useQuery<T>(type: string): Realm.Results<T & Realm.Object<T>>;
+  function useQuery<T extends Realm.Object<any>>(type: { new (...args: any): T }): Realm.Results<T>;
+  function useQuery<T extends Realm.Object>(type: string | { new (...args: any): T }): Realm.Results<T> {
     const realm = useRealm();
 
     // Create a forceRerender function for the cachedCollection to use as its updateCallback, so that
@@ -40,8 +40,8 @@ export function createUseQuery(useRealm: () => Realm) {
 
     // Wrap the cachedObject in useMemo, so we only replace it with a new instance if `primaryKey` or `type` change
     const { collection, tearDown } = useMemo(() => {
-      return createCachedCollection({
-        collection: realm.objects(type),
+      return createCachedCollection<T>({
+        collection: getObjects(realm, type),
         realm,
         updateCallback: forceRerender,
         updatedRef,
@@ -61,6 +61,7 @@ export function createUseQuery(useRealm: () => Realm) {
     }
 
     // This will never not be defined, but the type system doesn't know that
-    return collectionRef.current as Realm.Results<T & Realm.Object>;
-  };
+    return collectionRef.current as Realm.Results<T>;
+  }
+  return useQuery;
 }

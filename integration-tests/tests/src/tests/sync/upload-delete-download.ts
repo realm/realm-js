@@ -16,15 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { closeAndReopenRealm } from "../../utils/close-realm";
-
 export function itUploadsDeletesAndDownloads(): void {
   it("uploads, cleans and downloads", async function (this: RealmContext) {
     if (!this.realm) {
       throw new Error("Expected a 'realm' on the mocha context");
-    }
-    if (!this.config) {
-      throw new Error("Expected a 'config' on the mocha context");
     }
     if (!this.realm.syncSession) {
       throw new Error("Expected a 'syncSession' on the realm");
@@ -32,7 +27,7 @@ export function itUploadsDeletesAndDownloads(): void {
 
     await this.realm.syncSession.uploadAllLocalChanges();
 
-    this.realm = await closeAndReopenRealm(this.realm, this.config);
+    await this.closeRealm({ deleteFile: true, clearTestState: true, reopen: true });
 
     if (!this.realm.syncSession) {
       throw new Error("Expected a 'syncSession' on the realm");

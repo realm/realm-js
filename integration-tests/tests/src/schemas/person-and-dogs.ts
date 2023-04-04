@@ -18,13 +18,13 @@
 
 /* tslint:disable max-classes-per-file */
 
-import Realm from "realm";
+import { Realm } from "realm";
 
 export interface IPerson {
   name: string;
   age: number;
   friends: Realm.List<IPerson>;
-  dogs: Realm.Collection<IDog>;
+  dogs: Realm.Results<IDog>;
 }
 
 export const PersonSchema: Realm.ObjectSchema = {
@@ -37,7 +37,7 @@ export const PersonSchema: Realm.ObjectSchema = {
   },
 };
 
-export class Person extends Realm.Object {
+export class Person extends Realm.Object<Person> {
   name!: string;
   age!: number;
   friends!: Realm.List<Person>;
@@ -65,7 +65,7 @@ export const DogSchema: Realm.ObjectSchema = {
   },
 };
 
-export class Dog extends Realm.Object {
+export class Dog extends Realm.Object<Dog> {
   name!: string;
   age!: number;
   owner!: Person;

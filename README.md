@@ -55,7 +55,7 @@ The documentation for the Realm React Native SDK can be found at [mongodb.com/do
 
 The API reference is located at [docs.mongodb.com/realm-sdks/js/latest/](https://docs.mongodb.com/realm-sdks/js/latest/).
 
-If you are using React Native, please also take a look the README for [@realm/react](https://github.com/realm/realm-js/tree/master/packages/realm-react#readme), which provides React hooks to make working with Realm easier.
+If you are using React Native, please also take a look the README for [@realm/react](https://github.com/realm/realm-js/tree/main/packages/realm-react#readme), which provides React hooks to make working with Realm easier.
 
 ### TypeScript models
 
@@ -90,13 +90,13 @@ Moreover, we have a [Flipper plugin](https://www.npmjs.com/package/realm-flipper
 We have TypeScript and JavaScript templates to help you get started using Realm.  Follow the links to your desired template and follow the instructions there to get up and running fast.
 ### Using Expo
 
-- [TypeScript](https://github.com/realm/realm-js/tree/master/templates/expo-template-ts#readme)
-- [JavaScript](https://github.com/realm/realm-js/tree/master/templates/expo-template-js#readme)
+- [TypeScript](https://github.com/realm/realm-js/tree/main/templates/expo-template-ts#readme)
+- [JavaScript](https://github.com/realm/realm-js/tree/main/templates/expo-template-js#readme)
 
 ### React Native
 
-- [TypeScript](https://github.com/realm/realm-js/tree/master/templates/react-native-template-realm-ts#readme)
-- [JavaScript](https://github.com/realm/realm-js/tree/master/templates/react-native-template-realm-js#readme)
+- [TypeScript](https://github.com/realm/realm-js/tree/main/templates/react-native-template-realm-ts#readme)
+- [JavaScript](https://github.com/realm/realm-js/tree/main/templates/react-native-template-realm-js#readme)
 ## Getting Help
 
 * **Need help with your code?**: Look for previous questions on the  [#realm tag](https://stackoverflow.com/questions/tagged/realm?sort=newest) — or [ask a new question](https://stackoverflow.com/questions/ask?tags=realm). You can also check out our [Community Forum](https://developer.mongodb.com/community/forums/tags/c/realm/9/realm-sdk) where general questions about how to do something can be discussed.
@@ -105,7 +105,7 @@ We have TypeScript and JavaScript templates to help you get started using Realm.
 
 ## Contributing
 
-See [CONTRIBUTING.md](https://github.com/realm/realm-js/blob/master/CONTRIBUTING.md) for more details!
+See [CONTRIBUTING.md](https://github.com/realm/realm-js/blob/main/CONTRIBUTING.md) for more details!
 
 ## Known issues
 

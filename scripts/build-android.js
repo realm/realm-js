@@ -21,10 +21,23 @@ const fs = require("fs-extra");
 const path = require("path");
 const exec = require("child_process").execFileSync;
 
-//simple validation of current directory.
-const rnDir = path.resolve(process.cwd(), "react-native");
-if (!fs.existsSync(rnDir)) {
-  throw new Error("This script needs to be run at the root dir of the project");
+const { version } = require("realm/package.json");
+
+const packageRoot = path.resolve(__dirname, "..");
+
+const NDK_VERSION = "23.1.7779620";
+
+const { ANDROID_SDK_ROOT } = process.env;
+if (!fs.existsSync(ANDROID_SDK_ROOT)) {
+  console.error(`Missing the Android SDK ${ANDROID_SDK_ROOT}`);
+  process.exit(1);
+}
+
+const ndkPath = path.resolve(ANDROID_SDK_ROOT, "ndk", NDK_VERSION);
+if (!fs.existsSync(ndkPath)) {
+  const cmd = `sdkmanager --install "ndk;${NDK_VERSION}"`;
+  console.error(`Missing Android NDK v${NDK_VERSION} (${ndkPath}) - run: ${cmd}`);
+  process.exit(1);
 }
 
 const buildTypes = ["Debug", "Release", "RelWithDebInfo", "MinSizeRel"];
@@ -48,14 +61,9 @@ if (options.arch) {
 
 const buildType = options.buildType;
 
-const ndkPath = process.env["ANDROID_NDK"] || process.env["ANDROID_NDK_HOME"];
-if (!ndkPath) {
-  throw Error("ANDROID_NDK / ANDROID_NDK_HOME environment variable not set");
-}
-
 const cmakePath = process.platform === "win32" ? "cmake.exe" : "cmake";
 
-const buildPath = path.resolve(process.cwd(), "build-android");
+const buildPath = path.resolve(packageRoot, "build-android");
 if (options.clean) {
   if (fs.existsSync(buildPath)) {
     fs.removeSync(buildPath);
@@ -74,7 +82,6 @@ for (const arch of architectures) {
   }
 
   let args = [
-    cmakePath,
     "-GNinja",
     `-DANDROID_NDK=${ndkPath}`,
     `-DANDROID_ABI=${arch}`,
@@ -84,7 +91,7 @@ for (const arch of architectures) {
     "-DANDROID_NATIVE_API_LEVEL=16",
     `-DCMAKE_BUILD_TYPE=${buildType}`,
     "-DANDROID_STL=c++_shared",
-    process.cwd(),
+    path.resolve(packageRoot, "packages/bindgen"),
   ];
   exec(cmakePath, args, { cwd: archBuildDir, stdio: "inherit" });
 
@@ -97,7 +104,9 @@ generateVersionFile();
 
 function generateVersionFile() {
   const targetFile = path.resolve(
-    process.cwd(),
+    packageRoot,
+    "packages",
+    "realm",
     "react-native",
     "android",
     "src",
@@ -108,7 +117,6 @@ function generateVersionFile() {
     "react",
     "Version.java",
   );
-  const version = getVersion();
   const versionFileContents = `package io.realm.react;
 
 public class Version {
@@ -117,23 +125,6 @@ public class Version {
 `;
 
   fs.writeFileSync(targetFile, versionFileContents);
-}
-
-function getVersion() {
-  const depencenciesListFile = path.resolve(process.cwd(), "dependencies.list");
-  const contents = fs.readFileSync(depencenciesListFile, "UTF-8");
-  const lines = contents.split(/\r?\n/);
-  const versionValue = lines.find((line) => line.startsWith("VERSION="));
-  if (!versionValue) {
-    throw new Error("Realm version not found. Invalid dependencies.list file");
-  }
-
-  const version = versionValue.split("=")[1];
-  if (!version) {
-    throw new Error("Realm version not found. Invalid version value in dependencies.list file");
-  }
-
-  return version;
 }
 
 function validateBuildType(buildTypeOption) {

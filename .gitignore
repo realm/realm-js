@@ -14,7 +14,9 @@
 *.realm
 *.realm.lock
 *.realm.fresh.lock
+*.realm.note
 *.management/
+*.realm.backup-log
 
 vendor/realm-*
 !vendor/realm-core
@@ -103,3 +105,23 @@ integration-tests/**/.lock
 # Ignore template package-lock.json files
 /templates/*/package-lock.json
 /templats/*/template/package-lock.json
+
+# Generated artifacts
+/packages/bindgen/generated/
+/packages/realm/generated/
+
+# Build artifacts
+/packages/realm/dist/
+/packages/realm/prebuilds/
+/packages/realm/react-native/android/src/main/java/io/realm/react/Version.java
+/packages/realm/react-native/android/src/main/jniLibs/
+/packages/realm/react-native/ios/realm-js-ios.xcframework/
+
+# Wireit repo caches
+.wireit
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Rollup
+.rollup.cache/

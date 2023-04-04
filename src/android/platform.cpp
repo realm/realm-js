@@ -52,14 +52,14 @@ void set_asset_manager(AAssetManager* asset_manager)
     s_asset_manager = asset_manager;
 }
 
-std::string default_realm_file_directory()
+std::string JsPlatformHelpers::default_realm_file_directory()
 {
     return s_default_realm_directory;
 }
 
-void ensure_directory_exists_for_file(const std::string& file) {}
+void JsPlatformHelpers::ensure_directory_exists_for_file(const std::string& file) {}
 
-void copy_bundled_realm_files()
+void JsPlatformHelpers::copy_bundled_realm_files()
 {
     AAssetDir* assetDir = AAssetManager_openDir(s_asset_manager, "");
     const char* filename = nullptr;
@@ -86,13 +86,13 @@ void copy_bundled_realm_files()
     AAssetDir_close(assetDir);
 }
 
-void remove_realm_files_from_directory(const std::string& directory)
+void JsPlatformHelpers::remove_realm_files_from_directory(const std::string& directory)
 {
     std::string cmd = "rm " + s_default_realm_directory + "/*.realm " + s_default_realm_directory + "/*.realm.lock";
     system(cmd.c_str());
 }
 
-void remove_directory(const std::string& path)
+void JsPlatformHelpers::remove_directory(const std::string& path)
 {
     std::string cmd_clear_dir = "rm " + path + "/*";
     system(cmd_clear_dir.c_str());
@@ -101,13 +101,13 @@ void remove_directory(const std::string& path)
     system(cmd_rmdir.c_str());
 }
 
-void remove_file(const std::string& path)
+void JsPlatformHelpers::remove_file(const std::string& path)
 {
     std::string cmd = "rm " + path;
     system(cmd.c_str());
 }
 
-void print(const char* fmt, ...)
+void JsPlatformHelpers::print(const char* fmt, ...)
 {
     va_list vl;
     va_start(vl, fmt);
@@ -115,7 +115,7 @@ void print(const char* fmt, ...)
     va_end(vl);
 }
 
-std::string get_cpu_arch()
+std::string JsPlatformHelpers::get_cpu_arch()
 {
 #if defined(__arm__)
     return "armeabi-v7a";

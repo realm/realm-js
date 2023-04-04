@@ -1,0 +1,1299 @@
+# yaml-language-server: $schema=generated/spec.schema.json
+
+headers:
+  - "realm/sync/config.hpp"
+  - "realm/sync/subscriptions.hpp"
+  - "realm/object-store/shared_realm.hpp"
+  - "realm/object-store/object_store.hpp"
+  - "realm/object-store/object_schema.hpp"
+  - "realm/object-store/results.hpp"
+  - "realm/object-store/thread_safe_reference.hpp"
+  - "realm/object-store/util/scheduler.hpp"
+  - "realm/object-store/collection_notifications.hpp"
+  - "realm/object-store/impl/object_notifier.hpp"
+  - "realm/object-store/impl/realm_coordinator.hpp"
+  - "realm/object-store/sync/async_open_task.hpp"
+  - "realm/object-store/sync/app_credentials.hpp"
+  - "realm/object-store/sync/generic_network_transport.hpp"
+  - "realm/object-store/sync/app.hpp"
+  - "realm/object-store/sync/sync_manager.hpp"
+  - "realm/object-store/sync/sync_session.hpp"
+  - "realm/object-store/sync/sync_user.hpp"
+  - "realm/object-store/sync/mongo_collection.hpp"
+  - "realm/object-store/util/bson/bson.hpp"
+
+primitives:
+  # TODO need to distinguish 64bit types where all bits are needed vs where double would be fine
+  - int32_t
+  - int64_t
+  - uint64_t
+  - count_t # size_t but only used for counts (so never > 2**52, which when doubles stop having full precision)
+  - double
+  - float
+  - bool
+  - void
+  - std::string
+  - std::string_view
+  # TODO: see if we need nullable versions of these. For now null buffers are treated as empty.
+  - StringData
+  - OwnedBinaryData
+  - BinaryData
+  - Mixed
+  - bson::BsonDocument # Suggestion: handle like EJsonObj by converting via EJSON string
+  - bson::BsonArray # Suggestion: handle like EJsonArray by converting via EJSON string
+  - ObjectId
+  - Decimal128
+  - UUID
+  - EncryptionKey # vector<char> in C++, but should have API of OwnedBinaryData in SDK
+                  # TODO consider changing type in realm-core.
+  - AppError
+  - std::exception_ptr
+  - std::error_code
+  - Status
+  - QueryArg # variant<Mixed, vector<Mixed>> (don't want to support arbitrary variants as a template, because we need logic to distinguish the cases)
+
+  # These are all strings in C++, but parsed/serialized EJSON in the binding.
+  - EJson
+  - EJsonArray
+  - EJsonObj
+
+typeAliases:
+  int: int32_t
+  KeyPath: std::vector<std::pair<TableKey, ColKey>>
+  KeyPathArray: std::vector<KeyPath>
+  IndexRange: std::pair<count_t, count_t>
+  AppCredentialsToken: std::string
+  Email: std::string
+  SchemaVersion: int64_t # is uint64_t in C++ but -1 is used as a sentinel.
+
+templates: # value tells you how many arguments it takes ('*' means any number)
+  util::Optional: 1
+  std::vector: 1
+  std::shared_ptr: 1
+  std::pair: 2
+  std::tuple: '*'
+  std::unordered_map: 2
+  std::map: 2
+  util::UniqueFunction: 1
+  std::function: 1
+  AsyncCallback: 1 # same as UniqueFunction, but guaranteed to be called exactly once.
+                   # Recommended to convert to Future/Promise/Task in bound language.
+  AsyncResult: 1 # Synthetic type. Not used in spec, but created by utilities.
+  Nullable: 1 # By default most types in the spec are assumed to be non-null. This marks those that are nullable.
+  IgnoreArgument: 1
+
+mixedInfo:
+  dataTypes:
+    Int:
+      getter: get_int
+      type: int64_t
+    Bool:
+      getter: get_bool
+      type: bool
+    Float:
+      getter: get_float
+      type: float
+    Double:
+      getter: get_double
+      type: double
+    String:
+      getter: get_string
+      type: StringData
+    Binary:
+      getter: get_binary
+      type: BinaryData
+    Timestamp:
+      getter: get_timestamp
+      type: Timestamp
+    Decimal:
+      getter: get_decimal
+      type: Decimal128
+    ObjectId:
+      getter: get_object_id
+      type: ObjectId
+    UUID:
+      getter: get_uuid
+      type: UUID
+    TypedLink:
+      getter: get_link # get_link is for TypedLink, not Link!
+      type: ObjLink
+    Link:
+      getter: get<ObjKey>
+      type: ObjKey
+  unusedDataTypes:
+    - Mixed
+    - LinkList
+  extraCtors:
+    - Obj
+
+enums:
+  SchemaMode:
+    values:
+      - Automatic
+      - Immutable
+      - ReadOnly
+      - SoftResetFile
+      - HardResetFile
+      - AdditiveDiscovered
+      - AdditiveExplicit
+      - Manual
+
+  PropertyType:
+    values:
+      Int: 0
+      Bool: 1
+      String: 2
+      Data: 3
+      Date: 4
+      Float: 5
+      Double: 6
+      Object: 7         # currently must be either Array xor Nullable
+      LinkingObjects: 8 # currently must be Array and not Nullable
+
+      Mixed: 9
+      ObjectId: 10
+      Decimal: 11
+      UUID: 12
+
+      # Flags which can be combined with any of the above types except as noted
+      Required: 0
+      Nullable: 64
+      Array: 128
+      Set: 256
+      Dictionary: 512
+
+      Collection: 896 # Array | Set | Dictionary
+      Flags: 960 # Nullable | Collection
+
+  TableType:
+    cppName: ObjectSchema::ObjectType
+    values:
+      TopLevel: 0
+      Embedded: 1
+      TopLevelAsymmetric: 0x2
+
+  ClientResetMode:
+    cppName: ClientResyncMode
+    values:
+      - Manual
+      - DiscardLocal 
+      - Recover
+      - RecoverOrDiscard
+
+  DataType:
+    cppName: DataType::Type
+    values:
+      Int: 0
+      Bool: 1
+      String: 2
+      Binary: 4
+      Mixed: 6
+      Timestamp: 8
+      Float: 9
+      Double: 10
+      Decimal: 11
+      Link: 12
+      LinkList: 13
+      ObjectId: 15
+      TypedLink: 16
+      UUID: 17
+
+  AuthProvider:
+    cppName: app::AuthProvider
+    values:
+      - ANONYMOUS
+      - ANONYMOUS_NO_REUSE
+      - FACEBOOK
+      - GOOGLE
+      - APPLE
+      - CUSTOM
+      - USERNAME_PASSWORD
+      - FUNCTION
+      - USER_API_KEY
+      - SERVER_API_KEY
+  MetadataMode:
+    cppName: SyncClientConfig::MetadataMode
+    values:
+      - NoEncryption
+      - Encryption
+      - NoMetadata
+  LoggerLevel:
+    cppName: util::Logger::Level
+    values:
+      - all
+      - trace
+      - debug
+      - detail
+      - info
+      - warn
+      - error
+      - fatal
+      - off
+  HttpMethod:
+    cppName: app::HttpMethod
+    values:
+      - get
+      - post
+      - patch
+      - put
+      - del
+  SyncSessionStopPolicy:
+    values:
+      - Immediately
+      - LiveIndefinitely
+      - AfterChangesUploaded
+  SyncSessionState:
+    cppName: SyncSession::State
+    values:
+      - Active
+      - Dying
+      - Inactive
+      - WaitingForAccessToken
+  SyncSessionConnectionState:
+    cppName: SyncSession::ConnectionState
+    values:
+      - Disconnected
+      - Connecting
+      - Connected
+  SyncErrorAction:
+    cppName: sync::ProtocolErrorInfo::Action
+    values:
+      - NoAction
+      - ProtocolViolation
+      - ApplicationBug
+      - Warning
+      - Transient
+      - DeleteRealm
+      - ClientReset
+      - ClientResetNoRecovery
+  ProgressDirection:
+    cppName: SyncSession::ProgressDirection
+    values:
+      - upload
+      - download
+  SyncUserState:
+    cppName: SyncUser::State
+    values:
+      - LoggedOut
+      - LoggedIn
+      - Removed
+  SyncSubscriptionSetState:
+    cppName: sync::SubscriptionSet::State
+    values:
+      - Uncommitted
+      - Pending
+      - Bootstrapping
+      - Complete
+      - Error
+      - Superseded
+      - AwaitingMark
+  WatchStreamState:
+    cppName: app::WatchStream::State
+    values:
+      - NEED_DATA
+      - HAVE_EVENT
+      - HAVE_ERROR
+
+# These types are handled specially. They must be structs with a single fields named "value".
+keyTypes:
+  ColKey: int64_t
+  ObjKey: int64_t
+  TableKey: int32_t
+
+records:
+  Property:
+    fields:
+      name: std::string
+      public_name:
+        type: std::string
+        default: ""
+      type:
+        type: PropertyType
+      object_type:
+        type: std::string
+        default: ""
+      link_origin_property_name:
+        type: std::string
+        default: ""
+      is_primary:
+        type: bool
+        default: false
+      is_indexed:
+        type: bool
+        default: false
+      column_key:
+        type: ColKey
+        default: {}
+  VersionID:
+    fields:
+      version:
+        type: int64_t
+        default: 0x7FFF_FFFF_FFFF_FFFF
+      index:
+        type: int32_t
+        default: 0
+  ObjectSchema:
+    fields:
+      name: std::string
+      persisted_properties:
+        type: std::vector<Property>
+        default: []
+      computed_properties:
+        type: std::vector<Property>
+        default: []
+      primary_key:
+        type: std::string
+        default: ''
+      table_key:
+        type: TableKey
+        default: {}
+      table_type:
+        type: TableType
+        default: TopLevel
+      alias:
+        type: std::string
+        default: ''
+
+  RealmConfig:
+    fields:
+      path: std::string
+      cache:
+        type: bool
+        default: false
+      # realm_data: BinaryData
+      encryption_key:
+        type: EncryptionKey
+        default: {}
+      fifo_files_fallback_path:
+        type: std::string
+        default: ""
+      in_memory:
+        type: bool
+        default: false
+      schema: util::Optional<std::vector<ObjectSchema>>
+      schema_version:
+        type: SchemaVersion
+        default: -1
+      schema_mode:
+        type: SchemaMode
+        default: SchemaMode::Automatic
+      disable_format_upgrade:
+        type: bool
+        default: false
+      sync_config: Nullable<std::shared_ptr<SyncConfig>>
+      # Used internally as a flag for opening a synced realm locally.
+      force_sync_history:
+        type: bool
+        default: false
+      # Unclear if migration_function and initialization_function should be marked as off_thread.
+      # Existing JS sdk treats them as not.
+      migration_function: 'Nullable<std::function<(old_realm: SharedRealm, new_realm: SharedRealm, new_schema_handle: IgnoreArgument<Schema&>) -> void>>'
+      initialization_function: 'Nullable<std::function<(realm: SharedRealm) -> void>>'
+      should_compact_on_launch_function: 'Nullable<std::function<(total_bytes: uint64_t, used_bytes: uint64_t) off_thread -> bool>>'
+
+  UserIdentity:
+    cppName: SyncUserIdentity
+    fields:
+      id:
+        type: std::string
+      provider_type:
+        type: std::string
+
+  UserAPIKey:
+    cppName: app::App::UserAPIKey
+    fields:
+      id:
+        type: ObjectId
+      key:
+        type: util::Optional<std::string>
+      name:
+        type: std::string
+      disabled:
+        type: bool
+
+  SyncConfig:
+    fields:
+      user: SharedSyncUser
+      partition_value:
+        type: std::string
+        default: ""
+      stop_policy:
+        type: SyncSessionStopPolicy
+        default: AfterChangesUploaded
+      flx_sync_requested:
+        type: bool
+        default: false
+      error_handler: 'Nullable<std::function<(session: SharedSyncSession, error: SyncError) off_thread -> void>>'
+      custom_http_headers: 
+        type: 'std::map<std::string, std::string>'
+        default: {}
+      client_resync_mode:
+        type: ClientResetMode 
+        default: ClientResyncMode::Manual;
+      notify_before_client_reset: 'Nullable<std::function<(before_frozen: SharedRealm) off_thread -> void>>'
+      notify_after_client_reset: 'Nullable<std::function<(before_frozen: SharedRealm, after: ThreadSafeReference, did_recover: bool) off_thread -> void>>'
+      cancel_waits_on_nonfatal_error:
+        type: bool
+        default: false
+        
+  SyncSubscription:
+    cppName: sync::Subscription
+    fields:
+      id: ObjectId
+      created_at: Timestamp
+      updated_at: Timestamp
+      name: util::Optional<std::string>
+      object_class_name: std::string
+      query_string: std::string
+
+  ObjectChangeSet:
+    fields:
+      is_deleted: bool
+      changed_columns: std::vector<ColKey>
+
+  # TODO nested type?
+  CollectionChangeSetMove:
+    cppName: CollectionChangeSet::Move
+    fields:
+      from: count_t
+      to: count_t
+  CollectionChangeSet:
+    fields:
+      deletions: IndexSet
+      insertions: IndexSet
+      modifications: IndexSet
+      modifications_new: IndexSet
+      moves: std::vector<CollectionChangeSetMove>
+      collection_root_was_deleted: bool
+      collection_was_cleared: bool
+      # columns: std::unordered_map<int64_t, IndexSet>
+
+  DictionaryChangeSet:
+    fields:
+      deletions: std::vector<Mixed>
+      insertions: std::vector<Mixed>
+      modifications: std::vector<Mixed>
+      collection_root_was_deleted: bool
+
+  BindingContext:
+    cppName: Helpers::BindingContextMethods
+    fields:
+      did_change: 'Nullable<util::UniqueFunction<(r: SharedRealm)>>'
+      before_notify: 'Nullable<util::UniqueFunction<(r: SharedRealm)>>'
+      schema_did_change: 'Nullable<util::UniqueFunction<(r: SharedRealm)>>' # new schema available as r.schema
+
+  SyncClientTimeouts:
+    fields:
+      connect_timeout:
+        type: uint64_t
+        default: 120000
+      connection_linger_time:
+        type: uint64_t
+        default: 30000
+      ping_keepalive_period:
+        type: uint64_t
+        default: 60000
+      pong_keepalive_timeout:
+        type: uint64_t
+        default: 120000
+      fast_reconnect_limit:
+        type: uint64_t
+        default: 60000
+
+  SyncClientConfig:
+    fields:
+      base_file_path: std::string
+      metadata_mode:
+        type: MetadataMode
+        default: MetadataMode::Encryption
+      custom_encryption_key: util::Optional<EncryptionKey>
+      logger_factory: Nullable<LoggerFactory>
+      log_level:
+        type: LoggerLevel
+        default: LoggerLevel::info
+      # reconnect_mode is probably internal-only
+      multiplex_sessions:
+        type: bool
+        default: false
+      user_agent_binding_info:
+        type: std::string
+        default: ""
+      user_agent_application_info:
+        type: std::string
+        default: ""
+      timeouts:
+        type: SyncClientTimeouts
+        default: {}
+
+  SyncError:
+   fields:
+     system_error:
+       type: std::error_code
+       cppName: get_system_error()
+     is_fatal: bool
+     simple_message: StringData
+     logURL: StringData
+     user_info: std::unordered_map<StringData, StringData>
+     is_unrecognized_by_client:
+       type: bool
+       default: false
+     is_client_reset_requested:
+       type: bool
+       cppName: is_client_reset_requested()
+     server_requests_action:
+       type: SyncErrorAction
+       default: NoAction
+     # server_requests_action:
+     #   type: sync::ProtocolErrorInfo::Action
+     #   default: sync::ProtocolErrorInfo::Action::NoAction
+     compensating_writes_info: std::vector<CompensatingWriteErrorInfo>
+
+  Request:
+    cppName: app::Request
+    fields:
+      method: HttpMethod
+      url: std::string
+      timeout_ms: uint64_t
+      headers: std::map<std::string, std::string>
+      body: std::string
+      uses_refresh_token: bool
+
+  Response:
+    cppName: app::Response
+    fields:
+      http_status_code: int
+      custom_status_code: int
+      headers: std::map<std::string, std::string>
+      body: std::string
+
+  DeviceInfo:
+    cppName: app::App::Config::DeviceInfo
+    fields:
+      platform: std::string
+      platform_version: std::string
+      sdk_version: std::string
+      sdk: std::string
+      cpu_arch: std::string
+      device_name: std::string
+      device_version: std::string
+      framework_name: std::string
+      framework_version: std::string
+
+  AppConfig:
+    cppName: app::App::Config
+    fields:
+      app_id: std::string
+      transport: SharedGenericNetworkTransport
+      base_url: util::Optional<std::string>
+      local_app_name: util::Optional<std::string>
+      local_app_version: util::Optional<std::string>
+      default_request_timeout_ms: util::Optional<uint64_t>
+      device_info: DeviceInfo
+
+  CompensatingWriteErrorInfo:
+   cppName: sync::CompensatingWriteErrorInfo
+   fields:
+     object_name: std::string
+     reason: std::string
+     primary_key: Mixed
+
+opaqueTypes:
+  - Schema
+  - Group
+  - AuditInterface
+
+classes:
+  #SchemaChange: {}
+
+  Helpers:
+    abstract: true
+    staticMethods:
+      get_table:
+        - '(r: SharedRealm, key: TableKey) -> TableRef'
+        - sig: '(r: SharedRealm, name: StringData) -> TableRef'
+          suffix: by_name
+      get_keypath_mapping: '(r: SharedRealm) -> KeyPathMapping'
+      results_from_query: '(r: SharedRealm, q: Query) -> Results'
+      # This is needed because Query::and_query doesn't append ordering
+      results_append_query: '(results: Results, query: Query) -> Results'
+      make_object_notifier: '(r: SharedRealm, o: Obj) -> SharedObjectNotifier'
+      has_binding_context: '(r: Realm) -> bool'
+      set_binding_context: '(r: SharedRealm, methods: BindingContext)'
+      get_or_create_object_with_primary_key: '(t: TableRef, pk: Mixed) -> std::pair<Obj, bool>'
+      make_network_transport: '(runRequest: (request: const Request&, callback: util::UniqueFunction<(response: Response&&)>&&) off_thread) -> SharedGenericNetworkTransport'
+      delete_data_for_object: '(realm: SharedRealm, object_type: StringData)'
+      is_empty_realm: '(realm: SharedRealm) -> bool'
+      base64_decode: '(input: StringData) -> BinaryData'
+      make_logger_factory: '(log: (level: LoggerLevel, message: const std::string&) off_thread) -> LoggerFactory'
+      simulate_sync_error: '(session: SyncSession&, code: const int&, message: const std::string&, type: const std::string&, is_fatal: bool)'
+      consume_thread_safe_reference_to_shared_realm: '(tsr: ThreadSafeReference) -> SharedRealm'
+      file_exists: '(path: StringData) -> bool'
+      erase_subscription: '(subs: MutableSyncSubscriptionSet&, sub_to_remove: const SyncSubscription&) -> bool'
+      # This is added due to DescriptorOrdering not being exposed
+      get_results_description: '(results: const Results&) -> StringData'
+      feed_buffer: '(ws: WatchStream&, buffer: BinaryData)'
+
+  Logger:
+    cppName: util::Logger
+    sharedPtrWrapped: SharedLogger
+    properties:
+      get_default_logger: SharedLogger
+      get_default_level_threshold: LoggerLevel
+    staticMethods:
+      set_default_logger: '(logger: SharedLogger)'
+      set_default_level_threshold: '(level: LoggerLevel)'
+
+  ConstTableRef:
+    needsDeref: true
+    iterable: Obj
+    properties:
+      get_name: StringData
+      get_column_count: count_t
+      get_key: TableKey
+    methods:
+      is_embedded: () const -> bool
+      get_column_type: '(column: ColKey) const -> DataType'
+      get_link_target: '(column: ColKey) const -> ConstTableRef'
+      get_object: '(key: ObjKey) const -> Obj'
+      try_get_object: '(key: ObjKey) const -> Nullable<Obj>'
+      query: '(query_string: std::string, args: std::vector<QueryArg>, mapping: KeyPathMapping) const -> Query'
+      find_primary_key: '(pk: Mixed) -> ObjKey'
+
+  TableRef:
+    base: ConstTableRef
+    needsDeref: true
+    methods:
+      create_object: () -> Obj
+      create_object_with_primary_key: '(pk: Mixed) -> Obj'
+      remove_object: '(key: ObjKey)'
+      get_link_target: '(column: ColKey) -> TableRef'
+      clear: ()
+
+  Obj:
+    properties:
+      is_valid: bool
+      get_table: TableRef
+      get_key: ObjKey
+      get_link: ObjLink
+      get_primary_key: Mixed
+    methods:
+      get_any:
+        - '(column: ColKey) const -> Mixed'
+        - sig: '(column: StringData) const -> Mixed'
+          suffix: 'by_name'
+      is_null:
+        - '(column: ColKey) const -> bool'
+        - sig: '(column: StringData) const -> bool'
+          suffix: by_name
+      set_any: # NOTE: ignoring ability to chain calls
+        - '(column: ColKey, value: Mixed)'
+        - sig: '(column: ColKey, value: Mixed, is_default: bool)'
+          suffix: with_default
+      get_linked_object: '(column: ColKey) const -> Nullable<Obj>'
+      to_string: () const -> std::string
+      get_backlink_count: '() const -> count_t'
+      get_backlink_view: '(src_table: TableRef, src_col_key: ColKey) -> TableView'
+      create_and_set_linked_object: '(column: ColKey) -> Obj'
+
+  Transaction:
+    sharedPtrWrapped: TransactionRef
+
+  ObjectStore:
+    staticMethods:
+      get_schema_version: '(group: Group) -> SchemaVersion'
+      set_schema_version: '(group: Group, version: SchemaVersion)'
+      #    verify_no_migration_required: '(changes: std::vector<SchemaChange>)'
+      #needs_migration: '(changes: std::vector<SchemaChange>) -> bool'
+      #verify_valid_additive_changes:
+      #  - '(changes: std::vector<SchemaChange>) -> bool'
+      #  - suffix: and_update_indexes
+      #    sig: '(changes: std::vector<SchemaChange>, update_indexes: bool) -> bool'
+      #verify_valid_external_changes: '(changes: std::vector<SchemaChange>)'
+      #verify_compatible_for_immutable_and_readonly: '(changes: std::vector<SchemaChange>)'
+      #verify_no_changes_required: '(changes: std::vector<SchemaChange>)'
+
+      # apply_schema_changes: '(group: Transaction&, schema_version: SchemaVersion, target_schema: Schema&, target_schema_version: SchemaVersion, mode: SchemaMode, changes: std::vector<SchemaChange>, migration_function: () -> void)'
+      # apply_additive_changes: '(group: Group&, changes: std::vector<SchemaChanges>, update_indexes: bool)'
+      # table_for_object_type
+      # table_for_Schema_type
+
+      schema_from_group: '(group: Group) -> std::vector<ObjectSchema>'
+
+      # some more...
+
+  # TODO should this be nullable or always non-null?
+  Timestamp:
+    constructors:
+      make: '(seconds: int64_t, nanoseconds: int32_t)'
+    properties:
+      get_seconds: int64_t
+      get_nanoseconds: int32_t
+
+  ObjLink:
+    properties:
+      is_null: bool
+      is_unresolved: bool
+      get_table_key: TableKey
+      get_obj_key: ObjKey
+
+  KeyPathMapping:
+    cppName: query_parser::KeyPathMapping
+
+  Query:
+    properties:
+      get_table: ConstTableRef
+      get_description: StringData
+    methods:
+      count: () const -> count_t
+
+  SortDescriptor:
+    constructors:
+      make_empty: ()
+      make: '(column_indices: std::vector<std::vector<ColKey>>, ascending: std::vector<bool>)'
+    properties:
+      is_valid: bool
+
+  TableView: {}
+
+  Results:
+    constructors:
+      make_empty: ()
+      from_table: '(r: SharedRealm, table: ConstTableRef)'
+      # TODO It might be too expensive to copy TableView.
+      # Consider a Helper to combine with Obj::get_backlink_view(), or some way to get move semantics.
+      from_table_view: '(r: SharedRealm, table: TableView)'
+      # from_query: '(r: SharedRealm, query: Query, ordering: DescriptorOrdering)'
+    properties:
+      is_frozen: bool
+      is_valid: bool
+      get_query: Query
+      #get_ordering: const DescriptorOrdering&
+      get_object_type: StringData
+      get_type: PropertyType
+    methods:
+      size: () -> count_t
+      index_of:
+        - sig: '(value: Mixed) const -> count_t'
+        - sig: '(obj: Obj) const -> count_t'
+          suffix: 'obj'
+      get: # NOTE: this is actually a template with a defaulted template param.
+        - sig: '(index: count_t) -> Obj'
+          suffix: 'obj'
+      get_any: '(index: count_t) -> Mixed'
+      get_dictionary_element: '(index: count_t) -> std::pair<StringData, Mixed>'
+      filter: '(query: Query&&) const -> Results'
+      sort:
+        - '(order: SortDescriptor&&) const -> Results'
+        - sig: '(order: std::vector<std::pair<std::string, bool>>) const -> Results'
+          suffix: by_names
+      limit: '(max_count: count_t) const -> Results'
+      snapshot: '() const -> Results'
+      freeze: '(frozen_realm: SharedRealm) const -> Results'
+      max: '(column: ColKey) -> util::Optional<Mixed>'
+      min: '(column: ColKey) -> util::Optional<Mixed>'
+      average: '(column: ColKey) -> util::Optional<Mixed>'
+      sum: '(column: ColKey) -> util::Optional<Mixed>'
+      clear: ()
+
+      add_notification_callback: '(cb: (changes: const CollectionChangeSet&), keyPaths: util::Optional<KeyPathArray>) -> NotificationToken'
+
+  Realm:
+    sharedPtrWrapped: SharedRealm
+
+    staticMethods:
+      get_shared_realm:
+        - '(config: RealmConfig) -> SharedRealm'
+        # These are important, but we need to handle move-only types, and that is tricky
+        # - suffix: from_reference
+        #   sig: '(thread: ThreadSafeReference) -> SharedRealm'
+        # - suffix: from_reference_with_sched
+        #   sig: '(thread: ThreadSafeReference, scheduler: SharedScheduler) -> SharedRealm'
+      get_synchronized_realm: '(config: RealmConfig) -> SharedAsyncOpenTask'
+      #make_shared_realm: '(config: Realm::Config, version: util::Optional<VersionID>, coordinator: std::shared_ptr<_impl::RealmCoordinator>) -> SharedRealm'
+      get_schema_version: '(config: const RealmConfig&) const -> SchemaVersion'
+
+    properties:
+      config: const RealmConfig&
+      schema: const std::vector<ObjectSchema>&
+      schema_version: SchemaVersion
+      is_in_transaction: bool
+      is_frozen: bool
+      is_in_migration: bool
+
+      get_number_of_versions: uint64_t
+      read_transaction_version: VersionID
+      current_transaction_version: util::Optional<VersionID>
+
+      auto_refresh: bool
+
+      can_deliver_notifications: bool
+      scheduler: SharedScheduler
+
+      is_closed: bool
+
+      audit_context: Nullable<AuditInterface*>
+
+      sync_session: Nullable<SharedSyncSession>
+      get_latest_subscription_set: SyncSubscriptionSet
+      get_active_subscription_set: SyncSubscriptionSet
+
+    methods:
+      begin_transaction: ()
+      commit_transaction: ()
+      cancel_transaction: ()
+      freeze: () -> SharedRealm
+      last_seen_transaction_version: () -> uint64_t
+      read_group: () -> Group&
+      duplicate: () -> TransactionRef
+
+      update_schema: '(schema: std::vector<ObjectSchema>, version: SchemaVersion, migration_function: Nullable<std::function<(old_realm: SharedRealm, new_realm: SharedRealm, new_schema_handle: IgnoreArgument<Schema&>) -> void>>, initialization_function: Nullable<std::function<(realm: SharedRealm) -> void>>, in_transaction: bool) -> void'
+      enable_wait_for_change: ()
+      wait_for_change: () -> bool
+      wait_for_change_release: ()
+      refresh: () -> bool
+      set_auto_refresh: '(auto_refresh: bool)'
+      notify: ()
+      invalidate: ()
+      compact: () -> bool
+      write_copy: () -> OwnedBinaryData
+      convert: '(config: RealmConfig)'
+
+      verify_thread: () const
+      verify_in_write: () const
+      verify_open: () const
+      verify_notifications_available:
+        - () const
+        - suffix: maybe_throw
+          sig: '(throw_on_error: bool) const'
+
+      close: ()
+
+  RealmCoordinator:
+    sharedPtrWrapped: SharedRealmCoordinator
+    cppName: _impl::RealmCoordinator
+    staticMethods:
+      clear_all_caches: ()
+
+  ObjectNotifier:
+    cppName: _impl::ObjectNotifier
+    sharedPtrWrapped: SharedObjectNotifier
+    constructors:
+      make: '(realm: SharedRealm, table: TableKey, obj: ObjKey)'
+    methods:
+      add_callback: '(cb: (changes: ObjectChangeSet), keyPaths: util::Optional<KeyPathArray>) -> uint64_t'
+      remove_callback: '(token: uint64_t)'
+
+  NotificationToken:
+    constructors:
+      for_object: '(notifier: SharedObjectNotifier, token: uint64_t)'
+    methods:
+      suppress_next: ()
+      unregister: ()
+
+  IndexSet:
+    iterable: IndexRange
+    # methods:
+    #   as_indexes: () const -> IndexSetIndexes
+
+  # NOTE this is currently done in sdk language so we have less VM<->Native transitions.
+  # TODO make this a nested type of IndexSet?
+  # TODO this needs support for non-default-constructible types
+  # IndexSetIndexes:
+  #   cppName: IndexSet::IndexIteratableAdaptor
+  #   iterable: count_t
+
+  Collection:
+    cppName: object_store::Collection
+    abstract: true
+    properties:
+      get_type: PropertyType
+      get_realm: SharedRealm
+      get_parent_column_key: ColKey
+      get_parent_object_key: ObjKey
+      get_parent_table_key: TableKey
+      get_object_schema: const ObjectSchema&
+      size: count_t
+      is_valid: bool
+      is_frozen: bool
+    methods:
+      get_any: '(ndx: count_t) const -> Mixed'
+      find_any: '(value: Mixed) const -> count_t'
+      verify_attached: () const
+      verify_in_transaction: () const
+      as_results: () const -> Results
+      snapshot: () const -> Results
+      sort:
+        - '(order: SortDescriptor) const -> Results'
+        - sig: '(keyPaths: std::vector<std::pair<std::string, bool>> const&) const -> Results'
+          suffix: 'by_name'
+      add_notification_callback: '(cb: (changes: const CollectionChangeSet&), keyPaths: util::Optional<KeyPathArray>) -> NotificationToken'
+
+  List:
+    base: Collection
+    constructors:
+      make: '(r: SharedRealm, parent: const Obj&, col: ColKey)'
+    methods:
+      get: '(ndx: count_t) const -> Obj'
+      move: '(source_ndx: count_t, dest_ndx: count_t)'
+      remove: '(ndx: count_t)'
+      remove_all: '()'
+      swap: '(ndx1: count_t, ndx2: count_t)'
+      delete_at: '(ndx: count_t)'
+      delete_all: '()'
+      insert_any: '(list_ndx: count_t, value: Mixed)'
+      insert_embedded: '(ndx: count_t) -> Obj'
+      set_any: '(list_ndx: count_t, value: Mixed)'
+      filter: '(q: Query) const -> Results'
+      freeze: '(frozen_realm: SharedRealm const&) const -> List'
+
+      max:
+        - '() const -> util::Optional<Mixed>'
+        - sig: '(column: ColKey) const -> util::Optional<Mixed>'
+          suffix: of
+      min:
+        - '() const -> util::Optional<Mixed>'
+        - sig: '(column: ColKey) const -> util::Optional<Mixed>'
+          suffix: of
+      average:
+        - '() const -> util::Optional<Mixed>'
+        - sig: '(column: ColKey) const -> util::Optional<Mixed>'
+          suffix: of
+      sum:
+        - '() const -> Mixed'
+        - sig: '(column: ColKey) const -> Mixed'
+          suffix: of
+
+  Set:
+    cppName: object_store::Set
+    base: Collection
+    constructors:
+      make: '(r: SharedRealm, parent: const Obj&, col: ColKey)'
+    methods:
+      get: '(ndx: count_t) const -> Obj'
+      insert_any: '(val: Mixed) -> std::pair<count_t, bool>'
+      remove_any: '(val: Mixed) -> std::pair<count_t, bool>'
+      remove_all: '()'
+      delete_all: '()'
+      filter: '(q: Query) const -> Results'
+
+      # TODO Anything that takes a Collection (or any other Base) isn't possible while using Napi::ObjectWrap
+      # is_subset_of: '(rhs: const Collection&) const -> bool'
+      # is_strict_subset_of: '(rhs: const Collection&) const -> bool'
+      # is_superset_of: '(rhs: const Collection&) const -> bool'
+      # is_strict_superset_of: '(rhs: const Collection&) const -> bool'
+      # intersects: '(rhs: const Collection&) const -> bool'
+      # set_equals: '(rhs: const Collection&) const -> bool'
+      # assign_intersection: '(rhs: const Collection&) -> void'
+      # assign_union: '(rhs: const Collection&) -> void'
+      # assign_difference: '(rhs: const Collection&) -> void'
+      # assign_symmetric_difference: '(rhs: const Collection&) -> void'
+
+      max:
+        - '() const -> util::Optional<Mixed>'
+        - sig: '(column: ColKey) const -> util::Optional<Mixed>'
+          suffix: of
+      min:
+        - '() const -> util::Optional<Mixed>'
+        - sig: '(column: ColKey) const -> util::Optional<Mixed>'
+          suffix: of
+      average:
+        - '() const -> util::Optional<Mixed>'
+        - sig: '(column: ColKey) const -> util::Optional<Mixed>'
+          suffix: of
+      sum:
+        - '() const -> Mixed'
+        - sig: '(column: ColKey) const -> Mixed'
+          suffix: of
+
+  Dictionary:
+    cppName: object_store::Dictionary
+    base: Collection
+    iterable: std::pair<const Mixed, Mixed>
+    constructors:
+      make: '(r: SharedRealm, parent: const Obj&, col: ColKey)'
+    properties:
+      get_keys: Results
+      get_values: Results
+    methods:
+      get:
+        - sig: '(key: StringData) const -> Obj'
+          cppName: get<Obj> # TODO can't distinguish null from missing
+      get_pair: '(ndx: count_t) const -> std::pair<StringData, Mixed>'
+      contains: '(key: StringData) -> bool'
+      freeze: '(frozen_realm: SharedRealm const&) const -> Dictionary'
+      add_key_based_notification_callback: '(cb: (changes: DictionaryChangeSet), keyPaths: KeyPathArray) -> NotificationToken'
+      insert_any: '(key: StringData, value: Mixed) -> std::pair<count_t, bool>'
+      insert_embedded: '(key: StringData) -> Obj'
+      try_get_any: '(key: StringData) const -> util::Optional<Mixed>'
+      remove_all: '()'
+      try_erase: '(key: StringData) -> bool'
+
+  # These are a bit of a hack.
+  # TODO rename one of the AppCredentials::google() functions.
+  GoogleAuthCode:
+    cppName: app::AuthCode
+    constructors:
+      make: '(code: std::string)'
+  GoogleIdToken:
+    cppName: app::IdToken
+    constructors:
+      make: '(token: std::string)'
+
+  AppCredentials:
+    cppName: app::AppCredentials
+    staticMethods:
+      facebook: '(access_token: const AppCredentialsToken) -> AppCredentials'
+      anonymous: '(reuse_anonymous_credentials: bool) -> AppCredentials'
+      apple: '(id_token: const AppCredentialsToken) -> AppCredentials'
+      google:
+        - sig: '(id_token: GoogleAuthCode&&) -> AppCredentials'
+          suffix: auth
+        - sig: '(id_token: GoogleIdToken&&) -> AppCredentials'
+          suffix: id
+      custom: '(token: const AppCredentialsToken) -> AppCredentials'
+      username_password: '(username: std::string, password: std::string) -> AppCredentials'
+      function:
+        - '(serialized_payload: const EJsonObj&) -> AppCredentials'
+        - sig: '(payload: const bson::BsonDocument&) -> AppCredentials'
+          suffix: 'bson'
+      user_api_key: '(api_key: std::string) -> AppCredentials'
+      server_api_key: '(api_key: std::string) -> AppCredentials'
+    properties:
+      provider: AuthProvider
+      provider_as_string: std::string
+
+  SyncUserSubscriptionToken:
+    cppName: SyncUser::Token
+
+  SyncUser:
+    sharedPtrWrapped: SharedSyncUser
+    properties:
+      all_sessions: std::vector<SharedSyncSession>
+      is_logged_in: bool
+      identity: const std::string&
+      provider_type: const std::string&
+      local_identity: const std::string&
+      access_token: std::string
+      refresh_token: std::string
+      device_id: std::string
+      has_device_id: bool
+      user_profile: UserProfile 
+      identities: std::vector<UserIdentity>
+      custom_data: util::Optional<bson::BsonDocument>
+      sync_manager: SharedSyncManager
+      state: SyncUserState
+      subscribers_count: count_t
+    methods:
+      log_out: ()
+      session_for_on_disk_path: '(path: StringData) -> Nullable<SharedSyncSession>'
+      subscribe: '(observer: (user: IgnoreArgument<const SyncUser&>)) -> SyncUserSubscriptionToken'
+      unsubscribe: '(token: SyncUserSubscriptionToken)'
+      # TODO update methods?
+
+  UserProfile:
+    cppName: SyncUserProfile
+    methods:
+      name: '() -> util::Optional<std::string>'
+      email: '() -> util::Optional<std::string>'
+      picture_url: '() -> util::Optional<std::string>'
+      first_name: '() -> util::Optional<std::string>'
+      last_name: '() -> util::Optional<std::string>'
+      gender: '() -> util::Optional<std::string>'
+      birthday: '() -> util::Optional<std::string>'
+      min_age: '() -> util::Optional<std::string>'
+      max_age: '() -> util::Optional<std::string>'
+      data: '() -> bson::BsonDocument'  
+
+  AppSubscriptionToken:
+    cppName: app::App::Token
+
+  App:
+    cppName: app::App
+    sharedPtrWrapped: SharedApp
+    properties:
+      config: const AppConfig&
+      base_url: const std::string&
+      current_user: Nullable<SharedSyncUser>
+      all_users: std::vector<SharedSyncUser>
+      sync_manager: SharedSyncManager
+      subscribers_count: count_t
+    staticMethods:
+      get_shared_app: '(config: AppConfig, sync_client_config: SyncClientConfig) -> SharedApp'
+      get_uncached_app: '(config: AppConfig, sync_client_config: SyncClientConfig) -> SharedApp'
+      get_cached_app: '(app_id: const std::string&) -> SharedApp'
+      clear_cached_apps: ()
+      close_all_sync_sessions: ()
+
+    methods:
+      log_in_with_credentials: '(credentials: AppCredentials, cb: AsyncCallback<(user: const Nullable<SharedSyncUser>&, err: util::Optional<AppError>)>&&)'
+      log_out:
+        - '(cb: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+        - sig: '(user: SharedSyncUser, cb: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+          suffix: user
+      refresh_custom_data: '(user: SharedSyncUser, cb: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      link_user: '(user: SharedSyncUser, credentials: const AppCredentials&, cb: AsyncCallback<(user: const Nullable<SharedSyncUser>&, err: util::Optional<AppError>)>&&)'
+      switch_user: '(user: SharedSyncUser)'
+      remove_user: '(user: SharedSyncUser, cb: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      delete_user: '(user: SharedSyncUser, cb: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      usernamePasswordProviderClient:
+        - sig: () -> UsernamePasswordProviderClient
+          cppName: provider_client<app::App::UsernamePasswordProviderClient>
+      userAPIKeyProviderClient:
+        - sig: () -> UserAPIKeyProviderClient
+          cppName: provider_client<app::App::UserAPIKeyProviderClient>
+      push_notification_client: '(service_name: const std::string&) -> PushClient'
+      subscribe: '(observer: (app: IgnoreArgument<const App&>)) -> AppSubscriptionToken'
+      unsubscribe: '(token: AppSubscriptionToken)'
+      call_function: '(user: const SharedSyncUser&, name: std::string, args: EJsonArray, service_name: util::Optional<std::string>, cb: AsyncCallback<(result: Nullable<const EJson*>, err: util::Optional<AppError>)>)'
+      make_streaming_request: '(user: SharedSyncUser, name: std::string, args: bson::BsonArray, service_name: util::Optional<std::string>) -> Request'
+
+  WatchStream:
+    cppName: app::WatchStream
+    constructors:
+      make: ()
+    properties:
+      state: WatchStreamState
+      error: AppError
+    methods:
+      next_event: '() -> bson::BsonDocument'
+
+  PushClient:
+    cppName: app::PushClient
+    methods:
+      register_device: '(registration_token: const std::string&, sync_user: const SharedSyncUser&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      deregister_device: '(sync_user: const SharedSyncUser&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+
+  UsernamePasswordProviderClient:
+    cppName: app::App::UsernamePasswordProviderClient
+    methods:
+      register_email: '(email: const std::string&, password: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      retry_custom_confirmation: '(email: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      confirm_user: '(token: const std::string&, token_id: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      resend_confirmation_email: '(email: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      reset_password: '(password: const std::string&, token: const std::string&, token_id: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      send_reset_password_email: '(email: const std::string&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      call_reset_password_function: '(email: const std::string&, password: const std::string&, args: const bson::BsonArray&, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+
+  UserAPIKeyProviderClient:
+    cppName: app::App::UserAPIKeyProviderClient
+    methods:
+      create_api_key: '(name: const std::string&, user: SharedSyncUser, completion: AsyncCallback<(apiKey: UserAPIKey&&, err: util::Optional<AppError>)>&&)'
+      fetch_api_key: '(id: ObjectId&, user: const SharedSyncUser, completion: AsyncCallback<(apiKey: UserAPIKey&&, err: util::Optional<AppError>)>&&)'
+      fetch_api_keys: '(user: const SharedSyncUser, completion: AsyncCallback<(apiKeys: std::vector<UserAPIKey>&&, err: util::Optional<AppError>)>&&)'
+      delete_api_key: '(id: ObjectId&, user: const SharedSyncUser, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      enable_api_key: '(id: ObjectId&, user: const SharedSyncUser, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+      disable_api_key: '(id: ObjectId&, user: const SharedSyncUser, completion: AsyncCallback<(err: util::Optional<AppError>)>&&)'
+
+  # See Helpers::make_loger_factory to construct one.
+  # Using an opaque class here rather than exposing the factory to avoid having to
+  # involve the SDK in the construction of the logger. For JS at least, that would
+  # require hopping to the JS thread and back, blocking until it completes. Instead,
+  # we just let the C++ code handle it. Hopefully we can change the API here because
+  # it is weird that we need a factory here, rather than passing a Logger instance.
+  LoggerFactory:
+    cppName: std::function<std::shared_ptr<util::Logger>(util::Logger::Level)>
+
+  SyncManager:
+    sharedPtrWrapped: SharedSyncManager
+    properties:
+      log_level: LoggerLevel
+      has_existing_sessions: bool
+    methods:
+      immediately_run_file_actions: '(original_name: std::string) -> bool'
+      enable_session_multiplexing: ()
+      set_log_level: '(level: LoggerLevel)'
+      set_logger_factory: '(factory: LoggerFactory)'
+      set_user_agent: '(user_agent: std::string)'
+      set_timeouts: '(timeouts: SyncClientTimeouts)'
+      reconnect: ()
+      wait_for_sessions_to_terminate: ()
+      path_for_realm: '(config: SyncConfig, custom_file_name: util::Optional<std::string>) -> StringData'
+      get_existing_active_session: '(path: const std::string&) -> SharedSyncSession'
+
+  ThreadSafeReference: {}
+  AsyncOpenTask:
+    sharedPtrWrapped: SharedAsyncOpenTask
+    methods:
+      start: '(callback: AsyncCallback<(realm: Nullable<ThreadSafeReference>, error: Nullable<std::exception_ptr>) off_thread>)'
+      cancel: ()
+      register_download_progress_notifier: '(callback: (transferred_bytes: uint64_t, transferrable_bytes: uint64_t) off_thread) -> uint64_t'
+      unregister_download_progress_notifier: '(token: uint64_t)'
+
+  SyncSession:
+    sharedPtrWrapped: SharedSyncSession
+    properties:
+      state: SyncSessionState
+      connection_state: SyncSessionConnectionState
+      path: std::string
+      user: SharedSyncUser
+      config: SyncConfig
+      full_realm_url: util::Optional<std::string>
+    methods:
+      wait_for_upload_completion: '(callback: AsyncCallback<(err: Status) off_thread>)'
+      wait_for_download_completion: '(callback: AsyncCallback<(err: Status) off_thread>)'
+      register_progress_notifier: '(callback: (transferred_bytes: uint64_t, transferrable_bytes: uint64_t) off_thread, direction: ProgressDirection, is_streaming: bool) -> uint64_t'
+      unregister_progress_notifier: '(token: uint64_t)'
+      register_connection_change_callback: '(callback: (old_state: SyncSessionConnectionState, new_state: SyncSessionConnectionState) off_thread) -> uint64_t'
+      unregister_connection_change_callback: '(token: uint64_t)'
+      revive_if_needed: ()
+      handle_reconnect: ()
+      close: ()
+      force_close: ()
+      shutdown_and_wait: ()
+      update_configuration: '(config: SyncConfig)'
+
+  SyncSubscriptionSet:
+    cppName: sync::SubscriptionSet
+    iterable: const SyncSubscription&
+    properties:
+      version: int64_t
+      # not exposing snapshot_version
+      state: SyncSubscriptionSetState
+      error_str: StringData
+      size: count_t
+    methods:
+      make_mutable_copy: () const -> MutableSyncSubscriptionSet
+      get_state_change_notification: '(notify_when: SyncSubscriptionSetState, callback: AsyncCallback<(new_state: util::Optional<SyncSubscriptionSetState>, err: util::Optional<Status>) off_thread>) const'
+      at: '(index: count_t) const -> const SyncSubscription&'
+      find:
+        - sig: '(name: StringData) const -> Nullable<const SyncSubscription*>'
+          suffix: by_name
+        - sig: '(query: const Query&) const -> Nullable<const SyncSubscription*>'
+          suffix: by_query
+      refresh: ()
+      # not exposing to_ext_json()
+
+  MutableSyncSubscriptionSet:
+    cppName: sync::MutableSubscriptionSet
+    base: SyncSubscriptionSet
+    methods:
+      clear: ()
+      insert_or_assign: # NOTE: these really return iterators, but the API is close enough to pointers to work here.
+        - sig: '(name: std::string_view, query: const Query&) -> std::pair<const SyncSubscription*, bool>'
+          suffix: by_name
+        - sig: '(query: const Query&) -> std::pair<const SyncSubscription*, bool>'
+          suffix: by_query
+      erase:
+        - sig: '(name: StringData) -> bool'
+          suffix: by_name
+        - sig: '(query: const Query&) -> bool'
+          suffix: by_query
+      commit: () -> SyncSubscriptionSet
+      # not exposing import() or update_state()
+  Scheduler:
+    cppName: util::Scheduler
+    sharedPtrWrapped: SharedScheduler
+    methods:
+      invoke: '(callback: () -> void)'
+      is_on_thread: () const noexcept -> bool
+      is_same_as: '(other: const Scheduler*) const noexcept -> bool'
+      can_invoke: () const noexcept -> bool
+    staticMethods:
+      make_frozen: '(version: VersionID) -> SharedScheduler'
+      make_default: '() -> SharedScheduler'
+      set_default_factory: '(factory: () -> SharedScheduler)'
+  GenericNetworkTransport:
+    cppName: app::GenericNetworkTransport
+    sharedPtrWrapped: SharedGenericNetworkTransport
+    methods:
+      send_request_to_server: '(request: Request&&, completionBlock: util::UniqueFunction<(response: const Response&)>&&)'

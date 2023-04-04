@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import Realm from "realm";
+import { Realm } from "realm";
 
 import { IPerson, PersonSchema, DogSchema } from "../schemas/person-and-dogs";
 
@@ -110,13 +110,6 @@ describe("Realm#constructor", () => {
       expect(() => {
         new Realm("");
       }).to.throw(); // The actual message varies across environments
-    });
-
-    it("throws when called with two strings", () => {
-      expect(() => {
-        //@ts-expect-error constructing new realm with too many arguments.
-        new Realm("", "");
-      }).to.throw("Invalid arguments when constructing 'Realm'");
     });
   });
 
@@ -211,12 +204,13 @@ describe("Realm#constructor", () => {
     it("has the same schema as before", () => {
       // Open the Realm with a schema
       const realm = new Realm({ schema: [PersonSchema, DogSchema] });
+      const schemaBefore = realm.schema;
       realm.close();
       // Re-open it without a schema
       const reopenedRealm = new Realm();
       // Expect the schemas to match
       expect(reopenedRealm.schema.length).to.equal(2);
-      expect(reopenedRealm.schema).deep.equals(realm.schema);
+      expect(reopenedRealm.schema).deep.equals(schemaBefore);
     });
   });
 
@@ -225,38 +219,45 @@ describe("Realm#constructor", () => {
       expect(() => {
         //@ts-expect-error passing plain empty object to schema
         new Realm({ schema: {} });
-      }).throws("schema must be of type 'array', got");
+      }).throws("Expected 'realm schema' to be an array, got an object");
     });
 
     it("fails when passed an array with non-objects", () => {
       expect(() => {
         //@ts-expect-error can not pass plain string as schema
         new Realm({ schema: [""] });
-      }).throws("Failed to read ObjectSchema: JS value must be of type 'object', got");
+      }).throws("Expected 'object schema' to be an object, got a string");
     });
 
     it("fails when passed an array with empty object", () => {
       expect(() => {
         //@ts-expect-error passing array of empty object
         new Realm({ schema: [{}] });
-      }).throws("Failed to read ObjectSchema: name must be of type 'string', got ");
+      }).throws("Expected 'name' on object schema to be a string, got undefined");
     });
 
     it("fails when passed an array with an object without 'properties'", () => {
       expect(() => {
         //@ts-expect-error object without properties
         new Realm({ schema: [{ name: "SomeObject" }] });
-      }).throws("Failed to read ObjectSchema: properties must be of type 'object', got ");
+      }).throws("Expected 'properties' on 'SomeObject' to be an object, got undefined");
     });
 
     it("fails when passed an array with an object without 'name'", () => {
       expect(() => {
         //@ts-expect-error object without name
         new Realm({ schema: [{ properties: {} }] });
-      }).throws("Failed to read ObjectSchema: name must be of type 'string', got ");
+      }).throws("Expected 'name' on object schema to be a string, got undefined");
     });
 
-    function expectInvalidProperty(badProperty: Realm.PropertyType | Realm.ObjectSchemaProperty, message: string) {
+    function expectInvalidProperty(
+      badProperty: Realm.PropertySchemaShorthand | Realm.PropertySchema,
+      message: string,
+      addMessagePrefix = true,
+    ) {
+      if (addMessagePrefix) {
+        message = `Invalid type declaration for property 'bad' on 'InvalidObject': ${message}`;
+      }
       expect(() => {
         new Realm({
           schema: [
@@ -276,20 +277,20 @@ describe("Realm#constructor", () => {
 
     it("fails when asking for a list of lists", () => {
       expectInvalidProperty(
-        { type: "list[]", objectType: "InvalidObject" },
-        "List property 'InvalidObject.bad' must have a non-list value type",
+        { type: "list", objectType: "list" },
+        "A list must contain only primitive or user-defined types specified through 'objectType'",
       );
     });
 
-    it("fails when asking for an optional list", () => {
+    it("fails when asking for an optional list of objects", () => {
       expectInvalidProperty(
-        { type: "list?", objectType: "InvalidObject" },
-        "List property 'InvalidObject.bad' cannot be optional",
+        { type: "list", objectType: "InvalidObject", optional: true },
+        "User-defined types in lists and sets are always non-optional and cannot be made optional",
       );
     });
 
     it("fails when asking for an empty type string", () => {
-      expectInvalidProperty("", "Property 'InvalidObject.bad' must have a non-empty type");
+      expectInvalidProperty("", "The type must be specified.");
     });
 
     it("fails when asking for linkingObjects to a non-existing property", () => {
@@ -300,6 +301,7 @@ describe("Realm#constructor", () => {
           type: "linkingObjects",
         },
         "Property 'InvalidObject.nosuchproperty' declared as origin of linking objects property 'InvalidObject.bad' does not exist",
+        false,
       );
     });
 
@@ -311,6 +313,7 @@ describe("Realm#constructor", () => {
           type: "linkingObjects",
         },
         "Property 'InvalidObject.nummeric' declared as origin of linking objects property 'InvalidObject.bad' is not a link",
+        false,
       );
     });
 
@@ -322,23 +325,8 @@ describe("Realm#constructor", () => {
           type: "linkingObjects",
         },
         "Property 'InvalidObject.another' declared as origin of linking objects property 'InvalidObject.bad' links to type 'AnotherObject'",
+        false,
       );
-    });
-
-    it("allows list of objects with objectType defined", () => {
-      new Realm({
-        schema: [
-          {
-            name: "SomeObject",
-            properties: {
-              myObjects: {
-                objectType: "SomeObject",
-                type: "object[]",
-              },
-            },
-          },
-        ],
-      });
     });
   });
 

@@ -4,18 +4,31 @@
   "private": true,
   "main": "src/index.ts",
   "scripts": {
-    "start": "mocha --file harness/node.ts src/**/*.test.ts --watch",
+    "start": "wireit",
     "lint": "eslint --ext .js,.ts .",
-    "build": "webpack --mode production",
-    "test": "ts-node harness/dev.ts",
-    "test:github": "ts-node harness/github.ts"
+    "test": "wireit",
+    "test:github": "wireit"
+  },
+  "wireit": {
+    "start": {
+      "command": "mocha --file harness/node.ts src/**/*.test.ts --watch",
+      "dependencies": ["../realm-web:bundle"]
+    },
+    "test": {
+      "command": "tsx harness/dev.ts",
+      "dependencies": ["../realm-web:bundle"]
+    },
+    "test:github": {
+      "command": "tsx harness/github.ts",
+      "dependencies": ["../realm-web:bundle"]
+    }
   },
   "dependencies": {
-    "chai": "^4.3.6",
+    "chai": "4.3.6",
     "js-base64": "^3.7.2",
     "jwt-encode": "^1.0.1",
-    "mocha": "^8.3.2",
-    "mocha-remote": "^1.5.0",
+    "mocha-remote-cli": "^1.6.1",
+    "mocha-remote-server": "^1.6.0",
     "puppeteer": "^14.3.0",
     "@realm/app-importer": "^0.1.0",
     "realm-web": "*",
@@ -23,13 +36,13 @@
     "webpack-dev-server": "^4.9.2"
   },
   "peerDependencies": {
-    "mocha-remote-client": "^1.5.0"
+    "mocha-remote-client": "^1.6.1"
   },
   "devDependencies": {
     "@types/chai": "^4.3.1",
     "@types/fs-extra": "^9.0.13",
     "@types/mocha": "^8",
-    "@types/node-fetch": "^2.6.1",
+    "@types/node-fetch": "^2.6.2",
     "@types/puppeteer": "^5.4.6",
     "@types/webpack": "^5.28.0",
     "@types/webpack-env": "^1.17.0",

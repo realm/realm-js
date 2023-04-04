@@ -1,0 +1,278 @@
+{
+  "name": "realm",
+  "version": "12.0.0-alpha.1",
+  "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
+  "license": "apache-2.0",
+  "homepage": "https://realm.io",
+  "keywords": [
+    "database",
+    "db",
+    "react",
+    "react-native",
+    "persistence",
+    "localstorage",
+    "sqlite",
+    "asyncstorage",
+    "rocksdb",
+    "leveldb",
+    "realm"
+  ],
+  "author": {
+    "name": "Realm",
+    "email": "help@realm.io",
+    "url": "https://realm.io"
+  },
+  "main": "./dist/bundle.node.js",
+  "module": "./dist/bundle.node.mjs",
+  "types": "./dist/bundle.d.ts",
+  "react-native": "./dist/bundle.react-native.mjs",
+  "exports": {
+    ".": {
+      "types": "./dist/bundle.d.ts",
+      "require": "./dist/bundle.node.js",
+      "node": "./dist/bundle.node.mjs",
+      "react-native": "./dist/bundle.react-native.mjs"
+    },
+    "./scripts/submit-analytics": "./scripts/submit-analytics.mjs",
+    "./react-native.config.js": "./react-native.config.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "react-native/android",
+    "react-native/ios/realm-js-ios.xcframework",
+    "react-native/ios/realm-js-ios.xcframework/**/*.a",
+    "react-native/ios/RealmReact",
+    "scripts/submit-analytics.mjs",
+    "react-native.config.js",
+    "RealmJS.podspec"
+  ],
+  "scripts": {
+    "test": "wireit",
+    "test:types": "tsc --project type-tests/tsconfig.json",
+    "lint": "eslint --ext .js,.mjs,.ts .",
+    "build": "echo 'Run bundle, build:node, build:ios or build:android or other scripts depending on these instead' && exit 1",
+    "bundle": "wireit",
+    "bindgen:configure": "wireit",
+    "bindgen:build:node": "wireit",
+    "bindgen:generate:typescript": "wireit",
+    "bindgen:generate:wrappers": "wireit",
+    "build:node": "wireit",
+    "build:node:prebuild": "wireit",
+    "build:node:prebuild:arm": "wireit",
+    "build:node:prebuild:arm64": "wireit",
+    "build:node:prebuild:x64": "wireit",
+    "build:node:prebuild:ia32": "wireit",
+    "build:android": "wireit",
+    "build:ios": "wireit",
+    "build:ios:simulator": "wireit",
+    "build:ios:ios": "wireit",
+    "build:ios:catalyst": "wireit",
+    "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'"
+  },
+  "wireit": {
+    "test": {
+      "command": "mocha",
+      "dependencies": [
+        "build:node",
+        "bindgen:generate:typescript",
+        "bindgen:generate:wrappers",
+        "../realm-network-transport:bundle"
+      ]
+    },
+    "bundle": {
+      "command": "rollup --config",
+      "dependencies": [
+        "../realm-network-transport:bundle",
+        "bindgen:generate:typescript",
+        "bindgen:generate:wrappers"
+      ],
+      "files": [
+        "rollup.config.mjs",
+        "src/**/*.ts",
+        "tsconfig.json",
+        "src/**/tsconfig.json"
+      ],
+      "output": ["dist"]
+    },
+    "bindgen:configure": {
+      "command": "cmake-js configure --debug --directory ../bindgen",
+      "dependencies": ["../..:submodules"]
+    },
+    "bindgen:build:node": {
+      "command": "cmake --build ../bindgen/build --target realm-js-node",
+      "dependencies": ["bindgen:configure"]
+    },
+    "bindgen:generate:typescript": {
+      "command": "realm-bindgen --template typescript --spec ../bindgen/spec.yml --spec ../bindgen/js_spec.yml --output ./generated/ts",
+      "dependencies": [
+        "../..:submodules",
+        "../bindgen:generate:spec-schema"
+      ],
+      "files": [
+        "../bindgen/spec.yml",
+        "../bindgen/js_spec.yml",
+        "../bindgen/src",
+        "!../bindgen/src/templates",
+        "../bindgen/src/templates/typescript.ts"
+      ],
+      "output": [
+        "generated/ts/core.ts",
+        "generated/ts/native.d.mts"
+      ]
+    },
+    "bindgen:generate:wrappers": {
+      "command": "realm-bindgen --template node-wrapper --spec ../bindgen/spec.yml --spec ../bindgen/js_spec.yml --output ./generated/ts",
+      "dependencies": [
+        "../..:submodules",
+        "../bindgen:generate:spec-schema"
+      ],
+      "files": [
+        "../bindgen/spec.yml",
+        "../bindgen/js_spec.yml",
+        "../bindgen/src",
+        "!../bindgen/src/templates",
+        "../bindgen/src/templates/node-wrapper.ts"
+      ],
+      "output": [
+        "generated/ts/native.mjs",
+        "generated/ts/native-rn.mjs"
+      ]
+    },
+    "build:node": {
+      "dependencies": [
+        { "script": "bindgen:build:node", "cascade": false }
+      ]
+    },
+    "build:node:prebuild": {
+      "command": "cross-env prebuild --runtime napi --arch $PREBUILD_ARCH -- --directory ../bindgen",
+      "env": {
+        "PREBUILD_ARCH": {
+          "external": true
+        }
+      }
+    },
+    "build:node:prebuild:arm": {
+      "command": "npm run build:node:prebuild",
+      "env": {
+        "PREBUILD_ARCH": "arm"
+      }
+    },
+    "build:node:prebuild:arm64": {
+      "command": "npm run build:node:prebuild",
+      "env": {
+        "PREBUILD_ARCH": "arm64"
+      }
+    },
+    "build:node:prebuild:x64": {
+      "command": "npm run build:node:prebuild",
+      "env": {
+        "PREBUILD_ARCH": "x64"
+      }
+    },
+    "build:node:prebuild:ia32": {
+      "command": "npm run build:node:prebuild",
+      "env": {
+        "PREBUILD_ARCH": "ia32"
+      }
+    },
+    "build:android": {
+      "command": "node ../../scripts/build-android.js",
+      "dependencies": [
+        "../..:submodules"
+      ],
+      "files": [
+        "../../src/android/**",
+        "../bindgen/src/**/*.ts",
+        "../bindgen/src/**/*.h"
+      ]
+    },
+    "build:ios": {
+      "command": "../../scripts/build-ios.sh -c ${CONFIGURATION:=Debug} ${PLATFORMS}",
+      "dependencies": [
+        "../..:submodules"
+      ],
+      "files": [
+        "../../src/ios/**",
+        "../bindgen/src/**/*.ts",
+        "../bindgen/src/**/*.h"
+      ],
+      "env": {
+        "PLATFORMS": {
+          "external": true
+        },
+        "CONFIGURATION": {
+          "external": true
+        }
+      }
+    },
+    "build:ios:simulator": {
+      "command": "npm run build:ios",
+      "env": {
+        "PLATFORMS": "simulator"
+      }
+    },
+    "build:ios:ios": {
+      "command": "npm run build:ios",
+      "env": {
+        "PLATFORMS": "ios"
+      }
+    },
+    "build:ios:catalyst": {
+      "command": "npm run build:ios",
+      "env": {
+        "PLATFORMS": "catalyst"
+      }
+    }
+  },
+  "dependencies": {
+    "debug": "^4.3.4",
+    "node-fetch": "^2.6.9",
+    "prebuild-install": "^7.1.1"
+  },
+  "peerDependencies": {
+    "bson": "^4",
+    "react-native": "^0.71.0"
+  },
+  "peerDependenciesMeta": {
+    "react-native": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@realm/bindgen": "^0.1.0",
+    "@realm/network-transport": "^0.7.2",
+    "@rollup/plugin-commonjs": "^23.0.2",
+    "@rollup/plugin-json": "^6.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-replace": "^5.0.1",
+    "@rollup/plugin-typescript": "^9.0.2",
+    "@types/chai": "^4.3.3",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^18.15.10",
+    "@types/path-browserify": "^1.0.0",
+    "chai": "4.3.6",
+    "cmake-js": "6.3.2",
+    "cross-env": "^7.0.3",
+    "mocha": "^10.1.0",
+    "path-browserify": "^1.0.1",
+    "prebuild": "^11.0.4",
+    "react-native": "0.71.4",
+    "rollup-plugin-dts": "^5.0.0",
+    "tsm": "^2.2.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/realm/realm-js.git",
+    "directory": "packages/realm"
+  },
+  "binary": {
+    "module_name": "realm",
+    "module_path": "generated/ts",
+    "host": "https://static.realm.io",
+    "remote_path": "realm-js-prebuilds/{version}",
+    "napi_versions": [
+      6
+    ]
+  }
+}

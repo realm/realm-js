@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import Realm from "realm";
+import { Realm } from "realm";
 
 import { openRealmBeforeEach } from "../hooks";
 
@@ -31,7 +31,7 @@ describe("Class models", () => {
       class Person extends Realm.Object {}
       expect(() => {
         new Realm({ schema: [Person as any] });
-      }).throws("must have a 'schema' property");
+      }).throws("Expected 'schema static' to be an object, got undefined");
     });
 
     it("fails without a schema.properties static", () => {
@@ -40,7 +40,7 @@ describe("Class models", () => {
       }
       expect(() => {
         new Realm({ schema: [Person as any] });
-      }).throws("properties must be of type 'object'");
+      }).throws("Expected 'properties' on 'Person' to be an object, got undefined");
     });
 
     it("fails if it doesn't extend Realm.Object", () => {

@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ES2020",
+    "moduleResolution": "node",
+    "noEmit": true,
+    "esModuleInterop": true,
+    "noResolve": true,
+    "lib": [
+      "ES2022"
+    ],
+    "types": [
+      "@realm/network-transport",
+      "bson",
+      "debug",
+      "ms" // debug dependency
+    ]
+  },
+  "include": [
+    "src/",
+    "generated/ts/"
+  ],
+  "exclude": [
+    "src/tests/",
+    "type-tests/",
+    "src/node/",
+    "src/react-native/"
+  ],
+}

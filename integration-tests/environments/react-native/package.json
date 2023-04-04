@@ -3,31 +3,185 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "react-native start",
+    "start": "wireit",
+    "test": "wireit",
+    "test:android": "wireit",
+    "test:ios": "wireit",
+    "test:catalyst": "wireit",
+    "test:ci:android": "PLATFORM=android npm run common:ci",
+    "test:ci:ios": "pod-install && PLATFORM=ios npm run common:ci",
+    "watch:ios": "wireit",
+    "watch:catalyst": "wireit",
+    "watch:android": "wireit",
+    "common": "wireit",
+    "common:ci": "mocha-remote --template @realm/mocha-reporter --context appImporterIsRemote,$MOCHA_REMOTE_CONTEXT -- concurrently --kill-others-on-fail npm:metro npm:runner npm:app-importer",
+
     "lint": "eslint .",
-    "test": "npm run test:android && npm run test:ios",
-    "test:ios": "PLATFORM=ios WATCH=false MODE=native npm run common",
-    "test:catalyst": "PLATFORM=catalyst WATCH=false MODE=native npm run common",
-    "test:android": "PLATFORM=android WATCH=false MODE=native npm run common",
-    "watch:ios": "PLATFORM=ios WATCH=true MODE=native npm run common",
-    "watch:catalyst": "PLATFORM=catalyst WATCH=true MODE=native npm run common",
-    "watch:android": "PLATFORM=android WATCH=true MODE=native npm run common",
-    "common": "mocha-remote --template @realm/mocha-reporter --context mode=$MODE,appImporterIsRemote,$MOCHA_REMOTE_CONTEXT --watch $WATCH -- concurrently --kill-others-on-fail npm:metro npm:runner npm:app-importer",
     "app-importer": "realm-app-importer serve ../../realm-apps",
     "metro": "react-native start --reset-cache",
     "runner": "node harness/runner.js"
   },
+  "wireit": {
+    "start": {
+      "command": "react-native start",
+      "dependencies": [
+        "../../tests:build-dependencies"
+      ]
+    },
+    "test": {
+      "command": "npm run test:android && npm run test:ios"
+    },
+    "pod-install:simulator": {
+      "command": "pod-install || (cd ios && bundle install && bundle exec pod install)",
+      "dependencies": [
+        {
+          "script": "../../../packages/realm:build:ios:simulator",
+          "cascade": false
+        }
+      ],
+      "clean": "if-file-deleted",
+      "files": [
+        "ios/Podfile",
+        "../../../packages/realm/react-native/ios/realm-js-ios.xcframework"
+      ],
+      "output": [
+        "ios/Pods",
+        "ios/Podfile.lock"
+      ],
+      "env": {
+        "USE_HERMES": {
+          "external": true
+        },
+        "RCT_NEW_ARCH_ENABLED": {
+          "external": true
+        }
+      }
+    },
+    "pod-install:catalyst": {
+      "command": "pod-install || (cd ios && bundle install && bundle exec pod install)",
+      "dependencies": [
+        {
+          "script": "../../../packages/realm:build:ios:catalyst",
+          "cascade": false
+        }
+      ],
+      "files": [
+        "ios/Podfile",
+        "../../../packages/realm/react-native/ios/realm-js-ios.xcframework"
+      ],
+      "output": [
+        "ios/Pods",
+        "ios/Podfile.lock"
+      ],
+      "env": {
+        "USE_HERMES": {
+          "external": true
+        },
+        "RCT_NEW_ARCH_ENABLED": {
+          "external": true
+        }
+      }
+    },
+    "common": {
+      "command": "mocha-remote --template @realm/mocha-reporter --context appImporterIsRemote,$MOCHA_REMOTE_CONTEXT --watch $WATCH -- concurrently --kill-others-on-fail npm:metro npm:runner npm:app-importer"
+    },
+    "test:android": {
+      "command": "npm run common",
+      "dependencies": [
+        "../../../packages/realm:build:android",
+        "../../../packages/realm:bundle",
+        "../../../packages/mocha-reporter:bundle",
+        "../../../packages/realm-network-transport:bundle",
+        "../../../packages/realm-app-importer:bundle"
+      ],
+      "env": {
+        "PLATFORM": "android",
+        "WATCH": "false"
+      }
+    },
+    "test:ios": {
+      "command": "npm run common",
+      "dependencies": [
+        "pod-install:simulator",
+        "../../../packages/realm:bundle",
+        "../../../packages/mocha-reporter:bundle",
+        "../../../packages/realm-network-transport:bundle",
+        "../../../packages/realm-app-importer:bundle"
+      ],
+      "env": {
+        "PLATFORM": "ios",
+        "WATCH": "false"
+      }
+    },
+    "test:catalyst": {
+      "command": "npm run common",
+      "dependencies": [
+        "pod-install:catalyst",
+        "../../../packages/realm:bundle",
+        "../../../packages/mocha-reporter:bundle",
+        "../../../packages/realm-network-transport:bundle",
+        "../../../packages/realm-app-importer:bundle"
+      ],
+      "env": {
+        "PLATFORM": "catalyst",
+        "WATCH": "false"
+      }
+    },
+    "watch:android": {
+      "command": "npm run common",
+      "dependencies": [
+        "../../../packages/realm:build:android",
+        "../../../packages/realm:bundle",
+        "../../../packages/mocha-reporter:bundle",
+        "../../../packages/realm-network-transport:bundle",
+        "../../../packages/realm-app-importer:bundle"
+      ],
+      "env": {
+        "PLATFORM": "android",
+        "WATCH": "true"
+      }
+    },
+    "watch:ios": {
+      "command": "npm run common",
+      "dependencies": [
+        "pod-install:simulator",
+        "../../../packages/realm:build:ios:simulator",
+        "../../../packages/realm:bundle",
+        "../../../packages/mocha-reporter:bundle",
+        "../../../packages/realm-network-transport:bundle",
+        "../../../packages/realm-app-importer:bundle"
+      ],
+      "env": {
+        "PLATFORM": "ios",
+        "WATCH": "true"
+      }
+    },
+    "watch:catalyst": {
+      "command": "npm run common",
+      "dependencies": [
+        "pod-install:catalyst",
+        "../../../packages/realm:build:ios:catalyst",
+        "../../../packages/realm:bundle",
+        "../../../packages/mocha-reporter:bundle",
+        "../../../packages/realm-network-transport:bundle",
+        "../../../packages/realm-app-importer:bundle"
+      ],
+      "env": {
+        "PLATFORM": "catalyst",
+        "WATCH": "true"
+      }
+    }
+  },
   "dependencies": {
     "@react-native-community/art": "^1.2.0",
     "@realm/integration-tests": "*",
-    "mocha": "^8.3.2",
     "mocha-junit-reporter": "^2.0.0",
-    "mocha-remote-client": "^1.5.0",
+    "mocha-remote-client": "^1.6.1",
     "path-browserify": "^1.0.1",
     "react": "18.2.0",
-    "react-native": "0.71.0",
+    "react-native": "0.71.4",
     "react-native-fs": "^2.20.0",
-    "react-native-polyfill-globals": "3.1.0",
+    "react-native-polyfill-globals": "^3.1.0",
     "react-native-progress": "^4.1.2",
     "realm": "*",
     "@realm/app-importer": "*",
@@ -44,7 +198,7 @@
     "jest": "^29.2.1",
     "metro-react-native-babel-preset": "0.73.5",
     "mocha-github-actions-reporter": "^0.2.3",
-    "mocha-remote-cli": "^1.5.0",
+    "mocha-remote-cli": "^1.6.1",
     "pod-install": "^0.1.23"
   }
 }

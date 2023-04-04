@@ -16,4 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-module.exports = require("@realm/metro-config")(__dirname);
+module.exports = require("@realm/metro-config")({
+  projectRoot: __dirname,
+});

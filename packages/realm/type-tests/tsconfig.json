@@ -1,0 +1,21 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "noResolve": true,
+    "esModuleInterop": true,
+    "lib": [
+      "ES2022",
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "realm": ["../../.."],
+      "next-realm": [".."],
+    }
+  },
+  "exclude": [],
+  "include": [
+    "../src/**/*.ts",
+    "type-tests.ts"
+  ]
+}

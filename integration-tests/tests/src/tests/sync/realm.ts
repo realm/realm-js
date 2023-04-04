@@ -634,7 +634,7 @@ describe("Realmtest", () => {
             //@ts-expect-error assigning string to int
             p1.age = "Ten";
           });
-        }).throws("PersonObject.age must be of type 'number', got 'string' ('Ten')");
+        }).throws("Expected value to be a number, got a string");
       });
     });
 
@@ -660,7 +660,7 @@ describe("Realmtest", () => {
           this.realm.write(() => {
             this.realm.create(PersonObject.schema.name, { name: "Ari", age: "Ten" });
           });
-        }).throws("PersonObject.age must be of type 'number', got 'string' ('Ten')");
+        }).throws("Expected value to be a number, got a string");
       });
 
       it("create only works within transaction", function (this: RealmContext) {
@@ -959,7 +959,7 @@ describe("Realmtest", () => {
           };
           const obj0 = this.realm.create<IAllPrimaryTypes>(AllPrimaryTypesSchema.name, values);
           expect(() => this.realm.create(AllPrimaryTypesSchema.name, values)).throws(
-            "Attempting to create an object of type 'AllPrimaryTypesObject' with an existing primary key value ''0''.",
+            "Attempting to create an object of type 'AllPrimaryTypesObject' with an existing primary key value '0'.",
           );
           const obj1 = this.realm.create<IAllPrimaryTypes>(
             AllPrimaryTypesSchema.name,
@@ -1111,12 +1111,17 @@ describe("Realmtest", () => {
             },
           };
         }
-        class InvalidObject extends Realm.Object {
-          static schema: Realm.ObjectSchema;
+        function InvalidObject() {
+          return {};
         }
 
+        expect(() => new Realm({ schema: [InvalidObject] })).throws("Class 'InvalidObject' must extend Realm.Object");
+
+        Object.setPrototypeOf(InvalidObject, Realm.Object);
+        Object.setPrototypeOf(InvalidObject.prototype, Realm.Object.prototype);
+
         expect(() => new Realm({ schema: [InvalidObject] })).throws(
-          "Realm object constructor must have a 'schema' property.",
+          "Expected 'schema static' to be an object, got undefined",
         );
 
         InvalidObject.schema = {
@@ -1131,13 +1136,11 @@ describe("Realmtest", () => {
         realm.write(() => {
           let object = realm.create("CustomObject", { intCol: 1 });
           expect(object).instanceof(CustomObject);
-          expect(Object.getPrototypeOf(object) == CustomObject.prototype).to.be.true;
           expect(customCreated).equals(0);
 
           // Should be able to create object by passing in constructor.
           object = realm.create(CustomObject, { intCol: 2 });
           expect(object).instanceof(CustomObject);
-          expect(Object.getPrototypeOf(object) == CustomObject.prototype).to.be.true;
           expect(customCreated).equals(0);
         });
 
@@ -1217,6 +1220,53 @@ describe("Realmtest", () => {
           expect(managedObj.nullObjectCol).equals(null);
           expect(managedObj.arrayCol[0].doubleCol).equals(2);
         });
+      });
+
+      // TODO: Refactor and re-enable
+      it.skip("writeCopyTo works", async function (this: RealmContext) {
+        const realm = new Realm({
+          schema: [schemas.IntPrimary, schemas.AllTypes, schemas.TestObject, schemas.LinkToAllTypes],
+        });
+
+        realm.write(() => {
+          realm.create("TestObject", { doubleCol: 1 });
+        });
+        TestCase.assertEqual(1, realm.objects("TestObject").length);
+
+        TestCase.assertThrowsContaining(() => {
+          realm.writeCopyTo();
+        }, "Expected value to be an object, got undefined");
+
+        TestCase.assertThrowsContaining(() => {
+          realm.writeCopyTo(34);
+        }, "Expected value to be an object, got a number");
+
+        // make sure that copies are in the same directory as the original file
+        // that is important for running tests on mobile devices,
+        // so we don't have issues with permissisons
+        const copyName = realm.path + ".copy.realm";
+
+        const copyConfig = { path: copyName };
+        realm.writeCopyTo(copyConfig);
+
+        const realmCopy = new Realm(copyConfig);
+        TestCase.assertEqual(1, realmCopy.objects("TestObject").length);
+        realmCopy.close();
+
+        const encryptedCopyName = realm.path + ".copy-encrypted.realm";
+
+        const encryptionKey = new Int8Array(64);
+        for (let i = 0; i < 64; i++) {
+          encryptionKey[i] = 1;
+        }
+        realm.writeCopyTo({ path: encryptedCopyName, encryptionKey });
+
+        const encryptedCopyConfig = { path: encryptedCopyName, encryptionKey: encryptionKey };
+        const encryptedRealmCopy = new Realm(encryptedCopyConfig);
+        TestCase.assertEqual(1, encryptedRealmCopy.objects("TestObject").length);
+        encryptedRealmCopy.close();
+
+        realm.close();
       });
 
       it("creating objects without properties work", async function (this: RealmContext) {
@@ -1329,14 +1379,10 @@ describe("Realmtest", () => {
         }
 
         //@ts-expect-error object without specifying type
-        expect(() => this.realm.objects()).throws("objectType must be of type 'string', got (undefined)");
+        expect(() => this.realm.objects()).throws("Expected an object schema name, object instance or class");
         //@ts-expect-error object without specifying type
-        expect(() => this.realm.objects([])).throws("objectType must be of type 'string', got ()");
+        expect(() => this.realm.objects([])).throws("Expected an object schema name, object instance or class");
         expect(() => this.realm.objects("InvalidClass")).throws("Object type 'InvalidClass' not found in schema.");
-        //@ts-expect-error testing too many arguments for objects
-        expect(() => this.realm.objects(PersonObject.schema.name, "truepredicate")).throws(
-          "Invalid arguments: at most 1 expected, but 2 supplied.",
-        );
         expect(() => this.realm.objects(InvalidPerson)).throws(
           "Constructor was not registered in the schema for this Realm",
         );
@@ -1351,7 +1397,7 @@ describe("Realmtest", () => {
         this.realm.close();
 
         expect(() => console.log("Name: ", person.name)).throws(
-          "Accessing object of type PersonObject which has been invalidated or deleted",
+          "Accessing object which has been invalidated or deleted",
         );
 
         expect(() => this.realm.objects(PersonObject.schema.name)).throws("Cannot access realm that has been closed");
@@ -1526,7 +1572,7 @@ describe("Realmtest", () => {
 
       this.realm.write(() => {
         //@ts-expect-error tests delete without specifying object
-        expect(() => this.realm.delete()).throws("object must be of type 'object', got (undefined)");
+        expect(() => this.realm.delete()).throws("Expected 'subject' to be an object, got undefined");
 
         this.realm.delete(objects[0]);
         expect(objects.length).equals(9, "wrong object count");
@@ -1618,14 +1664,12 @@ describe("Realmtest", () => {
       expect(this.realm.objectForPrimaryKey<IStringPrimary>("StringPrimaryObject", "val0")?.valueCol).equals(0);
       expect(this.realm.objectForPrimaryKey<IStringPrimary>("StringPrimaryObject", "val1")?.valueCol).equals(1);
 
-      expect(() => this.realm.objectForPrimaryKey("TestObject", 0)).throws(
-        "'TestObject' does not have a primary key defined",
-      );
+      expect(() => this.realm.objectForPrimaryKey("TestObject", 0)).throws("Expected a primary key on 'TestObject'");
       //@ts-expect-error objectForprimaryKey without arguments
-      expect(() => this.realm.objectForPrimaryKey()).throws("objectType must be of type 'string', got (undefined)");
+      expect(() => this.realm.objectForPrimaryKey()).throws("Expected an object schema name, object instance or class");
       //@ts-expect-error objectForprimaryKey without key
       expect(() => this.realm.objectForPrimaryKey("IntPrimaryObject")).throws(
-        "Invalid null value for non-nullable primary key.",
+        "Expected value to be a number or bigint, got undefined",
       );
       expect(() => this.realm.objectForPrimaryKey("InvalidClass", 0)).throws(
         "Object type 'InvalidClass' not found in schema.",
@@ -1633,7 +1677,7 @@ describe("Realmtest", () => {
 
       //@ts-expect-error objectForprimaryKey with object as key
       expect(() => this.realm.objectForPrimaryKey("IntPrimaryObject", { foo: "bar" })).throws(
-        "Property must be of type 'number', got ([object Object])",
+        "Expected value to be a number or bigint, got an object",
       );
     });
   });
@@ -1724,7 +1768,7 @@ describe("Realmtest", () => {
           prop.optional = val.optional || false;
           prop.indexed = val.indexed || false;
         } else {
-          prop = { type: (val as unknown) as string, indexed: false, optional: false };
+          prop = { type: val as unknown as string, indexed: false, optional: false };
         }
         if (prop.type.includes("?")) {
           prop.optional = true;

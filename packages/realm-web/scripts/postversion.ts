@@ -46,4 +46,4 @@ cp.execSync(`git commit -a -m 'Releasing Realm Web v${version}'`);
 cp.execSync(`git tag 'realm-web-v${version}'`);
 // Print instructions
 console.log("Now push (with tags) to the repository:");
-console.log("git push origin master --tags");
+console.log("git push origin main --tags");

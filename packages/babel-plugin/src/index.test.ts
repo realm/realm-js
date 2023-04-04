@@ -18,7 +18,7 @@
 
 import * as babel from "@babel/core";
 
-import type { ObjectSchema, ObjectSchemaProperty } from "realm";
+import type { ObjectSchema, PropertySchema } from "realm";
 
 import { describeProperty, extractSchema } from "./tests/generator";
 import { transformProperty } from "./tests/generator/transform";
@@ -230,7 +230,8 @@ describe("Babel plugin", () => {
     });
 
     describeProperty("link", {
-      type: "Person",
+      type: "object",
+      objectTypes: ["Person"],
     });
 
     // LinkingObjects has sufficiently unique syntax that we test it manually
@@ -360,7 +361,7 @@ describe("Babel plugin", () => {
       const transformCode = transformProperty(`@index name: Realm.Types.String;`);
       const parsedSchema = extractSchema(transformCode);
 
-      expect((parsedSchema?.properties.name as ObjectSchemaProperty).indexed).toEqual(true);
+      expect((parsedSchema?.properties.name as PropertySchema).indexed).toEqual(true);
     });
 
     it("handles `@index` decorators from the Realm import", () => {
@@ -370,7 +371,7 @@ describe("Babel plugin", () => {
       });
       const parsedSchema = extractSchema(transformCode);
 
-      expect((parsedSchema?.properties.name as ObjectSchemaProperty).indexed).toEqual(true);
+      expect((parsedSchema?.properties.name as PropertySchema).indexed).toEqual(true);
     });
 
     it("ignores `@index` decorators not imported from `realm`", () => {
@@ -380,7 +381,7 @@ describe("Babel plugin", () => {
       });
       const parsedSchema = extractSchema(transformCode);
 
-      expect((parsedSchema?.properties.name as ObjectSchemaProperty).indexed).toBeUndefined();
+      expect((parsedSchema?.properties.name as PropertySchema).indexed).toBeUndefined();
     });
 
     it("removes `@index` decorators from the source", () => {
@@ -393,7 +394,7 @@ describe("Babel plugin", () => {
       const transformCode = transformProperty(`@mapTo("rename") name: Realm.Types.String;`);
       const parsedSchema = extractSchema(transformCode);
 
-      expect((parsedSchema?.properties.name as ObjectSchemaProperty).mapTo).toEqual("rename");
+      expect((parsedSchema?.properties.name as PropertySchema).mapTo).toEqual("rename");
     });
 
     it("handles `@mapTo` decorators from the Realm import", () => {
@@ -403,7 +404,7 @@ describe("Babel plugin", () => {
       });
       const parsedSchema = extractSchema(transformCode);
 
-      expect((parsedSchema?.properties.name as ObjectSchemaProperty).mapTo).toEqual("rename");
+      expect((parsedSchema?.properties.name as PropertySchema).mapTo).toEqual("rename");
     });
 
     it("ignores `@mapTo` decorators not imported from `realm`", () => {
@@ -413,7 +414,7 @@ describe("Babel plugin", () => {
       });
       const parsedSchema = extractSchema(transformCode);
 
-      expect((parsedSchema?.properties.name as ObjectSchemaProperty).mapTo).toBeUndefined();
+      expect((parsedSchema?.properties.name as PropertySchema).mapTo).toBeUndefined();
     });
 
     it("removes `@mapTo` decorators from the source", () => {
@@ -426,8 +427,8 @@ describe("Babel plugin", () => {
       const transformCode = transformProperty(`@index @mapTo("rename") name: Realm.Types.String;`);
       const parsedSchema = extractSchema(transformCode);
 
-      expect((parsedSchema?.properties.name as ObjectSchemaProperty).indexed).toEqual(true);
-      expect((parsedSchema?.properties.name as ObjectSchemaProperty).mapTo).toEqual("rename");
+      expect((parsedSchema?.properties.name as PropertySchema).indexed).toEqual(true);
+      expect((parsedSchema?.properties.name as PropertySchema).mapTo).toEqual("rename");
     });
 
     // This does not work in tests, but does work in real code. Leaving disabled for now
@@ -435,7 +436,7 @@ describe("Babel plugin", () => {
       const transformCode = transformProperty(`@index name!: Realm.Types.String;`);
       const parsedSchema = extractSchema(transformCode);
 
-      expect((parsedSchema?.properties.name as ObjectSchemaProperty).indexed).toEqual(true);
+      expect((parsedSchema?.properties.name as PropertySchema).indexed).toEqual(true);
     });
   });
 

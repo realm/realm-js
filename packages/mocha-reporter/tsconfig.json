@@ -7,6 +7,6 @@
 		"noEmit": false,
 		"declaration": true,
 		"outDir": "./dist",
-		"typeRoots": ["./types", "./node_modules/@types"]
+		"types": ["node", "mocha"]
 	}
 }

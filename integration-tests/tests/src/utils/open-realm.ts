@@ -16,13 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Realm from "realm";
+import { Realm, Configuration, SyncConfiguration, User, BSON } from "realm";
 
 // Either the sync property is left out (local Realm)
-export type LocalConfiguration = Omit<Realm.Configuration, "sync"> & { sync?: never };
+export type LocalConfiguration = Omit<Configuration, "sync"> & { sync?: never };
 // Or the sync parameter is present
-export type SyncedConfiguration = Omit<Realm.Configuration, "sync"> & {
-  sync?: Partial<Realm.SyncConfiguration>;
+export type SyncedConfiguration = Omit<Configuration, "sync"> & {
+  sync?: Partial<SyncConfiguration>;
 };
 export type OpenRealmConfiguration = LocalConfiguration | SyncedConfiguration;
 
@@ -36,45 +36,65 @@ export type OpenRealmConfiguration = LocalConfiguration | SyncedConfiguration;
  */
 export async function openRealm(
   partialConfig: LocalConfiguration | SyncedConfiguration = {},
-  user: Realm.User | undefined,
-): Promise<{ config: Realm.Configuration; realm: Realm }> {
-  const nonce = new Realm.BSON.ObjectID().toHexString();
-  const path = `temp-${nonce}.realm`;
-
+  user: User | undefined,
+): Promise<{ config: Configuration; realm: Realm }> {
   if (!partialConfig.sync) {
-    const config = { ...partialConfig, path } as LocalConfiguration;
+    const config = createLocalConfig(partialConfig as LocalConfiguration);
     const realm = await Realm.open(config);
     return { config, realm };
-  } else {
-    const config = {
-      ...partialConfig,
-      path,
-      sync: {
-        user: user,
-        ...(partialConfig.sync.flexible ? { flexible: true } : { partitionValue: nonce }),
-        _sessionStopPolicy: "immediately",
-        ...partialConfig.sync,
-      },
-    } as Realm.Configuration;
-    const realm = await Realm.open(config);
-
-    // Upload the schema, ensuring a valid connection. uploadAllLocalChanges
-    // will not resolve with flexible sync enabled until we have created an
-    // initial subscription set, so skip it if we have a flexible config.
-    // There is an issue on the cloud side which will fix this.
-    if (!config.sync?.flexible) {
-      if (!realm.syncSession) {
-        throw new Error("No syncSession found on realm");
-      }
-
-      await realm.syncSession.uploadAllLocalChanges();
-    }
-
-    // TODO: This should probably be done in Realm.open()
-    if (config.sync?.flexible) {
-      await realm.subscriptions.waitForSynchronization();
-    }
-
-    return { config, realm };
+  } else if (!user) {
+    throw new Error("Expected a user");
   }
+
+  const config = createSyncConfig(partialConfig, user);
+  const realm = await Realm.open(config);
+
+  // Upload the schema, ensuring a valid connection. uploadAllLocalChanges
+  // will not resolve with flexible sync enabled until we have created an
+  // initial subscription set, so skip it if we have a flexible config.
+  // There is an issue on the cloud side which will fix this.
+  if (!config.sync?.flexible) {
+    if (!realm.syncSession) {
+      throw new Error("No syncSession found on realm");
+    }
+
+    await realm.syncSession.uploadAllLocalChanges();
+  }
+
+  // TODO: This should probably be done in Realm.open()
+  if (config.sync?.flexible) {
+    await realm.subscriptions.waitForSynchronization();
+  }
+
+  return { config, realm };
+}
+
+export function createSyncConfig(partialConfig: SyncedConfiguration = {}, user: User): Configuration {
+  const { path, nonce } = getRandomPathAndNonce();
+
+  return {
+    path,
+    ...partialConfig,
+    sync: {
+      user: user,
+      ...(partialConfig.sync?.flexible ? { flexible: true } : { partitionValue: nonce }),
+      _sessionStopPolicy: "immediately",
+      ...partialConfig.sync,
+    },
+  } as unknown as Configuration;
+}
+
+export function createLocalConfig(partialConfig: LocalConfiguration = {}): Configuration {
+  const path = getRandomPathAndNonce().path;
+
+  return { path, ...partialConfig };
+}
+
+//TODO When bindgen is rebased on master, it could be worth moving this method to /src/utils/generators.ts that deals with generating random values
+function getRandomPathAndNonce(): { path: string; nonce: string } {
+  const nonce = new BSON.ObjectId().toHexString();
+  return {
+    path: `temp-${nonce}.realm`,
+    nonce,
+  };
 }

@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "noResolve": false,
+    "strictFunctionTypes": false,
+    "types": [
+      "mocha",
+      "node"
+    ]
+  },
+  "exclude": []
+}

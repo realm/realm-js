@@ -16,13 +16,34 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-/* eslint-disable @typescript-eslint/no-var-requires */
+// Set the defult depth of objects logged with console.log to improve DX when debugging
+import { inspect } from "node:util";
+inspect.defaultOptions.depth = null;
+
+if (!global.gc) {
+  throw new Error("Run with --expose_gc to allow garbage collection between tests");
+}
 
 // Require this file to get the Realm constructor injected into the global.
 // This is only useful when we want to run the tests outside of any particular environment
 
-global.fs = require("fs-extra") as typeof global.fs;
-global.path = require("path") as typeof global.path;
+import { existsSync } from "node:fs";
+global.fs = {
+  exists(path) {
+    return existsSync(path);
+  },
+};
+
+import { dirname, resolve } from "path";
+global.path = {
+  dirname(path) {
+    return dirname(path);
+  },
+  resolve(...paths: string[]) {
+    return resolve(...paths);
+  },
+};
+
 global.title = "Realm JS development-mode";
 global.environment = { node: true };
 

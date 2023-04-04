@@ -16,7 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-type BenchmarkResult = import("@thi.ng/bench").BenchmarkResult;
+type Realm = import("realm").Realm;
+type RealmObject = import("realm").Object;
+type App = import("realm").App;
+type User = import("realm").User;
+type Configuration = import("realm").Configuration;
+//type BenchmarkResult = import("@thi.ng/bench").BenchmarkResult;
 
 interface fs {
   exists: (path: string) => boolean;
@@ -24,7 +29,7 @@ interface fs {
 
 interface path {
   dirname: (path: string) => string;
-  resolve: (basePath: string, path?: string) => string;
+  resolve: (...paths: string[]) => string;
 }
 
 type Require = (id: string) => unknown;
@@ -150,18 +155,40 @@ declare namespace Mocha {
 }
 
 // Mocha contexts made available by hooks
-type AppContext = { app: Realm.App; databaseName: string } & Mocha.Context;
-type UserContext = { user: Realm.User } & Mocha.Context;
+type AppContext = { app: App; databaseName: string } & Mocha.Context;
+type UserContext = { user: User } & Mocha.Context;
+type CloseRealmOptions = { deleteFile: boolean; clearTestState: boolean; reopen: boolean };
 type RealmContext = {
   realm: Realm;
-  config: Realm.Configuration;
+  /**
+   * Close a Realm instance, optionally deleting the file, clearing test state or reopening it afterwards.
+   * Defaults to deleting the Realm file and clearing test state.
+   */
+  closeRealm(options?: Partial<CloseRealmOptions>): Promise<void>;
 } & Mocha.Context;
 type RealmObjectContext<T = Record<string, unknown>> = {
-  object: Realm.Object & T;
+  object: RealmObject & T;
 } & RealmContext;
-type BenchmarkContext = {
-  result: BenchmarkResult;
-} & Mocha.Context;
+// type BenchmarkContext = {
+//   result: BenchmarkResult;
+// } & Mocha.Context;
+
+// Added by the "utils/chai-plugin.ts"
+declare namespace Chai {
+  interface Assertion {
+    /**
+     * Maps the current value from a Realm.Object to its primary key value.
+     */
+    primaryKey: Assertion;
+    /**
+     * Maps the current array or collection of Realm.Object to an array of their primary key values.
+     */
+    primaryKeys: Assertion;
+  }
+}
+
+/** Calls the callback on the next tick of the event loop */
+declare function setImmediate(cb: () => void): void;
 
 interface Console {
   error(message?: unknown, ...optionalParams: unknown[]): void;

@@ -203,8 +203,8 @@ If you find a need to change these, copy them to your testfile instead of extend
 
 These tests have been designed for increased developer experience and productivity over completeness. Which means that the environments are not consuming the Realm JS package exactly like an end user would, but we gain the ability watch and rerun tests as files change on the filesystem.
 
-- We need to move or rewrite more tests from `../tests/js` into the `./tests` directory.
 - All environments are not getting tested on all their available platforms on CI:
   - Electron is not running tests on Windows nor MacOS - and the tests running on Linux is running an intermediary version of the app, before it gets packaged, which might produce false negative results.
   - React Native tests are not running in React Native "release" mode.
 - Because React Native bundles its JavaScript source files into a single bundle, using the Metro bundler, we need to be explicit in the files we include in the test-suite. I.e. we cannot call the require function with a expression which value will only be known at runtime, such as iterating over a list of files, would be. Therefore `tests/src/index.ts` must require all individual files in which our tests are defined: We cannot simply ask for all `*/**.tests.js` files to be included.
+- We've pinned chai to v4.3.6 to avoid [a "fix" that got introduced in v4.3.7](https://github.com/chaijs/chai/pull/1483).

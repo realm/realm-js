@@ -122,7 +122,8 @@ Then you can install the SDK and NDK by running: (you can alternatively do this 
 
 ```sh
 sdkmanager --install "platforms;android-31"
-sdkmanager --install "ndk;23.2.8568313"
+sdkmanager --install "ndk;23.1.7779620"
+sdkmanager --install "cmake;3.18.1"
 ```
 
 #### Optional extras
@@ -390,7 +391,7 @@ The relevant snippet is:
 ```
 ## Updating the Android JNI headers
 
-If you add a new JNI method to [`RealmReactModule.java`](https://github.com/realm/realm-js/blob/master/react-native/android/src/main/java/io/realm/react/RealmReactModule.java), you will need to regenerate the auto-generated [header file](https://github.com/realm/realm-js/blob/master/src/android/io_realm_react_RealmReactModule.h).
+If you add a new JNI method to [`RealmReactModule.java`](https://github.com/realm/realm-js/blob/main/packages/realm/react-native/android/src/main/java/io/realm/react/RealmReactModule.java), you will need to regenerate the auto-generated [header file](https://github.com/realm/realm-js/blob/main/packages/realm/src/android/io_realm_react_RealmReactModule.h).
 
 1. First you need to find some classpaths required to generate the header. In a terminal, `cd ~/.gradle/caches` and then run:
     1. `find "$(pwd -P)" -name "jetified-react-native-0.69.1-debug" -exec find {} -name "classes.jar" \;`

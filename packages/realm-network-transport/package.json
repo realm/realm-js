@@ -2,21 +2,32 @@
   "name": "@realm/network-transport",
   "version": "0.7.2",
   "description": "Implements cross-platform fetching used by Realm JS",
-  "main": "./dist/bundle.cjs.js",
-  "module": "./dist/bundle.es.js",
+  "main": "./dist/bundle.js",
+  "module": "./dist/bundle.mjs",
   "types": "./dist/bundle.d.ts",
-  "react-native": "./dist/bundle.react-native.es.js",
+  "react-native": "./dist/bundle.react-native.mjs",
   "browser": {
-    "./dist/bundle.cjs.js": "./dist/bundle.dom.cjs.js",
-    "./dist/bundle.es.js": "./dist/bundle.dom.es.js",
+    "./dist/bundle.js": "./dist/bundle.dom.js",
+    "./dist/bundle.mjs": "./dist/bundle.dom.mjs",
     "./dist/bundle.d.ts": "./dist/bundle.dom.d.ts"
   },
   "scripts": {
-    "generate-types": "tsc --project tsconfig.types.json --declaration --emitDeclarationOnly --declarationDir types/generated",
-    "build": "npm run generate-types && rollup --config",
+    "bundle": "wireit",
     "lint": "eslint --ext .js,.ts .",
-    "test": "mocha 'src/**/*.test.ts'",
-    "prepare": "npm run build"
+    "test": "mocha 'src/**/*.test.ts'"
+  },
+  "wireit": {
+    "bundle": {
+      "command": "rollup --config",
+      "dependencies": ["generate-types", "../realm-common:bundle"],
+      "files": ["rollup.config.mjs", "src/**/*.ts"],
+      "output": ["dist/**"]
+    },
+    "generate-types": {
+      "command": "tsc --project tsconfig.types.json --declaration --emitDeclarationOnly --declarationDir types/generated",
+      "files": ["src/**/*.ts"],
+      "output": ["types/generated/**/*.d.ts"]
+    }
   },
   "files": [
     "dist"
@@ -37,18 +48,17 @@
   "dependencies": {
     "@realm/common": "^0.1.4",
     "abort-controller": "^3.0.0",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^2.6.9"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^14.0.0",
-    "@rollup/plugin-node-resolve": "^7.1.3",
-    "@rollup/plugin-typescript": "^4.1.1",
+    "@rollup/plugin-commonjs": "^23.0.2",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-typescript": "^9.0.2",
     "@types/chai": "^4.2.10",
     "@types/mocha": "^5",
-    "@types/node-fetch": "^2.5.7",
-    "chai": "^4.2.0",
+    "@types/node-fetch": "^2.6.2",
+    "chai": "4.3.6",
     "mocha": "^5.2.0",
-    "rollup": "^2.6.1",
-    "rollup-plugin-dts": "^1.4.0"
+    "rollup-plugin-dts": "^5.0.0"
   }
 }

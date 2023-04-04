@@ -102,14 +102,17 @@ function getRealmTypeForTSTypeReference(path: NodePath<types.TSTypeReference>): 
   } else if (isRealmTypeAlias(path, "Data") || typeName.isIdentifier({ name: "ArrayBuffer" })) {
     return { type: "data" };
   } else if (isRealmTypeAlias(path, "List") || isRealmTypeAlias(path, "List", null)) {
-    const objectType = getRealmTypeForTypeArgument(typeParameters);
-    return { type: "list", objectType: objectType?.type, optional: objectType?.optional };
+    const argumentType = getRealmTypeForTypeArgument(typeParameters);
+    const objectType = argumentType?.type === "object" ? argumentType.objectType : argumentType?.type;
+    return { type: "list", objectType: objectType, optional: argumentType?.optional };
   } else if (isRealmTypeAlias(path, "Set") || isRealmTypeAlias(path, "Set", null)) {
-    const objectType = getRealmTypeForTypeArgument(typeParameters);
-    return { type: "set", objectType: objectType?.type, optional: objectType?.optional };
+    const argumentType = getRealmTypeForTypeArgument(typeParameters);
+    const objectType = argumentType?.type === "object" ? argumentType.objectType : argumentType?.type;
+    return { type: "set", objectType: objectType, optional: argumentType?.optional };
   } else if (isRealmTypeAlias(path, "Dictionary") || isRealmTypeAlias(path, "Dictionary", null)) {
-    const objectType = getRealmTypeForTypeArgument(typeParameters);
-    return { type: "dictionary", objectType: objectType?.type, optional: objectType?.optional };
+    const argumentType = getRealmTypeForTypeArgument(typeParameters);
+    const objectType = argumentType?.type === "object" ? argumentType.objectType : argumentType?.type;
+    return { type: "dictionary", objectType: objectType, optional: argumentType?.optional };
   } else if (isRealmTypeAlias(path, "Mixed") || isRealmTypeAlias(path, "Mixed", null)) {
     return { type: "mixed" };
   } else if (isRealmTypeAlias(path, "LinkingObjects")) {
@@ -158,7 +161,7 @@ function getRealmTypeForTSTypeReference(path: NodePath<types.TSTypeReference>): 
     return { type: "linkingObjects", objectType, property };
   } else if (typeName.isIdentifier()) {
     // TODO: Consider checking the scope to ensure it is a declared identifier
-    return { type: typeName.node.name };
+    return { type: "object", objectType: typeName.node.name };
   }
 }
 
@@ -278,7 +281,8 @@ function findDecoratorCall(
 function visitRealmClassProperty(path: NodePath<types.ClassProperty>) {
   const keyPath = path.get("key");
   const valuePath = path.get("value");
-  const decoratorsPath: NodePath<types.Decorator>[] = path.get("decorators");
+  // TODO: Avoid this type assertion
+  const decoratorsPath = path.get("decorators") as NodePath<types.Decorator>[];
 
   const indexDecorator = findDecoratorIdentifier(decoratorsPath, "index");
   if (indexDecorator) {

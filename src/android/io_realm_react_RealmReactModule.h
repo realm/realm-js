@@ -20,17 +20,15 @@ JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileD
  * Method:    install
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_install
-  (JNIEnv *, jobject, jlong);
+JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_install(JNIEnv*, jobject, jlong);
 
 /*
  * Class:     io_realm_react_RealmReactModule
  * Method:    invalidateCaches
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_invalidateCaches
-  (JNIEnv *, jobject);
-  
+JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_invalidateCaches(JNIEnv*, jobject);
+
 /*
  * Class:     io_realm_react_RealmReactModule
  * Method:    setupFlushUiQueue
