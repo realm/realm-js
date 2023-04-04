@@ -270,7 +270,7 @@ export class SyncSession {
    * @internal
    */
   public static resetAllInternals() {
-    assert(flags.CLEAN_TEST_STATE, "Set the flag.CLEAN_TEST_STATE = true before calling this.");
+    assert(flags.CLEAR_TEST_STATE, "Set the flag.CLEAR_TEST_STATE = true before calling this.");
     for (const sessionRef of SyncSession.instances) {
       const session = sessionRef.deref();
       if (session) {
@@ -291,7 +291,7 @@ export class SyncSession {
   /** @internal */
   constructor(internal: binding.SyncSession) {
     this._internal = internal;
-    if (flags.CLEAN_TEST_STATE) {
+    if (flags.CLEAR_TEST_STATE) {
       SyncSession.instances.add(new binding.WeakRef(this));
     }
   }

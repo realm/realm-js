@@ -84,7 +84,7 @@ export class ProgressRealmPromise implements Promise<Realm> {
 
   /** @internal */
   constructor(config: Configuration) {
-    if (flags.CLEAN_TEST_STATE) {
+    if (flags.CLEAR_TEST_STATE) {
       ProgressRealmPromise.instances.add(new binding.WeakRef(this));
     }
     try {
