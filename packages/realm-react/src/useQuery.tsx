@@ -19,8 +19,6 @@
 import Realm from "realm";
 import { useEffect, useReducer, useMemo, useRef } from "react";
 import { createCachedCollection } from "./cachedCollection";
-import { symbols } from "@realm/common";
-import { getObjects } from "./helpers";
 
 /**
  * Generates the `useQuery` hook from a given `useRealm` hook.
@@ -59,17 +57,7 @@ export function createUseQuery(useRealm: () => Realm) {
     // Also we are ensuring the type returned is Realm.Results, as this is known in this context
     if (updatedRef.current) {
       updatedRef.current = false;
-      collectionRef.current = new Proxy(collection as Realm.Results<T & Realm.Object>, {}); // Store the original, unproxied result as a non-enumerable field with a symbol
-      // key on the proxy object, so that we can check for this and get the original results
-      // when passing the result of `useQuery` into the subscription mutation methods
-      // (see `lib/mutable-subscription-set.js` for more details)
-      // TODO: We can remove this if `realm` becomes a peer dependency >= 12
-      Object.defineProperty(collectionRef.current, symbols.PROXY_TARGET, {
-        value: getObjects(realm, type),
-        enumerable: false,
-        configurable: false,
-        writable: true,
-      });
+      collectionRef.current = new Proxy(collection as Realm.Results<T & Realm.Object>, {});
     }
 
     // This will never not be defined, but the type system doesn't know that

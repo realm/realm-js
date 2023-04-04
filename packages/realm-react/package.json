@@ -33,7 +33,6 @@
     }
   },
   "dependencies": {
-    "@realm/common": "^0.1.4",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
