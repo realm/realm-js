@@ -15,10 +15,13 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import Realm from "realm";
+import Realm, { flags } from "realm";
 import { useState, useEffect } from "react";
 import { renderHook } from "@testing-library/react-native";
 import { createUseQuery } from "../useQuery";
+
+// Enable calling Realm.clearTestState()
+flags.CLEAR_TEST_STATE = true;
 
 const dogSchema: Realm.ObjectSchema = {
   name: "dog",

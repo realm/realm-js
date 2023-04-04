@@ -16,12 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import React, { useRef, useState } from "react";
-import Realm, { User } from "realm";
+import Realm, { User, flags } from "realm";
 import "@testing-library/jest-native/extend-expect";
 import { createRealmContext } from "..";
 import { mergeRealmConfiguration, areConfigurationsIdentical } from "../RealmProvider";
 import { View, Button, Text } from "react-native";
 import { render, fireEvent, waitFor, renderHook, act } from "@testing-library/react-native";
+
+// Enable calling Realm.clearTestState()
+flags.CLEAR_TEST_STATE = true;
 
 const dogSchema: Realm.ObjectSchema = {
   name: "dog",
