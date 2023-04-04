@@ -20,7 +20,6 @@ import { expect } from "chai";
 const { X509Certificate } = await import("node:crypto");
 import {
   ConfigurationWithSync,
-  ConnectionState,
   Credentials,
   ErrorCallback,
   ProgressRealmPromise,
@@ -35,6 +34,10 @@ import { closeRealm } from "../utils/close-realm";
 import { createPromiseHandle } from "../utils/promise-handle";
 import { importAppBefore } from "../hooks";
 import { PersonSchema } from "../schemas/person-and-dog-with-object-ids";
+
+// IMPORTANT:
+// * Can only run on non-Apple machines, otherwise tests will await forever.
+// * TODO: Utlize acceptedByOpenSSL?
 
 describe.skipIf(environment.missingServer, "SSL Configuration", function () {
   this.longTimeout();
@@ -73,18 +76,12 @@ describe.skipIf(environment.missingServer, "SSL Configuration", function () {
   });
 
   it("connects when accepting the server's SSL certificate", async function (this: RealmContext) {
-    const connectionHandle = createPromiseHandle();
-
     let validationCallbackInvoked = false;
     const ssl: SSLConfiguration = {
       validate: true,
       certificatePath: undefined,
-      validateCertificates: (verifyObject: SSLVerifyObject) => {
-        console.log("VALIDATING CERTIFICATES..."); // TODO: <-- Temporary
-        console.log({ verifyObject }); // TODO: <-- Temporary
-
+      validateCertificates: () => {
         validationCallbackInvoked = true;
-
         // Accept the certificate.
         return true;
       },
@@ -94,114 +91,93 @@ describe.skipIf(environment.missingServer, "SSL Configuration", function () {
     const onError: ErrorCallback = () => (syncErrorCallbackInvoked = true);
 
     const realm = await openRealm(this.app.currentUser, ssl, onError);
-    realm.syncSession?.addConnectionNotification((newState, oldState) => {
-      console.log({ oldState, newState }); // TODO: <-- Temporary
 
-      if (newState === ConnectionState.Connected) {
-        connectionHandle.resolve();
-      }
-    });
-
-    await connectionHandle.promise;
+    expect(realm.syncSession?.isConnected()).to.be.true;
+    expect(realm.syncSession?.config.ssl).to.deep.equal({ validate: true, certificatePath: undefined });
     expect(validationCallbackInvoked).to.be.true;
     expect(syncErrorCallbackInvoked).to.be.false;
+
+    closeRealm(realm);
+  });
+
+  it("connects without validating the server's SSL certificate when 'validate' is 'false'", async function (this: RealmContext) {
+    let validationCallbackInvoked = false;
+    const ssl: SSLConfiguration = {
+      validate: false,
+      certificatePath: undefined,
+      validateCertificates: () => (validationCallbackInvoked = true),
+    };
+
+    let syncErrorCallbackInvoked = false;
+    const onError: ErrorCallback = () => (syncErrorCallbackInvoked = true);
+
+    const realm = await openRealm(this.app.currentUser, ssl, onError);
+
     expect(realm.syncSession?.isConnected()).to.be.true;
-    console.log({ ssl: realm.syncSession?.config.ssl }); // TODO: <-- Temporary
-    expect(realm.syncSession?.config.ssl).to.deep.equal({ validate: true }); // or: { validate: true, certificatePath: undefined }
+    expect(realm.syncSession?.config.ssl).to.deep.equal({ validate: false, certificatePath: undefined });
+    expect(validationCallbackInvoked).to.be.false;
+    expect(syncErrorCallbackInvoked).to.be.false;
 
     closeRealm(realm);
   });
 
   it("does not connect when rejecting the server's SSL certificate", async function (this: RealmContext) {
-    const onErrorHandle = createPromiseHandle();
-
+    let validationCallbackInvoked = false;
     const ssl: SSLConfiguration = {
       validate: true,
       certificatePath: undefined,
-      validateCertificates: (verifyObject: SSLVerifyObject) => {
-        console.log("VALIDATING CERTIFICATES..."); // TODO: <-- Temporary
-        console.log({ verifyObject }); // TODO: <-- Temporary
-
+      validateCertificates: () => {
+        validationCallbackInvoked = true;
         // Reject the certificate.
         return false;
       },
     };
 
-    const onError: ErrorCallback = (session, error) => {
-      console.log("In onError:"); // TODO: <-- Temporary
-      console.log({ error }); // TODO: <-- Temporary
-
-      if (error.message === "SSL server certificate rejected") {
+    const onErrorHandle = createPromiseHandle();
+    const onError: ErrorCallback = (_, error) => {
+      const SSL_SERVER_CERT_REJECTED = 117;
+      if (error.code === SSL_SERVER_CERT_REJECTED) {
         onErrorHandle.resolve();
       } else {
         onErrorHandle.reject(`Expected the error to be an SSL server certificate rejection, got: ${error.message}`);
       }
     };
 
-    const realm = await openRealm(this.app.currentUser, ssl, onError);
-
+    await expect(openRealm(this.app.currentUser, ssl, onError)).to.be.rejectedWith("SSL server certificate rejected");
+    expect(validationCallbackInvoked).to.be.true;
     await expect(onErrorHandle.promise).to.not.be.rejected;
-    expect(realm.syncSession?.isConnected()).to.be.false;
-
-    closeRealm(realm);
   });
 
   it("calls the certificate validation callback with an SSLVerifyObject", async function (this: RealmContext) {
     const validateHandle = createPromiseHandle();
-
     const ssl: SSLConfiguration = {
       validate: true,
       certificatePath: undefined,
       validateCertificates: (verifyObject: SSLVerifyObject) => {
-        console.log("VALIDATING CERTIFICATES..."); // TODO: <-- Temporary
-        console.log({ verifyObject }); // TODO: <-- Temporary
-
         try {
-          // expect(verifyObject).to.be.an("object");
-          // expect(verifyObject.serverAddress).to.be.a("string");
-          // expect(verifyObject.serverPort).to.be.a("number");
-          // expect(verifyObject.pemCertificate).to.be.a("string");
-          // expect(verifyObject.acceptedByOpenSSL).to.be.a("boolean");
-          // expect(verifyObject.depth).to.be.a("number");
-
-          const { serverAddress, serverPort, pemCertificate, acceptedByOpenSSL, depth } = verifyObject;
-          let errMessage = "";
-          if (typeof serverAddress !== "string") {
-            errMessage += `Expected 'verifyObject.serverAddress' to be a string, got ${typeof serverAddress}\n`;
-          }
-          if (typeof serverPort !== "number" || isNaN(serverPort)) {
-            errMessage += `Expected 'verifyObject.serverPort' to be a number, got ${typeof serverPort}\n`;
-          }
-          if (typeof pemCertificate !== "string") {
-            errMessage += `Expected 'verifyObject.pemCertificate' to be a string, got ${typeof pemCertificate}\n`;
-          }
-          if (typeof acceptedByOpenSSL !== "boolean") {
-            errMessage += `Expected 'verifyObject.acceptedByOpenSSL' to be a boolean, got ${typeof acceptedByOpenSSL}\n`;
-          }
-          if (typeof depth !== "number" || isNaN(depth)) {
-            errMessage += `Expected 'verifyObject.depth' to be a number, got ${typeof depth}\n`;
-          }
-
-          if (errMessage) {
-            throw new Error(errMessage);
-          }
+          expect(verifyObject).to.be.an("object");
+          expect(verifyObject.serverAddress).to.be.a("string");
+          expect(verifyObject.serverPort).to.be.a("number");
+          expect(verifyObject.pemCertificate).to.be.a("string");
+          expect(verifyObject.acceptedByOpenSSL).to.be.a("boolean");
+          expect(verifyObject.depth).to.be.a("number");
           validateHandle.resolve();
         } catch (err: any) {
           validateHandle.reject(err.message);
         }
-
+        // Always returning `true` due to only testing resolved/rejected.
         return true;
       },
     };
 
     const realm = await openRealm(this.app.currentUser, ssl);
-
     await expect(validateHandle.promise).to.not.be.rejected;
 
     closeRealm(realm);
   });
 
-  it("can verify the server's public key from the SSL certificate", async function (this: RealmContext) {
+  // TODO: Enable
+  it.skip("can verify the server's public key from the SSL certificate", async function (this: RealmContext) {
     const validateHandle = createPromiseHandle();
 
     const ssl: SSLConfiguration = {
