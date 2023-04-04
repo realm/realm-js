@@ -68,7 +68,8 @@
     "build:ios:simulator": "wireit",
     "build:ios:ios": "wireit",
     "build:ios:catalyst": "wireit",
-    "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'"
+    "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'",
+    "docs": "wireit"
   },
   "wireit": {
     "test": {
@@ -223,6 +224,12 @@
       "env": {
         "PLATFORMS": "catalyst"
       }
+    },
+    "docs": {
+      "command": "typedoc",
+      "dependencies": [
+        "bundle"
+      ]
     }
   },
   "dependencies": {
