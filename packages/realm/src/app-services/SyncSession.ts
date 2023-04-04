@@ -272,10 +272,7 @@ export class SyncSession {
   public static resetAllInternals() {
     assert(flags.CLEAR_TEST_STATE, "Set the flag.CLEAR_TEST_STATE = true before calling this.");
     for (const sessionRef of SyncSession.instances) {
-      const session = sessionRef.deref();
-      if (session) {
-        session.resetInternal();
-      }
+      sessionRef.deref()?.resetInternal();
     }
     SyncSession.instances.clear();
   }

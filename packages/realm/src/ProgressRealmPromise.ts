@@ -65,11 +65,9 @@ export class ProgressRealmPromise implements Promise<Realm> {
    * @internal
    */
   public static cancelAll() {
+    assert(flags.CLEAR_TEST_STATE, "Set the flag.CLEAR_TEST_STATE = true before calling this.");
     for (const promiseRef of ProgressRealmPromise.instances) {
-      const promise = promiseRef.deref();
-      if (promise) {
-        promise.cancel();
-      }
+      promiseRef.deref()?.cancel();
     }
     ProgressRealmPromise.instances.clear();
   }
