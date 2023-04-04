@@ -347,3 +347,12 @@ const { RealmProvider: PrivateRealmProvider, useRealm: usePrivateRealm, useObjec
 ```
 
 It is also possible to call it without any Config; in the case that you want to do all your configuration through the `RealmProvider` props.
+
+
+#### Sync Debug Logs
+When running into issues with sync, it may be helpful to view logs in order to determine what the issue was or to provide more context when submitting an issue.  This can by done with the `AppProvider`.
+
+```
+// logger includes a default that prints level and message
+<AppProvider id={appId} logLevel={'trace'} logger={(level, message) => console.log(`[${level}]: ${message}`)}>
+```

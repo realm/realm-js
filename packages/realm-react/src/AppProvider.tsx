@@ -32,13 +32,29 @@ const AppContext = createContext<Realm.App | null>(null);
 type AppProviderProps = Realm.AppConfiguration & {
   children: React.ReactNode;
   appRef?: React.MutableRefObject<Realm.App | null>;
+  logLevel?: Realm.App.Sync.LogLevel;
+  logger?: (level: Realm.App.Sync.NumericLogLevel, message: string) => void;
 };
+
+function defaultLogger(level: Realm.App.Sync.NumericLogLevel, message: string) {
+  console.log(`[${level}] ${message}`);
+}
 
 /**
  * React component providing a Realm App instance on the context for the
  * sync hooks to use. An `AppProvider` is required for an app to use the hooks.
+ * @param appProps - The {@link Realm.AppConfiguration} for app services, passed as props.
+ * @param appRef - A ref to the app instance, which can be used to access the app instance outside of the React component tree.
+ * @param logLevel - The {@link Realm.App.Sync.LogLevel} to use for the app instance.
+ * @param logger - A callback function to provide custom logging. It takes a {@link Realm.App.Sync.NumericLogLevel} and a message string as arguments.
  */
-export const AppProvider: React.FC<AppProviderProps> = ({ children, appRef, ...appProps }) => {
+export const AppProvider: React.FC<AppProviderProps> = ({
+  children,
+  appRef,
+  logLevel,
+  logger = defaultLogger,
+  ...appProps
+}) => {
   const configuration = useRef<Realm.AppConfiguration>(appProps);
 
   const [app, setApp] = useState<Realm.App>(() => new Realm.App(configuration.current));
@@ -57,8 +73,13 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children, appRef, ...a
   useLayoutEffect(() => {
     if (appRef) {
       appRef.current = app;
+      if (logLevel) {
+        console.log("setting log level: ", logLevel);
+        Realm.App.Sync.setLogger(app, logger);
+        Realm.App.Sync.setLogLevel(app, logLevel);
+      }
     }
-  }, [appRef, app]);
+  }, [appRef, app, logLevel]);
 
   return <AppContext.Provider value={app}>{children}</AppContext.Provider>;
 };
