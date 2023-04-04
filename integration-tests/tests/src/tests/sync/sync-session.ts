@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { Realm, ConnectionState, ObjectSchema, BSON, User, SyncConfiguration } from "realm";
+import { Realm, ConnectionState, ObjectSchema, BSON, User, SyncConfiguration, SyncError, ClientResetMode } from "realm";
 import { importAppBefore } from "../../hooks";
 import { DogSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { getRegisteredEmailPassCredentials } from "../../utils/credentials";
@@ -259,30 +259,26 @@ describe("SessionTest", () => {
     it("can simulate an error", async function (this: AppContext) {
       const partition = generatePartition();
       const credentials = Realm.Credentials.anonymous();
-      return this.app.logIn(credentials).then((user) => {
-        return new Promise((resolve, _reject) => {
-          const config = getSyncConfiguration(user, partition);
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          config.sync!.onError = (_, error: any) => {
-            try {
-              expect(error.message).equals("simulated error");
-              expect(error.code).equals(123);
-              resolve();
-            } catch (e) {
-              _reject(e);
-            }
-          };
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          config.sync!.clientReset = {
-            //@ts-expect-error TYPEBUG: can't apply enums.
-            mode: "manual",
-          };
-          const realm = new Realm(config);
-          const session = realm.syncSession;
-          //@ts-expect-error using internal method.
-          session._simulateError(123, "simulated error", "realm::sync::ProtocolError", false);
-        });
+      const user = await this.app.logIn(credentials);
+      const config = getSyncConfiguration(user, partition);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      config.sync!.clientReset = {
+        mode: ClientResetMode.Manual,
+      };
+      const syncErrorPromise = new Promise<SyncError>((resolve) => {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        config.sync!.onError = (_, error) => {
+          resolve(error);
+        };
       });
+      const realm = new Realm(config);
+      const session = realm.syncSession;
+      // @ts-expect-error using internal method.
+      session._simulateError(123, "simulated error", "realm::sync::ProtocolError", false);
+
+      const error = await syncErrorPromise;
+      expect(error.message).equals("simulated error");
+      expect(error.code).equals(123);
     });
   });
 
@@ -537,58 +533,47 @@ describe("SessionTest", () => {
   describe("upload and download data", () => {
     afterEach(() => Realm.clearTestState());
     it("uploaded data from one user is propagated to another", async function (this: AppContext) {
-      let realm2: Realm;
       const partition = generatePartition();
 
       const credentials = Realm.Credentials.anonymous();
-      return this.app
-        .logIn(credentials)
-        .then((user1) => {
-          const config1 = getSyncConfiguration(user1, partition);
-          return Realm.open(config1);
-        })
-        .then((realm1) => {
-          realm1.write(() => {
-            realm1.create("Dog", { _id: new BSON.ObjectId(), name: "Lassy" });
-          });
-          return realm1.syncSession?.uploadAllLocalChanges(1000);
-        })
-        .then(() => {
-          return this.app.logIn(Realm.Credentials.anonymous());
-        })
-        .then((user2) => {
-          const config2 = getSyncConfiguration(user2, partition);
-          return Realm.open(config2).then((r) => {
-            realm2 = r;
-            return realm2.syncSession?.downloadAllServerChanges();
-          });
-        })
-        .then(() => {
-          expect(1).equals(realm2.objects("Dog").length);
+      {
+        const user = await this.app.logIn(credentials);
+        const config = getSyncConfiguration(user, partition);
+        const realm = await Realm.open(config);
+        realm.write(() => {
+          realm.create("Dog", { _id: new BSON.ObjectId(), name: "Lassy" });
         });
+        await realm.syncSession?.uploadAllLocalChanges(1000);
+        Realm.deleteFile(config);
+        Realm.clearTestState();
+      }
+      {
+        const user = await this.app.logIn(Realm.Credentials.anonymous());
+        const config = getSyncConfiguration(user, partition);
+        const realm = await Realm.open(config);
+        await realm.syncSession?.downloadAllServerChanges();
+        expect(realm.objects("Dog").length).equals(1);
+      }
     });
 
     it("timeout on download successfully throws", async function (this: AppContext) {
       const partition = generatePartition();
-      let realm!: Realm;
-      await expect(
-        this.app.logIn(Realm.Credentials.anonymous()).then((user) => {
-          const config = getSyncConfiguration(user, partition);
-          realm = new Realm(config);
-          return realm.syncSession?.downloadAllServerChanges(1);
-        }),
-      ).is.rejectedWith("Downloading changes did not complete in 1 ms.");
+      const user = await this.app.logIn(Realm.Credentials.anonymous());
+      const config = getSyncConfiguration(user, partition);
+      const realm = new Realm(config);
+      await expect(realm.syncSession?.downloadAllServerChanges(1)).rejectedWith(
+        "Downloading changes did not complete in 1 ms.",
+      );
     });
 
     it("timeout on upload successfully throws", async function (this: AppContext) {
       const partition = generatePartition();
-      expect(
-        this.app.logIn(Realm.Credentials.anonymous()).then((user) => {
-          const config = getSyncConfiguration(user, partition);
-          const realm = new Realm(config);
-          return realm.syncSession?.uploadAllLocalChanges(1);
-        }),
-      ).rejectedWith("Uploading changes did not complete in 1 ms.");
+      const user = await this.app.logIn(Realm.Credentials.anonymous());
+      const config = getSyncConfiguration(user, partition);
+      const realm = new Realm(config);
+      await expect(realm.syncSession?.uploadAllLocalChanges(1)).rejectedWith(
+        "Uploading changes did not complete in 1 ms.",
+      );
     });
   });
 
@@ -597,15 +582,14 @@ describe("SessionTest", () => {
     it("smoketest", async function (this: AppContext) {
       const credentials = Realm.Credentials.anonymous();
       const partition = generatePartition();
-      return this.app.logIn(credentials).then((user) => {
-        const config = getSyncConfiguration(user, partition);
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const realm = new Realm(config);
+      const user = await this.app.logIn(credentials);
+      const config = getSyncConfiguration(user, partition);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const realm = new Realm(config);
 
-        // No real way to check if this works automatically.
-        // This is just a smoke test, making sure the method doesn't crash outright.
-        Realm.App.Sync.reconnect(this.app);
-      });
+      // No real way to check if this works automatically.
+      // This is just a smoke test, making sure the method doesn't crash outright.
+      Realm.App.Sync.reconnect(this.app);
     });
   });
 
@@ -616,23 +600,20 @@ describe("SessionTest", () => {
 
       const credentials = Realm.Credentials.anonymous();
       const partition = generatePartition();
-      return this.app.logIn(credentials).then((user) => {
-        const config = getSyncConfiguration(user, partition);
-        const realm = new Realm(config);
-        expect(Realm.App.Sync._hasExistingSessions(this.app)).to.be.true;
-        realm.close();
+      const user = await this.app.logIn(credentials);
+      const config = getSyncConfiguration(user, partition);
+      const realm = new Realm(config);
+      expect(Realm.App.Sync._hasExistingSessions(this.app)).to.be.true;
+      realm.close();
 
-        // Wait for the session to finish
-        return async () => {
-          for (let i = 50; i >= 0; i--) {
-            if (!Realm.App.Sync._hasExistingSessions(this.app)) {
-              return;
-            }
-            await sleep(100);
-          }
-          throw new Error("Failed to cleanup session in time");
-        };
-      });
+      // Wait for the session to finish
+      for (let i = 50; i >= 0; i--) {
+        if (!Realm.App.Sync._hasExistingSessions(this.app)) {
+          return;
+        }
+        await sleep(100);
+      }
+      throw new Error("Failed to cleanup session in time");
     });
   });
 
@@ -681,50 +662,43 @@ describe("SessionTest", () => {
       const credentials = Realm.Credentials.anonymous();
       const partition = generatePartition();
 
-      return this.app.logIn(credentials).then((user) => {
-        // Check valid input
-        const config1 = getSyncConfiguration(user, partition);
-        //@ts-expect-error internal field
-        config1.sync._sessionStopPolicy = "after-upload";
+      const user = await this.app.logIn(credentials);
+      const config = getSyncConfiguration(user, partition);
 
-        new Realm(config1).close();
+      // Check valid input
 
-        const config2 = config1;
-        //@ts-expect-error internal field
-        config2.sync._sessionStopPolicy = "immediately";
-        new Realm(config2).close();
+      //@ts-expect-error internal field
+      config.sync._sessionStopPolicy = "after-upload";
+      new Realm(config).close();
 
-        const config3 = config1;
-        //@ts-expect-error internal field
-        config3.sync._sessionStopPolicy = "never";
-        new Realm(config3).close();
+      //@ts-expect-error internal field
+      config.sync._sessionStopPolicy = "immediately";
+      new Realm(config).close();
 
-        // Invalid input
-        const config4 = config1;
-        //@ts-expect-error internal field
-        config4.sync._sessionStopPolicy = "foo";
-        expect(() => new Realm(config4)).throws();
-      });
+      //@ts-expect-error internal field
+      config.sync._sessionStopPolicy = "never";
+      new Realm(config).close();
+
+      //@ts-expect-error internal field
+      config.sync._sessionStopPolicy = "foo";
+      expect(() => new Realm(config)).throws();
     });
 
-    it("stop policy immediately succesfully removes session when realm is out of scope", async function (this: AppContext) {
+    it("stop policy immediately successfully removes session when realm is out of scope", async function (this: AppContext) {
       const credentials = Realm.Credentials.anonymous();
       const partition = generatePartition();
 
-      return this.app.logIn(credentials).then((user) => {
-        // Check valid input
-        const config = getSyncConfiguration(user, partition);
-        //@ts-expect-error internal field
-        config.sync._sessionStopPolicy = "immediately";
+      const user = await this.app.logIn(credentials);
+      // Check valid input
+      const config = getSyncConfiguration(user, partition);
+      //@ts-expect-error internal field
+      config.sync._sessionStopPolicy = "immediately";
 
-        {
-          expect(Realm.App.Sync._hasExistingSessions(this.app)).to.be.false;
-          const realm = new Realm(config);
-          expect(Realm.App.Sync._hasExistingSessions(this.app)).to.be.true;
-          realm.close();
-        }
-        expect(Realm.App.Sync._hasExistingSessions(this.app)).to.be.false;
-      });
+      expect(Realm.App.Sync._hasExistingSessions(this.app)).to.be.false;
+      const realm = new Realm(config);
+      expect(Realm.App.Sync._hasExistingSessions(this.app)).to.be.true;
+      realm.close();
+      expect(Realm.App.Sync._hasExistingSessions(this.app)).to.be.false;
     });
   });
 
