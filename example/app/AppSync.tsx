@@ -27,7 +27,7 @@ export const AppSync: React.FC = () => {
 
   useEffect(() => {
     realm.subscriptions.update(mutableSubs => {
-      mutableSubs.add(result);
+      mutableSubs.add(tasks);
     });
   }, [realm, tasks]);
 

@@ -23,7 +23,7 @@ import { View, TextInput, TouchableHighlight, Text, FlatList, ListRenderItem } f
 import "@testing-library/jest-native/extend-expect";
 import { createRealmContext } from "..";
 
-class Item extends Realm.Object<Item> {
+class Item extends Realm.Object {
   id!: number;
   name!: string;
   tags!: Realm.List<Tag>;
@@ -39,7 +39,7 @@ class Item extends Realm.Object<Item> {
   };
 }
 
-class Tag extends Realm.Object<Tag> {
+class Tag extends Realm.Object {
   id!: number;
   name!: string;
 
@@ -349,9 +349,9 @@ describe.each`
 
     // Insert some tags into visible Items
     testRealm.write(() => {
-      const tag1 = new Tag(testRealm, { id: 1, name: "a123" });
-      const tag2 = new Tag(testRealm, { id: 2, name: "b234" });
-      const tag3 = new Tag(testRealm, { id: 3, name: "c567" });
+      const tag1 = testRealm.create(Tag, { id: 1, name: "a123" });
+      const tag2 = testRealm.create(Tag, { id: 2, name: "b234" });
+      const tag3 = testRealm.create(Tag, { id: 3, name: "c567" });
 
       collection[0].tags.push(tag1);
       collection[0].tags.push(tag2);
