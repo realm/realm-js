@@ -18,14 +18,21 @@
 
 import { expect } from "chai";
 import { openRealmBefore } from "../hooks";
+import { Realm } from "realm";
 
 interface Test {
-  primary?: number;
-  value?: number;
+  primary: number;
+  value: number;
+  simpleValue: number;
 }
 
 describe("Realm schema", () => {
   describe("Default property values", () => {
+    let idIncPrim = 0;
+    let idIncNorm = 0;
+    before(() => {
+      Realm.clearTestState();
+    });
     openRealmBefore({
       schema: [
         {
@@ -34,11 +41,15 @@ describe("Realm schema", () => {
           properties: {
             primary: {
               type: "int",
-              default: () => 42,
+              default: () => ++idIncPrim,
             },
             value: {
               type: "int",
-              default: () => 13,
+              default: () => ++idIncNorm,
+            },
+            simpleValue: {
+              type: "int",
+              default: () => 42,
             },
           },
         },
@@ -46,18 +57,30 @@ describe("Realm schema", () => {
     });
     it("can take a function as a default property value", function (this: RealmContext) {
       const { realm } = this;
-      const test = realm.write(() => {
+      let obj = realm.write(() => {
         return realm.create<Test>("Test", {});
       });
 
-      expect(test.primary).to.equal(42);
-      expect(test.value).to.equal(13);
+      expect(obj.primary).to.equal(1);
+      expect(obj.value).to.equal(1);
+      expect(obj.simpleValue).to.equal(42);
 
-      const staticTest = realm.write(() => {
-        return realm.create<Test>("Test", { primary: 0, value: 0 });
+      obj = realm.write(() => {
+        return realm.create<Test>("Test", {});
       });
-      expect(staticTest.primary).to.equal(0);
-      expect(staticTest.value).to.equal(0);
+
+      expect(obj.primary).to.equal(2);
+      expect(obj.value).to.equal(2);
+      expect(obj.simpleValue).to.equal(42);
+    });
+    it("can override the default property value", function (this: RealmContext) {
+      const { realm } = this;
+      const obj = realm.write(() => {
+        return realm.create<Test>("Test", { primary: 42, value: 13, simpleValue: 123 });
+      });
+      expect(obj.primary).to.equal(42);
+      expect(obj.value).to.equal(13);
+      expect(obj.simpleValue).to.equal(123);
     });
   });
 });
