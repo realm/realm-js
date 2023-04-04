@@ -802,17 +802,15 @@ export class Realm {
    *       should not be used.
    * @returns A {@link RealmObject} or `undefined` if the object is asymmetric.
    */
-  create<T = DefaultObject>(type: string, values: RealmInsertionModel<T>, mode?: UpdateMode.Never): RealmObject<T> & T;
   create<T = DefaultObject>(
     type: string,
     values: Partial<T> | Partial<RealmInsertionModel<T>>,
-    mode: UpdateMode.All | UpdateMode.Modified | boolean,
+    mode?: UpdateMode.Never | UpdateMode.All | UpdateMode.Modified | boolean,
   ): RealmObject<T> & T;
-  create<T extends AnyRealmObject>(type: Constructor<T>, values: RealmInsertionModel<T>, mode?: UpdateMode.Never): T;
   create<T extends AnyRealmObject>(
     type: Constructor<T>,
     values: Partial<T> | Partial<RealmInsertionModel<T>>,
-    mode: UpdateMode.All | UpdateMode.Modified | boolean,
+    mode?: UpdateMode.Never | UpdateMode.All | UpdateMode.Modified | boolean,
   ): T;
   create<T extends AnyRealmObject>(
     type: string | Constructor<T>,
