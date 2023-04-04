@@ -72,12 +72,6 @@
     "docs": "wireit"
   },
   "wireit": {
-    "docs": {
-      "command": "typedoc",
-      "dependencies": [
-        "bundle"
-      ]
-    },
     "test": {
       "command": "mocha",
       "dependencies": [
@@ -239,6 +233,12 @@
       "env": {
         "PLATFORMS": "catalyst"
       }
+    },
+    "docs": {
+      "command": "typedoc",
+      "dependencies": [
+        "bundle"
+      ]
     }
   },
   "dependencies": {
