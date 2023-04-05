@@ -26,4 +26,9 @@ export const flags = {
    * Helps finding places where the app is depending on the now deprecated way of using the package.
    */
   THROW_ON_GLOBAL_REALM: false,
+  /**
+   * Enables calling internal, test-only functions like `Realm.clearTestState`.
+   * This is disabled by default, mainly because the data-structures needed to support this, introduce minor memory leaks if clearTestState() is not called regularly and are not intended for production use.
+   */
+  ALLOW_CLEAR_TEST_STATE: false,
 };

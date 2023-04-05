@@ -22,6 +22,8 @@ import { flags } from "realm";
 
 // TODO: Refactor tests to disable this
 flags.ALLOW_VALUES_ARRAYS = true;
+// We need this to call Realm.clearTestState()
+flags.ALLOW_CLEAR_TEST_STATE = true;
 
 import "./setup-globals";
 

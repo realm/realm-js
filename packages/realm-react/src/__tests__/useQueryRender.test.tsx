@@ -17,11 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import Realm from "realm";
+import Realm, { flags } from "realm";
 import { render, waitFor, fireEvent, act } from "@testing-library/react-native";
 import { View, TextInput, TouchableHighlight, Text, FlatList, ListRenderItem } from "react-native";
 import "@testing-library/jest-native/extend-expect";
 import { createRealmContext } from "..";
+
+// Enable calling Realm.clearTestState()
+flags.ALLOW_CLEAR_TEST_STATE = true;
 
 class Item extends Realm.Object {
   id!: number;
