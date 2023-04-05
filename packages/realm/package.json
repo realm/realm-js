@@ -99,10 +99,7 @@
       ]
     },
     "bindgen:configure": {
-      "command": "cmake-js configure --debug --directory ../bindgen",
-      "dependencies": [
-        "../..:submodules"
-      ]
+      "command": "cmake-js configure --debug --directory ../bindgen"
     },
     "bindgen:build:node": {
       "command": "cmake --build ../bindgen/build --target realm-js-node",
@@ -113,7 +110,6 @@
     "bindgen:generate:typescript": {
       "command": "realm-bindgen --template typescript --spec ../bindgen/spec.yml --spec ../bindgen/js_spec.yml --output ./generated/ts",
       "dependencies": [
-        "../..:submodules",
         "../bindgen:generate:spec-schema"
       ],
       "files": [
@@ -131,7 +127,6 @@
     "bindgen:generate:wrappers": {
       "command": "realm-bindgen --template node-wrapper --spec ../bindgen/spec.yml --spec ../bindgen/js_spec.yml --output ./generated/ts",
       "dependencies": [
-        "../..:submodules",
         "../bindgen:generate:spec-schema"
       ],
       "files": [
@@ -188,9 +183,6 @@
     },
     "build:android": {
       "command": "node ../../scripts/build-android.js",
-      "dependencies": [
-        "../..:submodules"
-      ],
       "files": [
         "../../src/android/**",
         "../bindgen/src/**/*.ts",
@@ -199,9 +191,6 @@
     },
     "build:ios": {
       "command": "../../scripts/build-ios.sh -c ${CONFIGURATION:=Release} ${PLATFORMS}",
-      "dependencies": [
-        "../..:submodules"
-      ],
       "files": [
         "../../src/ios/**",
         "../bindgen/src/**/*.ts",

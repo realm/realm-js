@@ -9,17 +9,12 @@
     "bundle": "wireit",
     "lint": "wireit",
     "lint:cpp": "find src packages/bindgen/src -name '*.cpp' -or -name '*.h' -or -name '*.hpp' | xargs clang-format --dry-run --Werror",
-    "lint:cpp:fix": "find src packages/bindgen/src -name '*.cpp' -or -name '*.h' -or -name '*.hpp' | xargs clang-format -i"
+    "lint:cpp:fix": "find src packages/bindgen/src -name '*.cpp' -or -name '*.h' -or -name '*.hpp' | xargs clang-format -i",
+    "postinstall": "git submodule update --init --recursive"
   },
   "wireit": {
-    "submodules": {
-      "command": "git submodule update --init --recursive",
-      "files": [".git/modules/vendor/realm-core/HEAD"],
-      "output": ["vendor/realm-core"]
-    },
     "build": {
       "dependencies": [
-        "submodules",
         "bundle",
         "./packages/realm:build"
       ]
