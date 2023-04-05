@@ -42,11 +42,8 @@ function expectIsSameUser(value: Realm.User, user: Realm.User | null) {
   expect(value.id).equals(user?.id);
 }
 
-function expectUserFromAll(all: Realm.User[], user: Realm.User) {
-  expectIsSameUser(
-    all.find((other) => other.id === user.id),
-    user,
-  );
+function expectUserFromAll(all: Record<string, Realm.User>, user: Realm.User) {
+  expectIsSameUser(all[user.id], user);
 }
 
 async function registerAndLogInEmailUser(app: Realm.App) {

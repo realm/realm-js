@@ -217,8 +217,13 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
     return currentUser ? User.get(currentUser) : null;
   }
 
-  public get allUsers(): User<FunctionsFactoryType, CustomDataType>[] {
-    return this.internal.allUsers.map((user) => User.get(user));
+  public get allUsers(): Readonly<Record<string, User<FunctionsFactoryType, CustomDataType>>> {
+    const result: Record<string, User<FunctionsFactoryType, CustomDataType>> = {};
+    for (const user of this.internal.allUsers) {
+      result[user.identity] = User.get(user);
+    }
+
+    return result;
   }
 
   public switchUser(): unknown {

@@ -26,6 +26,7 @@ This can happen when the client creates/updates objects that do not match any su
 * `Realm.App.Sync#pause()` could hold a reference to the database open after shutting down the sync session, preventing users from being able to delete the Realm. ([realm/realm-core#6372](https://github.com/realm/realm-core/issues/6372), since v11.5.0)
 * Fixed a bug that may have resulted in `Realm.Results` and `Realm.List` being in different orders on different devices. Moreover, some cases of the error message `Invalid prior_size` may have be fixed too. ([realm/realm-core#6191](https://github.com/realm/realm-core/issues/6191), since v10.15.0)
 * Exposed `Sync` as named export. [#5649](https://github.com/realm/realm-js/issues/5649)
+* Fixed the return value of `App.allUsers` to return a record with the `User.id` as the key and the `User` as the value. [#5671](https://github.com/realm/realm-js/issues/5671)
 
 ### Compatibility
 * React Native >= v0.71.0
