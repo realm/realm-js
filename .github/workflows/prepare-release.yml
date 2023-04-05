@@ -34,10 +34,14 @@ jobs:
         run: npm version ${{ steps.update-changelog.outputs.new-version }} --workspace realm
 
       - name: Create Release PR
-        uses: peter-evans/create-pull-request@7380612b49221684fefa025244f2ef4008ae50ad #! 3.10.1
+        uses: peter-evans/create-pull-request@v5.0.0
+        id: create-pr
         with:
           branch: release/${{ steps.update-changelog.outputs.new-version }}
           title: Prepare for ${{ steps.update-changelog.outputs.new-version }}
           body: An automated PR for next release.
           commit-message: "[${{ steps.update-changelog.outputs.new-version }}] Bump version"
           token: ${{ secrets.REALM_CI_PAT }}
+      
+      - name: Update summary
+        run: echo "Created [PR for v${{ steps.update-changelog.outputs.new-version }}](${{ steps.create-pr.outputs.pull-request-url }})" >> $GITHUB_STEP_SUMMARY
