@@ -1,5 +1,5 @@
 <p align="center">
-  <img height="140" src="logo.svg" alt="Realm React Logo"/>
+  <img height="140" src="media/realm-react-logo.svg" alt="Realm React Logo"/>
 </p>
 
 <h1 align="center">

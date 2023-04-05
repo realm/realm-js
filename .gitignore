@@ -128,3 +128,5 @@ integration-tests/**/.lock
 
 # Generated docs
 /packages/realm/docs/
+/packages/realm-react/docs/
+/packages/realm-web/docs/
