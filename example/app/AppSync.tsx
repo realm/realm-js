@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useApp, useUser} from '@realm/react';
 import {Pressable, StyleSheet, Text} from 'react-native';
 
@@ -15,7 +15,7 @@ export const AppSync: React.FC = () => {
   const realm = useRealm();
   const user = useUser();
   const app = useApp();
-  const [showDone, setShowDone] = React.useState(false);
+  const [showDone, setShowDone] = useState(false);
   const tasks = useQuery(
     Task,
     collection =>

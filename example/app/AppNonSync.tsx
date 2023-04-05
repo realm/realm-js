@@ -1,4 +1,4 @@
-import React, {useMemo} from 'react';
+import React from 'react';
 
 import {Task} from './models/Task';
 import {TaskManager} from './components/TaskManager';

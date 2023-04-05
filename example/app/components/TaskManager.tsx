@@ -33,7 +33,7 @@ export const TaskManager: React.FC<{
       realm.write(() => {
         return realm.create(Task, {
           description,
-          userId: userId ? userId : 'blah',
+          userId: userId ?? 'SYNC_DISABLED',
         });
       });
     },
