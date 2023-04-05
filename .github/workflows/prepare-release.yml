@@ -42,6 +42,7 @@ jobs:
           body: An automated PR for next release.
           commit-message: "[${{ steps.update-changelog.outputs.new-version }}] Bump version"
           token: ${{ secrets.REALM_CI_PAT }}
+          assignees: ${{ github.event.sender }}
       
       - name: Update summary
         run: echo "Created [PR for v${{ steps.update-changelog.outputs.new-version }}](${{ steps.create-pr.outputs.pull-request-url }})" >> $GITHUB_STEP_SUMMARY
