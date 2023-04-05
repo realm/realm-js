@@ -44,11 +44,11 @@ export type UserChangeCallback = () => void;
  */
 export enum UserState {
   /** Authenticated and available to communicate with services. */
-  Active = "active",
+  LoggedIn = "LoggedIn",
   /** Logged out, but ready to be logged in. */
-  LoggedOut = "logged-out",
+  LoggedOut = "LoggedOut",
   /** Removed from the app entirely. */
-  Removed = "removed",
+  Removed = "Removed",
 }
 
 /**
@@ -141,7 +141,17 @@ export class User<
    * The state of the user.
    */
   get state(): UserState {
-    throw new Error("Not yet implemented");
+    const state = this.internal.state;
+    switch (state) {
+      case binding.SyncUserState.LoggedIn:
+        return UserState.LoggedIn;
+      case binding.SyncUserState.LoggedOut:
+        return UserState.LoggedOut;
+      case binding.SyncUserState.Removed:
+        return UserState.Removed;
+      default:
+        throw new Error(`Unsupported SyncUserState value: ${state}`);
+    }
   }
 
   /**
