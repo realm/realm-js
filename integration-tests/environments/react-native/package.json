@@ -96,7 +96,13 @@
       ],
       "env": {
         "PLATFORM": "android",
-        "WATCH": "false"
+        "WATCH": "false",
+        "ORG_GRADLE_PROJECT_newArchEnabled": {
+          "external": true
+        },
+        "ORG_GRADLE_PROJECT_hermesEnabled": {
+          "external": true
+        }
       }
     },
     "test:ios": {

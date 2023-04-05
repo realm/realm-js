@@ -623,15 +623,15 @@ export class Realm {
       binding.Helpers.setBindingContext(this.internal, {
         didChange: (r) => {
           r.verifyOpen();
-          this.changeListeners.callback();
+          this.changeListeners.notify();
         },
         schemaDidChange: (r) => {
           r.verifyOpen();
-          this.schemaListeners.callback();
+          this.schemaListeners.notify(this.schema);
         },
         beforeNotify: (r) => {
           r.verifyOpen();
-          this.beforeNotifyListeners.callback();
+          this.beforeNotifyListeners.notify();
         },
       });
     } else {
@@ -960,6 +960,8 @@ export class Realm {
     } else if (isAsymmetric(objectSchema)) {
       throw new Error("You cannot query an asymmetric object.");
     }
+
+    assert.numericString(objectKey);
 
     const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
     try {

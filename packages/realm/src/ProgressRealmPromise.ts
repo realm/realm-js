@@ -97,7 +97,14 @@ export class ProgressRealmPromise implements Promise<Realm> {
         this.handle.resolve(realm);
       } else if (openBehavior === OpenRealmBehaviorType.DownloadBeforeOpen) {
         const { bindingConfig } = Realm.transformConfig(config);
+        // Construct an async open task
         this.task = binding.Realm.getSynchronizedRealm(bindingConfig);
+        // If the promise handle gets rejected, we should cancel the open task
+        // to avoid consuming a thread safe reference which is no longer registered
+        this.handle.promise.catch(() => this.task?.cancel());
+
+        this.createTimeoutPromise(config, { openBehavior, timeOut, timeOutBehavior });
+
         this.task
           .start()
           .then(async (tsr) => {
@@ -114,35 +121,18 @@ export class ProgressRealmPromise implements Promise<Realm> {
             }
             return realm;
           })
-          .then(this.handle.resolve, this.handle.reject);
+          .then(this.handle.resolve, (err) => {
+            assert.undefined(err.code, "Update this to use the error code instead of matching on message");
+            if (err instanceof Error && err.message === "Sync session became inactive") {
+              // This can happen when two async tasks are opened for the same Realm and one gets canceled
+              this.rejectAsCanceled();
+            } else {
+              this.handle.reject(err);
+            }
+          });
         // TODO: Consider storing the token returned here to unregister when the task gets cancelled,
         // if for some reason, that doesn't happen internally
         this.task.registerDownloadProgressNotifier(this.emitProgress);
-        if (typeof timeOut === "number") {
-          this.timeoutPromise = new TimeoutPromise(
-            this.handle.promise, // Ensures the timeout gets cancelled when the realm opens
-            timeOut,
-            `Realm could not be downloaded in the allocated time: ${timeOut} ms.`,
-          );
-          if (timeOutBehavior === OpenRealmTimeOutBehavior.ThrowException) {
-            // Make failing the timeout, reject the promise
-            this.timeoutPromise.catch(this.handle.reject);
-          } else if (timeOutBehavior === OpenRealmTimeOutBehavior.OpenLocalRealm) {
-            // Make failing the timeout, resolve the promise
-            this.timeoutPromise.catch((err) => {
-              if (err instanceof TimeoutError) {
-                const realm = new Realm(config);
-                this.handle.resolve(realm);
-              } else {
-                this.handle.reject(err);
-              }
-            });
-          } else {
-            throw new Error(
-              `Invalid 'timeOutBehavior': '${timeOutBehavior}'. Only 'throwException' and 'openLocalRealm' is allowed.`,
-            );
-          }
-        }
       } else {
         throw new Error(`Unexpected open behavior '${openBehavior}'`);
       }
@@ -152,17 +142,12 @@ export class ProgressRealmPromise implements Promise<Realm> {
   }
 
   cancel(): void {
-    if (this.task) {
-      this.task.cancel();
-      this.task.$resetSharedPtr();
-      this.task = null;
-    }
+    this.cancelAndResetTask();
     this.timeoutPromise?.cancel();
     // Clearing all listeners to avoid accidental progress notifications
     this.listeners.clear();
     // Tell anything awaiting the promise
-    const err = new Error("Async open canceled");
-    this.handle.reject(err);
+    this.rejectAsCanceled();
   }
 
   progress(callback: ProgressNotificationCallback): this {
@@ -181,6 +166,48 @@ export class ProgressRealmPromise implements Promise<Realm> {
       listener(transferred, transferable);
     }
   };
+
+  private createTimeoutPromise(config: Configuration, { timeOut, timeOutBehavior }: OpenBehavior) {
+    if (typeof timeOut === "number") {
+      this.timeoutPromise = new TimeoutPromise(
+        this.handle.promise, // Ensures the timeout gets cancelled when the realm opens
+        timeOut,
+        `Realm could not be downloaded in the allocated time: ${timeOut} ms.`,
+      );
+      if (timeOutBehavior === OpenRealmTimeOutBehavior.ThrowException) {
+        // Make failing the timeout, reject the promise
+        this.timeoutPromise.catch(this.handle.reject);
+      } else if (timeOutBehavior === OpenRealmTimeOutBehavior.OpenLocalRealm) {
+        // Make failing the timeout, resolve the promise
+        this.timeoutPromise.catch((err) => {
+          if (err instanceof TimeoutError) {
+            this.cancelAndResetTask();
+            const realm = new Realm(config);
+            this.handle.resolve(realm);
+          } else {
+            this.handle.reject(err);
+          }
+        });
+      } else {
+        throw new Error(
+          `Invalid 'timeOutBehavior': '${timeOutBehavior}'. Only 'throwException' and 'openLocalRealm' is allowed.`,
+        );
+      }
+    }
+  }
+
+  private cancelAndResetTask() {
+    if (this.task) {
+      this.task.cancel();
+      this.task.$resetSharedPtr();
+      this.task = null;
+    }
+  }
+
+  private rejectAsCanceled() {
+    const err = new Error("Async open canceled");
+    this.handle.reject(err);
+  }
 
   get [Symbol.toStringTag]() {
     return ProgressRealmPromise.name;

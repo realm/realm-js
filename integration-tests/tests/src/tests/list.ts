@@ -1838,10 +1838,10 @@ describe("Lists", () => {
         });
 
         // Test that we can push a created object on a list
-        const name = this.realm.create<INameObjectSchema>(NameObjectLocalSchema.name, {
+        const name = this.realm.create<INameObjectSchema>(NameObjectSchema.name, {
           _id: new BSON.ObjectId(),
-          family: "Petersen",
-          given: ["Gurli", "Margrete"],
+          family: "Larsen",
+          given: ["Lars"],
           prefix: [],
         });
         const person = this.realm.create<IParentObjectSchema>(ParentObjectSchema.name, {
@@ -1853,7 +1853,7 @@ describe("Lists", () => {
       });
 
       const objects = this.realm.objects<IParentObjectSchema>(ParentObjectSchema.name).sorted([["id", false]]);
-      expect(objects.length).equals(2);
+      expect(objects.length).equals(3);
       expect(objects[0].name.length).equals(2);
       expect(objects[0].name[0].given.length).equals(2);
       expect(objects[0].name[0].prefix.length).equals(0);
@@ -1868,6 +1868,12 @@ describe("Lists", () => {
       expect(objects[1].name[0].prefix.length).equals(0);
       expect(objects[1].name[0].given[0]).equals("Gurli");
       expect(objects[1].name[0].given[1]).equals("Margrete");
+
+      expect(objects[2].name.length).equals(1);
+      expect(objects[2].name[0].given.length).equals(1);
+      expect(objects[2].name[0].prefix.length).equals(0);
+      expect(objects[2].name[0].given[0]).equals("Lars");
+      expect(objects[2].name[0].family).equals("Larsen");
     });
     it("supports nested lists from parsed JSON", function (this: RealmContext) {
       const json =

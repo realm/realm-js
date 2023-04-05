@@ -135,12 +135,11 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
   this.timeout(60_000); // TODO: Temporarily hardcoded until envs are set up.
   importAppBefore("with-db-flx");
   authenticateUserBefore();
+  afterEach(() => {
+    Realm.clearTestState();
+  });
 
   describe("Configuration", () => {
-    afterEach(() => {
-      Realm.clearTestState();
-    });
-
     describe("flexible sync Realm config", function () {
       it.skip("respects cancelWaitOnNonFatalError", async function () {
         this.timeout(2_000);
@@ -477,11 +476,11 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       });
 
       await realm.syncSession?.uploadAllLocalChanges();
-      await callbackHandle.promise;
+      await callbackHandle;
     });
   });
 
-  describe("With realm opened before", function () {
+  describe("with realm opened before", function () {
     openRealmBeforeEach({
       schema: [FlexiblePersonSchema, DogSchema],
       sync: {
@@ -1769,16 +1768,17 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         it("deletes the item if an item not matching the filter is created", async function (this: RealmContext) {
           await addSubscriptionAndSync(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("age < 30"));
 
-          this.realm.write(() => {
+          const tom = this.realm.write(() =>
             this.realm.create<IPerson>(FlexiblePersonSchema.name, {
               _id: new BSON.ObjectId(),
               name: "Tom Old",
               age: 99,
-            });
-          });
+            }),
+          );
 
+          expect(tom.isValid()).equals(true);
           await this.realm.syncSession?.downloadAllServerChanges();
-          expect(this.realm.objects(FlexiblePersonSchema.name)).to.have.length(0);
+          expect(tom.isValid()).equals(false);
         });
 
         it("throw an exception if you remove a subscription without waiting for server acknowledgement, then modify objects that were only matched by the now removed subscription", async function (this: RealmContext) {

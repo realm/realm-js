@@ -73,6 +73,10 @@ export class Results<T = unknown> extends OrderedCollection<T> {
     return this.internal.size();
   }
 
+  set length(value: number) {
+    throw new Error("Cannot assign to read only property 'length'");
+  }
+
   description(): string {
     return binding.Helpers.getResultsDescription(this.internal);
   }

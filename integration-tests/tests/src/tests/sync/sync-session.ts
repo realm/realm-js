@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { ConnectionState, ObjectSchema, BSON } from "realm";
+import { Realm, ConnectionState, ObjectSchema, BSON, User, SyncConfiguration } from "realm";
 import { importAppBefore } from "../../hooks";
 import { DogSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { getRegisteredEmailPassCredentials } from "../../utils/credentials";
@@ -137,29 +137,21 @@ describe("SessionTest", () => {
       expect(realm.syncSession).to.be.null;
     });
 
-    it("config with undefined sync property", () => {
+    it("config with undefined sync property", async () => {
       const config = {
         sync: undefined,
       };
-      Realm.open(config).then((realm) => {
-        expect(realm.syncSession).to.be.null;
-      });
+      const realm = await Realm.open(config);
+      expect(realm.syncSession).to.be.null;
     });
 
     it("config with sync and inMemory set", async () => {
-      const config = {
-        sync: true,
-        inMemory: true,
-      };
-      return new Promise((resolve, reject) => {
-        //@ts-expect-error try config with mutually exclusive properties
-        return Realm.open(config)
-          .then(() => reject("opened realm with invalid configuration"))
-          .catch((error) => {
-            expect(error.message).contains("Options 'inMemory' and 'sync' are mutual exclusive.");
-            resolve();
-          });
-      });
+      await expect(
+        Realm.open({
+          sync: {} as SyncConfiguration,
+          inMemory: true,
+        }),
+      ).rejectedWith("The realm configuration options 'inMemory' and 'sync' cannot both be defined.");
     });
 
     it("config with onMigration and sync set", async function (this: AppContext) {
@@ -168,14 +160,9 @@ describe("SessionTest", () => {
       config.onMigration = () => {
         /* empty function */
       };
-      return new Promise<void>((resolve, reject) => {
-        return Realm.open(config)
-          .then(() => reject("opened realm with invalid configuration"))
-          .catch((error) => {
-            expect(error.message).contains("Options 'onMigration' and 'sync' are mutually exclusive");
-            resolve();
-          });
-      });
+      await expect(Realm.open(config)).rejectedWith(
+        "The realm configuration options 'onMigration' and 'sync' cannot both be defined.",
+      );
     });
 
     it("invalid sync user object", async function (this: AppContext) {
@@ -184,11 +171,9 @@ describe("SessionTest", () => {
       const { config } = await getSyncConfWithUser(this.app, partition);
       //@ts-expect-error setting an invalid user object
       config.sync.user = { username: "John Doe" };
-      try {
-        await Realm.open(config);
-      } catch (e: any) {
-        expect(e.message).contains("Expected 'user' to be an instance of User, got an object");
-      }
+      await expect(Realm.open(config)).rejectedWith(
+        "Expected 'user' on realm sync configuration to be an instance of User, got an object",
+      );
     });
 
     it("propagates custom http headers", async function (this: AppContext) {
@@ -586,41 +571,24 @@ describe("SessionTest", () => {
     it("timeout on download successfully throws", async function (this: AppContext) {
       const partition = generatePartition();
       let realm!: Realm;
-      return this.app
-        .logIn(Realm.Credentials.anonymous())
-        .then((user) => {
+      await expect(
+        this.app.logIn(Realm.Credentials.anonymous()).then((user) => {
           const config = getSyncConfiguration(user, partition);
           realm = new Realm(config);
           return realm.syncSession?.downloadAllServerChanges(1);
-        })
-        .then(
-          () => {
-            throw new Error("Download did not time out");
-          },
-          (e) => {
-            expect(e).equals("Downloading changes did not complete in 1 ms.");
-          },
-        );
+        }),
+      ).is.rejectedWith("Downloading changes did not complete in 1 ms.");
     });
 
     it("timeout on upload successfully throws", async function (this: AppContext) {
-      let realm!: Realm;
       const partition = generatePartition();
-      return this.app
-        .logIn(Realm.Credentials.anonymous())
-        .then((user) => {
+      expect(
+        this.app.logIn(Realm.Credentials.anonymous()).then((user) => {
           const config = getSyncConfiguration(user, partition);
-          realm = new Realm(config);
+          const realm = new Realm(config);
           return realm.syncSession?.uploadAllLocalChanges(1);
-        })
-        .then(
-          () => {
-            throw new Error("Upload did not time out");
-          },
-          (e) => {
-            expect(e).equals("Uploading changes did not complete in 1 ms.");
-          },
-        );
+        }),
+      ).rejectedWith("Uploading changes did not complete in 1 ms.");
     });
   });
 
@@ -951,6 +919,7 @@ describe("SessionTest", () => {
             age: i,
             firstName: "John",
             lastName: "Smith",
+            partition,
           });
         }
       });
@@ -976,6 +945,7 @@ describe("SessionTest", () => {
             age: i,
             firstName: "John",
             lastName: "Smith",
+            partition,
           });
         }
       });
@@ -997,7 +967,7 @@ describe("SessionTest", () => {
       // we haven't uploaded our recent changes -- we're not allowed to copy
       expect(() => {
         realm1.writeCopyTo(outputConfig2);
-      }).throws("Could not write file as not all client changes are integrated in server");
+      }).throws("All client changes must be integrated in server before writing copy");
 
       // log back in and upload the changes we made locally
       user1 = await this.app.logIn(credentials1);
@@ -1041,6 +1011,7 @@ describe("SessionTest", () => {
             age: i,
             firstName: "John",
             lastName: "Smith",
+            partition,
           });
         }
       });
@@ -1077,7 +1048,7 @@ describe("SessionTest", () => {
           clientReset: {
             //@ts-expect-error TYPEBUG: enum not exposed in realm namespace
             mode: "manual",
-            onManual: () => console.log("error"),
+            onManual: (...args) => console.log("error", args),
           },
         },
         schema: [PersonForSyncSchema, DogForSyncSchema],

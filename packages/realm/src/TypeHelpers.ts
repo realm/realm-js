@@ -83,7 +83,10 @@ export type TypeOptions = {
 // "Only Realm instances are supported." (which should probably have been "RealmObject")
 // instead of relying on the binding to throw.
 export function mixedToBinding(realm: binding.Realm, value: unknown): binding.MixedArg {
-  if (typeof value === "undefined") {
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean" || value === null) {
+    // Fast track pass through for the most commonly used types
+    return value;
+  } else if (value === undefined) {
     return null;
   } else if (value instanceof Date) {
     return binding.Timestamp.fromDate(value);
@@ -96,7 +99,14 @@ export function mixedToBinding(realm: binding.Realm, value: unknown): binding.Mi
   } else if (Array.isArray(value)) {
     throw new TypeError("A mixed property cannot contain an array of values.");
   } else {
-    return value as binding.Mixed;
+    // Convert typed arrays to an `ArrayBuffer`
+    for (const TypedArray of TYPED_ARRAY_CONSTRUCTORS) {
+      if (value instanceof TypedArray) {
+        return value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength);
+      }
+    }
+    // Rely on the binding for any other value
+    return value as binding.MixedArg;
   }
 }
 

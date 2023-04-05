@@ -102,6 +102,10 @@ const NullableBasicTypesSchema = {
 };
 
 describe("Results", () => {
+  afterEach(() => {
+    Realm.clearTestState();
+  });
+
   describe("General functionality", () => {
     openRealmBeforeEach({ schema: [TestObject] });
 
@@ -169,7 +173,7 @@ describe("Results", () => {
 
       expect(() => {
         objects.indexOf(object4);
-      }).throws("Realm object is from another Realm");
+      }).throws("Object of type 'TestObject' does not match Results type 'TestObject'");
     });
 
     it("should be read-only", function (this: RealmContext) {
@@ -186,11 +190,11 @@ describe("Results", () => {
       expect(() => {
         //@ts-expect-error Should be an invalid write to read-only object.
         objects[0] = { doubleCol: 0 };
-      }).throws(select({ reactNative: "Cannot assign to index", default: "Cannot assign to read only index 0" }));
+      }).throws("Assigning into a Results is not supported");
       expect(() => {
         //@ts-expect-error Should be an invalid write to read-only object.
         objects[1] = { doubleCol: 0 };
-      }).throws(select({ reactNative: "Cannot assign to index", default: "Cannot assign to read only index 1" }));
+      }).throws("Assigning into a Results is not supported");
       expect(() => {
         //@ts-expect-error Should be an invalid write to read-only object.
         objects.length = 0;
@@ -511,11 +515,11 @@ describe("Results", () => {
       expect(() => {
         //@ts-expect-error Expected to be an invalid sorted argument.
         objects.sorted(1);
-      }).throws("JS value must be of type 'string'");
+      }).throws("Expected 'argument' to be property name and optional bool or an array of descriptors, got a number");
       expect(() => {
         //@ts-expect-error Expected to be an invalid sorted argument.
         objects.sorted([1]);
-      }).throws("JS value must be of type 'string'");
+      }).throws("Expected 'descriptor[0]' to be string or array with two elements [string, boolean], got a number");
 
       expect(() => {
         objects.sorted("fish");
@@ -527,7 +531,7 @@ describe("Results", () => {
       expect(() => {
         //@ts-expect-error Expected to be an invalid sorted argument.
         objects.sorted(["valueCol", "primaryCol"], true);
-      }).throws("Second argument is not allowed if passed an array of sort descriptors");
+      }).throws("Expected second 'argument' to be undefined, got a boolean");
 
       realm.close();
     });
@@ -752,28 +756,28 @@ describe("Results", () => {
       ["boolCol", "stringCol", "dataCol"].forEach((colName) => {
         expect(() => {
           results.min(colName);
-        }).throws(`Cannot min property '${colName}'`);
+        }).throws("Operation 'min' not supported for");
       });
 
       // bool, string & data columns don't support 'max'
       ["boolCol", "stringCol", "dataCol"].forEach((colName) => {
         expect(() => {
           results.max(colName);
-        }).throws(`Cannot max property '${colName}'`);
+        }).throws(`Operation 'max' not supported for`);
       });
 
       // bool, string, date & data columns don't support 'avg'
       ["boolCol", "stringCol", "dateCol", "dataCol"].forEach((colName) => {
         expect(() => {
           results.avg(colName);
-        }).throws(`Cannot avg property '${colName}'`);
+        }).throws(`Operation 'average' not supported for`);
       });
 
       // bool, string, date & data columns don't support 'sum'
       ["boolCol", "stringCol", "dateCol", "dataCol"].forEach((colName) => {
         expect(() => {
           results.sum(colName);
-        }).throws(`Cannot sum property '${colName}'`);
+        }).throws(`Operation 'sum' not supported for`);
       });
     });
 
@@ -784,16 +788,16 @@ describe("Results", () => {
       const results = this.realm.objects("NullableBasicTypesObject");
       expect(() => {
         results.min("foo");
-      }).throws("Property 'foo' does not exist on object 'NullableBasicTypesObject'");
+      }).throws("Property 'foo' does not exist on 'NullableBasicTypesObject' objects");
       expect(() => {
         results.max("foo");
-      }).throws("Property 'foo' does not exist on object 'NullableBasicTypesObject'");
+      }).throws("Property 'foo' does not exist on 'NullableBasicTypesObject' objects");
       expect(() => {
         results.sum("foo");
-      }).throws("Property 'foo' does not exist on object 'NullableBasicTypesObject'");
+      }).throws("Property 'foo' does not exist on 'NullableBasicTypesObject' objects");
       expect(() => {
         results.avg("foo");
-      }).throws("Property 'foo' does not exist on object 'NullableBasicTypesObject'");
+      }).throws("Property 'foo' does not exist on 'NullableBasicTypesObject' objects");
     });
   });
 
@@ -979,11 +983,11 @@ describe("Results", () => {
         this.realm.write(() => {
           results.update("unknownCol", "world");
         });
-      }).throws("No such property: unknownCol");
+      }).throws("Property 'unknownCol' does not exist on 'NullableBasicTypesObject' objects");
 
       expect(() => {
         results.update("stringCol", "world");
-      }).throws("Can only 'update' objects within a transaction.");
+      }).throws("Cannot modify managed objects outside of a write transaction.");
     });
   });
 });
