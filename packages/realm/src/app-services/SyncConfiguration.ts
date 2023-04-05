@@ -108,15 +108,25 @@ export type ClientResetConfig =
 
 export type SSLConfiguration = {
   /**
-   * Indicates if SSL certificates must be validated. Default is `true`.
+   * Whether the SSL certificates must be validated. This should generally
+   * be `true` in production.
+   *
+   * Default is `true`.
    */
   validate?: boolean;
   /**
-   * The path where to find trusted SSL certificates.
+   * The path where to find trusted SSL certificates used to validate the
+   * server certificate. If `undefined`, validation will be delegated to
+   * the provided `validateCertificates` callback.
    */
   certificatePath?: string;
   /**
-   * A callback function used to accept or reject the server's SSL certificate.
+   * A callback function used to validate the server's SSL certificate. It
+   * is invoked for every certificate in the certificate chain starting from
+   * the root downward. An SSL connection will be established if all certificates
+   * are accepted. The certificate will be accepted if the callback returns `true`,
+   * or rejected if returning `false`. This callback is only invoked if
+   * `certificatePath` is `undefined`.
    */
   validateCertificates?: SSLVerifyCallback;
 };
@@ -132,10 +142,31 @@ type SSLVerifyCallbackWithListArguments = (
 ) => boolean;
 
 export type SSLVerifyObject = {
+  /**
+   * The address that the SSL connection is being established to.
+   */
   serverAddress: string;
+  /**
+   * The port that the SSL connection is being established to.
+   */
   serverPort: number;
+  /**
+   * The certificate using the PEM format.
+   */
   pemCertificate: string;
+  /**
+   * The result of OpenSSL's preverification of the certificate. If `true`,
+   * the certificate has been accepted and will generally be safe to trust.
+   * If `false`, it has been rejected and the user should do an independent
+   * validation step.
+   */
   acceptedByOpenSSL: boolean;
+  /**
+   * The position of the certificate in the certificate chain. The actual
+   * server certificate has `depth` 0 (lowest) and also contains the host
+   * name, while all other certificates up the chain have higher depths in
+   * increments of 1.
+   */
   depth: number;
 };
 
