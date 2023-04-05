@@ -27,8 +27,8 @@ export const flags = {
    */
   THROW_ON_GLOBAL_REALM: false,
   /**
-   * When enabled, calling `Realm.clearTestState` will be callable.
-   * This is disabled by default, mainly because the data-structures needed to support this, introduce minor memory leaks and are not intended for production use.
+   * Enables calling internal, test-only functions like `Realm.clearTestState`.
+   * This is disabled by default, mainly because the data-structures needed to support this, introduce minor memory leaks if clearTestState() is not called regularly and are not intended for production use.
    */
   ALLOW_CLEAR_TEST_STATE: false,
 };
