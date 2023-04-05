@@ -35,9 +35,7 @@ This can happen when the client creates/updates objects that do not match any su
 ### Internal
 * Fixed linting issues and running linting on CI.
 * Upgraded Realm Core from v13.6.0 to v13.8.0. ([#5638](https://github.com/realm/realm-js/pull/5638))
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Build iOS prebuilt binaries in release mode by default. ([#5709](https://github.com/realm/realm-js/pull/5709))
 
 ## 12.0.0-alpha.1 (2023-03-22)
 
