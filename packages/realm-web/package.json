@@ -16,7 +16,8 @@
     "start": "npm run build -- --watch",
     "lint": "eslint --ext .js,.ts .",
     "test": "mocha 'src/tests/**/*.test.ts'",
-    "postversion": "ts-node --project scripts/tsconfig.json scripts/postversion.ts"
+    "postversion": "ts-node --project scripts/tsconfig.json scripts/postversion.ts",
+    "docs": "wireit"
   },
   "wireit": {
     "bundle": {
@@ -35,6 +36,10 @@
       "command": "ts-node --project scripts/tsconfig.json scripts/update-types.ts",
       "files": ["../../types"],
       "output": ["types/realm"]
+    },
+    "docs": {
+      "command": "typedoc",
+      "dependencies": ["bundle"]
     }
   },
   "files": [
