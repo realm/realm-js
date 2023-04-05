@@ -87,16 +87,10 @@ Moreover, we have a [Flipper plugin](https://www.npmjs.com/package/realm-flipper
 
 ## Template apps
 
-We have TypeScript and JavaScript templates to help you get started using Realm.  Follow the links to your desired template and follow the instructions there to get up and running fast.
-### Using Expo
+We have TypeScript templates to help you get started using Realm.  Follow the links to your desired template and follow the instructions there to get up and running fast.
 
-- [TypeScript](https://github.com/realm/realm-js/tree/main/templates/expo-template-ts#readme)
-- [JavaScript](https://github.com/realm/realm-js/tree/main/templates/expo-template-js#readme)
-
-### React Native
-
-- [TypeScript](https://github.com/realm/realm-js/tree/main/templates/react-native-template-realm-ts#readme)
-- [JavaScript](https://github.com/realm/realm-js/tree/main/templates/react-native-template-realm-js#readme)
+- [Expo](https://github.com/realm/realm-js/tree/main/templates/expo-template#readme)
+- [React Native](https://github.com/realm/realm-js/tree/main/templates/react-native-template#readme)
 ## Getting Help
 
 * **Need help with your code?**: Look for previous questions on the  [#realm tag](https://stackoverflow.com/questions/tagged/realm?sort=newest) — or [ask a new question](https://stackoverflow.com/questions/ask?tags=realm). You can also check out our [Community Forum](https://developer.mongodb.com/community/forums/tags/c/realm/9/realm-sdk) where general questions about how to do something can be discussed.
