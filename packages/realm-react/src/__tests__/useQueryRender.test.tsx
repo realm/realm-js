@@ -24,7 +24,7 @@ import "@testing-library/jest-native/extend-expect";
 import { createRealmContext } from "..";
 
 // Enable calling Realm.clearTestState()
-flags.CLEAR_TEST_STATE = true;
+flags.ALLOW_CLEAR_TEST_STATE = true;
 
 class Item extends Realm.Object {
   id!: number;

@@ -65,7 +65,7 @@ export class ProgressRealmPromise implements Promise<Realm> {
    * @internal
    */
   public static cancelAll() {
-    assert(flags.CLEAR_TEST_STATE, "Set the flag.CLEAR_TEST_STATE = true before calling this.");
+    assert(flags.ALLOW_CLEAR_TEST_STATE, "Set the flags.ALLOW_CLEAR_TEST_STATE = true before calling this.");
     for (const promiseRef of ProgressRealmPromise.instances) {
       promiseRef.deref()?.cancel();
     }
@@ -82,7 +82,7 @@ export class ProgressRealmPromise implements Promise<Realm> {
 
   /** @internal */
   constructor(config: Configuration) {
-    if (flags.CLEAR_TEST_STATE) {
+    if (flags.ALLOW_CLEAR_TEST_STATE) {
       ProgressRealmPromise.instances.add(new binding.WeakRef(this));
     }
     try {

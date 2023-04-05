@@ -266,7 +266,7 @@ export class Realm {
    * @private Not a part of the public API: It's primarily used from the library's tests.
    */
   public static clearTestState(): void {
-    assert(flags.CLEAR_TEST_STATE, "Set the flag.CLEAR_TEST_STATE = true before calling this.");
+    assert(flags.ALLOW_CLEAR_TEST_STATE, "Set the flags.ALLOW_CLEAR_TEST_STATE = true before calling this.");
     // Close any realms not already closed
     for (const realmRef of Realm.internals) {
       const realm = realmRef.deref();
@@ -616,7 +616,7 @@ export class Realm {
 
       fs.ensureDirectoryForFile(bindingConfig.path);
       this.internal = internalConfig.internal ?? binding.Realm.getSharedRealm(bindingConfig);
-      if (flags.CLEAR_TEST_STATE) {
+      if (flags.ALLOW_CLEAR_TEST_STATE) {
         Realm.internals.add(new binding.WeakRef(this.internal));
       }
 

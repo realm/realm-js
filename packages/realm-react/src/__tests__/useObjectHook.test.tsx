@@ -22,7 +22,7 @@ import { renderHook } from "@testing-library/react-native";
 import { createUseObject } from "../useObject";
 
 // Enable calling Realm.clearTestState()
-flags.CLEAR_TEST_STATE = true;
+flags.ALLOW_CLEAR_TEST_STATE = true;
 
 const dogSchema: Realm.ObjectSchema = {
   name: "dog",

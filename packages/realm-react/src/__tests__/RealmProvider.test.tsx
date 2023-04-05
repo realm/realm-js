@@ -24,7 +24,7 @@ import { View, Button, Text } from "react-native";
 import { render, fireEvent, waitFor, renderHook, act } from "@testing-library/react-native";
 
 // Enable calling Realm.clearTestState()
-flags.CLEAR_TEST_STATE = true;
+flags.ALLOW_CLEAR_TEST_STATE = true;
 
 const dogSchema: Realm.ObjectSchema = {
   name: "dog",
