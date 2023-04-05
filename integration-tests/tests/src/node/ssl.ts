@@ -37,7 +37,6 @@ import { PersonSchema } from "../schemas/person-and-dog-with-object-ids";
 
 // IMPORTANT:
 // * Can only run on non-Apple machines, otherwise tests will await forever.
-// * TODO: Utlize acceptedByOpenSSL?
 
 describe.skipIf(environment.missingServer, "SSL Configuration", function () {
   this.longTimeout();
@@ -148,6 +147,48 @@ describe.skipIf(environment.missingServer, "SSL Configuration", function () {
     await expect(onErrorHandle.promise).to.not.be.rejected;
   });
 
+  it("verifies the server's SSL certificate", async function (this: RealmContext) {
+    let validationCallbackInvoked = false;
+    const ssl: SSLConfiguration = {
+      validate: true,
+      certificatePath: undefined,
+      validateCertificates: (verifyObject: SSLVerifyObject) => {
+        validationCallbackInvoked = true;
+
+        // The `depth` of the root certificate will be the length of the chain - 1. All
+        // certificates between the root and the actual server certificate have a depth > 0.
+        const isServerCertificate = verifyObject.depth === 0;
+        const x509 = new X509Certificate(verifyObject.pemCertificate);
+
+        if (verifyObject.acceptedByOpenSSL) {
+          // If it's the actual server certificate, Core recommends always checking the host;
+          // otherwise, if it's higher up in the chain and accepted by OpenSSL, they recommend
+          // returning `true`.
+          return isServerCertificate ? !!x509.checkHost(verifyObject.serverAddress) : true;
+        } else {
+          // If the certificate is not accepted by OpenSSL, Core recommends using an independent
+          // verification step. That step is represented here by checking the dates.
+          // (TODO: Add extra validation)
+          const now = new Date();
+          const isValid = now >= new Date(x509.validFrom) && now <= new Date(x509.validTo);
+          return isServerCertificate ? isValid && !!x509.checkHost(verifyObject.serverAddress) : isValid;
+        }
+      },
+    };
+
+    let syncErrorCallbackInvoked = false;
+    const onError: ErrorCallback = () => (syncErrorCallbackInvoked = true);
+
+    const realm = await openRealm(this.app.currentUser, ssl, onError);
+
+    expect(realm.syncSession?.isConnected()).to.be.true;
+    expect(realm.syncSession?.config.ssl).to.deep.equal({ validate: true, certificatePath: undefined });
+    expect(validationCallbackInvoked).to.be.true;
+    expect(syncErrorCallbackInvoked).to.be.false;
+
+    closeRealm(realm);
+  });
+
   it("calls the certificate validation callback with an SSLVerifyObject", async function (this: RealmContext) {
     const validateHandle = createPromiseHandle();
     const ssl: SSLConfiguration = {
@@ -171,33 +212,6 @@ describe.skipIf(environment.missingServer, "SSL Configuration", function () {
     };
 
     const realm = await openRealm(this.app.currentUser, ssl);
-    await expect(validateHandle.promise).to.not.be.rejected;
-
-    closeRealm(realm);
-  });
-
-  // TODO: Enable
-  it.skip("can verify the server's public key from the SSL certificate", async function (this: RealmContext) {
-    const validateHandle = createPromiseHandle();
-
-    const ssl: SSLConfiguration = {
-      validate: true,
-      certificatePath: undefined,
-      validateCertificates: (verifyObject: SSLVerifyObject) => {
-        const x509 = new X509Certificate(verifyObject.pemCertificate);
-        // Verify that the certificate was signed by the given public key.
-        const verified = x509.verify(x509.publicKey);
-        if (verified) {
-          validateHandle.resolve();
-        } else {
-          validateHandle.reject("The x509 certificate is invalid.");
-        }
-        return true;
-      },
-    };
-
-    const realm = await openRealm(this.app.currentUser, ssl);
-
     await expect(validateHandle.promise).to.not.be.rejected;
 
     closeRealm(realm);
