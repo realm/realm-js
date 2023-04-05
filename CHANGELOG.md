@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
+## 12.0.0-alpha.2 (2023-04-05)
 
 ### Enhancements
 * Added support for building with the new React Native architecture enabled on Android. Thanks to 
