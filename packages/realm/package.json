@@ -65,9 +65,9 @@
     "build:node:prebuild:ia32": "wireit",
     "build:android": "wireit",
     "build:ios": "wireit",
-    "build:ios:simulator": "wireit",
-    "build:ios:ios": "wireit",
-    "build:ios:catalyst": "wireit",
+    "build:ios:debug:simulator": "wireit",
+    "build:ios:debug:ios": "wireit",
+    "build:ios:debug:catalyst": "wireit",
     "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'",
     "docs": "wireit"
   },
@@ -189,7 +189,7 @@
       ]
     },
     "build:ios": {
-      "command": "../../scripts/build-ios.sh -c ${CONFIGURATION:=Debug} ${PLATFORMS}",
+      "command": "../../scripts/build-ios.sh -c ${CONFIGURATION:=Release} ${PLATFORMS}",
       "dependencies": [
         "../..:submodules"
       ],
@@ -207,22 +207,25 @@
         }
       }
     },
-    "build:ios:simulator": {
+    "build:ios:debug:simulator": {
       "command": "npm run build:ios",
       "env": {
-        "PLATFORMS": "simulator"
+        "PLATFORMS": "simulator",
+        "CONFIGURATION": "Debug"
       }
     },
-    "build:ios:ios": {
+    "build:ios:debug:ios": {
       "command": "npm run build:ios",
       "env": {
-        "PLATFORMS": "ios"
+        "PLATFORMS": "ios",
+        "CONFIGURATION": "Debug"
       }
     },
-    "build:ios:catalyst": {
+    "build:ios:debug:catalyst": {
       "command": "npm run build:ios",
       "env": {
-        "PLATFORMS": "catalyst"
+        "PLATFORMS": "catalyst",
+        "CONFIGURATION": "Debug"
       }
     },
     "docs": {
