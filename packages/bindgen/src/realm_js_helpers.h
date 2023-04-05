@@ -30,6 +30,7 @@
 #include <realm/object-store/sync/generic_network_transport.hpp>
 #include <realm/object-store/util/event_loop_dispatcher.hpp>
 #include <realm/util/functional.hpp>
+#include <string_view>
 #include <system_error>
 #include <thread>
 #include <type_traits>
@@ -267,10 +268,12 @@ struct Helpers {
     }
 
     static auto make_ssl_verify_callback(std::function<bool(const std::string& server_address, int server_port,
-                                         std::string_view pem_data, int preverify_ok, int depth)> callback) {
+                                                            std::string_view pem_data, int preverify_ok, int depth)>
+                                             callback)
+    {
         return [callback = std::move(callback)](const std::string& server_address, uint16_t server_port,
                                                 const char* pem_data, size_t pem_size, int preverify_ok, int depth) {
-            return callback(server_address, server_port, { pem_data, pem_size }, preverify_ok, depth);
+            return callback(server_address, server_port, std::string_view(pem_data, pem_size), preverify_ok, depth);
         };
     }
 };
