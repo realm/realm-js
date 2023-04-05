@@ -12,11 +12,12 @@
   Example:
 	```tsx
 	const SomeComponent = () => {
-	  const user = useUser();
-		const items = useQuery(Item,
-			(res) => res.filtered(`owner_id == "${user?.id}"`).sorted('createdAt'),
-			 [user]
-		);
+	    const user = useUser();
+	    const items = useQuery(Item,
+	        (res) => res.filtered(`owner_id == "${user?.id}"`).sorted('createdAt'),
+	        [user]
+	    );
+	};
 	```
 * Create a default context so the `RealmProvider`, `useQuery`, `useRealm`, and `useObject` can be directly imported from `@realm/react` ([#5292](https://github.com/realm/realm-js/issue/5292))
 

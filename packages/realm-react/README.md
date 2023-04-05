@@ -156,8 +156,8 @@ const Component = () => {
   // ObjectClass is a class extending Realm.Object, which should have been provided in the Realm Config.
   // It is also possible to use the model's name as a string ( ex. "Object" ) if you are not using class based models.
   const sortedCollection = useQuery(ObjectClass, (collection) => {
-    // The methods `sorted` and `filtered` should be passed as a `query` function
-    // any variables that are dependencies for this should be placed in the dependency array
+    // The methods `sorted` and `filtered` should be passed as a `query` function.
+    // Any variables that are dependencies of this should be placed in the dependency array.
     return collection.sorted();
   }, []);
 
