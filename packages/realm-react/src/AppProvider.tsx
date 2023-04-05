@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 import { isEqual } from "lodash";
 import React, { createContext, useContext, useLayoutEffect, useRef, useState } from "react";
-import Realm from "realm";
+import Realm, { LogLevel } from "realm";
 
 /**
  * Create a context containing the Realm app.  Should be accessed with the useApp hook.
@@ -36,8 +36,49 @@ type AppProviderProps = Realm.AppConfiguration & {
   logger?: (level: Realm.App.Sync.NumericLogLevel, message: string) => void;
 };
 
+// This is the default log level that would be useful for React Native.
+const DEFAULT_LOG_LEVEL: LogLevel = "warn";
+
+// Since the logger provides the numeric log level, we need to convert it to a
+// string for the log message.
+const getLogLevelString = (level: Realm.App.Sync.NumericLogLevel) => {
+  switch (level) {
+    case Realm.App.Sync.NumericLogLevel.Fatal:
+      return "fatal";
+    case Realm.App.Sync.NumericLogLevel.Error:
+      return "error";
+    case Realm.App.Sync.NumericLogLevel.Warn:
+      return "warn";
+    case Realm.App.Sync.NumericLogLevel.Info:
+      return "info";
+    case Realm.App.Sync.NumericLogLevel.Detail:
+      return "detail";
+    case Realm.App.Sync.NumericLogLevel.Debug:
+      return "debug";
+    case Realm.App.Sync.NumericLogLevel.Trace:
+      return "trace";
+    default:
+      return "";
+  }
+};
+
+// The default logger for the SDK is std::out, which is not useful for React
+// Native. This is a simple logger that logs to the console.
 function defaultLogger(level: Realm.App.Sync.NumericLogLevel, message: string) {
-  console.log(`[${level}] ${message}`);
+  const logLevelString = getLogLevelString(level);
+  const logLevel = logLevelString.toUpperCase();
+  const logMessage = `[${logLevel}] ${message}`;
+  switch (level) {
+    case Realm.App.Sync.NumericLogLevel.Error:
+    case Realm.App.Sync.NumericLogLevel.Fatal:
+      console.error(logMessage);
+      return;
+    case Realm.App.Sync.NumericLogLevel.Warn:
+      console.warn(logMessage);
+      return;
+    default:
+      console.log(logMessage);
+  }
 }
 
 /**
@@ -74,12 +115,14 @@ export const AppProvider: React.FC<AppProviderProps> = ({
     if (appRef) {
       appRef.current = app;
       if (logLevel) {
-        console.log("setting log level: ", logLevel);
         Realm.App.Sync.setLogger(app, logger);
         Realm.App.Sync.setLogLevel(app, logLevel);
+      } else {
+        Realm.App.Sync.setLogger(app, defaultLogger);
+        Realm.App.Sync.setLogLevel(app, DEFAULT_LOG_LEVEL);
       }
     }
-  }, [appRef, app, logLevel]);
+  }, [appRef, app, logLevel, logger]);
 
   return <AppContext.Provider value={app}>{children}</AppContext.Provider>;
 };
