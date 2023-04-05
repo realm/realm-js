@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
+## 12.0.0-alpha.2 (2023-04-05)
 
 ### Enhancements
 * Added support for building with the new React Native architecture enabled on Android. Thanks to 
@@ -33,6 +30,7 @@ This can happen when the client creates/updates objects that do not match any su
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
+* Enabled all tests from v11 and fixed all remaining failures. ([#5595](https://github.com/realm/realm-js/pull/5595))
 * Fixed linting issues and running linting on CI.
 * Upgraded Realm Core from v13.6.0 to v13.8.0. ([#5638](https://github.com/realm/realm-js/pull/5638))
 * Build iOS prebuilt binaries in release mode by default. ([#5709](https://github.com/realm/realm-js/pull/5709))
