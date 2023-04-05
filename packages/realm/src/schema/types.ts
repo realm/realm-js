@@ -28,7 +28,7 @@ export type Constructor<T = unknown> = { new (...args: any): T };
 export type RealmObjectConstructor<T extends RealmObject = RealmObject> = {
   new (...args: any): T;
   // We need to declare schema as optional to support the babel plugin.
-  // Otherwise it will produce a type error.  
+  // Otherwise it will produce a type error.
   schema?: ObjectSchema;
 };
 
