@@ -1,6 +1,6 @@
 {
   "name": "realm",
-  "version": "12.0.0-alpha.1",
+  "version": "12.0.0-alpha.2",
   "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
   "license": "apache-2.0",
   "homepage": "https://realm.io",
@@ -94,15 +94,21 @@
         "tsconfig.json",
         "src/**/tsconfig.json"
       ],
-      "output": ["dist"]
+      "output": [
+        "dist"
+      ]
     },
     "bindgen:configure": {
       "command": "cmake-js configure --debug --directory ../bindgen",
-      "dependencies": ["../..:submodules"]
+      "dependencies": [
+        "../..:submodules"
+      ]
     },
     "bindgen:build:node": {
       "command": "cmake --build ../bindgen/build --target realm-js-node",
-      "dependencies": ["bindgen:configure"]
+      "dependencies": [
+        "bindgen:configure"
+      ]
     },
     "bindgen:generate:typescript": {
       "command": "realm-bindgen --template typescript --spec ../bindgen/spec.yml --spec ../bindgen/js_spec.yml --output ./generated/ts",
@@ -142,7 +148,10 @@
     },
     "build:node": {
       "dependencies": [
-        { "script": "bindgen:build:node", "cascade": false }
+        {
+          "script": "bindgen:build:node",
+          "cascade": false
+        }
       ]
     },
     "build:node:prebuild": {
