@@ -19,6 +19,7 @@
 import Realm from "realm";
 import { useEffect, useReducer, useMemo, useRef } from "react";
 import { createCachedCollection } from "./cachedCollection";
+import { getObjects } from "./helpers";
 
 /**
  * Generates the `useQuery` hook from a given `useRealm` hook.
