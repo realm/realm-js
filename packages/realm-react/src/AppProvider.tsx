@@ -74,7 +74,6 @@ export const AppProvider: React.FC<AppProviderProps> = ({
     if (appRef) {
       appRef.current = app;
       if (logLevel) {
-        console.log("setting log level: ", logLevel);
         Realm.App.Sync.setLogger(app, logger);
         Realm.App.Sync.setLogLevel(app, logLevel);
       }
