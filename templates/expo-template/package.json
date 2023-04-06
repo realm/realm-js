@@ -1,6 +1,6 @@
 {
   "name": "@realm/expo-template",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Realm Template for Expo",
   "scripts": {
     "start": "expo start --dev-client",

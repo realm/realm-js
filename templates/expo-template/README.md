@@ -21,7 +21,7 @@ yarn global add expo-cli
 Then use the following command to generate your template:
 
 ```
-expo init MyAwesomeRealmApp --template @realm/expo-template-ts
+expo init MyAwesomeRealmApp --template @realm/expo-template
 ```
 ## 🏃 How to build and run locally
 
