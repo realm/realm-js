@@ -1,7 +1,7 @@
 {
   "name": "@realm/expo-template",
-  "version": "0.4.2",
-  "description": "Expo Template Realm",
+  "version": "0.5.0",
+  "description": "Realm Template for Expo",
   "scripts": {
     "start": "expo start --dev-client",
     "android": "expo run:android",
