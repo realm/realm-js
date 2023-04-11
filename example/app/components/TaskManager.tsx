@@ -1,5 +1,5 @@
 import React, {useCallback} from 'react';
-import {View, StyleSheet} from 'react-native';
+import {View, StyleSheet, Switch, Text} from 'react-native';
 
 import {Task} from '../models/Task';
 import {IntroText} from './IntroText';
@@ -7,11 +7,14 @@ import {AddTaskForm} from './AddTaskForm';
 import TaskList from './TaskList';
 
 import {useRealm} from '@realm/react';
+import {shadows} from '../styles/shadows';
 
 export const TaskManager: React.FC<{
   tasks: Realm.Results<Task & Realm.Object>;
   userId?: string;
-}> = ({tasks, userId}) => {
+  setShowDone: (showDone: boolean) => void;
+  showDone: boolean;
+}> = ({tasks, userId, setShowDone, showDone}) => {
   const realm = useRealm();
 
   const handleAddTask = useCallback(
@@ -28,7 +31,10 @@ export const TaskManager: React.FC<{
       // of sync participants to successfully sync everything in the transaction, otherwise
       // no changes propagate and the transaction needs to start over when connectivity allows.
       realm.write(() => {
-        return new Task(realm, description, userId);
+        return realm.create(Task, {
+          description,
+          userId: userId ?? 'SYNC_DISABLED',
+        });
       });
     },
     [realm, userId],
@@ -71,18 +77,24 @@ export const TaskManager: React.FC<{
   );
 
   return (
-    <View style={styles.content}>
-      <AddTaskForm onSubmit={handleAddTask} />
-      {tasks.length === 0 ? (
-        <IntroText />
-      ) : (
-        <TaskList
-          tasks={tasks}
-          onToggleTaskStatus={handleToggleTaskStatus}
-          onDeleteTask={handleDeleteTask}
-        />
-      )}
-    </View>
+    <>
+      <View style={styles.content}>
+        <AddTaskForm onSubmit={handleAddTask} />
+        {tasks.length === 0 ? (
+          <IntroText />
+        ) : (
+          <TaskList
+            tasks={tasks}
+            onToggleTaskStatus={handleToggleTaskStatus}
+            onDeleteTask={handleDeleteTask}
+          />
+        )}
+      </View>
+      <View style={styles.switchPanel}>
+        <Text style={styles.switchPanelText}>Show Completed?</Text>
+        <Switch value={showDone} onValueChange={() => setShowDone(!showDone)} />
+      </View>
+    </>
   );
 };
 
@@ -91,5 +103,19 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 20,
     paddingHorizontal: 20,
+  },
+  switchPanel: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    padding: 10,
+    borderRadius: 5,
+    marginHorizontal: 10,
+    marginBottom: 10,
+    ...shadows,
+  },
+  switchPanelText: {
+    flex: 1,
+    fontSize: 16,
+    padding: 5,
   },
 });

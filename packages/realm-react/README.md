@@ -155,10 +155,11 @@ import {useQuery} from '@realm/react';
 const Component = () => {
   // ObjectClass is a class extending Realm.Object, which should have been provided in the Realm Config.
   // It is also possible to use the model's name as a string ( ex. "Object" ) if you are not using class based models.
-  const collection = useQuery(ObjectClass);
-
-  // The methods `sorted` and `filtered` should be wrapped in a useMemo.
-  const sortedCollection = useMemo(() => collection.sorted(), [collection]);
+  const sortedCollection = useQuery(ObjectClass, (collection) => {
+    // The methods `sorted` and `filtered` should be passed as a `query` function.
+    // Any variables that are dependencies of this should be placed in the dependency array.
+    return collection.sorted();
+  }, []);
 
   return (
     <FlatList data={sortedCollection} renderItem={({ item }) => <Object item={item}/>
