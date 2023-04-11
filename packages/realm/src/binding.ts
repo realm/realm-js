@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { IndexSet, Int64, Logger, LoggerLevel, ObjKey, Timestamp } from "../generated/ts/native.mjs";
+import { IndexSet, Int64, ObjKey, Timestamp } from "../generated/ts/native.mjs";
 
 /** @internal */
 export * from "../generated/ts/native.mjs"; // core types are transitively exported.
@@ -75,7 +75,6 @@ export function isEmptyObjKey(objKey: ObjKey) {
 }
 
 // Silence logs from core by default
-Logger.setDefaultLevelThreshold(LoggerLevel.Off); //TODO This is what I need to use
 /**
  * This is what I need to use
  * Need to find a way to create a shared logger

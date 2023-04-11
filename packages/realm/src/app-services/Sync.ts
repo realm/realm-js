@@ -19,7 +19,10 @@
 import {
   App,
   ConnectionState,
+  LogLevel,
+  Logger,
   MutableSubscriptionSet,
+  NumericLogLevel,
   OpenRealmBehaviorConfiguration,
   OpenRealmBehaviorType,
   OpenRealmTimeOutBehavior,
@@ -31,40 +34,11 @@ import {
   User,
   assert,
   binding,
+  fromBindingLoggerLevelToNumericLogLevel,
+  toBindingLoggerLevel,
   toBindingSyncConfig,
   validateSyncConfiguration,
 } from "../internal";
-
-export type LogLevel = "all" | "trace" | "debug" | "detail" | "info" | "warn" | "error" | "fatal" | "off";
-
-export enum NumericLogLevel {
-  All = 0,
-  Trace = 1,
-  Debug = 2,
-  Detail = 3,
-  Info = 4,
-  Warn = 5,
-  Error = 6,
-  Fatal = 7,
-  Off = 8,
-}
-
-export type Logger = (level: NumericLogLevel, message: string) => void;
-
-function toBindingLoggerLevel(arg: LogLevel): binding.LoggerLevel {
-  const result = Object.entries(NumericLogLevel).find(([name]) => {
-    return name.toLowerCase() === arg;
-  });
-  assert(result, `Unexpected log level: ${arg}`);
-  const [, level] = result;
-  assert.number(level, "Expected a numeric level");
-  return level as number as binding.LoggerLevel;
-}
-
-function fromBindingLoggerLevel(arg: binding.LoggerLevel): NumericLogLevel {
-  // For now, these map 1-to-1
-  return arg as unknown as NumericLogLevel;
-}
 
 export class Sync {
   /** @deprecated Please use named imports */
@@ -82,14 +56,16 @@ export class Sync {
   /** @deprecated Please use named imports */
   static NumericLogLevel = NumericLogLevel;
 
-  //TODO Need to deprecate this and related methods
+  //TODO Deprecate
   static setLogLevel(app: App, level: LogLevel) {
     const numericLevel = toBindingLoggerLevel(level);
     app.internal.syncManager.setLogLevel(numericLevel);
   }
+
+  //TODO Deprecate
   static setLogger(app: App, logger: Logger) {
     const factory = binding.Helpers.makeLoggerFactory((level, message) => {
-      logger(fromBindingLoggerLevel(level), message);
+      logger(fromBindingLoggerLevelToNumericLogLevel(level), message);
     });
     app.internal.syncManager.setLoggerFactory(factory);
   }

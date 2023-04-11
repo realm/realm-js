@@ -195,8 +195,8 @@ struct Helpers {
     using LogCallback = std::function<void(util::Logger::Level, const std::string& message)>;
     static LoggerFactory make_logger_factory(LogCallback&& logger)
     {
-        return [logger = std::move(logger)](util::Logger::Level level) {
-            auto out = make_logger(logger);
+        return [logger = std::move(logger)](util::Logger::Level level) mutable {
+            auto out = make_logger(std::move(logger));
             out->set_level_threshold(level);
             return out;
         };

@@ -89,6 +89,8 @@ import {
   List,
   LocalAppConfiguration,
   LogLevel,
+  Logger,
+  LoggerCallback,
   MapToDecorator,
   MigrationCallback,
   MongoDB,
@@ -154,6 +156,8 @@ import {
   assert,
   binding,
   extendDebug,
+  fromBindingLoggerLevelToLogLevel,
+  fromBindingLoggerLevelToNumericLogLevel,
   fromBindingRealmSchema,
   fs,
   index,
@@ -162,6 +166,7 @@ import {
   normalizeRealmSchema,
   safeGlobalThis,
   toArrayBuffer,
+  toBindingLoggerLevel,
   toBindingSchema,
   toBindingSyncConfig,
   validateConfiguration,
@@ -260,6 +265,21 @@ export class Realm {
   public static defaultPath = Realm.normalizePath("default.realm");
 
   private static internals = new IterableWeakRefs<binding.Realm>();
+
+  //TODO Add default logger
+  //TODO Add docs
+  static setLogLevel(level: LogLevel) {
+    const numericLevel = toBindingLoggerLevel(level);
+    binding.Logger.setDefaultLevelThreshold(numericLevel);
+  }
+
+  //TODO Add docs
+  static setLoggerCallback(loggerCallback: LoggerCallback) {
+    const logger = binding.Helpers.makeLogger((level, message) => {
+      loggerCallback(fromBindingLoggerLevelToLogLevel(level), message);
+    });
+    binding.Logger.setDefaultLogger(logger);
+  }
 
   /**
    * Clears the state by closing and deleting any Realm in the default directory and logout all users.

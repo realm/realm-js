@@ -23,6 +23,28 @@ import { openRealmBefore, openRealmBeforeEach } from "../hooks";
 import { createLocalConfig } from "../utils/open-realm";
 
 describe("SharedRealm operations", () => {
+  describe("logger", () => {
+    it.only("logger callback gets called", async function () {
+      const logs: string[] = [];
+
+      Realm.setLoggerCallback((level, message) => {
+        logs.push(`[${level}] - ${message}`);
+      });
+
+      Realm.setLogLevel("all");
+
+      const realm = await Realm.open({ schema: [{ name: "Person", properties: { name: "string" } }] });
+
+      realm.write(() => realm.create("Person", { name: "Alice" }));
+      realm.write(() => realm.create("Person", { name: "Alice" }));
+      realm.write(() => realm.create("Person", { name: "Alice" }));
+      realm.write(() => realm.create("Person", { name: "Alice" }));
+
+      console.log(logs);
+      expect(logs).to.not.be.empty;
+    });
+  });
+
   describe("object deletion", () => {
     openRealmBefore({ schema: [{ name: "Person", properties: { name: "string" } }] });
 
