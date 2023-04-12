@@ -88,6 +88,11 @@ jobs:
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+    - name: Create a tag
+      run: | 
+        git tag v${{ steps.get-version.outputs.version }}
+        git push --tags origin ${{ github.ref }}
+
     - name: Find Release PR
       uses: juliangruber/find-pull-request-action@v1.7.0
       id: find-pull-request
