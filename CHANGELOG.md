@@ -1,24 +1,22 @@
 ## vNext (TBD)
+NOTE: Since the file format of the Realm auxiliary files have been changed, it is required to use Realm Studio v14.0.0 to open Realm files produced by this release.
 
 ### Deprecations
 * None
 
 ### Enhancements
-* None
+* Enable multiple processes to operate on an encrypted Realm simultaneously. ([realm/realm-core#1845](https://github.com/realm/realm-core/issues/1845))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fix a stack overflow crash when using the query parser with long chains of AND/OR conditions. ([realm/realm-core#6428](https://github.com/realm/realm-core/pull/6428), since v10.11.0)
 
 ### Compatibility
 * React Native >= v0.71.0
-* Realm Studio v13.0.0.
+* Realm Studio v14.0.0.
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v13.8.0 to v13.9.0. ([#5720](https://github.com/realm/realm-js/issues/5720))
 * Turning off the new Realm Core logger. A better solution will be provided in version 12.
 * Tagging on the release branch early to ensure the tag ends on the correct branch. ([#5674](https://github.com/realm/realm-js/issues/5674))
 
