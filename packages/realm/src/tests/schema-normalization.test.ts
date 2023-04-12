@@ -21,6 +21,7 @@ import { inspect } from "util";
 
 import { CanonicalPropertySchema, PropertySchema, PropertySchemaShorthand } from "../schema";
 import { extractGeneric, normalizePropertySchema } from "../schema/normalize";
+import { SchemaParseError } from "../errors";
 
 const OBJECT_NAME = "MyObject";
 const PROPERTY_NAME = "prop";
@@ -1029,6 +1030,7 @@ function itThrowsWhenNormalizing(
         isPrimaryKey,
       });
     expect(normalizeFn).to.throw(
+      SchemaParseError,
       `Invalid type declaration for property '${PROPERTY_NAME}' on '${OBJECT_NAME}': ${errMessage}`,
     );
   });
