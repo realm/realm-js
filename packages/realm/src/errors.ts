@@ -92,6 +92,12 @@ export class TimeoutError extends Error {
   }
 }
 
+export class SchemaParseError extends Error {
+  constructor(message: string) {
+    super(message);
+  }
+}
+
 /** @internal */
 export function fromBindingSyncError(error: binding.SyncError) {
   if (error.systemError.code === 231) {
