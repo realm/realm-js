@@ -23,6 +23,7 @@ export {
   App,
   AppChangeCallback,
   AppConfiguration,
+  AssertionError,
   BaseConfiguration,
   BaseObjectSchema,
   BaseSubscriptionSet,
@@ -132,6 +133,7 @@ export {
   RenameEvent,
   ReplaceEvent,
   Results,
+  SchemaParseError,
   SessionState,
   SessionStopPolicy,
   SortDescriptor,
@@ -145,6 +147,7 @@ export {
   SyncSession,
   /** @deprecated Got renamed to {@link SyncSession} */
   SyncSession as Session,
+  TypeAssertionError,
   Types,
   Update,
   UpdateDescription,
