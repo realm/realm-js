@@ -31,7 +31,9 @@
 #include "platform.hpp"
 #include "realm/binary_data.hpp"
 #include "realm/util/functional.hpp"
+#include "realm/util/logger.hpp"
 #include <exception>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <set>
@@ -597,6 +599,9 @@ inline typename T::Function RealmClass<T>::create_constructor(ContextType ctx)
     if (getenv("REALM_DISABLE_SYNC_TO_DISK")) {
         realm::disable_sync_to_disk();
     }
+
+    std::shared_ptr<util::NullLogger> logger = std::make_shared<util::NullLogger>();
+    util::Logger::set_default_logger(std::move(logger));
 
     Object::set_global(ctx, "Realm", realm_constructor);
     return realm_constructor;

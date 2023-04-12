@@ -19,7 +19,9 @@
 <!-- * Either mention core version or upgrade -->
 <!-- * Using Realm Core vX.Y.Z -->
 <!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Turning off the new Realm Core logger. A better solution will be provided in version 12.
 * Tagging on the release branch early to ensure the tag ends on the correct branch. ([#5674](https://github.com/realm/realm-js/issues/5674))
+
 ## 11.7.0 (2023-03-26)
 
 ### Deprecations
