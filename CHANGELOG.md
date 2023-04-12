@@ -1,8 +1,5 @@
-## vNext (TBD)
+## 11.8.0 (2023-04-12)
 NOTE: Since the file format of the Realm auxiliary files have been changed, it is required to use Realm Studio v14.0.0 to open Realm files produced by this release.
-
-### Deprecations
-* None
 
 ### Enhancements
 * Enable multiple processes to operate on an encrypted Realm simultaneously. ([realm/realm-core#1845](https://github.com/realm/realm-core/issues/1845))
