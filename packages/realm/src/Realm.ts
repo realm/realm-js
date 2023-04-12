@@ -1047,7 +1047,7 @@ export class Realm {
     } else if (eventName === RealmEvent.BeforeNotify) {
       this.beforeNotifyListeners.remove(callback);
     } else {
-      throw assert.never(eventName, "eventName");
+      assert.never(eventName, "eventName");
     }
   }
 
@@ -1072,7 +1072,7 @@ export class Realm {
       } else if (eventName === RealmEvent.BeforeNotify) {
         this.beforeNotifyListeners.removeAll();
       } else {
-        throw assert.never(eventName, "eventName");
+        assert.never(eventName, "eventName");
       }
     }
   }
