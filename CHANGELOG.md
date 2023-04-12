@@ -1,5 +1,5 @@
 ## vNext (TBD)
-NOTE: Since the file format of the Realm aux. files has been changes, and it is required to use Realm Studio v14.0.0 to open Realm files produced by this release.
+NOTE: Since the file format of the Realm auxiliary files have been changed, it is required to use Realm Studio v14.0.0 to open Realm files produced by this release.
 
 ### Deprecations
 * None
