@@ -1,7 +1,7 @@
 #pragma once
 
 #include <napi.h>
-#include <realm_js_helpers.h>
+#include <realm_helpers.h>
 
 namespace realm::js::node {
 namespace {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <jsi/jsi.h>
-#include <realm_js_helpers.h>
+#include <realm_helpers.h>
 #include <type_traits>
 
 namespace realm::js {
