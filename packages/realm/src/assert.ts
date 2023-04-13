@@ -81,17 +81,6 @@ assert.symbol = (value: unknown, target?: string): asserts value is symbol => {
   assert(typeof value === "symbol", () => new TypeAssertionError("a symbol", value, target));
 };
 
-assert.primaryKey = (value: unknown, target?: string): asserts value is PrimaryKey => {
-  assert(
-    value === null ||
-      typeof value === "number" ||
-      typeof value === "string" ||
-      value instanceof BSON.UUID ||
-      value instanceof BSON.ObjectId,
-    () => new TypeAssertionError("a primary key", value, target),
-  );
-};
-
 assert.object = <K extends string | number | symbol = string, V = unknown>(
   value: unknown,
   target?: string,
@@ -133,11 +122,27 @@ assert.iterable = (value: unknown, target?: string): asserts value is Iterable<u
   assert(Symbol.iterator in value, () => new TypeAssertionError("iterable", value, target));
 };
 
-assert.never = (value: never, target?: string): asserts value is never => {
+// * Use arg type `value: never` rather than `value: unknown` to get a compile time
+//   error when e.g. not including if-checks for all enum values.
+// * Use return type `never` rather than `asserts value is never` to remove the
+//   need for callers to explicitly throw (i.e. `throw assert.never()`) as a way
+//   for TS to detect unreachable code.
+assert.never = (value: never, target?: string): never => {
   throw new TypeAssertionError("never", value, target);
 };
 
 // SDK specific
+
+assert.primaryKey = (value: unknown, target?: string): asserts value is PrimaryKey => {
+  assert(
+    value === null ||
+      typeof value === "number" ||
+      typeof value === "string" ||
+      value instanceof BSON.UUID ||
+      value instanceof BSON.ObjectId,
+    () => new TypeAssertionError("a primary key", value, target),
+  );
+};
 
 assert.open = (realm: Realm) => {
   assert(!realm.isClosed, "Cannot access realm that has been closed.");
