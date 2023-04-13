@@ -64,7 +64,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
-set(PACKAGE_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
+set(PACKAGE_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../../..")
 
 # Ninja buffers output so we need to tell tools to use colors even though stdout isn't a tty.
 if(CMAKE_GENERATOR MATCHES "^Ninja")
@@ -75,7 +75,7 @@ if(CMAKE_GENERATOR MATCHES "^Ninja")
 endif()
 
 if(DEFINED CMAKE_JS_VERSION)
-    list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../cmake")
+    list(APPEND CMAKE_MODULE_PATH "${PACKAGE_ROOT_DIR}/cmake")
     include(NodeJSTargets)
 endif()
 
@@ -88,7 +88,7 @@ if(REALM_JS_BUILD_CORE_FROM_SOURCE)
         set(REALM_ANDROID ON)
     endif()
 
-    add_subdirectory(../../vendor/realm-core # source path
+    add_subdirectory(${PACKAGE_ROOT_DIR}/vendor/realm-core # source path
         realm-core # subdir in output directories
         EXCLUDE_FROM_ALL
     )
@@ -113,7 +113,7 @@ endif()
 target_include_directories(realm-js PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 # TODO move platform.hpp and delete this line.
-target_include_directories(realm-js PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../src")
+target_include_directories(realm-js PRIVATE "${PACKAGE_ROOT_DIR}/src")
 
 file(GLOB_RECURSE TS_FILES
     LIST_DIRECTORIES false
@@ -135,7 +135,7 @@ set(SPEC_ARGS --spec ${CORE_SPEC_FILE} --spec ${JS_SPEC_FILE})
 # TODO 
 set(SCHEMA_FILE ${CMAKE_CURRENT_SOURCE_DIR}/generated/spec.schema.json)
 
-set(SDK_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../realm)
+set(SDK_DIR ${PACKAGE_ROOT_DIR}/packages/realm)
 
 set(TYPESCRIPT_OUTPUT_DIR ${SDK_DIR}/generated/ts)
 
@@ -204,7 +204,7 @@ if(DEFINED CMAKE_JS_VERSION)
             ${TS_FILES}
     )
 
-    target_sources(realm-js PRIVATE node_init.cpp ${CMAKE_JS_SRC} ../../src/node/platform.cpp)
+    target_sources(realm-js PRIVATE node_init.cpp ${CMAKE_JS_SRC} ${PACKAGE_ROOT_DIR}/src/node/platform.cpp)
 else()
     include(jsi.cmake)
 
@@ -222,9 +222,9 @@ else()
     target_sources(realm-js PRIVATE jsi_init.cpp ${CMAKE_JS_SRC})
 
     if(ANDROID)
-        add_subdirectory(../../src/android android)
+        add_subdirectory(${PACKAGE_ROOT_DIR}/src/android android)
     elseif(CMAKE_SYSTEM_NAME STREQUAL iOS)
-        add_subdirectory(../../src/ios ios)
+        add_subdirectory(${PACKAGE_ROOT_DIR}/src/ios ios)
     else()
         # disabling for now to simplify the bootstrapping process.
         # message(FATAL_ERROR "Only support JSI builds for Android and iOS")
