@@ -165,7 +165,7 @@ add_custom_target(SpecJsonSchema DEPENDS ${SCHEMA_FILE})
 
 add_custom_command(
     OUTPUT ${GENERATED_TS_FILES}
-    COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template typescript --output ${TYPESCRIPT_OUTPUT_DIR}
+    COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template ${CMAKE_CURRENT_SOURCE_DIR}/src/templates/typescript.ts --output ${TYPESCRIPT_OUTPUT_DIR}
     VERBATIM
     MAIN_DEPENDENCY src/templates/typescript.ts
     DEPENDS
@@ -181,7 +181,7 @@ add_custom_target(TypeScript ALL DEPENDS ${GENERATED_TS_FILES} ${GENERATED_JS_FI
 # One issue we may run into when splitting is that they will need to be different files, otherwise ninja will get confused.
 add_custom_command(
     OUTPUT ${GENERATED_JS_FILES}
-    COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template node-wrapper --output ${TYPESCRIPT_OUTPUT_DIR}
+    COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template ${CMAKE_CURRENT_SOURCE_DIR}/src/templates/node-wrapper.ts --output ${TYPESCRIPT_OUTPUT_DIR}
     VERBATIM
     MAIN_DEPENDENCY src/templates/node-wrapper.ts
     DEPENDS
@@ -195,7 +195,7 @@ if(DEFINED CMAKE_JS_VERSION)
 
     add_custom_command(
         OUTPUT node_init.cpp
-        COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template node --output ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template ${CMAKE_CURRENT_SOURCE_DIR}/src/templates/node.ts --output ${CMAKE_CURRENT_BINARY_DIR}
         VERBATIM
         MAIN_DEPENDENCY src/templates/node.ts
         DEPENDS
@@ -210,7 +210,7 @@ else()
 
     add_custom_command(
         OUTPUT jsi_init.cpp
-        COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template jsi --output ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template ${CMAKE_CURRENT_SOURCE_DIR}/src/templates/jsi.ts --output ${CMAKE_CURRENT_BINARY_DIR}
         VERBATIM
         MAIN_DEPENDENCY src/templates/jsi.ts
         DEPENDS

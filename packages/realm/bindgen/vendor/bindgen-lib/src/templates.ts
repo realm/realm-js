@@ -16,28 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { readdirSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 import { TemplateContext } from "./context";
 
-const TEMPLATES_DIR = resolve(dirname(fileURLToPath(new URL(import.meta.url))), "templates");
-
 export type Template = (context: TemplateContext) => void;
 
-export const TEMPLATES_NAMES = readdirSync(TEMPLATES_DIR).map((fileName) => fileName.replace(/\.ts$/, ""));
-
-export async function importTemplate(name: string): Promise<Template> {
-  if (TEMPLATES_NAMES.includes(name)) {
-    const templatePath = resolve(TEMPLATES_DIR, `${name}.ts`);
-    const templateUrl = pathToFileURL(templatePath).toString();
-    const template = (await import(templateUrl)) as { generate: Template };
-    if (typeof template !== "object" || typeof template.generate !== "function") {
-      throw new Error("Expected template to export a 'generate' function");
-    }
-    return template.generate;
-  } else {
-    throw new Error(`Expected one of these template names: ${TEMPLATES_NAMES.join(", ")}`);
+export async function importTemplate(path: string): Promise<Template> {
+  const template = (await import(pathToFileURL(resolve(path)).toString())) as { generate: Template };
+  if (typeof template !== "object" || typeof template.generate !== "function") {
+    throw new Error("Expected template to export a 'generate' function");
   }
+  return template.generate;
 }
