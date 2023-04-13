@@ -234,7 +234,7 @@ jobs:
   integration-tests:
     name: Integration tests (${{matrix.variant.target}}) for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
     needs: [bundle, build, ios-xcframework]
-    if: ${{ always() }}
+    if: ${{ success() || failure() }}
     env:
       REALM_DISABLE_ANALYTICS: 1
       MOCHA_REMOTE_TIMEOUT: 60000
