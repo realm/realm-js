@@ -18,7 +18,7 @@
 
 import { expect } from "chai";
 
-import { validateObjectSchema, validatePropertySchema } from "../internal";
+import { SchemaParseError, validateObjectSchema, validatePropertySchema } from "../internal";
 
 const OBJECT_NAME = "MyObject";
 const PROPERTY_NAME = "prop";
@@ -135,7 +135,7 @@ describe("validateObjectSchema", () => {
   function itThrowsWhenValidating(description: string, input: unknown, errMessage: string): void {
     it(`throws when validating ${description}.`, () => {
       const validateFn = () => validateObjectSchema(input);
-      expect(validateFn).to.throw(errMessage);
+      expect(validateFn).to.throw(SchemaParseError, errMessage);
     });
   }
 });
