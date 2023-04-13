@@ -107,7 +107,7 @@ integration-tests/**/.lock
 /templats/*/template/package-lock.json
 
 # Generated artifacts
-/packages/bindgen/generated/
+/packages/realm/bindgen/vendor/bindgen-lib/generated/
 /packages/realm/generated/
 
 # Build artifacts
