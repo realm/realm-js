@@ -26,6 +26,7 @@ import {
 } from "./internal";
 
 export class AssertionError extends Error {
+  /** @internal */
   constructor(message = "Assertion failed!") {
     super(message);
   }
@@ -60,6 +61,8 @@ export class TypeAssertionError extends AssertionError {
    * Get an error message for when the target's value is of
    * the wrong type. Single quotes are added around the target
    * string if it does not already contain one.
+   *
+   * @internal
    */
   private static message(expected: string, value: unknown, target?: string) {
     const actual = TypeAssertionError.deriveType(value);
@@ -71,10 +74,12 @@ export class TypeAssertionError extends AssertionError {
     return `Expected ${target} to be ${expected}, got ${actual}`;
   }
 
-  constructor(private expected: string, private value: unknown, target?: string) {
+  /** @internal */
+  constructor(/** @internal */ private expected: string, /** @internal */ private value: unknown, target?: string) {
     super(TypeAssertionError.message(expected, value, target));
   }
 
+  /** @internal */
   public rename(name: string) {
     this.message = TypeAssertionError.message(this.expected, this.value, name);
   }
@@ -93,6 +98,7 @@ export class TimeoutError extends Error {
 }
 
 export class SchemaParseError extends Error {
+  /** @internal */
   constructor(message: string) {
     super(message);
   }
