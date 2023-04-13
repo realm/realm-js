@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
+import { platform } from "node:os";
 const { X509Certificate } = await import("node:crypto");
 import {
   ConfigurationWithSync,
@@ -37,8 +38,11 @@ import { PersonSchema } from "../schemas/person-and-dog-with-object-ids";
 
 // IMPORTANT:
 // * Can only run on non-Apple machines, otherwise tests will await forever.
+function isMacOS() {
+  return platform() === "darwin";
+}
 
-describe.skipIf(environment.missingServer, "SSL Configuration", function () {
+describe.skipIf(isMacOS() || environment.missingServer, "SSL Configuration", function () {
   this.longTimeout();
   importAppBefore("with-db-flx");
 
