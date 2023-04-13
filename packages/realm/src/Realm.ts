@@ -85,7 +85,6 @@ import {
   InsertManyResult,
   InsertOneResult,
   InvalidateEvent,
-  IterableWeakRefs,
   List,
   LocalAppConfiguration,
   LogLevel,
@@ -156,6 +155,7 @@ import {
   assert,
   binding,
   extendDebug,
+  flags,
   fromBindingLoggerLevelToLogLevel,
   fromBindingLoggerLevelToNumericLogLevel,
   fromBindingRealmSchema,
@@ -264,7 +264,7 @@ export class Realm {
 
   public static defaultPath = Realm.normalizePath("default.realm");
 
-  private static internals = new IterableWeakRefs<binding.Realm>();
+  private static internals = new Set<binding.WeakRef<binding.Realm>>();
 
   //TODO Add default logger
   //TODO Add docs
@@ -286,20 +286,23 @@ export class Realm {
    * @private Not a part of the public API: It's primarily used from the library's tests.
    */
   public static clearTestState(): void {
+    assert(flags.ALLOW_CLEAR_TEST_STATE, "Set the flags.ALLOW_CLEAR_TEST_STATE = true before calling this.");
     // Close any realms not already closed
-    for (const realm of this.internals) {
+    for (const realmRef of Realm.internals) {
+      const realm = realmRef.deref();
       if (realm && !realm.isClosed) {
         realm.close();
       }
     }
     Realm.internals.clear();
     binding.RealmCoordinator.clearAllCaches();
+    binding.App.clearCachedApps();
+    ProgressRealmPromise.cancelAll();
+    SyncSession.resetAllInternals();
 
     // Delete all Realm files in the default directory
     const defaultDirectoryPath = fs.getDefaultDirectoryPath();
     fs.removeRealmFilesFromDirectory(defaultDirectoryPath);
-
-    binding.App.clearCachedApps();
   }
 
   /**
@@ -633,22 +636,24 @@ export class Realm {
 
       fs.ensureDirectoryForFile(bindingConfig.path);
       this.internal = internalConfig.internal ?? binding.Realm.getSharedRealm(bindingConfig);
+      if (flags.ALLOW_CLEAR_TEST_STATE) {
+        Realm.internals.add(new binding.WeakRef(this.internal));
+      }
 
       binding.Helpers.setBindingContext(this.internal, {
         didChange: (r) => {
           r.verifyOpen();
-          this.changeListeners.callback();
+          this.changeListeners.notify();
         },
         schemaDidChange: (r) => {
           r.verifyOpen();
-          this.schemaListeners.callback();
+          this.schemaListeners.notify(this.schema);
         },
         beforeNotify: (r) => {
           r.verifyOpen();
-          this.beforeNotifyListeners.callback();
+          this.beforeNotifyListeners.notify();
         },
       });
-      Realm.internals.add(this.internal);
     } else {
       const { internal, schemaExtras } = internalConfig;
       assert.instanceOf(internal, binding.Realm, "internal");
@@ -817,17 +822,15 @@ export class Realm {
    *       should not be used.
    * @returns A {@link RealmObject} or `undefined` if the object is asymmetric.
    */
-  create<T = DefaultObject>(type: string, values: RealmInsertionModel<T>, mode?: UpdateMode.Never): RealmObject<T> & T;
   create<T = DefaultObject>(
     type: string,
     values: Partial<T> | Partial<RealmInsertionModel<T>>,
-    mode: UpdateMode.All | UpdateMode.Modified | boolean,
+    mode?: UpdateMode.Never | UpdateMode.All | UpdateMode.Modified | boolean,
   ): RealmObject<T> & T;
-  create<T extends AnyRealmObject>(type: Constructor<T>, values: RealmInsertionModel<T>, mode?: UpdateMode.Never): T;
   create<T extends AnyRealmObject>(
     type: Constructor<T>,
     values: Partial<T> | Partial<RealmInsertionModel<T>>,
-    mode: UpdateMode.All | UpdateMode.Modified | boolean,
+    mode?: UpdateMode.Never | UpdateMode.All | UpdateMode.Modified | boolean,
   ): T;
   create<T extends AnyRealmObject>(
     type: string | Constructor<T>,
@@ -975,6 +978,8 @@ export class Realm {
     } else if (isAsymmetric(objectSchema)) {
       throw new Error("You cannot query an asymmetric object.");
     }
+
+    assert.numericString(objectKey);
 
     const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
     try {
@@ -1986,33 +1991,23 @@ declare global {
   }
 }
 
-function getCallstack() {
-  try {
-    throw new Error("Finding calling stack");
-  } catch (err) {
-    const stack = err instanceof Error ? err.stack || "" : "";
-    return stack
-      .split("\n")
-      .map((line) => line.trim())
-      .filter((line) => line.startsWith("at"))
-      .splice(1); // Skipping this function
-  }
-}
-
 // Patch the global at runtime
 let warnedAboutGlobalRealmUse = false;
 Object.defineProperty(safeGlobalThis, "Realm", {
   get() {
-    if (!warnedAboutGlobalRealmUse) {
-      // Skipping this function
-      const frame: string | undefined = getCallstack()[1];
+    if (flags.THROW_ON_GLOBAL_REALM) {
+      throw new Error(
+        "Accessed global Realm, please update your code to ensure you import Realm via a named import:\nimport { Realm } from 'realm';",
+      );
+    } else if (!warnedAboutGlobalRealmUse) {
       // eslint-disable-next-line no-console
       console.warn(
-        "Your app is relying on a Realm global, which will be removed in realm-js v13,\n",
-        "please update your code to ensure you import Realm via a named import:\n\n",
+        "Your app is relying on a Realm global, which will be removed in realm-js v13, please update your code to ensure you import Realm via a named import:\n\n",
         'import { Realm } from "realm"; // For ES Modules\n',
         'const { Realm } = require("realm"); // For CommonJS\n\n',
-        frame ? `This is happening ${frame}\n` : "Can't determine caller.\n",
+        "To determine where, put this in the top of your index file:\n",
+        `import { flags } from "realm";\n`,
+        `flags.THROW_ON_GLOBAL_REALM = true`,
       );
       warnedAboutGlobalRealmUse = true;
     }

@@ -17,11 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import Realm from "realm";
+import Realm, { flags } from "realm";
 import { render, waitFor, fireEvent, act } from "@testing-library/react-native";
 import { View, TextInput, TouchableHighlight, Text, FlatList, ListRenderItem } from "react-native";
 import "@testing-library/jest-native/extend-expect";
 import { createRealmContext } from "..";
+
+// Enable calling Realm.clearTestState()
+flags.ALLOW_CLEAR_TEST_STATE = true;
 
 class Item extends Realm.Object {
   id!: number;
@@ -101,7 +104,7 @@ const SetupComponent = ({ children }: { children: JSX.Element }): JSX.Element | 
   useEffect(() => {
     realm.write(() => {
       realm.deleteAll();
-      testCollection.forEach((object) => realm.create(Item, object));
+      testCollection.forEach((object) => new Item(realm, object));
     });
     setSetupComplete(true);
   }, [realm]);
@@ -405,7 +408,7 @@ describe.each`
         await new Promise((resolve) => setTimeout(resolve, 10));
         const id = i;
         testRealm.write(() => {
-          testRealm.create(Item, { id, name: `${id}` }, Realm.UpdateMode.Modified);
+          return new Item(testRealm, { id, name: `${id}` });
         });
         await new Promise((resolve) => setTimeout(resolve, 0));
         testRealm.write(() => {

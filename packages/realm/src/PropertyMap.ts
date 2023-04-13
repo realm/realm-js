@@ -31,7 +31,10 @@ export class PropertyMap {
   private objectSchemaName: string | null = null;
   private initialized = false;
   private mapping: Record<string, PropertyHelpers | undefined> = {};
-  private nameByColumnKey: Map<binding.ColKey, string> = new Map();
+  /**
+   * Note: Cannot key by the binding.ColKey directly, as this is `Long` on JSC (which does not pass equality checks like `bigint` does)
+   */
+  private nameByColumnKeyString: Map<string, string> = new Map();
   private _names: string[] = [];
 
   public initialize(objectSchema: BindingObjectSchema, defaults: Record<string, unknown>, options: HelperOptions) {
@@ -51,7 +54,7 @@ export class PropertyMap {
         return [propertyName, helpers];
       }),
     );
-    this.nameByColumnKey = new Map(properties.map((p) => [p.columnKey, p.publicName || p.name]));
+    this.nameByColumnKeyString = new Map(properties.map((p) => [p.columnKey.toString(), p.publicName || p.name]));
     this._names = properties.map((p) => p.publicName || p.name);
     this.initialized = true;
   }
@@ -70,7 +73,7 @@ export class PropertyMap {
 
   public getName = <T>(columnKey: binding.ColKey): keyof T => {
     if (this.initialized) {
-      return this.nameByColumnKey.get(columnKey) as keyof T;
+      return this.nameByColumnKeyString.get(columnKey.toString()) as keyof T;
     } else {
       throw new UninitializedPropertyMapError();
     }

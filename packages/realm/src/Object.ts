@@ -185,7 +185,14 @@ export class RealmObject<T = DefaultObject> {
     const table = binding.Helpers.getTable(realm.internal, tableKey);
     if (primaryKey) {
       const primaryKeyHelpers = properties.get(primaryKey);
-      const primaryKeyValue = values[primaryKey];
+      let primaryKeyValue = values[primaryKey];
+
+      // If the value for the primary key was not set, use the default value
+      if (primaryKeyValue === undefined) {
+        const defaultValue = primaryKeyHelpers.default;
+        primaryKeyValue = typeof defaultValue === "function" ? defaultValue() : defaultValue;
+      }
+
       const pk = primaryKeyHelpers.toBinding(
         // Fallback to default value if the provided value is undefined or null
         typeof primaryKeyValue !== "undefined" && primaryKeyValue !== null
@@ -344,7 +351,7 @@ export class RealmObject<T = DefaultObject> {
 
     assert(
       linkedObjectSchema.name === property.objectType,
-      () => `'${linkedObjectSchema.name}#${propertyName}' is not a relationship to '${this.objectSchema.name}'`,
+      () => `'${linkedObjectSchema.name}#${propertyName}' is not a relationship to '${this.objectSchema().name}'`,
     );
 
     // Create the Result for the backlink view

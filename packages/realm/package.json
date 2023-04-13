@@ -1,6 +1,6 @@
 {
   "name": "realm",
-  "version": "12.0.0-alpha.1",
+  "version": "12.0.0-alpha.2",
   "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
   "license": "apache-2.0",
   "homepage": "https://realm.io",
@@ -65,16 +65,20 @@
     "build:node:prebuild:ia32": "wireit",
     "build:android": "wireit",
     "build:ios": "wireit",
-    "build:ios:simulator": "wireit",
-    "build:ios:ios": "wireit",
-    "build:ios:catalyst": "wireit",
-    "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'"
+    "build:ios:debug:simulator": "wireit",
+    "build:ios:debug:ios": "wireit",
+    "build:ios:debug:catalyst": "wireit",
+    "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'",
+    "docs": "wireit"
   },
   "wireit": {
     "test": {
       "command": "mocha",
       "dependencies": [
-        "build:node"
+        "build:node",
+        "bindgen:generate:typescript",
+        "bindgen:generate:wrappers",
+        "../realm-network-transport:bundle"
       ]
     },
     "bundle": {
@@ -90,20 +94,22 @@
         "tsconfig.json",
         "src/**/tsconfig.json"
       ],
-      "output": ["dist"]
+      "output": [
+        "dist"
+      ]
     },
     "bindgen:configure": {
-      "command": "cmake-js configure --debug --directory ../bindgen",
-      "dependencies": ["../..:submodules"]
+      "command": "cmake-js configure --debug --directory ../bindgen"
     },
     "bindgen:build:node": {
       "command": "cmake --build ../bindgen/build --target realm-js-node",
-      "dependencies": ["bindgen:configure"]
+      "dependencies": [
+        "bindgen:configure"
+      ]
     },
     "bindgen:generate:typescript": {
       "command": "realm-bindgen --template typescript --spec ../bindgen/spec.yml --spec ../bindgen/js_spec.yml --output ./generated/ts",
       "dependencies": [
-        "../..:submodules",
         "../bindgen:generate:spec-schema"
       ],
       "files": [
@@ -121,7 +127,6 @@
     "bindgen:generate:wrappers": {
       "command": "realm-bindgen --template node-wrapper --spec ../bindgen/spec.yml --spec ../bindgen/js_spec.yml --output ./generated/ts",
       "dependencies": [
-        "../..:submodules",
         "../bindgen:generate:spec-schema"
       ],
       "files": [
@@ -138,7 +143,10 @@
     },
     "build:node": {
       "dependencies": [
-        { "script": "bindgen:build:node", "cascade": false }
+        {
+          "script": "bindgen:build:node",
+          "cascade": false
+        }
       ]
     },
     "build:node:prebuild": {
@@ -175,9 +183,6 @@
     },
     "build:android": {
       "command": "node ../../scripts/build-android.js",
-      "dependencies": [
-        "../..:submodules"
-      ],
       "files": [
         "../../src/android/**",
         "../bindgen/src/**/*.ts",
@@ -185,10 +190,7 @@
       ]
     },
     "build:ios": {
-      "command": "../../scripts/build-ios.sh -c ${CONFIGURATION:=Debug} ${PLATFORMS}",
-      "dependencies": [
-        "../..:submodules"
-      ],
+      "command": "../../scripts/build-ios.sh -c ${CONFIGURATION:=Release} ${PLATFORMS}",
       "files": [
         "../../src/ios/**",
         "../bindgen/src/**/*.ts",
@@ -203,23 +205,32 @@
         }
       }
     },
-    "build:ios:simulator": {
+    "build:ios:debug:simulator": {
       "command": "npm run build:ios",
       "env": {
-        "PLATFORMS": "simulator"
+        "PLATFORMS": "simulator",
+        "CONFIGURATION": "Debug"
       }
     },
-    "build:ios:ios": {
+    "build:ios:debug:ios": {
       "command": "npm run build:ios",
       "env": {
-        "PLATFORMS": "ios"
+        "PLATFORMS": "ios",
+        "CONFIGURATION": "Debug"
       }
     },
-    "build:ios:catalyst": {
+    "build:ios:debug:catalyst": {
       "command": "npm run build:ios",
       "env": {
-        "PLATFORMS": "catalyst"
+        "PLATFORMS": "catalyst",
+        "CONFIGURATION": "Debug"
       }
+    },
+    "docs": {
+      "command": "typedoc",
+      "dependencies": [
+        "bundle"
+      ]
     }
   },
   "dependencies": {

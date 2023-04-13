@@ -35,7 +35,7 @@
       "command": "pod-install || (cd ios && bundle install && bundle exec pod install)",
       "dependencies": [
         {
-          "script": "../../../packages/realm:build:ios:simulator",
+          "script": "../../../packages/realm:build:ios:debug:simulator",
           "cascade": false
         }
       ],
@@ -61,7 +61,7 @@
       "command": "pod-install || (cd ios && bundle install && bundle exec pod install)",
       "dependencies": [
         {
-          "script": "../../../packages/realm:build:ios:catalyst",
+          "script": "../../../packages/realm:build:ios:debug:catalyst",
           "cascade": false
         }
       ],
@@ -96,7 +96,13 @@
       ],
       "env": {
         "PLATFORM": "android",
-        "WATCH": "false"
+        "WATCH": "false",
+        "ORG_GRADLE_PROJECT_newArchEnabled": {
+          "external": true
+        },
+        "ORG_GRADLE_PROJECT_hermesEnabled": {
+          "external": true
+        }
       }
     },
     "test:ios": {
@@ -145,7 +151,7 @@
       "command": "npm run common",
       "dependencies": [
         "pod-install:simulator",
-        "../../../packages/realm:build:ios:simulator",
+        "../../../packages/realm:build:ios:debug:simulator",
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:bundle",
         "../../../packages/realm-network-transport:bundle",
@@ -160,7 +166,7 @@
       "command": "npm run common",
       "dependencies": [
         "pod-install:catalyst",
-        "../../../packages/realm:build:ios:catalyst",
+        "../../../packages/realm:build:ios:debug:catalyst",
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:bundle",
         "../../../packages/realm-network-transport:bundle",

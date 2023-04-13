@@ -91,7 +91,7 @@ async function waitServerSideClientResetDiscardUnsyncedChangesCallbacks(
 
   await realm.syncSession?.uploadAllLocalChanges();
   await triggerClientReset(app, user);
-  await resetHandle.promise;
+  await resetHandle;
 }
 
 async function waitServerSideClientResetRecoveryCallbacks(
@@ -139,7 +139,7 @@ async function waitServerSideClientResetRecoveryCallbacks(
 
   await realm.syncSession?.uploadAllLocalChanges();
   await triggerClientReset(app, user);
-  await resetHandle.promise;
+  await resetHandle;
 }
 
 async function waitSimulatedClientResetDiscardUnsyncedChangesCallbacks(
@@ -189,7 +189,7 @@ async function waitSimulatedClientResetDiscardUnsyncedChangesCallbacks(
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore calling undocumented method _simulateError
   realm.syncSession?._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false); // 211 -> diverging histories
-  await resetHandle.promise;
+  await resetHandle;
 }
 
 async function waitSimulatedClientResetRecoverCallbacks(
@@ -243,7 +243,7 @@ async function waitSimulatedClientResetRecoverCallbacks(
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore calling undocumented method _simulateError
   session._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false); // 211 -> diverging histories; 217 -> synchronization no longer possible for client-side file
-  await resetHandle.promise;
+  await resetHandle;
 }
 
 /**

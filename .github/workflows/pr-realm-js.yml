@@ -183,8 +183,10 @@ jobs:
       - name: Build iOS
         if: ${{ (matrix.variant.os == 'ios') }}
         run: |
-          npm run build:ios --workspace realm -- ${{matrix.variant.arch}}
+          npm run build:ios --workspace realm
           rm -vf ${{ matrix.variant.artifact-path }}/Info.plist
+        env:
+          PLATFORMS: ${{ matrix.variant.arch }}
 
       # build the c++ library for Android
       - name: Build Android

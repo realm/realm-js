@@ -217,8 +217,8 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
     return currentUser ? User.get(currentUser) : null;
   }
 
-  public get allUsers(): User<FunctionsFactoryType, CustomDataType>[] {
-    return this.internal.allUsers.map((user) => User.get(user));
+  public get allUsers(): Readonly<Record<string, User<FunctionsFactoryType, CustomDataType>>> {
+    return Object.fromEntries(this.internal.allUsers.map((user) => [user.identity, User.get(user)]));
   }
 
   public switchUser(): unknown {

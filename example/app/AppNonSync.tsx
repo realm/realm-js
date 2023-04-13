@@ -1,4 +1,4 @@
-import React, {useMemo} from 'react';
+import React from 'react';
 
 import {Task} from './models/Task';
 import {TaskManager} from './components/TaskManager';
@@ -6,9 +6,17 @@ import {TaskManager} from './components/TaskManager';
 import {useQuery} from '@realm/react';
 
 export const AppNonSync = () => {
-  const result = useQuery(Task);
+  const [showDone, setShowDone] = React.useState(false);
+  const tasks = useQuery(
+    Task,
+    collection =>
+      showDone
+        ? collection.sorted('createdAt')
+        : collection.filtered('isComplete == false').sorted('createdAt'),
+    [showDone],
+  );
 
-  const tasks = useMemo(() => result.sorted('createdAt'), [result]);
-
-  return <TaskManager tasks={tasks} />;
+  return (
+    <TaskManager tasks={tasks} setShowDone={setShowDone} showDone={showDone} />
+  );
 };

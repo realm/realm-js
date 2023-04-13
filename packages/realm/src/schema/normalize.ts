@@ -95,6 +95,7 @@ export function normalizeRealmSchema(
  */
 export function normalizeObjectSchema(arg: RealmObjectConstructor | ObjectSchema): CanonicalObjectSchema {
   if (typeof arg === "function") {
+    assert(arg.schema, "A static schema must be specified on this class.");
     const objectSchema = normalizeObjectSchema(arg.schema);
     objectSchema.ctor = arg;
     return objectSchema;

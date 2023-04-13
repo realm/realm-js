@@ -4,6 +4,27 @@
 * None
 
 ### Enhancements
+* None
+
+### Fixed
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None
+
+### Compatibility
+* React Native >= v0.71.0
+* Realm Studio v13.0.0.
+* File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Internal
+<!-- * Either mention core version or upgrade -->
+<!-- * Using Realm Core vX.Y.Z -->
+<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+
+## 12.0.0-alpha.2 (2023-04-05)
+
+### Enhancements
+* Added support for building with the new React Native architecture enabled on Android. Thanks to 
+Nikolai Samorodov / [@zabutok](https://github.com/zabutok) for contributing the fix. ([#5032](https://github.com/realm/realm-js/issues/5032))
 * Exposed `SyncError.logUrl` which contains the URL to the server log related to the sync error. ([#5609](https://github.com/realm/realm-js/issues/5609))
 * Added a new error class `CompensatingWriteError` which indicates that one or more object changes have been reverted by the server. 
 This can happen when the client creates/updates objects that do not match any subscription, or performs writes on an object it didn't have permission to access. ([#5599](https://github.com/realm/realm-js/pull/5599))
@@ -13,14 +34,18 @@ This can happen when the client creates/updates objects that do not match any su
   * Significant (~99%) improvement when querying for a case insensitive match on a `mixed` property that has an index.
   * Moderate (~25%) improvement when querying for an exact match on a `bool` property that has an index.
   * Small (~5%) improvement when querying for a case insensitive match on a `mixed` property that does not have an index.
+* Added a `THROW_ON_GLOBAL_REALM` which will enable throwing when the app is accessing the `Realm` without first importing it from the Realm package.
 
 ### Fixed
+* Fixed bootstrapping the native module on Android. Seen as Exception in HostObject::get for prop 'Realm': java.lang.NoClassDefFoundError: io.realm.react.RealmReactModule. ([#5666](https://github.com/realm/realm-js/issues/5666), since v12.0.0-alpha.0)
 * Fixed passing RealmObject instances between shared Realms. ([#5634](https://github.com/realm/realm-js/pull/5634), since v12.0.0-alpha.0)
 * Fixed a crash when querying a `mixed` property with a string operator (`contains`/`like`/`beginswith`/`endswith`) or with case insensitivity. ([realm/realm-core#6376](https://github.com/realm/realm-core/issues/6376, since v10.5.0)
 * Querying for equality of a string on an indexed `mixed` property was returning case insensitive matches. For example querying for `myIndexedMixed == "Foo"` would incorrectly match on values of `"foo"` or `"FOO"`. ([realm/realm-core#6376](https://github.com/realm/realm-core/issues/6376), since v10.5.0)
 * Adding an index to a `mixed` property on a non-empty class/objectType would crash with an assertion. ([realm/realm-core#6376](https://github.com/realm/realm-core/issues/6376), since v10.5.0)
 * `Realm.App.Sync#pause()` could hold a reference to the database open after shutting down the sync session, preventing users from being able to delete the Realm. ([realm/realm-core#6372](https://github.com/realm/realm-core/issues/6372), since v11.5.0)
 * Fixed a bug that may have resulted in `Realm.Results` and `Realm.List` being in different orders on different devices. Moreover, some cases of the error message `Invalid prior_size` may have be fixed too. ([realm/realm-core#6191](https://github.com/realm/realm-core/issues/6191), since v10.15.0)
+* Exposed `Sync` as named export. [#5649](https://github.com/realm/realm-js/issues/5649)
+* Fixed the return value of `App.allUsers` to return a record with the `User.id` as the key and the `User` as the value. [#5671](https://github.com/realm/realm-js/issues/5671)
 
 ### Compatibility
 * React Native >= v0.71.0
@@ -28,11 +53,10 @@ This can happen when the client creates/updates objects that do not match any su
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
+* Enabled all tests from v11 and fixed all remaining failures. ([#5595](https://github.com/realm/realm-js/pull/5595))
 * Fixed linting issues and running linting on CI.
 * Upgraded Realm Core from v13.6.0 to v13.8.0. ([#5638](https://github.com/realm/realm-js/pull/5638))
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Build iOS prebuilt binaries in release mode by default. ([#5709](https://github.com/realm/realm-js/pull/5709))
 
 ## 12.0.0-alpha.1 (2023-03-22)
 

@@ -9,9 +9,9 @@
   "scripts": {
     "bundle": "wireit",
     "start": "npm run build -- --watch",
-    "test": "jest --forceExit",
     "test": "wireit",
-    "lint": "eslint --ext .tsx ."
+    "lint": "eslint --ext .tsx .",
+    "docs": "wireit"
   },
   "wireit": {
     "bundle": {
@@ -30,10 +30,15 @@
         "../realm:build:node",
         "../realm-common:bundle"
       ]
+    },
+    "docs": {
+      "command": "typedoc",
+      "dependencies": [
+        "bundle"
+      ]
     }
   },
   "dependencies": {
-    "@realm/common": "^0.1.4",
     "lodash": "^4.17.21"
   },
   "devDependencies": {

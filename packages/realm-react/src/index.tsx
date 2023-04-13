@@ -72,14 +72,18 @@ type RealmContext = {
    * then only the modified object will re-render.
    *
    * @example
-   * ```
-   * const collection = useQuery(Object);
+   * ```tsx
+   * // Return all collection items
+   * const collection = useQuery(Object)
    *
-   * // The methods `sorted` and `filtered` should be wrapped in a useMemo.
-   * const sortedCollection = useMemo(collection.sorted(), [collection]);
+   * // Return all collection items sorted by name and filtered by category
+   * const filteredAndSorted = useQuery(Object, (collection) => collection.filtered('category == $0',category).sorted('name'), [category]);
    * ```
    *
    * @param type - The object type, depicted by a string or a class extending Realm.Object
+   * @param query - A function that takes a {@link Realm.Collection} and returns a {@link Realm.Collection} of the same type.
+   * This allows for filtering and sorting of the collection, before it is returned.
+   * @param deps - An array of dependencies that will be passed to {@link React.useMemo}
    * @returns a collection of realm objects or an empty array
    */
   useQuery: ReturnType<typeof createUseQuery>;
@@ -189,14 +193,18 @@ export const useRealm = defaultContext.useRealm;
  * then only the modified object will re-render.
  *
  * @example
- * ```
- * const collection = useQuery(Object);
+ * ```tsx
+ * // Return all collection items
+ * const collection = useQuery(Object)
  *
- * // The methods `sorted` and `filtered` should be wrapped in a useMemo.
- * const sortedCollection = useMemo(collection.sorted(), [collection]);
+ * // Return all collection items sorted by name and filtered by category
+ * const filteredAndSorted = useQuery(Object, (collection) => collection.filtered('category == $0',category).sorted('name'), [category]);
  * ```
  *
  * @param type - The object type, depicted by a string or a class extending Realm.Object
+ * @param query - A function that takes a {@link Realm.Collection} and returns a {@link Realm.Collection} of the same type.
+ * This allows for filtering and sorting of the collection, before it is returned.
+ * @param deps - An array of dependencies that will be passed to {@link React.useMemo}
  * @returns a collection of realm objects or an empty array
  */
 export const useQuery = defaultContext.useQuery;

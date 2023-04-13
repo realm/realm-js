@@ -22,8 +22,10 @@ import com.facebook.react.ReactPackage;
 import com.facebook.react.TurboReactPackage;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.react.module.model.ReactModuleInfo;
 import com.facebook.react.module.model.ReactModuleInfoProvider;
+import com.facebook.react.turbomodule.core.interfaces.TurboModule;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,19 +42,23 @@ public class RealmReactPackage extends TurboReactPackage implements ReactPackage
 
     @Override
     public ReactModuleInfoProvider getReactModuleInfoProvider() {
+        final Map<String, ReactModuleInfo> reactModuleInfoMap = new HashMap<>();
+        ReactModule reactModule = RealmReactModule.class.getAnnotation(ReactModule.class);
+
+        reactModuleInfoMap.put(
+                reactModule.name(),
+                new ReactModuleInfo(
+                        reactModule.name(),
+                        RealmReactModule.class.getName(),
+                        false,
+                        reactModule.needsEagerInit(),
+                        reactModule.hasConstants(),
+                        reactModule.isCxxModule(),
+                        TurboModule.class.isAssignableFrom(RealmReactModule.class)));
+
         return new ReactModuleInfoProvider() {
             @Override
             public Map<String, ReactModuleInfo> getReactModuleInfos() {
-                Map reactModuleInfoMap = new HashMap();
-                reactModuleInfoMap.put(RealmReactModule.NAME, new ReactModuleInfo(
-                        RealmReactModule.NAME,
-                        "io.realm.react.RealmReactModule",
-                        false,
-                        false,
-                        false,
-                        false, // TODO: Should we be using this?
-                        true
-                ));
                 return reactModuleInfoMap;
             }
         };

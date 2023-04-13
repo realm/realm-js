@@ -1,5 +1,5 @@
 <p align="center">
-  <img height="140" src="logo.svg" alt="Realm React Logo"/>
+  <img height="140" src="media/realm-react-logo.svg" alt="Realm React Logo"/>
 </p>
 
 <h1 align="center">
@@ -155,10 +155,11 @@ import {useQuery} from '@realm/react';
 const Component = () => {
   // ObjectClass is a class extending Realm.Object, which should have been provided in the Realm Config.
   // It is also possible to use the model's name as a string ( ex. "Object" ) if you are not using class based models.
-  const collection = useQuery(ObjectClass);
-
-  // The methods `sorted` and `filtered` should be wrapped in a useMemo.
-  const sortedCollection = useMemo(() => collection.sorted(), [collection]);
+  const sortedCollection = useQuery(ObjectClass, (collection) => {
+    // The methods `sorted` and `filtered` should be passed as a `query` function.
+    // Any variables that are dependencies of this should be placed in the dependency array.
+    return collection.sorted();
+  }, []);
 
   return (
     <FlatList data={sortedCollection} renderItem={({ item }) => <Object item={item}/>
@@ -347,3 +348,12 @@ const { RealmProvider: PrivateRealmProvider, useRealm: usePrivateRealm, useObjec
 ```
 
 It is also possible to call it without any Config; in the case that you want to do all your configuration through the `RealmProvider` props.
+
+
+#### Sync Debug Logs
+When running into issues with sync, it may be helpful to view logs in order to determine what the issue was or to provide more context when submitting an issue.  This can by done with the `AppProvider`.
+
+```
+// logger includes a default that prints level and message
+<AppProvider id={appId} logLevel={'trace'} logger={(level, message) => console.log(`[${level}]: ${message}`)}>
+```

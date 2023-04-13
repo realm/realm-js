@@ -143,10 +143,10 @@ const IndexedTypesSchema = {
     intCol: { type: "int", indexed: true },
     stringCol: { type: "string", indexed: true },
     dateCol: { type: "date", indexed: true },
-    optBoolCol: { type: "bool?", indexed: true },
-    optIntCol: { type: "int?", indexed: true },
-    optStringCol: { type: "string?", indexed: true },
-    optDateCol: { type: "date?", indexed: true },
+    optBoolCol: { type: "bool", optional: true, indexed: true },
+    optIntCol: { type: "int", optional: true, indexed: true },
+    optStringCol: { type: "string", optional: true, indexed: true },
+    optDateCol: { type: "date", optional: true, indexed: true },
   },
 };
 
@@ -160,9 +160,9 @@ const DefaultValuesSchema = {
     stringCol: { type: "string", default: "defaultString" },
     dateCol: { type: "date", default: new Date(1.111) },
     dataCol: { type: "data", default: new ArrayBuffer(1) },
-    objectCol: { type: "TestObject", default: { doubleCol: 1 } },
-    nullObjectCol: { type: "TestObject", default: null },
-    arrayCol: { type: "TestObject[]", default: [{ doubleCol: 2 }] },
+    objectCol: { type: "object", objectType: "TestObject", default: { doubleCol: 1 } },
+    nullObjectCol: { type: "object", objectType: "TestObject", default: null },
+    arrayCol: { type: "list", objectType: "TestObject", default: [{ doubleCol: 2 }] },
   },
 };
 
@@ -1500,19 +1500,16 @@ describe("Realmtest", () => {
     openRealmBeforeEach({ schema: [] });
 
     it("gives correct function and error message", function (this: RealmContext) {
-      function failingFunction() {
-        throw new Error("not implemented");
-      }
-
       try {
-        this.realm.write(() => {
-          failingFunction();
+        this.realm.write(function failingFunction() {
+          throw new Error("boom");
         });
-      } catch (e: any) {
-        expect(e.stack).not.equals(undefined, "e.stack should not be undefined");
-        expect(e.stack).not.equals(null, "e.stack should not be null");
-        expect(e.stack.indexOf("at failingFunction (") !== -1).to.be.true;
-        expect(e.stack.indexOf("not implemented") !== -1).to.be.true;
+      } catch (e) {
+        expect(e).instanceOf(Error);
+        if (e instanceof Error) {
+          expect(e.message).contains("boom");
+          expect(e.stack).contains("failingFunction");
+        }
       }
     });
   });
@@ -1764,7 +1761,7 @@ describe("Realmtest", () => {
       const normalizeProperty = (val: Realm.ObjectSchemaProperty | string) => {
         let prop: Realm.ObjectSchemaProperty | string;
         if (typeof val !== "string" && !(val instanceof String)) {
-          prop = val;
+          prop = { ...val };
           prop.optional = val.optional || false;
           prop.indexed = val.indexed || false;
         } else {
@@ -1937,7 +1934,7 @@ describe("Realmtest", () => {
 
       expect(() => {
         new Realm({ path: "bundled.realm", disableFormatUpgrade: true });
-      }).throws("The Realm file format must be allowed to be upgraded in order to proceed.");
+      }).throws("Database upgrade required but prohibited.");
     });
   });
 
@@ -2228,7 +2225,7 @@ describe("Realmtest", () => {
           // eslint-disable-next-line @typescript-eslint/no-empty-function
           onMigration: function () {},
         });
-      }).throws("Cannot include 'onMigration' when 'deleteRealmIfMigrationNeeded' is set.");
+      }).throws("Cannot set 'deleteRealmIfMigrationNeeded' when 'onMigration' is set.");
     });
   });
 });

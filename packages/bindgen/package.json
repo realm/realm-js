@@ -10,10 +10,14 @@
   "main": "./realm-bindgen.ts",
   "scripts": {
     "start": "./realm-bindgen.ts",
-    "test": "mocha",
+    "test": "wireit",
     "generate:spec-schema": "wireit"
   },
   "wireit": {
+    "test": {
+      "command": "mocha",
+      "dependencies": ["../realm:build:node"]
+    },
     "generate:spec-schema": {
       "command": "typescript-json-schema tsconfig.json RelaxedSpec --include src/spec/relaxed-model.ts --out generated/spec.schema.json --required",
       "files": ["src/spec/relaxed-model.ts"],

@@ -125,3 +125,8 @@ integration-tests/**/.lock
 
 # Rollup
 .rollup.cache/
+
+# Generated docs
+/packages/realm/docs/
+/packages/realm-react/docs/
+/packages/realm-web/docs/

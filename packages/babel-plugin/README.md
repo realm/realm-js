@@ -237,3 +237,12 @@ There is currently no way to specify a property on your class which should not b
 ### Classes extending Realm.Object cannot be constructed with `new` outside of a write transaction
 
 This plugin does not change the behaviour of `Realm.Object`, which cannot be constructed using `new` outside of a write transaction - there is no concept of a Realm.Object which is not stored in a Realm. Constructing a Realm object with `new` inside a write transaction will create a new object in the Realm - see [class-based models in the CHANGELOG](/CHANGELOG.md#enhancements-4).
+
+## Debugging your model
+
+To generate the output for your model (let's say it's located in `./models/task.ts`) you can run the babel transpiler manually on the file:
+
+```
+npm install --save-dev @babel/cli @babel/preset-typescript
+npx babel --presets @babel/preset-typescript --plugins @realm/babel-plugin ./models/task.ts
+```

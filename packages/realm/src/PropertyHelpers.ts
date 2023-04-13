@@ -79,14 +79,24 @@ export type PropertyHelpers = TypeHelpers &
 const defaultGet =
   ({ typeHelpers: { fromBinding }, columnKey }: PropertyOptions) =>
   (obj: binding.Obj) => {
-    return fromBinding(obj.getAny(columnKey));
+    try {
+      return fromBinding(obj.getAny(columnKey));
+    } catch (err) {
+      assert.isValid(obj);
+      throw err;
+    }
   };
 
 const defaultSet =
   ({ realm, typeHelpers: { toBinding }, columnKey }: PropertyOptions) =>
   (obj: binding.Obj, value: unknown) => {
     assert.inTransaction(realm);
-    obj.setAny(columnKey, toBinding(value));
+    try {
+      obj.setAny(columnKey, toBinding(value));
+    } catch (err) {
+      assert.isValid(obj);
+      throw err;
+    }
   };
 
 function embeddedSet({ typeHelpers: { toBinding }, columnKey }: PropertyOptions) {

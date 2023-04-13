@@ -1,6 +1,6 @@
 <picture>
-    <source srcset="./logo-dark.svg" media="(prefers-color-scheme: dark)" alt="realm by MongoDB">
-    <img src="./logo.svg" alt="realm by MongoDB">
+    <source srcset="./media/logo-dark.svg" media="(prefers-color-scheme: dark)" alt="realm by MongoDB">
+    <img src="./media/logo.svg" alt="realm by MongoDB">
 </picture>
 
 Realm is a mobile database that runs directly inside phones, tablets or wearables.
@@ -12,7 +12,7 @@ This project hosts the JavaScript versions of [Realm](https://realm.io/). Curren
 * **Simple:** Data is directly [exposed as objects](https://docs.mongodb.com/realm/node/realms/) and [queryable by code](https://docs.mongodb.com/realm/node/query-engine/), removing the need for ORM's riddled with performance & maintenance issues.
 * **Modern:** Realm supports relationships, generics, and vectorization.
 * **Fast:** Realm is faster than even raw SQLite on common operations, while maintaining an extremely rich feature set.
-* **[Device Sync](https://www.mongodb.com/atlas/app-services/device-sync)**: Makes it simple to keep data in sync across users, devices, and your backend in real-time. [Get started](http://mongodb.com/realm/register?utm_medium=github_atlas_CTA&utm_source=realm_js_github) for free with a template application that includes a cloud backend and Sync.
+* **[Device Sync](https://www.mongodb.com/atlas/app-services/device-sync)**: Makes it simple to keep data in sync across users, devices, and your backend in real-time. Get started for free with [a template application](https://github.com/mongodb/template-app-react-native-todo) and [create the cloud backend](http://mongodb.com/realm/register?utm_medium=github_atlas_CTA&utm_source=realm_js_github).
 
 ## Getting Started
 
@@ -87,16 +87,10 @@ Moreover, we have a [Flipper plugin](https://www.npmjs.com/package/realm-flipper
 
 ## Template apps
 
-We have TypeScript and JavaScript templates to help you get started using Realm.  Follow the links to your desired template and follow the instructions there to get up and running fast.
-### Using Expo
+We have TypeScript templates to help you get started using Realm.  Follow the links to your desired template and follow the instructions there to get up and running fast.
 
-- [TypeScript](https://github.com/realm/realm-js/tree/main/templates/expo-template-ts#readme)
-- [JavaScript](https://github.com/realm/realm-js/tree/main/templates/expo-template-js#readme)
-
-### React Native
-
-- [TypeScript](https://github.com/realm/realm-js/tree/main/templates/react-native-template-realm-ts#readme)
-- [JavaScript](https://github.com/realm/realm-js/tree/main/templates/react-native-template-realm-js#readme)
+- [Expo](https://github.com/realm/realm-js/tree/main/templates/expo-template#readme)
+- [React Native](https://github.com/realm/realm-js/tree/main/templates/react-native-template#readme)
 ## Getting Help
 
 * **Need help with your code?**: Look for previous questions on the  [#realm tag](https://stackoverflow.com/questions/tagged/realm?sort=newest) — or [ask a new question](https://stackoverflow.com/questions/ask?tags=realm). You can also check out our [Community Forum](https://developer.mongodb.com/community/forums/tags/c/realm/9/realm-sdk) where general questions about how to do something can be discussed.

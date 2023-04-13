@@ -24,7 +24,6 @@
 /** @internal */
 export * from "./debug";
 export * from "./safeGlobalThis";
-export * from "./IterableWeakRefs";
 
 /** @internal */
 export * from "./platform";

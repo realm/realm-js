@@ -9,17 +9,12 @@
     "bundle": "wireit",
     "lint": "wireit",
     "lint:cpp": "find src packages/bindgen/src -name '*.cpp' -or -name '*.h' -or -name '*.hpp' | xargs clang-format --dry-run --Werror",
-    "lint:cpp:fix": "find src packages/bindgen/src -name '*.cpp' -or -name '*.h' -or -name '*.hpp' | xargs clang-format -i"
+    "lint:cpp:fix": "find src packages/bindgen/src -name '*.cpp' -or -name '*.h' -or -name '*.hpp' | xargs clang-format -i",
+    "postinstall": "git submodule update --init --recursive"
   },
   "wireit": {
-    "submodules": {
-      "command": "git submodule update --init --recursive",
-      "files": [".git/modules/vendor/realm-core/HEAD"],
-      "output": ["vendor/realm-core"]
-    },
     "build": {
       "dependencies": [
-        "submodules",
         "bundle",
         "./packages/realm:build"
       ]
@@ -86,10 +81,13 @@
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-react": "^7.31.10",
     "eslint-plugin-react-native": "^4.0.0",
-    "node-addon-api": "^5.0.0",
+    "node-addon-api": "^6.0.0",
+    "react-native": "0.71.4",
     "rollup": "^3.15.0",
     "tsx": "^3.12.3",
     "typescript": "^4.9.3",
+    "typedoc": "^0.23.28",
+    "typedoc-plugin-extras": "^2.3.2",
     "wireit": "^0.9.5"
   },
   "peerDependencies": {
@@ -99,8 +97,5 @@
     "react-native": {
       "jsc-android": "250231.0.0"
     }
-  },
-  "devDependencies": {
-    "react-native": "0.71.4"
   }
 }
