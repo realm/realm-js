@@ -108,7 +108,7 @@
       ]
     },
     "bindgen:generate:typescript": {
-      "command": "realm-bindgen --template typescript --spec bindgen/vendor/bindgen-lib/spec.yml --spec bindgen/vendor/bindgen-lib/js_spec.yml --output ./generated/ts",
+      "command": "realm-bindgen --template bindgen/vendor/bindgen-lib/src/templates/typescript.ts --spec bindgen/vendor/bindgen-lib/spec.yml --spec bindgen/vendor/bindgen-lib/js_spec.yml --output ./generated/ts",
       "dependencies": [
         "./bindgen/vendor/bindgen-lib:generate:spec-schema"
       ],
@@ -125,7 +125,7 @@
       ]
     },
     "bindgen:generate:wrappers": {
-      "command": "realm-bindgen --template node-wrapper --spec bindgen/vendor/bindgen-lib/spec.yml --spec bindgen/vendor/bindgen-lib/js_spec.yml --output ./generated/ts",
+      "command": "realm-bindgen --template bindgen/vendor/bindgen-lib/src/templates/node-wrapper.ts --spec bindgen/vendor/bindgen-lib/spec.yml --spec bindgen/vendor/bindgen-lib/js_spec.yml --output ./generated/ts",
       "dependencies": [
         "./bindgen/vendor/bindgen-lib:generate:spec-schema"
       ],
