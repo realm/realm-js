@@ -206,6 +206,7 @@ jobs:
   ios-xcframework:
     name: Generate Info.plist with all frameworks in place
     needs: [build]
+    if: ${{ success() || failure() }}
     runs-on: macos-latest
     steps:
       - name: Checkout code
@@ -234,6 +235,7 @@ jobs:
   integration-tests:
     name: Integration tests (${{matrix.variant.target}}) for ${{ matrix.variant.environment }} on ${{ matrix.variant.os }}
     needs: [bundle, build, ios-xcframework]
+    if: ${{ success() || failure() }}
     env:
       REALM_DISABLE_ANALYTICS: 1
       MOCHA_REMOTE_TIMEOUT: 60000
