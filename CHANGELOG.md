@@ -4,7 +4,7 @@
 * None
 
 ### Enhancements
-* Opening a realm with invalid schemas will throw a `SchemaParseError` rather than an `AssertionError` or `Error`.
+* Opening a Realm with invalid schemas will throw a `SchemaParseError` rather than an `AssertionError` or `Error`. ([#5198](https://github.com/realm/realm-js/issues/5198))
 
 ### Fixed
 * <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
