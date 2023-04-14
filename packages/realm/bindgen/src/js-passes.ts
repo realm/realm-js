@@ -20,14 +20,14 @@ import {
   Class,
   Enumerator,
   Field,
+  Func,
   InstanceMethod,
   Method,
+  MethodCallSig,
   NamedType,
   Property,
   Type,
-  Func,
-  MethodCallSig,
-} from "./bound-model";
+} from "@realm/bindgen/bound-model";
 import { camelCase, pascalCase } from "change-case";
 import { strict as assert } from "assert";
 
@@ -92,7 +92,7 @@ class CustomInstanceMethod extends InstanceMethod {
   }
 }
 
-declare module "./bound-model" {
+declare module "@realm/bindgen/bound-model" {
   interface Property {
     readonly jsName: string;
   }

@@ -16,13 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { TemplateContext } from "../context";
-import { Arg, bindModel, BoundSpec, NamedType, Property, Type } from "../bound-model";
+import { TemplateContext } from "@realm/bindgen/context";
+import { Arg, BoundSpec, NamedType, Property, Type, bindModel } from "@realm/bindgen/bound-model";
 import { strict as assert } from "assert";
 
 import { doJsPasses } from "../js-passes";
 
-import { addFormatter } from "../formatter";
+import { addFormatter } from "@realm/bindgen/formatter";
 
 // Ideally, this would be codified in a tsconfig.json, but tsc doesn't support
 // configs mixed with filenames when invoked via the CLI.
