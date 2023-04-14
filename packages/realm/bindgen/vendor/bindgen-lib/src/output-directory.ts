@@ -22,7 +22,7 @@ import fs from "fs";
 import path from "path";
 
 import { extend } from "./debug";
-import { createOutputter, Outputter } from "./outputter";
+import { Outputter, createOutputter } from "./outputter";
 import { FormatterName, format, getFormatterNames } from "./formatter";
 
 const debug = extend("out");

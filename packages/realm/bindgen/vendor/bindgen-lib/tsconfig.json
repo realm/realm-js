@@ -5,7 +5,11 @@
     "module": "es2020",
     "moduleResolution": "node",
     "noEmit": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "baseUrl": "./",
+    "paths": {
+      "@realm/bindgen/*": [ "./src/*" ]
+    }
   },
   "include": [
     "src/"

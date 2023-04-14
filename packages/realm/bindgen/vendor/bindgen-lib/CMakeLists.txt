@@ -115,9 +115,13 @@ target_include_directories(realm-js PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 # TODO move platform.hpp and delete this line.
 target_include_directories(realm-js PRIVATE "${PACKAGE_ROOT_DIR}/src")
 
+# TODO move everything using this out of this CMakeLists.txt and into the SDK code.
+set(SDK_DIR ${PACKAGE_ROOT_DIR}/packages/realm)
+
 file(GLOB_RECURSE TS_FILES
     LIST_DIRECTORIES false
     CONFIGURE_DEPENDS
+    ${SDK_DIR}/bindgen/src/*.ts # TODO split this out to SDK cmake file
     src/*.ts
 )
 
@@ -135,8 +139,6 @@ set(SPEC_ARGS --spec ${CORE_SPEC_FILE} --spec ${JS_SPEC_FILE})
 # TODO 
 set(SCHEMA_FILE ${CMAKE_CURRENT_SOURCE_DIR}/generated/spec.schema.json)
 
-set(SDK_DIR ${PACKAGE_ROOT_DIR}/packages/realm)
-
 set(TYPESCRIPT_OUTPUT_DIR ${SDK_DIR}/generated/ts)
 
 set(GENERATED_TS_FILES
@@ -148,7 +150,7 @@ set(GENERATED_JS_FILES
     ${TYPESCRIPT_OUTPUT_DIR}/native-rn.mjs
 )
 
-set(NPX ${NODE_FORCE_COLOR} npx)
+set(NPX ${NODE_FORCE_COLOR} npx --prefix .) # without a prefix, npx changes the current directory and that is really confusing and hard to debug
 
 add_custom_command(
     OUTPUT ${SCHEMA_FILE}
@@ -165,9 +167,9 @@ add_custom_target(SpecJsonSchema DEPENDS ${SCHEMA_FILE})
 
 add_custom_command(
     OUTPUT ${GENERATED_TS_FILES}
-    COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template ${CMAKE_CURRENT_SOURCE_DIR}/src/templates/typescript.ts --output ${TYPESCRIPT_OUTPUT_DIR}
+    COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template ${SDK_DIR}/bindgen/src/templates/typescript.ts --output ${TYPESCRIPT_OUTPUT_DIR}
     VERBATIM
-    MAIN_DEPENDENCY src/templates/typescript.ts
+    MAIN_DEPENDENCY ${SDK_DIR}/bindgen/src/templates/typescript.ts
     DEPENDS
         ${SPEC_FILES}
         SpecJsonSchema
@@ -181,9 +183,9 @@ add_custom_target(TypeScript ALL DEPENDS ${GENERATED_TS_FILES} ${GENERATED_JS_FI
 # One issue we may run into when splitting is that they will need to be different files, otherwise ninja will get confused.
 add_custom_command(
     OUTPUT ${GENERATED_JS_FILES}
-    COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template ${CMAKE_CURRENT_SOURCE_DIR}/src/templates/node-wrapper.ts --output ${TYPESCRIPT_OUTPUT_DIR}
+    COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template ${SDK_DIR}/bindgen/src/templates/node-wrapper.ts --output ${TYPESCRIPT_OUTPUT_DIR}
     VERBATIM
-    MAIN_DEPENDENCY src/templates/node-wrapper.ts
+    MAIN_DEPENDENCY ${SDK_DIR}/bindgen/src/templates/node-wrapper.ts
     DEPENDS
         ${SPEC_FILES}
         SpecJsonSchema
@@ -195,9 +197,9 @@ if(DEFINED CMAKE_JS_VERSION)
 
     add_custom_command(
         OUTPUT node_init.cpp
-        COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template ${CMAKE_CURRENT_SOURCE_DIR}/src/templates/node.ts --output ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template ${SDK_DIR}/bindgen/src/templates/node.ts --output ${CMAKE_CURRENT_BINARY_DIR}
         VERBATIM
-        MAIN_DEPENDENCY src/templates/node.ts
+        MAIN_DEPENDENCY ${SDK_DIR}/bindgen/src/templates/node.ts
         DEPENDS
             ${SPEC_FILES}
             SpecJsonSchema
@@ -210,9 +212,9 @@ else()
 
     add_custom_command(
         OUTPUT jsi_init.cpp
-        COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template ${CMAKE_CURRENT_SOURCE_DIR}/src/templates/jsi.ts --output ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template ${SDK_DIR}/bindgen/src/templates/jsi.ts --output ${CMAKE_CURRENT_BINARY_DIR}
         VERBATIM
-        MAIN_DEPENDENCY src/templates/jsi.ts
+        MAIN_DEPENDENCY ${SDK_DIR}/bindgen/src/templates/jsi.ts
         DEPENDS
             ${SPEC_FILES}
             SpecJsonSchema

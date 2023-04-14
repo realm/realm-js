@@ -6,8 +6,10 @@
   "bin": {
     "realm-bindgen": "./realm-bindgen.ts"
   },
+  "exports": {
+      "./*": "./src/*"
+  },
   "type": "module",
-  "main": "./realm-bindgen.ts",
   "scripts": {
     "start": "./realm-bindgen.ts",
     "test": "wireit",

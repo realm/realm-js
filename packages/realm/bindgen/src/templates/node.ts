@@ -17,8 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 import { strict as assert } from "assert";
 
-import { TemplateContext } from "../context";
-import { CppVar, CppFunc, CppFuncProps, CppCtor, CppMethod, CppClass, CppDecls } from "../cpp";
+import { TemplateContext } from "@realm/bindgen/context";
+import { CppVar, CppFunc, CppFuncProps, CppCtor, CppMethod, CppClass, CppDecls } from "@realm/bindgen/cpp";
 import {
   bindModel,
   BoundSpec,
@@ -30,7 +30,7 @@ import {
   Primitive,
   Pointer,
   Template,
-} from "../bound-model";
+} from "@realm/bindgen/bound-model";
 
 import { doJsPasses } from "../js-passes";
 
@@ -583,7 +583,7 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
   }
 }
 
-declare module "../bound-model" {
+declare module "@realm/bindgen/bound-model" {
   interface Struct {
     toNode: () => CppFunc;
     fromNode: () => CppFunc;

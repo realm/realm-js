@@ -48,6 +48,7 @@
   },
   "workspaces": [
     "example",
+    "packages/realm/bindgen/",
     "packages/realm/bindgen/vendor/bindgen-lib/",
     "packages/babel-plugin",
     "packages/realm",
