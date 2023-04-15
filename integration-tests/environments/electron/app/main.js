@@ -19,6 +19,9 @@
 // This file is pretty much a copy of https://github.com/electron/electron-quick-start/blob/master/main.js
 const electron = require("electron");
 const { app, BrowserWindow } = electron;
+// Needed to forward console logs
+const remote = require("@electron/remote/main");
+remote.initialize();
 
 // Increasing memory
 // app.commandLine.appendSwitch('js-flags', '--max-old-space-size=4096');
@@ -43,6 +46,8 @@ app.on("ready", () => {
         preload,
       },
     });
+
+    remote.enable(mainWindow.webContents);
 
     mainWindow.loadFile(path.join(__dirname, "index.html"));
   } else {

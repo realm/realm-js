@@ -33,7 +33,7 @@
       ]
     },
     "test:renderer": {
-      "command": "mocha-remote --reporter @realm/mocha-reporter --id main tsx runner.ts renderer",
+      "command": "mocha-remote --reporter @realm/mocha-reporter --id renderer tsx runner.ts renderer",
       "dependencies": [
         "../../../packages/realm:bundle",
         "../../../packages/realm:build:node",
@@ -54,6 +54,7 @@
     "mocha-remote-cli": "^1.6.1"
   },
   "dependencies": {
+    "@electron/remote": "^2.0.9",
     "@realm/integration-tests": "*",
     "fs-extra": "^9.1.0",
     "mocha-remote-client": "^1.6.1",
