@@ -6,6 +6,13 @@
   "main": "./dist/bundle.es.js",
   "types": "./dist/index.d.ts",
   "react-native": "./dist/bundle.react-native.es.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/bundle.mjs",
+      "require": "./dist/bundle.cjs"
+    }
+  },
   "bin": {
     "realm-app-importer": "./realm-app-importer.ts"
   },
