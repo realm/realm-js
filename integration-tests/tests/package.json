@@ -2,12 +2,10 @@
 	"name": "@realm/integration-tests",
   "version": "0.1.0",
   "description": "A set of tests that can run in different environments",
-  "type": "module",
   "main": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./node": "./src/node/index.ts",
-    "./electron": "./dist/index.js"
+    "./node": "./src/node/index.ts"
   },
   "private": true,
   "scripts": {
