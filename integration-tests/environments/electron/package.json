@@ -23,7 +23,7 @@
       "command": "npm run test:main && npm run test:renderer"
     },
     "test:main": {
-      "command": "mocha-remote --reporter @realm/mocha-reporter --id main node runner.js main",
+      "command": "mocha-remote --reporter @realm/mocha-reporter --id main tsx runner.ts main",
       "dependencies": [
         "../../../packages/realm:bundle",
         "../../../packages/realm:build:node",
@@ -33,7 +33,7 @@
       ]
     },
     "test:renderer": {
-      "command": "mocha-remote --reporter @realm/mocha-reporter --id main node runner.js renderer",
+      "command": "mocha-remote --reporter @realm/mocha-reporter --id main tsx runner.ts renderer",
       "dependencies": [
         "../../../packages/realm:bundle",
         "../../../packages/realm:build:node",
