@@ -42,6 +42,8 @@ app.on("ready", () => {
     mainWindow = new BrowserWindow({
       show: false,
       webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
         enableRemoteModule: true,
         preload,
       },
