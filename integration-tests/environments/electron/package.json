@@ -45,13 +45,12 @@
   },
   "devDependencies": {
     "@realm/mocha-reporter": "*",
-    "cmake-js": "^6.1.0",
-    "command-line-args": "^5.1.1",
-    "concurrently": "^6.0.2",
-    "electron": "^12.2.1",
-    "electron-builder": "^22.10.5",
-    "mocha-github-actions-reporter": "^0.2.3",
-    "mocha-junit-reporter": "^2.0.0",
+    "command-line-args": "^5.2.1",
+    "concurrently": "^8.0.1",
+    "electron": "^24.1.2",
+    "electron-builder": "^23.6.0",
+    "mocha-github-actions-reporter": "^0.3.0",
+    "mocha-junit-reporter": "^2.2.0",
     "mocha-remote-cli": "^1.6.1"
   },
   "dependencies": {
