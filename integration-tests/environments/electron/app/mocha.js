@@ -23,7 +23,7 @@ const processType = process.type === "browser" ? "main" : process.type;
 
 console.log("Required Mocha client");
 
-return new Client({
+const client = new Client({
   id: processType,
   title: `Electron v${process.versions.electron} ${processType} process on ${platform()}`,
   tests(context) {
@@ -39,4 +39,9 @@ return new Client({
     require("ts-node/register/transpile-only");
     require("@realm/integration-tests");
   },
+});
+
+client.on("error", (err) => {
+  console.error("Failure from Mocha Remote Client:", err);
+  process.exitCode = 1;
 });
