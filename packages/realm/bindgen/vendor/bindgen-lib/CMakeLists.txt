@@ -131,7 +131,7 @@ list(FILTER TS_FILES EXCLUDE REGEX "templates/[^/]*\.ts$")
 list(FILTER TS_FILES EXCLUDE REGEX "tests/[^/]*\.ts$")
 
 set(CORE_SPEC_FILE ${CMAKE_CURRENT_SOURCE_DIR}/spec.yml)
-set(JS_SPEC_FILE ${CMAKE_CURRENT_SOURCE_DIR}/js_spec.yml)
+set(JS_SPEC_FILE ${SDK_DIR}/bindgen/js_spec.yml)
 set(SPEC_FILES ${CORE_SPEC_FILE} ${JS_SPEC_FILE})
 set(SPEC_ARGS --spec ${CORE_SPEC_FILE} --spec ${JS_SPEC_FILE})
 

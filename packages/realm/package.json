@@ -108,14 +108,14 @@
       ]
     },
     "bindgen:generate:typescript": {
-      "command": "realm-bindgen --template bindgen/src/templates/typescript.ts --spec bindgen/vendor/bindgen-lib/spec.yml --spec bindgen/vendor/bindgen-lib/js_spec.yml --output ./generated/ts",
+      "command": "realm-bindgen --template bindgen/src/templates/typescript.ts --spec bindgen/vendor/bindgen-lib/spec.yml --spec bindgen/js_spec.yml --output ./generated/ts",
       "dependencies": [
         "./bindgen/vendor/bindgen-lib:generate:spec-schema"
       ],
       "files": [
         "bindgen/vendor/bindgen-lib/spec.yml",
-        "bindgen/vendor/bindgen-lib/js_spec.yml",
         "bindgen/vendor/bindgen-lib/src",
+        "bindgen/js_spec.yml",
         "bindgen/src",
         "!bindgen/src/templates",
         "bindgen/src/templates/typescript.ts"
@@ -126,14 +126,14 @@
       ]
     },
     "bindgen:generate:wrappers": {
-      "command": "realm-bindgen --template bindgen/src/templates/node-wrapper.ts --spec bindgen/vendor/bindgen-lib/spec.yml --spec bindgen/vendor/bindgen-lib/js_spec.yml --output ./generated/ts",
+      "command": "realm-bindgen --template bindgen/src/templates/node-wrapper.ts --spec bindgen/vendor/bindgen-lib/spec.yml --spec bindgen/js_spec.yml --output ./generated/ts",
       "dependencies": [
         "./bindgen/vendor/bindgen-lib:generate:spec-schema"
       ],
       "files": [
         "bindgen/vendor/bindgen-lib/spec.yml",
-        "bindgen/vendor/bindgen-lib/js_spec.yml",
         "bindgen/vendor/bindgen-lib/src",
+        "bindgen/js_spec.yml",
         "bindgen/src",
         "!bindgen/src/templates",
         "bindgen/src/templates/node-wrapper.ts"
