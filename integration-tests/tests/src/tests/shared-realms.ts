@@ -37,15 +37,31 @@ describe("SharedRealm operations", () => {
 
       Realm.setLogLevel("all");
 
-      const realm = await Realm.open({ schema: [{ name: "Person", properties: { name: "string" } }] });
-      realm.write(() => realm.create("Person", { name: "Alice" }));
+      const realm = await Realm.open({
+        schema: [{ name: "Person", primaryKey: "id", properties: { name: "string", id: "int" } }],
+      });
+      realm.write(() => realm.deleteAll);
+      realm.write(() => realm.create("Person", { name: "Alice", id: 1 }));
 
       expect(logs).to.not.be.empty;
-      console.log(logs.length);
+      expect(logs.map((l) => l.level)).to.contain.members(["trace", "debug"]);
+      logs = [];
+
+      Realm.setLogLevel("trace");
+      realm.write(() => realm.create("Person", { name: "Alice", id: 2 }));
+      expect(logs.map((l) => l.level)).to.contain.members(["trace", "debug"]);
+      console.log(logs);
+      logs = [];
+
+      Realm.setLogLevel("debug");
+      realm.write(() => realm.create("Person", { name: "Alice", id: 3 }));
+      expect(logs.map((l) => l.level))
+        .to.contain("debug")
+        .and.to.not.contain("trace");
       logs = [];
 
       Realm.setLogLevel("error");
-      realm.write(() => realm.create("Person", { name: "Alice" }));
+      realm.write(() => realm.create("Person", { name: "Alice", id: 4 }));
       expect(logs).to.be.empty;
     });
   });
