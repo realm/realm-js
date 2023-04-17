@@ -157,7 +157,6 @@ import {
   extendDebug,
   flags,
   fromBindingLoggerLevelToLogLevel,
-  fromBindingLoggerLevelToNumericLogLevel,
   fromBindingRealmSchema,
   fs,
   index,

@@ -38,13 +38,9 @@ export type LoggerCallback = (level: LogLevel, message: string) => void;
 
 /** @internal */
 export function toBindingLoggerLevel(arg: LogLevel): binding.LoggerLevel {
-  const result = Object.entries(NumericLogLevel).find(([name]) => {
-    return name.toLowerCase() === arg;
-  });
-  assert(result, `Unexpected log level: ${arg}`);
-  const [, level] = result;
-  assert.number(level, "Expected a numeric level");
-  return level as number as binding.LoggerLevel;
+  const bindingLogLevel = inverseTranslationTable[arg];
+  assert(bindingLogLevel !== undefined, `Unexpected log level: ${arg}`);
+  return bindingLogLevel;
 }
 
 /** @internal */
@@ -65,7 +61,11 @@ const translationTable: Record<binding.LoggerLevel, LogLevel> = {
   [binding.LoggerLevel.Off]: "off",
 };
 
+const inverseTranslationTable: Record<LogLevel, binding.LoggerLevel> = Object.fromEntries(
+  Object.entries(translationTable).map(([key, val]) => [val, Number(key)]),
+) as unknown as Record<LogLevel, binding.LoggerLevel>;
+
 /** @internal */
 export function fromBindingLoggerLevelToLogLevel(arg: binding.LoggerLevel): LogLevel {
-  return translationTable[arg] ?? "all";
+  return translationTable[arg];
 }
