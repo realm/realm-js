@@ -40,7 +40,7 @@ describe("SharedRealm operations", () => {
       const realm = await Realm.open({
         schema: [{ name: "Person", primaryKey: "id", properties: { name: "string", id: "int" } }],
       });
-      realm.write(() => realm.deleteAll);
+      realm.write(() => realm.deleteAll());
       realm.write(() => realm.create("Person", { name: "Alice", id: 1 }));
 
       expect(logs).to.not.be.empty;
