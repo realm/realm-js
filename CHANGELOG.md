@@ -7,8 +7,7 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Added missing implementation of `User.state` and changed the `UserState` enum values to use pascal case to conform to the v11 implementation (except for `UserState.Active` that we now deprecate in favor of `UserState.LoggedIn`). [#5686](https://github.com/realm/realm-js/issues/5686)
 
 ### Compatibility
 * React Native >= v0.71.0
