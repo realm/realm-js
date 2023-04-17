@@ -53,19 +53,19 @@ export function fromBindingLoggerLevelToNumericLogLevel(arg: binding.LoggerLevel
   return arg as unknown as NumericLogLevel;
 }
 
-const translationTable = new Map<binding.LoggerLevel, LogLevel>([
-  [binding.LoggerLevel.All, "all"],
-  [binding.LoggerLevel.Trace, "trace"],
-  [binding.LoggerLevel.Debug, "debug"],
-  [binding.LoggerLevel.Detail, "detail"],
-  [binding.LoggerLevel.Info, "info"],
-  [binding.LoggerLevel.Warn, "warn"],
-  [binding.LoggerLevel.Error, "error"],
-  [binding.LoggerLevel.Fatal, "fatal"],
-  [binding.LoggerLevel.Off, "off"],
-]);
+const translationTable: Record<binding.LoggerLevel, LogLevel> = {
+  [binding.LoggerLevel.All]: "all",
+  [binding.LoggerLevel.Trace]: "trace",
+  [binding.LoggerLevel.Debug]: "debug",
+  [binding.LoggerLevel.Detail]: "detail",
+  [binding.LoggerLevel.Info]: "info",
+  [binding.LoggerLevel.Warn]: "warn",
+  [binding.LoggerLevel.Error]: "error",
+  [binding.LoggerLevel.Fatal]: "fatal",
+  [binding.LoggerLevel.Off]: "off",
+};
 
 /** @internal */
 export function fromBindingLoggerLevelToLogLevel(arg: binding.LoggerLevel): LogLevel {
-  return translationTable.get(arg) ?? "all";
+  return translationTable[arg] ?? "all";
 }
