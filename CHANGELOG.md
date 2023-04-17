@@ -4,21 +4,23 @@
 * None
 
 ### Enhancements
-* None
+* Enable multiple processes to operate on an encrypted Realm simultaneously. ([realm/realm-core#1845](https://github.com/realm/realm-core/issues/1845))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fix a stack overflow crash when using the query parser with long chains of AND/OR conditions. ([realm/realm-core#6428](https://github.com/realm/realm-core/pull/6428), since v10.11.0)
+* Fixed an issue that could have resulted in a client reset action being reported as successful when it actually failed on windows if the `Realm` was still open ([realm/realm-core#6050](https://github.com/realm/realm-core/issues/6050)).
+* Fix a data race that could cause a reading thread to read from a no-longer-valid memory mapping ([realm/realm-core#6411](https://github.com/realm/realm-core/pull/6411), since v11.3.0-rc.0).
+* Fixed an issue that could cause a crash when performing count() on an undefined query. ([realm/realm-core#6443](https://github.com/realm/realm-core/issues/6443), since v12.0.0-alpha.2)
+* Added missing implementation of `User.state` and changed the `UserState` enum values to use pascal case to conform to the v11 implementation (except for `UserState.Active` that we now deprecate in favor of `UserState.LoggedIn`). [#5686](https://github.com/realm/realm-js/issues/5686)
 
 ### Compatibility
 * React Native >= v0.71.0
 * Realm Studio v13.0.0.
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+* Lock file format: New format introduced for multiprocess encryption. All processes accessing the file must be upgraded to the new format.
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v13.8.0 to v13.9.1. ([#5739](https://github.com/realm/realm-js/pull/5739))
 
 ## 12.0.0-alpha.2 (2023-04-05)
 
@@ -29,7 +31,7 @@ Nikolai Samorodov / [@zabutok](https://github.com/zabutok) for contributing the 
 * Added a new error class `CompensatingWriteError` which indicates that one or more object changes have been reverted by the server. 
 This can happen when the client creates/updates objects that do not match any subscription, or performs writes on an object it didn't have permission to access. ([#5599](https://github.com/realm/realm-js/pull/5599))
 * Performance improvement for the following queries ([realm/realm-core#6376](https://github.com/realm/realm-core/issues/6376)):
-  * Significant (~75%) improvement when counting (`Realm.Results#length`) the number of exact matches (with no other query conditions) on a `string`/`int`/`uuid`/`objectId` property that has an index. This improvement will be especially noticiable if there are a large number of results returned (duplicate values).
+  * Significant (~75%) improvement when counting (`Realm.Results#length`) the number of exact matches (with no other query conditions) on a `string`/`int`/`uuid`/`objectId` property that has an index. This improvement will be especially noticeable if there are a large number of results returned (duplicate values).
   * Significant (~99%) improvement when querying for an exact match on a `date` property that has an index.
   * Significant (~99%) improvement when querying for a case insensitive match on a `mixed` property that has an index.
   * Moderate (~25%) improvement when querying for an exact match on a `bool` property that has an index.
