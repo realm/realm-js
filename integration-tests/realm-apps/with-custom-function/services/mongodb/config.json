@@ -3,7 +3,7 @@
     "type": "mongodb",
     "config": {},
     "secret_config": {
-        "uri": "mongodb_uri"
+        "uri": "local-mongodb-uri"
     },
     "version": 1
 }
