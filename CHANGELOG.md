@@ -16,6 +16,7 @@
 * React Native >= v0.71.0
 * Realm Studio v13.0.0.
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+* Lock file format: New format introduced for multiprocess encryption. All processes accessing the file must be upgraded to the new format.
 
 ### Internal
 * Upgraded Realm Core from v13.8.0 to v13.9.1. ([#5739](https://github.com/realm/realm-js/pull/5739))
