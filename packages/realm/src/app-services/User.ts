@@ -43,6 +43,11 @@ export type UserChangeCallback = () => void;
  * The state of a user.
  */
 export enum UserState {
+  /**
+   * Authenticated and available to communicate with services.
+   * @deprecated Will be removed in v13. Please use {@link LoggedIn}
+   */
+  Active = "active",
   /** Authenticated and available to communicate with services. */
   LoggedIn = "LoggedIn",
   /** Logged out, but ready to be logged in. */
