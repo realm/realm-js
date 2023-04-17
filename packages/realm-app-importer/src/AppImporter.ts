@@ -21,7 +21,18 @@ import path from "path";
 import fs from "fs-extra";
 import glob from "glob";
 import deepmerge from "deepmerge";
-import { Credentials } from "./sharedTypes";
+
+export type Credentials =
+  | {
+      kind: "api-key";
+      publicKey: string;
+      privateKey: string;
+    }
+  | {
+      kind: "username-password";
+      username: string;
+      password: string;
+    };
 
 /**
  * First level keys are file globs and the values are objects that are spread over the content of the files matching the glob.

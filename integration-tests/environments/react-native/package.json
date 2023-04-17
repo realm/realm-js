@@ -90,8 +90,7 @@
         "../../../packages/realm:build:android",
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:bundle",
-        "../../../packages/realm-network-transport:bundle",
-        "../../../packages/realm-app-importer:bundle"
+        "../../../packages/realm-network-transport:bundle"
       ],
       "env": {
         "PLATFORM": "android",
@@ -110,8 +109,7 @@
         "pod-install:simulator",
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:bundle",
-        "../../../packages/realm-network-transport:bundle",
-        "../../../packages/realm-app-importer:bundle"
+        "../../../packages/realm-network-transport:bundle"
       ],
       "env": {
         "PLATFORM": "ios",
@@ -124,8 +122,7 @@
         "pod-install:catalyst",
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:bundle",
-        "../../../packages/realm-network-transport:bundle",
-        "../../../packages/realm-app-importer:bundle"
+        "../../../packages/realm-network-transport:bundle"
       ],
       "env": {
         "PLATFORM": "catalyst",
@@ -138,8 +135,7 @@
         "../../../packages/realm:build:android",
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:bundle",
-        "../../../packages/realm-network-transport:bundle",
-        "../../../packages/realm-app-importer:bundle"
+        "../../../packages/realm-network-transport:bundle"
       ],
       "env": {
         "PLATFORM": "android",
@@ -153,8 +149,7 @@
         "../../../packages/realm:build:ios:debug:simulator",
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:bundle",
-        "../../../packages/realm-network-transport:bundle",
-        "../../../packages/realm-app-importer:bundle"
+        "../../../packages/realm-network-transport:bundle"
       ],
       "env": {
         "PLATFORM": "ios",
@@ -168,8 +163,7 @@
         "../../../packages/realm:build:ios:debug:catalyst",
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:bundle",
-        "../../../packages/realm-network-transport:bundle",
-        "../../../packages/realm-app-importer:bundle"
+        "../../../packages/realm-network-transport:bundle"
       ],
       "env": {
         "PLATFORM": "catalyst",
