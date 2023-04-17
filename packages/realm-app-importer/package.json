@@ -24,7 +24,7 @@
     "bundle": {
       "command": "rollup --config",
       "files": ["rollup.config.mjs", "src/**/*.ts", "src/**/tsconfig.json"],
-      "output": ["dist/**/*.js", "dist/**/*.d.ts"],
+      "output": ["dist/**/*.mjs", "dist/**/*.cjs", "dist/**/*.d.ts"],
       "dependencies": [
         "generate-types",
         "../realm-network-transport:bundle"
