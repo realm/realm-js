@@ -145,40 +145,15 @@ export async function importApp(
     throw new Error("Calling the app importer remotely, is not longer supported");
   } else {
     const appTemplatePath = `${appTemplatesPath}/${name}`;
-
     const { appId } = await importer.importApp(appTemplatePath, replacements);
-
     return { appId, baseUrl, databaseName };
   }
 }
 
 export async function deleteApp(clientAppId: string): Promise<void> {
-  const { baseUrl, appImporterUrl } = getUrls();
-
   if (appImporterIsRemote) {
-    // This might take some time, so we just send it and forget it
-    const response = await fetch(`${appImporterUrl}/app/${clientAppId}`, {
-      method: "DELETE",
-    });
-    if (!response.ok) {
-      const json = await response.json();
-      const message = isErrorResponse(json) ? json.message : "No error message";
-      throw new Error(`Failed to delete app with client ID '${clientAppId}': ${message}`);
-    }
+    throw new Error("Calling the app importer remotely, is not longer supported");
   } else {
-    const appsDirectoryPath = "./realm-apps";
-    const realmConfigPath = "./realm-config";
-
-    const credentials = getCredentials();
-
-    const importer = new AppImporter({
-      baseUrl,
-      credentials,
-      realmConfigPath,
-      appsDirectoryPath,
-      cleanUp: true,
-    });
-
-    importer.deleteApp(clientAppId);
+    await importer.deleteApp(clientAppId);
   }
 }
