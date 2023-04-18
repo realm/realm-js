@@ -22,6 +22,7 @@ import fs from "fs-extra";
 import glob from "glob";
 import deepmerge from "deepmerge";
 import { AdminApiClient, Credentials, SyncConfig } from "./AdminApiClient";
+import { Deployment, DeploymentDraft } from "./types";
 
 /**
  * First level keys are file globs and the values are objects that are spread over the content of the files matching the glob.
@@ -61,6 +62,7 @@ export interface AppImporterOptions {
   realmConfigPath: string;
   appsDirectoryPath: string;
   cleanUp?: boolean;
+  reuseApp?: boolean;
 }
 
 export class AppImporter {
@@ -68,13 +70,25 @@ export class AppImporter {
   private readonly credentials: Credentials;
   private readonly realmConfigPath: string;
   private readonly appsDirectoryPath: string;
+  private readonly reuseApp: boolean;
   private readonly client: AdminApiClient;
+  private initialDeployment: Deployment | null = null;
+  private currentDeploymentDraft: DeploymentDraft | null = null;
+  private reusedApp: App | null = null;
 
-  constructor({ baseUrl, credentials, realmConfigPath, appsDirectoryPath, cleanUp = true }: AppImporterOptions) {
+  constructor({
+    baseUrl,
+    credentials,
+    realmConfigPath,
+    appsDirectoryPath,
+    cleanUp = true,
+    reuseApp = false,
+  }: AppImporterOptions) {
     this.baseUrl = baseUrl;
     this.credentials = credentials;
     this.realmConfigPath = realmConfigPath;
     this.appsDirectoryPath = appsDirectoryPath;
+    this.reuseApp = reuseApp;
     this.client = new AdminApiClient({ baseUrl });
 
     if (cleanUp) {
@@ -93,6 +107,40 @@ export class AppImporter {
     }
   }
 
+  public async createOrReuseApp(name: string) {
+    if (this.reuseApp) {
+      if (this.reusedApp) {
+        // Reset it
+        if (!this.initialDeployment) {
+          throw new Error("Missing an initial deployment");
+        }
+        console.log("Redeploying initial deployment", this.initialDeployment.draft_id);
+        await this.client.redeployDeployment(this.reusedApp._id, this.initialDeployment._id);
+        await this.pollDeploymentUntilSuccessful(this.reusedApp._id, this.initialDeployment._id);
+        return this.reusedApp;
+      } else {
+        // Ensure we have the reusable app imported already
+        const app = await this.client.createApp("reused");
+        // Store this for next import
+        this.reusedApp = app;
+        // Configure this to use deployments
+        await this.client.configureDeployments(app._id, {
+          ui_drafts_disabled: false,
+          automatic_deployment: {
+            enabled: false,
+          },
+        });
+        // Create and deploy a deployment draft we can redeploy later
+        const draft = await this.client.createDeploymentDraft(app._id);
+        this.initialDeployment = await this.client.deployDeploymentDraft(app._id, draft._id);
+        await this.pollDeploymentUntilSuccessful(app._id, this.initialDeployment._id);
+        return app;
+      }
+    } else {
+      return await this.client.createApp(name);
+    }
+  }
+
   /**
    * @param appTemplatePath The path to a template directory containing the configuration files needed to import the app.
    * @param replacements An object with file globs as keys and a replacement object as values. Allows for just-in-time replacements of configuration parameters.
@@ -103,7 +151,10 @@ export class AppImporter {
 
     await this.client.ensureLogIn(this.credentials);
 
-    const app = await this.client.createApp(appName);
+    const app = await this.createOrReuseApp(appName);
+    if (this.reuseApp) {
+      this.currentDeploymentDraft = await this.client.createDeploymentDraft(app._id);
+    }
     const appId = app.client_app_id;
     console.log(`Created ${appId}`);
     try {
@@ -127,6 +178,10 @@ export class AppImporter {
       if (appId) {
         console.log(`The application ${appId} was successfully deployed...`);
         console.log(`${this.baseUrl}/groups/${await this.client.groupId}/apps/${app._id}/dashboard`);
+      }
+
+      if (this.currentDeploymentDraft) {
+        await this.client.deployDeploymentDraft(app._id, this.currentDeploymentDraft._id);
       }
 
       return { appName, appId };
@@ -334,5 +389,21 @@ export class AppImporter {
     await this.configureFunctionsFromAppPath(appPath, appId);
 
     await this.configureAuthProvidersFromAppPath(appPath, appId);
+  }
+
+  private async pollDeploymentUntilSuccessful(appId: string, deploymentId: string) {
+    for (let retry = 0; retry < 1000; retry++) {
+      const response = await this.client.getDeployment(appId, deploymentId);
+      console.log({ response });
+      if (response.status === "successful") {
+        // Delete the draft to enable creation of another
+        this.client.deleteDeploymentDraft(appId, response.draft_id);
+        return response;
+      }
+      // Wait a bit
+      console.log("Waiting for deployment to complete");
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+    throw new Error(`Failed to deploy ${deploymentId}`);
   }
 }

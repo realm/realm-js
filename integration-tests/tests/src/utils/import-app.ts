@@ -117,12 +117,24 @@ export function getDefaultReplacements(name: string, databaseName: string): Temp
   };
 }
 
+const appsDirectoryPath = "./realm-apps";
+const realmConfigPath = "./realm-config";
+const { baseUrl } = getUrls();
+const credentials = getCredentials();
+
+const importer = new AppImporter({
+  baseUrl,
+  credentials,
+  realmConfigPath,
+  appsDirectoryPath,
+  cleanUp: true,
+  reuseApp: true,
+});
+
 export async function importApp(
   name: string,
   replacements?: TemplateReplacements,
 ): Promise<{ appId: string; baseUrl: string; databaseName: string }> {
-  const { baseUrl, appImporterUrl } = getUrls();
-
   const databaseName = generateDatabaseName();
 
   if (!replacements) {
@@ -130,33 +142,8 @@ export async function importApp(
   }
 
   if (appImporterIsRemote) {
-    const response = await fetch(appImporterUrl, {
-      method: "POST",
-      body: JSON.stringify({ name, replacements }),
-    });
-
-    const json = await response.json<Response>();
-    if (response.ok && typeof json.appId === "string") {
-      return { appId: json.appId, baseUrl, databaseName };
-    } else if (typeof json.message === "string") {
-      throw new Error(`Failed to import: ${json.message}`);
-    } else {
-      throw new Error("Failed to import app");
-    }
+    throw new Error("Calling the app importer remotely, is not longer supported");
   } else {
-    const appsDirectoryPath = "./realm-apps";
-    const realmConfigPath = "./realm-config";
-
-    const credentials = getCredentials();
-
-    const importer = new AppImporter({
-      baseUrl,
-      credentials,
-      realmConfigPath,
-      appsDirectoryPath,
-      cleanUp: true,
-    });
-
     const appTemplatePath = `${appTemplatesPath}/${name}`;
 
     const { appId } = await importer.importApp(appTemplatePath, replacements);

@@ -23,6 +23,8 @@ import {
   assertAppResponse,
   assertAppsResponse,
   assertAuthProvidersResponse,
+  assertDeploymentDraftResponse,
+  assertDeploymentResponse,
   assertFunctionResponse,
   assertFunctionsResponse,
   assertLoginResponse,
@@ -125,6 +127,62 @@ export class AdminApiClient {
       route: ["groups", await this.groupId, "apps", _id],
       method: "DELETE",
     });
+  }
+
+  public async configureDeployments(appId: string, config: Record<string, unknown>) {
+    this.assertLoggedIn();
+    await this.fetch({
+      route: ["groups", await this.groupId, "apps", appId, "deploy", "config"],
+      method: "PATCH",
+      body: config,
+    });
+  }
+
+  public async createDeploymentDraft(appId: string) {
+    this.assertLoggedIn();
+    const response = await this.fetch({
+      route: ["groups", await this.groupId, "apps", appId, "drafts"],
+      method: "POST",
+    });
+    assertDeploymentDraftResponse(response);
+    return response;
+  }
+
+  public async deleteDeploymentDraft(appId: string, draftId: string) {
+    console.log("Deleting draft", draftId);
+    this.assertLoggedIn();
+    await this.fetch({
+      route: ["groups", await this.groupId, "apps", appId, "drafts", draftId],
+      method: "DELETE",
+    });
+  }
+
+  public async redeployDeployment(appId: string, deploymentId: string) {
+    this.assertLoggedIn();
+    await this.fetch({
+      route: ["groups", await this.groupId, "apps", appId, "deployments", deploymentId, "redeploy"],
+      method: "POST",
+    });
+  }
+
+  public async deployDeploymentDraft(appId: string, draftId: string) {
+    this.assertLoggedIn();
+    const response = await this.fetch({
+      route: ["groups", await this.groupId, "apps", appId, "drafts", draftId, "deployment"],
+      method: "POST",
+    });
+    assertDeploymentResponse(response);
+    return response;
+  }
+
+  public async getDeployment(appId: string, deploymentId: string) {
+    this.assertLoggedIn();
+    const response = await this.fetch({
+      route: ["groups", await this.groupId, "apps", appId, "deployments", deploymentId],
+      method: "GET",
+    });
+    assertDeploymentResponse(response);
+    return response;
   }
 
   public async createSecret(internalAppId: string, name: string, value: string) {
@@ -298,10 +356,12 @@ export class AdminApiClient {
       if (response.headers.get("content-type") === "application/json") {
         return response.json();
       }
-    } else {
+    } else if (response.headers.get("content-type") === "application/json") {
       const json = await response.json();
       const error = isErrorResponse(json) ? json.error : "No error message";
       throw new Error(`Failed to fetch ${url}: ${error} (${response.status} ${response.statusText})`);
+    } else {
+      throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText})`);
     }
   }
 

@@ -28,7 +28,6 @@ describe.skipIf(environment.missingServer, "importApp utility", function () {
     try {
       const app = new App({ id: appId, baseUrl });
       expect(app).instanceOf(App);
-      expect(app.id.startsWith("simple")).to.be.true;
     } finally {
       await deleteApp(appId);
     }

@@ -87,6 +87,45 @@ export function assertAppsResponse(response: unknown): asserts response is AppsR
   response.every(assertAppResponse);
 }
 
+export type DeploymentDraft = {
+  _id: string;
+  user_id: string;
+  app: App;
+};
+
+export type DeploymentDraftResponse = DeploymentDraft;
+
+export function assertDeploymentDraftResponse(response: unknown): asserts response is DeploymentDraftResponse {
+  assertObject(response);
+  if (typeof response._id !== "string" || typeof response.user_id !== "string" || typeof response.app !== "object") {
+    throw new Error("Expected a DeploymentDraftResponse");
+  }
+}
+
+export type Deployment = {
+  _id: string;
+  name: string;
+  app_id: string;
+  draft_id: string;
+  user_id: string;
+  deployed_at: number;
+  origin: string;
+  commit: string;
+  status: string;
+  status_error_message: string;
+  diff_url: string;
+  remote_location: string;
+};
+
+export type DeploymentResponse = Deployment;
+
+export function assertDeploymentResponse(response: unknown): asserts response is DeploymentResponse {
+  assertObject(response);
+  if (typeof response._id !== "string" || typeof response.draft_id !== "string") {
+    throw new Error("Expected a DeploymentResponse");
+  }
+}
+
 // TODO: Extend this
 export type Service = {
   _id: string;
