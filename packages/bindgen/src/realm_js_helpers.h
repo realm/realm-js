@@ -336,8 +336,8 @@ template <typename F>
 auto schedulerWrapBlockingFunction(F&& f)
 {
     return [f = FWD(f),
-            sched = util::Scheduler::make_default()](auto&&... args) -> std::decay_t<decltype(f(FWD(args)...))> {
-        using Ret = std::decay_t<decltype(f(FWD(args)...))>;
+            sched = util::Scheduler::make_default()](auto&&... args) -> std::decay_t<std::invoke_result_t<F, decltype(args)...>> {
+        using Ret = std::decay_t<std::invoke_result_t<F, decltype(args)...>> ;
         if (sched->is_on_thread())
             return f(FWD(args)...);
 
