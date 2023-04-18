@@ -21,18 +21,7 @@ import path from "path";
 import fs from "fs-extra";
 import glob from "glob";
 import deepmerge from "deepmerge";
-
-export type Credentials =
-  | {
-      kind: "api-key";
-      publicKey: string;
-      privateKey: string;
-    }
-  | {
-      kind: "username-password";
-      username: string;
-      password: string;
-    };
+import { AdminApiClient, Credentials, SyncConfig } from "./AdminApiClient";
 
 /**
  * First level keys are file globs and the values are objects that are spread over the content of the files matching the glob.
@@ -58,11 +47,6 @@ type App = {
   environment: string;
 };
 
-type LoginResponse = {
-  access_token: string;
-  refresh_token: string;
-};
-
 type AppConfig = {
   name: string;
   sync?: SyncConfig;
@@ -70,107 +54,6 @@ type AppConfig = {
     allowed_request_origins?: string[];
   };
 };
-
-type SyncConfig = {
-  development_mode_enabled?: boolean;
-};
-
-type ErrorResponse = {
-  error: string;
-};
-
-type ProfileResponse = {
-  roles: Role[];
-};
-
-type Role = { role_name: string; group_id: string };
-
-type AuthProvider = {
-  _id: string;
-  name: string;
-  type: string;
-  disabled: boolean;
-};
-
-type RemoteFunction = {
-  _id: string;
-  name: string;
-  last_modified: number;
-};
-
-type Service = {
-  _id: string;
-};
-
-function isString(value: unknown): value is string {
-  return typeof value === "string";
-}
-
-function isObject(json: unknown): json is Record<string, unknown> {
-  return typeof json === "object" && json !== null;
-}
-
-function isAppResponse(json: unknown): json is App {
-  if (isObject(json)) {
-    return typeof json.client_app_id === "string" && typeof json._id === "string";
-  } else {
-    return false;
-  }
-}
-
-function isAppsResponse(json: unknown): json is App[] {
-  return Array.isArray(json) && json.every(isAppResponse);
-}
-
-function isServiceResponse(json: unknown): json is Service {
-  if (isObject(json)) {
-    return typeof json._id === "string";
-  } else {
-    return false;
-  }
-}
-
-function isLoginResponse(json: unknown): json is LoginResponse {
-  if (isObject(json)) {
-    return typeof json.access_token === "string" && typeof json.refresh_token === "string";
-  } else {
-    return false;
-  }
-}
-
-function isErrorResponse(json: unknown): json is ErrorResponse {
-  if (isObject(json)) {
-    return typeof json.error === "string";
-  } else {
-    return false;
-  }
-}
-
-function isProfileResponse(json: unknown): json is ProfileResponse {
-  if (isObject(json)) {
-    return Array.isArray(json.roles) && json.roles.every((item) => typeof item.role_name === "string");
-  } else {
-    return false;
-  }
-}
-
-function isRemoteFunctionsResponse(json: unknown): json is RemoteFunction[] {
-  if (Array.isArray(json)) {
-    return json.every((item) => typeof item._id === "string" && typeof item.name === "string");
-  } else {
-    return false;
-  }
-}
-
-function isAuthProvidersResponse(json: unknown): json is AuthProvider[] {
-  if (Array.isArray(json)) {
-    return json.every(
-      (item) => typeof item._id === "string" && typeof item.name === "string" && typeof item.type === "string",
-    );
-  } else {
-    return false;
-  }
-}
 
 export interface AppImporterOptions {
   baseUrl: string;
@@ -185,14 +68,14 @@ export class AppImporter {
   private readonly credentials: Credentials;
   private readonly realmConfigPath: string;
   private readonly appsDirectoryPath: string;
-
-  private accessToken: string | undefined;
+  private readonly client: AdminApiClient;
 
   constructor({ baseUrl, credentials, realmConfigPath, appsDirectoryPath, cleanUp = true }: AppImporterOptions) {
     this.baseUrl = baseUrl;
     this.credentials = credentials;
     this.realmConfigPath = realmConfigPath;
     this.appsDirectoryPath = appsDirectoryPath;
+    this.client = new AdminApiClient({ baseUrl });
 
     if (cleanUp) {
       process.on("exit", () => {
@@ -218,11 +101,11 @@ export class AppImporter {
   public async importApp(appTemplatePath: string, replacements: TemplateReplacements = {}): Promise<ImportedApp> {
     const { name: appName, sync, security } = this.loadAppConfigJson(appTemplatePath);
 
-    await this.logIn();
+    await this.client.ensureLogIn(this.credentials);
 
-    const groupId = await this.getGroupId();
-    const app = await this.createApp(groupId, appName);
+    const app = await this.client.createApp(appName);
     const appId = app.client_app_id;
+    console.log(`Created ${appId}`);
     try {
       // Determine the path of the new app
       const appPath = path.resolve(this.appsDirectoryPath, appId);
@@ -235,21 +118,25 @@ export class AppImporter {
 
       // Apply allowed request origins if they exist
       if (security?.allowed_request_origins) {
-        this.applyAllowedRequestOrigins(security.allowed_request_origins, app._id, groupId);
+        this.client.applyAllowedRequestOrigins(security.allowed_request_origins, app._id);
       }
 
       // Create the app service
-      await this.applyAppConfiguration(appPath, app._id, groupId, sync);
+      await this.applyAppConfiguration(appPath, app._id, sync);
 
       if (appId) {
         console.log(`The application ${appId} was successfully deployed...`);
-        console.log(`${this.baseUrl}/groups/${groupId}/apps/${app._id}/dashboard`);
+        console.log(`${this.baseUrl}/groups/${await this.client.groupId}/apps/${app._id}/dashboard`);
       }
 
       return { appName, appId };
     } catch (err) {
-      console.log(`Something went wrong on import, cleaning up the app ${appId}`);
-      await this.deleteApp(appId);
+      try {
+        // Using a try-catch here, because the failure to delete the app should not shadow the actual error
+        await this.client.deleteApp(appId);
+      } catch (err) {
+        console.warn(`Failed to delete the app: ${err}`);
+      }
       throw err;
     }
   }
@@ -263,27 +150,9 @@ export class AppImporter {
     return apps;
   }
 
-  public async deleteApp(clientAppId: string): Promise<void> {
-    await this.logIn();
-    const groupId = await this.getGroupId();
-
-    const app = await this.getAppByClientAppId(groupId, clientAppId);
-    const url = `${this.baseUrl}/api/admin/v3.0/groups/${groupId}/apps/${app._id}`;
-
-    const response = await fetch(url, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-        "content-type": "application/json",
-      },
-    });
-    if (!response.ok) {
-      throw new Error(`Failed to delete app with client app ID '${clientAppId}' in group '${groupId}'`);
-    }
-  }
-
-  private get apiUrl() {
-    return `${this.baseUrl}/api/admin/v3.0`;
+  public async deleteApp(clientAppId: string) {
+    const app = await this.client.getAppByClientAppId(clientAppId);
+    await this.client.deleteApp(app._id);
   }
 
   private loadJson(filePath: string) {
@@ -332,38 +201,7 @@ export class AppImporter {
     }
   }
 
-  private async applyAllowedRequestOrigins(origins: string[], appId: string, groupId: string) {
-    console.log("Applying allowed request origins: ", origins);
-    const originsUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/security/allowed_request_origins`;
-    const response = await fetch(originsUrl, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify(origins),
-    });
-    if (!response.ok) {
-      console.error("Could not apply request origins: ", origins, originsUrl, response.status, response.statusText);
-    }
-  }
-
-  private async applySyncConfig(groupId: string, appId: string, config: SyncConfig) {
-    const configUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/sync/config`;
-    const response = await fetch(configUrl, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify(config),
-    });
-    if (!response.ok) {
-      console.error("Could not apply sync configuration: ", config, configUrl, response.status, response.statusText);
-    }
-  }
-
-  private async configureValuesFromAppPath(appPath: string, appId: string, groupId: string) {
+  private async configureValuesFromAppPath(appPath: string, appId: string) {
     const valuesDir = path.join(appPath, "values");
 
     if (fs.existsSync(valuesDir)) {
@@ -372,27 +210,13 @@ export class AppImporter {
       for (const valueFile of valuesDirs) {
         const configPath = path.join(valuesDir, valueFile);
         const config = this.loadJson(configPath);
-
         console.log("creating new value: ", config);
-        const url = `${this.apiUrl}/groups/${groupId}/apps/${appId}/values`;
-        const response = await fetch(url, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${this.accessToken}`,
-            "content-type": "application/json",
-          },
-          body: JSON.stringify(config),
-        });
-        if (!response.ok) {
-          const json = await response.json();
-          const error = isErrorResponse(json) ? json.error : "No error message";
-          console.error("Failed to apply function: ", { config, url, error });
-        }
+        this.client.createValue(appId, config);
       }
     }
   }
 
-  private async configureServiceFromAppPath(appPath: string, appId: string, groupId: string, syncConfig?: SyncConfig) {
+  private async configureServiceFromAppPath(appPath: string, appId: string, syncConfig?: SyncConfig) {
     const servicesDir = path.join(appPath, "services");
     if (fs.existsSync(servicesDir)) {
       console.log("Applying services... ");
@@ -404,38 +228,20 @@ export class AppImporter {
         if (fs.existsSync(configFilePath)) {
           const config = this.loadJson(configFilePath);
 
-          const serviceUrl = `${this.apiUrl}/groups/${groupId}/apps/${appId}/services`;
-          const response = await fetch(serviceUrl, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${this.accessToken}`,
-              "content-type": "application/json",
-            },
-            body: JSON.stringify(config),
-          });
-          if (!response.ok) {
-            throw new Error(
-              `Could not create service: ${JSON.stringify(config)}, ${serviceUrl}, ${response.statusText}`,
-            );
-          } else {
-            if (syncConfig) {
-              await this.applySyncConfig(groupId, appId, syncConfig);
-            }
-            const rulesDir = path.join(servicesDir, serviceDir, "rules");
-            const responseJson = await response.json();
-            if (!isServiceResponse(responseJson)) {
-              throw new Error("Expected a service response");
-            }
-            const serviceId = responseJson._id;
-            // rules must be applied after the service is created
-            if (fs.existsSync(rulesDir)) {
-              console.log("Applying rules...");
-              const ruleFiles = fs.readdirSync(rulesDir);
-              for (const ruleFile of ruleFiles) {
-                const ruleFilePath = path.join(rulesDir, ruleFile);
-                const ruleConfig = this.loadJson(ruleFilePath);
-                this.createRule(appId, groupId, serviceId, config.type, ruleConfig);
-              }
+          const service = await this.client.createService(appId, config);
+          if (syncConfig) {
+            await this.client.applySyncConfig(appId, syncConfig);
+          }
+          const rulesDir = path.join(servicesDir, serviceDir, "rules");
+          const serviceId = service._id;
+          // rules must be applied after the service is created
+          if (fs.existsSync(rulesDir)) {
+            console.log("Applying rules...");
+            const ruleFiles = fs.readdirSync(rulesDir);
+            for (const ruleFile of ruleFiles) {
+              const ruleFilePath = path.join(rulesDir, ruleFile);
+              const ruleConfig = this.loadJson(ruleFilePath);
+              this.client.createRule(appId, serviceId, config.type, ruleConfig);
             }
           }
         }
@@ -443,55 +249,16 @@ export class AppImporter {
     }
   }
 
-  private async createRule(
-    appId: string,
-    groupId: string,
-    serviceId: string,
-    serviceType: string,
-    config: Record<string, unknown>,
-  ) {
-    const schemaConfig = config.schema || null;
-    if (schemaConfig) {
-      // Schema is not valid in a rule request, but is included when exporting an app from realm
-      delete config.schema;
-    }
-
-    const relationshipsConfig = config.relationships || null;
-    if (relationshipsConfig) {
-      // Relationships is not valid in a rule request, but is included when exporting an app from realm
-      delete config.relationships;
-    }
-    const url =
-      serviceType === "mongodb" || serviceType === "mongodb-atlas"
-        ? `${this.apiUrl}/groups/${groupId}/apps/${appId}/services/${serviceId}/default_rule`
-        : `${this.apiUrl}/groups/${groupId}/apps/${appId}/services/${serviceId}/rules`;
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify(config),
-    });
-    if (!response.ok) {
-      const json = await response.json();
-      const error = isErrorResponse(json) ? json.error : "No error message";
-      const configStr = JSON.stringify(config);
-      throw new Error(`Could not create rule: ${error} (${url} ${configStr})`);
-    }
-  }
-
-  private async configureAuthProvidersFromAppPath(appPath: string, appId: string, groupId: string) {
+  private async configureAuthProvidersFromAppPath(appPath: string, appId: string) {
     const authProviderDir = path.join(appPath, "auth_providers");
 
     // Some auth providers use a remote function.  This makes sure the ids are available to add to the configuration
-    const remoteFunctions = await this.getFunctions(appId, groupId);
+    const remoteFunctions = await this.client.getFunctions(appId);
 
     if (fs.existsSync(authProviderDir)) {
       console.log("Applying auth providers...");
       const authFileNames = fs.readdirSync(authProviderDir);
-      const providers = await this.getAuthProviders(appId, groupId);
+      const providers = await this.client.getAuthProviders(appId);
       for (const authFileName of authFileNames) {
         const authFilePath = path.join(authProviderDir, authFileName);
         const config = this.loadJson(authFilePath);
@@ -520,63 +287,15 @@ export class AppImporter {
 
         const currentProvider = providers.find((provider) => provider.type === config.type);
         if (currentProvider) {
-          const url = `${this.apiUrl}/groups/${groupId}/apps/${appId}/auth_providers/${currentProvider._id}`;
-          const response = await fetch(url, {
-            method: "PATCH",
-            headers: {
-              Authorization: `Bearer ${this.accessToken}`,
-              "content-type": "application/json",
-            },
-            body: JSON.stringify({ ...config, _id: currentProvider._id }),
-          });
-          if (!response.ok) {
-            const json = await response.json();
-            const error = isErrorResponse(json) ? json.error : "No error message";
-            console.error("Failed to apply auth_provider: ", { config, url, error });
-          }
+          await this.client.patchAuthProvider(appId, currentProvider._id, config);
         } else {
-          const url = `${this.apiUrl}/groups/${groupId}/apps/${appId}/auth_providers`;
-          const response = await fetch(url, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${this.accessToken}`,
-              "content-type": "application/json",
-            },
-            body: JSON.stringify(config),
-          });
-          if (!response.ok) {
-            const json = await response.json();
-            const error = isErrorResponse(json) ? json.error : "No error message";
-            console.error("Failed to apply auth_provider: ", { config, url, error });
-          }
+          await this.client.createAuthProvider(appId, config);
         }
       }
     }
   }
 
-  private async getFunctions(appId: string, groupId: string): Promise<RemoteFunction[]> {
-    const url = `${this.apiUrl}/groups/${groupId}/apps/${appId}/functions`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-        "content-type": "application/json",
-      },
-    });
-    const result = await response.json();
-    if (!response.ok) {
-      const json = await response.json();
-      const error = isErrorResponse(json) ? json.error : "No error message";
-      console.error("Failed to retrieve functions: ", { url, error });
-    }
-    if (isRemoteFunctionsResponse(result)) {
-      return result;
-    } else {
-      throw new Error(`Unexpected response body: ${JSON.stringify(result)}`);
-    }
-  }
-
-  private async configureFunctionsFromAppPath(appPath: string, appId: string, groupId: string) {
+  private async configureFunctionsFromAppPath(appPath: string, appId: string) {
     const functionsDir = path.join(appPath, "functions");
 
     if (fs.existsSync(functionsDir)) {
@@ -591,47 +310,12 @@ export class AppImporter {
         delete config.id;
 
         console.log("creating new function provider: ", config);
-        const url = `${this.apiUrl}/groups/${groupId}/apps/${appId}/functions`;
-        const response = await fetch(url, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${this.accessToken}`,
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({ ...config, source: source }),
-        });
-        if (!response.ok) {
-          const json = await response.json();
-          const error = isErrorResponse(json) ? json.error : "No error message";
-          console.error("Failed to apply function: ", { config, url, error });
-        }
+        await this.client.createFunction(appId, { ...config, source: source });
       }
     }
   }
 
-  private async getAuthProviders(appId: string, groupId: string): Promise<AuthProvider[]> {
-    const url = `${this.apiUrl}/groups/${groupId}/apps/${appId}/auth_providers`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-        "content-type": "application/json",
-      },
-    });
-    const result = await response.json();
-    if (!response.ok) {
-      const json = await response.json();
-      const error = isErrorResponse(json) ? json.error : "No error message";
-      console.error("Failed to retrieve auth_providers: ", { url, error });
-    }
-    if (isAuthProvidersResponse(result)) {
-      return result;
-    } else {
-      throw new Error(`Unexpected response body: ${JSON.stringify(result)}`);
-    }
-  }
-
-  private async applyAppConfiguration(appPath: string, appId: string, groupId: string, syncConfig?: SyncConfig) {
+  private async applyAppConfiguration(appPath: string, appId: string, syncConfig?: SyncConfig) {
     // Create all secrets in parallel
     const secrets = this.loadSecretsJson(appPath);
     await Promise.all(
@@ -639,193 +323,16 @@ export class AppImporter {
         if (typeof value !== "string") {
           throw new Error(`Expected a secret string value for '${name}'`);
         }
-        return this.createSecret(groupId, appId, name, value);
+        return this.client.createSecret(appId, name, value);
       }),
     );
 
-    await this.configureValuesFromAppPath(appPath, appId, groupId);
+    await this.configureValuesFromAppPath(appPath, appId);
 
-    await this.configureServiceFromAppPath(appPath, appId, groupId, syncConfig);
+    await this.configureServiceFromAppPath(appPath, appId, syncConfig);
 
-    await this.configureFunctionsFromAppPath(appPath, appId, groupId);
+    await this.configureFunctionsFromAppPath(appPath, appId);
 
-    await this.configureAuthProvidersFromAppPath(appPath, appId, groupId);
-  }
-
-  private performLogIn() {
-    const { credentials } = this;
-    if (credentials.kind === "api-key") {
-      return fetch(`${this.apiUrl}/auth/providers/mongodb-cloud/login`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          username: credentials.publicKey,
-          apiKey: credentials.privateKey,
-        }),
-      });
-    } else if (credentials.kind === "username-password") {
-      return fetch(`${this.apiUrl}/auth/providers/local-userpass/login`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          username: credentials.username,
-          password: credentials.password,
-        }),
-      });
-    } else {
-      throw new Error(`Unexpected credentials: ${credentials}`);
-    }
-  }
-
-  private async logIn() {
-    // Store the access and refresh tokens
-    const response = await this.performLogIn();
-    const responseBody = await response.json();
-    if (response.ok && isLoginResponse(responseBody)) {
-      this.accessToken = responseBody.access_token;
-      // Write the stitch config file
-      const { credentials } = this;
-      this.saveStitchConfig(
-        credentials.kind === "api-key" ? credentials.publicKey : credentials.username,
-        responseBody.refresh_token,
-        responseBody.access_token,
-      );
-    } else if (isErrorResponse(responseBody)) {
-      throw new Error(`Failed to log in: ${responseBody.error}`);
-    } else {
-      throw new Error("Failed to log in");
-    }
-  }
-
-  private saveStitchConfig(username: string, refreshToken: string, accessToken: string) {
-    const realmConfig = [
-      `public_api_key: ${username}`,
-      `refresh_token: ${refreshToken}`,
-      `access_token: ${accessToken}`,
-    ];
-    fs.writeFileSync(this.realmConfigPath, realmConfig.join("\n"), "utf8");
-  }
-
-  private async getProfile() {
-    if (!this.accessToken) {
-      throw new Error("Login before calling this method");
-    }
-    const url = `${this.baseUrl}/api/admin/v3.0/auth/profile`;
-    const response = await fetch(url, {
-      headers: { Authorization: `Bearer ${this.accessToken}` },
-    });
-    if (response.ok) {
-      const json = await response.json();
-      if (!isProfileResponse(json)) {
-        throw new Error("Expected a profile response");
-      }
-      return json;
-    } else {
-      throw new Error("Failed to get users profile");
-    }
-  }
-
-  private async getGroupId(): Promise<string> {
-    const profile = await this.getProfile();
-    const groupIds = profile.roles.map((r) => r.group_id).filter(isString);
-    const uniqueGroupIds = [...new Set(groupIds)];
-    if (uniqueGroupIds.length === 1) {
-      return uniqueGroupIds[0];
-    } else {
-      throw new Error("Expected user to have a role in a single group");
-    }
-  }
-
-  private async getAppByClientAppId(groupId: string, clientAppId: string): Promise<App> {
-    if (!this.accessToken) {
-      throw new Error("Login before calling this method");
-    }
-    const url = `${this.baseUrl}/api/admin/v3.0/groups/${groupId}/apps`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-        "content-type": "application/json",
-      },
-    });
-    if (response.ok) {
-      const apps = await response.json();
-      if (!isAppsResponse(apps)) {
-        throw new Error("Expected a response with apps");
-      }
-      const app = apps.find((app) => app.client_app_id === clientAppId);
-      if (!app) {
-        throw new Error(`App with client app ID '${clientAppId}' in group '${groupId}' not found`);
-      }
-      return app;
-    } else {
-      throw new Error(`Failed to find app with client app ID '${clientAppId}' in group '${groupId}'`);
-    }
-  }
-
-  private async findApp(groupId: string, name: string) {
-    if (!this.accessToken) {
-      throw new Error("Login before calling this method");
-    }
-    const response = await fetch(`${this.apiUrl}/groups/${groupId}/apps`, {
-      method: "GET",
-      headers: { authorization: `Bearer ${this.accessToken}` },
-    });
-    if (response.ok) {
-      const appList = (await response.json()) as Array<App>;
-      return appList.find((app) => app.name === name);
-    } else {
-      throw new Error(`Failed reach app listing in group '${groupId}'`);
-    }
-  }
-
-  private async createApp(groupId: string, name: string) {
-    if (!this.accessToken) {
-      throw new Error("Login before calling this method");
-    }
-    const url = `${this.baseUrl}/api/admin/v3.0/groups/${groupId}/apps`;
-    const body = JSON.stringify({
-      name,
-      sync: {
-        development_mode_enabled: true,
-      },
-    });
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-        "content-type": "application/json",
-      },
-      body,
-    });
-    if (response.ok) {
-      const json = await response.json();
-      if (!isAppResponse(json)) {
-        throw new Error("Expected an app response");
-      }
-      return json;
-    } else {
-      throw new Error(`Failed to create app named '${name}' in group '${groupId}'`);
-    }
-  }
-
-  private async createSecret(groupId: string, internalAppId: string, name: string, value: string) {
-    console.log(`Creating "${name}" secret`);
-    if (!this.accessToken) {
-      throw new Error("Login before calling this method");
-    }
-    const url = `${this.apiUrl}/groups/${groupId}/apps/${internalAppId}/secrets`;
-    const body = JSON.stringify({ name, value });
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-        "content-type": "application/json",
-      },
-      body,
-    });
-    if (!response.ok) {
-      throw new Error(`Failed to create secret '${name}'`);
-    }
+    await this.configureAuthProvidersFromAppPath(appPath, appId);
   }
 }
