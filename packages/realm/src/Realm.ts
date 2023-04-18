@@ -2000,7 +2000,7 @@ declare global {
   }
 }
 
-//Set default logger
+//Set default logger and log level.
 Realm.setLoggerCallback(defaultLogger);
 Realm.setLogLevel(defaultLoggerLevel);
 
