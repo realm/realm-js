@@ -95,18 +95,29 @@ export type DeploymentDraft = {
 
 export type DeploymentDraftResponse = DeploymentDraft;
 
-export function assertDeploymentDraftResponse(response: unknown): asserts response is DeploymentDraftResponse {
-  assertObject(response);
-  if (typeof response._id !== "string" || typeof response.user_id !== "string" || typeof response.app !== "object") {
+export function assertDeploymentDraft(value: unknown): asserts value is DeploymentDraftResponse {
+  assertObject(value);
+  if (typeof value._id !== "string" || typeof value.user_id !== "string" || typeof value.app !== "object") {
     throw new Error("Expected a DeploymentDraftResponse");
   }
+}
+
+export function assertDeploymentDraftResponse(response: unknown): asserts response is DeploymentDraftResponse {
+  assertDeploymentDraft(response);
+}
+
+export type DeploymentDraftsResponse = Array<DeploymentDraft>;
+
+export function assertDeploymentsDraftResponse(response: unknown): asserts response is DeploymentDraftsResponse {
+  assertArray(response);
+  response.every(assertDeploymentDraft);
 }
 
 export type Deployment = {
   _id: string;
   name: string;
   app_id: string;
-  draft_id: string;
+  draft_id?: string;
   user_id: string;
   deployed_at: number;
   origin: string;
@@ -119,11 +130,22 @@ export type Deployment = {
 
 export type DeploymentResponse = Deployment;
 
-export function assertDeploymentResponse(response: unknown): asserts response is DeploymentResponse {
-  assertObject(response);
-  if (typeof response._id !== "string" || typeof response.draft_id !== "string") {
-    throw new Error("Expected a DeploymentResponse");
+function assertDeployment(value: unknown): asserts value is Deployment {
+  assertObject(value);
+  if (typeof value._id !== "string" || typeof value.deployed_at !== "number") {
+    throw new Error("Expected a Deployment");
   }
+}
+
+export function assertDeploymentResponse(response: unknown): asserts response is DeploymentResponse {
+  assertDeployment(response);
+}
+
+export type DeploymentsResponse = Array<Deployment>;
+
+export function assertDeploymentsResponse(response: unknown): asserts response is DeploymentsResponse {
+  assertArray(response);
+  response.every(assertDeployment);
 }
 
 // TODO: Extend this
@@ -184,6 +206,21 @@ export function assertFunctionResponse(response: unknown): asserts response is F
 
 export type FunctionsResponse = Array<AtlasFunction>;
 export function assertFunctionsResponse(response: unknown): asserts response is FunctionsResponse {
+  assertArray(response);
+  response.every(assertAtlasFunction);
+}
+
+export type Secret = {
+  _id: string;
+  name: string;
+};
+
+export function assertSecret(value: unknown): asserts value is Secret {
+  assertObject(value);
+}
+
+export type SecretsResponse = Array<Secret>;
+export function assertSecretsResponse(response: unknown): asserts response is SecretsResponse {
   assertArray(response);
   response.every(assertAtlasFunction);
 }

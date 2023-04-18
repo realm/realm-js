@@ -25,10 +25,13 @@ import {
   assertAuthProvidersResponse,
   assertDeploymentDraftResponse,
   assertDeploymentResponse,
+  assertDeploymentsDraftResponse,
+  assertDeploymentsResponse,
   assertFunctionResponse,
   assertFunctionsResponse,
   assertLoginResponse,
   assertProfileResponse,
+  assertSecretsResponse,
   assertServiceResponse,
   isErrorResponse,
 } from "./types";
@@ -165,16 +168,6 @@ export class AdminApiClient {
     });
   }
 
-  public async deployDeploymentDraft(appId: string, draftId: string) {
-    this.assertLoggedIn();
-    const response = await this.fetch({
-      route: ["groups", await this.groupId, "apps", appId, "drafts", draftId, "deployment"],
-      method: "POST",
-    });
-    assertDeploymentResponse(response);
-    return response;
-  }
-
   public async getDeployment(appId: string, deploymentId: string) {
     this.assertLoggedIn();
     const response = await this.fetch({
@@ -185,13 +178,51 @@ export class AdminApiClient {
     return response;
   }
 
-  public async createSecret(internalAppId: string, name: string, value: string) {
+  public async listDeploymentDrafts(appId: string) {
+    this.assertLoggedIn();
+    const response = await this.fetch({
+      route: ["groups", await this.groupId, "apps", appId, "drafts"],
+      method: "GET",
+    });
+    assertDeploymentsDraftResponse(response);
+    return response;
+  }
+
+  public async listDeployments(appId: string) {
+    this.assertLoggedIn();
+    const response = await this.fetch({
+      route: ["groups", await this.groupId, "apps", appId, "deployments"],
+      method: "GET",
+    });
+    assertDeploymentsResponse(response);
+    return response;
+  }
+
+  public async createSecret(appId: string, name: string, value: string) {
     this.assertLoggedIn();
     await this.fetch({
-      route: ["groups", await this.groupId, "apps", internalAppId, "secrets"],
+      route: ["groups", await this.groupId, "apps", appId, "secrets"],
       body: { name, value },
       method: "POST",
     });
+  }
+
+  public async deleteSecret(appId: string, secretId: string) {
+    this.assertLoggedIn();
+    await this.fetch({
+      route: ["groups", await this.groupId, "apps", appId, "secrets", secretId],
+      method: "DELETE",
+    });
+  }
+
+  public async listSecrets(appId: string) {
+    this.assertLoggedIn();
+    const response = await this.fetch({
+      route: ["groups", await this.groupId, "apps", appId, "secrets"],
+      method: "GET",
+    });
+    assertSecretsResponse(response);
+    return response;
   }
 
   public async createValue(appId: string, config: Record<string, unknown>) {
@@ -249,7 +280,7 @@ export class AdminApiClient {
     return response;
   }
 
-  public async getAuthProviders(appId: string) {
+  public async listAuthProviders(appId: string) {
     const response = await this.fetch({
       route: ["groups", await this.groupId, "apps", appId, "auth_providers"],
       method: "GET",
@@ -274,7 +305,7 @@ export class AdminApiClient {
     });
   }
 
-  public async getFunctions(appId: string) {
+  public async listFunctions(appId: string) {
     const response = await this.fetch({
       route: ["groups", await this.groupId, "apps", appId, "functions"],
       method: "GET",

@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import fetch from "node-fetch";
 import path from "path";
 import fs from "fs-extra";
 import glob from "glob";
@@ -114,26 +113,33 @@ export class AppImporter {
         if (!this.initialDeployment) {
           throw new Error("Missing an initial deployment");
         }
-        console.log("Redeploying initial deployment", this.initialDeployment.draft_id);
+        console.log(`Reusing ${this.reusedApp.client_app_id}`);
         await this.client.redeployDeployment(this.reusedApp._id, this.initialDeployment._id);
-        await this.pollDeploymentUntilSuccessful(this.reusedApp._id, this.initialDeployment._id);
+        const [deployment] = await this.client.listDeployments(this.reusedApp._id);
+        console.log(`Redeployed ${this.initialDeployment._id} as ${deployment._id}`);
+        this.initialDeployment = deployment;
+        // Delete any existing secrets
+        const secrets = await this.client.listSecrets(this.reusedApp._id);
+        for (const secret of secrets) {
+          console.log(`Deleting old secret named '${secret.name}'`);
+          await this.client.deleteSecret(this.reusedApp._id, secret._id);
+        }
         return this.reusedApp;
       } else {
         // Ensure we have the reusable app imported already
         const app = await this.client.createApp("reused");
+        console.log(`Created ${app.client_app_id}`);
         // Store this for next import
         this.reusedApp = app;
-        // Configure this to use deployments
-        await this.client.configureDeployments(app._id, {
-          ui_drafts_disabled: false,
-          automatic_deployment: {
-            enabled: false,
-          },
-        });
+        // Do a simple change to get an initial deployment
+        await this.client.createValue(app._id, { name: "initial-deployment-value", value: "whatever" });
         // Create and deploy a deployment draft we can redeploy later
-        const draft = await this.client.createDeploymentDraft(app._id);
-        this.initialDeployment = await this.client.deployDeploymentDraft(app._id, draft._id);
-        await this.pollDeploymentUntilSuccessful(app._id, this.initialDeployment._id);
+        const deployments = await this.client.listDeployments(app._id);
+        if (deployments.length === 1) {
+          this.initialDeployment = deployments[0];
+        } else {
+          throw new Error("Expected a single initial deployment");
+        }
         return app;
       }
     } else {
@@ -152,15 +158,15 @@ export class AppImporter {
     await this.client.ensureLogIn(this.credentials);
 
     const app = await this.createOrReuseApp(appName);
-    if (this.reuseApp) {
-      this.currentDeploymentDraft = await this.client.createDeploymentDraft(app._id);
-    }
     const appId = app.client_app_id;
-    console.log(`Created ${appId}`);
     try {
       // Determine the path of the new app
       const appPath = path.resolve(this.appsDirectoryPath, appId);
 
+      if (fs.existsSync(appPath)) {
+        console.log(`Deleting old app directory (${appPath})`);
+        fs.rmSync(appPath, { recursive: true });
+      }
       // Copy over the app template
       this.copyAppTemplate(appPath, appTemplatePath);
 
@@ -178,10 +184,6 @@ export class AppImporter {
       if (appId) {
         console.log(`The application ${appId} was successfully deployed...`);
         console.log(`${this.baseUrl}/groups/${await this.client.groupId}/apps/${app._id}/dashboard`);
-      }
-
-      if (this.currentDeploymentDraft) {
-        await this.client.deployDeploymentDraft(app._id, this.currentDeploymentDraft._id);
       }
 
       return { appName, appId };
@@ -207,6 +209,11 @@ export class AppImporter {
 
   public async deleteApp(clientAppId: string) {
     const app = await this.client.getAppByClientAppId(clientAppId);
+    console.log("Deleting", this.reusedApp ? this.reusedApp._id : null, app._id);
+    // Forget the reused app if this was the one getting deleted
+    if (this.reusedApp && this.reusedApp._id === app._id) {
+      this.reusedApp = null;
+    }
     await this.client.deleteApp(app._id);
   }
 
@@ -234,13 +241,10 @@ export class AppImporter {
   }
 
   private copyAppTemplate(appPath: string, appTemplatePath: string) {
-    // Only copy over the template, if the app doesn't already exist
-    if (!fs.existsSync(appPath)) {
-      fs.mkdirpSync(appPath);
-      fs.copySync(appTemplatePath, appPath, {
-        recursive: true,
-      });
-    }
+    fs.mkdirpSync(appPath);
+    fs.copySync(appTemplatePath, appPath, {
+      recursive: true,
+    });
   }
 
   private applyReplacements(appPath: string, replacements: TemplateReplacements) {
@@ -306,14 +310,13 @@ export class AppImporter {
 
   private async configureAuthProvidersFromAppPath(appPath: string, appId: string) {
     const authProviderDir = path.join(appPath, "auth_providers");
-
     // Some auth providers use a remote function.  This makes sure the ids are available to add to the configuration
-    const remoteFunctions = await this.client.getFunctions(appId);
+    const remoteFunctions = await this.client.listFunctions(appId);
 
     if (fs.existsSync(authProviderDir)) {
       console.log("Applying auth providers...");
       const authFileNames = fs.readdirSync(authProviderDir);
-      const providers = await this.client.getAuthProviders(appId);
+      const providers = await this.client.listAuthProviders(appId);
       for (const authFileName of authFileNames) {
         const authFilePath = path.join(authProviderDir, authFileName);
         const config = this.loadJson(authFilePath);
@@ -347,6 +350,8 @@ export class AppImporter {
           await this.client.createAuthProvider(appId, config);
         }
       }
+      // Wait a bit for BaaS to enable the auth provider
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   }
 
@@ -394,10 +399,7 @@ export class AppImporter {
   private async pollDeploymentUntilSuccessful(appId: string, deploymentId: string) {
     for (let retry = 0; retry < 1000; retry++) {
       const response = await this.client.getDeployment(appId, deploymentId);
-      console.log({ response });
       if (response.status === "successful") {
-        // Delete the draft to enable creation of another
-        this.client.deleteDeploymentDraft(appId, response.draft_id);
         return response;
       }
       // Wait a bit
