@@ -22,9 +22,9 @@ import { Realm, List } from "realm";
 import { openRealmBefore, openRealmBeforeEach } from "../hooks";
 import { createLocalConfig } from "../utils/open-realm";
 
-describe("SharedRealm operations", () => {
+describe.only("SharedRealm operations", () => {
   describe("logger", () => {
-    it.only("logger callback gets called", async function () {
+    it("logger callback gets called", async function () {
       type Log = {
         message: string;
         level: string;
@@ -38,30 +38,37 @@ describe("SharedRealm operations", () => {
       Realm.setLogLevel("all");
 
       const realm = await Realm.open({
-        schema: [{ name: "Person", primaryKey: "id", properties: { name: "string", id: "int" } }],
+        schema: [{ name: "Person", properties: { name: "string" } }],
       });
-      realm.write(() => realm.deleteAll());
-      realm.write(() => realm.create("Person", { name: "Alice", id: 1 }));
+      realm.write(() => realm.create("Person", { name: "Alice" }));
 
       expect(logs).to.not.be.empty;
       expect(logs.map((l) => l.level)).to.contain.members(["trace", "debug"]);
       logs = [];
 
       Realm.setLogLevel("trace");
-      realm.write(() => realm.create("Person", { name: "Alice", id: 2 }));
+      realm.write(() => realm.create("Person", { name: "Alice" }));
       expect(logs.map((l) => l.level)).to.contain.members(["trace", "debug"]);
-      console.log(logs);
       logs = [];
 
       Realm.setLogLevel("debug");
-      realm.write(() => realm.create("Person", { name: "Alice", id: 3 }));
+      realm.write(() => realm.create("Person", { name: "Alice" }));
       expect(logs.map((l) => l.level))
         .to.contain("debug")
         .and.to.not.contain("trace");
       logs = [];
 
+      Realm.setLogLevel("warn");
+      realm.write(() => realm.create("Person", { name: "Alice" }));
+      expect(logs).to.be.empty;
+
       Realm.setLogLevel("error");
-      realm.write(() => realm.create("Person", { name: "Alice", id: 4 }));
+      realm.write(() => realm.create("Person", { name: "Alice" }));
+      expect(logs).to.be.empty;
+
+      //This will also disable the logger again after the test
+      Realm.setLogLevel("off");
+      realm.write(() => realm.create("Person", { name: "Alice" }));
       expect(logs).to.be.empty;
     });
   });

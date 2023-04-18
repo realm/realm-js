@@ -69,3 +69,23 @@ const inverseTranslationTable: Record<LogLevel, binding.LoggerLevel> = Object.fr
 export function fromBindingLoggerLevelToLogLevel(arg: binding.LoggerLevel): LogLevel {
   return translationTable[arg];
 }
+
+const consoleErrorLevels: LogLevel[] = ["error", "fatal"];
+const consoleWarnLevels: LogLevel[] = ["warn"];
+
+/** @internal */
+export const defaultLogger: LoggerCallback = function (logLevel: LogLevel, message: string) {
+  const formattedLogMessage = `[${logLevel}] ${message}`;
+  /* eslint-disable no-console */
+  if (consoleErrorLevels.includes(logLevel)) {
+    console.error(formattedLogMessage);
+  } else if (consoleWarnLevels.includes(logLevel)) {
+    console.error(formattedLogMessage);
+  } else {
+    console.log(formattedLogMessage);
+  }
+  /* eslint-enable no-console */
+};
+
+/** @internal */
+export const defaultLoggerLevel: LogLevel = "warn";

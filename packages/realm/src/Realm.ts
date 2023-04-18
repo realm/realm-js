@@ -88,7 +88,6 @@ import {
   List,
   LocalAppConfiguration,
   LogLevel,
-  Logger,
   LoggerCallback,
   MapToDecorator,
   MigrationCallback,
@@ -154,6 +153,8 @@ import {
   UserState,
   assert,
   binding,
+  defaultLogger,
+  defaultLoggerLevel,
   extendDebug,
   flags,
   fromBindingLoggerLevelToLogLevel,
@@ -265,14 +266,23 @@ export class Realm {
 
   private static internals = new Set<binding.WeakRef<binding.Realm>>();
 
-  //TODO Add default logger
-  //TODO Add docs
+  /**
+   * Sets the log level.
+   * @param level The log level to be used by the logger.
+   * @note The log level can be changed during the lifetime of the application.
+   * @since v12.0.0
+   */
   static setLogLevel(level: LogLevel) {
-    const numericLevel = toBindingLoggerLevel(level);
-    binding.Logger.setDefaultLevelThreshold(numericLevel);
+    const bindingLoggerLevel = toBindingLoggerLevel(level);
+    binding.Logger.setDefaultLevelThreshold(bindingLoggerLevel);
   }
 
-  //TODO Add docs
+  /**
+   * Sets the logger callback.
+   * @param loggerCallback The callback invoked by the logger.
+   * @note The logger callback needs to be setup before opening the first realm.
+   * @since v12.0.0
+   */
   static setLoggerCallback(loggerCallback: LoggerCallback) {
     const logger = binding.Helpers.makeLogger((level, message) => {
       loggerCallback(fromBindingLoggerLevelToLogLevel(level), message);
@@ -1989,6 +1999,10 @@ declare global {
     }
   }
 }
+
+//Set default logger
+Realm.setLoggerCallback(defaultLogger);
+Realm.setLogLevel(defaultLoggerLevel);
 
 // Patch the global at runtime
 let warnedAboutGlobalRealmUse = false;

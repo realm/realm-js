@@ -5,6 +5,7 @@
 
 ### Enhancements
 * Enable multiple processes to operate on an encrypted Realm simultaneously. ([realm/realm-core#1845](https://github.com/realm/realm-core/issues/1845))
+* Added `Realm.setLoggerCallback`, that allows to setup a single static logger for the duration of the app lifetime. Differently from the now deprecated sync logger (that was setup with `Sync.setLogger`), this new one will emit messages coming also from the local database, and not only from sync. It is also possible to change the log level during the whole duration of the app lifetime with `Realm.setLogLevel`. ([#2546](https://github.com/realm/realm-js/issues/2546))
 
 ### Fixed
 * Fix a stack overflow crash when using the query parser with long chains of AND/OR conditions. ([realm/realm-core#6428](https://github.com/realm/realm-core/pull/6428), since v10.11.0)
