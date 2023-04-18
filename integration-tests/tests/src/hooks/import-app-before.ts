@@ -18,7 +18,7 @@
 
 import { Realm } from "realm";
 
-import { deleteApp, importApp, TemplateReplacements } from "../utils/import-app";
+import { importApp, TemplateReplacements } from "../utils/import-app";
 
 const REALM_LOG_LEVELS = ["all", "trace", "debug", "detail", "info", "warn", "error", "fatal", "off"];
 
@@ -50,6 +50,27 @@ export function importAppBefore(
     }
   });
 
+  after("logoutUsersAfter", async function (this: Partial<AppContext> & Mocha.Context) {
+    if (this.app) {
+      // Loop all the users and log them out
+      for (const user of Object.values(this.app.allUsers)) {
+        try {
+          await user.logOut();
+        } catch (err) {
+          // Users might miss a refresh token
+          if (err instanceof Error) {
+            if (!err.message.includes("failed to find refresh token")) {
+              throw err;
+            }
+          } else {
+            throw err;
+          }
+        }
+      }
+    }
+  });
+
+  /*
   // Delete our app after we have finished, otherwise the server can slow down
   // (in the case of flexible sync, with lots of apps with subscriptions created)
   after("deleteAppAfter", async function (this: Partial<AppContext> & Mocha.Context) {
@@ -60,4 +81,5 @@ export function importAppBefore(
       console.warn("No app on context when trying to delete app");
     }
   });
+  */
 }
