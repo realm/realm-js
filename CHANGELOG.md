@@ -37,6 +37,7 @@ This can happen when the client creates/updates objects that do not match any su
   * Moderate (~25%) improvement when querying for an exact match on a `bool` property that has an index.
   * Small (~5%) improvement when querying for a case insensitive match on a `mixed` property that does not have an index.
 * Added a `THROW_ON_GLOBAL_REALM` which will enable throwing when the app is accessing the `Realm` without first importing it from the Realm package.
+* Added support for a sync configuration option to provide an `SSLConfiguration` with a custom function for validating the server's SSL certificate. [#5485](https://github.com/realm/realm-js/issues/5485)
 
 ### Fixed
 * Fixed bootstrapping the native module on Android. Seen as Exception in HostObject::get for prop 'Realm': java.lang.NoClassDefFoundError: io.realm.react.RealmReactModule. ([#5666](https://github.com/realm/realm-js/issues/5666), since v12.0.0-alpha.0)
