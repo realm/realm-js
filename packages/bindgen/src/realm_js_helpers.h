@@ -30,6 +30,7 @@
 #include <realm/object-store/sync/generic_network_transport.hpp>
 #include <realm/object-store/util/event_loop_dispatcher.hpp>
 #include <realm/util/functional.hpp>
+#include <string_view>
 #include <system_error>
 #include <thread>
 #include <type_traits>
@@ -265,6 +266,16 @@ struct Helpers {
     {
         ws.feed_buffer({buffer.data(), buffer.size()});
     }
+
+    static auto make_ssl_verify_callback(std::function<bool(const std::string& server_address, int server_port,
+                                                            std::string_view pem_data, int preverify_ok, int depth)>
+                                             callback)
+    {
+        return [callback = std::move(callback)](const std::string& server_address, uint16_t server_port,
+                                                const char* pem_data, size_t pem_size, int preverify_ok, int depth) {
+            return callback(server_address, server_port, std::string_view(pem_data, pem_size), preverify_ok, depth);
+        };
+    }
 };
 
 struct ObjectChangeSet {
@@ -324,9 +335,9 @@ private:
 template <typename F>
 auto schedulerWrapBlockingFunction(F&& f)
 {
-    return [f = FWD(f),
-            sched = util::Scheduler::make_default()](auto&&... args) -> std::decay_t<decltype(f(FWD(args)...))> {
-        using Ret = std::decay_t<decltype(f(FWD(args)...))>;
+    return [f = FWD(f), sched = util::Scheduler::make_default()](
+               auto&&... args) -> std::decay_t<std::invoke_result_t<F, decltype(args)...>> {
+        using Ret = std::decay_t<std::invoke_result_t<F, decltype(args)...>>;
         if (sched->is_on_thread())
             return f(FWD(args)...);
 

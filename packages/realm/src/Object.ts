@@ -478,7 +478,7 @@ export class RealmObject<T = DefaultObject> {
       } else if (value instanceof BSON.UUID) {
         return "uuid";
       } else {
-        throw assert.never(value, "value");
+        assert.never(value, "value");
       }
     } else {
       return typeName;

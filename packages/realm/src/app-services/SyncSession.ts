@@ -304,11 +304,22 @@ export class SyncSession {
   // TODO: Figure out a way to avoid passing a mocked app instance when constructing the User.
   get config(): SyncConfiguration {
     const user = new User(this.internal.user, mockApp);
-    const { partitionValue, flxSyncRequested, customHttpHeaders } = this.internal.config;
+    const { partitionValue, flxSyncRequested, customHttpHeaders, clientValidateSsl, sslTrustCertificatePath } =
+      this.internal.config;
     if (flxSyncRequested) {
-      return { user, flexible: true, customHttpHeaders };
+      return {
+        user,
+        flexible: true,
+        customHttpHeaders,
+        ssl: { validate: clientValidateSsl, certificatePath: sslTrustCertificatePath },
+      };
     } else {
-      return { user, partitionValue: EJSON.parse(partitionValue) as PartitionValue, customHttpHeaders };
+      return {
+        user,
+        partitionValue: EJSON.parse(partitionValue) as PartitionValue,
+        customHttpHeaders,
+        ssl: { validate: clientValidateSsl, certificatePath: sslTrustCertificatePath },
+      };
     }
   }
 

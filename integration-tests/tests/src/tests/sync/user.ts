@@ -23,6 +23,7 @@ import {
   randomVerifiableEmail,
 } from "../../utils/generators";
 import { KJUR } from "jsrsasign";
+import { UserState } from "realm";
 
 function expectIsUSer(user: Realm.User) {
   expect(user).to.not.be.undefined;
@@ -319,6 +320,26 @@ describe.skipIf(environment.missingServer, "User", () => {
           });
         expect(user2).to.be.undefined;
         expect(didFail).to.be.true;
+      });
+
+      describe("state", () => {
+        it("can fetch state when logged in with email password", async function (this: AppContext & RealmContext) {
+          expect(this.app.currentUser).to.be.null;
+          const user = await registerAndLogInEmailUser(this.app);
+          expect(user.state).to.equal(UserState.LoggedIn);
+        });
+
+        it("can fetch state when logged out with email password", async function (this: AppContext & RealmContext) {
+          const user = await registerAndLogInEmailUser(this.app);
+          await user.logOut();
+          expect(user.state).to.equal(UserState.LoggedOut);
+        });
+
+        it("can fetch state when removed with email password", async function (this: AppContext & RealmContext) {
+          const user = await registerAndLogInEmailUser(this.app);
+          await this.app.removeUser(user);
+          expect(user.state).to.equal(UserState.Removed);
+        });
       });
     });
   });

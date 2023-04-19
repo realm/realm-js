@@ -3,9 +3,15 @@
   "version": "0.1.0",
   "description": "Wrapping the Stitch CLI to import an app from a template (w. secrets)",
   "type": "module",
-  "main": "./dist/bundle.es.js",
   "types": "./dist/index.d.ts",
-  "react-native": "./dist/bundle.react-native.es.js",
+  "react-native": "./dist/bundle.react-native.mjs",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/bundle.mjs",
+      "require": "./dist/bundle.cjs"
+    }
+  },
   "bin": {
     "realm-app-importer": "./realm-app-importer.ts"
   },
@@ -18,7 +24,7 @@
     "bundle": {
       "command": "rollup --config",
       "files": ["rollup.config.mjs", "src/**/*.ts", "src/**/tsconfig.json"],
-      "output": ["dist/**/*.js", "dist/**/*.d.ts"],
+      "output": ["dist/**/*.mjs", "dist/**/*.cjs", "dist/**/*.d.ts"],
       "dependencies": [
         "generate-types",
         "../realm-network-transport:bundle"

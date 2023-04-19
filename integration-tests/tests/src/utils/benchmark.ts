@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { benchmark, BenchmarkOpts } from "@thi.ng/bench";
+import type { BenchmarkOpts } from "@thi.ng/bench";
 
 import { openRealmBefore } from "../hooks";
 
@@ -28,6 +28,7 @@ const DEFAULT_OPTIONS: Partial<BenchmarkOpts> = { output: false, iter: 1000, siz
 
 export function itPerforms(title: string, fn: () => void, options?: Partial<BenchmarkOpts>): void {
   it(title, async function (this: Partial<BenchmarkContext> & Mocha.Context) {
+    const { benchmark } = await import("@thi.ng/bench");
     this.timeout("1m").slow("1m");
     const result = benchmark(fn.bind(this), { ...DEFAULT_OPTIONS, ...options });
     const hz = (result.iter * result.size) / (result.total / 1000);

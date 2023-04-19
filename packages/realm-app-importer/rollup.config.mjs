@@ -22,14 +22,19 @@ import commonjs from "@rollup/plugin-commonjs";
 import dts from "rollup-plugin-dts";
 
 import pkg from "./package.json" assert { type: "json" };
+const mainExport = pkg.exports["."];
 
 export default [
   {
     input: "src/node/index.ts",
     output: [
       {
-        file: pkg.main,
+        file: mainExport.import,
         format: "es",
+      },
+      {
+        file: mainExport.require,
+        format: "cjs",
       },
     ],
     plugins: [
