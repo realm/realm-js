@@ -372,7 +372,8 @@ auto schedulerWrapBlockingFunction(F&& f)
  * Helps with correct handling of -1/npos for count_t
  */
 template <typename T>
-auto asSigned(T num) {
+auto asSigned(T num)
+{
     return std::make_signed_t<T>(num);
 }
 
