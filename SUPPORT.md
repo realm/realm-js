@@ -4,13 +4,13 @@ The Realm team is here to help you with your Realm-related issues!
 
 ## Documentation
 
-Before asking questions, please familiarize yourself with our [Javascript](https://realm.io/docs/javascript/latest/) documentation. We also have a number of [Tech Notes](https://realm.io/docs/tech-notes/) which cover various topics that may be of interest.
+Before asking questions, please familiarize yourself with our [Node.js](https://www.mongodb.com/docs/realm/sdk/node/) and [React Native](https://www.mongodb.com/docs/realm/sdk/react-native/) documentation. 
 
-## Stack Overflow
+## MongoDB Developer Community
 
-If you have questions about configuring or using Realm you can ask them on Stack Overflow. We continually monitor the [`realm` tag](https://stackoverflow.com/tags/realm). Please also tag your question with `javascript` or other tags as appropriate.
+If you have questions about configuring or using Realm you can ask the [MongoDB Developer Community](https://www.mongodb.com/community/forums/).
 
-When asking questions on Stack Overflow, please keep in mind Stack Overflow's [question guidelines](https://stackoverflow.com/help/how-to-ask), and please use their search functionality to see if your question has been asked before.
+When asking questions the MongoDB Developer Community, please keep in mind the [guidelines](https://www.mongodb.com/community/forums/guidelines), and please use the search functionality to see if your question has been asked before.
 
 ## GitHub Issues
 
