@@ -56,13 +56,13 @@ export class Sync {
   /** @deprecated Please use named imports */
   static NumericLogLevel = NumericLogLevel;
 
-  /** @deprecated Please use Realm.setLogLevel. Will be removed in v13.0.0. */
+  /** @deprecated Will be removed in v13.0.0. Please use {@link Realm.setLogLevel}. */
   static setLogLevel(app: App, level: LogLevel) {
     const numericLevel = toBindingLoggerLevel(level);
     app.internal.syncManager.setLogLevel(numericLevel);
   }
 
-  /** @deprecated Please use Realm.setLoggerCallback. Will be removed in v13.0.0. */
+  /** @deprecated Will be removed in v13.0.0. Please use {@link Realm.setLoggerCallback}. */
   static setLogger(app: App, logger: Logger) {
     const factory = binding.Helpers.makeLoggerFactory((level, message) => {
       logger(fromBindingLoggerLevelToNumericLogLevel(level), message);

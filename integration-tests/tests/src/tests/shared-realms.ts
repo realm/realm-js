@@ -22,7 +22,7 @@ import { Realm, List } from "realm";
 import { openRealmBefore, openRealmBeforeEach } from "../hooks";
 import { createLocalConfig } from "../utils/open-realm";
 
-describe.only("SharedRealm operations", () => {
+describe("SharedRealm operations", () => {
   describe("logger", () => {
     it("logger callback gets called", async function () {
       type Log = {
