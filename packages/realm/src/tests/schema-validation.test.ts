@@ -18,7 +18,12 @@
 
 import { expect } from "chai";
 
-import { SchemaParseError, validateObjectSchema, validatePropertySchema } from "../internal";
+import {
+  ObjectSchemaParseError,
+  PropertySchemaParseError,
+  validateObjectSchema,
+  validatePropertySchema,
+} from "../internal";
 
 const OBJECT_NAME = "MyObject";
 const PROPERTY_NAME = "prop";
@@ -135,7 +140,7 @@ describe("validateObjectSchema", () => {
   function itThrowsWhenValidating(description: string, input: unknown, errMessage: string): void {
     it(`throws when validating ${description}.`, () => {
       const validateFn = () => validateObjectSchema(input);
-      expect(validateFn).to.throw(SchemaParseError, errMessage);
+      expect(validateFn).to.throw(ObjectSchemaParseError, errMessage);
     });
   }
 });
@@ -265,7 +270,7 @@ describe("validatePropertySchema", () => {
   function itThrowsWhenValidating(description: string, input: unknown, errMessage: string): void {
     it(`throws when validating ${description}.`, () => {
       const validateFn = () => validatePropertySchema(OBJECT_NAME, PROPERTY_NAME, input);
-      expect(validateFn).to.throw(errMessage);
+      expect(validateFn).to.throw(PropertySchemaParseError, errMessage);
     });
   }
 });

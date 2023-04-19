@@ -21,9 +21,11 @@ import {
   CanonicalPropertySchema,
   CollectionPropertyTypeName,
   ObjectSchema,
+  ObjectSchemaParseError,
   PrimitivePropertyTypeName,
   PropertiesTypes,
   PropertySchema,
+  PropertySchemaParseError,
   PropertySchemaShorthand,
   PropertyTypeName,
   RealmObjectConstructor,
@@ -214,19 +216,19 @@ function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): Can
       type = propertySchema as PropertyTypeName;
     }
   } else if (isCollection(propertySchema)) {
-    throwError(
-      info,
+    throw new PropertySchemaParseError(
       `Cannot use the collection name ${propertySchema}. (Examples: 'int[]' (list), 'int{}' (dictionary), and 'int<>' (set))`,
+      info,
     );
   } else if (propertySchema === "object") {
-    throwError(
-      info,
+    throw new PropertySchemaParseError(
       "To define a relationship, use either 'MyObjectType' or { type: 'object', objectType: 'MyObjectType' }",
+      info,
     );
   } else if (propertySchema === "linkingObjects") {
-    throwError(
-      info,
+    throw new PropertySchemaParseError(
       "To define an inverse relationship, use { type: 'linkingObjects', objectType: 'MyObjectType', property: 'myObjectTypesProperty' }",
+      info,
     );
   } else {
     // User-defined types
@@ -289,9 +291,9 @@ function normalizePropertySchemaObject(info: PropertyInfoUsingObject): Canonical
     assert(!!property, propError(info, "The linking object's property name must be specified through 'property'."));
   } else {
     // 'type' is a user-defined type
-    throwError(
-      info,
+    throw new PropertySchemaParseError(
       `If you meant to define a relationship, use { type: 'object', objectType: '${type}' } or { type: 'linkingObjects', objectType: '${type}', property: 'The ${type} property' }`,
+      info,
     );
   }
 
@@ -386,41 +388,19 @@ function assertNotUsingShorthand(input: string | undefined, info: PropertyInfo):
 }
 
 /**
- * Get an error message for an invalid property schema.
- */
-function propSchemaErrorMessage({ objectName, propertyName }: PropertyInfo, message: string): string {
-  return `Invalid type declaration for property '${propertyName}' on '${objectName}': ${message}`;
-}
-
-/**
  * Generate an error caused by an invalid property schema.
  * (Returning a function rather than the Error itself in order
  * for the Error to only be created if needed.)
  */
-function propError(info: PropertyInfo, message: string): () => SchemaParseError {
-  return () => new SchemaParseError(propSchemaErrorMessage(info, message));
-}
-
-/**
- * Get an error message for an invalid object schema.
- */
-function objectSchemaErrorMessage(objectName: string, message: string): string {
-  const displayName = objectName ? `object '${objectName}'` : "unnamed object";
-  return `Invalid schema for ${displayName}: ${message}`;
+function propError(info: PropertyInfo, message: string): () => PropertySchemaParseError {
+  return () => new PropertySchemaParseError(message, info);
 }
 
 /**
  * Generate an error caused by an invalid object schema.
  */
-function objectError(objectName: string, message: string): () => SchemaParseError {
-  return () => new SchemaParseError(objectSchemaErrorMessage(objectName, message));
-}
-
-/**
- * Throw an error caused by an invalid property schema.
- */
-function throwError(info: PropertyInfo, message: string): never {
-  throw new SchemaParseError(propSchemaErrorMessage(info, message));
+function objectError(objectName: string, message: string): () => ObjectSchemaParseError {
+  return () => new ObjectSchemaParseError(message, { objectName });
 }
 
 /**

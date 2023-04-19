@@ -104,6 +104,29 @@ export class SchemaParseError extends Error {
   }
 }
 
+export class ObjectSchemaParseError extends SchemaParseError {
+  objectName: string;
+
+  /** @internal */
+  constructor(message: string, info: { objectName: string }) {
+    const displayName = info.objectName ? `object '${info.objectName}'` : "unnamed object";
+    super(`Invalid schema for ${displayName}: ${message}`);
+    this.objectName = info.objectName;
+  }
+}
+
+export class PropertySchemaParseError extends SchemaParseError {
+  objectName: string;
+  propertyName: string;
+
+  /** @internal */
+  constructor(message: string, info: { objectName: string; propertyName: string }) {
+    super(`Invalid type declaration for property '${info.propertyName}' on '${info.objectName}': ${message}`);
+    this.objectName = info.objectName;
+    this.propertyName = info.propertyName;
+  }
+}
+
 /** @internal */
 export function fromBindingSyncError(error: binding.SyncError) {
   if (error.systemError.code === 231) {

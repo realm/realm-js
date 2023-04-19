@@ -27,6 +27,8 @@ import {
   RealmObjectConstructor,
   SchemaParseError,
   assert,
+  PropertySchemaParseError,
+  ObjectSchemaParseError,
 } from "../internal";
 
 // Need to use `CanonicalObjectSchema` rather than `ObjectSchema` due to some
@@ -123,9 +125,19 @@ export function validateObjectSchema(
       }
     }
   } catch (err: any) {
-    // Rethrow as SchemaParseError rather than a mix of Error, TypeError,
+    // Rethrow as SchemaParseError(s) rather than a mix of Error, TypeError,
     // TypeAssertionError, or AssertionError.
-    throw new SchemaParseError(err.message);
+    if (err instanceof PropertySchemaParseError) {
+      throw err;
+    }
+    if (err instanceof Error) {
+      // This first line is a workaround to satisfy TS. Runtime check needs to be
+      // `const objectName = objectSchema?.name || ""` where either `objectSchema`
+      // or `objectSchema.name` can be undefined or an incorrect type.
+      const objectName = (objectSchema as { name: string })?.name || "";
+      throw new ObjectSchemaParseError(err.message, { objectName });
+    }
+    throw err;
   }
 }
 
@@ -138,31 +150,38 @@ export function validatePropertySchema(
   propertyName: string,
   propertySchema: unknown,
 ): asserts propertySchema is PropertySchema {
-  assert.object(propertySchema, `'${propertyName}' on '${objectName}'`, { allowArrays: false });
-  const { type, objectType, optional, property, indexed, mapTo } = propertySchema;
-  assert.string(type, `'${propertyName}.type' on '${objectName}'`);
-  if (objectType !== undefined) {
-    assert.string(objectType, `'${propertyName}.objectType' on '${objectName}'`);
+  try {
+    assert.object(propertySchema, `'${propertyName}' on '${objectName}'`, { allowArrays: false });
+    const { type, objectType, optional, property, indexed, mapTo } = propertySchema;
+    assert.string(type, `'${propertyName}.type' on '${objectName}'`);
+    if (objectType !== undefined) {
+      assert.string(objectType, `'${propertyName}.objectType' on '${objectName}'`);
+    }
+    if (optional !== undefined) {
+      assert.boolean(optional, `'${propertyName}.optional' on '${objectName}'`);
+    }
+    if (property !== undefined) {
+      assert.string(property, `'${propertyName}.property' on '${objectName}'`);
+    }
+    if (indexed !== undefined) {
+      assert.boolean(indexed, `'${propertyName}.indexed' on '${objectName}'`);
+    }
+    if (mapTo !== undefined) {
+      assert.string(mapTo, `'${propertyName}.mapTo' on '${objectName}'`);
+    }
+    const invalidKeysUsed = filterInvalidKeys(propertySchema, PROPERTY_SCHEMA_KEYS);
+    assert(
+      !invalidKeysUsed.length,
+      `Unexpected field(s) found on the schema for property '${propertyName}' on '${objectName}': '${invalidKeysUsed.join(
+        "', '",
+      )}'.`,
+    );
+  } catch (err: any) {
+    if (err instanceof Error) {
+      throw new PropertySchemaParseError(err.message, { objectName, propertyName });
+    }
+    throw err;
   }
-  if (optional !== undefined) {
-    assert.boolean(optional, `'${propertyName}.optional' on '${objectName}'`);
-  }
-  if (property !== undefined) {
-    assert.string(property, `'${propertyName}.property' on '${objectName}'`);
-  }
-  if (indexed !== undefined) {
-    assert.boolean(indexed, `'${propertyName}.indexed' on '${objectName}'`);
-  }
-  if (mapTo !== undefined) {
-    assert.string(mapTo, `'${propertyName}.mapTo' on '${objectName}'`);
-  }
-  const invalidKeysUsed = filterInvalidKeys(propertySchema, PROPERTY_SCHEMA_KEYS);
-  assert(
-    !invalidKeysUsed.length,
-    `Unexpected field(s) found on the schema for property '${propertyName}' on '${objectName}': '${invalidKeysUsed.join(
-      "', '",
-    )}'.`,
-  );
 }
 
 /**
