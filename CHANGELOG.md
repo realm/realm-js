@@ -4,6 +4,7 @@
 * None
 
 ### Enhancements
+* Opening a Realm with invalid schemas will throw a `SchemaParseError` (or one of its subtypes `ObjectSchemaParseError` and `PropertySchemaParseError`) rather than an `AssertionError` or `Error`. ([#5198](https://github.com/realm/realm-js/issues/5198))
 * Enable multiple processes to operate on an encrypted Realm simultaneously. ([realm/realm-core#1845](https://github.com/realm/realm-core/issues/1845))
 
 ### Fixed
