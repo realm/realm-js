@@ -10,7 +10,7 @@ Before asking questions, please familiarize yourself with our [Node.js](https://
 
 If you have questions about configuring or using Realm you can ask the [MongoDB Developer Community](https://www.mongodb.com/community/forums/).
 
-When asking questions the MongoDB Developer Community, please keep in mind the [guidelines](https://www.mongodb.com/community/forums/guidelines), and please use the search functionality to see if your question has been asked before.
+When asking questions on the MongoDB Developer Community forums, please keep in mind the [guidelines](https://www.mongodb.com/community/forums/guidelines), and please use the search functionality to see if your question has been asked before.
 
 ## GitHub Issues
 
