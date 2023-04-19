@@ -404,7 +404,7 @@ export class RealmObject<T = DefaultObject> {
    *      console.log(` ${prop}`);
    *   });
    * })
-   * @note The callback will be invoked with an empty `changes` when the listener is registered.
+   * @note The callback will also be invoked when the listener is added, containing an empty array for `changes.changedProperties`.
    * @since 2.23.0
    */
   addListener(callback: ObjectChangeCallback<T>): void {
