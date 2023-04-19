@@ -268,7 +268,7 @@ export class Realm {
 
   /**
    * Sets the log level.
-   * @param level The log level to be used by the logger.
+   * @param level The log level to be used by the logger. The default value is `info`.
    * @note The log level can be changed during the lifetime of the application.
    * @since v12.0.0
    */
@@ -279,7 +279,7 @@ export class Realm {
 
   /**
    * Sets the logger callback.
-   * @param loggerCallback The callback invoked by the logger.
+   * @param loggerCallback The callback invoked by the logger. The default callback uses `console.log`, `console.warn` and `console.error`, depending on the level of the message.
    * @note The logger callback needs to be setup before opening the first realm.
    * @since v12.0.0
    */
