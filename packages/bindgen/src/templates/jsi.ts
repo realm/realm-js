@@ -227,8 +227,8 @@ function convertPrimToJsi(addon: JsiAddon, type: string, expr: string): string {
       return `jsi::Value(double(${expr}))`;
 
     case "count_t":
-      // NOTE: using int64_t cast here to get -1.0 for size_t(-1), aka npos.
-      return `jsi::Value(double(int64_t(${expr})))`;
+      // NOTE: using asSigned() here to get -1.0 for size_t(-1), aka npos.
+      return `jsi::Value(double(asSigned(${expr})))`;
 
     case "int64_t":
       return `bigIntFromI64(_env, ${expr})`;
@@ -317,8 +317,8 @@ function convertPrimFromJsi(addon: JsiAddon, type: string, expr: string): string
       return `int32_t((${expr}).asNumber())`;
 
     case "count_t":
-      // NOTE: using int64_t here is important to correctly handle -1.0 aka npos.
-      return `size_t(int64_t((${expr}).asNumber()))`;
+      // NOTE: using size_t here is important to correctly handle -1.0 aka npos.
+      return `size_t(std::size_t((${expr}).asNumber()))`;
 
     case "int64_t":
       return `bigIntToI64(_env, jsi::Value(_env, ${expr}))`;
