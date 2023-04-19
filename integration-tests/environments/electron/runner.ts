@@ -16,22 +16,32 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-const { spawn } = require("child_process");
-const fs = require("fs");
-const path = require("path");
+import { spawn } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import module from "node:module"
+import { rollup } from "rollup";
+
+const require = module.createRequire(import.meta.url);
 
 // Adjust this as the expected execution time increases
 const TIMEOUT_MS = 1000 * 30; // 30 seconds
 
-const appPaths = {
+type ProcessType = "main" | "renderer";
+
+const appPaths: Partial<Record<NodeJS.Platform, string>> = {
   darwin: "dist/mac/realm-electron-tests.app/Contents/MacOS/realm-electron-tests",
   linux: "dist/linux-unpacked/realm-electron-tests",
   win32: "dist/win-unpacked/realm-electron-tests.exe",
 };
 
-function determineSpawnParameters(processType) {
+function determineSpawnParameters(processType: ProcessType) {
   const platform = process.platform;
-  const appPath = path.resolve(appPaths[platform]);
+  const relativeAppPath = appPaths[platform];
+  if (!relativeAppPath) {
+    throw new Error(`Unsupported platform: ${platform}`);
+  }
+  const appPath = path.resolve(relativeAppPath);
   if (fs.existsSync(appPath)) {
     if (platform === "darwin") {
       return {
@@ -50,7 +60,7 @@ function determineSpawnParameters(processType) {
   }
 }
 
-function runElectron(processType) {
+function runElectron(processType: ProcessType) {
   const { command, args } = determineSpawnParameters(processType);
   // Spawn the Electron app
   const env = Object.create(process.env);
@@ -74,7 +84,7 @@ async function run() {
   console.log(`Started the Electron app (pid = ${appProcess.pid})`);
 }
 
-function timeout(ms) {
+function timeout(ms: number) {
   return new Promise((_, reject) => {
     setTimeout(() => {
       const err = new Error(`Timed out after ${ms}ms`);

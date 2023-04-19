@@ -13,8 +13,8 @@
     "test": "wireit",
     "test:main": "wireit",
     "test:renderer": "wireit",
-    "test:ci:main": "mocha-remote --reporter @realm/mocha-reporter --id main node runner.js main",
-    "test:ci:renderer": "mocha-remote --reporter @realm/mocha-reporter --id main node runner.js renderer",
+    "test:ci:main": "mocha-remote --reporter mocha-github-actions-reporter --id main tsx runner.ts main",
+    "test:ci:renderer": "mocha-remote --reporter mocha-github-actions-reporter --id renderer tsx runner.ts renderer",
     "lint": "eslint .",
     "package": "electron-builder --dir"
   },
@@ -23,7 +23,7 @@
       "command": "npm run test:main && npm run test:renderer"
     },
     "test:main": {
-      "command": "mocha-remote --reporter @realm/mocha-reporter --id main node runner.js main",
+      "command": "mocha-remote --reporter @realm/mocha-reporter --id main tsx runner.ts main",
       "dependencies": [
         "../../../packages/realm:bundle",
         "../../../packages/realm:build:node",
@@ -33,7 +33,7 @@
       ]
     },
     "test:renderer": {
-      "command": "mocha-remote --reporter @realm/mocha-reporter --id main node runner.js renderer",
+      "command": "mocha-remote --reporter @realm/mocha-reporter --id renderer tsx runner.ts renderer",
       "dependencies": [
         "../../../packages/realm:bundle",
         "../../../packages/realm:build:node",
@@ -45,16 +45,16 @@
   },
   "devDependencies": {
     "@realm/mocha-reporter": "*",
-    "cmake-js": "^6.1.0",
-    "command-line-args": "^5.1.1",
-    "concurrently": "^6.0.2",
-    "electron": "^12.2.1",
-    "electron-builder": "^22.10.5",
-    "mocha-github-actions-reporter": "^0.2.3",
-    "mocha-junit-reporter": "^2.0.0",
+    "command-line-args": "^5.2.1",
+    "concurrently": "^8.0.1",
+    "electron": "^24.1.2",
+    "electron-builder": "^23.6.0",
+    "mocha-github-actions-reporter": "^0.3.0",
+    "mocha-junit-reporter": "^2.2.0",
     "mocha-remote-cli": "^1.6.1"
   },
   "dependencies": {
+    "@electron/remote": "^2.0.9",
     "@realm/integration-tests": "*",
     "fs-extra": "^9.1.0",
     "mocha-remote-client": "^1.6.1",

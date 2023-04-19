@@ -19,7 +19,7 @@
 // Disables security warnings which spams the console
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = true;
 
-const remote = require("electron").remote;
+const remote = require("@electron/remote");
 
 // Use the main process console when logging
 global.console = remote.getGlobal("console");
