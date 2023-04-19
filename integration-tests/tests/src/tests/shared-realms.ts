@@ -31,7 +31,7 @@ describe("SharedRealm operations", () => {
       };
       let logs: Log[] = [];
 
-      Realm.setLoggerCallback((level, message) => {
+      Realm.setLogger((level, message) => {
         logs.push({ level, message });
       });
 
@@ -58,11 +58,19 @@ describe("SharedRealm operations", () => {
         .and.to.not.contain("trace");
       logs = [];
 
+      Realm.setLogLevel("info");
+      realm.write(() => realm.create("Person", { name: "Alice" }));
+      expect(logs).to.be.empty;
+
       Realm.setLogLevel("warn");
       realm.write(() => realm.create("Person", { name: "Alice" }));
       expect(logs).to.be.empty;
 
       Realm.setLogLevel("error");
+      realm.write(() => realm.create("Person", { name: "Alice" }));
+      expect(logs).to.be.empty;
+
+      Realm.setLogLevel("fatal");
       realm.write(() => realm.create("Person", { name: "Alice" }));
       expect(logs).to.be.empty;
 

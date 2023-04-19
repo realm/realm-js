@@ -63,7 +63,7 @@ const translationTable: Record<binding.LoggerLevel, LogLevel> = {
 
 const inverseTranslationTable: Record<LogLevel, binding.LoggerLevel> = Object.fromEntries(
   Object.entries(translationTable).map(([key, val]) => [val, Number(key)]),
-) as unknown as Record<LogLevel, binding.LoggerLevel>;
+) as Record<LogLevel, binding.LoggerLevel>;
 
 /** @internal */
 export function fromBindingLoggerLevelToLogLevel(arg: binding.LoggerLevel): LogLevel {

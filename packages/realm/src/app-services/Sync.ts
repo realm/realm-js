@@ -62,7 +62,7 @@ export class Sync {
     app.internal.syncManager.setLogLevel(numericLevel);
   }
 
-  /** @deprecated Will be removed in v13.0.0. Please use {@link Realm.setLoggerCallback}. */
+  /** @deprecated Will be removed in v13.0.0. Please use {@link Realm.setLogger}. */
   static setLogger(app: App, logger: Logger) {
     const factory = binding.Helpers.makeLoggerFactory((level, message) => {
       logger(fromBindingLoggerLevelToNumericLogLevel(level), message);

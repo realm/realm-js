@@ -283,7 +283,7 @@ export class Realm {
    * @note The logger callback needs to be setup before opening the first realm.
    * @since v12.0.0
    */
-  static setLoggerCallback(loggerCallback: LoggerCallback) {
+  static setLogger(loggerCallback: LoggerCallback) {
     const logger = binding.Helpers.makeLogger((level, message) => {
       loggerCallback(fromBindingLoggerLevelToLogLevel(level), message);
     });
@@ -2001,7 +2001,7 @@ declare global {
 }
 
 //Set default logger and log level.
-Realm.setLoggerCallback(defaultLogger);
+Realm.setLogger(defaultLogger);
 Realm.setLogLevel(defaultLoggerLevel);
 
 // Patch the global at runtime
