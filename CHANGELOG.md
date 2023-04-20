@@ -6,6 +6,7 @@
 ### Enhancements
 * Opening a Realm with invalid schemas will throw a `SchemaParseError` (or one of its subtypes `ObjectSchemaParseError` and `PropertySchemaParseError`) rather than an `AssertionError` or `Error`. ([#5198](https://github.com/realm/realm-js/issues/5198))
 * Enable multiple processes to operate on an encrypted Realm simultaneously. ([realm/realm-core#1845](https://github.com/realm/realm-core/issues/1845))
+* Added support for a sync configuration option to provide an `SSLConfiguration` with a custom function for validating the server's SSL certificate. [#5485](https://github.com/realm/realm-js/issues/5485)
 
 ### Fixed
 * Fix a stack overflow crash when using the query parser with long chains of AND/OR conditions. ([realm/realm-core#6428](https://github.com/realm/realm-core/pull/6428), since v10.11.0)
@@ -38,7 +39,6 @@ This can happen when the client creates/updates objects that do not match any su
   * Moderate (~25%) improvement when querying for an exact match on a `bool` property that has an index.
   * Small (~5%) improvement when querying for a case insensitive match on a `mixed` property that does not have an index.
 * Added a `THROW_ON_GLOBAL_REALM` which will enable throwing when the app is accessing the `Realm` without first importing it from the Realm package.
-* Added support for a sync configuration option to provide an `SSLConfiguration` with a custom function for validating the server's SSL certificate. [#5485](https://github.com/realm/realm-js/issues/5485)
 
 ### Fixed
 * Fixed bootstrapping the native module on Android. Seen as Exception in HostObject::get for prop 'Realm': java.lang.NoClassDefFoundError: io.realm.react.RealmReactModule. ([#5666](https://github.com/realm/realm-js/issues/5666), since v12.0.0-alpha.0)
