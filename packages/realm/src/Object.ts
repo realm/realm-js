@@ -404,6 +404,8 @@ export class RealmObject<T = DefaultObject> {
    *      console.log(` ${prop}`);
    *   });
    * })
+   * @note Adding the listener is an asynchronous operation, so the callback is invoked the first time to notify the caller when the listener has been added.
+   * Thus, when the callback is invoked the first time it will contain empty array for `changes.changedProperties`.
    * @since 2.23.0
    */
   addListener(callback: ObjectChangeCallback<T>): void {
