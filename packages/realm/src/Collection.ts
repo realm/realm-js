@@ -124,7 +124,8 @@ export abstract class Collection<
    *  console.log(`${changes.deletions.length} deletions`);
    *  console.log(`new size of collection: ${collection.length}`);
    * });
-   * @note The callback will also be invoked when the listener is added, containing empty arrays for each property in the `changes` object.
+   * @note Adding the listener is an asynchronous operation, so the callback is invoked the first time to notify the caller when the listener has been added.
+   * Thus, when the callback is invoked the first time it will contain empty arrays for each property in the `changes` object.
    */
   addListener(callback: ChangeCallbackType): void {
     assert.function(callback, "callback");
