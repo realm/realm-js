@@ -6,7 +6,8 @@
   "type": "module",
   "main": "./src/index.ts",
   "scripts": {
-    "lint": "eslint --ext .js,.ts ."
+    "lint": "eslint --ext .js,.ts .",
+    "test": "mocha"
   },
   "files": [
     "dist",

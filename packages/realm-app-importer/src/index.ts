@@ -16,5 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export type { AppImporterOptions, Credentials } from "./AppImporter";
+export type { Credentials } from "./AdminApiClient";
+export type { AppImporterOptions } from "./AppImporter";
+export type {
+  AppConfig,
+  AuthProviderConfig,
+  FunctionConfig,
+  ServiceConfig,
+  ServiceRule,
+  SyncConfig,
+  SyncPartitionConfig,
+} from "./AppConfigBuilder";
 export { AppImporter } from "./AppImporter";
+export { AppConfigBuilder } from "./AppConfigBuilder";
