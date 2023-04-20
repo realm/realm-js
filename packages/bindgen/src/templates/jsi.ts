@@ -318,7 +318,7 @@ function convertPrimFromJsi(addon: JsiAddon, type: string, expr: string): string
 
     case "count_t":
       // NOTE: using size_t here is important to correctly handle -1.0 aka npos.
-      return `size_t(std::size_t((${expr}).asNumber()))`;
+      return `size_t(ptrdiff_t((${expr}).asNumber()))`;
 
     case "int64_t":
       return `bigIntToI64(_env, jsi::Value(_env, ${expr}))`;
