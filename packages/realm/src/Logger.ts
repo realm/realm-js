@@ -77,10 +77,10 @@ const consoleWarnLevels: LogLevel[] = ["warn"];
 export const defaultLogger: LoggerCallback = function (logLevel: LogLevel, message: string) {
   const formattedLogMessage = `[${logLevel}] ${message}`;
   /* eslint-disable no-console */
-  if (consoleErrorLevels.includes(logLevel)) {
+  if (logLevel === "error" || logLevel === "fatal") {
     console.error(formattedLogMessage);
-  } else if (consoleWarnLevels.includes(logLevel)) {
-    console.error(formattedLogMessage);
+  } else if (logLevel === "warn") {
+    console.warn(formattedLogMessage);
   } else {
     console.log(formattedLogMessage);
   }
