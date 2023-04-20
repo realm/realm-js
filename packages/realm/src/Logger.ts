@@ -70,9 +70,6 @@ export function fromBindingLoggerLevelToLogLevel(arg: binding.LoggerLevel): LogL
   return translationTable[arg];
 }
 
-const consoleErrorLevels: LogLevel[] = ["error", "fatal"];
-const consoleWarnLevels: LogLevel[] = ["warn"];
-
 /** @internal */
 export const defaultLogger: LoggerCallback = function (logLevel: LogLevel, message: string) {
   const formattedLogMessage = `[${logLevel}] ${message}`;
