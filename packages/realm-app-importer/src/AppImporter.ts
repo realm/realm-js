@@ -170,7 +170,6 @@ export class AppImporter {
 
   public async deleteApp(clientAppId: string) {
     const app = await this.client.getAppByClientAppId(clientAppId);
-    console.log("Deleting", this.reusedApp ? this.reusedApp._id : null, app._id);
     // Forget the reused app if this was the one getting deleted
     if (this.reusedApp && this.reusedApp._id === app._id) {
       this.reusedApp = null;
@@ -279,7 +278,7 @@ export class AppImporter {
         return response;
       }
       // Wait a bit
-      console.log("Waiting for deployment to complete");
+      debug("Waiting for deployment to complete");
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
     throw new Error(`Failed to deploy ${deploymentId}`);

@@ -149,7 +149,6 @@ export class AdminApiClient {
   }
 
   public async deleteDeploymentDraft(appId: string, draftId: string) {
-    console.log("Deleting draft", draftId);
     this.assertLoggedIn();
     await this.fetch({
       route: ["groups", await this.groupId, "apps", appId, "drafts", draftId],
