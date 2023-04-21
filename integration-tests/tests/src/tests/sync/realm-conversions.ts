@@ -20,6 +20,7 @@ import { Realm, BSON } from "realm";
 import { expect } from "chai";
 import { importAppBefore } from "../../hooks";
 import { getRegisteredEmailPassCredentials } from "../../utils/credentials";
+import { appConfigs } from "../../app-configs";
 
 const DogForSyncSchema = {
   name: "Dog",
@@ -46,7 +47,7 @@ const PersonForSyncSchema = {
 };
 
 describe.skip("Realm conversions", async () => {
-  importAppBefore("with-db");
+  importAppBefore(appConfigs.partitionBased());
   afterEach(() => Realm.clearTestState());
 
   describe("converting between Realms", () => {

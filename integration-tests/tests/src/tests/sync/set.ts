@@ -19,9 +19,10 @@ import { expect } from "chai";
 import Realm from "realm";
 import { authenticateUserBefore, importAppBefore, openRealmBefore } from "../../hooks";
 import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
+import { appConfigs } from "../../app-configs";
 
 describe.skipIf(environment.missingServer, "Type roundtrip of set object", () => {
-  importAppBefore("with-db");
+  importAppBefore(appConfigs.partitionBased());
   authenticateUserBefore();
 
   class SetObject extends Realm.Object {

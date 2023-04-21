@@ -20,6 +20,7 @@ import { expect } from "chai";
 import Realm, { BSON } from "realm";
 
 import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "../../hooks";
+import { appConfigs } from "../../app-configs";
 
 describe.skipIf(environment.missingServer, "Asymmetric sync", function () {
   describe("Configuration and schema", function () {
@@ -36,7 +37,7 @@ describe.skipIf(environment.missingServer, "Asymmetric sync", function () {
       },
     };
 
-    importAppBefore("with-db-flx");
+    importAppBefore(appConfigs.flexible());
     authenticateUserBefore();
     openRealmBeforeEach({
       schema: [PersonSchema],

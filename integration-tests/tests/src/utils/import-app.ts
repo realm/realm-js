@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 import { App, BSON } from "realm";
 
-import { AppImporter, Credentials } from "@realm/app-importer";
+import { AppConfig, AppImporter, Credentials } from "@realm/app-importer";
 import { fetch } from "./fetch";
 
 export type TemplateReplacements = Record<string, Record<string, unknown>>;
@@ -55,14 +55,6 @@ function getCredentials(): Credentials {
 
 function isErrorResponse(arg: unknown): arg is ErrorResponse {
   return typeof arg === "object" && arg !== null && "message" in arg;
-}
-
-function generateDatabaseName(): string {
-  const { mongodbClusterName } = environment;
-  if (typeof mongodbClusterName === "string") {
-    return `test-database-${new BSON.ObjectId().toHexString()}`;
-  }
-  return "test-database";
 }
 
 type SyncConfigOptions = {
@@ -127,26 +119,15 @@ const importer = new AppImporter({
   credentials,
   realmConfigPath,
   appsDirectoryPath,
-  cleanUp: true,
   reuseApp: true,
 });
 
-export async function importApp(
-  name: string,
-  replacements?: TemplateReplacements,
-): Promise<{ appId: string; baseUrl: string; databaseName: string }> {
-  const databaseName = generateDatabaseName();
-
-  if (!replacements) {
-    replacements = getDefaultReplacements(name, databaseName);
-  }
-
+export async function importApp(config: AppConfig): Promise<{ appId: string; baseUrl: string }> {
   if (appImporterIsRemote) {
     throw new Error("Calling the app importer remotely, is not longer supported");
   } else {
-    const appTemplatePath = `${appTemplatesPath}/${name}`;
-    const { appId } = await importer.importApp(appTemplatePath, replacements);
-    return { appId, baseUrl, databaseName };
+    const { appId } = await importer.importApp(config);
+    return { appId, baseUrl };
   }
 }
 

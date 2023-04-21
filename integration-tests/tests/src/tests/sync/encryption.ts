@@ -18,6 +18,7 @@
 
 import { expect } from "chai";
 import { importAppBefore } from "../../hooks";
+import { appConfigs } from "../../app-configs";
 
 const TestObjectSchema = {
   name: "TestObject",
@@ -81,7 +82,7 @@ describe("Encryption", () => {
   });
 
   describe("with sync", () => {
-    importAppBefore("simple");
+    importAppBefore(appConfigs.simple());
 
     it("can set property in config", async function (this: AppContext) {
       this.longTimeout();

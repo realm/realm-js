@@ -16,12 +16,30 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { expect } from "chai";
-import { Credentials, User } from "realm";
+import { Credentials } from "realm";
+import { buildConfig } from "@realm/app-importer";
+
 import { importAppBefore } from "../../hooks";
 
 //These tests are adopted from api-key-auth.test.ts in the realm-web-integration-tests directory.
 describe.skipIf(environment.missingServer, "api-key credentials", () => {
-  importAppBefore("with-api-key");
+  importAppBefore(
+    buildConfig("with-api-key")
+      .authProvider({
+        name: "api-key",
+        type: "api-key",
+        disabled: false,
+      })
+      .authProvider({
+        name: "local-userpass",
+        type: "local-userpass",
+        config: {
+          autoConfirm: true,
+          resetPasswordUrl: "http://localhost/resetPassword",
+        },
+        disabled: false,
+      }),
+  );
 
   it("lists, creates, gets, enables, authenticates, disables and deletes api keys", async function (this: AppContext) {
     this.slow(1000);

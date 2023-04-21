@@ -17,11 +17,18 @@
 ////////////////////////////////////////////////////////////////////////////
 import { expect } from "chai";
 import { Credentials, User } from "realm";
+import { buildConfig } from "@realm/app-importer";
 
 import { importAppBefore } from "../../hooks";
 
 describe.skipIf(environment.missingServer, "anonymous credentials", () => {
-  importAppBefore("simple");
+  importAppBefore(
+    buildConfig("with-anon").authProvider({
+      name: "anon-user",
+      type: "anon-user",
+      disabled: false,
+    }),
+  );
 
   it("authenticates", async function (this: AppContext) {
     const credentials = Credentials.anonymous();

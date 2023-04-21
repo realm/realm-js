@@ -22,6 +22,8 @@ import { importAppBefore } from "../../hooks";
 import { generatePartition } from "../../utils/generators";
 import { getUrls } from "../../utils/import-app";
 import { select } from "../../utils/select";
+import { buildConfig } from "@realm/app-importer";
+import { appConfigs } from "../../app-configs";
 
 const TestObjectSchema: Realm.ObjectSchema = {
   primaryKey: "_id",
@@ -133,7 +135,8 @@ describe("App", () => {
   });
 
   describe("with valid app", async () => {
-    importAppBefore("with-db");
+    // TODO: This was "with-db" before
+    importAppBefore(appConfigs.simple());
 
     it("logins successfully ", async function (this: Mocha.Context & AppContext & RealmContext) {
       let user;
@@ -226,7 +229,17 @@ describe("App", () => {
   });
 
   describe("with email-password auth", () => {
-    importAppBefore("with-email-password");
+    importAppBefore(
+      buildConfig("with-email-password").authProvider({
+        name: "local-userpass",
+        type: "local-userpass",
+        config: {
+          autoConfirm: true,
+          resetPasswordUrl: "http://localhost/resetPassword",
+        },
+        disabled: false,
+      }).config,
+    );
     it("throws on login with non existing user ", async function (this: Mocha.Context & AppContext & RealmContext) {
       expect(this.app).instanceOf(Realm.App);
       const credentials = Realm.Credentials.emailPassword("me", "secret");
@@ -242,7 +255,7 @@ describe("App", () => {
   });
 
   describe("with sync", () => {
-    importAppBefore("with-db");
+    importAppBefore(appConfigs.partitionBased());
 
     it("migration while sync is enabled throws", async function (this: Mocha.Context & AppContext & RealmContext) {
       const user = await this.app.logIn(Realm.Credentials.anonymous());

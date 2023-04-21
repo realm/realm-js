@@ -17,13 +17,63 @@
 ////////////////////////////////////////////////////////////////////////////
 import { expect } from "chai";
 import { Credentials, User } from "realm";
-import { serialize } from "v8";
-import { EJSON } from "bson";
+import { buildConfig } from "@realm/app-importer";
 
 import { importAppBefore } from "../../hooks";
 
 describe.skipIf(environment.missingServer, "custom-function credentials", () => {
-  importAppBefore("with-custom-function");
+  importAppBefore(
+    buildConfig("with-custom-function")
+      .authProvider({
+        name: "custom-function",
+        type: "custom-function",
+        config: {
+          authFunctionName: "customAuthentication",
+        },
+        disabled: false,
+      })
+      .service({
+        name: "mongodb",
+        type: "mongodb",
+        config: {},
+        secret_config: {
+          uri: "mongodb_uri",
+        },
+        version: 1,
+      })
+      .secret("mongodb_uri", "mongodb://localhost:26000")
+      .function({
+        name: "customAuthentication",
+        private: true,
+        run_as_system: true,
+        source: `
+          exports = async function (loginPayload) {
+            // Get a handle for the app.users collection
+            const users = context.services.get("mongodb").db("app").collection("users");
+          
+            // Parse out custom data from the FunctionCredential
+          
+            const { username, secret } = loginPayload;
+          
+            if (secret !== "v3ry-s3cret") {
+              throw new Error("Ah ah ah, you didn't say the magic word");
+            }
+            // Query for an existing user document with the specified username
+          
+            const user = await users.findOne({ username });
+          
+            if (user) {
+              // If the user document exists, return its unique ID
+              return user._id.toString();
+            } else {
+              // If the user document does not exist, create it and then return its unique ID
+              const result = await users.insertOne({ username });
+              return result.insertedId.toString();
+            }
+          };
+        `,
+      }),
+  );
 
   it("authenticates", async function (this: AppContext) {
     this.timeout(60 * 1000); // 1 min

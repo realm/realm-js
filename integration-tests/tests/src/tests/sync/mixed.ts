@@ -21,6 +21,7 @@ import { Realm } from "realm";
 import { importAppBefore, authenticateUserBefore, openRealmBefore } from "../../hooks";
 
 import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
+import { appConfigs } from "../../app-configs";
 
 type MixedClass = {
   _id: Realm.BSON.ObjectId;
@@ -231,13 +232,13 @@ function describeTypes(flexibleSync: boolean) {
 describe.skipIf(environment.missingServer, "mixed", () => {
   describe("partition-based sync roundtrip", function () {
     this.longTimeout();
-    importAppBefore("with-db");
+    importAppBefore(appConfigs.partitionBased());
     describeTypes(false);
   });
 
   describe.skipIf(environment.skipFlexibleSync, "flexible sync roundtrip", function () {
     this.longTimeout();
-    importAppBefore("with-db-flx");
+    importAppBefore(appConfigs.flexible());
     describeTypes(true);
   });
 });

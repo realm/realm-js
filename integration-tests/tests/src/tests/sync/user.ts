@@ -24,6 +24,7 @@ import {
 } from "../../utils/generators";
 import { KJUR } from "jsrsasign";
 import { UserState } from "realm";
+import { buildConfig } from "@realm/app-importer";
 
 function expectIsUSer(user: Realm.User) {
   expect(user).to.not.be.undefined;
@@ -70,7 +71,17 @@ function removeExistingUsers(): void {
 
 describe.skipIf(environment.missingServer, "User", () => {
   describe("email password", () => {
-    importAppBefore("with-email-password");
+    importAppBefore(
+      buildConfig("with-email-password").authProvider({
+        name: "local-userpass",
+        type: "local-userpass",
+        config: {
+          autoConfirm: true,
+          resetPasswordUrl: "http://localhost/resetPassword",
+        },
+        disabled: false,
+      }),
+    );
     it("login without username throws", async function (this: AppContext & RealmContext) {
       // @ts-expect-error test logging in without providing username.
       expect(() => Realm.Credentials.emailPassword({ email: undefined, password: "password" })).throws(
@@ -139,7 +150,13 @@ describe.skipIf(environment.missingServer, "User", () => {
 
   describe("properties and methods", () => {
     describe("with anonymous", () => {
-      importAppBefore("with-db");
+      importAppBefore(
+        buildConfig("with-anon").authProvider({
+          name: "anon-user",
+          type: "anon-user",
+          disabled: false,
+        }),
+      );
       beforeEach(() => {
         removeExistingUsers();
       });
@@ -213,7 +230,17 @@ describe.skipIf(environment.missingServer, "User", () => {
     });
 
     describe("with email password", () => {
-      importAppBefore("with-email-password");
+      importAppBefore(
+        buildConfig("with-email-password").authProvider({
+          name: "local-userpass",
+          type: "local-userpass",
+          config: {
+            autoConfirm: true,
+            resetPasswordUrl: "http://localhost/resetPassword",
+          },
+          disabled: false,
+        }),
+      );
       beforeEach(() => {
         removeExistingUsers();
       });
@@ -344,10 +371,44 @@ describe.skipIf(environment.missingServer, "User", () => {
     });
   });
 
+  const privateKey = "2k66QfKeTRk3MdZ5vpDYgZCu2k66QfKeTRk3MdZ5vpDYgZCu";
+
   describe("JWT", () => {
-    importAppBefore("with-jwt");
+    importAppBefore(
+      buildConfig("with-custom-token")
+        .authProvider({
+          name: "custom-token",
+          type: "custom-token",
+          config: {
+            audience: "",
+            signingAlgorithm: "HS256",
+            useJWKURI: false,
+          },
+          secret_config: {
+            signingKeys: ["jwt-secret"],
+          },
+          disabled: false,
+          metadata_fields: [
+            {
+              required: true,
+              name: "mySecretField",
+              field_name: "secret",
+            },
+            {
+              required: false,
+              name: "id",
+              field_name: "id",
+            },
+            {
+              required: false,
+              name: "license",
+              field_name: "license",
+            },
+          ],
+        })
+        .secret("jwt-secret", privateKey),
+    );
     it.skipIf(!environment.node, "can fetch JWTUserProfile", async function (this: AppContext & RealmContext) {
-      const signingKey = "2k66QfKeTRk3MdZ5vpDYgZCu2k66QfKeTRk3MdZ5vpDYgZCu";
       const claims = {
         name: "John Doe",
         iss: "http://myapp.com/",
@@ -362,7 +423,7 @@ describe.skipIf(environment.missingServer, "User", () => {
         license: "one-two-three",
       };
 
-      const jwt = KJUR.jws.JWS.sign(null, { alg: "HS256" }, claims, signingKey);
+      const jwt = KJUR.jws.JWS.sign(null, { alg: "HS256" }, claims, privateKey);
       const credentials = Realm.Credentials.jwt(jwt);
       const user = await this.app.logIn(credentials);
       await user.refreshCustomData();
@@ -377,7 +438,23 @@ describe.skipIf(environment.missingServer, "User", () => {
   });
 
   describe("api-key auth", () => {
-    importAppBefore("with-api-key");
+    importAppBefore(
+      buildConfig("with-api-key")
+        .authProvider({
+          name: "api-key",
+          type: "api-key",
+          disabled: false,
+        })
+        .authProvider({
+          name: "local-userpass",
+          type: "local-userpass",
+          config: {
+            autoConfirm: true,
+            resetPasswordUrl: "http://localhost/resetPassword",
+          },
+          disabled: false,
+        }),
+    );
     it("can create valid key", async function (this: AppContext & RealmContext) {
       const validEmail = randomVerifiableEmail();
       const validPassword = "test1234567890";
@@ -408,7 +485,115 @@ describe.skipIf(environment.missingServer, "User", () => {
   });
 
   describe("custom functions", () => {
-    importAppBefore("with-custom-function");
+    importAppBefore(
+      buildConfig("with-custom-function")
+        .authProvider({
+          name: "anon-user",
+          type: "anon-user",
+          disabled: false,
+        })
+        .authProvider({
+          name: "custom-function",
+          type: "custom-function",
+          config: {
+            authFunctionName: "customAuthentication",
+          },
+          disabled: false,
+        })
+        .authProvider({
+          name: "local-userpass",
+          type: "local-userpass",
+          config: {
+            autoConfirm: false,
+            confirmEmailSubject: "",
+            confirmationFunctionName: "confirmFunc",
+            emailConfirmationUrl: "http://localhost/confirmEmail",
+            resetFunctionName: "resetFunc",
+            resetPasswordSubject: "",
+            resetPasswordUrl: "http://localhost/resetPassword",
+            runConfirmationFunction: true,
+            runResetFunction: true,
+          },
+          disabled: false,
+        })
+        .function({
+          name: "confirmFunc",
+          private: false,
+          can_evaluate: {},
+          source: `
+            exports = ({ tokenId, username }) => {
+              // process the confirm token, tokenId and username
+              // - usernames that contain realm_tests_do_autoverify* will automatically be registered and approved.
+              // - usernames that contain realm_tests_do_pendverify* will automatically be registered pending approval.
+              // - all other usernames will fail verification and not be registered.
+              if (username.includes("realm_tests_do_autoverify")) {
+                return { status: "success" };
+              } else if (username.includes("realm_tests_do_pendverify")) {
+                return { status: "pending" };
+              } else {
+                return { status: "fail" };
+              }
+            };
+          `,
+        })
+        .function({
+          name: "resetFunc",
+          private: false,
+          can_evaluate: {},
+          source: `
+            exports = ({ token, tokenId, username, password }) => {
+              // process the reset token, tokenId, username and password
+              if (password.includes("realm_tests_do_reset")) {
+                return { status: "success" };
+              }
+              // will not reset the password
+              return { status: "fail" };
+            };
+          `,
+        })
+        .function({
+          can_evaluate: {},
+          name: "sumFunc",
+          private: false,
+          source: `
+            exports = function (...args) {
+              return parseInt(args.reduce((a, b) => a + b, 0));
+            };
+          `,
+        })
+        .function({
+          name: "customAuthentication",
+          private: true,
+          run_as_system: true,
+          source: `
+            exports = async function (loginPayload) {
+              // Get a handle for the app.users collection
+              const users = context.services.get("mongodb").db("app").collection("users");
+            
+              // Parse out custom data from the FunctionCredential
+            
+              const { username, secret } = loginPayload;
+            
+              if (secret !== "v3ry-s3cret") {
+                throw new Error("Ah ah ah, you didn't say the magic word");
+              }
+              // Query for an existing user document with the specified username
+            
+              const user = await users.findOne({ username });
+            
+              if (user) {
+                // If the user document exists, return its unique ID
+                return user._id.toString();
+              } else {
+                // If the user document does not exist, create it and then return its unique ID
+                const result = await users.insertOne({ username });
+                return result.insertedId.toString();
+              }
+            };
+          `,
+        }),
+    );
+
     it("custom confirmation function works", async function (this: AppContext & RealmContext) {
       const pendingEmail = randomPendingVerificationEmail();
       const validPassword = "password123456";

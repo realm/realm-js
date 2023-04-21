@@ -22,6 +22,7 @@ import path from "node:path";
 import os from "node:os";
 
 import { importAppBefore, authenticateUserBefore } from "../hooks";
+import { appConfigs } from "../app-configs";
 
 const getAbsolutePath = () => os.tmpdir() + path.sep + new BSON.UUID().toHexString();
 const getRelativePath = () => "testFiles" + path.sep + new BSON.UUID().toHexString();
@@ -57,7 +58,7 @@ describe("path configuration (local)", function () {
 });
 
 describe.skipIf(environment.missingServer, "path configuration (partition based sync)", function () {
-  importAppBefore("with-db");
+  importAppBefore(appConfigs.partitionBased());
   authenticateUserBefore();
 
   it("absolute path", async function () {
@@ -95,7 +96,7 @@ describe.skipIf(environment.missingServer, "path configuration (partition based 
 });
 
 describe.skipIf(environment.skipFlexibleSync, "path configuration (flexible sync)", function () {
-  importAppBefore("with-db-flx");
+  importAppBefore(appConfigs.flexible());
   authenticateUserBefore();
 
   it("absolute path", async function () {

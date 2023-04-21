@@ -18,9 +18,11 @@
 
 import { expect } from "chai";
 import { CollectionChangeSet } from "realm";
+
 import { importAppBefore, openRealmBeforeEach } from "../../hooks";
 import { expectArraysEqual, expectDecimalEqual } from "../../utils/comparisons";
 import { sleep } from "../../utils/sleep";
+import { appConfigs } from "../../app-configs";
 
 const CarSchema = {
   name: "Car",
@@ -1331,7 +1333,7 @@ describe("Realmtest", () => {
     });
 
     describe("exists", () => {
-      importAppBefore("with-db");
+      importAppBefore(appConfigs.partitionBased());
 
       it("yields correct value on a local realm", () => {
         const config = { schema: [TestObject] };
@@ -2059,7 +2061,7 @@ describe("Realmtest", () => {
   });
 
   describe("with sync", () => {
-    importAppBefore("simple");
+    importAppBefore(appConfigs.simple());
 
     it.skipIf(
       environment.missingServer,
