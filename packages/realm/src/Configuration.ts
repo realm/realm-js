@@ -65,21 +65,6 @@ export type Configuration = ConfigurationWithSync | ConfigurationWithoutSync;
 //  */
 // export type MigrationCallback = (oldRealm: Realm, newRealm: Realm) => void;
 
-// export type SSLVerifyObject = {
-//   serverAddress: string;
-//   serverPort: number;
-//   pemCertificate: string;
-//   acceptedByOpenSSL: boolean;
-//   depth: number;
-// };
-
-// export type SSLVerifyCallback = (sslVerifyObject: SSLVerifyObject) => boolean;
-// export type SSLConfiguration = {
-//   validate?: boolean;
-//   certificatePath?: string;
-//   validateCallback?: SSLVerifyCallback;
-// };
-
 // export enum ClientResetModeManualOnly {
 //   Manual = "manual",
 // }

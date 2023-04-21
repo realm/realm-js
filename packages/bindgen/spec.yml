@@ -427,6 +427,11 @@ records:
       custom_http_headers: 
         type: 'std::map<std::string, std::string>'
         default: {}
+      client_validate_ssl:
+        type: bool
+        default: true
+      ssl_trust_certificate_path: util::Optional<std::string>
+      ssl_verify_callback: Nullable<SSLVerifyCallback>
       client_resync_mode:
         type: ClientResetMode 
         default: ClientResyncMode::Manual;
@@ -633,6 +638,9 @@ classes:
       # This is added due to DescriptorOrdering not being exposed
       get_results_description: '(results: const Results&) -> StringData'
       feed_buffer: '(ws: WatchStream&, buffer: BinaryData)'
+      # Converts char* and length to a combined string_view argument to callback.
+      # TODO: Consider making preverify_ok a bool.
+      make_ssl_verify_callback: '(callback: (server_address: const std::string&, server_port: int, pem_data: std::string_view, preverify_ok: int, depth: int) off_thread -> bool) -> SSLVerifyCallback'
 
   Logger:
     cppName: util::Logger
@@ -1242,6 +1250,9 @@ classes:
       force_close: ()
       shutdown_and_wait: ()
       update_configuration: '(config: SyncConfig)'
+
+  SSLVerifyCallback:
+    cppName: std::function<SyncConfig::SSLVerifyCallback>
 
   SyncSubscriptionSet:
     cppName: sync::SubscriptionSet

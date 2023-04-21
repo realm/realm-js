@@ -52,10 +52,10 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
     };
   `);
   nodeLines.push(`
-    /*global global*/
+    /*global global, require */
     import { createRequire } from 'node:module';
-    const require = createRequire(import.meta.url);
-    const nativeModule = require("./realm.node");
+    const nodeRequire = typeof require === 'function' ? require : createRequire(import.meta.url);
+    const nativeModule = nodeRequire("./realm.node");
 
     // We know that node always has real WeakRefs so just use them.
     export const WeakRef = global.WeakRef;

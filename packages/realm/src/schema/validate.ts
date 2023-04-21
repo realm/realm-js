@@ -25,7 +25,10 @@ import {
   PropertySchema,
   RealmObject,
   RealmObjectConstructor,
+  SchemaParseError,
   assert,
+  PropertySchemaParseError,
+  ObjectSchemaParseError,
 } from "../internal";
 
 // Need to use `CanonicalObjectSchema` rather than `ObjectSchema` due to some
@@ -73,50 +76,68 @@ export function validateRealmSchema(realmSchema: unknown): asserts realmSchema i
 export function validateObjectSchema(
   objectSchema: unknown,
 ): asserts objectSchema is RealmObjectConstructor | ObjectSchema {
-  // Schema is passed via a class based model (RealmObjectConstructor)
-  if (typeof objectSchema === "function") {
-    const clazz = objectSchema as unknown as DefaultObject;
-    // We assert this later, but want a custom error message
-    if (!(objectSchema.prototype instanceof RealmObject)) {
-      const schemaName = clazz.schema && (clazz.schema as DefaultObject).name;
-      if (typeof schemaName === "string" && schemaName !== objectSchema.name) {
-        throw new TypeError(`Class '${objectSchema.name}' (declaring '${schemaName}' schema) must extend Realm.Object`);
-      } else {
-        throw new TypeError(`Class '${objectSchema.name}' must extend Realm.Object`);
+  try {
+    // Schema is passed via a class based model (RealmObjectConstructor)
+    if (typeof objectSchema === "function") {
+      const clazz = objectSchema as unknown as DefaultObject;
+      // We assert this later, but want a custom error message
+      if (!(objectSchema.prototype instanceof RealmObject)) {
+        const schemaName = clazz.schema && (clazz.schema as DefaultObject).name;
+        if (typeof schemaName === "string" && schemaName !== objectSchema.name) {
+          throw new TypeError(
+            `Class '${objectSchema.name}' (declaring '${schemaName}' schema) must extend Realm.Object`,
+          );
+        } else {
+          throw new TypeError(`Class '${objectSchema.name}' must extend Realm.Object`);
+        }
+      }
+      assert.object(clazz.schema, "schema static");
+      validateObjectSchema(clazz.schema);
+    }
+    // Schema is passed as an object (ObjectSchema)
+    else {
+      assert.object(objectSchema, "object schema", { allowArrays: false });
+      const { name: objectName, properties, primaryKey, asymmetric, embedded } = objectSchema;
+      assert.string(objectName, "'name' on object schema");
+      assert.object(properties, `'properties' on '${objectName}'`, { allowArrays: false });
+      if (primaryKey !== undefined) {
+        assert.string(primaryKey, `'primaryKey' on '${objectName}'`);
+      }
+      if (embedded !== undefined) {
+        assert.boolean(embedded, `'embedded' on '${objectName}'`);
+      }
+      if (asymmetric !== undefined) {
+        assert.boolean(asymmetric, `'asymmetric' on '${objectName}'`);
+      }
+
+      const invalidKeysUsed = filterInvalidKeys(objectSchema, OBJECT_SCHEMA_KEYS);
+      assert(
+        !invalidKeysUsed.length,
+        `Unexpected field(s) found on the schema for object '${objectName}': '${invalidKeysUsed.join("', '")}'.`,
+      );
+
+      for (const propertyName in properties) {
+        const propertySchema = properties[propertyName];
+        const isUsingShorthand = typeof propertySchema === "string";
+        if (!isUsingShorthand) {
+          validatePropertySchema(objectName, propertyName, propertySchema);
+        }
       }
     }
-    assert.object(clazz.schema, "schema static");
-    validateObjectSchema(clazz.schema);
-  }
-  // Schema is passed as an object (ObjectSchema)
-  else {
-    assert.object(objectSchema, "object schema", { allowArrays: false });
-    const { name: objectName, properties, primaryKey, asymmetric, embedded } = objectSchema;
-    assert.string(objectName, "'name' on object schema");
-    assert.object(properties, `'properties' on '${objectName}'`, { allowArrays: false });
-    if (primaryKey !== undefined) {
-      assert.string(primaryKey, `'primaryKey' on '${objectName}'`);
+  } catch (err: any) {
+    // Rethrow as SchemaParseError(s) rather than a mix of Error, TypeError,
+    // TypeAssertionError, or AssertionError.
+    if (err instanceof PropertySchemaParseError) {
+      throw err;
     }
-    if (embedded !== undefined) {
-      assert.boolean(embedded, `'embedded' on '${objectName}'`);
+    if (err instanceof Error) {
+      // This first line is a workaround to satisfy TS. Runtime check needs to be
+      // `const objectName = objectSchema?.name || ""` where either `objectSchema`
+      // or `objectSchema.name` can be undefined or an incorrect type.
+      const objectName = (objectSchema as { name: string })?.name || "";
+      throw new ObjectSchemaParseError(err.message, { objectName });
     }
-    if (asymmetric !== undefined) {
-      assert.boolean(asymmetric, `'asymmetric' on '${objectName}'`);
-    }
-
-    const invalidKeysUsed = filterInvalidKeys(objectSchema, OBJECT_SCHEMA_KEYS);
-    assert(
-      !invalidKeysUsed.length,
-      `Unexpected field(s) found on the schema for object '${objectName}': '${invalidKeysUsed.join("', '")}'.`,
-    );
-
-    for (const propertyName in properties) {
-      const propertySchema = properties[propertyName];
-      const isUsingShorthand = typeof propertySchema === "string";
-      if (!isUsingShorthand) {
-        validatePropertySchema(objectName, propertyName, propertySchema);
-      }
-    }
+    throw err;
   }
 }
 
@@ -129,31 +150,38 @@ export function validatePropertySchema(
   propertyName: string,
   propertySchema: unknown,
 ): asserts propertySchema is PropertySchema {
-  assert.object(propertySchema, `'${propertyName}' on '${objectName}'`, { allowArrays: false });
-  const { type, objectType, optional, property, indexed, mapTo } = propertySchema;
-  assert.string(type, `'${propertyName}.type' on '${objectName}'`);
-  if (objectType !== undefined) {
-    assert.string(objectType, `'${propertyName}.objectType' on '${objectName}'`);
+  try {
+    assert.object(propertySchema, `'${propertyName}' on '${objectName}'`, { allowArrays: false });
+    const { type, objectType, optional, property, indexed, mapTo } = propertySchema;
+    assert.string(type, `'${propertyName}.type' on '${objectName}'`);
+    if (objectType !== undefined) {
+      assert.string(objectType, `'${propertyName}.objectType' on '${objectName}'`);
+    }
+    if (optional !== undefined) {
+      assert.boolean(optional, `'${propertyName}.optional' on '${objectName}'`);
+    }
+    if (property !== undefined) {
+      assert.string(property, `'${propertyName}.property' on '${objectName}'`);
+    }
+    if (indexed !== undefined) {
+      assert.boolean(indexed, `'${propertyName}.indexed' on '${objectName}'`);
+    }
+    if (mapTo !== undefined) {
+      assert.string(mapTo, `'${propertyName}.mapTo' on '${objectName}'`);
+    }
+    const invalidKeysUsed = filterInvalidKeys(propertySchema, PROPERTY_SCHEMA_KEYS);
+    assert(
+      !invalidKeysUsed.length,
+      `Unexpected field(s) found on the schema for property '${propertyName}' on '${objectName}': '${invalidKeysUsed.join(
+        "', '",
+      )}'.`,
+    );
+  } catch (err: any) {
+    if (err instanceof Error) {
+      throw new PropertySchemaParseError(err.message, { objectName, propertyName });
+    }
+    throw err;
   }
-  if (optional !== undefined) {
-    assert.boolean(optional, `'${propertyName}.optional' on '${objectName}'`);
-  }
-  if (property !== undefined) {
-    assert.string(property, `'${propertyName}.property' on '${objectName}'`);
-  }
-  if (indexed !== undefined) {
-    assert.boolean(indexed, `'${propertyName}.indexed' on '${objectName}'`);
-  }
-  if (mapTo !== undefined) {
-    assert.string(mapTo, `'${propertyName}.mapTo' on '${objectName}'`);
-  }
-  const invalidKeysUsed = filterInvalidKeys(propertySchema, PROPERTY_SCHEMA_KEYS);
-  assert(
-    !invalidKeysUsed.length,
-    `Unexpected field(s) found on the schema for property '${propertyName}' on '${objectName}': '${invalidKeysUsed.join(
-      "', '",
-    )}'.`,
-  );
 }
 
 /**

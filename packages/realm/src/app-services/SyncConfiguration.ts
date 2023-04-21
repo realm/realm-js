@@ -106,12 +106,77 @@ export type ClientResetConfig =
   | ClientResetRecoverUnsyncedChangesConfiguration
   | ClientResetRecoverOrDiscardUnsyncedChangesConfiguration;
 
+export type SSLConfiguration = {
+  /**
+   * Whether the SSL certificates must be validated. This should generally
+   * be `true` in production.
+   *
+   * Default is `true`.
+   */
+  validate?: boolean;
+  /**
+   * The path where to find trusted SSL certificates used to validate the
+   * server certificate. If `undefined`, validation will be delegated to
+   * the provided `validateCertificates` callback.
+   */
+  certificatePath?: string;
+  /**
+   * A callback function used to validate the server's SSL certificate. It
+   * is invoked for every certificate in the certificate chain starting from
+   * the root downward. An SSL connection will be established if all certificates
+   * are accepted. The certificate will be accepted if the callback returns `true`,
+   * or rejected if returning `false`. This callback is only invoked if
+   * `certificatePath` is `undefined`.
+   */
+  validateCertificates?: SSLVerifyCallback;
+};
+
+export type SSLVerifyCallback = (sslVerifyObject: SSLVerifyObject) => boolean;
+
+type SSLVerifyCallbackWithListArguments = (
+  serverAddress: string,
+  serverPort: number,
+  pemCertificate: string,
+  preverifyOk: number, // Acts as `SSLVerifyObject.acceptedByOpenSSL`
+  depth: number,
+) => boolean;
+
+export type SSLVerifyObject = {
+  /**
+   * The address that the SSL connection is being established to.
+   */
+  serverAddress: string;
+  /**
+   * The port that the SSL connection is being established to.
+   */
+  serverPort: number;
+  /**
+   * The certificate using the PEM format.
+   */
+  pemCertificate: string;
+  /**
+   * The result of OpenSSL's preverification of the certificate. If `true`,
+   * the certificate has been accepted and will generally be safe to trust.
+   * If `false`, it has been rejected and the user should do an independent
+   * validation step.
+   */
+  acceptedByOpenSSL: boolean;
+  /**
+   * The position of the certificate in the certificate chain. The actual
+   * server certificate has `depth` 0 (lowest) and also contains the host
+   * name, while all other certificates up the chain have higher depths in
+   * increments of 1.
+   */
+  depth: number;
+};
+
 export type BaseSyncConfiguration = {
   user: User;
   newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
   existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
   onError?: ErrorCallback;
   customHttpHeaders?: Record<string, string>;
+  ssl?: SSLConfiguration;
   /** @internal */
   _sessionStopPolicy?: SessionStopPolicy;
   clientReset?: ClientResetConfig;
@@ -156,6 +221,7 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
     onError,
     _sessionStopPolicy,
     customHttpHeaders,
+    ssl,
     clientReset,
     cancelWaitsOnNonFatalError,
   } = config;
@@ -163,14 +229,25 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
   return {
     user: user.internal,
     partitionValue: flexible ? undefined : EJSON.stringify(partitionValue),
+    flxSyncRequested: !!flexible,
     stopPolicy: _sessionStopPolicy
       ? toBindingStopPolicy(_sessionStopPolicy)
       : binding.SyncSessionStopPolicy.AfterChangesUploaded,
     customHttpHeaders,
-    flxSyncRequested: !!flexible,
+    clientValidateSsl: ssl?.validate,
+    sslTrustCertificatePath: ssl?.certificatePath,
+    sslVerifyCallback: ssl?.validateCertificates
+      ? binding.Helpers.makeSslVerifyCallback(toSSLVerifyCallbackWithListArguments(ssl.validateCertificates))
+      : undefined,
     ...parseClientResetConfig(clientReset, onError),
     cancelWaitsOnNonfatalError: cancelWaitsOnNonFatalError,
   };
+}
+
+/** @internal */
+function toSSLVerifyCallbackWithListArguments(verifyCallback: SSLVerifyCallback): SSLVerifyCallbackWithListArguments {
+  return (serverAddress: string, serverPort: number, pemCertificate: string, preverifyOk: number, depth: number) =>
+    verifyCallback({ serverAddress, serverPort, pemCertificate, acceptedByOpenSSL: !!preverifyOk, depth });
 }
 
 /** @internal */
@@ -259,6 +336,7 @@ export function validateSyncConfiguration(config: unknown): asserts config is Sy
     existingRealmFileBehavior,
     onError,
     customHttpHeaders,
+    ssl,
     clientReset,
     flexible,
     cancelWaitOnNonFatalError: cancelWaitsOnNonFatalError,
@@ -282,6 +360,9 @@ export function validateSyncConfiguration(config: unknown): asserts config is Sy
     for (const key in customHttpHeaders) {
       assert.string(customHttpHeaders[key], "all property values of 'customHttpHeaders' on realm sync configuration");
     }
+  }
+  if (ssl !== undefined) {
+    validateSSLConfiguration(ssl);
   }
   if (clientReset !== undefined) {
     validateClientResetConfiguration(clientReset);
@@ -315,6 +396,22 @@ function validateOpenRealmBehaviorConfiguration(
         config.timeOutBehavior === OpenRealmTimeOutBehavior.ThrowException,
       `'${target}.timeOutBehavior' on realm sync configuration must be either '${OpenRealmTimeOutBehavior.OpenLocalRealm}' or '${OpenRealmTimeOutBehavior.ThrowException}'.`,
     );
+  }
+}
+
+/**
+ * Validate the fields of a user-provided SSL configuration.
+ */
+function validateSSLConfiguration(config: unknown): asserts config is SSLConfiguration {
+  assert.object(config, "'ssl' on realm sync configuration");
+  if (config.validate !== undefined) {
+    assert.boolean(config.validate, "'ssl.validate' on realm sync configuration");
+  }
+  if (config.certificatePath !== undefined) {
+    assert.string(config.certificatePath, "'ssl.certificatePath' on realm sync configuration");
+  }
+  if (config.validateCertificates !== undefined) {
+    assert.function(config.validateCertificates, "'ssl.validateCertificates' on realm sync configuration");
   }
 }
 

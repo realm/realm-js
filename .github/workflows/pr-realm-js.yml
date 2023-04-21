@@ -344,13 +344,9 @@ jobs:
           name: realm-js-prebuilds
 
       - name: Install dependencies
-        # Ignoring scripts to prevent building if a prebuild is missing
-        run: npm ci --ignore-scripts
-
-      - name: Install prebuild
-        if: ${{ matrix.variant.environment == 'node' || matrix.variant.environment == 'electron' }}
-        run: npx --workspace realm prebuild-install --runtime napi --verbose
+        run: npm ci
         env:
+          # Ensure we install the prebuild built in the previous job
           npm_config_realm_local_prebuilds: ${{github.workspace}}/packages/realm/prebuilds
 
       - name: Invoke the simulator (making subsequent "open -a Simulator" calls work)
