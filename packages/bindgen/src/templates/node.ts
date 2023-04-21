@@ -180,8 +180,8 @@ function convertPrimToNode(addon: NodeAddon, type: string, expr: string): string
       return `Napi::Number::New(${env}, ${expr})`;
 
     case "count_t":
-      // NOTE: using int64_t cast here to get -1.0 for size_t(-1), aka npos.
-      return `Napi::Number::New(${env}, int64_t(${expr}))`;
+      // NOTE: using asSigned() here to get -1.0 for size_t(-1), aka npos.
+      return `Napi::Number::New(${env}, asSigned(${expr}))`;
 
     case "int64_t":
     case "uint64_t":
