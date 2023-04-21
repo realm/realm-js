@@ -1,15 +1,13 @@
 {
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
+		"strict": true,
+		"strictPropertyInitialization": true,
 		"target": "es2022",
 		"module": "es2022",
 		"moduleResolution": "node",
 		"forceConsistentCasingInFileNames": true,
-		"types": [
-			"node",
-			"fs-extra",
-			"yargs"
-		],
+		"noResolve": true,
 		"lib": [
 			"es2019",
 			"dom"

@@ -16,12 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import path from "path";
-import fs from "fs-extra";
-import glob from "glob";
-import deepmerge from "deepmerge";
-import { AdminApiClient, Credentials, SyncConfig } from "./AdminApiClient";
-import { Deployment, DeploymentDraft } from "./types";
+import createDebug from "debug";
+
+import { AdminApiClient, Credentials } from "./AdminApiClient";
+import { AppConfig } from "./AppConfigBuilder";
+import { Deployment } from "./types";
+
+const debug = createDebug("realm:app-importer");
 
 /**
  * First level keys are file globs and the values are objects that are spread over the content of the files matching the glob.
@@ -46,64 +47,43 @@ type App = {
   product: string;
   environment: string;
 };
-
-type AppConfig = {
-  name: string;
-  sync?: SyncConfig;
-  security?: {
-    allowed_request_origins?: string[];
-  };
-};
-
 export interface AppImporterOptions {
+  /**
+   * The server's URL.
+   */
   baseUrl: string;
+  /**
+   * Administrative credentials to use when authenticating against the server.
+   */
   credentials: Credentials;
-  realmConfigPath: string;
-  appsDirectoryPath: string;
-  cleanUp?: boolean;
+  /**
+   * Re-use a single app instead of importing individual apps.
+   * This will redeploy a previously known "clean" version of the app (to revert any configurations) and delete secrets off the app,
+   * before re-configuring it. This is a useful strategy to lower stress on the server.
+   */
   reuseApp?: boolean;
+  /**
+   * Poll the deployment endpoint after the last configuration is requested towards the server.
+   * @default false Since this turns out not to be needed when configuration happens over the API without drafts.
+   */
+  awaitDeployments?: boolean;
 }
 
 export class AppImporter {
   private readonly baseUrl: string;
   private readonly credentials: Credentials;
-  private readonly realmConfigPath: string;
-  private readonly appsDirectoryPath: string;
   private readonly reuseApp: boolean;
+  private readonly awaitDeployments: boolean;
   private readonly client: AdminApiClient;
   private initialDeployment: Deployment | null = null;
-  private currentDeploymentDraft: DeploymentDraft | null = null;
   private reusedApp: App | null = null;
 
-  constructor({
-    baseUrl,
-    credentials,
-    realmConfigPath,
-    appsDirectoryPath,
-    cleanUp = true,
-    reuseApp = false,
-  }: AppImporterOptions) {
+  constructor({ baseUrl, credentials, reuseApp = false, awaitDeployments = false }: AppImporterOptions) {
     this.baseUrl = baseUrl;
     this.credentials = credentials;
-    this.realmConfigPath = realmConfigPath;
-    this.appsDirectoryPath = appsDirectoryPath;
     this.reuseApp = reuseApp;
+    this.awaitDeployments = awaitDeployments;
     this.client = new AdminApiClient({ baseUrl });
-
-    if (cleanUp) {
-      process.on("exit", () => {
-        // Remove any stitch configuration
-        if (fs.existsSync(this.realmConfigPath)) {
-          console.log(`Deleting ${this.realmConfigPath}`);
-          fs.removeSync(this.realmConfigPath);
-        }
-        // If there is nothing the the apps directory, lets delete it
-        if (fs.existsSync(this.appsDirectoryPath)) {
-          console.log(`Deleting ${this.appsDirectoryPath}`);
-          fs.removeSync(this.appsDirectoryPath);
-        }
-      });
-    }
   }
 
   public async createOrReuseApp(name: string) {
@@ -113,26 +93,26 @@ export class AppImporter {
         if (!this.initialDeployment) {
           throw new Error("Missing an initial deployment");
         }
-        console.log(`Reusing ${this.reusedApp.client_app_id}`);
+        debug(`Reusing ${this.reusedApp.client_app_id}`);
         await this.client.redeployDeployment(this.reusedApp._id, this.initialDeployment._id);
         const [deployment] = await this.client.listDeployments(this.reusedApp._id);
-        console.log(`Redeployed ${this.initialDeployment._id} as ${deployment._id}`);
+        debug(`Redeployed ${this.initialDeployment._id} as ${deployment._id}`);
         this.initialDeployment = deployment;
         // Delete any existing secrets
         const secrets = await this.client.listSecrets(this.reusedApp._id);
+        debug(`Deleting old secrets (${secrets.map((s) => s.name).join(", ")})`);
         for (const secret of secrets) {
-          console.log(`Deleting old secret named '${secret.name}'`);
           await this.client.deleteSecret(this.reusedApp._id, secret._id);
         }
         return this.reusedApp;
       } else {
         // Ensure we have the reusable app imported already
         const app = await this.client.createApp("reused");
-        console.log(`Created ${app.client_app_id}`);
+        debug(`Created ${app.client_app_id}`);
         // Store this for next import
         this.reusedApp = app;
         // Do a simple change to get an initial deployment
-        await this.client.createValue(app._id, { name: "initial-deployment-value", value: "whatever" });
+        await this.client.createValue(app._id, "dummyValue", "whatever");
         // Create and deploy a deployment draft we can redeploy later
         const deployments = await this.client.listDeployments(app._id);
         if (deployments.length === 1) {
@@ -152,45 +132,31 @@ export class AppImporter {
    * @param replacements An object with file globs as keys and a replacement object as values. Allows for just-in-time replacements of configuration parameters.
    * @returns A promise of an object containing the app id.
    */
-  public async importApp(appTemplatePath: string, replacements: TemplateReplacements = {}): Promise<ImportedApp> {
-    const { name: appName, sync, security } = this.loadAppConfigJson(appTemplatePath);
-
+  public async importApp(config: AppConfig): Promise<ImportedApp> {
     await this.client.ensureLogIn(this.credentials);
 
-    const app = await this.createOrReuseApp(appName);
-    const appId = app.client_app_id;
+    const app = await this.createOrReuseApp(config.name);
     try {
-      // Determine the path of the new app
-      const appPath = path.resolve(this.appsDirectoryPath, appId);
-
-      if (fs.existsSync(appPath)) {
-        console.log(`Deleting old app directory (${appPath})`);
-        fs.rmSync(appPath, { recursive: true });
-      }
-      // Copy over the app template
-      this.copyAppTemplate(appPath, appTemplatePath);
-
-      // Apply any replacements to the files before importing from them
-      this.applyReplacements(appPath, replacements);
-
-      // Apply allowed request origins if they exist
-      if (security?.allowed_request_origins) {
-        this.client.applyAllowedRequestOrigins(security.allowed_request_origins, app._id);
-      }
-
       // Create the app service
-      await this.applyAppConfiguration(appPath, app._id, sync);
+      debug("Configuring %s %j", app.client_app_id, config);
+      await this.configureApp(app._id, config);
 
-      if (appId) {
-        console.log(`The application ${appId} was successfully deployed...`);
-        console.log(`${this.baseUrl}/groups/${await this.client.groupId}/apps/${app._id}/dashboard`);
+      if (this.awaitDeployments) {
+        // Await any deployment which is not yet successful
+        const [latestDeployment] = await this.client.listDeployments(app._id);
+        await this.pollDeploymentUntilSuccessful(app._id, latestDeployment._id);
       }
 
-      return { appName, appId };
+      debug(`The application ${app.client_app_id} was successfully deployed:`);
+      debug(`${this.baseUrl}/groups/${await this.client.groupId}/apps/${app._id}/dashboard`);
+
+      return { appName: config.name, appId: app.client_app_id };
     } catch (err) {
       try {
         // Using a try-catch here, because the failure to delete the app should not shadow the actual error
-        await this.client.deleteApp(appId);
+        await this.client.deleteApp(app._id);
+        // Clear any reused app
+        this.reusedApp = null;
       } catch (err) {
         console.warn(`Failed to delete the app: ${err}`);
       }
@@ -198,13 +164,8 @@ export class AppImporter {
     }
   }
 
-  public async importApps(templatePaths: string[]): Promise<ImportedApp[]> {
-    const apps: ImportedApp[] = [];
-    for (const templatePath of templatePaths) {
-      const app = await this.importApp(templatePath);
-      apps.push(app);
-    }
-    return apps;
+  public async importApps(appConfigs: AppConfig[]): Promise<ImportedApp[]> {
+    return Promise.all(appConfigs.map((appConfig) => this.importApp(appConfig)));
   }
 
   public async deleteApp(clientAppId: string) {
@@ -217,183 +178,98 @@ export class AppImporter {
     await this.client.deleteApp(app._id);
   }
 
-  private loadJson(filePath: string) {
-    try {
-      const content = fs.readFileSync(filePath, "utf8");
-      return JSON.parse(content);
-    } catch (err) {
-      throw new Error(`Failed to load JSON (${filePath}): ${(err as Error).message}`);
+  private async configureSecurity(appId: string, security: AppConfig["security"]) {
+    if (security?.allowed_request_origins) {
+      this.client.applyAllowedRequestOrigins(appId, security.allowed_request_origins);
     }
   }
 
-  private loadAppConfigJson(appTemplatePath: string): AppConfig {
-    const configJsonPath = path.resolve(appTemplatePath, "config.json");
-    return this.loadJson(configJsonPath);
-  }
-
-  private loadSecretsJson(appTemplatePath: string) {
-    const secretsJsonPath = path.resolve(appTemplatePath, "secrets.json");
-    if (fs.existsSync(secretsJsonPath)) {
-      return this.loadJson(secretsJsonPath);
-    } else {
-      return {};
-    }
-  }
-
-  private copyAppTemplate(appPath: string, appTemplatePath: string) {
-    fs.mkdirpSync(appPath);
-    fs.copySync(appTemplatePath, appPath, {
-      recursive: true,
-    });
-  }
-
-  private applyReplacements(appPath: string, replacements: TemplateReplacements) {
-    for (const [fileGlob, replacement] of Object.entries(replacements)) {
-      console.log(`Applying replacements to ${fileGlob}`);
-      const files = glob.sync(fileGlob, { cwd: appPath });
-      for (const relativeFilePath of files) {
-        const filePath = path.resolve(appPath, relativeFilePath);
-        const content = fs.readJSONSync(filePath);
-        const mergedContent = deepmerge(content, replacement);
-        fs.writeJSONSync(filePath, mergedContent, { spaces: 2 });
-      }
-    }
-  }
-
-  private async configureValuesFromAppPath(appPath: string, appId: string) {
-    const valuesDir = path.join(appPath, "values");
-
-    if (fs.existsSync(valuesDir)) {
-      console.log("Applying values...");
-      const valuesDirs = fs.readdirSync(valuesDir);
-      for (const valueFile of valuesDirs) {
-        const configPath = path.join(valuesDir, valueFile);
-        const config = this.loadJson(configPath);
-        console.log("creating new value: ", config);
-        this.client.createValue(appId, config);
-      }
-    }
-  }
-
-  private async configureServiceFromAppPath(appPath: string, appId: string, syncConfig?: SyncConfig) {
-    const servicesDir = path.join(appPath, "services");
-    if (fs.existsSync(servicesDir)) {
-      console.log("Applying services... ");
-      const serviceDirectories = fs.readdirSync(servicesDir);
-
-      // It is possible for there to be multiple service directories
-      for (const serviceDir of serviceDirectories) {
-        const configFilePath = path.join(servicesDir, serviceDir, "config.json");
-        if (fs.existsSync(configFilePath)) {
-          const config = this.loadJson(configFilePath);
-
-          const service = await this.client.createService(appId, config);
-          if (syncConfig) {
-            await this.client.applySyncConfig(appId, syncConfig);
-          }
-          const rulesDir = path.join(servicesDir, serviceDir, "rules");
-          const serviceId = service._id;
-          // rules must be applied after the service is created
-          if (fs.existsSync(rulesDir)) {
-            console.log("Applying rules...");
-            const ruleFiles = fs.readdirSync(rulesDir);
-            for (const ruleFile of ruleFiles) {
-              const ruleFilePath = path.join(rulesDir, ruleFile);
-              const ruleConfig = this.loadJson(ruleFilePath);
-              this.client.createRule(appId, serviceId, config.type, ruleConfig);
-            }
-          }
-        }
-      }
-    }
-  }
-
-  private async configureAuthProvidersFromAppPath(appPath: string, appId: string) {
-    const authProviderDir = path.join(appPath, "auth_providers");
-    // Some auth providers use a remote function.  This makes sure the ids are available to add to the configuration
-    const remoteFunctions = await this.client.listFunctions(appId);
-
-    if (fs.existsSync(authProviderDir)) {
-      console.log("Applying auth providers...");
-      const authFileNames = fs.readdirSync(authProviderDir);
-      const providers = await this.client.listAuthProviders(appId);
-      for (const authFileName of authFileNames) {
-        const authFilePath = path.join(authProviderDir, authFileName);
-        const config = this.loadJson(authFilePath);
-
-        console.log("Applying ", config.name);
-
-        // Add the ID of the resetFunction to the configuration
-        if (config?.config?.resetFunctionName) {
-          const resetFunctionId = remoteFunctions.find((func) => func.name === config.config.resetFunctionName)?._id;
-          config.config.resetFunctionId = resetFunctionId;
-        }
-
-        // Add the ID of the authFunction to the configuration
-        if (config?.config?.authFunctionName) {
-          const authFunctionId = remoteFunctions.find((func) => func.name === config.config.authFunctionName)?._id;
-          config.config.authFunctionId = authFunctionId;
-        }
-
-        // Add the ID of the authFunction to the configuration
-        if (config?.config?.confirmationFunctionName) {
-          const confirmationFunctionId = remoteFunctions.find(
-            (func) => func.name === config.config.confirmationFunctionName,
-          )?._id;
-          config.config.confirmationFunctionId = confirmationFunctionId;
-        }
-
-        const currentProvider = providers.find((provider) => provider.type === config.type);
-        if (currentProvider) {
-          await this.client.patchAuthProvider(appId, currentProvider._id, config);
-        } else {
-          await this.client.createAuthProvider(appId, config);
-        }
-      }
-      // Wait a bit for BaaS to enable the auth provider
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
-  }
-
-  private async configureFunctionsFromAppPath(appPath: string, appId: string) {
-    const functionsDir = path.join(appPath, "functions");
-
-    if (fs.existsSync(functionsDir)) {
-      console.log("Applying functions...");
-      const functionDirs = fs.readdirSync(functionsDir);
-      for (const functionDir of functionDirs) {
-        const configPath = path.join(functionsDir, functionDir, "config.json");
-        const config = this.loadJson(configPath);
-        const sourcePath = path.join(functionsDir, functionDir, "source.js");
-        const source = fs.readFileSync(sourcePath, "utf8");
-
-        delete config.id;
-
-        console.log("creating new function provider: ", config);
-        await this.client.createFunction(appId, { ...config, source: source });
-      }
-    }
-  }
-
-  private async applyAppConfiguration(appPath: string, appId: string, syncConfig?: SyncConfig) {
+  private async configureSecrets(appId: string, secrets: Record<string, string>) {
     // Create all secrets in parallel
-    const secrets = this.loadSecretsJson(appPath);
     await Promise.all(
       Object.entries<string>(secrets).map(async ([name, value]) => {
         if (typeof value !== "string") {
           throw new Error(`Expected a secret string value for '${name}'`);
         }
-        return this.client.createSecret(appId, name, value);
+        await this.client.createSecret(appId, name, value);
       }),
     );
+  }
 
-    await this.configureValuesFromAppPath(appPath, appId);
+  private async configureValues(appId: string, values: Record<string, string>) {
+    await Promise.all(Object.entries(values).map(([name, value]) => this.client.createValue(appId, name, value)));
+  }
 
-    await this.configureServiceFromAppPath(appPath, appId, syncConfig);
+  private async configureSync(appId: string, config: AppConfig["sync"]) {
+    if (config) {
+      await this.client.applySyncConfig(appId, config);
+    }
+  }
 
-    await this.configureFunctionsFromAppPath(appPath, appId);
+  private async configureServices(appId: string, services: AppConfig["services"]) {
+    for (const [serviceConfig, ruleConfigs] of services) {
+      const service = await this.client.createService(appId, serviceConfig);
+      const serviceId = service._id;
+      for (const ruleConfig of ruleConfigs) {
+        this.client.createRule(
+          appId,
+          serviceId,
+          ruleConfig,
+          serviceConfig.type === "mongodb" || serviceConfig.type === "mongodb-atlas",
+        );
+      }
+    }
+  }
 
-    await this.configureAuthProvidersFromAppPath(appPath, appId);
+  private async configureFunctions(appId: string, functions: AppConfig["functions"]) {
+    for (const functionConfig of functions) {
+      await this.client.createFunction(appId, functionConfig);
+    }
+  }
+
+  private async configureAuthProviders(appId: string, providers: AppConfig["authProviders"]) {
+    // Some auth providers use a remote function.  This makes sure the ids are available to add to the configuration
+    const functions = await this.client.listFunctions(appId);
+    const existingProviders = await this.client.listAuthProviders(appId);
+
+    for (const provider of providers) {
+      // Set function ids from function names
+      if (provider.type === "local-userpass") {
+        const { confirmationFunctionName, resetFunctionName } = provider.config;
+        if (confirmationFunctionName) {
+          provider.config.confirmationFunctionId = functions.find(
+            (func) => func.name === confirmationFunctionName,
+          )?._id;
+        }
+        if (resetFunctionName) {
+          provider.config.resetFunctionId = functions.find((func) => func.name === resetFunctionName)?._id;
+        }
+      }
+
+      if (provider.type === "custom-function") {
+        const { authFunctionName } = provider.config;
+        provider.config.authFunctionId = functions.find((func) => func.name === authFunctionName)?._id;
+      }
+
+      const existingProvider = existingProviders.find((otherProvider) => otherProvider.type === provider.type);
+      if (existingProvider) {
+        await this.client.patchAuthProvider(appId, existingProvider._id, provider);
+      } else {
+        await this.client.createAuthProvider(appId, provider);
+      }
+    }
+  }
+
+  private async configureApp(appId: string, config: AppConfig) {
+    await this.configureSecurity(appId, config.security);
+    await this.configureSecrets(appId, config.secrets);
+    await this.configureValues(appId, config.values);
+    await this.configureSync(appId, config.sync);
+    await this.configureServices(appId, config.services);
+    await this.configureFunctions(appId, config.functions);
+    await this.configureAuthProviders(appId, config.authProviders);
+    // Wait a bit for BaaS to settle - it would be great to get rid of this ...
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 
   private async pollDeploymentUntilSuccessful(appId: string, deploymentId: string) {

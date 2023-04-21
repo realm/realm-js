@@ -25,7 +25,9 @@ export type {
   ServiceConfig,
   ServiceRule,
   SyncConfig,
-  SyncPartitionConfig,
+  PartitionSyncConfig,
+  PartitionConfig,
+  FlexibleSyncConfig,
 } from "./AppConfigBuilder";
 export { AppImporter } from "./AppImporter";
-export { AppConfigBuilder } from "./AppConfigBuilder";
+export { AppConfigBuilder, buildConfig } from "./AppConfigBuilder";

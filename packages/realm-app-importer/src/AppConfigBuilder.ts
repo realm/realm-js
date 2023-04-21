@@ -19,6 +19,10 @@
 export type AppConfig = {
   name: string;
   sync?: SyncConfig;
+  security?: {
+    allowed_request_origins?: string[];
+  };
+  // Additional config below
   secrets: Record<string, string>;
   values: Record<string, string>;
   services: [ServiceConfig, ServiceRule[]][];
@@ -33,22 +37,9 @@ export type SyncConfig = {
 export type ServiceConfig = {
   name: string;
   type: string;
-  config:
-    | {
-        sync: {
-          state: "enabled";
-          database_name: string;
-          partition: SyncPartitionConfig;
-        };
-      }
-    | {
-        flexible_sync: {
-          state: "enabled";
-          database_name: string;
-        };
-      };
+  config: DisabledSyncConfig | PartitionSyncConfig | FlexibleSyncConfig;
   secret_config: Record<string, unknown>;
-  version: number;
+  version?: number;
 };
 
 export type ServiceRule = {
@@ -78,18 +69,20 @@ export type AuthProviderConfig = {
       config: {
         autoConfirm?: boolean;
         confirmEmailSubject?: string;
-        confirmationFunctionName?: string;
         emailConfirmationUrl?: string;
-        resetFunctionName?: string;
         resetPasswordSubject?: string;
         resetPasswordUrl?: string;
         runConfirmationFunction?: boolean;
         runResetFunction?: boolean;
+        confirmationFunctionName?: string;
+        confirmationFunctionId?: string;
+        resetFunctionName?: string;
+        resetFunctionId?: string;
       };
     }
   | {
       type: "custom-function";
-      config: { authFunctionName: string };
+      config: { authFunctionName: string; authFunctionId?: string };
     }
   | {
       type: "custom-token";
@@ -112,17 +105,35 @@ export type AuthProviderConfig = {
 export type FunctionConfig = {
   name: string;
   private: boolean;
-  can_evaluate: unknown; // {}
+  can_evaluate?: unknown; // {}
   run_as_system?: boolean;
   source: string;
 };
 
-export type SyncPartitionConfig = {
+export type Disabled = Record<string, never>;
+
+export type PartitionSyncConfig = {
+  sync: {
+    state: "enabled";
+    database_name: string;
+    partition: PartitionConfig;
+  };
+};
+
+export type PartitionConfig = {
   key: string;
   type: "long" | "objectId" | "string" | "uuid";
+  required?: boolean;
   permissions: {
     read: boolean;
     write: boolean;
+  };
+};
+
+export type FlexibleSyncConfig = {
+  flexible_sync: {
+    state: "enabled";
+    database_name: string;
   };
 };
 
@@ -174,4 +185,8 @@ export class AppConfigBuilder {
     this.config.functions.push(config);
     return this;
   }
+}
+
+export function buildConfig(name?: string) {
+  return new AppConfigBuilder(name);
 }

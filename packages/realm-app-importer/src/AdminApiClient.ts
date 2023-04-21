@@ -35,6 +35,7 @@ import {
   assertServiceResponse,
   isErrorResponse,
 } from "./types";
+import { AppConfig } from "./AppConfigBuilder";
 
 export type Credentials =
   | {
@@ -52,10 +53,6 @@ type ClientFetchRequest = Omit<FetchRequestInit, "headers"> & { route: string[];
 
 type AdminApiClientConfig = {
   baseUrl: string;
-};
-
-export type SyncConfig = {
-  development_mode_enabled?: boolean;
 };
 
 /**
@@ -225,11 +222,11 @@ export class AdminApiClient {
     return response;
   }
 
-  public async createValue(appId: string, config: Record<string, unknown>) {
+  public async createValue(appId: string, name: string, value: string) {
     await this.fetch({
       route: ["groups", await this.groupId, "apps", appId, "values"],
       method: "POST",
-      body: config,
+      body: { name, value },
     });
   }
 
@@ -324,29 +321,14 @@ export class AdminApiClient {
     return response;
   }
 
-  public async createRule(appId: string, serviceId: string, serviceType: string, config: Record<string, unknown>) {
-    const schemaConfig = config.schema || null;
-    if (schemaConfig) {
-      // Schema is not valid in a rule request, but is included when exporting an app from realm
-      delete config.schema;
-    }
-
-    const relationshipsConfig = config.relationships || null;
-    if (relationshipsConfig) {
-      // Relationships is not valid in a rule request, but is included when exporting an app from realm
-      delete config.relationships;
-    }
-
+  public async createRule(
+    appId: string,
+    serviceId: string,
+    config: AppConfig["services"][0][1][0],
+    isDefault: boolean,
+  ) {
     await this.fetch({
-      route: [
-        "groups",
-        await this.groupId,
-        "apps",
-        appId,
-        "services",
-        serviceId,
-        serviceType === "mongodb" || serviceType === "mongodb-atlas" ? "default_rule" : "rules",
-      ],
+      route: ["groups", await this.groupId, "apps", appId, "services", serviceId, isDefault ? "default_rule" : "rules"],
       method: "POST",
       body: config,
     });
@@ -360,7 +342,7 @@ export class AdminApiClient {
     });
   }
 
-  public async applyAllowedRequestOrigins(origins: string[], appId: string) {
+  public async applyAllowedRequestOrigins(appId: string, origins: string[]) {
     await this.fetch({
       route: ["groups", await this.groupId, "apps", appId, "security", "allowed_request_origins"],
       method: "PUT",
