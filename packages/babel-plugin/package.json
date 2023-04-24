@@ -11,12 +11,20 @@
   "wireit": {
     "bundle": {
       "command": "tsc -p tsconfig.build.json",
-      "files": ["tsconfig.build.json", "tsconfig.json", "src"],
-      "output": ["dist"]
+      "files": [
+        "tsconfig.build.json",
+        "tsconfig.json",
+        "src"
+      ],
+      "output": [
+        "dist"
+      ]
     },
     "test": {
       "command": "jest",
-      "dependencies": ["../realm:bundle"]
+      "dependencies": [
+        "../realm:bundle"
+      ]
     }
   },
   "keywords": [

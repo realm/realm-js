@@ -15,7 +15,6 @@
     "watch:android": "wireit",
     "common": "wireit",
     "common:ci": "mocha-remote --template @realm/mocha-reporter --context appImporterIsRemote,$MOCHA_REMOTE_CONTEXT -- concurrently --kill-others-on-fail npm:metro npm:runner npm:app-importer",
-
     "lint": "eslint .",
     "app-importer": "realm-app-importer serve ../../realm-apps",
     "metro": "react-native start --reset-cache",
