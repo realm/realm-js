@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "description": "Wrapping the Stitch CLI to import an app from a template (w. secrets)",
-  "type": "module",
   "main": "./src/index.ts",
   "scripts": {
     "lint": "eslint --ext .js,.ts .",
