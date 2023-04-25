@@ -76,7 +76,9 @@ function ensureSimulator() {
     const deviceType = devicetypes.find(({ identifier }) => identifier === IOS_DEVICE_TYPE_ID);
     if (!deviceType) {
       throw new Error(
-        `System doesn't have the "${IOS_DEVICE_TYPE_ID}" device type, found ${JSON.stringify(devicetypes, null, 2)}`,
+        `System doesn't have the "${IOS_DEVICE_TYPE_ID}" device type, found: ${devicetypes
+          .map(({ identifier }) => identifier)
+          .join(", ")}`,
       );
     }
 
