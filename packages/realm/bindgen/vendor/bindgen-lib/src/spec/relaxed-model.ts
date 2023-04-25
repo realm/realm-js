@@ -92,7 +92,7 @@ export type RelaxedSpec = {
    * If in doubt between exposing a class or record, rule of thumb: methods -> use a class, public fields -> record.
    *
    * [1] Note that in C++ there is no real difference between structs and classes, but this is using the
-   * conventional meaning of types with public data members.
+   * conventional meaning of types with public data members that are just a bunch of data.
    */
   records?: { [name: string]: RelaxedRecordSpec };
   /**
@@ -106,13 +106,14 @@ export type RelaxedSpec = {
    * If in doubt between exposing a class or record, rule of thumb: methods -> use a class, public fields -> record.
    *
    * [1] Note that in C++ there is no real difference between structs and classes, but this is using the
+   * conventional meaning of types with hidden data and behaviors exposed by public methods.
    */
   classes?: { [name: string]: RelaxedClassSpec };
   /**
    * Type aliases allow simplifying the spec by assigning a short name to a potentially complex type.
    * They can also be used to make it easier to change the type of many things at once.
    * They only exist in the spec file and do not need to exist in the C++ code.
-   * NOTE: Currently the are resolved and erased during spec parsing so they never show up in the generated APIs.
+   * NOTE: Currently they are resolved and erased during spec parsing so they never show up in the generated APIs.
    */
   typeAliases?: { [name: string]: SpecType };
   /**
