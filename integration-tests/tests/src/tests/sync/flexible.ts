@@ -1622,6 +1622,26 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         });
       });
 
+      describe("Results#unsubscribe", function () {
+        it("unsubscribes from existing subscription", async function (this: RealmContext) {
+          const peopleOver10 = await this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10").subscribe();
+          expect(this.realm.subscriptions).to.have.length(1);
+
+          const unsubscribed = peopleOver10.unsubscribe();
+          expect(unsubscribed).to.be.true;
+          expect(this.realm.subscriptions).to.have.length(0);
+        });
+
+        it("does not unsubscribe when there is no subscription", function (this: RealmContext) {
+          const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
+          expect(this.realm.subscriptions).to.have.length(0);
+
+          const unsubscribed = peopleOver10.unsubscribe();
+          expect(unsubscribed).to.be.false;
+          expect(this.realm.subscriptions).to.have.length(0);
+        });
+      });
+
       // TODO Right now there is no is_valid method we can use to verify if the subs
       // are in a valid state... maybe need a different solution as this will crash
       xdescribe("when realm is closed", function () {
