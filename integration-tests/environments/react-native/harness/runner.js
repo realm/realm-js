@@ -75,7 +75,9 @@ function ensureSimulator() {
     const { devicetypes } = xcode.simctl.list("devicetypes");
     const deviceType = devicetypes.find(({ identifier }) => identifier === IOS_DEVICE_TYPE_ID);
     if (!deviceType) {
-      throw new Error(`System doesn't have the "${IOS_DEVICE_TYPE_ID}" device type`);
+      throw new Error(
+        `System doesn't have the "${IOS_DEVICE_TYPE_ID}" device type, found ${JSON.stringify(devicetypes, null, 2)}`,
+      );
     }
 
     // Shutdown all booted simulators (as they might interfeer by loading and executing the Metro bundle)
