@@ -253,12 +253,13 @@ export class User<
    * Call a remote Atlas App Services Function by its name.
    * Note: Consider using `functions[name]()` instead of calling this method.
    *
-   * @param name Name of the function.
-   * @param args Arguments passed to the function.
+   * @param name Name of the App Services Function.
+   * @param args Arguments passed to the Function.
+   * @returns A promise that resolves to the value returned by the Function.
    *
    * @example
    * // These are all equivalent:
-   * await user.callFunction("doThing", [a1, a2, a3]);
+   * await user.callFunction("doThing", a1, a2, a3);
    * await user.functions.doThing(a1, a2, a3);
    * await user.functions["doThing"](a1, a2, a3);
    * @example
