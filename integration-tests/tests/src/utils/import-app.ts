@@ -15,27 +15,15 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import { App, BSON } from "realm";
 
 import { AppConfig, AppImporter, Credentials } from "@realm/app-importer";
-import { fetch } from "./fetch";
 
 export type TemplateReplacements = Record<string, Record<string, unknown>>;
 export type ErrorResponse = { message: string; appId: never };
 export type ImportResponse = { appId: string; message: never };
 export type Response = ImportResponse | ErrorResponse;
 
-//TODO should be moved to a separate file as it doesn't directly have anything to do with importing an app.
-export function getUrls() {
-  // Try reading the app importer URL out of the environment, it might not be accessiable via localhost
-  const { appImporterUrl, realmBaseUrl } = environment;
-  return {
-    appImporterUrl: typeof appImporterUrl === "string" ? appImporterUrl : "http://localhost:8091",
-    baseUrl: typeof realmBaseUrl === "string" ? realmBaseUrl : "http://localhost:9090",
-  };
-}
-
-const { appImporterIsRemote, appTemplatesPath = "../../realm-apps" } = environment;
+const { realmBaseUrl = "http://localhost:9090" } = environment;
 
 function getCredentials(): Credentials {
   const { publicKey, privateKey, username, password } = environment;
@@ -51,10 +39,6 @@ function getCredentials(): Credentials {
     username: typeof username === "string" ? username : "unique_user@domain.com",
     password: typeof password === "string" ? password : "password",
   };
-}
-
-function isErrorResponse(arg: unknown): arg is ErrorResponse {
-  return typeof arg === "object" && arg !== null && "message" in arg;
 }
 
 type SyncConfigOptions = {
@@ -109,32 +93,19 @@ export function getDefaultReplacements(name: string, databaseName: string): Temp
   };
 }
 
-const appsDirectoryPath = "./realm-apps";
-const realmConfigPath = "./realm-config";
-const { baseUrl } = getUrls();
 const credentials = getCredentials();
 
 const importer = new AppImporter({
-  baseUrl,
+  baseUrl: realmBaseUrl,
   credentials,
-  realmConfigPath,
-  appsDirectoryPath,
   reuseApp: true,
 });
 
 export async function importApp(config: AppConfig): Promise<{ appId: string; baseUrl: string }> {
-  if (appImporterIsRemote) {
-    throw new Error("Calling the app importer remotely, is not longer supported");
-  } else {
-    const { appId } = await importer.importApp(config);
-    return { appId, baseUrl };
-  }
+  const { appId } = await importer.importApp(config);
+  return { appId, baseUrl: realmBaseUrl };
 }
 
 export async function deleteApp(clientAppId: string): Promise<void> {
-  if (appImporterIsRemote) {
-    throw new Error("Calling the app importer remotely, is not longer supported");
-  } else {
-    await importer.deleteApp(clientAppId);
-  }
+  await importer.deleteApp(clientAppId);
 }
