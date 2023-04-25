@@ -22,6 +22,8 @@ import {
   OrderedCollectionHelpers,
   Realm,
   RealmInsertionModel,
+  SubscriptionOptions,
+  WaitForSync,
   assert,
   binding,
 } from "./internal";
@@ -40,6 +42,8 @@ export class Results<T = unknown> extends OrderedCollection<T> {
    * @internal
    */
   public declare internal: binding.Results;
+  /** @internal */
+  private isSubscribedTo = false;
 
   /**
    * Create a `Results` wrapping a set of query `Results` from the binding.
@@ -102,6 +106,23 @@ export class Results<T = unknown> extends OrderedCollection<T> {
       assert.instanceOf(obj, binding.Obj);
       set(obj, value);
     }
+  }
+
+  async subscribe(options?: SubscriptionOptions): Promise<this> {
+    const waitFirstTime = !options?.behavior || options.behavior === WaitForSync.FirstTime;
+    if ((waitFirstTime && !this.isSubscribedTo) || options?.behavior === WaitForSync.Always) {
+      // TODO: Incorporate options.timeout
+      await this.realm.subscriptions.update((mutableSubs) => {
+        mutableSubs.add(this, options);
+      });
+    } else {
+      this.realm.subscriptions.updateNoWait((mutableSubs) => {
+        mutableSubs.add(this, options);
+      });
+    }
+    this.isSubscribedTo = true;
+
+    return this;
   }
 
   isValid(): boolean {

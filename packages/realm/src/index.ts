@@ -167,6 +167,7 @@ export {
   UserChangeCallback,
   UserState,
   UserTypeName,
+  WaitForSync,
 } from "./internal";
 
 import { Realm, RealmObjectConstructor } from "./internal";

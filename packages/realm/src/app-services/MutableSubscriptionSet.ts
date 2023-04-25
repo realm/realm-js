@@ -18,6 +18,24 @@
 
 import { BaseSubscriptionSet, Realm, Results, Subscription, SubscriptionSet, assert, binding } from "../internal";
 
+export enum WaitForSync {
+  /**
+   * Waits until the objects have been downloaded from the server
+   * the first time the subscription is created. If the subscription
+   * already exists, the `Results` is returned immediately.
+   */
+  FirstTime = "first-time",
+  /**
+   * Always waits until the objects have been downloaded from the server.
+   */
+  Always = "always",
+  /**
+   * Never waits for the download to complete, but keeps downloading the
+   * objects in the background.
+   */
+  Never = "never",
+}
+
 /**
  * Options for {@link MutableSubscriptionSet.add}.
  */
@@ -27,7 +45,6 @@ export interface SubscriptionOptions {
    * to the subscription by name, e.g. when calling {@link MutableSubscriptionSet.removeByName}.
    */
   name?: string;
-
   /**
    * By default, adding a subscription with the same name as an existing one
    * but a different query will update the existing subscription with the new
@@ -36,6 +53,16 @@ export interface SubscriptionOptions {
    * Adding a subscription with the same name and query is always a no-op.
    */
   throwOnUpdate?: boolean;
+  /**
+   * Specifies how to wait or not wait for subscribed objects to be downloaded.
+   */
+  behavior?: WaitForSync;
+  /**
+   * The maximum number of milliseconds to wait for objects to be downloaded.
+   * If the time exceeds this limit, the `Results` is returned and the download
+   * continues in the background.
+   */
+  timeout?: number;
 }
 
 /**
@@ -71,7 +98,7 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
   add(query: Results<any>, options?: SubscriptionOptions): Subscription {
     assert.instanceOf(query, Results, "query");
     if (options) {
-      assertIsSubscriptionOptions(options);
+      validateSubscriptionOptions(options);
     }
 
     const subscriptions = this.internal;
@@ -179,12 +206,24 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
   }
 }
 
-function assertIsSubscriptionOptions(input: unknown): asserts input is SubscriptionOptions {
+function validateSubscriptionOptions(input: unknown): asserts input is SubscriptionOptions {
   assert.object(input, "options", { allowArrays: false });
   if (input.name !== undefined) {
     assert.string(input.name, "'name' on 'SubscriptionOptions'");
   }
   if (input.throwOnUpdate !== undefined) {
     assert.boolean(input.throwOnUpdate, "'throwOnUpdate' on 'SubscriptionOptions'");
+  }
+  // TODO: May not be needed
+  if (input.behavior !== undefined) {
+    assert(
+      input.behavior === WaitForSync.FirstTime ||
+        input.behavior === WaitForSync.Always ||
+        input.behavior === WaitForSync.Never,
+      `'behavior' on 'SubscriptionOptions' must be either '${WaitForSync.FirstTime}', '${WaitForSync.Always}, or '${WaitForSync.Never}'.`,
+    );
+  }
+  if (input.timeout !== undefined) {
+    assert.number(input.timeout, "'timeout' on 'SubscriptionOptions'");
   }
 }
