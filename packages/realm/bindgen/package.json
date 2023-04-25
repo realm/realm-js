@@ -1,0 +1,8 @@
+{
+  "name": "@realm/js-binding",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/realm/bindgen/vendor/bindgen-lib/"
+  ]
+}

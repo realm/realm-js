@@ -22,7 +22,7 @@ const xcode = require("./xcode-cli");
 const logcat = require("./logcat");
 
 const IOS_DEVICE_NAME = "realm-js-integration-tests";
-const IOS_DEVICE_TYPE_ID = "com.apple.CoreSimulator.SimDeviceType.iPhone-11";
+const IOS_DEVICE_TYPE_ID = "com.apple.CoreSimulator.SimDeviceType.iPhone-14";
 
 const { MOCHA_REMOTE_PORT, PLATFORM, SPAWN_LOGCAT, SKIP_RUNNER, RETRY_DELAY, RETRIES } = process.env;
 

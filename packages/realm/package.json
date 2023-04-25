@@ -99,25 +99,26 @@
       ]
     },
     "bindgen:configure": {
-      "command": "cmake-js configure --debug --directory ../bindgen"
+      "command": "cmake-js configure --debug --directory bindgen/vendor/bindgen-lib"
     },
     "bindgen:build:node": {
-      "command": "cmake --build ../bindgen/build --target realm-js-node",
+      "command": "cmake --build bindgen/vendor/bindgen-lib/build --target realm-js-node",
       "dependencies": [
         "bindgen:configure"
       ]
     },
     "bindgen:generate:typescript": {
-      "command": "realm-bindgen --template typescript --spec ../bindgen/spec.yml --spec ../bindgen/js_spec.yml --output ./generated/ts",
+      "command": "realm-bindgen --template bindgen/src/templates/typescript.ts --spec bindgen/vendor/bindgen-lib/spec.yml --spec bindgen/js_spec.yml --output ./generated/ts",
       "dependencies": [
-        "../bindgen:generate:spec-schema"
+        "./bindgen/vendor/bindgen-lib:generate:spec-schema"
       ],
       "files": [
-        "../bindgen/spec.yml",
-        "../bindgen/js_spec.yml",
-        "../bindgen/src",
-        "!../bindgen/src/templates",
-        "../bindgen/src/templates/typescript.ts"
+        "bindgen/vendor/bindgen-lib/spec.yml",
+        "bindgen/vendor/bindgen-lib/src",
+        "bindgen/js_spec.yml",
+        "bindgen/src",
+        "!bindgen/src/templates",
+        "bindgen/src/templates/typescript.ts"
       ],
       "output": [
         "generated/ts/core.ts",
@@ -125,16 +126,17 @@
       ]
     },
     "bindgen:generate:wrappers": {
-      "command": "realm-bindgen --template node-wrapper --spec ../bindgen/spec.yml --spec ../bindgen/js_spec.yml --output ./generated/ts",
+      "command": "realm-bindgen --template bindgen/src/templates/node-wrapper.ts --spec bindgen/vendor/bindgen-lib/spec.yml --spec bindgen/js_spec.yml --output ./generated/ts",
       "dependencies": [
-        "../bindgen:generate:spec-schema"
+        "./bindgen/vendor/bindgen-lib:generate:spec-schema"
       ],
       "files": [
-        "../bindgen/spec.yml",
-        "../bindgen/js_spec.yml",
-        "../bindgen/src",
-        "!../bindgen/src/templates",
-        "../bindgen/src/templates/node-wrapper.ts"
+        "bindgen/vendor/bindgen-lib/spec.yml",
+        "bindgen/vendor/bindgen-lib/src",
+        "bindgen/js_spec.yml",
+        "bindgen/src",
+        "!bindgen/src/templates",
+        "bindgen/src/templates/node-wrapper.ts"
       ],
       "output": [
         "generated/ts/native.mjs",
@@ -150,7 +152,7 @@
       ]
     },
     "build:node:prebuild": {
-      "command": "cross-env prebuild --runtime napi --arch $PREBUILD_ARCH -- --directory ../bindgen",
+      "command": "cross-env prebuild --runtime napi --arch $PREBUILD_ARCH -- --directory bindgen/vendor/bindgen-lib",
       "env": {
         "PREBUILD_ARCH": {
           "external": true
@@ -185,16 +187,18 @@
       "command": "node ../../scripts/build-android.js",
       "files": [
         "../../src/android/**",
-        "../bindgen/src/**/*.ts",
-        "../bindgen/src/**/*.h"
+        "bindgen/src/**/*.ts",
+        "bindgen/vendor/bindgen-lib/src/**/*.ts",
+        "bindgen/vendor/bindgen-lib/src/**/*.h"
       ]
     },
     "build:ios": {
       "command": "../../scripts/build-ios.sh -c ${CONFIGURATION:=Release} ${PLATFORMS}",
       "files": [
         "../../src/ios/**",
-        "../bindgen/src/**/*.ts",
-        "../bindgen/src/**/*.h"
+        "bindgen/src/**/*.ts",
+        "bindgen/vendor/bindgen-lib/src/**/*.ts",
+        "bindgen/vendor/bindgen-lib/src/**/*.h"
       ],
       "env": {
         "PLATFORMS": {
@@ -265,7 +269,7 @@
     "mocha": "^10.1.0",
     "path-browserify": "^1.0.1",
     "prebuild": "^11.0.4",
-    "react-native": "0.71.4",
+    "react-native": "0.71.7",
     "rollup-plugin-dts": "^5.0.0",
     "tsm": "^2.2.2"
   },

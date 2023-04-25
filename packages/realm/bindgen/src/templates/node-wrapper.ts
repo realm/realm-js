@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { strict as assert } from "assert";
-import { bindModel, Property } from "../bound-model";
-import { TemplateContext } from "../context";
+import { bindModel, Property } from "@realm/bindgen/bound-model";
+import { TemplateContext } from "@realm/bindgen/context";
 
 import { doJsPasses } from "../js-passes";
 

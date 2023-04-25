@@ -7,7 +7,7 @@ set -o pipefail
 cd "$(dirname "$0")/.."
 PROJECT_ROOT=$(pwd)
 SDK_PATH=$PROJECT_ROOT/packages/realm
-BINDGEN_PATH=$PROJECT_ROOT/packages/bindgen
+BINDGEN_PATH=$PROJECT_ROOT/packages/realm/bindgen/vendor/bindgen-lib
 SCRIPT=$(basename "${BASH_SOURCE[0]}")
 
 function usage {

@@ -22,24 +22,51 @@
   "wireit": {
     "bundle": {
       "command": "rollup --config",
-      "dependencies": ["update-types", "generate-types"],
-      "files": ["rollup.config.mjs", "src/**/*.ts", "src/**/tsconfig.json", "tsconfig.json", "types"],
-      "output": ["dist"]
+      "dependencies": [
+        "update-types",
+        "generate-types"
+      ],
+      "files": [
+        "rollup.config.mjs",
+        "src/**/*.ts",
+        "src/**/tsconfig.json",
+        "tsconfig.json",
+        "types"
+      ],
+      "output": [
+        "dist"
+      ]
     },
     "generate-types": {
       "command": "tsc --project src/dom/tsconfig.json --declaration --emitDeclarationOnly --declarationDir types/generated",
-      "dependencies": ["update-types", "../realm-common:bundle", "../realm-network-transport:bundle"],
-      "files": ["src/**/*.ts", "src/**/tsconfig.json", "tsconfig.json"],
-      "output": ["types/generated"]
+      "dependencies": [
+        "update-types",
+        "../realm-common:bundle",
+        "../realm-network-transport:bundle"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "src/**/tsconfig.json",
+        "tsconfig.json"
+      ],
+      "output": [
+        "types/generated"
+      ]
     },
     "update-types": {
       "command": "ts-node --project scripts/tsconfig.json scripts/update-types.ts",
-      "files": ["../../types"],
-      "output": ["types/realm"]
+      "files": [
+        "../../types"
+      ],
+      "output": [
+        "types/realm"
+      ]
     },
     "docs": {
       "command": "typedoc",
-      "dependencies": ["bundle"]
+      "dependencies": [
+        "bundle"
+      ]
     }
   },
   "files": [

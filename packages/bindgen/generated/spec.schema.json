@@ -1,0 +1,375 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "OverloadSet": {
+            "anyOf": [
+                {
+                    "allOf": [
+                        {
+                            "properties": {
+                                "cppName": {
+                                    "description": "Allows overriding the C++ name used when generating a binding.\nBy default we will use the same name in the spec for the cppName, so you don't need to specify this when they match.\nThis can be used both to simply change the name, or because the C++ entity can't be identified by a simple identifier.\nExamples:\n - Can provide explicit template arguments for types and methods.\n - For types, this must be used types in namespaces or defined inside of classes.\n - For record fields, this can be used to expose a C++ getter as a field (a bit of a hack, but works).\n - For methods, Can be used to chain accesses (a bit of a hack, but works).",
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "sig": {
+                                    "description": "The signature of this method.",
+                                    "type": "string"
+                                },
+                                "suffix": {
+                                    "description": "Appended to the name of the method (with a `_` separator) to form a unique name for this overload.\nThis is used among other things as the method name in languages that don't support overloading.",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "sig"
+                            ],
+                            "type": "object"
+                        }
+                    ]
+                },
+                {
+                    "items": {
+                        "$ref": "#/definitions/RelaxedMethodSpec"
+                    },
+                    "type": "array"
+                },
+                {
+                    "type": "string"
+                }
+            ],
+            "description": "Either a single method or a list of methods in an overload set.\nIf providing a list, at most one entry may omit the suffix field to ensure that unique names are unique.\n\nFunction syntax: (arg_name: ArgType) FLAGS -> RetType\n  FLAGS: zero or more of const, noexcept, or off_thread\n  If RetType is void, the `-> RetType` part can be omitted.\n  Final comma is optional (recommend omitting).\n  WARNING: in yaml, strings containing a : followed by a space MUST be quoted!"
+        },
+        "RelaxedClassSpec": {
+            "allOf": [
+                {
+                    "properties": {
+                        "cppName": {
+                            "description": "Allows overriding the C++ name used when generating a binding.\nBy default we will use the same name in the spec for the cppName, so you don't need to specify this when they match.\nThis can be used both to simply change the name, or because the C++ entity can't be identified by a simple identifier.\nExamples:\n - Can provide explicit template arguments for types and methods.\n - For types, this must be used types in namespaces or defined inside of classes.\n - For record fields, this can be used to expose a C++ getter as a field (a bit of a hack, but works).\n - For methods, Can be used to chain accesses (a bit of a hack, but works).",
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                {
+                    "properties": {
+                        "abstract": {
+                            "description": "When true, the bindings will never try to bind directly to values of this type.",
+                            "type": "boolean"
+                        },
+                        "base": {
+                            "description": "The base class of this class. If omitted, this is treated as a root type.",
+                            "type": "string"
+                        },
+                        "constructors": {
+                            "additionalProperties": {
+                                "type": "string"
+                            },
+                            "description": "Map of unique names to function types describing constructors of this class.\nThe function type should omit a return type because it is implicitly ThisClass.\nFor languages that don't support overloading, these will be named static methods instead of constructors.",
+                            "type": "object"
+                        },
+                        "iterable": {
+                            "description": "Marks the class as iterable using begin()/end() in C++.\nAutomatically mapped to whatever the \"normal\" iteration API is in the SDK language.\nValue is the type yielded by the iterator (not the iterator type!).",
+                            "type": "string"
+                        },
+                        "methods": {
+                            "additionalProperties": {
+                                "$ref": "#/definitions/OverloadSet"
+                            },
+                            "description": "Instance methods on this class.",
+                            "type": "object"
+                        },
+                        "needsDeref": {
+                            "description": "Use this for types that need to be dereferenced in order to access their methods.\nIn this case, the methods are really on whatever operator* returns, and NOT on this type!\nThis is currently only used for TableRef/ConstTableRef (unless this comment is stale...)",
+                            "type": "boolean"
+                        },
+                        "properties": {
+                            "additionalProperties": {
+                                "type": "string"
+                            },
+                            "description": "These are like instance methods, but for languages that support computed properties, they will be exposed like that.\nNote that these still call methods in C++. There is no way to expose fields on a class (unlike a record)!",
+                            "type": "object"
+                        },
+                        "sharedPtrWrapped": {
+                            "description": "Marks types that are passed around inside of a std::shared_ptr.\nInjects a typeAlias with this name for std::shared_ptr<ThisClass>.\nWhen provided, objects bound to this type will hold a shared_ptr<T> rather than a unique by-value copy of this class.",
+                            "type": "string"
+                        },
+                        "staticMethods": {
+                            "additionalProperties": {
+                                "$ref": "#/definitions/OverloadSet"
+                            },
+                            "description": "Static methods attached to this class.",
+                            "type": "object"
+                        }
+                    },
+                    "type": "object"
+                }
+            ]
+        },
+        "RelaxedEnumSpec": {
+            "allOf": [
+                {
+                    "properties": {
+                        "cppName": {
+                            "description": "Allows overriding the C++ name used when generating a binding.\nBy default we will use the same name in the spec for the cppName, so you don't need to specify this when they match.\nThis can be used both to simply change the name, or because the C++ entity can't be identified by a simple identifier.\nExamples:\n - Can provide explicit template arguments for types and methods.\n - For types, this must be used types in namespaces or defined inside of classes.\n - For record fields, this can be used to expose a C++ getter as a field (a bit of a hack, but works).\n - For methods, Can be used to chain accesses (a bit of a hack, but works).",
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                {
+                    "properties": {
+                        "values": {
+                            "anyOf": [
+                                {
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "type": "array"
+                                },
+                                {
+                                    "additionalProperties": {
+                                        "type": "number"
+                                    },
+                                    "type": "object"
+                                }
+                            ],
+                            "description": "The values in the enum, either as a list or map from name to value.\nThe list form implicitly starts at 0 and assigns numbers to remaining entries.\nWe automatically validate that the names map to the correct values in C++."
+                        }
+                    },
+                    "required": [
+                        "values"
+                    ],
+                    "type": "object"
+                }
+            ]
+        },
+        "RelaxedFieldSpec": {
+            "anyOf": [
+                {
+                    "allOf": [
+                        {
+                            "properties": {
+                                "cppName": {
+                                    "description": "Allows overriding the C++ name used when generating a binding.\nBy default we will use the same name in the spec for the cppName, so you don't need to specify this when they match.\nThis can be used both to simply change the name, or because the C++ entity can't be identified by a simple identifier.\nExamples:\n - Can provide explicit template arguments for types and methods.\n - For types, this must be used types in namespaces or defined inside of classes.\n - For record fields, this can be used to expose a C++ getter as a field (a bit of a hack, but works).\n - For methods, Can be used to chain accesses (a bit of a hack, but works).",
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "default": {
+                                    "description": "Allows specifying a default value for this field.\nFields that are top-level Nullable or Optional have an implicit default value of nullptr/nullopt.\nFields with an implicit or explicit default value are considered optional, those without are considered required."
+                                },
+                                "type": {
+                                    "description": "NOTE: this is the spec type name, not the C++ type name (they are often but not always the same)",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "type"
+                            ],
+                            "type": "object"
+                        }
+                    ]
+                },
+                {
+                    "type": "string"
+                }
+            ],
+            "description": "Description of a public field in a record.\nIf a string is specified rather than an object, it is equivalent to specifying just the type."
+        },
+        "RelaxedMethodSpec": {
+            "anyOf": [
+                {
+                    "allOf": [
+                        {
+                            "properties": {
+                                "cppName": {
+                                    "description": "Allows overriding the C++ name used when generating a binding.\nBy default we will use the same name in the spec for the cppName, so you don't need to specify this when they match.\nThis can be used both to simply change the name, or because the C++ entity can't be identified by a simple identifier.\nExamples:\n - Can provide explicit template arguments for types and methods.\n - For types, this must be used types in namespaces or defined inside of classes.\n - For record fields, this can be used to expose a C++ getter as a field (a bit of a hack, but works).\n - For methods, Can be used to chain accesses (a bit of a hack, but works).",
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        {
+                            "properties": {
+                                "sig": {
+                                    "description": "The signature of this method.",
+                                    "type": "string"
+                                },
+                                "suffix": {
+                                    "description": "Appended to the name of the method (with a `_` separator) to form a unique name for this overload.\nThis is used among other things as the method name in languages that don't support overloading.",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "sig"
+                            ],
+                            "type": "object"
+                        }
+                    ]
+                },
+                {
+                    "type": "string"
+                }
+            ],
+            "description": "If a string is specified rather than an object, it is equivalent to specifying just the sig.\n\nFunction syntax: (arg_name: ArgType) FLAGS -> RetType\n  FLAGS: zero or more of const, noexcept, or off_thread\n  If RetType is void, the `-> RetType` part can be omitted.\n  Final comma is optional (recommend omitting).\n  WARNING: in yaml, strings containing a : followed by a space MUST be quoted!"
+        },
+        "RelaxedRecordSpec": {
+            "allOf": [
+                {
+                    "properties": {
+                        "cppName": {
+                            "description": "Allows overriding the C++ name used when generating a binding.\nBy default we will use the same name in the spec for the cppName, so you don't need to specify this when they match.\nThis can be used both to simply change the name, or because the C++ entity can't be identified by a simple identifier.\nExamples:\n - Can provide explicit template arguments for types and methods.\n - For types, this must be used types in namespaces or defined inside of classes.\n - For record fields, this can be used to expose a C++ getter as a field (a bit of a hack, but works).\n - For methods, Can be used to chain accesses (a bit of a hack, but works).",
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                {
+                    "properties": {
+                        "fields": {
+                            "additionalProperties": {
+                                "$ref": "#/definitions/RelaxedFieldSpec"
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "required": [
+                        "fields"
+                    ],
+                    "type": "object"
+                }
+            ]
+        }
+    },
+    "properties": {
+        "classes": {
+            "additionalProperties": {
+                "$ref": "#/definitions/RelaxedClassSpec"
+            },
+            "description": "Classes establish a long-term binding between some C++ class[1] and an in-language object.\n\nClasses can expose C++ methods, and can be passed to functions taking mutable references or pointers.\nSee optional settings for more information on what you can do with classes.\n\nClasses may NOT expose data members! In addition to lacking a syntax to do this, it is unclear how they should behave.\n\nIf in doubt between exposing a class or record, rule of thumb: methods -> use a class, public fields -> record.\n\n[1] Note that in C++ there is no real difference between structs and classes, but this is using the",
+            "type": "object"
+        },
+        "enums": {
+            "additionalProperties": {
+                "$ref": "#/definitions/RelaxedEnumSpec"
+            },
+            "description": "Enums are... enums. They are always eagerly converted.",
+            "type": "object"
+        },
+        "headers": {
+            "description": "Headers that need to be included to use the types described in this spec.",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "keyTypes": {
+            "additionalProperties": {
+                "type": "string"
+            },
+            "description": "Special handling for perf-sensitve \"FooKey\" types. RHS is underlying type.\nNot allowed on extra specs.",
+            "type": "object"
+        },
+        "mixedInfo": {
+            "description": "Data used for converting the `Mixed` primitive type to and from C++\nRequired in base spec, disallowed in additional specs.",
+            "properties": {
+                "dataTypes": {
+                    "additionalProperties": {
+                        "properties": {
+                            "getter": {
+                                "description": "The getter method to call to extract data for this DataType.",
+                                "type": "string"
+                            },
+                            "type": {
+                                "description": "The spec type corresponding to this DataType.\nMust be the return type of the getter and something that can be passed to Mixed constructor.",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "getter",
+                            "type"
+                        ],
+                        "type": "object"
+                    },
+                    "description": "Map from a DataType enumerator to info on how to use it",
+                    "type": "object"
+                },
+                "extraCtors": {
+                    "description": "Constructors that don't have a matching getter.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "unusedDataTypes": {
+                    "description": "DataType values that are not used by the binding generator (because they never show up in a Mixed).",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "dataTypes",
+                "extraCtors",
+                "unusedDataTypes"
+            ],
+            "type": "object"
+        },
+        "opaqueTypes": {
+            "description": "Opaque types are types that are only passed around by reference and that SDK code never needs to inspect or own.\nThis give reference semantics while everything else uses value semantics.\nTherefore SDKs need to be careful when working with the lifetime of opaque references.\n\nTODO: consider getting rid of this, since I don't think it is currently used for anything useful.",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "primitives": {
+            "description": "Primitive types are concrete types that the binding generators must have specific knowledge of.\nThey are always eagerly converted between C++ and the native language, rather than establishing a binding.",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "records": {
+            "additionalProperties": {
+                "$ref": "#/definitions/RelaxedRecordSpec"
+            },
+            "description": "Records are C++ structs[1] that are eagerly converted to language objects without establishing a long-term binding.\n\nRecords can only expose public fields (although getters can be exposed via a `cppName` override hack).\nBecause no bindings are established, there is no way to call methods on a record, and they cannot be\npassed to functions taking a pointer or mutable reference (rvalue references (Type&&) are ok).\nFor now, all records must have a public default constructor.\n\nIf in doubt between exposing a class or record, rule of thumb: methods -> use a class, public fields -> record.\n\n[1] Note that in C++ there is no real difference between structs and classes, but this is using the\nconventional meaning of types with public data members.",
+            "type": "object"
+        },
+        "templates": {
+            "additionalProperties": {
+                "anyOf": [
+                    {
+                        "enum": [
+                            "*"
+                        ],
+                        "type": "string"
+                    },
+                    {
+                        "type": "number"
+                    }
+                ]
+            },
+            "description": "Templates are like primitives, but are parameterized.\nThe RHS is either the number of arguments that the template takes or `*` to indicate variadic templates.\nFor now, only type parameters are supported.",
+            "type": "object"
+        },
+        "typeAliases": {
+            "additionalProperties": {
+                "type": "string"
+            },
+            "description": "Type aliases allow simplifying the spec by assigning a short name to a potentially complex type.\nThey can also be used to make it easier to change the type of many things at once.\nThey only exist in the spec file and do not need to exist in the C++ code.\nNOTE: Currently the are resolved and erased during spec parsing so they never show up in the generated APIs.",
+            "type": "object"
+        }
+    },
+    "type": "object"
+}
+

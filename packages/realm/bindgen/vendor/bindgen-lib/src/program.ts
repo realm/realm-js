@@ -24,7 +24,7 @@ import path from "path";
 import { debug, enableDebugging } from "./debug";
 import { generate } from "./generator";
 import { InvalidSpecError, parseSpecs } from "./spec";
-import { importTemplate, Template, TEMPLATES_NAMES } from "./templates";
+import { Template, importTemplate } from "./templates";
 
 type GenerateOptions = {
   spec: ReadonlyArray<string>;
@@ -68,8 +68,7 @@ const specOption = program
   .makeOptionMandatory();
 
 const templateOption = program
-  .createOption("-t, --template <template>", "Template to apply when generating")
-  .choices(TEMPLATES_NAMES)
+  .createOption("-t, --template <template>", "Path to template source file to apply when generating")
   .argParser((name) => {
     return importTemplate(name);
   })

@@ -1,0 +1,6 @@
+{
+    "extends": "@realm/bindgen/tsconfig.json",
+    "include": [
+        "src/**/*.ts"
+    ]
+}

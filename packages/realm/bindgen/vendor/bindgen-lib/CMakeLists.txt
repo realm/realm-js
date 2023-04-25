@@ -64,7 +64,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
-set(PACKAGE_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
+set(PACKAGE_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../../..")
 
 # Ninja buffers output so we need to tell tools to use colors even though stdout isn't a tty.
 if(CMAKE_GENERATOR MATCHES "^Ninja")
@@ -75,7 +75,7 @@ if(CMAKE_GENERATOR MATCHES "^Ninja")
 endif()
 
 if(DEFINED CMAKE_JS_VERSION)
-    list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../cmake")
+    list(APPEND CMAKE_MODULE_PATH "${PACKAGE_ROOT_DIR}/cmake")
     include(NodeJSTargets)
 endif()
 
@@ -88,7 +88,7 @@ if(REALM_JS_BUILD_CORE_FROM_SOURCE)
         set(REALM_ANDROID ON)
     endif()
 
-    add_subdirectory(../../vendor/realm-core # source path
+    add_subdirectory(${PACKAGE_ROOT_DIR}/vendor/realm-core # source path
         realm-core # subdir in output directories
         EXCLUDE_FROM_ALL
     )
@@ -113,11 +113,15 @@ endif()
 target_include_directories(realm-js PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 # TODO move platform.hpp and delete this line.
-target_include_directories(realm-js PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../src")
+target_include_directories(realm-js PRIVATE "${PACKAGE_ROOT_DIR}/src")
+
+# TODO move everything using this out of this CMakeLists.txt and into the SDK code.
+set(SDK_DIR ${PACKAGE_ROOT_DIR}/packages/realm)
 
 file(GLOB_RECURSE TS_FILES
     LIST_DIRECTORIES false
     CONFIGURE_DEPENDS
+    ${SDK_DIR}/bindgen/src/*.ts # TODO split this out to SDK cmake file
     src/*.ts
 )
 
@@ -127,15 +131,13 @@ list(FILTER TS_FILES EXCLUDE REGEX "templates/[^/]*\.ts$")
 list(FILTER TS_FILES EXCLUDE REGEX "tests/[^/]*\.ts$")
 
 set(CORE_SPEC_FILE ${CMAKE_CURRENT_SOURCE_DIR}/spec.yml)
-set(JS_SPEC_FILE ${CMAKE_CURRENT_SOURCE_DIR}/js_spec.yml)
+set(JS_SPEC_FILE ${SDK_DIR}/bindgen/js_spec.yml)
 set(SPEC_FILES ${CORE_SPEC_FILE} ${JS_SPEC_FILE})
 set(SPEC_ARGS --spec ${CORE_SPEC_FILE} --spec ${JS_SPEC_FILE})
 
 # Unfortunately this path is hard coded in the reader.
 # TODO 
 set(SCHEMA_FILE ${CMAKE_CURRENT_SOURCE_DIR}/generated/spec.schema.json)
-
-set(SDK_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../realm)
 
 set(TYPESCRIPT_OUTPUT_DIR ${SDK_DIR}/generated/ts)
 
@@ -148,7 +150,7 @@ set(GENERATED_JS_FILES
     ${TYPESCRIPT_OUTPUT_DIR}/native-rn.mjs
 )
 
-set(NPX ${NODE_FORCE_COLOR} npx)
+set(NPX ${NODE_FORCE_COLOR} npx --prefix .) # without a prefix, npx changes the current directory and that is really confusing and hard to debug
 
 add_custom_command(
     OUTPUT ${SCHEMA_FILE}
@@ -165,9 +167,9 @@ add_custom_target(SpecJsonSchema DEPENDS ${SCHEMA_FILE})
 
 add_custom_command(
     OUTPUT ${GENERATED_TS_FILES}
-    COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template typescript --output ${TYPESCRIPT_OUTPUT_DIR}
+    COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template ${SDK_DIR}/bindgen/src/templates/typescript.ts --output ${TYPESCRIPT_OUTPUT_DIR}
     VERBATIM
-    MAIN_DEPENDENCY src/templates/typescript.ts
+    MAIN_DEPENDENCY ${SDK_DIR}/bindgen/src/templates/typescript.ts
     DEPENDS
         ${SPEC_FILES}
         SpecJsonSchema
@@ -181,9 +183,9 @@ add_custom_target(TypeScript ALL DEPENDS ${GENERATED_TS_FILES} ${GENERATED_JS_FI
 # One issue we may run into when splitting is that they will need to be different files, otherwise ninja will get confused.
 add_custom_command(
     OUTPUT ${GENERATED_JS_FILES}
-    COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template node-wrapper --output ${TYPESCRIPT_OUTPUT_DIR}
+    COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template ${SDK_DIR}/bindgen/src/templates/node-wrapper.ts --output ${TYPESCRIPT_OUTPUT_DIR}
     VERBATIM
-    MAIN_DEPENDENCY src/templates/node-wrapper.ts
+    MAIN_DEPENDENCY ${SDK_DIR}/bindgen/src/templates/node-wrapper.ts
     DEPENDS
         ${SPEC_FILES}
         SpecJsonSchema
@@ -195,24 +197,24 @@ if(DEFINED CMAKE_JS_VERSION)
 
     add_custom_command(
         OUTPUT node_init.cpp
-        COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template node --output ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template ${SDK_DIR}/bindgen/src/templates/node.ts --output ${CMAKE_CURRENT_BINARY_DIR}
         VERBATIM
-        MAIN_DEPENDENCY src/templates/node.ts
+        MAIN_DEPENDENCY ${SDK_DIR}/bindgen/src/templates/node.ts
         DEPENDS
             ${SPEC_FILES}
             SpecJsonSchema
             ${TS_FILES}
     )
 
-    target_sources(realm-js PRIVATE node_init.cpp ${CMAKE_JS_SRC} ../../src/node/platform.cpp)
+    target_sources(realm-js PRIVATE node_init.cpp ${CMAKE_JS_SRC} ${PACKAGE_ROOT_DIR}/src/node/platform.cpp)
 else()
     include(jsi.cmake)
 
     add_custom_command(
         OUTPUT jsi_init.cpp
-        COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template jsi --output ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template ${SDK_DIR}/bindgen/src/templates/jsi.ts --output ${CMAKE_CURRENT_BINARY_DIR}
         VERBATIM
-        MAIN_DEPENDENCY src/templates/jsi.ts
+        MAIN_DEPENDENCY ${SDK_DIR}/bindgen/src/templates/jsi.ts
         DEPENDS
             ${SPEC_FILES}
             SpecJsonSchema
@@ -222,9 +224,9 @@ else()
     target_sources(realm-js PRIVATE jsi_init.cpp ${CMAKE_JS_SRC})
 
     if(ANDROID)
-        add_subdirectory(../../src/android android)
+        add_subdirectory(${PACKAGE_ROOT_DIR}/src/android android)
     elseif(CMAKE_SYSTEM_NAME STREQUAL iOS)
-        add_subdirectory(../../src/ios ios)
+        add_subdirectory(${PACKAGE_ROOT_DIR}/src/ios ios)
     else()
         # disabling for now to simplify the bootstrapping process.
         # message(FATAL_ERROR "Only support JSI builds for Android and iOS")

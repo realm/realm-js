@@ -17,8 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 import { strict as assert } from "assert";
 
-import { TemplateContext } from "../context";
-import { CppVar, CppFunc, CppFuncProps, CppCtor, CppMethod, CppClass, CppDecls } from "../cpp";
+import { TemplateContext } from "@realm/bindgen/context";
+import { CppVar, CppFunc, CppFuncProps, CppCtor, CppMethod, CppClass, CppDecls } from "@realm/bindgen/cpp";
 import {
   bindModel,
   BoundSpec,
@@ -30,7 +30,7 @@ import {
   Primitive,
   Pointer,
   Template,
-} from "../bound-model";
+} from "@realm/bindgen/bound-model";
 
 import { doJsPasses } from "../js-passes";
 
@@ -180,8 +180,8 @@ function convertPrimToNode(addon: NodeAddon, type: string, expr: string): string
       return `Napi::Number::New(${env}, ${expr})`;
 
     case "count_t":
-      // NOTE: using int64_t cast here to get -1.0 for size_t(-1), aka npos.
-      return `Napi::Number::New(${env}, int64_t(${expr}))`;
+      // NOTE: using asSigned() here to get -1.0 for size_t(-1), aka npos.
+      return `Napi::Number::New(${env}, asSigned(${expr}))`;
 
     case "int64_t":
     case "uint64_t":
@@ -583,7 +583,7 @@ function convertFromNode(addon: NodeAddon, type: Type, expr: string): string {
   }
 }
 
-declare module "../bound-model" {
+declare module "@realm/bindgen/bound-model" {
   interface Struct {
     toNode: () => CppFunc;
     fromNode: () => CppFunc;
@@ -907,7 +907,7 @@ export function generate({ spec, file: makeFile }: TemplateContext): void {
 
   out(`
       #include <napi.h>
-      #include <realm_js_helpers.h>
+      #include <realm_helpers.h>
       #include <realm_js_node_helpers.h>
 
       namespace realm::js::node {

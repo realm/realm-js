@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=generated/spec.schema.json
+# yaml-language-server: $schema=vendor/bindgen-lib/generated/spec.schema.json
 
 headers:
   - "platform.hpp"
