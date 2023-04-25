@@ -18,14 +18,25 @@
   "wireit": {
     "bundle": {
       "command": "rollup --config",
-      "dependencies": ["generate-types"],
-      "files": ["rollup.config.mjs", "src/**/*.ts"],
-      "output": ["dist/**"]
+      "dependencies": [
+        "generate-types"
+      ],
+      "files": [
+        "rollup.config.mjs",
+        "src/**/*.ts"
+      ],
+      "output": [
+        "dist/**"
+      ]
     },
     "generate-types": {
       "command": "tsc --project tsconfig.types.json --declaration --emitDeclarationOnly --declarationDir types/generated",
-      "files": ["src/**/*.ts"],
-      "output": ["types/generated/**/*.d.ts"]
+      "files": [
+        "src/**/*.ts"
+      ],
+      "output": [
+        "types/generated/**/*.d.ts"
+      ]
     }
   },
   "files": [

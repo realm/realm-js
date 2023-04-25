@@ -23,8 +23,16 @@
   "wireit": {
     "bundle": {
       "command": "rollup --config",
-      "files": ["rollup.config.mjs", "src/**/*.ts", "src/**/tsconfig.json"],
-      "output": ["dist/**/*.mjs", "dist/**/*.cjs", "dist/**/*.d.ts"],
+      "files": [
+        "rollup.config.mjs",
+        "src/**/*.ts",
+        "src/**/tsconfig.json"
+      ],
+      "output": [
+        "dist/**/*.mjs",
+        "dist/**/*.cjs",
+        "dist/**/*.d.ts"
+      ],
       "dependencies": [
         "generate-types",
         "../realm-network-transport:bundle"
@@ -35,8 +43,12 @@
       "dependencies": [
         "../realm-network-transport:bundle"
       ],
-      "files": ["src/**/*.ts"],
-      "output": ["types/generated/**/*.d.ts"]
+      "files": [
+        "src/**/*.ts"
+      ],
+      "output": [
+        "types/generated/**/*.d.ts"
+      ]
     }
   },
   "files": [
