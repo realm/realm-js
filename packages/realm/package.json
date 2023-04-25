@@ -99,10 +99,10 @@
       ]
     },
     "bindgen:configure": {
-      "command": "cmake-js configure --debug --directory bindgen/vendor/bindgen-lib"
+      "command": "cmake-js configure --debug --directory bindgen"
     },
     "bindgen:build:node": {
-      "command": "cmake --build bindgen/vendor/bindgen-lib/build --target realm-js-node",
+      "command": "cmake --build bindgen/build --target realm-js-node",
       "dependencies": [
         "bindgen:configure"
       ]
@@ -152,7 +152,7 @@
       ]
     },
     "build:node:prebuild": {
-      "command": "cross-env prebuild --runtime napi --arch $PREBUILD_ARCH -- --directory bindgen/vendor/bindgen-lib",
+      "command": "cross-env prebuild --runtime napi --arch $PREBUILD_ARCH -- --directory bindgen",
       "env": {
         "PREBUILD_ARCH": {
           "external": true
@@ -189,7 +189,8 @@
         "../../src/android/**",
         "bindgen/src/**/*.ts",
         "bindgen/vendor/bindgen-lib/src/**/*.ts",
-        "bindgen/vendor/bindgen-lib/src/**/*.h"
+        "bindgen/vendor/bindgen-lib/src/**/*.h",
+        "bindgen/src/**/*.h"
       ]
     },
     "build:ios": {
@@ -198,7 +199,8 @@
         "../../src/ios/**",
         "bindgen/src/**/*.ts",
         "bindgen/vendor/bindgen-lib/src/**/*.ts",
-        "bindgen/vendor/bindgen-lib/src/**/*.h"
+        "bindgen/vendor/bindgen-lib/src/**/*.h",
+        "bindgen/src/**/*.h"
       ],
       "env": {
         "PLATFORMS": {
