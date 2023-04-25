@@ -89,6 +89,7 @@ export {
   InvalidateEvent,
   List,
   LocalAppConfiguration,
+  LoggerCallback,
   LogLevel,
   mapTo,
   MapToDecorator,

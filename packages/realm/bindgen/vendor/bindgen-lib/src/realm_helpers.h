@@ -196,6 +196,15 @@ struct Helpers {
     using LogCallback = std::function<void(util::Logger::Level, const std::string& message)>;
     static LoggerFactory make_logger_factory(LogCallback&& logger)
     {
+        return [logger = std::move(logger)](util::Logger::Level level) mutable {
+            auto out = make_logger(std::move(logger));
+            out->set_level_threshold(level);
+            return out;
+        };
+    }
+
+    static std::shared_ptr<util::Logger> make_logger(LogCallback&& logger)
+    {
         class MyLogger final : public util::Logger {
         public:
             MyLogger(const LogCallback& log)
@@ -211,11 +220,7 @@ struct Helpers {
             LogCallback m_log;
         };
 
-        return [logger = std::move(logger)](util::Logger::Level level) {
-            auto out = std::make_shared<MyLogger>(logger);
-            out->set_level_threshold(level);
-            return out;
-        };
+        return std::make_shared<MyLogger>(logger);
     }
 
     static void simulate_sync_error(SyncSession& session, const int& code, const std::string& message,

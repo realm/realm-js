@@ -88,6 +88,7 @@ import {
   List,
   LocalAppConfiguration,
   LogLevel,
+  LoggerCallback,
   MapToDecorator,
   MigrationCallback,
   MongoDB,
@@ -155,8 +156,11 @@ import {
   UserState,
   assert,
   binding,
+  defaultLogger,
+  defaultLoggerLevel,
   extendDebug,
   flags,
+  fromBindingLoggerLevelToLogLevel,
   fromBindingRealmSchema,
   fs,
   index,
@@ -165,6 +169,7 @@ import {
   normalizeRealmSchema,
   safeGlobalThis,
   toArrayBuffer,
+  toBindingLoggerLevel,
   toBindingSchema,
   toBindingSyncConfig,
   validateConfiguration,
@@ -263,6 +268,30 @@ export class Realm {
   public static defaultPath = Realm.normalizePath("default.realm");
 
   private static internals = new Set<binding.WeakRef<binding.Realm>>();
+
+  /**
+   * Sets the log level.
+   * @param level The log level to be used by the logger. The default value is `info`.
+   * @note The log level can be changed during the lifetime of the application.
+   * @since v12.0.0
+   */
+  static setLogLevel(level: LogLevel) {
+    const bindingLoggerLevel = toBindingLoggerLevel(level);
+    binding.Logger.setDefaultLevelThreshold(bindingLoggerLevel);
+  }
+
+  /**
+   * Sets the logger callback.
+   * @param loggerCallback The callback invoked by the logger. The default callback uses `console.log`, `console.warn` and `console.error`, depending on the level of the message.
+   * @note The logger callback needs to be setup before opening the first realm.
+   * @since v12.0.0
+   */
+  static setLogger(loggerCallback: LoggerCallback) {
+    const logger = binding.Helpers.makeLogger((level, message) => {
+      loggerCallback(fromBindingLoggerLevelToLogLevel(level), message);
+    });
+    binding.Logger.setDefaultLogger(logger);
+  }
 
   /**
    * Clears the state by closing and deleting any Realm in the default directory and logout all users.
@@ -1978,6 +2007,10 @@ declare global {
     }
   }
 }
+
+//Set default logger and log level.
+Realm.setLogger(defaultLogger);
+Realm.setLogLevel(defaultLoggerLevel);
 
 // Patch the global at runtime
 let warnedAboutGlobalRealmUse = false;

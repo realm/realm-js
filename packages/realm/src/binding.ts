@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { IndexSet, Int64, Logger, LoggerLevel, ObjKey, Timestamp } from "../generated/ts/native.mjs";
+import { IndexSet, Int64, ObjKey, Timestamp } from "../generated/ts/native.mjs";
 
 /** @internal */
 export * from "../generated/ts/native.mjs"; // core types are transitively exported.
@@ -73,6 +73,3 @@ export function isEmptyObjKey(objKey: ObjKey) {
   // This relies on the JS representation of an ObjKey being a bigint
   return Int64.equals(objKey as unknown as Int64, -1);
 }
-
-// Silence logs from core by default
-Logger.setDefaultLevelThreshold(LoggerLevel.Off);

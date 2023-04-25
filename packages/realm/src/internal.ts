@@ -69,6 +69,7 @@ export * from "./Set";
 export * from "./Dictionary";
 
 export * from "./Types";
+export * from "./Logger";
 
 export * from "./app-services/utils";
 export * from "./app-services/SyncConfiguration";

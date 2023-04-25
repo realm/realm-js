@@ -23,6 +23,64 @@ import { openRealmBefore, openRealmBeforeEach } from "../hooks";
 import { createLocalConfig } from "../utils/open-realm";
 
 describe("SharedRealm operations", () => {
+  describe("logger", () => {
+    it("logger callback gets called", async function () {
+      type Log = {
+        message: string;
+        level: string;
+      };
+      let logs: Log[] = [];
+
+      Realm.setLogger((level, message) => {
+        logs.push({ level, message });
+      });
+
+      Realm.setLogLevel("all");
+
+      const realm = await Realm.open({
+        schema: [{ name: "Person", properties: { name: "string" } }],
+      });
+      realm.write(() => realm.create("Person", { name: "Alice" }));
+
+      expect(logs).to.not.be.empty;
+      expect(logs.map((l) => l.level)).to.contain.members(["trace", "debug"]);
+      logs = [];
+
+      Realm.setLogLevel("trace");
+      realm.write(() => realm.create("Person", { name: "Alice" }));
+      expect(logs.map((l) => l.level)).to.contain.members(["trace", "debug"]);
+      logs = [];
+
+      Realm.setLogLevel("debug");
+      realm.write(() => realm.create("Person", { name: "Alice" }));
+      expect(logs.map((l) => l.level))
+        .to.contain("debug")
+        .and.to.not.contain("trace");
+      logs = [];
+
+      Realm.setLogLevel("info");
+      realm.write(() => realm.create("Person", { name: "Alice" }));
+      expect(logs).to.be.empty;
+
+      Realm.setLogLevel("warn");
+      realm.write(() => realm.create("Person", { name: "Alice" }));
+      expect(logs).to.be.empty;
+
+      Realm.setLogLevel("error");
+      realm.write(() => realm.create("Person", { name: "Alice" }));
+      expect(logs).to.be.empty;
+
+      Realm.setLogLevel("fatal");
+      realm.write(() => realm.create("Person", { name: "Alice" }));
+      expect(logs).to.be.empty;
+
+      //This will also disable the logger again after the test
+      Realm.setLogLevel("off");
+      realm.write(() => realm.create("Person", { name: "Alice" }));
+      expect(logs).to.be.empty;
+    });
+  });
+
   describe("object deletion", () => {
     openRealmBefore({ schema: [{ name: "Person", properties: { name: "string" } }] });
 
