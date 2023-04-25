@@ -118,40 +118,17 @@ target_include_directories(realm-js PRIVATE "${PACKAGE_ROOT_DIR}/src")
 # TODO move everything using this out of this CMakeLists.txt and into the SDK code.
 set(SDK_DIR ${PACKAGE_ROOT_DIR}/packages/realm)
 
-file(GLOB_RECURSE TS_FILES
+file(GLOB_RECURSE BINDGEN_LIB_TS_FILES
     LIST_DIRECTORIES false
     CONFIGURE_DEPENDS
-    ${SDK_DIR}/bindgen/src/*.ts # TODO split this out to SDK cmake file
     src/*.ts
 )
-
-# Each template command should include its file as an explicit dependency.
-# This avoids needing to re-run all generators for changes that could only affect one of them.
-list(FILTER TS_FILES EXCLUDE REGEX "templates/[^/]*\.ts$")
-list(FILTER TS_FILES EXCLUDE REGEX "tests/[^/]*\.ts$")
-
-set(CORE_SPEC_FILE ${CMAKE_CURRENT_SOURCE_DIR}/spec.yml)
-set(JS_SPEC_FILE ${SDK_DIR}/bindgen/js_spec.yml)
-set(SPEC_FILES ${CORE_SPEC_FILE} ${JS_SPEC_FILE})
-set(SPEC_ARGS --spec ${CORE_SPEC_FILE} --spec ${JS_SPEC_FILE})
-
-# Unfortunately this path is hard coded in the reader.
-# TODO 
-set(SCHEMA_FILE ${CMAKE_CURRENT_SOURCE_DIR}/generated/spec.schema.json)
-
-set(TYPESCRIPT_OUTPUT_DIR ${SDK_DIR}/generated/ts)
-
-set(GENERATED_TS_FILES
-    ${TYPESCRIPT_OUTPUT_DIR}/native.d.mts
-    ${TYPESCRIPT_OUTPUT_DIR}/core.ts
-)
-set(GENERATED_JS_FILES
-    ${TYPESCRIPT_OUTPUT_DIR}/native.mjs
-    ${TYPESCRIPT_OUTPUT_DIR}/native-rn.mjs
-)
+list(FILTER BINDGEN_LIB_TS_FILES EXCLUDE REGEX "tests/[^/]*\.ts$")
 
 set(NPX ${NODE_FORCE_COLOR} npx --prefix .) # without a prefix, npx changes the current directory and that is really confusing and hard to debug
 
+# This path is hard coded in the reader, and referred to in the specs to inform yaml-language-server of the schema
+set(SCHEMA_FILE ${CMAKE_CURRENT_SOURCE_DIR}/generated/spec.schema.json)
 add_custom_command(
     OUTPUT ${SCHEMA_FILE}
     COMMAND ${NPX} typescript-json-schema ${CMAKE_CURRENT_SOURCE_DIR}/tsconfig.json RelaxedSpec --include ${CMAKE_CURRENT_SOURCE_DIR}/src/spec/relaxed-model.ts --out ${SCHEMA_FILE} --required --noExtraProps --aliasRefs
@@ -163,62 +140,107 @@ add_custom_command(
         # (Right now there are no imports)
 )
 
-add_custom_target(SpecJsonSchema DEPENDS ${SCHEMA_FILE})
+add_custom_target(BindgenSpecJsonSchema DEPENDS ${SCHEMA_FILE})
 
-add_custom_command(
-    OUTPUT ${GENERATED_TS_FILES}
-    COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template ${SDK_DIR}/bindgen/src/templates/typescript.ts --output ${TYPESCRIPT_OUTPUT_DIR}
-    VERBATIM
-    MAIN_DEPENDENCY ${SDK_DIR}/bindgen/src/templates/typescript.ts
-    DEPENDS
-        ${SPEC_FILES}
-        SpecJsonSchema
-        ${TS_FILES}
+function(bindgen)
+    set(options)
+    set(oneValueArgs TEMPLATE OUTDIR)
+    set(multiValueArgs OUTPUTS SPECS SOURCES)
+    cmake_parse_arguments(PARSE_ARGV 0 BINDGEN "${options}" "${oneValueArgs}" "${multiValueArgs}")
+
+    if (BINDGEN_UNPARSED_ARGUMENTS)
+        message(FATAL_ERROR "Unexpected arguemnts to bindgen()" ${BINDGEN_UNPARSED_ARGUMENTS})
+    endif()
+
+    foreach(ARG TEMPLATE OUTDIR OUTPUTS) # SOURCES and SPECS are optional.
+        if (NOT BINDGEN_${ARG})
+            message(FATAL_ERROR "Argument ${ARG} is required to bindgen()")
+        endif()
+    endforeach()
+
+    set(CORE_SPEC_FILE ${CMAKE_CURRENT_SOURCE_DIR}/spec.yml)
+
+    add_custom_command(
+        OUTPUT ${BINDGEN_OUTPUTS}
+        COMMAND ${NPX} tsx -- "${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts"
+            --spec "$<JOIN:${CORE_SPEC_FILE};${BINDGEN_SPECS},;--spec;>"
+            --template "${BINDGEN_TEMPLATE}"
+            --output "${BINDGEN_OUTDIR}"
+        COMMAND_EXPAND_LISTS
+        VERBATIM
+        MAIN_DEPENDENCY ${BINDGEN_TEMPLATE}
+        DEPENDS
+            # from bindgen-lib
+            ${CORE_SPEC_FILE}
+            BindgenSpecJsonSchema
+            ${BINDGEN_LIB_TS_FILES}
+
+            # from sdk
+            ${BINDGEN_SPECS}
+            ${BINDGEN_SOURCES}
+    )
+endfunction()
+
+file(GLOB_RECURSE SDK_TS_FILES
+    LIST_DIRECTORIES false
+    CONFIGURE_DEPENDS
+    ${SDK_DIR}/bindgen/src/*.ts
+)
+
+# Each template command should include its file as an explicit dependency.
+# This avoids needing to re-run all generators for changes that could only affect one of them.
+list(FILTER SDK_TS_FILES EXCLUDE REGEX "templates/[^/]*\.ts$")
+
+set(JS_SPEC_FILE ${SDK_DIR}/bindgen/js_spec.yml)
+set(TYPESCRIPT_OUTPUT_DIR ${SDK_DIR}/generated/ts)
+
+set(GENERATED_TS_FILES
+    ${TYPESCRIPT_OUTPUT_DIR}/native.d.mts
+    ${TYPESCRIPT_OUTPUT_DIR}/core.ts
+)
+bindgen(
+    TEMPLATE ${SDK_DIR}/bindgen/src/templates/typescript.ts
+    OUTPUTS ${GENERATED_TS_FILES}
+    OUTDIR ${TYPESCRIPT_OUTPUT_DIR}
+    SPECS ${JS_SPEC_FILE}
+    SOURCES ${SDK_TS_FILES}
+)
+
+set(GENERATED_JS_FILES
+    ${TYPESCRIPT_OUTPUT_DIR}/native.mjs
+    ${TYPESCRIPT_OUTPUT_DIR}/native-rn.mjs
+)
+bindgen(
+    TEMPLATE ${SDK_DIR}/bindgen/src/templates/node-wrapper.ts
+    OUTPUTS ${GENERATED_JS_FILES}
+    OUTDIR ${TYPESCRIPT_OUTPUT_DIR}
+    SPECS ${JS_SPEC_FILE}
+    SOURCES ${SDK_TS_FILES}
 )
 
 add_custom_target(TypeScript ALL DEPENDS ${GENERATED_TS_FILES} ${GENERATED_JS_FILES})
 
-# For now leaving the native.mjs file as a "common" file between node and jsi.
-# We may need them to differ, but for now it is simpler to avoid that.
-# One issue we may run into when splitting is that they will need to be different files, otherwise ninja will get confused.
-add_custom_command(
-    OUTPUT ${GENERATED_JS_FILES}
-    COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template ${SDK_DIR}/bindgen/src/templates/node-wrapper.ts --output ${TYPESCRIPT_OUTPUT_DIR}
-    VERBATIM
-    MAIN_DEPENDENCY ${SDK_DIR}/bindgen/src/templates/node-wrapper.ts
-    DEPENDS
-        ${SPEC_FILES}
-        SpecJsonSchema
-        ${TS_FILES}
-)
-
 if(DEFINED CMAKE_JS_VERSION)
     include(node.cmake)
 
-    add_custom_command(
-        OUTPUT node_init.cpp
-        COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template ${SDK_DIR}/bindgen/src/templates/node.ts --output ${CMAKE_CURRENT_BINARY_DIR}
-        VERBATIM
-        MAIN_DEPENDENCY ${SDK_DIR}/bindgen/src/templates/node.ts
-        DEPENDS
-            ${SPEC_FILES}
-            SpecJsonSchema
-            ${TS_FILES}
+    bindgen(
+        TEMPLATE ${SDK_DIR}/bindgen/src/templates/node.ts
+        OUTPUTS node_init.cpp
+        OUTDIR ${CMAKE_CURRENT_BINARY_DIR}
+        SPECS ${JS_SPEC_FILE}
+        SOURCES ${SDK_TS_FILES}
     )
 
     target_sources(realm-js PRIVATE node_init.cpp ${CMAKE_JS_SRC} ${PACKAGE_ROOT_DIR}/src/node/platform.cpp)
 else()
     include(jsi.cmake)
 
-    add_custom_command(
-        OUTPUT jsi_init.cpp
-        COMMAND ${NPX} tsx -- ${CMAKE_CURRENT_SOURCE_DIR}/realm-bindgen.ts ${SPEC_ARGS} --template ${SDK_DIR}/bindgen/src/templates/jsi.ts --output ${CMAKE_CURRENT_BINARY_DIR}
-        VERBATIM
-        MAIN_DEPENDENCY ${SDK_DIR}/bindgen/src/templates/jsi.ts
-        DEPENDS
-            ${SPEC_FILES}
-            SpecJsonSchema
-            ${TS_FILES}
+    bindgen(
+        TEMPLATE ${SDK_DIR}/bindgen/src/templates/jsi.ts
+        OUTPUTS jsi_init.cpp
+        OUTDIR ${CMAKE_CURRENT_BINARY_DIR}
+        SPECS ${JS_SPEC_FILE}
+        SOURCES ${SDK_TS_FILES}
     )
 
     target_sources(realm-js PRIVATE jsi_init.cpp ${CMAKE_JS_SRC})
