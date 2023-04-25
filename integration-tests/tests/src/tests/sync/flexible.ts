@@ -38,6 +38,7 @@ import {
   Realm,
   SessionStopPolicy,
   CompensatingWriteError,
+  WaitForSync,
 } from "realm";
 
 import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "../../hooks";
@@ -1568,6 +1569,56 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             await this.realm.subscriptions.waitForSynchronization();
             expect(this.realm.subscriptions.state).to.equal(Realm.App.Sync.SubscriptionSetState.Complete);
           });
+        });
+      });
+
+      describe("Results#subscribe", function () {
+        it("waits for objects to be downloaded the first time only", async function (this: RealmContext) {
+          expect(this.realm.subscriptions).to.have.length(0);
+
+          const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
+          // TODO: Expect it to wait.
+          await peopleOver10.subscribe({ behavior: WaitForSync.FirstTime });
+          // TODO: Expect it not to wait.
+          await peopleOver10.subscribe({ behavior: WaitForSync.FirstTime });
+
+          expect(this.realm.subscriptions).to.have.length(1);
+        });
+
+        it("waits for objects to be downloaded the first time only by default", async function (this: RealmContext) {
+          expect(this.realm.subscriptions).to.have.length(0);
+
+          const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
+          // TODO: Expect it to wait.
+          await peopleOver10.subscribe();
+          // TODO: Expect it not to wait.
+          await peopleOver10.subscribe();
+
+          expect(this.realm.subscriptions).to.have.length(1);
+        });
+
+        it("always waits for objects to be downloaded", async function (this: RealmContext) {
+          expect(this.realm.subscriptions).to.have.length(0);
+
+          const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
+          // TODO: Expect it to wait.
+          await peopleOver10.subscribe({ behavior: WaitForSync.Always });
+          // TODO: Expect it to wait.
+          await peopleOver10.subscribe({ behavior: WaitForSync.Always });
+
+          expect(this.realm.subscriptions).to.have.length(1);
+        });
+
+        it("never waits for objects to be downloaded", async function (this: RealmContext) {
+          expect(this.realm.subscriptions).to.have.length(0);
+
+          const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
+          // TODO: Expect it to not wait.
+          peopleOver10.subscribe({ behavior: WaitForSync.Never });
+          // TODO: Expect it to not wait.
+          peopleOver10.subscribe({ behavior: WaitForSync.Never });
+
+          expect(this.realm.subscriptions).to.have.length(1);
         });
       });
 
