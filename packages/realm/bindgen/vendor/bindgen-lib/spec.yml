@@ -321,6 +321,9 @@ records:
       is_indexed:
         type: bool
         default: false
+      is_fulltext_indexed:
+        type: bool
+        default: false
       column_key:
         type: ColKey
         default: {}

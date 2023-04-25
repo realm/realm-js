@@ -114,10 +114,10 @@ export function fromBindingObjectSchema({
  * @internal
  */
 export function fromBindingPropertySchema(propertySchema: BindingProperty): CanonicalPropertySchema {
-  const { name, isIndexed, publicName } = propertySchema;
+  const { name, isIndexed, isFulltextIndexed, publicName } = propertySchema;
   const result: CanonicalPropertySchema = {
     name,
-    indexed: isIndexed,
+    indexed: isFulltextIndexed ? "fulltext" : isIndexed,
     mapTo: name,
     ...fromBindingPropertyTypeName(propertySchema),
   };

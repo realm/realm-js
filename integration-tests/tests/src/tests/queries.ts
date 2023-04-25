@@ -63,6 +63,19 @@ class NullableTypesObject extends Realm.Object implements INullableTypesObject {
   };
 }
 
+class Story extends Realm.Object<Story> {
+  id?: number;
+  content?: string;
+
+  static schema = {
+    name: "Story",
+    properties: {
+      id: "string",
+      content: { type: "int" }, //TODO Not sure why it seems that the schema doesn't work properly
+    },
+  };
+}
+
 type QueryLengthPair = [ExpectedLength: number, Query: string, ...QueryArgs: Array<any>];
 type QueryExceptionPair = [ExpectedException: string, Query: string, ...QueryArgs: Array<any>];
 type QueryResultsPair = [ExpectedResults: any[], Query: string, ...QueryArgs: Array<any>];
@@ -131,6 +144,20 @@ const expectQueryResultValues = (
 };
 
 describe("Queries", () => {
+  describe.only("Full text search", () => {
+    openRealmBeforeEach({ schema: [Story] });
+
+    beforeEach(function (this: RealmContext) {
+      this.realm.write(() => {
+        this.realm.create<INullableTypesObject>("Story", { boolCol: true });
+        this.realm.create<INullableTypesObject>("Story", { boolCol: true });
+        this.realm.create<INullableTypesObject>("Story", { boolCol: undefined });
+      });
+    });
+
+    it("basic test", () => {});
+  });
+
   describe("Basic types", () => {
     openRealmBeforeEach({ schema: [NullableTypesObject] });
 

@@ -84,6 +84,9 @@ export type CanonicalRealmSchema = CanonicalObjectSchema[];
  */
 export type CanonicalObjectSchemaProperty = CanonicalPropertySchema;
 
+//TODO add docs
+export type IndexedType = boolean | "fulltext";
+
 /**
  * The canonical representation of the schema of a specific property.
  */
@@ -91,7 +94,7 @@ export type CanonicalPropertySchema = {
   name: string;
   type: PropertyTypeName;
   optional: boolean;
-  indexed: boolean;
+  indexed: IndexedType;
   mapTo: string; // TODO: Make this optional and leave it out when it equals the name
   objectType?: string;
   property?: string;
@@ -239,11 +242,11 @@ export type PropertySchema = {
    */
   optional?: boolean;
   /**
-   * Whether the property should be indexed.
+   * Whether the property should be indexed.  //TODO need to change this
    *
    * Default value: `false` if the property is not a primary key, otherwise `true`.
    */
-  indexed?: boolean;
+  indexed?: IndexedType;
   /**
    * The name to be persisted in the Realm file if it differs from the already-defined
    * JavaScript/TypeScript (JS/TS) property name. This is useful for allowing different

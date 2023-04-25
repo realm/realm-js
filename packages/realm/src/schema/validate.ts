@@ -22,13 +22,13 @@ import {
   Configuration,
   DefaultObject,
   ObjectSchema,
+  ObjectSchemaParseError,
   PropertySchema,
+  PropertySchemaParseError,
   RealmObject,
   RealmObjectConstructor,
   SchemaParseError,
   assert,
-  PropertySchemaParseError,
-  ObjectSchemaParseError,
 } from "../internal";
 
 // Need to use `CanonicalObjectSchema` rather than `ObjectSchema` due to some
@@ -164,7 +164,11 @@ export function validatePropertySchema(
       assert.string(property, `'${propertyName}.property' on '${objectName}'`);
     }
     if (indexed !== undefined) {
-      assert.boolean(indexed, `'${propertyName}.indexed' on '${objectName}'`);
+      //TODO Find good error message
+      assert(
+        typeof indexed === "boolean" || indexed === "fulltext",
+        `"indexed" needs to be either a boolean or "fulltext"`,
+      );
     }
     if (mapTo !== undefined) {
       assert.string(mapTo, `'${propertyName}.mapTo' on '${objectName}'`);
