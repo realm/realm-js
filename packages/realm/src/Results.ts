@@ -125,6 +125,18 @@ export class Results<T = unknown> extends OrderedCollection<T> {
     return this;
   }
 
+  unsubscribe(): boolean {
+    let removed = false;
+    if (this.isSubscribedTo) {
+      this.realm.subscriptions.updateNoWait((mutableSubs) => {
+        removed = mutableSubs.remove(this);
+      });
+      this.isSubscribedTo = !removed;
+    }
+
+    return removed;
+  }
+
   isValid(): boolean {
     return this.internal.isValid;
   }
