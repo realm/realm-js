@@ -20,33 +20,25 @@ import { Credentials, User } from "realm";
 import { buildConfig } from "@realm/app-importer";
 
 import { importAppBefore } from "../../hooks";
+import { appendDatabaseConfig } from "../../app-configs/database";
 
 describe.skipIf(environment.missingServer, "custom-function credentials", () => {
   importAppBefore(
-    buildConfig("with-custom-function")
-      .authProvider({
-        name: "custom-function",
-        type: "custom-function",
-        config: {
-          authFunctionName: "customAuthentication",
-        },
-        disabled: false,
-      })
-      .service({
-        name: "mongodb",
-        type: "mongodb",
-        config: {},
-        secret_config: {
-          uri: "mongodb_uri",
-        },
-        version: 1,
-      })
-      .secret("mongodb_uri", "mongodb://localhost:26000")
-      .function({
-        name: "customAuthentication",
-        private: true,
-        run_as_system: true,
-        source: `
+    appendDatabaseConfig(
+      buildConfig("with-custom-function")
+        .authProvider({
+          name: "custom-function",
+          type: "custom-function",
+          config: {
+            authFunctionName: "customAuthentication",
+          },
+          disabled: false,
+        })
+        .function({
+          name: "customAuthentication",
+          private: true,
+          run_as_system: true,
+          source: `
           exports = async function (loginPayload) {
             // Get a handle for the app.users collection
             const users = context.services.get("mongodb").db("app").collection("users");
@@ -72,7 +64,8 @@ describe.skipIf(environment.missingServer, "custom-function credentials", () => 
             }
           };
         `,
-      }),
+        }),
+    ),
   );
 
   it("authenticates", async function (this: AppContext) {

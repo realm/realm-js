@@ -20,7 +20,7 @@ import { BSON } from "realm";
 import { expect } from "chai";
 import { importAppBefore } from "../../hooks";
 import { generatePartition } from "../../utils/generators";
-import { getUrls } from "../../utils/import-app";
+import { baseUrl } from "../../utils/import-app";
 import { select } from "../../utils/select";
 import { buildConfig } from "@realm/app-importer";
 import { appConfigs } from "../../app-configs";
@@ -79,8 +79,7 @@ describe("App", () => {
     afterEach(async () => {
       Realm.clearTestState();
     });
-    const { baseUrl } = getUrls();
-    const missingAppConfig = { id: "smurf", baseUrl: baseUrl };
+    const missingAppConfig = { id: "smurf", baseUrl };
 
     it("from config", () => {
       //even if "id" is not an existing app we can still instantiate a new Realm.

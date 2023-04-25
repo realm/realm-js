@@ -25,72 +25,23 @@ export type Response = ImportResponse | ErrorResponse;
 
 const { realmBaseUrl = "http://localhost:9090" } = environment;
 
+export const baseUrl = realmBaseUrl;
+
 function getCredentials(): Credentials {
-  const { publicKey, privateKey, username, password } = environment;
+  const { publicKey, privateKey, username = "unique_user@domain.com", password = "password" } = environment;
   if (typeof publicKey === "string" && typeof privateKey === "string") {
     return {
       kind: "api-key",
       publicKey,
       privateKey,
     };
-  }
-  return {
-    kind: "username-password",
-    username: typeof username === "string" ? username : "unique_user@domain.com",
-    password: typeof password === "string" ? password : "password",
-  };
-}
-
-type SyncConfigOptions = {
-  name: string;
-  databaseName: string;
-};
-
-function generateSyncConfig({ name, databaseName }: SyncConfigOptions) {
-  if (name === "with-db") {
-    return {
-      sync: {
-        database_name: databaseName,
-      },
-    };
-  } else if (name === "with-db-flx") {
-    return {
-      flexible_sync: {
-        database_name: databaseName,
-      },
-    };
-  } else {
-    return {};
-  }
-}
-
-type MongodbServiceOptions = { name: string; databaseName: string; clusterName: string | undefined };
-
-function generateMongoDBServiceConfig({ name, databaseName, clusterName }: MongodbServiceOptions) {
-  if (clusterName) {
-    return {
-      type: "mongodb-atlas",
-      config: {
-        clusterName,
-        readPreference: "primary",
-        wireProtocolEnabled: false,
-        ...generateSyncConfig({ name, databaseName }),
-      },
-    };
   } else {
     return {
-      config: generateSyncConfig({ name, databaseName }),
+      kind: "username-password",
+      username,
+      password,
     };
   }
-}
-
-export function getDefaultReplacements(name: string, databaseName: string): TemplateReplacements {
-  // When running on CI we connect through mongodb-atlas instead of local-mongodb
-  const { mongodbClusterName: clusterName } = environment;
-
-  return {
-    "services/mongodb/config.json": generateMongoDBServiceConfig({ name, databaseName, clusterName }),
-  };
 }
 
 const credentials = getCredentials();

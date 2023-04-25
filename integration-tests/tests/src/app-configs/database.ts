@@ -16,9 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { buildConfig, PartitionConfig } from "@realm/app-importer";
+import { AppConfigBuilder, buildConfig, PartitionConfig } from "@realm/app-importer";
 
 import { randomDatabaseName } from "../utils/generators";
+
+const { mongodbClusterName, mongodbServiceType = mongodbClusterName ? "mongodb-atlas" : "mongodb" } = environment;
+
+export { mongodbClusterName, mongodbServiceType };
 
 type SyncConfig =
   | { kind: "disabled" }
@@ -30,7 +34,7 @@ type SyncConfig =
       partition: PartitionConfig;
     };
 
-export function buildMongoDBConfig(config: SyncConfig) {
+function buildMongoDBSyncConfig(config: SyncConfig) {
   if (config.kind === "disabled") {
     return {};
   } else if (config.kind === "flexible") {
@@ -53,27 +57,29 @@ export function buildMongoDBConfig(config: SyncConfig) {
   }
 }
 
-export function buildDatabaseConfig(appName = "with-db", syncConfig: SyncConfig = { kind: "disabled" }) {
-  return buildConfig(appName)
-    .sync({
-      development_mode_enabled: true,
-    })
-    .secret("mongodb_uri", "mongodb://localhost:26000")
-    .authProvider({ name: "anon-user", type: "anon-user", disabled: false })
-    .authProvider({
-      name: "local-userpass",
-      type: "local-userpass",
-      config: {
-        autoConfirm: true,
-        resetPasswordUrl: "http://localhost/resetPassword",
-      },
-      disabled: false,
-    })
+export function buildMongoDBConfig(config: SyncConfig) {
+  const syncConfig = buildMongoDBSyncConfig(config);
+  if (mongodbServiceType === "mongodb-atlas") {
+    if (!mongodbClusterName) {
+      throw new Error("Expected 'mongodbClusterName' when mongodbServiceType is 'mongodb-atlas'");
+    }
+    return {
+      clusterName: mongodbClusterName,
+      readPreference: "primary",
+      wireProtocolEnabled: false,
+      ...syncConfig,
+    };
+  } else {
+    return syncConfig;
+  }
+}
+
+export function appendDatabaseConfig(builder: AppConfigBuilder, syncConfig: SyncConfig = { kind: "disabled" }) {
+  return builder
     .service(
       {
         name: "mongodb",
-        // TODO: Adjust this based on baseUrl
-        type: "mongodb",
+        type: mongodbServiceType,
         config: buildMongoDBConfig(syncConfig),
         secret_config: {
           uri: "mongodb_uri",
@@ -98,6 +104,24 @@ export function buildDatabaseConfig(appName = "with-db", syncConfig: SyncConfig 
         },
       ],
     )
+    .secret("mongodb_uri", "mongodb://localhost:26000");
+}
+
+export function buildDatabaseConfig(appName = "with-db", syncConfig: SyncConfig = { kind: "disabled" }) {
+  const builder = buildConfig(appName)
+    .sync({
+      development_mode_enabled: true,
+    })
+    .authProvider({ name: "anon-user", type: "anon-user", disabled: false })
+    .authProvider({
+      name: "local-userpass",
+      type: "local-userpass",
+      config: {
+        autoConfirm: true,
+        resetPasswordUrl: "http://localhost/resetPassword",
+      },
+      disabled: false,
+    })
     .function({
       name: "triggerClientReset",
       private: false,
@@ -112,5 +136,9 @@ export function buildDatabaseConfig(appName = "with-db", syncConfig: SyncConfig 
           return (await mongodb.db(db).collection("clientfiles").deleteMany({ ownerId: userId })).deletedCount > 0;
         }
       `,
-    }).config;
+    });
+
+  appendDatabaseConfig(builder);
+
+  return builder.config;
 }
