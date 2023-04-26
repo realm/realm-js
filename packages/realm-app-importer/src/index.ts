@@ -28,6 +28,8 @@ export type {
   PartitionSyncConfig,
   PartitionConfig,
   FlexibleSyncConfig,
+  CustomTokenAuthMetadataField,
+  EmailPasswordAuthConfig,
 } from "./AppConfigBuilder";
 export { AppImporter } from "./AppImporter";
-export { AppConfigBuilder, buildConfig } from "./AppConfigBuilder";
+export { AppConfigBuilder } from "./AppConfigBuilder";

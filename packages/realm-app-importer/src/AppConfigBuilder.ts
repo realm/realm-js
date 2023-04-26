@@ -66,41 +66,54 @@ export type AuthProviderConfig = {
     }
   | {
       type: "local-userpass";
-      config: {
-        autoConfirm?: boolean;
-        confirmEmailSubject?: string;
-        emailConfirmationUrl?: string;
-        resetPasswordSubject?: string;
-        resetPasswordUrl?: string;
-        runConfirmationFunction?: boolean;
-        runResetFunction?: boolean;
-        confirmationFunctionName?: string;
-        confirmationFunctionId?: string;
-        resetFunctionName?: string;
-        resetFunctionId?: string;
-      };
+      config: EmailPasswordAuthConfig;
     }
   | {
       type: "custom-function";
-      config: { authFunctionName: string; authFunctionId?: string };
+      config: CustomFunctionAuthConfig;
     }
   | {
       type: "custom-token";
-      config: {
-        audience: string; // ""
-        signingAlgorithm: "HS256";
-        useJWKURI: boolean;
-      };
-      secret_config: {
-        signingKeys: string[];
-      };
-      metadata_fields: Array<{
-        required: boolean;
-        name: string;
-        field_name: string;
-      }>;
+      config: CustomTokenAuthConfig;
+      secret_config: CustomTokenAuthSecretConfig;
+      metadata_fields: Array<CustomTokenAuthMetadataField>;
     }
 );
+
+export type EmailPasswordAuthConfig = {
+  autoConfirm?: boolean;
+  confirmEmailSubject?: string;
+  emailConfirmationUrl?: string;
+  resetPasswordSubject?: string;
+  resetPasswordUrl?: string;
+  runConfirmationFunction?: boolean;
+  runResetFunction?: boolean;
+  confirmationFunctionName?: string;
+  confirmationFunctionId?: string;
+  resetFunctionName?: string;
+  resetFunctionId?: string;
+};
+
+export type CustomFunctionAuthConfig = {
+  authFunctionName: string;
+  authFunctionId?: string;
+};
+
+export type CustomTokenAuthConfig = {
+  audience: string; // ""
+  signingAlgorithm: "HS256";
+  useJWKURI: boolean;
+};
+
+export type CustomTokenAuthSecretConfig = {
+  signingKeys: string[];
+};
+
+export type CustomTokenAuthMetadataField = {
+  required: boolean;
+  name: string;
+  field_name: string;
+};
 
 export type FunctionConfig = {
   name: string;
@@ -185,8 +198,4 @@ export class AppConfigBuilder {
     this.config.functions.push(config);
     return this;
   }
-}
-
-export function buildConfig(name?: string) {
-  return new AppConfigBuilder(name);
 }
