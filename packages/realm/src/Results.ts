@@ -148,12 +148,9 @@ export class Results<T = unknown> extends OrderedCollection<T> {
 
   unsubscribe(): boolean {
     let removed = false;
-    if (this.isSubscribedTo) {
-      this.realm.subscriptions.updateNoWait((mutableSubs) => {
-        removed = mutableSubs.remove(this);
-      });
-      this.isSubscribedTo = !removed;
-    }
+    this.realm.subscriptions.updateNoWait((mutableSubs) => {
+      removed = mutableSubs.remove(this);
+    });
 
     return removed;
   }

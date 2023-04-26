@@ -1685,6 +1685,19 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(unsubscribed).to.be.false;
           expect(this.realm.subscriptions).to.have.length(0);
         });
+
+        it("does not unsubscribe multiple times", async function (this: RealmContext) {
+          const peopleOver10 = await this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10").subscribe();
+          expect(this.realm.subscriptions).to.have.length(1);
+
+          let unsubscribed = peopleOver10.unsubscribe();
+          expect(unsubscribed).to.be.true;
+
+          unsubscribed = peopleOver10.unsubscribe();
+          expect(unsubscribed).to.be.false;
+
+          expect(this.realm.subscriptions).to.have.length(0);
+        });
       });
 
       // TODO Right now there is no is_valid method we can use to verify if the subs
