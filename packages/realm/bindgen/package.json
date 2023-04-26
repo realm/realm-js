@@ -3,6 +3,6 @@
   "private": true,
   "type": "module",
   "workspaces": [
-    "packages/realm/bindgen/vendor/realm-core/bindgen/"
+    "packages/realm/bindgen/vendor/realm-core/"
   ]
 }
