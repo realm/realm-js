@@ -363,7 +363,14 @@ export class AdminApiClient {
     if (typeof body === "object") {
       headers["content-type"] = "application/json";
     }
-    const response = await DefaultNetworkTransport.fetch(url, { ...rest, body: JSON.stringify(body), headers });
+    const response = await DefaultNetworkTransport.fetch(url, {
+      ...rest,
+      body: JSON.stringify(body),
+      headers,
+      // Setting additional options to signal to the RN fetch polyfill that it shouldn't consider the response a "blob"
+      // see https://github.com/react-native-community/fetch/issues/15
+      reactNative: { textStreaming: true },
+    } as FetchRequestInit);
     if (response.ok) {
       if (response.headers.get("content-type") === "application/json") {
         return response.json();
