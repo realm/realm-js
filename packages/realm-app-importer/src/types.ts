@@ -155,7 +155,12 @@ export type Service = {
 
 export type ServiceResponse = Service;
 
-export function assertServiceResponse(response: unknown): asserts response is ServiceResponse {}
+export function assertServiceResponse(response: unknown): asserts response is ServiceResponse {
+  assertObject(response);
+  if (typeof response._id !== "string") {
+    throw new Error("Expected a ServiceResponse");
+  }
+}
 
 export function assertProfileResponse(response: unknown): asserts response is ProfileResponse {
   assertObject(response);
