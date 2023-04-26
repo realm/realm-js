@@ -154,7 +154,7 @@ android {
     // in debug mode. These will not be compiled, it will still use the .so library.
     sourceSets {
         main.java.srcDirs += '../../../../../src'
-        main.java.srcDirs += '../../../../../vendor/realm-core/src'
+        main.java.srcDirs += '../../../../../packages/realm/bindgen/vendor/realm-core/src'
     }
 }
 
