@@ -23,6 +23,7 @@ import {
   Realm,
   RealmInsertionModel,
   SubscriptionOptions,
+  TimeoutPromise,
   WaitForSync,
   assert,
   binding,
@@ -43,7 +44,7 @@ export class Results<T = unknown> extends OrderedCollection<T> {
    */
   public declare internal: binding.Results;
   /** @internal */
-  private isSubscribedTo = false;
+  private isSubscribedTo = false; // TODO: Replace with call to Core
 
   /**
    * Create a `Results` wrapping a set of query `Results` from the binding.
@@ -68,6 +69,11 @@ export class Results<T = unknown> extends OrderedCollection<T> {
       configurable: false,
       writable: false,
       value: realm,
+    });
+    Object.defineProperty(this, "isSubscribedTo", {
+      enumerable: false,
+      configurable: false,
+      writable: true,
     });
   }
 
@@ -108,19 +114,34 @@ export class Results<T = unknown> extends OrderedCollection<T> {
     }
   }
 
-  async subscribe(options?: SubscriptionOptions): Promise<this> {
-    const waitFirstTime = !options?.behavior || options.behavior === WaitForSync.FirstTime;
-    if ((waitFirstTime && !this.isSubscribedTo) || options?.behavior === WaitForSync.Always) {
-      // TODO: Incorporate options.timeout
-      await this.realm.subscriptions.update((mutableSubs) => {
-        mutableSubs.add(this, options);
-      });
+  /**
+   * Add the query (represented by this {@link Results} instance) to the set of active subscriptions.
+   * The query will be joined via an `OR` operator with any existing queries for the same type.
+   *
+   * @param options An optional {@link SubscriptionOptions} object containing options to
+   *  use when adding this subscription (e.g. to give the subscription a name).
+   * @returns A promise that resolves to this {@link Results} instance.
+   */
+  async subscribe(options: SubscriptionOptions = { behavior: WaitForSync.FirstTime }): Promise<this> {
+    const subs = this.realm.subscriptions;
+    const shouldWait =
+      (options.behavior === WaitForSync.FirstTime && !this.isSubscribedTo) || options.behavior === WaitForSync.Always;
+    if (shouldWait) {
+      if (typeof options.timeout === "number") {
+        await new TimeoutPromise(
+          subs.update((mutableSubs) => mutableSubs.add(this, options)),
+          {
+            ms: options.timeout,
+            rejectOnTimeout: false,
+          },
+        );
+      } else {
+        await subs.update((mutableSubs) => mutableSubs.add(this, options));
+      }
     } else {
-      this.realm.subscriptions.updateNoWait((mutableSubs) => {
-        mutableSubs.add(this, options);
-      });
+      subs.updateNoWait((mutableSubs) => mutableSubs.add(this, options));
     }
-    this.isSubscribedTo = true;
+    this.isSubscribedTo = true; // TODO: Remove when calling into Core instead.
 
     return this;
   }
