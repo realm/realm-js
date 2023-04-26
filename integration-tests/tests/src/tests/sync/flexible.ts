@@ -37,6 +37,7 @@ import {
   FlexibleSyncConfiguration,
   Realm,
   SessionStopPolicy,
+  SubscriptionsState,
   CompensatingWriteError,
   WaitForSync,
 } from "realm";
@@ -1573,50 +1574,94 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       });
 
       describe("Results#subscribe", function () {
-        it("waits for objects to be downloaded the first time only", async function (this: RealmContext) {
+        it("waits for objects to sync the first time only", async function (this: RealmContext) {
           expect(this.realm.subscriptions).to.have.length(0);
 
           const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
-          // TODO: Expect it to wait.
+
+          // Subscribing the first time should wait for synchronization.
           await peopleOver10.subscribe({ behavior: WaitForSync.FirstTime });
-          // TODO: Expect it not to wait.
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionsState.Complete);
+
+          // Subscribing the second time should return without waiting.
           await peopleOver10.subscribe({ behavior: WaitForSync.FirstTime });
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionsState.Pending);
 
           expect(this.realm.subscriptions).to.have.length(1);
         });
 
-        it("waits for objects to be downloaded the first time only by default", async function (this: RealmContext) {
+        it("waits for objects to sync the first time only by default", async function (this: RealmContext) {
           expect(this.realm.subscriptions).to.have.length(0);
 
           const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
-          // TODO: Expect it to wait.
+
           await peopleOver10.subscribe();
-          // TODO: Expect it not to wait.
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionsState.Complete);
+
           await peopleOver10.subscribe();
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionsState.Pending);
 
           expect(this.realm.subscriptions).to.have.length(1);
         });
 
-        it("always waits for objects to be downloaded", async function (this: RealmContext) {
+        it("waits for objects to sync the first time only for different 'Results' instances", async function (this: RealmContext) {
           expect(this.realm.subscriptions).to.have.length(0);
 
-          const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
-          // TODO: Expect it to wait.
-          await peopleOver10.subscribe({ behavior: WaitForSync.Always });
-          // TODO: Expect it to wait.
-          await peopleOver10.subscribe({ behavior: WaitForSync.Always });
+          let peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
+          await peopleOver10.subscribe({ behavior: WaitForSync.FirstTime });
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionsState.Complete);
+
+          peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
+          await peopleOver10.subscribe({ behavior: WaitForSync.FirstTime });
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionsState.Pending);
 
           expect(this.realm.subscriptions).to.have.length(1);
         });
 
-        it("never waits for objects to be downloaded", async function (this: RealmContext) {
+        it("always waits for objects to sync", async function (this: RealmContext) {
           expect(this.realm.subscriptions).to.have.length(0);
 
           const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
-          // TODO: Expect it to not wait.
-          peopleOver10.subscribe({ behavior: WaitForSync.Never });
-          // TODO: Expect it to not wait.
-          peopleOver10.subscribe({ behavior: WaitForSync.Never });
+
+          await peopleOver10.subscribe({ behavior: WaitForSync.Always });
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionsState.Complete);
+
+          await peopleOver10.subscribe({ behavior: WaitForSync.Always });
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionsState.Complete);
+
+          expect(this.realm.subscriptions).to.have.length(1);
+        });
+
+        it("never waits for objects to sync", async function (this: RealmContext) {
+          expect(this.realm.subscriptions).to.have.length(0);
+
+          const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
+
+          await peopleOver10.subscribe({ behavior: WaitForSync.Never });
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionsState.Pending);
+
+          await peopleOver10.subscribe({ behavior: WaitForSync.Never });
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionsState.Pending);
+
+          expect(this.realm.subscriptions).to.have.length(1);
+        });
+
+        it("waits for objects to sync when timeout is longer", async function (this: RealmContext) {
+          expect(this.realm.subscriptions).to.have.length(0);
+
+          const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
+          await peopleOver10.subscribe({ behavior: WaitForSync.Always, timeout: this.timeout() });
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionsState.Complete);
+
+          expect(this.realm.subscriptions).to.have.length(1);
+        });
+
+        it("does not wait for objects to sync when timeout is shorter", async function (this: RealmContext) {
+          expect(this.realm.subscriptions).to.have.length(0);
+
+          const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
+          await peopleOver10.subscribe({ behavior: WaitForSync.Always, timeout: 0 });
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionsState.Pending);
 
           expect(this.realm.subscriptions).to.have.length(1);
         });
