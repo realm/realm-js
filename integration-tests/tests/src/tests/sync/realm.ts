@@ -22,7 +22,7 @@ import { CollectionChangeSet } from "realm";
 import { importAppBefore, openRealmBeforeEach } from "../../hooks";
 import { expectArraysEqual, expectDecimalEqual } from "../../utils/comparisons";
 import { sleep } from "../../utils/sleep";
-import { appConfigs } from "../../app-configs";
+import { buildAppConfig } from "../../utils/build-app-config";
 
 const CarSchema = {
   name: "Car",
@@ -1333,7 +1333,7 @@ describe("Realmtest", () => {
     });
 
     describe("exists", () => {
-      importAppBefore(appConfigs.partitionBased());
+      importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
 
       it("yields correct value on a local realm", () => {
         const config = { schema: [TestObject] };
@@ -2060,29 +2060,25 @@ describe("Realmtest", () => {
     });
   });
 
-  describe("with sync", () => {
-    importAppBefore(appConfigs.simple());
+  describe.skipIf(environment.missingServer, "with sync", () => {
+    importAppBefore(buildAppConfig("with-anon").anonAuth().partitionBasedSync());
 
-    it.skipIf(
-      environment.missingServer,
-      "data is deleted on realm with custom path",
-      function (this: RealmContext & AppContext) {
-        return this.app.logIn(Realm.Credentials.anonymous()).then(async (user) => {
-          const config = {
-            schema: [TestObjectWithPkSchema],
-            sync: { user, partitionValue: '"Lolo"' },
-          };
-          const realm = new Realm(config);
-          const path = realm.path;
-          realm.close();
-          const pathExistBeforeDelete = await fs.exists(path);
-          expect(pathExistBeforeDelete).to.be.true;
-          Realm.deleteFile(config);
-          const pathExistAfterDelete = await fs.exists(path);
-          expect(pathExistAfterDelete).to.be.false;
-        });
-      },
-    );
+    it("data is deleted on realm with custom path", function (this: RealmContext & AppContext) {
+      return this.app.logIn(Realm.Credentials.anonymous()).then(async (user) => {
+        const config = {
+          schema: [TestObjectWithPkSchema],
+          sync: { user, partitionValue: '"Lolo"' },
+        };
+        const realm = new Realm(config);
+        const path = realm.path;
+        realm.close();
+        const pathExistBeforeDelete = await fs.exists(path);
+        expect(pathExistBeforeDelete).to.be.true;
+        Realm.deleteFile(config);
+        const pathExistAfterDelete = await fs.exists(path);
+        expect(pathExistAfterDelete).to.be.false;
+      });
+    });
   });
 
   describe("deleteRealmIfMigrationNeeded", () => {

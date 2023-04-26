@@ -46,7 +46,7 @@ import { closeRealm } from "../../utils/close-realm";
 import { expectClientResetError } from "../../utils/expect-sync-error";
 import { createSyncConfig } from "../../utils/open-realm";
 import { createPromiseHandle } from "../../utils/promise-handle";
-import { appConfigs } from "../../app-configs";
+import { buildAppConfig } from "../../utils/build-app-config";
 
 const FlexiblePersonSchema = { ...PersonSchema, properties: { ...PersonSchema.properties, nonQueryable: "string?" } };
 
@@ -134,7 +134,7 @@ async function addSubscriptionAndSync<T>(
 
 describe.skipIf(environment.missingServer, "Flexible sync", function () {
   this.timeout(60_000); // TODO: Temporarily hardcoded until envs are set up.
-  importAppBefore(appConfigs.flexible());
+  importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
   authenticateUserBefore();
   afterEach(() => {
     Realm.clearTestState();

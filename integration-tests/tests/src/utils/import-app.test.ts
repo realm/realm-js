@@ -19,13 +19,13 @@ import { App } from "realm";
 import { expect } from "chai";
 
 import { deleteApp, importApp } from "./import-app";
-import { appConfigs } from "../app-configs";
+import { buildAppConfig } from "./build-app-config";
 
 describe.skipIf(environment.missingServer, "importApp utility", function () {
   this.slow(2000);
 
   it("can import and delete an app", async () => {
-    const { appId, baseUrl } = await importApp(appConfigs.simple().config);
+    const { appId, baseUrl } = await importApp(buildAppConfig("simple").config);
     try {
       const app = new App({ id: appId, baseUrl });
       expect(app).instanceOf(App);

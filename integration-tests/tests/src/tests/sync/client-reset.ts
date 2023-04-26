@@ -23,6 +23,7 @@ import { DogSchema, PersonSchema } from "../../schemas/person-and-dog-with-objec
 import { expectClientResetError } from "../../utils/expect-sync-error";
 import { createPromiseHandle } from "../../utils/promise-handle";
 import { appConfigs } from "../../app-configs";
+import { buildAppConfig } from "../../utils/build-app-config";
 
 const FlexiblePersonSchema = { ...PersonSchema, properties: { ...PersonSchema.properties, nonQueryable: "string?" } };
 const FlexibleDogSchema = { ...DogSchema, properties: { ...DogSchema.properties, nonQueryable: "string?" } };
@@ -280,7 +281,11 @@ function getSchema(useFlexibleSync: boolean) {
     `client reset handling (${getPartialTestTitle(useFlexibleSync)} sync)`,
     function () {
       this.longTimeout(); // client reset with flexible sync can take quite some time
-      importAppBefore(useFlexibleSync ? appConfigs.flexible() : appConfigs.partitionBased());
+      importAppBefore(
+        useFlexibleSync
+          ? buildAppConfig("with-flx").anonAuth().flexibleSync()
+          : buildAppConfig("with-pbs").anonAuth().partitionBasedSync(),
+      );
       authenticateUserBefore();
 
       it(`manual client reset requires either error handler, client reset callback or both (${getPartialTestTitle(

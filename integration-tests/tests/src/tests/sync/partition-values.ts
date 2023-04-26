@@ -20,7 +20,7 @@ import Realm, { BSON } from "realm";
 import { authenticateUserBefore } from "../../hooks/authenticate-user-before";
 import { importAppBefore } from "../../hooks/import-app-before";
 import { generatePartition } from "../../utils/generators";
-import { appConfigs } from "../../app-configs";
+import { buildAppConfig } from "../../utils/build-app-config";
 
 const PvIntDog = {
   name: "Dog",
@@ -78,7 +78,7 @@ const createConfig = (schema: Realm.ObjectSchema, user: Realm.User, partitionVal
 
 describe("Partition-values", () => {
   describe("setting partition value on config", () => {
-    importAppBefore(appConfigs.partitionBased("pv-int-tests", { key: "realm_id", type: "long" }));
+    importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
     afterEach(() => Realm.clearTestState());
 
     it("can set accepted value types", async function (this: AppContext) {
@@ -125,7 +125,7 @@ describe("Partition-values", () => {
   });
 
   describe("integer", () => {
-    importAppBefore(appConfigs.partitionBased("pv-int-tests", { key: "realm_id", type: "long" }));
+    importAppBefore(buildAppConfig("pv-int-tests").partitionBasedSync({ key: "realm_id", type: "long" }));
     authenticateUserBefore();
 
     it("works", async function (this: Mocha.Context & AppContext & UserContext) {
@@ -165,7 +165,7 @@ describe("Partition-values", () => {
   });
 
   describe("string", () => {
-    importAppBefore(appConfigs.partitionBased("pv-string-tests", { key: "realm_id", type: "string" }));
+    importAppBefore(buildAppConfig("pv-string-tests").partitionBasedSync({ key: "realm_id", type: "string" }));
     authenticateUserBefore();
 
     it("works", async function (this: Mocha.Context & AppContext & UserContext) {
@@ -205,7 +205,7 @@ describe("Partition-values", () => {
   });
 
   describe("UUID", () => {
-    importAppBefore(appConfigs.partitionBased("pv-uuid-tests", { key: "realm_id", type: "uuid" }));
+    importAppBefore(buildAppConfig("pv-uuid-tests").partitionBasedSync({ key: "realm_id", type: "uuid" }));
     authenticateUserBefore();
 
     it("works", async function (this: Mocha.Context & AppContext & UserContext) {
@@ -253,7 +253,7 @@ describe("Partition-values", () => {
   });
 
   describe("objectId", () => {
-    importAppBefore(appConfigs.partitionBased("pv-objectid-tests", { key: "realm_id", type: "objectId" }));
+    importAppBefore(buildAppConfig("pv-objectid-tests").partitionBasedSync({ key: "realm_id", type: "objectId" }));
     authenticateUserBefore();
 
     it("works", async function (this: Mocha.Context & AppContext & UserContext) {

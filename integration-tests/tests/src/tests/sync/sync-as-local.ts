@@ -21,11 +21,11 @@ import { Realm } from "realm";
 
 import { PersonSchema, IPerson } from "../../schemas/person-and-dog-with-object-ids";
 import { authenticateUserBefore, importAppBefore, openRealmBefore } from "../../hooks";
-import { appConfigs } from "../../app-configs";
+import { buildAppConfig } from "../../utils/build-app-config";
 
 describe.skipIf(environment.missingServer, "Synced Realm as local", function () {
   this.timeout(60_000); // TODO: Temporarily hardcoded until envs are set up.
-  importAppBefore(appConfigs.flexible());
+  importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
   authenticateUserBefore();
   openRealmBefore({
     schema: [PersonSchema],

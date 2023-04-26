@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2020 Realm Inc.
+// Copyright 2023 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,18 +15,9 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import { expect } from "chai";
-import { Credentials, User } from "realm";
 
-import { importAppBefore } from "../../hooks";
-import { buildAppConfig } from "../../utils/build-app-config";
+import { ExtendedAppConfigBuilder } from "./ExtendedAppConfigBuilder";
 
-describe.skipIf(environment.missingServer, "anonymous credentials", () => {
-  importAppBefore(buildAppConfig("with-anon").anonAuth());
-
-  it("authenticates", async function (this: AppContext) {
-    const credentials = Credentials.anonymous();
-    const user = await this.app.logIn(credentials);
-    expect(user).instanceOf(User);
-  });
-});
+export function buildAppConfig(name?: string) {
+  return new ExtendedAppConfigBuilder(name);
+}

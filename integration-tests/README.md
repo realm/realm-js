@@ -154,7 +154,7 @@ The hooks store their output on the Mocha context (available through `this` of t
 
 ```typescript
 describe("opening a synced Realm", () => {
-  importAppBefore("with-db");
+  importAppBefore(buildAppConfig("with-db").mongodbService());
   authenticateUserBefore();
   openRealmBefore({
     schema: [

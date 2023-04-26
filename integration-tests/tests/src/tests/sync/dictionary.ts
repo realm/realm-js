@@ -20,10 +20,10 @@ import Realm from "realm";
 import { authenticateUserBefore, importAppBefore, openRealmBefore } from "../../hooks";
 import { expectDecimalEqual } from "../../utils/comparisons";
 import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
-import { appConfigs } from "../../app-configs";
+import { buildAppConfig } from "../../utils/build-app-config";
 
 describe.skipIf(environment.missingServer, "Type roundtrip of Dictionary object", () => {
-  importAppBefore(appConfigs.partitionBased());
+  importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
   authenticateUserBefore();
 
   class DictionaryObject extends Realm.Object {

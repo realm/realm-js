@@ -21,6 +21,7 @@ import { generatePartition, randomVerifiableEmail } from "../../utils/generators
 import { importAppBefore } from "../../hooks";
 import { sleep } from "../../utils/sleep";
 import { appConfigs } from "../../app-configs";
+import { buildAppConfig } from "../../utils/build-app-config";
 
 const DogForSyncSchema = {
   name: "Dog",
@@ -48,7 +49,7 @@ async function getRegisteredEmailPassCredentials(app: Realm.App) {
 
 describe("OpenBehaviour", function () {
   this.longTimeout();
-  importAppBefore(appConfigs.partitionBased());
+  importAppBefore(buildAppConfig("with-pbs").anonAuth().emailPasswordAuth().partitionBasedSync());
   afterEach(() => Realm.clearTestState());
 
   it("static references are defined", () => {

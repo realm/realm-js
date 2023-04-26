@@ -20,7 +20,7 @@ import { Realm, BSON } from "realm";
 import { expect } from "chai";
 import { importAppBefore } from "../../hooks";
 import { getRegisteredEmailPassCredentials } from "../../utils/credentials";
-import { appConfigs } from "../../app-configs";
+import { buildAppConfig } from "../../utils/build-app-config";
 
 const DogForSyncSchema = {
   name: "Dog",
@@ -47,7 +47,7 @@ const PersonForSyncSchema = {
 };
 
 describe.skip("Realm conversions", async () => {
-  importAppBefore(appConfigs.partitionBased());
+  importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
   afterEach(() => Realm.clearTestState());
 
   describe("converting between Realms", () => {
