@@ -14,7 +14,7 @@
     "watch:catalyst": "wireit",
     "watch:android": "wireit",
     "common": "wireit",
-    "common:ci": "mocha-remote --template @realm/mocha-reporter -- concurrently --kill-others-on-fail npm:metro npm:runner npm:app-importer",
+    "common:ci": "mocha-remote --template @realm/mocha-reporter -- concurrently --kill-others-on-fail npm:metro npm:runner",
     "lint": "eslint .",
     "metro": "react-native start --reset-cache",
     "runner": "node harness/runner.js"
