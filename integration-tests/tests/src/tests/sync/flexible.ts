@@ -314,7 +314,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
             try {
               expect(realm.subscriptions).to.have.length(1);
-              expect(realm.subscriptions.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
+              expect(realm.subscriptions.state).to.equal(Realm.App.Sync.SubscriptionSetState.Complete);
             } finally {
               if (closeRealmAfter) {
                 closeRealm(realm);
@@ -340,7 +340,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             await realm.subscriptions.waitForSynchronization();
 
             expect(realm.subscriptions).to.have.length(1);
-            expect(realm.subscriptions.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
+            expect(realm.subscriptions.state).to.equal(Realm.App.Sync.SubscriptionSetState.Complete);
 
             closeRealm(realm);
           });
@@ -602,11 +602,11 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
           it("waits for subscriptions to be in a complete state", async function (this: RealmContext) {
             const { subs } = addSubscriptionForPerson(this.realm);
-            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Pending);
+            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionSetState.Pending);
 
             await subs.waitForSynchronization();
 
-            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
+            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionSetState.Complete);
           });
 
           it("resolves if subscriptions are already in a complete state", async function (this: RealmContext) {
@@ -614,7 +614,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             await subs.waitForSynchronization();
             await subs.waitForSynchronization();
 
-            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
+            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionSetState.Complete);
           });
 
           // Should only pass if `"development_mode_enabled": true`
@@ -623,30 +623,30 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
               this.realm,
               this.realm.objects(FlexiblePersonSchema.name).filtered("nonQueryable == 'test'"),
             );
-            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Pending);
+            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionSetState.Pending);
 
             await subs.waitForSynchronization();
 
-            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
+            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionSetState.Complete);
           });
 
-          // TODO: Enable test when we can find another way of triggering a `SubscriptionsState.Error`.
+          // TODO: Enable test when we can find another way of triggering a `SubscriptionSetState.Error`.
           //       (This is due to non queryable fields now being queryable since BaaS automatically adds them when in Dev Mode)
           it.skip("is rejected if there is an error synchronising subscriptions", async function (this: RealmContext) {
             const { subs } = addSubscription(
               this.realm,
               this.realm.objects(FlexiblePersonSchema.name).filtered("nonQueryable == 'test'"),
             );
-            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Pending);
+            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionSetState.Pending);
 
             await expect(subs.waitForSynchronization()).to.be.rejectedWith(
               'Client provided query with bad syntax: unsupported query for table "Person": key "nonQueryable" is not a queryable field',
             );
 
-            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
+            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionSetState.Error);
           });
 
-          // TODO: Enable test when we can find another way of triggering a `SubscriptionsState.Error`.
+          // TODO: Enable test when we can find another way of triggering a `SubscriptionSetState.Error`.
           //       (This is due to non queryable fields now being queryable since BaaS automatically adds them when in Dev Mode)
           it.skip("is rejected if subscriptions are already in an error state", async function (this: RealmContext) {
             const { subs } = addSubscription(
@@ -662,7 +662,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
               'Client provided query with bad syntax: unsupported query for table "Person": key "nonQueryable" is not a queryable field',
             );
 
-            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
+            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionSetState.Error);
           });
 
           it("cannot be called on a MutableSubscriptionSet instance", async function (this: RealmContext) {
@@ -864,16 +864,16 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           // Since the tests now await realm.open and realm.sync.waitForSynchronization, this will no longer be pending
           it.skip("is Pending by default", function (this: RealmContext) {
             const subs = this.realm.subscriptions;
-            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Pending);
+            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionSetState.Pending);
           });
 
           it("is Complete once synchronisation is complete", async function (this: RealmContext) {
             const { subs } = await addSubscriptionForPersonAndSync(this.realm);
 
-            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
+            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionSetState.Complete);
           });
 
-          // TODO: Enable test when we can find another way of triggering a `SubscriptionsState.Error`.
+          // TODO: Enable test when we can find another way of triggering a `SubscriptionSetState.Error`.
           //       (This is due to non queryable fields now being queryable since BaaS automatically adds them when in Dev Mode)
           it.skip("is Error if there is an error during synchronisation", async function (this: RealmContext) {
             await expect(
@@ -885,10 +885,10 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
               'Client provided query with bad syntax: unsupported query for table "Person": key "nonQueryable" is not a queryable field',
             );
 
-            expect(this.realm.subscriptions.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
+            expect(this.realm.subscriptions.state).to.equal(Realm.App.Sync.SubscriptionSetState.Error);
           });
 
-          // TODO: Enable test when we can find another way of triggering a `SubscriptionsState.Error`.
+          // TODO: Enable test when we can find another way of triggering a `SubscriptionSetState.Error`.
           //       (This is due to non queryable fields now being queryable since BaaS automatically adds them when in Dev Mode)
           it.skip("is Error if there are two errors in a row", async function (this: RealmContext) {
             await expect(
@@ -900,7 +900,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
               'Client provided query with bad syntax: unsupported query for table "Person": key "nonQueryable" is not a queryable field',
             );
 
-            expect(this.realm.subscriptions.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
+            expect(this.realm.subscriptions.state).to.equal(Realm.App.Sync.SubscriptionSetState.Error);
 
             await expect(
               addSubscriptionAndSync(
@@ -911,7 +911,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
               'Client provided query with bad syntax: unsupported query for table "Person": key "nonQueryable" is not a queryable field',
             );
 
-            expect(this.realm.subscriptions.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
+            expect(this.realm.subscriptions.state).to.equal(Realm.App.Sync.SubscriptionSetState.Error);
           });
 
           it("is Superseded if another update is synchronised after this one", async function (this: RealmContext) {
@@ -921,7 +921,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             await addSubscriptionForPersonAndSync(this.realm);
             await subs.waitForSynchronization();
 
-            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Superseded);
+            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionSetState.Superseded);
           });
 
           // TODO verify correct behaviour - right now this doesn't work
@@ -949,7 +949,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             expect(this.realm.subscriptions.error).to.be.null;
           });
 
-          // TODO: Enable test when we can find another way of triggering a `SubscriptionsState.Error`.
+          // TODO: Enable test when we can find another way of triggering a `SubscriptionSetState.Error`.
           //       (This is due to non queryable fields now being queryable since BaaS automatically adds them when in Dev Mode)
           it.skip("contains the error message if there was an error synchronising subscriptions", async function (this: RealmContext) {
             await expect(
@@ -964,7 +964,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             );
           });
 
-          // TODO: Enable test when we can find another way of triggering a `SubscriptionsState.Error`.
+          // TODO: Enable test when we can find another way of triggering a `SubscriptionSetState.Error`.
           //       (This is due to non queryable fields now being queryable since BaaS automatically adds them when in Dev Mode)
           it.skip("is null if there was an error but it was subsequently corrected", async function (this: RealmContext) {
             await expect(
@@ -988,7 +988,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             expect(this.realm.subscriptions.error).to.be.null;
           });
 
-          // TODO: Enable test when we can find another way of triggering a `SubscriptionsState.Error`.
+          // TODO: Enable test when we can find another way of triggering a `SubscriptionSetState.Error`.
           //       (This is due to non queryable fields now being queryable since BaaS automatically adds them when in Dev Mode)
           it.skip("still contains the erroring subscription in the set if there was an error synchronising", async function (this: RealmContext) {
             await expect(
@@ -1110,10 +1110,10 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
                 mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name));
               });
 
-              expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
+              expect(subs.state).to.equal(Realm.App.Sync.SubscriptionSetState.Complete);
             });
 
-            // TODO: Enable test when we can find another way of triggering a `SubscriptionsState.Error`.
+            // TODO: Enable test when we can find another way of triggering a `SubscriptionSetState.Error`.
             //       (This is due to non queryable fields now being queryable since BaaS automatically adds them when in Dev Mode)
             it.skip("returns a promise which is rejected if there is an error synchronising", async function (this: RealmContext) {
               const subs = this.realm.subscriptions;
@@ -1126,7 +1126,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
                 'Client provided query with bad syntax: unsupported query for table "Person": key "nonQueryable" is not a queryable field',
               );
 
-              expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
+              expect(subs.state).to.equal(Realm.App.Sync.SubscriptionSetState.Error);
             });
           });
 
@@ -1136,7 +1136,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
               mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name));
             });
 
-            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Pending);
+            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionSetState.Pending);
             await result;
           });
 
@@ -1190,7 +1190,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             expect(subsCopy[2].objectType).to.equal(DogSchema.name);
           });
 
-          // TODO: Enable test when we can find another way of triggering a `SubscriptionsState.Error`.
+          // TODO: Enable test when we can find another way of triggering a `SubscriptionSetState.Error`.
           //       (This is due to non queryable fields now being queryable since BaaS automatically adds them when in Dev Mode)
           it.skip("still applies all updates in a batch if one errors", async function (this: RealmContext) {
             const { subs } = await addSubscriptionForPersonAndSync(this.realm);
@@ -1203,7 +1203,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
               }),
             ).to.be.rejected;
 
-            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionsState.Error);
+            expect(subs.state).to.equal(Realm.App.Sync.SubscriptionSetState.Error);
             expect(subs).to.have.length(4);
           });
 
@@ -1565,7 +1565,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
             expect(this.realm.subscriptions).to.have.length(1);
             await this.realm.subscriptions.waitForSynchronization();
-            expect(this.realm.subscriptions.state).to.equal(Realm.App.Sync.SubscriptionsState.Complete);
+            expect(this.realm.subscriptions.state).to.equal(Realm.App.Sync.SubscriptionSetState.Complete);
           });
         });
       });

@@ -31,5 +31,5 @@ declare const options2: Realm.App.Sync.SubscriptionOptions;
 Realm.deleteFile({});
 
 // Mixing enums is supported
-declare const state1: Realm.App.Sync.SubscriptionsState;
-const state2: Realm2.App.Sync.SubscriptionsState = state1;
+declare const state1: Realm.App.Sync.SubscriptionSetState;
+const state2: Realm2.App.Sync.SubscriptionSetState = state1;
