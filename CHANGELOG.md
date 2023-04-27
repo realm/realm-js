@@ -15,6 +15,21 @@
 * Improve performance of equality queries on a non-indexed mixed property by about 30%. ([realm/realm-core#6506](https://github.com/realm/realm-core/pull/6506))
 * Improve performance of rolling back write transactions after making changes.  ([realm/realm-core#6513](https://github.com/realm/realm-core/pull/6513))
 * Extended `PropertySchema.indexed` with the `full-text` option, that allows to create an index for full-text search queries.  ([#5755](https://github.com/realm/realm-js/issues/5755))
+* Added APIs to facilitate adding and removing subscriptions ([#5772](https://github.com/realm/realm-js/pull/5772)):
+  * Enabled subscribing and unsubscribing directly to and from a `Results` instance via `Results.subscribe()` (asynchronous) and `Results.unsubscribe()` (synchronous).
+  * Added a `WaitForSync` enum specifying whether to wait or not wait for subscribed objects to be downloaded before returning from `Results.subscribe()`.
+  * Extended `SubscriptionOptions` to take a `WaitForSync` behavior and a maximum waiting timeout before returning from `Results.subscribe()`.
+  * Added an optional `unnamedOnly` parameter to `MutableSubscriptionSet.removeAll()` allowing the removal of only unnamed subscriptions.
+  ```javascript
+  const peopleOver20 = await realm
+    .objects("Person")
+    .filtered("age > 20")
+    .subscribe({
+      name: "peopleOver20",
+      behavior: WaitForSync.FirstTime, // Default
+      timeout: 2000,
+    });
+  ```
 
 ### Fixed
 * Fix a stack overflow crash when using the query parser with long chains of AND/OR conditions. ([realm/realm-core#6428](https://github.com/realm/realm-core/pull/6428), since v10.11.0)
