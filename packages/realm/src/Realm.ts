@@ -139,7 +139,7 @@ import {
   Subscription,
   SubscriptionOptions,
   SubscriptionSet,
-  SubscriptionsState,
+  SubscriptionSetState,
   SyncConfiguration,
   SyncError,
   SyncSession,
@@ -1332,7 +1332,7 @@ type MutableSubscriptionSetType = MutableSubscriptionSet;
 type PartitionValueType = PartitionValue;
 type SubscriptionOptionsType = SubscriptionOptions;
 type SubscriptionSetType = SubscriptionSet;
-type SubscriptionsStateType = SubscriptionsState;
+type SubscriptionSetStateType = SubscriptionSetState;
 type SubscriptionType = Subscription;
 
 type ObjectIdType = BSON.ObjectId;
@@ -1575,7 +1575,9 @@ export declare namespace Realm {
       /** @deprecated Please use named imports */
       export type SubscriptionSet = SubscriptionSetType;
       /** @deprecated Please use named imports */
-      export type SubscriptionsState = SubscriptionsStateType;
+      export type SubscriptionSetState = SubscriptionSetStateType;
+      /** @deprecated Please use {@link SubscriptionSetState} as a named import */
+      export type SubscriptionsState = SubscriptionSetStateType;
       /** @deprecated Please use named imports */
       export type Subscription = SubscriptionType;
       /** @deprecated Please use named imports */
@@ -1922,7 +1924,9 @@ declare global {
         /** @deprecated Please use named imports */
         export type SubscriptionSet = SubscriptionSetType;
         /** @deprecated Please use named imports */
-        export type SubscriptionsState = SubscriptionsStateType;
+        export type SubscriptionSetState = SubscriptionSetStateType;
+        /** @deprecated Please use {@link SubscriptionSetState} as a named import */
+        export type SubscriptionsState = SubscriptionSetStateType;
         /** @deprecated Please use named imports */
         export type Subscription = SubscriptionType;
         /** @deprecated Please use named imports */

@@ -30,7 +30,7 @@ import {
 /**
  * Enum representing the state of a {@link SubscriptionSet}.
  */
-export enum SubscriptionsState {
+export enum SubscriptionSetState {
   /**
    * The subscription update has been persisted locally, but the server hasn't
    * yet returned all the data that matched the updated subscription queries.
@@ -61,6 +61,16 @@ export enum SubscriptionsState {
    * and instead obtain a new instance from {@link Realm.subscriptions}.
    */
   Superseded = "superseded",
+}
+
+/**
+ * @deprecated Will be removed in v13.0.0. Please use {@link SubscriptionSetState}.
+ */
+export enum SubscriptionsState {
+  Pending = SubscriptionSetState.Pending,
+  Complete = SubscriptionSetState.Complete,
+  Error = SubscriptionSetState.Error,
+  Superseded = SubscriptionSetState.Superseded,
 }
 
 const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true, writable: false };
@@ -127,31 +137,31 @@ export abstract class BaseSubscriptionSet {
   /**
    * The state of the SubscriptionSet.
    */
-  get state(): SubscriptionsState {
+  get state(): SubscriptionSetState {
     const state = this.internal.state;
     switch (state) {
       case binding.SyncSubscriptionSetState.Uncommitted:
       case binding.SyncSubscriptionSetState.Pending:
       case binding.SyncSubscriptionSetState.Bootstrapping:
       case binding.SyncSubscriptionSetState.AwaitingMark:
-        return SubscriptionsState.Pending;
+        return SubscriptionSetState.Pending;
       case binding.SyncSubscriptionSetState.Complete:
-        return SubscriptionsState.Complete;
+        return SubscriptionSetState.Complete;
       case binding.SyncSubscriptionSetState.Error:
-        return SubscriptionsState.Error;
+        return SubscriptionSetState.Error;
       case binding.SyncSubscriptionSetState.Superseded:
-        return SubscriptionsState.Superseded;
+        return SubscriptionSetState.Superseded;
       default:
-        throw new Error(`Unsupported SubscriptionsState value: ${state}`);
+        throw new Error(`Unsupported SubscriptionSetState value: ${state}`);
     }
   }
 
   /**
-   * If `state` is {@link SubscriptionsState.Error}, this will be a `string` representing
+   * If `state` is {@link SubscriptionSetState.Error}, this will be a `string` representing
    * why the SubscriptionSet is in an error state. It will be `null` if there is no error.
    */
   get error(): string | null {
-    return this.state === SubscriptionsState.Error ? this.internal.errorStr : null;
+    return this.state === SubscriptionSetState.Error ? this.internal.errorStr : null;
   }
 
   /**

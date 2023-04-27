@@ -146,6 +146,7 @@ export {
   Subscription,
   SubscriptionOptions,
   SubscriptionSet,
+  SubscriptionSetState,
   SubscriptionsState,
   Sync,
   SyncConfiguration,

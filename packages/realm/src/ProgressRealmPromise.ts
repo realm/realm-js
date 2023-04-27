@@ -23,7 +23,7 @@ import {
   ProgressNotificationCallback,
   PromiseHandle,
   Realm,
-  SubscriptionsState,
+  SubscriptionSetState,
   TimeoutError,
   TimeoutPromise,
   assert,
@@ -115,7 +115,7 @@ export class ProgressRealmPromise implements Promise<Realm> {
             });
             if (config.sync?.flexible && !config.openSyncedRealmLocally) {
               const { subscriptions } = realm;
-              if (subscriptions.state === SubscriptionsState.Pending) {
+              if (subscriptions.state === SubscriptionSetState.Pending) {
                 await subscriptions.waitForSynchronization();
               }
             }

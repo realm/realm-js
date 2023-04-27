@@ -21,7 +21,7 @@ import {
   FlexibleSyncConfiguration,
   MutableSubscriptionSet,
   Realm,
-  SubscriptionsState,
+  SubscriptionSetState,
   assert,
   binding,
 } from "../internal";
@@ -53,9 +53,9 @@ export class SubscriptionSet extends BaseSubscriptionSet {
    * Wait for the server to acknowledge this set of subscriptions and return the
    * matching objects.
    *
-   * If `state` is {@link SubscriptionsState.Complete}, the promise will be resolved immediately.
+   * If `state` is {@link SubscriptionSetState.Complete}, the promise will be resolved immediately.
    *
-   * If `state` is {@link SubscriptionsState.Error}, the promise will be rejected immediately.
+   * If `state` is {@link SubscriptionSetState.Error}, the promise will be rejected immediately.
    *
    * @returns A promise which is resolved when synchronization is complete, or is
    *  rejected if there is an error during synchronization.
