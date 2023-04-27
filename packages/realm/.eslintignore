@@ -1,2 +1,3 @@
 dist/
 generated/types/
+bindgen/vendor/realm-core/
