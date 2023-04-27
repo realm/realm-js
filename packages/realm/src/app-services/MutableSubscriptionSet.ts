@@ -39,7 +39,7 @@ export enum WaitForSync {
 /**
  * Options for {@link MutableSubscriptionSet.add}.
  */
-export interface SubscriptionOptions {
+export type SubscriptionOptions = {
   /**
    * Sets the name of the subscription being added. This allows you to later refer
    * to the subscription by name, e.g. when calling {@link MutableSubscriptionSet.removeByName}.
@@ -63,7 +63,7 @@ export interface SubscriptionOptions {
    * continues in the background.
    */
   timeout?: number;
-}
+};
 
 /**
  * The mutable version of a given SubscriptionSet. The {@link MutableSubscriptionSet}
@@ -168,17 +168,38 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
    * @returns The number of subscriptions removed.
    */
   removeByObjectType(objectType: string): number {
+    assert.string(objectType, "objectType");
+
+    return this.removeByPredicate((subscription) => subscription.objectClassName === objectType);
+  }
+
+  /**
+   * Remove all subscriptions from the SubscriptionSet.
+   *
+   * @param unnamedOnly Whether to only remove unnamed/anonymous subscriptions. (Default: `false`)
+   * @returns The number of subscriptions removed.
+   */
+  removeAll(unnamedOnly = false): number {
+    if (unnamedOnly) {
+      return this.removeByPredicate((subscription) => !subscription.name);
+    }
+    const numRemoved = this.internal.size;
+    this.internal.clear();
+
+    return numRemoved;
+  }
+
+  /** @internal */
+  private removeByPredicate(predicate: (subscription: binding.SyncSubscription) => boolean): number {
     // TODO: This is currently O(n^2) because each erase call is O(n). Once Core has
     //       fixed https://github.com/realm/realm-core/issues/6241, we can update this.
-
-    assert.string(objectType, "objectType");
 
     // Removing the subscription (calling `eraseSubscription()`) invalidates all current
     // iterators, so it would be illegal to continue iterating. Instead, we push it to an
     // array to remove later.
     const subscriptionsToRemove: binding.SyncSubscription[] = [];
     for (const subscription of this.internal) {
-      if (subscription.objectClassName === objectType) {
+      if (predicate(subscription)) {
         subscriptionsToRemove.push(subscription);
       }
     }
@@ -192,18 +213,6 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
 
     return numRemoved;
   }
-
-  /**
-   * Remove all subscriptions from the SubscriptionSet.
-   *
-   * @returns The number of subscriptions removed.
-   */
-  removeAll(): number {
-    const numSubscriptions = this.internal.size;
-    this.internal.clear();
-
-    return numSubscriptions;
-  }
 }
 
 function validateSubscriptionOptions(input: unknown): asserts input is SubscriptionOptions {
@@ -213,17 +222,5 @@ function validateSubscriptionOptions(input: unknown): asserts input is Subscript
   }
   if (input.throwOnUpdate !== undefined) {
     assert.boolean(input.throwOnUpdate, "'throwOnUpdate' on 'SubscriptionOptions'");
-  }
-  // TODO: May not be needed
-  if (input.behavior !== undefined) {
-    assert(
-      input.behavior === WaitForSync.FirstTime ||
-        input.behavior === WaitForSync.Always ||
-        input.behavior === WaitForSync.Never,
-      `'behavior' on 'SubscriptionOptions' must be either '${WaitForSync.FirstTime}', '${WaitForSync.Always}, or '${WaitForSync.Never}'.`,
-    );
-  }
-  if (input.timeout !== undefined) {
-    assert.number(input.timeout, "'timeout' on 'SubscriptionOptions'");
   }
 }
