@@ -1532,6 +1532,26 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
             expect(this.realm.subscriptions.isEmpty).to.be.true;
           });
+
+          it("removes all unnamed subscriptions and returns the number of subscriptions removed", async function (this: RealmContext) {
+            // Add 1 named and 2 unnamed subscriptions.
+            addSubscriptionForPerson(this.realm, { name: "name1" });
+            addSubscription(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("age < 5"));
+            await addSubscriptionAndSync(
+              this.realm,
+              this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"),
+            );
+            expect(this.realm.subscriptions).to.have.length(3);
+
+            let numRemoved = 0;
+            await this.realm.subscriptions.update((mutableSubs) => {
+              const unnamedOnly = true;
+              numRemoved = mutableSubs.removeAll(unnamedOnly);
+            });
+
+            expect(numRemoved).to.equal(2);
+            expect(this.realm.subscriptions).to.have.length(1);
+          });
         });
 
         describe("#removeByObjectType", function () {
