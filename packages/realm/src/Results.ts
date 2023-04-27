@@ -125,10 +125,7 @@ export class Results<T = unknown> extends OrderedCollection<T> {
       if (typeof options.timeout === "number") {
         await new TimeoutPromise(
           subs.update((mutableSubs) => mutableSubs.add(this, options)),
-          {
-            ms: options.timeout,
-            rejectOnTimeout: false,
-          },
+          { ms: options.timeout, rejectOnTimeout: false },
         );
       } else {
         await subs.update((mutableSubs) => mutableSubs.add(this, options));
