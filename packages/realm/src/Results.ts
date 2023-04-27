@@ -43,8 +43,6 @@ export class Results<T = unknown> extends OrderedCollection<T> {
    * @internal
    */
   public declare internal: binding.Results;
-  /** @internal */
-  private isSubscribedTo = false; // TODO: Replace with call to Core
 
   /**
    * Create a `Results` wrapping a set of query `Results` from the binding.
@@ -69,11 +67,6 @@ export class Results<T = unknown> extends OrderedCollection<T> {
       configurable: false,
       writable: false,
       value: realm,
-    });
-    Object.defineProperty(this, "isSubscribedTo", {
-      enumerable: false,
-      configurable: false,
-      writable: true,
     });
   }
 
@@ -124,8 +117,10 @@ export class Results<T = unknown> extends OrderedCollection<T> {
    */
   async subscribe(options: SubscriptionOptions = { behavior: WaitForSync.FirstTime }): Promise<this> {
     const subs = this.realm.subscriptions;
+    // @ts-expect-error TODO: Fix type error from passing 'this'.
+    const isSubscribedTo = !!subs.findByQuery(this);
     const shouldWait =
-      (options.behavior === WaitForSync.FirstTime && !this.isSubscribedTo) || options.behavior === WaitForSync.Always;
+      (options.behavior === WaitForSync.FirstTime && !isSubscribedTo) || options.behavior === WaitForSync.Always;
     if (shouldWait) {
       if (typeof options.timeout === "number") {
         await new TimeoutPromise(
@@ -141,7 +136,6 @@ export class Results<T = unknown> extends OrderedCollection<T> {
     } else {
       subs.updateNoWait((mutableSubs) => mutableSubs.add(this, options));
     }
-    this.isSubscribedTo = true; // TODO: Remove when calling into Core instead.
 
     return this;
   }
