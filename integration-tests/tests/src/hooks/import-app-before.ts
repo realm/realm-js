@@ -42,13 +42,16 @@ export function importAppBefore(
       this.app = new Realm.App({ id: appId, baseUrl });
 
       // Extract the sync database name from the config
-      const databaseNames = config.services.map(([service]) => {
-        if ("sync" in service.config) {
-          return service.config.sync.database_name;
-        } else if ("flexible_sync" in service.config) {
-          return service.config.flexible_sync.database_name;
-        }
-      });
+      const databaseNames: string[] = config.services
+        .filter(([service]) => service.type === "mongodb" || service.type === "mongodb-atlas")
+        .map(([service]) => {
+          if ("sync" in service.config) {
+            return service.config.sync.database_name;
+          } else if ("flexible_sync" in service.config) {
+            return service.config.flexible_sync.database_name;
+          }
+        })
+        .filter((name) => typeof name === "string");
       if (databaseNames.length === 1) {
         this.databaseName = databaseNames[0];
       } else if (databaseNames.length > 1) {
