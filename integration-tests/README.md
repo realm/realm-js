@@ -79,6 +79,7 @@ Examples of context variables used:
 - `integration=false`: Skip the integration test (which performance tests are not considered a part of).
 - `preserveAppAfterRun`: Skip deleting the Realm app after the test run
 - `syncLogLevel=all`: Set the sync client log level to help debugging sync client issues.
+- `reuseApp=true`: Instructs the app importer to reuse and reconfigure a single app. Defaults to `true`.
 - `realmBaseUrl=https://localhost:9090`: Set the base URL used when connecting the the server.
 - `mongodbClusterName=Cluster0`: Set the name of the cluster, used when setting up the "mongodb-atlas" service on imported apps.
 - The "react-native" environment looks for additional context variables (use the `./environment/react-native` NPM scripts to control this):
