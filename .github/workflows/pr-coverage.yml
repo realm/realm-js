@@ -9,9 +9,10 @@ env:
   REALM_DISABLE_ANALYTICS: 1
   MOCHA_TIMEOUT: 60000 # 1 minute
   LONG_TIMEOUT: 300000 # 5 minutes
-  REALM_BASE_URL: ${{ secrets.REALM_QA_BASE_URL }}
-  REALM_PUBLIC_KEY: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
-  REALM_PRIVATE_KEY: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
+  SERVER_TAG: latest
+  # REALM_BASE_URL: ${{ secrets.REALM_QA_BASE_URL }}
+  # REALM_PUBLIC_KEY: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+  # REALM_PRIVATE_KEY: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
 
 jobs:
   run:
@@ -41,6 +42,12 @@ jobs:
           key: coverage
           max-size: '2.0G'
 
+      - name: Start server
+        run: docker run --detach --env AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY --publish 9090:9090 ghcr.io/realm/ci/mongodb-realm-test-server:${{ env.SERVER_TAG }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.BAAS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.BAAS_AWS_SECRET_ACCESS_KEY }}
+
       - name: Install dependencies
         # Ignoring scripts to prevent a prebuilt from getting fetched / built
         run: npm ci --ignore-scripts
@@ -48,7 +55,8 @@ jobs:
       - name: Run tests with coverage
         timeout-minutes: 60
         env:
-          CONTEXT: syncLogLevel=warn,longTimeout=${{ env.LONG_TIMEOUT }},realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ secrets.ATLAS_QA_DAILY_CLUSTER_NAME }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+          CONTEXT: syncLogLevel=warn,longTimeout=${{ env.LONG_TIMEOUT }}
+          # CONTEXT: syncLogLevel=warn,longTimeout=${{ env.LONG_TIMEOUT }},realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ secrets.ATLAS_QA_DAILY_CLUSTER_NAME }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
         run: npm run ci:coverage --workspace @realm/integration-tests -- --reporter mocha-github-actions-reporter --timeout ${{ env.MOCHA_TIMEOUT }}
 
       - name: Coveralls
