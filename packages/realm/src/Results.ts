@@ -108,19 +108,16 @@ export class Results<T = unknown> extends OrderedCollection<T> {
   }
 
   /**
-   * Add the query (represented by this {@link Results} instance) to the set of active subscriptions.
-   * The query will be joined via an `OR` operator with any existing queries for the same type.
+   * Add this query result to the set of active subscriptions. The query will be joined
+   * via an `OR` operator with any existing queries for the same type.
    *
-   * @param options An optional {@link SubscriptionOptions} object containing options to
-   *  use when adding this subscription (e.g. to give the subscription a name).
+   * @param options Options to use when adding this subscription (e.g. a name or wait behavior).
    * @returns A promise that resolves to this {@link Results} instance.
    */
   async subscribe(options: SubscriptionOptions = { behavior: WaitForSync.FirstTime }): Promise<this> {
     const subs = this.realm.subscriptions;
-    // @ts-expect-error TODO: Fix type error from passing 'this'.
-    const isSubscribedTo = !!subs.findByQuery(this);
     const shouldWait =
-      (options.behavior === WaitForSync.FirstTime && !isSubscribedTo) || options.behavior === WaitForSync.Always;
+      (options.behavior === WaitForSync.FirstTime && !this.isSubscribedTo()) || options.behavior === WaitForSync.Always;
     if (shouldWait) {
       if (typeof options.timeout === "number") {
         await new TimeoutPromise(
@@ -137,6 +134,10 @@ export class Results<T = unknown> extends OrderedCollection<T> {
     return this;
   }
 
+  /**
+   * Unsubscribe from this query result.
+   * @returns `true` if this was previously subscribed to and now is not, otherwise `false`.
+   */
   unsubscribe(): boolean {
     let removed = false;
     this.realm.subscriptions.updateNoWait((mutableSubs) => {
@@ -152,5 +153,11 @@ export class Results<T = unknown> extends OrderedCollection<T> {
 
   isEmpty(): boolean {
     return this.internal.size() === 0;
+  }
+
+  /** @internal */
+  private isSubscribedTo() {
+    // @ts-expect-error TODO: Fix type error from passing 'this'.
+    return !!this.realm.subscriptions.findByQuery(this);
   }
 }

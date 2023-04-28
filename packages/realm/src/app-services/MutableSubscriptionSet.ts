@@ -18,6 +18,9 @@
 
 import { BaseSubscriptionSet, Realm, Results, Subscription, SubscriptionSet, assert, binding } from "../internal";
 
+/**
+ * Behavior when waiting for subscribed objects to be synchronized/downloaded.
+ */
 export enum WaitForSync {
   /**
    * Waits until the objects have been downloaded from the server
