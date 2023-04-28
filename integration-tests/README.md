@@ -81,9 +81,7 @@ Examples of context variables used:
 - `syncLogLevel=all`: Set the sync client log level to help debugging sync client issues.
 - `realmBaseUrl=https://localhost:9090`: Set the base URL used when connecting the the server.
 - `mongodbClusterName=Cluster0`: Set the name of the cluster, used when setting up the "mongodb-atlas" service on imported apps.
-- The "react-native" environment looks for additional context variables (use the `./environment/react-native` NPM scripts to control this):
-  - `mode=native`: Run the tests natively (default)
-  - `mode=chrome-debugging`: Run tests using the legacy chrome-debugger.
+- `mongodbServiceType`: Set the type of mongodb service, used when importing. Defaults to `mongodb` or `mongodb-atlas` if `mongodbClusterName` is set.
 
 As an example, to iterate on the performence tests, run the `./tests` (on Node.js) skipping tests that require a server as well as the integration tests and enable performance tests:
 
