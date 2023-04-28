@@ -59,6 +59,8 @@ type AdminApiClientConfig = {
  * Simplified client for the Atlas App Services Admin API.
  */
 export class AdminApiClient {
+  private static readonly baseRoute = "api/admin/v3.0";
+
   private accessToken: string | null;
   private _groupId: Promise<string> | null;
 
@@ -356,7 +358,7 @@ export class AdminApiClient {
   }
 
   private async fetch({ route, body, headers = {}, ...rest }: ClientFetchRequest) {
-    const url = [this.config.baseUrl, "api/admin/v3.0", ...route].join("/");
+    const url = [this.config.baseUrl, AdminApiClient.baseRoute, ...route].join("/");
     if (this.accessToken) {
       headers["Authorization"] = `Bearer ${this.accessToken}`;
     }
