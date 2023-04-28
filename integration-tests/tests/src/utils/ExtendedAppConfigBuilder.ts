@@ -20,7 +20,6 @@ import {
   PartitionConfig,
   CustomTokenAuthMetadataField,
   EmailPasswordAuthConfig,
-  SyncConfig,
 } from "@realm/app-importer";
 
 import { randomDatabaseName } from "./generators";
@@ -28,6 +27,8 @@ import { randomDatabaseName } from "./generators";
 // Setting the mongodbClusterName on the Mocha Remote context will default the service type of mongodb services to "mongodb-atlas"
 // This makes sense because there's no reason to provide the cluster name if we're not on Atlas.
 const { mongodbClusterName, mongodbServiceType = mongodbClusterName ? "mongodb-atlas" : "mongodb" } = environment;
+
+export { mongodbServiceType };
 
 type MongoServiceSyncConfig =
   | { kind: "disabled" }

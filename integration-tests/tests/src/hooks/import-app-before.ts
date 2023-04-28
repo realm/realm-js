@@ -20,6 +20,7 @@ import { Realm } from "realm";
 
 import { importApp } from "../utils/import-app";
 import { AppConfig } from "@realm/app-importer";
+import { mongodbServiceType } from "../utils/ExtendedAppConfigBuilder";
 
 const REALM_LOG_LEVELS = ["all", "trace", "debug", "detail", "info", "warn", "error", "fatal", "off"];
 
@@ -43,7 +44,7 @@ export function importAppBefore(
 
       // Extract the sync database name from the config
       const databaseNames: string[] = config.services
-        .filter(([service]) => service.type === "mongodb" || service.type === "mongodb-atlas")
+        .filter(([service]) => service.type === mongodbServiceType)
         .map(([service]) => {
           if ("sync" in service.config) {
             return service.config.sync.database_name;
