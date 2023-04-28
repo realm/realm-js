@@ -1,3 +1,4 @@
 dist/
-generated/types/
+docs/
 bindgen/vendor/realm-core/
+src/tests/realms/

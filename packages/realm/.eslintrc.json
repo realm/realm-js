@@ -1,11 +1,18 @@
 {
   "parser": "@typescript-eslint/parser",
   "extends": [
-    "plugin:@typescript-eslint/recommended"
+    "plugin:@typescript-eslint/recommended",
+    "plugin:jsdoc/recommended-typescript"
   ],
   "rules": {
     "@typescript-eslint/explicit-function-return-type": "off",
     "no-console": "error",
-    "sort-imports": ["warn", { "ignoreDeclarationSort": true }]
+    "sort-imports": ["warn", { "ignoreDeclarationSort": true }],
+    "jsdoc/check-tag-names": "off",
+    "jsdoc/require-jsdoc": "off",
+    "jsdoc/require-returns": "off",
+    "jsdoc/require-yields": "off",
+    "jsdoc/require-param": "off",
+    "jsdoc/no-undefined-types": "warn"
   }
 }
