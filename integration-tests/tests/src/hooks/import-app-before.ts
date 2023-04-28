@@ -68,23 +68,25 @@ export function importAppBefore(
     }
   });
 
-  after("logoutUsersAfter", async function (this: Partial<AppContext> & Mocha.Context) {
-    if (this.app) {
-      // Loop all the users and log them out
-      for (const user of Object.values(this.app.allUsers)) {
-        try {
-          await user.logOut();
-        } catch (err) {
-          // Users might miss a refresh token
-          if (err instanceof Error) {
-            if (!err.message.includes("failed to find refresh token")) {
+  after("removeUsersAfter", async function (this: Partial<AppContext> & Mocha.Context) {
+    const { app } = this;
+    if (app) {
+      await Promise.all(
+        Object.values(app.allUsers).map(async (user) => {
+          try {
+            await app.removeUser(user);
+          } catch (err) {
+            // Users might miss a refresh token
+            if (err instanceof Error) {
+              if (!err.message.includes("failed to find refresh token")) {
+                throw err;
+              }
+            } else {
               throw err;
             }
-          } else {
-            throw err;
           }
-        }
-      }
+        }),
+      );
     }
   });
 }
