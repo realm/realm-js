@@ -33,6 +33,7 @@ import {
   assertProfileResponse,
   assertSecretsResponse,
   assertServiceResponse,
+  assertSessionRefreshResponse,
   isErrorResponse,
 } from "./types";
 import { AppConfig } from "./AppConfigBuilder";
@@ -49,7 +50,13 @@ export type Credentials =
       password: string;
     };
 
-type ClientFetchRequest = Omit<FetchRequestInit, "headers"> & { route: string[]; headers?: Record<string, string> };
+export type AuthenticationMode = "access" | "refresh" | "none";
+
+type ClientFetchRequest = Omit<FetchRequestInit, "headers"> & {
+  route: string[];
+  headers?: Record<string, string>;
+  authentication?: AuthenticationMode;
+};
 
 type AdminApiClientConfig = {
   baseUrl: string;
@@ -62,6 +69,7 @@ export class AdminApiClient {
   private static readonly baseRoute = "api/admin/v3.0";
 
   private accessToken: string | null;
+  private refreshToken: string | null;
   private _groupId: Promise<string> | null;
 
   constructor(private config: AdminApiClientConfig) {}
@@ -76,6 +84,7 @@ export class AdminApiClient {
   public async logIn(credentials: Credentials) {
     if (credentials.kind === "api-key") {
       const response = await this.fetch({
+        authentication: "none",
         route: ["auth", "providers", "mongodb-cloud", "login"],
         method: "POST",
         body: {
@@ -85,8 +94,10 @@ export class AdminApiClient {
       });
       assertLoginResponse(response);
       this.accessToken = response.access_token;
+      this.refreshToken = response.refresh_token;
     } else if (credentials.kind === "username-password") {
       const response = await this.fetch({
+        authentication: "none",
         route: ["auth", "providers", "local-userpass", "login"],
         method: "POST",
         body: {
@@ -96,6 +107,7 @@ export class AdminApiClient {
       });
       assertLoginResponse(response);
       this.accessToken = response.access_token;
+      this.refreshToken = response.refresh_token;
     } else {
       throw new Error(`Unexpected credentials: ${credentials}`);
     }
@@ -108,7 +120,6 @@ export class AdminApiClient {
   }
 
   public async createApp(name: string): Promise<AppResponse> {
-    this.assertLoggedIn();
     const response = await this.fetch({
       route: ["groups", await this.groupId, "apps"],
       method: "POST",
@@ -124,7 +135,6 @@ export class AdminApiClient {
   }
 
   public async deleteApp(_id: string): Promise<void> {
-    this.assertLoggedIn();
     await this.fetch({
       route: ["groups", await this.groupId, "apps", _id],
       method: "DELETE",
@@ -132,7 +142,6 @@ export class AdminApiClient {
   }
 
   public async configureDeployments(appId: string, config: Record<string, unknown>) {
-    this.assertLoggedIn();
     await this.fetch({
       route: ["groups", await this.groupId, "apps", appId, "deploy", "config"],
       method: "PATCH",
@@ -141,7 +150,6 @@ export class AdminApiClient {
   }
 
   public async createDeploymentDraft(appId: string) {
-    this.assertLoggedIn();
     const response = await this.fetch({
       route: ["groups", await this.groupId, "apps", appId, "drafts"],
       method: "POST",
@@ -151,7 +159,6 @@ export class AdminApiClient {
   }
 
   public async deleteDeploymentDraft(appId: string, draftId: string) {
-    this.assertLoggedIn();
     await this.fetch({
       route: ["groups", await this.groupId, "apps", appId, "drafts", draftId],
       method: "DELETE",
@@ -159,7 +166,6 @@ export class AdminApiClient {
   }
 
   public async redeployDeployment(appId: string, deploymentId: string) {
-    this.assertLoggedIn();
     await this.fetch({
       route: ["groups", await this.groupId, "apps", appId, "deployments", deploymentId, "redeploy"],
       method: "POST",
@@ -167,7 +173,6 @@ export class AdminApiClient {
   }
 
   public async getDeployment(appId: string, deploymentId: string) {
-    this.assertLoggedIn();
     const response = await this.fetch({
       route: ["groups", await this.groupId, "apps", appId, "deployments", deploymentId],
       method: "GET",
@@ -177,7 +182,6 @@ export class AdminApiClient {
   }
 
   public async listDeploymentDrafts(appId: string) {
-    this.assertLoggedIn();
     const response = await this.fetch({
       route: ["groups", await this.groupId, "apps", appId, "drafts"],
       method: "GET",
@@ -187,7 +191,6 @@ export class AdminApiClient {
   }
 
   public async listDeployments(appId: string) {
-    this.assertLoggedIn();
     const response = await this.fetch({
       route: ["groups", await this.groupId, "apps", appId, "deployments"],
       method: "GET",
@@ -197,7 +200,6 @@ export class AdminApiClient {
   }
 
   public async createSecret(appId: string, name: string, value: string) {
-    this.assertLoggedIn();
     await this.fetch({
       route: ["groups", await this.groupId, "apps", appId, "secrets"],
       body: { name, value },
@@ -206,7 +208,6 @@ export class AdminApiClient {
   }
 
   public async deleteSecret(appId: string, secretId: string) {
-    this.assertLoggedIn();
     await this.fetch({
       route: ["groups", await this.groupId, "apps", appId, "secrets", secretId],
       method: "DELETE",
@@ -214,7 +215,6 @@ export class AdminApiClient {
   }
 
   public async listSecrets(appId: string) {
-    this.assertLoggedIn();
     const response = await this.fetch({
       route: ["groups", await this.groupId, "apps", appId, "secrets"],
       method: "GET",
@@ -242,7 +242,6 @@ export class AdminApiClient {
   }
 
   public async findApp(name: string) {
-    this.assertLoggedIn();
     const response = await this.fetch({
       route: ["groups", await this.groupId, "apps"],
       method: "GET",
@@ -255,7 +254,6 @@ export class AdminApiClient {
   }
 
   public async getAppByClientAppId(clientAppId: string): Promise<App> {
-    this.assertLoggedIn();
     const response = await this.fetch({
       route: ["groups", await this.groupId, "apps"],
       method: "GET",
@@ -269,7 +267,6 @@ export class AdminApiClient {
   }
 
   public async getProfile() {
-    this.assertLoggedIn();
     const response = await this.fetch({
       route: ["auth", "profile"],
       headers: { Authorization: `Bearer ${this.accessToken}` },
@@ -351,38 +348,63 @@ export class AdminApiClient {
     });
   }
 
-  private assertLoggedIn() {
-    if (!this.accessToken) {
-      throw new Error("Need a log in before calling this method");
+  private async refreshSession() {
+    if (!this.refreshToken) {
+      throw new Error("Need a refresh token before calling this method");
     }
+    const response = await this.fetch({
+      authentication: "refresh",
+      route: ["auth", "session"],
+      method: "POST",
+    });
+    assertSessionRefreshResponse(response);
+    this.accessToken = response.access_token;
   }
 
-  private async fetch({ route, body, headers = {}, ...rest }: ClientFetchRequest) {
-    const url = [this.config.baseUrl, AdminApiClient.baseRoute, ...route].join("/");
-    if (this.accessToken) {
-      headers["Authorization"] = `Bearer ${this.accessToken}`;
-    }
-    if (typeof body === "object") {
-      headers["content-type"] = "application/json";
-    }
-    const response = await DefaultNetworkTransport.fetch(url, {
-      ...rest,
-      body: JSON.stringify(body),
-      headers,
-      // Setting additional options to signal to the RN fetch polyfill that it shouldn't consider the response a "blob"
-      // see https://github.com/react-native-community/fetch/issues/15
-      reactNative: { textStreaming: true },
-    } as FetchRequestInit);
-    if (response.ok) {
-      if (response.headers.get("content-type") === "application/json") {
-        return response.json();
+  private async fetch(request: ClientFetchRequest) {
+    try {
+      const { route, body, headers = {}, authentication = "access", ...rest } = request;
+      const url = [this.config.baseUrl, AdminApiClient.baseRoute, ...route].join("/");
+      if (authentication === "access") {
+        if (!this.accessToken) {
+          throw new Error("Not yet authenticated");
+        }
+        headers["Authorization"] = `Bearer ${this.accessToken}`;
+      } else if (authentication === "refresh") {
+        if (!this.refreshToken) {
+          throw new Error("Not yet authenticated");
+        }
+        headers["Authorization"] = `Bearer ${this.refreshToken}`;
       }
-    } else if (response.headers.get("content-type") === "application/json") {
-      const json = await response.json();
-      const error = isErrorResponse(json) ? json.error : "No error message";
-      throw new Error(`Failed to fetch ${url}: ${error} (${response.status} ${response.statusText})`);
-    } else {
-      throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText})`);
+      if (typeof body === "object") {
+        headers["content-type"] = "application/json";
+      }
+      const response = await DefaultNetworkTransport.fetch(url, {
+        ...rest,
+        body: JSON.stringify(body),
+        headers,
+        // Setting additional options to signal to the RN fetch polyfill that it shouldn't consider the response a "blob"
+        // see https://github.com/react-native-community/fetch/issues/15
+        reactNative: { textStreaming: true },
+      } as FetchRequestInit);
+      if (response.ok) {
+        if (response.headers.get("content-type") === "application/json") {
+          return response.json();
+        }
+      } else if (response.headers.get("content-type") === "application/json") {
+        const json = await response.json();
+        const error = isErrorResponse(json) ? json.error : "No error message";
+        throw new Error(`Failed to fetch ${url}: ${error} (${response.status} ${response.statusText})`);
+      } else {
+        throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText})`);
+      }
+    } catch (err) {
+      if (err instanceof Error && err.message.includes("invalid session: access token expired")) {
+        await this.refreshSession();
+        return this.fetch(request);
+      } else {
+        throw err;
+      }
     }
   }
 

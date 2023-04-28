@@ -41,6 +41,17 @@ export function assertLoginResponse(response: unknown): asserts response is Logi
   }
 }
 
+export type SessionRefreshResponse = {
+  access_token: string;
+};
+
+export function assertSessionRefreshResponse(response: unknown): asserts response is SessionRefreshResponse {
+  assertObject(response);
+  if (typeof response.access_token !== "string") {
+    throw new Error("Expected a SessionRefreshResponse");
+  }
+}
+
 export type App = {
   _id: string;
   client_app_id: string;
