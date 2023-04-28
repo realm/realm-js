@@ -20,7 +20,6 @@ import Realm, { BSON } from "realm";
 import { generatePartition, randomVerifiableEmail } from "../../utils/generators";
 import { importAppBefore } from "../../hooks";
 import { sleep } from "../../utils/sleep";
-import { appConfigs } from "../../app-configs";
 import { buildAppConfig } from "../../utils/build-app-config";
 
 const DogForSyncSchema = {

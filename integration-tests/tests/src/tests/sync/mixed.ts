@@ -21,7 +21,6 @@ import { Realm } from "realm";
 import { importAppBefore, authenticateUserBefore, openRealmBefore } from "../../hooks";
 
 import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
-import { appConfigs } from "../../app-configs";
 import { buildAppConfig } from "../../utils/build-app-config";
 
 type MixedClass = {

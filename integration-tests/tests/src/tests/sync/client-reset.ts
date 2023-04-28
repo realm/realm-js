@@ -22,7 +22,6 @@ import { authenticateUserBefore, importAppBefore } from "../../hooks";
 import { DogSchema, PersonSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { expectClientResetError } from "../../utils/expect-sync-error";
 import { createPromiseHandle } from "../../utils/promise-handle";
-import { appConfigs } from "../../app-configs";
 import { buildAppConfig } from "../../utils/build-app-config";
 
 const FlexiblePersonSchema = { ...PersonSchema, properties: { ...PersonSchema.properties, nonQueryable: "string?" } };

@@ -22,7 +22,6 @@ import path from "node:path";
 import os from "node:os";
 
 import { importAppBefore, authenticateUserBefore } from "../hooks";
-import { appConfigs } from "../app-configs";
 import { buildAppConfig } from "../utils/build-app-config";
 
 const getAbsolutePath = () => os.tmpdir() + path.sep + new BSON.UUID().toHexString();
