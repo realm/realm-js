@@ -42,6 +42,13 @@ jobs:
           key: coverage
           max-size: '2.0G'
 
+      - name: Docker Login
+        uses: azure/docker-login@v1
+        with:
+          login-server: ghcr.io
+          username: realm-ci
+          password: ${{ secrets.REALM_CI_GITHUB_API_KEY }}
+
       - name: Start server
         run: docker run --detach --env AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY --publish 9090:9090 ghcr.io/realm/ci/mongodb-realm-test-server:${{ env.SERVER_TAG }}
         env:
