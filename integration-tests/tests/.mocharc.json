@@ -6,6 +6,9 @@
     "no-warnings"
   ],
   "reporter": "@realm/mocha-reporter",
-  "require": "src/node/inject-globals.ts",
+  "require": [
+    "source-map-support/register",
+    "src/node/inject-globals.ts"
+  ],
   "spec": "src/index.ts"
 }
