@@ -23,7 +23,7 @@ export type ErrorResponse = { message: string; appId: never };
 export type ImportResponse = { appId: string; message: never };
 export type Response = ImportResponse | ErrorResponse;
 
-const { realmBaseUrl = "http://localhost:9090" } = environment;
+const { realmBaseUrl = "http://localhost:9090", reuseApp = true } = environment;
 
 export const baseUrl = realmBaseUrl;
 
@@ -49,7 +49,7 @@ const credentials = getCredentials();
 const importer = new AppImporter({
   baseUrl: realmBaseUrl,
   credentials,
-  reuseApp: true,
+  reuseApp,
 });
 
 export async function importApp(config: AppConfig): Promise<{ appId: string; baseUrl: string }> {

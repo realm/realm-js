@@ -65,7 +65,7 @@ jobs:
       - name: Run tests with coverage
         timeout-minutes: 60
         env:
-          CONTEXT: syncLogLevel=warn,longTimeout=${{ env.LONG_TIMEOUT }}
+          CONTEXT: syncLogLevel=warn,longTimeout=${{ env.LONG_TIMEOUT }},reuseApp=false
           # CONTEXT: syncLogLevel=warn,longTimeout=${{ env.LONG_TIMEOUT }},realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ secrets.ATLAS_QA_DAILY_CLUSTER_NAME }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
         run: npm run ci:coverage --workspace @realm/integration-tests -- --reporter mocha-github-actions-reporter --timeout ${{ env.MOCHA_TIMEOUT }}
 
