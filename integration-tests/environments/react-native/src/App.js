@@ -222,11 +222,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#F5FCFF",
   },
-  mode: {
-    fontSize: 14,
-    margin: 10,
-    color: "dimgray",
-  },
   status: {
     fontSize: 20,
     margin: 10,
