@@ -20,6 +20,7 @@ import Realm, { BSON } from "realm";
 import { authenticateUserBefore } from "../../hooks/authenticate-user-before";
 import { importAppBefore } from "../../hooks/import-app-before";
 import { generatePartition } from "../../utils/generators";
+import { buildAppConfig } from "../../utils/build-app-config";
 
 const PvIntDog = {
   name: "Dog",
@@ -77,7 +78,7 @@ const createConfig = (schema: Realm.ObjectSchema, user: Realm.User, partitionVal
 
 describe("Partition-values", () => {
   describe("setting partition value on config", () => {
-    importAppBefore("with-db");
+    importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
     afterEach(() => Realm.clearTestState());
 
     it("can set accepted value types", async function (this: AppContext) {
@@ -124,7 +125,7 @@ describe("Partition-values", () => {
   });
 
   describe("integer", () => {
-    importAppBefore("pv-int-tests");
+    importAppBefore(buildAppConfig("pv-int-tests").partitionBasedSync({ key: "realm_id", type: "long" }));
     authenticateUserBefore();
 
     it("works", async function (this: Mocha.Context & AppContext & UserContext) {
@@ -164,7 +165,7 @@ describe("Partition-values", () => {
   });
 
   describe("string", () => {
-    importAppBefore("pv-string-tests");
+    importAppBefore(buildAppConfig("pv-string-tests").partitionBasedSync({ key: "realm_id", type: "string" }));
     authenticateUserBefore();
 
     it("works", async function (this: Mocha.Context & AppContext & UserContext) {
@@ -204,7 +205,7 @@ describe("Partition-values", () => {
   });
 
   describe("UUID", () => {
-    importAppBefore("pv-uuid-tests");
+    importAppBefore(buildAppConfig("pv-uuid-tests").partitionBasedSync({ key: "realm_id", type: "uuid" }));
     authenticateUserBefore();
 
     it("works", async function (this: Mocha.Context & AppContext & UserContext) {
@@ -252,7 +253,7 @@ describe("Partition-values", () => {
   });
 
   describe("objectId", () => {
-    importAppBefore("pv-objectid-tests");
+    importAppBefore(buildAppConfig("pv-objectid-tests").partitionBasedSync({ key: "realm_id", type: "objectId" }));
     authenticateUserBefore();
 
     it("works", async function (this: Mocha.Context & AppContext & UserContext) {

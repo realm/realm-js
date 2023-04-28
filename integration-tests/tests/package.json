@@ -10,9 +10,8 @@
 	"private": true,
 	"scripts": {
 		"build": "wireit",
-		"start": "CONTEXT=appTemplatesPath=../realm-apps,$CONTEXT npm run mocha -- --watch",
-		"test": "CONTEXT=appTemplatesPath=../realm-apps,$CONTEXT npm run mocha -- --exit",
-		"mocha": "mocha",
+		"start": "mocha --watch",
+		"test": "mocha --exit",
 		"lint": "eslint --ext .js,.ts ."
 	},
 	"wireit": {
@@ -27,8 +26,7 @@
 				"../../packages/realm:bundle",
 				"../../packages/realm:build:node",
 				"../../packages/mocha-reporter:bundle",
-				"../../packages/realm-network-transport:bundle",
-				"../../packages/realm-app-importer:bundle"
+				"../../packages/realm-network-transport:bundle"
 			]
 		}
 	},

@@ -14,9 +14,8 @@
     "watch:catalyst": "wireit",
     "watch:android": "wireit",
     "common": "wireit",
-    "common:ci": "mocha-remote --template @realm/mocha-reporter --context appImporterIsRemote,$MOCHA_REMOTE_CONTEXT -- concurrently --kill-others-on-fail npm:metro npm:runner npm:app-importer",
+    "common:ci": "mocha-remote -- concurrently --kill-others-on-fail npm:metro npm:runner",
     "lint": "eslint .",
-    "app-importer": "realm-app-importer serve ../../realm-apps",
     "metro": "react-native start --reset-cache",
     "runner": "node harness/runner.js"
   },
@@ -82,7 +81,7 @@
       }
     },
     "common": {
-      "command": "mocha-remote --template @realm/mocha-reporter --context appImporterIsRemote,$MOCHA_REMOTE_CONTEXT --watch $WATCH -- concurrently --kill-others-on-fail npm:metro npm:runner npm:app-importer"
+      "command": "mocha-remote --reporter @realm/mocha-reporter --watch $WATCH -- concurrently --kill-others-on-fail npm:metro npm:runner"
     },
     "test:android": {
       "command": "npm run common",
@@ -90,8 +89,7 @@
         "../../../packages/realm:build:android",
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:bundle",
-        "../../../packages/realm-network-transport:bundle",
-        "../../../packages/realm-app-importer:bundle"
+        "../../../packages/realm-network-transport:bundle"
       ],
       "env": {
         "PLATFORM": "android",
@@ -110,8 +108,7 @@
         "pod-install:simulator",
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:bundle",
-        "../../../packages/realm-network-transport:bundle",
-        "../../../packages/realm-app-importer:bundle"
+        "../../../packages/realm-network-transport:bundle"
       ],
       "env": {
         "PLATFORM": "ios",
@@ -124,8 +121,7 @@
         "pod-install:catalyst",
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:bundle",
-        "../../../packages/realm-network-transport:bundle",
-        "../../../packages/realm-app-importer:bundle"
+        "../../../packages/realm-network-transport:bundle"
       ],
       "env": {
         "PLATFORM": "catalyst",
@@ -138,8 +134,7 @@
         "../../../packages/realm:build:android",
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:bundle",
-        "../../../packages/realm-network-transport:bundle",
-        "../../../packages/realm-app-importer:bundle"
+        "../../../packages/realm-network-transport:bundle"
       ],
       "env": {
         "PLATFORM": "android",
@@ -153,8 +148,7 @@
         "../../../packages/realm:build:ios:debug:simulator",
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:bundle",
-        "../../../packages/realm-network-transport:bundle",
-        "../../../packages/realm-app-importer:bundle"
+        "../../../packages/realm-network-transport:bundle"
       ],
       "env": {
         "PLATFORM": "ios",
@@ -168,8 +162,7 @@
         "../../../packages/realm:build:ios:debug:catalyst",
         "../../../packages/realm:bundle",
         "../../../packages/mocha-reporter:bundle",
-        "../../../packages/realm-network-transport:bundle",
-        "../../../packages/realm-app-importer:bundle"
+        "../../../packages/realm-network-transport:bundle"
       ],
       "env": {
         "PLATFORM": "catalyst",

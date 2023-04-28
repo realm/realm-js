@@ -19,9 +19,10 @@ import { expect } from "chai";
 import { Credentials, User } from "realm";
 
 import { importAppBefore } from "../../hooks";
+import { buildAppConfig } from "../../utils/build-app-config";
 
 describe.skipIf(environment.missingServer, "anonymous credentials", () => {
-  importAppBefore("simple");
+  importAppBefore(buildAppConfig("with-anon").anonAuth());
 
   it("authenticates", async function (this: AppContext) {
     const credentials = Credentials.anonymous();

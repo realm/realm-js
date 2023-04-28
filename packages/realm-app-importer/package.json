@@ -1,55 +1,12 @@
 {
   "name": "@realm/app-importer",
   "version": "0.1.0",
+  "private": true,
   "description": "Wrapping the Stitch CLI to import an app from a template (w. secrets)",
-  "type": "module",
-  "types": "./dist/index.d.ts",
-  "react-native": "./dist/bundle.react-native.mjs",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/bundle.mjs",
-      "require": "./dist/bundle.cjs"
-    }
-  },
-  "bin": {
-    "realm-app-importer": "./realm-app-importer.ts"
-  },
+  "main": "./src/index.ts",
   "scripts": {
-    "bundle": "wireit",
     "lint": "eslint --ext .js,.ts .",
-    "start": "./realm-app-importer.ts"
-  },
-  "wireit": {
-    "bundle": {
-      "command": "rollup --config",
-      "files": [
-        "rollup.config.mjs",
-        "src/**/*.ts",
-        "src/**/tsconfig.json"
-      ],
-      "output": [
-        "dist/**/*.mjs",
-        "dist/**/*.cjs",
-        "dist/**/*.d.ts"
-      ],
-      "dependencies": [
-        "generate-types",
-        "../realm-network-transport:bundle"
-      ]
-    },
-    "generate-types": {
-      "command": "tsc --project tsconfig.types.json --declaration --emitDeclarationOnly --declarationDir types/generated",
-      "dependencies": [
-        "../realm-network-transport:bundle"
-      ],
-      "files": [
-        "src/**/*.ts"
-      ],
-      "output": [
-        "types/generated/**/*.d.ts"
-      ]
-    }
+    "test": "mocha"
   },
   "files": [
     "dist",
@@ -77,6 +34,7 @@
     "@realm/network-transport": "*",
     "body-parser": "^1.20.1",
     "chalk": "^4.1.2",
+    "debug": "^4.3.4",
     "deepmerge": "^4.2.2",
     "fs-extra": "^10.1.0",
     "glob": "^8.0.3",

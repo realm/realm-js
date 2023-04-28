@@ -18,24 +18,45 @@
 
 import { Realm } from "realm";
 
-import { deleteApp, importApp, TemplateReplacements } from "../utils/import-app";
+import { importApp } from "../utils/import-app";
+import { AppConfig } from "@realm/app-importer";
 
 const REALM_LOG_LEVELS = ["all", "trace", "debug", "detail", "info", "warn", "error", "fatal", "off"];
 
 export function importAppBefore(
-  name: string,
-  replacements?: TemplateReplacements,
+  config: AppConfig | { config: AppConfig },
   logLevel: Realm.App.Sync.LogLevel = (environment.syncLogLevel as Realm.App.Sync.LogLevel) || "warn",
 ): void {
+  // Unwrap when passed a builder directly
+  if ("config" in config) {
+    return importAppBefore(config.config);
+  }
+
   before(importAppBefore.name, async function (this: Partial<AppContext> & Mocha.Context) {
     // Importing an app might take up to 5 minutes when the app has a MongoDB Atlas service enabled.
     this.longTimeout();
     if (this.app) {
       throw new Error("Unexpected app on context, use only one importAppBefore per test");
     } else {
-      const { appId, baseUrl, databaseName } = await importApp(name, replacements);
+      const { appId, baseUrl } = await importApp(config);
       this.app = new Realm.App({ id: appId, baseUrl });
-      this.databaseName = databaseName;
+
+      // Extract the sync database name from the config
+      const databaseNames: string[] = config.services
+        .filter(([service]) => service.type === "mongodb" || service.type === "mongodb-atlas")
+        .map(([service]) => {
+          if ("sync" in service.config) {
+            return service.config.sync.database_name;
+          } else if ("flexible_sync" in service.config) {
+            return service.config.flexible_sync.database_name;
+          }
+        })
+        .filter((name) => typeof name === "string");
+      if (databaseNames.length === 1) {
+        this.databaseName = databaseNames[0];
+      } else if (databaseNames.length > 1) {
+        throw new Error("Expected at most 1 database name in the config");
+      }
 
       Realm.App.Sync.setLogLevel(this.app, logLevel);
       // Set a default logger as Android does not forward stdout
@@ -50,14 +71,21 @@ export function importAppBefore(
     }
   });
 
-  // Delete our app after we have finished, otherwise the server can slow down
-  // (in the case of flexible sync, with lots of apps with subscriptions created)
-  after("deleteAppAfter", async function (this: Partial<AppContext> & Mocha.Context) {
-    if (environment.preserveAppAfterRun) return;
-    if (this.app) {
-      await deleteApp(this.app.id);
-    } else {
-      console.warn("No app on context when trying to delete app");
+  after("removeUsersAfter", async function (this: Partial<AppContext> & Mocha.Context) {
+    const { app } = this;
+    if (app) {
+      await Promise.all(
+        Object.values(app.allUsers).map(async (user) => {
+          try {
+            await app.removeUser(user);
+          } catch (err) {
+            // Users might miss a refresh token
+            if (!(err instanceof Error) || !err.message.includes("failed to find refresh token")) {
+              throw err;
+            }
+          }
+        }),
+      );
     }
   });
 }

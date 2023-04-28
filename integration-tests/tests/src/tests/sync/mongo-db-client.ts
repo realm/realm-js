@@ -21,6 +21,7 @@ import { BSON, ChangeEvent, Credentials, DeleteResult, Document, InsertEvent, Mo
 
 import { importAppBefore } from "../../hooks";
 import { sleep } from "../../utils/sleep";
+import { buildAppConfig } from "../../utils/build-app-config";
 
 type TestDocument = {
   _id: number;
@@ -30,7 +31,7 @@ type TestDocument = {
 
 describe.skipIf(environment.missingServer, "MongoDB Client", function () {
   this.timeout(60_000); // TODO: Temporarily hardcoded until envs are set up.
-  importAppBefore("with-db");
+  importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
 
   let collection: MongoDBCollection<TestDocument>;
   const serviceName = "mongodb";

@@ -179,7 +179,7 @@ export interface FetchResponse extends FetchBody {
   clone(): FetchResponse;
 }
 
-interface FetchRequestInit<RequestBody = unknown> {
+export interface FetchRequestInit<RequestBody = unknown> {
   /**
    * A BodyInit object or null to set request's body.
    */

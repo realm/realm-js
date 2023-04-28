@@ -18,6 +18,7 @@
 
 import { expect } from "chai";
 import { importAppBefore } from "../../hooks";
+import { buildAppConfig } from "../../utils/build-app-config";
 
 const TestObjectSchema = {
   name: "TestObject",
@@ -81,7 +82,7 @@ describe("Encryption", () => {
   });
 
   describe("with sync", () => {
-    importAppBefore("simple");
+    importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
 
     it("can set property in config", async function (this: AppContext) {
       this.longTimeout();

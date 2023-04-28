@@ -1,9 +1,0 @@
-{
-    "name": "mongodb",
-    "type": "mongodb",
-    "config": {},
-    "secret_config": {
-        "uri": "local-mongodb-uri"
-    },
-    "version": 1
-}

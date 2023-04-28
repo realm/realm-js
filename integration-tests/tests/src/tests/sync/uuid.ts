@@ -19,9 +19,10 @@ import { expect } from "chai";
 import Realm from "realm";
 import { authenticateUserBefore, importAppBefore, openRealmBefore } from "../../hooks";
 import { itUploadsDeletesAndDownloads } from "./upload-delete-download";
+import { buildAppConfig } from "../../utils/build-app-config";
 
 describe.skipIf(environment.missingServer, "Type roundtrip of UUID object", () => {
-  importAppBefore("with-db");
+  importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
   authenticateUserBefore();
   const { UUID } = Realm.BSON;
 

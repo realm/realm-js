@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { BSON } from "realm";
+
 export function generatePartition() {
   return "xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx".replace(/[xy]/g, function (c) {
     const r = (Math.random() * 16) | 0,
@@ -26,18 +28,24 @@ export function generatePartition() {
 
 export function randomVerifiableEmail() {
   // according to the custom register function, emails will register if they contain "realm_tests_do_autoverify"
-  const uuid = new Realm.BSON.UUID().toHexString();
+  const uuid = new BSON.UUID().toHexString();
   return `realm_tests_do_autoverify_${uuid}_@test.com`;
 }
 
 export function randomNonVerifiableEmail() {
   // according to the custom register function, emails will not register if they don't contain "realm_tests_do_autoverify"
-  const uuid = new Realm.BSON.UUID().toHexString();
+  const uuid = new BSON.UUID().toHexString();
   return `should-not-register-${uuid}_@test.com`;
 }
 
 export function randomPendingVerificationEmail() {
   // create an email address that should neither auto-verify or fail verification
-  const uuid = new Realm.BSON.UUID().toHexString();
+  const uuid = new BSON.UUID().toHexString();
   return `realm_tests_do_pendverify-${uuid}_@test.com`;
+}
+
+export function randomDatabaseName() {
+  // create an email address that should neither auto-verify or fail verification
+  const uuid = new BSON.UUID().toHexString();
+  return `db-${uuid}`;
 }

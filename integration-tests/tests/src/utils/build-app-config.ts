@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2020 Realm Inc.
+// Copyright 2023 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,20 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export type { Credentials } from "./AdminApiClient";
-export type { AppImporterOptions } from "./AppImporter";
-export type {
-  AppConfig,
-  AuthProviderConfig,
-  FunctionConfig,
-  ServiceConfig,
-  ServiceRule,
-  SyncConfig,
-  PartitionSyncConfig,
-  PartitionConfig,
-  FlexibleSyncConfig,
-  CustomTokenAuthMetadataField,
-  EmailPasswordAuthConfig,
-} from "./AppConfigBuilder";
-export { AppImporter } from "./AppImporter";
-export { AppConfigBuilder } from "./AppConfigBuilder";
+import { ExtendedAppConfigBuilder } from "./ExtendedAppConfigBuilder";
+
+export function buildAppConfig(name?: string) {
+  return new ExtendedAppConfigBuilder(name);
+}

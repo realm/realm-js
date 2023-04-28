@@ -22,13 +22,37 @@ import { Credentials, User } from "realm";
 import { KJUR } from "jsrsasign";
 
 import { importAppBefore } from "../../hooks";
+import { buildAppConfig } from "../../utils/build-app-config";
+
+const privateKey = "2k66QfKeTRk3MdZ5vpDYgZCu2k66QfKeTRk3MdZ5vpDYgZCu";
 
 describe.skipIf(environment.missingServer, "jwt credentials", () => {
-  importAppBefore("with-jwt");
+  importAppBefore(
+    buildAppConfig("with-custom-token").customTokenAuth({
+      privateKey,
+      metadataFields: [
+        {
+          required: true,
+          name: "mySecretField",
+          field_name: "secret",
+        },
+        {
+          required: false,
+          name: "id",
+          field_name: "id",
+        },
+        {
+          required: false,
+          name: "license",
+          field_name: "license",
+        },
+      ],
+    }),
+  );
+
   it("authenticates", async function (this: AppContext) {
     this.timeout(60 * 1000); // 1 min
     // Needs to match the value in the apps secrets.json
-    const privateKey = "2k66QfKeTRk3MdZ5vpDYgZCu2k66QfKeTRk3MdZ5vpDYgZCu";
     const token = KJUR.jws.JWS.sign(
       null,
       { alg: "HS256" },

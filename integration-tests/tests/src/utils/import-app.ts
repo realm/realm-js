@@ -15,183 +15,48 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import { App, BSON } from "realm";
 
-import { AppImporter, Credentials } from "@realm/app-importer";
-import { fetch } from "./fetch";
+import { AppConfig, AppImporter, Credentials } from "@realm/app-importer";
 
 export type TemplateReplacements = Record<string, Record<string, unknown>>;
 export type ErrorResponse = { message: string; appId: never };
 export type ImportResponse = { appId: string; message: never };
 export type Response = ImportResponse | ErrorResponse;
 
-//TODO should be moved to a separate file as it doesn't directly have anything to do with importing an app.
-export function getUrls() {
-  // Try reading the app importer URL out of the environment, it might not be accessiable via localhost
-  const { appImporterUrl, realmBaseUrl } = environment;
-  return {
-    appImporterUrl: typeof appImporterUrl === "string" ? appImporterUrl : "http://localhost:8091",
-    baseUrl: typeof realmBaseUrl === "string" ? realmBaseUrl : "http://localhost:9090",
-  };
-}
+const { realmBaseUrl = "http://localhost:9090" } = environment;
 
-const { appImporterIsRemote, appTemplatesPath = "../../realm-apps" } = environment;
+export const baseUrl = realmBaseUrl;
 
 function getCredentials(): Credentials {
-  const { publicKey, privateKey, username, password } = environment;
+  const { publicKey, privateKey, username = "unique_user@domain.com", password = "password" } = environment;
   if (typeof publicKey === "string" && typeof privateKey === "string") {
     return {
       kind: "api-key",
       publicKey,
       privateKey,
     };
-  }
-  return {
-    kind: "username-password",
-    username: typeof username === "string" ? username : "unique_user@domain.com",
-    password: typeof password === "string" ? password : "password",
-  };
-}
-
-function isErrorResponse(arg: unknown): arg is ErrorResponse {
-  return typeof arg === "object" && arg !== null && "message" in arg;
-}
-
-function generateDatabaseName(): string {
-  const { mongodbClusterName } = environment;
-  if (typeof mongodbClusterName === "string") {
-    return `test-database-${new BSON.ObjectId().toHexString()}`;
-  }
-  return "test-database";
-}
-
-type SyncConfigOptions = {
-  name: string;
-  databaseName: string;
-};
-
-function generateSyncConfig({ name, databaseName }: SyncConfigOptions) {
-  if (name === "with-db") {
-    return {
-      sync: {
-        database_name: databaseName,
-      },
-    };
-  } else if (name === "with-db-flx") {
-    return {
-      flexible_sync: {
-        database_name: databaseName,
-      },
-    };
-  } else {
-    return {};
-  }
-}
-
-type MongodbServiceOptions = { name: string; databaseName: string; clusterName: string | undefined };
-
-function generateMongoDBServiceConfig({ name, databaseName, clusterName }: MongodbServiceOptions) {
-  if (clusterName) {
-    return {
-      type: "mongodb-atlas",
-      config: {
-        clusterName,
-        readPreference: "primary",
-        wireProtocolEnabled: false,
-        ...generateSyncConfig({ name, databaseName }),
-      },
-    };
   } else {
     return {
-      config: generateSyncConfig({ name, databaseName }),
+      kind: "username-password",
+      username,
+      password,
     };
   }
 }
 
-export function getDefaultReplacements(name: string, databaseName: string): TemplateReplacements {
-  // When running on CI we connect through mongodb-atlas instead of local-mongodb
-  const { mongodbClusterName: clusterName } = environment;
+const credentials = getCredentials();
 
-  return {
-    "services/mongodb/config.json": generateMongoDBServiceConfig({ name, databaseName, clusterName }),
-  };
-}
+const importer = new AppImporter({
+  baseUrl: realmBaseUrl,
+  credentials,
+  reuseApp: true,
+});
 
-export async function importApp(
-  name: string,
-  replacements?: TemplateReplacements,
-): Promise<{ appId: string; baseUrl: string; databaseName: string }> {
-  const { baseUrl, appImporterUrl } = getUrls();
-
-  const databaseName = generateDatabaseName();
-
-  if (!replacements) {
-    replacements = getDefaultReplacements(name, databaseName);
-  }
-
-  if (appImporterIsRemote) {
-    const response = await fetch(appImporterUrl, {
-      method: "POST",
-      body: JSON.stringify({ name, replacements }),
-    });
-
-    const json = await response.json<Response>();
-    if (response.ok && typeof json.appId === "string") {
-      return { appId: json.appId, baseUrl, databaseName };
-    } else if (typeof json.message === "string") {
-      throw new Error(`Failed to import: ${json.message}`);
-    } else {
-      throw new Error("Failed to import app");
-    }
-  } else {
-    const appsDirectoryPath = "./realm-apps";
-    const realmConfigPath = "./realm-config";
-
-    const credentials = getCredentials();
-
-    const importer = new AppImporter({
-      baseUrl,
-      credentials,
-      realmConfigPath,
-      appsDirectoryPath,
-      cleanUp: true,
-    });
-
-    const appTemplatePath = `${appTemplatesPath}/${name}`;
-
-    const { appId } = await importer.importApp(appTemplatePath, replacements);
-
-    return { appId, baseUrl, databaseName };
-  }
+export async function importApp(config: AppConfig): Promise<{ appId: string; baseUrl: string }> {
+  const { appId } = await importer.importApp(config);
+  return { appId, baseUrl: realmBaseUrl };
 }
 
 export async function deleteApp(clientAppId: string): Promise<void> {
-  const { baseUrl, appImporterUrl } = getUrls();
-
-  if (appImporterIsRemote) {
-    // This might take some time, so we just send it and forget it
-    const response = await fetch(`${appImporterUrl}/app/${clientAppId}`, {
-      method: "DELETE",
-    });
-    if (!response.ok) {
-      const json = await response.json();
-      const message = isErrorResponse(json) ? json.message : "No error message";
-      throw new Error(`Failed to delete app with client ID '${clientAppId}': ${message}`);
-    }
-  } else {
-    const appsDirectoryPath = "./realm-apps";
-    const realmConfigPath = "./realm-config";
-
-    const credentials = getCredentials();
-
-    const importer = new AppImporter({
-      baseUrl,
-      credentials,
-      realmConfigPath,
-      appsDirectoryPath,
-      cleanUp: true,
-    });
-
-    importer.deleteApp(clientAppId);
-  }
+  await importer.deleteApp(clientAppId);
 }
