@@ -52,6 +52,9 @@ jobs:
         # Ignoring scripts to prevent a prebuilt from getting fetched / built
         run: npm ci --ignore-scripts
 
+      - name: Wait for the server to start
+        run: npx wait-on http://localhost:9090
+
       - name: Run tests with coverage
         timeout-minutes: 60
         env:
