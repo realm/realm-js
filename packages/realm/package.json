@@ -73,7 +73,7 @@
   },
   "wireit": {
     "test": {
-      "command": "mocha",
+      "command": "mocha --exit",
       "dependencies": [
         "build:node",
         "bindgen:generate:typescript",
