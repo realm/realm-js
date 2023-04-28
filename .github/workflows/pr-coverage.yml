@@ -7,13 +7,11 @@ concurrency:
 
 env:
   REALM_DISABLE_ANALYTICS: 1
-  MOCHA_REMOTE_TIMEOUT: 60000
+  MOCHA_TIMEOUT: 60000 # 1 minute
   LONG_TIMEOUT: 300000 # 5 minutes
   REALM_BASE_URL: ${{ secrets.REALM_QA_BASE_URL }}
   REALM_PUBLIC_KEY: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
   REALM_PRIVATE_KEY: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
-  MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
-  MOCHA_REMOTE_EXIT_ON_ERROR: true
 
 jobs:
   run:
@@ -52,7 +50,7 @@ jobs:
           CONTEXT: syncLogLevel=warn,longTimeout=${{ env.LONG_TIMEOUT }},realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ secrets.ATLAS_QA_DAILY_CLUSTER_NAME }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
         # The non react native environments should not take so long
         timeout-minutes: 30
-        run: npm run ci:coverage --workspace @realm/integration-tests
+        run: npm run ci:coverage --workspace @realm/integration-tests -- --reporter mocha-github-actions-reporter --timeout ${{ env.MOCHA_TIMEOUT }}
 
       - name: Coveralls
         if: 
