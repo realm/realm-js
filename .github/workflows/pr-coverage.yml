@@ -1,0 +1,58 @@
+name: Test Coverage
+on: ["push", "pull_request"]
+
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  REALM_DISABLE_ANALYTICS: 1
+  MOCHA_REMOTE_TIMEOUT: 60000
+  LONG_TIMEOUT: 300000 # 5 minutes
+  REALM_BASE_URL: ${{ secrets.REALM_QA_BASE_URL }}
+  REALM_PUBLIC_KEY: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+  REALM_PRIVATE_KEY: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
+  MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
+  MOCHA_REMOTE_EXIT_ON_ERROR: true
+
+jobs:
+  run:
+    name: Build and tests with coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          submodules: "recursive"
+
+      - name: Setup node version
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: npm
+
+      - name: Setup Wireit cache
+        uses: google/wireit@setup-github-actions-caching/v1
+        
+      - name: Environment setup
+        run: sudo apt-get install ccache ninja-build
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: coverage
+          max-size: '2.0G'
+
+      - name: Install dependencies
+        # Ignoring scripts to prevent a prebuilt from getting fetched / built
+        run: npm ci --ignore-scripts
+
+      - name: Run tests with coverage
+        env:
+          MOCHA_REMOTE_CONTEXT: context=syncLogLevel=warn,longTimeout=${{ env.LONG_TIMEOUT }},realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ secrets.ATLAS_QA_DAILY_CLUSTER_NAME }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+        # The non react native environments should not take so long
+        timeout-minutes: 30
+        run: npm run ci:coverage --workspace @realm/node-tests
+
+      - name: Coveralls
+        uses: coverallsapp/github-action@v2
