@@ -52,7 +52,7 @@ jobs:
           MOCHA_REMOTE_CONTEXT: context=syncLogLevel=warn,longTimeout=${{ env.LONG_TIMEOUT }},realmBaseUrl=${{ secrets.REALM_QA_BASE_URL }},mongodbClusterName=${{ secrets.ATLAS_QA_DAILY_CLUSTER_NAME }},privateKey=${{ secrets.ATLAS_QA_PRIVATE_API_KEY }},publicKey=${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
         # The non react native environments should not take so long
         timeout-minutes: 30
-        run: npm run ci:coverage --workspace @realm/node-tests
+        run: npm run ci:coverage --workspace @realm/integration-tests
 
       - name: Coveralls
         uses: coverallsapp/github-action@v2
