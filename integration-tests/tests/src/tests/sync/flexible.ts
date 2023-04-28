@@ -1685,6 +1685,12 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
           expect(this.realm.subscriptions).to.have.length(1);
         });
+
+        it("returns the same 'Results' instance", async function (this: RealmContext) {
+          const beforeSubscribe = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
+          const afterSubscribe = await beforeSubscribe.subscribe();
+          expect(beforeSubscribe).to.equal(afterSubscribe);
+        });
       });
 
       describe("Results#unsubscribe", function () {
