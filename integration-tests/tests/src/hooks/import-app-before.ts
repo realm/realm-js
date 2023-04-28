@@ -77,11 +77,7 @@ export function importAppBefore(
             await app.removeUser(user);
           } catch (err) {
             // Users might miss a refresh token
-            if (err instanceof Error) {
-              if (!err.message.includes("failed to find refresh token")) {
-                throw err;
-              }
-            } else {
+            if (!(err instanceof Error) || !err.message.includes("failed to find refresh token")) {
               throw err;
             }
           }

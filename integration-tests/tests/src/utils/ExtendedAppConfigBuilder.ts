@@ -25,6 +25,8 @@ import {
 
 import { randomDatabaseName } from "./generators";
 
+// Setting the mongodbClusterName on the Mocha Remote context will default the service type of mongodb services to "mongodb-atlas"
+// This makes sense because there's no reason to provide the cluster name if we're not on Atlas.
 const { mongodbClusterName, mongodbServiceType = mongodbClusterName ? "mongodb-atlas" : "mongodb" } = environment;
 
 type MongoServiceSyncConfig =

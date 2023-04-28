@@ -64,7 +64,7 @@ export type ProfileResponse = {
 };
 
 export function assertObject(response: unknown): asserts response is Record<string, unknown> {
-  if (typeof response !== "object" || response === null) {
+  if (typeof response !== "object" || Array.isArray(response) || response === null) {
     throw new Error("Expected an object");
   }
 }
