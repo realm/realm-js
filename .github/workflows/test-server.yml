@@ -7,7 +7,6 @@ on:
   workflow_run:
     workflows:
       - Disabled for now
-      - Test Coverage
       # - Pull request build and test
     types:
       - in_progress
