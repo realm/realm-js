@@ -87,17 +87,4 @@ export function importAppBefore(
       }
     }
   });
-
-  /*
-  // Delete our app after we have finished, otherwise the server can slow down
-  // (in the case of flexible sync, with lots of apps with subscriptions created)
-  after("deleteAppAfter", async function (this: Partial<AppContext> & Mocha.Context) {
-    if (environment.preserveAppAfterRun) return;
-    if (this.app) {
-      await deleteApp(this.app.id);
-    } else {
-      console.warn("No app on context when trying to delete app");
-    }
-  });
-  */
 }
