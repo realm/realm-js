@@ -1,5 +1,1 @@
 realm-apps/
-
-# Test coverage artifacts
-coverage/
-.nyc_output/
