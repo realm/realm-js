@@ -9,6 +9,9 @@ on:
       ngrok_subdomain:
         description: A subdomain to prefix ".ngrok.io" used for the server.
         type: string
+      run_id:
+        description: The GitHub Actions run id of the triggering action, which will be used to await completion.
+        type: number
 
 jobs:
   server:
@@ -44,6 +47,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.BAAS_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BAAS_AWS_SECRET_ACCESS_KEY }}
       - name: Wait for triggering run to complete
-        run: gh run watch ${{ github.event.workflow_run.id || github.run_id }}
+        if:  ${{ inputs.run_id }}
+        run: gh run watch ${{ inputs.run_id }}
         env:
           GH_TOKEN: ${{ github.token }}
