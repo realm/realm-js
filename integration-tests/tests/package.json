@@ -10,20 +10,50 @@
 	"private": true,
 	"scripts": {
 		"build": "wireit",
-		"start": "mocha --watch",
-		"test": "mocha --exit",
-		"lint": "eslint --ext .js,.ts ."
+		"start": "wireit",
+		"test": "wireit",
+		"lint": "eslint --ext .js,.ts .",
+		"coverage": "wireit",
+		"ci:coverage": "wireit"
 	},
 	"wireit": {
 		"build": {
 			"command": "tsc",
 			"dependencies": [
+				"../../packages/realm:bundle",
+				"build-dependencies"
+			]
+		},
+		"start": {
+			"command": "mocha --watch",
+			"dependencies": [
+				"../../packages/realm:bundle",
+				"build-dependencies"
+			]
+		},
+		"test": {
+			"command": "mocha --exit",
+			"dependencies": [
+				"../../packages/realm:bundle",
+				"build-dependencies"
+			]
+		},
+		"coverage": {
+			"command": "nyc mocha --exit",
+			"dependencies": [
+				"../../packages/realm:bundle:coverage",
+				"build-dependencies"
+			]
+		},
+		"ci:coverage": {
+			"command": "nyc --reporter=lcov -- mocha --exit",
+			"dependencies": [
+				"../../packages/realm:bundle:coverage",
 				"build-dependencies"
 			]
 		},
 		"build-dependencies": {
 			"dependencies": [
-				"../../packages/realm:bundle",
 				"../../packages/realm:build:node",
 				"../../packages/mocha-reporter:bundle",
 				"../../packages/realm-network-transport:bundle"
@@ -34,6 +64,7 @@
 		"realm": "*"
 	},
 	"devDependencies": {
+		"@istanbuljs/nyc-config-typescript": "^1.0.2",
 		"@realm/app-importer": "*",
 		"@realm/mocha-reporter": "*",
 		"@thi.ng/bench": "^3.1.16",
@@ -45,12 +76,13 @@
 		"concurrently": "^6.5.1",
 		"mocha": "^10.1.0",
 		"node-fetch": "^2.6.9",
+		"nyc": "^15.1.0",
 		"platform": "^1.3.6",
 		"realm": "*"
 	},
 	"dependencies": {
-		"@thi.ng/bench": "^3.1.16",
 		"@realm/network-transport": "^0.7.2",
+		"@thi.ng/bench": "^3.1.16",
 		"chai": "4.3.6",
 		"chai-as-promised": "^7.1.1",
 		"concurrently": "^6.0.2",
