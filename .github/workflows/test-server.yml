@@ -43,7 +43,8 @@ jobs:
       - name: Start server
         run: docker run ${{ env.MODE }} --env AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY --publish 9090:9090 --volume `pwd`/patch-and-run.sh:/patch-and-run.sh --entrypoint /patch-and-run.sh ghcr.io/realm/ci/mongodb-realm-test-server:${{ env.SERVER_TAG }}
         env:
-          MODE: ${{ github.event_name == 'workflow_dispatch' && '--interactive' || '--detach' }}
+          # Use --detach if a run_id is provided to watch for completion, --interactive otherwise
+          MODE: ${{ inputs.run_id && '--detach' || '--interactive' }}
           AWS_ACCESS_KEY_ID: ${{ secrets.BAAS_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BAAS_AWS_SECRET_ACCESS_KEY }}
       - name: Wait for triggering run to complete
