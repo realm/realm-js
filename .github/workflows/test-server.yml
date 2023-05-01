@@ -24,8 +24,8 @@ jobs:
         id: ngrok-config
         run:
           subdomain="${{ inputs.ngrok_subdomain || format('realm-js-test-server-{0}-{1}', github.run_id, github.run_attempt) }}";
-          echo "subdomain=${subdomain}"
-          echo "hostname=${subdomain}.ngrok.io"
+          echo "subdomain=${subdomain}" >> $GITHUB_OUTPUT;
+          echo "hostname=${subdomain}.ngrok.io" >> $GITHUB_OUTPUT;
       - name: Start Ngrok
         run: docker run --detach --network host --env NGROK_AUTHTOKEN ngrok/ngrok http --subdomain ${{ steps.ngrok-config.outputs.subdomain }} 9090
         env:
