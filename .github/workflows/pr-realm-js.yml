@@ -248,7 +248,6 @@ jobs:
     runs-on: ${{ matrix.variant.runner }}
     strategy:
       fail-fast: false
-      max-parallel: 3
       matrix:
         variant:
           - { os: linux, target: "test:ci", runner: ubuntu-latest, environment: node }
