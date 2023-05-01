@@ -1,14 +1,15 @@
 name: Run test server
 env:
   SERVER_TAG: latest
-  NGROK_SUBDOMAIN: realm-js-test-server-${{ github.event.workflow_run.id || github.run_id }}-${{ github.event.workflow_run.run_attempt || github.run_attempt }}
+  NGROK_SUBDOMAIN: ${{ inputs.ngrok_subdomain || format('realm-js-test-server-{0}-{1}', github.run_id, github.run_attempt) }}
+
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows:
-      - Pull request build and test
-    types:
-      - in_progress
+    inputs:
+      ngrok_subdomain:
+        description: A subdomain to prefix ".ngrok.io" used for the server.
+        type: string
+
 jobs:
   server:
     name: Run test server
