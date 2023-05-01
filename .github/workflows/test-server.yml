@@ -57,6 +57,7 @@ jobs:
       - name: Wait for triggering run to complete
         if:  ${{ inputs.run_id }}
         # Using " > /dev/null" because this will print the status of all jobs and steps every second
-        run: gh run watch ${{ inputs.run_id }} > /dev/null
+        # Using "--interval 60" because we don't want to hit the GitHub actions requests limit
+        run: gh run watch --interval 60 ${{ inputs.run_id }} > /dev/null
         env:
           GH_TOKEN: ${{ github.token }}
