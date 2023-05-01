@@ -240,7 +240,6 @@ jobs:
       REALM_DISABLE_ANALYTICS: 1
       MOCHA_REMOTE_TIMEOUT: 60000
       LONG_TIMEOUT: 300000 # 5 minutes
-      REALM_BASE_URL: realm-js-test-server-${{ github.run_id }}-${{ github.run_attempt }}.ngrok.io
       MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
       MOCHA_REMOTE_EXIT_ON_ERROR: true
       SPAWN_LOGCAT: true
@@ -276,6 +275,19 @@ jobs:
         with:
           node-version: 16
           cache: npm
+
+      - name: Generate server configuration
+        id: baas-config
+        run:
+          suffix=$(node -p 'Math.floor(Math.random()*Number.MAX_SAFE_INTEGER)');
+          subdomain="realm-js-test-server-${{ github.run_id }}-${{ github.run_attempt }}-${suffix}";
+          echo 'subdomain=${subdomain}' >> $GITHUB_OUTPUT;
+          echo 'url=${subdomain}.ngrok.io' >> $GITHUB_OUTPUT;
+
+      - name: Trigger the test server workflow to start the server
+        run: gh workflow run test-server.yml -f ngrok_subdomain=${{ steps.baas-config.outputs.subdomain }} -f run_id=${{ github.run_id }}
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Get NPM cache directory
         id: npm-cache-dir
@@ -353,10 +365,10 @@ jobs:
 
       - name: Create Mocha Remote Context
         id: mocha-env
-        run: echo "context=syncLogLevel=warn,longTimeout=${{ env.LONG_TIMEOUT }},realmBaseUrl=${{ env.REALM_BASE_URL }},reuseApp=false" >> $GITHUB_OUTPUT
+        run: echo "context=syncLogLevel=warn,longTimeout=${{ env.LONG_TIMEOUT }},realmBaseUrl=${{ steps.baas-config.outputs.url }},reuseApp=false" >> $GITHUB_OUTPUT
 
       - name: Wait for the server to start
-        run: npx wait-on ${{ env.REALM_BASE_URL }}
+        run: npx wait-on ${{ steps.baas-config.outputs.url }}
 
       - name: Run ${{matrix.variant.target}} (${{ matrix.variant.os}} / ${{ matrix.variant.environment }})
         if: ${{ (matrix.variant.os != 'android') && (matrix.variant.os != 'ios') }}
