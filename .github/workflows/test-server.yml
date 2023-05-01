@@ -6,8 +6,7 @@ on:
   workflow_dispatch:
   workflow_run:
     workflows:
-      - Disabled for now
-      # - Pull request build and test
+      - Pull request build and test
     types:
       - in_progress
 jobs:
