@@ -108,7 +108,7 @@ describe("Partition-values", () => {
         expect(realm).to.not.be.null;
         expect(realm).to.not.be.undefined;
 
-        const spv: any = realm.syncSession?.config.partitionValue;
+        const spv: any = realm.syncSession.config.partitionValue;
 
         // BSON types have their own 'equals' comparer
         if (spv instanceof BSON.ObjectId) {
@@ -141,14 +141,14 @@ describe("Partition-values", () => {
       });
 
       const dogsBefore = realm1.objects("Dog").length;
-      await realm1.syncSession?.uploadAllLocalChanges();
+      await realm1.syncSession.uploadAllLocalChanges();
       realm1.close();
 
       // cleanup, re-sync & check changes are synced
       Realm.deleteFile(realmConfigPrimary);
 
       const realm2 = await Realm.open(realmConfigPrimary);
-      await realm2.syncSession?.downloadAllServerChanges();
+      await realm2.syncSession.downloadAllServerChanges();
 
       expect(realm2.objects("Dog").length).equals(dogsBefore);
       realm2.close();
@@ -157,7 +157,7 @@ describe("Partition-values", () => {
       Realm.deleteFile(realmConfigPrimary);
 
       const realm3 = await Realm.open(realmConfigSecondary);
-      await realm3.syncSession?.downloadAllServerChanges();
+      await realm3.syncSession.downloadAllServerChanges();
 
       expect(realm3.objects("Dog").length).equals(0);
       realm3.close();
@@ -181,14 +181,14 @@ describe("Partition-values", () => {
       });
 
       const dogsBefore = realm1.objects("Dog").length;
-      await realm1.syncSession?.uploadAllLocalChanges();
+      await realm1.syncSession.uploadAllLocalChanges();
       realm1.close();
 
       // cleanup, re-sync & check changes are synced
       Realm.deleteFile(realmConfigPrimary);
 
       const realm2 = await Realm.open(realmConfigPrimary);
-      await realm2.syncSession?.downloadAllServerChanges();
+      await realm2.syncSession.downloadAllServerChanges();
 
       expect(realm2.objects("Dog").length).equals(dogsBefore);
       realm2.close();
@@ -197,7 +197,7 @@ describe("Partition-values", () => {
       Realm.deleteFile(realmConfigPrimary);
 
       const realm3 = await Realm.open(realmConfigSecondary);
-      await realm3.syncSession?.downloadAllServerChanges();
+      await realm3.syncSession.downloadAllServerChanges();
 
       expect(realm3.objects("Dog").length).equals(0);
       realm3.close();
@@ -229,14 +229,14 @@ describe("Partition-values", () => {
       });
 
       const dogsBefore = realm1.objects("Dog").length;
-      await realm1.syncSession?.uploadAllLocalChanges();
+      await realm1.syncSession.uploadAllLocalChanges();
       realm1.close();
 
       // cleanup, re-sync & check changes are synced
       Realm.deleteFile(realmConfigPrimary);
 
       const realm2 = await Realm.open(realmConfigPrimary);
-      await realm2.syncSession?.downloadAllServerChanges();
+      await realm2.syncSession.downloadAllServerChanges();
 
       expect(realm2.objects("Dog").length).equals(dogsBefore);
       realm2.close();
@@ -245,7 +245,7 @@ describe("Partition-values", () => {
       Realm.deleteFile(realmConfigPrimary);
 
       const realm3 = await Realm.open(realmConfigSecondary);
-      await realm3.syncSession?.downloadAllServerChanges();
+      await realm3.syncSession.downloadAllServerChanges();
 
       expect(realm3.objects("Dog").length).equals(0);
       realm3.close();
@@ -272,13 +272,13 @@ describe("Partition-values", () => {
       });
 
       const dogsBefore = realm1.objects("Dog").length;
-      await realm1.syncSession?.uploadAllLocalChanges();
+      await realm1.syncSession.uploadAllLocalChanges();
       realm1.close();
 
       Realm.deleteFile(realmConfigPrimary);
 
       const realm2 = await Realm.open(realmConfigPrimary);
-      await realm2.syncSession?.downloadAllServerChanges();
+      await realm2.syncSession.downloadAllServerChanges();
 
       expect(realm2.objects("Dog").length).equals(dogsBefore);
       realm2.close();
@@ -287,7 +287,7 @@ describe("Partition-values", () => {
       Realm.deleteFile(realmConfigPrimary);
 
       const realm3 = await Realm.open(realmConfigSecondary);
-      await realm3.syncSession?.downloadAllServerChanges();
+      await realm3.syncSession.downloadAllServerChanges();
 
       expect(realm3.objects("Dog").length).equals(0);
       realm3.close();

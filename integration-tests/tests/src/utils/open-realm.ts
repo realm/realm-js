@@ -53,11 +53,7 @@ export async function openRealm(
   // will not resolve with flexible sync enabled until we have created an
   // initial subscription set, so skip it if we have a flexible config.
   // There is an issue on the cloud side which will fix this.
-  if (!config.sync?.flexible) {
-    if (!realm.syncSession) {
-      throw new Error("No syncSession found on realm");
-    }
-
+  if (config.sync && !config.sync.flexible) {
     await realm.syncSession.uploadAllLocalChanges();
   }
 

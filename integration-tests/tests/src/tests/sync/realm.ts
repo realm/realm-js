@@ -1343,7 +1343,7 @@ describe("Realmtest", () => {
         expect(Realm.exists(config)).to.be.true;
       });
 
-      it.skipIf(environment.missingServerm, "yields correct value on a synced realm", function (this: AppContext) {
+      it.skipIf(environment.missingServer, "yields correct value on a synced realm", function (this: AppContext) {
         const credentials = Realm.Credentials.anonymous();
 
         return this.app.logIn(credentials).then((user) => {

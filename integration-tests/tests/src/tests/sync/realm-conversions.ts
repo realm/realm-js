@@ -133,15 +133,15 @@ describe.skip("Realm conversions", async () => {
         });
 
         if (source.sync) {
-          await realmSrc.syncSession?.uploadAllLocalChanges();
-          await realmSrc.syncSession?.downloadAllServerChanges();
+          await realmSrc.syncSession.uploadAllLocalChanges();
+          await realmSrc.syncSession.downloadAllServerChanges();
         }
         realmSrc.writeCopyTo(this.configDst);
         realmSrc.close();
 
         const realmDst = await Realm.open(this.configDst);
         if (destination.sync) {
-          await realmDst.syncSession?.downloadAllServerChanges();
+          await realmDst.syncSession.downloadAllServerChanges();
         }
         expect(realmDst.objects("Dog").length).equals(5);
         realmDst.close();
@@ -156,7 +156,7 @@ describe.skip("Realm conversions", async () => {
         // Clean up synced source Realm
         const realmSrc = await Realm.open(configSrc);
         realmSrc.write(() => realmSrc.deleteAll());
-        await realmSrc.syncSession?.uploadAllLocalChanges();
+        await realmSrc.syncSession.uploadAllLocalChanges();
         realmSrc.close();
       }
 
@@ -164,7 +164,7 @@ describe.skip("Realm conversions", async () => {
         // Clean up synced destination Realm
         const realmDst = await Realm.open(configDst);
         realmDst.write(() => realmDst.deleteAll());
-        await realmDst.syncSession?.uploadAllLocalChanges();
+        await realmDst.syncSession.uploadAllLocalChanges();
         realmDst.close();
       }
     });

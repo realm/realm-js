@@ -175,7 +175,7 @@ describe("OpenBehaviour", function () {
       realm.write(() => {
         realm.create(DogForSyncSchema.name, { _id: new BSON.ObjectId(), name: "Milo" });
       });
-      await realm.syncSession?.uploadAllLocalChanges();
+      await realm.syncSession.uploadAllLocalChanges();
     }
     {
       // Check that realm contains changes made (using the same user)
@@ -301,7 +301,7 @@ describe("OpenBehaviour", function () {
         realm.create(DogForSyncSchema.name, { _id: new BSON.ObjectId(), name: "Lola" });
       });
 
-      await realm.syncSession?.uploadAllLocalChanges();
+      await realm.syncSession.uploadAllLocalChanges();
 
       realm.close();
       await user.logOut();
@@ -382,7 +382,7 @@ describe("OpenBehaviour", function () {
         realm.create(DogForSyncSchema.name, { _id: new BSON.ObjectId(), name: "Molly" });
       });
 
-      await realm.syncSession?.uploadAllLocalChanges();
+      await realm.syncSession.uploadAllLocalChanges();
 
       realm.close();
       await user.logOut();
@@ -450,7 +450,7 @@ describe("OpenBehaviour", function () {
         realm.create(DogForSyncSchema.name, { _id: new BSON.ObjectId(), name: "Lola" });
       });
 
-      await realm.syncSession?.uploadAllLocalChanges();
+      await realm.syncSession.uploadAllLocalChanges();
 
       realm.close();
       await user.logOut();

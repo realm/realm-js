@@ -303,7 +303,7 @@ describe("App", () => {
         });
       });
 
-      await realm.syncSession?.uploadAllLocalChanges();
+      await realm.syncSession.uploadAllLocalChanges();
       expect(realm.objects("Dog").length).equals(2);
       realm.close();
 
@@ -313,7 +313,7 @@ describe("App", () => {
       //@ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
       const realm2 = await Realm.open(realmConfig);
       expect(nCalls).equals(2);
-      await realm2.syncSession?.downloadAllServerChanges();
+      await realm2.syncSession.downloadAllServerChanges();
 
       const dogs = realm2.objects<IDogForSyncSchema>(DogForSyncSchema.name).sorted("name");
       expect(dogs.length).equals(dogNames.length);

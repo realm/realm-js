@@ -476,7 +476,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         realm.create<IDog>(DogSchema.name, { _id: new BSON.ObjectId(), name: "Oldy", age: 6, owner: luigi });
       });
 
-      await realm.syncSession?.uploadAllLocalChanges();
+      await realm.syncSession.uploadAllLocalChanges();
       await callbackHandle;
     });
   });
@@ -1604,7 +1604,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         // Save the values we want to return, as this could be invalid after uploading, depending on the flexible sync criteria
         const returnValue = { person, id: person._id };
 
-        await realm?.syncSession?.uploadAllLocalChanges();
+        await realm?.syncSession.uploadAllLocalChanges();
 
         return returnValue;
       }
@@ -1778,7 +1778,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           );
 
           expect(tom.isValid()).equals(true);
-          await this.realm.syncSession?.downloadAllServerChanges();
+          await this.realm.syncSession.downloadAllServerChanges();
           expect(tom.isValid()).equals(false);
         });
 

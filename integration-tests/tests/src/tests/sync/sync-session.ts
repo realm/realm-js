@@ -135,7 +135,13 @@ describe("SessionTest", () => {
 
     it("local realm", () => {
       const realm = new Realm();
-      expect(realm.syncSession).to.be.null;
+      expect(realm.syncEnabled).to.be.false;
+      try {
+        realm.syncSession;
+        expect.fail("Expected `realm.syncSession` to throw.");
+      } catch (err: any) {
+        expect(err.message.includes("`syncSession` can only be accessed if sync is enabled")).to.be.true;
+      }
     });
 
     it("config with undefined sync property", async () => {
@@ -143,7 +149,13 @@ describe("SessionTest", () => {
         sync: undefined,
       };
       const realm = await Realm.open(config);
-      expect(realm.syncSession).to.be.null;
+      expect(realm.syncEnabled).to.be.false;
+      try {
+        realm.syncSession;
+        expect.fail("Expected `realm.syncSession` to throw.");
+      } catch (err: any) {
+        expect(err.message.includes("`syncSession` can only be accessed if sync is enabled")).to.be.true;
+      }
     });
 
     it("config with sync and inMemory set", async () => {
@@ -319,7 +331,7 @@ describe("SessionTest", () => {
         let failOnCall = false;
         const progressCallback = (transferred: number, total: number) => {
           unregisterFunc = () => {
-            realm.syncSession?.removeProgressNotification(progressCallback);
+            realm.syncSession.removeProgressNotification(progressCallback);
           };
           if (failOnCall) {
             reject(new Error("Progress callback should not be called after removeProgressNotification"));
@@ -331,7 +343,7 @@ describe("SessionTest", () => {
             unregisterFunc();
             //use second callback to wait for sync finished
             //@ts-expect-error TYPEBUG: enums not exposed in realm namespace
-            realm.syncSession?.addProgressNotification("upload", "reportIndefinitely", (transferred, transferable) => {
+            realm.syncSession.addProgressNotification("upload", "reportIndefinitely", (transferred, transferable) => {
               if (transferred === transferable) {
                 resolve();
               }
@@ -340,7 +352,7 @@ describe("SessionTest", () => {
           }
         };
         //@ts-expect-error TYPEBUG: enums not exposed in realm namespace
-        realm.syncSession?.addProgressNotification("upload", "reportIndefinitely", progressCallback);
+        realm.syncSession.addProgressNotification("upload", "reportIndefinitely", progressCallback);
         writeDataFunc();
       });
       await realm.close();
@@ -394,7 +406,7 @@ describe("SessionTest", () => {
         })
         .then((realm) => {
           return new Promise((resolve) => {
-            realm.syncSession?.addConnectionNotification((newState, oldState) => {
+            realm.syncSession.addConnectionNotification((newState, oldState) => {
               if (oldState === "connected" && newState === "disconnected") {
                 resolve();
               }
@@ -442,8 +454,7 @@ describe("SessionTest", () => {
           return Realm.open(config);
         })
         .then(async (realm) => {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          const session = realm.syncSession!;
+          const session = realm.syncSession;
           session.pause();
           expect(session.connectionState).equals("disconnected");
           expect(session.isConnected()).to.be.false;
@@ -488,8 +499,7 @@ describe("SessionTest", () => {
       const { config } = await getSyncConfWithUser(this.app, partition);
 
       const realm = await Realm.open(config);
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const session = realm.syncSession!;
+      const session = realm.syncSession;
       await waitForConnectionState(session, "connected");
 
       session?.pause();
@@ -504,8 +514,7 @@ describe("SessionTest", () => {
       const { config } = await getSyncConfWithUser(this.app, partition);
 
       const realm = await Realm.open(config);
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const session = realm.syncSession!;
+      const session = realm.syncSession;
       await waitForConnectionState(session, "connected");
 
       session.resume();
@@ -523,8 +532,7 @@ describe("SessionTest", () => {
       const config = getSyncConfiguration(user, partition);
 
       const realm = await Realm.open(config);
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const session = realm.syncSession!;
+      const session = realm.syncSession;
       await waitForConnectionState(session, "connected");
 
       session.pause();
@@ -553,7 +561,7 @@ describe("SessionTest", () => {
           realm1.write(() => {
             realm1.create("Dog", { _id: new BSON.ObjectId(), name: "Lassy" });
           });
-          return realm1.syncSession?.uploadAllLocalChanges(1000);
+          return realm1.syncSession.uploadAllLocalChanges(1000);
         })
         .then(() => {
           return this.app.logIn(Realm.Credentials.anonymous());
@@ -562,7 +570,7 @@ describe("SessionTest", () => {
           const config2 = getSyncConfiguration(user2, partition);
           return Realm.open(config2).then((r) => {
             realm2 = r;
-            return realm2.syncSession?.downloadAllServerChanges();
+            return realm2.syncSession.downloadAllServerChanges();
           });
         })
         .then(() => {
@@ -577,7 +585,7 @@ describe("SessionTest", () => {
         this.app.logIn(Realm.Credentials.anonymous()).then((user) => {
           const config = getSyncConfiguration(user, partition);
           realm = new Realm(config);
-          return realm.syncSession?.downloadAllServerChanges(1);
+          return realm.syncSession.downloadAllServerChanges(1);
         }),
       ).is.rejectedWith("Downloading changes did not complete in 1 ms.");
     });
@@ -588,7 +596,7 @@ describe("SessionTest", () => {
         this.app.logIn(Realm.Credentials.anonymous()).then((user) => {
           const config = getSyncConfiguration(user, partition);
           const realm = new Realm(config);
-          return realm.syncSession?.uploadAllLocalChanges(1);
+          return realm.syncSession.uploadAllLocalChanges(1);
         }),
       ).rejectedWith("Uploading changes did not complete in 1 ms.");
     });
@@ -812,9 +820,9 @@ describe("SessionTest", () => {
       });
 
       // sync changes
-      await realm1.syncSession?.uploadAllLocalChanges();
-      await realm1.syncSession?.downloadAllServerChanges();
-      realm1.syncSession?.pause();
+      await realm1.syncSession.uploadAllLocalChanges();
+      await realm1.syncSession.downloadAllServerChanges();
+      realm1.syncSession.pause();
 
       // create encrypted copy
       const encryptedCopyName = realm1.path + ".copy-encrypted.realm";
@@ -926,8 +934,8 @@ describe("SessionTest", () => {
         }
       });
 
-      await realm1.syncSession?.uploadAllLocalChanges();
-      await realm1.syncSession?.downloadAllServerChanges();
+      await realm1.syncSession.uploadAllLocalChanges();
+      await realm1.syncSession.downloadAllServerChanges();
 
       const outputConfig1 = {
         schema: [PersonForSyncSchema, DogForSyncSchema],
@@ -973,7 +981,7 @@ describe("SessionTest", () => {
 
       // log back in and upload the changes we made locally
       user1 = await this.app.logIn(credentials1);
-      await realm1.syncSession?.uploadAllLocalChanges();
+      await realm1.syncSession.uploadAllLocalChanges();
 
       // create copy no. 2 of the realm
       realm1.writeCopyTo(outputConfig2);
@@ -1005,7 +1013,7 @@ describe("SessionTest", () => {
       );
 
       // add another 25 people locally to the original realm
-      realm1.syncSession?.pause();
+      realm1.syncSession.pause();
       realm1.write(() => {
         for (let i = 0; i < 25; i++) {
           realm1.create("Person", {
@@ -1021,10 +1029,10 @@ describe("SessionTest", () => {
       realm1Persons = realm1.objects("Person");
       realm2Persons = realm2.objects("Person");
       expect(realm1Persons.length).equals(realm2Persons.length + 25, "realm1 should have an additional 25 people");
-      realm1.syncSession?.resume();
+      realm1.syncSession.resume();
 
-      await realm1.syncSession?.uploadAllLocalChanges();
-      await realm1.syncSession?.downloadAllServerChanges();
+      await realm1.syncSession.uploadAllLocalChanges();
+      await realm1.syncSession.downloadAllServerChanges();
 
       await user2.logOut();
       realm2.close();

@@ -90,7 +90,7 @@ async function waitServerSideClientResetDiscardUnsyncedChangesCallbacks(
     addSubscriptions(realm);
   }
 
-  await realm.syncSession?.uploadAllLocalChanges();
+  await realm.syncSession.uploadAllLocalChanges();
   await triggerClientReset(app, user);
   await resetHandle;
 }
@@ -138,7 +138,7 @@ async function waitServerSideClientResetRecoveryCallbacks(
     addSubscriptions(realm);
   }
 
-  await realm.syncSession?.uploadAllLocalChanges();
+  await realm.syncSession.uploadAllLocalChanges();
   await triggerClientReset(app, user);
   await resetHandle;
 }
@@ -186,10 +186,10 @@ async function waitSimulatedClientResetDiscardUnsyncedChangesCallbacks(
     addSubscriptions(realm);
   }
 
-  await realm.syncSession?.uploadAllLocalChanges();
+  await realm.syncSession.uploadAllLocalChanges();
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore calling undocumented method _simulateError
-  realm.syncSession?._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false); // 211 -> diverging histories
+  realm.syncSession._simulateError(211, "Simulate Client Reset", "realm::sync::ProtocolError", false); // 211 -> diverging histories
   await resetHandle;
 }
 
@@ -238,8 +238,7 @@ async function waitSimulatedClientResetRecoverCallbacks(
   realm.write(() => {
     realm.create(DogSchema.name, { _id: new BSON.ObjectId(), name: "Rex", age: 2 });
   });
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const session = realm.syncSession!;
+  const session = realm.syncSession;
   await session.uploadAllLocalChanges();
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore calling undocumented method _simulateError

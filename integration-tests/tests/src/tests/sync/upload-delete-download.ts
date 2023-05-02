@@ -21,16 +21,16 @@ export function itUploadsDeletesAndDownloads(): void {
     if (!this.realm) {
       throw new Error("Expected a 'realm' on the mocha context");
     }
-    if (!this.realm.syncSession) {
-      throw new Error("Expected a 'syncSession' on the realm");
+    if (!this.realm.syncEnabled) {
+      throw new Error("Expected a 'syncSession' on the realm by enabling sync.");
     }
 
     await this.realm.syncSession.uploadAllLocalChanges();
 
     await this.closeRealm({ deleteFile: true, clearTestState: true, reopen: true });
 
-    if (!this.realm.syncSession) {
-      throw new Error("Expected a 'syncSession' on the realm");
+    if (!this.realm.syncEnabled) {
+      throw new Error("Expected a 'syncSession' on the realm by enabling sync.");
     }
 
     await this.realm.syncSession.downloadAllServerChanges();

@@ -58,6 +58,7 @@ describe.skipIf(environment.missingServer, "Synced Realm as local", function () 
     // Re-open as local Realm
     // @ts-expect-error Using `openSyncedRealmLocally: true` is an internal API
     this.realm = new Realm({ path: realmPath, openSyncedRealmLocally: true });
+    expect(this.realm.syncEnabled).to.be.false;
     expect(this.realm.schema[0].name).equals("Person");
     const [alice] = this.realm.objects<IPerson>("Person");
     expect(alice.name).equals("Alice");
