@@ -593,10 +593,7 @@ export class Realm {
    */
   public readonly internal: binding.Realm;
 
-  /**
-   * The sync session if this is a synced Realm
-   */
-  public readonly syncSession: SyncSession | null;
+  private readonly mSyncSession?: SyncSession;
 
   private schemaExtras: RealmSchemaExtra = {};
   private classes: ClassMap;
@@ -689,13 +686,41 @@ export class Realm {
     this.classes = new ClassMap(this, this.internal.schema, this.schema);
 
     const syncSession = this.internal.syncSession;
-    this.syncSession = syncSession ? new SyncSession(syncSession) : null;
+    this.mSyncSession = syncSession ? new SyncSession(syncSession) : undefined;
 
     const initialSubscriptions = config.sync?.initialSubscriptions;
     if (initialSubscriptions && !config.openSyncedRealmLocally) {
       // Do not call `Realm.exists()` here in case the realm has been opened by this point in time.
       this.handleInitialSubscriptions(initialSubscriptions, realmExists);
     }
+  }
+
+  /**
+   * @returns `true` if sync is enabled, otherwise `false`.
+   * @readonly
+   * @note Sync can be enabled by passing a sync config when opening the realm,
+   *  for example: `{ sync: { user, flexible: true } }`.
+   */
+  get syncEnabled(): boolean {
+    return !!this.internal.config.syncConfig;
+    // TODO: Or: `return !!this.mSyncSession;` ?
+  }
+
+  /**
+   * The sync session if this is a synced Realm
+   * @readonly
+   * @throws {@link Error} if sync is not enabled for this app.
+   */
+  get syncSession(): SyncSession {
+    assert(
+      this.internal.config.syncConfig,
+      "`syncSession` can only be accessed if sync is enabled, but sync is " +
+        "currently disabled for your app. Add a sync config when opening the " +
+        "Realm, for example: { sync: { user, flexible: true } }.",
+    );
+    assert(this.mSyncSession, "Internal error: Expected a sync session.");
+
+    return this.mSyncSession;
   }
 
   /**
@@ -784,7 +809,8 @@ export class Realm {
 
   /**
    * The latest set of flexible sync subscriptions.
-   * @throws {@link Error} If flexible sync is not enabled for this app.
+   * @readonly
+   * @throws {@link Error} if flexible sync is not enabled for this app.
    */
   get subscriptions(): SubscriptionSet {
     const { syncConfig } = this.internal.config;
@@ -811,7 +837,7 @@ export class Realm {
    */
   close(): void {
     this.internal.close();
-    this.syncSession?.resetInternal();
+    this.mSyncSession?.resetInternal();
   }
 
   // TODO: Support embedded objects
