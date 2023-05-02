@@ -171,8 +171,7 @@ export function toBindingNotifyAfterClientResetWithFallback(
     } else {
       const realm = new Realm(null, { internal: binding.Helpers.consumeThreadSafeReferenceToSharedRealm(tsr) });
       if (onFallback) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        onFallback(realm.syncSession!, realm.path);
+        onFallback(realm.syncSession, realm.path);
       } else {
         throw new Error("onFallback is undefined");
       }
