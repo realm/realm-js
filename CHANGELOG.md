@@ -4,21 +4,22 @@
 * None
 
 ### Enhancements
-* None
+* Improve performance of equality queries on a non-indexed mixed property by about 30%. ([realm/realm-core#6506](https://github.com/realm/realm-core/issues/6506))
+* PBS to FLX Migration for migrating a client app that uses partition based sync to use flexible sync under the hood if the server has been migrated to flexible sync. ([realm/realm-core#6554](https://github.com/realm/realm-core/issues/6554))
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
-
+* If session multiplexing was enabled in the sync client and multiple realms for multiple users were being synchronized, a connection authenticated for the wrong user could have been used, resulting in a `UserMismatch` error from the server. ([realm/realm-core#6320](https://github.com/realm/realm-core/pull/6320), since v10.0.0).
+* If session multiplexing was enabled and an automatic client reset failed, it could cause all sessions to fail with a fatal ProtocolError rather than just the session that failed to client reset. This would mean that no other sync session would be able to be opened for up to an hour without restarting the app. ([realm/realm-core#6320](https://github.com/realm/realm-core/pull/6320), since v10.10.0)
+* Performing a query like `{1, 2, 3, ...} IN list` where the array is longer than 8 and all elements are smaller than some values in list, the app would crash. ([realm/realm-core#1183](https://github.com/realm/realm-kotlin/issues/1183), since v10.20.0)
+* Performing a large number of queries without ever performing a write resulted in steadily increasing memory usage, some of which was never fully freed due to an unbounded cache. ([realm/realm-swift#7978](https://github.com/realm/realm-swift/issues/7978), since v10.19.0)
 ### Compatibility
 * React Native >= v0.71.0
 * Realm Studio v14.0.0.
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+* Upgraded Realm Core from v13.9.0 to v13.10.0. ([#5784](https://github.com/realm/realm-js/issues/5784))
+* Bump the sync protocol version to v8. ([realm/realm-core#6549](https://github.com/realm/realm-core/pull/6549))
 
 ## 11.8.0 (2023-04-12)
 NOTE: Since the file format of the Realm auxiliary files have been changed, it is required to use Realm Studio v14.0.0 to open Realm files produced by this release.
@@ -1250,7 +1251,7 @@ Based on Realm JS v10.10.1: See changelog below for details on enhancements and 
 * File format: generates Realms with format v22 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v11.4.1 to v10.6.0.
+* Upgraded Realm Core from v11.4.1 to v11.6.0.
 * Added use of [ccache](https://ccache.dev/) in build scripts, XCode projects and the integration tests GHA workflow.
 * Dropped using `install-local` in the integration tests, in favour of a more involved Metro configuration.
 * Added combined type definition for Realm.object and Realm.objectForPrimaryKey so they can be cleanly wrapped.
