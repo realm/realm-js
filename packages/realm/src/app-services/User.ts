@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
+  AnyApp,
   ApiKeyAuth,
   App,
   Credentials,
@@ -104,7 +105,11 @@ export class User<
     FunctionsFactoryType = DefaultFunctionsFactory,
     CustomDataType = DefaultObject,
     UserProfileDataType = DefaultUserProfileData,
-  >(internal: binding.SyncUser) {
+  >(internal: binding.SyncUser, app?: AnyApp) {
+    // Update the static user reference to the current app
+    if (app) {
+      App.setAppByUser(internal, app);
+    }
     // TODO: Use a WeakRef to memoize the SDK object
     return new User<FunctionsFactoryType, CustomDataType, UserProfileDataType>(internal, App.getAppByUser(internal));
   }
