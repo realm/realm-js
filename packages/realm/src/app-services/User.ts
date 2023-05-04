@@ -82,7 +82,7 @@ export class User<
   UserProfileDataType = DefaultUserProfileData,
 > {
   /** @internal */
-  public app: App;
+  public app: App<FunctionsFactoryType, CustomDataType>;
 
   /** @internal */
   public internal: binding.SyncUser;
@@ -104,13 +104,13 @@ export class User<
     FunctionsFactoryType = DefaultFunctionsFactory,
     CustomDataType = DefaultObject,
     UserProfileDataType = DefaultUserProfileData,
-  >(internal: binding.SyncUser) {
+  >(internal: binding.SyncUser): User<FunctionsFactoryType, CustomDataType, UserProfileDataType> {
     // TODO: Use a WeakRef to memoize the SDK object
-    return new User<FunctionsFactoryType, CustomDataType, UserProfileDataType>(internal, App.getAppByUser(internal));
+    return new User(internal, App.getByUser(internal));
   }
 
   /** @internal */
-  constructor(internal: binding.SyncUser, app: App) {
+  constructor(internal: binding.SyncUser, app: App<FunctionsFactoryType, CustomDataType>) {
     this.internal = internal;
     this.app = app;
     this.cachedProfile = undefined;

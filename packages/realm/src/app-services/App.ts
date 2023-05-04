@@ -21,6 +21,7 @@ import {
   Credentials,
   DefaultFunctionsFactory,
   EmailPasswordAuth,
+  IndirectWeakMap,
   Listeners,
   Sync,
   User,
@@ -77,6 +78,8 @@ export type AppChangeCallback = () => void;
 
 type AppListenerToken = binding.AppSubscriptionToken;
 
+const appByUser = new IndirectWeakMap<binding.SyncUser, App<any, any>, string>(({ identity }) => identity);
+
 /**
  * The class represents an Atlas App Services Application.
  *
@@ -87,8 +90,6 @@ type AppListenerToken = binding.AppSubscriptionToken;
 export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType = Record<string, unknown>> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private static appById = new Map<string, binding.WeakRef<App<any, any>>>();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private static appByUserId = new Map<string, binding.WeakRef<App<any, any>>>();
 
   /**
    * Get or create a singleton Realm App from an id.
@@ -130,8 +131,8 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
   public static userAgent = `RealmJS/${App.deviceInfo.sdkVersion} (${App.deviceInfo.platform}, v${App.deviceInfo.platformVersion})`;
 
   /** @internal */
-  public static getAppByUser(userInternal: binding.SyncUser): App {
-    const app = this.appByUserId.get(userInternal.identity)?.deref();
+  public static getByUser(userInternal: binding.SyncUser) {
+    const app = appByUser.get(userInternal);
     if (!app) {
       throw new Error(`Cannot determine which app is associated with user (id = ${userInternal.identity})`);
     }
@@ -202,8 +203,8 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
 
   public async logIn(credentials: Credentials) {
     const userInternal = await this.internal.logInWithCredentials(credentials.internal);
-    App.appByUserId.set(userInternal.identity, new binding.WeakRef(this));
-    return new User(userInternal, this);
+    appByUser.set(userInternal, this);
+    return User.get(userInternal);
   }
 
   public get emailPasswordAuth(): EmailPasswordAuth {

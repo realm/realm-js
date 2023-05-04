@@ -2,6 +2,7 @@
   "loader": "tsx",
   "enable-source-maps": true,
   "no-warnings": true,
+  "expose-gc": true,
   "require": "src/node/index.ts",
   "spec": "src/tests/*.test.ts"
 }
