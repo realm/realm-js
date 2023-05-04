@@ -20,8 +20,9 @@ import { BSON } from "realm";
 import { expect } from "chai";
 import { importAppBefore } from "../../hooks";
 import { generatePartition } from "../../utils/generators";
-import { getUrls } from "../../utils/import-app";
+import { baseUrl } from "../../utils/import-app";
 import { select } from "../../utils/select";
+import { buildAppConfig } from "../../utils/build-app-config";
 
 const TestObjectSchema: Realm.ObjectSchema = {
   primaryKey: "_id",
@@ -77,8 +78,7 @@ describe("App", () => {
     afterEach(async () => {
       Realm.clearTestState();
     });
-    const { baseUrl } = getUrls();
-    const missingAppConfig = { id: "smurf", baseUrl: baseUrl };
+    const missingAppConfig = { id: "smurf", baseUrl };
 
     it("from config", () => {
       //even if "id" is not an existing app we can still instantiate a new Realm.
@@ -133,7 +133,7 @@ describe("App", () => {
   });
 
   describe("with valid app", async () => {
-    importAppBefore("with-db");
+    importAppBefore(buildAppConfig("with-anon").anonAuth());
 
     it("logins successfully ", async function (this: Mocha.Context & AppContext & RealmContext) {
       let user;
@@ -226,7 +226,12 @@ describe("App", () => {
   });
 
   describe("with email-password auth", () => {
-    importAppBefore("with-email-password");
+    importAppBefore(
+      buildAppConfig("with-email-password").emailPasswordAuth({
+        autoConfirm: true,
+        resetPasswordUrl: "http://localhost/resetPassword",
+      }),
+    );
     it("throws on login with non existing user ", async function (this: Mocha.Context & AppContext & RealmContext) {
       expect(this.app).instanceOf(Realm.App);
       const credentials = Realm.Credentials.emailPassword("me", "secret");
@@ -242,7 +247,7 @@ describe("App", () => {
   });
 
   describe("with sync", () => {
-    importAppBefore("with-db");
+    importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
 
     it("migration while sync is enabled throws", async function (this: Mocha.Context & AppContext & RealmContext) {
       const user = await this.app.logIn(Realm.Credentials.anonymous());

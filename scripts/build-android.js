@@ -91,7 +91,7 @@ for (const arch of architectures) {
     "-DANDROID_NATIVE_API_LEVEL=16",
     `-DCMAKE_BUILD_TYPE=${buildType}`,
     "-DANDROID_STL=c++_shared",
-    path.resolve(packageRoot, "packages/realm/bindgen/vendor/bindgen-lib"),
+    path.resolve(packageRoot, "packages/realm/bindgen"),
   ];
   exec(cmakePath, args, { cwd: archBuildDir, stdio: "inherit" });
 

@@ -9,10 +9,10 @@
 # Everything here we want to see, so this one is easy.
 !/packages/bindgen/generated/
 
-# Only want to see a single file here for now.
-!/packages/bindgen/build
-/packages/bindgen/build/*
-!/packages/bindgen/build/node_init.cpp
+# Only want to see generated sources in build dir
+!/packages/realm/bindgen/build
+/packages/realm/bindgen/build/*
+!/packages/realm/bindgen/build/*.cpp
 
 # We also generate extracted .d.ts files into realm/generated/types,
 # but those are redundant with the source files so we don't need to see them.

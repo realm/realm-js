@@ -22,7 +22,7 @@ const xcode = require("./xcode-cli");
 const logcat = require("./logcat");
 
 const IOS_DEVICE_NAME = "realm-js-integration-tests";
-const IOS_DEVICE_TYPE_ID = "com.apple.CoreSimulator.SimDeviceType.iPhone-14";
+const IOS_DEVICE_TYPE_ID = "com.apple.CoreSimulator.SimDeviceType.iPhone-13";
 
 const { MOCHA_REMOTE_PORT, PLATFORM, SPAWN_LOGCAT, SKIP_RUNNER, RETRY_DELAY, RETRIES } = process.env;
 
@@ -75,7 +75,11 @@ function ensureSimulator() {
     const { devicetypes } = xcode.simctl.list("devicetypes");
     const deviceType = devicetypes.find(({ identifier }) => identifier === IOS_DEVICE_TYPE_ID);
     if (!deviceType) {
-      throw new Error(`System doesn't have the "${IOS_DEVICE_TYPE_ID}" device type`);
+      throw new Error(
+        `System doesn't have the "${IOS_DEVICE_TYPE_ID}" device type, found: ${devicetypes
+          .map(({ identifier }) => identifier)
+          .join(", ")}`,
+      );
     }
 
     // Shutdown all booted simulators (as they might interfeer by loading and executing the Metro bundle)

@@ -55,7 +55,7 @@
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@rollup/plugin-typescript": "^9.0.2",
     "@testing-library/jest-native": "^4.0.13",
-    "@testing-library/react-native": "^11.2.0",
+    "@testing-library/react-native": "^12.1.1",
     "@types/jest": "^26.0.24",
     "@types/lodash-es": "^4.17.6",
     "@types/react": "^18.0.21",

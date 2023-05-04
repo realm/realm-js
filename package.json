@@ -24,7 +24,6 @@
         "./packages/realm:bundle",
         "./packages/babel-plugin:bundle",
         "./packages/mocha-reporter:bundle",
-        "./packages/realm-app-importer:bundle",
         "./packages/realm-react:bundle",
         "./packages/realm-web:bundle",
         "./packages/realm-tools:build"

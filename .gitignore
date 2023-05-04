@@ -88,6 +88,10 @@ integration-tests/tests/src/bench/rolledup.js
 # TODO: Solve .lock files are produced in "throws when called with an empty string"
 integration-tests/**/.lock
 
+# Test coverage artifacts
+coverage/
+.nyc_output/
+
 # Realm App Importer artifacts
 **/imported-apps/
 **/realm-config

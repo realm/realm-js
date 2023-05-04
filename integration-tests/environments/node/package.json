@@ -16,8 +16,7 @@
         "../../../packages/realm:bundle",
         "../../../packages/realm:build:node",
         "../../../packages/mocha-reporter:bundle",
-        "../../../packages/realm-network-transport:bundle",
-        "../../../packages/realm-app-importer:bundle"
+        "../../../packages/realm-network-transport:bundle"
       ]
     },
     "test:commonjs": {
@@ -26,8 +25,7 @@
         "../../../packages/realm:bundle",
         "../../../packages/realm:build:node",
         "../../../packages/mocha-reporter:bundle",
-        "../../../packages/realm-network-transport:bundle",
-        "../../../packages/realm-app-importer:bundle"
+        "../../../packages/realm-network-transport:bundle"
       ]
     }
   },

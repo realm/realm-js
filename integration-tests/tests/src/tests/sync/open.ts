@@ -20,9 +20,10 @@ import { expect } from "chai";
 import { Realm } from "realm";
 
 import { authenticateUserBefore, importAppBefore } from "../../hooks";
+import { buildAppConfig } from "../../utils/build-app-config";
 
 describe("Realm.open on a sync Realm", () => {
-  importAppBefore("with-db-flx");
+  importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
   authenticateUserBefore();
 
   it("fails gracefully when canceled while opening", async function (this: UserContext) {

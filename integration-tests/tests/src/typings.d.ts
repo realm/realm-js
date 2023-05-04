@@ -39,6 +39,8 @@ type KnownEnvironment = {
   longTimeout?: number;
   /** Set the name of the cluster, used when setting up the "mongodb-atlas" service on imported apps. */
   mongodbClusterName?: string;
+  /** The type of service to use when importing an app which uses the mongodb service. */
+  mongodbServiceType?: "mongodb" | "mongodb-atlas";
   /** Run the performance tests (skipped by default) */
   performance?: true;
   /** Disable deletion of the Realm app after the test run. */

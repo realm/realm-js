@@ -16,16 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+/* eslint-env node */
+
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import json from "@rollup/plugin-json";
 import typescript from "@rollup/plugin-typescript";
 import replace from "@rollup/plugin-replace";
 import dts from "rollup-plugin-dts";
+import istanbul from "rollup-plugin-istanbul";
 
 import pkg from "./package.json" assert { type: "json" };
 
 const mainExport = pkg.exports["."];
+
+const { ENABLE_TEST_COVERAGE_INSTRUMENTATION } = process.env;
+if (ENABLE_TEST_COVERAGE_INSTRUMENTATION) {
+  // eslint-disable-next-line no-console
+  console.warn(`\n\n!!! WARNING: Instrumenting ${mainExport.node} for test coverage !!!\n`);
+}
 
 export default [
   {
@@ -45,6 +54,11 @@ export default [
       },
     ],
     plugins: [
+      ENABLE_TEST_COVERAGE_INSTRUMENTATION === "true"
+        ? istanbul({
+            include: ["src/**"],
+          })
+        : undefined,
       nodeResolve({
         modulesOnly: true,
         preferBuiltins: true,

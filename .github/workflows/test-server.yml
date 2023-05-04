@@ -1,32 +1,42 @@
 name: Run test server
-env:
-  SERVER_TAG: latest
-  NGROK_SUBDOMAIN: realm-js-test-server-${{ github.event.workflow_run.id || github.run_id }}-${{ github.event.workflow_run.run_attempt || github.run_attempt }}
+
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows:
-      - Disabled for now
-      # - Pull request build and test
-    types:
-      - in_progress
+    inputs:
+      ngrok_subdomain:
+        description: A subdomain to prefix ".ngrok.io" used for the server.
+        type: string
+      run_id:
+        description: The GitHub Actions run id of the triggering action, which will be used to await completion.
+        type: number
+      server_tag:
+        description: The docker tag to use when pulling the server
+        type: string
+        default: latest
+
 jobs:
   server:
     name: Run test server
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Determine Ngrok subdomain
+        id: ngrok-config
+        run:
+          subdomain="${{ inputs.ngrok_subdomain || format('realm-js-test-server-{0}-{1}', github.run_id, github.run_attempt) }}";
+          echo "subdomain=${subdomain}" >> $GITHUB_OUTPUT;
+          echo "hostname=${subdomain}.ngrok.io" >> $GITHUB_OUTPUT;
       - name: Start Ngrok
-        run: docker run --detach --network host --env NGROK_AUTHTOKEN ngrok/ngrok http --subdomain ${{ env.NGROK_SUBDOMAIN }} 9090
+        run: docker run --detach --network host --env NGROK_AUTHTOKEN ngrok/ngrok http --subdomain ${{ steps.ngrok-config.outputs.subdomain }} 9090
         env:
           NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
       - name: Preparing server entrypoint
         # Writes an entrypoint script, which will patch the test-config to use the right hostnames, before it starts the server
         run: |
           echo '#!/bin/bash' >> patch-and-run.sh
-          echo 'NGROK_HOSTNAME=${{ env.NGROK_SUBDOMAIN }}.ngrok.io' >> patch-and-run.sh
+          echo 'NGROK_HOSTNAME=${{ steps.ngrok-config.outputs.hostname }}' >> patch-and-run.sh
           # Replace localhost:9090 with the Ngrok hostname, "http" with "https" and "ws" with "wss"
-          echo 'sed -i -e "s/http:\/\/localhost:9090/https:\/\/${NGROK_HOSTNAME}/g" -e "s/ws:\/\/localhost:9090/wss:\/\/${NGROK_HOSTNAME}/g" /stitch/test_config.json' >> patch-and-run.sh
+          echo 'sed -i -e "s/http:\/\/localhost:9090/https:\/\/${{ steps.ngrok-config.outputs.hostname }}/g" -e "s/ws:\/\/localhost:9090/wss:\/\/${{ steps.ngrok-config.outputs.hostname }}/g" /stitch/test_config.json' >> patch-and-run.sh
           echo 'cat /stitch/test_config.json' >> patch-and-run.sh
           # Start the server
           echo '/run.sh' >> patch-and-run.sh
@@ -38,12 +48,16 @@ jobs:
           username: realm-ci
           password: ${{ secrets.REALM_CI_GITHUB_API_KEY }}
       - name: Start server
-        run: docker run ${{ env.MODE }} --env AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY --publish 9090:9090 --volume `pwd`/patch-and-run.sh:/patch-and-run.sh --entrypoint /patch-and-run.sh ghcr.io/realm/ci/mongodb-realm-test-server:${{ env.SERVER_TAG }}
+        run: docker run ${{ env.MODE }} --env AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY --publish 9090:9090 --volume `pwd`/patch-and-run.sh:/patch-and-run.sh --entrypoint /patch-and-run.sh ghcr.io/realm/ci/mongodb-realm-test-server:${{ inputs.server_tag }}
         env:
-          MODE: ${{ github.event_name == 'workflow_dispatch' && '--interactive' || '--detach' }}
+          # Use --detach if a run_id is provided to watch for completion, --interactive otherwise
+          MODE: ${{ inputs.run_id && '--detach' || '--interactive' }}
           AWS_ACCESS_KEY_ID: ${{ secrets.BAAS_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BAAS_AWS_SECRET_ACCESS_KEY }}
       - name: Wait for triggering run to complete
-        run: gh run watch ${{ github.event.workflow_run.id || github.run_id }}
+        if:  ${{ inputs.run_id }}
+        # Using " > /dev/null" because this will print the status of all jobs and steps every second
+        # Using "--interval 60" because we don't want to hit the GitHub actions requests limit
+        run: gh run watch --interval 60 ${{ inputs.run_id }} > /dev/null
         env:
           GH_TOKEN: ${{ github.token }}
