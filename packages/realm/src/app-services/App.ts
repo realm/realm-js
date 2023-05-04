@@ -78,7 +78,7 @@ export type AppChangeCallback = () => void;
 
 type AppListenerToken = binding.AppSubscriptionToken;
 
-const appByUser = new IndirectWeakMap<binding.SyncUser, App, string>(({ identity }) => identity);
+const appByUser = new IndirectWeakMap<binding.SyncUser, App<any, any>, string>(({ identity }) => identity);
 
 /**
  * The class represents an Atlas App Services Application.
@@ -90,8 +90,6 @@ const appByUser = new IndirectWeakMap<binding.SyncUser, App, string>(({ identity
 export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType = Record<string, unknown>> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private static appById = new Map<string, binding.WeakRef<App<any, any>>>();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private static appByUserId = new Map<string, binding.WeakRef<App<any, any>>>();
 
   /**
    * Get or create a singleton Realm App from an id.
@@ -206,7 +204,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
   public async logIn(credentials: Credentials) {
     const userInternal = await this.internal.logInWithCredentials(credentials.internal);
     appByUser.set(userInternal, this);
-    return new User(userInternal, this);
+    return User.get(userInternal);
   }
 
   public get emailPasswordAuth(): EmailPasswordAuth {
