@@ -34,5 +34,6 @@ export function getApp(id: string): App {
 export * from "./App";
 export * from "./Credentials";
 export * from "./User";
+export * from "./Storage";
 export { MongoDBRealmError } from "./MongoDBRealmError";
 export { getEnvironment, setEnvironment } from "./environment";
