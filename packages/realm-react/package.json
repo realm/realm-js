@@ -8,7 +8,7 @@
   "source": "src/index.tsx",
   "scripts": {
     "bundle": "wireit",
-    "start": "npm run build -- --watch",
+    "start": "npm run bundle -- --watch",
     "test": "wireit",
     "lint": "eslint --ext .tsx .",
     "docs": "wireit"

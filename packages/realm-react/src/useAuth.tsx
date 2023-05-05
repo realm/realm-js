@@ -39,8 +39,7 @@ interface UseAuth {
    * If this is called when a user is currently logged in, it will switch the user.
    *
    * @returns A `Realm.User` instance for the logged in user.
-   * @throws if another login is already in progress for this `AppProvider`
-   * context.
+   * @throws if another operation is already in progress for this `useAuth` instance.
    * @throws if there is an error logging in.
    */
   logIn(credentials: Realm.Credentials): Promise<Realm.User>;
@@ -49,8 +48,7 @@ interface UseAuth {
    * Log in with the Anonymous authentication provider.
    *
    * @returns A `Realm.User` instance for the logged in user.
-   * @throws if another login is already in progress for this `AppProvider`
-   * context.
+   * @throws if another operation is already in progress for this `useAuth` instance.
    * @throws if there is an error logging in.
    */
   logInWithAnonymous(): Promise<Realm.User>;
@@ -59,8 +57,7 @@ interface UseAuth {
    * Log in with an API key.
    *
    * @returns A `Realm.User` instance for the logged in user.
-   * @throws if another login is already in progress for this `AppProvider`
-   * context.
+   * @throws if another operation is already in progress for this `useAuth` instance.
    * @throws if there is an error logging in.
    */
   logInWithApiKey(key: string): Promise<Realm.User>;
@@ -69,8 +66,7 @@ interface UseAuth {
    * Log in with Email / Password.
    *
    * @returns A `Realm.User` instance for the logged in user.
-   * @throws if another login is already in progress for this `AppProvider`
-   * context.
+   * @throws if another operation is already in progress for this `useAuth` instance.
    * @throws if there is an error logging in.
    */
   logInWithEmailPassword(params: { email: string; password: string }): Promise<Realm.User>;
@@ -79,8 +75,7 @@ interface UseAuth {
    * Log in with a JSON Web Token (JWT).
    *
    * @returns A `Realm.User` instance for the logged in user.
-   * @throws if another login is already in progress for this `AppProvider`
-   * context.
+   * @throws if another operation is already in progress for this `useAuth` instance.
    * @throws if there is an error logging in.
    */
   logInWithJWT(token: string): Promise<Realm.User>;
@@ -89,8 +84,7 @@ interface UseAuth {
    * Log in with Google.
    *
    * @returns A `Realm.User` instance for the logged in user.
-   * @throws if another login is already in progress for this `AppProvider`
-   * context.
+   * @throws if another operation is already in progress for this `useAuth` instance.
    * @throws if there is an error logging in.
    */
   logInWithGoogle(params: { idToken: string } | { authCode: string }): Promise<Realm.User>;
@@ -99,8 +93,7 @@ interface UseAuth {
    * Log in with Apple.
    *
    * @returns A `Realm.User` instance for the logged in user.
-   * @throws if another login is already in progress for this `AppProvider`
-   * context.
+   * @throws if another operation is already in progress for this `useAuth` instance.
    * @throws if there is an error logging in.
    */
   logInWithApple(idToken: string): Promise<Realm.User>;
@@ -109,8 +102,7 @@ interface UseAuth {
    * Log in with Facebook.
    *
    * @returns A `Realm.User` instance for the logged in user.
-   * @throws if another login is already in progress for this `AppProvider`
-   * context.
+   * @throws if another operation is already in progress for this `useAuth` instance.
    * @throws if there is an error logging in.
    */
   logInWithFacebook(accessToken: string): Promise<Realm.User>;
@@ -119,8 +111,7 @@ interface UseAuth {
    * Log in with a custom function.
    *
    * @returns A `Realm.User` instance for the logged in user.
-   * @throws if another login is already in progress for this `AppProvider`
-   * context.
+   * @throws if another operation is already in progress for this `useAuth` instance.
    * @throws if there is an error logging in.
    */
   logInWithFunction<PayloadType extends Record<string, unknown>>(payload: PayloadType): Promise<Realm.User>;
@@ -129,9 +120,8 @@ interface UseAuth {
    * Log out the current user.
    *
    * @returns A `Realm.User` instance for the logged in user.
-   * @throws if another login is already in progress for this `RealmAppProvider`
-   * context.
-   * @throws if there is an error logging in.
+   * @throws if another operation is already in progress for this `useAuth` instance.
+   * @throws if there is an error logging out.
    */
   logOut(): Promise<void>;
 

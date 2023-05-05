@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useApp, useUser} from '@realm/react';
 import {Pressable, StyleSheet, Text} from 'react-native';
 
@@ -10,11 +10,13 @@ import colors from './styles/colors';
 import {OfflineModeButton} from './components/OfflineModeButton';
 
 import {useRealm, useQuery} from '@realm/react';
+import {useAuth} from '@realm/react';
 
 export const AppSync: React.FC = () => {
   const realm = useRealm();
   const user = useUser();
   const app = useApp();
+  const {logOut} = useAuth();
   const [showDone, setShowDone] = useState(false);
   const tasks = useQuery(
     Task,
@@ -31,10 +33,6 @@ export const AppSync: React.FC = () => {
     });
   }, [realm, tasks]);
 
-  const handleLogout = useCallback(() => {
-    user.logOut();
-  }, [user]);
-
   return (
     <>
       <Text style={styles.idText}>Syncing with app id: {app.id}</Text>
@@ -44,7 +42,7 @@ export const AppSync: React.FC = () => {
         setShowDone={setShowDone}
         showDone={showDone}
       />
-      <Pressable style={styles.authButton} onPress={handleLogout}>
+      <Pressable style={styles.authButton} onPress={logOut}>
         <Text
           style={styles.authButtonText}>{`Logout ${user?.profile.email}`}</Text>
       </Pressable>

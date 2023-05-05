@@ -2,7 +2,6 @@
  * @format
  */
 
-import 'react-native-get-random-values';
 import React from 'react';
 import {AppRegistry} from 'react-native';
 import {AppWrapperNonSync} from './app/AppWrapperNonSync';
