@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import Realm, { BSON } from "realm";
+import Realm, { BSON, ObjectSchema } from "realm";
 import { expect } from "chai";
 import { openRealmBeforeEach } from "../hooks";
 import { IPerson, PersonSchema } from "../schemas/person-and-dogs";
@@ -63,16 +63,22 @@ class NullableTypesObject extends Realm.Object implements INullableTypesObject {
   };
 }
 
-class Story extends Realm.Object<Story> {
-  id?: number;
+interface IStory {
+  title?: string;
+  content?: string;
+}
+
+class Story extends Realm.Object<Story> implements IStory {
+  title?: string;
   content?: string;
 
-  static schema = {
+  static schema: ObjectSchema = {
     name: "Story",
     properties: {
-      id: "string",
-      content: { type: "int" }, //TODO Not sure why it seems that the schema doesn't work properly
+      title: { type: "string" },
+      content: { type: "string", indexed: "fulltext" },
     },
+    primaryKey: "title",
   };
 }
 
@@ -147,15 +153,40 @@ describe("Queries", () => {
   describe.only("Full text search", () => {
     openRealmBeforeEach({ schema: [Story] });
 
+    const story1: IStory = {
+      title: "Dogs and cats",
+      content: "A short story about a dog running after two cats",
+    };
+
+    const story2: IStory = {
+      title: "Adventure",
+      content: "A novel about two friends looking for a treasure",
+    };
+
+    const story3: IStory = {
+      title: "A friend",
+      content: "A short poem about friendship",
+    };
+
+    const story4: IStory = {
+      title: "Lord of the rings",
+      content: "A long story about the quest for a ring",
+    };
+
     beforeEach(function (this: RealmContext) {
       this.realm.write(() => {
-        this.realm.create<INullableTypesObject>("Story", { boolCol: true });
-        this.realm.create<INullableTypesObject>("Story", { boolCol: true });
-        this.realm.create<INullableTypesObject>("Story", { boolCol: undefined });
+        this.realm.create<IStory>("Story", story1);
+        this.realm.create<IStory>("Story", story2);
+        this.realm.create<IStory>("Story", story3);
+        this.realm.create<IStory>("Story", story4);
       });
     });
 
-    it("basic test", () => {});
+    it("basic test", function (this: RealmContext) {
+      expectQueryResultValues(this.realm, Story, "id", [[1, "content TEXT 'cats'"]]);
+    });
+
+    //TODO Need to add test for full text search on title
   });
 
   describe("Basic types", () => {
