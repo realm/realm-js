@@ -175,15 +175,36 @@ describe("Queries", () => {
 
     beforeEach(function (this: RealmContext) {
       this.realm.write(() => {
-        this.realm.create<IStory>("Story", story1);
-        this.realm.create<IStory>("Story", story2);
-        this.realm.create<IStory>("Story", story3);
-        this.realm.create<IStory>("Story", story4);
+        this.realm.create("Story", story1);
+        this.realm.create("Story", story2);
+        this.realm.create("Story", story3);
+        this.realm.create("Story", story4);
       });
     });
 
     it("basic test", function (this: RealmContext) {
-      expectQueryResultValues(this.realm, Story, "id", [[1, "content TEXT 'cats'"]]);
+      expectQueryResultValues(this.realm, Story, "title", [[[story1.title], "content TEXT 'cats'"]]);
+      expectQueryResultValues(this.realm, Story, "title", [[[story1.title, story4.title], "content TEXT 'story'"]]);
+    });
+
+    it("multiple terms", function (this: RealmContext) {
+      expectQueryResultValues(this.realm, Story, "title", [[[story1.title], "content TEXT 'two dog'"]]);
+      expectQueryResultValues(this.realm, Story, "title", [[[story3.title], "content TEXT 'poem short friendship'"]]);
+      expectQueryResultValues(this.realm, Story, "title", [
+        [[story1.title, story2.title, story3.title, story4.title], "content TEXT 'A about'"],
+      ]);
+    });
+
+    it("empty results", function (this: RealmContext) {
+      expectQueryResultValues(this.realm, Story, "title", [[[], "content TEXT 'two dog friends'"]]);
+    });
+
+    it.only("exclude term", function (this: RealmContext) {
+      expectQueryResultValues(this.realm, Story, "title", [[[story1.title], "content TEXT '-+cts'"]]);
+    });
+
+    it("throws on column with no index", function (this: RealmContext) {
+      expectQueryException(this.realm, Story, [["Column has no fulltext index", "title TEXT 'cats'"]]);
     });
 
     //TODO Need to add test for full text search on title
