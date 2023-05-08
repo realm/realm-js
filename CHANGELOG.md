@@ -29,7 +29,7 @@
 * Lock file format: New format introduced for multiprocess encryption. All processes accessing the file must be upgraded to the new format.
 
 ### Internal
-* Upgraded Realm Core from v13.8.0 to v13.9.1. ([#5739](https://github.com/realm/realm-js/pull/5739))
+* Upgraded Realm Core from v13.8.0 to v13.10.1. ([#5796](https://github.com/realm/realm-js/pull/5796))
 * Upgraded React Native from 0.71.4 to 0.71.7. ([#5761](https://github.com/realm/realm-js/pull/5761))
 
 ## 12.0.0-alpha.2 (2023-04-05)
