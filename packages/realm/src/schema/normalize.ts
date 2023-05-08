@@ -255,7 +255,7 @@ function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): Can
     name: info.propertyName,
     type: type as PropertyTypeName,
     optional: !!optional,
-    indexed: !!info.isPrimaryKey, //TODO Need to check what does this do.
+    indexed: !!info.isPrimaryKey,
     mapTo: info.propertyName,
   };
   // Add optional properties only if defined (tests expect no 'undefined' properties)

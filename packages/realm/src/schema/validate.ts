@@ -164,7 +164,6 @@ export function validatePropertySchema(
       assert.string(property, `'${propertyName}.property' on '${objectName}'`);
     }
     if (indexed !== undefined) {
-      //TODO Find good error message
       assert(
         typeof indexed === "boolean" || indexed === "fulltext",
         `"indexed" needs to be either a boolean or "fulltext"`,

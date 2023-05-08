@@ -84,7 +84,10 @@ export type CanonicalRealmSchema = CanonicalObjectSchema[];
  */
 export type CanonicalObjectSchemaProperty = CanonicalPropertySchema;
 
-//TODO add docs
+/**
+ * The type of index on a property.
+ * `fulltext` is used to enable support for full-text search and can only be applied to string properties.
+ */
 export type IndexedType = boolean | "fulltext";
 
 /**
@@ -242,7 +245,7 @@ export type PropertySchema = {
    */
   optional?: boolean;
   /**
-   * Whether the property should be indexed.  //TODO need to change this
+   * The type of index applied to the property.
    *
    * Default value: `false` if the property is not a primary key, otherwise `true`.
    */

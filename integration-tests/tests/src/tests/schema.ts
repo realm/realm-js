@@ -83,4 +83,38 @@ describe("Realm schema", () => {
       expect(obj.simpleValue).to.equal(123);
     });
   });
+
+  describe("Schema validation", () => {
+    it("throws on invalid indexed type", () => {
+      expect(() => {
+        new Realm({
+          schema: [
+            {
+              name: "testProp",
+              properties: {
+                content: { type: "string", indexed: 22 },
+              },
+            },
+          ],
+        });
+      }).throws(
+        "Invalid type declaration for property 'content' on 'testProp': \"indexed\" needs to be either a boolean or \"fulltext\"",
+      );
+    });
+  });
+
+  it("throws when declaring fulltext index on non string property", () => {
+    expect(() => {
+      new Realm({
+        schema: [
+          {
+            name: "testProp",
+            properties: {
+              num: { type: "int", indexed: "fulltext" },
+            },
+          },
+        ],
+      });
+    }).throws("Index not supported for this property: num");
+  });
 });
