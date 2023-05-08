@@ -143,9 +143,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
 
   /** @internal */
   public static setAppByUser(userInternal: binding.SyncUser, currentApp: AnyApp): void {
-    if (currentApp) {
-      App.appByUserId.set(userInternal.identity, new binding.WeakRef(currentApp));
-    }
+    App.appByUserId.set(userInternal.identity, new binding.WeakRef(currentApp));
   }
 
   /** @internal */
