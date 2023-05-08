@@ -31,6 +31,9 @@ import {
   fs,
 } from "../internal";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyApp = App<any, any>;
+
 /**
  * This describes the options used to create a Realm App instance.
  */
@@ -86,9 +89,9 @@ type AppListenerToken = binding.AppSubscriptionToken;
  */
 export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType = Record<string, unknown>> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private static appById = new Map<string, binding.WeakRef<App<any, any>>>();
+  private static appById = new Map<string, binding.WeakRef<AnyApp>>();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private static appByUserId = new Map<string, binding.WeakRef<App<any, any>>>();
+  private static appByUserId = new Map<string, binding.WeakRef<AnyApp>>();
 
   /**
    * Get or create a singleton Realm App from an id.
@@ -110,12 +113,12 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
    * @returns The Realm App instance.
    */
   public static get(id: string): App {
-    const cachedApp = this.appById.get(id)?.deref();
+    const cachedApp = App.appById.get(id)?.deref();
     if (cachedApp) {
       return cachedApp;
     }
     const newApp = new App(id);
-    this.appById.set(id, new binding.WeakRef(newApp));
+    App.appById.set(id, new binding.WeakRef(newApp));
     return newApp;
   }
 
@@ -131,11 +134,16 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
 
   /** @internal */
   public static getAppByUser(userInternal: binding.SyncUser): App {
-    const app = this.appByUserId.get(userInternal.identity)?.deref();
+    const app = App.appByUserId.get(userInternal.identity)?.deref();
     if (!app) {
       throw new Error(`Cannot determine which app is associated with user (id = ${userInternal.identity})`);
     }
     return app;
+  }
+
+  /** @internal */
+  public static setAppByUser(userInternal: binding.SyncUser, currentApp: AnyApp): void {
+    App.appByUserId.set(userInternal.identity, new binding.WeakRef(currentApp));
   }
 
   /** @internal */
@@ -202,8 +210,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
 
   public async logIn(credentials: Credentials) {
     const userInternal = await this.internal.logInWithCredentials(credentials.internal);
-    App.appByUserId.set(userInternal.identity, new binding.WeakRef(this));
-    return new User(userInternal, this);
+    return User.get(userInternal, this);
   }
 
   public get emailPasswordAuth(): EmailPasswordAuth {
@@ -214,11 +221,11 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
 
   public get currentUser(): User<FunctionsFactoryType, CustomDataType> | null {
     const currentUser = this.internal.currentUser;
-    return currentUser ? User.get(currentUser) : null;
+    return currentUser ? User.get(currentUser, this) : null;
   }
 
   public get allUsers(): Readonly<Record<string, User<FunctionsFactoryType, CustomDataType>>> {
-    return Object.fromEntries(this.internal.allUsers.map((user) => [user.identity, User.get(user)]));
+    return Object.fromEntries(this.internal.allUsers.map((user) => [user.identity, User.get(user, this)]));
   }
 
   public switchUser(): unknown {

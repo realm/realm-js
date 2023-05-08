@@ -29,7 +29,7 @@ import {
   PartitionValue,
   Subscription,
   SubscriptionSet,
-  SubscriptionsState,
+  SubscriptionSetState,
   SyncSession,
   User,
   assert,
@@ -52,7 +52,9 @@ export class Sync {
   /** @deprecated Please use named imports */
   static MutableSubscriptionSet = MutableSubscriptionSet;
   /** @deprecated Please use named imports */
-  static SubscriptionsState = SubscriptionsState;
+  static SubscriptionSetState = SubscriptionSetState;
+  /** @deprecated Please use {@link SubscriptionSetState} as a named import */
+  static SubscriptionsState = SubscriptionSetState;
   /** @deprecated Please use named imports */
   static NumericLogLevel = NumericLogLevel;
 
