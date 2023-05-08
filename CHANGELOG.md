@@ -8,6 +8,8 @@
 * Enable multiple processes to operate on an encrypted Realm simultaneously. ([realm/realm-core#1845](https://github.com/realm/realm-core/issues/1845))
 * Added `Realm.setLogger`, that allows to setup a single static logger for the duration of the app lifetime. Differently from the now deprecated sync logger (that was setup with `Sync.setLogger`), this new one will emit messages coming also from the local database, and not only from sync. It is also possible to change the log level during the whole duration of the app lifetime with `Realm.setLogLevel`. ([#2546](https://github.com/realm/realm-js/issues/2546))
 * Added support for a sync configuration option to provide an `SSLConfiguration` with a custom function for validating the server's SSL certificate. ([#5485](https://github.com/realm/realm-js/issues/5485))
+* Improve performance of equality queries on a non-indexed mixed property by about 30%. ([realm/realm-core#6506](https://github.com/realm/realm-core/pull/6506))
+* Improve performance of rolling back write transactions after making changes.  ([realm/realm-core#6513](https://github.com/realm/realm-core/pull/6513))
 
 ### Fixed
 * Fix a stack overflow crash when using the query parser with long chains of AND/OR conditions. ([realm/realm-core#6428](https://github.com/realm/realm-core/pull/6428), since v10.11.0)
@@ -17,6 +19,8 @@
 * Added missing implementation of `User.state` and changed the `UserState` enum values to use pascal case to conform to the v11 implementation (except for `UserState.Active` that we now deprecate in favor of `UserState.LoggedIn`). [#5686](https://github.com/realm/realm-js/issues/5686)
 * Getting the `indexOf` a missing value will no longer return `4294967295` instead of `-1` and the `Set#has` will no longer return `true` when missing. Caused by an incorrect conversion of `size_t` to `Number` on x86 (32bit) architectures. ([#5746](https://github.com/realm/realm-js/pull/5746), since 12.0.0-alpha.0)
 * Fixed `App.currentUser()` when being called on a new instance of `App` ([#5790](https://github.com/realm/realm-js/pull/5790))
+* Fixed an error where performing a query like "{1, 2, 3, ...} IN list" where the array is longer than 8 and all elements are smaller than some values in list, the program would crash. [realm/realm-core#6545](https://github.com/realm/realm-core/pull/6545)  
+* Performing a large number of queries without ever performing a write resulted in steadily increasing memory usage, some of which was never fully freed due to an unbounded cache. [realm/realm-core#6530](https://github.com/realm/realm-core/pull/6530)  
 
 ### Compatibility
 * React Native >= v0.71.4
