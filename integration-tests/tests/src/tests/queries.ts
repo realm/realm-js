@@ -150,7 +150,7 @@ const expectQueryResultValues = (
 };
 
 describe("Queries", () => {
-  describe.only("Full text search", () => {
+  describe("Full text search", () => {
     openRealmBeforeEach({ schema: [Story] });
 
     const story1: IStory = {
@@ -212,9 +212,6 @@ describe("Queries", () => {
       expectQueryException(this.realm, Story, [["Column has no fulltext index", "title TEXT 'cats'"]]);
     });
   });
-
-  //TODO Need test for: index applied to not string property
-  // indexed: with the wrong type
 
   describe("Basic types", () => {
     openRealmBeforeEach({ schema: [NullableTypesObject] });
