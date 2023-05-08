@@ -8,6 +8,7 @@
 * Enable multiple processes to operate on an encrypted Realm simultaneously. ([realm/realm-core#1845](https://github.com/realm/realm-core/issues/1845))
 * Added `Realm.setLogger`, that allows to setup a single static logger for the duration of the app lifetime. Differently from the now deprecated sync logger (that was setup with `Sync.setLogger`), this new one will emit messages coming also from the local database, and not only from sync. It is also possible to change the log level during the whole duration of the app lifetime with `Realm.setLogLevel`. ([#2546](https://github.com/realm/realm-js/issues/2546))
 * Added support for a sync configuration option to provide an `SSLConfiguration` with a custom function for validating the server's SSL certificate. [#5485](https://github.com/realm/realm-js/issues/5485)
+* Extended `PropertySchema.indexed` with the `fulltext` option, that allows to create an index for full-text search queries.  [#5755](https://github.com/realm/realm-js/issues/5755)
 
 ### Fixed
 * Fix a stack overflow crash when using the query parser with long chains of AND/OR conditions. ([realm/realm-core#6428](https://github.com/realm/realm-core/pull/6428), since v10.11.0)

@@ -85,8 +85,9 @@ export type CanonicalRealmSchema = CanonicalObjectSchema[];
 export type CanonicalObjectSchemaProperty = CanonicalPropertySchema;
 
 /**
- * The type of index on a property.
- * `fulltext` is used to enable support for full-text search and can only be applied to string properties.
+ * The type of index on a property:
+ * - 'true' enables a regular index
+ * - `fulltext` enables a full-text search index and can only be applied to string properties.
  */
 export type IndexedType = boolean | "fulltext";
 
