@@ -23,7 +23,7 @@ import {
   randomVerifiableEmail,
 } from "../../utils/generators";
 import { KJUR } from "jsrsasign";
-import { UserState } from "realm";
+import { Realm, UserState } from "realm";
 
 import { buildAppConfig } from "../../utils/build-app-config";
 
@@ -491,18 +491,18 @@ describe.skipIf(environment.missingServer, "User", () => {
           exports = async function (loginPayload) {
             // Get a handle for the app.users collection
             const users = context.services.get("mongodb").db("app").collection("users");
-          
+
             // Parse out custom data from the FunctionCredential
-          
+
             const { username, secret } = loginPayload;
-          
+
             if (secret !== "v3ry-s3cret") {
               throw new Error("Ah ah ah, you didn't say the magic word");
             }
             // Query for an existing user document with the specified username
-          
+
             const user = await users.findOne({ username });
-          
+
             if (user) {
               // If the user document exists, return its unique ID
               return user._id.toString();
@@ -572,6 +572,31 @@ describe.skipIf(environment.missingServer, "User", () => {
       expect(await user.functions.sumFunc(1, 2, 3)).equals(6);
 
       await expect(user.functions.error()).to.be.rejectedWith("function not found: 'error'");
+    });
+  });
+  describe("currentUser", () => {
+    importAppBefore(buildAppConfig("with-anon-auth").anonAuth());
+
+    it("persists currentUser on opening the app", async function (this: AppContext & RealmContext) {
+      const credentials = Realm.Credentials.anonymous();
+      const user = await this.app.logIn(credentials);
+      const appId = this.app.id;
+      //@ts-expect-error Wanting to prove that a completely new app instance will still return the current logged in user
+      delete this.app;
+      this.app = new Realm.App(appId);
+
+      {
+        const currentUser = this.app.currentUser;
+        expect(currentUser).not.to.be.null;
+        expect(user.id).to.equal(currentUser?.id);
+      }
+
+      {
+        const newApp = new Realm.App(appId);
+        const currentUser = newApp.currentUser;
+        expect(currentUser).not.to.be.null;
+        expect(user.id).to.equal(currentUser?.id);
+      }
     });
   });
 });
