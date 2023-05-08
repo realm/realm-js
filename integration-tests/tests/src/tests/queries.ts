@@ -200,13 +200,9 @@ describe("Queries", () => {
       expectQueryResultValues(this.realm, Story, "title", [[[], "content TEXT 'amazing'"]]);
     });
 
-    // TODO Reinstate after update
-    // it("exclude term", function (this: RealmContext) {
-    //   expectQueryResultValues(this.realm, Story, "title", [[[story1.title], "content TEXT '-+cts'"]]);
-    // });
-    // it("throws with only excluded terms", function (this: RealmContext) {
-    //   expectQueryException(this.realm, Story, [["Column has no fulltext index", "content TEXT ''"]]);
-    // });
+    it("exclude term", function (this: RealmContext) {
+      expectQueryResultValues(this.realm, Story, "title", [[[story4.title], "content TEXT 'story -cats'"]]);
+    });
 
     it("throws on column with no index", function (this: RealmContext) {
       expectQueryException(this.realm, Story, [["Column has no fulltext index", "title TEXT 'cats'"]]);
