@@ -704,6 +704,19 @@ describe("normalizePropertySchema", () => {
     itNormalizes(
       {
         type: "string",
+        indexed: "full-text",
+      },
+      {
+        type: "string",
+        indexed: "full-text",
+        optional: false,
+      },
+      { isPrimaryKey: false },
+    );
+
+    itNormalizes(
+      {
+        type: "string",
         optional: true,
       },
       {

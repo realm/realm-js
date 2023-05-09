@@ -27,7 +27,6 @@ import {
   PropertySchemaParseError,
   RealmObject,
   RealmObjectConstructor,
-  SchemaParseError,
   assert,
 } from "../internal";
 

@@ -268,8 +268,8 @@ export type PropertySchema = {
 /**
  * Keys used in the property schema that are common among all variations of {@link PropertySchemaStrict}.
  */
-type PropertySchemaCommon = {
-  indexed?: boolean;
+export type PropertySchemaCommon = {
+  indexed?: IndexedType;
   mapTo?: string;
   default?: unknown;
 };
