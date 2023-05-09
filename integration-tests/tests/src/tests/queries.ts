@@ -182,7 +182,7 @@ describe("Queries", () => {
       });
     });
 
-    it("basic test", function (this: RealmContext) {
+    it("single term", function (this: RealmContext) {
       expectQueryResultValues(this.realm, Story, "title", [[[story1.title], "content TEXT 'cats'"]]);
       expectQueryResultValues(this.realm, Story, "title", [[[story1.title, story4.title], "content TEXT 'story'"]]);
     });

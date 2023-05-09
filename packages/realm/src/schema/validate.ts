@@ -166,7 +166,7 @@ export function validatePropertySchema(
     if (indexed !== undefined) {
       assert(
         typeof indexed === "boolean" || indexed === "full-text",
-        `"indexed" needs to be either a boolean or "full-text"`,
+        `Expected '${propertyName}.indexed' on '${objectName}' to be a boolean or 'full-text'.`,
       );
     }
     if (mapTo !== undefined) {
