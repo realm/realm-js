@@ -32,11 +32,13 @@
 * Improve performance of equality queries on a non-indexed mixed property by about 30%. ([realm/realm-core#6506](https://github.com/realm/realm-core/issues/6506))
 * PBS to FLX Migration for migrating a client app that uses partition based sync to use flexible sync under the hood if the server has been migrated to flexible sync. ([realm/realm-core#6554](https://github.com/realm/realm-core/issues/6554))
 * New notifiers can now be registered in write transactions until changes have actually been made in the write transaction. This makes it so that new notifications can be registered inside change notifications triggered by beginning a write transaction (unless a previous callback performed writes). ([realm/realm-core#6560](https://github.com/realm/realm-core/pull/6560))
+
 ### Fixed
 * If session multiplexing was enabled in the sync client and multiple realms for multiple users were being synchronized, a connection authenticated for the wrong user could have been used, resulting in a `UserMismatch` error from the server. ([realm/realm-core#6320](https://github.com/realm/realm-core/pull/6320), since v10.0.0).
 * If session multiplexing was enabled and an automatic client reset failed, it could cause all sessions to fail with a fatal ProtocolError rather than just the session that failed to client reset. This would mean that no other sync session would be able to be opened for up to an hour without restarting the app. ([realm/realm-core#6320](https://github.com/realm/realm-core/pull/6320), since v10.10.0)
 * Performing a query like `{1, 2, 3, ...} IN list` where the array is longer than 8 and all elements are smaller than some values in list, the app would crash. ([realm/realm-core#1183](https://github.com/realm/realm-kotlin/issues/1183), since v10.20.0)
 * Performing a large number of queries without ever performing a write resulted in steadily increasing memory usage, some of which was never fully freed due to an unbounded cache. ([realm/realm-swift#7978](https://github.com/realm/realm-swift/issues/7978), since v10.19.0)
+
 ### Compatibility
 * React Native >= v0.71.0
 * Realm Studio v14.0.0.
@@ -45,8 +47,7 @@
 ### Internal
 * Upgraded Realm Core from v13.9.0 to v13.10.1. ([#5784](https://github.com/realm/realm-js/issues/5784) and [#5793](https://github.com/realm/realm-js/issues/5793))
 * Bump the sync protocol version to v8. ([realm/realm-core#6549](https://github.com/realm/realm-core/pull/6549))
-* Aligning analytics with other Realm SDKs. You can still disable by setting environment variable `REALM_DISABLE_ANALYTICS`, and you can print out want is submitted by setting `REALM_PRINT_ANALYTICS`.
-
+* Aligning analytics with other Realm SDKs. You can still disable by setting environment variable `REALM_DISABLE_ANALYTICS`, and you can print out what is submitted by setting the environment variable `REALM_PRINT_ANALYTICS`.
 
 ## 11.8.0 (2023-04-12)
 NOTE: Since the file format of the Realm auxiliary files have been changed, it is required to use Realm Studio v14.0.0 to open Realm files produced by this release.
@@ -79,6 +80,7 @@ NOTE: Since the file format of the Realm auxiliary files have been changed, it i
   * Significant (~99%) improvement when querying for a case insensitive match on a `mixed` property that has an index.
   * Moderate (~25%) improvement when querying for an exact match on a `bool` property that has an index.
   * Small (~5%) improvement when querying for a case insensitive match on a `mixed` property that does not have an index.
+
 ### Fixed
 * Added a missing (internal) method on iOS. Building a React Native app will failed with the error `Undefined symbol: realm::set_default_realm_file_directory(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >)`. ([#5633](https://github.com/realm/realm-js/issues/5633), since v11.6.0)
 * Fixed a crash when querying a `mixed` property with a string operator (`contains`/`like`/`beginswith`/`endswith`) or with case insensitivity. ([realm/realm-core#6376](https://github.com/realm/realm-core/issues/6376, since v10.5.0)
