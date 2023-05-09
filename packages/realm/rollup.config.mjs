@@ -94,13 +94,6 @@ export default [
       }),
       // We need to use `commonjs` because of "path-browserify"
       commonjs(),
-      replace({
-        preventAssignment: true,
-        delimiters: ["", ""],
-        values: {
-          '"../generated/ts/native.mjs"': '"../generated/ts/native-rn.mjs"',
-        },
-      }),
       json(),
       typescript({
         tsconfig: "src/platform/react-native/tsconfig.json",

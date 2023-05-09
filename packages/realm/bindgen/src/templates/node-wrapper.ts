@@ -204,6 +204,6 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
 
   both(`nativeModule.injectInjectables({ ${injectables} });`);
 
-  file("native.mjs", "eslint")(nodeLines.join("\n"));
-  file("native-rn.mjs", "eslint")(reactLines.join("\n"));
+  file("native-node.mjs", "eslint")(nodeLines.join("\n"));
+  file("native-react-native.mjs", "eslint")(reactLines.join("\n"));
 }

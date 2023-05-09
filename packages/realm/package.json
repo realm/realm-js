@@ -146,8 +146,8 @@
         "bindgen/src/templates/node-wrapper.ts"
       ],
       "output": [
-        "generated/ts/native.mjs",
-        "generated/ts/native-rn.mjs"
+        "generated/ts/native-node.mjs",
+        "generated/ts/native-react-native.mjs"
       ]
     },
     "bindgen:generate:spec-schema": {
