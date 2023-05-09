@@ -16,11 +16,11 @@
 * Fixed an issue that could have resulted in a client reset action being reported as successful when it actually failed on windows if the `Realm` was still open ([realm/realm-core#6050](https://github.com/realm/realm-core/issues/6050)).
 * Fix a data race that could cause a reading thread to read from a no-longer-valid memory mapping ([realm/realm-core#6411](https://github.com/realm/realm-core/pull/6411), since v11.3.0-rc.0).
 * Fixed an issue that could cause a crash when performing count() on an undefined query. ([realm/realm-core#6443](https://github.com/realm/realm-core/issues/6443), since v12.0.0-alpha.2)
-* Added missing implementation of `User.state` and changed the `UserState` enum values to use pascal case to conform to the v11 implementation (except for `UserState.Active` that we now deprecate in favor of `UserState.LoggedIn`). [#5686](https://github.com/realm/realm-js/issues/5686)
+* Added missing implementation of `User.state` and changed the `UserState` enum values to use pascal case to conform to the v11 implementation (except for `UserState.Active` that we now deprecate in favor of `UserState.LoggedIn`). ([#5686](https://github.com/realm/realm-js/issues/5686))
 * Getting the `indexOf` a missing value will no longer return `4294967295` instead of `-1` and the `Set#has` will no longer return `true` when missing. Caused by an incorrect conversion of `size_t` to `Number` on x86 (32bit) architectures. ([#5746](https://github.com/realm/realm-js/pull/5746), since 12.0.0-alpha.0)
 * Fixed `App.currentUser()` when being called on a new instance of `App` ([#5790](https://github.com/realm/realm-js/pull/5790))
-* Fixed an error where performing a query like "{1, 2, 3, ...} IN list" where the array is longer than 8 and all elements are smaller than some values in list, the program would crash. [realm/realm-core#6545](https://github.com/realm/realm-core/pull/6545)  
-* Performing a large number of queries without ever performing a write resulted in steadily increasing memory usage, some of which was never fully freed due to an unbounded cache. [realm/realm-core#6530](https://github.com/realm/realm-core/pull/6530)  
+* Fixed an error where performing a query like "{1, 2, 3, ...} IN list" where the array is longer than 8 and all elements are smaller than some values in list, the program would crash. ([realm/realm-core#6545](https://github.com/realm/realm-core/pull/6545))  
+* Performing a large number of queries without ever performing a write resulted in steadily increasing memory usage, some of which was never fully freed due to an unbounded cache. ([realm/realm-core#6530](https://github.com/realm/realm-core/pull/6530))  
 
 ### Compatibility
 * React Native >= v0.71.4
