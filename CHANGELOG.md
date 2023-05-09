@@ -6,7 +6,7 @@
 ### Enhancements
 * Improve performance of equality queries on a non-indexed mixed property by about 30%. ([realm/realm-core#6506](https://github.com/realm/realm-core/issues/6506))
 * PBS to FLX Migration for migrating a client app that uses partition based sync to use flexible sync under the hood if the server has been migrated to flexible sync. ([realm/realm-core#6554](https://github.com/realm/realm-core/issues/6554))
-
+* New notifiers can now be registered in write transactions until changes have actually been made in the write transaction. This makes it so that new notifications can be registered inside change notifications triggered by beginning a write transaction (unless a previous callback performed writes). ([realm/realm-core#6560](https://github.com/realm/realm-core/pull/6560))
 ### Fixed
 * If session multiplexing was enabled in the sync client and multiple realms for multiple users were being synchronized, a connection authenticated for the wrong user could have been used, resulting in a `UserMismatch` error from the server. ([realm/realm-core#6320](https://github.com/realm/realm-core/pull/6320), since v10.0.0).
 * If session multiplexing was enabled and an automatic client reset failed, it could cause all sessions to fail with a fatal ProtocolError rather than just the session that failed to client reset. This would mean that no other sync session would be able to be opened for up to an hour without restarting the app. ([realm/realm-core#6320](https://github.com/realm/realm-core/pull/6320), since v10.10.0)
@@ -18,7 +18,7 @@
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v13.9.0 to v13.10.0. ([#5784](https://github.com/realm/realm-js/issues/5784))
+* Upgraded Realm Core from v13.9.0 to v13.10.1. ([#5784](https://github.com/realm/realm-js/issues/5784) and [#5793](https://github.com/realm/realm-js/issues/5793))
 * Bump the sync protocol version to v8. ([realm/realm-core#6549](https://github.com/realm/realm-core/pull/6549))
 
 ## 11.8.0 (2023-04-12)
