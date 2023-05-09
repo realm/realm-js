@@ -184,24 +184,37 @@ describe("Queries", () => {
 
     it("basic test", function (this: RealmContext) {
       expectQueryResultValues(this.realm, Story, "title", [[[story1.title], "content TEXT 'cats'"]]);
+      expectQueryResultValues(this.realm, Story, "title", [[[story1.title], "content TEXT $0", "cats"]]);
+
       expectQueryResultValues(this.realm, Story, "title", [[[story1.title, story4.title], "content TEXT 'story'"]]);
+      expectQueryResultValues(this.realm, Story, "title", [[[story1.title, story4.title], "content TEXT $0", "story"]]);
     });
 
     it("multiple terms", function (this: RealmContext) {
       expectQueryResultValues(this.realm, Story, "title", [[[story1.title], "content TEXT 'two dog'"]]);
+      expectQueryResultValues(this.realm, Story, "title", [[[story1.title], "content TEXT $0", "two dog"]]);
+
       expectQueryResultValues(this.realm, Story, "title", [[[story3.title], "content TEXT 'poem short friendship'"]]);
+      expectQueryResultValues(this.realm, Story, "title", [
+        [[story3.title], "content TEXT $0", "poem short friendship"],
+      ]);
+
       expectQueryResultValues(this.realm, Story, "title", [
         [[story1.title, story2.title, story3.title, story4.title], "content TEXT 'about a'"],
       ]);
+      expectQueryResultValues(this.realm, Story, "title", [
+        [[story1.title, story2.title, story3.title, story4.title], "content TEXT $0", "about a"],
+      ]);
+    });
+
+    it("exclude term", function (this: RealmContext) {
+      expectQueryResultValues(this.realm, Story, "title", [[[story4.title], "content TEXT 'story -cats'"]]);
+      expectQueryResultValues(this.realm, Story, "title", [[[story4.title], "content TEXT $0", "story -cats"]]);
     });
 
     it("empty results", function (this: RealmContext) {
       expectQueryResultValues(this.realm, Story, "title", [[[], "content TEXT 'two dog friends'"]]);
       expectQueryResultValues(this.realm, Story, "title", [[[], "content TEXT 'amazing'"]]);
-    });
-
-    it("exclude term", function (this: RealmContext) {
-      expectQueryResultValues(this.realm, Story, "title", [[[story4.title], "content TEXT 'story -cats'"]]);
     });
 
     it("throws on column with no index", function (this: RealmContext) {
