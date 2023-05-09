@@ -103,7 +103,7 @@ describe("Realm schema", () => {
     });
   });
 
-  it("throws when declaring fulltext index on non string property", () => {
+  it("throws when declaring full-text index on non string property", () => {
     expect(() => {
       new Realm({
         schema: [
