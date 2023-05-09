@@ -165,8 +165,8 @@ export function validatePropertySchema(
     }
     if (indexed !== undefined) {
       assert(
-        typeof indexed === "boolean" || indexed === "fulltext",
-        `"indexed" needs to be either a boolean or "fulltext"`,
+        typeof indexed === "boolean" || indexed === "full-text",
+        `"indexed" needs to be either a boolean or "full-text"`,
       );
     }
     if (mapTo !== undefined) {

@@ -76,7 +76,7 @@ class Story extends Realm.Object<Story> implements IStory {
     name: "Story",
     properties: {
       title: { type: "string" },
-      content: { type: "string", indexed: "fulltext" },
+      content: { type: "string", indexed: "full-text" },
     },
     primaryKey: "title",
   };

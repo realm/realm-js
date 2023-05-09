@@ -117,7 +117,7 @@ export function fromBindingPropertySchema(propertySchema: BindingProperty): Cano
   const { name, isIndexed, isFulltextIndexed, publicName } = propertySchema;
   const result: CanonicalPropertySchema = {
     name,
-    indexed: isFulltextIndexed ? "fulltext" : isIndexed,
+    indexed: isFulltextIndexed ? "full-text" : isIndexed,
     mapTo: name,
     ...fromBindingPropertyTypeName(propertySchema),
   };

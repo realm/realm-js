@@ -87,9 +87,9 @@ export type CanonicalObjectSchemaProperty = CanonicalPropertySchema;
 /**
  * The type of index on a property:
  * - 'true' enables a regular index
- * - `fulltext` enables a full-text search index and can only be applied to string properties.
+ * - `full-text` enables a full-text search index and can only be applied to string properties.
  */
-export type IndexedType = boolean | "fulltext";
+export type IndexedType = boolean | "full-text";
 
 /**
  * The canonical representation of the schema of a specific property.

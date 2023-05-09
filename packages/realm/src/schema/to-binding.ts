@@ -103,7 +103,7 @@ export function toBindingPropertySchema(name: string, schema: CanonicalPropertyS
     linkOriginPropertyName: schema.property,
   };
 
-  if (schema.indexed === "fulltext") {
+  if (schema.indexed === "full-text") {
     result.isFulltextIndexed = true;
   } else {
     result.isIndexed = schema.indexed;
