@@ -38,7 +38,7 @@ if (ENABLE_TEST_COVERAGE_INSTRUMENTATION) {
 
 export default [
   {
-    input: "src/node/index.ts",
+    input: "src/platform/node/index.ts",
     output: [
       {
         file: mainExport.node,
@@ -72,7 +72,7 @@ export default [
       }),
       json(),
       typescript({
-        tsconfig: "src/node/tsconfig.json",
+        tsconfig: "src/platform/node/tsconfig.json",
         noEmitOnError: true,
         outputToFilesystem: true,
       }),
@@ -80,7 +80,7 @@ export default [
     external: ["bson", "debug", "node-fetch", "node:module", "node:fs", "node:path"],
   },
   {
-    input: "src/react-native/index.ts",
+    input: "src/platform/react-native/index.ts",
     output: {
       file: mainExport["react-native"],
       format: "es",
@@ -103,7 +103,7 @@ export default [
       }),
       json(),
       typescript({
-        tsconfig: "src/react-native/tsconfig.json",
+        tsconfig: "src/platform/react-native/tsconfig.json",
         noEmitOnError: true,
         outputToFilesystem: true,
       }),

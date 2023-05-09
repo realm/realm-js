@@ -20,7 +20,7 @@ import os from "node:os";
 
 import { version } from "realm/package.json";
 
-import { inject } from "../platform/device-info";
+import { inject } from "../device-info";
 
 inject({
   create() {

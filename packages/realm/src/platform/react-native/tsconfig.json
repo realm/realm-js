@@ -1,5 +1,5 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../../../tsconfig.json",
   "compilerOptions": {
     "noResolve": false,
     "incremental": true,
@@ -10,8 +10,8 @@
     ]
   },
   "exclude": [
-    "../tests/",
+    "../../tests/",
     "../node/",
-    "../../type-tests/"
+    "../../../type-tests/"
   ],
 }

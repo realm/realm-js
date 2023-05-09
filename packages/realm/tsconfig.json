@@ -24,7 +24,7 @@
   "exclude": [
     "src/tests/",
     "type-tests/",
-    "src/node/",
-    "src/react-native/"
+    "src/platform/node/",
+    "src/platform/react-native/"
   ],
 }
