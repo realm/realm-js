@@ -26,7 +26,7 @@ import {
   User,
   assert,
   binding,
-  createNetworkTransport,
+  // createNetworkTransport,
   deviceInfo,
   fs,
 } from "../internal";
@@ -128,9 +128,11 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
   public static Credentials = Credentials;
 
   /** @internal */
-  public static deviceInfo = deviceInfo.create();
+  // public static deviceInfo = deviceInfo.create();
+  public static deviceInfo = null;
   /** @internal */
-  public static userAgent = `RealmJS/${App.deviceInfo.sdkVersion} (${App.deviceInfo.platform}, v${App.deviceInfo.platformVersion})`;
+  //public static userAgent = `RealmJS/${App.deviceInfo.sdkVersion} (${App.deviceInfo.platform}, v${App.deviceInfo.platformVersion})`;
+  public static userAgent = null;
 
   /** @internal */
   public static getAppByUser(userInternal: binding.SyncUser): App {
@@ -183,20 +185,32 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
       assert.number(timeout, "timeout");
     }
     // TODO: This used getSharedApp in the legacy SDK, but it's failing AppTests
+    // this.internal = binding.App.getCachedApp(id);
     this.internal = binding.App.getUncachedApp(
       {
         appId: id,
-        deviceInfo: App.deviceInfo,
-        transport: createNetworkTransport(),
+        // deviceInfo: App.deviceInfo,
+        // transport: createNetworkTransport(),
+        baseUrl,
         localAppName: app?.name,
         localAppVersion: app?.version,
-        baseUrl,
         defaultRequestTimeoutMs: timeout ? binding.Int64.numToInt(timeout) : undefined,
+        deviceInfo: {
+          platform: "platform",
+          platformVersion: "platformVersion",
+          sdkVersion: "sdkVersion",
+          sdk: "sdk",
+          cpuArch: "cpuArch",
+          deviceName: "deviceName",
+          deviceVersion: "deviceVersion",
+          frameworkName: "frameworkName",
+          frameworkVersion: "frameworkVersion",
+        },
       },
       {
         baseFilePath: fs.getDefaultDirectoryPath(),
-        metadataMode: binding.MetadataMode.NoEncryption,
-        userAgentBindingInfo: App.userAgent,
+        metadataMode: binding.MetadataMode.NoMetadata,
+        userAgentBindingInfo: "RealmJS/",
       },
     );
   }

@@ -13,6 +13,7 @@
   "exclude": [
     "../../tests/",
     "../react-native/",
-    "../../../type-tests/"
+    "../../../type-tests/",
+    "../../browser"
   ],
 }

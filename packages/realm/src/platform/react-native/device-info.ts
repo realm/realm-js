@@ -71,7 +71,8 @@ inject({
       deviceName: getDeviceName(),
       deviceVersion: getDeviceVersion(),
 
-      cpuArch: JsPlatformHelpers.getCpuArch(),
+      //JsPlatformHelpers.getCpuArch()
+      cpuArch: "unknown",
 
       frameworkName: "react-native",
       frameworkVersion: getReactNativeVersion(),

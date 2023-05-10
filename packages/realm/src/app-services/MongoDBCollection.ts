@@ -669,18 +669,18 @@ export class MongoDBCollection<T extends Document> {
       filter,
     });
 
-    const watchStream = binding.WatchStream.make();
-    for await (const chunk of iterator) {
-      if (!chunk) continue;
-      // TODO: Remove `toArrayBuffer()` once https://jira.mongodb.org/browse/RJS-2124 gets solved
-      const buffer = toArrayBuffer(chunk);
-      binding.Helpers.feedBuffer(watchStream, buffer);
-      while (watchStream.state === binding.WatchStreamState.HaveEvent) {
-        yield watchStream.nextEvent() as unknown as ChangeEvent<T>;
-      }
-      if (watchStream.state === binding.WatchStreamState.HaveError) {
-        throw watchStream.error;
-      }
-    }
+    // const watchStream = binding.WatchStream.make();
+    // for await (const chunk of iterator) {
+    //   if (!chunk) continue;
+    //   // TODO: Remove `toArrayBuffer()` once https://jira.mongodb.org/browse/RJS-2124 gets solved
+    //   const buffer = toArrayBuffer(chunk);
+    //   binding.Helpers.feedBuffer(watchStream, buffer);
+    //   while (watchStream.state === binding.WatchStreamState.HaveEvent) {
+    //     yield watchStream.nextEvent() as unknown as ChangeEvent<T>;
+    //   }
+    //   if (watchStream.state === binding.WatchStreamState.HaveError) {
+    //     throw watchStream.error;
+    //   }
+    // }
   }
 }

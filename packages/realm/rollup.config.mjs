@@ -27,6 +27,7 @@ import dts from "rollup-plugin-dts";
 import istanbul from "rollup-plugin-istanbul";
 
 import pkg from "./package.json" assert { type: "json" };
+import copy from "rollup-plugin-copy";
 
 const mainExport = pkg.exports["."];
 
@@ -78,6 +79,38 @@ export default [
       }),
     ],
     external: ["bson", "debug", "node-fetch", "node:module", "node:fs", "node:path"],
+  },
+  {
+    input: "src/browser/index.ts",
+    output: {
+      file: mainExport.browser,
+      format: "es",
+      sourcemap: true,
+    },
+    plugins: [
+      nodeResolve({
+        mainFields: ["browser", "module", "main"],
+        resolveOnly: ["@realm/network-transport", "path-browserify"],
+      }),
+      // We need to use `commonjs` because of "path-browserify"
+      commonjs(),
+      replace({
+        preventAssignment: true,
+        delimiters: ["", ""],
+        values: {
+          '"../generated/ts/native.mjs"': '"../generated/ts/native-browser.mjs"',
+        },
+      }),
+      typescript({
+        tsconfig: "src/browser/tsconfig.json",
+        noEmitOnError: true,
+        outputToFilesystem: true,
+      }),
+      copy({
+        targets: [{ src: "./generated/ts/realm-js-wasm.wasm", dest: "./dist/" }],
+      }),
+    ],
+    external: ["bson", "debug"],
   },
   {
     input: "src/platform/react-native/index.ts",

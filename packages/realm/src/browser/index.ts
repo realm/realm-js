@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2022 Realm Inc.
+// Copyright 2023 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,30 +15,8 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+import "./fs";
 
-import { DeviceInfo } from "../binding";
-
-type DeviceInfoType = {
-  create(): DeviceInfo;
-};
-
-export const deviceInfo: DeviceInfoType = {
-  create() {
-    return {
-      platform: "",
-      platformVersion: "",
-      sdkVersion: "",
-      sdk: "",
-      cpuArch: "",
-      deviceName: "",
-      deviceVersion: "",
-      frameworkName: "",
-      frameworkVersion: "",
-    };
-    // throw new Error("Not supported on this platform");
-  },
-};
-
-export function inject(injected: DeviceInfoType) {
-  Object.freeze(Object.assign(deviceInfo, injected));
-}
+export * from "../index";
+import { Realm } from "../index";
+export default Realm;

@@ -26,12 +26,15 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
   const spec = doJsPasses(bindModel(rawSpec));
   const reactLines = [];
   const nodeLines = [];
-  function both(...content: string[]) {
-    reactLines.push(...content);
-    nodeLines.push(...content);
+  const browserLines = [];
+
+  function all(content: string) {
+    reactLines.push(content);
+    nodeLines.push(content);
+    browserLines.push(content);
   }
 
-  both("// This file is generated: Update the spec instead of editing this file directly");
+  all("// This file is generated: Update the spec instead of editing this file directly");
 
   // TODO RN vs Node will probably diverge further in the future and will likely need different templates.
   // But for now, this should work to let us load the native module for both platforms.
@@ -62,7 +65,16 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
     export const WeakRef = global.WeakRef;
   `);
 
-  both(`
+  browserLines.push(`
+    /*global window, FinalizationRegistry*/
+    import Module from "./realm-js-wasm.js";
+    const nativeModule = await Module(); // loading WASM 
+    nativeModule.browserInit();
+    // We know that node always has real WeakRefs so just use them.
+    export const WeakRef = window.WeakRef;
+  `);
+
+  all(`
     const NativeBigIntSupport = Object.freeze({
       add(a, b) { return a + b; },
       equals(a, b) { return a == b; }, // using == rather than === to support number and string RHS!
@@ -87,7 +99,9 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
     }
   `);
 
-  both(`
+  browserLines.push(`export const Int64 = NativeBigIntSupport;`);
+
+  all(`
     import { Long, ObjectId, UUID, Decimal128, EJSON } from "bson";
     import { Float } from "./core";
 
@@ -138,6 +152,7 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
     injectables.push(cls.jsName);
 
     let body = "";
+    let body_browser = "";
 
     // It will always be accessed via this name rather than a static to enable optimizations
     // that depend on the symbol not changing.
@@ -145,13 +160,19 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
 
     if (!cls.base) {
       // Only root classes get symbols and constructors
-      both(`const ${symb} = Symbol("Realm.${cls.jsName}.external_pointer");`);
+      all(`const ${symb} = Symbol("Realm.${cls.jsName}.external_pointer");`);
+      // TODO consider using this pattern https://github.com/realm/realm-js/pull/5497#discussion_r1121482122
+      //      to do the finalization registry for every class.
+      browserLines.push(
+        `const _${cls.jsName}_registery = new FinalizationRegistry(nativeModule.${cls.jsName}_deleter);`,
+      );
 
-      body += `constructor(ptr) { this[${symb}] = ptr};`;
+      body += `constructor(ptr) { this[${symb}] = ptr; };`;
+      body_browser += `constructor(ptr) { this[${symb}] = ptr; _${cls.jsName}_registery.register(this, ptr);};`;
     }
 
     // This will override the extractor from the base class to do a more specific type check.
-    body += `
+    const extractDefinition = `
       static _extract(self) {
         if (!(self instanceof ${cls.jsName}))
           throw new TypeError("Expected a ${cls.jsName}");
@@ -161,11 +182,13 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
         return out;
       };
     `;
+    body += extractDefinition;
+    body_browser += extractDefinition;
 
     for (const method of cls.methods) {
       // Eagerly bind the name once from the native module.
       const native = `_native_${method.id}`;
-      both(`const ${native} = nativeModule.${method.id};`);
+      all(`const ${native} = nativeModule.${method.id};`);
       // TODO consider pre-extracting class-typed arguments while still in JIT VM.
       const asyncSig = method.sig.asyncTransform();
       const params = (asyncSig ?? method.sig).args.map((a) => a.name);
@@ -186,25 +209,34 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
         const nullAllowed = !!(ret.is("Pointer") && ret.type.kind == "Const" && ret.type.type.isPrimitive("EJson"));
         call = `_promisify(${nullAllowed}, _cb => ${call})`;
       }
-      body += `
+      const method_definition = `
         ${method.isStatic ? "static" : ""}
         ${method instanceof Property ? "get" : ""}
         ${method.jsName}(${params}) {
           return ${call};
         }`;
+      body += method_definition;
+      body_browser += method_definition;
     }
 
     if (cls.iterable) {
       const native = `_native_${cls.iteratorMethodId()}`;
-      both(`const ${native} = nativeModule.${cls.iteratorMethodId()};`);
-      body += `\n[Symbol.iterator]() { return ${native}(this[${symb}]); }`;
+      all(`const ${native} = nativeModule.${cls.iteratorMethodId()};`);
+      const symbol_iterator_definition = `\n[Symbol.iterator]() { return ${native}(this[${symb}]); }`;
+      body += symbol_iterator_definition;
+      body_browser += symbol_iterator_definition;
     }
 
-    both(`export class ${cls.jsName} ${cls.base ? `extends ${cls.base.jsName}` : ""} { ${body} }`);
+    body = `export class ${cls.jsName} ${cls.base ? `extends ${cls.base.jsName}` : ""} { ${body} }`;
+    body_browser = `export class ${cls.jsName} ${cls.base ? `extends ${cls.base.jsName}` : ""} { ${body_browser} }`;
+    reactLines.push(body);
+    nodeLines.push(body);
+    browserLines.push(body_browser);
   }
 
-  both(`nativeModule.injectInjectables({ ${injectables} });`);
+  all(`nativeModule.injectInjectables({ ${injectables} });`);
 
   file("native-node.mjs", eslint)(nodeLines.join("\n"));
   file("native-react-native.mjs", eslint)(reactLines.join("\n"));
+  file("native-browser.mjs", eslint)(browserLines.join("\n"));
 }

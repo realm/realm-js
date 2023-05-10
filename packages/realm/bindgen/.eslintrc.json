@@ -11,6 +11,7 @@
     "no-case-declarations": "off"
   },
   "env": {
+    "browser": true,
     "node": true
   }
 }

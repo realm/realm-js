@@ -26,12 +26,14 @@
   "module": "./dist/bundle.node.mjs",
   "types": "./dist/bundle.d.ts",
   "react-native": "./dist/bundle.react-native.mjs",
+  "browser": "./dist/bundle.browser.mjs",
   "exports": {
     ".": {
       "types": "./dist/bundle.d.ts",
       "require": "./dist/bundle.node.js",
       "node": "./dist/bundle.node.mjs",
-      "react-native": "./dist/bundle.react-native.mjs"
+      "react-native": "./dist/bundle.react-native.mjs",
+      "browser": "./dist/bundle.browser.mjs"
     },
     "./scripts/submit-analytics": "./scripts/submit-analytics.mjs",
     "./react-native.config.js": "./react-native.config.js",
@@ -56,6 +58,7 @@
     "bundle:coverage": "ENABLE_TEST_COVERAGE_INSTRUMENTATION=true npm run bundle",
     "bindgen:configure": "wireit",
     "bindgen:build:node": "wireit",
+    "bindgen:build:browser": "wireit",
     "bindgen:generate:typescript": "wireit",
     "bindgen:generate:wrappers": "wireit",
     "bindgen:generate:spec-schema": "wireit",
@@ -113,6 +116,9 @@
       "dependencies": [
         "bindgen:configure"
       ]
+    },
+    "bindgen:build:browser": {
+      "command": "emcmake cmake -DCMAKE_BUILD_TYPE=Debug -S bindgen -B bindgen/build.browser -G Ninja && cmake --build bindgen/build.browser"
     },
     "bindgen:generate:typescript": {
       "command": "realm-bindgen --template bindgen/src/templates/typescript.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --output ./generated/ts",
@@ -278,6 +284,7 @@
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@rollup/plugin-replace": "^5.0.1",
     "@rollup/plugin-typescript": "^9.0.2",
+    "rollup-plugin-copy": "^3.4.0",
     "@types/chai": "^4.3.3",
     "@types/mocha": "^10.0.0",
     "@types/node": "^18.15.10",

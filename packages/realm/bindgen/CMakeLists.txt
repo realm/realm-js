@@ -142,6 +142,7 @@ bindgen(
 set(GENERATED_JS_FILES
     ${TYPESCRIPT_OUTPUT_DIR}/native-node.mjs
     ${TYPESCRIPT_OUTPUT_DIR}/native-react-native.mjs
+    ${TYPESCRIPT_OUTPUT_DIR}/native-browser.mjs
 )
 bindgen(
     TEMPLATE ${SDK_DIR}/bindgen/src/templates/node-wrapper.ts
@@ -165,6 +166,23 @@ if(DEFINED CMAKE_JS_VERSION)
     )
 
     target_sources(realm-js PRIVATE node_init.cpp ${CMAKE_JS_SRC} ${PACKAGE_ROOT_DIR}/src/node/platform.cpp)
+
+elseif(EMSCRIPTEN)
+    include(browser.cmake)
+    bindgen(
+        TEMPLATE ${SDK_DIR}/bindgen/src/templates/browser.ts
+        OUTPUTS browser_init.cpp
+        OUTDIR ${CMAKE_CURRENT_BINARY_DIR}
+        SPECS ${JS_SPEC_FILE}
+        SOURCES ${SDK_TS_FILES}
+    )
+
+    target_sources(realm-js PRIVATE browser_init.cpp ${CMAKE_JS_SRC} ${PACKAGE_ROOT_DIR}/src/browser/platform.cpp)
+
+    set_target_properties(realm-js-wasm PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${TYPESCRIPT_OUTPUT_DIR}
+    )
+
 else()
     include(jsi.cmake)
 
