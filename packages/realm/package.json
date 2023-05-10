@@ -128,6 +128,9 @@
         "bindgen:configure:browser"
       ]
     },
+    "bindgen:build:browser": {
+      "command": "emcmake cmake -DCMAKE_BUILD_TYPE=Debug -S bindgen -B bindgen/build.browser -G Ninja && cmake --build bindgen/build.browser"
+    },
     "bindgen:generate:typescript": {
       "command": "realm-bindgen --template bindgen/src/templates/typescript.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --output ./generated/ts",
       "dependencies": [
