@@ -158,6 +158,24 @@ function getInstallationMethod() {
 }
 
 /**
+ * Determines the application Id
+ *
+ * @returns Android Application Id - or `undefined` if none found
+ */
+function getAndroidApplicationId() {
+  const root = getProjectRoot();
+  const buildGradlePath = path.resolve(root, "android", "app", "bundle.gradle");
+  if (fse.exists(buildGradlePath)) {
+    const lines = fse.readFileSync(buildGradlePath).toString().split("\n");
+    const appIds = lines.find((line) => line.includes("applicationId"));
+    if (appIds.length > 0) {
+      return appIds[0].trim().split(" ")[1].replaceAll('"', "");
+    }
+  }
+  return undefined;
+}
+
+/**
  * Collect analytics data from the runtime system
  * @param {Object} packageJson The app's package.json parsed as an object
  * @returns {Object} Analytics payload
@@ -178,6 +196,7 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
   let framework = "node.js";
   let frameworkVersion = process.version;
   let jsEngine = "v8";
+  let bundleId = "unknown";
 
   const packageJson = getPackageJson(packagePath);
 
@@ -211,6 +230,8 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
     } catch (err) {
       doLog(`Cannot read react-native package.json: ${err}`);
     }
+
+    bundleId = getAndroidApplicationId();
   }
 
   if (packageJson.dependencies && packageJson.dependencies["electron"]) {
@@ -244,7 +265,7 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
     "JS Analytics Version": 3,
     distinct_id: identifier,
     "Anonymized Machine Identifier": identifier,
-    "Anonymized Application ID": sha256(__dirname),
+    "Anonymized Application ID": sha256(bundleId), // TODO: salt and hash according to spec
     "Realm Version": realmVersion,
     Binding: "javascript",
     Version: packageJson.version,
