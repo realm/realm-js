@@ -25,9 +25,9 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
   const spec = doJsPasses(bindModel(rawSpec));
   const reactLines = [];
   const nodeLines = [];
-  function both(content: string) {
-    reactLines.push(content);
-    nodeLines.push(content);
+  function both(...content: string[]) {
+    reactLines.push(...content);
+    nodeLines.push(...content);
   }
 
   both("// This file is generated: Update the spec instead of editing this file directly");
