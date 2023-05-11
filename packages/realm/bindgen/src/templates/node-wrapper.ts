@@ -20,7 +20,7 @@ import { bindModel, Property } from "@realm/bindgen/bound-model";
 import { TemplateContext } from "@realm/bindgen/context";
 
 import { doJsPasses } from "../js-passes";
-import { eslint } from "../formatters/eslint";
+import { eslint } from "../eslint-formatter";
 
 export function generate({ spec: rawSpec, file }: TemplateContext): void {
   const spec = doJsPasses(bindModel(rawSpec));

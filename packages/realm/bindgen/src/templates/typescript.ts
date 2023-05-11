@@ -22,7 +22,7 @@ import { TemplateContext } from "@realm/bindgen/context";
 import { Arg, BoundSpec, NamedType, Property, Type, bindModel } from "@realm/bindgen/bound-model";
 
 import { doJsPasses } from "../js-passes";
-import { eslint } from "../formatters/eslint";
+import { eslint } from "../eslint-formatter";
 
 const PRIMITIVES_MAPPING: Record<string, string> = {
   void: "void",
