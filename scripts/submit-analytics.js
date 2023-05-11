@@ -46,6 +46,7 @@ const fse = require("fs-extra");
 const path = require("path");
 const { execSync } = require("child_process");
 const commandLineArgs = require("command-line-args");
+const { createHmac } = require("crypto");
 
 let doLog; // placeholder for logger function
 
@@ -63,15 +64,12 @@ const getAnalyticsRequestUrl = (payload) =>
   ANALYTICS_BASE_URL + "?data=" + Buffer.from(JSON.stringify(payload.webHook), "utf8").toString("base64");
 
 /**
- * Generate a hash value of data
- * @param {*} data
- * @returns SHA256 of data
+ * Generate a hash value of data using salt
+ *
+ * @param {string} data
+ * @returns base64 encoded SHA256 of data
  */
-function sha256(data) {
-  let hash = require("crypto").createHash("sha256");
-  hash.update(data);
-  return hash.digest("hex");
-}
+const sha256 = (data) => createHmac("sha256", Buffer.from("Realm is great")).update(data).digest().toString("base64");
 
 /**
  * Finds the root directory of the project.
@@ -158,24 +156,6 @@ function getInstallationMethod() {
 }
 
 /**
- * Determines the application Id
- *
- * @returns Android Application Id - or `undefined` if none found
- */
-function getAndroidApplicationId() {
-  const root = getProjectRoot();
-  const buildGradlePath = path.resolve(root, "android", "app", "bundle.gradle");
-  if (fse.exists(buildGradlePath)) {
-    const lines = fse.readFileSync(buildGradlePath).toString().split("\n");
-    const appIds = lines.find((line) => line.includes("applicationId"));
-    if (appIds.length > 0) {
-      return appIds[0].trim().split(" ")[1].replaceAll('"', "");
-    }
-  }
-  return undefined;
-}
-
-/**
  * Collect analytics data from the runtime system
  * @param {Object} packageJson The app's package.json parsed as an object
  * @returns {Object} Analytics payload
@@ -187,7 +167,7 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
   // node-machine-id returns the ID SHA-256 hashed, if we cannot get the ID we send "unknown" hashed instead
   let identifier = await machineId();
   if (!identifier) {
-    identifier = sha256("unknown");
+    identifier = "unknown";
   }
 
   const realmVersion = getRealmVersion();
@@ -199,6 +179,10 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
   let bundleId = "unknown";
 
   const packageJson = getPackageJson(packagePath);
+
+  if (packageJson.name) {
+    bundleId = packageJson["name"];
+  }
 
   if (packageJson.dependencies && packageJson.dependencies["react-native"]) {
     framework = "react-native";
@@ -230,8 +214,6 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
     } catch (err) {
       doLog(`Cannot read react-native package.json: ${err}`);
     }
-
-    bundleId = getAndroidApplicationId();
   }
 
   if (packageJson.dependencies && packageJson.dependencies["electron"]) {
@@ -254,22 +236,38 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
 
   // JavaScript or TypeScript - we don't consider Flow as a programming language
   let language = "javascript";
+  let languageVersion = "unknown";
+  if (packageJson.dependencies && packageJson.dependencies["typescript"]) {
+    language = "typescript";
+    languageVersion = packageJson.dependencies["typescript"];
+  }
   if (packageJson.devDependencies && packageJson.devDependencies["typescript"]) {
     language = "typescript";
+    languageVersion = packageJson.devDependencies["typescript"];
+  }
+  if (language === "typescript") {
+    try {
+      const typescriptPath = path.join(packagePath, "node_modules", "typescript", "package.json");
+      const typescriptPackageJson = JSON.parse(fs.readFileSync(typescriptPath, "utf-8"));
+      languageVersion = typescriptPackageJson["version"];
+    } catch (err) {
+      doLog(`Cannot read typescript package.json: ${err}`);
+    }
   }
 
-  const installatioMethod = getInstallationMethod();
+  const installationMethod = getInstallationMethod();
 
   return {
     token: "ce0fac19508f6c8f20066d345d360fd0",
     "JS Analytics Version": 3,
     distinct_id: identifier,
-    "Anonymized Machine Identifier": identifier,
-    "Anonymized Application ID": sha256(bundleId), // TODO: salt and hash according to spec
+    "Anonymized Builder Id": sha256(identifier),
+    "Anonymized Bundle Id": sha256(bundleId),
     "Realm Version": realmVersion,
-    Binding: "javascript",
+    Binding: "Javascript",
     Version: packageJson.version,
     Language: language,
+    "Language Version": languageVersion,
     Framework: framework,
     "Framework Version": frameworkVersion,
     "Host OS Type": os.platform(),
@@ -278,8 +276,8 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
     "Node.js version": process.version,
     "Core Version": realmCoreVersion,
     "Sync Enabled": true,
-    "Installation Method": installatioMethod[0],
-    "Installation Method Version": installatioMethod[1],
+    "Installation Method": installationMethod[0],
+    "Installation Method Version": installationMethod[1],
     "Runtime Engine": jsEngine,
   };
 }

@@ -25,6 +25,7 @@
   * `release` equivalent to `uname -r`
   * `version` equivalent to `uname -v`
   * `machine` equivalent to `uname -m`
+* Aligning analytics with other Realm SDKs. You can still disable the submission by setting environment variable `REALM_DISABLE_ANALYTICS`, and you can print out what is submitted by setting the environment variable `REALM_PRINT_ANALYTICS`.
 
 ## 11.9.0 (2023-05-11)
 
@@ -47,7 +48,6 @@
 ### Internal
 * Upgraded Realm Core from v13.9.0 to v13.10.1. ([#5784](https://github.com/realm/realm-js/issues/5784) and [#5793](https://github.com/realm/realm-js/issues/5793))
 * Bump the sync protocol version to v8. ([realm/realm-core#6549](https://github.com/realm/realm-core/pull/6549))
-* Aligning analytics with other Realm SDKs. You can still disable by setting environment variable `REALM_DISABLE_ANALYTICS`, and you can print out what is submitted by setting the environment variable `REALM_PRINT_ANALYTICS`.
 
 ## 11.8.0 (2023-04-12)
 NOTE: Since the file format of the Realm auxiliary files have been changed, it is required to use Realm Studio v14.0.0 to open Realm files produced by this release.

@@ -150,7 +150,7 @@ Currently the following information is reported:
  * If a JavaScript framework (currently React Native and Electron) is used and its version.
  * Which JavaScript engine is being used.
  * Node.js version number.
- * An anonymous machine identifier and hashed application path to aggregate the other information on.
+ * An anonymous machine identifier and hashed application id to aggregate the other information on.
 
 You can see all submitted data by setting environment variable `REALM_PRINT_ANALYTICS`.
 
