@@ -20,7 +20,7 @@ import { bindModel, Property } from "@realm/bindgen/bound-model";
 import { TemplateContext } from "@realm/bindgen/context";
 
 import { doJsPasses } from "../js-passes";
-import { eslintFormatter } from "../formatters/eslint-formatter";
+import { eslint } from "../formatters/eslint";
 
 export function generate({ spec: rawSpec, file }: TemplateContext): void {
   const spec = doJsPasses(bindModel(rawSpec));
@@ -205,6 +205,6 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
 
   both(`nativeModule.injectInjectables({ ${injectables} });`);
 
-  file("native-node.mjs", eslintFormatter)(nodeLines.join("\n"));
-  file("native-react-native.mjs", eslintFormatter)(reactLines.join("\n"));
+  file("native-node.mjs", eslint)(nodeLines.join("\n"));
+  file("native-react-native.mjs", eslint)(reactLines.join("\n"));
 }
