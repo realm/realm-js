@@ -17,3 +17,5 @@ export function typescriptChecker(cwd: string, filePaths: string[]) {
   // Run the tsc command, pointing using this tsconfig
   executeCommand(cwd, "npx", "tsc", "--project", tsconfigPath);
 }
+
+Object.defineProperty(typescriptChecker, "name", { value: "typescript-checker" });

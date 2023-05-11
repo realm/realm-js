@@ -20,12 +20,10 @@ import { strict as assert } from "node:assert";
 
 import { TemplateContext } from "@realm/bindgen/context";
 import { Arg, BoundSpec, NamedType, Property, Type, bindModel } from "@realm/bindgen/bound-model";
-import { addFormatter } from "@realm/bindgen/formatter";
 
 import { doJsPasses } from "../js-passes";
-import { typescriptChecker } from "./typescript-checker";
-
-addFormatter("typescript-checker", typescriptChecker);
+import { typescriptChecker } from "../formatters/typescript-checker";
+import { eslintFormatter } from "../formatters/eslint-formatter";
 
 const PRIMITIVES_MAPPING: Record<string, string> = {
   void: "void",
@@ -152,7 +150,7 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
 
   const spec = doJsPasses(bindModel(rawSpec));
 
-  const coreOut = file("core.ts", "eslint", "typescript-checker");
+  const coreOut = file("core.ts", eslintFormatter, typescriptChecker);
   coreOut("// This file is generated: Update the spec instead of editing this file directly");
 
   coreOut("// Enums");
@@ -170,7 +168,7 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
     }
   `);
 
-  const out = file("native.d.mts", "eslint", "typescript-checker");
+  const out = file("native.d.mts", eslintFormatter, typescriptChecker);
   out("// This file is generated: Update the spec instead of editing this file directly");
 
   out("declare module 'realm/binding' {");

@@ -31,6 +31,7 @@ import {
   Pointer,
   Template,
 } from "@realm/bindgen/bound-model";
+import { clangFormatter } from "@realm/bindgen/formatter";
 
 import { doJsPasses } from "../js-passes";
 
@@ -896,7 +897,7 @@ class NodeCppDecls extends CppDecls {
 }
 
 export function generate({ spec, file: makeFile }: TemplateContext): void {
-  const out = makeFile("node_init.cpp", "clang-format");
+  const out = makeFile("node_init.cpp", clangFormatter);
 
   // HEADER
   out(`// This file is generated: Update the spec instead of editing this file directly`);
