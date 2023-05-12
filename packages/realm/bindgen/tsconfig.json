@@ -1,5 +1,5 @@
 {
-    "extends": "./vendor/bindgen-lib/tsconfig.json",
+    "extends": "./vendor/realm-core/bindgen/tsconfig.json",
     "include": [
         "src/**/*.ts"
     ]

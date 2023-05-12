@@ -58,6 +58,7 @@
     "bindgen:build:node": "wireit",
     "bindgen:generate:typescript": "wireit",
     "bindgen:generate:wrappers": "wireit",
+    "bindgen:generate:spec-schema": "wireit",
     "build:node": "wireit",
     "build:node:prebuild": "wireit",
     "build:node:prebuild:arm": "wireit",
@@ -114,13 +115,13 @@
       ]
     },
     "bindgen:generate:typescript": {
-      "command": "realm-bindgen --template bindgen/src/templates/typescript.ts --spec bindgen/vendor/bindgen-lib/spec.yml --spec bindgen/js_spec.yml --output ./generated/ts",
+      "command": "realm-bindgen --template bindgen/src/templates/typescript.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --output ./generated/ts",
       "dependencies": [
-        "./bindgen/vendor/bindgen-lib:generate:spec-schema"
+        "bindgen:generate:spec-schema"
       ],
       "files": [
-        "bindgen/vendor/bindgen-lib/spec.yml",
-        "bindgen/vendor/bindgen-lib/src",
+        "bindgen/vendor/realm-core/bindgen/spec.yml",
+        "bindgen/vendor/realm-core/bindgen/src",
         "bindgen/js_spec.yml",
         "bindgen/src",
         "!bindgen/src/templates",
@@ -132,13 +133,13 @@
       ]
     },
     "bindgen:generate:wrappers": {
-      "command": "realm-bindgen --template bindgen/src/templates/node-wrapper.ts --spec bindgen/vendor/bindgen-lib/spec.yml --spec bindgen/js_spec.yml --output ./generated/ts",
+      "command": "realm-bindgen --template bindgen/src/templates/node-wrapper.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --output ./generated/ts",
       "dependencies": [
-        "./bindgen/vendor/bindgen-lib:generate:spec-schema"
+        "bindgen:generate:spec-schema"
       ],
       "files": [
-        "bindgen/vendor/bindgen-lib/spec.yml",
-        "bindgen/vendor/bindgen-lib/src",
+        "bindgen/vendor/realm-core/bindgen/spec.yml",
+        "bindgen/vendor/realm-core/bindgen/src",
         "bindgen/js_spec.yml",
         "bindgen/src",
         "!bindgen/src/templates",
@@ -147,6 +148,16 @@
       "output": [
         "generated/ts/native.mjs",
         "generated/ts/native-rn.mjs"
+      ]
+    },
+    "bindgen:generate:spec-schema": {
+      "command": "typescript-json-schema bindgen/vendor/realm-core/bindgen/tsconfig.json RelaxedSpec --include bindgen/vendor/realm-core/bindgen/src/spec/relaxed-model.ts --out bindgen/vendor/realm-core/bindgen/generated/spec.schema.json --required",
+      "files": [
+        "bindgen/vendor/realm-core/bindgen/src/spec/relaxed-model.ts",
+        "bindgen/vendor/realm-core/bindgen/tsconfig.json"
+      ],
+      "output": [
+        "bindgen/vendor/realm-core/bindgen/generated/spec.schema.json"
       ]
     },
     "build:node": {
@@ -194,8 +205,8 @@
       "files": [
         "../../src/android/**",
         "bindgen/src/**/*.ts",
-        "bindgen/vendor/bindgen-lib/src/**/*.ts",
-        "bindgen/vendor/bindgen-lib/src/**/*.h",
+        "bindgen/vendor/realm-core/bindgen/src/**/*.ts",
+        "bindgen/vendor/realm-core/bindgen/src/**/*.h",
         "bindgen/src/**/*.h"
       ]
     },
@@ -204,8 +215,8 @@
       "files": [
         "../../src/ios/**",
         "bindgen/src/**/*.ts",
-        "bindgen/vendor/bindgen-lib/src/**/*.ts",
-        "bindgen/vendor/bindgen-lib/src/**/*.h",
+        "bindgen/vendor/realm-core/bindgen/src/**/*.ts",
+        "bindgen/vendor/realm-core/bindgen/src/**/*.h",
         "bindgen/src/**/*.h"
       ],
       "env": {

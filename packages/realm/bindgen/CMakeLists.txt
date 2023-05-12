@@ -78,6 +78,7 @@ if(DEFINED CMAKE_JS_VERSION)
     include(NodeJSTargets)
 endif()
 
+# TODO is this option dead? Do we want to support compiling with it set to OFF?
 option(REALM_JS_BUILD_CORE_FROM_SOURCE "Build Realm Core from source, as opposed to downloading prebuilt binaries" ON)
 if(REALM_JS_BUILD_CORE_FROM_SOURCE)
     set(REALM_BUILD_LIB_ONLY ON)
@@ -87,10 +88,7 @@ if(REALM_JS_BUILD_CORE_FROM_SOURCE)
         set(REALM_ANDROID ON)
     endif()
 
-    add_subdirectory(${PACKAGE_ROOT_DIR}/vendor/realm-core # source path
-        realm-core # subdir in output directories
-        EXCLUDE_FROM_ALL
-    )
+    add_subdirectory(vendor/realm-core EXCLUDE_FROM_ALL)
 endif()
         
 add_library(realm-js OBJECT)
@@ -115,8 +113,6 @@ target_include_directories(realm-js PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 target_include_directories(realm-js PRIVATE "${PACKAGE_ROOT_DIR}/src")
 
 set(SDK_DIR ${PACKAGE_ROOT_DIR}/packages/realm)
-
-add_subdirectory(vendor/bindgen-lib EXCLUDE_FROM_ALL)
 
 file(GLOB_RECURSE SDK_TS_FILES
     LIST_DIRECTORIES false
