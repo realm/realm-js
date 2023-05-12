@@ -897,6 +897,12 @@ describe("Queries", () => {
 
         const dennis = persons.filtered("name in {'Dennis'}");
         expect(dennis.length).equal(0);
+
+        const bobs = persons.filtered("name in $0", ["Bob"]);
+        expect(bobs.length).equal(1);
+
+        const many = persons.filtered("name in $0", ["Alice", "Dennis", "Bob"]);
+        expect(many.length).equal(2);
       });
 
       it("array of primitive types", () => {
