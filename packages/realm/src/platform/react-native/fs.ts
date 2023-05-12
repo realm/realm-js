@@ -42,6 +42,10 @@ inject({
     debug("ensureDirectoryForFile", path);
     JsPlatformHelpers.ensureDirectoryExistsForFile(path);
   },
+  setDefaultDirectoryPath(path) {
+    debug("setDefaultDirectoryPath", path);
+    return JsPlatformHelpers.setDefaultRealmFileDirectory(path);
+  },
   getDefaultDirectoryPath() {
     return JsPlatformHelpers.defaultRealmFileDirectory();
   },

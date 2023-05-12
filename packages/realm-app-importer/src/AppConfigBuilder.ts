@@ -18,6 +18,7 @@
 
 export type AppConfig = {
   name: string;
+  baseFilePath?: string;
   sync?: SyncConfig;
   security?: {
     allowed_request_origins?: string[];
@@ -166,6 +167,11 @@ export class AppConfigBuilder {
 
   name(value: string) {
     this.config.name = value;
+    return this;
+  }
+
+  baseFilePath(value: string) {
+    this.config.baseFilePath = value;
     return this;
   }
 

@@ -22,6 +22,7 @@ type FileSystemType = {
   removeFile(path: string): void;
   removeDirectory(path: string): void;
   ensureDirectoryForFile(path: string): void;
+  setDefaultDirectoryPath(path: string): void;
   getDefaultDirectoryPath(): string;
   exists(path: string): boolean;
   copyBundledRealmFiles(): void;
@@ -43,6 +44,9 @@ export const fs: FileSystemType = {
     throw new Error("Not supported on this platform");
   },
   removeFile() {
+    throw new Error("Not supported on this platform");
+  },
+  setDefaultDirectoryPath() {
     throw new Error("Not supported on this platform");
   },
   getDefaultDirectoryPath() {

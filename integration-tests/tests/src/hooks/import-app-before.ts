@@ -39,7 +39,7 @@ export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkCo
       throw new Error("Unexpected app on context, use only one importAppBefore per test");
     } else {
       const { appId, baseUrl } = await importApp(config);
-      this.app = new Realm.App({ id: appId, baseUrl, ...sdkConfig });
+      this.app = new Realm.App({ id: appId, baseUrl, baseFilePath: config?.baseFilePath, ...sdkConfig });
 
       // Extract the sync database name from the config
       const databaseNames: string[] = config.services
