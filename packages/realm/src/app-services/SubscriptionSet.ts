@@ -56,7 +56,6 @@ export class SubscriptionSet extends BaseSubscriptionSet {
    * If `state` is {@link SubscriptionSetState.Complete}, the promise will be resolved immediately.
    *
    * If `state` is {@link SubscriptionSetState.Error}, the promise will be rejected immediately.
-   *
    * @returns A promise which is resolved when synchronization is complete, or is
    *  rejected if there is an error during synchronization.
    */
@@ -83,16 +82,13 @@ export class SubscriptionSet extends BaseSubscriptionSet {
    * All changes done by the callback will be batched and sent to the server. You can either
    * `await` the call to `update`, or call {@link SubscriptionSet.waitForSynchronization}
    * to wait for the new data to be available.
-   *
    * @param callback A callback function which receives a {@link MutableSubscriptionSet}
    *  instance as the first argument, which can be used to add or remove subscriptions
    *  from the set, and the {@link Realm} associated with the SubscriptionSet as the
    *  second argument (mainly useful when working with `initialSubscriptions` in
    *  {@link FlexibleSyncConfiguration}).
-   *
    * @returns A promise which resolves when the SubscriptionSet is synchronized, or is rejected
    *  if there was an error during synchronization (see {@link SubscriptionSet.waitForSynchronization})
-   *
    * @example
    * await realm.subscriptions.update(mutableSubscriptions => {
    *   mutableSubscriptions.add(realm.objects("Cat").filtered("age > 10"));

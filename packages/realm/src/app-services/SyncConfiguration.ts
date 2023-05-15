@@ -186,7 +186,6 @@ export type BaseSyncConfiguration = {
 export type InitialSubscriptions = {
   /**
    * A callback to make changes to a SubscriptionSet.
-   *
    * @see {@link SubscriptionSet.update} for more information.
    */
   update: (mutableSubscriptions: MutableSubscriptionSet, realm: Realm) => void;
@@ -377,6 +376,8 @@ export function validateSyncConfiguration(config: unknown): asserts config is Sy
 
 /**
  * Validate the fields of a user-provided open realm behavior configuration.
+ * @param config
+ * @param target
  */
 function validateOpenRealmBehaviorConfiguration(
   config: unknown,
@@ -401,6 +402,7 @@ function validateOpenRealmBehaviorConfiguration(
 
 /**
  * Validate the fields of a user-provided SSL configuration.
+ * @param config
  */
 function validateSSLConfiguration(config: unknown): asserts config is SSLConfiguration {
   assert.object(config, "'ssl' on realm sync configuration");
@@ -417,6 +419,7 @@ function validateSSLConfiguration(config: unknown): asserts config is SSLConfigu
 
 /**
  * Validate the fields of a user-provided client reset configuration.
+ * @param config
  */
 function validateClientResetConfiguration(config: unknown): asserts config is ClientResetConfig {
   assert.object(config, "'clientReset' on realm sync configuration", { allowArrays: false });
@@ -441,6 +444,7 @@ function validateClientResetConfiguration(config: unknown): asserts config is Cl
 
 /**
  * Validate the fields of a user-provided realm flexible sync configuration.
+ * @param config
  */
 function validateFlexibleSyncConfiguration(
   config: Record<string, unknown>,
@@ -469,6 +473,7 @@ function validateFlexibleSyncConfiguration(
 
 /**
  * Validate the fields of a user-provided realm partition sync configuration.
+ * @param config
  */
 function validatePartitionSyncConfiguration(
   config: Record<string, unknown>,
@@ -491,6 +496,7 @@ function validatePartitionSyncConfiguration(
 
 /**
  * Validate the user-provided partition value of a realm sync configuration.
+ * @param value
  */
 function validatePartitionValue(value: unknown): asserts value is PartitionValue {
   if (typeof value === "number") {

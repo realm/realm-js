@@ -86,6 +86,7 @@ function isUserDefined(type: string | undefined): type is UserTypeName {
 
 /**
  * Transform a validated user-provided Realm schema into its canonical form.
+ * @param realmSchema
  */
 export function normalizeRealmSchema(
   realmSchema: Readonly<(RealmObjectConstructor | ObjectSchema)[]>,
@@ -95,6 +96,7 @@ export function normalizeRealmSchema(
 
 /**
  * Transform a validated user-provided object schema into its canonical form.
+ * @param arg
  */
 export function normalizeObjectSchema(arg: RealmObjectConstructor | ObjectSchema): CanonicalObjectSchema {
   if (typeof arg === "function") {
@@ -138,6 +140,9 @@ export function normalizeObjectSchema(arg: RealmObjectConstructor | ObjectSchema
 
 /**
  * Transform user-provided property schemas into their canonical forms.
+ * @param objectName
+ * @param propertiesSchemas
+ * @param primaryKey
  */
 function normalizePropertySchemas(
   objectName: string,
@@ -159,6 +164,7 @@ function normalizePropertySchemas(
 
 /**
  * Transform a user-provided property schema into its canonical form.
+ * @param info
  */
 export function normalizePropertySchema(info: PropertyInfo): CanonicalPropertySchema {
   const isUsingShorthand = typeof info.propertySchema === "string";
@@ -172,6 +178,7 @@ export function normalizePropertySchema(info: PropertyInfo): CanonicalPropertySc
 /**
  * Transform a validated user-provided property schema that is using
  * the shorthand string notation into its canonical form.
+ * @param info
  */
 function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): CanonicalPropertySchema {
   let { propertySchema } = info;
@@ -267,6 +274,7 @@ function normalizePropertySchemaShorthand(info: PropertyInfoUsingShorthand): Can
 /**
  * Transform a validated user-provided property schema that is using
  * the relaxed object notation into its canonical form.
+ * @param info
  */
 function normalizePropertySchemaObject(info: PropertyInfoUsingObject): CanonicalPropertySchema {
   const { propertySchema } = info;
@@ -338,6 +346,8 @@ function normalizePropertySchemaObject(info: PropertyInfoUsingObject): Canonical
 
 /**
  * Determine whether a property always is implicitly optional (nullable).
+ * @param type
+ * @param objectType
  */
 function optionalIsImplicitlyTrue(type: string, objectType: string | undefined): boolean {
   return (
@@ -350,6 +360,8 @@ function optionalIsImplicitlyTrue(type: string, objectType: string | undefined):
 
 /**
  * Determine whether a property always is implicitly non-optional (non-nullable).
+ * @param type
+ * @param objectType
  */
 function optionalIsImplicitlyFalse(type: string, objectType: string | undefined): boolean {
   return (type === "list" || type === "set" || type === "linkingObjects") && isUserDefined(objectType);
@@ -357,6 +369,7 @@ function optionalIsImplicitlyFalse(type: string, objectType: string | undefined)
 
 /**
  * Determine whether a string ends with a shorthand collection ('[]' or '{}' or '<>').
+ * @param input
  */
 function hasCollectionSuffix(input: string): boolean {
   const end = input.substring(input.length - 2);
@@ -365,6 +378,8 @@ function hasCollectionSuffix(input: string): boolean {
 
 /**
  * Assert that shorthand notation is not being used.
+ * @param input
+ * @param info
  */
 function assertNotUsingShorthand(input: string | undefined, info: PropertyInfo): void {
   const shorthands: string[] = [];
@@ -391,6 +406,8 @@ function assertNotUsingShorthand(input: string | undefined, info: PropertyInfo):
  * Generate an error caused by an invalid property schema.
  * (Returning a function rather than the Error itself in order
  * for the Error to only be created if needed.)
+ * @param info
+ * @param message
  */
 function propError(info: PropertyInfo, message: string): () => PropertySchemaParseError {
   return () => new PropertySchemaParseError(message, info);
@@ -398,6 +415,8 @@ function propError(info: PropertyInfo, message: string): () => PropertySchemaPar
 
 /**
  * Generate an error caused by an invalid object schema.
+ * @param objectName
+ * @param message
  */
 function objectError(objectName: string, message: string): () => ObjectSchemaParseError {
   return () => new ObjectSchemaParseError(message, { objectName });
@@ -405,6 +424,7 @@ function objectError(objectName: string, message: string): () => ObjectSchemaPar
 
 /**
  * Extract the base type and the type argument from a generic string notation.
+ * @param type
  */
 export function extractGeneric(type: string): { typeBase: string; typeArgument?: string } {
   const bracketStart = type.indexOf("<");

@@ -65,7 +65,6 @@ export class ApiKeyAuth {
 
   /**
    * Creates an API key that can be used to authenticate as the current user.
-   *
    * @param keyName the name of the API key to be created.
    */
   async create(keyName: string): Promise<SecretApiKey> {
@@ -76,7 +75,6 @@ export class ApiKeyAuth {
 
   /**
    * Fetches an API key associated with the current user.
-   *
    * @param keyId the id of the API key to fetch.
    */
   async fetch(keyId: string): Promise<ApiKey> {
@@ -94,7 +92,6 @@ export class ApiKeyAuth {
 
   /**
    * Deletes an API key associated with the current user.
-   *
    * @param keyId the id of the API key to delete
    */
   async delete(keyId: string) {
@@ -103,7 +100,6 @@ export class ApiKeyAuth {
 
   /**
    * Enables an API key associated with the current user.
-   *
    * @param keyId the id of the API key to enable
    */
   async enable(keyId: string) {
@@ -112,7 +108,6 @@ export class ApiKeyAuth {
 
   /**
    * Disable an API key associated with the current user.
-   *
    * @param keyId the id of the API key to disable
    */
   async disable(keyId: string) {

@@ -286,7 +286,7 @@ export class RealmObject<T = DefaultObject> {
    * Use circular JSON serialization libraries such as [@ungap/structured-clone](https://www.npmjs.com/package/@ungap/structured-clone)
    * and [flatted](https://www.npmjs.com/package/flatted) to stringify Realm entities that have circular structures.
    * @returns A plain object.
-   **/
+   */
   toJSON(_?: string, cache?: unknown): DefaultObject;
   /** @internal */
   toJSON(_?: string, cache = new JSONCacheMap()): DefaultObject {

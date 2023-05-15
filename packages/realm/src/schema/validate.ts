@@ -22,13 +22,13 @@ import {
   Configuration,
   DefaultObject,
   ObjectSchema,
+  ObjectSchemaParseError,
   PropertySchema,
+  PropertySchemaParseError,
   RealmObject,
   RealmObjectConstructor,
   SchemaParseError,
   assert,
-  PropertySchemaParseError,
-  ObjectSchemaParseError,
 } from "../internal";
 
 // Need to use `CanonicalObjectSchema` rather than `ObjectSchema` due to some
@@ -61,6 +61,7 @@ const PROPERTY_SCHEMA_KEYS = new Set<keyof CanonicalPropertySchema>([
 
 /**
  * Validate the data types of the fields of a user-provided realm schema.
+ * @param realmSchema
  */
 export function validateRealmSchema(realmSchema: unknown): asserts realmSchema is Configuration["schema"][] {
   assert.array(realmSchema, "realm schema");
@@ -72,6 +73,7 @@ export function validateRealmSchema(realmSchema: unknown): asserts realmSchema i
 
 /**
  * Validate the data types of the fields of a user-provided object schema.
+ * @param objectSchema
  */
 export function validateObjectSchema(
   objectSchema: unknown,
@@ -144,6 +146,9 @@ export function validateObjectSchema(
 /**
  * Validate the data types of a user-provided property schema that ought to use the
  * relaxed object notation.
+ * @param objectName
+ * @param propertyName
+ * @param propertySchema
  */
 export function validatePropertySchema(
   objectName: string,
@@ -186,6 +191,8 @@ export function validatePropertySchema(
 
 /**
  * Get the keys of an object that are not part of the provided valid keys.
+ * @param object
+ * @param validKeys
  */
 function filterInvalidKeys(object: Record<string, unknown>, validKeys: Set<string>): string[] {
   return Object.keys(object).filter((key) => !validKeys.has(key));

@@ -120,6 +120,8 @@ function defaultFromBinding(value: unknown) {
 
 /**
  * Adds a branch to a function, which checks for the argument to be null, in which case it returns early.
+ * @param fn
+ * @param enabled
  */
 function nullPassthrough<T, R extends any[], F extends (value: unknown, ...rest: R) => unknown>(
   this: T,

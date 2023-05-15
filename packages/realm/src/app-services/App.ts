@@ -96,7 +96,6 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
   /**
    * Get or create a singleton Realm App from an id.
    * Calling this function multiple times with the same id will return the same instance.
-   *
    * @deprecated Use App.get.
    * @param id The Realm App id visible from the Atlas App Services UI or a configuration.
    * @returns The Realm App instance.
@@ -108,7 +107,6 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
   /**
    * Get or create a singleton Realm App from an id.
    * Calling this function multiple times with the same id will return the same instance.
-   *
    * @param id The Realm App id visible from the Atlas App Services UI or a configuration.
    * @returns The Realm App instance.
    */
@@ -160,7 +158,6 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
 
   /**
    * Creates a new app and connects to an Atlas App Services instance.
-   *
    * @param id A string app id.
    * @throws {@link Error} If no {@link id} is provided.
    */
@@ -168,7 +165,6 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
 
   /**
    * Creates a new app and connects to an Atlas App Services instance.
-   *
    * @param config The configuration of the app.
    * @throws {@link Error} If no {@link AppConfiguration.id | app id} is provided.
    */
@@ -202,7 +198,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
   }
 
   /**
-   * @return The app id.
+   * @returns The app id.
    */
   public get id(): string {
     return this.internal.config.appId;

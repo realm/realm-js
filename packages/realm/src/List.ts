@@ -124,11 +124,9 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
 
   /**
    * Add one or more values to the _end_ of the list.
-   *
    * @param items Values to add to the list.
    * @throws {TypeError} If a `value` is not of a type which can be stored in
    *   the list, or if an object being added to the list does not match the {@link ObjectSchema} for the list.
-   *
    * @throws {@link AssertionError} If not inside a write transaction.
    * @returns A number equal to the new length of
    *          the list after adding the values.
@@ -173,7 +171,6 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
 
   /**
    * Add one or more values to the _beginning_ of the list.
-   *
    * @param items Values to add to the list.
    * @throws {TypeError} If a `value` is not of a type which can be stored in
    * the list, or if an object being added to the list does not match the {@link Realm.ObjectSchema} for the list.
@@ -198,9 +195,9 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     return internal.size;
   }
 
-  /** TODO
+  /**
+   * TODO
    * Changes the contents of the list by removing value and/or inserting new value.
-   *
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice Array.prototype.splice}
    * @param start The start index. If greater than the length of the list,
    *   the start index will be set to the length instead. If negative, then the start index
@@ -214,7 +211,6 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
   splice(start: number, deleteCount?: number): T[];
   /**
    * Changes the contents of the list by removing value and/or inserting new value.
-   *
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice Array.prototype.splice}
    * @param start The start index. If greater than the length of the list,
    *   the start index will be set to the length instead. If negative, then the start index
@@ -229,7 +225,6 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
   splice(start: number, deleteCount: number, ...items: T[]): T[];
   /**
    * Changes the contents of the list by removing value and/or inserting new value.
-   *
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice Array.prototype.splice}
    * @param start The start index. If greater than the length of the list,
    *   the start index will be set to the length instead. If negative, then the start index
@@ -286,7 +281,6 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
 
   /**
    * Removes the element of the list at the specified index.
-   *
    * @param index The index of the element to remove.
    * @throws {@link AssertionError} If not inside a write transaction or the input index is less than 0
    * or greater than the size of the list.
@@ -303,7 +297,6 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
 
   /**
    * Moves one element of the list from one index to another.
-   *
    * @param from The index of the element to move.
    * @param to The destination index of the element.
    * @throws {@link AssertionError} If not inside a write transaction or if any of the input indexes
@@ -323,7 +316,6 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
 
   /**
    * Swaps the positions of the elements of the list at two indexes.
-   *
    * @param index1 The index of the first element.
    * @param index2 The index of the second element.
    * @throws {@link AssertionError} If not inside a write transaction or if any of the input indexes

@@ -295,7 +295,7 @@ export class Realm {
 
   /**
    * Clears the state by closing and deleting any Realm in the default directory and logout all users.
-   * @private Not a part of the public API: It's primarily used from the library's tests.
+   * Not a part of the public API: It's primarily used from the library's tests.
    */
   public static clearTestState(): void {
     assert(flags.ALLOW_CLEAR_TEST_STATE, "Set the flags.ALLOW_CLEAR_TEST_STATE = true before calling this.");
@@ -383,7 +383,6 @@ export class Realm {
    * and all required fields have the default value for the given data type, either the value
    * set by the default property in the schema or the default value for the datatype if the schema
    * doesn't specify one, i.e. 0, false and "".
-   *
    * @param objectSchema Schema describing the object that should be created.
    */
   public static createTemplateObject<T extends Record<string, unknown>>(objectSchema: ObjectSchema): T {
@@ -447,13 +446,12 @@ export class Realm {
    * Realm.copyBundledRealmFiles();
    *
    * const realm = await Realm.open({
-   *   // This will open example.realm from the documents directory, with the bundled data in.
-   *   path: "example.realm"
+   * // This will open example.realm from the documents directory, with the bundled data in.
+   * path: "example.realm"
    * });
    * ```
    *
    * This is only implemented for React Native.
-   *
    * @throws {@link Error} If an I/O error occurred or method is not implemented.
    */
   public static copyBundledRealmFiles() {
@@ -462,6 +460,7 @@ export class Realm {
 
   /**
    * TODO: Consider breaking this by ensuring a ".realm" suffix (coordinating with other SDK teams in the process)
+   * @param path
    */
   private static normalizePath(path: string | undefined): string {
     if (typeof path === "undefined") {
@@ -476,6 +475,7 @@ export class Realm {
   }
 
   /**
+   * @param config
    * @note When the path is relative and the config contains a sync object, Core will replace any existing file extension
    * or add the ".realm" suffix.
    */
@@ -700,7 +700,6 @@ export class Realm {
 
   /**
    * Indicates if this Realm contains any objects.
-   * @readonly
    * @since 1.10.0
    */
   get isEmpty(): boolean {
@@ -709,7 +708,6 @@ export class Realm {
 
   /**
    * The path to the file where this Realm is stored.
-   * @readonly
    * @since 0.12.0
    */
   get path(): string {
@@ -718,7 +716,6 @@ export class Realm {
 
   /**
    * Indicates if this Realm was opened as read-only.
-   * @readonly
    * @since 0.12.0
    */
   get isReadOnly(): boolean {
@@ -727,7 +724,6 @@ export class Realm {
 
   /**
    * Indicates if this Realm was opened in-memory.
-   * @readonly
    */
   get isInMemory(): boolean {
     return this.internal.config.inMemory;
@@ -735,7 +731,6 @@ export class Realm {
 
   /**
    * A normalized representation of the schema provided in the {@link Configuration} when this Realm was constructed.
-   * @readonly
    * @since 0.12.0
    */
   get schema(): CanonicalObjectSchema[] {
@@ -755,7 +750,6 @@ export class Realm {
 
   /**
    * The current schema version of the Realm.
-   * @readonly
    * @since 0.12.0
    */
   get schemaVersion(): number {
@@ -764,7 +758,6 @@ export class Realm {
 
   /**
    * Indicates if this Realm is in a write transaction.
-   * @readonly
    * @since 1.10.3
    */
   get isInTransaction(): boolean {
@@ -774,7 +767,6 @@ export class Realm {
 
   /**
    * Indicates if this Realm has been closed.
-   * @readonly
    * @since 2.1.0
    */
   get isClosed(): boolean {
@@ -871,6 +863,7 @@ export class Realm {
 
   /**
    * Deletes the provided Realm object, or each one inside the provided collection.
+   * @param subject
    */
   delete(subject: AnyRealmObject | AnyRealmObject[] | List | Results): void {
     assert.inTransaction(this, "Can only delete objects within a transaction.");
@@ -1115,6 +1108,7 @@ export class Realm {
    * be called instead of {@link commitTransaction} and the exception will be re-thrown to the caller of {@link write}.
    *
    * Nested transactions (calling {@link write} within {@link write}) is not possible.
+   * @param callback
    * @returns Returned value from the callback.
    */
   write<T>(callback: () => T): T {
@@ -1136,7 +1130,6 @@ export class Realm {
    * When doing a transaction, it is highly recommended to do error handling.
    * If you don't handle errors, your data might become inconsistent. Error handling
    * will often involve canceling the transaction.
-   *
    * @throws {@link Error} If already in write transaction
    * @see {@link cancelTransaction}
    * @see {@link commitTransaction}
@@ -1157,7 +1150,6 @@ export class Realm {
 
   /**
    * Commit a write transaction.
-   *
    * @see {@link beginTransaction}
    */
   commitTransaction(): void {
@@ -1166,7 +1158,6 @@ export class Realm {
 
   /**
    * Cancel a write transaction.
-   *
    * @see {@link beginTransaction}
    */
   cancelTransaction(): void {
@@ -1216,7 +1207,7 @@ export class Realm {
    * Update the schema of the Realm.
    *
    * @param schema The schema which the Realm should be updated to use.
-   * @internal Consider passing a {@link schema} when constructing the {@link Realm} instead.
+   * @internal
    */
   _updateSchema(schema: ObjectSchema[]): void {
     validateRealmSchema(schema);
@@ -1246,7 +1237,6 @@ export class Realm {
 
   /**
    * Update subscriptions with the initial subscriptions if needed.
-   *
    * @param initialSubscriptions The initial subscriptions.
    * @param realmExists Whether the realm already exists.
    */

@@ -45,7 +45,6 @@ export type MapToDecorator = (realmPropertyName: string) => (target: unknown, me
 /**
  * Specify that the decorated field should be remapped to a different property name in the Realm database.
  * See: [documentation](https://www.mongodb.com/docs/realm/sdk/react-native/examples/define-a-realm-object-model/#remap-a-property)
- *
  * @param realmPropertyName The name of the property in the Realm database
  */
 export const mapTo = () => {

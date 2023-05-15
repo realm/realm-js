@@ -34,7 +34,6 @@ export class PushClient {
 
   /**
    * Register this device with the user.
-   *
    * @param token A Firebase Cloud Messaging (FCM) token, retrieved via the firebase SDK.
    */
   async register(token: string) {
