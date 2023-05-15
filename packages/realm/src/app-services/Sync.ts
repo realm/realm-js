@@ -91,7 +91,7 @@ export class Sync {
   }
   // TODO: Consider breaking the API, turning this into an instance method
   static enableSessionMultiplexing(app: App) {
-    app.internal.syncManager.enableSessionMultiplexing();
+    app.internal.syncManager.setSessionMultiplexing(true);
   }
   // TODO: Consider breaking the API, turning this into an instance method
   static initiateClientReset(app: App, path: string) {
