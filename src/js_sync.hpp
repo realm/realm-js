@@ -1459,7 +1459,7 @@ void SyncClass<T>::enable_multiplexing(ContextType ctx, ObjectType this_object, 
 {
     args.validate_count(1);
     auto app = get_internal<T, AppClass<T>>(ctx, Value::validated_to_object(ctx, args[0], "app"))->m_app;
-    app->sync_manager()->enable_session_multiplexing();
+    app->sync_manager()->set_session_multiplexing(true);
 }
 
 } // namespace js

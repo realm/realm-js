@@ -74,6 +74,9 @@ if(DEFINED CMAKE_JS_VERSION)
     include(NodeJSTargets)
 endif()
 
+# Disable geospatial queries for v11
+set(REALM_ENABLE_GEOSPATIAL OFF)
+
 if (NOT MSVC)
     # Ninja buffers output so we need to tell the compiler to use colors even though stdout isn't a tty.
     if(CMAKE_GENERATOR STREQUAL "Ninja")
