@@ -1,0 +1,18 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "noResolve": false,
+    "incremental": true,
+    "resolveJsonModule": true,
+    "paths": {
+      "realm/binding": ["./generated/ts/native-node.mjs"],
+      "realm/binding/core": ["./generated/ts/core.ts"]
+    }
+  },
+  "exclude": [
+    "../../tests/",
+    "../react-native/",
+    "../../../type-tests/"
+  ],
+}
