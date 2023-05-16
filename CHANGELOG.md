@@ -1,5 +1,9 @@
 ## vNext (TBD)
 
+### Breaking changes
+* `SyncSession` JS objects no longer keep their associated C++ objects, and therefore the sync network connection, alive. This was causing issues because JS garbage collection is lazy so the `SyncSession` may survive much longer than the last reference held to it. We now use the same technique as v11 to avoid keeping the C++ object alive (`std::weak_ptr`). ([#5815](https://github.com/realm/realm-js/pull/5815), since v12.0.0-alpha.0)
+  * Breaking change: On v11, if the C++ object had been destroyed already, we would often return `undefined` or some other default value when calling methods or accessing properties on the JS `SyncSession` object, even if that would violate our declared TS types. Now, in v12, we will throw from all methods and property accessors in this case.
+
 ### Deprecations
 * Deprecated the `SubscriptionsState` enum (will be removed in v13) in favor of the now-named `SubscriptionSetState`. ([#5773](https://github.com/realm/realm-js/issues/5773))
 

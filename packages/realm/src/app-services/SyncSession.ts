@@ -103,7 +103,6 @@ export function toBindingErrorHandler(onError: ErrorCallback) {
     const session = new SyncSession(sessionInternal);
     const error = fromBindingSyncError(bindingError);
     onError(session, error);
-    session.resetInternal();
   };
 }
 
@@ -208,7 +207,7 @@ export function toBindingClientResetMode(resetMode: ClientResetMode): binding.Cl
 }
 
 type ListenerToken = {
-  internal: binding.SyncSession;
+  weakInternal: binding.WeakSyncSession;
   token: binding.Int64;
 };
 
@@ -229,19 +228,19 @@ const mockApp = new Proxy({} as App, {
 const PROGRESS_LISTENERS = new Listeners<
   ProgressNotificationCallback,
   ListenerToken,
-  [binding.SyncSession, ProgressDirection, ProgressMode]
+  [binding.WeakSyncSession, binding.SyncSession, ProgressDirection, ProgressMode]
 >({
   throwOnReAdd: true,
-  add(callback, internal, direction, mode) {
+  add(callback, weakInternal, internal, direction, mode) {
     const token = internal.registerProgressNotifier(
       (transferred, transferable) => callback(Number(transferred), Number(transferable)),
       toBindingDirection(direction),
       mode === ProgressMode.ReportIndefinitely,
     );
-    return { internal, token };
+    return { weakInternal, token };
   },
-  remove({ internal, token }) {
-    return internal.unregisterProgressNotifier(token);
+  remove({ weakInternal, token }) {
+    weakInternal.withDeref((internal) => internal?.unregisterProgressNotifier(token));
   },
 });
 
@@ -249,86 +248,70 @@ const PROGRESS_LISTENERS = new Listeners<
  * Connection listeners are shared across instances of the SyncSession, making it possible to deregister a listener on another session
  * TODO: Consider adding a check to verify that the callback is removed from the correct SyncSession (although that would break the API)
  */
-const CONNECTION_LISTENERS = new Listeners<ConnectionNotificationCallback, ListenerToken, [binding.SyncSession]>({
+const CONNECTION_LISTENERS = new Listeners<
+  ConnectionNotificationCallback,
+  ListenerToken,
+  [binding.WeakSyncSession, binding.SyncSession]
+>({
   throwOnReAdd: true,
-  add(callback, internal) {
+  add(callback, weakInternal, internal) {
     const token = internal.registerConnectionChangeCallback((oldState, newState) =>
       callback(fromBindingConnectionState(newState), fromBindingConnectionState(oldState)),
     );
-    return { internal, token };
+    return { weakInternal, token };
   },
-  remove({ internal, token }) {
-    internal.unregisterConnectionChangeCallback(token);
+  remove({ weakInternal, token }) {
+    weakInternal.withDeref((internal) => internal?.unregisterConnectionChangeCallback(token));
   },
 });
 
 export class SyncSession {
-  private static instances = new Set<binding.WeakRef<SyncSession>>();
-
-  /**
-   * Resets the internal shared pointer of all instances returned since this message was last called.
-   * @internal
-   */
-  public static resetAllInternals() {
-    assert(flags.ALLOW_CLEAR_TEST_STATE, "Set the flags.ALLOW_CLEAR_TEST_STATE = true before calling this.");
-    for (const sessionRef of SyncSession.instances) {
-      sessionRef.deref()?.resetInternal();
-    }
-    SyncSession.instances.clear();
-  }
-
   /** @internal */
-  private _internal: binding.SyncSession | null;
+  private weakInternal: binding.WeakSyncSession;
   /** @internal */
-  public get internal() {
-    assert(this._internal, "This SyncSession is no longer valid");
-    return this._internal;
+  public withInternal<Ret = void>(cb: (syncSession: binding.SyncSession) => Ret) {
+    return this.weakInternal.withDeref((syncSession) => {
+      assert(syncSession, "This SyncSession is no longer valid");
+      return cb(syncSession);
+    });
   }
 
   /** @internal */
   constructor(internal: binding.SyncSession) {
-    this._internal = internal;
-    if (flags.ALLOW_CLEAR_TEST_STATE) {
-      SyncSession.instances.add(new binding.WeakRef(this));
-    }
-  }
-
-  /**@internal*/
-  resetInternal() {
-    if (!this._internal) return;
-    this._internal.$resetSharedPtr();
-    this._internal = null;
+    this.weakInternal = internal.weaken();
   }
 
   // TODO: Return the `error_handler`
   // TODO: Figure out a way to avoid passing a mocked app instance when constructing the User.
   get config(): SyncConfiguration {
-    const user = new User(this.internal.user, mockApp);
-    const { partitionValue, flxSyncRequested, customHttpHeaders, clientValidateSsl, sslTrustCertificatePath } =
-      this.internal.config;
-    if (flxSyncRequested) {
-      return {
-        user,
-        flexible: true,
-        customHttpHeaders,
-        ssl: { validate: clientValidateSsl, certificatePath: sslTrustCertificatePath },
-      };
-    } else {
-      return {
-        user,
-        partitionValue: EJSON.parse(partitionValue) as PartitionValue,
-        customHttpHeaders,
-        ssl: { validate: clientValidateSsl, certificatePath: sslTrustCertificatePath },
-      };
-    }
+    return this.withInternal((internal) => {
+      const user = new User(internal.user, mockApp);
+      const { partitionValue, flxSyncRequested, customHttpHeaders, clientValidateSsl, sslTrustCertificatePath } =
+        internal.config;
+      if (flxSyncRequested) {
+        return {
+          user,
+          flexible: true,
+          customHttpHeaders,
+          ssl: { validate: clientValidateSsl, certificatePath: sslTrustCertificatePath },
+        };
+      } else {
+        return {
+          user,
+          partitionValue: EJSON.parse(partitionValue) as PartitionValue,
+          customHttpHeaders,
+          ssl: { validate: clientValidateSsl, certificatePath: sslTrustCertificatePath },
+        };
+      }
+    });
   }
 
   get state(): SessionState {
-    return fromBindingSessionState(this.internal.state);
+    return fromBindingSessionState(this.withInternal((internal) => internal.state));
   }
 
   get url() {
-    const url = this.internal.fullRealmUrl;
+    const url = this.withInternal((internal) => internal.fullRealmUrl);
     if (url) {
       return url;
     } else {
@@ -337,32 +320,34 @@ export class SyncSession {
   }
 
   get user() {
-    return User.get(this.internal.user);
+    return User.get(this.withInternal((internal) => internal.user));
   }
 
   get connectionState() {
-    return fromBindingConnectionState(this.internal.connectionState);
+    return fromBindingConnectionState(this.withInternal((internal) => internal.connectionState));
   }
 
   // TODO: Make this a getter instead of a method
   isConnected() {
-    const { connectionState, state } = this.internal;
-    return (
-      connectionState === binding.SyncSessionConnectionState.Connected &&
-      (state === binding.SyncSessionState.Active || state === binding.SyncSessionState.Dying)
-    );
+    return this.withInternal((internal) => {
+      const { connectionState, state } = internal;
+      return (
+        connectionState === binding.SyncSessionConnectionState.Connected &&
+        (state === binding.SyncSessionState.Active || state === binding.SyncSessionState.Dying)
+      );
+    });
   }
 
   pause() {
-    this.internal.forceClose();
+    this.withInternal((internal) => internal.forceClose());
   }
 
   resume() {
-    this.internal.reviveIfNeeded();
+    this.withInternal((internal) => internal.reviveIfNeeded());
   }
 
   addProgressNotification(direction: ProgressDirection, mode: ProgressMode, callback: ProgressNotificationCallback) {
-    PROGRESS_LISTENERS.add(callback, this.internal, direction, mode);
+    this.withInternal((internal) => PROGRESS_LISTENERS.add(callback, this.weakInternal, internal, direction, mode));
   }
 
   removeProgressNotification(callback: ProgressNotificationCallback) {
@@ -370,30 +355,36 @@ export class SyncSession {
   }
 
   addConnectionNotification(callback: ConnectionNotificationCallback) {
-    CONNECTION_LISTENERS.add(callback, this.internal);
+    this.withInternal((internal) => CONNECTION_LISTENERS.add(callback, this.weakInternal, internal));
   }
   removeConnectionNotification(callback: ConnectionNotificationCallback) {
     CONNECTION_LISTENERS.remove(callback);
   }
 
   downloadAllServerChanges(timeoutMs?: number): Promise<void> {
-    return new TimeoutPromise(
-      this.internal.waitForDownloadCompletion(),
-      timeoutMs,
-      `Downloading changes did not complete in ${timeoutMs} ms.`,
+    return this.withInternal(
+      (internal) =>
+        new TimeoutPromise(
+          internal.waitForDownloadCompletion(),
+          timeoutMs,
+          `Downloading changes did not complete in ${timeoutMs} ms.`,
+        ),
     );
   }
 
   uploadAllLocalChanges(timeoutMs?: number): Promise<void> {
-    return new TimeoutPromise(
-      this.internal.waitForUploadCompletion(),
-      timeoutMs,
-      `Uploading changes did not complete in ${timeoutMs} ms.`,
+    return this.withInternal(
+      (internal) =>
+        new TimeoutPromise(
+          internal.waitForUploadCompletion(),
+          timeoutMs,
+          `Uploading changes did not complete in ${timeoutMs} ms.`,
+        ),
     );
   }
 
   /** @internal */
   _simulateError(code: number, message: string, type: string, isFatal: boolean) {
-    binding.Helpers.simulateSyncError(this.internal, code, message, type, isFatal);
+    this.withInternal((internal) => binding.Helpers.simulateSyncError(internal, code, message, type, isFatal));
   }
 }

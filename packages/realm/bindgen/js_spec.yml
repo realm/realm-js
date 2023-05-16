@@ -17,3 +17,12 @@ classes:
       get_cpu_arch: () -> std::string
       # print: (const char* fmt, ...) # can't expose varargs directly. Could expose a fixed overload.
 
+  WeakSyncSession:
+    cppName: std::weak_ptr<SyncSession>
+    constructors:
+      weak_copy_of: '(shared: SharedSyncSession)'
+    methods:
+      raw_dereference:
+        sig: '() const -> Nullable<SharedSyncSession>'
+        cppName: lock
+
