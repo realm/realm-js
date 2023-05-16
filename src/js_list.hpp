@@ -279,7 +279,7 @@ void ListClass<T>::snapshot(ContextType ctx, ObjectType this_object, Arguments& 
     args.validate_maximum(0);
     auto list = get_internal<T, ListClass<T>>(ctx, this_object);
     auto type = list->get_type();
-    if ((type & ~realm::PropertyType::Collection) != realm::PropertyType::Object) {
+    if ((type & ~realm::PropertyType::Flags) != realm::PropertyType::Object) {
         throw std::invalid_argument("`snapshot()` is not supported on list of primitive types");
     }
     return_value.set(ResultsClass<T>::create_instance(ctx, list->snapshot()));
