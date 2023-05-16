@@ -98,7 +98,7 @@ describe("Realm schema", () => {
           ],
         });
       }).throws(
-        "Invalid type declaration for property 'content' on 'testProp': \"indexed\" needs to be either a boolean or \"full-text\"",
+        "Invalid type declaration for property 'content' on 'testProp': Expected 'content.indexed' on 'testProp' to be a boolean or 'full-text'",
       );
     });
   });
