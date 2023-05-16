@@ -21,6 +21,8 @@
 * Fixed `App.currentUser()` when being called on a new instance of `App` ([#5790](https://github.com/realm/realm-js/pull/5790))
 * Fixed an error where performing a query like "{1, 2, 3, ...} IN list" where the array is longer than 8 and all elements are smaller than some values in list, the program would crash. ([realm/realm-core#6545](https://github.com/realm/realm-core/pull/6545), since v10.20.0)  
 * Performing a large number of queries without ever performing a write resulted in steadily increasing memory usage, some of which was never fully freed due to an unbounded cache. ([realm/realm-core#6530](https://github.com/realm/realm-core/pull/6530), since v10.19.0)  
+* `SyncSession` JS objects no longer keep their associated C++ objects, and therefore the sync network connection, alive. This was causing issues because JS garbage collection is lazy so the `SyncSession` may survive much longer than the last reference held to it. We now use the same technique as v11 to avoid keeping the C++ object alive (`std::weak_ptr`). ([#5815](https://github.com/realm/realm-js/pull/5815), since v12.0.0-alpha.0)
+  * Breaking change: On v11, if the C++ object had been destroyed already, we would often return `undefined` or some other default value when calling methods or accessing properties on the JS `SyncSession` object, even if that would violate our declared TS types. Now, in v12, we will throw from all methods and property accessors in this case.
 
 ### Compatibility
 * React Native >= v0.71.4
