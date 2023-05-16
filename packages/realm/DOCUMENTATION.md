@@ -19,7 +19,7 @@ Here are all the tags Realm class methods are likely to have, **listed in the or
     - ❌ `@param {boolean} config - the config`
     - Should **not** have a dash after param. name (some of the legacy documentation and is actually ignored by JSDoc but for sake of consistency it would be good to avoid this)
 - `@throws {@link errorType} {If / When + description}`
-    - ✅ `@throws {@link Error} If no app id is provided.`
+    - ✅ `@throws {Error} If no app id is provided.`
     - ✅ `@throws {@link RuntimeError} When Realm closes.`
     - ❌ `@throws no app id is provided.`
     - Should have description **start with If or When**.
@@ -46,7 +46,7 @@ Some examples of annotations following the principles above:
    * are ignored entirely by this method and will not be returned.
    *
    * @param property For a collection of objects, the property to take the maximum of.
-   * @throws {@link Error} If no property with the name exists or if property is not numeric/date.
+   * @throws {Error} If no property with the name exists or if property is not numeric/date.
    * @returns The maximum value.
    * @since 1.12.1
 */

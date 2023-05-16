@@ -85,7 +85,7 @@ export class Results<T = unknown> extends OrderedCollection<T> {
    * Bulk update objects in the collection.
    * @param propertyName The name of the property.
    * @param value The updated property value.
-   * @throws {@link Error} If no property with the name exists.
+   * @throws {Error} If no property with the name exists.
    * @since 2.0.0-rc20
    */
   update(propertyName: keyof RealmInsertionModel<T>, value: RealmInsertionModel<T>[typeof propertyName]): void {

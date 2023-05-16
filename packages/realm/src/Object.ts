@@ -338,7 +338,7 @@ export class RealmObject<T = DefaultObject> {
    * Returns all the objects that link to this object in the specified relationship.
    * @param objectType The type of the objects that link to this object's type.
    * @param propertyName The name of the property that references objects of this object's type.
-   * @throws {@link AssertionError} If the relationship is not valid.
+   * @throws {AssertionError} If the relationship is not valid.
    * @returns The objects that link to this object.
    * @since 1.9.0
    */
@@ -440,7 +440,7 @@ export class RealmObject<T = DefaultObject> {
   /**
    * Get underlying type of a property value.
    * @param propertyName The name of the property to retrieve the type of.
-   * @throws {@link Error} If property does not exist.
+   * @throws {Error} If property does not exist.
    * @returns Underlying type of the property value.
    * @since 10.8.0
    */
