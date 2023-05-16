@@ -308,10 +308,7 @@ async function submitAnalytics(dryRun) {
   }
 
   if ("REALM_PRINT_ANALYTICS" in process.env) {
-    console.log("REALM ANALYTICS");
-    Object.keys(data).forEach((key) => {
-      console.log(`  ${key}: ${data[key]}`);
-    });
+    console.log("REALM ANALYTICS", JSON.stringify(data, null, 2));
   }
 
   return new Promise((resolve, reject) => {
