@@ -20,9 +20,9 @@ classes:
   WeakSyncSession:
     cppName: std::weak_ptr<SyncSession>
     constructors:
-      weakCopyOf: '(shared: SharedSyncSession)'
+      weak_copy_of: '(shared: SharedSyncSession)'
     methods:
-      rawDereference:
+      raw_dereference:
         sig: '() const -> Nullable<SharedSyncSession>'
         cppName: lock
 
