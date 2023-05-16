@@ -320,7 +320,7 @@ export class Realm {
   /**
    * Delete the Realm file for the given configuration.
    * @param config The configuration for the Realm
-   * @throws {@link Error} If anything in the provided {@link config} is invalid.
+   * @throws {Error} If anything in the provided {@link config} is invalid.
    */
   public static deleteFile(config: Configuration): void {
     validateConfiguration(config);
@@ -335,7 +335,7 @@ export class Realm {
   /**
    * Checks if the Realm already exists on disk.
    * @param arg The configuration for the Realm or the path to it.
-   * @throws {@link Error} If anything in the provided {@link config} is invalid.
+   * @throws {Error} If anything in the provided {@link config} is invalid.
    * @returns `true` if the Realm exists on the device, `false` if not.
    */
   public static exists(arg: Configuration | string = {}): boolean {
@@ -352,7 +352,7 @@ export class Realm {
    * thrown if {@link Configuration.scheme | config.schema} is not defined.
    * @param arg The configuration for the Realm or the path to it.
    * @returns A promise that will be resolved with the Realm instance when it's available.
-   * @throws {@link Error} If anything in the provided {@link arg} is invalid.
+   * @throws {Error} If anything in the provided {@link arg} is invalid.
    */
   public static open(arg: Configuration | string = {}): ProgressRealmPromise {
     const config = typeof arg === "string" ? { path: arg } : arg;
@@ -365,7 +365,7 @@ export class Realm {
    *   Realm database is stored.
    * @param encryptionKey Required only when
    *   accessing encrypted Realms.
-   * @throws {@link Error} If passing an invalid or non-matching encryption key.
+   * @throws {Error} If passing an invalid or non-matching encryption key.
    * @returns Version of the schema, or `-1` if no Realm exists at {@link path}.
    */
   public static schemaVersion(path: string, encryptionKey?: ArrayBuffer | ArrayBufferView): number {
@@ -452,7 +452,7 @@ export class Realm {
    * ```
    *
    * This is only implemented for React Native.
-   * @throws {@link Error} If an I/O error occurred or method is not implemented.
+   * @throws {Error} If an I/O error occurred or method is not implemented.
    */
   public static copyBundledRealmFiles() {
     fs.copyBundledRealmFiles();
@@ -606,14 +606,14 @@ export class Realm {
 
   /**
    * Create a new {@link Realm} instance, at the default path.
-   * @throws {@link Error} When an incompatible synced Realm is opened.
+   * @throws {Error} When an incompatible synced Realm is opened.
    */
   constructor();
   /**
    * Create a new {@link Realm} instance at the provided {@link path}.
    * @param path Required when first creating the Realm.
-   * @throws {@link Error} If the Realm cannot be opened at the provided {@link path}.
-   * @throws {@link Error} When an incompatible synced Realm is opened.
+   * @throws {Error} If the Realm cannot be opened at the provided {@link path}.
+   * @throws {Error} When an incompatible synced Realm is opened.
    */
   constructor(path: string);
   /**
@@ -627,8 +627,8 @@ export class Realm {
    * In the case of query-based sync, {@link Configuration.schema | config.schema} is required. An exception will be
    * thrown if {@link Configuration.schema | config.schema} is not defined.
    * @param config Required when first creating the Realm.
-   * @throws {@link Error} If anything in the provided {@link config} is invalid.
-   * @throws {@link Error} When an incompatible synced Realm is opened.
+   * @throws {Error} If anything in the provided {@link config} is invalid.
+   * @throws {Error} When an incompatible synced Realm is opened.
    */
   constructor(config: Configuration);
   /** @internal */
@@ -775,8 +775,8 @@ export class Realm {
   }
 
   /**
-   * The latest set of flexible sync subscriptions.
-   * @throws {@link Error} If flexible sync is not enabled for this app.
+   * @throws {Error} If flexible sync is not enabled for this app.
+   * @returns The latest set of flexible sync subscriptions.
    */
   get subscriptions(): SubscriptionSet {
     const { syncConfig } = this.internal.config;
@@ -863,7 +863,7 @@ export class Realm {
 
   /**
    * Deletes the provided Realm object, or each one inside the provided collection.
-   * @param subject
+   * @param subject the object or collection of objects to delete.
    */
   delete(subject: AnyRealmObject | AnyRealmObject[] | List | Results): void {
     assert.inTransaction(this, "Can only delete objects within a transaction.");
@@ -897,7 +897,7 @@ export class Realm {
 
   /**
    * Deletes a Realm model, including all of its objects.
-   * If called outside a migration function, {@link schema} and {@link schemaVersion} are updated.
+   * If called outside a migration function, {@link Realm.schema} and {@link Realm.schemaVersion} are updated.
    * @param name The model name
    */
   deleteModel(name: string): void {
@@ -930,7 +930,7 @@ export class Realm {
    * Searches for a Realm object by its primary key.
    * @param type The type of Realm object to search for.
    * @param primaryKey The primary key value of the object to search for.
-   * @throws {@link Error} If type passed into this method is invalid, or if the object type did
+   * @throws {Error} If type passed into this method is invalid, or if the object type did
    *  not have a {@link primaryKey} specified in the schema, or if it was marked asymmetric.
    * @returns A {@link RealmObject} or `null` if no object is found.
    * @since 0.14.0
@@ -970,7 +970,7 @@ export class Realm {
    * Returns all objects of the given {@link type} in the Realm.
    * @param type The type of Realm object to search for.
    * @param objectKey The object key of the Realm object to search for.
-   * @throws {@link Error} If type passed into this method is invalid or if the type is marked embedded or asymmetric.
+   * @throws {Error} If type passed into this method is invalid or if the type is marked embedded or asymmetric.
    * @returns A {@link RealmObject} or `undefined` if the object key is not found.
    * @internal
    */
@@ -1004,7 +1004,7 @@ export class Realm {
   /**
    * Returns all objects of the given {@link type} in the Realm.
    * @param type The type of Realm objects to retrieve.
-   * @throws {@link Error} If type passed into this method is invalid or if the type is marked embedded or asymmetric.
+   * @throws {Error} If type passed into this method is invalid or if the type is marked embedded or asymmetric.
    * @returns Results that will live-update as objects are created, modified, and destroyed.
    */
   objects<T = DefaultObject>(type: string): Results<RealmObject<T> & T>;
@@ -1037,7 +1037,7 @@ export class Realm {
    * @param callback Function to be called when a change event occurs.
    *   Each callback will only be called once per event, regardless of the number of times
    *   it was added.
-   * @throws {@link Error} If an invalid event {@link eventName} is supplied, if Realm is closed or if {@link callback} is not a function.
+   * @throws {Error} If an invalid event {@link eventName} is supplied, if Realm is closed or if {@link callback} is not a function.
    */
   addListener(eventName: RealmEventName, callback: RealmListenerCallback): void {
     assert.open(this);
@@ -1056,8 +1056,8 @@ export class Realm {
   /**
    * Remove the listener {@link callback} for the specified event {@link eventName}.
    * @param eventName The event name.
-   * @param callback Function that was previously added as a listener for this event through the {@link addListener} method.
-   * @throws {@link Error} If an invalid event {@link eventName} is supplied, if Realm is closed or if {@link callback} is not a function.
+   * @param callback Function that was previously added as a listener for this event through the {@link Realm.addListener} method.
+   * @throws {Error} If an invalid event {@link eventName} is supplied, if Realm is closed or if {@link callback} is not a function.
    */
   removeListener(eventName: RealmEventName, callback: RealmListenerCallback): void {
     assert.open(this);
@@ -1077,7 +1077,7 @@ export class Realm {
   /**
    * Remove all event listeners (restricted to the event {@link eventName}, if provided).
    * @param eventName The name of the event whose listeners should be removed.
-   * @throws {@link Error} When invalid event {@link eventName} is supplied
+   * @throws {Error} When invalid event {@link eventName} is supplied
    */
   removeAllListeners(eventName?: RealmEventName): void {
     assert.open(this);
@@ -1103,12 +1103,12 @@ export class Realm {
   /**
    * Synchronously call the provided {@link callback} inside a write transaction. If an exception happens inside a transaction,
    * you’ll lose the changes in that transaction, but the Realm itself won’t be affected (or corrupted).
-   * More precisely, {@link beginTransaction} and {@link commitTransaction} will be called
-   * automatically. If any exception is thrown during the transaction {@link cancelTransaction} will
-   * be called instead of {@link commitTransaction} and the exception will be re-thrown to the caller of {@link write}.
+   * More precisely, {@link Realm.beginTransaction} and {@link Realm.commitTransaction} will be called
+   * automatically. If any exception is thrown during the transaction {@link Realm.cancelTransaction} will
+   * be called instead of {@link Realm.commitTransaction} and the exception will be re-thrown to the caller of {@link Realm.write}.
    *
-   * Nested transactions (calling {@link write} within {@link write}) is not possible.
-   * @param callback
+   * Nested transactions (calling {@link Realm.write} within {@link Realm.write}) is not possible.
+   * @param callback Called after transaction has begun and before transaction is committed.
    * @returns Returned value from the callback.
    */
   write<T>(callback: () => T): T {
@@ -1130,9 +1130,9 @@ export class Realm {
    * When doing a transaction, it is highly recommended to do error handling.
    * If you don't handle errors, your data might become inconsistent. Error handling
    * will often involve canceling the transaction.
-   * @throws {@link Error} If already in write transaction
-   * @see {@link cancelTransaction}
-   * @see {@link commitTransaction}
+   * @throws {Error} If already in write transaction
+   * @see {@link Realm.cancelTransaction}
+   * @see {@link Realm.commitTransaction}
    * @example
    * realm.beginTransaction();
    * try {
@@ -1150,7 +1150,7 @@ export class Realm {
 
   /**
    * Commit a write transaction.
-   * @see {@link beginTransaction}
+   * @see {@link Realm.beginTransaction}
    */
   commitTransaction(): void {
     this.internal.commitTransaction();
@@ -1158,7 +1158,7 @@ export class Realm {
 
   /**
    * Cancel a write transaction.
-   * @see {@link beginTransaction}
+   * @see {@link Realm.beginTransaction}
    */
   cancelTransaction(): void {
     this.internal.cancelTransaction();
