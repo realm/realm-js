@@ -15,7 +15,13 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+
+// We need to disable noFinalLineText in this file because we need the @ts-expect-error
+// to propagate into the types (hence it's in a doc comment) and it needs to precede the line it expects the error on.
+/* eslint jsdoc/multiline-blocks: ["warn", { "noFinalLineText": false }] */
+
 import {
+  AssertionError,
   Collection,
   DefaultObject,
   IllegalConstructorError,
@@ -190,7 +196,9 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
     yield* this.entries();
   }
 
-  /** @ts-expect-error We're exposing methods in the end-users namespace of keys */
+  /**
+   * @yields Every key, one at a time.
+   * @ts-expect-error We're exposing methods in the end-users namespace of keys */
   *keys() {
     const snapshot = this[INTERNAL].keys.snapshot();
     const size = snapshot.size();
@@ -201,7 +209,9 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
     }
   }
 
-  /** @ts-expect-error We're exposing methods in the end-users namespace of keys */
+  /**
+   * @yields Every value, one at a time.
+   * @ts-expect-error We're exposing methods in the end-users namespace of keys */
   *values() {
     const { fromBinding } = this[HELPERS];
     const snapshot = this[INTERNAL].values.snapshot();
@@ -212,7 +222,9 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
     }
   }
 
-  /** @ts-expect-error We're exposing methods in the end-users namespace of keys */
+  /**
+   * @yields Every entry (key + value pair), one at a time.
+   * @ts-expect-error We're exposing methods in the end-users namespace of keys */
   *entries() {
     const { fromBinding } = this[HELPERS];
     const keys = this[INTERNAL].keys.snapshot();
@@ -226,7 +238,9 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
     }
   }
 
-  /** @ts-expect-error We're exposing methods in the end-users namespace of keys */
+  /**
+   * @returns true if the underlying object is actively managed by the database and can be safely accessed, false otherwise.
+   * @ts-expect-error We're exposing methods in the end-users namespace of keys */
   isValid() {
     return this[INTERNAL].isValid;
   }
@@ -234,7 +248,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
   /**
    * Adds one or more elements with specified key and value to the dictionary or updates value if key exists.
    * @param elements The object of element(s) to add.
-   * @throws {@link AssertionError} If not inside a write transaction, input object contains symbol keys or if any value violates types constraints.
+   * @throws {AssertionError} If not inside a write transaction, input object contains symbol keys or if any value violates types constraints.
    * @returns The dictionary.
    * @since 10.6.0
    * @ts-expect-error We're exposing methods in the end-users namespace of keys */
@@ -243,7 +257,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * Adds an element with the specified key and value to the dictionary or updates value if key exists.
    * @param key The key of the element to add.
    * @param value The value of the element to add.
-   * @throws {@link AssertionError} If not inside a write transaction, key is a symbol or if value violates type constraints.
+   * @throws {AssertionError} If not inside a write transaction, key is a symbol or if value violates type constraints.
    * @returns The dictionary.
    * @since 12.0.0
    */
@@ -252,7 +266,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * Adds one or more elements with the specified key and value to the dictionary or updates value if key exists.
    * @param elementsOrKey The element to add or the key of the element to add.
    * @param value The value of the element to add.
-   * @throws {@link AssertionError} If not inside a write transaction, if using symbol as keys, or if any value violates type constraints.
+   * @throws {AssertionError} If not inside a write transaction, if using symbol as keys, or if any value violates type constraints.
    * @returns The dictionary.
    * @since 10.6.0
    */
@@ -273,7 +287,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * Removes elements from the dictionary, with the keys provided.
    * This does not throw if the keys are already missing from the dictionary.
    * @param key The key to be removed.
-   * @throws {@link AssertionError} If not inside a write transaction.
+   * @throws {AssertionError} If not inside a write transaction.
    * @returns The dictionary
    * @since 10.6.0
    * @ts-expect-error We're exposing methods in the end-users namespace of keys */
