@@ -278,7 +278,7 @@ export class SyncSession {
 
   /** @internal */
   constructor(internal: binding.SyncSession) {
-    this.weakInternal = binding.WeakSyncSession.weaken(internal);
+    this.weakInternal = internal.weaken();
   }
 
   // TODO: Return the `error_handler`

@@ -34,11 +34,11 @@ declare module "realm/binding" {
     export function fromDate(d: Date): Timestamp;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-namespace
-  namespace WeakSyncSession {
-    /** Returns a WeakSyncSession and releases the strong reference held by `shared` */
-    export function weaken(shared: SyncSession): WeakSyncSession;
+  interface SyncSession {
+    /** Returns a WeakSyncSession and releases the strong reference held by this SyncSession */
+    weaken(): WeakSyncSession;
   }
+
   interface WeakSyncSession {
     /**
      * Similar to WeakRef.deref(), but takes a callback so that the strong reference can be
@@ -67,11 +67,11 @@ Timestamp.prototype.toDate = function () {
   return new Date(Number(this.seconds) * 1000 + this.nanoseconds / 1000_000);
 };
 
-WeakSyncSession.weaken = function (shared: SyncSession) {
+SyncSession.prototype.weaken = function () {
   try {
-    return WeakSyncSession.weakCopyOf(shared);
+    return WeakSyncSession.weakCopyOf(this);
   } finally {
-    shared.$resetSharedPtr();
+    this.$resetSharedPtr();
   }
 };
 
