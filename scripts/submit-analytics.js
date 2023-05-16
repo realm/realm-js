@@ -69,7 +69,10 @@ const getAnalyticsRequestUrl = (payload) =>
  * @param {string} data
  * @returns base64 encoded SHA256 of data
  */
-const sha256 = (data) => createHmac("sha256", Buffer.from("Realm is great")).update(data).digest().toString("base64");
+function sha256(data) {
+  const salt = "Realm is great";
+  return createHmac("sha256", Buffer.from(salt)).update(data).digest().toString("base64");
+}
 
 /**
  * Finds the root directory of the project.
@@ -134,7 +137,7 @@ function getRealmCoreVersion() {
     .toString()
     .split("\n")
     .map((s) => s.split("="));
-  return dependenciesList.find((e) => e[0] === "REALM_CORE_VERSION")[0];
+  return dependenciesList.find((e) => e[0] === "REALM_CORE_VERSION")[1];
 }
 
 /**
@@ -143,16 +146,8 @@ function getRealmCoreVersion() {
  * @returns An array with two elements: method and version
  */
 function getInstallationMethod() {
-  const root = getProjectRoot();
-  if (fse.exists(path.resolve(root, "yarn.lock"))) {
-    const yarnVersion = execSync("yarn --version").toString().trim();
-    return ["yarn", yarnVersion];
-  }
-  if (fse.exists(path.resolve(root, "package-lock.json"))) {
-    const npmVersion = execSync("npm --version").toString().trim();
-    return ["npm", npmVersion];
-  }
-  return ["unknown", "unknown"];
+  const userAgent = process.env["npm_config_user_agent"];
+  return userAgent.split(" ")[0].split("/");
 }
 
 /**

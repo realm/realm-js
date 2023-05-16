@@ -45,6 +45,9 @@ describe("Analytics", () => {
     expect(data["Realm Version"]).equals(getRealmVersion());
     expect(data.token).equals("ce0fac19508f6c8f20066d345d360fd0");
     expect(data["Anonymized Builder Id"]).is.not.undefined;
+    expect(data["Core Version"]).is.not.undefined;
+    expect((data["Core Version"] as string).match(/[0-9]+\.[0-9]+\.[0-9]+/)?.length).equal(1); // expect X.Y.Z
+    expect(data["Installation Method"]).equals("npm"); // we run our tests with NPM
   }
 
   it("parses node.js package.json", async () => {
