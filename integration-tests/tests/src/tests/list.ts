@@ -875,7 +875,9 @@ describe("Lists", () => {
     });
   });
   describe("operations", () => {
-    openRealmBeforeEach({ schema: [LinkTypeSchema, TestObjectSchema, PersonSchema, PersonListSchema] });
+    openRealmBeforeEach({
+      schema: [LinkTypeSchema, TestObjectSchema, PersonSchema, PersonListSchema, PrimitiveArraysSchema],
+    });
     it("supports enumeration", function (this: RealmContext) {
       let obj!: ILinkTypeSchema;
 
@@ -1187,11 +1189,12 @@ describe("Lists", () => {
         expect(arrayCopy[0]).equals(null);
 
         this.realm.deleteAll();
+        expect(objectsCopy.isValid()).equals(true);
         expect(objectsCopy.length).equals(6);
-        expect(arrayCopy.length).equals(2);
-        expect(arrayCopy[1]).equals(null);
+        expect(arrayCopy.isValid()).equals(false);
       });
     });
+
     it("supports isValid", function (this: RealmContext) {
       let object;
       let list!: Realm.List<IPersonSchema>;
@@ -1472,6 +1475,12 @@ describe("Lists", () => {
         });
         prim = this.realm.create<IPrimitiveArraysSchema>(PrimitiveArraysSchema.name, { int: [10, 11, 12] });
       });
+
+      // list of primitive types does not support snapshot
+      const primitiveTypesObjects = this.realm.objects<PrimitiveArrays>(PrimitiveArraysSchema.name);
+      expect(() => primitiveTypesObjects[0].int.snapshot()).throws(
+        "`snapshot()` is not supported on list of primitive types",
+      );
 
       for (const list of [object.list, this.realm.objects(PersonSchema.name) as Realm.Results<IPersonSchema>]) {
         expect(list.slice().length).equals(3);

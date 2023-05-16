@@ -8,6 +8,7 @@
 
 ### Fixed
 * Partition-Based to Flexible Sync Migration for migrating a client app that uses partition based sync to use flexible sync under the hood if the server has been migrated to flexible sync is officially supported with this release. Any clients using an older version of Realm will receive a "switch to flexible sync" error message when trying to sync with the app. ([realm/realm-core#6554](https://github.com/realm/realm-core/issues/6554), since v11.9.0)
+* Calling `snapshot()` on an array of primitive types will product undefined results, and the method has been removed.
 
 ### Compatibility
 * React Native >= v0.71.3
