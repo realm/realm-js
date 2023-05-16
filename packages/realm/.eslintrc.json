@@ -8,7 +8,8 @@
     "@typescript-eslint/explicit-function-return-type": "off",
     "no-console": "error",
     "sort-imports": ["warn", { "ignoreDeclarationSort": true }],
-    "jsdoc/require-jsdoc": "off"
+    "jsdoc/require-jsdoc": "off",
+    "jsdoc/check-tag-names": ["warn", { "typed": true, "definedTags": ["ts-expect-error"] }]
   },
   "settings": {
     "jsdoc": {
