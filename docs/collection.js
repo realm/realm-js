@@ -139,7 +139,7 @@ class Collection {
    * they are deleted from the Realm they will be replaced by `null` at the
    * respective indices.
    *
-   * Snapshotting is not supported for list of primitive types.
+   * @throws {Error} When snapshotting a list of primitives.
    *
    * @returns {Realm.Results<T>} which will **not** live update.
    */
