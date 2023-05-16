@@ -16,13 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { IndexSet, Int64, ObjKey, Timestamp } from "../generated/ts/native.mjs";
+import { IndexSet, Int64, ObjKey, Timestamp } from "realm/binding";
 
 /** @internal */
-export * from "../generated/ts/native.mjs"; // core types are transitively exported.
+export * from "realm/binding";
 
 /** @internal */
-declare module "../generated/ts/native.mjs" {
+declare module "realm/binding" {
   interface IndexSet {
     asIndexes(): Iterator<number>;
   }

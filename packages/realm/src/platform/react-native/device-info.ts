@@ -20,8 +20,8 @@ import { Platform } from "react-native";
 
 import { version } from "realm/package.json";
 
-import { inject } from "../platform/device-info";
-import { JsPlatformHelpers } from "../binding";
+import { inject } from "../device-info";
+import { JsPlatformHelpers } from "../../binding";
 
 function getDeviceName() {
   if (Platform.OS === "ios") {

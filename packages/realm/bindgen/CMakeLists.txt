@@ -140,8 +140,8 @@ bindgen(
 )
 
 set(GENERATED_JS_FILES
-    ${TYPESCRIPT_OUTPUT_DIR}/native.mjs
-    ${TYPESCRIPT_OUTPUT_DIR}/native-rn.mjs
+    ${TYPESCRIPT_OUTPUT_DIR}/native-node.mjs
+    ${TYPESCRIPT_OUTPUT_DIR}/native-react-native.mjs
 )
 bindgen(
     TEMPLATE ${SDK_DIR}/bindgen/src/templates/node-wrapper.ts

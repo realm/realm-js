@@ -1,0 +1,21 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "noResolve": false,
+    "incremental": true,
+    "resolveJsonModule": true,
+    "types": [
+      "react-native",
+      "path-browserify"
+    ],
+    "paths": {
+      "realm/binding": ["./generated/ts/native-react-native.mjs"],
+      "realm/binding/core": ["./generated/ts/core.ts"]
+    }
+  },
+  "exclude": [
+    "../../tests/",
+    "../node/",
+    "../../../type-tests/"
+  ],
+}

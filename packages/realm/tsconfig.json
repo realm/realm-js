@@ -15,7 +15,12 @@
       "bson",
       "debug",
       "ms" // debug dependency
-    ]
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "realm/binding": ["./generated/ts/native-node.mjs"],
+      "realm/binding/core": ["./generated/ts/core.ts"]
+    }
   },
   "include": [
     "src/",
@@ -24,7 +29,7 @@
   "exclude": [
     "src/tests/",
     "type-tests/",
-    "src/node/",
-    "src/react-native/"
+    "src/platform/node/",
+    "src/platform/react-native/"
   ],
 }

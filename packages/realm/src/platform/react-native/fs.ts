@@ -17,9 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 import { isAbsolute, join } from "path-browserify";
 
-import { inject } from "../platform/file-system";
-import { extendDebug } from "../debug";
-import { Helpers, JsPlatformHelpers } from "../binding";
+import { inject } from "../file-system";
+import { extendDebug } from "../../debug";
+import { Helpers, JsPlatformHelpers } from "../../binding";
 
 const debug = extendDebug("fs");
 

@@ -20,14 +20,15 @@ import { bindModel, Property } from "@realm/bindgen/bound-model";
 import { TemplateContext } from "@realm/bindgen/context";
 
 import { doJsPasses } from "../js-passes";
+import { eslint } from "../eslint-formatter";
 
 export function generate({ spec: rawSpec, file }: TemplateContext): void {
   const spec = doJsPasses(bindModel(rawSpec));
   const reactLines = [];
   const nodeLines = [];
-  function both(content: string) {
-    reactLines.push(content);
-    nodeLines.push(content);
+  function both(...content: string[]) {
+    reactLines.push(...content);
+    nodeLines.push(...content);
   }
 
   both("// This file is generated: Update the spec instead of editing this file directly");
@@ -204,6 +205,6 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
 
   both(`nativeModule.injectInjectables({ ${injectables} });`);
 
-  file("native.mjs", "eslint")(nodeLines.join("\n"));
-  file("native-rn.mjs", "eslint")(reactLines.join("\n"));
+  file("native-node.mjs", eslint)(nodeLines.join("\n"));
+  file("native-react-native.mjs", eslint)(reactLines.join("\n"));
 }

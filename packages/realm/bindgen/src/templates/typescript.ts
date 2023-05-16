@@ -16,26 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import { strict as assert } from "node:assert";
+
 import { TemplateContext } from "@realm/bindgen/context";
 import { Arg, BoundSpec, NamedType, Property, Type, bindModel } from "@realm/bindgen/bound-model";
-import { strict as assert } from "assert";
 
 import { doJsPasses } from "../js-passes";
-
-import { addFormatter } from "@realm/bindgen/formatter";
-
-// Ideally, this would be codified in a tsconfig.json, but tsc doesn't support
-// configs mixed with filenames when invoked via the CLI.
-addFormatter("typescript-checker", [
-  "npx",
-  "tsc",
-  "--noEmit",
-  "--noResolve",
-  "--lib",
-  "es2022",
-  "--types",
-  "buffer,bson",
-]);
+import { eslint } from "../eslint-formatter";
 
 const PRIMITIVES_MAPPING: Record<string, string> = {
   void: "void",
@@ -162,7 +149,7 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
 
   const spec = doJsPasses(bindModel(rawSpec));
 
-  const coreOut = file("core.ts", "eslint", "typescript-checker");
+  const coreOut = file("core.ts", eslint);
   coreOut("// This file is generated: Update the spec instead of editing this file directly");
 
   coreOut("// Enums");
@@ -180,12 +167,14 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
     }
   `);
 
-  const out = file("native.d.mts", "eslint", "typescript-checker");
+  const out = file("native.d.mts", eslint);
   out("// This file is generated: Update the spec instead of editing this file directly");
 
+  out("declare module 'realm/binding' {");
+
   out('import { ObjectId, UUID, Decimal128 } from "bson";');
-  out("import { Float, ", spec.enums.map((e) => e.name).join(", "), '} from "./core";');
-  out('export * from "./core";');
+  out("import { Float, ", spec.enums.map((e) => e.name).join(", "), '} from "realm/binding/core";');
+  out('export * from "realm/binding/core";');
 
   out("// Utilities");
   out("export type AppError = Error & {code: number};");
@@ -216,7 +205,7 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
 
   out("// Opaque types (including Key types)");
   for (const { jsName } of (spec.opaqueTypes as NamedType[]).concat(spec.keyTypes)) {
-    out.lines("/** Using an empty enum to express a nominal type */", `export declare enum ${jsName} {}`);
+    out.lines("/** Using an empty enum to express a nominal type */", `export enum ${jsName} {}`);
   }
 
   out("// Records");
@@ -278,4 +267,6 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
     }
     out(`}`);
   }
+
+  out("} // end of module declaration");
 }
