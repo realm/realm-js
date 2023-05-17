@@ -115,7 +115,7 @@
       ]
     },
     "bindgen:generate:typescript": {
-      "command": "realm-bindgen --template bindgen/src/templates/typescript.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --output ./generated/ts",
+      "command": "realm-bindgen --template bindgen/src/templates/typescript.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output ./generated/ts",
       "dependencies": [
         "bindgen:generate:spec-schema"
       ],
@@ -133,7 +133,7 @@
       ]
     },
     "bindgen:generate:wrappers": {
-      "command": "realm-bindgen --template bindgen/src/templates/node-wrapper.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --output ./generated/ts",
+      "command": "realm-bindgen --template bindgen/src/templates/node-wrapper.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output ./generated/ts",
       "dependencies": [
         "bindgen:generate:spec-schema"
       ],
