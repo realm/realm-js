@@ -310,7 +310,6 @@ export class Realm {
     binding.RealmCoordinator.clearAllCaches();
     binding.App.clearCachedApps();
     ProgressRealmPromise.cancelAll();
-    SyncSession.resetAllInternals();
 
     // Delete all Realm files in the default directory
     const defaultDirectoryPath = fs.getDefaultDirectoryPath();
@@ -811,7 +810,6 @@ export class Realm {
    */
   close(): void {
     this.internal.close();
-    this.syncSession?.resetInternal();
   }
 
   // TODO: Support embedded objects
