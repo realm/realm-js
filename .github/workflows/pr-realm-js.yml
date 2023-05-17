@@ -243,6 +243,7 @@ jobs:
       MOCHA_REMOTE_REPORTER: mocha-github-actions-reporter
       MOCHA_REMOTE_EXIT_ON_ERROR: true
       SPAWN_LOGCAT: true
+      BAAS_TAG: "2023-05-16"
       # Pin the Xcode version
       DEVELOPER_DIR: /Applications/Xcode_13.4.1.app
     runs-on: ${{ matrix.variant.runner }}
@@ -284,7 +285,7 @@ jobs:
           echo "url=https://${subdomain}.ngrok.io" >> $GITHUB_OUTPUT;
 
       - name: Trigger the test server workflow to start the server
-        run: gh workflow run test-server.yml -f ngrok_subdomain=${{ steps.baas-config.outputs.subdomain }} -f run_id=${{ github.run_id }}
+        run: gh workflow run test-server.yml -f ngrok_subdomain=${{ steps.baas-config.outputs.subdomain }} -f run_id=${{ github.run_id }} -f server_tag=${{ env.BAAS_TAG }}
         env:
           GH_TOKEN: ${{ github.token }}
 
