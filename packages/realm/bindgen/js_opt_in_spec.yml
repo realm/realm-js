@@ -1,0 +1,29 @@
+# --------------------
+# Description of file:
+# --------------------
+# List all the unique names of what to opt in to from the general spec.
+#
+# The following can be listed:
+# * `classes` and their methods
+# * `records` and their fields
+
+classes:
+  Obj:
+    methods:
+      - get_any
+      - get_any_by_name
+      - is_null
+
+records:
+  Property:
+    fields:
+      - name
+      - public_name
+      - type
+      - object_type
+      - link_origin_property_name
+      - is_primary
+      - is_indexed
+      - column_key
+
+# TODO: Will add more
