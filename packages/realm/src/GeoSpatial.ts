@@ -19,24 +19,28 @@
 import { ObjectSchema, RealmObject } from "./internal";
 
 type GeoPoint =
+  //This is compatible with GeoLocationCoordinates (https://developer.mozilla.org/en-US/docs/Web/API/GeolocationCoordinates)
   | {
       latitude: number;
       longitude: number;
     }
   | IGeoPoint
-  | [number, number];
+  | [number, number]; // long/lat, so it’s the same order as geoJson
 
+type GeoPolygon =
+  | {
+      outerRing: GeoPoint[];
+      holes: GeoPoint[][];
+    }
+  | IGeoPolygon;
+
+// GeoBox and GeoCircle have no corresponding geoJSON types
 type GeoBox = {
   bottomLeft: GeoPoint;
   topRight: GeoPoint;
 };
 
-type GeoPolygon = {
-  outerRing: GeoPoint[];
-  holes: GeoPoint[][];
-};
-
-type GeoSphere = {
+type GeoCircle = {
   center: GeoPoint;
   distance: number;
 };
@@ -47,14 +51,21 @@ class Distance {
   static fromMiles(val: number): number {}
 }
 
-//Interface that indicates the requirements for objects that satisfy the geoJSON specification for a point
+//Interface that satisfies the geoJSON specification for a polygon.
+interface IGeoPolygon {
+  coordinates: number[][][];
+  type: "Polygon";
+}
+
+//Interface that satisfies the geoJSON specification for a point.
+//Any object that respects this interface can be used in geospatial queries
 interface IGeoPoint {
   coordinates: [number, number];
   type: "Point";
 }
 
 //Example of embedded class that satisfies the geoJSON specification for a point.
-//This will not be exposed to developers, it will only be shown in the docs
+//This will not be exposed to developers, it will only be shown in the docs as an example.
 class ExampleGeoPoint implements IGeoPoint {
   coordinates: [number, number] = [0, 0];
   type = "Point" as const;
@@ -83,11 +94,6 @@ class Restaurant extends RealmObject {
   };
 }
 
-const a: ExampleGeoPoint = {
-  coordinates: [2, 3],
-  type: "Point",
-};
-
 //Example queries
 const restaurants = realm.objects(Restaurant.schema.name);
 
@@ -95,13 +101,13 @@ restaurants.filtered("location geoWithin geoBox([0.2, 0.2], [0.7, 0.7])");
 
 const boxArea: GeoBox = {
   bottomLeft: { latitude: 0.2, longitude: 0.2 },
-  topRight: { latitude: 0.7, longitude: 0.7 },
+  topRight: [0.7, 0.7],
 };
 restaurants.filtered("location geoWithin $0", boxArea);
 
 restaurants.filtered("location geoWithin geoWithin geoSphere([0.3, 0.3], 1000.0)");
 
-const sphereArea: GeoSphere = {
+const sphereArea: GeoCircle = {
   center: { latitude: 0.3, longitude: 0.3 },
   distance: Distance.fromKilometers(200),
 };
