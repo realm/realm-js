@@ -20,7 +20,6 @@ import { strict as assert } from "assert";
 import { TemplateContext } from "@realm/bindgen/context";
 import { CppVar, CppFunc, CppFuncProps, CppCtor, CppMethod, CppClass, CppDecls, CppMemInit } from "@realm/bindgen/cpp";
 import {
-  bindModel,
   BoundSpec,
   Class,
   InstanceMethod,
@@ -699,7 +698,7 @@ class JsiCppDecls extends CppDecls {
               body: `
                     auto out = jsi::Object(_env);
                     ${struct.fields
-                      .filter((field) => !field.type.isFunction())
+                      .filter((field) => !field.type.isFunction() && field.isOptedInTo)
                       .map(
                         (field) =>
                           `out.setProperty(
@@ -736,6 +735,7 @@ class JsiCppDecls extends CppDecls {
                 auto obj = FWD(val).asObject(_env);
                 auto out = ${struct.cppName}();
                 ${struct.fields
+                  .filter((field) => field.isOptedInTo)
                   .map(
                     (field) => `{
                         auto field = obj.getProperty(_env, ${this.addon.getPropId(field.jsName)});
@@ -784,6 +784,8 @@ class JsiCppDecls extends CppDecls {
       const self = `(${cls.needsDeref ? "**" : "*"}${casted("args[0]")})`;
 
       for (const method of cls.methods) {
+        if (!method.isOptedInTo) continue;
+
         const argOffset = method.isStatic ? 0 : 1; // `this` takes arg 0 if not static
         const args = method.sig.args.map((a, i) => convertFromJsi(this.addon, a.type, `args[${i + argOffset}]`));
 
@@ -1040,13 +1042,13 @@ class JsiCppDecls extends CppDecls {
   }
 }
 
-export function generate({ spec, file: makeFile }: TemplateContext): void {
+export function generate({ rawSpec, spec, file: makeFile }: TemplateContext): void {
   const out = makeFile("jsi_init.cpp", clangFormat);
 
   // HEADER
   out(`// This file is generated: Update the spec instead of editing this file directly`);
 
-  for (const header of spec.headers) {
+  for (const header of rawSpec.headers) {
     out(`#include <${header}>`);
   }
 
@@ -1063,7 +1065,7 @@ export function generate({ spec, file: makeFile }: TemplateContext): void {
       namespace {
     `);
 
-  new JsiCppDecls(doJsPasses(bindModel(spec))).outputDefsTo(out);
+  new JsiCppDecls(doJsPasses(spec)).outputDefsTo(out);
 
   out(`
         } // namespace

@@ -19,7 +19,7 @@
 import { strict as assert } from "node:assert";
 
 import { TemplateContext } from "@realm/bindgen/context";
-import { Arg, BoundSpec, NamedType, Property, Type, bindModel } from "@realm/bindgen/bound-model";
+import { Arg, BoundSpec, NamedType, Property, Type } from "@realm/bindgen/bound-model";
 
 import { doJsPasses } from "../js-passes";
 import { eslint } from "../eslint-formatter";
@@ -76,7 +76,7 @@ const enum Kind {
   Ret, // Cpp -> JS
 }
 function suffix(kind: Kind) {
-  return kind == Kind.Arg ? "_Relaxed" : "";
+  return kind === Kind.Arg ? "_Relaxed" : "";
 }
 
 function generateType(spec: BoundSpec, type: Type, kind: Kind): string {
@@ -100,7 +100,7 @@ function generateType(spec: BoundSpec, type: Type, kind: Kind): string {
       return type.jsName + suffix(kind);
 
     case "Primitive":
-      if (type.name == "Mixed") return kind == Kind.Arg ? "MixedArg" : "Mixed";
+      if (type.name === "Mixed") return kind === Kind.Arg ? "MixedArg" : "Mixed";
       return PRIMITIVES_MAPPING[type.name];
 
     case "Template":
@@ -108,8 +108,8 @@ function generateType(spec: BoundSpec, type: Type, kind: Kind): string {
 
     case "Func":
       // When a js function is passed to cpp, its arguments behave like Ret and its return value behaves like Arg.
-      const Arg = kind == Kind.Arg ? Kind.Ret : Kind.Arg;
-      const Ret = kind == Kind.Arg ? Kind.Arg : Kind.Ret;
+      const Arg = kind === Kind.Arg ? Kind.Ret : Kind.Arg;
+      const Ret = kind === Kind.Arg ? Kind.Arg : Kind.Ret;
 
       const args = type.argsSkippingIgnored().map((arg) => arg.name + ": " + generateType(spec, arg.type, Arg));
       return `((${args.join(", ")}) => ${generateType(spec, type.ret, Ret)})`;
@@ -129,10 +129,10 @@ function generateMixedTypes(spec: BoundSpec) {
   `;
 }
 
-export function generate({ spec: rawSpec, file }: TemplateContext): void {
+export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): void {
   // Check the support for primitives used
   for (const primitive of rawSpec.primitives) {
-    if (primitive == "Mixed") continue;
+    if (primitive === "Mixed") continue;
     assert(
       Object.keys(PRIMITIVES_MAPPING).includes(primitive),
       `Spec declares an unsupported primitive: "${primitive}"`,
@@ -147,7 +147,7 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
     );
   }
 
-  const spec = doJsPasses(bindModel(rawSpec));
+  const spec = doJsPasses(boundSpec);
 
   const coreOut = file("core.ts", eslint);
   coreOut("// This file is generated: Update the spec instead of editing this file directly");
@@ -212,9 +212,9 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
   for (const rec of spec.records) {
     for (const kind of [Kind.Ret, Kind.Arg]) {
       // Skip function fields when converting records from C++ to JS.
-      const fields = kind == Kind.Arg ? rec.fields : rec.fields.filter((field) => !field.type.isFunction());
+      const fields = kind === Kind.Arg ? rec.fields : rec.fields.filter((field) => !field.type.isFunction());
 
-      if (fields.length == 0) {
+      if (fields.length === 0) {
         // ESLint complains if we use {} as a type, which would otherwise happen in this case.
         out(`export type ${rec.jsName}${suffix(kind)} = Record<string, never>;`);
         continue;
@@ -223,9 +223,13 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
       // TODO consider making the Arg version just alias the Ret version if the bodies are the same.
       out(`export type ${rec.jsName}${suffix(kind)} = {`);
       for (const field of fields) {
+        if (!field.isOptedInTo) {
+          out(`/** @deprecated Add '${field.name}' to your opt-in list to use this. */`);
+        }
+
         // For Optional<T> fields, the field will always be there in Ret mode, but it may be undefined.
         // This is handled by Optional<T> becoming `undefined | T`.
-        const optField = !field.required && kind == Kind.Arg;
+        const optField = !field.required && kind === Kind.Arg;
         const hasInterestingDefault = ![undefined, "", "{}", "[]"].includes(field.defaultVal);
         out(
           hasInterestingDefault ? `/** @default ${field.defaultVal} */\n` : "",
@@ -244,8 +248,11 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
   for (const cls of spec.classes) {
     out(`export class ${cls.jsName} ${cls.base ? `extends ${cls.base.jsName}` : ""} {`);
     out(`private brandFor${cls.jsName};`);
-    out(`${cls.subclasses.length == 0 ? "private" : "protected"} constructor();`);
+    out(`${cls.subclasses.length === 0 ? "private" : "protected"} constructor();`);
     for (const meth of cls.methods) {
+      if (!meth.isOptedInTo) {
+        out(`/** @deprecated Add '${meth.unique_name}' to your opt-in list to use this. */`);
+      }
       if (meth instanceof Property) {
         out("readonly ", meth.jsName, ": ", generateType(spec, meth.type, Kind.Ret));
         continue;
