@@ -25,7 +25,7 @@ type GeoPoint =
       longitude: number;
     }
   | IGeoPoint
-  | [number, number]; // long/lat, so it’s the same order as geoJson
+  | IGeoPosition; // long/lat, so it’s the same order as geoJson
 
 type GeoPolygon =
   | {
@@ -51,23 +51,25 @@ class Distance {
   static fromMiles(val: number): number {}
 }
 
+type IGeoPosition = [number, number];
+
 //Interface that satisfies the geoJSON specification for a polygon.
 interface IGeoPolygon {
-  coordinates: number[][][];
+  coordinates: IGeoPosition[][];
   type: "Polygon";
 }
 
 //Interface that satisfies the geoJSON specification for a point.
 //Any object that respects this interface can be used in geospatial queries
 interface IGeoPoint {
-  coordinates: [number, number];
+  coordinates: IGeoPosition;
   type: "Point";
 }
 
 //Example of embedded class that satisfies the geoJSON specification for a point.
 //This will not be exposed to developers, it will only be shown in the docs as an example.
 class ExampleGeoPoint implements IGeoPoint {
-  coordinates: [number, number] = [0, 0];
+  coordinates: IGeoPosition = [0, 0];
   type = "Point" as const;
 
   static schema: ObjectSchema = {
