@@ -172,7 +172,7 @@ function convertPrimToEmscripten(addon: BrowserAddon, type: string, expr: string
             }(${expr}))`;
 
     case "Mixed":
-      return `NODE_FROM_Mixed(${expr})`;
+      return `EMVAL_FROM_Mixed(${expr})`;
     case "QueryArg":
       // We _could_ support this, but no reason to.
       throw Error("QueryArg should only be used for conversion to C++");
@@ -261,7 +261,7 @@ function convertPrimFromEmscripten(addon: BrowserAddon, type: string, expr: stri
     case "EncryptionKey": //TODO assert.fail("Encryption is not supported in WASM.");
       return "std::vector<char>()";
     case "Mixed":
-      return `NODE_TO_Mixed(${expr})`;
+      return `EMVAL_TO_Mixed(${expr})`;
     case "QueryArg": {
       const mixed = new Primitive("Mixed");
       return `
@@ -327,10 +327,15 @@ function convertToEmscripten(addon: BrowserAddon, type: Type, expr: string): str
       const inner = type.args[0];
       switch (type.name) {
         case "std::shared_ptr":
-          if (inner.kind == "Class" && inner.sharedPtrWrapped) return `NODE_FROM_SHARED_${inner.name}(${expr})`;
+          if (inner.kind == "Class" && inner.sharedPtrWrapped) return `EMVAL_FROM_SHARED_${inner.name}(${expr})`;
           return c(new Pointer(inner), expr);
-        case "Nullable":
-          return `[&] (auto&& val) { if(!val) return emscripten::val::null(); else return ${c(inner, "FWD(val)")}; }(${expr})`;
+        case "Nullable": {
+          let returnedExpression = `${c(inner, "FWD(val)")};`;
+          if (!returnedExpression.startsWith("toEmscriptenException")) {
+            returnedExpression = `return ${returnedExpression}`;
+          }
+          return `[&] (auto&& val) { if(!val) return emscripten::val::null(); else ${returnedExpression} }(${expr})`;
+        }
         case "util::Optional":
           return `[&] (auto&& opt) { return !opt ? emscripten::val::undefined() : ${c(inner, "*FWD(opt)")}; }(${expr})`;
         case "std::vector":
@@ -378,7 +383,7 @@ function convertToEmscripten(addon: BrowserAddon, type: Type, expr: string): str
 
     case "Class":
       assert(!type.sharedPtrWrapped, `should not directly convert from ${type.name} without shared_ptr wrapper`);
-      return `NODE_FROM_CLASS_${type.name}(${expr})`;
+      return `EMVAL_FROM_CLASS_${type.name}(${expr})`;
 
     case "Struct":
       return `${type.toNode().name}(${expr})`;
@@ -440,7 +445,7 @@ function convertFromEmscripten(addon: BrowserAddon, type: Type, expr: string): s
 
       switch (type.name) {
         case "std::shared_ptr":
-          if (inner.kind == "Class" && inner.sharedPtrWrapped) return `NODE_TO_SHARED_${inner.name}(${expr})`;
+          if (inner.kind == "Class" && inner.sharedPtrWrapped) return `EMVAL_TO_SHARED_${inner.name}(${expr})`;
           return `std::make_shared<${inner.toCpp()}>(${c(inner, expr)})`;
         case "Nullable":
           return `[&] (emscripten::val val) { return val.isNull() ? ${inner.toCpp()}() : ${c(
@@ -500,8 +505,8 @@ function convertFromEmscripten(addon: BrowserAddon, type: Type, expr: string): s
       break;
 
     case "Class":
-      if (type.sharedPtrWrapped) return `*NODE_TO_SHARED_${type.name}(${expr})`;
-      return `NODE_TO_CLASS_${type.name}(${expr})`;
+      if (type.sharedPtrWrapped) return `*EMVAL_TO_SHARED_${type.name}(${expr})`;
+      return `EMVAL_TO_CLASS_${type.name}(${expr})`;
 
     case "Struct":
       return `${type.fromNode().name}(${expr})`;
@@ -693,12 +698,49 @@ class BrowserCppDecls extends CppDecls {
         );
       }
 
+      if (cls.iterable) {
+        this.free_funcs.push(
+          this.addon.addFunc(cls.iteratorMethodId(), 1, {
+            body: `
+              emscripten::val jsIt = emscripten::val::object();
+              auto& self = ${self};
+
+              std::function<emscripten::val()> incrementIterators = [begin = std::make_move_iterator(self.begin()), end = std::make_move_iterator(self.end())]() mutable {
+                emscripten::val iteratorResult = emscripten::val::object();
+                 if (begin == end) {
+                    iteratorResult.set("done", true);
+                }
+                else {
+                    iteratorResult.set("value", ${convertToEmscripten(this.addon, cls.iterable, "*begin")});
+                    ++begin;
+                }
+                return iteratorResult;
+            };
+
+              // Allocate memory for the lambda on the heap
+              auto* lambdaPtr = new decltype(incrementIterators)(incrementIterators);
+              // Get the address of the lambda
+              std::uintptr_t lambdaAddress = reinterpret_cast<std::uintptr_t>(lambdaPtr);
+
+              int jsInternalIteratorCall = EM_ASM_INT({
+                var myFunction = function() {
+                    return Module["_internal_iterator"]($0);
+                };
+                return Emval.toHandle(myFunction);
+            }, lambdaAddress);
+              jsIt.set("next", emscripten::val::take_ownership((emscripten::EM_VAL)(jsInternalIteratorCall)));
+              return jsIt;
+            `,
+          }),
+        );
+      }
+
       const refType = cls.sharedPtrWrapped ? `const ${derivedType}&` : `${derivedType}&`;
       const kind = cls.sharedPtrWrapped ? "SHARED" : "CLASS";
 
       // TODO in napi 8 we can use type_tags to validate that the object REALLY is from us.
       this.free_funcs.push(
-        new CppFunc(`NODE_TO_${kind}_${cls.name}`, refType, [new CppVar("emscripten::val", "val")], {
+        new CppFunc(`EMVAL_TO_${kind}_${cls.name}`, refType, [new CppVar("emscripten::val", "val")], {
           attributes: "[[maybe_unused]]",
           body: `
             // TODO check val is object translate below as well
@@ -720,7 +762,7 @@ class BrowserCppDecls extends CppDecls {
 
       if (!cls.abstract) {
         this.free_funcs.push(
-          new CppFunc(`NODE_FROM_${kind}_${cls.name}`, "emscripten::val", [new CppVar(derivedType, "val")], {
+          new CppFunc(`EMVAL_FROM_${kind}_${cls.name}`, "emscripten::val", [new CppVar(derivedType, "val")], {
             attributes: "[[maybe_unused]]",
             // Note: the External::New constructor taking a finalizer does an extra heap allocation for the finalizer.
             // We can look into bypassing that if it is a problem.
@@ -744,8 +786,25 @@ class BrowserCppDecls extends CppDecls {
         return false;
       }) != undefined,
     );
+
+    // Adding internal iterator function
     this.free_funcs.push(
-      new CppFunc("NODE_FROM_Mixed", "emscripten::val", [new CppVar("Mixed", "val")], {
+      new CppFunc("_internal_iterator", "emscripten::val", [new CppVar("std::uintptr_t", "lambdaAddress")], {
+        body: `
+        std::function<emscripten::val()>* func = reinterpret_cast<std::function<emscripten::val()>*>(lambdaAddress);
+        emscripten::val val = (*func)();
+
+        // Deallocate the lambda from the heap if it's the last element
+        if (!val["done"].isUndefined()) {
+            delete func;
+        }
+        return val;
+        `,
+      }),
+    );
+
+    this.free_funcs.push(
+      new CppFunc("EMVAL_FROM_Mixed", "emscripten::val", [new CppVar("Mixed", "val")], {
         body: `
           if (val.is_null())
               return emscripten::val::null();
@@ -764,7 +823,7 @@ class BrowserCppDecls extends CppDecls {
           REALM_UNREACHABLE();
         `,
       }),
-      new CppFunc("NODE_TO_Mixed", "Mixed", [new CppVar("emscripten::val", "val")], {
+      new CppFunc("EMVAL_TO_Mixed", "Mixed", [new CppVar("emscripten::val", "val")], {
         body: `
           const char* type = val.typeOf().as<std::string>().c_str();
           if (strcmp("string", type) == 0) {
@@ -859,10 +918,10 @@ class BrowserCppDecls extends CppDecls {
       .filter((free_func: CppFunc) => {
         // FIXME:  manually exclude some function signatrue causing issue wiht embind (ex: call to deleted constructor of 'realm::ThreadSafeReference')
         const excluded_functions: string[] = [
-          "NODE_FROM_CLASS_ThreadSafeReference",
-          "NODE_FROM_CLASS_AppSubscriptionToken",
-          "NODE_FROM_CLASS_SyncUserSubscriptionToken",
-          "NODE_FROM_CLASS_NotificationToken",
+          "EMVAL_FROM_CLASS_ThreadSafeReference",
+          "EMVAL_FROM_CLASS_AppSubscriptionToken",
+          "EMVAL_FROM_CLASS_SyncUserSubscriptionToken",
+          "EMVAL_FROM_CLASS_NotificationToken",
         ];
         return free_func.ret.endsWith("emscripten::val") && excluded_functions.indexOf(free_func.name) == -1;
         // return free_func.ret.endsWith("emscripten::val") && free_func.name !in excluded_functions;
@@ -875,6 +934,7 @@ class BrowserCppDecls extends CppDecls {
       out(`\nfunction("${c.jsName}_deleter", &${c.jsName}_deleter);`);
     });
 
+    out(`\nfunction("_internal_iterator", &_internal_iterator);`);
     out(`\nemscripten::function("browserInit", &browser_init);`);
     out(`\nfunction("injectInjectables", &injectExternalTypes);`);
 
