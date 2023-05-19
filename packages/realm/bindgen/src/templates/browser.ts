@@ -33,6 +33,7 @@ import {
 } from "@realm/bindgen/bound-model";
 
 import { doJsPasses } from "../js-passes";
+import { clangFormat } from "@realm/bindgen/formatter";
 
 const emscripten_call_args = new CppVar("const emscripten::val", "args");
 
@@ -943,7 +944,7 @@ class BrowserCppDecls extends CppDecls {
 }
 
 export function generate({ spec, file: makeFile }: TemplateContext): void {
-  const out = makeFile("browser_init.cpp", "clang-format");
+  const out = makeFile("browser_init.cpp", clangFormat);
 
   // HEADER
   out(`// This file is generated: Update the spec instead of editing this file directly`);

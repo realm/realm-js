@@ -14,6 +14,6 @@
     "../../tests/",
     "../react-native/",
     "../../../type-tests/",
-    "../../browser"
+    "../browser"
   ],
 }

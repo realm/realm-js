@@ -17,6 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 import "./fs";
 
-export * from "../index";
-import { Realm } from "../index";
+export * from "../../index";
+import { Realm } from "../../index";
 export default Realm;

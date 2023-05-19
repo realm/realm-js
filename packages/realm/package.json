@@ -153,7 +153,8 @@
       ],
       "output": [
         "generated/ts/native-node.mjs",
-        "generated/ts/native-react-native.mjs"
+        "generated/ts/native-react-native.mjs",
+        "generated/ts/native-browser.mjs"
       ]
     },
     "bindgen:generate:spec-schema": {

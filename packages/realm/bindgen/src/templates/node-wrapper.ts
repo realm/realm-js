@@ -28,10 +28,10 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
   const nodeLines = [];
   const browserLines = [];
 
-  function all(content: string) {
-    reactLines.push(content);
-    nodeLines.push(content);
-    browserLines.push(content);
+  function all(...content: string[]) {
+    reactLines.push(...content);
+    nodeLines.push(...content);
+    browserLines.push(...content);
   }
 
   all("// This file is generated: Update the spec instead of editing this file directly");
@@ -70,7 +70,6 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
     import Module from "./realm-js-wasm.js";
     const nativeModule = await Module(); // loading WASM 
     nativeModule.browserInit();
-    // We know that node always has real WeakRefs so just use them.
     export const WeakRef = window.WeakRef;
   `);
 

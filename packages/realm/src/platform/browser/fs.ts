@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 import { isAbsolute, join } from "path-browserify";
 
-import { inject } from "../platform/file-system";
+import { inject } from "../file-system";
 
 inject({
   isAbsolutePath(path) {

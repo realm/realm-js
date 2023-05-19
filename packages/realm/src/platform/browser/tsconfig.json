@@ -1,0 +1,26 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "noResolve": false,
+    "incremental": true,
+    "types": [],
+    "lib": [
+      "DOM",
+      "ES2022"
+    ],
+    "paths": {
+      "realm/binding": [
+        "./generated/ts/native-browser.mjs"
+      ],
+      "realm/binding/core": [
+        "./generated/ts/core.ts"
+      ],
+    }
+  },
+  "exclude": [
+    "../../tests/",
+    "../../platform/node/",
+    "../../platform/react-native/",
+    "../../../type-tests/"
+  ],
+}

@@ -81,7 +81,7 @@ export default [
     external: ["bson", "debug", "node-fetch", "node:module", "node:fs", "node:path"],
   },
   {
-    input: "src/browser/index.ts",
+    input: "src/platform/browser/index.ts",
     output: {
       file: mainExport.browser,
       format: "es",
@@ -98,11 +98,11 @@ export default [
         preventAssignment: true,
         delimiters: ["", ""],
         values: {
-          '"../generated/ts/native.mjs"': '"../generated/ts/native-browser.mjs"',
+          '"../generated/ts/native-node.mjs"': '"../generated/ts/native-browser.mjs"',
         },
       }),
       typescript({
-        tsconfig: "src/browser/tsconfig.json",
+        tsconfig: "src/platform/browser/tsconfig.json",
         noEmitOnError: true,
         outputToFilesystem: true,
       }),
