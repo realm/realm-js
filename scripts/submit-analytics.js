@@ -44,7 +44,6 @@
 const fs = require("fs");
 const fse = require("fs-extra");
 const path = require("path");
-const { execSync } = require("child_process");
 const commandLineArgs = require("command-line-args");
 const { createHmac } = require("crypto");
 
