@@ -25,28 +25,30 @@ import { readFileSync } from "node:fs";
 
 type Fixture = "node" | "react-native" | "electron";
 
-// TODO: Update this to use ESM friendly APIs
-describe.skip("Analytics", () => {
+describe("Analytics", () => {
   function resolvePath(fixture: Fixture) {
     return path.resolve(__dirname, "fixtures", fixture);
   }
 
   function getRealmVersion() {
-    const realmPath = path.resolve(__dirname, "../../../../package.json");
+    const realmPath = path.resolve(__dirname, "../../../../packages/realm/package.json");
     const realmPackageContent = readFileSync(realmPath, { encoding: "utf8" });
     const realmPackageJson = JSON.parse(realmPackageContent);
     return realmPackageJson["version"];
   }
 
   function expectCommon(data: Record<string, unknown>) {
-    expect(data["JS Analytics Version"]).equals(2);
-    expect(data.Binding).equals("javascript");
-    expect(data.Language).equals("javascript");
+    expect(data["JS Analytics Version"]).equals(3);
+    expect(data.Binding).equals("Javascript");
     expect(data["Host OS Type"]).equals(os.platform());
     expect(data["Host OS Version"]).equals(os.release());
     expect(data["Node.js version"]).equals(process.version);
     expect(data["Realm Version"]).equals(getRealmVersion());
     expect(data.token).equals("ce0fac19508f6c8f20066d345d360fd0");
+    expect(data["Anonymized Builder Id"]).is.not.undefined;
+    expect(data["Core Version"]).is.not.undefined;
+    expect((data["Core Version"] as string).match(/[0-9]+\.[0-9]+\.[0-9]+/)?.length).equal(1); // expect X.Y.Z
+    expect(data["Installation Method"]).equals("npm"); // we run our tests with NPM
   }
 
   it("parses node.js package.json", async () => {
@@ -55,7 +57,22 @@ describe.skip("Analytics", () => {
     expect(data.Version).equals("1.2.3");
     expect(data.Framework).equals("node.js");
     expect(data["Framework Version"]).equals(process.version);
-    expect(data["JavaScript Engine"]).equals("v8");
+    expect(data["Runtime Engine"]).equals("v8");
+    expect(data["Anonymized Bundle Id"]).equals("TfvqclDWR/+6sIPfZc73MetEj0DLskCtWXjWXXXIg6k=");
+    expect(data.Language).equals("javascript");
+    expect(data["Language Version"]).equals("unknown");
+  });
+
+  it("parses typescript/node package.json", async () => {
+    const data = await collectPlatformData(resolvePath("ts-node"));
+    expectCommon(data);
+    expect(data.Version).equals("1.2.3");
+    expect(data.Framework).equals("node.js");
+    expect(data["Framework Version"]).equals(process.version);
+    expect(data["Runtime Engine"]).equals("v8");
+    expect(data["Anonymized Bundle Id"]).equals("ajQjGK7Tztb3WeVhmPitQFDRV24loZVttnXWSlXUjEc=");
+    expect(data.Language).equals("typescript");
+    expect(data["Language Version"]).equals("3.2.1");
   });
 
   it("parses electron package.json", async () => {
@@ -64,7 +81,10 @@ describe.skip("Analytics", () => {
     expect(data.Version).equals("1.2.3");
     expect(data.Framework).equals("electron");
     expect(data["Framework Version"]).equals("1.0.1");
-    expect(data["JavaScript Engine"]).equals("v8");
+    expect(data["Runtime Engine"]).equals("v8");
+    expect(data["Anonymized Bundle Id"]).equals("B4vmI2GL8s/WLRIvDt7ffHn1TeiJxNRzUPsgRfqhNOU=");
+    expect(data.Language).equals("javascript");
+    expect(data["Language Version"]).equals("unknown");
   });
 
   it("parses rn package.json", async () => {
@@ -73,6 +93,9 @@ describe.skip("Analytics", () => {
     expect(data.Version).equals("1.2.3");
     expect(data.Framework).equals("react-native");
     expect(data["Framework Version"]).equals("1.0.1");
-    expect(data["JavaScript Engine"]).equals("unknown");
+    expect(data["Runtime Engine"]).equals("unknown");
+    expect(data["Anonymized Bundle Id"]).equals("1RmJBlqbKuzyRiPm4AsdIIxe8xlRUntGcGFEwUnUh6A=");
+    expect(data.Language).equals("javascript");
+    expect(data["Language Version"]).equals("unknown");
   });
 });

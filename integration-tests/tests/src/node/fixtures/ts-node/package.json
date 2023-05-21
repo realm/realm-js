@@ -1,0 +1,7 @@
+{
+    "name": "fake-ts-node-package",
+    "version": "1.2.3",
+    "devDependencies": {
+        "typescript": "3.2.1"
+    }
+}
