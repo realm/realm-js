@@ -39,6 +39,7 @@
 * Upgraded Realm Core from v13.10.1 to v13.11.0. ([#5811](https://github.com/realm/realm-js/issues/5811))
 * Bump sync protocol to v9 to indicate client has fix for client reset error during async open. ([realm/realm-core#6609](https://github.com/realm/realm-core/issues/6609))
 * Sync session multiplexing is enabled by default, and calling `Realm.Sync.Session#enableSessionMultiplexing()` is a no-op.
+* Aligning analytics with other Realm SDKs. You can still disable the submission by setting environment variable `REALM_DISABLE_ANALYTICS`, and you can print out what is submitted by setting the environment variable `REALM_PRINT_ANALYTICS`.
 
 ## 12.0.0-alpha.2 (2023-04-05)
 

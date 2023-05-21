@@ -51,7 +51,7 @@ import console from "node:console";
 import { createHmac } from "node:crypto";
 import { Buffer } from "node:buffer";
 
-import { machineId } from "node-machine-id";
+import machineId from "node-machine-id";
 import commandLineArgs from "command-line-args";
 import fse from "fs-extra";
 
@@ -170,7 +170,7 @@ function getInstallationMethod() {
  */
 async function collectPlatformData(packagePath = getProjectRoot()) {
   // node-machine-id returns the ID SHA-256 hashed, if we cannot get the ID we send "unknown" hashed instead
-  let identifier = await machineId();
+  let identifier = await machineId.machineId();
   if (!identifier) {
     identifier = "unknown";
   }
