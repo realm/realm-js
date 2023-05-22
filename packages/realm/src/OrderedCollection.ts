@@ -104,9 +104,9 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   extends Collection<number, T, EntryType, T, CollectionChangeCallback<T, EntryType>>
   implements Omit<ReadonlyArray<T>, "entries">
 {
-  /** @internal */ protected realm!: Realm;
-  /** @internal */ protected results!: binding.Results;
-  /** @internal */ protected helpers!: OrderedCollectionHelpers;
+  /** @internal */ protected declare realm: Realm;
+  /** @internal */ protected declare results: binding.Results;
+  /** @internal */ protected declare helpers: OrderedCollectionHelpers;
   /** @internal */
   constructor(realm: Realm, results: binding.Results, helpers: OrderedCollectionHelpers) {
     if (arguments.length === 0) {
@@ -170,8 +170,8 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   }
 
   /** @internal */
-  protected classHelpers!: ClassHelpers | null;
-  private mixedToBinding!: (value: unknown) => binding.MixedArg;
+  protected declare classHelpers: ClassHelpers | null;
+  private declare mixedToBinding: (value: unknown) => binding.MixedArg;
 
   /**
    * Get an element of the ordered collection by index
