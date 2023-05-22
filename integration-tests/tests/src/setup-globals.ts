@@ -63,8 +63,8 @@ describe("Test Harness", function (this: Mocha.Suite) {
   Context.prototype.longTimeout = longTimeout;
 });
 
-import { LogLevel, Realm } from "realm";
+import { Realm } from "realm";
 
 // Disable the logger to avoid console flooding
 const { defaultLogLevel = "off" } = environment;
-Realm.setLogLevel(defaultLogLevel as LogLevel);
+Realm.setLogLevel(defaultLogLevel);
