@@ -64,6 +64,7 @@
     "integration-tests/environments/node",
     "integration-tests/environments/electron",
     "integration-tests/environments/react-native",
+    "integration-tests/environments/browser",
     "integration-tests/baas-test-server"
   ],
   "dependencies": {

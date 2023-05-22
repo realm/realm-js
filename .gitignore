@@ -117,6 +117,7 @@ coverage/
 # Build artifacts
 /packages/realm/dist/
 /packages/realm/prebuilds/
+/packages/realm/bindgen/build.browser/
 /packages/realm/react-native/android/src/main/java/io/realm/react/Version.java
 /packages/realm/react-native/android/src/main/jniLibs/
 /packages/realm/react-native/ios/realm-js-ios.xcframework/

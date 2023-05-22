@@ -16,17 +16,17 @@ REALM_NOINLINE inline emscripten::val toEmscriptenErrorCode(const std::error_cod
 
     return out;
 }
-REALM_NOINLINE inline void toEmscriptenException(const std::exception_ptr& e) noexcept
+REALM_NOINLINE [[noreturn]] inline emscripten::val toEmscriptenException(const std::exception_ptr& e) noexcept
 {
     try {
         std::rethrow_exception(e);
     }
     catch (const std::exception& e) {
         // TODO throw an actual Error object (maybe using EM_JS)
-        return emscripten::val(e.what()).throw_();
+        emscripten::val(e.what()).throw_();
     }
     catch (...) {
-        return emscripten::val("Unknown Error").throw_();
+        emscripten::val("Unknown Error").throw_();
     }
 }
 } // namespace
