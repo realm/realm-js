@@ -56,12 +56,10 @@ export abstract class Collection<
       },
     });
     // Make the internal properties non-enumerable
-    Object.defineProperties(this, {
-      listeners: {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-      },
+    Object.defineProperty(this, "listeners", {
+      enumerable: false,
+      configurable: false,
+      writable: false,
     });
   }
 

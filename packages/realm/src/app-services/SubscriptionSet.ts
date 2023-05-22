@@ -40,12 +40,10 @@ export class SubscriptionSet extends BaseSubscriptionSet {
   constructor(/**@internal */ private realm: Realm, internal: binding.SyncSubscriptionSet) {
     super(internal);
 
-    Object.defineProperties(this, {
-      realm: {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-      },
+    Object.defineProperty(this, "realm", {
+      enumerable: false,
+      configurable: false,
+      writable: false,
     });
   }
 

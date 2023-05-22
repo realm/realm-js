@@ -53,19 +53,17 @@ export class Results<T = unknown> extends OrderedCollection<T> {
       throw new IllegalConstructorError("Results");
     }
     super(realm, internal, helpers);
-    Object.defineProperties(this, {
-      internal: {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-        value: internal,
-      },
-      realm: {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-        value: realm,
-      },
+    Object.defineProperty(this, "internal", {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: internal,
+    });
+    Object.defineProperty(this, "realm", {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: realm,
     });
   }
 
