@@ -78,6 +78,7 @@ Examples of context variables used:
 - `performance`: Disabled skipping of the "Performance tests" suite.
 - `integration=false`: Skip the integration test (which performance tests are not considered a part of).
 - `preserveAppAfterRun`: Skip deleting the Realm app after the test run
+- `defaultLogLevel=all`: Set the default log level to help debugging realm core issues.
 - `syncLogLevel=all`: Set the sync client log level to help debugging sync client issues.
 - `reuseApp=true`: Instructs the app importer to reuse and reconfigure a single app. Defaults to `false`.
 - `realmBaseUrl=https://localhost:9090`: Set the base URL used when connecting the the server.
