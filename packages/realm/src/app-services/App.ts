@@ -211,6 +211,8 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
         baseFilePath: fs.getDefaultDirectoryPath(),
         metadataMode: binding.MetadataMode.NoMetadata,
         userAgentBindingInfo: "RealmJS/",
+        // Default session multiplexing to being disabled.
+        multiplexSessions: false,
       },
     );
   }
