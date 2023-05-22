@@ -79,46 +79,39 @@ export class ClassMap {
     const properties = [...schema.persistedProperties, ...schema.computedProperties];
     const propertyNames = properties.map((p) => p.publicName || p.name);
 
-    // Build a map of property descriptors from the properties declared in the schema
-    const descriptors: PropertyDescriptorMap = Object.fromEntries(
-      properties.map((property) => {
-        const propertyName = property.publicName || property.name;
-        const { get, set } = propertyMap.get(propertyName);
-        return [
-          propertyName,
-          {
-            enumerable: true,
-            get(this: RealmObject) {
-              return get(this[INTERNAL]);
-            },
-            set(this: RealmObject, value: unknown) {
-              set(this[INTERNAL], value);
-            },
-          },
-        ];
-      }),
-    );
+    // Set up accessors for the properties declared in the schema
+    for (const property of properties) {
+      const propertyName = property.publicName || property.name;
+      const { get, set } = propertyMap.get(propertyName);
+      Object.defineProperty(constructor.prototype, propertyName, {
+        enumerable: true,
+        get(this: RealmObject) {
+          return get(this[INTERNAL]);
+        },
+        set(this: RealmObject, value: unknown) {
+          set(this[INTERNAL], value);
+        },
+      });
+    }
 
-    descriptors[REALM] = {
+    Object.defineProperty(constructor.prototype, REALM, {
       enumerable: false,
       configurable: false,
       writable: false,
       value: realm,
-    };
-    descriptors[KEY_ARRAY] = {
+    });
+    Object.defineProperty(constructor.prototype, KEY_ARRAY, {
       enumerable: false,
       configurable: false,
       writable: false,
       value: propertyNames,
-    };
-    descriptors[KEY_SET] = {
+    });
+    Object.defineProperty(constructor.prototype, KEY_SET, {
       enumerable: false,
       configurable: false,
       writable: false,
       value: new Set(propertyNames),
-    };
-
-    Object.defineProperties(constructor.prototype, descriptors);
+    });
   }
 
   constructor(realm: Realm, realmSchema: readonly BindingObjectSchema[], canonicalRealmSchema: CanonicalRealmSchema) {
