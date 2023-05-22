@@ -39,7 +39,7 @@ export class Results<T = unknown> extends OrderedCollection<T> {
    * The representation in the binding.
    * @internal
    */
-  public internal!: binding.Results;
+  public declare internal: binding.Results;
 
   /**
    * Create a `Results` wrapping a set of query `Results` from the binding.

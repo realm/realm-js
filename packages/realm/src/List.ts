@@ -40,10 +40,10 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
    * The representation in the binding.
    * @internal
    */
-  public internal!: binding.List;
+  public declare internal: binding.List;
 
   /** @internal */
-  private isEmbedded!: boolean;
+  private declare isEmbedded: boolean;
 
   /** @internal */
   constructor(realm: Realm, internal: binding.List, helpers: OrderedCollectionHelpers) {
