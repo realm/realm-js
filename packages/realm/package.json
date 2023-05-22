@@ -56,7 +56,8 @@
     "build": "echo 'Run bundle, build:node, build:ios or build:android or other scripts depending on these instead' && exit 1",
     "bundle": "wireit",
     "bundle:coverage": "ENABLE_TEST_COVERAGE_INSTRUMENTATION=true npm run bundle",
-    "bindgen:configure": "wireit",
+    "bindgen:configure:node": "wireit",
+    "bindgen:configure:browser": "wireit",
     "bindgen:build:node": "wireit",
     "bindgen:build:browser": "wireit",
     "bindgen:generate:typescript": "wireit",
@@ -70,6 +71,7 @@
     "build:node:prebuild:ia32": "wireit",
     "build:android": "wireit",
     "build:ios": "wireit",
+    "build:browser": "wireit",
     "build:ios:debug:simulator": "wireit",
     "build:ios:debug:ios": "wireit",
     "build:ios:debug:catalyst": "wireit",
@@ -108,17 +110,23 @@
         "dist"
       ]
     },
-    "bindgen:configure": {
+    "bindgen:configure:node": {
       "command": "cmake-js configure --debug --directory bindgen"
+    },
+    "bindgen:configure:browser": {
+      "command": "emcmake cmake -DCMAKE_BUILD_TYPE=Debug -S bindgen -B bindgen/build.browser -G Ninja"
     },
     "bindgen:build:node": {
       "command": "cmake --build bindgen/build --target realm-js-node",
       "dependencies": [
-        "bindgen:configure"
+        "bindgen:configure:node"
       ]
     },
     "bindgen:build:browser": {
-      "command": "emcmake cmake -DCMAKE_BUILD_TYPE=Debug -S bindgen -B bindgen/build.browser -G Ninja && cmake --build bindgen/build.browser"
+      "command": "cmake --build bindgen/build.browser",
+      "dependencies": [
+        "bindgen:configure:browser"
+      ]
     },
     "bindgen:generate:typescript": {
       "command": "realm-bindgen --template bindgen/src/templates/typescript.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --output ./generated/ts",
@@ -255,6 +263,11 @@
         "PLATFORMS": "catalyst",
         "CONFIGURATION": "Debug"
       }
+    },
+    "build:browser": {
+      "dependencies": [
+        "bindgen:build:browser"
+      ]
     },
     "docs": {
       "command": "typedoc",

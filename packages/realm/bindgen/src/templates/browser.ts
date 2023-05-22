@@ -488,7 +488,7 @@ function convertFromEmscripten(addon: BrowserAddon, type: Type, expr: string): s
           return `[&] (const emscripten::val obj) {
                 auto out = ${type.toCpp()}();
                 auto entries = emscripten::val::global("Object")["entries"].call<emscripten::val>("call", obj);
-                const auto length = entries["length"].as<int>();
+                const auto length = entries["length"].as<uint32_t>();
                 for (uint32_t i = 0; i < length; i++) {                  
                     out.insert({
                       entries[i][0].as<std::string>(),
@@ -574,6 +574,7 @@ constCast(Property.prototype).nodeDescriptorType = "InstanceAccessor";
 class BrowserCppDecls extends CppDecls {
   addon = pushRet(this.classes, new BrowserAddon());
   boundSpec: BoundSpec;
+  methodFunctions: string[] = [];
 
   constructor(spec: BoundSpec) {
     super();
@@ -697,6 +698,7 @@ class BrowserCppDecls extends CppDecls {
             `,
           }),
         );
+        this.methodFunctions.push(method.id);
       }
 
       if (cls.iterable) {
@@ -734,6 +736,7 @@ class BrowserCppDecls extends CppDecls {
             `,
           }),
         );
+        this.methodFunctions.push(cls.iteratorMethodId());
       }
 
       const refType = cls.sharedPtrWrapped ? `const ${derivedType}&` : `${derivedType}&`;
@@ -826,14 +829,14 @@ class BrowserCppDecls extends CppDecls {
       }),
       new CppFunc("EMVAL_TO_Mixed", "Mixed", [new CppVar("emscripten::val", "val")], {
         body: `
-          const char* type = val.typeOf().as<std::string>().c_str();
-          if (strcmp("string", type) == 0) {
+          auto type = val.typeOf().as<std::string>();
+          if (type == "string") {
             return strdup(${convertFromEmscripten(this.addon, spec.types["StringData"], "val")});
 
-          } else if (strcmp("boolean", type) == 0) {
+          } else if (type == "boolean") {
             return ${convertFromEmscripten(this.addon, spec.types["bool"], "val")};
 
-          } else if (strcmp("number", type) == 0) {
+          } else if (type == "number") {
               // TODO double, int64_t and uint64_t are not passed correctly from JS -> C++ 
               if (emscripten::val::global("Number")["isInteger"](val).as<bool>()) {
                 return ${convertFromEmscripten(this.addon, spec.types["int32_t"], "val")};
@@ -841,10 +844,10 @@ class BrowserCppDecls extends CppDecls {
                 return val.as<float>();
               }            
 
-          } else if (strcmp("bigint", type) == 0) {
+          } else if (type == "bigint") {
              return val.as<int64_t>(); 
               
-          } else if (strcmp("object", type) == 0) {
+          } else if (type == "object") {
               if(val.isNull()) {
                 return Mixed();
               }
@@ -873,12 +876,12 @@ class BrowserCppDecls extends CppDecls {
 
               // TODO should we check for "boxed" values like 'new Number(1)'?
               const auto ctorName =
-              val["constructor"]["name"].as<std::string>().c_str();
+              val["constructor"]["name"].as<std::string>();
     
               emscripten::val(util::format("Unable to convert an object with ctor '(%1)' to a Mixed", ctorName)).throw_();
           } else {
             // NOTE: must not treat undefined as null here, because that makes Optional<Mixed> ambiguous.
-            emscripten::val(util::format("Can't convert (%1) to Mixed", val.typeOf().as<std::string>().c_str())).throw_();
+            emscripten::val(util::format("Can't convert (%1) to Mixed", type)).throw_();
           }
 
           REALM_UNREACHABLE();              
@@ -909,26 +912,17 @@ class BrowserCppDecls extends CppDecls {
         void ${c.jsName}_deleter(emscripten::val pointer) {
           // FIXME reenable when investigating currently causing 'Uncaught RuntimeError: memory access out of bounds' 
           // delete reinterpret_cast<${c.cppName}*>(pointer.as<std::uintptr_t>());
+          static_cast<void>(pointer);
         }        
       `);
     });
 
-    // export free functions via embind
+    // export method functions via embind
     out(`\nEMSCRIPTEN_BINDINGS(realm_c_api) {`);
-    this.free_funcs
-      .filter((free_func: CppFunc) => {
-        // FIXME:  manually exclude some function signatrue causing issue wiht embind (ex: call to deleted constructor of 'realm::ThreadSafeReference')
-        const excluded_functions: string[] = [
-          "EMVAL_FROM_CLASS_ThreadSafeReference",
-          "EMVAL_FROM_CLASS_AppSubscriptionToken",
-          "EMVAL_FROM_CLASS_SyncUserSubscriptionToken",
-          "EMVAL_FROM_CLASS_NotificationToken",
-        ];
-        return free_func.ret.endsWith("emscripten::val") && excluded_functions.indexOf(free_func.name) == -1;
-        // return free_func.ret.endsWith("emscripten::val") && free_func.name !in excluded_functions;
-      })
-      .map((fun: CppFunc) => {
-        out(`\nfunction("${fun.name}", &${fun.name});`);
+    out('\nusing emscripten::function;');
+    this.methodFunctions
+      .map((fun: string) => {
+        out(`\nfunction("${fun}", &${fun});`);
       });
 
     this.boundSpec.classes.forEach((c) => {
@@ -936,7 +930,7 @@ class BrowserCppDecls extends CppDecls {
     });
 
     out(`\nfunction("_internal_iterator", &_internal_iterator);`);
-    out(`\nemscripten::function("browserInit", &browser_init);`);
+    out(`\nfunction("browserInit", &browser_init);`);
     out(`\nfunction("injectInjectables", &injectExternalTypes);`);
 
     out("\n}");
