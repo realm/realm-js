@@ -672,17 +672,15 @@ export class Realm {
       this.schemaExtras = schemaExtras || {};
     }
 
-    Object.defineProperties(this, {
-      classes: {
-        enumerable: false,
-        configurable: false,
-        writable: true,
-      },
-      internal: {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-      },
+    Object.defineProperty(this, "classes", {
+      enumerable: false,
+      configurable: false,
+      writable: true,
+    });
+    Object.defineProperty(this, "internal", {
+      enumerable: false,
+      configurable: false,
+      writable: false,
     });
 
     this.classes = new ClassMap(this, this.internal.schema, this.schema);

@@ -57,19 +57,17 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     const isEmbedded =
       baseType === binding.PropertyType.Object && internal.objectSchema.tableType === binding.TableType.Embedded;
 
-    Object.defineProperties(this, {
-      internal: {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-        value: internal,
-      },
-      isEmbedded: {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-        value: isEmbedded,
-      },
+    Object.defineProperty(this, "internal", {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: internal,
+    });
+    Object.defineProperty(this, "isEmbedded", {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: isEmbedded,
     });
   }
 
