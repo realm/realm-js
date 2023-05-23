@@ -10,7 +10,7 @@
 # * `records` and their `fields``
 #
 # If all methods in a class, or all fields of a property, are opted out of,
-# the entire class/property should either be commented out or removed.
+# the entire class/property should be removed.
 
 records:
   Property:
@@ -24,11 +24,6 @@ records:
       - is_indexed
       - column_key
 
-  # VersionID:
-    # fields:
-      # - version
-      # - index
-
   ObjectSchema:
     fields:
       - name
@@ -37,7 +32,6 @@ records:
       - primary_key
       - table_key
       - table_type
-      # - alias
 
   RealmConfig:
     fields:
@@ -56,10 +50,10 @@ records:
       - initialization_function
       - should_compact_on_launch_function
 
-  # UserIdentity:
-    # fields:
-      # - id
-      # - provider_type
+  UserIdentity:
+    fields:
+      - id
+      - provider_type
 
   UserAPIKey:
     fields:
@@ -79,9 +73,6 @@ records:
       - client_validate_ssl
       - ssl_trust_certificate_path
       - ssl_verify_callback
-      # - client_resync_mode
-      # - notify_before_client_reset
-      # - notify_after_client_reset
       - cancel_waits_on_nonfatal_error
 
   SyncSubscription:
@@ -98,27 +89,18 @@ records:
       - is_deleted
       - changed_columns
 
-  # CollectionChangeSetMove:
-    # fields:
-      # - from
-      # - to
-
   CollectionChangeSet:
     fields:
       - deletions
       - insertions
       - modifications
       - modifications_new
-      # - moves
-      # - collection_root_was_deleted
-      # - collection_was_cleared
 
   DictionaryChangeSet:
     fields:
       - deletions
       - insertions
       - modifications
-      # - collection_root_was_deleted
 
   BindingContext:
     fields:
@@ -126,25 +108,11 @@ records:
       - before_notify
       - schema_did_change
 
-  # SyncClientTimeouts:
-    # fields:
-      # - connect_timeout
-      # - connection_linger_time
-      # - ping_keepalive_period
-      # - pong_keepalive_timeout
-      # - fast_reconnect_limit
-
   SyncClientConfig:
     fields:
       - base_file_path
       - metadata_mode
-      # - custom_encryption_key
-      # - logger_factory
-      # - log_level
-      # - multiplex_sessions
       - user_agent_binding_info
-      # - user_agent_application_info
-      # - timeouts
 
   SyncError:
    fields:
@@ -153,9 +121,7 @@ records:
      - simple_message
      - logURL
      - user_info
-    #  - is_unrecognized_by_client
      - is_client_reset_requested
-    #  - server_requests_action
      - compensating_writes_info
 
   Request:
@@ -165,7 +131,6 @@ records:
       - timeout_ms
       - headers
       - body
-      # - uses_refresh_token
 
   Response:
     fields:
@@ -207,15 +172,16 @@ classes:
   # FROM JS EXTRA SPEC #
   ######################
 
-  # JsPlatformHelpers:
-    # methods:
-      # - default_realm_file_directory
-      # - ensure_directory_exists_for_file
-      # - copy_bundled_realm_files
-      # - remove_realm_files_from_directory
-      # - remove_file
-      # - remove_directory
-      # - get_cpu_arch
+  # These JsPlatformHelpers are used for React Native.
+  JsPlatformHelpers:
+    methods:
+      - default_realm_file_directory
+      - ensure_directory_exists_for_file
+      - copy_bundled_realm_files
+      - remove_realm_files_from_directory
+      - remove_file
+      - remove_directory
+      - get_cpu_arch
 
   WeakSyncSession:
     methods:
@@ -229,12 +195,9 @@ classes:
   Helpers:
     methods:
       - get_table
-      # - get_table_by_name
       - get_keypath_mapping
-      # - results_from_query
       - results_append_query
       - make_object_notifier
-      # - has_binding_context
       - set_binding_context
       - get_or_create_object_with_primary_key
       - make_network_transport
@@ -245,7 +208,7 @@ classes:
       - make_logger
       - simulate_sync_error
       - consume_thread_safe_reference_to_shared_realm
-      # - file_exists
+      - file_exists
       - erase_subscription
       - get_results_description
       - feed_buffer
@@ -253,17 +216,12 @@ classes:
 
   Logger:
     methods:
-      # - get_default_logger
-      # - get_default_level_threshold
       - set_default_logger
       - set_default_level_threshold
 
   ConstTableRef:
     methods:
-      # - get_name
-      # - get_column_count
       - get_key
-      # - is_embedded
       - get_column_type
       - get_link_target
       - get_object
@@ -274,7 +232,6 @@ classes:
   TableRef:
     methods:
       - create_object
-      # - create_object_with_primary_key
       - remove_object
       - get_link_target
       - clear
@@ -284,27 +241,12 @@ classes:
       - is_valid
       - get_table
       - get_key
-      # - get_link
-      # - get_primary_key
       - get_any
-      # - get_any_by_name
-      # - is_null
-      # - is_null_by_name
       - set_any
-      # - set_any_with_default
       - get_linked_object
-      # - to_string
       - get_backlink_count
       - get_backlink_view
       - create_and_set_linked_object
-
-  # Transaction:
-
-  # ObjectStore:
-    # methods:
-      # - get_schema_version
-      # - set_schema_version
-      # - schema_from_group
   
   Timestamp:
     methods:
@@ -314,33 +256,18 @@ classes:
 
   ObjLink:
     methods:
-      # - is_null
-      # - is_unresolved
       - get_table_key
       - get_obj_key
-
-  #  KeyPathMapping:
 
   Query:
     methods:
       - get_table
       - get_description
-      # - count
-
-  # SortDescriptor:
-    # methods:
-      # - make_empty
-      # - make
-      # - is_valid
-
-  # TableView
 
   Results:
     methods:
-      # - make_empty
       - from_table
       - from_table_view
-      # - is_frozen
       - is_valid
       - get_query
       - get_object_type
@@ -350,13 +277,8 @@ classes:
       - index_of_obj
       - get_obj
       - get_any
-      # - get_dictionary_element
-      # - filter
-      # - sort
       - sort_by_names
-      # - limit
       - snapshot
-      # - freeze
       - max
       - min
       - average
@@ -373,42 +295,17 @@ classes:
       - schema
       - schema_version
       - is_in_transaction
-      # - is_frozen
       - is_in_migration
-      # - get_number_of_versions
-      # - read_transaction_version
-      # - current_transaction_version
-      # - auto_refresh
-      # - can_deliver_notifications
-      # - scheduler
       - is_closed
-      # - audit_context
       - sync_session
       - get_latest_subscription_set
-      # - get_active_subscription_set
       - begin_transaction
       - commit_transaction
       - cancel_transaction
-      # - freeze
-      # - last_seen_transaction_version
-      # - read_group
-      # - duplicate
       - update_schema
-      # - enable_wait_for_change
-      # - wait_for_change
-      # - wait_for_change_release
-      # - refresh
-      # - set_auto_refresh
-      # - notify
-      # - invalidate
       - compact
-      # - write_copy
       - convert
-      # - verify_thread
-      # - verify_in_write
       - verify_open
-      # - verify_notifications_available
-      # - verify_notifications_available_maybe_throw
       - close
       - DOLLAR_addr
       - DOLLAR_resetSharedPtr
@@ -419,90 +316,47 @@ classes:
 
   ObjectNotifier:
     methods:
-      # - make
       - add_callback
-      # - remove_callback
 
   NotificationToken:
     methods:
       - for_object
-      # - suppress_next
       - unregister
-
-  # IndexSet:
 
   Collection:
     methods:
-      # - get_type
-      # - get_realm
-      # - get_parent_column_key
-      # - get_parent_object_key
-      # - get_parent_table_key
       - get_object_schema
       - size
       - is_valid
-      # - is_frozen
       - get_any
-      # - find_any
-      # - verify_attached
-      # - verify_in_transaction
       - as_results
-      # - snapshot
-      # - sort
-      # - sort_by_name
-      # - add_notification_callback
 
   List:
     methods:
       - make
-      # - get
       - move
       - remove
       - remove_all
       - swap
-      # - delete_at
       - delete_all
       - insert_any
       - insert_embedded
       - set_any
-      # - filter
-      # - freeze
-      # - max
-      # - max_of
-      # - min
-      # - min_of
-      # - average
-      # - average_of
-      # - sum
-      # - sum_of
 
   Set:
     methods:
       - make
-      # - get
       - insert_any
       - remove_any
       - remove_all
       - delete_all
-      # - filter
-      # - max
-      # - max_of
-      # - min
-      # - min_of
-      # - average
-      # - average_of
-      # - sum
-      # - sum_of
 
   Dictionary:
     methods:
       - make
       - get_keys
       - get_values
-      # - get
-      # - get_pair
       - contains
-      # - freeze
       - add_key_based_notification_callback
       - insert_any
       - insert_embedded
@@ -528,13 +382,7 @@ classes:
       - custom
       - username_password
       - function
-      # - function_bson
       - user_api_key
-      # - server_api_key
-      # - provider
-      # - provider_as_string
-
-  # SyncUserSubscriptionToken:
 
   SyncUser:
     methods:
@@ -542,56 +390,34 @@ classes:
       - is_logged_in
       - identity
       - provider_type
-      # - local_identity
       - access_token
       - refresh_token
       - device_id
-      # - has_device_id
       - user_profile
       - identities
       - custom_data
       - sync_manager
       - state
-      # - subscribers_count
-      # - log_out
       - session_for_on_disk_path
       - subscribe
       - unsubscribe
 
   UserProfile:
     methods:
-      # - name
-      # - email
-      # - picture_url
-      # - first_name
-      # - last_name
-      # - gender
-      # - birthday
-      # - min_age
-      # - max_age
       - data
-
-  # AppSubscriptionToken:
 
   App:
     methods:
       - config
-      # - base_url
       - current_user
       - all_users
       - sync_manager
-      # - subscribers_count
-      # - get_shared_app
       - get_uncached_app
-      # - get_cached_app
       - clear_cached_apps
-      # - close_all_sync_sessions
       - log_in_with_credentials
-      # - log_out
       - log_out_user
       - refresh_custom_data
       - link_user
-      # - switch_user
       - remove_user
       - delete_user
       - usernamePasswordProviderClient
@@ -633,38 +459,28 @@ classes:
       - enable_api_key
       - disable_api_key
 
-  # LoggerFactory:
-
   SyncManager:
     methods:
-      # - log_level
       - has_existing_sessions
       - immediately_run_file_actions
       - enable_session_multiplexing
       - set_log_level
       - set_logger_factory
       - set_user_agent
-      # - set_timeouts
       - reconnect
-      # - wait_for_sessions_to_terminate
       - path_for_realm
-      # - get_existing_active_session
-
-  # ThreadSafeReference:
 
   AsyncOpenTask:
     methods:
       - start
       - cancel
       - register_download_progress_notifier
-      # - unregister_download_progress_notifier
       - DOLLAR_resetSharedPtr
 
   SyncSession:
     methods:
       - state
       - connection_state
-      # - path
       - user
       - config
       - full_realm_url
@@ -675,14 +491,8 @@ classes:
       - register_connection_change_callback
       - unregister_connection_change_callback
       - revive_if_needed
-      # - handle_reconnect
-      # - close
       - force_close
-      # - shutdown_and_wait
-      # - update_configuration
       - DOLLAR_resetSharedPtr
-
-  # SSLVerifyCallback:
 
   SyncSubscriptionSet:
     methods:
@@ -692,7 +502,6 @@ classes:
       - size
       - make_mutable_copy
       - get_state_change_notification
-      # - at
       - find_by_name
       - find_by_query
       - refresh
@@ -705,17 +514,3 @@ classes:
       - erase_by_name
       - erase_by_query
       - commit
-
-  # Scheduler:
-    # methods:
-      # - invoke
-      # - is_on_thread
-      # - is_same_as
-      # - can_invoke
-      # - make_frozen
-      # - make_default
-      # - set_default_factory
-
-  # GenericNetworkTransport:
-    # methods:
-      # - send_request_to_server
