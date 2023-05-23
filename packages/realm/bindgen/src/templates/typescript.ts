@@ -224,7 +224,9 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
       out(`export type ${rec.jsName}${suffix(kind)} = {`);
       for (const field of fields) {
         if (!field.isOptedInTo) {
-          out(`/** @deprecated Add '${field.name}' to your opt-in list to use this. */`);
+          out(
+            `/** @deprecated Add '${field.name}' to your opt-in list (under 'records: ${rec.cppName}: fields:') to use this. */`,
+          );
         }
 
         // For Optional<T> fields, the field will always be there in Ret mode, but it may be undefined.
@@ -251,7 +253,9 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
     out(`${cls.subclasses.length === 0 ? "private" : "protected"} constructor();`);
     for (const meth of cls.methods) {
       if (!meth.isOptedInTo) {
-        out(`/** @deprecated Add '${meth.unique_name}' to your opt-in list to use this. */`);
+        out(
+          `/** @deprecated Add '${meth.unique_name}' to your opt-in list (under 'classes: ${cls.cppName}: methods:') to use this. */`,
+        );
       }
       if (meth instanceof Property) {
         out("readonly ", meth.jsName, ": ", generateType(spec, meth.type, Kind.Ret));
