@@ -291,8 +291,8 @@ class Realm {
    * Be warned that resource requirements for compaction is proportional to the amount of live data in
    * the database. Compaction works by writing the database contents to a temporary database file and
    * then replacing the database with the temporary one.
-   * @returns {boolean} returns `true` if compaction succeeds, `false` if not. An exception is 
-   * thrown if writing the compacted file fails.
+   * @returns {boolean} returns `false` if compaction was not allowed, `true` if compaction succeeds. 
+   * An exception is thrown if writing the compacted file fails.
    */
   compact() {}
 
