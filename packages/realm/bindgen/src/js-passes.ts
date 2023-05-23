@@ -33,6 +33,7 @@ import { strict as assert } from "assert";
 
 export function doJsPasses(spec: BoundSpec) {
   addSharedPtrMethods(spec);
+  spec.applyOptInList();
   return spec;
 }
 
