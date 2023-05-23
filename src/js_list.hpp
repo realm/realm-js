@@ -25,10 +25,12 @@
 #include "js_types.hpp"
 #include "js_util.hpp"
 #include "js_notifications.hpp"
+#include "realm/object-store/property.hpp"
 
 #include <realm/object-store/shared_realm.hpp>
 #include <realm/object-store/list.hpp>
 #include <realm/object-store/collection_notifications.hpp>
+#include <stdexcept>
 
 namespace realm {
 namespace js {
@@ -276,6 +278,10 @@ void ListClass<T>::snapshot(ContextType ctx, ObjectType this_object, Arguments& 
 {
     args.validate_maximum(0);
     auto list = get_internal<T, ListClass<T>>(ctx, this_object);
+    auto type = list->get_type();
+    if ((type & ~realm::PropertyType::Flags) != realm::PropertyType::Object) {
+        throw std::invalid_argument("`snapshot()` is not supported on list of primitive types");
+    }
     return_value.set(ResultsClass<T>::create_instance(ctx, list->snapshot()));
 }
 

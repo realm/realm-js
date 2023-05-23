@@ -127,7 +127,7 @@ class Collection {
   sorted(descriptor, reverse) {}
 
   /**
-   * Create a frozen snapshot of the collection.
+   * Create a snapshot of the collection.
    *
    * Values added to and removed from the original collection will not be
    * reflected in the _Results_ returned by this method, including if the
@@ -138,6 +138,8 @@ class Collection {
    * snapshot will continue to update as changes are made to them, and if
    * they are deleted from the Realm they will be replaced by `null` at the
    * respective indices.
+   *
+   * @throws {Error} When snapshotting a collection of primitive types.
    *
    * @returns {Realm.Results<T>} which will **not** live update.
    */
