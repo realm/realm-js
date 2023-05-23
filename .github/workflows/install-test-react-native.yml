@@ -25,6 +25,7 @@ jobs:
         realm-version:
           # - v10 # Enable if we feel the need
           - latest
+          - next
         react-native-version:
           - latest
           - next
