@@ -24,18 +24,7 @@ type DeviceInfoType = {
 
 export const deviceInfo: DeviceInfoType = {
   create() {
-    return {
-      platform: "",
-      platformVersion: "",
-      sdkVersion: "",
-      sdk: "",
-      cpuArch: "",
-      deviceName: "",
-      deviceVersion: "",
-      frameworkName: "",
-      frameworkVersion: "",
-    };
-    // throw new Error("Not supported on this platform");
+    throw new Error("Not supported on this platform");
   },
 };
 

@@ -94,6 +94,7 @@ export default [
       }),
       // We need to use `commonjs` because of "path-browserify"
       commonjs(),
+      json(),
       replace({
         preventAssignment: true,
         delimiters: ["", ""],

@@ -54,4 +54,9 @@ void JsPlatformHelpers::remove_file(const std::string&)
     throw std::runtime_error("Realm for browser does not support this method.");
 }
 
+std::string JsPlatformHelpers::get_cpu_arch()
+{
+    return "N/A WASM";
+}
+
 } // namespace realm

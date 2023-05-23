@@ -3,6 +3,7 @@
   "compilerOptions": {
     "noResolve": false,
     "incremental": true,
+    "resolveJsonModule": true,
     "types": [],
     "lib": [
       "DOM",
