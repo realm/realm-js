@@ -240,11 +240,9 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
     config.transport = AppClass<T>::transport_generator(Protected(Context::get_global_context(ctx)),
                                                         NetworkTransport::make_dispatcher());
 
-    config.device_info.platform = platform;
     config.device_info.platform_version = platform_version;
     config.device_info.sdk = sdk;
     config.device_info.sdk_version = sdk_version;
-    config.device_info.cpu_arch = cpu_arch;
     config.device_info.device_name = device_name;
     config.device_info.device_version = device_version;
     config.device_info.framework_name = framework_name;

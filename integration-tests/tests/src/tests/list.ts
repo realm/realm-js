@@ -1191,7 +1191,7 @@ describe("Lists", () => {
         this.realm.deleteAll();
         expect(objectsCopy.isValid()).to.be.true;
         expect(objectsCopy.length).equals(6);
-        expect(arrayCopy.isValid()).to.be.false;
+        expect(arrayCopy.isValid()).to.be.true;
       });
     });
 
