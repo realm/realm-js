@@ -4,15 +4,13 @@
 # List all the unique names of what to opt in to from the general spec.
 #
 # The following can be listed:
-# * `classes` and their methods
-# * `records` and their fields
-
-classes:
-  Obj:
-    methods:
-      - get_any
-      - get_any_by_name
-      - is_null
+# * `classes` and their `methods`
+#   * Methods, static methods, constructors, and properties in the general `spec.yml`
+#     should all be listed in this opt-in list as `methods`.
+# * `records` and their `fields``
+#
+# If all methods in a class, or all fields of a property, are opted out of,
+# the entire class/property should either be commented out or removed.
 
 records:
   Property:
@@ -26,4 +24,698 @@ records:
       - is_indexed
       - column_key
 
-# TODO: Will add more
+  # VersionID:
+    # fields:
+      # - version
+      # - index
+
+  ObjectSchema:
+    fields:
+      - name
+      - persisted_properties
+      - computed_properties
+      - primary_key
+      - table_key
+      - table_type
+      # - alias
+
+  RealmConfig:
+    fields:
+      - path
+      - cache
+      - encryption_key
+      - fifo_files_fallback_path
+      - in_memory
+      - schema
+      - schema_version
+      - schema_mode
+      - disable_format_upgrade
+      - sync_config
+      - force_sync_history
+      - migration_function
+      - initialization_function
+      - should_compact_on_launch_function
+
+  # UserIdentity:
+    # fields:
+      # - id
+      # - provider_type
+
+  UserAPIKey:
+    fields:
+      - id
+      - key
+      - name
+      - disabled
+
+  SyncConfig:
+    fields:
+      - user
+      - partition_value
+      - stop_policy
+      - flx_sync_requested
+      - error_handler
+      - custom_http_headers
+      - client_validate_ssl
+      - ssl_trust_certificate_path
+      - ssl_verify_callback
+      # - client_resync_mode
+      # - notify_before_client_reset
+      # - notify_after_client_reset
+      - cancel_waits_on_nonfatal_error
+
+  SyncSubscription:
+    fields:
+      - id
+      - created_at
+      - updated_at
+      - name
+      - object_class_name
+      - query_string
+
+  ObjectChangeSet:
+    fields:
+      - is_deleted
+      - changed_columns
+
+  # CollectionChangeSetMove:
+    # fields:
+      # - from
+      # - to
+
+  CollectionChangeSet:
+    fields:
+      - deletions
+      - insertions
+      - modifications
+      - modifications_new
+      # - moves
+      # - collection_root_was_deleted
+      # - collection_was_cleared
+
+  DictionaryChangeSet:
+    fields:
+      - deletions
+      - insertions
+      - modifications
+      # - collection_root_was_deleted
+
+  BindingContext:
+    fields:
+      - did_change
+      - before_notify
+      - schema_did_change
+
+  # SyncClientTimeouts:
+    # fields:
+      # - connect_timeout
+      # - connection_linger_time
+      # - ping_keepalive_period
+      # - pong_keepalive_timeout
+      # - fast_reconnect_limit
+
+  SyncClientConfig:
+    fields:
+      - base_file_path
+      - metadata_mode
+      # - custom_encryption_key
+      # - logger_factory
+      # - log_level
+      # - multiplex_sessions
+      - user_agent_binding_info
+      # - user_agent_application_info
+      # - timeouts
+
+  SyncError:
+   fields:
+     - system_error
+     - is_fatal
+     - simple_message
+     - logURL
+     - user_info
+    #  - is_unrecognized_by_client
+     - is_client_reset_requested
+    #  - server_requests_action
+     - compensating_writes_info
+
+  Request:
+    fields:
+      - method
+      - url
+      - timeout_ms
+      - headers
+      - body
+      # - uses_refresh_token
+
+  Response:
+    fields:
+      - http_status_code
+      - custom_status_code
+      - headers
+      - body
+
+  DeviceInfo:
+    fields:
+      - platform
+      - platform_version
+      - sdk_version
+      - sdk
+      - cpu_arch
+      - device_name
+      - device_version
+      - framework_name
+      - framework_version
+
+  AppConfig:
+    fields:
+      - app_id
+      - transport
+      - base_url
+      - local_app_name
+      - local_app_version
+      - default_request_timeout_ms
+      - device_info
+
+  CompensatingWriteErrorInfo:
+   fields:
+     - object_name
+     - reason
+     - primary_key
+
+classes:
+  ######################
+  # FROM JS EXTRA SPEC #
+  ######################
+
+  # JsPlatformHelpers:
+    # methods:
+      # - default_realm_file_directory
+      # - ensure_directory_exists_for_file
+      # - copy_bundled_realm_files
+      # - remove_realm_files_from_directory
+      # - remove_file
+      # - remove_directory
+      # - get_cpu_arch
+
+  WeakSyncSession:
+    methods:
+      - weak_copy_of
+      - raw_dereference
+
+  #####################
+  # FROM GENERAL SPEC #
+  #####################
+
+  Helpers:
+    methods:
+      - get_table
+      # - get_table_by_name
+      - get_keypath_mapping
+      # - results_from_query
+      - results_append_query
+      - make_object_notifier
+      # - has_binding_context
+      - set_binding_context
+      - get_or_create_object_with_primary_key
+      - make_network_transport
+      - delete_data_for_object
+      - is_empty_realm
+      - base64_decode
+      - make_logger_factory
+      - make_logger
+      - simulate_sync_error
+      - consume_thread_safe_reference_to_shared_realm
+      # - file_exists
+      - erase_subscription
+      - get_results_description
+      - feed_buffer
+      - make_ssl_verify_callback
+
+  Logger:
+    methods:
+      # - get_default_logger
+      # - get_default_level_threshold
+      - set_default_logger
+      - set_default_level_threshold
+
+  ConstTableRef:
+    methods:
+      # - get_name
+      # - get_column_count
+      - get_key
+      # - is_embedded
+      - get_column_type
+      - get_link_target
+      - get_object
+      - try_get_object
+      - query
+      - find_primary_key
+
+  TableRef:
+    methods:
+      - create_object
+      # - create_object_with_primary_key
+      - remove_object
+      - get_link_target
+      - clear
+
+  Obj:
+    methods:
+      - is_valid
+      - get_table
+      - get_key
+      # - get_link
+      # - get_primary_key
+      - get_any
+      # - get_any_by_name
+      # - is_null
+      # - is_null_by_name
+      - set_any
+      # - set_any_with_default
+      - get_linked_object
+      # - to_string
+      - get_backlink_count
+      - get_backlink_view
+      - create_and_set_linked_object
+
+  # Transaction:
+
+  # ObjectStore:
+    # methods:
+      # - get_schema_version
+      # - set_schema_version
+      # - schema_from_group
+  
+  Timestamp:
+    methods:
+      - make
+      - get_seconds
+      - get_nanoseconds
+
+  ObjLink:
+    methods:
+      # - is_null
+      # - is_unresolved
+      - get_table_key
+      - get_obj_key
+
+  #  KeyPathMapping:
+
+  Query:
+    methods:
+      - get_table
+      - get_description
+      # - count
+
+  # SortDescriptor:
+    # methods:
+      # - make_empty
+      # - make
+      # - is_valid
+
+  # TableView
+
+  Results:
+    methods:
+      # - make_empty
+      - from_table
+      - from_table_view
+      # - is_frozen
+      - is_valid
+      - get_query
+      - get_object_type
+      - get_type
+      - size
+      - index_of
+      - index_of_obj
+      - get_obj
+      - get_any
+      # - get_dictionary_element
+      # - filter
+      # - sort
+      - sort_by_names
+      # - limit
+      - snapshot
+      # - freeze
+      - max
+      - min
+      - average
+      - sum
+      - clear
+      - add_notification_callback
+
+  Realm:
+    methods:
+      - get_shared_realm
+      - get_synchronized_realm
+      - get_schema_version
+      - config
+      - schema
+      - schema_version
+      - is_in_transaction
+      # - is_frozen
+      - is_in_migration
+      # - get_number_of_versions
+      # - read_transaction_version
+      # - current_transaction_version
+      # - auto_refresh
+      # - can_deliver_notifications
+      # - scheduler
+      - is_closed
+      # - audit_context
+      - sync_session
+      - get_latest_subscription_set
+      # - get_active_subscription_set
+      - begin_transaction
+      - commit_transaction
+      - cancel_transaction
+      # - freeze
+      # - last_seen_transaction_version
+      # - read_group
+      # - duplicate
+      - update_schema
+      # - enable_wait_for_change
+      # - wait_for_change
+      # - wait_for_change_release
+      # - refresh
+      # - set_auto_refresh
+      # - notify
+      # - invalidate
+      - compact
+      # - write_copy
+      - convert
+      # - verify_thread
+      # - verify_in_write
+      - verify_open
+      # - verify_notifications_available
+      # - verify_notifications_available_maybe_throw
+      - close
+      - DOLLAR_addr
+      - DOLLAR_resetSharedPtr
+
+  RealmCoordinator:
+    methods:
+      - clear_all_caches
+
+  ObjectNotifier:
+    methods:
+      # - make
+      - add_callback
+      # - remove_callback
+
+  NotificationToken:
+    methods:
+      - for_object
+      # - suppress_next
+      - unregister
+
+  # IndexSet:
+
+  Collection:
+    methods:
+      # - get_type
+      # - get_realm
+      # - get_parent_column_key
+      # - get_parent_object_key
+      # - get_parent_table_key
+      - get_object_schema
+      - size
+      - is_valid
+      # - is_frozen
+      - get_any
+      # - find_any
+      # - verify_attached
+      # - verify_in_transaction
+      - as_results
+      # - snapshot
+      # - sort
+      # - sort_by_name
+      # - add_notification_callback
+
+  List:
+    methods:
+      - make
+      # - get
+      - move
+      - remove
+      - remove_all
+      - swap
+      # - delete_at
+      - delete_all
+      - insert_any
+      - insert_embedded
+      - set_any
+      # - filter
+      # - freeze
+      # - max
+      # - max_of
+      # - min
+      # - min_of
+      # - average
+      # - average_of
+      # - sum
+      # - sum_of
+
+  Set:
+    methods:
+      - make
+      # - get
+      - insert_any
+      - remove_any
+      - remove_all
+      - delete_all
+      # - filter
+      # - max
+      # - max_of
+      # - min
+      # - min_of
+      # - average
+      # - average_of
+      # - sum
+      # - sum_of
+
+  Dictionary:
+    methods:
+      - make
+      - get_keys
+      - get_values
+      # - get
+      # - get_pair
+      - contains
+      # - freeze
+      - add_key_based_notification_callback
+      - insert_any
+      - insert_embedded
+      - try_get_any
+      - remove_all
+      - try_erase
+
+  GoogleAuthCode:
+    methods:
+      - make
+
+  GoogleIdToken:
+    methods:
+      - make
+
+  AppCredentials:
+    methods:
+      - facebook
+      - anonymous
+      - apple
+      - google_auth
+      - google_id
+      - custom
+      - username_password
+      - function
+      # - function_bson
+      - user_api_key
+      # - server_api_key
+      # - provider
+      # - provider_as_string
+
+  # SyncUserSubscriptionToken:
+
+  SyncUser:
+    methods:
+      - all_sessions
+      - is_logged_in
+      - identity
+      - provider_type
+      # - local_identity
+      - access_token
+      - refresh_token
+      - device_id
+      # - has_device_id
+      - user_profile
+      - identities
+      - custom_data
+      - sync_manager
+      - state
+      # - subscribers_count
+      # - log_out
+      - session_for_on_disk_path
+      - subscribe
+      - unsubscribe
+
+  UserProfile:
+    methods:
+      # - name
+      # - email
+      # - picture_url
+      # - first_name
+      # - last_name
+      # - gender
+      # - birthday
+      # - min_age
+      # - max_age
+      - data
+
+  # AppSubscriptionToken:
+
+  App:
+    methods:
+      - config
+      # - base_url
+      - current_user
+      - all_users
+      - sync_manager
+      # - subscribers_count
+      # - get_shared_app
+      - get_uncached_app
+      # - get_cached_app
+      - clear_cached_apps
+      # - close_all_sync_sessions
+      - log_in_with_credentials
+      # - log_out
+      - log_out_user
+      - refresh_custom_data
+      - link_user
+      # - switch_user
+      - remove_user
+      - delete_user
+      - usernamePasswordProviderClient
+      - userAPIKeyProviderClient
+      - push_notification_client
+      - subscribe
+      - unsubscribe
+      - call_function
+      - make_streaming_request
+
+  WatchStream:
+    methods:
+      - make
+      - state
+      - error
+      - next_event
+
+  PushClient:
+    methods:
+      - register_device
+      - deregister_device
+
+  UsernamePasswordProviderClient:
+    methods:
+      - register_email
+      - retry_custom_confirmation
+      - confirm_user
+      - resend_confirmation_email
+      - reset_password
+      - send_reset_password_email
+      - call_reset_password_function
+
+  UserAPIKeyProviderClient:
+    methods:
+      - create_api_key
+      - fetch_api_key
+      - fetch_api_keys
+      - delete_api_key
+      - enable_api_key
+      - disable_api_key
+
+  # LoggerFactory:
+
+  SyncManager:
+    methods:
+      # - log_level
+      - has_existing_sessions
+      - immediately_run_file_actions
+      - enable_session_multiplexing
+      - set_log_level
+      - set_logger_factory
+      - set_user_agent
+      # - set_timeouts
+      - reconnect
+      # - wait_for_sessions_to_terminate
+      - path_for_realm
+      # - get_existing_active_session
+
+  # ThreadSafeReference:
+
+  AsyncOpenTask:
+    methods:
+      - start
+      - cancel
+      - register_download_progress_notifier
+      # - unregister_download_progress_notifier
+      - DOLLAR_resetSharedPtr
+
+  SyncSession:
+    methods:
+      - state
+      - connection_state
+      # - path
+      - user
+      - config
+      - full_realm_url
+      - wait_for_upload_completion
+      - wait_for_download_completion
+      - register_progress_notifier
+      - unregister_progress_notifier
+      - register_connection_change_callback
+      - unregister_connection_change_callback
+      - revive_if_needed
+      # - handle_reconnect
+      # - close
+      - force_close
+      # - shutdown_and_wait
+      # - update_configuration
+      - DOLLAR_resetSharedPtr
+
+  # SSLVerifyCallback:
+
+  SyncSubscriptionSet:
+    methods:
+      - version
+      - state
+      - error_str
+      - size
+      - make_mutable_copy
+      - get_state_change_notification
+      # - at
+      - find_by_name
+      - find_by_query
+      - refresh
+
+  MutableSyncSubscriptionSet:
+    methods:
+      - clear
+      - insert_or_assign_by_name
+      - insert_or_assign_by_query
+      - erase_by_name
+      - erase_by_query
+      - commit
+
+  # Scheduler:
+    # methods:
+      # - invoke
+      # - is_on_thread
+      # - is_same_as
+      # - can_invoke
+      # - make_frozen
+      # - make_default
+      # - set_default_factory
+
+  # GenericNetworkTransport:
+    # methods:
+      # - send_request_to_server
