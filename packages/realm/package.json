@@ -122,6 +122,7 @@
         "bindgen/vendor/realm-core/bindgen/spec.yml",
         "bindgen/vendor/realm-core/bindgen/src",
         "bindgen/js_spec.yml",
+        "bindgen/js_opt_in_spec.yml",
         "bindgen/src",
         "!bindgen/src/templates",
         "bindgen/src/templates/typescript.ts"
@@ -140,6 +141,7 @@
         "bindgen/vendor/realm-core/bindgen/spec.yml",
         "bindgen/vendor/realm-core/bindgen/src",
         "bindgen/js_spec.yml",
+        "bindgen/js_opt_in_spec.yml",
         "bindgen/src",
         "!bindgen/src/templates",
         "bindgen/src/templates/node-wrapper.ts"
