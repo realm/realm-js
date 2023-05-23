@@ -1,7 +1,7 @@
 The Realm JavaScript SDK has limited support for running behind an HTTP proxy:
 
 Current limitations:
-- This is currently only supported on Realm JS v10.3.0 or higher running on Node.js.
+- This is currently only supported on Realm JS v10.3.0 or higher running on Node.js or Electron.
 - You must install the [`fetch-with-proxy`](https://www.npmjs.com/package/fetch-with-proxy) package manually.
 - You must set the `HTTPS_PROXY` environment variable, hence the proxy cannot be set at runtime or on a per-app basis.
 - HTTPS connections from the client to the proxy server, is not supported. I.e. the URL specified in the `HTTPS_PROXY` must start with `http://`.
