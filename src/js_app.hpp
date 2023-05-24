@@ -35,6 +35,7 @@
 #include "js_email_password_auth.hpp"
 #include "realm/object-store/sync/subscribable.hpp"
 #include "realm/util/file.hpp"
+#include "realm/util/platform_info.hpp"
 
 
 using SharedApp = std::shared_ptr<realm::app::App>;
@@ -259,7 +260,7 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
 template <typename T>
 std::string AppClass<T>::get_user_agent()
 {
-    return "RealmJS/" + sdk_version + " (" + platform + ", v" + platform_version + ")";
+    return "RealmJS/" + sdk_version + " (" + util::get_platform_info() + ")";
 }
 
 template <typename T>
