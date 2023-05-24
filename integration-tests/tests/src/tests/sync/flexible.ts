@@ -1399,6 +1399,20 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             expect(subs).to.have.length(1);
             expect([...subs][0].queryString).to.equal("age > 10");
           });
+
+          it("returns true and removes a subscription with an empty name", async function (this: RealmContext) {
+            addSubscription(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"));
+            const { subs } = addSubscriptionForPerson(this.realm, { name: "" });
+
+            expect(subs).to.have.length(2);
+
+            await subs.update((mutableSubs) => {
+              expect(mutableSubs.removeByName("")).to.be.true;
+            });
+
+            expect(subs).to.have.length(1);
+            expect([...subs][0].queryString).to.equal("age > 10");
+          });
         });
 
         describe("#remove", function () {
@@ -1532,10 +1546,12 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
             expect(this.realm.subscriptions.isEmpty).to.be.true;
           });
+        });
 
+        describe("#removeUnnamed", function () {
           it("removes all unnamed subscriptions and returns the number of subscriptions removed", async function (this: RealmContext) {
             // Add 1 named and 2 unnamed subscriptions.
-            addSubscriptionForPerson(this.realm, { name: "name1" });
+            addSubscriptionForPerson(this.realm, { name: "test" });
             addSubscription(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("age < 5"));
             await addSubscriptionAndSync(
               this.realm,
@@ -1549,6 +1565,23 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             });
 
             expect(numRemoved).to.equal(2);
+            expect(this.realm.subscriptions).to.have.length(1);
+          });
+
+          it("does not remove subscription with empty name", async function (this: RealmContext) {
+            await addSubscriptionAndSync(
+              this.realm,
+              this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"),
+              { name: "" },
+            );
+            expect(this.realm.subscriptions).to.have.length(1);
+
+            let numRemoved = 0;
+            await this.realm.subscriptions.update((mutableSubs) => {
+              numRemoved = mutableSubs.removeUnnamed();
+            });
+
+            expect(numRemoved).to.equal(0);
             expect(this.realm.subscriptions).to.have.length(1);
           });
         });

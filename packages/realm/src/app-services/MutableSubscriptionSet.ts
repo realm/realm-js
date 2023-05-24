@@ -109,7 +109,7 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
     const results = query.internal;
     const queryInternal = results.query;
 
-    if (options?.throwOnUpdate && options.name) {
+    if (options?.throwOnUpdate && options.name !== undefined) {
       const existingSubscription = subscriptions.findByName(options.name);
       if (existingSubscription) {
         const isSameQuery =
@@ -122,9 +122,11 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
       }
     }
 
-    const [subscription] = options?.name
-      ? subscriptions.insertOrAssignByName(options.name, queryInternal)
-      : subscriptions.insertOrAssignByQuery(queryInternal);
+    const [subscription] =
+      // Check for `undefined` rather than falsy since we treat empty names as named.
+      options?.name === undefined
+        ? subscriptions.insertOrAssignByQuery(queryInternal)
+        : subscriptions.insertOrAssignByName(options.name, queryInternal);
 
     return new Subscription(subscription);
   }
@@ -195,7 +197,7 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
    * @returns The number of subscriptions removed.
    */
   removeUnnamed(): number {
-    return this.removeByPredicate((subscription) => !subscription.name);
+    return this.removeByPredicate((subscription) => subscription.name === undefined);
   }
 
   /** @internal */
