@@ -772,9 +772,9 @@ class BrowserCppDecls extends CppDecls {
             // We can look into bypassing that if it is a problem.
             body: `
                 ${nullCheck}
-                return emscripten::val(${this.addon.accessCtor(
+                return ${this.addon.accessCtor(
                   cls,
-                )}.new_(emscripten::val(reinterpret_cast<std::uintptr_t>(new auto(std::move(val))))));
+                )}.new_(emscripten::val(reinterpret_cast<std::uintptr_t>(new auto(std::move(val)))));
               `,
           }),
         );
@@ -910,9 +910,7 @@ class BrowserCppDecls extends CppDecls {
     this.boundSpec.classes.forEach((c) => {
       out(`
         void ${c.jsName}_deleter(emscripten::val pointer) {
-          // FIXME reenable when investigating currently causing 'Uncaught RuntimeError: memory access out of bounds' 
-          // delete reinterpret_cast<${c.cppName}*>(pointer.as<std::uintptr_t>());
-          static_cast<void>(pointer);
+          delete reinterpret_cast<std::shared_ptr<${c.cppName}>*>(pointer.as<std::uintptr_t>());
         }        
       `);
     });
