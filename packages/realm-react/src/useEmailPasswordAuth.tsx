@@ -16,10 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { useApp } from "./AppProvider";
 import { AuthError, AuthResult, OperationState } from "./types";
-import { useAuth } from "./useAuth";
+import { User } from "realm";
+import { Credentials } from "realm";
 
 interface UseEmailPasswordAuth {
   /**
@@ -118,7 +119,10 @@ interface UseEmailPasswordAuth {
    * @throws if there is an error sending the password reset.
    */
   callResetPasswordFunction<Args extends unknown[] = []>(
-    args: { email: string; password: string },
+    args: {
+      email: string;
+      password: string;
+    },
     ...restArgs: Args
   ): Promise<void>;
 
@@ -138,6 +142,38 @@ interface UseEmailPasswordAuth {
   result: AuthResult;
 }
 
+function useAuthOperation<Args extends unknown[], Result>({
+  result,
+  setResult,
+  operation,
+  onSuccess = () => undefined,
+}: {
+  result: AuthResult;
+  setResult: (value: React.SetStateAction<AuthResult>) => void;
+  operation: (...args: Args) => Promise<Result>;
+  onSuccess?: (...args: Args) => void;
+}) {
+  return useCallback<(...args: Args) => ReturnType<typeof operation>>(
+    (...args) => {
+      if (result.pending) {
+        throw new AuthError("Another authentication operation is already in progress");
+      }
+      setResult({ state: OperationState.Pending, pending: true, success: false, error: undefined });
+      return operation(...args)
+        .then((result) => {
+          setResult({ state: OperationState.Success, pending: false, success: true, error: undefined });
+          onSuccess(...args);
+          return result;
+        })
+        .catch((error) => {
+          setResult({ state: OperationState.Error, pending: false, success: false, error });
+          throw error;
+        });
+    },
+    [result, setResult, operation, onSuccess],
+  );
+}
+
 export function useEmailPasswordAuth(): UseEmailPasswordAuth {
   const app = useApp();
 
@@ -148,238 +184,57 @@ export function useEmailPasswordAuth(): UseEmailPasswordAuth {
     error: undefined,
   });
 
-  const logIn = useCallback(
-    ({ email, password }: { email: string; password: string }) => {
-      if (result.pending) {
-        throw new AuthError("Another Email/Password auth operation is already in progress");
+  const logIn = useAuthOperation<[{ email: string; password: string }], User>({
+    result,
+    setResult,
+    operation: ({ email, password }) => app.logIn(Credentials.emailPassword({ email, password })),
+  });
+
+  const register = useAuthOperation<[{ email: string; password: string; loginAfterRegister?: boolean }], void>({
+    result,
+    setResult,
+    operation: ({ email, password }) => app.emailPasswordAuth.registerUser({ email, password }),
+    onSuccess: ({ email, password, loginAfterRegister = true }) => {
+      if (loginAfterRegister === true) {
+        return logIn({ email, password });
       }
-      setResult({ state: OperationState.Pending, pending: true, success: false, error: undefined });
-      return app
-        .logIn(Realm.Credentials.emailPassword(email, password))
-        .then((user) => {
-          setResult({ state: OperationState.Success, pending: false, success: true, error: undefined });
-          return user;
-        })
-        .catch((error) => {
-          setResult({ state: OperationState.Error, pending: false, success: false, error });
-          throw error;
-        });
     },
-    [app, result.pending],
-  );
+  });
 
-  const register = useCallback(
-    ({
-      email,
-      password,
-      loginAfterRegister = true,
-    }: {
-      email: string;
-      password: string;
-      loginAfterRegister?: boolean;
-    }) => {
-      if (result.pending) {
-        throw new AuthError("Another Email/Password auth operation is already in progress");
-      }
-      setResult({ state: OperationState.Pending, pending: true, success: false, error: undefined });
-      return app.emailPasswordAuth
-        .registerUser({ email, password })
-        .then(() => {
-          setResult({ state: OperationState.Success, pending: false, success: true, error: undefined });
-          if (loginAfterRegister) {
-            return logIn({ email, password });
-          }
-        })
-        .catch((error) => {
-          setResult({ state: OperationState.Error, pending: false, success: false, error });
-          throw error;
-        });
-    },
-    [logIn, app, result.pending],
-  );
+  const confirm = useAuthOperation({ result, setResult, operation: app.emailPasswordAuth.confirmUser });
 
-  const confirm = useCallback(
-    ({ token, tokenId }: { token: string; tokenId: string }) => {
-      if (result.pending) {
-        throw new AuthError("Another Email/Password auth operation is already in progress");
-      }
+  const resendConfirmationEmail = useAuthOperation({
+    result,
+    setResult,
+    operation: app.emailPasswordAuth.resendConfirmationEmail,
+  });
 
-      setResult({ state: OperationState.Pending, pending: true, success: false, error: undefined });
-      return app.emailPasswordAuth
-        .confirmUser({ token, tokenId })
-        .then((user) => {
-          setResult({ state: OperationState.Success, pending: false, success: true, error: undefined });
-          return user;
-        })
-        .catch((error) => {
-          setResult({ state: OperationState.Error, pending: false, success: false, error });
-          throw error;
-        });
-    },
-    [app, result.pending],
-  );
+  const retryCustomConfirmation = useAuthOperation({
+    result,
+    setResult,
+    operation: app.emailPasswordAuth.retryCustomConfirmation,
+  });
 
-  const resendConfirmationEmail = useCallback(
-    ({ email }: { email: string }) => {
-      if (result.pending) {
-        throw new AuthError("Another Email/Password auth operation is already in progress");
-      }
+  const sendResetPasswordEmail = useAuthOperation({
+    result,
+    setResult,
+    operation: app.emailPasswordAuth.sendResetPasswordEmail,
+  });
 
-      setResult({
-        state: OperationState.Pending,
-        pending: true,
-        success: false,
-        error: undefined,
-      });
-      return app.emailPasswordAuth
-        .resendConfirmationEmail({ email })
+  const callResetPasswordFunction = useAuthOperation({
+    result,
+    setResult,
+    operation: ({ email, password }, ...restArgs) =>
+      app.emailPasswordAuth.callResetPasswordFunction({ email, password }, ...restArgs),
+  });
 
-        .then(() => {
-          setResult({
-            state: OperationState.Success,
-            pending: false,
-            success: true,
-            error: undefined,
-          });
-        })
-        .catch((error) => {
-          setResult({ state: OperationState.Error, pending: false, success: false, error });
-          throw error;
-        });
-    },
-    [app, result.pending],
-  );
+  const resetPassword = useAuthOperation({ result, setResult, operation: app.emailPasswordAuth.resetPassword });
 
-  const retryCustomConfirmation = useCallback(
-    ({ email }: { email: string }) => {
-      if (result.pending) {
-        throw new AuthError("Another Email/Password auth operation is already in progress");
-      }
-
-      setResult({
-        state: OperationState.Pending,
-        pending: true,
-        success: false,
-        error: undefined,
-      });
-      return app.emailPasswordAuth
-        .retryCustomConfirmation({ email })
-        .then(() => {
-          setResult({
-            state: OperationState.Success,
-            pending: false,
-            success: true,
-            error: undefined,
-          });
-        })
-        .catch((error) => {
-          setResult({ state: OperationState.Error, pending: false, success: false, error });
-          throw error;
-        });
-    },
-    [app, result.pending],
-  );
-
-  const sendResetPasswordEmail = useCallback(
-    ({ email }: { email: string }) => {
-      if (result.pending) {
-        throw new AuthError("Another Email/Password auth operation is already in progress");
-      }
-
-      setResult({
-        state: OperationState.Pending,
-        pending: true,
-        success: false,
-        error: undefined,
-      });
-      return app.emailPasswordAuth
-        .sendResetPasswordEmail({ email })
-        .then(() => {
-          setResult({
-            state: OperationState.Success,
-            pending: false,
-            success: true,
-            error: undefined,
-          });
-        })
-        .catch((error) => {
-          setResult({ state: OperationState.Error, pending: false, success: false, error });
-          throw error;
-        });
-    },
-    [app, result.pending],
-  );
-
-  const callResetPasswordFunction = useCallback(
-    ({ email, password }: { email: string; password: string }, ...restArgs: unknown[]) => {
-      if (result.pending) {
-        throw new AuthError("Another Email/Password auth operation is already in progress");
-      }
-
-      setResult({
-        state: OperationState.Pending,
-        pending: true,
-        success: false,
-        error: undefined,
-      });
-      return app.emailPasswordAuth
-        .callResetPasswordFunction({ email, password }, ...restArgs)
-        .then(() => {
-          setResult({
-            state: OperationState.Success,
-            pending: false,
-            success: true,
-            error: undefined,
-          });
-        })
-        .catch((error) => {
-          setResult({ state: OperationState.Error, pending: false, success: false, error });
-          throw error;
-        });
-    },
-    [app, result.pending],
-  );
-
-  const resetPassword = useCallback(
-    ({ password, token, tokenId }: { password: string; token: string; tokenId: string }) => {
-      if (result.pending) {
-        throw new AuthError("Another Email/Password auth operation is already in progress");
-      }
-
-      setResult({ state: OperationState.Pending, pending: true, success: false, error: undefined });
-      return app.emailPasswordAuth
-        .resetPassword({ password, token, tokenId })
-
-        .then(() => {
-          setResult({ state: OperationState.Success, pending: false, success: true, error: undefined });
-        })
-        .catch((error) => {
-          setResult({ state: OperationState.Error, pending: false, success: false, error });
-          throw error;
-        });
-    },
-    [app, result.pending],
-  );
-
-  const logOut = useCallback(() => {
-    if (result.pending) {
-      throw new AuthError("Another Email/Password auth operation is already in progress");
-    }
-    if (!app.currentUser) {
-      setResult({ state: OperationState.Success, pending: false, success: true, error: undefined });
-      return Promise.resolve();
-    }
-    setResult({ state: OperationState.Pending, pending: true, success: false, error: undefined });
-    return app.currentUser
-      ?.logOut()
-      .then(() => {
-        setResult({ state: OperationState.Success, pending: false, success: true, error: undefined });
-      })
-      .catch((error) => {
-        setResult({ state: OperationState.Error, pending: false, success: false, error });
-        throw error;
-      });
-  }, [app, result.pending]);
+  const logOut = useAuthOperation({
+    result,
+    setResult,
+    operation: () => (app.currentUser ? app.currentUser.logOut() : Promise.resolve()),
+  });
 
   return {
     result,
@@ -394,9 +249,3 @@ export function useEmailPasswordAuth(): UseEmailPasswordAuth {
     logOut,
   };
 }
-
-// const logOut = useOperation(setResult, result, ({email, password}) => app)
-
-// function useOperation((setResult, result, operation, ...args) => {
-
-// })
