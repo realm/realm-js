@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-type Realm = import("realm").Realm;
 type RealmObject = import("realm").Object;
 type App = import("realm").App;
 type User = import("realm").User;
@@ -45,6 +44,10 @@ type KnownEnvironment = {
   performance?: true;
   /** Disable deletion of the Realm app after the test run. */
   preserveAppAfterRun?: true;
+  /** Instructs the app importer to reuse and reconfigure a single app. */
+  reuseApp?: true;
+  /** Set the default log level to help debugging realm core issues */
+  defaultLogLevel?: Realm.App.Sync.LogLevel;
   /** Set the sync client log level to help debugging sync client issues */
   syncLogLevel?: Realm.App.Sync.LogLevel;
 

@@ -39,7 +39,7 @@
 * Upgraded React Native from 0.71.4 to 0.71.7. ([#5761](https://github.com/realm/realm-js/pull/5761))
 * Upgraded Realm Core from v13.10.1 to v13.11.0. ([#5811](https://github.com/realm/realm-js/issues/5811))
 * Bump sync protocol to v9 to indicate client has fix for client reset error during async open. ([realm/realm-core#6609](https://github.com/realm/realm-core/issues/6609))
-* Sync session multiplexing is enabled by default, and calling `Realm.Sync.Session#enableSessionMultiplexing()` is a no-op.
+* Disabling sync session multiplexing by default in the SDK, since Core's default changed to enabled with v13.11.0. ([#5831](https://github.com/realm/realm-js/pull/5831))
 
 ## 12.0.0-alpha.2 (2023-04-05)
 

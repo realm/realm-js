@@ -39,7 +39,7 @@ export class Results<T = unknown> extends OrderedCollection<T> {
    * The representation in the binding.
    * @internal
    */
-  public internal!: binding.Results;
+  public declare internal: binding.Results;
 
   /**
    * Create a `Results` wrapping a set of query `Results` from the binding.
@@ -53,19 +53,17 @@ export class Results<T = unknown> extends OrderedCollection<T> {
       throw new IllegalConstructorError("Results");
     }
     super(realm, internal, helpers);
-    Object.defineProperties(this, {
-      internal: {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-        value: internal,
-      },
-      realm: {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-        value: realm,
-      },
+    Object.defineProperty(this, "internal", {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: internal,
+    });
+    Object.defineProperty(this, "realm", {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: realm,
     });
   }
 
