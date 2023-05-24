@@ -163,11 +163,15 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
       // TODO consider using this pattern https://github.com/realm/realm-js/pull/5497#discussion_r1121482122
       //      to do the finalization registry for every class.
       browserLines.push(
-        `const _${cls.jsName}_registery = new FinalizationRegistry(nativeModule.${cls.jsName}_deleter);`,
+        // Not all types have deleters
+        `
+        const _${cls.jsName}_registery = (nativeModule.${cls.jsName}_deleter) ? new FinalizationRegistry(nativeModule.${cls.jsName}_deleter) : undefined;`,
       );
 
       body += `constructor(ptr) { this[${symb}] = ptr; };`;
-      body_browser += `constructor(ptr) { this[${symb}] = ptr; _${cls.jsName}_registery.register(this, ptr);};`;
+      body_browser += `constructor(ptr) { this[${symb}] = ptr; 
+        if (_${cls.jsName}_registery) _${cls.jsName}_registery.register(this, ptr);
+      };`;
     }
 
     // This will override the extractor from the base class to do a more specific type check.

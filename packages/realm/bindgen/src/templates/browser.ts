@@ -46,7 +46,7 @@ function tryWrap(body: string) {
         `;
 }
 
-class CppNodeFunc extends CppFunc {
+class CppEmscriptenFunc extends CppFunc {
   constructor(private addon: BrowserAddon, name: string, numberOfArgs: number, props?: CppFuncProps) {
     // TODO generate signature with exact number of args (numberOfArgs)
     const vars = new Array<CppVar>(numberOfArgs);
@@ -100,7 +100,7 @@ class BrowserAddon extends CppClass {
   }
 
   addFunc(name: string, numberOfArgs: number, props?: CppFuncProps) {
-    return new CppNodeFunc(this, name, numberOfArgs, props);
+    return new CppEmscriptenFunc(this, name, numberOfArgs, props);
   }
 
   addClass(cls: Class) {
@@ -387,7 +387,7 @@ function convertToEmscripten(addon: BrowserAddon, type: Type, expr: string): str
       return `EMVAL_FROM_CLASS_${type.name}(${expr})`;
 
     case "Struct":
-      return `${type.toNode().name}(${expr})`;
+      return `${type.toEmscripten().name}(${expr})`;
 
     case "Func":
     // TODO: see if we want to try to propagate a function name in rather than always making them anonymous.
@@ -510,7 +510,7 @@ function convertFromEmscripten(addon: BrowserAddon, type: Type, expr: string): s
       return `EMVAL_TO_CLASS_${type.name}(${expr})`;
 
     case "Struct":
-      return `${type.fromNode().name}(${expr})`;
+      return `${type.fromEmscripten().name}(${expr})`;
 
     case "Func":
       //assert.fail(`TODO unsuported`);
@@ -555,11 +555,11 @@ function convertFromEmscripten(addon: BrowserAddon, type: Type, expr: string): s
 
 declare module "../bound-model" {
   interface Struct {
-    toNode: () => CppFunc;
-    fromNode: () => CppFunc;
+    toEmscripten: () => CppFunc;
+    fromEmscripten: () => CppFunc;
   }
   interface Method {
-    readonly nodeDescriptorType: string;
+    readonly emscriptenDescriptorType: string;
   }
 }
 
@@ -567,9 +567,9 @@ function constCast<T>(obj: T) {
   return obj as { -readonly [k in keyof T]: T[k] };
 }
 
-constCast(InstanceMethod.prototype).nodeDescriptorType = "InstanceMethod";
-constCast(StaticMethod.prototype).nodeDescriptorType = "StaticMethod";
-constCast(Property.prototype).nodeDescriptorType = "InstanceAccessor";
+constCast(InstanceMethod.prototype).emscriptenDescriptorType = "InstanceMethod";
+constCast(StaticMethod.prototype).emscriptenDescriptorType = "StaticMethod";
+constCast(Property.prototype).emscriptenDescriptorType = "InstanceAccessor";
 
 class BrowserCppDecls extends CppDecls {
   addon = pushRet(this.classes, new BrowserAddon());
@@ -590,13 +590,13 @@ class BrowserCppDecls extends CppDecls {
     for (const struct of spec.records) {
       // Lazily create the to/from conversions only as needed. This is important because some structs
       // can only be converted in one direction.
-      let toNode: CppFunc | undefined;
-      let fromNode: CppFunc | undefined;
+      let toEmscripten: CppFunc | undefined;
+      let fromEmscripten: CppFunc | undefined;
 
-      struct.toNode = () => {
-        if (!toNode) {
-          toNode = new CppFunc(
-            `STRUCT_TO_NODE_${struct.name}`,
+      struct.toEmscripten = () => {
+        if (!toEmscripten) {
+          toEmscripten = new CppFunc(
+            `STRUCT_TO_EMVAL_${struct.name}`,
             "emscripten::val",
             [new CppVar(`const ${struct.cppName}&`, "in")],
             {
@@ -617,13 +617,13 @@ class BrowserCppDecls extends CppDecls {
                 `,
             },
           );
-          this.free_funcs.push(toNode);
+          this.free_funcs.push(toEmscripten);
         }
-        return toNode;
+        return toEmscripten;
       };
 
-      struct.fromNode = () => {
-        if (!fromNode) {
+      struct.fromEmscripten = () => {
+        if (!fromEmscripten) {
           for (const field of struct.fields) {
             if (field.cppName && field.cppName.endsWith(")")) {
               // If this fires, we should consider a way to mark these fields as only being for one-way conversion.
@@ -632,8 +632,8 @@ class BrowserCppDecls extends CppDecls {
               );
             }
           }
-          fromNode = new CppFunc(
-            `STRUCT_FROM_NODE_${struct.name}`,
+          fromEmscripten = new CppFunc(
+            `STRUCT_FROM_EMVAL_${struct.name}`,
             struct.cppName,
             [new CppVar("emscripten::val", "val")],
             {
@@ -659,9 +659,9 @@ class BrowserCppDecls extends CppDecls {
             `,
             },
           );
-          this.free_funcs.push(fromNode);
+          this.free_funcs.push(fromEmscripten);
         }
-        return fromNode;
+        return fromEmscripten;
       };
     }
 
@@ -741,8 +741,6 @@ class BrowserCppDecls extends CppDecls {
 
       const refType = cls.sharedPtrWrapped ? `const ${derivedType}&` : `${derivedType}&`;
       const kind = cls.sharedPtrWrapped ? "SHARED" : "CLASS";
-
-      // TODO in napi 8 we can use type_tags to validate that the object REALLY is from us.
       this.free_funcs.push(
         new CppFunc(`EMVAL_TO_${kind}_${cls.name}`, refType, [new CppVar("emscripten::val", "val")], {
           attributes: "[[maybe_unused]]",
@@ -768,8 +766,6 @@ class BrowserCppDecls extends CppDecls {
         this.free_funcs.push(
           new CppFunc(`EMVAL_FROM_${kind}_${cls.name}`, "emscripten::val", [new CppVar(derivedType, "val")], {
             attributes: "[[maybe_unused]]",
-            // Note: the External::New constructor taking a finalizer does an extra heap allocation for the finalizer.
-            // We can look into bypassing that if it is a problem.
             body: `
                 ${nullCheck}
                 return ${this.addon.accessCtor(
@@ -777,19 +773,16 @@ class BrowserCppDecls extends CppDecls {
                 )}.new_(emscripten::val(reinterpret_cast<std::uintptr_t>(new auto(std::move(val)))));
               `,
           }),
+          new CppFunc(`${cls.name}_deleter`, "void", [new CppVar("emscripten::val", "pointer")], {
+            body:
+              kind === "SHARED"
+                ? `delete reinterpret_cast<std::shared_ptr<${cls.cppName}>*>(pointer.as<std::uintptr_t>());`
+                : `delete reinterpret_cast<${cls.cppName}*>(pointer.as<std::uintptr_t>());`,
+          }),
         );
+        this.methodFunctions.push(`${cls.name}_deleter`);
       }
     }
-    // FIXME double return 0 when using emscripten::val.get_double(), we fall back to get_float()
-    assert(
-      spec.mixedInfo.getters.find((get) => {
-        if (get.dataType === "Double") {
-          get.getter = "get_float";
-          return true;
-        }
-        return false;
-      }) != undefined,
-    );
 
     // Adding internal iterator function
     this.free_funcs.push(
@@ -907,14 +900,6 @@ class BrowserCppDecls extends CppDecls {
     }
     `);
 
-    this.boundSpec.classes.forEach((c) => {
-      out(`
-        void ${c.jsName}_deleter(emscripten::val pointer) {
-          delete reinterpret_cast<std::shared_ptr<${c.cppName}>*>(pointer.as<std::uintptr_t>());
-        }        
-      `);
-    });
-
     // export method functions via embind
     out(`\nEMSCRIPTEN_BINDINGS(realm_c_api) {`);
     out('\nusing emscripten::function;');
@@ -923,9 +908,9 @@ class BrowserCppDecls extends CppDecls {
         out(`\nfunction("${fun}", &${fun});`);
       });
 
-    this.boundSpec.classes.forEach((c) => {
-      out(`\nfunction("${c.jsName}_deleter", &${c.jsName}_deleter);`);
-    });
+    // this.boundSpec.classes.forEach((c) => {
+    //   out(`\nfunction("${c.jsName}_deleter", &${c.jsName}_deleter);`);
+    // });
 
     out(`\nfunction("_internal_iterator", &_internal_iterator);`);
     out(`\nfunction("browserInit", &browser_init);`);
