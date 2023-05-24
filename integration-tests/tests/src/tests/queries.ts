@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import Realm, IGeoPoint, { BSON } from "realm";
+import Realm, { IGeoPoint, BSON } from "realm";
 import { expect } from "chai";
 import { openRealmBeforeEach } from "../hooks";
 import { IPerson, PersonSchema } from "../schemas/person-and-dogs";
