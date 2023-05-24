@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Realm } from "realm";
+import { Realm, AppConfiguration } from "realm";
 
 import { importApp } from "../utils/import-app";
 import { AppConfig } from "@realm/app-importer";
@@ -24,10 +24,9 @@ import { mongodbServiceType } from "../utils/ExtendedAppConfigBuilder";
 
 const REALM_LOG_LEVELS = ["all", "trace", "debug", "detail", "info", "warn", "error", "fatal", "off"];
 
-export function importAppBefore(
-  config: AppConfig | { config: AppConfig },
-  logLevel: Realm.App.Sync.LogLevel = (environment.syncLogLevel as Realm.App.Sync.LogLevel) || "warn",
-): void {
+const { syncLogLevel = "warn" } = environment;
+
+export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkConfig?: AppConfiguration): void {
   // Unwrap when passed a builder directly
   if ("config" in config) {
     return importAppBefore(config.config);
@@ -40,7 +39,7 @@ export function importAppBefore(
       throw new Error("Unexpected app on context, use only one importAppBefore per test");
     } else {
       const { appId, baseUrl } = await importApp(config);
-      this.app = new Realm.App({ id: appId, baseUrl });
+      this.app = new Realm.App({ id: appId, baseUrl, ...sdkConfig });
 
       // Extract the sync database name from the config
       const databaseNames: string[] = config.services
@@ -59,7 +58,7 @@ export function importAppBefore(
         throw new Error("Expected at most 1 database name in the config");
       }
 
-      Realm.App.Sync.setLogLevel(this.app, logLevel);
+      Realm.App.Sync.setLogLevel(this.app, syncLogLevel);
       // Set a default logger as Android does not forward stdout
       Realm.App.Sync.setLogger(this.app, (level, message) => {
         const time = new Date().toISOString().split("T")[1].replace("Z", "");

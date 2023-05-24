@@ -107,14 +107,12 @@ const PROXY_HANDLER: ProxyHandler<BaseSubscriptionSet> = {
 export abstract class BaseSubscriptionSet {
   /**@internal */
   protected constructor(/**@internal */ protected internal: binding.SyncSubscriptionSet) {
-    Object.defineProperties(this, {
-      internal: {
-        enumerable: false,
-        configurable: false,
-        // `internal` needs to be writable due to `SubscriptionSet.updateNoWait()`
-        // overwriting `this.internal` with the new committed set.
-        writable: true,
-      },
+    Object.defineProperty(this, "internal", {
+      enumerable: false,
+      configurable: false,
+      // `internal` needs to be writable due to `SubscriptionSet.updateNoWait()`
+      // overwriting `this.internal` with the new committed set.
+      writable: true,
     });
     return new Proxy<BaseSubscriptionSet>(this, PROXY_HANDLER);
   }

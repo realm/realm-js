@@ -279,8 +279,7 @@ class Realm {
   cancelTransaction() {}
 
   /**
-   * Replaces all string columns in this Realm with a string enumeration column and compacts the
-   * database file.
+   * Compacts the database file.
    *
    * Cannot be called from a write transaction.
    *
@@ -292,7 +291,8 @@ class Realm {
    * Be warned that resource requirements for compaction is proportional to the amount of live data in
    * the database. Compaction works by writing the database contents to a temporary database file and
    * then replacing the database with the temporary one.
-   * @returns {true} if compaction succeeds.
+   * @returns {boolean} returns `false` if compaction was not allowed, `true` if compaction succeeds. 
+   * An exception is thrown if writing the compacted file fails.
    */
   compact() {}
 

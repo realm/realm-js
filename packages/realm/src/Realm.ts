@@ -310,7 +310,6 @@ export class Realm {
     binding.RealmCoordinator.clearAllCaches();
     binding.App.clearCachedApps();
     ProgressRealmPromise.cancelAll();
-    SyncSession.resetAllInternals();
 
     // Delete all Realm files in the default directory
     const defaultDirectoryPath = fs.getDefaultDirectoryPath();
@@ -673,17 +672,15 @@ export class Realm {
       this.schemaExtras = schemaExtras || {};
     }
 
-    Object.defineProperties(this, {
-      classes: {
-        enumerable: false,
-        configurable: false,
-        writable: true,
-      },
-      internal: {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-      },
+    Object.defineProperty(this, "classes", {
+      enumerable: false,
+      configurable: false,
+      writable: true,
+    });
+    Object.defineProperty(this, "internal", {
+      enumerable: false,
+      configurable: false,
+      writable: false,
     });
 
     this.classes = new ClassMap(this, this.internal.schema, this.schema);
@@ -811,7 +808,6 @@ export class Realm {
    */
   close(): void {
     this.internal.close();
-    this.syncSession?.resetInternal();
   }
 
   // TODO: Support embedded objects

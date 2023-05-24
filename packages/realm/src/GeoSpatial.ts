@@ -18,7 +18,7 @@
 
 import { ObjectSchema, RealmObject } from "./internal";
 
-type GeoPoint =
+export type GeoPoint =
   //This is compatible with GeoLocationCoordinates (https://developer.mozilla.org/en-US/docs/Web/API/GeolocationCoordinates)
   | {
       latitude: number;
@@ -27,7 +27,7 @@ type GeoPoint =
   | IGeoPoint
   | IGeoPosition; // long/lat, so it’s the same order as geoJson
 
-type GeoPolygon =
+export type GeoPolygon =
   | {
       outerRing: GeoPoint[];
       holes: GeoPoint[][];
@@ -35,33 +35,33 @@ type GeoPolygon =
   | IGeoPolygon;
 
 // GeoBox and GeoCircle have no corresponding geoJSON types
-type GeoBox = {
+export type GeoBox = {
   bottomLeft: GeoPoint;
   topRight: GeoPoint;
 };
 
-type GeoCircle = {
+export type GeoCircle = {
   center: GeoPoint;
   distance: number;
 };
 
 //Utility class for distance conversions to radians
-class Distance {
+export class Distance {
   static fromKilometers(val: number): number {}
   static fromMiles(val: number): number {}
 }
 
-type IGeoPosition = [number, number];
+export type IGeoPosition = [number, number];
 
 //Interface that satisfies the geoJSON specification for a polygon.
-interface IGeoPolygon {
+export interface IGeoPolygon {
   coordinates: IGeoPosition[][];
   type: "Polygon";
 }
 
 //Interface that satisfies the geoJSON specification for a point.
 //Any object that respects this interface can be used in geospatial queries
-interface IGeoPoint {
+export interface IGeoPoint {
   coordinates: IGeoPosition;
   type: "Point";
 }
@@ -69,6 +69,7 @@ interface IGeoPoint {
 //Example of embedded class that satisfies the geoJSON specification for a point.
 //This will not be exposed to developers, it will only be shown in the docs as an example.
 class ExampleGeoPoint implements IGeoPoint {
+  //TODO To Remove
   coordinates: IGeoPosition = [0, 0];
   type = "Point" as const;
 

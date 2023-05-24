@@ -197,6 +197,8 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
         baseFilePath: fs.getDefaultDirectoryPath(),
         metadataMode: binding.MetadataMode.NoEncryption,
         userAgentBindingInfo: App.userAgent,
+        // Default session multiplexing to being disabled.
+        multiplexSessions: false,
       },
     );
   }

@@ -166,6 +166,14 @@ export {
   UserChangeCallback,
   UserState,
   UserTypeName,
+  GeoBox,
+  GeoCircle,
+  GeoPoint,
+  GeoPolygon,
+  IGeoPolygon,
+  IGeoPoint,
+  IGeoPosition,
+  Distance, //TODO Need to order this
 } from "./internal";
 
 import { Realm, RealmObjectConstructor } from "./internal";

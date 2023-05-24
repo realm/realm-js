@@ -134,7 +134,7 @@ REALM_NOINLINE inline jsi::Value toJsiException(jsi::Runtime& env, const std::ex
 
 [[noreturn]] REALM_NOINLINE inline void throwNullSharedPtrError(jsi::Runtime& env, const char* clsName)
 {
-    throw jsi::JSError(env, util::format("Attempting to use an instanace of $1 holding a null shared_ptr. "
+    throw jsi::JSError(env, util::format("Attempting to use an instanace of %1 holding a null shared_ptr. "
                                          "Did you call $resetSharedPtr on it already?",
                                          clsName));
 }

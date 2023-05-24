@@ -40,7 +40,7 @@ import {
  */
 export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
   /** @internal */
-  private internal!: binding.Set;
+  private declare internal: binding.Set;
 
   /** @internal */
   constructor(realm: Realm, internal: binding.Set, helpers: OrderedCollectionHelpers) {

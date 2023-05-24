@@ -187,7 +187,7 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
       deref(): T | undefined;
     }
 
-    export declare const enum Int64Type {} // This shouldn't need to be exported, but rollup complains if it isn't.
+    export const enum Int64Type {} // This shouldn't need to be exported, but rollup complains if it isn't.
     export type Int64 = Int64Type;
     export const Int64: {
       add(a: Int64, b: Int64): Int64;

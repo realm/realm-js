@@ -66,7 +66,7 @@ REALM_NOINLINE inline Napi::Object toNodeException(Napi::Env& env, const std::ex
 
 [[noreturn]] REALM_NOINLINE inline void throwNullSharedPtrError(Napi::Env& env, const char* clsName)
 {
-    throw Napi::Error::New(env, util::format("Attempting to use an instanace of $1 holding a null shared_ptr. "
+    throw Napi::Error::New(env, util::format("Attempting to use an instanace of %1 holding a null shared_ptr. "
                                              "Did you call $resetSharedPtr on it already?",
                                              clsName));
 }

@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { IndexSet, Int64, ObjKey, Timestamp } from "realm/binding";
+import { IndexSet, Int64, ObjKey, SyncSession, Timestamp, WeakSyncSession } from "realm/binding";
 
 /** @internal */
 export * from "realm/binding";
@@ -32,6 +32,21 @@ declare module "realm/binding" {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Timestamp {
     export function fromDate(d: Date): Timestamp;
+  }
+
+  interface SyncSession {
+    /** Returns a WeakSyncSession and releases the strong reference held by this SyncSession */
+    weaken(): WeakSyncSession;
+  }
+
+  interface WeakSyncSession {
+    /**
+     * Similar to WeakRef.deref(), but takes a callback so that the strong reference can be
+     * automatically released when the callback exists (either by returning or throwing).
+     * It is not legal to hold on to the SyncSession after this returns because its
+     * strong reference will have been deleted.
+     */
+    withDeref<Ret = void>(callback: (shared: SyncSession | null) => Ret): Ret;
   }
 }
 
@@ -50,6 +65,23 @@ Timestamp.fromDate = (d: Date) =>
 
 Timestamp.prototype.toDate = function () {
   return new Date(Number(this.seconds) * 1000 + this.nanoseconds / 1000_000);
+};
+
+SyncSession.prototype.weaken = function () {
+  try {
+    return WeakSyncSession.weakCopyOf(this);
+  } finally {
+    this.$resetSharedPtr();
+  }
+};
+
+WeakSyncSession.prototype.withDeref = function <Ret = void>(callback: (shared: SyncSession | null) => Ret) {
+  const shared = this.rawDereference();
+  try {
+    return callback(shared);
+  } finally {
+    shared?.$resetSharedPtr();
+  }
 };
 
 /** @internal */

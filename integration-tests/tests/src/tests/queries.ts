@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import Realm, { BSON } from "realm";
+import Realm, IGeoPoint, { BSON } from "realm";
 import { expect } from "chai";
 import { openRealmBeforeEach } from "../hooks";
 import { IPerson, PersonSchema } from "../schemas/person-and-dogs";
@@ -59,6 +59,21 @@ class NullableTypesObject extends Realm.Object implements INullableTypesObject {
       decimal128Col: "decimal128?",
       objectIdCol: "objectId?",
       uuidCol: "uuid?",
+    },
+  };
+}
+
+class ExampleGeoPoint implements IGeoPoint {
+  //TODO To Remove
+  coordinates: IGeoPosition = [0, 0];
+  type = "Point" as const;
+
+  static schema: ObjectSchema = {
+    name: "ExampleGeoPoint",
+    embedded: true,
+    properties: {
+      type: "string",
+      coordinates: "double[]",
     },
   };
 }

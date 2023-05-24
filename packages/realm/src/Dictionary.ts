@@ -142,25 +142,23 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
 
     const proxied = new Proxy(this, PROXY_HANDLER) as Dictionary<T>;
 
-    Object.defineProperties(this, {
-      [REALM]: {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-        value: realm,
-      },
-      [INTERNAL]: {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-        value: internal,
-      },
-      [HELPERS]: {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-        value: helpers,
-      },
+    Object.defineProperty(this, REALM, {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: realm,
+    });
+    Object.defineProperty(this, INTERNAL, {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: internal,
+    });
+    Object.defineProperty(this, HELPERS, {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: helpers,
     });
 
     return proxied;
@@ -170,18 +168,18 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * The representation in the binding.
    * @internal
    */
-  private [REALM]!: Realm;
+  private declare [REALM]: Realm;
 
   /**
    * The representation in the binding.
    * @internal
    */
-  private [INTERNAL]!: binding.Dictionary;
+  private declare [INTERNAL]: binding.Dictionary;
 
   /**
    * @internal
    */
-  private [HELPERS]!: TypeHelpers;
+  private declare [HELPERS]: TypeHelpers;
 
   /** @ts-expect-error We're exposing methods in the end-users namespace of keys */
   [key: string]: T;

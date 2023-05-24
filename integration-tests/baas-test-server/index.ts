@@ -26,8 +26,7 @@ import { Socket } from "node:net";
 
 const MONGO_CONTAINER_NAME = "mongo";
 const STITCH_SUPPORT_URL =
-  "https://mciuploads.s3.amazonaws.com/mongodb-mongo-master-nightly/stitch-support/macos-arm64/796351fa200293a91413699c8da073eb314ac2cd/stitch-support-6.1.0-alpha-527-g796351f.tgz";
-// This can be updated once https://github.com/10gen/baas/pull/7405 gets merged
+  "https://stitch-artifacts.s3.amazonaws.com/stitch-support/macos-arm64/stitch-support-6.1.0-alpha-527-g796351f.tgz";
 const BAAS_REPO = "git@github.com:10gen/baas.git";
 const BAAS_UI_REPO = "git@github.com:10gen/baas-ui.git";
 const MONGODB_PORT = 26000;
