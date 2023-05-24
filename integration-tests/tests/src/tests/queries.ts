@@ -15,7 +15,17 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import Realm, { IGeoPoint, BSON } from "realm";
+import Realm, {
+  ObjectSchema,
+  BSON,
+  IGeoPoint,
+  IGeoPolygon,
+  IGeoPosition,
+  GeoBox,
+  GeoCircle,
+  GeoPoint,
+  GeoPolygon,
+} from "realm";
 import { expect } from "chai";
 import { openRealmBeforeEach } from "../hooks";
 import { IPerson, PersonSchema } from "../schemas/person-and-dogs";
@@ -63,18 +73,40 @@ class NullableTypesObject extends Realm.Object implements INullableTypesObject {
   };
 }
 
-class ExampleGeoPoint implements IGeoPoint {
-  //TODO To Remove
+class MyGeoPoint implements IGeoPoint {
   coordinates: IGeoPosition = [0, 0];
   type = "Point" as const;
 
+  constructor(lat: number, long: number) {
+    this.coordinates = [long, lat];
+  }
+
   static schema: ObjectSchema = {
-    name: "ExampleGeoPoint",
+    name: "MyGeoPoint",
     embedded: true,
     properties: {
       type: "string",
       coordinates: "double[]",
     },
+  };
+}
+
+interface IPointOfInterest {
+  id: number;
+  location: MyGeoPoint;
+}
+
+class PointOfInterest extends Realm.Object<PointOfInterest> implements IPointOfInterest {
+  id = 0;
+  location: MyGeoPoint = { type: "Point", coordinates: [0, 0] };
+
+  static schema: ObjectSchema = {
+    name: "PointOfInterest",
+    properties: {
+      id: "int",
+      location: "MyGeoPoint",
+    },
+    primaryKey: "id",
   };
 }
 
@@ -1100,6 +1132,25 @@ describe("Queries", () => {
         expect(primitives.filtered(`s == "${unicornString}" AND i == 44`).length).equal(1);
         expect(primitives.filtered("s == $0 AND i == $1", unicornString, 44).length).equal(1);
       });
+    });
+  });
+
+  describe("GeoSpatial", () => {
+    const zero: IPointOfInterest = {
+      id: 1,
+      location: new MyGeoPoint(0, 0),
+    };
+
+    beforeEach(function (this: RealmContext) {
+      this.realm.write(() => {
+        this.realm.create("PointOfInterest", zero);
+      });
+    });
+
+    it("simple test", function (this: RealmContext) {
+
+      let filtered = 
+
     });
   });
 });

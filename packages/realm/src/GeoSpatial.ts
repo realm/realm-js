@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { ObjectSchema, RealmObject } from "./internal";
+import { ObjectSchema } from "./internal";
 
 export type GeoPoint =
   //This is compatible with GeoLocationCoordinates (https://developer.mozilla.org/en-US/docs/Web/API/GeolocationCoordinates)
