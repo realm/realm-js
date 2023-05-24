@@ -1163,6 +1163,10 @@ describe("Realmtest", () => {
         }).throws("Constructor was not registered in the schema for this Realm");
         realm.close();
 
+        if (environment.browser) {
+          return; // no persistence causes next part to fail
+        }
+
         realm = new Realm({ schema: [CustomObject, InvalidObject] });
         const obj = realm.objects("CustomObject")[0];
         expect(realm.objects("CustomObject")[0]).instanceof(CustomObject);
@@ -1282,7 +1286,7 @@ describe("Realmtest", () => {
   });
 
   describe("static methods", () => {
-    describe("open", () => {
+    describe.skipIf(environment.browser, "open", () => {
       afterEach(() => {
         Realm.clearTestState();
       });
@@ -1332,7 +1336,7 @@ describe("Realmtest", () => {
       });
     });
 
-    describe("exists", () => {
+    describe.skipIf(environment.missingServer, "exists", () => {
       importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
 
       it("yields correct value on a local realm", () => {
@@ -1823,7 +1827,7 @@ describe("Realmtest", () => {
       }
     });
 
-    it("adding schema updates realm", async () => {
+    it("adding schema updates realm", () => {
       const realm1 = new Realm();
       expect(realm1.isEmpty).to.be.true;
       expect(realm1.schema.length).equals(0); // empty schema
@@ -1900,7 +1904,7 @@ describe("Realmtest", () => {
     });
   });
 
-  describe.skipIf(environment.node || environment.electron, "copyBundledRealmFiles", () => {
+  describe.skipIf(environment.node || environment.electron || environment.browser, "copyBundledRealmFiles", () => {
     it("copies realm files", () => {
       const config = { path: "bundled.realm", schema: [DateObjectSchema] };
       if (Realm.exists(config)) {
@@ -1954,7 +1958,7 @@ describe("Realmtest", () => {
     });
   });
 
-  describe("compaction", () => {
+  describe.skipIf(environment.browser, "compaction", () => {
     afterEach(() => {
       Realm.clearTestState();
     });
@@ -2081,7 +2085,7 @@ describe("Realmtest", () => {
     });
   });
 
-  describe("deleteRealmIfMigrationNeeded", () => {
+  describe.skipIf(environment.browser, "deleteRealmIfMigrationNeeded", () => {
     afterEach(() => {
       Realm.clearTestState();
     });

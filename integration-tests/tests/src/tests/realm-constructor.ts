@@ -66,7 +66,7 @@ describe("Realm#constructor", () => {
     expect(realm.schema).deep.equals([]);
   });
 
-  it("creates multiple Realm files when called with a non-empty string", async () => {
+  it.skipIf(environment.browser, "creates multiple Realm files when called with a non-empty string", async () => {
     // Opening a file at at relative path
     const realm1 = new Realm("temporary-1.realm");
     // Expect an instance of Realm
@@ -113,7 +113,7 @@ describe("Realm#constructor", () => {
     });
   });
 
-  describe("opening, closing and re-opening", () => {
+  describe.skipIf(environment.browser, "opening, closing and re-opening", () => {
     it("changes the isClosed boolean", () => {
       // Open the Realm
       const realm = new Realm({ schema: [] });
@@ -200,7 +200,7 @@ describe("Realm#constructor", () => {
     });
   });
 
-  describe("re-opening without a schema", () => {
+  describe.skipIf(environment.browser, "re-opening without a schema", () => {
     it("has the same schema as before", () => {
       // Open the Realm with a schema
       const realm = new Realm({ schema: [PersonSchema, DogSchema] });
@@ -377,7 +377,7 @@ describe("Realm#constructor", () => {
     });
   });
 
-  describe("constructing with readonly property set", () => {
+  describe.skipIf(environment.browser, "constructing with readonly property set", () => {
     it("throws when write transaction is started", () => {
       //seed data
       let realm = new Realm({ schema: [TestObject] });

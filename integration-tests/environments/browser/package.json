@@ -64,8 +64,9 @@
     }
   },
   "devDependencies": {
-    "@babel/preset-typescript": "^7.21.5",
     "@craco/craco": "^7.1.0",
-    "@craco/types": "^7.1.0"
+    "@craco/types": "^7.1.0",
+    "mocha": "^8.4.0",
+    "mocha-remote-cli": "^1.6.1"
   }
 }

@@ -76,7 +76,7 @@ const createConfig = (schema: Realm.ObjectSchema, user: Realm.User, partitionVal
   },
 });
 
-describe("Partition-values", () => {
+describe.skipIf(environment.missingServer, "Partition-values", () => {
   describe("setting partition value on config", () => {
     importAppBefore(buildAppConfig("with-pbs").anonAuth().partitionBasedSync());
     afterEach(() => Realm.clearTestState());
