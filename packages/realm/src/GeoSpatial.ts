@@ -47,8 +47,12 @@ export type GeoCircle = {
 
 //Utility class for distance conversions to radians
 export class Distance {
-  static fromKilometers(val: number): number {}
-  static fromMiles(val: number): number {}
+  static fromKilometers(val: number): number {
+    return 0;
+  }
+  static fromMiles(val: number): number {
+    return 0;
+  } //TODO Add right conversion
 }
 
 export type IGeoPosition = [number, number];
@@ -83,35 +87,35 @@ class ExampleGeoPoint implements IGeoPoint {
   };
 }
 
-//Example class definition
-class Restaurant extends RealmObject {
-  name?: string;
-  location?: ExampleGeoPoint;
+// //Example class definition
+// class Restaurant extends RealmObject {
+//   name?: string;
+//   location?: ExampleGeoPoint;
 
-  static schema: ObjectSchema = {
-    name: "Restaurant",
-    properties: {
-      name: "string",
-      location: "ExampleGeoPoint",
-    },
-  };
-}
+//   static schema: ObjectSchema = {
+//     name: "Restaurant",
+//     properties: {
+//       name: "string",
+//       location: "ExampleGeoPoint",
+//     },
+//   };
+// }
 
-//Example queries
-const restaurants = realm.objects(Restaurant.schema.name);
+// //Example queries
+// const restaurants = realm.objects(Restaurant.schema.name);
 
-restaurants.filtered("location geoWithin geoBox([0.2, 0.2], [0.7, 0.7])");
+// restaurants.filtered("location geoWithin geoBox([0.2, 0.2], [0.7, 0.7])");
 
-const boxArea: GeoBox = {
-  bottomLeft: { latitude: 0.2, longitude: 0.2 },
-  topRight: [0.7, 0.7],
-};
-restaurants.filtered("location geoWithin $0", boxArea);
+// const boxArea: GeoBox = {
+//   bottomLeft: { latitude: 0.2, longitude: 0.2 },
+//   topRight: [0.7, 0.7],
+// };
+// restaurants.filtered("location geoWithin $0", boxArea);
 
-restaurants.filtered("location geoWithin geoWithin geoSphere([0.3, 0.3], 1000.0)");
+// restaurants.filtered("location geoWithin geoWithin geoSphere([0.3, 0.3], 1000.0)");
 
-const sphereArea: GeoCircle = {
-  center: { latitude: 0.3, longitude: 0.3 },
-  distance: Distance.fromKilometers(200),
-};
-restaurants.filtered("location geoWithin $0", sphereArea);
+// const sphereArea: GeoCircle = {
+//   center: { latitude: 0.3, longitude: 0.3 },
+//   distance: Distance.fromKilometers(200),
+// };
+// restaurants.filtered("location geoWithin $0", sphereArea);
