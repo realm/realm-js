@@ -318,6 +318,7 @@ function normalizePropertySchemaObject(info: PropertyInfoUsingObject): Canonical
 
   if (info.isPrimaryKey) {
     assert(indexed !== false, propError(info, "Primary keys must always be indexed."));
+    assert(indexed !== "full-text", propError(info, "Primary keys cannot be full-text indexed."));
     indexed = true;
   }
 

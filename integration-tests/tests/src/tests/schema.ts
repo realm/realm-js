@@ -131,8 +131,6 @@ describe("Realm schema", () => {
           },
         ],
       });
-    }).throws(
-      "Invalid type declaration for property 'myString' on 'testProp': 'myString on 'testProp' cannot be both a primary key and have a full-text index",
-    );
+    }).throws("Primary keys cannot be full-text indexed.");
   });
 });

@@ -119,7 +119,7 @@ export function validateObjectSchema(
         const propertySchema = properties[propertyName];
         const isUsingShorthand = typeof propertySchema === "string";
         if (!isUsingShorthand) {
-          validatePropertySchema(objectName, propertyName, propertySchema, primaryKey);
+          validatePropertySchema(objectName, propertyName, propertySchema);
         }
       }
     }
@@ -148,7 +148,6 @@ export function validatePropertySchema(
   objectName: string,
   propertyName: string,
   propertySchema: unknown,
-  primaryKey: string | undefined,
 ): asserts propertySchema is PropertySchema {
   try {
     assert.object(propertySchema, `'${propertyName}' on '${objectName}'`, { allowArrays: false });
@@ -168,13 +167,6 @@ export function validatePropertySchema(
         typeof indexed === "boolean" || indexed === "full-text",
         `Expected '${propertyName}.indexed' on '${objectName}' to be a boolean or 'full-text'.`,
       );
-
-      if (indexed == "full-text" && typeof primaryKey == "string") {
-        assert(
-          primaryKey != propertyName,
-          `'${propertyName} on '${objectName}' cannot be both a primary key and have a full-text index.`,
-        );
-      }
     }
     if (mapTo !== undefined) {
       assert.string(mapTo, `'${propertyName}.mapTo' on '${objectName}'`);
