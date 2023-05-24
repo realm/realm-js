@@ -37,7 +37,7 @@ import {
   FlexibleSyncConfiguration,
   Realm,
   SessionStopPolicy,
-  SubscriptionsState,
+  SubscriptionSetState,
   CompensatingWriteError,
   WaitForSync,
 } from "realm";
@@ -1601,11 +1601,11 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
           // Subscribing the first time should wait for synchronization.
           await peopleOver10.subscribe({ behavior: WaitForSync.FirstTime });
-          expect(this.realm.subscriptions.state).to.equal(SubscriptionsState.Complete);
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Complete);
 
           // Subscribing the second time should return without waiting.
           await peopleOver10.subscribe({ behavior: WaitForSync.FirstTime });
-          expect(this.realm.subscriptions.state).to.equal(SubscriptionsState.Pending);
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Pending);
 
           expect(this.realm.subscriptions).to.have.length(1);
         });
@@ -1616,10 +1616,10 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
 
           await peopleOver10.subscribe();
-          expect(this.realm.subscriptions.state).to.equal(SubscriptionsState.Complete);
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Complete);
 
           await peopleOver10.subscribe();
-          expect(this.realm.subscriptions.state).to.equal(SubscriptionsState.Pending);
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Pending);
 
           expect(this.realm.subscriptions).to.have.length(1);
         });
@@ -1629,11 +1629,11 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
           let peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
           await peopleOver10.subscribe({ behavior: WaitForSync.FirstTime });
-          expect(this.realm.subscriptions.state).to.equal(SubscriptionsState.Complete);
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Complete);
 
           peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
           await peopleOver10.subscribe({ behavior: WaitForSync.FirstTime });
-          expect(this.realm.subscriptions.state).to.equal(SubscriptionsState.Pending);
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Pending);
 
           expect(this.realm.subscriptions).to.have.length(1);
         });
@@ -1644,10 +1644,10 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
 
           await peopleOver10.subscribe({ behavior: WaitForSync.Always });
-          expect(this.realm.subscriptions.state).to.equal(SubscriptionsState.Complete);
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Complete);
 
           await peopleOver10.subscribe({ behavior: WaitForSync.Always });
-          expect(this.realm.subscriptions.state).to.equal(SubscriptionsState.Complete);
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Complete);
 
           expect(this.realm.subscriptions).to.have.length(1);
         });
@@ -1658,10 +1658,10 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
 
           await peopleOver10.subscribe({ behavior: WaitForSync.Never });
-          expect(this.realm.subscriptions.state).to.equal(SubscriptionsState.Pending);
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Pending);
 
           await peopleOver10.subscribe({ behavior: WaitForSync.Never });
-          expect(this.realm.subscriptions.state).to.equal(SubscriptionsState.Pending);
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Pending);
 
           expect(this.realm.subscriptions).to.have.length(1);
         });
@@ -1671,7 +1671,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
           const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
           await peopleOver10.subscribe({ behavior: WaitForSync.Always, timeout: this.timeout() });
-          expect(this.realm.subscriptions.state).to.equal(SubscriptionsState.Complete);
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Complete);
 
           expect(this.realm.subscriptions).to.have.length(1);
         });
@@ -1681,7 +1681,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
           const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
           await peopleOver10.subscribe({ behavior: WaitForSync.Always, timeout: 0 });
-          expect(this.realm.subscriptions.state).to.equal(SubscriptionsState.Pending);
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Pending);
 
           expect(this.realm.subscriptions).to.have.length(1);
         });
