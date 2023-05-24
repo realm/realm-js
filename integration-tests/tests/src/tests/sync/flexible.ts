@@ -1545,8 +1545,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
             let numRemoved = 0;
             await this.realm.subscriptions.update((mutableSubs) => {
-              const unnamedOnly = true;
-              numRemoved = mutableSubs.removeAll(unnamedOnly);
+              numRemoved = mutableSubs.removeUnnamed();
             });
 
             expect(numRemoved).to.equal(2);

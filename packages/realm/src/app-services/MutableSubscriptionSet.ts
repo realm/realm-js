@@ -180,17 +180,22 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
   /**
    * Remove all subscriptions from the SubscriptionSet.
    *
-   * @param unnamedOnly Whether to only remove unnamed/anonymous subscriptions. (Default: `false`)
    * @returns The number of subscriptions removed.
    */
-  removeAll(unnamedOnly = false): number {
-    if (unnamedOnly) {
-      return this.removeByPredicate((subscription) => !subscription.name);
-    }
+  removeAll(): number {
     const numRemoved = this.internal.size;
     this.internal.clear();
 
     return numRemoved;
+  }
+
+  /**
+   * Remove all unnamed/anonymous subscriptions from the SubscriptionSet.
+   *
+   * @returns The number of subscriptions removed.
+   */
+  removeUnnamed(): number {
+    return this.removeByPredicate((subscription) => !subscription.name);
   }
 
   /** @internal */
