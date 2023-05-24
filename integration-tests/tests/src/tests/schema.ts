@@ -117,4 +117,22 @@ describe("Realm schema", () => {
       });
     }).throws("Index not supported for this property: num");
   });
+
+  it("throws when declaring full-text index on primary key", () => {
+    expect(() => {
+      new Realm({
+        schema: [
+          {
+            name: "testProp",
+            properties: {
+              myString: { type: "string", indexed: "full-text" },
+            },
+            primaryKey: "myString",
+          },
+        ],
+      });
+    }).throws(
+      "Invalid type declaration for property 'myString' on 'testProp': 'myString on 'testProp' cannot be both a primary key and have a full-text index",
+    );
+  });
 });
