@@ -1430,6 +1430,9 @@ void SyncClass<T>::populate_sync_config(ContextType ctx, ObjectType realm_constr
                 config.path = user->m_user->sync_manager()->path_for_realm(*(config.sync_config), config.path);
             }
         }
+
+        // preserving the old behavior where multiplexing is disabled
+        user->m_user->sync_manager()->set_session_multiplexing(false);
     }
 }
 
