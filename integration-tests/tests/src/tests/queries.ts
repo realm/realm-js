@@ -1136,6 +1136,8 @@ describe("Queries", () => {
   });
 
   describe("GeoSpatial", () => {
+    openRealmBeforeEach({ schema: [PointOfInterest, MyGeoPoint.schema] });
+
     const zero: IPointOfInterest = {
       id: 1,
       location: new MyGeoPoint(0, 0),
@@ -1147,10 +1149,13 @@ describe("Queries", () => {
       });
     });
 
-    it("simple test", function (this: RealmContext) {
+    it.only("simple test", function (this: RealmContext) {
+      const results = this.realm.objects<IPointOfInterest>("PointOfInterest");
+      const filtered = results.filtered("location geoWithin geoSphere([0, 0], 1000.0)");
+      const first = filtered[0];
 
-      let filtered = 
-
+      console.log(first.id);
+      console.log(first.location.coordinates);
     });
   });
 });
