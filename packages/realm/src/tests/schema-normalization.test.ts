@@ -983,10 +983,9 @@ describe("normalizePropertySchema", () => {
     itThrowsWhenNormalizing(
       {
         type: "string",
-        indexed: false,
-        optional: false,
+        indexed: "full-text",
       },
-      "Primary keys must always be indexed.",
+      "Primary keys cannot be full-text indexed.",
       { isPrimaryKey: true },
     );
   });
