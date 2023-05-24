@@ -136,16 +136,12 @@ export class Results<T = unknown> extends OrderedCollection<T> {
 
   /**
    * Unsubscribe from this query result.
-   * @returns `true` if this was previously subscribed to and now is not, otherwise `false`.
    * @experimental This API is experimental and may change or be removed.
    */
-  unsubscribe(): boolean {
-    let removed = false;
+  unsubscribe(): void {
     this.realm.subscriptions.updateNoWait((mutableSubs) => {
-      removed = mutableSubs.remove(this);
+      mutableSubs.remove(this);
     });
-
-    return removed;
   }
 
   isValid(): boolean {

@@ -1730,8 +1730,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           const peopleOver10 = await this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10").subscribe();
           expect(this.realm.subscriptions).to.have.length(1);
 
-          const unsubscribed = peopleOver10.unsubscribe();
-          expect(unsubscribed).to.be.true;
+          peopleOver10.unsubscribe();
           expect(this.realm.subscriptions).to.have.length(0);
         });
 
@@ -1739,22 +1738,19 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
           expect(this.realm.subscriptions).to.have.length(0);
 
-          const unsubscribed = peopleOver10.unsubscribe();
-          expect(unsubscribed).to.be.false;
+          peopleOver10.unsubscribe();
           expect(this.realm.subscriptions).to.have.length(0);
         });
 
         it("does not unsubscribe multiple times", async function (this: RealmContext) {
+          await this.realm.objects(FlexiblePersonSchema.name).filtered("age < 10").subscribe();
           const peopleOver10 = await this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10").subscribe();
+          expect(this.realm.subscriptions).to.have.length(2);
+
+          peopleOver10.unsubscribe();
+          peopleOver10.unsubscribe();
+
           expect(this.realm.subscriptions).to.have.length(1);
-
-          let unsubscribed = peopleOver10.unsubscribe();
-          expect(unsubscribed).to.be.true;
-
-          unsubscribed = peopleOver10.unsubscribe();
-          expect(unsubscribed).to.be.false;
-
-          expect(this.realm.subscriptions).to.have.length(0);
         });
       });
 
