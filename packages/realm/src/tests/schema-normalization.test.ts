@@ -979,6 +979,16 @@ describe("normalizePropertySchema", () => {
       "Primary keys must always be indexed.",
       { isPrimaryKey: true },
     );
+
+    itThrowsWhenNormalizing(
+      {
+        type: "string",
+        indexed: false,
+        optional: false,
+      },
+      "Primary keys must always be indexed.",
+      { isPrimaryKey: true },
+    );
   });
 });
 
