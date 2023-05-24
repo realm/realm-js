@@ -137,6 +137,7 @@ export class Results<T = unknown> extends OrderedCollection<T> {
   /**
    * Unsubscribe from this query result.
    * @returns `true` if this was previously subscribed to and now is not, otherwise `false`.
+   * @experimental This API is experimental and may change or be removed.
    */
   unsubscribe(): boolean {
     let removed = false;
