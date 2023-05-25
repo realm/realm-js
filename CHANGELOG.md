@@ -16,9 +16,15 @@
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v13.10.1 to v13.11.0. ([#5811](https://github.com/realm/realm-js/issues/5811))
+* Upgraded Realm Core from v13.10.1 to v13.12.0. ([#5811](https://github.com/realm/realm-js/issues/5811) and [#5833](https://github.com/realm/realm-js/issues/5833))
 * Bump sync protocol to v9 to indicate client has fix for client reset error during async open. ([realm/realm-core#6609](https://github.com/realm/realm-core/issues/6609))
-* Sync session multiplexing is enabled by default, and calling `Realm.Sync.Session#enableSessionMultiplexing()` is a no-op.
+* The sync client's user agent has been changed and has now the form `RealmJS/<sdk version> (<osname> <sysname> <release> <version> <machine>)` where
+  * `sdk version` is the version of Realm JavaScript
+  * `osname` equivalent to `uname -o`
+  * `sysname` equivalent to `uname -s`
+  * `release` equivalent to `uname -r`
+  * `version` equivalent to `uname -v`
+  * `machine` equivalent to `uname -m`
 
 ## 11.9.0 (2023-05-11)
 
