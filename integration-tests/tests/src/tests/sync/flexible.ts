@@ -1701,6 +1701,8 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(this.realm.subscriptions).to.have.length(0);
 
           const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
+          // `this.timeout()` is used so that it doesn't exceed the timeout that our tests
+          // are configured to use (which could vary).
           await peopleOver10.subscribe({ behavior: WaitForSync.Always, timeout: this.timeout() });
           expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Complete);
 
