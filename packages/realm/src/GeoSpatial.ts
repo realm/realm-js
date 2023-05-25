@@ -55,7 +55,7 @@ export class Distance {
   } //TODO Add right conversion
 }
 
-export type IGeoPosition = [number, number];
+export type IGeoPosition = [number, number]; //long/latw
 
 //Interface that satisfies the geoJSON specification for a polygon.
 export interface IGeoPolygon {

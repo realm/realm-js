@@ -100,6 +100,7 @@ export function mixedToBinding(realm: binding.Realm, value: unknown): binding.Mi
   } else if (Array.isArray(value)) {
     throw new TypeError("A mixed property cannot contain an array of values.");
   } else if (assertIsGeoCircle(value)) {
+    throw new TypeError("A mixed property cannot contain an array of values."); //TODO TO Modify
   } else {
     // Convert typed arrays to an `ArrayBuffer`
     for (const TypedArray of TYPED_ARRAY_CONSTRUCTORS) {

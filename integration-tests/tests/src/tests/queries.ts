@@ -31,43 +31,6 @@ import { openRealmBeforeEach } from "../hooks";
 import { IPerson, PersonSchema } from "../schemas/person-and-dogs";
 import { ContactSchema, IContact } from "../schemas/contact";
 
-class MyGeoPoint implements IGeoPoint {
-  coordinates: IGeoPosition = [0, 0];
-  type = "Point" as const;
-
-  constructor(lat: number, long: number) {
-    this.coordinates = [long, lat];
-  }
-
-  static schema: ObjectSchema = {
-    name: "MyGeoPoint",
-    embedded: true,
-    properties: {
-      type: "string",
-      coordinates: "double[]",
-    },
-  };
-}
-
-interface IPointOfInterest {
-  id: number;
-  location: MyGeoPoint;
-}
-
-class PointOfInterest extends Realm.Object<PointOfInterest> implements IPointOfInterest {
-  id = 0;
-  location: MyGeoPoint = { type: "Point", coordinates: [0, 0] };
-
-  static schema: ObjectSchema = {
-    name: "PointOfInterest",
-    properties: {
-      id: "int",
-      location: "MyGeoPoint",
-    },
-    primaryKey: "id",
-  };
-}
-
 interface INullableTypesObject {
   boolCol?: boolean;
   intCol?: Realm.Types.Int;
@@ -126,6 +89,43 @@ class Story extends Realm.Object<Story> implements IStory {
       content: { type: "string", indexed: "full-text" },
     },
     primaryKey: "title",
+  };
+}
+
+class MyGeoPoint implements IGeoPoint {
+  coordinates: IGeoPosition = [0, 0];
+  type = "Point" as const;
+
+  constructor(lat: number, long: number) {
+    this.coordinates = [long, lat];
+  }
+
+  static schema: ObjectSchema = {
+    name: "MyGeoPoint",
+    embedded: true,
+    properties: {
+      type: "string",
+      coordinates: "double[]",
+    },
+  };
+}
+
+interface IPointOfInterest {
+  id: number;
+  location: MyGeoPoint;
+}
+
+class PointOfInterest extends Realm.Object<PointOfInterest> implements IPointOfInterest {
+  id = 0;
+  location: MyGeoPoint = { type: "Point", coordinates: [0, 0] };
+
+  static schema: ObjectSchema = {
+    name: "PointOfInterest",
+    properties: {
+      id: "int",
+      location: "MyGeoPoint",
+    },
+    primaryKey: "id",
   };
 }
 
@@ -197,6 +197,89 @@ const expectQueryResultValues = (
 };
 
 describe("Queries", () => {
+  describe("GeoSpatial", () => {
+    openRealmBeforeEach({ schema: [PointOfInterest, MyGeoPoint.schema] });
+
+    const zero: IPointOfInterest = {
+      id: 1,
+      location: new MyGeoPoint(0, 0),
+    };
+
+    const poiA: IPointOfInterest = {
+      id: 2,
+      location: new MyGeoPoint(50.5, 50.5),
+    };
+
+    const poiB: IPointOfInterest = {
+      id: 3,
+      location: new MyGeoPoint(40, -40),
+    };
+
+    const poiC: IPointOfInterest = {
+      id: 4,
+      location: new MyGeoPoint(-30, -30.5),
+    };
+
+    const poiD: IPointOfInterest = {
+      id: 5,
+      location: new MyGeoPoint(-25, 25),
+    };
+
+    function convertIGeoPosition(point: IGeoPosition): string {
+      return `[${point[0]}, ${point[1]}]`;
+    }
+
+    function convertGeoPoint(point: GeoPoint): string {
+      if (Array.isArray(point)) {
+        return convertIGeoPosition(point);
+      }
+
+      if ("latitude" in point) {
+        return convertIGeoPosition([point.longitude, point.latitude]);
+      }
+
+      return convertIGeoPosition(point.coordinates);
+    }
+
+    function convertGeoCircle(circle: GeoCircle): string {
+      return `geoSphere(${convertGeoPoint(circle.center)},  ${circle.distance})`;
+    }
+
+    function convertGeoBox(box: GeoBox): string {
+      return `geoBox(${convertGeoPoint(box.bottomLeft)},  ${convertGeoPoint(box.topRight)})`;
+    }
+
+    beforeEach(function (this: RealmContext) {
+      this.realm.write(() => {
+        this.realm.create("PointOfInterest", zero);
+        this.realm.create("PointOfInterest", poiA);
+        this.realm.create("PointOfInterest", poiB);
+        this.realm.create("PointOfInterest", poiC);
+        this.realm.create("PointOfInterest", poiD);
+      });
+    });
+
+    it.only("GeoCircle", function (this: RealmContext) {
+      const circle: GeoCircle = {
+        center: [0, 0],
+        distance: 1000,
+      };
+
+      const stringCircle = convertGeoCircle(circle);
+
+      const results = this.realm.objects<IPointOfInterest>("PointOfInterest");
+
+      //TODO This could be added to a method, so we don't need to do it ourselves all the time
+      const filtered = results.filtered(`location geoWithin ${stringCircle}`);
+      const filtered2 = results.filtered("location geoWithin $0", circle);
+
+      const first = filtered[0];
+
+      console.log(first.id);
+      console.log(first.location.coordinates);
+    });
+  });
+
   describe("Full text search", () => {
     openRealmBeforeEach({ schema: [Story] });
 
@@ -1220,36 +1303,6 @@ describe("Queries", () => {
         expect(primitives.filtered(`s == "${unicornString}" AND i == 44`).length).equal(1);
         expect(primitives.filtered("s == $0 AND i == $1", unicornString, 44).length).equal(1);
       });
-    });
-  });
-
-  describe("GeoSpatial", () => {
-    openRealmBeforeEach({ schema: [PointOfInterest, MyGeoPoint.schema] });
-
-    const zero: IPointOfInterest = {
-      id: 1,
-      location: new MyGeoPoint(0, 0),
-    };
-
-    beforeEach(function (this: RealmContext) {
-      this.realm.write(() => {
-        this.realm.create("PointOfInterest", zero);
-      });
-    });
-
-    it.only("simple test", function (this: RealmContext) {
-      const circle: GeoCircle = {
-        center: [0, 0],
-        distance: 1000,
-      };
-      const results = this.realm.objects<IPointOfInterest>("PointOfInterest");
-      const filtered = results.filtered("location geoWithin geoSphere([0, 0], 1000.0)");
-      const filtered2 = results.filtered("location geoWithin $0", circle);
-
-      const first = filtered2[0];
-
-      console.log(first.id);
-      console.log(first.location.coordinates);
     });
   });
 });
