@@ -2,8 +2,9 @@ import { CracoConfig } from "@craco/types";
 import {
     loaderByName,
     getLoaders,
-  } from '@craco/craco';
+  } from "@craco/craco";
 import * as path from "path";
+import NodePolyfillPlugin from "node-polyfill-webpack-plugin";
 
 const config: CracoConfig = {
     babel: {
@@ -25,7 +26,13 @@ const config: CracoConfig = {
                 path.resolve(__dirname, '../../tests/src'),
                 path.resolve(__dirname, '../../../packages')
             ];
-                
+
+            // needed to import source-map-support
+            config.plugins = [
+                ...config.plugins || [],
+                new NodePolyfillPlugin()
+            ];
+
             config.experiments = {
                 topLevelAwait: true,
                 ...config.experiments

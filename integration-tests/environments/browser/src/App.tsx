@@ -4,6 +4,10 @@ import './App.css';
 
 import { Client } from 'mocha-remote-client';
 
+import { install as enable_sourcemaps } from 'source-map-support';
+
+enable_sourcemaps();
+
 async function runTests() {
   const client = new Client({
     async tests(context) {
