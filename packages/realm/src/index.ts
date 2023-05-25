@@ -122,6 +122,7 @@ export {
   ProgressRealmPromise,
   PropertiesTypes,
   PropertySchema,
+  PropertySchemaCommon,
   PropertySchemaParseError,
   PropertySchemaShorthand,
   PropertySchemaStrict,

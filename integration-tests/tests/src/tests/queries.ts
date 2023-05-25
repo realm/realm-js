@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import Realm, { BSON } from "realm";
+import Realm, { BSON, ObjectSchema } from "realm";
 import { expect } from "chai";
 import { openRealmBeforeEach } from "../hooks";
 import { IPerson, PersonSchema } from "../schemas/person-and-dogs";
@@ -60,6 +60,25 @@ class NullableTypesObject extends Realm.Object implements INullableTypesObject {
       objectIdCol: "objectId?",
       uuidCol: "uuid?",
     },
+  };
+}
+
+interface IStory {
+  title?: string;
+  content?: string;
+}
+
+class Story extends Realm.Object<Story> implements IStory {
+  title?: string;
+  content?: string;
+
+  static schema: ObjectSchema = {
+    name: "Story",
+    properties: {
+      title: { type: "string" },
+      content: { type: "string", indexed: "full-text" },
+    },
+    primaryKey: "title",
   };
 }
 
@@ -131,6 +150,75 @@ const expectQueryResultValues = (
 };
 
 describe("Queries", () => {
+  describe("Full text search", () => {
+    openRealmBeforeEach({ schema: [Story] });
+
+    const story1: IStory = {
+      title: "Dogs and cats",
+      content: "A short story about a dog running after two cats",
+    };
+
+    const story2: IStory = {
+      title: "Adventure",
+      content: "A novel about two friends looking for a treasure",
+    };
+
+    const story3: IStory = {
+      title: "A friend",
+      content: "A short poem about friendship",
+    };
+
+    const story4: IStory = {
+      title: "Lord of the rings",
+      content: "A long story about the quest for a ring",
+    };
+
+    beforeEach(function (this: RealmContext) {
+      this.realm.write(() => {
+        this.realm.create("Story", story1);
+        this.realm.create("Story", story2);
+        this.realm.create("Story", story3);
+        this.realm.create("Story", story4);
+      });
+    });
+
+    it("single term", function (this: RealmContext) {
+      expectQueryResultValues(this.realm, Story, "title", [[[story1.title], "content TEXT 'cats'"]]);
+      expectQueryResultValues(this.realm, Story, "title", [[[story1.title, story4.title], "content TEXT 'story'"]]);
+    });
+
+    it("multiple terms", function (this: RealmContext) {
+      expectQueryResultValues(this.realm, Story, "title", [[[story1.title], "content TEXT 'two dog'"]]);
+      expectQueryResultValues(this.realm, Story, "title", [[[story3.title], "content TEXT 'poem short friendship'"]]);
+      expectQueryResultValues(this.realm, Story, "title", [
+        [[story1.title, story2.title, story3.title, story4.title], "content TEXT 'about a'"],
+      ]);
+    });
+
+    it("exclude term", function (this: RealmContext) {
+      expectQueryResultValues(this.realm, Story, "title", [[[story4.title], "content TEXT 'story -cats'"]]);
+    });
+
+    it("empty results", function (this: RealmContext) {
+      expectQueryResultValues(this.realm, Story, "title", [[[], "content TEXT 'two dog friends'"]]);
+      expectQueryResultValues(this.realm, Story, "title", [[[], "content TEXT 'amazing'"]]);
+    });
+
+    it("query parameters", function (this: RealmContext) {
+      expectQueryResultValues(this.realm, Story, "title", [[[story1.title], "content TEXT $0", "cats"]]);
+      expectQueryResultValues(this.realm, Story, "title", [[[story1.title], "content TEXT $0", "two dog"]]);
+      expectQueryResultValues(this.realm, Story, "title", [[[story4.title], "content TEXT $0", "story -cats"]]);
+
+      expectQueryResultValues(this.realm, Story, "title", [[[story1.title], "content TEXT $0", "'cats'"]]);
+      expectQueryResultValues(this.realm, Story, "title", [[[story1.title], "content TEXT $0", "'two dog'"]]);
+      expectQueryResultValues(this.realm, Story, "title", [[[story4.title], "content TEXT $0", "'story -cats'"]]);
+    });
+
+    it("throws on column with no index", function (this: RealmContext) {
+      expectQueryException(this.realm, Story, [["Column has no fulltext index", "title TEXT 'cats'"]]);
+    });
+  });
+
   describe("Basic types", () => {
     openRealmBeforeEach({ schema: [NullableTypesObject] });
 

@@ -704,6 +704,19 @@ describe("normalizePropertySchema", () => {
     itNormalizes(
       {
         type: "string",
+        indexed: "full-text",
+      },
+      {
+        type: "string",
+        indexed: "full-text",
+        optional: false,
+      },
+      { isPrimaryKey: false },
+    );
+
+    itNormalizes(
+      {
+        type: "string",
         optional: true,
       },
       {
@@ -964,6 +977,15 @@ describe("normalizePropertySchema", () => {
         optional: false,
       },
       "Primary keys must always be indexed.",
+      { isPrimaryKey: true },
+    );
+
+    itThrowsWhenNormalizing(
+      {
+        type: "string",
+        indexed: "full-text",
+      },
+      "Primary keys cannot be full-text indexed.",
       { isPrimaryKey: true },
     );
   });
