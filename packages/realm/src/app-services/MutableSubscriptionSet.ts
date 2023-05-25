@@ -128,6 +128,8 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
         ? subscriptions.insertOrAssignByQuery(queryInternal)
         : subscriptions.insertOrAssignByName(options.name, queryInternal);
 
+    query.subscriptionName = subscription.name;
+
     return new Subscription(subscription);
   }
 

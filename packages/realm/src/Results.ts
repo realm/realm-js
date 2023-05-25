@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2022 Realm Inc.
+// Copyright 2023 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -43,6 +43,8 @@ export class Results<T = unknown> extends OrderedCollection<T> {
    * @internal
    */
   public declare internal: binding.Results;
+  /** @internal */
+  public subscriptionName?: string;
 
   /**
    * Create a `Results` wrapping a set of query `Results` from the binding.
@@ -67,6 +69,11 @@ export class Results<T = unknown> extends OrderedCollection<T> {
       configurable: false,
       writable: false,
       value: realm,
+    });
+    Object.defineProperty(this, "subscriptionName", {
+      enumerable: false,
+      configurable: false,
+      writable: true,
     });
   }
 
@@ -117,7 +124,7 @@ export class Results<T = unknown> extends OrderedCollection<T> {
   async subscribe(options: SubscriptionOptions = { behavior: WaitForSync.FirstTime }): Promise<this> {
     const subs = this.realm.subscriptions;
     const shouldWait =
-      (options.behavior === WaitForSync.FirstTime && !this.isSubscribedTo()) || options.behavior === WaitForSync.Always;
+      (options.behavior === WaitForSync.FirstTime && !subs.exists(this)) || options.behavior === WaitForSync.Always;
     if (shouldWait) {
       if (typeof options.timeout === "number") {
         await new TimeoutPromise(
@@ -140,7 +147,11 @@ export class Results<T = unknown> extends OrderedCollection<T> {
    */
   unsubscribe(): void {
     this.realm.subscriptions.updateNoWait((mutableSubs) => {
-      mutableSubs.remove(this);
+      if (this.subscriptionName) {
+        mutableSubs.removeByName(this.subscriptionName);
+      } else {
+        mutableSubs.remove(this);
+      }
     });
   }
 
@@ -150,11 +161,5 @@ export class Results<T = unknown> extends OrderedCollection<T> {
 
   isEmpty(): boolean {
     return this.internal.size() === 0;
-  }
-
-  /** @internal */
-  private isSubscribedTo() {
-    // @ts-expect-error TODO: Fix type error from passing 'this'.
-    return !!this.realm.subscriptions.findByQuery(this);
   }
 }
