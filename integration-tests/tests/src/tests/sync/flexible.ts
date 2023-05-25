@@ -1403,7 +1403,6 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           it("returns true and removes a subscription with an empty name", async function (this: RealmContext) {
             addSubscription(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"));
             const { subs } = addSubscriptionForPerson(this.realm, { name: "" });
-
             expect(subs).to.have.length(2);
 
             await subs.update((mutableSubs) => {
@@ -1734,12 +1733,14 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(this.realm.subscriptions).to.have.length(0);
         });
 
-        it("does not throw or unsubscribe when there is no subscription", function (this: RealmContext) {
+        it("does not throw or unsubscribe when there is no matching subscription", function (this: RealmContext) {
+          const peopleUnder10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age < 10").subscribe();
           const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
-          expect(this.realm.subscriptions).to.have.length(0);
+          expect(this.realm.subscriptions).to.have.length(1);
 
+          // Unsubscribe to the Results without a subscription.
           peopleOver10.unsubscribe();
-          expect(this.realm.subscriptions).to.have.length(0);
+          expect(this.realm.subscriptions).to.have.length(1);
         });
 
         it("does not unsubscribe multiple times", async function (this: RealmContext) {
