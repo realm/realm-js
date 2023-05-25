@@ -31,6 +31,43 @@ import { openRealmBeforeEach } from "../hooks";
 import { IPerson, PersonSchema } from "../schemas/person-and-dogs";
 import { ContactSchema, IContact } from "../schemas/contact";
 
+class MyGeoPoint implements IGeoPoint {
+  coordinates: IGeoPosition = [0, 0];
+  type = "Point" as const;
+
+  constructor(lat: number, long: number) {
+    this.coordinates = [long, lat];
+  }
+
+  static schema: ObjectSchema = {
+    name: "MyGeoPoint",
+    embedded: true,
+    properties: {
+      type: "string",
+      coordinates: "double[]",
+    },
+  };
+}
+
+interface IPointOfInterest {
+  id: number;
+  location: MyGeoPoint;
+}
+
+class PointOfInterest extends Realm.Object<PointOfInterest> implements IPointOfInterest {
+  id = 0;
+  location: MyGeoPoint = { type: "Point", coordinates: [0, 0] };
+
+  static schema: ObjectSchema = {
+    name: "PointOfInterest",
+    properties: {
+      id: "int",
+      location: "MyGeoPoint",
+    },
+    primaryKey: "id",
+  };
+}
+
 interface INullableTypesObject {
   boolCol?: boolean;
   intCol?: Realm.Types.Int;
@@ -70,43 +107,6 @@ class NullableTypesObject extends Realm.Object implements INullableTypesObject {
       objectIdCol: "objectId?",
       uuidCol: "uuid?",
     },
-  };
-}
-
-class MyGeoPoint implements IGeoPoint {
-  coordinates: IGeoPosition = [0, 0];
-  type = "Point" as const;
-
-  constructor(lat: number, long: number) {
-    this.coordinates = [long, lat];
-  }
-
-  static schema: ObjectSchema = {
-    name: "MyGeoPoint",
-    embedded: true,
-    properties: {
-      type: "string",
-      coordinates: "double[]",
-    },
-  };
-}
-
-interface IPointOfInterest {
-  id: number;
-  location: MyGeoPoint;
-}
-
-class PointOfInterest extends Realm.Object<PointOfInterest> implements IPointOfInterest {
-  id = 0;
-  location: MyGeoPoint = { type: "Point", coordinates: [0, 0] };
-
-  static schema: ObjectSchema = {
-    name: "PointOfInterest",
-    properties: {
-      id: "int",
-      location: "MyGeoPoint",
-    },
-    primaryKey: "id",
   };
 }
 
@@ -178,36 +178,6 @@ const expectQueryResultValues = (
 };
 
 describe("Queries", () => {
-  describe("GeoSpatial", () => {
-    openRealmBeforeEach({ schema: [PointOfInterest, MyGeoPoint.schema] });
-
-    const zero: IPointOfInterest = {
-      id: 1,
-      location: new MyGeoPoint(0, 0),
-    };
-
-    beforeEach(function (this: RealmContext) {
-      this.realm.write(() => {
-        this.realm.create("PointOfInterest", zero);
-      });
-    });
-
-    it.only("simple test", function (this: RealmContext) {
-      const circle: GeoCircle = {
-        center: [0, 0],
-        distance: 1000,
-      };
-      const results = this.realm.objects<IPointOfInterest>("PointOfInterest");
-      const filtered = results.filtered("location geoWithin geoSphere([0, 0], 1000.0)");
-      const filtered2 = results.filtered("location geoWithin $0", circle);
-
-      const first = filtered2[0];
-
-      console.log(first.id);
-      console.log(first.location.coordinates);
-    });
-  });
-
   describe("Basic types", () => {
     openRealmBeforeEach({ schema: [NullableTypesObject] });
 
@@ -1162,6 +1132,36 @@ describe("Queries", () => {
         expect(primitives.filtered(`s == "${unicornString}" AND i == 44`).length).equal(1);
         expect(primitives.filtered("s == $0 AND i == $1", unicornString, 44).length).equal(1);
       });
+    });
+  });
+
+  describe("GeoSpatial", () => {
+    openRealmBeforeEach({ schema: [PointOfInterest, MyGeoPoint.schema] });
+
+    const zero: IPointOfInterest = {
+      id: 1,
+      location: new MyGeoPoint(0, 0),
+    };
+
+    beforeEach(function (this: RealmContext) {
+      this.realm.write(() => {
+        this.realm.create("PointOfInterest", zero);
+      });
+    });
+
+    it.only("simple test", function (this: RealmContext) {
+      const circle: GeoCircle = {
+        center: [0, 0],
+        distance: 1000,
+      };
+      const results = this.realm.objects<IPointOfInterest>("PointOfInterest");
+      const filtered = results.filtered("location geoWithin geoSphere([0, 0], 1000.0)");
+      const filtered2 = results.filtered("location geoWithin $0", circle);
+
+      const first = filtered2[0];
+
+      console.log(first.id);
+      console.log(first.location.coordinates);
     });
   });
 });
