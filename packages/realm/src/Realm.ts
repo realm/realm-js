@@ -1276,6 +1276,7 @@ function isEmbedded(objectSchema: binding.ObjectSchema): boolean {
 // @see https://www.typescriptlang.org/docs/handbook/declaration-merging.html#merging-namespaces-with-classes-functions-and-enums
 
 // We need these type aliases because of https://github.com/Swatinem/rollup-plugin-dts/issues/223
+// We cannot move this to a different file and rely on module declarations because of https://github.com/Swatinem/rollup-plugin-dts/issues/168
 
 type AppType<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType = DefaultObject> = App<
   FunctionsFactoryType,

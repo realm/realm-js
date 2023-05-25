@@ -318,6 +318,7 @@ function normalizePropertySchemaObject(info: PropertyInfoUsingObject): Canonical
 
   if (info.isPrimaryKey) {
     assert(indexed !== false, propError(info, "Primary keys must always be indexed."));
+    assert(indexed !== "full-text", propError(info, "Primary keys cannot be full-text indexed."));
     indexed = true;
   }
 
@@ -325,9 +326,10 @@ function normalizePropertySchemaObject(info: PropertyInfoUsingObject): Canonical
     name: info.propertyName,
     type: type as PropertyTypeName,
     optional: !!optional,
-    indexed: !!indexed,
+    indexed: indexed !== undefined ? indexed : false,
     mapTo: propertySchema.mapTo || info.propertyName,
   };
+
   // Add optional properties only if defined (tests expect no 'undefined' properties)
   if (objectType !== undefined) normalizedSchema.objectType = objectType;
   if (property !== undefined) normalizedSchema.property = property;

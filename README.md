@@ -29,7 +29,7 @@ If you want to contribute to any of our packages, you are welcome to do so. We w
 In tier 1 we will respond to issues in a timely manner during workdays from CET timezone, and we will work on bug fixing and adding new features.
 
 * [Realm JavaScript](https://www.npmjs.com/package/realm) (NPM tag: `latest`) on node.js (LTS) and Electron on Windows, MacOS, and Linux
-* [Realm JavaScript](https://www.npmjs.com/package/realm) (NPM tag: `latest`) with latest React Native version on Android and iOS
+* [Realm JavaScript](https://www.npmjs.com/package/realm) (NPM tag: `latest`) with latest React Native version 0.71.0 on Android and iOS
 * [@realm/react](https://www.npmjs.com/package/@realm/react) (NPM tag: `latest`) in conjunction with latest [Realm JavaScript](https://www.npmjs.com/package/realm) release
 
 ### Tier 2 - best effort
