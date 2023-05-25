@@ -123,6 +123,7 @@ list(FILTER SDK_TS_FILES EXCLUDE REGEX "templates/[^/]*\.ts$")
 
 set(JS_SPEC_FILE ${SDK_DIR}/bindgen/js_spec.yml)
 set(TYPESCRIPT_OUTPUT_DIR ${SDK_DIR}/generated/ts)
+set(DIST_DIR ${SDK_DIR}/dist)
 
 set(GENERATED_TS_FILES
     ${TYPESCRIPT_OUTPUT_DIR}/native.d.mts
@@ -177,7 +178,7 @@ elseif(EMSCRIPTEN)
     target_sources(realm-js PRIVATE browser_init.cpp ${CMAKE_JS_SRC} ${PACKAGE_ROOT_DIR}/src/browser/platform.cpp)
 
     set_target_properties(realm-js-wasm PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY ${TYPESCRIPT_OUTPUT_DIR}
+        RUNTIME_OUTPUT_DIRECTORY ${DIST_DIR}
     )
 
 else()

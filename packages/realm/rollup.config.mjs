@@ -100,6 +100,7 @@ export default [
         delimiters: ["", ""],
         values: {
           '"../generated/ts/native-node.mjs"': '"../generated/ts/native-browser.mjs"',
+          '\'../../../generated/ts/realm-js-wasm.js\'': '\'./realm-js-wasm.js\''
         },
       }),
       typescript({
@@ -107,11 +108,8 @@ export default [
         noEmitOnError: true,
         outputToFilesystem: true,
       }),
-      copy({
-        targets: [{ src: "./generated/ts/realm-js-wasm.wasm", dest: "./dist/" }],
-      }),
     ],
-    external: ["bson", "debug"],
+    external: ["bson", "debug", "./realm-js-wasm.js"],
   },
   {
     input: "src/platform/react-native/index.ts",

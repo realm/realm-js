@@ -105,10 +105,11 @@
         "src/**/*.ts",
         "tsconfig.json",
         "src/**/tsconfig.json",
-        "generated/ts/*"
+        "generated/ts/*",
+        "dist/realm-js-wasm.js"
       ],
       "output": [
-        "dist"
+        "dist/bundle.*"
       ]
     },
     "bindgen:configure:node": {
@@ -133,8 +134,8 @@
         "bindgen:configure:browser"
       ],
       "output": [
-        "generated/ts/realm-js-wasm.js",
-        "generated/ts/realm-js-wasm.wasm"
+        "dist/realm-js-wasm.js",
+        "dist/realm-js-wasm.wasm"
       ]
     },
     "bindgen:generate:typescript": {
