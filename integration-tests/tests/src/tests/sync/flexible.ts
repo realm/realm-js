@@ -1734,7 +1734,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(this.realm.subscriptions).to.have.length(0);
         });
 
-        it("does not unsubscribe when there is no subscription", function (this: RealmContext) {
+        it("does not throw or unsubscribe when there is no subscription", function (this: RealmContext) {
           const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
           expect(this.realm.subscriptions).to.have.length(0);
 
@@ -1749,8 +1749,67 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
           peopleOver10.unsubscribe();
           peopleOver10.unsubscribe();
-
           expect(this.realm.subscriptions).to.have.length(1);
+        });
+
+        it("unsubscribes from subscription with matching name", async function (this: RealmContext) {
+          // Create 3 subscriptions with the same query: 2 named, 1 unnamed.
+          const queryString = "age > 10";
+          await this.realm.objects(FlexiblePersonSchema.name).filtered(queryString).subscribe({ name: "name1" });
+          await this.realm.objects(FlexiblePersonSchema.name).filtered(queryString).subscribe();
+          const peopleOver10 = await this.realm
+            .objects(FlexiblePersonSchema.name)
+            .filtered(queryString)
+            .subscribe({ name: "name2" });
+          expect(this.realm.subscriptions).to.have.length(3);
+
+          // Expect only the "name2" subscription to be gone.
+          peopleOver10.unsubscribe();
+
+          const subs = [...this.realm.subscriptions];
+          expect(subs).to.have.length(2);
+          expect(subs[0].queryString).to.equal(queryString);
+          expect(subs[0].name).to.equal("name1");
+          expect(subs[1].queryString).to.equal(queryString);
+          expect(subs[1].name).to.be.null;
+        });
+
+        it("unsubscribes from subscription with matching name when subscribing via `update()`", async function (this: RealmContext) {
+          // Save a reference to a Results that is not yet subscribed to.
+          const queryString = "age > 10";
+          const peopleOver10 = await this.realm.objects(FlexiblePersonSchema.name).filtered(queryString);
+          expect(this.realm.subscriptions).to.have.length(0);
+
+          // Create 3 subscriptions via `update()` with the same query: 2 named, 1 unnamed.
+          await this.realm.subscriptions.update((mutableSubs) => {
+            mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name).filtered(queryString), { name: "name1" });
+            mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name).filtered(queryString));
+            // Pass the Results reference to subscribe to.
+            mutableSubs.add(peopleOver10, { name: "name2" });
+          });
+          expect(this.realm.subscriptions).to.have.length(3);
+
+          // Expect only the "name2" subscription to be gone.
+          peopleOver10.unsubscribe();
+
+          const subs = [...this.realm.subscriptions];
+          expect(subs).to.have.length(2);
+          expect(subs[0].queryString).to.equal(queryString);
+          expect(subs[0].name).to.equal("name1");
+          expect(subs[1].queryString).to.equal(queryString);
+          expect(subs[1].name).to.be.null;
+        });
+
+        it("unsubscribes from subscription with matching query", async function (this: RealmContext) {
+          const queryString = "age > 10";
+          const results1 = await this.realm.objects(FlexiblePersonSchema.name).filtered(queryString).subscribe();
+          const results2 = await this.realm.objects(FlexiblePersonSchema.name).filtered(queryString);
+          expect(this.realm.subscriptions).to.have.length(1);
+
+          // Even though `subscribe()` was called on `results1`, `unsubscribe()` removes unnamed
+          // subscriptions by query, thus removing the one `results1` subscribed to.
+          results2.unsubscribe();
+          expect(this.realm.subscriptions).to.have.length(0);
         });
       });
 
