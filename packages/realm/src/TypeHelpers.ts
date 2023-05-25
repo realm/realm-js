@@ -20,6 +20,7 @@ import {
   BSON,
   ClassHelpers,
   Collection,
+  GeoCircle,
   INTERNAL,
   List,
   ObjCreator,
@@ -98,6 +99,7 @@ export function mixedToBinding(realm: binding.Realm, value: unknown): binding.Mi
     throw new Error(`Using a ${value.constructor.name} as Mixed value, is not yet supported`);
   } else if (Array.isArray(value)) {
     throw new TypeError("A mixed property cannot contain an array of values.");
+  } else if (assertIsGeoCircle(value)) {
   } else {
     // Convert typed arrays to an `ArrayBuffer`
     for (const TypedArray of TYPED_ARRAY_CONSTRUCTORS) {
@@ -108,6 +110,10 @@ export function mixedToBinding(realm: binding.Realm, value: unknown): binding.Mi
     // Rely on the binding for any other value
     return value as binding.MixedArg;
   }
+}
+
+function assertIsGeoCircle(value: any): value is GeoCircle {
+  return "distance" in value && "center" in value;
 }
 
 function defaultToBinding(value: unknown): binding.MixedArg {

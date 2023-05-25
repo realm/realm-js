@@ -178,6 +178,36 @@ const expectQueryResultValues = (
 };
 
 describe("Queries", () => {
+  describe("GeoSpatial", () => {
+    openRealmBeforeEach({ schema: [PointOfInterest, MyGeoPoint.schema] });
+
+    const zero: IPointOfInterest = {
+      id: 1,
+      location: new MyGeoPoint(0, 0),
+    };
+
+    beforeEach(function (this: RealmContext) {
+      this.realm.write(() => {
+        this.realm.create("PointOfInterest", zero);
+      });
+    });
+
+    it.only("simple test", function (this: RealmContext) {
+      const circle: GeoCircle = {
+        center: [0, 0],
+        distance: 1000,
+      };
+      const results = this.realm.objects<IPointOfInterest>("PointOfInterest");
+      const filtered = results.filtered("location geoWithin geoSphere([0, 0], 1000.0)");
+      const filtered2 = results.filtered("location geoWithin $0", circle);
+
+      const first = filtered2[0];
+
+      console.log(first.id);
+      console.log(first.location.coordinates);
+    });
+  });
+
   describe("Basic types", () => {
     openRealmBeforeEach({ schema: [NullableTypesObject] });
 
@@ -1132,30 +1162,6 @@ describe("Queries", () => {
         expect(primitives.filtered(`s == "${unicornString}" AND i == 44`).length).equal(1);
         expect(primitives.filtered("s == $0 AND i == $1", unicornString, 44).length).equal(1);
       });
-    });
-  });
-
-  describe("GeoSpatial", () => {
-    openRealmBeforeEach({ schema: [PointOfInterest, MyGeoPoint.schema] });
-
-    const zero: IPointOfInterest = {
-      id: 1,
-      location: new MyGeoPoint(0, 0),
-    };
-
-    beforeEach(function (this: RealmContext) {
-      this.realm.write(() => {
-        this.realm.create("PointOfInterest", zero);
-      });
-    });
-
-    it.only("simple test", function (this: RealmContext) {
-      const results = this.realm.objects<IPointOfInterest>("PointOfInterest");
-      const filtered = results.filtered("location geoWithin geoSphere([0, 0], 1000.0)");
-      const first = filtered[0];
-
-      console.log(first.id);
-      console.log(first.location.coordinates);
     });
   });
 });
