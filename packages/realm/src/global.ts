@@ -16,7 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Realm as RealmConstructor, flags, safeGlobalThis } from "./internal";
+import { Realm, flags, safeGlobalThis } from "./internal";
+
+import RealmConstructor = Realm;
 
 declare global {
   /**
