@@ -2,6 +2,8 @@ import { CracoConfig } from "@craco/types";
 import {
     loaderByName,
     getLoaders,
+    removePlugins,
+    pluginByName
   } from "@craco/craco";
 import * as path from "path";
 import NodePolyfillPlugin from "node-polyfill-webpack-plugin";
@@ -28,6 +30,9 @@ const config: CracoConfig = {
             ];
 
             // needed to import source-map-support
+            if (config.resolve!.plugins) {
+                config.resolve!.plugins.pop();
+            }
             config.plugins = [
                 ...config.plugins || [],
                 new NodePolyfillPlugin()
