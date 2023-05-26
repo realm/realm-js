@@ -17,7 +17,7 @@
     "bundle": {
       "command": "rollup --config",
       "dependencies": [
-        "../realm:bundle",
+        "../realm:build:ts",
         "../realm-common:bundle"
       ],
       "files": [
@@ -32,7 +32,7 @@
     "test": {
       "command": "jest --forceExit",
       "dependencies": [
-        "../realm:bundle",
+        "../realm:build:ts",
         "../realm:build:node",
         "../realm-common:bundle"
       ]

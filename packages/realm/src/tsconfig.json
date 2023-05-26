@@ -1,0 +1,26 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../dist",
+    "types": [
+      "@realm/network-transport",
+      "bson",
+      "debug",
+      "ms" // debug dependency
+    ],
+    "baseUrl": "..",
+    "paths": {
+      "realm/binding/core": ["./src/generated/core.ts"]
+    }
+  },
+  "include": [
+    "."
+  ],
+  "exclude": [
+    "tests/",
+    "platform/node/",
+    "platform/react-native/",
+    "../bindgen/",
+    "../type-tests/"
+  ]
+}

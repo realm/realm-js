@@ -25,7 +25,7 @@
     "test:main": {
       "command": "mocha-remote --reporter @realm/mocha-reporter --id main tsx runner.ts main",
       "dependencies": [
-        "../../../packages/realm:bundle",
+        "../../../packages/realm:build:ts",
         "../../../packages/realm:build:node",
         "../../../packages/mocha-reporter:bundle",
         "../../../packages/realm-network-transport:bundle"
@@ -34,7 +34,7 @@
     "test:renderer": {
       "command": "mocha-remote --reporter @realm/mocha-reporter --id renderer tsx runner.ts renderer",
       "dependencies": [
-        "../../../packages/realm:bundle",
+        "../../../packages/realm:build:ts",
         "../../../packages/realm:build:node",
         "../../../packages/mocha-reporter:bundle",
         "../../../packages/realm-network-transport:bundle"

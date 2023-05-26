@@ -13,7 +13,7 @@
     "test": {
       "command": "mocha-remote --reporter @realm/mocha-reporter tsx index.mjs",
       "dependencies": [
-        "../../../packages/realm:bundle",
+        "../../../packages/realm:build:ts",
         "../../../packages/realm:build:node",
         "../../../packages/mocha-reporter:bundle",
         "../../../packages/realm-network-transport:bundle"
@@ -22,7 +22,7 @@
     "test:commonjs": {
       "command": "mocha-remote --reporter @realm/mocha-reporter tsx index.cjs",
       "dependencies": [
-        "../../../packages/realm:bundle",
+        "../../../packages/realm:build:ts",
         "../../../packages/realm:build:node",
         "../../../packages/mocha-reporter:bundle",
         "../../../packages/realm-network-transport:bundle"

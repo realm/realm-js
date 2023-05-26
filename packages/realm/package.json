@@ -22,17 +22,20 @@
     "email": "help@realm.io",
     "url": "https://realm.io"
   },
-  "main": "./dist/bundle.node.js",
-  "module": "./dist/bundle.node.mjs",
-  "types": "./dist/bundle.d.ts",
-  "react-native": "./dist/bundle.react-native.mjs",
+  "types": "./dist/cjs.d.ts",
+  "main": "./dist/platform/node/index.cjs.js",
+  "react-native": "./dist/platform/react-native/index.cjs.js",
   "exports": {
     ".": {
-      "types": "./dist/bundle.d.ts",
-      "require": "./dist/bundle.node.js",
-      "node": "./dist/bundle.node.mjs",
-      "react-native": "./dist/bundle.react-native.mjs"
+      "types": "./dist/cjs.d.ts",
+      "node": "./dist/platform/node/index.cjs.js",
+      "react-native": "./dist/platform/react-native/index.cjs.js"
     },
+    "./binding": {
+      "node": "./generated/native-node.mjs",
+      "react-native": "./generated/native-react-native.mjs"
+    },
+    "./binding/core": "./dist/generated/core.js",
     "./scripts/submit-analytics": "./scripts/submit-analytics.mjs",
     "./react-native.config.js": "./react-native.config.js",
     "./package.json": "./package.json"
@@ -52,13 +55,12 @@
     "test:types": "tsc --project type-tests/tsconfig.json",
     "lint": "eslint --ext .js,.mjs,.ts .",
     "build": "echo 'Run bundle, build:node, build:ios or build:android or other scripts depending on these instead' && exit 1",
-    "bundle": "wireit",
-    "bundle:coverage": "ENABLE_TEST_COVERAGE_INSTRUMENTATION=true npm run bundle",
     "bindgen:configure": "wireit",
     "bindgen:build:node": "wireit",
     "bindgen:generate:typescript": "wireit",
     "bindgen:generate:wrappers": "wireit",
     "bindgen:generate:spec-schema": "wireit",
+    "build:ts": "wireit",
     "build:node": "wireit",
     "build:node:prebuild": "wireit",
     "build:node:prebuild:arm": "wireit",
@@ -83,13 +85,8 @@
         "../realm-network-transport:bundle"
       ]
     },
-    "bundle": {
-      "command": "rollup --config",
-      "env": {
-        "ENABLE_TEST_COVERAGE_INSTRUMENTATION": {
-          "external": true
-        }
-      },
+    "build:ts": {
+      "command": "tsc -b",
       "dependencies": [
         "../realm-network-transport:bundle",
         "bindgen:generate:typescript",
@@ -115,7 +112,7 @@
       ]
     },
     "bindgen:generate:typescript": {
-      "command": "realm-bindgen --template bindgen/src/templates/typescript.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --output ./generated/ts",
+      "command": "realm-bindgen --template bindgen/src/templates/typescript.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --output ./src/generated",
       "dependencies": [
         "bindgen:generate:spec-schema"
       ],
@@ -128,12 +125,12 @@
         "bindgen/src/templates/typescript.ts"
       ],
       "output": [
-        "generated/ts/core.ts",
-        "generated/ts/native.d.mts"
+        "src/generated/core.ts",
+        "src/generated/native.d.ts"
       ]
     },
     "bindgen:generate:wrappers": {
-      "command": "realm-bindgen --template bindgen/src/templates/node-wrapper.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --output ./generated/ts",
+      "command": "realm-bindgen --template bindgen/src/templates/node-wrapper.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --output ./generated",
       "dependencies": [
         "bindgen:generate:spec-schema"
       ],
@@ -146,8 +143,8 @@
         "bindgen/src/templates/node-wrapper.ts"
       ],
       "output": [
-        "generated/ts/native-node.mjs",
-        "generated/ts/native-react-native.mjs"
+        "generated/native-node.mjs",
+        "generated/native-react-native.mjs"
       ]
     },
     "bindgen:generate:spec-schema": {
@@ -252,7 +249,7 @@
     "docs": {
       "command": "typedoc",
       "dependencies": [
-        "bundle"
+        "build:ts"
       ]
     }
   },

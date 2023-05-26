@@ -21,7 +21,7 @@
     },
     "bundle": {
       "dependencies": [
-        "./packages/realm:bundle",
+        "./packages/realm:build:ts",
         "./packages/babel-plugin:bundle",
         "./packages/mocha-reporter:bundle",
         "./packages/realm-react:bundle",

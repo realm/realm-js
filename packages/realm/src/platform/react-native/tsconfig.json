@@ -1,21 +1,18 @@
 {
-  "extends": "../../../tsconfig.json",
+  "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
-    "noResolve": false,
-    "incremental": true,
-    "resolveJsonModule": true,
+    "outDir": "../../../dist/platform/react-native",
     "types": [
       "react-native",
       "path-browserify"
     ],
-    "paths": {
-      "realm/binding": ["./generated/ts/native-react-native.mjs"],
-      "realm/binding/core": ["./generated/ts/core.ts"]
-    }
+    "noResolve": false,
   },
-  "exclude": [
-    "../../tests/",
-    "../node/",
-    "../../../type-tests/"
+  "include": [
+    ".",
+    "../../generated/native.d.ts"
   ],
+  "references": [{
+    "path": "../.."
+  }]
 }

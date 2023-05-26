@@ -23,7 +23,7 @@
     "test": {
       "command": "jest",
       "dependencies": [
-        "../realm:bundle"
+        "../realm:build:ts"
       ]
     }
   },

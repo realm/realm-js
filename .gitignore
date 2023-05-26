@@ -113,6 +113,7 @@ coverage/
 # Generated artifacts
 /packages/realm/bindgen/vendor/bindgen-lib/generated/
 /packages/realm/generated/
+/packages/realm/src/generated/
 
 # Build artifacts
 /packages/realm/dist/

@@ -1,35 +1,7 @@
 {
-  "compilerOptions": {
-    "strict": true,
-    "target": "ES2022",
-    "module": "ES2020",
-    "moduleResolution": "node",
-    "noEmit": true,
-    "esModuleInterop": true,
-    "noResolve": true,
-    "lib": [
-      "ES2022"
-    ],
-    "types": [
-      "@realm/network-transport",
-      "bson",
-      "debug",
-      "ms" // debug dependency
-    ],
-    "baseUrl": ".",
-    "paths": {
-      "realm/binding": ["./generated/ts/native-node.mjs"],
-      "realm/binding/core": ["./generated/ts/core.ts"]
-    }
-  },
-  "include": [
-    "src/",
-    "generated/ts/"
+  "references": [
+    { "path": "./src/platform/node" },
+    { "path": "./src/platform/react-native" }
   ],
-  "exclude": [
-    "src/tests/",
-    "type-tests/",
-    "src/platform/node/",
-    "src/platform/react-native/"
-  ],
+  "files": []
 }

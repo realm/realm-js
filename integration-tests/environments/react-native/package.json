@@ -87,7 +87,7 @@
       "command": "npm run common",
       "dependencies": [
         "../../../packages/realm:build:android",
-        "../../../packages/realm:bundle",
+        "../../../packages/realm:build:ts",
         "../../../packages/mocha-reporter:bundle",
         "../../../packages/realm-network-transport:bundle"
       ],
@@ -106,7 +106,7 @@
       "command": "npm run common",
       "dependencies": [
         "pod-install:simulator",
-        "../../../packages/realm:bundle",
+        "../../../packages/realm:build:ts",
         "../../../packages/mocha-reporter:bundle",
         "../../../packages/realm-network-transport:bundle"
       ],
@@ -119,7 +119,7 @@
       "command": "npm run common",
       "dependencies": [
         "pod-install:catalyst",
-        "../../../packages/realm:bundle",
+        "../../../packages/realm:build:ts",
         "../../../packages/mocha-reporter:bundle",
         "../../../packages/realm-network-transport:bundle"
       ],
@@ -132,7 +132,7 @@
       "command": "npm run common",
       "dependencies": [
         "../../../packages/realm:build:android",
-        "../../../packages/realm:bundle",
+        "../../../packages/realm:build:ts",
         "../../../packages/mocha-reporter:bundle",
         "../../../packages/realm-network-transport:bundle"
       ],
@@ -146,7 +146,7 @@
       "dependencies": [
         "pod-install:simulator",
         "../../../packages/realm:build:ios:debug:simulator",
-        "../../../packages/realm:bundle",
+        "../../../packages/realm:build:ts",
         "../../../packages/mocha-reporter:bundle",
         "../../../packages/realm-network-transport:bundle"
       ],
@@ -160,7 +160,7 @@
       "dependencies": [
         "pod-install:catalyst",
         "../../../packages/realm:build:ios:debug:catalyst",
-        "../../../packages/realm:bundle",
+        "../../../packages/realm:build:ts",
         "../../../packages/mocha-reporter:bundle",
         "../../../packages/realm-network-transport:bundle"
       ],

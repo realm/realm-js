@@ -19,5 +19,3 @@ import "./fs";
 import "./device-info";
 
 export * from "../../index";
-import { Realm } from "../../index";
-export default Realm;

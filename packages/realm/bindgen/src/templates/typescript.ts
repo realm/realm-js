@@ -167,7 +167,7 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
     }
   `);
 
-  const out = file("native.d.mts", eslint);
+  const out = file("native.d.ts", eslint);
   out("// This file is generated: Update the spec instead of editing this file directly");
 
   out("declare module 'realm/binding' {");
