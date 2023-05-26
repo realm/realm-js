@@ -245,8 +245,15 @@ describe("Queries", () => {
       return `geoSphere(${convertGeoPoint(circle.center)},  ${circle.distance})`;
     }
 
-    function convertGeoBox(box: GeoBox): string {
-      return `geoBox(${convertGeoPoint(box.bottomLeft)},  ${convertGeoPoint(box.topRight)})`;
+    function circleTest(realm: Realm, circle: GeoCircle, pois: PointOfInterest[]) {
+      const circleString = convertGeoCircle(circle);
+      geoTest(realm, circle, circleString, pois);
+    }
+
+    function geoTest(realm: Realm, geo: GeoCircle | GeoBox | GeoPolygon, geoString: string, pois: PointOfInterest[]) {
+      const poiIds = pois.map((p) => p.id);
+      expectQueryResultValues(realm, PointOfInterest, "id", [[poiIds, "location geoWithin $0 SORT(id ASC)", geo]]);
+      expectQueryResultValues(realm, PointOfInterest, "id", [[poiIds, `location geoWithin ${geoString} SORT(id ASC)`]]);
     }
 
     beforeEach(function (this: RealmContext) {
@@ -259,24 +266,20 @@ describe("Queries", () => {
       });
     });
 
-    it.only("GeoCircle", function (this: RealmContext) {
-      const circle: GeoCircle = {
+    it.only("GeoCircle basic", function (this: RealmContext) {
+      let circle: GeoCircle = {
+        center: [0, 0],
+        distance: 0.001,
+      };
+
+      circleTest(this.realm, circle, [zero]);
+
+      circle = {
         center: [0, 0],
         distance: 1000,
       };
 
-      const stringCircle = convertGeoCircle(circle);
-
-      const results = this.realm.objects<IPointOfInterest>("PointOfInterest");
-
-      //TODO This could be added to a method, so we don't need to do it ourselves all the time
-      const filtered = results.filtered(`location geoWithin ${stringCircle}`);
-      const filtered2 = results.filtered("location geoWithin $0", circle);
-
-      const first = filtered[0];
-
-      console.log(first.id);
-      console.log(first.location.coordinates);
+      circleTest(this.realm, circle, [zero, poiA, poiB, poiC, poiD]);
     });
   });
 

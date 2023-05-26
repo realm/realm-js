@@ -16,7 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { IndexSet, Int64, ObjKey, SyncSession, Timestamp, WeakSyncSession } from "realm/binding";
+import { GeoCircle as ExternalGeoCircle, GeoPoint as ExternalGeoPoint } from "./internal";
+import {
+  GeoCircle as BindingGeoCircle,
+  GeoPoint as BindingGeoPoint,
+  Geospatial,
+  IndexSet,
+  Int64,
+  ObjKey,
+  SyncSession,
+  Timestamp,
+  WeakSyncSession,
+} from "realm/binding";
 
 /** @internal */
 export * from "realm/binding";
@@ -34,6 +45,11 @@ declare module "realm/binding" {
     export function fromDate(d: Date): Timestamp;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Geospatial {
+    export function fromCircle(c: ExternalGeoCircle): Geospatial;
+  }
+
   interface SyncSession {
     /** Returns a WeakSyncSession and releases the strong reference held by this SyncSession */
     weaken(): WeakSyncSession;
@@ -47,6 +63,23 @@ declare module "realm/binding" {
      * strong reference will have been deleted.
      */
     withDeref<Ret = void>(callback: (shared: SyncSession | null) => Ret): Ret;
+  }
+}
+
+Geospatial.fromCircle = function (c: ExternalGeoCircle): Geospatial {
+  return Geospatial.makeFromCircle({
+    center: convertToBindingGeoPoint(c.center),
+    radiusRadians: c.distance,
+  });
+};
+
+function convertToBindingGeoPoint(p: ExternalGeoPoint): BindingGeoPoint {
+  if (Array.isArray(p)) {
+    return { longitude: p[0], latitude: p[1] };
+  } else if ("type" in p) {
+    return { longitude: p.coordinates[0], latitude: p.coordinates[1] };
+  } else {
+    return p;
   }
 }
 
