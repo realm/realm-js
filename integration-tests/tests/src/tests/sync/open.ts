@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { Realm } from "realm";
+import Realm from "realm";
 
 import { authenticateUserBefore, importAppBefore } from "../../hooks";
 import { buildAppConfig } from "../../utils/build-app-config";

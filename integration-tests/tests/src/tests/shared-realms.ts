@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { Realm, List } from "realm";
+import Realm, { List } from "realm";
 
 import { openRealmBefore, openRealmBeforeEach } from "../hooks";
 import { createLocalConfig } from "../utils/open-realm";
