@@ -50,7 +50,4 @@ void remove_directory(const std::string& path);
 // print something
 void print(const char* fmt, ...);
 
-// the CPU architecture
-std::string get_cpu_arch();
-
 } // namespace realm

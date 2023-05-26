@@ -219,11 +219,4 @@ void print(const char* fmt, ...)
     vprintf(format.c_str(), vl);
     va_end(vl);
 }
-
-// this should never be called
-std::string get_cpu_arch()
-{
-    return "unknown";
-}
-
 } // namespace realm

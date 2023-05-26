@@ -36,7 +36,7 @@
 #include "realm/object-store/sync/subscribable.hpp"
 #include "realm/util/file.hpp"
 #include "realm/util/platform_info.hpp"
-
+#include "realm/util/sha_crypto.hpp"
 
 using SharedApp = std::shared_ptr<realm::app::App>;
 using SharedUser = std::shared_ptr<realm::SyncUser>;
@@ -94,7 +94,7 @@ public:
     };
 
     // These values are overridden at runtime - from app.hpp
-    static inline std::string platform = "unknown";
+    static inline std::string bundle_id = "unknown";
     static inline std::string platform_version = "?.?.?";
     static inline std::string sdk_version = "?.?.?";
     static inline std::string sdk = "unknown";
@@ -240,14 +240,14 @@ void AppClass<T>::constructor(ContextType ctx, ObjectType this_object, Arguments
 
     config.transport = AppClass<T>::transport_generator(Protected(Context::get_global_context(ctx)),
                                                         NetworkTransport::make_dispatcher());
-
-    config.device_info.platform_version = platform_version;
     config.device_info.sdk = sdk;
     config.device_info.sdk_version = sdk_version;
+    config.device_info.platform_version = platform_version;
     config.device_info.device_name = device_name;
     config.device_info.device_version = device_version;
     config.device_info.framework_name = framework_name;
     config.device_info.framework_version = framework_version;
+    config.device_info.bundle_id = bundle_id;
 
     util::try_make_dir(client_config.base_file_path);
     set_default_realm_file_directory(client_config.base_file_path);
@@ -399,20 +399,28 @@ void AppClass<T>::set_versions(ContextType ctx, ObjectType this_object, Argument
     args.validate_count(1);
     auto versions = Value::validated_to_object(ctx, args[0]);
 
-    AppClass<T>::platform = Object::validated_get_string(ctx, versions, "platform");
-    AppClass<T>::platform_version = Object::validated_get_string(ctx, versions, "platformVersion");
+    // the bundle id has to be anonymized
+    std::string raw_bundle_id = Object::validated_get_string(ctx, versions, "bundleId");
+    unsigned char salt[] = "Realm is great";
+    std::array<unsigned char, 32> hmac;
+    util::hmac_sha256(util::unsafe_span_cast<unsigned char>(raw_bundle_id), hmac, util::Span<uint8_t, 32>(salt, 32));
+    std::string anonymized_bundle_id;
+    anonymized_bundle_id.resize(util::base64_encoded_size(hmac.size()));
+    util::base64_encode(reinterpret_cast<char*>(hmac.data()), hmac.size(), anonymized_bundle_id.data(), anonymized_bundle_id.size());
+    while (anonymized_bundle_id.back() == '=') {
+        anonymized_bundle_id.pop_back();
+    }
+    std::replace(anonymized_bundle_id.begin(), anonymized_bundle_id.end(), '+', '-');
+    std::replace(anonymized_bundle_id.begin(), anonymized_bundle_id.end(), '/', '_');
+
+    AppClass<T>::bundle_id = anonymized_bundle_id;
     AppClass<T>::sdk = Object::validated_get_string(ctx, versions, "sdk");
     AppClass<T>::sdk_version = Object::validated_get_string(ctx, versions, "sdkVersion");
-    AppClass<T>::cpu_arch = Object::validated_get_string(ctx, versions, "cpuArch");
+    AppClass<T>::platform_version = Object::validated_get_string(ctx, versions, "platformVersion");
     AppClass<T>::device_name = Object::validated_get_string(ctx, versions, "deviceName");
     AppClass<T>::device_version = Object::validated_get_string(ctx, versions, "deviceVersion");
     AppClass<T>::framework_name = Object::validated_get_string(ctx, versions, "frameworkName");
     AppClass<T>::framework_version = Object::validated_get_string(ctx, versions, "frameworkVersion");
-
-    // we are likely on iOS or Android
-    if (AppClass<T>::cpu_arch == "unknown") {
-        AppClass<T>::cpu_arch = get_cpu_arch();
-    }
 }
 
 /**

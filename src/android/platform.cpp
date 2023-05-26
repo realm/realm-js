@@ -115,19 +115,4 @@ void print(const char* fmt, ...)
     va_end(vl);
 }
 
-std::string get_cpu_arch()
-{
-#if defined(__arm__)
-    return "armeabi-v7a";
-#elif defined(__aarch64__)
-    return "arm64-v8a";
-#elif defined(__i386__)
-    return "x86";
-#elif defined(__x86_64__)
-    return "x86_64";
-#else
-    return "unknown";
-#endif
-}
-
 } // namespace realm
