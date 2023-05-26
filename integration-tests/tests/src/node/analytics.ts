@@ -19,9 +19,12 @@
 import * as os from "os";
 import * as process from "process";
 import * as path from "path";
+
 import { expect } from "chai";
 import { collectPlatformData } from "realm/scripts/submit-analytics";
 import { readFileSync } from "node:fs";
+
+import fse from "fs-extra";
 
 type Fixture = "node" | "react-native" | "electron";
 
@@ -31,10 +34,9 @@ describe("Analytics", () => {
   }
 
   function getRealmVersion() {
-    const realmPath = path.resolve(__dirname, "../../../../packages/realm/package.json");
-    const realmPackageContent = readFileSync(realmPath, { encoding: "utf8" });
-    const realmPackageJson = JSON.parse(realmPackageContent);
-    return realmPackageJson["version"];
+    const packageJsonPath = path.resolve(__dirname, "../../../../packages/realm/package.json");
+    const packageJson = fse.readJsonSync(packageJsonPath);
+    return packageJson["version"];
   }
 
   function expectCommon(data: Record<string, unknown>) {

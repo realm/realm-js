@@ -52,16 +52,16 @@ import { createHmac } from "node:crypto";
 import { Buffer } from "node:buffer";
 
 import machineId from "node-machine-id";
-import commandLineArgs from "command-line-args";
 import fse from "fs-extra";
+
+import createDebug from "debug";
+export const debug = createDebug("realm:submit-analytics");
 
 export { collectPlatformData };
 
 // emulate old __dirname: https://flaviocopes.com/fix-dirname-not-defined-es-module-scope/
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-let doLog; // placeholder for logger function
 
 /**
  * Path and credentials required to submit analytics through the webhook.
@@ -208,7 +208,7 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
         jsEngine = "jsc";
       }
     } catch (err) {
-      doLog(`Cannot read ios/Podfile: ${err}`);
+      debug(`Cannot read ios/Podfile: ${err}`);
       jsEngine = "unknown";
     }
 
@@ -217,7 +217,7 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
       const rnPackageJson = JSON.parse(fs.readFileSync(rnPath, "utf-8"));
       frameworkVersion = rnPackageJson["version"];
     } catch (err) {
-      doLog(`Cannot read react-native package.json: ${err}`);
+      debug(`Cannot read react-native package.json: ${err}`);
     }
   }
 
@@ -235,7 +235,7 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
       const electronPackageJson = JSON.parse(fs.readFileSync(electronPath, "utf-8"));
       frameworkVersion = electronPackageJson["version"];
     } catch (err) {
-      doLog(`Cannot read electron package.json: ${err}`);
+      debug(`Cannot read electron package.json: ${err}`);
     }
   }
 
@@ -256,7 +256,7 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
       const typescriptPackageJson = JSON.parse(fs.readFileSync(typescriptPath, "utf-8"));
       languageVersion = typescriptPackageJson["version"];
     } catch (err) {
-      doLog(`Cannot read typescript package.json: ${err}`);
+      debug(`Cannot read typescript package.json: ${err}`);
     }
   }
 
@@ -289,9 +289,9 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
 
 /**
  * Collect and send analytics data to MongoDB over HTTPS
- * @param  {boolean} dryRun if true, collect data but don't submit
+ * If `REALM_DISABLE_ANALYTICS` is set, no data is submitted to MongoDB
  */
-async function submitAnalytics(dryRun) {
+async function submitAnalytics() {
   const data = await collectPlatformData();
   const payload = {
     webHook: {
@@ -299,20 +299,15 @@ async function submitAnalytics(dryRun) {
       properties: data,
     },
   };
-  doLog(`payload: ${JSON.stringify(payload)}`);
-
-  if (dryRun) {
-    doLog("Dry run; will not submit analytics");
-    return;
-  }
-
-  if (isAnalyticsDisabled()) {
-    doLog("Analytics is disabled");
-    return;
-  }
+  debug(`payload: ${JSON.stringify(payload)}`);
 
   if ("REALM_PRINT_ANALYTICS" in process.env) {
     console.log("REALM ANALYTICS", JSON.stringify(data, null, 2));
+  }
+
+  if (isAnalyticsDisabled()) {
+    debug("Analytics is disabled");
+    return;
   }
 
   return new Promise((resolve, reject) => {
@@ -335,37 +330,6 @@ async function submitAnalytics(dryRun) {
   });
 }
 
-const optionDefinitions = [
-  {
-    name: "dryRun",
-    type: Boolean,
-    multiple: false,
-    defaultValue: false,
-    description: "If true, don't submit analytics",
-  },
-  { name: "log", type: Boolean, multiple: false, defaultValue: false, description: "If true, print log messages" },
-  { name: "test", type: Boolean, multiple: false, defaultValue: false, description: "If true, run as --dryRun --log" },
-];
-
-const options = commandLineArgs(optionDefinitions, { camelCase: true });
-
-let dryRun = options.dryRun;
-let log = options.log;
-
-if (options.test) {
-  dryRun = true;
-  log = true;
-}
-
-if (log) {
-  doLog = (msg) => console.log(msg);
-} else {
-  // eslint-disable-next-line no-unused-vars
-  doLog = () => {
-    /* don't log */
-  };
-}
-
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  submitAnalytics(dryRun).catch(console.error);
+  submitAnalytics().catch(console.error);
 }
