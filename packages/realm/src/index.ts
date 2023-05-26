@@ -169,6 +169,8 @@ export {
   UserTypeName,
 } from "./internal";
 
+import "./global";
+
 import { Realm, RealmObjectConstructor } from "./internal";
 
 export type Mixed = unknown;
