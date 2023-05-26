@@ -50,6 +50,7 @@ import {
   Collection,
   CollectionChangeCallback,
   CollectionChangeSet,
+  CompensatingWriteError,
   Configuration,
   ConfigurationWithSync,
   ConfigurationWithoutSync,
@@ -220,12 +221,14 @@ export class Realm {
   public static ClientResetMode = ClientResetMode;
   /** @deprecated Please use named imports */
   public static Collection = Collection;
+  public static CompensatingWriteError = CompensatingWriteError;
   /** @deprecated Please use named imports */
   public static ConnectionState = ConnectionState;
   /** @deprecated Please use named imports */
   public static Credentials = Credentials;
   /** @deprecated Please use named imports */
   public static Dictionary = Dictionary;
+  public static flags = flags;
   /** @deprecated Please use named imports */
   public static List = List;
   // TODO: Decide if we want to deprecate this as well
@@ -1291,6 +1294,7 @@ type CollectionType<
   T = ValueType,
   ChangeCallbackType = unknown,
 > = Collection<KeyType, ValueType, EntryType, T, ChangeCallbackType>;
+type CompensatingWriteErrorType = CompensatingWriteError;
 type ConnectionStateType = ConnectionState;
 type CredentialsType = Credentials;
 type DictionaryType<T> = Dictionary<T>;
@@ -1433,6 +1437,7 @@ export declare namespace Realm {
     CollectionChangeSet,
     /** @deprecated Please use named imports */
     CollectionType as Collection,
+    CompensatingWriteErrorType,
     /** @deprecated Please use named imports */
     ConfigurationWithoutSync,
     /** @deprecated Please use named imports */
