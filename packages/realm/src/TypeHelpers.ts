@@ -99,7 +99,7 @@ export function mixedToBinding(realm: binding.Realm, value: unknown): binding.Mi
     throw new Error(`Using a ${value.constructor.name} as Mixed value, is not yet supported`);
   } else if (Array.isArray(value)) {
     throw new TypeError("A mixed property cannot contain an array of values.");
-  } else if (assertIsGeoCircle(value)) {
+  } else if (isGeoCircle(value)) {
     return binding.Geospatial.fromCircle(value);
   } else {
     // Convert typed arrays to an `ArrayBuffer`
@@ -113,7 +113,7 @@ export function mixedToBinding(realm: binding.Realm, value: unknown): binding.Mi
   }
 }
 
-function assertIsGeoCircle(value: any): value is GeoCircle {
+function isGeoCircle(value: any): value is GeoCircle {
   return "distance" in value && "center" in value;
 }
 
