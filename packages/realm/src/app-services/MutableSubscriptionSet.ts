@@ -61,10 +61,9 @@ export type SubscriptionOptions = {
    */
   behavior?: WaitForSync;
   /**
-   * The maximum number of milliseconds to wait for objects to be downloaded.
+   * The maximum time (in milliseconds) to wait for objects to be downloaded.
    * If the time exceeds this limit, the `Results` is returned and the download
-   * continues in the background. (This value affects the timeout behavior
-   * similar to {@link setTimeout}.)
+   * continues in the background.
    */
   timeout?: number;
 };

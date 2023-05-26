@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2023 Realm Inc.
+// Copyright 2022 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -120,6 +120,7 @@ export class Results<T = unknown> extends OrderedCollection<T> {
    *
    * @param options Options to use when adding this subscription (e.g. a name or wait behavior).
    * @returns A promise that resolves to this {@link Results} instance.
+   * @experimental This API is experimental and may change or be removed.
    */
   async subscribe(options: SubscriptionOptions = { behavior: WaitForSync.FirstTime }): Promise<this> {
     const subs = this.realm.subscriptions;
