@@ -48,7 +48,6 @@ function tryWrap(body: string) {
 
 class CppEmscriptenFunc extends CppFunc {
   constructor(private addon: BrowserAddon, name: string, numberOfArgs: number, props?: CppFuncProps) {
-    // TODO generate signature with exact number of args (numberOfArgs)
     const vars = new Array<CppVar>(numberOfArgs);
     for (let i = 0; i < numberOfArgs; i++) {
       vars[i] = new CppVar("const emscripten::val", `arg${i}`);
@@ -198,7 +197,6 @@ function convertPrimToEmscripten(addon: BrowserAddon, type: string, expr: string
     case "ObjectId":
     case "UUID":
     case "Decimal128":
-      //TODO FIXME return `${type}((${expr}.as<std::string>().c_str()))`;
       return `${addon.accessCtor(type)}.new_(${convertPrimToEmscripten(addon, "std::string", `${expr}.to_string()`)})`;
 
     case "EJson":
@@ -213,15 +211,11 @@ function convertPrimToEmscripten(addon: BrowserAddon, type: string, expr: string
     case "AppError":
       // This matches old JS SDK. The C++ type will be changing as part of the unify error handleing project.
       return `([&] (const app::AppError& err) {
-                // TODO call the extern method to report an error
-                // auto jsErr =  Napi::Error::New(, err.message).Value();
-                // jsErr.Set("code", double(err.error_code.value()));
-                // return jsErr;
                 return emscripten::val(err.what());
               }(${expr}))`;
     case "std::exception_ptr":
       return `toEmscriptenException(${expr})`;
-    case "std::error_code": //TODO same?
+    case "std::error_code":
       return `toEmscriptenErrorCode(${expr})`;
     case "Status":
       return `([&] (const Status& status) {
@@ -233,7 +227,6 @@ function convertPrimToEmscripten(addon: BrowserAddon, type: string, expr: string
   assert.fail(`unexpected primitive type '${type}'`);
 }
 function convertPrimFromEmscripten(addon: BrowserAddon, type: string, expr: string): string {
-  // TODO consider using coercion using ToString, ToNumber, ToBoolean.
   switch (type) {
     case "void":
       return `((void)(${expr}))`;
@@ -264,8 +257,6 @@ function convertPrimFromEmscripten(addon: BrowserAddon, type: string, expr: stri
 
     case "StringData":
     case "std::string_view":
-      // TODO look into not wrapping if directly converting into an argument.
-      //return `${addon.get()}->wrapString(${convertPrimFromEmscripten(addon, "std::string", expr)})`;
       return `${convertPrimFromEmscripten(addon, "std::string", expr)}`;
 
     case "BinaryData":
@@ -315,7 +306,6 @@ function convertToEmscripten(addon: BrowserAddon, type: Type, expr: string): str
     case "Primitive":
       return convertPrimToEmscripten(addon, type.name, expr);
     case "Pointer":
-      // TODO copy JSI impl
       return `[&] (const auto& ptr){
           if constexpr(requires{ bool(ptr); }) { // support claiming that always-valid iterators are pointers.
               REALM_ASSERT(bool(ptr) && "Must mark nullable pointers with Nullable<> in spec");
@@ -347,9 +337,6 @@ function convertToEmscripten(addon: BrowserAddon, type: Type, expr: string): str
         case "util::Optional":
           return `[&] (auto&& opt) { return !opt ? emscripten::val::undefined() : ${c(inner, "*FWD(opt)")}; }(${expr})`;
         case "std::vector":
-          // TODO try different ways to create the array to see what is fastest.
-          // eg, try calling push() with and without passing size argument to New().
-          // TODO try val::vecFromJSArray
           return `[&] (auto&& vec) {
               auto out = emscripten::val::array();
               for (auto&& e : vec) {
@@ -482,7 +469,6 @@ function convertFromEmscripten(addon: BrowserAddon, type: Type, expr: string): s
           const suffix = type.name.split(":")[2];
           const nArgs = type.args.length;
           return `[&] (const emscripten::val& arr) {
-              // TODO assert arr.isArray()
               if (arr["length"].as<int>() != ${nArgs}u)
                 emscripten::val("Need an array with exactly ${nArgs} elements").throw_();
               return std::make_${suffix}(${type.args.map((arg, i) => c(arg, `arr[${i}u]`))});
@@ -521,12 +507,7 @@ function convertFromEmscripten(addon: BrowserAddon, type: Type, expr: string): s
       return `${type.fromEmscripten().name}(${expr})`;
 
     case "Func":
-      //assert.fail(`TODO unsuported`);
-    // TODO see if we ever need to do any conversion from Napi::Error exceptions to something else.
-    // TODO see if the ThreadConfinementChecker is ever too expensive in release builds.
-    // Note: putting the FunctionReference in a shared_ptr because some of these need to be put into a std::function
-    // which requires copyability, but FunctionReferences are move-only.
-    const lambda = `
+      const lambda = `
       [
         _cb =  FWD(${expr})
       ]
@@ -646,7 +627,6 @@ class BrowserCppDecls extends CppDecls {
             [new CppVar("emscripten::val", "val")],
             {
               body: `
-                // TODO assert val is an object 
                 auto out = ${struct.cppName}();
                 ${struct.fields
                   .map(
@@ -674,8 +654,6 @@ class BrowserCppDecls extends CppDecls {
     }
 
     for (const cls of spec.classes) {
-      // TODO need to do extra work to enable JS implementation of interfaces
-
       assert(
         !cls.sharedPtrWrapped || (!cls.base && cls.subclasses.length == 0),
         `We don't support mixing sharedPtrWrapped and class hierarchies. ${cls.name} requires this.`,
@@ -683,7 +661,6 @@ class BrowserCppDecls extends CppDecls {
 
       this.addon.addClass(cls);
 
-      // TODO look into using enabled_shared_from for all shared thingies so we can just store T*.
       const baseType = cls.sharedPtrWrapped ? `std::shared_ptr<${cls.cppName}>` : cls.rootBase().cppName;
       const derivedType = cls.sharedPtrWrapped ? `std::shared_ptr<${cls.cppName}>` : cls.cppName;
       const ptr = (expr: string) => `reinterpret_cast<${baseType}*>(${expr}.as<std::uintptr_t>())`;
@@ -753,7 +730,6 @@ class BrowserCppDecls extends CppDecls {
         new CppFunc(`EMVAL_TO_${kind}_${cls.name}`, refType, [new CppVar("emscripten::val", "val")], {
           attributes: "[[maybe_unused]]",
           body: `
-            // TODO check val is object translate below as well
             emscripten::val external = ${this.addon.accessExtractor(cls)}(val);
             const auto ptr = ${casted(`external`)};
             ${
@@ -873,7 +849,6 @@ class BrowserCppDecls extends CppDecls {
                   .join(" ")
               }
 
-              // TODO should we check for "boxed" values like 'new Number(1)'?
               const auto ctorName =
               val["constructor"]["name"].as<std::string>();
     
