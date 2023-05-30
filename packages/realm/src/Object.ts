@@ -359,7 +359,7 @@ export class RealmObject<T = DefaultObject> {
     assert(collectionHelpers, "collection helpers");
     const tableView = this[INTERNAL].getBacklinkView(tableRef, columnKey);
     const results = binding.Results.fromTableView(this[REALM].internal, tableView);
-    return new Results(this[REALM], results, collectionHelpers);
+    return new Results(this[REALM], results, collectionHelpers, linkedObjectSchema.name);
   }
 
   /**

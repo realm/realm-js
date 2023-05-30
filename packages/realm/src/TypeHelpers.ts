@@ -308,16 +308,10 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
       fromBinding: defaultFromBinding,
     };
   },
-  [binding.PropertyType.Array]({ realm, getClassHelpers, name, objectSchemaName }) {
-    assert.string(objectSchemaName, "objectSchemaName");
-    const classHelpers = getClassHelpers(objectSchemaName);
+  [binding.PropertyType.Array]() {
     return {
-      fromBinding(value: unknown) {
-        assert.instanceOf(value, binding.List);
-        const propertyHelpers = classHelpers.properties.get(name);
-        const collectionHelpers = propertyHelpers.collectionHelpers;
-        assert.object(collectionHelpers);
-        return new List(realm, value, collectionHelpers);
+      fromBinding() {
+        throw new Error("Not supported");
       },
       toBinding() {
         throw new Error("Not supported");

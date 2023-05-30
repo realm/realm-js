@@ -19,7 +19,7 @@
 import {
   ClassHelpers,
   Dictionary,
-  OrderedCollectionHelpers,
+  List,
   Realm,
   RealmSet,
   Results,
@@ -41,13 +41,6 @@ type PropertyContext = BindingPropertySchema & {
   default?: unknown;
 };
 
-function getObj(results: binding.Results, index: number) {
-  return results.getObj(index);
-}
-function getAny(results: binding.Results, index: number) {
-  return results.getAny(index);
-}
-
 export type HelperOptions = {
   realm: Realm;
   getClassHelpers: (name: string) => ClassHelpers;
@@ -64,7 +57,7 @@ type PropertyOptions = {
 type PropertyAccessors = {
   get(obj: binding.Obj): unknown;
   set(obj: binding.Obj, value: unknown): unknown;
-  collectionHelpers?: OrderedCollectionHelpers;
+  collectionHelpers?: TypeHelpers;
 };
 
 export type PropertyHelpers = TypeHelpers &
@@ -158,13 +151,6 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       objectSchemaName: undefined,
     });
 
-    // Properties of items are only available on lists of objects
-    const isObjectItem = itemType === binding.PropertyType.Object || itemType === binding.PropertyType.LinkingObjects;
-    const collectionHelpers: OrderedCollectionHelpers = {
-      ...itemHelpers,
-      get: isObjectItem ? getObj : getAny,
-    };
-
     if (itemType === binding.PropertyType.LinkingObjects) {
       // Locate the table of the targeted object
       assert.string(objectType, "object type");
@@ -182,7 +168,7 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
         get(obj: binding.Obj) {
           const tableView = obj.getBacklinkView(tableRef, targetProperty.columnKey);
           const results = binding.Results.fromTableView(realmInternal, tableView);
-          return new Results(realm, results, collectionHelpers);
+          return new Results(realm, results, itemHelpers, objectType);
         },
         set() {
           throw new Error("Not supported");
@@ -191,11 +177,15 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
     } else {
       const { toBinding: itemToBinding } = itemHelpers;
       return {
-        collectionHelpers,
+        itemHelpers,
         get(obj: binding.Obj) {
+          assert.string(objectType);
+          const collectionHelpers: TypeHelpers = {
+            fromBinding: itemHelpers.fromBinding,
+            toBinding: itemHelpers.toBinding,
+          };
           const internal = binding.List.make(realm.internal, obj, columnKey);
-          assert.instanceOf(internal, binding.List);
-          return fromBinding(internal);
+          return new List(realm, internal, collectionHelpers, objectType);
         },
         set(obj, values) {
           assert.inTransaction(realm);
@@ -288,15 +278,14 @@ const ACCESSOR_FACTORIES: Partial<Record<binding.PropertyType, AccessorFactory>>
       objectSchemaName: undefined,
     });
     assert.string(objectType);
-    const collectionHelpers: OrderedCollectionHelpers = {
-      get: itemType === binding.PropertyType.Object ? getObj : getAny,
+    const collectionHelpers: TypeHelpers = {
       fromBinding: itemHelpers.fromBinding,
       toBinding: itemHelpers.toBinding,
     };
     return {
       get(obj) {
         const internal = binding.Set.make(realm.internal, obj, columnKey);
-        return new RealmSet(realm, internal, collectionHelpers);
+        return new RealmSet(realm, internal, collectionHelpers, objectType);
       },
       set(obj, value) {
         const internal = binding.Set.make(realm.internal, obj, columnKey);

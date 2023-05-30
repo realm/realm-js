@@ -51,11 +51,6 @@ export type CollectionChangeCallback<T = unknown, EntryType extends [unknown, un
   changes: CollectionChangeSet,
 ) => void;
 
-/** @internal */
-export type OrderedCollectionHelpers = TypeHelpers & {
-  get(results: binding.Results, index: number): unknown;
-};
-
 const DEFAULT_PROPERTY_DESCRIPTOR: PropertyDescriptor = { configurable: true, enumerable: true, writable: true };
 const PROXY_HANDLER: ProxyHandler<OrderedCollection> = {
   // TODO: Consider executing the `parseInt` first to optimize for index access over accessing a member on the list
@@ -100,20 +95,28 @@ const PROXY_HANDLER: ProxyHandler<OrderedCollection> = {
   },
 };
 
+type OrderedCollectionInternal = binding.Results | binding.List | binding.Set;
+
 export abstract class OrderedCollection<T = unknown, EntryType extends [unknown, unknown] = [number, T]>
   extends Collection<number, T, EntryType, T, CollectionChangeCallback<T, EntryType>>
   implements Omit<ReadonlyArray<T>, "entries">
 {
   /** @internal */ protected declare realm: Realm;
-  /** @internal */ protected declare results: binding.Results;
-  /** @internal */ protected declare helpers: OrderedCollectionHelpers;
+  /** @internal */ protected declare abstract internal: OrderedCollectionInternal;
+  /** @internal */ protected declare helpers: TypeHelpers;
+  /** @internal */ protected declare itemType: binding.PropertyType;
   /** @internal */
-  constructor(realm: Realm, results: binding.Results, helpers: OrderedCollectionHelpers) {
+  constructor(
+    realm: Realm,
+    internal: OrderedCollectionInternal,
+    helpers: TypeHelpers,
+    objectSchemaName: string | undefined | null,
+  ) {
     if (arguments.length === 0) {
       throw new IllegalConstructorError("OrderedCollection");
     }
     super((callback) => {
-      return results.addNotificationCallback((changes) => {
+      return internal.addNotificationCallback((changes) => {
         try {
           callback(proxied, {
             deletions: unwind(changes.deletions),
@@ -132,9 +135,12 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     });
     // Wrap in a proxy to trap ownKeys and get, enabling the spread operator
     const proxied = new Proxy(this, PROXY_HANDLER as ProxyHandler<this>);
+    const itemType = internal.type; // Can probably get this passed in rather than dropping to C++.
+    const isObjectType =
+      (itemType & ~binding.PropertyType.Flags) === binding.PropertyType.Object ||
+      (itemType & ~binding.PropertyType.Flags) === binding.PropertyType.LinkingObjects;
     // Get the class helpers for later use, if available
-    const { objectType } = results;
-    const classHelpers = typeof objectType === "string" && objectType !== "" ? realm.getClassHelpers(objectType) : null;
+    const classHelpers = isObjectType && objectSchemaName ? realm.getClassHelpers(objectSchemaName) : null;
     // Make the internal properties non-enumerable
     Object.defineProperty(this, "realm", {
       enumerable: false,
@@ -142,11 +148,11 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
       writable: false,
       value: realm,
     });
-    Object.defineProperty(this, "results", {
+    Object.defineProperty(this, "internal", {
       enumerable: false,
       configurable: false,
       writable: false,
-      value: results,
+      value: internal,
     });
     Object.defineProperty(this, "helpers", {
       enumerable: false,
@@ -166,12 +172,24 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
       writable: false,
       value: mixedToBinding.bind(undefined, realm.internal),
     });
+    Object.defineProperty(this, "itemType", {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: itemType,
+    });
     return proxied;
   }
 
   /** @internal */
   protected declare classHelpers: ClassHelpers | null;
   private declare mixedToBinding: (value: unknown) => binding.MixedArg;
+
+  /** @internal */
+  private get isObjectType() {
+    const itemType = this.itemType & ~binding.PropertyType.Flags;
+    return itemType === binding.PropertyType.Object || itemType === binding.PropertyType.LinkingObjects;
+  }
 
   /**
    * Get an element of the ordered collection by index
@@ -180,7 +198,8 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * @internal
    */
   public get(index: number): T {
-    return this.helpers.fromBinding(this.helpers.get(this.results, index)) as T;
+    const item = this.isObjectType ? this.internal.getObj(index) : this.internal.getAny(index);
+    return this.helpers.fromBinding(item) as T;
   }
 
   /**
@@ -215,33 +234,38 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   }
 
   *keys() {
-    const size = this.results.size();
+    const size = this.internal.size();
     for (let i = 0; i < size; i++) {
       yield i;
     }
   }
 
   *values() {
-    const snapshot = this.results.snapshot();
-    const { get, fromBinding } = this.helpers;
-    for (const i of this.keys()) {
-      yield fromBinding(get(snapshot, i)) as T;
+    const { isObjectType } = this;
+    const snapshot = isObjectType ? this.internal.snapshot() : this.internal;
+    const { fromBinding } = this.helpers;
+    const size = this.internal.size();
+    for (let i = 0; i < size; i++) {
+      const item = isObjectType ? snapshot.getObj(i) : snapshot.getAny(i);
+      yield fromBinding(item) as T;
     }
   }
 
   *entries() {
-    const { get, fromBinding } = this.helpers;
-    const snapshot = this.results.snapshot();
-    const size = snapshot.size();
+    const { isObjectType } = this;
+    const { fromBinding } = this.helpers;
+    const snapshot = isObjectType ? this.internal.snapshot() : this.internal;
+    const size = this.internal.size();
     for (let i = 0; i < size; i++) {
-      yield [i, fromBinding(get(snapshot, i))] as EntryType;
+      const item = isObjectType ? snapshot.getObj(i) : snapshot.getAny(i);
+      yield [i, fromBinding(item)] as EntryType;
     }
   }
 
   readonly [n: number]: T;
 
   get length(): number {
-    return this.results.size();
+    return this.internal.size();
   }
 
   set length(value: number) {
@@ -249,7 +273,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   }
 
   get type(): PropertyType {
-    return getTypeName(this.results.type & ~binding.PropertyType.Flags, undefined);
+    return getTypeName(this.itemType & ~binding.PropertyType.Flags, undefined);
   }
 
   /**
@@ -258,7 +282,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * @since 2.0.0
    */
   get optional(): boolean {
-    return !!(this.results.type & binding.PropertyType.Nullable);
+    return !!(this.itemType & binding.PropertyType.Nullable);
   }
 
   toString(): string {
@@ -280,12 +304,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   }
   indexOf(searchElement: T, fromIndex?: number): number {
     assert(typeof fromIndex === "undefined", "The second fromIndex argument is not yet supported");
-    if (this.type === "object") {
-      assert.instanceOf(searchElement, RealmObject);
-      return this.results.indexOfObj(searchElement[INTERNAL]);
-    } else {
-      return this.results.indexOf(this.helpers.toBinding(searchElement, undefined));
-    }
+    return this.internal.indexOf(this.helpers.toBinding(searchElement, undefined));
   }
   lastIndexOf(searchElement: T, fromIndex?: number): number {
     return [...this].lastIndexOf(searchElement, fromIndex);
@@ -391,7 +410,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * @since 2.7.0
    */
   isEmpty(): boolean {
-    return this.results.size() === 0;
+    return this.internal.size() === 0;
   }
 
   /**
@@ -409,7 +428,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    */
   min(property?: string): number | Date | undefined {
     const columnKey = this.getPropertyColumnKey(property);
-    const result = this.results.min(columnKey);
+    const result = this.internal.min(columnKey);
     if (result instanceof Date || typeof result === "number" || typeof result === "undefined") {
       return result;
     } else if (binding.Int64.isInt(result)) {
@@ -438,7 +457,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    */
   max(property?: string): number | Date | undefined {
     const columnKey = this.getPropertyColumnKey(property);
-    const result = this.results.max(columnKey);
+    const result = this.internal.max(columnKey);
     if (result instanceof Date || typeof result === "number" || typeof result === "undefined") {
       return result;
     } else if (binding.Int64.isInt(result)) {
@@ -466,7 +485,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    */
   sum(property?: string): number {
     const columnKey = this.getPropertyColumnKey(property);
-    const result = this.results.sum(columnKey);
+    const result = this.internal.sum(columnKey);
     if (typeof result === "number") {
       return result;
     } else if (binding.Int64.isInt(result)) {
@@ -492,7 +511,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    */
   avg(property?: string): number | undefined {
     const columnKey = this.getPropertyColumnKey(property);
-    const result = this.results.average(columnKey);
+    const result = this.internal.average(columnKey);
     if (typeof result === "number" || typeof result === "undefined") {
       return result;
     } else if (binding.Int64.isInt(result)) {
@@ -519,14 +538,15 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * let merlots = wines.filtered('variety == "Merlot" && vintage <= $0', maxYear);
    */
   filtered(queryString: string, ...args: unknown[]): Results<T> {
-    const { results: parent, realm, helpers } = this;
+    const { internal, realm, helpers } = this;
+    const parent = internal instanceof binding.Results ? internal : internal.asResults();
     const kpMapping = binding.Helpers.getKeypathMapping(realm.internal);
     const bindingArgs = args.map((arg) =>
       Array.isArray(arg) ? arg.map((sub) => this.mixedToBinding(sub)) : this.mixedToBinding(arg),
     );
     const newQuery = parent.query.table.query(queryString, bindingArgs, kpMapping);
     const results = binding.Helpers.resultsAppendQuery(parent, newQuery);
-    return new Results(realm, results, helpers);
+    return new Results(realm, results, helpers, this.classHelpers?.objectSchema.name);
   }
 
   /**
@@ -590,7 +610,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   sorted(arg0: boolean | SortDescriptor[] | string = "self", arg1?: boolean): Results<T> {
     if (Array.isArray(arg0)) {
       assert.undefined(arg1, "second 'argument'");
-      const { results: parent, realm, helpers } = this;
+      const { internal, realm, helpers } = this;
       // Map optional "reversed" to "ascending" (expected by the binding)
       const descriptors = arg0.map<[string, boolean]>((arg, i) => {
         if (typeof arg === "string") {
@@ -605,8 +625,8 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
         }
       });
       // TODO: Call `parent.sort`, avoiding property name to column key conversion to speed up performance here.
-      const results = parent.sortByNames(descriptors);
-      return new Results(realm, results, helpers);
+      const results = internal.sortByNames(descriptors);
+      return new Results(realm, results, helpers, this.classHelpers?.objectSchema.name);
     } else if (typeof arg0 === "string") {
       return this.sorted([[arg0, arg1 === true]]);
     } else if (typeof arg0 === "boolean") {
@@ -632,7 +652,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * @returns Results which will **not** live update.
    */
   snapshot(): Results<T> {
-    return new Results(this.realm, this.results.snapshot(), this.helpers);
+    return new Results(this.realm, this.internal.snapshot(), this.helpers, this.classHelpers?.objectSchema.name);
   }
 
   private getPropertyColumnKey(name: string | undefined): binding.ColKey {

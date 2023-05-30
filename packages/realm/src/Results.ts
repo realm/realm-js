@@ -19,11 +19,11 @@
 import {
   IllegalConstructorError,
   OrderedCollection,
-  OrderedCollectionHelpers,
   Realm,
   RealmInsertionModel,
   SubscriptionOptions,
   TimeoutPromise,
+  TypeHelpers,
   WaitForSync,
   assert,
   binding,
@@ -53,23 +53,16 @@ export class Results<T = unknown> extends OrderedCollection<T> {
    * @param internalRealm The internal representation of the Realm managing these results.
    * @param internalTable The internal representation of the table.
    */
-  constructor(realm: Realm, internal: binding.Results, helpers: OrderedCollectionHelpers) {
+  constructor(
+    realm: Realm,
+    internal: binding.Results,
+    helpers: TypeHelpers,
+    objectSchemaName: string | undefined | null,
+  ) {
     if (arguments.length === 0 || !(internal instanceof binding.Results)) {
       throw new IllegalConstructorError("Results");
     }
-    super(realm, internal, helpers);
-    Object.defineProperty(this, "internal", {
-      enumerable: false,
-      configurable: false,
-      writable: false,
-      value: internal,
-    });
-    Object.defineProperty(this, "realm", {
-      enumerable: false,
-      configurable: false,
-      writable: false,
-      value: realm,
-    });
+    super(realm, internal, helpers, objectSchemaName);
     Object.defineProperty(this, "subscriptionName", {
       enumerable: false,
       configurable: false,
@@ -97,18 +90,15 @@ export class Results<T = unknown> extends OrderedCollection<T> {
    * @since 2.0.0-rc20
    */
   update(propertyName: keyof RealmInsertionModel<T>, value: RealmInsertionModel<T>[typeof propertyName]): void {
-    const {
-      classHelpers,
-      helpers: { get },
-    } = this;
+    const { classHelpers } = this;
     assert.string(propertyName);
     assert(this.type === "object" && classHelpers, "Expected a result of Objects");
     const { set } = classHelpers.properties.get(propertyName);
 
-    const snapshot = this.results.snapshot();
+    const snapshot = this.internal.snapshot();
     const size = snapshot.size();
     for (let i = 0; i < size; i++) {
-      const obj = get(snapshot, i);
+      const obj = snapshot.getObj(i);
       assert.instanceOf(obj, binding.Obj);
       set(obj, value);
     }

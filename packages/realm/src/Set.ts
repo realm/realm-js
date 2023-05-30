@@ -16,14 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-  IllegalConstructorError,
-  OrderedCollection,
-  OrderedCollectionHelpers,
-  Realm,
-  assert,
-  binding,
-} from "./internal";
+import { IllegalConstructorError, OrderedCollection, Realm, TypeHelpers, assert, binding } from "./internal";
 
 /**
  * Instances of this class will be returned when accessing object properties whose type is `"Set"`
@@ -40,20 +33,14 @@ import {
  */
 export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
   /** @internal */
-  private declare internal: binding.Set;
+  protected declare internal: binding.Set;
 
   /** @internal */
-  constructor(realm: Realm, internal: binding.Set, helpers: OrderedCollectionHelpers) {
+  constructor(realm: Realm, internal: binding.Set, helpers: TypeHelpers, objectSchemaName: string | undefined | null) {
     if (arguments.length === 0 || !(internal instanceof binding.Set)) {
       throw new IllegalConstructorError("Set");
     }
-    super(realm, internal.asResults(), helpers);
-    Object.defineProperty(this, "internal", {
-      enumerable: false,
-      configurable: false,
-      writable: false,
-      value: internal,
-    });
+    super(realm, internal, helpers, objectSchemaName);
   }
   /**
    * Number of items in the set
