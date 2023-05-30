@@ -41,14 +41,14 @@
 		"coverage": {
 			"command": "nyc mocha --exit",
 			"dependencies": [
-				"../../packages/realm:build:ts:coverage",
+				"../../packages/realm:build:ts",
 				"build-dependencies"
 			]
 		},
 		"ci:coverage": {
 			"command": "nyc --reporter=lcov -- mocha --exit",
 			"dependencies": [
-				"../../packages/realm:build:ts:coverage",
+				"../../packages/realm:build:ts",
 				"build-dependencies"
 			]
 		},
