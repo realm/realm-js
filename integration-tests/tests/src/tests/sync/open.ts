@@ -22,7 +22,7 @@ import { Realm } from "realm";
 import { authenticateUserBefore, importAppBefore } from "../../hooks";
 import { buildAppConfig } from "../../utils/build-app-config";
 
-describe("Realm.open on a sync Realm", () => {
+describe.skipIf(environment.missingServer, "Realm.open on a sync Realm", () => {
   importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync());
   authenticateUserBefore();
 

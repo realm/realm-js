@@ -7,13 +7,6 @@ include(CheckCXXCompilerFlag)
 if(DEFINED CMAKE_JS_VERSION)
     if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
         set(CMAKE_SYSTEM_VERSION 8.1)
-        if(CMAKE_GENERATOR_PLATFORM MATCHES "^[Ww][Ii][Nn]32$")
-            set(VCPKG_TARGET_TRIPLET "x86-windows-static" CACHE STRING "")
-        elseif(CMAKE_GENERATOR_PLATFORM MATCHES "^[Xx]64$")
-            set(VCPKG_TARGET_TRIPLET "x64-windows-static" CACHE STRING "")
-        else()
-            message(FATAL_ERROR "Unable to deduce vcpkg target triplet (from '${NODE_ARCH}')")
-        endif()
     elseif(APPLE)
       set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9")
       if(NODE_ARCH STREQUAL "arm64")
@@ -78,6 +71,10 @@ if(DEFINED CMAKE_JS_VERSION)
     include(NodeJSTargets)
 endif()
 
+if(EMSCRIPTEN)
+    add_compile_options(-fwasm-exceptions)
+endif()
+
 # TODO is this option dead? Do we want to support compiling with it set to OFF?
 option(REALM_JS_BUILD_CORE_FROM_SOURCE "Build Realm Core from source, as opposed to downloading prebuilt binaries" ON)
 if(REALM_JS_BUILD_CORE_FROM_SOURCE)
@@ -126,6 +123,7 @@ list(FILTER SDK_TS_FILES EXCLUDE REGEX "templates/[^/]*\.ts$")
 
 set(JS_SPEC_FILE ${SDK_DIR}/bindgen/js_spec.yml)
 set(TYPESCRIPT_OUTPUT_DIR ${SDK_DIR}/generated/ts)
+set(DIST_DIR ${SDK_DIR}/dist)
 
 set(GENERATED_TS_FILES
     ${TYPESCRIPT_OUTPUT_DIR}/native.d.mts
@@ -180,7 +178,7 @@ elseif(EMSCRIPTEN)
     target_sources(realm-js PRIVATE browser_init.cpp ${CMAKE_JS_SRC} ${PACKAGE_ROOT_DIR}/src/browser/platform.cpp)
 
     set_target_properties(realm-js-wasm PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY ${TYPESCRIPT_OUTPUT_DIR}
+        RUNTIME_OUTPUT_DIRECTORY ${DIST_DIR}
     )
 
 else()

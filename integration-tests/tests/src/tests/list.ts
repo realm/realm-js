@@ -1917,7 +1917,7 @@ describe("Lists", () => {
     });
   });
   describe("Schema with list", () => {
-    it("supports get and apply schema", function () {
+    it.skipIf(environment.browser, "supports get and apply schema", function () {
       //@ts-expect-error TYPEBUG: should add _cache as a field to interface "Configuration" if it's publicly consumed.
       const realm1 = new Realm({
         schema: [NameObjectLocalSchema],

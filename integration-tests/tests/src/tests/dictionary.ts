@@ -761,7 +761,7 @@ describe("Dictionary", () => {
       fields.removeAllListeners();
       this.realm.close();
     });
-  });
+  }).timeout("5s");
 
   describe("nested models", () => {
     openRealmBeforeEach({ schema: [TwoDictSchema, Child] });

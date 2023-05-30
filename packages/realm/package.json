@@ -104,17 +104,23 @@
         "rollup.config.mjs",
         "src/**/*.ts",
         "tsconfig.json",
-        "src/**/tsconfig.json"
+        "src/**/tsconfig.json",
+        "generated/ts/*",
+        "dist/realm-js-wasm.js"
       ],
       "output": [
-        "dist"
+        "dist/bundle.*"
       ]
     },
     "bindgen:configure:node": {
       "command": "cmake-js configure --debug --directory bindgen"
     },
     "bindgen:configure:browser": {
-      "command": "emcmake cmake -DCMAKE_BUILD_TYPE=Debug -S bindgen -B bindgen/build.browser -G Ninja"
+      "command": "emcmake cmake -DCMAKE_BUILD_TYPE=Debug -S bindgen -B bindgen/build.browser -G Ninja",
+      "files": [
+        "bindgen/**/CMakeLists.txt",
+        "bindgen/browser.cmake"
+      ]
     },
     "bindgen:build:node": {
       "command": "cmake --build bindgen/build --target realm-js-node",
@@ -126,10 +132,11 @@
       "command": "cmake --build bindgen/build.browser",
       "dependencies": [
         "bindgen:configure:browser"
+      ],
+      "output": [
+        "dist/realm-js-wasm.js",
+        "dist/realm-js-wasm.wasm"
       ]
-    },
-    "bindgen:build:browser": {
-      "command": "emcmake cmake -DCMAKE_BUILD_TYPE=Debug -S bindgen -B bindgen/build.browser -G Ninja && cmake --build bindgen/build.browser"
     },
     "bindgen:generate:typescript": {
       "command": "realm-bindgen --template bindgen/src/templates/typescript.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --output ./generated/ts",

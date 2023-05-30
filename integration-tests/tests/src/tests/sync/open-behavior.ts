@@ -46,7 +46,7 @@ async function getRegisteredEmailPassCredentials(app: Realm.App) {
   return Realm.Credentials.emailPassword(email, password);
 }
 
-describe("OpenBehaviour", function () {
+describe.skipIf(environment.missingServer, "OpenBehaviour", function () {
   this.longTimeout();
   importAppBefore(buildAppConfig("with-pbs").anonAuth().emailPasswordAuth().partitionBasedSync());
   afterEach(() => Realm.clearTestState());

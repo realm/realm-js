@@ -41,7 +41,7 @@ function tryWrap(body: string) {
   return `try {
                 ${body}
             } catch (const std::exception& ex) {
-                emscripten::val(ex.what()).throw_();
+                toEmscriptenException(ex).throw_();
             }
         `;
 }
@@ -58,6 +58,7 @@ class CppEmscriptenFunc extends CppFunc {
 
   definition() {
     return super.definition(`
+            const auto callBlock = ${this.addon.get()}->startCall();
             ${tryWrap(this.body)}
         `);
   }
@@ -76,6 +77,19 @@ class BrowserAddon extends CppClass {
   constructor() {
     super("RealmAddon");
     this.members.push(new CppVar("std::unique_ptr<RealmAddon>", "self", { static: true }));
+    this.members.push(new CppVar("std::deque<std::string>", "m_string_bufs"));
+    this.addMethod(
+      new CppMethod("wrapString", "const std::string&", [new CppVar("std::string", "str")], {
+        attributes: "inline",
+        body: `return m_string_bufs.emplace_back(std::move(str));`,
+      }),
+    );
+    this.addMethod(
+      new CppMethod("startCall", "auto", [], {
+        attributes: "inline",
+        body: `return ContainerResizer(m_string_bufs);`,
+      }),
+    );
   }
 
   generateMembers() {
@@ -168,8 +182,11 @@ function convertPrimToEmscripten(addon: BrowserAddon, type: string, expr: string
       return "emscripten::val()";
     case "OwnedBinaryData":
     case "BinaryData":
+      // construct a typed view around the C++ data. the underlying array buffer is the Emscripten heap
+      // call slice to create a copy and return the new underlying buffer
       return `([&] (const auto& bd) -> emscripten::val {
-                return emscripten::val(emscripten::typed_memory_view(bd.size(), bd.data()));
+                emscripten::val typed_array(emscripten::typed_memory_view(bd.size(), bd.data()));
+                return typed_array.call<emscripten::val>("slice")["buffer"];
             }(${expr}))`;
 
     case "Mixed":
@@ -243,8 +260,7 @@ function convertPrimFromEmscripten(addon: BrowserAddon, type: string, expr: stri
       return `${expr}.as<uint64_t>()`;
 
     case "std::string":
-      //TODO is this optimal? retruning a std::string used inside a `List<String>` sometimes yield garbage content(already reclaimed?)
-      return `(${expr}).as<std::string>().c_str()`;
+      return `${addon.get()}->wrapString((${expr}).as<std::string>())`;
 
     case "StringData":
     case "std::string_view":
@@ -252,12 +268,10 @@ function convertPrimFromEmscripten(addon: BrowserAddon, type: string, expr: stri
       //return `${addon.get()}->wrapString(${convertPrimFromEmscripten(addon, "std::string", expr)})`;
       return `${convertPrimFromEmscripten(addon, "std::string", expr)}`;
 
-    case "OwnedBinaryData":
     case "BinaryData":
-      return `([&] (const emscripten::val& v) -> ${type} {
-                auto buf = v.as<std::string>();
-                return BinaryData(buf.c_str(), buf.length());
-            })(${expr})`;
+      return `BinaryData(${addon.get()}->wrapString(toBinaryData(${expr})))`;
+    case "OwnedBinaryData":
+      return `toOwnedBinaryData(${expr})`;
 
     case "EncryptionKey": //TODO assert.fail("Encryption is not supported in WASM.");
       return "std::vector<char>()";
@@ -277,11 +291,8 @@ function convertPrimFromEmscripten(addon: BrowserAddon, type: string, expr: stri
 
     case "UUID":
     case "Decimal128":
-      return `${type}((${expr}.as<std::string>().c_str()))`;
-
-    // TODO add a StringData overload to the ObjectId ctor in core so this can merge with above.
     case "ObjectId":
-      return `${type}((${expr}.as<std::string>().c_str()))`;
+      return `${type}((${expr}.call<std::string>("toString").c_str()))`;
 
     case "EJson":
     case "EJsonObj":
@@ -331,11 +342,7 @@ function convertToEmscripten(addon: BrowserAddon, type: Type, expr: string): str
           if (inner.kind == "Class" && inner.sharedPtrWrapped) return `EMVAL_FROM_SHARED_${inner.name}(${expr})`;
           return c(new Pointer(inner), expr);
         case "Nullable": {
-          let returnedExpression = `${c(inner, "FWD(val)")};`;
-          if (!returnedExpression.startsWith("toEmscriptenException")) {
-            returnedExpression = `return ${returnedExpression}`;
-          }
-          return `[&] (auto&& val) { if(!val) return emscripten::val::null(); else ${returnedExpression} }(${expr})`;
+          return `[&] (auto&& val) { return !val ? emscripten::val::null() : ${c(inner, "FWD(val)")}; }(${expr})`;
         }
         case "util::Optional":
           return `[&] (auto&& opt) { return !opt ? emscripten::val::undefined() : ${c(inner, "*FWD(opt)")}; }(${expr})`;
@@ -396,6 +403,7 @@ function convertToEmscripten(addon: BrowserAddon, type: Type, expr: string): str
               if constexpr(std::is_constructible_v<bool, decltype(cb)>) {
                   REALM_ASSERT(bool(cb) && "Must mark nullable callbacks with Nullable<> in spec");
               }
+                  const auto callBlock = ${addon.get()}->startCall();
                   ${tryWrap(`
                       return ${c(
                         type.ret,
@@ -824,18 +832,13 @@ class BrowserCppDecls extends CppDecls {
         body: `
           auto type = val.typeOf().as<std::string>();
           if (type == "string") {
-            return strdup(${convertFromEmscripten(this.addon, spec.types["StringData"], "val")});
+            return ${convertFromEmscripten(this.addon, spec.types["StringData"], "val")};
 
           } else if (type == "boolean") {
             return ${convertFromEmscripten(this.addon, spec.types["bool"], "val")};
 
           } else if (type == "number") {
-              // TODO double, int64_t and uint64_t are not passed correctly from JS -> C++ 
-              if (emscripten::val::global("Number")["isInteger"](val).as<bool>()) {
-                return ${convertFromEmscripten(this.addon, spec.types["int32_t"], "val")};
-              } else {
-                return val.as<float>();
-              }            
+            return val.as<double>();           
 
           } else if (type == "bigint") {
              return val.as<int64_t>(); 
@@ -846,6 +849,9 @@ class BrowserCppDecls extends CppDecls {
               }
               if (val.instanceof(emscripten::val::global("ArrayBuffer"))) {
                 return ${convertFromEmscripten(this.addon, spec.types["BinaryData"], "val")};
+              }
+              else if (val.instanceof(emscripten::val::global("DataView"))) {
+                return ${convertFromEmscripten(this.addon, spec.types["BinaryData"], "val[\"buffer\"]")};
               }
               ${
                 // This list should be sorted in in roughly the expected frequency since earlier entries will be faster.
@@ -871,10 +877,10 @@ class BrowserCppDecls extends CppDecls {
               const auto ctorName =
               val["constructor"]["name"].as<std::string>();
     
-              emscripten::val(util::format("Unable to convert an object with ctor '(%1)' to a Mixed", ctorName)).throw_();
+              emscripten::val::global("Error")(util::format("Unable to convert an object with ctor '%1' to a Mixed", ctorName)).throw_();
           } else {
             // NOTE: must not treat undefined as null here, because that makes Optional<Mixed> ambiguous.
-            emscripten::val(util::format("Can't convert (%1) to Mixed", type)).throw_();
+            emscripten::val::global("Error")(util::format("Can't convert %1 to Mixed", type)).throw_();
           }
 
           REALM_UNREACHABLE();              

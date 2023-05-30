@@ -73,7 +73,7 @@ interface IDogForSyncSchema {
   realm_id: string | undefined;
 }
 
-describe("App", () => {
+describe.skipIf(environment.missingServer, "App", () => {
   describe("instantiation", function () {
     afterEach(async () => {
       Realm.clearTestState();

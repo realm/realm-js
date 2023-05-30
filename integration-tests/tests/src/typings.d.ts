@@ -113,6 +113,10 @@ type KnownEnvironment = {
    * React native specific variable injected by the runner, to signal if the tests are ran by the legacy chrome debugger (i.e. in a browser).
    * @deprecated Since we no longer support the legacy chrome debugger. */
   chromeDebugging?: true;
+  /**
+   * Browser specific variable injected by the runner, to signal if we're running inside a Browser with WebAssembly.
+   */
+  browser?: true;
 };
 
 type Environment = KnownEnvironment & Record<string, unknown>;

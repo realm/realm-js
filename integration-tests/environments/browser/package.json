@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@craco/craco": "^7.1.0",
     "@realm/integration-tests": "*",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
@@ -11,10 +12,11 @@
     "@types/node": "^16.18.31",
     "@types/react": "^18.2.6",
     "@types/react-dom": "^18.2.4",
+    "mocha": "^8.4.0",
+    "node-polyfill-webpack-plugin": "^2.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "realm": "*",
+    "source-map-support": "^0.5.21",
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
   },
@@ -64,8 +66,7 @@
     }
   },
   "devDependencies": {
-    "@babel/preset-typescript": "^7.21.5",
-    "@craco/craco": "^7.1.0",
-    "@craco/types": "^7.1.0"
+    "@craco/types": "^7.1.0",
+    "mocha-remote-cli": "^1.6.1"
   }
 }

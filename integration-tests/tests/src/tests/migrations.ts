@@ -34,7 +34,7 @@ interface TestWithNewProperty extends Test {
   surname: string;
 }
 
-describe("Migrations", () => {
+describe.skipIf(environment.browser, "Migrations", () => {
   describe("onMigration", () => {
     let count = 0;
     before(Realm.clearTestState);

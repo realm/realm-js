@@ -2,26 +2,36 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 
-import Realm from 'realm';
+import { Client } from 'mocha-remote-client';
 
-function runTests() {
-  const realm = new Realm({
-    schema: [
-      {
-        name: "Person",
-        "properties": {
-          name: "string"
-        }
+import { install as enable_sourcemaps } from 'source-map-support';
+
+enable_sourcemaps();
+
+async function runTests() {
+  const client = new Client({
+    async tests(context) {
+      const testsGlobal = global as any;
+      testsGlobal.path = {
+        dirname() {
+          throw new Error("Not supported on this platform");
+        },
+        resolve() {
+          throw new Error("Not supported on this platform");
+        },
+      };
+      testsGlobal.fs = {
+        exists() {
+          throw new Error("Not supported on this platform");
+        },
+      };
+      testsGlobal.environment = {
+        ...context,
+        browser: true,
+        missingServer: true,
       }
-    ],
-    schemaVersion: 0
-  });
-  const people = realm.objects("Person");
-  people.addListener((collection, changes) => {
-    console.log("length:", collection.length);
-  });
-  realm.write(() => {
-    realm.create("Person", { name: "Web" });
+      await import(/* webpackMode: "eager" */ '@realm/integration-tests');
+    }
   });
 }
 runTests();
