@@ -93,9 +93,9 @@
         "bindgen:generate:wrappers"
       ],
       "files": [
-        "rollup.config.mjs",
         "src/**/*.ts",
         "tsconfig.json",
+        "tsconfig.base.json",
         "src/**/tsconfig.json"
       ],
       "output": [
