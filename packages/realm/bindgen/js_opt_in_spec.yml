@@ -309,6 +309,7 @@ classes:
       - convert
       - verify_open
       - close
+      # JS-specific
       - DOLLAR_addr
       - DOLLAR_resetSharedPtr
 
@@ -477,6 +478,7 @@ classes:
       - start
       - cancel
       - register_download_progress_notifier
+      # JS-specific
       - DOLLAR_resetSharedPtr
 
   SyncSession:
@@ -494,6 +496,7 @@ classes:
       - unregister_connection_change_callback
       - revive_if_needed
       - force_close
+      # JS-specific
       - DOLLAR_resetSharedPtr
 
   SyncSubscriptionSet:
