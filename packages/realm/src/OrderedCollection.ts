@@ -104,17 +104,16 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   extends Collection<number, T, EntryType, T, CollectionChangeCallback<T, EntryType>>
   implements Omit<ReadonlyArray<T>, "entries">
 {
+  /** @internal */ protected declare realm: Realm;
+  /** @internal */ protected declare results: binding.Results;
+  /** @internal */ protected declare helpers: OrderedCollectionHelpers;
   /** @internal */
-  constructor(
-    /** @internal */ protected realm: Realm,
-    /** @internal */ protected results: binding.Results,
-    /** @internal */ protected helpers: OrderedCollectionHelpers,
-  ) {
+  constructor(realm: Realm, results: binding.Results, helpers: OrderedCollectionHelpers) {
     if (arguments.length === 0) {
       throw new IllegalConstructorError("OrderedCollection");
     }
     super((callback) => {
-      return this.results.addNotificationCallback((changes) => {
+      return results.addNotificationCallback((changes) => {
         try {
           callback(proxied, {
             deletions: unwind(changes.deletions),
@@ -135,46 +134,44 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     const proxied = new Proxy(this, PROXY_HANDLER as ProxyHandler<this>);
     // Get the class helpers for later use, if available
     const { objectType } = results;
-    if (typeof objectType === "string" && objectType !== "") {
-      this.classHelpers = this.realm.getClassHelpers(objectType);
-    } else {
-      this.classHelpers = null;
-    }
-    this.mixedToBinding = mixedToBinding.bind(undefined, realm.internal);
+    const classHelpers = typeof objectType === "string" && objectType !== "" ? realm.getClassHelpers(objectType) : null;
     // Make the internal properties non-enumerable
-    Object.defineProperties(this, {
-      realm: {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-      },
-      results: {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-      },
-      helpers: {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-      },
-      classHelpers: {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-      },
-      mixedToBinding: {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-      },
+    Object.defineProperty(this, "realm", {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: realm,
+    });
+    Object.defineProperty(this, "results", {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: results,
+    });
+    Object.defineProperty(this, "helpers", {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: helpers,
+    });
+    Object.defineProperty(this, "classHelpers", {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: classHelpers,
+    });
+    Object.defineProperty(this, "mixedToBinding", {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: mixedToBinding.bind(undefined, realm.internal),
     });
     return proxied;
   }
 
   /** @internal */
-  protected classHelpers: ClassHelpers | null;
-  private mixedToBinding: (value: unknown) => binding.MixedArg;
+  protected declare classHelpers: ClassHelpers | null;
+  private declare mixedToBinding: (value: unknown) => binding.MixedArg;
 
   /**
    * Get an element of the ordered collection by index

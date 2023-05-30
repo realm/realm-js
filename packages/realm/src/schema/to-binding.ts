@@ -99,10 +99,16 @@ export function toBindingPropertySchema(name: string, schema: CanonicalPropertyS
   const result: BindingProperty = {
     name,
     type: toBindingPropertyType(schema),
-    isIndexed: schema.indexed,
     objectType: schema.objectType && schema.objectType in TYPE_MAPPINGS ? undefined : schema.objectType,
     linkOriginPropertyName: schema.property,
   };
+
+  if (schema.indexed === "full-text") {
+    result.isFulltextIndexed = true;
+  } else {
+    result.isIndexed = schema.indexed;
+  }
+
   if (schema.mapTo && schema.mapTo !== schema.name) {
     result.publicName = result.name;
     result.name = schema.mapTo;

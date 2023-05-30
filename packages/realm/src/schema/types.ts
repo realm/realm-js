@@ -85,13 +85,20 @@ export type CanonicalRealmSchema = CanonicalObjectSchema[];
 export type CanonicalObjectSchemaProperty = CanonicalPropertySchema;
 
 /**
+ * The type of index on a property:
+ * - `true` enables a regular index
+ * - `"full-text"` enables a full-text search index and can only be applied to string properties.
+ */
+export type IndexedType = boolean | "full-text";
+
+/**
  * The canonical representation of the schema of a specific property.
  */
 export type CanonicalPropertySchema = {
   name: string;
   type: PropertyTypeName;
   optional: boolean;
-  indexed: boolean;
+  indexed: IndexedType;
   mapTo: string; // TODO: Make this optional and leave it out when it equals the name
   objectType?: string;
   property?: string;
@@ -239,11 +246,11 @@ export type PropertySchema = {
    */
   optional?: boolean;
   /**
-   * Whether the property should be indexed.
+   * The type of index applied to the property.
    *
    * Default value: `false` if the property is not a primary key, otherwise `true`.
    */
-  indexed?: boolean;
+  indexed?: IndexedType;
   /**
    * The name to be persisted in the Realm file if it differs from the already-defined
    * JavaScript/TypeScript (JS/TS) property name. This is useful for allowing different
@@ -261,8 +268,8 @@ export type PropertySchema = {
 /**
  * Keys used in the property schema that are common among all variations of {@link PropertySchemaStrict}.
  */
-type PropertySchemaCommon = {
-  indexed?: boolean;
+export type PropertySchemaCommon = {
+  indexed?: IndexedType;
   mapTo?: string;
   default?: unknown;
 };

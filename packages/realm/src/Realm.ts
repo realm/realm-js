@@ -672,17 +672,15 @@ export class Realm {
       this.schemaExtras = schemaExtras || {};
     }
 
-    Object.defineProperties(this, {
-      classes: {
-        enumerable: false,
-        configurable: false,
-        writable: true,
-      },
-      internal: {
-        enumerable: false,
-        configurable: false,
-        writable: false,
-      },
+    Object.defineProperty(this, "classes", {
+      enumerable: false,
+      configurable: false,
+      writable: true,
+    });
+    Object.defineProperty(this, "internal", {
+      enumerable: false,
+      configurable: false,
+      writable: false,
     });
 
     this.classes = new ClassMap(this, this.internal.schema, this.schema);
@@ -1278,6 +1276,7 @@ function isEmbedded(objectSchema: binding.ObjectSchema): boolean {
 // @see https://www.typescriptlang.org/docs/handbook/declaration-merging.html#merging-namespaces-with-classes-functions-and-enums
 
 // We need these type aliases because of https://github.com/Swatinem/rollup-plugin-dts/issues/223
+// We cannot move this to a different file and rely on module declarations because of https://github.com/Swatinem/rollup-plugin-dts/issues/168
 
 type AppType<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType = DefaultObject> = App<
   FunctionsFactoryType,

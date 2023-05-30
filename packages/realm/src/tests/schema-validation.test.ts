@@ -236,7 +236,7 @@ describe("validatePropertySchema", () => {
         type: "",
         indexed: NOT_A_BOOLEAN,
       },
-      `Expected '${PROPERTY_NAME}.indexed' on '${OBJECT_NAME}' to be a boolean, got a number`,
+      `Expected '${PROPERTY_NAME}.indexed' on '${OBJECT_NAME}' to be a boolean or 'full-text'`,
     );
 
     itThrowsWhenValidating(
