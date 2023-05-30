@@ -68,12 +68,12 @@ declare module "realm/binding" {
 
 Geospatial.fromCircle = function (c: ExternalGeoCircle): Geospatial {
   return Geospatial.makeFromCircle({
-    center: convertToBindingGeoPoint(c.center),
+    center: toBindingGeoPoint(c.center),
     radiusRadians: c.distance,
   });
 };
 
-function convertToBindingGeoPoint(p: ExternalGeoPoint): BindingGeoPoint {
+function toBindingGeoPoint(p: ExternalGeoPoint): BindingGeoPoint {
   if (Array.isArray(p)) {
     return { longitude: p[0], latitude: p[1] };
   } else if ("type" in p) {

@@ -93,7 +93,7 @@ class Story extends Realm.Object<Story> implements IStory {
 }
 
 class MyGeoPoint implements IGeoPoint {
-  coordinates: IGeoPosition = [0, 0];
+  coordinates: IGeoPosition;
   type = "Point" as const;
 
   constructor(lat: number, long: number) {
@@ -117,7 +117,7 @@ interface IPointOfInterest {
 
 class PointOfInterest extends Realm.Object<PointOfInterest> implements IPointOfInterest {
   id = 0;
-  location: MyGeoPoint = { type: "Point", coordinates: [0, 0] };
+  location: MyGeoPoint = new MyGeoPoint(0, 0);
 
   static schema: ObjectSchema = {
     name: "PointOfInterest",
