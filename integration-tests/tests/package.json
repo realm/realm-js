@@ -20,40 +20,36 @@
 		"build": {
 			"command": "tsc",
 			"dependencies": [
-				"../../packages/realm:build:ts",
 				"build-dependencies"
 			]
 		},
 		"start": {
 			"command": "mocha --watch",
 			"dependencies": [
-				"../../packages/realm:build:ts",
 				"build-dependencies"
 			]
 		},
 		"test": {
 			"command": "mocha --exit",
 			"dependencies": [
-				"../../packages/realm:build:ts",
 				"build-dependencies"
 			]
 		},
 		"coverage": {
 			"command": "nyc mocha --exit",
 			"dependencies": [
-				"../../packages/realm:build:ts",
 				"build-dependencies"
 			]
 		},
 		"ci:coverage": {
 			"command": "nyc --reporter=lcov -- mocha --exit",
 			"dependencies": [
-				"../../packages/realm:build:ts",
 				"build-dependencies"
 			]
 		},
 		"build-dependencies": {
 			"dependencies": [
+				"../../packages/realm:build:ts",
 				"../../packages/realm:build:node",
 				"../../packages/mocha-reporter:bundle",
 				"../../packages/realm-network-transport:bundle"
