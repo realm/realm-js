@@ -22,15 +22,14 @@ import * as path from "path";
 
 import { expect } from "chai";
 import { collectPlatformData } from "realm/scripts/submit-analytics";
-import { readFileSync } from "node:fs";
 
 import fse from "fs-extra";
 
-type Fixture = "node" | "react-native" | "electron";
+type Fixture = "node" | "react-native" | "electron" | "ts-node";
 
 describe("Analytics", () => {
   function resolvePath(fixture: Fixture) {
-    return path.resolve(__dirname, "fixtures", fixture);
+    return path.resolve(__dirname, "../../src/node/fixtures", fixture);
   }
 
   function getRealmVersion() {
