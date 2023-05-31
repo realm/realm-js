@@ -9,7 +9,7 @@
     "esModuleInterop": true,
     "declaration": true,
     "declarationMap": true,
-    "inlineSourceMap": true,
+    "sourceMap": true,
     "types": [],
     "lib": [
       "ES2022"
