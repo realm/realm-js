@@ -76,7 +76,7 @@ describe("Analytics", () => {
     expect(data["Language Version"]).equals("3.2.1");
   });
 
-  it.only("parses electron package.json", async () => {
+  it("parses electron package.json", async () => {
     const data = await collectPlatformData(resolvePath("electron"));
     expectCommon(data);
     expect(data.Version).equals("1.2.3");
