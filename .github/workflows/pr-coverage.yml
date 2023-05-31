@@ -16,6 +16,8 @@ env:
 
 jobs:
   run:
+    # Disabled until https://github.com/istanbuljs/nyc/issues/1448 is fixed or we find a workaround
+    if: false
     name: Build and tests with coverage
     runs-on: ubuntu-latest
     steps:
