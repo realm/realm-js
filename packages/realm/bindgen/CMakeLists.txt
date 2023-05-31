@@ -122,6 +122,7 @@ file(GLOB_RECURSE SDK_TS_FILES
 list(FILTER SDK_TS_FILES EXCLUDE REGEX "templates/[^/]*\.ts$")
 
 set(JS_SPEC_FILE ${SDK_DIR}/bindgen/js_spec.yml)
+set(JS_OPT_IN_FILE ${SDK_DIR}/bindgen/js_opt_in_spec.yml)
 set(TYPESCRIPT_OUTPUT_DIR ${SDK_DIR}/generated/ts)
 set(DIST_DIR ${SDK_DIR}/dist)
 
@@ -134,6 +135,7 @@ bindgen(
     OUTPUTS ${GENERATED_TS_FILES}
     OUTDIR ${TYPESCRIPT_OUTPUT_DIR}
     SPECS ${JS_SPEC_FILE}
+    OPTIN ${JS_OPT_IN_FILE}
     SOURCES ${SDK_TS_FILES}
 )
 
@@ -147,6 +149,7 @@ bindgen(
     OUTPUTS ${GENERATED_JS_FILES}
     OUTDIR ${TYPESCRIPT_OUTPUT_DIR}
     SPECS ${JS_SPEC_FILE}
+    OPTIN ${JS_OPT_IN_FILE}
     SOURCES ${SDK_TS_FILES}
 )
 
@@ -160,6 +163,7 @@ if(DEFINED CMAKE_JS_VERSION)
         OUTPUTS node_init.cpp
         OUTDIR ${CMAKE_CURRENT_BINARY_DIR}
         SPECS ${JS_SPEC_FILE}
+        OPTIN ${JS_OPT_IN_FILE}
         SOURCES ${SDK_TS_FILES}
     )
 
@@ -189,6 +193,7 @@ else()
         OUTPUTS jsi_init.cpp
         OUTDIR ${CMAKE_CURRENT_BINARY_DIR}
         SPECS ${JS_SPEC_FILE}
+        OPTIN ${JS_OPT_IN_FILE}
         SOURCES ${SDK_TS_FILES}
     )
 

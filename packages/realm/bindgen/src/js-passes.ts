@@ -33,6 +33,7 @@ import { strict as assert } from "assert";
 
 export function doJsPasses(spec: BoundSpec) {
   addSharedPtrMethods(spec);
+  spec.applyOptInList();
   return spec;
 }
 
@@ -44,7 +45,7 @@ function addSharedPtrMethods(spec: BoundSpec) {
       // stuff pointers into nan-boxed doubles anyway for performance. By the time we can't
       // rely on the 52 bit limit (if that ever happens), I'm sure we will have good bigint
       // support across all engines.
-      cls.methods.push(
+      cls.addMethod(
         new CustomProperty( //
           cls,
           "$addr",
@@ -53,7 +54,7 @@ function addSharedPtrMethods(spec: BoundSpec) {
         ),
       );
 
-      cls.methods.push(
+      cls.addMethod(
         new CustomInstanceMethod(
           cls,
           "$resetSharedPtr",

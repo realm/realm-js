@@ -16,14 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { strict as assert } from "assert";
-import { bindModel, Property } from "@realm/bindgen/bound-model";
+import { Property } from "@realm/bindgen/bound-model";
 import { TemplateContext } from "@realm/bindgen/context";
 
 import { doJsPasses } from "../js-passes";
 import { eslint } from "../eslint-formatter";
 
-export function generate({ spec: rawSpec, file }: TemplateContext): void {
-  const spec = doJsPasses(bindModel(rawSpec));
+export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): void {
+  const spec = doJsPasses(boundSpec);
   const reactLines = [];
   const nodeLines = [];
   const browserLines = [];
@@ -189,6 +189,8 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
     body_browser += extractDefinition;
 
     for (const method of cls.methods) {
+      if (!method.isOptedInTo) continue;
+
       // Eagerly bind the name once from the native module.
       const native = `_native_${method.id}`;
       all(`const ${native} = nativeModule.${method.id};`);

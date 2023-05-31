@@ -63,6 +63,7 @@
     "bindgen:generate:typescript": "wireit",
     "bindgen:generate:wrappers": "wireit",
     "bindgen:generate:spec-schema": "wireit",
+    "bindgen:generate:opt-in-spec-schema": "wireit",
     "build:node": "wireit",
     "build:node:prebuild": "wireit",
     "build:node:prebuild:arm": "wireit",
@@ -139,14 +140,16 @@
       ]
     },
     "bindgen:generate:typescript": {
-      "command": "realm-bindgen --template bindgen/src/templates/typescript.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --output ./generated/ts",
+      "command": "realm-bindgen --template bindgen/src/templates/typescript.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output ./generated/ts",
       "dependencies": [
-        "bindgen:generate:spec-schema"
+        "bindgen:generate:spec-schema",
+        "bindgen:generate:opt-in-spec-schema"
       ],
       "files": [
         "bindgen/vendor/realm-core/bindgen/spec.yml",
         "bindgen/vendor/realm-core/bindgen/src",
         "bindgen/js_spec.yml",
+        "bindgen/js_opt_in_spec.yml",
         "bindgen/src",
         "!bindgen/src/templates",
         "bindgen/src/templates/typescript.ts"
@@ -157,14 +160,16 @@
       ]
     },
     "bindgen:generate:wrappers": {
-      "command": "realm-bindgen --template bindgen/src/templates/node-wrapper.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --output ./generated/ts",
+      "command": "realm-bindgen --template bindgen/src/templates/node-wrapper.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --opt-in bindgen/js_opt_in_spec.yml --output ./generated/ts",
       "dependencies": [
-        "bindgen:generate:spec-schema"
+        "bindgen:generate:spec-schema",
+        "bindgen:generate:opt-in-spec-schema"
       ],
       "files": [
         "bindgen/vendor/realm-core/bindgen/spec.yml",
         "bindgen/vendor/realm-core/bindgen/src",
         "bindgen/js_spec.yml",
+        "bindgen/js_opt_in_spec.yml",
         "bindgen/src",
         "!bindgen/src/templates",
         "bindgen/src/templates/node-wrapper.ts"
@@ -176,13 +181,23 @@
       ]
     },
     "bindgen:generate:spec-schema": {
-      "command": "typescript-json-schema bindgen/vendor/realm-core/bindgen/tsconfig.json RelaxedSpec --include bindgen/vendor/realm-core/bindgen/src/spec/relaxed-model.ts --out bindgen/vendor/realm-core/bindgen/generated/spec.schema.json --required",
+      "command": "typescript-json-schema bindgen/vendor/realm-core/bindgen/tsconfig.json RelaxedSpec --include bindgen/vendor/realm-core/bindgen/src/spec/relaxed-model.ts --out bindgen/vendor/realm-core/bindgen/generated/spec.schema.json --required --noExtraProps",
       "files": [
         "bindgen/vendor/realm-core/bindgen/src/spec/relaxed-model.ts",
         "bindgen/vendor/realm-core/bindgen/tsconfig.json"
       ],
       "output": [
         "bindgen/vendor/realm-core/bindgen/generated/spec.schema.json"
+      ]
+    },
+    "bindgen:generate:opt-in-spec-schema": {
+      "command": "typescript-json-schema bindgen/vendor/realm-core/bindgen/tsconfig.json OptInSpec --include bindgen/vendor/realm-core/bindgen/src/spec/model.ts --out bindgen/vendor/realm-core/bindgen/generated/opt-in-spec.schema.json --required --noExtraProps",
+      "files": [
+        "bindgen/vendor/realm-core/bindgen/src/spec/model.ts",
+        "bindgen/vendor/realm-core/bindgen/tsconfig.json"
+      ],
+      "output": [
+        "bindgen/vendor/realm-core/bindgen/generated/opt-in-spec.schema.json"
       ]
     },
     "build:node": {
