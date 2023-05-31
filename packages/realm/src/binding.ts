@@ -16,10 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { GeoCircle as ExternalGeoCircle, GeoPoint as ExternalGeoPoint } from "./internal";
 import {
+  GeoBox as ExternalGeoBox,
+  GeoCircle as ExternalGeoCircle,
+  GeoPoint as ExternalGeoPoint,
+  GeoPolygon as ExternalGeoPolygon,
+  IGeoPoint,
+  IGeoPosition,
+} from "./internal";
+import {
+  GeoBox as BindingGeoBox,
   GeoCircle as BindingGeoCircle,
   GeoPoint as BindingGeoPoint,
+  GeoPolygon as BindingGeoPolygon,
   Geospatial,
   IndexSet,
   Int64,
@@ -48,6 +57,8 @@ declare module "realm/binding" {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Geospatial {
     export function fromCircle(c: ExternalGeoCircle): Geospatial;
+    export function fromBox(c: ExternalGeoBox): Geospatial;
+    export function fromPolygon(c: ExternalGeoPolygon): Geospatial;
   }
 
   interface SyncSession {
@@ -66,10 +77,30 @@ declare module "realm/binding" {
   }
 }
 
-Geospatial.fromCircle = function (c: ExternalGeoCircle): Geospatial {
+Geospatial.fromCircle = function (circle: ExternalGeoCircle): Geospatial {
   return Geospatial.makeFromCircle({
-    center: toBindingGeoPoint(c.center),
-    radiusRadians: c.distance,
+    center: toBindingGeoPoint(circle.center),
+    radiusRadians: circle.distance,
+  });
+};
+
+Geospatial.fromBox = function (box: ExternalGeoBox): Geospatial {
+  return Geospatial.makeFromBox({
+    lo: toBindingGeoPoint(box.bottomLeft),
+    hi: toBindingGeoPoint(box.topRight),
+  });
+};
+
+Geospatial.fromPolygon = function (polygon: ExternalGeoPolygon): Geospatial {
+  let points: BindingGeoPoint[][];
+  if ("type" in polygon) {
+    points = toBindingGeoPointArray(polygon.coordinates);
+  } else {
+    points = toBindingGeoPointArray([polygon.outerRing].concat(polygon.holes));
+  }
+
+  return Geospatial.makeFromPolygon({
+    points,
   });
 };
 
@@ -81,6 +112,10 @@ function toBindingGeoPoint(p: ExternalGeoPoint): BindingGeoPoint {
   } else {
     return p;
   }
+}
+
+function toBindingGeoPointArray(arr: ExternalGeoPoint[][]): BindingGeoPoint[][] {
+  return arr.map((ring) => ring.map((p) => toBindingGeoPoint(p)));
 }
 
 IndexSet.prototype.asIndexes = function* (this: IndexSet) {

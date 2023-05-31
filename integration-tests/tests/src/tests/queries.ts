@@ -281,6 +281,12 @@ describe("Queries", () => {
 
       circleTest(this.realm, circle, [zero, poiA, poiB, poiC, poiD]);
     });
+
+    /**
+     * Need to test:
+     *  - AND of various geoWithin
+     *  - Parameter substitution with single parameters of geo query
+     */
   });
 
   describe("Full text search", () => {

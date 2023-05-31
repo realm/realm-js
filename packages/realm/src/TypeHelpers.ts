@@ -20,7 +20,10 @@ import {
   BSON,
   ClassHelpers,
   Collection,
+  GeoBox,
   GeoCircle,
+  GeoPoint,
+  GeoPolygon,
   INTERNAL,
   List,
   ObjCreator,
@@ -113,8 +116,63 @@ export function mixedToBinding(realm: binding.Realm, value: unknown): binding.Mi
   }
 }
 
-function isGeoCircle(value: any): value is GeoCircle {
-  return "distance" in value && "center" in value;
+//TODO NEED TO CHANGE ALSO WHAT HAPPENS ON JSI (NOT ONLY NODE)
+
+function isGeoCircle(value: unknown): value is GeoCircle {
+  return (
+    typeof value == "object" &&
+    value !== null &&
+    "distance" in value &&
+    "center" in value &&
+    typeof value["distance"] == "number"
+  );
+}
+
+function isGeoBox(value: unknown): value is GeoBox {
+  return (
+    typeof value == "object" &&
+    value !== null &&
+    "bottomLeft" in value &&
+    "topRight" in value &&
+    typeof value["bottomLeft"] == "number" &&
+    typeof value["topRight"] == "number"
+  );
+}
+
+function isGeoPolygon(value: unknown): value is GeoPolygon {
+  return (
+    typeof value == "object" &&
+    value !== null &&
+    (("type" in value &&
+      value["type"] === "Polygon" &&
+      "coordinates" in value &&
+      Array.isArray(value["coordinates"])) ||
+      ("holes" in value && "outerRing" in value && Array.isArray(value["holes"] && Array.isArray(value["outerRing"]))))
+  );
+}
+
+//TODO We could decide to use this, but to be honest it seems quite excessive.
+function isGeoPoint(value: unknown): value is GeoPoint {
+  if (value === null) {
+    return false;
+  }
+  if (Array.isArray(value) && value.length >= 2) {
+    return true;
+  } else if (typeof value == "object") {
+    if ("latitude" in value && "longitude" in value) {
+      return true;
+    }
+    if (
+      "type" in value &&
+      value["type"] === "Point" &&
+      "coordinates" in value &&
+      Array.isArray(value["coordinates"]) &&
+      value["coordinates"].length >= 2
+    ) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function defaultToBinding(value: unknown): binding.MixedArg {
