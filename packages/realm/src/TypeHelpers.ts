@@ -104,6 +104,10 @@ export function mixedToBinding(realm: binding.Realm, value: unknown): binding.Mi
     throw new TypeError("A mixed property cannot contain an array of values.");
   } else if (isGeoCircle(value)) {
     return binding.Geospatial.fromCircle(value);
+  } else if (isGeoBox(value)) {
+    return binding.Geospatial.fromBox(value);
+  } else if (isGeoPolygon(value)) {
+    return binding.Geospatial.fromPolygon(value);
   } else {
     // Convert typed arrays to an `ArrayBuffer`
     for (const TypedArray of TYPED_ARRAY_CONSTRUCTORS) {
