@@ -171,8 +171,10 @@ export class ProgressRealmPromise implements Promise<Realm> {
     if (typeof timeOut === "number") {
       this.timeoutPromise = new TimeoutPromise(
         this.handle.promise, // Ensures the timeout gets cancelled when the realm opens
-        timeOut,
-        `Realm could not be downloaded in the allocated time: ${timeOut} ms.`,
+        {
+          ms: timeOut,
+          message: `Realm could not be downloaded in the allocated time: ${timeOut} ms.`,
+        },
       );
       if (timeOutBehavior === OpenRealmTimeOutBehavior.ThrowException) {
         // Make failing the timeout, reject the promise

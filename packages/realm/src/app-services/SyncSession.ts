@@ -364,22 +364,20 @@ export class SyncSession {
   downloadAllServerChanges(timeoutMs?: number): Promise<void> {
     return this.withInternal(
       (internal) =>
-        new TimeoutPromise(
-          internal.waitForDownloadCompletion(),
-          timeoutMs,
-          `Downloading changes did not complete in ${timeoutMs} ms.`,
-        ),
+        new TimeoutPromise(internal.waitForDownloadCompletion(), {
+          ms: timeoutMs,
+          message: `Downloading changes did not complete in ${timeoutMs} ms.`,
+        }),
     );
   }
 
   uploadAllLocalChanges(timeoutMs?: number): Promise<void> {
     return this.withInternal(
       (internal) =>
-        new TimeoutPromise(
-          internal.waitForUploadCompletion(),
-          timeoutMs,
-          `Uploading changes did not complete in ${timeoutMs} ms.`,
-        ),
+        new TimeoutPromise(internal.waitForUploadCompletion(), {
+          ms: timeoutMs,
+          message: `Uploading changes did not complete in ${timeoutMs} ms.`,
+        }),
     );
   }
 

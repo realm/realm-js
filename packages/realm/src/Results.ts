@@ -22,6 +22,9 @@ import {
   OrderedCollectionHelpers,
   Realm,
   RealmInsertionModel,
+  SubscriptionOptions,
+  TimeoutPromise,
+  WaitForSync,
   assert,
   binding,
 } from "./internal";
@@ -40,6 +43,8 @@ export class Results<T = unknown> extends OrderedCollection<T> {
    * @internal
    */
   public declare internal: binding.Results;
+  /** @internal */
+  public subscriptionName?: string;
 
   /**
    * Create a `Results` wrapping a set of query `Results` from the binding.
@@ -64,6 +69,11 @@ export class Results<T = unknown> extends OrderedCollection<T> {
       configurable: false,
       writable: false,
       value: realm,
+    });
+    Object.defineProperty(this, "subscriptionName", {
+      enumerable: false,
+      configurable: false,
+      writable: true,
     });
   }
 
@@ -102,6 +112,53 @@ export class Results<T = unknown> extends OrderedCollection<T> {
       assert.instanceOf(obj, binding.Obj);
       set(obj, value);
     }
+  }
+
+  /**
+   * Add this query result to the set of active subscriptions. The query will be joined
+   * via an `OR` operator with any existing queries for the same type.
+   *
+   * @param options Options to use when adding this subscription (e.g. a name or wait behavior).
+   * @returns A promise that resolves to this {@link Results} instance.
+   * @experimental This API is experimental and may change or be removed.
+   */
+  async subscribe(options: SubscriptionOptions = { behavior: WaitForSync.FirstTime }): Promise<this> {
+    const subs = this.realm.subscriptions;
+    const shouldWait =
+      options.behavior === WaitForSync.Always || (options.behavior === WaitForSync.FirstTime && !subs.exists(this));
+    if (shouldWait) {
+      if (typeof options.timeout === "number") {
+        await new TimeoutPromise(
+          subs.update((mutableSubs) => mutableSubs.add(this, options)),
+          { ms: options.timeout, rejectOnTimeout: false },
+        );
+      } else {
+        await subs.update((mutableSubs) => mutableSubs.add(this, options));
+      }
+    } else {
+      subs.updateNoWait((mutableSubs) => mutableSubs.add(this, options));
+    }
+
+    return this;
+  }
+
+  /**
+   * Unsubscribe from this query result. It returns immediately without waiting
+   * for synchronization.
+   *
+   * If the subscription is unnamed, the subscription matching the query will
+   * be removed.
+   *
+   * @experimental This API is experimental and may change or be removed.
+   */
+  unsubscribe(): void {
+    this.realm.subscriptions.updateNoWait((mutableSubs) => {
+      if (this.subscriptionName) {
+        mutableSubs.removeByName(this.subscriptionName);
+      } else {
+        mutableSubs.remove(this);
+      }
+    });
   }
 
   isValid(): boolean {

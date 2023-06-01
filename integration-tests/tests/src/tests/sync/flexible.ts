@@ -37,7 +37,9 @@ import {
   FlexibleSyncConfiguration,
   Realm,
   SessionStopPolicy,
+  SubscriptionSetState,
   CompensatingWriteError,
+  WaitForSync,
 } from "realm";
 
 import { authenticateUserBefore, importAppBefore, openRealmBeforeEach } from "../../hooks";
@@ -1397,6 +1399,19 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             expect(subs).to.have.length(1);
             expect([...subs][0].queryString).to.equal("age > 10");
           });
+
+          it("returns true and removes a subscription with an empty name", async function (this: RealmContext) {
+            addSubscription(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"));
+            const { subs } = addSubscriptionForPerson(this.realm, { name: "" });
+            expect(subs).to.have.length(2);
+
+            await subs.update((mutableSubs) => {
+              expect(mutableSubs.removeByName("")).to.be.true;
+            });
+
+            expect(subs).to.have.length(1);
+            expect([...subs][0].queryString).to.equal("age > 10");
+          });
         });
 
         describe("#remove", function () {
@@ -1532,6 +1547,44 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           });
         });
 
+        describe("#removeUnnamed", function () {
+          it("removes all unnamed subscriptions and returns the number of subscriptions removed", async function (this: RealmContext) {
+            // Add 1 named and 2 unnamed subscriptions.
+            addSubscriptionForPerson(this.realm, { name: "test" });
+            addSubscription(this.realm, this.realm.objects(FlexiblePersonSchema.name).filtered("age < 5"));
+            await addSubscriptionAndSync(
+              this.realm,
+              this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"),
+            );
+            expect(this.realm.subscriptions).to.have.length(3);
+
+            let numRemoved = 0;
+            await this.realm.subscriptions.update((mutableSubs) => {
+              numRemoved = mutableSubs.removeUnnamed();
+            });
+
+            expect(numRemoved).to.equal(2);
+            expect(this.realm.subscriptions).to.have.length(1);
+          });
+
+          it("does not remove subscription with empty name", async function (this: RealmContext) {
+            await addSubscriptionAndSync(
+              this.realm,
+              this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10"),
+              { name: "" },
+            );
+            expect(this.realm.subscriptions).to.have.length(1);
+
+            let numRemoved = 0;
+            await this.realm.subscriptions.update((mutableSubs) => {
+              numRemoved = mutableSubs.removeUnnamed();
+            });
+
+            expect(numRemoved).to.equal(0);
+            expect(this.realm.subscriptions).to.have.length(1);
+          });
+        });
+
         describe("#removeByObjectType", function () {
           it("returns 0 if no subscriptions for the object type exist", async function (this: RealmContext) {
             const { subs } = addSubscriptionForPerson(this.realm);
@@ -1568,6 +1621,200 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             await this.realm.subscriptions.waitForSynchronization();
             expect(this.realm.subscriptions.state).to.equal(Realm.App.Sync.SubscriptionSetState.Complete);
           });
+        });
+      });
+
+      describe("Results#subscribe", function () {
+        it("waits for objects to sync the first time only", async function (this: RealmContext) {
+          expect(this.realm.subscriptions).to.have.length(0);
+
+          const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
+
+          // Subscribing the first time should wait for synchronization.
+          await peopleOver10.subscribe({ behavior: WaitForSync.FirstTime });
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Complete);
+
+          // Subscribing the second time should return without waiting.
+          await peopleOver10.subscribe({ behavior: WaitForSync.FirstTime });
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Pending);
+
+          expect(this.realm.subscriptions).to.have.length(1);
+        });
+
+        it("waits for objects to sync the first time only by default", async function (this: RealmContext) {
+          expect(this.realm.subscriptions).to.have.length(0);
+
+          const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
+
+          await peopleOver10.subscribe();
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Complete);
+
+          await peopleOver10.subscribe();
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Pending);
+
+          expect(this.realm.subscriptions).to.have.length(1);
+        });
+
+        it("waits for objects to sync the first time only for separate 'Results' instances w/ same query", async function (this: RealmContext) {
+          expect(this.realm.subscriptions).to.have.length(0);
+
+          // Subscribe to a query on 'Results' instance 1.
+          let peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
+          await peopleOver10.subscribe({ behavior: WaitForSync.FirstTime });
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Complete);
+
+          // Subscribe to the same query on 'Results' instance 2 (overwrite previous 'peopleOver10' value).
+          peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
+          await peopleOver10.subscribe({ behavior: WaitForSync.FirstTime });
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Pending);
+
+          expect(this.realm.subscriptions).to.have.length(1);
+        });
+
+        it("always waits for objects to sync", async function (this: RealmContext) {
+          expect(this.realm.subscriptions).to.have.length(0);
+
+          const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
+
+          await peopleOver10.subscribe({ behavior: WaitForSync.Always });
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Complete);
+
+          await peopleOver10.subscribe({ behavior: WaitForSync.Always });
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Complete);
+
+          expect(this.realm.subscriptions).to.have.length(1);
+        });
+
+        it("never waits for objects to sync", async function (this: RealmContext) {
+          expect(this.realm.subscriptions).to.have.length(0);
+
+          const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
+
+          await peopleOver10.subscribe({ behavior: WaitForSync.Never });
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Pending);
+
+          await peopleOver10.subscribe({ behavior: WaitForSync.Never });
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Pending);
+
+          expect(this.realm.subscriptions).to.have.length(1);
+        });
+
+        it("waits for objects to sync when timeout is longer", async function (this: RealmContext) {
+          expect(this.realm.subscriptions).to.have.length(0);
+
+          const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
+          // `this.timeout()` is used so that it doesn't exceed the timeout that our tests
+          // are configured to use (which could vary).
+          await peopleOver10.subscribe({ behavior: WaitForSync.Always, timeout: this.timeout() });
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Complete);
+
+          expect(this.realm.subscriptions).to.have.length(1);
+        });
+
+        it("does not wait for objects to sync when timeout is shorter", async function (this: RealmContext) {
+          expect(this.realm.subscriptions).to.have.length(0);
+
+          const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
+          await peopleOver10.subscribe({ behavior: WaitForSync.Always, timeout: 0 });
+          expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Pending);
+
+          expect(this.realm.subscriptions).to.have.length(1);
+        });
+
+        it("returns the same 'Results' instance", async function (this: RealmContext) {
+          const beforeSubscribe = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
+          const afterSubscribe = await beforeSubscribe.subscribe();
+          expect(beforeSubscribe).to.equal(afterSubscribe);
+        });
+      });
+
+      describe("Results#unsubscribe", function () {
+        it("unsubscribes from existing subscription", async function (this: RealmContext) {
+          const peopleOver10 = await this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10").subscribe();
+          expect(this.realm.subscriptions).to.have.length(1);
+
+          peopleOver10.unsubscribe();
+          expect(this.realm.subscriptions).to.have.length(0);
+        });
+
+        it("does not throw or unsubscribe when there is no matching subscription", function (this: RealmContext) {
+          const peopleUnder10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age < 10").subscribe();
+          const peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
+          expect(this.realm.subscriptions).to.have.length(1);
+
+          // Unsubscribe to the Results without a subscription.
+          peopleOver10.unsubscribe();
+          expect(this.realm.subscriptions).to.have.length(1);
+        });
+
+        it("does not unsubscribe multiple times", async function (this: RealmContext) {
+          await this.realm.objects(FlexiblePersonSchema.name).filtered("age < 10").subscribe();
+          const peopleOver10 = await this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10").subscribe();
+          expect(this.realm.subscriptions).to.have.length(2);
+
+          peopleOver10.unsubscribe();
+          peopleOver10.unsubscribe();
+          expect(this.realm.subscriptions).to.have.length(1);
+        });
+
+        it("unsubscribes from subscription with matching name", async function (this: RealmContext) {
+          // Create 3 subscriptions with the same query: 2 named, 1 unnamed.
+          const queryString = "age > 10";
+          await this.realm.objects(FlexiblePersonSchema.name).filtered(queryString).subscribe({ name: "name1" });
+          await this.realm.objects(FlexiblePersonSchema.name).filtered(queryString).subscribe();
+          const peopleOver10 = await this.realm
+            .objects(FlexiblePersonSchema.name)
+            .filtered(queryString)
+            .subscribe({ name: "name2" });
+          expect(this.realm.subscriptions).to.have.length(3);
+
+          // Expect only the "name2" subscription to be gone.
+          peopleOver10.unsubscribe();
+
+          const subs = [...this.realm.subscriptions];
+          expect(subs).to.have.length(2);
+          expect(subs[0].queryString).to.equal(queryString);
+          expect(subs[0].name).to.equal("name1");
+          expect(subs[1].queryString).to.equal(queryString);
+          expect(subs[1].name).to.be.null;
+        });
+
+        it("unsubscribes from subscription with matching name when subscribing via `update()`", async function (this: RealmContext) {
+          // Save a reference to a Results that is not yet subscribed to.
+          const queryString = "age > 10";
+          const peopleOver10 = await this.realm.objects(FlexiblePersonSchema.name).filtered(queryString);
+          expect(this.realm.subscriptions).to.have.length(0);
+
+          // Create 3 subscriptions via `update()` with the same query: 2 named, 1 unnamed.
+          await this.realm.subscriptions.update((mutableSubs) => {
+            mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name).filtered(queryString), { name: "name1" });
+            mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name).filtered(queryString));
+            // Pass the Results reference to subscribe to.
+            mutableSubs.add(peopleOver10, { name: "name2" });
+          });
+          expect(this.realm.subscriptions).to.have.length(3);
+
+          // Expect only the "name2" subscription to be gone.
+          peopleOver10.unsubscribe();
+
+          const subs = [...this.realm.subscriptions];
+          expect(subs).to.have.length(2);
+          expect(subs[0].queryString).to.equal(queryString);
+          expect(subs[0].name).to.equal("name1");
+          expect(subs[1].queryString).to.equal(queryString);
+          expect(subs[1].name).to.be.null;
+        });
+
+        it("unsubscribes from subscription with matching query", async function (this: RealmContext) {
+          const queryString = "age > 10";
+          const results1 = await this.realm.objects(FlexiblePersonSchema.name).filtered(queryString).subscribe();
+          const results2 = await this.realm.objects(FlexiblePersonSchema.name).filtered(queryString);
+          expect(this.realm.subscriptions).to.have.length(1);
+
+          // Even though `subscribe()` was called on `results1`, `unsubscribe()` removes unnamed
+          // subscriptions by query, thus removing the one `results1` subscribed to.
+          results2.unsubscribe();
+          expect(this.realm.subscriptions).to.have.length(0);
         });
       });
 

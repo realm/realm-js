@@ -20,19 +20,26 @@ import { TimeoutError } from "./errors";
 import { PromiseHandle } from "./PromiseHandle";
 
 export type TimeoutPromiseOptions = {
-  ms: number;
+  ms?: number;
   message?: string;
+  rejectOnTimeout?: boolean;
 };
 
-export class TimeoutPromise<T = unknown> implements Promise<T> {
+export class TimeoutPromise<T = unknown> implements Promise<T | void> {
   private timer: Timer | undefined;
-  private handle = new PromiseHandle<T>();
+  private handle = new PromiseHandle<T | void>();
 
-  constructor(inner: Promise<T>, ms?: number, message = `Waited ${ms}ms`) {
+  constructor(
+    inner: Promise<T>,
+    { ms, message = `Waited ${ms}ms`, rejectOnTimeout = true }: TimeoutPromiseOptions = {},
+  ) {
     if (typeof ms === "number") {
       this.timer = setTimeout(() => {
-        const err = new TimeoutError(message);
-        this.handle.reject(err);
+        if (rejectOnTimeout) {
+          this.handle.reject(new TimeoutError(message));
+        } else {
+          this.handle.resolve();
+        }
       }, ms);
     }
     inner.then(this.handle.resolve, this.handle.reject).finally(() => {
