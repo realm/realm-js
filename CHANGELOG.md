@@ -17,8 +17,8 @@
 * Extended `PropertySchema.indexed` with the `full-text` option, that allows to create an index for full-text search queries.  ([#5755](https://github.com/realm/realm-js/issues/5755))
 * Added APIs to facilitate adding and removing subscriptions. ([#5772](https://github.com/realm/realm-js/pull/5772))
   * Experimental APIs: Enabled subscribing and unsubscribing directly to and from a `Results` instance via `Results.subscribe()` (asynchronous) and `Results.unsubscribe()` (synchronous).
-  * Added a `WaitForSync` enum specifying whether to wait or not wait for subscribed objects to be downloaded before returning from `Results.subscribe()`.
-  * Extended `SubscriptionOptions` to take a `WaitForSync` behavior and a maximum waiting timeout before returning from `Results.subscribe()`.
+    * Added a `WaitForSync` enum specifying whether to wait or not wait for subscribed objects to be downloaded before resolving the promise returned from `Results.subscribe()`.
+    * Extended `SubscriptionOptions` to take a `WaitForSync` behavior and a maximum waiting timeout before returning from `Results.subscribe()`.
   * Added the instance method `MutableSubscriptionSet.removeUnnamed()` for removing only unnamed subscriptions.
   ```javascript
   const peopleOver20 = await realm
