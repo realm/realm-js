@@ -96,7 +96,7 @@ class MyGeoPoint implements IGeoPoint {
   coordinates: IGeoPosition;
   type = "Point" as const;
 
-  constructor(lat: number, long: number) {
+  constructor(long: number, lat: number) {
     this.coordinates = [long, lat];
   }
 
@@ -197,7 +197,7 @@ const expectQueryResultValues = (
 };
 
 describe("Queries", () => {
-  describe("GeoSpatial", () => {
+  describe.only("GeoSpatial", () => {
     openRealmBeforeEach({ schema: [PointOfInterest, MyGeoPoint.schema] });
 
     const zero: IPointOfInterest = {
@@ -225,44 +225,10 @@ describe("Queries", () => {
       location: new MyGeoPoint(-25, 25),
     };
 
-    function convertIGeoPosition(point: IGeoPosition): string {
-      return `[${point[0]}, ${point[1]}]`;
-    }
-
-    function convertGeoPoint(point: GeoPoint): string {
-      if (Array.isArray(point)) {
-        return convertIGeoPosition(point);
-      }
-
-      if ("latitude" in point) {
-        return convertIGeoPosition([point.longitude, point.latitude]);
-      }
-
-      return convertIGeoPosition(point.coordinates);
-    }
-
-    function convertGeoCircle(circle: GeoCircle): string {
-      return `geoSphere(${convertGeoPoint(circle.center)},  ${circle.distance})`;
-    }
-
-    function convertGeoBox(box: GeoBox): string {
-      return `geoBox(${convertGeoPoint(box.bottomLeft)}, ${convertGeoPoint(box.topRight)})`;
-    }
-
+    //TODO This could be useful later, should keep it around
     function geoTest(realm: Realm, geo: GeoCircle | GeoBox | GeoPolygon, geoString: string, pois: IPointOfInterest[]) {
       const poiIds = pois.map((p) => p.id);
       expectQueryResultValues(realm, PointOfInterest, "id", [[poiIds, "location geoWithin $0 SORT(id ASC)", geo]]);
-      expectQueryResultValues(realm, PointOfInterest, "id", [[poiIds, `location geoWithin ${geoString} SORT(id ASC)`]]);
-    }
-
-    function circleTest(realm: Realm, circle: GeoCircle, pois: IPointOfInterest[]) {
-      const circleString = convertGeoCircle(circle);
-      geoTest(realm, circle, circleString, pois);
-    }
-
-    function boxTest(realm: Realm, box: GeoBox, pois: IPointOfInterest[]) {
-      const circleString = convertGeoBox(box);
-      geoTest(realm, box, circleString, pois);
     }
 
     beforeEach(function (this: RealmContext) {
@@ -281,33 +247,103 @@ describe("Queries", () => {
         distance: 0.001,
       };
 
-      circleTest(this.realm, circle, [zero]);
+      let queryResultsIds = [zero].map((p) => p.id);
+
+      expectQueryResultValues(this.realm, PointOfInterest, "id", [
+        [queryResultsIds, "location geoWithin $0 SORT(id ASC)", circle, "id"],
+      ]);
+      expectQueryResultValues(this.realm, PointOfInterest, "id", [
+        [queryResultsIds, "location geoWithin geoSphere([0, 0], 0.001) SORT(id ASC)"],
+      ]);
+      //TODO After merging from core this should go back in and be added to all other tests
+      // expectQueryResultValues(this.realm, PointOfInterest, "id", [
+      //   [queryResultsIds, "location geoWithin geoSphere([$0, $1], $2) SORT(id ASC)", 0, 0, 0.001],
+      // ]);
 
       circle = {
-        center: [0, 0],
+        center: [2.34, -4.6],
         distance: 10,
       };
 
-      circleTest(this.realm, circle, [zero, poiA, poiB, poiC, poiD]);
+      queryResultsIds = [zero, poiA, poiB, poiC, poiD].map((p) => p.id);
+
+      expectQueryResultValues(this.realm, PointOfInterest, "id", [
+        [queryResultsIds, "location geoWithin $0 SORT(id ASC)", circle, "id"],
+      ]);
+      expectQueryResultValues(this.realm, PointOfInterest, "id", [
+        [queryResultsIds, "location geoWithin geoSphere([2.34, -4.6], 10) SORT(id ASC)"],
+      ]);
+
+      circle = {
+        center: [-32.34, -25],
+        distance: 0.5,
+      };
+
+      queryResultsIds = [poiC].map((p) => p.id);
+
+      expectQueryResultValues(this.realm, PointOfInterest, "id", [
+        [queryResultsIds, "location geoWithin $0 SORT(id ASC)", circle, "id"],
+      ]);
+      expectQueryResultValues(this.realm, PointOfInterest, "id", [
+        [queryResultsIds, "location geoWithin geoSphere([-32.34, -25.0], 0.5) SORT(id ASC)"],
+      ]);
+
+      circle = {
+        center: [-75.234, 120.023],
+        distance: 0.01,
+      };
+
+      expectQueryLength(this.realm, PointOfInterest, [[0, "location geoWithin $0 SORT(id ASC)", circle, "id"]]);
+      expectQueryLength(this.realm, PointOfInterest, [
+        [0, "location geoWithin geoSphere([-75.234, 120.023], 0.01) SORT(id ASC)"],
+      ]);
     });
 
-    it.only("GeoBox basic", function (this: RealmContext) {
+    it("GeoBox basic", function (this: RealmContext) {
       let box: GeoBox = {
         bottomLeft: [-1, -1],
         topRight: [1, 1],
       };
 
-      let results = this.realm.objects<any>(PointOfInterest);
-      results = results.filtered("location geoWithin geoBox([-8, -8], [8, 8]) SORT(id ASC)");
+      let queryResultsIds = [zero].map((p) => p.id);
 
-      boxTest(this.realm, box, [zero]);
+      expectQueryResultValues(this.realm, PointOfInterest, "id", [
+        [queryResultsIds, "location geoWithin $0 SORT(id ASC)", box, "id"],
+      ]);
+      expectQueryResultValues(this.realm, PointOfInterest, "id", [
+        [queryResultsIds, "location geoWithin geoBox([-1.0, -1.0], [1.0, 1.0]) SORT(id ASC)"],
+      ]);
+      // expectQueryResultValues(this.realm, PointOfInterest, "id", [
+      //   [queryResultsIds, "location geoWithin geoSphere([$0, $1], $2) SORT(id ASC)", 0, 0, 0.001],
+      // ]);
 
       box = {
-        bottomLeft: [-80, -80],
-        topRight: [80, 80],
+        bottomLeft: [-90.23, -80.25],
+        topRight: [85.24, 88.0],
       };
 
-      boxTest(this.realm, box, [zero, poiA, poiB, poiC, poiD]);
+      queryResultsIds = [zero, poiA, poiB, poiC, poiD].map((p) => p.id);
+
+      expectQueryResultValues(this.realm, PointOfInterest, "id", [
+        [queryResultsIds, "location geoWithin $0 SORT(id ASC)", box, "id"],
+      ]);
+      expectQueryResultValues(this.realm, PointOfInterest, "id", [
+        [queryResultsIds, "location geoWithin geoBox([-90.23, -80.25], [85.24, 88.0]) SORT(id ASC)"],
+      ]);
+
+      box = {
+        bottomLeft: [-90.23, -80.25],
+        topRight: [85.24, 88.0],
+      };
+
+      queryResultsIds = [zero, poiA, poiB, poiC, poiD].map((p) => p.id);
+
+      expectQueryResultValues(this.realm, PointOfInterest, "id", [
+        [queryResultsIds, "location geoWithin $0 SORT(id ASC)", box, "id"],
+      ]);
+      expectQueryResultValues(this.realm, PointOfInterest, "id", [
+        [queryResultsIds, "location geoWithin geoBox([-90.23, -80.25], [85.24, 88.0]) SORT(id ASC)"],
+      ]);
     });
   });
 
