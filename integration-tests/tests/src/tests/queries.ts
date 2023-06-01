@@ -332,17 +332,27 @@ describe("Queries", () => {
       ]);
 
       box = {
-        bottomLeft: [-90.23, -80.25],
-        topRight: [85.24, 88.0],
+        bottomLeft: [30, -50],
+        topRight: [45, -35],
       };
 
-      queryResultsIds = [zero, poiA, poiB, poiC, poiD].map((p) => p.id);
+      queryResultsIds = [poiB].map((p) => p.id);
 
       expectQueryResultValues(this.realm, PointOfInterest, "id", [
         [queryResultsIds, "location geoWithin $0 SORT(id ASC)", box, "id"],
       ]);
       expectQueryResultValues(this.realm, PointOfInterest, "id", [
-        [queryResultsIds, "location geoWithin geoBox([-90.23, -80.25], [85.24, 88.0]) SORT(id ASC)"],
+        [queryResultsIds, "location geoWithin geoBox([30.0, -50.0], [45.0, -35.0]) SORT(id ASC)"],
+      ]);
+
+      box = {
+        bottomLeft: [-45.05, -10.2],
+        topRight: [-35.24, 5.02],
+      };
+
+      expectQueryLength(this.realm, PointOfInterest, [[0, "location geoWithin $0 SORT(id ASC)", box, "id"]]);
+      expectQueryLength(this.realm, PointOfInterest, [
+        [0, "location geoWithin geoBox([-45.05, -10.2], [-35.24, 5.02]) SORT(id ASC)"],
       ]);
     });
   });
