@@ -1655,13 +1655,15 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           expect(this.realm.subscriptions).to.have.length(1);
         });
 
-        it("waits for objects to sync the first time only for different 'Results' instances", async function (this: RealmContext) {
+        it("waits for objects to sync the first time only for separate 'Results' instances w/ same query", async function (this: RealmContext) {
           expect(this.realm.subscriptions).to.have.length(0);
 
+          // Subscribe to a query on 'Results' instance 1.
           let peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
           await peopleOver10.subscribe({ behavior: WaitForSync.FirstTime });
           expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Complete);
 
+          // Subscribe to the same query on 'Results' instance 2 (overwrite previous 'peopleOver10' value).
           peopleOver10 = this.realm.objects(FlexiblePersonSchema.name).filtered("age > 10");
           await peopleOver10.subscribe({ behavior: WaitForSync.FirstTime });
           expect(this.realm.subscriptions.state).to.equal(SubscriptionSetState.Pending);
