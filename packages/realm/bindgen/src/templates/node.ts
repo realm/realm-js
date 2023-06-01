@@ -872,7 +872,7 @@ class NodeCppDecls extends CppDecls {
                   )
                   .join(" ")
 
-                //Geospatial is separated because the Mixed constructor for that takes the reference as input
+                //Geospatial is separated because the Mixed constructor for that takes a pointer as input
               }
               else if (obj.InstanceOf(addon->m_cls_Geospatial_ctor.Value())) {
                 return &NODE_TO_CLASS_Geospatial(val);

@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export type IGeoPosition = [number, number]; //long/lat, so it's the same order as geoJSON
+export type IGeoPosition = [number, number]; // long/lat, so it's the same order as geoJSON
 
 //Interface that satisfies the geoJSON specification for a polygon.
 export interface IGeoPolygon {
@@ -36,6 +36,7 @@ export type GeoPoint =
   | {
       latitude: number;
       longitude: number;
+      altitude?: number;
     }
   | IGeoPoint
   | IGeoPosition;

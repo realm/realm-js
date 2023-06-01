@@ -106,9 +106,9 @@ Geospatial.fromPolygon = function (polygon: ExternalGeoPolygon): Geospatial {
 
 function toBindingGeoPoint(p: ExternalGeoPoint): BindingGeoPoint {
   if (Array.isArray(p)) {
-    return { longitude: p[0], latitude: p[1] };
+    return { longitude: p[0], latitude: p[1], altitude: p[2] };
   } else if ("type" in p) {
-    return { longitude: p.coordinates[0], latitude: p.coordinates[1] };
+    return { longitude: p.coordinates[0], latitude: p.coordinates[1], altitude: p.coordinates[2] };
   } else {
     return p;
   }
