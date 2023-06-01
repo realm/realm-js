@@ -125,7 +125,7 @@ export class Results<T = unknown> extends OrderedCollection<T> {
   async subscribe(options: SubscriptionOptions = { behavior: WaitForSync.FirstTime }): Promise<this> {
     const subs = this.realm.subscriptions;
     const shouldWait =
-      (options.behavior === WaitForSync.FirstTime && !subs.exists(this)) || options.behavior === WaitForSync.Always;
+      options.behavior === WaitForSync.Always || (options.behavior === WaitForSync.FirstTime && !subs.exists(this));
     if (shouldWait) {
       if (typeof options.timeout === "number") {
         await new TimeoutPromise(
@@ -143,7 +143,12 @@ export class Results<T = unknown> extends OrderedCollection<T> {
   }
 
   /**
-   * Unsubscribe from this query result.
+   * Unsubscribe from this query result. It returns immediately without waiting
+   * for synchronization.
+   *
+   * If the subscription is unnamed, the subscription matching the query will
+   * be removed.
+   *
    * @experimental This API is experimental and may change or be removed.
    */
   unsubscribe(): void {
