@@ -1,9 +1,18 @@
 import React from 'react';
 import 'source-map-support/register';
 
+import { TaskContext } from './hooks/useTaskManager';
+import { TaskScreen } from './screens/TaskScreen';
+
+const { RealmProvider } = TaskContext
+
 function App() {
   return (
     <div>
+      {/* TODO: Show login screen if not authenticated */}
+      <RealmProvider>
+        <TaskScreen />
+      </RealmProvider>
     </div>
   );
 }
