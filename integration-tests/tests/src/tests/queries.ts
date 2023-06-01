@@ -115,7 +115,7 @@ interface IPointOfInterest {
   location: MyGeoPoint;
 }
 
-class PointOfInterest extends Realm.Object<PointOfInterest> implements IPointOfInterest {
+class PointOfInterest extends Realm.Object implements IPointOfInterest {
   id = 0;
   location: MyGeoPoint = new MyGeoPoint(0, 0);
 
@@ -245,15 +245,24 @@ describe("Queries", () => {
       return `geoSphere(${convertGeoPoint(circle.center)},  ${circle.distance})`;
     }
 
-    function circleTest(realm: Realm, circle: GeoCircle, pois: PointOfInterest[]) {
+    function convertGeoBox(box: GeoBox): string {
+      return `geoBox(${convertGeoPoint(box.bottomLeft)}, ${convertGeoPoint(box.topRight)})`;
+    }
+
+    function geoTest(realm: Realm, geo: GeoCircle | GeoBox | GeoPolygon, geoString: string, pois: IPointOfInterest[]) {
+      const poiIds = pois.map((p) => p.id);
+      expectQueryResultValues(realm, PointOfInterest, "id", [[poiIds, "location geoWithin $0 SORT(id ASC)", geo]]);
+      expectQueryResultValues(realm, PointOfInterest, "id", [[poiIds, `location geoWithin ${geoString} SORT(id ASC)`]]);
+    }
+
+    function circleTest(realm: Realm, circle: GeoCircle, pois: IPointOfInterest[]) {
       const circleString = convertGeoCircle(circle);
       geoTest(realm, circle, circleString, pois);
     }
 
-    function geoTest(realm: Realm, geo: GeoCircle | GeoBox | GeoPolygon, geoString: string, pois: PointOfInterest[]) {
-      const poiIds = pois.map((p) => p.id);
-      expectQueryResultValues(realm, PointOfInterest, "id", [[poiIds, "location geoWithin $0 SORT(id ASC)", geo]]);
-      expectQueryResultValues(realm, PointOfInterest, "id", [[poiIds, `location geoWithin ${geoString} SORT(id ASC)`]]);
+    function boxTest(realm: Realm, box: GeoBox, pois: IPointOfInterest[]) {
+      const circleString = convertGeoBox(box);
+      geoTest(realm, box, circleString, pois);
     }
 
     beforeEach(function (this: RealmContext) {
@@ -266,7 +275,7 @@ describe("Queries", () => {
       });
     });
 
-    it.only("GeoCircle basic", function (this: RealmContext) {
+    it("GeoCircle basic", function (this: RealmContext) {
       let circle: GeoCircle = {
         center: [0, 0],
         distance: 0.001,
@@ -276,17 +285,30 @@ describe("Queries", () => {
 
       circle = {
         center: [0, 0],
-        distance: 1000,
+        distance: 10,
       };
 
       circleTest(this.realm, circle, [zero, poiA, poiB, poiC, poiD]);
     });
 
-    /**
-     * Need to test:
-     *  - AND of various geoWithin
-     *  - Parameter substitution with single parameters of geo query
-     */
+    it.only("GeoBox basic", function (this: RealmContext) {
+      let box: GeoBox = {
+        bottomLeft: [-1, -1],
+        topRight: [1, 1],
+      };
+
+      let results = this.realm.objects<any>(PointOfInterest);
+      results = results.filtered("location geoWithin geoBox([-8, -8], [8, 8]) SORT(id ASC)");
+
+      boxTest(this.realm, box, [zero]);
+
+      box = {
+        bottomLeft: [-80, -80],
+        topRight: [80, 80],
+      };
+
+      boxTest(this.realm, box, [zero, poiA, poiB, poiC, poiD]);
+    });
   });
 
   describe("Full text search", () => {

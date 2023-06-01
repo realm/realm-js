@@ -122,6 +122,9 @@ export function mixedToBinding(realm: binding.Realm, value: unknown): binding.Mi
 
 //TODO NEED TO CHANGE ALSO WHAT HAPPENS ON JSI (NOT ONLY NODE)
 
+//Here I am trying to strike a balance between completeness and performance.
+//I think if we have to check everything (especially for polygon), all those type assertions will become very complex,
+//and probably also inefficient.
 function isGeoCircle(value: unknown): value is GeoCircle {
   return (
     typeof value == "object" &&
@@ -133,14 +136,7 @@ function isGeoCircle(value: unknown): value is GeoCircle {
 }
 
 function isGeoBox(value: unknown): value is GeoBox {
-  return (
-    typeof value == "object" &&
-    value !== null &&
-    "bottomLeft" in value &&
-    "topRight" in value &&
-    typeof value["bottomLeft"] == "number" &&
-    typeof value["topRight"] == "number"
-  );
+  return typeof value == "object" && value !== null && "bottomLeft" in value && "topRight" in value;
 }
 
 function isGeoPolygon(value: unknown): value is GeoPolygon {
