@@ -203,7 +203,7 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
 
   if (framework === "react-native") {
     try {
-      const podfilePath = path.join(packagePath, "ios/Podfile");
+      const podfilePath = path.join(packagePath, "ios", "Podfile");
       const podfile = fs.readFileSync(podfilePath, "utf8");
       if (/hermes_enabled.*true/.test(podfile)) {
         jsEngine = "hermes";
@@ -232,12 +232,17 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
     framework = "electron";
     frameworkVersion = packageJson.devDependencies["electron"];
   }
+  console.log("FISK 1", framework, frameworkVersion);
   if (framework === "electron") {
     try {
+      console.log("FISK 2");
       const electronPath = path.join(packagePath, "node_modules", "electron", "package.json");
+      console.log("FISK 3");
       const electronPackageJson = JSON.parse(fs.readFileSync(electronPath, "utf-8"));
+      console.log("FISK 4");
       frameworkVersion = electronPackageJson["version"];
     } catch (err) {
+      console.log("FISK 5", err);
       debug(`Cannot read electron package.json: ${err}`);
     }
   }
