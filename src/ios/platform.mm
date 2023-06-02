@@ -171,25 +171,4 @@ void print(const char *fmt, ...) {
   vprintf(format.c_str(), vl);
   va_end(vl);
 }
-
-std::string get_cpu_arch() {
-  std::size_t size;
-  cpu_type_t type;
-  size = sizeof(type);
-  sysctlbyname("hw.cputype", &type, &size, NULL, 0);
-
-  // values for cputype and cpusubtype defined in mach/machine.h
-  switch (type) {
-  case CPU_TYPE_X86:
-    return "x86";
-  case CPU_TYPE_X86_64:
-    return "x86_64";
-  case CPU_TYPE_ARM:
-    return "armeabi-armv7";
-  case CPU_TYPE_ARM64:
-    return "arm64";
-  default:
-    return "unknown";
-  }
-}
 }
