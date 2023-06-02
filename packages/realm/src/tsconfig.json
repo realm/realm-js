@@ -13,6 +13,9 @@
       "realm/binding/core": ["./src/generated/core.ts"]
     }
   },
+  "references": [
+    { "path": "./tsconfig.public.json" }
+  ],
   "include": [
     "."
   ],

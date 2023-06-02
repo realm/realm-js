@@ -49,6 +49,7 @@ function toFetchRequest({ method, timeoutMs, body, headers, url }: binding.Reque
   };
 }
 
+/** @internal */
 export const network: NetworkType = {
   async fetch(request) {
     debug("Requesting %O", request);
@@ -59,6 +60,7 @@ export const network: NetworkType = {
   },
 };
 
+/** @internal */
 export function inject(injected: NetworkType) {
   Object.freeze(Object.assign(network, injected));
 }

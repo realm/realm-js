@@ -22,12 +22,12 @@
     "email": "help@realm.io",
     "url": "https://realm.io"
   },
-  "types": "./dist/cjs.d.ts",
+  "types": "./dist/public/cjs.d.ts",
   "main": "./dist/platform/node/index.cjs.js",
   "react-native": "./dist/platform/react-native/index.cjs.js",
   "exports": {
     ".": {
-      "types": "./dist/cjs.d.ts",
+      "types": "./dist/public/cjs.d.ts",
       "node": "./dist/platform/node/index.cjs.js",
       "react-native": "./dist/platform/react-native/index.cjs.js"
     },
@@ -72,8 +72,9 @@
     "build:ios:debug:simulator": "wireit",
     "build:ios:debug:ios": "wireit",
     "build:ios:debug:catalyst": "wireit",
-    "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'",
-    "docs": "wireit"
+    "coverage": "wireit",
+    "docs": "wireit",
+    "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'"
   },
   "wireit": {
     "test": {
@@ -96,7 +97,8 @@
         "src/**/*.ts",
         "tsconfig.json",
         "tsconfig.base.json",
-        "src/**/tsconfig.json"
+        "src/**/tsconfig.json",
+        "src/**/tsconfig.*.json"
       ],
       "output": [
         "dist"
@@ -245,6 +247,12 @@
         "PLATFORMS": "catalyst",
         "CONFIGURATION": "Debug"
       }
+    },
+    "coverage": {
+      "command": "mocha --config .mocharc.integration-tests.json",
+      "dependencies": [
+        "../../integration-tests/tests:build"
+      ]
     },
     "docs": {
       "command": "typedoc",

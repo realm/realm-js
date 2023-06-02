@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+/** @internal */
 type FileSystemType = {
   isAbsolutePath(path: string): boolean;
   joinPaths(...segments: string[]): string;
@@ -29,12 +30,14 @@ type FileSystemType = {
   removeRealmFilesFromDirectory(path: string): void;
 };
 
+/** @internal */
 export type Dirent = {
   name: string;
   isFile(): boolean;
   isDirectory(): boolean;
 };
 
+/** @internal */
 export const fs: FileSystemType = {
   isAbsolutePath() {
     throw new Error("Not supported on this platform");
@@ -70,6 +73,7 @@ export const fs: FileSystemType = {
   },
 };
 
+/** @internal */
 export function inject(injected: FileSystemType) {
   Object.freeze(Object.assign(fs, injected));
 }
