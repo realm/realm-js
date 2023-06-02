@@ -406,7 +406,8 @@ void AppClass<T>::set_versions(ContextType ctx, ObjectType this_object, Argument
     util::hmac_sha256(util::unsafe_span_cast<unsigned char>(raw_bundle_id), hmac, util::Span<uint8_t, 32>(salt, 32));
     std::string anonymized_bundle_id;
     anonymized_bundle_id.resize(util::base64_encoded_size(hmac.size()));
-    util::base64_encode(reinterpret_cast<char*>(hmac.data()), hmac.size(), anonymized_bundle_id.data(), anonymized_bundle_id.size());
+    util::base64_encode(reinterpret_cast<char*>(hmac.data()), hmac.size(), anonymized_bundle_id.data(),
+                        anonymized_bundle_id.size());
     while (anonymized_bundle_id.back() == '=') {
         anonymized_bundle_id.pop_back();
     }
