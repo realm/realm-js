@@ -19,11 +19,16 @@
 import * as os from "os";
 import * as process from "process";
 import * as path from "path";
+import { fileURLToPath } from "url";
 
 import { expect } from "chai";
 import { collectPlatformData } from "realm/scripts/submit-analytics";
 
 import fse from "fs-extra";
+
+// emulate old __dirname: https://flaviocopes.com/fix-dirname-not-defined-es-module-scope/
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 type Fixture = "node" | "react-native" | "electron" | "ts-node";
 

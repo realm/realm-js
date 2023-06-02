@@ -169,10 +169,13 @@ function getInstallationMethod() {
  * @returns {Object} Analytics payload
  */
 async function collectPlatformData(packagePath = getProjectRoot()) {
-  // node-machine-id returns the ID SHA-256 hashed, if we cannot get the ID we send "unknown" hashed instead
-  let identifier = await machineId.machineId();
-  if (!identifier) {
-    identifier = "unknown";
+  // node-machine-id returns the ID SHA-256 hashed, if we cannot get the ID we send hostname instead
+  let identifier;
+  try {
+    identifier = await machineId.machineId();
+  } catch (err) {
+    debug(`Cannot get machine id: ${err}`);
+    identifier = os.hostname();
   }
 
   const realmVersion = getRealmVersion();
