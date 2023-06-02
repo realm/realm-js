@@ -171,10 +171,9 @@ export {
   GeoCircle,
   GeoPoint,
   GeoPolygon,
-  IGeoPolygon,
-  IGeoPoint,
-  IGeoPosition,
-  Distance, //TODO Need to order this
+  CanonicalGeoPolygon,
+  CanonicalGeoPoint,
+  GeoPosition,
 } from "./internal";
 
 import { Realm, RealmObjectConstructor } from "./internal";

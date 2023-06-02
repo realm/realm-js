@@ -34,6 +34,9 @@ import {
   UpdateMode,
   assert,
   binding,
+  boxToBindingGeospatial,
+  circleToBindingGeospatial,
+  polygonToBindingGeospatial,
   safeGlobalThis,
 } from "./internal";
 
@@ -102,19 +105,24 @@ export function mixedToBinding(realm: binding.Realm, value: unknown): binding.Mi
     throw new Error(`Using a ${value.constructor.name} as Mixed value, is not yet supported`);
   } else if (Array.isArray(value)) {
     throw new TypeError("A mixed property cannot contain an array of values.");
-  } else if (isGeoCircle(value)) {
-    return binding.Geospatial.fromCircle(value);
-  } else if (isGeoBox(value)) {
-    return binding.Geospatial.fromBox(value);
-  } else if (isGeoPolygon(value)) {
-    return binding.Geospatial.fromPolygon(value);
   } else {
-    // Convert typed arrays to an `ArrayBuffer`
-    for (const TypedArray of TYPED_ARRAY_CONSTRUCTORS) {
-      if (value instanceof TypedArray) {
-        return value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength);
+    if (typeof value == "object" && value !== null) {
+      if (isGeoCircle(value)) {
+        return circleToBindingGeospatial(value);
+      } else if (isGeoBox(value)) {
+        return boxToBindingGeospatial(value);
+      } else if (isGeoPolygon(value)) {
+        return polygonToBindingGeospatial(value);
       }
     }
+
+    // Convert typed arrays to an `ArrayBuffer`
+    else
+      for (const TypedArray of TYPED_ARRAY_CONSTRUCTORS) {
+        if (value instanceof TypedArray) {
+          return value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength);
+        }
+      }
     // Rely on the binding for any other value
     return value as binding.MixedArg;
   }
@@ -122,32 +130,18 @@ export function mixedToBinding(realm: binding.Realm, value: unknown): binding.Mi
 
 //TODO NEED TO CHANGE ALSO WHAT HAPPENS ON JSI (NOT ONLY NODE)
 
-//Here I am trying to strike a balance between completeness and performance.
-//I think if we have to check everything (especially for polygon), all those type assertions will become very complex,
-//and probably also inefficient.
-function isGeoCircle(value: unknown): value is GeoCircle {
-  return (
-    typeof value == "object" &&
-    value !== null &&
-    "distance" in value &&
-    "center" in value &&
-    typeof value["distance"] == "number"
-  );
+function isGeoCircle(value: object): value is GeoCircle {
+  return "distance" in value && "center" in value && typeof value["distance"] == "number";
 }
 
-function isGeoBox(value: unknown): value is GeoBox {
-  return typeof value == "object" && value !== null && "bottomLeft" in value && "topRight" in value;
+function isGeoBox(value: object): value is GeoBox {
+  return "bottomLeft" in value && "topRight" in value;
 }
 
-function isGeoPolygon(value: unknown): value is GeoPolygon {
+function isGeoPolygon(value: object): value is GeoPolygon {
   return (
-    typeof value == "object" &&
-    value !== null &&
-    (("type" in value &&
-      value["type"] === "Polygon" &&
-      "coordinates" in value &&
-      Array.isArray(value["coordinates"])) ||
-      ("holes" in value && "outerRing" in value && Array.isArray(value["holes"] && Array.isArray(value["outerRing"]))))
+    ("type" in value && value["type"] === "Polygon" && "coordinates" in value && Array.isArray(value["coordinates"])) ||
+    ("holes" in value && "outerRing" in value && Array.isArray(value["holes"] && Array.isArray(value["outerRing"])))
   );
 }
 

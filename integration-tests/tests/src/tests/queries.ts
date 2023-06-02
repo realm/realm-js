@@ -15,17 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import Realm, {
-  ObjectSchema,
-  BSON,
-  IGeoPoint,
-  IGeoPolygon,
-  IGeoPosition,
-  GeoBox,
-  GeoCircle,
-  GeoPoint,
-  GeoPolygon,
-} from "realm";
+import Realm, { ObjectSchema, BSON, GeoBox, GeoCircle, GeoPolygon, CanonicalGeoPoint, GeoPosition } from "realm";
 import { expect } from "chai";
 import { openRealmBeforeEach } from "../hooks";
 import { IPerson, PersonSchema } from "../schemas/person-and-dogs";
@@ -92,8 +82,8 @@ class Story extends Realm.Object<Story> implements IStory {
   };
 }
 
-class MyGeoPoint implements IGeoPoint {
-  coordinates: IGeoPosition;
+class MyGeoPoint implements CanonicalGeoPoint {
+  coordinates: GeoPosition;
   type = "Point" as const;
 
   constructor(long: number, lat: number) {

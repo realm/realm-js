@@ -16,27 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-  GeoBox as ExternalGeoBox,
-  GeoCircle as ExternalGeoCircle,
-  GeoPoint as ExternalGeoPoint,
-  GeoPolygon as ExternalGeoPolygon,
-  IGeoPoint,
-  IGeoPosition,
-} from "./internal";
-import {
-  GeoBox as BindingGeoBox,
-  GeoCircle as BindingGeoCircle,
-  GeoPoint as BindingGeoPoint,
-  GeoPolygon as BindingGeoPolygon,
-  Geospatial,
-  IndexSet,
-  Int64,
-  ObjKey,
-  SyncSession,
-  Timestamp,
-  WeakSyncSession,
-} from "realm/binding";
+import { IndexSet, Int64, ObjKey, SyncSession, Timestamp, WeakSyncSession } from "realm/binding";
 
 /** @internal */
 export * from "realm/binding";
@@ -54,13 +34,6 @@ declare module "realm/binding" {
     export function fromDate(d: Date): Timestamp;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-namespace
-  namespace Geospatial {
-    export function fromCircle(c: ExternalGeoCircle): Geospatial;
-    export function fromBox(c: ExternalGeoBox): Geospatial;
-    export function fromPolygon(c: ExternalGeoPolygon): Geospatial;
-  }
-
   interface SyncSession {
     /** Returns a WeakSyncSession and releases the strong reference held by this SyncSession */
     weaken(): WeakSyncSession;
@@ -75,47 +48,6 @@ declare module "realm/binding" {
      */
     withDeref<Ret = void>(callback: (shared: SyncSession | null) => Ret): Ret;
   }
-}
-
-Geospatial.fromCircle = function (circle: ExternalGeoCircle): Geospatial {
-  return Geospatial.makeFromCircle({
-    center: toBindingGeoPoint(circle.center),
-    radiusRadians: circle.distance,
-  });
-};
-
-Geospatial.fromBox = function (box: ExternalGeoBox): Geospatial {
-  return Geospatial.makeFromBox({
-    lo: toBindingGeoPoint(box.bottomLeft),
-    hi: toBindingGeoPoint(box.topRight),
-  });
-};
-
-Geospatial.fromPolygon = function (polygon: ExternalGeoPolygon): Geospatial {
-  let points: BindingGeoPoint[][];
-  if ("type" in polygon) {
-    points = toBindingGeoPointArray(polygon.coordinates);
-  } else {
-    points = toBindingGeoPointArray([polygon.outerRing].concat(polygon.holes));
-  }
-
-  return Geospatial.makeFromPolygon({
-    points,
-  });
-};
-
-function toBindingGeoPoint(p: ExternalGeoPoint): BindingGeoPoint {
-  if (Array.isArray(p)) {
-    return { longitude: p[0], latitude: p[1], altitude: p[2] };
-  } else if ("type" in p) {
-    return { longitude: p.coordinates[0], latitude: p.coordinates[1], altitude: p.coordinates[2] };
-  } else {
-    return p;
-  }
-}
-
-function toBindingGeoPointArray(arr: ExternalGeoPoint[][]): BindingGeoPoint[][] {
-  return arr.map((ring) => ring.map((p) => toBindingGeoPoint(p)));
 }
 
 IndexSet.prototype.asIndexes = function* (this: IndexSet) {
