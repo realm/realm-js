@@ -182,7 +182,7 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
   const realmCoreVersion = getRealmCoreVersion();
 
   let framework = "node.js";
-  let frameworkVersion = process.version;
+  let frameworkVersion = process.version.slice(1); // skip the leading 'v'
   let jsEngine = "v8";
   let bundleId = "unknown";
 
@@ -203,7 +203,7 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
 
   if (framework === "react-native") {
     try {
-      const podfilePath = path.join(packagePath, "ios", "Podfile");
+      const podfilePath = path.resolve(packagePath, "ios", "Podfile");
       const podfile = fs.readFileSync(podfilePath, "utf8");
       if (/hermes_enabled.*true/.test(podfile)) {
         jsEngine = "hermes";
@@ -216,7 +216,7 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
     }
 
     try {
-      const rnPath = path.join(packagePath, "node_modules", "react-native", "package.json");
+      const rnPath = path.resolve(packagePath, "node_modules", "react-native", "package.json");
       const rnPackageJson = JSON.parse(fs.readFileSync(rnPath, "utf-8"));
       frameworkVersion = rnPackageJson["version"];
     } catch (err) {
@@ -236,7 +236,7 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
   if (framework === "electron") {
     try {
       console.log("FISK 2");
-      const electronPath = path.join(packagePath, "node_modules", "electron", "package.json");
+      const electronPath = path.resolve(packagePath, "node_modules", "electron", "package.json");
       console.log("FISK 3");
       const electronPackageJson = JSON.parse(fs.readFileSync(electronPath, "utf-8"));
       console.log("FISK 4");
@@ -260,7 +260,7 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
   }
   if (language === "typescript") {
     try {
-      const typescriptPath = path.join(packagePath, "node_modules", "typescript", "package.json");
+      const typescriptPath = path.resolve(packagePath, "node_modules", "typescript", "package.json");
       const typescriptPackageJson = JSON.parse(fs.readFileSync(typescriptPath, "utf-8"));
       languageVersion = typescriptPackageJson["version"];
     } catch (err) {
