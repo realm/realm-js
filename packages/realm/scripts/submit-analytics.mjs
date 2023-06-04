@@ -169,6 +169,7 @@ function getInstallationMethod() {
  * @returns {Object} Analytics payload
  */
 async function collectPlatformData(packagePath = getProjectRoot()) {
+  console.log("FISK 0", packagePath);
   // node-machine-id returns the ID SHA-256 hashed, if we cannot get the ID we send hostname instead
   let identifier;
   try {

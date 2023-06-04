@@ -48,7 +48,7 @@ describe("Analytics", () => {
     expect(data.Binding).equals("Javascript");
     expect(data["Host OS Type"]).equals(os.platform());
     expect(data["Host OS Version"]).equals(os.release());
-    expect(data["Node.js version"]).equals(process.version);
+    expect(data["Node.js version"]).equals(process.version.slice(1)); // remove 'v'
     expect(data["Realm Version"]).equals(getRealmVersion());
     expect(data.token).equals("ce0fac19508f6c8f20066d345d360fd0");
     expect(data["Anonymized Builder Id"]).is.not.undefined;
@@ -82,6 +82,7 @@ describe("Analytics", () => {
   });
 
   it("parses electron package.json", async () => {
+    console.log("HEST 1", resolvePath("electron"));
     const data = await collectPlatformData(resolvePath("electron"));
     expectCommon(data);
     expect(data.Version).equals("1.2.3");
