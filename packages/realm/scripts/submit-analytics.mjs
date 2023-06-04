@@ -287,7 +287,7 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
     "Host OS Type": os.platform(),
     "Host OS Version": os.release(),
     "Host CPU Arch": os.arch(),
-    "Node.js version": process.version,
+    "Node.js version": process.version.slice(1),
     "Core Version": realmCoreVersion,
     "Sync Enabled": true,
     "Installation Method": installationMethod[0],
