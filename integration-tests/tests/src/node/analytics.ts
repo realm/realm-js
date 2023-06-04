@@ -62,7 +62,7 @@ describe("Analytics", () => {
     expectCommon(data);
     expect(data.Version).equals("1.2.3");
     expect(data.Framework).equals("node.js");
-    expect(data["Framework Version"]).equals(process.version);
+    expect(data["Framework Version"]).equals(process.version.slice(1)); // remove 'v'
     expect(data["Runtime Engine"]).equals("v8");
     expect(data["Anonymized Bundle Id"]).equals("TfvqclDWR/+6sIPfZc73MetEj0DLskCtWXjWXXXIg6k=");
     expect(data.Language).equals("javascript");
@@ -74,7 +74,7 @@ describe("Analytics", () => {
     expectCommon(data);
     expect(data.Version).equals("1.2.3");
     expect(data.Framework).equals("node.js");
-    expect(data["Framework Version"]).equals(process.version);
+    expect(data["Framework Version"]).equals(process.version.slice(1)); // remove 'v'
     expect(data["Runtime Engine"]).equals("v8");
     expect(data["Anonymized Bundle Id"]).equals("ajQjGK7Tztb3WeVhmPitQFDRV24loZVttnXWSlXUjEc=");
     expect(data.Language).equals("typescript");
