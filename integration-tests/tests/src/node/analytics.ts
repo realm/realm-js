@@ -41,7 +41,7 @@ describe("Analytics", () => {
     expect(data.Binding).equals("Javascript");
     expect(data["Host OS Type"]).equals(os.platform());
     expect(data["Host OS Version"]).equals(os.release());
-    expect(data["Node.js version"]).equals(process.version);
+    expect(data["Node.js version"]).equals(process.version.slice(1));
     expect(data["Realm Version"]).equals(getRealmVersion());
     expect(data.token).equals("ce0fac19508f6c8f20066d345d360fd0");
     expect(data["Anonymized Builder Id"]).is.not.undefined;
@@ -55,7 +55,7 @@ describe("Analytics", () => {
     expectCommon(data);
     expect(data.Version).equals("1.2.3");
     expect(data.Framework).equals("node.js");
-    expect(data["Framework Version"]).equals(process.version);
+    expect(data["Framework Version"]).equals(process.version.slice(1));
     expect(data["Runtime Engine"]).equals("v8");
     expect(data["Anonymized Bundle Id"]).equals("TfvqclDWR/+6sIPfZc73MetEj0DLskCtWXjWXXXIg6k=");
     expect(data.Language).equals("javascript");
@@ -67,7 +67,7 @@ describe("Analytics", () => {
     expectCommon(data);
     expect(data.Version).equals("1.2.3");
     expect(data.Framework).equals("node.js");
-    expect(data["Framework Version"]).equals(process.version);
+    expect(data["Framework Version"]).equals(process.version.slice(1));
     expect(data["Runtime Engine"]).equals("v8");
     expect(data["Anonymized Bundle Id"]).equals("ajQjGK7Tztb3WeVhmPitQFDRV24loZVttnXWSlXUjEc=");
     expect(data.Language).equals("typescript");

@@ -168,7 +168,7 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
   const realmCoreVersion = getRealmCoreVersion();
 
   let framework = "node.js";
-  let frameworkVersion = process.version;
+  let frameworkVersion = process.version.slice(1); // remove 'v'
   let jsEngine = "v8";
   let bundleId = "unknown";
 
@@ -267,7 +267,7 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
     "Host OS Type": os.platform(),
     "Host OS Version": os.release(),
     "Host CPU Arch": os.arch(),
-    "Node.js version": process.version,
+    "Node.js version": process.version.slice(1), // remove 'v'
     "Core Version": realmCoreVersion,
     "Sync Enabled": true,
     "Installation Method": installationMethod[0],
