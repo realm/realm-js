@@ -19,22 +19,13 @@ import React from "react";
 import { AppProvider } from "../AppProvider";
 import { waitFor, renderHook, act } from "@testing-library/react-native";
 
-import { AppConfigBuilder, AppImporter, Credentials } from "@realm/app-importer";
-import { ImportedApp } from "@realm/app-importer/src/AppImporter";
+import { AppConfigBuilder } from "@realm/app-importer";
 import { useAuth } from "../useAuth";
+import { baseUrl, importApp } from "./helpers";
 
-const credentials: Credentials = {
-  kind: "username-password",
-  username: "unique_user@domain.com",
-  password: "password",
-};
-
-const baseUrl = "http://localhost:9090";
-const appImporter = new AppImporter({ baseUrl, credentials });
-
-function renderAuth(importedApp: ImportedApp) {
+function renderAuth(appId: string, baseUrl: string) {
   const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <AppProvider id={importedApp.appId} baseUrl={baseUrl}>
+    <AppProvider id={appId} baseUrl={baseUrl}>
       {children}
     </AppProvider>
   );
@@ -45,13 +36,13 @@ function renderAuth(importedApp: ImportedApp) {
 // The tests for the authentication methods themselves should be written elsewhere
 describe("useAuth", () => {
   describe("all methods are callable and report a state", () => {
-    let importedApp: ImportedApp;
+    let appId: string;
     beforeAll(async () => {
       const config = new AppConfigBuilder("test-app");
-      importedApp = await appImporter.importApp(config.config);
+      ({ appId } = await importApp(config.config));
     });
     it("logIn", async () => {
-      const { result } = renderAuth(importedApp);
+      const { result } = renderAuth(appId, baseUrl);
       await act(async () => {
         result.current.logIn({ email: "test@test.com", password: "password" });
         await waitFor(() => {
@@ -63,7 +54,7 @@ describe("useAuth", () => {
       });
     });
     it("logInWithAnonymous", async () => {
-      const { result } = renderAuth(importedApp);
+      const { result } = renderAuth(appId, baseUrl);
       await act(async () => {
         result.current.logInWithAnonymous();
         await waitFor(() => {
@@ -75,7 +66,7 @@ describe("useAuth", () => {
       });
     });
     it("logInWithApiKey", async () => {
-      const { result } = renderAuth(importedApp);
+      const { result } = renderAuth(appId, baseUrl);
       await act(async () => {
         result.current.logInWithApiKey("12345");
         await waitFor(() => {
@@ -87,7 +78,7 @@ describe("useAuth", () => {
       });
     });
     it("logInWithEmailPassword", async () => {
-      const { result } = renderAuth(importedApp);
+      const { result } = renderAuth(appId, baseUrl);
       await act(async () => {
         result.current.logInWithEmailPassword({ email: "test@test.com", password: "password" });
         await waitFor(() => {
@@ -99,7 +90,7 @@ describe("useAuth", () => {
       });
     });
     it("logInWithJWT", async () => {
-      const { result } = renderAuth(importedApp);
+      const { result } = renderAuth(appId, baseUrl);
       await act(async () => {
         result.current.logInWithJWT("token");
         await waitFor(() => {
@@ -111,7 +102,7 @@ describe("useAuth", () => {
       });
     });
     it("logInWithGoogle", async () => {
-      const { result } = renderAuth(importedApp);
+      const { result } = renderAuth(appId, baseUrl);
       await act(async () => {
         result.current.logInWithGoogle({ idToken: "1234" });
         await waitFor(() => {
@@ -123,7 +114,7 @@ describe("useAuth", () => {
       });
     });
     it("logInWithApple", async () => {
-      const { result } = renderAuth(importedApp);
+      const { result } = renderAuth(appId, baseUrl);
       await act(async () => {
         result.current.logInWithApple("token");
         await waitFor(() => {
@@ -135,7 +126,7 @@ describe("useAuth", () => {
       });
     });
     it("logInWithFacebook", async () => {
-      const { result } = renderAuth(importedApp);
+      const { result } = renderAuth(appId, baseUrl);
       await act(async () => {
         result.current.logInWithFacebook("token");
         await waitFor(() => {
@@ -147,7 +138,7 @@ describe("useAuth", () => {
       });
     });
     it("logInWithFunction", async () => {
-      const { result } = renderAuth(importedApp);
+      const { result } = renderAuth(appId, baseUrl);
       await act(async () => {
         result.current.logInWithFunction({ foo: "bar" });
         await waitFor(() => {
@@ -159,7 +150,7 @@ describe("useAuth", () => {
       });
     });
     it("logOut", async () => {
-      const { result } = renderAuth(importedApp);
+      const { result } = renderAuth(appId, baseUrl);
       await act(async () => {
         result.current.logOut();
         await waitFor(() => {

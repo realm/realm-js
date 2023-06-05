@@ -19,24 +19,15 @@ import React from "react";
 import { AppProvider } from "../AppProvider";
 import { waitFor, renderHook, act } from "@testing-library/react-native";
 
-import { AppConfigBuilder, AppImporter, Credentials } from "@realm/app-importer";
+import { AppConfigBuilder } from "@realm/app-importer";
 import { App } from "realm";
-import { ImportedApp } from "@realm/app-importer/src/AppImporter";
 import { useEmailPasswordAuth } from "../useEmailPasswordAuth";
 import { OperationState } from "../types";
+import { baseUrl, importApp } from "./helpers";
 
-const credentials: Credentials = {
-  kind: "username-password",
-  username: "unique_user@domain.com",
-  password: "password",
-};
-
-const baseUrl = "http://localhost:9090";
-const appImporter = new AppImporter({ baseUrl, credentials });
-
-function renderEmailPasswordAuth(importedApp: ImportedApp) {
+function renderEmailPasswordAuth(appId: string, baseUrl: string) {
   const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <AppProvider id={importedApp.appId} baseUrl={baseUrl}>
+    <AppProvider id={appId} baseUrl={baseUrl}>
       {children}
     </AppProvider>
   );
@@ -45,7 +36,7 @@ function renderEmailPasswordAuth(importedApp: ImportedApp) {
 
 describe("useEmailPassword", () => {
   describe("with auto confirm", () => {
-    let importedApp: ImportedApp;
+    let appId: string;
     beforeAll(async () => {
       const config = new AppConfigBuilder("test-app");
       config.authProvider({
@@ -57,10 +48,10 @@ describe("useEmailPassword", () => {
         },
         disabled: false,
       });
-      importedApp = await appImporter.importApp(config.config);
+      ({ appId } = await importApp(config.config));
     });
     it("can register and login with email/password, just by calling register", async () => {
-      const { result } = renderEmailPasswordAuth(importedApp);
+      const { result } = renderEmailPasswordAuth(appId, baseUrl);
       await act(async () => {
         result.current.register({ email: "test@test.com", password: "password" });
         await waitFor(() => {
@@ -72,7 +63,7 @@ describe("useEmailPassword", () => {
       });
 
       // Get an instance of the realm app and make sure the current user has been set
-      const realmApp = new App({ id: importedApp.appId, baseUrl });
+      const realmApp = new App({ id: appId, baseUrl });
       expect(realmApp.currentUser).not.toBeNull();
       await act(async () => {
         await result.current.logOut();
@@ -80,7 +71,7 @@ describe("useEmailPassword", () => {
       expect(realmApp.currentUser).toBeNull();
     });
     it("can register and login with email/password, just by calling register and login", async () => {
-      const { result } = renderEmailPasswordAuth(importedApp);
+      const { result } = renderEmailPasswordAuth(appId, baseUrl);
       await act(async () => {
         result.current.register({ email: "test2@test.com", password: "password", loginAfterRegister: false });
         await waitFor(() => {
@@ -102,7 +93,7 @@ describe("useEmailPassword", () => {
       });
 
       // Get an instance of the realm app and make sure the current user has been set
-      const realmApp = new App({ id: importedApp.appId, baseUrl });
+      const realmApp = new App({ id: appId, baseUrl });
       const user = realmApp.currentUser;
       expect(user).not.toBeNull();
 
@@ -112,7 +103,7 @@ describe("useEmailPassword", () => {
       expect(realmApp.currentUser).toBeNull();
     });
     it("sets an error state when user is already registered", async () => {
-      const { result } = renderEmailPasswordAuth(importedApp);
+      const { result } = renderEmailPasswordAuth(appId, baseUrl);
 
       await act(async () => {
         result.current.register({ email: "test2@test.com", password: "password", loginAfterRegister: false }),
@@ -127,7 +118,7 @@ describe("useEmailPassword", () => {
     });
   });
   describe("all methods are callable and report a state", () => {
-    let importedApp: ImportedApp;
+    let appId: string;
     beforeAll(async () => {
       const config = new AppConfigBuilder("test-app-2");
       config
@@ -182,10 +173,10 @@ describe("useEmailPassword", () => {
             };
           `,
         });
-      importedApp = await appImporter.importApp(config.config);
+      ({ appId } = await importApp(config.config));
     });
     it("logIn", async () => {
-      const { result } = renderEmailPasswordAuth(importedApp);
+      const { result } = renderEmailPasswordAuth(appId, baseUrl);
       await act(async () => {
         result.current.logIn({ email: "test@test.com", password: "password" });
         await waitFor(() => {
@@ -197,7 +188,7 @@ describe("useEmailPassword", () => {
       });
     });
     it("register", async () => {
-      const { result } = renderEmailPasswordAuth(importedApp);
+      const { result } = renderEmailPasswordAuth(appId, baseUrl);
       await act(async () => {
         result.current.register({ email: "test@test.com", password: "password" });
         await waitFor(() => {
@@ -209,7 +200,7 @@ describe("useEmailPassword", () => {
       });
     });
     it("confirm", async () => {
-      const { result } = renderEmailPasswordAuth(importedApp);
+      const { result } = renderEmailPasswordAuth(appId, baseUrl);
       await act(async () => {
         result.current.confirm({ token: "1234", tokenId: "4321" });
         await waitFor(() => {
@@ -221,7 +212,7 @@ describe("useEmailPassword", () => {
       });
     });
     it("resendConfirmationEmail", async () => {
-      const { result } = renderEmailPasswordAuth(importedApp);
+      const { result } = renderEmailPasswordAuth(appId, baseUrl);
       await act(async () => {
         result.current.resendConfirmationEmail({ email: "test@test.com" });
         await waitFor(() => {
@@ -233,7 +224,7 @@ describe("useEmailPassword", () => {
       });
     });
     it("retryCustomConfirmation", async () => {
-      const { result } = renderEmailPasswordAuth(importedApp);
+      const { result } = renderEmailPasswordAuth(appId, baseUrl);
       await act(async () => {
         result.current.retryCustomConfirmation({ email: "test@test.com" });
         await waitFor(() => {
@@ -245,7 +236,7 @@ describe("useEmailPassword", () => {
       });
     });
     it("sendResetPasswordEmail", async () => {
-      const { result } = renderEmailPasswordAuth(importedApp);
+      const { result } = renderEmailPasswordAuth(appId, baseUrl);
       await act(async () => {
         result.current.sendResetPasswordEmail({ email: "test@test.com" });
         await waitFor(() => {
@@ -257,7 +248,7 @@ describe("useEmailPassword", () => {
       });
     });
     it("resetPassword", async () => {
-      const { result } = renderEmailPasswordAuth(importedApp);
+      const { result } = renderEmailPasswordAuth(appId, baseUrl);
       await act(async () => {
         result.current.resetPassword({ token: "1234", tokenId: "4321", password: "newpassword" });
         await waitFor(() => {
@@ -269,7 +260,7 @@ describe("useEmailPassword", () => {
       });
     });
     it("callResetPasswordFunction", async () => {
-      const { result } = renderEmailPasswordAuth(importedApp);
+      const { result } = renderEmailPasswordAuth(appId, baseUrl);
       await act(async () => {
         result.current.callResetPasswordFunction({ email: "test@test.com", password: "password" }, { foo: "bar" });
         await waitFor(() => {
@@ -281,7 +272,7 @@ describe("useEmailPassword", () => {
       });
     });
     it("logOut", async () => {
-      const { result } = renderEmailPasswordAuth(importedApp);
+      const { result } = renderEmailPasswordAuth(appId, baseUrl);
       await act(async () => {
         result.current.logOut();
         await waitFor(() => {
