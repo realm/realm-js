@@ -16,11 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useApp } from "./AppProvider";
 import { AuthError, AuthResult, OperationState } from "./types";
-import { User } from "realm";
-import { Credentials } from "realm";
+import { Realm, App, Object, User, Credentials } from "realm";
 
 interface UseEmailPasswordAuth {
   /**
@@ -31,11 +30,8 @@ interface UseEmailPasswordAuth {
    * convenience functions for other/all auth types if so?
    *
    * @returns A `Realm.User` instance for the logged in user.
-   * @throws if another login is already in progress for this `RealmAppProvider`
-   * context.
-   * @throws if there is an error logging in.
    */
-  logIn(args: { email: string; password: string }): Promise<Realm.User>;
+  logIn(args: { email: string; password: string }): Promise<Realm.User | void>;
 
   /**
    * Register a new user. By default this will login the newly registered user
@@ -44,9 +40,6 @@ interface UseEmailPasswordAuth {
    *
    * @returns A `Realm.User` instance for the logged in user if
    * `loginAfterRegister` is not `false`, `void` otherwise.
-   * @throws if another registration is already in progress for this
-   * `RealmAppProvider` context.
-   * @throws if there is an error registering the user.
    */
   register(args: {
     email: string;
@@ -63,9 +56,6 @@ interface UseEmailPasswordAuth {
    * Confirm a user's account by providing the `token` and `tokenId` received.
    *
    * @returns `void`
-   * @throws if another confirmation is already in progress for this
-   * `RealmAppProvider` context.
-   * @throws if there is an error confirming the user.
    */
   confirm(args: { token: string; tokenId: string }): Promise<void>;
 
@@ -73,9 +63,6 @@ interface UseEmailPasswordAuth {
    * Resend a user's confirmation email.
    *
    * @returns `void`
-   * @throws if another confirmation email resend is already in progress for
-   * this `RealmAppProvider` context.
-   * @throws if there is an error resending the confirmation email.
    */
   resendConfirmationEmail(args: { email: string }): Promise<void>;
 
@@ -83,9 +70,6 @@ interface UseEmailPasswordAuth {
    * Retry the custom confirmation function for a given user.
    *
    * @returns `void`
-   * @throws if another custom confirmation retry is already in progress for
-   * this `RealmAppProvider` context.
-   * @throws if there is an error retrying the custom confirmation.
    */
   retryCustomConfirmation(args: { email: string }): Promise<void>;
 
@@ -93,9 +77,6 @@ interface UseEmailPasswordAuth {
    * Send a password reset email for a given user.
    *
    * @returns `void`
-   * @throws if another password reset send is already in progress for this
-   * `RealmAppProvider` context.
-   * @throws if there is an error sending the password reset.
    */
   sendResetPasswordEmail(args: { email: string }): Promise<void>;
 
@@ -103,9 +84,6 @@ interface UseEmailPasswordAuth {
    * Complete resetting a user's password.
    *
    * @returns `void`
-   * @throws if another password reset is already in progress for this
-   * `RealmAppProvider` context.
-   * @throws if there is an error resetting the password.
    */
   resetPassword(args: { token: string; tokenId: string; password: string }): Promise<void>;
 
@@ -114,9 +92,6 @@ interface UseEmailPasswordAuth {
    * arguments to the function.
    *
    * @returns `void`
-   * @throws if another password reset send is already in progress for this
-   * `RealmAppProvider` context.
-   * @throws if there is an error sending the password reset.
    */
   callResetPasswordFunction<Args extends unknown[] = []>(
     args: {
@@ -150,24 +125,25 @@ function useAuthOperation<Args extends unknown[], Result>({
 }: {
   result: AuthResult;
   setResult: (value: React.SetStateAction<AuthResult>) => void;
-  operation: (...args: Args) => Promise<Result>;
+  operation: (...args: Args) => Promise<Result | void>;
   onSuccess?: (...args: Args) => void;
 }) {
   return useCallback<(...args: Args) => ReturnType<typeof operation>>(
     (...args) => {
       if (result.pending) {
-        throw new AuthError("Another authentication operation is already in progress");
+        return Promise.reject("Another authentication operation is already in progress");
       }
+
       setResult({ state: OperationState.Pending, pending: true, success: false, error: undefined });
       return operation(...args)
-        .then((result) => {
+        .then((res) => {
           setResult({ state: OperationState.Success, pending: false, success: true, error: undefined });
           onSuccess(...args);
-          return result;
+          return res;
         })
         .catch((error) => {
-          setResult({ state: OperationState.Error, pending: false, success: false, error });
-          throw error;
+          const authError = new AuthError(error);
+          setResult({ state: OperationState.Error, pending: false, success: false, error: authError });
         });
     },
     [result, setResult, operation, onSuccess],
@@ -187,7 +163,7 @@ export function useEmailPasswordAuth(): UseEmailPasswordAuth {
   const logIn = useAuthOperation<[{ email: string; password: string }], User>({
     result,
     setResult,
-    operation: ({ email, password }) => app.logIn(Credentials.emailPassword({ email, password })),
+    operation: (args) => app.logIn(Credentials.emailPassword(args)),
   });
 
   const register = useAuthOperation<[{ email: string; password: string; loginAfterRegister?: boolean }], void>({
@@ -201,24 +177,28 @@ export function useEmailPasswordAuth(): UseEmailPasswordAuth {
     },
   });
 
-  const confirm = useAuthOperation({ result, setResult, operation: app.emailPasswordAuth.confirmUser });
+  const confirm = useAuthOperation({
+    result,
+    setResult,
+    operation: ({ token, tokenId }) => app.emailPasswordAuth.confirmUser({ token, tokenId }),
+  });
 
   const resendConfirmationEmail = useAuthOperation({
     result,
     setResult,
-    operation: app.emailPasswordAuth.resendConfirmationEmail,
+    operation: ({ email }) => app.emailPasswordAuth.resendConfirmationEmail({ email }),
   });
 
   const retryCustomConfirmation = useAuthOperation({
     result,
     setResult,
-    operation: app.emailPasswordAuth.retryCustomConfirmation,
+    operation: ({ email }) => app.emailPasswordAuth.retryCustomConfirmation({ email }),
   });
 
   const sendResetPasswordEmail = useAuthOperation({
     result,
     setResult,
-    operation: app.emailPasswordAuth.sendResetPasswordEmail,
+    operation: ({ email }) => app.emailPasswordAuth.sendResetPasswordEmail({ email }),
   });
 
   const callResetPasswordFunction = useAuthOperation({
@@ -228,7 +208,11 @@ export function useEmailPasswordAuth(): UseEmailPasswordAuth {
       app.emailPasswordAuth.callResetPasswordFunction({ email, password }, ...restArgs),
   });
 
-  const resetPassword = useAuthOperation({ result, setResult, operation: app.emailPasswordAuth.resetPassword });
+  const resetPassword = useAuthOperation({
+    result,
+    setResult,
+    operation: ({ password, token, tokenId }) => app.emailPasswordAuth.resetPassword({ password, token, tokenId }),
+  });
 
   const logOut = useAuthOperation({
     result,
