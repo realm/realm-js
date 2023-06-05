@@ -27,7 +27,7 @@ export function App() {
           </RealmProvider>
         </UserProvider>
       ) : (
-        <Navigate to='/login' replace={true}/>
+        <Navigate to='login' replace={true}/>
       )}
     </div>
   );
