@@ -37,7 +37,7 @@ export type SyncConfig = {
 export type ServiceConfig = {
   name: string;
   type: string;
-  config: DisabledSyncConfig | PartitionSyncConfig | FlexibleSyncConfig;
+  config: PartitionSyncConfig | FlexibleSyncConfig;
   secret_config: Record<string, unknown>;
   version?: number;
 };

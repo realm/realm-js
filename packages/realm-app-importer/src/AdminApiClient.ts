@@ -36,7 +36,7 @@ import {
   assertSessionRefreshResponse,
   isErrorResponse,
 } from "./types";
-import { AppConfig } from "./AppConfigBuilder";
+import { AppConfig, SyncConfig } from "./AppConfigBuilder";
 
 export type Credentials =
   | {
@@ -68,9 +68,9 @@ type AdminApiClientConfig = {
 export class AdminApiClient {
   private static readonly baseRoute = "api/admin/v3.0";
 
-  private accessToken: string | null;
-  private refreshToken: string | null;
-  private _groupId: Promise<string> | null;
+  private accessToken: string | null = null;
+  private refreshToken: string | null = null;
+  private _groupId: Promise<string> | null = null;
 
   constructor(private config: AdminApiClientConfig) {}
 
@@ -361,7 +361,7 @@ export class AdminApiClient {
     this.accessToken = response.access_token;
   }
 
-  private async fetch(request: ClientFetchRequest) {
+  private async fetch(request: ClientFetchRequest): Promise<unknown> {
     try {
       const { route, body, headers = {}, authentication = "access", ...rest } = request;
       const url = [this.config.baseUrl, AdminApiClient.baseRoute, ...route].join("/");
