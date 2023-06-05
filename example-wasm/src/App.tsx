@@ -1,10 +1,9 @@
 import React from 'react';
-import 'source-map-support/register';
 
 import { TaskContext } from './hooks/useTaskManager';
 import { TaskScreen } from './screens/TaskScreen';
 
-const { RealmProvider } = TaskContext
+const { RealmProvider } = TaskContext;
 
 function App() {
   return (
