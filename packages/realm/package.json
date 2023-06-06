@@ -57,9 +57,7 @@
     "build": "echo 'Run bundle, build:node, build:ios or build:android or other scripts depending on these instead' && exit 1",
     "bindgen:configure": "wireit",
     "bindgen:build:node": "wireit",
-    "bindgen:generate:typescript": "wireit",
-    "bindgen:generate:wrappers": "wireit",
-    "bindgen:generate:spec-schema": "wireit",
+    "bindgen:generate": "wireit",
     "build:ts": "wireit",
     "build:node": "wireit",
     "build:node:prebuild": "wireit",
@@ -81,8 +79,7 @@
       "command": "mocha --exit",
       "dependencies": [
         "build:node",
-        "bindgen:generate:typescript",
-        "bindgen:generate:wrappers",
+        "bindgen:generate",
         "../realm-network-transport:bundle"
       ]
     },
@@ -90,8 +87,7 @@
       "command": "tsc -b",
       "dependencies": [
         "../realm-network-transport:bundle",
-        "bindgen:generate:typescript",
-        "bindgen:generate:wrappers"
+        "bindgen:generate"
       ],
       "files": [
         "src/**/*.ts",
@@ -113,50 +109,23 @@
         "bindgen:configure"
       ]
     },
+    "bindgen:generate": {
+      "dependencies": [
+        {
+          "script": "bindgen:generate:typescript",
+          "cascade": false
+        }
+      ]
+    },
     "bindgen:generate:typescript": {
-      "command": "realm-bindgen --template bindgen/src/templates/typescript.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --output ./src/generated",
-      "dependencies": [
-        "bindgen:generate:spec-schema"
-      ],
-      "files": [
-        "bindgen/vendor/realm-core/bindgen/spec.yml",
-        "bindgen/vendor/realm-core/bindgen/src",
-        "bindgen/js_spec.yml",
-        "bindgen/src",
-        "!bindgen/src/templates",
-        "bindgen/src/templates/typescript.ts"
-      ],
-      "output": [
-        "src/generated/core.ts",
-        "src/generated/native.d.ts"
-      ]
+      "command": "cmake --build bindgen/build --target TypeScript"
     },
-    "bindgen:generate:wrappers": {
-      "command": "realm-bindgen --template bindgen/src/templates/node-wrapper.ts --spec bindgen/vendor/realm-core/bindgen/spec.yml --spec bindgen/js_spec.yml --output ./generated",
+    "bindgen:node": {
       "dependencies": [
-        "bindgen:generate:spec-schema"
-      ],
-      "files": [
-        "bindgen/vendor/realm-core/bindgen/spec.yml",
-        "bindgen/vendor/realm-core/bindgen/src",
-        "bindgen/js_spec.yml",
-        "bindgen/src",
-        "!bindgen/src/templates",
-        "bindgen/src/templates/node-wrapper.ts"
-      ],
-      "output": [
-        "generated/native-node.mjs",
-        "generated/native-react-native.mjs"
-      ]
-    },
-    "bindgen:generate:spec-schema": {
-      "command": "typescript-json-schema bindgen/vendor/realm-core/bindgen/tsconfig.json RelaxedSpec --include bindgen/vendor/realm-core/bindgen/src/spec/relaxed-model.ts --out bindgen/vendor/realm-core/bindgen/generated/spec.schema.json --required",
-      "files": [
-        "bindgen/vendor/realm-core/bindgen/src/spec/relaxed-model.ts",
-        "bindgen/vendor/realm-core/bindgen/tsconfig.json"
-      ],
-      "output": [
-        "bindgen/vendor/realm-core/bindgen/generated/spec.schema.json"
+        {
+          "script": "bindgen:build:node",
+          "cascade": false
+        }
       ]
     },
     "build:node": {
