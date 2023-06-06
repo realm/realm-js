@@ -129,7 +129,7 @@ set(GENERATED_OUTPUT_DIR ${SDK_DIR}/generated)
 set(TYPESCRIPT_OUTPUT_DIR ${SDK_DIR}/src/generated)
 
 set(GENERATED_TS_FILES
-    ${GENERATED_OUTPUT_DIR}/native.d.mts
+    ${TYPESCRIPT_OUTPUT_DIR}/native.d.mts
     ${TYPESCRIPT_OUTPUT_DIR}/core.ts
 )
 bindgen(
@@ -141,8 +141,8 @@ bindgen(
 )
 
 set(GENERATED_JS_FILES
-    ${TYPESCRIPT_OUTPUT_DIR}/native-node.mjs
-    ${TYPESCRIPT_OUTPUT_DIR}/native-react-native.mjs
+    ${GENERATED_OUTPUT_DIR}/native-node.mjs
+    ${GENERATED_OUTPUT_DIR}/native-react-native.mjs
 )
 bindgen(
     TEMPLATE ${SDK_DIR}/bindgen/src/templates/node-wrapper.ts
