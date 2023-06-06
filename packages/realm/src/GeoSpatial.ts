@@ -46,7 +46,7 @@ export type GeoPoint =
 export type GeoPolygon =
   | {
       outerRing: GeoPoint[];
-      holes: GeoPoint[][];
+      holes?: GeoPoint[][];
     }
   | CanonicalGeoPolygon;
 
@@ -83,7 +83,7 @@ export function polygonToBindingGeospatial(polygon: GeoPolygon): binding.Geospat
   if ("type" in polygon) {
     points = toBindingGeoPointArray(polygon.coordinates);
   } else {
-    points = toBindingGeoPointArray([polygon.outerRing].concat(polygon.holes));
+    points = toBindingGeoPointArray([polygon.outerRing].concat(polygon.holes ?? []));
   }
 
   return binding.Geospatial.makeFromPolygon({
@@ -108,7 +108,7 @@ function toBindingGeoPointArray(arr: GeoPoint[][]): binding.GeoPoint_Relaxed[][]
 const earthRadiusKm = 6378.1;
 const earthRadiusMi = 3963.16760121; //earthRadiusKm / 1.609344 (km/mi)
 
-export function kmsToRadians(km: number): number {
+export function kmToRadians(km: number): number {
   return km / earthRadiusKm;
 }
 

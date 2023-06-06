@@ -115,14 +115,12 @@ export function mixedToBinding(realm: binding.Realm, value: unknown): binding.Mi
         return polygonToBindingGeospatial(value);
       }
     }
-
     // Convert typed arrays to an `ArrayBuffer`
-    else
-      for (const TypedArray of TYPED_ARRAY_CONSTRUCTORS) {
-        if (value instanceof TypedArray) {
-          return value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength);
-        }
+    for (const TypedArray of TYPED_ARRAY_CONSTRUCTORS) {
+      if (value instanceof TypedArray) {
+        return value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength);
       }
+    }
     // Rely on the binding for any other value
     return value as binding.MixedArg;
   }
@@ -141,7 +139,7 @@ function isGeoBox(value: object): value is GeoBox {
 function isGeoPolygon(value: object): value is GeoPolygon {
   return (
     ("type" in value && value["type"] === "Polygon" && "coordinates" in value && Array.isArray(value["coordinates"])) ||
-    ("holes" in value && "outerRing" in value && Array.isArray(value["holes"] && Array.isArray(value["outerRing"])))
+    ("outerRing" in value && Array.isArray(value["outerRing"]))
   );
 }
 

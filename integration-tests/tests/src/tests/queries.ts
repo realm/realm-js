@@ -15,7 +15,18 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-import Realm, { ObjectSchema, BSON, GeoBox, GeoCircle, GeoPolygon, CanonicalGeoPoint, GeoPosition } from "realm";
+import Realm, {
+  ObjectSchema,
+  BSON,
+  GeoBox,
+  GeoCircle,
+  GeoPolygon,
+  CanonicalGeoPoint,
+  GeoPosition,
+  CanonicalGeoPolygon,
+  kmToRadians,
+  miToRadians,
+} from "realm";
 import { expect } from "chai";
 import { openRealmBeforeEach } from "../hooks";
 import { IPerson, PersonSchema } from "../schemas/person-and-dogs";
@@ -176,6 +187,7 @@ const expectQueryResultValues = (
   queryResultPairs.forEach(([expectedResults, queryString, ...queryArgs]) => {
     let results = realm.objects<any>(objectSchema);
     results = results.filtered(queryString, ...queryArgs);
+    console.log(results.map((el) => el[propertyToCompare])); //TODO For testing
     expect(expectedResults.length).equals(results.length);
     expect(expectedResults).to.deep.equal(
       results.map((el) => el[propertyToCompare]),
@@ -189,7 +201,6 @@ const expectQueryResultValues = (
 describe("Queries", () => {
   describe.only("GeoSpatial", () => {
     openRealmBeforeEach({ schema: [PointOfInterest, MyGeoPoint.schema] });
-
     const zero: IPointOfInterest = {
       id: 1,
       location: new MyGeoPoint(0, 0),
@@ -216,7 +227,7 @@ describe("Queries", () => {
     };
 
     //TODO This could be useful later, should keep it around
-    function geoTest(realm: Realm, geo: GeoCircle | GeoBox | GeoPolygon, geoString: string, pois: IPointOfInterest[]) {
+    function geoTest(realm: Realm, geo: GeoCircle | GeoBox | GeoPolygon, pois: IPointOfInterest[]) {
       const poiIds = pois.map((p) => p.id);
       expectQueryResultValues(realm, PointOfInterest, "id", [[poiIds, "location geoWithin $0 SORT(id ASC)", geo]]);
     }
@@ -237,7 +248,7 @@ describe("Queries", () => {
         distance: 0.001,
       };
 
-      let queryResultsIds = [zero].map((p) => p.id);
+      let queryResultsIds = [zero.id];
 
       expectQueryResultValues(this.realm, PointOfInterest, "id", [
         [queryResultsIds, "location geoWithin $0 SORT(id ASC)", circle, "id"],
@@ -269,7 +280,7 @@ describe("Queries", () => {
         distance: 0.5,
       };
 
-      queryResultsIds = [poiC].map((p) => p.id);
+      queryResultsIds = [poiC.id];
 
       expectQueryResultValues(this.realm, PointOfInterest, "id", [
         [queryResultsIds, "location geoWithin $0 SORT(id ASC)", circle, "id"],
@@ -295,7 +306,7 @@ describe("Queries", () => {
         topRight: [1, 1],
       };
 
-      let queryResultsIds = [zero].map((p) => p.id);
+      let queryResultsIds = [zero.id];
 
       expectQueryResultValues(this.realm, PointOfInterest, "id", [
         [queryResultsIds, "location geoWithin $0 SORT(id ASC)", box, "id"],
@@ -326,7 +337,7 @@ describe("Queries", () => {
         topRight: [45, -35],
       };
 
-      queryResultsIds = [poiB].map((p) => p.id);
+      queryResultsIds = [poiB.id];
 
       expectQueryResultValues(this.realm, PointOfInterest, "id", [
         [queryResultsIds, "location geoWithin $0 SORT(id ASC)", box, "id"],
@@ -344,6 +355,190 @@ describe("Queries", () => {
       expectQueryLength(this.realm, PointOfInterest, [
         [0, "location geoWithin geoBox([-45.05, -10.2], [-35.24, 5.02]) SORT(id ASC)"],
       ]);
+    });
+
+    it("GeoPolygon basic", function (this: RealmContext) {
+      let polygon: GeoPolygon = {
+        outerRing: [
+          [-2, -2],
+          [3.45, -4.23],
+          [2.56, 4.62],
+          [-3.23, 2.5],
+          [-2, -2],
+        ],
+      };
+
+      let queryResultsIds = [zero.id];
+
+      expectQueryResultValues(this.realm, PointOfInterest, "id", [
+        [queryResultsIds, "location geoWithin $0 SORT(id ASC)", polygon, "id"],
+      ]);
+      expectQueryResultValues(this.realm, PointOfInterest, "id", [
+        [
+          queryResultsIds,
+          "location geoWithin geoPolygon({[-2.0, -2.0], [3.45, -4.23], [2.56, 4.62], [3.23, 2.5], [-2.0, 2.0]}) SORT(id ASC)",
+        ],
+      ]);
+      // expectQueryResultValues(this.realm, PointOfInterest, "id", [
+      //   [queryResultsIds, "location geoWithin geoSphere([$0, $1], $2) SORT(id ASC)", 0, 0, 0.001],
+      // ]);
+
+      polygon = {
+        outerRing: [
+          [50, -50],
+          [55, 55],
+          [1, 1],
+          [50, -50],
+        ],
+      };
+
+      queryResultsIds = [poiA, poiB].map((p) => p.id);
+
+      expectQueryResultValues(this.realm, PointOfInterest, "id", [
+        [queryResultsIds, "location geoWithin $0 SORT(id ASC)", polygon, "id"],
+      ]);
+      expectQueryResultValues(this.realm, PointOfInterest, "id", [
+        [
+          queryResultsIds,
+          "location geoWithin geoPolygon({[50.0, -50.0], [55.0, 55.0], [1.0, 1.0], [50.0, -50.0]}) SORT(id ASC)",
+        ],
+      ]);
+
+      polygon = {
+        outerRing: [
+          [-20, -20],
+          [-10, 10],
+          [-50, 0],
+          [-20, -20],
+        ],
+      };
+
+      expectQueryLength(this.realm, PointOfInterest, [[0, "location geoWithin $0 SORT(id ASC)", polygon, "id"]]);
+      expectQueryLength(this.realm, PointOfInterest, [
+        [0, "location geoWithin geoPolygon({[-20.0, -20.0], [-10.0, 10.0], [-50.0, 0], [-20.0, -20.0]}) SORT(id ASC)"],
+      ]);
+
+      //TODO After core update I need to uncomment this, to see if it works
+      //With hole
+      // polygon = {
+      //   outerRing: [
+      //     [-44, -44],
+      //     [44, -44],
+      //     [44, 44],
+      //     [-44, 44],
+      //     [-44, -44],
+      //   ],
+      //   holes: [
+      //     [
+      //       [-1, -1],
+      //       [-1, 1],
+      //       [1, 1],
+      //       [1, -1],
+      //       [-1, -1],
+      //     ],
+      //   ],
+      // };
+
+      // queryResultsIds = [poiB, poiC, poiD].map((p) => p.id);
+
+      // expectQueryResultValues(this.realm, PointOfInterest, "id", [
+      //   [queryResultsIds, "location geoWithin $0 SORT(id ASC)", polygon, "id"],
+      // ]);
+      // expectQueryResultValues(this.realm, PointOfInterest, "id", [
+      //   [
+      //     queryResultsIds,
+      //     "location geoWithin geoPolygon({[-44.0, -44.0], [44.0, -44.0], [44.0, 44.0], [-44.0, 44.0], [-44.0, -44.0]}, {[-1.0, -1.0], [-1.0, 1.0], [1.0, 1.0], [1.0, -1.0], [-1.0, -1.0]}) SORT(id ASC)",
+      //   ],
+      // ]);
+    });
+
+    it("Alternative GeoPoint", function (this: RealmContext) {
+      //Circle
+      let circle: GeoCircle = {
+        center: [-32.34, -25],
+        distance: 0.5,
+      };
+
+      let queryResults = [poiC];
+
+      geoTest(this.realm, circle, queryResults);
+
+      circle = {
+        center: { latitude: -25, longitude: -32.34 },
+        distance: 0.5,
+      };
+
+      geoTest(this.realm, circle, queryResults);
+
+      circle = {
+        center: {
+          coordinates: [-32.34, -25],
+          type: "Point",
+        },
+        distance: 0.5,
+      };
+
+      geoTest(this.realm, circle, queryResults);
+
+      //Box
+      const box: GeoBox = {
+        bottomLeft: { latitude: -50, longitude: 30 },
+        topRight: {
+          coordinates: [45, -35],
+          type: "Point",
+        },
+      };
+
+      queryResults = [poiB];
+
+      geoTest(this.realm, box, queryResults);
+
+      //Polygon
+      const polygon: GeoPolygon = {
+        outerRing: [
+          [50, -50],
+          { latitude: 55, longitude: 55 },
+          {
+            coordinates: [1, 1],
+            type: "Point",
+          },
+          [50, -50],
+        ],
+      };
+
+      queryResults = [poiA, poiB];
+
+      geoTest(this.realm, polygon, queryResults);
+    });
+
+    it("Alternative GeoPolygon", function (this: RealmContext) {
+      //Polygon
+      const polygon: CanonicalGeoPolygon = {
+        type: "Polygon",
+        coordinates: [
+          [
+            [50, -50],
+            [55, 55],
+            [1, 1],
+            [50, -50],
+          ],
+        ],
+      };
+
+      const queryResults = [poiA, poiB];
+
+      geoTest(this.realm, polygon, queryResults);
+
+      //TODO Add test with hole
+    });
+
+    it("Distance conversions", function (this: RealmContext) {
+      //Test with about 60 centimeters accuracy
+      const km = 20;
+      expect(kmToRadians(km)).to.be.approximately(0.00313573007, 0.0000001);
+
+      const mi = 20;
+      expect(miToRadians(mi)).to.be.approximately(0.00504646838, 0.0000001);
     });
   });
 

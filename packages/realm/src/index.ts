@@ -174,6 +174,8 @@ export {
   CanonicalGeoPolygon,
   CanonicalGeoPoint,
   GeoPosition,
+  kmToRadians,
+  miToRadians,
 } from "./internal";
 
 import { Realm, RealmObjectConstructor } from "./internal";
