@@ -1,7 +1,7 @@
 import React from 'react';
 
 // TODO
-export function ErrorScreen() {
+export function ErrorPage() {
   return (
     <div>
       <p>

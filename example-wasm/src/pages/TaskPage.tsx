@@ -5,7 +5,7 @@ import { IntroText } from '../components/IntroText';
 import { TaskList } from '../components/TaskList';
 import { useTaskManager } from '../hooks/useTaskManager';
 
-export function TaskScreen() {
+export function TaskPage() {
   const {
     tasks,
     addTask,

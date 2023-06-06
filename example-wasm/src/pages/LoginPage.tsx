@@ -1,14 +1,21 @@
 import React, { FormEvent, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 import { useAppManager } from '../hooks/useAppManager';
 
-export function LoginScreen() {
+const { useApp } = await import('@realm/react');
+
+export function LoginPage() {
+  const atlasApp = useApp();
   const navigate = useNavigate();
   const { register, logIn } = useAppManager();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [authRequest, setAuthRequest] = useState<'login' | 'register'>('login')
+  const [authRequest, setAuthRequest] = useState<'login' | 'register'>('login');
+
+  if (atlasApp.currentUser) {
+    return <Navigate to='/tasks' />
+  }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
@@ -25,7 +32,7 @@ export function LoginScreen() {
 
     setEmail('');
     setPassword('');
-    navigate('/');
+    navigate('/tasks');
   };
 
   const handleButtonClicked = (event: FormEvent<HTMLButtonElement>): void => {
