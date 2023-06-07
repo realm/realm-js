@@ -61,7 +61,7 @@
 * Upgraded Realm Core from v13.10.1 to v13.11.0. ([#5811](https://github.com/realm/realm-js/issues/5811))
 * Bump sync protocol to v9 to indicate client has fix for client reset error during async open. ([realm/realm-core#6609](https://github.com/realm/realm-core/issues/6609))
 * Disabling sync session multiplexing by default in the SDK, since Core's default changed to enabled with v13.11.0. ([#5831](https://github.com/realm/realm-js/pull/5831))
-* Upgraded Realm Core from v13.11.1 to v13.13.0. ([#FILLMEEEEEE]())
+* Upgraded Realm Core from v13.11.1 to v13.13.0. ([#5873](https://github.com/realm/realm-js/pull/5873))
 
 ## 12.0.0-alpha.2 (2023-04-05)
 
