@@ -255,15 +255,11 @@ describe("Queries", () => {
         let queryResultsIds = [zero.id];
 
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
-          [queryResultsIds, "location geoWithin $0 SORT(id ASC)", circle, "id"],
+          [queryResultsIds, "location geoWithin $0 SORT(id ASC)", circle],
         ]);
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
           [queryResultsIds, "location geoWithin geoCircle([0, 0], 0.001) SORT(id ASC)"],
         ]);
-        //TODO After merging from core this should go back in and be added to all other tests
-        // expectQueryResultValues(this.realm, PointOfInterest, "id", [
-        //   [queryResultsIds, "location geoWithin geoSphere([$0, $1], $2) SORT(id ASC)", 0, 0, 0.001],
-        // ]);
 
         circle = {
           center: [2.34, -4.6],
@@ -273,7 +269,7 @@ describe("Queries", () => {
         queryResultsIds = [zero, poiA, poiB, poiC, poiD].map((p) => p.id);
 
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
-          [queryResultsIds, "location geoWithin $0 SORT(id ASC)", circle, "id"],
+          [queryResultsIds, "location geoWithin $0 SORT(id ASC)", circle],
         ]);
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
           [queryResultsIds, "location geoWithin geoCircle([2.34, -4.6], 10) SORT(id ASC)"],
@@ -287,7 +283,7 @@ describe("Queries", () => {
         queryResultsIds = [poiC.id];
 
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
-          [queryResultsIds, "location geoWithin $0 SORT(id ASC)", circle, "id"],
+          [queryResultsIds, "location geoWithin $0 SORT(id ASC)", circle],
         ]);
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
           [queryResultsIds, "location geoWithin geoCircle([-32.34, -25.0], 0.5) SORT(id ASC)"],
@@ -298,7 +294,7 @@ describe("Queries", () => {
           distance: 0.01,
         };
 
-        expectQueryLength(this.realm, PointOfInterest, [[0, "location geoWithin $0 SORT(id ASC)", circle, "id"]]);
+        expectQueryLength(this.realm, PointOfInterest, [[0, "location geoWithin $0 SORT(id ASC)", circle]]);
         expectQueryLength(this.realm, PointOfInterest, [
           [0, "location geoWithin geoCircle([-75.234, 45.023], 0.01) SORT(id ASC)"],
         ]);
@@ -313,7 +309,7 @@ describe("Queries", () => {
         let queryResultsIds = [zero.id];
 
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
-          [queryResultsIds, "location geoWithin $0 SORT(id ASC)", box, "id"],
+          [queryResultsIds, "location geoWithin $0 SORT(id ASC)", box],
         ]);
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
           [queryResultsIds, "location geoWithin geoBox([-1.0, -1.0], [1.0, 1.0]) SORT(id ASC)"],
@@ -327,7 +323,7 @@ describe("Queries", () => {
         queryResultsIds = [zero, poiA, poiB, poiC, poiD].map((p) => p.id);
 
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
-          [queryResultsIds, "location geoWithin $0 SORT(id ASC)", box, "id"],
+          [queryResultsIds, "location geoWithin $0 SORT(id ASC)", box],
         ]);
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
           [queryResultsIds, "location geoWithin geoBox([-90.23, -80.25], [85.24, 88.0]) SORT(id ASC)"],
@@ -341,7 +337,7 @@ describe("Queries", () => {
         queryResultsIds = [poiB.id];
 
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
-          [queryResultsIds, "location geoWithin $0 SORT(id ASC)", box, "id"],
+          [queryResultsIds, "location geoWithin $0 SORT(id ASC)", box],
         ]);
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
           [queryResultsIds, "location geoWithin geoBox([30.0, -50.0], [45.0, -35.0]) SORT(id ASC)"],
@@ -352,7 +348,7 @@ describe("Queries", () => {
           topRight: [-35.24, 5.02],
         };
 
-        expectQueryLength(this.realm, PointOfInterest, [[0, "location geoWithin $0 SORT(id ASC)", box, "id"]]);
+        expectQueryLength(this.realm, PointOfInterest, [[0, "location geoWithin $0 SORT(id ASC)", box]]);
         expectQueryLength(this.realm, PointOfInterest, [
           [0, "location geoWithin geoBox([-45.05, -10.2], [-35.24, 5.02]) SORT(id ASC)"],
         ]);
@@ -372,7 +368,7 @@ describe("Queries", () => {
         let queryResultsIds = [zero.id];
 
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
-          [queryResultsIds, "location geoWithin $0 SORT(id ASC)", polygon, "id"],
+          [queryResultsIds, "location geoWithin $0 SORT(id ASC)", polygon],
         ]);
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
           [
@@ -393,7 +389,7 @@ describe("Queries", () => {
         queryResultsIds = [poiA, poiB].map((p) => p.id);
 
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
-          [queryResultsIds, "location geoWithin $0 SORT(id ASC)", polygon, "id"],
+          [queryResultsIds, "location geoWithin $0 SORT(id ASC)", polygon],
         ]);
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
           [
@@ -411,7 +407,7 @@ describe("Queries", () => {
           ],
         };
 
-        expectQueryLength(this.realm, PointOfInterest, [[0, "location geoWithin $0 SORT(id ASC)", polygon, "id"]]);
+        expectQueryLength(this.realm, PointOfInterest, [[0, "location geoWithin $0 SORT(id ASC)", polygon]]);
         expectQueryLength(this.realm, PointOfInterest, [
           [
             0,
@@ -442,7 +438,7 @@ describe("Queries", () => {
         queryResultsIds = [poiB, poiC, poiD].map((p) => p.id);
 
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
-          [queryResultsIds, "location geoWithin $0 SORT(id ASC)", polygon, "id"],
+          [queryResultsIds, "location geoWithin $0 SORT(id ASC)", polygon],
         ]);
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
           [
@@ -565,7 +561,7 @@ describe("Queries", () => {
         let queryResultsIds = [zero.id];
 
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
-          [queryResultsIds, "location geoWithin $0 SORT(id ASC)", circle, "id"],
+          [queryResultsIds, "location geoWithin $0 SORT(id ASC)", circle],
         ]);
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
           [queryResultsIds, "location geoWithin geoCircle([$0, $1], $2) SORT(id ASC)", 0, 0, 0.001],
@@ -580,7 +576,7 @@ describe("Queries", () => {
         queryResultsIds = [zero, poiA, poiB, poiC, poiD].map((p) => p.id);
 
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
-          [queryResultsIds, "location geoWithin $0 SORT(id ASC)", box, "id"],
+          [queryResultsIds, "location geoWithin $0 SORT(id ASC)", box],
         ]);
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
           [queryResultsIds, "location geoWithin geoBox([$0, $1], [$2, $3]) SORT(id ASC)", -90.23, -80.25, 85.24, 88.0],
@@ -623,9 +619,69 @@ describe("Queries", () => {
       });
     });
 
+    describe("Complex cases", () => {
+      it("Intersection queries", function (this: RealmContext) {
+        const polygon: GeoPolygon = {
+          outerRing: [
+            [50, -50],
+            [55, 55],
+            [1, 1],
+            [50, -50],
+          ],
+        };
+
+        geoTest(this.realm, polygon, [poiA, poiB]);
+
+        const box: GeoBox = {
+          bottomLeft: [-74, 2],
+          topRight: [60, 60],
+        };
+
+        geoTest(this.realm, box, [poiA, poiD]);
+
+        // expectQueryResultValues(this.realm, PointOfInterest, "id", [
+        //   [[poiA], "location geoWithin $0 AND location geoWithin $1 SORT(id ASC)", box, polygon],
+        // ]);
+      });
+
+      it("Inverted polygon", function (this: RealmContext) {
+        let polygon: GeoPolygon = {
+          outerRing: [
+            [50, -50],
+            [55, 55],
+            [1, 1],
+            [50, -50],
+          ],
+        };
+
+        geoTest(this.realm, polygon, [poiA, poiB]);
+
+        //This test verifies that when a polygon covers more than one hemisphere (according to right-hand rule)
+        //it is considered as an error and inverted by core.
+        polygon = {
+          outerRing: [
+            [50, -50],
+            [1, 1],
+            [55, 55],
+            [50, -50],
+          ],
+        };
+
+        geoTest(this.realm, polygon, [poiA, poiB]);
+      });
+    });
+
     describe("Error cases", () => {
+      it("Non-float arguments", function (this: RealmContext) {
+        expectQueryException(this.realm, PointOfInterest, [
+          [
+            "Invalid predicate: 'location geoWithin geoBox([-45, -10.2], [-35.24, 5.02])': syntax error, unexpected number, expecting natural0 or float or argument",
+            "location geoWithin geoBox([-45, -10.2], [-35.24, 5.02])",
+          ],
+        ]);
+      });
+
       it("Negative circle radius", function (this: RealmContext) {
-        //Circle
         const circle: GeoCircle = {
           center: [-32.34, -25],
           distance: -1.5,
@@ -638,7 +694,52 @@ describe("Queries", () => {
         );
       });
 
-      it("Out of bounds points", function (this: RealmContext) {
+      //TODO Re-enable after fix in core
+      it.skip("Impossible box", function (this: RealmContext) {
+        const box: GeoBox = {
+          bottomLeft: [1, 1],
+          topRight: [-1, -1],
+        };
+
+        geoException(this.realm, box, "FILL WITH THE CORRECT EXCEPTION'");
+      });
+
+      it("Polygon with edges intersecting", function (this: RealmContext) {
+        const polygon: GeoPolygon = {
+          outerRing: [
+            [50, -50],
+            [55, 55],
+            [-50, 50],
+            [70, -25],
+            [50, -50],
+          ],
+        };
+
+        geoException(
+          this.realm,
+          polygon,
+          "The Geospatial query argument region is invalid: 'Ring 0 is not valid: 'Edges 0 and 2 cross. Edge locations in degrees: [-50.0000000, 50.0000000]-[55.0000000, 55.0000000] and [50.0000000, -50.0000000]-[-25.0000000, 70.0000000]'",
+        );
+      });
+
+      it("Open polygon", function (this: RealmContext) {
+        const polygon: GeoPolygon = {
+          outerRing: [
+            [50, -50],
+            [55, 55],
+            [-50, 50],
+            [70, -25],
+          ],
+        };
+
+        geoException(
+          this.realm,
+          polygon,
+          "The Geospatial query argument region is invalid: 'Ring is not closed, first vertex 'GeoPoint([50, -50])' does not equal last vertex 'GeoPoint([70, -25])'",
+        );
+      });
+
+      it("Invalid points", function (this: RealmContext) {
         const circle: GeoCircle = {
           center: [-200, 200],
           distance: 1.5,
