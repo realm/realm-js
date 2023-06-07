@@ -2,6 +2,8 @@ import React, { FormEvent, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 
 import { useAppManager } from '../hooks/useAppManager';
+import logo from '../logo.png';
+import styles from '../styles/LoginPage.module.css';
 
 const { useApp } = await import('@realm/react');
 
@@ -21,11 +23,10 @@ export function LoginPage() {
     event.preventDefault();
 
     try {
-      if (authRequest === 'login') {
-        await logIn({ email, password });
-      } else {
+      if (authRequest === 'register') {
         await register({ email, password });
       }
+      await logIn({ email, password });
     } catch (err: any) {
       return console.error(`Error ${authRequest === 'login' ? 'logging in' : 'registering'}: ${err.message || err}`);
     }
@@ -40,9 +41,17 @@ export function LoginPage() {
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit}>
+    <div className={styles.container}>
+      <img
+        src={logo}
+        alt='Realm by MongoDB'
+      />
+      <h1>
+        Log in to try out Realm Web & Sync
+      </h1>
+      <form onSubmit={handleSubmit} className={styles.form}>
         <input
+          className={styles.input}
           type='text'
           placeholder='Email'
           value={email}
@@ -51,17 +60,30 @@ export function LoginPage() {
           autoCapitalize='none' // Safari only
         />
         <input
+          className={styles.input}
           type='password'
-          placeholder='Password'
+          placeholder='Password (min. 6 chars)'
           value={password}
           onChange={(event) => setPassword(event.currentTarget.value)}
         />
-        <button type='submit' value='login' onClick={handleButtonClicked}>
-          Log In
-        </button>
-        <button type='submit' value='register' onClick={handleButtonClicked}>
-          Register
-        </button>
+        <div className={styles.buttons}>
+          <button
+            className={styles.button}
+            type='submit'
+            value='login'
+            onClick={handleButtonClicked}
+          >
+            Log In
+          </button>
+          <button
+            className={styles.button}
+            type='submit'
+            value='register'
+            onClick={handleButtonClicked}
+          >
+            Register
+          </button>
+        </div>
       </form>
     </div>
   );

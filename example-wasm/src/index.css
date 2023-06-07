@@ -1,5 +1,18 @@
-body {
+:root {
+  --primary-color: #7e41f8;
+}
+
+* {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: sans-serif;
+  color: #333333;
+}
+
+h1 {
+  font-weight: 700;
+  font-size: 2.4rem;
+  font-family: "Gill Sans", sans-serif;
+  text-align: center;
 }

@@ -1,11 +1,12 @@
 import React from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
-import config from './atlas-app-services/config.json';
 import { App } from './App';
 import { ErrorPage } from './pages/ErrorPage';
 import { LoginPage } from './pages/LoginPage';
 import { TaskPage } from './pages/TaskPage';
+import config from './atlas-app-services/config.json';
+import styles from './styles/AppWrapper.module.css';
 
 const { AppProvider } = await import('@realm/react');
 
@@ -28,9 +29,11 @@ const router = createBrowserRouter([
 
 function AppWrapper() {
   return (
-    <AppProvider id={config.ATLAS_APP_ID} logLevel='all'>
-      <RouterProvider router={router}/>
-    </AppProvider>
+    <div className={styles.container}>
+      <AppProvider id={config.ATLAS_APP_ID} logLevel='all'>
+        <RouterProvider router={router}/>
+      </AppProvider>
+    </div>
   );
 }
 
