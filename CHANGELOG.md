@@ -15,6 +15,26 @@
 * Improve performance of equality queries on a non-indexed mixed property by about 30%. ([realm/realm-core#6506](https://github.com/realm/realm-core/pull/6506))
 * Improve performance of rolling back write transactions after making changes.  ([realm/realm-core#6513](https://github.com/realm/realm-core/pull/6513))
 * Extended `PropertySchema.indexed` with the `full-text` option, that allows to create an index for full-text search queries.  ([#5755](https://github.com/realm/realm-js/issues/5755))
+* Access token refresh for websockets was not updating the location metadata ([realm/realm-core#6630](https://github.com/realm/realm-core/issues/6630), since v11.9.0) 
+* Fix several UBSan failures which did not appear to result in functional bugs ([realm/realm-core#6649](https://github.com/realm/realm-core/pull/6649)).
+* Using both synchronous and asynchronous transactions on the same thread or scheduler could hit an assertion failure if one of the callbacks for an asynchronous transaction happened to be scheduled during a synchronous transaction ([realm/realm-core#6659](https://github.com/realm/realm-core/pull/6649), since v10.12.0)
+* Added APIs to facilitate adding and removing subscriptions. ([#5772](https://github.com/realm/realm-js/pull/5772))
+  * Experimental APIs: Enabled subscribing and unsubscribing directly to and from a `Results` instance via `Results.subscribe()` (asynchronous) and `Results.unsubscribe()` (synchronous).
+    * Added a `WaitForSync` enum specifying whether to wait or not wait for subscribed objects to be downloaded before resolving the promise returned from `Results.subscribe()`.
+    * Extended `SubscriptionOptions` to take a `WaitForSync` behavior and a maximum waiting timeout before returning from `Results.subscribe()`.
+  * Added the instance method `MutableSubscriptionSet.removeUnnamed()` for removing only unnamed subscriptions.
+  ```javascript
+  const peopleOver20 = await realm
+    .objects("Person")
+    .filtered("age > 20")
+    .subscribe({
+      name: "peopleOver20",
+      behavior: WaitForSync.FirstTime, // Default
+      timeout: 2000,
+    });
+  // ...
+  peopleOver20.unsubscribe();
+  ```
 
 ### Fixed
 * Fix a stack overflow crash when using the query parser with long chains of AND/OR conditions. ([realm/realm-core#6428](https://github.com/realm/realm-core/pull/6428), since v10.11.0)
@@ -27,6 +47,7 @@
 * Fixed an error where performing a query like "{1, 2, 3, ...} IN list" where the array is longer than 8 and all elements are smaller than some values in list, the program would crash. ([realm/realm-core#6545](https://github.com/realm/realm-core/pull/6545), since v10.20.0)  
 * Performing a large number of queries without ever performing a write resulted in steadily increasing memory usage, some of which was never fully freed due to an unbounded cache. ([realm/realm-core#6530](https://github.com/realm/realm-core/pull/6530), since v10.19.0)  
 * Partition-Based to Flexible Sync Migration for migrating a client app that uses partition based sync to use flexible sync under the hood if the server has been migrated to flexible sync is officially supported with this release. Any clients using an older version of Realm will receive a "switch to flexible sync" error message when trying to sync with the app. ([realm/realm-core#6554](https://github.com/realm/realm-core/issues/6554), since v11.9.0)
+* Fix deprecated namespace method warning when building for Android ([#5646](https://github.com/realm/realm-js/issues/5646))
 
 ### Compatibility
 * React Native >= v0.71.4
@@ -40,6 +61,7 @@
 * Upgraded Realm Core from v13.10.1 to v13.11.0. ([#5811](https://github.com/realm/realm-js/issues/5811))
 * Bump sync protocol to v9 to indicate client has fix for client reset error during async open. ([realm/realm-core#6609](https://github.com/realm/realm-core/issues/6609))
 * Disabling sync session multiplexing by default in the SDK, since Core's default changed to enabled with v13.11.0. ([#5831](https://github.com/realm/realm-js/pull/5831))
+* Upgraded Realm Core from v13.11.1 to v13.13.0. ([#5873](https://github.com/realm/realm-js/pull/5873))
 
 ## 12.0.0-alpha.2 (2023-04-05)
 

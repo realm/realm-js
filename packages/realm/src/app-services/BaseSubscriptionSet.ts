@@ -196,6 +196,14 @@ export abstract class BaseSubscriptionSet {
     return subscription ? (new Subscription(subscription) as Subscription) : null; // TODO: Remove the type assertion into Subscription
   }
 
+  /** @internal */
+  exists(query: Results<any>): boolean {
+    if (query.subscriptionName === undefined) {
+      return !!this.internal.findByQuery(query.internal.query);
+    }
+    return !!this.internal.findByName(query.subscriptionName);
+  }
+
   /**
    * Makes the subscription set iterable.
    *

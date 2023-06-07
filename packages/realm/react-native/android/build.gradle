@@ -22,6 +22,7 @@ allprojects {
 apply plugin: 'com.android.library'
 
 android {
+    namespace 'io.realm.react'
     compileSdkVersion rootProject.hasProperty('compileSdkVersion') ? rootProject.compileSdkVersion : 28
     buildToolsVersion rootProject.hasProperty('buildToolsVersion') ? rootProject.buildToolsVersion : '28.0.3'
 

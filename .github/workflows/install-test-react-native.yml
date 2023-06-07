@@ -71,7 +71,7 @@ jobs:
       - name: Initialize app
         # Using "--skip-bundle-install" to let the setup-ruby action install the bundle
         # Using "--skip-pod-install" to ensure it happens after setup-ruby has executed
-        run: npm run init -- --skip-bundle-install --skip-pod-install --realm-version ${{ matrix.realm-version }} --react-native-version ${{ matrix.react-native-version }} --engine ${{ matrix.engine }}
+        run: npm run init -- --skip-bundle-install --skip-pod-install --realm-version ${{ matrix.realm-version }} --react-native-version ${{ matrix.react-native-version }} --engine ${{ matrix.engine }} --new-architecture ${{ matrix.new-architecture }}
 
       - uses: ruby/setup-ruby@v1
         if: ${{ matrix.platform == 'ios' }}

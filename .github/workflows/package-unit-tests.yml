@@ -34,6 +34,11 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
+      # ninja-build is used by default if available and results in faster build times
+      - name: Install ninja
+        run: sudo apt-get install ninja-build
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1
       # Install the root package to get dev-dependencies
       # (--ignore-scripts to avoid downloading or building the native module)
       - run: npm ci --ignore-scripts

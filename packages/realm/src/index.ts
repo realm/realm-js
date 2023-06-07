@@ -176,6 +176,7 @@ export {
   GeoPosition,
   kmToRadians,
   miToRadians,
+  WaitForSync,
 } from "./internal";
 
 import { Realm, RealmObjectConstructor } from "./internal";
