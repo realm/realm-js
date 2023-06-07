@@ -155,7 +155,7 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
   coreOut("// Enums");
   for (const e of spec.enums) {
     // Using const enum to avoid having to emit JS backing these
-    coreOut(`export const enum ${e.jsName} {`);
+    coreOut(`export enum ${e.jsName} {`);
     coreOut(...e.enumerators.map(({ jsName, value }) => `${jsName} = ${value},\n`));
     coreOut("};");
   }
