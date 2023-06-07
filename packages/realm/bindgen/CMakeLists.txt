@@ -129,7 +129,7 @@ set(GENERATED_OUTPUT_DIR ${SDK_DIR}/generated)
 set(TYPESCRIPT_OUTPUT_DIR ${SDK_DIR}/src/generated)
 
 set(GENERATED_TS_FILES
-    ${TYPESCRIPT_OUTPUT_DIR}/native.d.mts
+    ${TYPESCRIPT_OUTPUT_DIR}/native.d.ts
     ${TYPESCRIPT_OUTPUT_DIR}/core.ts
 )
 bindgen(
