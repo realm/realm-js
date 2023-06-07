@@ -187,10 +187,10 @@ const expectQueryResultValues = (
   queryResultPairs.forEach(([expectedResults, queryString, ...queryArgs]) => {
     let results = realm.objects<any>(objectSchema);
     results = results.filtered(queryString, ...queryArgs);
-    //console.log(results.map((el) => el[propertyToCompare])); //TODO For testing
-    expect(expectedResults.length).equals(results.length);
-    expect(expectedResults).to.deep.equal(
-      results.map((el) => el[propertyToCompare]),
+    //console.log(results.map((el) => el[propertyToCompare])); //TODO For testing, can be removed later
+    expect(results.length).to.equal(expectedResults.length);
+    expect(results.map((el) => el[propertyToCompare])).to.deep.equal(
+      expectedResults,
       `
       Expected results not returned from query: ${queryString} ${JSON.stringify(queryArgs)}, 
     `,
@@ -226,6 +226,11 @@ describe("Queries", () => {
       location: new MyGeoPoint(-25, 25),
     };
 
+    const northPole: IPointOfInterest = {
+      id: 6,
+      location: new MyGeoPoint(0.01, 89.9),
+    };
+
     function geoTest(realm: Realm, geo: GeoCircle | GeoBox | GeoPolygon, pois: IPointOfInterest[]) {
       const poiIds = pois.map((p) => p.id);
       expectQueryResultValues(realm, PointOfInterest, "id", [[poiIds, "location geoWithin $0 SORT(id ASC)", geo]]);
@@ -242,6 +247,7 @@ describe("Queries", () => {
         this.realm.create("PointOfInterest", poiB);
         this.realm.create("PointOfInterest", poiC);
         this.realm.create("PointOfInterest", poiD);
+        this.realm.create("PointOfInterest", northPole);
       });
     });
 
@@ -263,7 +269,7 @@ describe("Queries", () => {
 
         circle = {
           center: [2.34, -4.6],
-          distance: 10,
+          distance: 1.5,
         };
 
         queryResultsIds = [zero, poiA, poiB, poiC, poiD].map((p) => p.id);
@@ -272,7 +278,7 @@ describe("Queries", () => {
           [queryResultsIds, "location geoWithin $0 SORT(id ASC)", circle],
         ]);
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
-          [queryResultsIds, "location geoWithin geoCircle([2.34, -4.6], 10) SORT(id ASC)"],
+          [queryResultsIds, "location geoWithin geoCircle([2.34, -4.6], 1.5) SORT(id ASC)"],
         ]);
 
         circle = {
@@ -639,9 +645,28 @@ describe("Queries", () => {
 
         geoTest(this.realm, box, [poiA, poiD]);
 
-        // expectQueryResultValues(this.realm, PointOfInterest, "id", [
-        //   [[poiA], "location geoWithin $0 AND location geoWithin $1 SORT(id ASC)", box, polygon],
-        // ]);
+        expectQueryResultValues(this.realm, PointOfInterest, "id", [
+          [[poiA.id], "location geoWithin $0 AND location geoWithin $1 SORT(id ASC)", box, polygon],
+        ]);
+      });
+
+      //TODO Need to re-enable when we know if we can do this or not
+      it.skip("Box around north pole", function (this: RealmContext) {
+        const box: GeoBox = {
+          bottomLeft: [6, 89],
+          topRight: [160, 89],
+        };
+
+        geoTest(this.realm, box, [northPole]);
+      });
+
+      it("Circle around north pole", function (this: RealmContext) {
+        const circle: GeoCircle = {
+          center: [0, 90],
+          distance: 0.5,
+        };
+
+        geoTest(this.realm, circle, [northPole]);
       });
 
       it("Inverted polygon", function (this: RealmContext) {
@@ -668,6 +693,36 @@ describe("Queries", () => {
         };
 
         geoTest(this.realm, polygon, [poiA, poiB]);
+      });
+
+      it("Polygon with multiple holes", function (this: RealmContext) {
+        const polygon: GeoPolygon = {
+          outerRing: [
+            [-44, -44],
+            [44, -44],
+            [44, 44],
+            [-44, 44],
+            [-44, -44],
+          ],
+          holes: [
+            [
+              [-1, -1],
+              [-1, 1],
+              [1, 1],
+              [1, -1],
+              [-1, -1],
+            ],
+            [
+              [-31, -31],
+              [-28, -31],
+              [-28, -28],
+              [-31, -28],
+              [-31, -31],
+            ],
+          ],
+        };
+
+        geoTest(this.realm, polygon, [poiB, poiD]);
       });
     });
 
