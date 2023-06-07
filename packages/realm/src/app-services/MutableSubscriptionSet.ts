@@ -19,15 +19,35 @@
 import { BaseSubscriptionSet, Realm, Results, Subscription, SubscriptionSet, assert, binding } from "../internal";
 
 /**
+ * Behavior when waiting for subscribed objects to be synchronized/downloaded.
+ */
+export enum WaitForSync {
+  /**
+   * Waits until the objects have been downloaded from the server
+   * the first time the subscription is created. If the subscription
+   * already exists, the `Results` is returned immediately.
+   */
+  FirstTime = "first-time",
+  /**
+   * Always waits until the objects have been downloaded from the server.
+   */
+  Always = "always",
+  /**
+   * Never waits for the download to complete, but keeps downloading the
+   * objects in the background.
+   */
+  Never = "never",
+}
+
+/**
  * Options for {@link MutableSubscriptionSet.add}.
  */
-export interface SubscriptionOptions {
+export type SubscriptionOptions = {
   /**
    * Sets the name of the subscription being added. This allows you to later refer
    * to the subscription by name, e.g. when calling {@link MutableSubscriptionSet.removeByName}.
    */
   name?: string;
-
   /**
    * By default, adding a subscription with the same name as an existing one
    * but a different query will update the existing subscription with the new
@@ -36,7 +56,17 @@ export interface SubscriptionOptions {
    * Adding a subscription with the same name and query is always a no-op.
    */
   throwOnUpdate?: boolean;
-}
+  /**
+   * Specifies how to wait or not wait for subscribed objects to be downloaded.
+   */
+  behavior?: WaitForSync;
+  /**
+   * The maximum time (in milliseconds) to wait for objects to be downloaded.
+   * If the time exceeds this limit, the `Results` is returned and the download
+   * continues in the background.
+   */
+  timeout?: number;
+};
 
 /**
  * The mutable version of a given SubscriptionSet. The {@link MutableSubscriptionSet}
@@ -71,14 +101,14 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
   add(query: Results<any>, options?: SubscriptionOptions): Subscription {
     assert.instanceOf(query, Results, "query");
     if (options) {
-      assertIsSubscriptionOptions(options);
+      validateSubscriptionOptions(options);
     }
 
     const subscriptions = this.internal;
     const results = query.internal;
     const queryInternal = results.query;
 
-    if (options?.throwOnUpdate && options.name) {
+    if (options?.throwOnUpdate && options.name !== undefined) {
       const existingSubscription = subscriptions.findByName(options.name);
       if (existingSubscription) {
         const isSameQuery =
@@ -91,9 +121,13 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
       }
     }
 
-    const [subscription] = options?.name
-      ? subscriptions.insertOrAssignByName(options.name, queryInternal)
-      : subscriptions.insertOrAssignByQuery(queryInternal);
+    const [subscription] =
+      // Check for `undefined` rather than falsy since we treat empty names as named.
+      options?.name === undefined
+        ? subscriptions.insertOrAssignByQuery(queryInternal)
+        : subscriptions.insertOrAssignByName(options.name, queryInternal);
+
+    query.subscriptionName = subscription.name;
 
     return new Subscription(subscription);
   }
@@ -141,17 +175,43 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
    * @returns The number of subscriptions removed.
    */
   removeByObjectType(objectType: string): number {
+    assert.string(objectType, "objectType");
+
+    return this.removeByPredicate((subscription) => subscription.objectClassName === objectType);
+  }
+
+  /**
+   * Remove all subscriptions from the SubscriptionSet.
+   *
+   * @returns The number of subscriptions removed.
+   */
+  removeAll(): number {
+    const numRemoved = this.internal.size;
+    this.internal.clear();
+
+    return numRemoved;
+  }
+
+  /**
+   * Remove all unnamed/anonymous subscriptions from the SubscriptionSet.
+   *
+   * @returns The number of subscriptions removed.
+   */
+  removeUnnamed(): number {
+    return this.removeByPredicate((subscription) => subscription.name === undefined);
+  }
+
+  /** @internal */
+  private removeByPredicate(predicate: (subscription: binding.SyncSubscription) => boolean): number {
     // TODO: This is currently O(n^2) because each erase call is O(n). Once Core has
     //       fixed https://github.com/realm/realm-core/issues/6241, we can update this.
-
-    assert.string(objectType, "objectType");
 
     // Removing the subscription (calling `eraseSubscription()`) invalidates all current
     // iterators, so it would be illegal to continue iterating. Instead, we push it to an
     // array to remove later.
     const subscriptionsToRemove: binding.SyncSubscription[] = [];
     for (const subscription of this.internal) {
-      if (subscription.objectClassName === objectType) {
+      if (predicate(subscription)) {
         subscriptionsToRemove.push(subscription);
       }
     }
@@ -165,21 +225,9 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
 
     return numRemoved;
   }
-
-  /**
-   * Remove all subscriptions from the SubscriptionSet.
-   *
-   * @returns The number of subscriptions removed.
-   */
-  removeAll(): number {
-    const numSubscriptions = this.internal.size;
-    this.internal.clear();
-
-    return numSubscriptions;
-  }
 }
 
-function assertIsSubscriptionOptions(input: unknown): asserts input is SubscriptionOptions {
+function validateSubscriptionOptions(input: unknown): asserts input is SubscriptionOptions {
   assert.object(input, "options", { allowArrays: false });
   if (input.name !== undefined) {
     assert.string(input.name, "'name' on 'SubscriptionOptions'");
