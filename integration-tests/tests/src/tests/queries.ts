@@ -557,6 +557,34 @@ describe("Queries", () => {
         geoTest(this.realm, polygon, queryResults);
       });
 
+      it("Altitude is supported but ignored", function (this: RealmContext) {
+        let circle: GeoCircle = {
+          center: [-32.34, -25, 23],
+          distance: 0.5,
+        };
+
+        const queryResults = [poiC];
+
+        geoTest(this.realm, circle, queryResults);
+
+        circle = {
+          center: { latitude: -25, longitude: -32.34, altitude: -25 },
+          distance: 0.5,
+        };
+
+        geoTest(this.realm, circle, queryResults);
+
+        circle = {
+          center: {
+            coordinates: [-32.34, -25, -35],
+            type: "Point",
+          },
+          distance: 0.5,
+        };
+
+        geoTest(this.realm, circle, queryResults);
+      });
+
       it("Coordinate Substitution", function (this: RealmContext) {
         //Circle
         const circle: GeoCircle = {
