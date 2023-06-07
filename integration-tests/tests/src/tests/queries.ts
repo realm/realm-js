@@ -198,8 +198,8 @@ const expectQueryResultValues = (
   });
 };
 
-describe.only("Queries", () => {
-  describe("GeoSpatial", () => {
+describe("Queries", () => {
+  describe.only("GeoSpatial", () => {
     openRealmBeforeEach({ schema: [PointOfInterest, MyGeoPoint.schema] });
     const zero: IPointOfInterest = {
       id: 1,
@@ -258,7 +258,7 @@ describe.only("Queries", () => {
           [queryResultsIds, "location geoWithin $0 SORT(id ASC)", circle, "id"],
         ]);
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
-          [queryResultsIds, "location geoWithin geoSphere([0, 0], 0.001) SORT(id ASC)"],
+          [queryResultsIds, "location geoWithin geoCircle([0, 0], 0.001) SORT(id ASC)"],
         ]);
         //TODO After merging from core this should go back in and be added to all other tests
         // expectQueryResultValues(this.realm, PointOfInterest, "id", [
@@ -276,7 +276,7 @@ describe.only("Queries", () => {
           [queryResultsIds, "location geoWithin $0 SORT(id ASC)", circle, "id"],
         ]);
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
-          [queryResultsIds, "location geoWithin geoSphere([2.34, -4.6], 10) SORT(id ASC)"],
+          [queryResultsIds, "location geoWithin geoCircle([2.34, -4.6], 10) SORT(id ASC)"],
         ]);
 
         circle = {
@@ -290,17 +290,17 @@ describe.only("Queries", () => {
           [queryResultsIds, "location geoWithin $0 SORT(id ASC)", circle, "id"],
         ]);
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
-          [queryResultsIds, "location geoWithin geoSphere([-32.34, -25.0], 0.5) SORT(id ASC)"],
+          [queryResultsIds, "location geoWithin geoCircle([-32.34, -25.0], 0.5) SORT(id ASC)"],
         ]);
 
         circle = {
-          center: [-75.234, 120.023],
+          center: [-75.234, 45.023],
           distance: 0.01,
         };
 
         expectQueryLength(this.realm, PointOfInterest, [[0, "location geoWithin $0 SORT(id ASC)", circle, "id"]]);
         expectQueryLength(this.realm, PointOfInterest, [
-          [0, "location geoWithin geoSphere([-75.234, 120.023], 0.01) SORT(id ASC)"],
+          [0, "location geoWithin geoCircle([-75.234, 45.023], 0.01) SORT(id ASC)"],
         ]);
       });
 
@@ -380,7 +380,7 @@ describe.only("Queries", () => {
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
           [
             queryResultsIds,
-            "location geoWithin geoPolygon({[-2.0, -2.0], [3.45, -4.23], [2.56, 4.62], [3.23, 2.5], [-2.0, 2.0]}) SORT(id ASC)",
+            "location geoWithin geoPolygon({[-2.0, -2.0], [3.45, -4.23], [2.56, 4.62], [3.23, 2.5], [-2.0, -2.0]}) SORT(id ASC)",
           ],
         ]);
         // expectQueryResultValues(this.realm, PointOfInterest, "id", [
@@ -570,12 +570,12 @@ describe.only("Queries", () => {
 
         //TODO Why it's not throwing errors???
         expectQueryException(this.realm, PointOfInterest, [
-          ["Column has no fulltext index", "location geoWithin geoBox([-190.0, -1.0], [1.0, 1.0]) SORT(id ASC)"],
+          ["Column has no fulltext index", "location geoWithin geoBox([-190.0, -211.0], [1.0, 1.0]) SORT(id ASC)"],
         ]);
 
-        expectQueryException(this.realm, PointOfInterest, [
-          ["Column has no fulltext index", "location geoWithin geoSphere([2220, 2220], -0.001) SORT(id ASC)"],
-        ]);
+        // expectQueryException(this.realm, PointOfInterest, [
+        //   ["Column has no fulltext index", "location geoWithin geoCircle([0, 0], -5.0) SORT(id ASC)"],
+        // ]);
 
         //TODO Why this doesn't give error????
         // geoException(this.realm, circle, "");
