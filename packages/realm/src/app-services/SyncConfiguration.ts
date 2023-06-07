@@ -19,6 +19,7 @@
 import { EJSON, ObjectId, UUID } from "bson";
 
 import {
+  AnyUser,
   BSON,
   ClientResetError,
   MutableSubscriptionSet,
@@ -171,7 +172,7 @@ export type SSLVerifyObject = {
 };
 
 export type BaseSyncConfiguration = {
-  user: User;
+  user: AnyUser;
   newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
   existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
   onError?: ErrorCallback;
