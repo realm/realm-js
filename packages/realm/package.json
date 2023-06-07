@@ -270,7 +270,7 @@
   },
   "binary": {
     "module_name": "realm",
-    "module_path": "generated/ts",
+    "module_path": "generated",
     "host": "https://static.realm.io",
     "remote_path": "realm-js-prebuilds/{version}",
     "napi_versions": [
