@@ -1,4 +1,4 @@
-import React, { FormEvent, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 
 import { useAppManager } from '../hooks/useAppManager';

@@ -1,4 +1,4 @@
-import React, { FormEvent, useState } from 'react';
+import { FormEvent, useState } from 'react';
 
 type AddTaskFormProps = {
   onSubmit: (description: string) => void;

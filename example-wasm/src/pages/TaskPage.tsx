@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { AddTaskForm } from '../components/AddTaskForm';
 import { IntroText } from '../components/IntroText';
 import { TaskList } from '../components/TaskList';

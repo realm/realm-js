@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { Task } from '../models/Task';
 
 type TaskItemProps = {
