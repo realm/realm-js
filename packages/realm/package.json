@@ -103,8 +103,8 @@
     "bindgen:configure": {
       "command": "cmake-js configure --debug --directory bindgen"
     },
-    "bindgen:build:node": {
-      "command": "cmake --build bindgen/build --target realm-js-node",
+    "bindgen:generate:typescript": {
+      "command": "cmake --build bindgen/build --target TypeScript",
       "dependencies": [
         "bindgen:configure"
       ]
@@ -117,15 +117,10 @@
         }
       ]
     },
-    "bindgen:generate:typescript": {
-      "command": "cmake --build bindgen/build --target TypeScript"
-    },
-    "bindgen:node": {
+    "bindgen:build:node": {
+      "command": "cmake --build bindgen/build --target realm-js-node",
       "dependencies": [
-        {
-          "script": "bindgen:build:node",
-          "cascade": false
-        }
+        "bindgen:configure"
       ]
     },
     "build:node": {
