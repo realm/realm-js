@@ -18,11 +18,20 @@
 import { isEqual } from "lodash";
 import React, { createContext, useContext, useLayoutEffect, useRef, useState } from "react";
 import Realm from "realm";
+import { AuthResult, OperationState } from "./types";
+
+type AppContextValue = {
+  app: Realm.App | null;
+  authOperationStateHook: [AuthResult, React.Dispatch<React.SetStateAction<AuthResult>>] | null;
+};
 
 /**
  * Create a context containing the Realm app.  Should be accessed with the useApp hook.
  */
-const AppContext = createContext<Realm.App | null>(null);
+const AppContext = createContext<AppContextValue>({
+  app: null,
+  authOperationStateHook: null,
+});
 
 /**
  * Props for the AppProvider component. These replicate the options which
@@ -59,6 +68,13 @@ export const AppProvider: React.FC<AppProviderProps> = ({
 
   const [app, setApp] = useState<Realm.App>(() => new Realm.App(configuration.current));
 
+  const [authOpResult, setAuthOpResult] = useState<AuthResult>({
+    state: OperationState.NotStarted,
+    pending: false,
+    success: false,
+    error: undefined,
+  });
+
   // Support for a possible change in configuration
   if (!isEqual(appProps, configuration.current)) {
     configuration.current = appProps;
@@ -80,7 +96,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({
     }
   }, [appRef, app, logLevel]);
 
-  return <AppContext.Provider value={app}>{children}</AppContext.Provider>;
+  return (
+    <AppContext.Provider value={{ app, authOperationStateHook: [authOpResult, setAuthOpResult] }}>
+      {children}
+    </AppContext.Provider>
+  );
 };
 
 /**
@@ -92,10 +112,21 @@ export const useApp = <
   FunctionsFactoryType extends Realm.DefaultFunctionsFactory,
   CustomDataType extends Record<string, unknown>,
 >(): Realm.App<FunctionsFactoryType, CustomDataType> => {
-  const app = useContext(AppContext);
+  const { app } = useContext(AppContext);
 
-  if (app === null) {
+  if (!app) {
     throw new Error("No app found. Did you forget to wrap your component in an <AppProvider>?");
   }
   return app as Realm.App<FunctionsFactoryType, CustomDataType>;
+};
+
+export const useAuthResult = () => {
+  const { authOperationStateHook } = useContext(AppContext);
+
+  if (!authOperationStateHook) {
+    throw new Error(
+      "Auth operation statue could not be determined. Did you forget to wrap your component in an <AppProvider>?",
+    );
+  }
+  return authOperationStateHook;
 };

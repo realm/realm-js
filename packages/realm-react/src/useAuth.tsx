@@ -16,17 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { useCallback, useState } from "react";
-import { useApp } from "./AppProvider";
+import { useCallback } from "react";
+import { useApp, useAuthResult } from "./AppProvider";
 import { AuthError, AuthResult, OperationState } from "./types";
 import { Realm } from "realm";
+import { useAuthOperation } from "./useAuthOperation";
 
 /**
  * Hook providing operations and corresponding state for authenticating with a
  * Realm app.
  *
  * The {@link AuthResult} states returned from this hook are "global" for all
- * components under a given RealmAppProvider, as only one operation can be in progress
+ * components under a given AppProvider, as only one operation can be in progress
  * at a given time (i.e. we will store the states on the context). This means that,
  * for example, multiple components can use the `useAuth` hook to access
  * `loginResult.pending` to render a spinner when login is in progress, without
@@ -108,7 +109,7 @@ interface UseAuth {
 
   /**
    * The {@link AuthResult} of the current (or last) login operation performed
-   * for this `RealmAppContext`. There is one {@link AuthResult} for all `login`
+   * for this hook. There is one {@link AuthResult} for all `login`
    * operations within a given `RealmAppProvider` context, as only one login can
    * be in progress at a time (e.g. the {@link AuthResult} of `loginUser` from
    * `useEmailPasswordAuth` is also represented by this).
@@ -118,32 +119,11 @@ interface UseAuth {
 
 export function useAuth(): UseAuth {
   const app = useApp();
-  const [result, setResult] = useState<AuthResult>({
-    state: OperationState.NotStarted,
-    pending: false,
-    success: false,
-    error: undefined,
-  });
+  const [result] = useAuthResult();
 
-  const logIn = useCallback(
-    (credentials: Realm.Credentials): Promise<Realm.User | void> => {
-      if (result.state === OperationState.Pending) {
-        return Promise.reject("Another auth operation is already in progress.");
-      }
-      setResult({ state: OperationState.Pending, pending: true, success: false, error: undefined });
-      return app.logIn(credentials).then(
-        (user) => {
-          setResult({ state: OperationState.Success, pending: false, success: true, error: undefined });
-          return user;
-        },
-        (error) => {
-          const authError = new AuthError(error);
-          setResult({ state: OperationState.Error, pending: false, success: false, error: authError });
-        },
-      );
-    },
-    [app, result, setResult],
-  );
+  const logIn = useAuthOperation({
+    operation: (credentials: Realm.Credentials) => app.logIn(credentials),
+  });
 
   const logInWithAnonymous = useCallback(() => {
     return logIn(Realm.Credentials.anonymous());
@@ -198,22 +178,9 @@ export function useAuth(): UseAuth {
     [logIn],
   );
 
-  const logOut = useCallback(() => {
-    if (result.state === OperationState.Pending) {
-      return Promise.reject("Another authentication operation is already in progress.");
-    }
-    setResult({ state: OperationState.Pending, pending: true, success: false, error: undefined });
-    return (app.currentUser ? app.currentUser.logOut() : Promise.resolve()).then(
-      (user) => {
-        setResult({ state: OperationState.Success, pending: false, success: true, error: undefined });
-        return user;
-      },
-      (error) => {
-        const authError = new AuthError(error);
-        setResult({ state: OperationState.Error, pending: false, success: false, error: authError });
-      },
-    );
-  }, [app, result, setResult]);
+  const logOut = useAuthOperation({
+    operation: () => (app.currentUser ? app.currentUser.logOut() : Promise.resolve()),
+  });
 
   return {
     result,

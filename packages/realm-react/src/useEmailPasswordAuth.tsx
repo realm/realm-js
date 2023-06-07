@@ -16,18 +16,28 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { useCallback, useEffect, useState } from "react";
-import { useApp } from "./AppProvider";
-import { AuthError, AuthResult, OperationState } from "./types";
-import { Realm, App, Object, User, Credentials } from "realm";
+import { useApp, useAuthResult } from "./AppProvider";
+import { AuthResult } from "./types";
+import { Realm, User, Credentials } from "realm";
+import { useAuthOperation } from "./useAuthOperation";
 
+/**
+ * Hook providing operations and corresponding state for authenticating with a
+ * Realm app with Email/Password.  It also contains operations related to
+ * Email/Password authentication, such as resetting password and confirming a user.
+ *
+ * The {@link AuthResult} states returned from this hook are "global" for all
+ * components under a given AppProvider, as only one operation can be in progress
+ * at a given time (i.e. we will store the states on the context). This means that,
+ * for example, multiple components can use the `useAuth` hook to access
+ * `result.pending` to render a spinner when login is in progress, without
+ * needing to pass that state around or store it somewhere global in their app
+ * code.
+ */
 interface UseEmailPasswordAuth {
   /**
    * Convenience function to login a user with an email and password - users
    * could also call `logIn(Realm.Credentials.emailPassword(email, password)).
-   *
-   * TODO: Does it make sense to have this convenience function? Should we add
-   * convenience functions for other/all auth types if so?
    *
    * @returns A `Realm.User` instance for the logged in user.
    */
@@ -48,9 +58,6 @@ interface UseEmailPasswordAuth {
     // in.
     loginAfterRegister?: boolean;
   }): Promise<Realm.User | void>;
-
-  // TODO: verify that the following operations have the same error return type as
-  // the ones above (i.e. that `AuthResult` is the correct type for their results).
 
   /**
    * Confirm a user's account by providing the `token` and `tokenId` received.
@@ -103,72 +110,25 @@ interface UseEmailPasswordAuth {
 
   /**
    * Log out the current user.
-   *
-   * @returns A `Realm.User` instance for the logged in user.
-   * @throws if another operation is already in progress for this `useAuth` instance.
-   * @throws if there is an error logging out.
    */
   logOut(): Promise<void>;
 
   /**
    * The {@link AuthResult} of the current (or last) operation performed for
-   * this `RealmAppContext`.
+   * this hook.
    */
   result: AuthResult;
 }
 
-function useAuthOperation<Args extends unknown[], Result>({
-  result,
-  setResult,
-  operation,
-  onSuccess = () => undefined,
-}: {
-  result: AuthResult;
-  setResult: (value: React.SetStateAction<AuthResult>) => void;
-  operation: (...args: Args) => Promise<Result | void>;
-  onSuccess?: (...args: Args) => void;
-}) {
-  return useCallback<(...args: Args) => ReturnType<typeof operation>>(
-    (...args) => {
-      if (result.pending) {
-        return Promise.reject("Another authentication operation is already in progress");
-      }
-
-      setResult({ state: OperationState.Pending, pending: true, success: false, error: undefined });
-      return operation(...args)
-        .then((res) => {
-          setResult({ state: OperationState.Success, pending: false, success: true, error: undefined });
-          onSuccess(...args);
-          return res;
-        })
-        .catch((error) => {
-          const authError = new AuthError(error);
-          setResult({ state: OperationState.Error, pending: false, success: false, error: authError });
-        });
-    },
-    [result, setResult, operation, onSuccess],
-  );
-}
-
 export function useEmailPasswordAuth(): UseEmailPasswordAuth {
   const app = useApp();
-
-  const [result, setResult] = useState<AuthResult>({
-    state: OperationState.NotStarted,
-    pending: false,
-    success: false,
-    error: undefined,
-  });
+  const [result] = useAuthResult();
 
   const logIn = useAuthOperation<[{ email: string; password: string }], User>({
-    result,
-    setResult,
     operation: (args) => app.logIn(Credentials.emailPassword(args)),
   });
 
   const register = useAuthOperation<[{ email: string; password: string; loginAfterRegister?: boolean }], void>({
-    result,
-    setResult,
     operation: ({ email, password }) => app.emailPasswordAuth.registerUser({ email, password }),
     onSuccess: ({ email, password, loginAfterRegister = true }) => {
       if (loginAfterRegister === true) {
@@ -178,45 +138,31 @@ export function useEmailPasswordAuth(): UseEmailPasswordAuth {
   });
 
   const confirm = useAuthOperation({
-    result,
-    setResult,
     operation: ({ token, tokenId }) => app.emailPasswordAuth.confirmUser({ token, tokenId }),
   });
 
   const resendConfirmationEmail = useAuthOperation({
-    result,
-    setResult,
     operation: ({ email }) => app.emailPasswordAuth.resendConfirmationEmail({ email }),
   });
 
   const retryCustomConfirmation = useAuthOperation({
-    result,
-    setResult,
     operation: ({ email }) => app.emailPasswordAuth.retryCustomConfirmation({ email }),
   });
 
   const sendResetPasswordEmail = useAuthOperation({
-    result,
-    setResult,
     operation: ({ email }) => app.emailPasswordAuth.sendResetPasswordEmail({ email }),
   });
 
   const callResetPasswordFunction = useAuthOperation({
-    result,
-    setResult,
     operation: ({ email, password }, ...restArgs) =>
       app.emailPasswordAuth.callResetPasswordFunction({ email, password }, ...restArgs),
   });
 
   const resetPassword = useAuthOperation({
-    result,
-    setResult,
     operation: ({ password, token, tokenId }) => app.emailPasswordAuth.resetPassword({ password, token, tokenId }),
   });
 
   const logOut = useAuthOperation({
-    result,
-    setResult,
     operation: () => (app.currentUser ? app.currentUser.logOut() : Promise.resolve()),
   });
 
