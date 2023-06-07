@@ -3,15 +3,13 @@ import {View, Text, StyleSheet, TextInput, Pressable} from 'react-native';
 import colors from '../styles/colors';
 import {shadows} from '../styles/shadows';
 import {buttonStyles} from '../styles/button';
-import {useAuth, useEmailPasswordAuth} from '@realm/react';
+import {AuthOperationName, useAuth, useEmailPasswordAuth} from '@realm/react';
 
 export const LoginScreen = () => {
-  const {result: loginResult, logInWithEmailPassword} = useAuth();
-  const {result: registerResult, register} = useEmailPasswordAuth();
+  const {result, logInWithEmailPassword} = useAuth();
+  const {register} = useEmailPasswordAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
-  const pending = loginResult.pending || registerResult.pending;
 
   const handleLogin = useCallback(() => {
     logInWithEmailPassword({email, password});
@@ -47,23 +45,24 @@ export const LoginScreen = () => {
         />
       </View>
 
-      {loginResult.error && (
+      {result.error && result.error.operation === AuthOperationName.LogIn && (
         <Text style={[styles.error]}>
-          There was an error logging in, please try again
+          There was an error logging in, please try again{' '}
         </Text>
       )}
 
-      {registerResult.error && (
-        <Text style={[styles.error]}>
-          There was an error registering, please try again
-        </Text>
-      )}
+      {result.error &&
+        result.error.operation === AuthOperationName.Register && (
+          <Text style={[styles.error]}>
+            There was an error registering, please try again
+          </Text>
+        )}
 
       <View style={styles.buttons}>
         <Pressable
           onPress={handleLogin}
-          style={[styles.button, pending && styles.buttonDisabled]}
-          disabled={pending}>
+          style={[styles.button, result.pending && styles.buttonDisabled]}
+          disabled={result.pending}>
           <Text style={buttonStyles.text}>Login</Text>
         </Pressable>
 
@@ -71,10 +70,10 @@ export const LoginScreen = () => {
           onPress={handleRegister}
           style={[
             styles.button,
-            pending && styles.buttonDisabled,
+            result.pending && styles.buttonDisabled,
             styles.registerButton,
           ]}
-          disabled={pending}>
+          disabled={result.pending}>
           <Text style={buttonStyles.text}>Register</Text>
         </Pressable>
       </View>

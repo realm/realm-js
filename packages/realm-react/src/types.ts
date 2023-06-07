@@ -16,22 +16,36 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-export enum AuthErrorName {
-  // e.g. wrong password for login
-  AuthError = "AuthError",
-  // e.g. password length wrong when registering.
-  BadRequest = "BadRequest",
-  // account name in use when registering
-  AccountNameInUse = "AccountNameInUse",
-  // ? not sure when this happens
-  InvalidEmailPassword = "InvalidEmailPassword",
+export enum AuthOperationName {
+  LogIn = "logIn",
+  LogInWithAnonymous = "logInWithAnonymous",
+  LogInWithApiKey = "logInWithApiKey",
+  LogInWithEmailPassword = "logInWithEmailPassword",
+  LogInWithJWT = "logInWithJWT",
+  LogInWithGoogle = "logInWithGoogle",
+  LogInWithApple = "logInWithApple",
+  LogInWithFacebook = "logInWithFacebook",
+  LogInWithFunction = "logInWithFunction",
+  LogOut = "logOut",
+  Register = "register",
+  Confirm = "confirm",
+  ResendConfirmationEmail = "resendConfirmationEmail",
+  RetryCustomConfirmation = "retryCustomConfirmation",
+  SendResetPasswordEmail = "sendResetPasswordEmail",
+  ResetPassword = "resetPassword",
+  CallResetPasswordFunction = "callResetPasswordFunction",
+  None = "none",
 }
 
-// TODO: Find a way to determine the error name
+/**
+ * The `AuthError` is set on the
+ */
 export class AuthError extends Error {
-  constructor(message: string) {
+  public operation: AuthOperationName;
+  constructor(operation: AuthOperationName, message: string) {
     super(message);
     this.name = "AuthError";
+    this.operation = operation;
   }
 }
 
@@ -57,6 +71,11 @@ export type OperationResult<ErrorT extends Error = Error, StateT = OperationStat
   state: StateT;
 
   /**
+   * The string name of the current operation running.
+   */
+  currentOperation: AuthOperationName;
+
+  /**
    * Convenience accessors, so users can write e.g. `loginResult.pending`
    * instead of `loginResult.state === OperationState.Pending`
    */
@@ -68,7 +87,7 @@ export type OperationResult<ErrorT extends Error = Error, StateT = OperationStat
    * if `state === OperationState.Error`, and will be cleared each time the
    * operation is called.
    */
-  error: ErrorT | Error | undefined;
+  error: AuthError | undefined;
 };
 
 export type AuthResult = OperationResult<AuthError, OperationState>;

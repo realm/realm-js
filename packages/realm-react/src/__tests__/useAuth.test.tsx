@@ -21,7 +21,7 @@ import { waitFor, renderHook, act } from "@testing-library/react-native";
 
 import { AppConfigBuilder } from "@realm/app-importer";
 import { useAuth } from "../useAuth";
-import { baseUrl, importApp } from "./helpers";
+import { baseUrl, importApp, testAuthOperation } from "./helpers";
 
 function renderAuth(appId: string, baseUrl: string) {
   const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -43,122 +43,82 @@ describe("useAuth", () => {
     });
     it("logIn", async () => {
       const { result } = renderAuth(appId, baseUrl);
-      await act(async () => {
-        result.current.logIn({ email: "test@test.com", password: "password" });
-        await waitFor(() => {
-          expect(result.current.result.pending).toBeTruthy();
-        });
-      });
-      await waitFor(() => {
-        expect(result.current.result.error).toBeDefined();
+      await testAuthOperation({
+        authOperation: () => result.current.logIn({ email: "test@test.com", password: "password" }),
+        result,
+        expectedResult: () => expect(result.current.result.error).toBeDefined(),
       });
     });
     it("logInWithAnonymous", async () => {
       const { result } = renderAuth(appId, baseUrl);
-      await act(async () => {
-        result.current.logInWithAnonymous();
-        await waitFor(() => {
-          expect(result.current.result.pending).toBeTruthy();
-        });
-      });
-      await waitFor(() => {
-        expect(result.current.result.error).toBeDefined();
+      await testAuthOperation({
+        authOperation: () => result.current.logInWithAnonymous(),
+        result,
+        expectedResult: () => expect(result.current.result.error).toBeDefined(),
       });
     });
     it("logInWithApiKey", async () => {
       const { result } = renderAuth(appId, baseUrl);
-      await act(async () => {
-        result.current.logInWithApiKey("12345");
-        await waitFor(() => {
-          expect(result.current.result.pending).toBeTruthy();
-        });
-      });
-      await waitFor(() => {
-        expect(result.current.result.error).toBeDefined();
+      await testAuthOperation({
+        authOperation: () => result.current.logInWithApiKey("12345"),
+        result,
+        expectedResult: () => expect(result.current.result.error).toBeDefined(),
       });
     });
     it("logInWithEmailPassword", async () => {
       const { result } = renderAuth(appId, baseUrl);
-      await act(async () => {
-        result.current.logInWithEmailPassword({ email: "test@test.com", password: "password" });
-        await waitFor(() => {
-          expect(result.current.result.pending).toBeTruthy();
-        });
-      });
-      await waitFor(() => {
-        expect(result.current.result.error).toBeDefined();
+      await testAuthOperation({
+        authOperation: () => result.current.logInWithEmailPassword({ email: "test@test.com", password: "password" }),
+        result,
+        expectedResult: () => expect(result.current.result.error).toBeDefined(),
       });
     });
     it("logInWithJWT", async () => {
       const { result } = renderAuth(appId, baseUrl);
-      await act(async () => {
-        result.current.logInWithJWT("token");
-        await waitFor(() => {
-          expect(result.current.result.pending).toBeTruthy();
-        });
-      });
-      await waitFor(() => {
-        expect(result.current.result.error).toBeDefined();
+      await testAuthOperation({
+        authOperation: () => result.current.logInWithJWT("token"),
+        result,
+        expectedResult: () => expect(result.current.result.error).toBeDefined(),
       });
     });
     it("logInWithGoogle", async () => {
       const { result } = renderAuth(appId, baseUrl);
-      await act(async () => {
-        result.current.logInWithGoogle({ idToken: "1234" });
-        await waitFor(() => {
-          expect(result.current.result.pending).toBeTruthy();
-        });
-      });
-      await waitFor(() => {
-        expect(result.current.result.error).toBeDefined();
+      await testAuthOperation({
+        authOperation: () => result.current.logInWithGoogle({ idToken: "1234" }),
+        result,
+        expectedResult: () => expect(result.current.result.error).toBeDefined(),
       });
     });
     it("logInWithApple", async () => {
       const { result } = renderAuth(appId, baseUrl);
-      await act(async () => {
-        result.current.logInWithApple("token");
-        await waitFor(() => {
-          expect(result.current.result.pending).toBeTruthy();
-        });
-      });
-      await waitFor(() => {
-        expect(result.current.result.error).toBeDefined();
+      await testAuthOperation({
+        authOperation: () => result.current.logInWithApple("token"),
+        result,
+        expectedResult: () => expect(result.current.result.error).toBeDefined(),
       });
     });
     it("logInWithFacebook", async () => {
       const { result } = renderAuth(appId, baseUrl);
-      await act(async () => {
-        result.current.logInWithFacebook("token");
-        await waitFor(() => {
-          expect(result.current.result.pending).toBeTruthy();
-        });
-      });
-      await waitFor(() => {
-        expect(result.current.result.error).toBeDefined();
+      await testAuthOperation({
+        authOperation: () => result.current.logInWithFacebook("token"),
+        result,
+        expectedResult: () => expect(result.current.result.error).toBeDefined(),
       });
     });
     it("logInWithFunction", async () => {
       const { result } = renderAuth(appId, baseUrl);
-      await act(async () => {
-        result.current.logInWithFunction({ foo: "bar" });
-        await waitFor(() => {
-          expect(result.current.result.pending).toBeTruthy();
-        });
-      });
-      await waitFor(() => {
-        expect(result.current.result.error).toBeDefined();
+      await testAuthOperation({
+        authOperation: () => result.current.logInWithFunction({ foo: "bar" }),
+        result,
+        expectedResult: () => expect(result.current.result.error).toBeDefined(),
       });
     });
     it("logOut", async () => {
       const { result } = renderAuth(appId, baseUrl);
-      await act(async () => {
-        result.current.logOut();
-        await waitFor(() => {
-          expect(result.current.result.pending).toBeTruthy();
-        });
-      });
-      await waitFor(() => {
-        expect(result.current.result.success).toBeTruthy();
+      await testAuthOperation({
+        authOperation: () => result.current.logOut(),
+        result,
+        expectedResult: () => expect(result.current.result.success).toBeTruthy(),
       });
     });
   });

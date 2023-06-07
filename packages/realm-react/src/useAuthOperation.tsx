@@ -17,15 +17,16 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { useCallback } from "react";
-import { AuthError, OperationState } from "./types";
+import { AuthError, AuthOperationName, OperationState } from "./types";
 import { useAuthResult } from "./AppProvider";
 
-// Convenience hook for tracking operation state.  This is used by all the auth hooks.
 export function useAuthOperation<Args extends unknown[], Result>({
   operation,
+  operationName,
   onSuccess = () => undefined,
 }: {
   operation: (...args: Args) => Promise<Result | void>;
+  operationName: AuthOperationName;
   onSuccess?: (...args: Args) => void;
 }) {
   const [result, setResult] = useAuthResult();
@@ -36,16 +37,34 @@ export function useAuthOperation<Args extends unknown[], Result>({
         return Promise.reject("Another authentication operation is already in progress");
       }
 
-      setResult({ state: OperationState.Pending, pending: true, success: false, error: undefined });
+      setResult({
+        state: OperationState.Pending,
+        pending: true,
+        success: false,
+        error: undefined,
+        currentOperation: operationName,
+      });
       return operation(...args)
         .then((res) => {
-          setResult({ state: OperationState.Success, pending: false, success: true, error: undefined });
+          setResult({
+            state: OperationState.Success,
+            pending: false,
+            success: true,
+            error: undefined,
+            currentOperation: operationName,
+          });
           onSuccess(...args);
           return res;
         })
         .catch((error) => {
-          const authError = new AuthError(error);
-          setResult({ state: OperationState.Error, pending: false, success: false, error: authError });
+          const authError = new AuthError(operationName, error);
+          setResult({
+            state: OperationState.Error,
+            pending: false,
+            success: false,
+            error: authError,
+            currentOperation: operationName,
+          });
         });
     },
     [result, setResult, operation, onSuccess],

@@ -20,10 +20,10 @@ import { AppProvider } from "../AppProvider";
 import { waitFor, renderHook, act } from "@testing-library/react-native";
 
 import { AppConfigBuilder } from "@realm/app-importer";
-import { App } from "realm";
+import { App, EmailPasswordAuth } from "realm";
 import { useEmailPasswordAuth } from "../useEmailPasswordAuth";
 import { OperationState } from "../types";
-import { baseUrl, importApp } from "./helpers";
+import { baseUrl, importApp, testAuthOperation } from "./helpers";
 
 function renderEmailPasswordAuth(appId: string, baseUrl: string) {
   const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -52,6 +52,7 @@ describe("useEmailPassword", () => {
     });
     it("can register and login with email/password, just by calling register", async () => {
       const { result } = renderEmailPasswordAuth(appId, baseUrl);
+
       await act(async () => {
         result.current.register({ email: "test@test.com", password: "password" });
         await waitFor(() => {
@@ -121,58 +122,15 @@ describe("useEmailPassword", () => {
     let appId: string;
     beforeAll(async () => {
       const config = new AppConfigBuilder("test-app-2");
-      config
-        .authProvider({
-          name: "local-userpass",
-          type: "local-userpass",
-          config: {
-            autoConfirm: false,
-            confirmEmailSubject: "",
-            confirmationFunctionName: "confirmFunc",
-            emailConfirmationUrl: "http://localhost/confirmEmail",
-            resetFunctionName: "resetFunc",
-            resetPasswordSubject: "",
-            resetPasswordUrl: "http://localhost/resetPassword",
-            runConfirmationFunction: true,
-            runResetFunction: true,
-          },
-          disabled: false,
-        })
-        .function({
-          name: "confirmFunc",
-          private: false,
-          can_evaluate: {},
-          source: `
-          exports = ({ tokenId, username }) => {
-            // process the confirm token, tokenId and username
-            // - usernames that contain realm_tests_do_autoverify* will automatically be registered and approved.
-            // - usernames that contain realm_tests_do_pendverify* will automatically be registered pending approval.
-            // - all other usernames will fail verification and not be registered.
-            if (username.includes("realm_tests_do_autoverify")) {
-              return { status: "success" };
-            } else if (username.includes("realm_tests_do_pendverify")) {
-              return { status: "pending" };
-            } else {
-              return { status: "fail" };
-            }
-          };
-          `,
-        })
-        .function({
-          name: "resetFunc",
-          private: false,
-          can_evaluate: {},
-          source: `
-            exports = ({ token, tokenId, username, password }) => {
-              // process the reset token, tokenId, username and password
-              if (password.includes("realm_tests_do_reset")) {
-                return { status: "success" };
-              }
-              // will not reset the password
-              return { status: "fail" };
-            };
-          `,
-        });
+      config.authProvider({
+        name: "local-userpass",
+        type: "local-userpass",
+        config: {
+          autoConfirm: true,
+          resetPasswordUrl: "http://localhost/resetPassword",
+        },
+        disabled: false,
+      });
       ({ appId } = await importApp(config.config));
     });
     it("logIn", async () => {
@@ -196,7 +154,7 @@ describe("useEmailPassword", () => {
         });
       });
       await waitFor(() => {
-        expect(result.current.result.error).toBeDefined();
+        expect(result.current.result.success).toBeTruthy();
       });
     });
     it("confirm", async () => {
@@ -273,14 +231,10 @@ describe("useEmailPassword", () => {
     });
     it("logOut", async () => {
       const { result } = renderEmailPasswordAuth(appId, baseUrl);
-      await act(async () => {
-        result.current.logOut();
-        await waitFor(() => {
-          expect(result.current.result.pending).toBeTruthy();
-        });
-      });
-      await waitFor(() => {
-        expect(result.current.result.success).toBeTruthy();
+      await testAuthOperation({
+        authOperation: () => result.current.logOut(),
+        result,
+        expectedResult: () => expect(result.current.result.success).toBeTruthy(),
       });
     });
   });

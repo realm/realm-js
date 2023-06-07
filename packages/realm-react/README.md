@@ -1,5 +1,5 @@
 <p align="center">
-  <img height="140" src="media/realm-react-logo.svg" alt="Realm React Logo"/>
+  <img height="140" src="https://raw.githubusercontent.com/realm/realm-js/main/media/realm-react-logo.svg" alt="Realm React Logo"/>
 </p>
 
 <h1 align="center">
@@ -323,8 +323,149 @@ const SomeComponent = () => {
 }
 ```
 
+### Authentication Hooks
 
-#### Multiple Realms
+The following hooks can be used to authenticate users in your application.  They return authentication operations and a single result object which can be read to track the progress of the current result. More information about the specific auth methods can be found in the [Authenticate Users](https://www.mongodb.com/docs/realm/sdk/react-native/manage-users/authenticate-users) Documentation.
+
+## `useAuth`
+These hooks would typically be used in the `fallback` component of the `UserProvider`
+
+### `result`
+The result has the following structure:
+```tsx
+{
+  /**
+   * The current state of the operation.
+   * Enumerated by OperationState
+   */
+  state, // "not-started", "pending", "success", "error"
+
+  /**
+   * Convenience accessors, so users can write e.g. `loginResult.pending`
+   * instead of `loginResult.state === OperationState.Pending`
+   */
+  pending, // true or false
+  success, // true or false
+
+  /**
+   * The error returned from the operation, if any. This will only be populated
+   * if `state === OperationState.Error`, and will be cleared each time the
+   * operation is called.
+   */
+  error // Error based object or undefined
+}
+```
+
+This can be used to manage the state of the current login operation.
+
+### `logIn`
+Log in with a Realm.Credentials instance. This allows login with any authentication mechanism supported by Realm. If this is called when a user is currently logged in, it will switch the user.  Typically the other methods from `useAuth` would be used.
+```tsx
+const {logIn, result} = useAuth();
+const performLogin = () => {
+  logIn(Realm.Credential.anonymous())
+}
+```
+
+### `logInWithAnonymous`
+Log in with the Anonymous authentication provider.
+```tsx
+const {logInWithAnonymous, result} = useAuth();
+const performLogin = () => {
+  logInWithAnonymous();
+};
+```
+
+### `logInWithApiKey`
+Log in with an API key.
+```tsx
+const {logInWithApiKey, result} = useAuth();
+const performLogin = () => {
+  const key = getApiKey(); // user defined function
+  logInWithApiKey(key);
+};
+```
+
+### `logInWithEmailPassword`
+Log in with Email/Password.
+```tsx
+const {logInWithEmailPassword, result} = useAuth();
+const [email, setEmail] = useState();
+const [password, setPassword] = useState();
+
+const performLogin = () => {
+  logInWithEmailPassword({email, password});
+};
+```
+
+### `logInWithJWT`
+Log in with a JSON Web Token (JWT).
+```tsx
+const {logInWithJWT, result} = useAuth();
+
+const performLogin = () => {
+  const token = authorizeWithCustomerProvider(); //user defined function
+  logInWithJWT(token);
+};
+```
+
+### `logInWithGoogle`
+Log in Google.
+```tsx
+const {logInWithGoogle, result} = useAuth();
+
+const performLogin = () => {
+  const token = getGoogleToken(); //user defined function
+  logInWithGoogle({idToken: token});
+};
+```
+
+### `logInWithApple`
+Log in with Apple.
+```tsx
+const {logInWithApple, result} = useAuth();
+
+const performLogin = () => {
+  const token = getAppleToken(); //user defined function
+  logInWithApple(token);
+};
+```
+
+### `logInWithFacebook`
+Log in with Facebook.
+```tsx
+const {logInWithFacebook, result} = useAuth();
+
+const performLogin = () => {
+  const token = getFacebookToken(); //user defined function
+  logInWithFacebook(token);
+};
+```
+
+### `logInWithCustomFunction`
+Log in with a custom function.
+```tsx
+const {logInWithFunction, result} = useAuth();
+
+const performLogin = () => {
+  const customPayload = getAuthParams(); // user defined arguments
+  logInWithFunction(customPayload);
+};
+```
+### `logOut`
+Log out the current user. This will immediately cause the `fallback` from the `UserProvider` to render.
+```tsx
+const {logOut, result} = useAuth();
+
+const performLogOut = () => {
+  logOut();
+};
+```
+
+## `useEmailPasswordAuth`
+This hook is similar to `useAuth`, but specifically offers operations around Email/Password authentication.  This includes methods around resetting passwords and confirming users.  It returns the same `result` object as `useAuth`.
+
+### Multiple Realms
 `createRealmContext` can be used to create a contextualized hooks and a RealmProvider to the passed in configuration for a Realm. It can be called multiple times if your app requires more than one Realm.  In that case, you would have multiple `RealmProvider`s that wrap your app and must use the hooks from the created context you wish to access.
 
 The Context object will contain a `RealmProvider`, which will a open a Realm when it is rendered. It also contains a set of hooks that can be used by children to the `RealmProvider` to access and manipulate Realm data.
@@ -350,7 +491,7 @@ const { RealmProvider: PrivateRealmProvider, useRealm: usePrivateRealm, useObjec
 It is also possible to call it without any Config; in the case that you want to do all your configuration through the `RealmProvider` props.
 
 
-#### Sync Debug Logs
+### Sync Debug Logs
 When running into issues with sync, it may be helpful to view logs in order to determine what the issue was or to provide more context when submitting an issue.  This can by done with the `AppProvider`.
 
 ```

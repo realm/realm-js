@@ -1,6 +1,10 @@
 ## vNext (TBD)
 
 ### Enhancements
+* Add authentication hooks, `useAuth` and `useEmailPasswordAuth`
+	Usage example:
+	```tsx
+	```
 * Add sync log configuration to AppProvider ([#5517](https://github.com/realm/realm-js/issue/5517))
   Usage example:
 	```tsx

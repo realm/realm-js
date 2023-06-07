@@ -18,11 +18,10 @@
 import { isEqual } from "lodash";
 import React, { createContext, useContext, useLayoutEffect, useRef, useState } from "react";
 import Realm from "realm";
-import { AuthResult, OperationState } from "./types";
+import { AuthOperationName, AuthResult, OperationState } from "./types";
 
 type AppContextValue = {
   app: Realm.App | null;
-  authOperationStateHook: [AuthResult, React.Dispatch<React.SetStateAction<AuthResult>>] | null;
 };
 
 /**
@@ -30,8 +29,32 @@ type AppContextValue = {
  */
 const AppContext = createContext<AppContextValue>({
   app: null,
+});
+
+type AppOpStateValue = {
+  authOperationStateHook: [AuthResult, React.Dispatch<React.SetStateAction<AuthResult>>] | null;
+};
+
+const AuthOpStateContext = createContext<AppOpStateValue>({
   authOperationStateHook: null,
 });
+
+type AuthOpStateProviderProps = { children: React.ReactNode };
+
+const AuthOpStateProvider: React.FC<AuthOpStateProviderProps> = ({ children }) => {
+  const [authOpResult, setAuthOpResult] = useState<AuthResult>({
+    state: OperationState.NotStarted,
+    pending: false,
+    success: false,
+    error: undefined,
+    currentOperation: AuthOperationName.None,
+  });
+  return (
+    <AuthOpStateContext.Provider value={{ authOperationStateHook: [authOpResult, setAuthOpResult] }}>
+      {children}
+    </AuthOpStateContext.Provider>
+  );
+};
 
 /**
  * Props for the AppProvider component. These replicate the options which
@@ -68,13 +91,6 @@ export const AppProvider: React.FC<AppProviderProps> = ({
 
   const [app, setApp] = useState<Realm.App>(() => new Realm.App(configuration.current));
 
-  const [authOpResult, setAuthOpResult] = useState<AuthResult>({
-    state: OperationState.NotStarted,
-    pending: false,
-    success: false,
-    error: undefined,
-  });
-
   // Support for a possible change in configuration
   if (!isEqual(appProps, configuration.current)) {
     configuration.current = appProps;
@@ -97,8 +113,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({
   }, [appRef, app, logLevel]);
 
   return (
-    <AppContext.Provider value={{ app, authOperationStateHook: [authOpResult, setAuthOpResult] }}>
-      {children}
+    <AppContext.Provider value={{ app }}>
+      <AuthOpStateProvider>{children}</AuthOpStateProvider>
     </AppContext.Provider>
   );
 };
@@ -121,7 +137,7 @@ export const useApp = <
 };
 
 export const useAuthResult = () => {
-  const { authOperationStateHook } = useContext(AppContext);
+  const { authOperationStateHook } = useContext(AuthOpStateContext);
 
   if (!authOperationStateHook) {
     throw new Error(

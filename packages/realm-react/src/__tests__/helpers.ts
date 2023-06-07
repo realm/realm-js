@@ -17,6 +17,29 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { AppConfig, AppImporter, Credentials } from "@realm/app-importer";
+import { act, waitFor } from "@testing-library/react-native";
+import { useAuth } from "../useAuth";
+import { useEmailPasswordAuth } from "../useEmailPasswordAuth";
+
+export async function testAuthOperation({
+  authOperation,
+  result,
+  expectedResult,
+}: {
+  authOperation: () => Promise<any>;
+  result: { current: ReturnType<typeof useEmailPasswordAuth> | ReturnType<typeof useAuth> };
+  expectedResult: () => void;
+}) {
+  await act(async () => {
+    authOperation();
+    await waitFor(() => {
+      expect(result.current.result.pending).toEqual(true);
+    });
+  });
+  await waitFor(() => {
+    expectedResult();
+  });
+}
 
 const { realmBaseUrl = "http://localhost:9090" } = process.env;
 

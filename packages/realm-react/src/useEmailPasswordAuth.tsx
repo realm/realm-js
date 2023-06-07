@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { useApp, useAuthResult } from "./AppProvider";
-import { AuthResult } from "./types";
+import { AuthOperationName, AuthResult } from "./types";
 import { Realm, User, Credentials } from "realm";
 import { useAuthOperation } from "./useAuthOperation";
 
@@ -126,10 +126,12 @@ export function useEmailPasswordAuth(): UseEmailPasswordAuth {
 
   const logIn = useAuthOperation<[{ email: string; password: string }], User>({
     operation: (args) => app.logIn(Credentials.emailPassword(args)),
+    operationName: AuthOperationName.LogIn,
   });
 
   const register = useAuthOperation<[{ email: string; password: string; loginAfterRegister?: boolean }], void>({
     operation: ({ email, password }) => app.emailPasswordAuth.registerUser({ email, password }),
+    operationName: AuthOperationName.Register,
     onSuccess: ({ email, password, loginAfterRegister = true }) => {
       if (loginAfterRegister === true) {
         return logIn({ email, password });
@@ -139,31 +141,38 @@ export function useEmailPasswordAuth(): UseEmailPasswordAuth {
 
   const confirm = useAuthOperation({
     operation: ({ token, tokenId }) => app.emailPasswordAuth.confirmUser({ token, tokenId }),
+    operationName: AuthOperationName.Confirm,
   });
 
   const resendConfirmationEmail = useAuthOperation({
     operation: ({ email }) => app.emailPasswordAuth.resendConfirmationEmail({ email }),
+    operationName: AuthOperationName.ResendConfirmationEmail,
   });
 
   const retryCustomConfirmation = useAuthOperation({
     operation: ({ email }) => app.emailPasswordAuth.retryCustomConfirmation({ email }),
+    operationName: AuthOperationName.RetryCustomConfirmation,
   });
 
   const sendResetPasswordEmail = useAuthOperation({
     operation: ({ email }) => app.emailPasswordAuth.sendResetPasswordEmail({ email }),
+    operationName: AuthOperationName.SendResetPasswordEmail,
   });
 
   const callResetPasswordFunction = useAuthOperation({
     operation: ({ email, password }, ...restArgs) =>
       app.emailPasswordAuth.callResetPasswordFunction({ email, password }, ...restArgs),
+    operationName: AuthOperationName.CallResetPasswordFunction,
   });
 
   const resetPassword = useAuthOperation({
     operation: ({ password, token, tokenId }) => app.emailPasswordAuth.resetPassword({ password, token, tokenId }),
+    operationName: AuthOperationName.ResetPassword,
   });
 
   const logOut = useAuthOperation({
     operation: () => (app.currentUser ? app.currentUser.logOut() : Promise.resolve()),
+    operationName: AuthOperationName.LogOut,
   });
 
   return {
