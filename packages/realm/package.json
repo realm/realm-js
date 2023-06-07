@@ -79,6 +79,7 @@
       "command": "mocha --exit",
       "dependencies": [
         "build:node",
+        "build:ts",
         "bindgen:generate",
         "../realm-network-transport:bundle"
       ]
