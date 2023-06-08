@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Task } from '../models/Task';
 
@@ -10,7 +10,14 @@ const { useQuery, useRealm, useUser } = await import('@realm/react');
 export function useTaskManager() {
   const realm = useRealm();
   const user = useUser();
-  const tasks = useQuery(Task); // TODO: Fix rerendering
+  const [requeryFlag, setRequeryFlag] = useState(false); // Temporary flag
+  const tasks = useQuery(Task, (collection) => collection, [requeryFlag]);
+
+  useEffect(() => {
+    // Temporary solution for making `useQuery` update the `tasks` reference.
+    // (The value doesn't matter, only that it is different from the initial value.)
+    setRequeryFlag(true);
+  }, []);
 
   const addTask = useCallback((description: string) => {
     console.log('Adding task:', description);
@@ -37,6 +44,6 @@ export function useTaskManager() {
     tasks,
     addTask,
     toggleTaskStatus,
-    deleteTask
+    deleteTask,
   };
 }
