@@ -1,0 +1,70 @@
+.task {
+  width: 300px;
+  min-width: 250px;
+  height: 300px;
+  margin: 5px;
+  padding: 10px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  border: 1px solid var(--light-gray);
+  border-radius: 10px;
+  background-image: linear-gradient(to top, var(--primary-color) 0%, var(--primary-color-dark) 100%);
+  box-shadow: 0 4px 15px -5px #a7a7a7;
+}
+
+.description {
+  margin: auto 0;
+  color: white;
+  font-family: "Gill Sans", sans-serif;
+  font-size: 18px;
+  text-align: center;
+}
+
+.buttons {
+  height: 30%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background-color: white;
+}
+
+.button {
+  width: 35px;
+  height: 35px;
+  margin: 0 10px;
+  border-radius: 50%;
+  color: white;
+  transition: all 150ms ease-in-out;
+}
+
+.toggleBtn {
+  background-color: var(--light-gray);
+}
+
+.toggleBtn:hover {
+  background-color: rgb(9, 138, 9);
+}
+
+.deleteBtn {
+  background-color: rgb(183, 41, 41);
+}
+
+.deleteBtn:hover {
+  background-color: rgb(234, 66, 66);
+}
+
+.completed .toggleBtn {
+  background-color: rgb(9, 138, 9);
+}
+
+.completed .toggleBtn:hover {
+  background-color: var(--light-gray);
+}
+
+.completed .description {
+  color: #c2c2c2;
+  text-decoration: line-through;
+}

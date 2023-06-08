@@ -29,7 +29,7 @@ const router = createBrowserRouter([
 function AppWrapper() {
   return (
     <div className={styles.container}>
-      <AppProvider id={config.ATLAS_APP_ID} logLevel='all'>
+      <AppProvider id={config.ATLAS_APP_ID}>
         <RouterProvider router={router}/>
       </AppProvider>
     </div>

@@ -1,13 +1,15 @@
+import styles from '../styles/IntroText.module.css';
+
 export function IntroText() {
   return (
-    <div>
+    <div className={styles.container}>
       <p>
-        Welcome to the MongoDB Realm + WASM example app!
+        Welcome to a MongoDB Realm, WASM, and Sync app!
       </p>
       <p>
-        Start adding a task using the form at the top of the screen to see it get
-        created in Realm (local-first) then MongoDB Atlas. You can also toggle the
-        task status or remove it from the list.
+        Add a task using the form at the top of the screen. It will create a
+        task and store it in an in-memory realm, then sync it to MongoDB Atlas
+        and any other apps connected to the same Atlas App.
       </p>
     </div>
   );

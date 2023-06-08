@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from 'react-router-dom';
 
 import { Task } from './models/Task';
+import { PageLayout } from './components/PageLayout';
 
 const { RealmProvider, UserProvider, useApp } = await import('@realm/react');
 
@@ -23,7 +24,9 @@ export function App() {
           },
         }}
       >
-        <Outlet />
+        <PageLayout>
+          <Outlet />
+        </PageLayout>
       </RealmProvider>
     </UserProvider>
   );

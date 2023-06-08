@@ -2,7 +2,6 @@
   width: 100vw;
   height: 100vh;
   min-height: 100vh;
-  padding: 30px 15px;
   overflow-x: hidden;
   overflow-y: auto;
   background-image: linear-gradient(to top, #ebebeb 0%, #f9f9f9 100%);

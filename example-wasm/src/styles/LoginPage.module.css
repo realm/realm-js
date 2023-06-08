@@ -18,26 +18,26 @@ h1 {
   padding: 40px;
   display: flex;
   flex-direction: column;
-  border: 1px solid #dddde3;
+  border: 1px solid var(--light-gray);
   border-radius: 5px;
   background-color: white;
-  box-shadow: 0 4px 20px -5px #dddde3;
+  box-shadow: 0 4px 20px -5px var(--light-gray);
 }
 
 .input {
   margin: 10px 0;
   padding: 3px 10px;
   height: 40px;
-  border: 1px solid #dddde3;
+  border: 1px solid var(--light-gray);
   border-radius: 4px;
   background: rgb(252, 252, 252);
-  color: #333333;
+  color: var(--black);
   font-size: 16px;
   outline: none;
 }
 
 .input::placeholder {
-  color: #9f9f9f;
+  color: var(--gray);
 }
 
 .buttons {
@@ -52,17 +52,14 @@ h1 {
   width: 160px;
   margin: 10px 15px;
   padding: 14px 0;
-  border: none;
   border-radius: 25px;
-  background-color: var(--primary-color);
+  background-color: var(--primary-color-dark);
   color: white;
   font-size: 16px;
   font-weight: bold;
-  outline: none;
-  cursor: pointer;
+  transition: all 150ms ease-in-out;
 }
 
 .button:hover {
-  background-color: #671ff7;
-  transition: all 150ms ease-in-out;
+  background-color: var(--primary-color);
 }
