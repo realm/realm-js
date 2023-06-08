@@ -82,7 +82,6 @@ describe("Analytics", () => {
   });
 
   it("parses electron package.json", async () => {
-    console.log("HEST 1", resolvePath("electron"));
     const data = await collectPlatformData(resolvePath("electron"));
     expectCommon(data);
     expect(data.Version).equals("1.2.3");
