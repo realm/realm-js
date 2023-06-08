@@ -5,9 +5,9 @@ import { TaskItem } from './TaskItem';
 import styles from '../styles/TaskList.module.css';
 
 type TaskListProps = {
-  tasks: Realm.Results<Task /*& Realm.Object*/>;
-  onToggleTaskStatus: (task: Task /*& Realm.Object*/) => void;
-  onDeleteTask: (task: Task /*& Realm.Object*/) => void;
+  tasks: Realm.Results<Task>;
+  onToggleTaskStatus: (task: Task) => void;
+  onDeleteTask: (task: Task) => void;
 };
 
 export function TaskList({ tasks, onToggleTaskStatus, onDeleteTask }: TaskListProps) {
@@ -17,8 +17,8 @@ export function TaskList({ tasks, onToggleTaskStatus, onDeleteTask }: TaskListPr
         <TaskItem
           key={task._id.toHexString()}
           task={task}
-          onToggleStatus={() => onToggleTaskStatus(task)}
-          onDelete={() => onDeleteTask(task)}
+          onToggleStatus={onToggleTaskStatus}
+          onDelete={onDeleteTask}
         />
       ))}
     </div>
