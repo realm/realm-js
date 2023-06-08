@@ -22,12 +22,12 @@
     "email": "help@realm.io",
     "url": "https://realm.io"
   },
-  "types": "./dist/public/cjs.d.ts",
+  "types": "./dist/public/index.cjs.d.ts",
   "main": "./dist/platform/node/index.cjs.js",
   "react-native": "./dist/platform/react-native/index.cjs.js",
   "exports": {
     ".": {
-      "types": "./dist/public/cjs.d.ts",
+      "types": "./dist/public/index.cjs.d.ts",
       "node": "./dist/platform/node/index.cjs.js",
       "react-native": "./dist/platform/react-native/index.cjs.js"
     },
