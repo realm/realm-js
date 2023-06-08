@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import Realm from 'realm';
+
 const { useApp } = await import('@realm/react');
 
 /**
@@ -18,5 +19,5 @@ export function useAppManager() {
     return app.logIn(Realm.Credentials.emailPassword(credentials));
   }, [app.id]);
 
-return { register, logIn };
+  return { register, logIn };
 }

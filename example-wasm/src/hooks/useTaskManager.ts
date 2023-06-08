@@ -24,10 +24,10 @@ export function useTaskManager() {
     realm.write(() => {
       realm.create(Task, { description, userId: user.id } as Task);
     });
-  }, [realm, user]);
+  }, [realm, user.id]);
 
   const toggleTaskStatus = useCallback((task: Task) => {
-    console.log('Toggling task status:', task.isComplete, '->', !task.isComplete);
+    console.log('Toggling task status to:', task.isComplete ? 'Not done' : 'Done' );
     realm.write(() => {
       task.isComplete = !task.isComplete;
     });
