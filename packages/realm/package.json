@@ -70,9 +70,9 @@
     "build:ios:debug:simulator": "wireit",
     "build:ios:debug:ios": "wireit",
     "build:ios:debug:catalyst": "wireit",
-    "coverage": "wireit",
     "docs": "wireit",
     "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'"
+    "postinstall": "node ./scripts/submit-analytics.mjs"
   },
   "wireit": {
     "test": {
@@ -214,12 +214,6 @@
         "CONFIGURATION": "Debug"
       }
     },
-    "coverage": {
-      "command": "mocha --config .mocharc.integration-tests.json",
-      "dependencies": [
-        "../../integration-tests/tests:build"
-      ]
-    },
     "docs": {
       "command": "typedoc",
       "dependencies": [
@@ -230,6 +224,7 @@
   "dependencies": {
     "debug": "^4.3.4",
     "node-fetch": "^2.6.9",
+    "node-machine-id": "^1.1.12",
     "prebuild-install": "^7.1.1"
   },
   "peerDependencies": {
