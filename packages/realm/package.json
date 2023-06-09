@@ -71,7 +71,7 @@
     "build:ios:debug:ios": "wireit",
     "build:ios:debug:catalyst": "wireit",
     "docs": "wireit",
-    "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'"
+    "install": "prebuild-install --runtime napi || echo 'Failed to download prebuild for Realm'",
     "postinstall": "node ./scripts/submit-analytics.mjs"
   },
   "wireit": {
