@@ -1,5 +1,3 @@
-import { memo } from 'react';
-
 import { Task } from '../models/Task';
 import styles from '../styles/TaskItem.module.css';
 
@@ -9,7 +7,7 @@ type TaskItemProps = {
   onDelete: (task: Task) => void;
 };
 
-export const TaskItem = memo(({ task, onToggleStatus, onDelete }: TaskItemProps) => {
+export function TaskItem({ task, onToggleStatus, onDelete }: TaskItemProps) {
   return (
     <div className={task.isComplete ? [styles.task, styles.completed].join(' ') : styles.task}>
       <p className={styles.description}>
@@ -31,10 +29,4 @@ export const TaskItem = memo(({ task, onToggleStatus, onDelete }: TaskItemProps)
       </div>
     </div>
   );
-}, shouldNotRerender);
-
-function shouldNotRerender({ task: prevTask }: Readonly<TaskItemProps>, { task: nextTask }: Readonly<TaskItemProps>) {
-  return prevTask._id.equals(nextTask._id)
-    && prevTask.description === nextTask.description
-    && prevTask.isComplete === nextTask.isComplete;
-}
+};
