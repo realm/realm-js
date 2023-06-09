@@ -1,46 +1,101 @@
-# Getting Started with Create React App
+# Example React App Using Realm & Sync for Web
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This is an example React Todo/Task app for showcasing Realm and Sync for Web.
 
-## Available Scripts
+## MongoDB & Realm Functionality
 
-In the project directory, you can run:
+### Use cases
 
-### `npm start`
+* Log in and register (email/password)
+* Log out
+* Create tasks
+* Read/query tasks
+* Update the status of tasks
+* Delete tasks
+* Sync
+  1. Tasks are stored locally in an in-memory realm..
+  2. then synced to MongoDB Atlas..
+  3. then synced to all other apps connected to the same Atlas App.
+* Offline-first
+  * All CRUD functionality works while offline.
+* Realm JS and [@realm/react](https://www.npmjs.com/package/@realm/react) hooks
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### Screenshot
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+![Tasks Page](./src/assets/screenshot-realm-web-sync-tasks.png)
 
-### `npm test`
+## Getting Started
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Prerequisites
 
-### `npm run build`
+* Emscripten v3.1.40 or later.
+  * Follow the [recommended installation instructions](https://emscripten.org/docs/getting_started/downloads.html#installation-instructions-using-the-emsdk-recommended).
+  * (In particular, do not use v3.1.39)
+* [Node.js](https://nodejs.org/en) v16 or later
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Installation
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Clone the repository and the current branch, then navigate to the project directory:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```sh
+cd realm-js
+```
 
-### `npm run eject`
+Install dependencies and packages:
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+```sh
+git submodule update --init --recursive
+npm i
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Setting up an Atlas App and Device Sync
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+To sync Realm data you must first:
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+1. [Create an App Services App](https://www.mongodb.com/docs/atlas/app-services/manage-apps/create/create-with-ui/)
+2. [Enable Email/Password Authentication](https://www.mongodb.com/docs/atlas/app-services/authentication/email-password/#std-label-email-password-authentication)
+    * For development purposes, you can also automatically confirm users:
+      * In the App Services UI, go to the **Authentication** tab > **Authentication Providers** > Edit **Email/Password** > **User Confirmation Method**
+3. [Enable Flexible Sync](https://www.mongodb.com/docs/atlas/app-services/sync/configure/enable-sync/) with **Development Mode** on.
+    * When Development Mode is enabled, queryable fields will be added automatically.
+    * Queryable fields used in this app: `_id`, `isComplete`
+4. Select a **global** [deployment region](https://www.mongodb.com/docs/atlas/app-services/apps/deployment-models-and-regions/#deployment-models---regions):
+    * In the App Services UI, go to the **App Settings** tab > **General** > **Deployment Region**
+5. Allow client requests from all or specific IP addresses:
+    * In the App Services UI, go to the **App Settings** tab > **IP Access List** > **Add IP Address**
+6. [Set read/write permissions](https://www.mongodb.com/docs/atlas/app-services/rules/roles/#with-device-sync) for the collection.
+    * This app assumes all users can read and write all tasks in the collection.
+    * In the App Services UI, go to the **Rules** tab > Click on the **Task** collection > Add a `readAndWriteAll` role.
+    * *You may need to run the client before seeing the **Task** collection.*
 
-## Learn More
+Once done, [copy your App ID](https://www.mongodb.com/docs/atlas/app-services/reference/find-your-project-or-app-id/#std-label-find-your-app-id) from the App Services UI and paste it as the value of `ATLAS_APP_ID` in [src/atlas-app-services/config.json](./src/atlas-app-services/config.json):
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```json
+{
+  "ATLAS_APP_ID": "YOUR_ID"
+}
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Building the App
+
+Build the app (the output will be located in the `build` folder and is minified):
+
+```sh
+npm run build
+```
+
+### Running the App
+
+Start the app in the development mode:
+
+```sh
+npm start
+```
+
+This should automatically open your default browser; but if not, open [http://localhost:3000](http://localhost:3000).
+
+The page will reload if you make edits to the code. (Changes made to code in dependencies such as `realm` or `@realm/react` requires a rebuild.)
+
+### Troubleshooting
+
+A great way to troubleshoot sync-related errors is to read the [logs in the App Services UI](https://www.mongodb.com/docs/atlas/app-services/logs/logs-ui/).
