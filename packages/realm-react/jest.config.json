@@ -1,6 +1,7 @@
 {
   "verbose": true,
   "preset": "react-native",
+  "resolver": "./export-conditions-resolver.cjs",
   "roots": [
     "<rootDir>/src"
   ],

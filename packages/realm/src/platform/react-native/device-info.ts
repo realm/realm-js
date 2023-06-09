@@ -49,7 +49,9 @@ function getDeviceVersion() {
 }
 
 function getReactNativeVersion() {
-  const { major, minor, patch, prerelease } = Platform.constants.reactNativeVersion;
+  // Providing a fallback for the `reactNativeVersion` to allow testing via Jest, which doesn't inject it
+  const { reactNativeVersion = { major: "?", minor: "?", patch: "?", prerelease: null } } = Platform.constants;
+  const { major, minor, patch, prerelease } = reactNativeVersion;
   const result = [major, minor, patch].join(".");
   if (prerelease) {
     return result + "-" + prerelease;
