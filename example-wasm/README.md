@@ -44,6 +44,7 @@ cd realm-js
 Install dependencies and packages:
 
 ```sh
+# From the root (realm-js/)
 git submodule update --init --recursive
 npm i
 ```
@@ -78,17 +79,19 @@ Once done, [copy your App ID](https://www.mongodb.com/docs/atlas/app-services/re
 
 ### Building the App
 
-Build the app (the output will be located in the `build` folder and is minified):
+Navigate to `example-wasm/` and build the app (the output will be located in the `build` folder and is minified):
 
 ```sh
+cd example-wasm
 npm run build
 ```
 
 ### Running the App
 
-Start the app in the development mode:
+Navigate to `example-wasm/` and start the app in the development mode:
 
 ```sh
+cd example-wasm
 npm start
 ```
 
