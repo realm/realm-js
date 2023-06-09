@@ -54,9 +54,13 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
   `);
   nodeLines.push(`
     /*global global, require */
+    /* eslint-disable @typescript-eslint/no-var-requires -- we're transpiling to CJS */
+    /*
     import { createRequire } from 'node:module';
     const nodeRequire = typeof require === 'function' ? require : createRequire(import.meta.url);
-    const nativeModule = nodeRequire("./realm.node");
+    const nativeModule = nodeRequire("../../realm.node");
+    */
+    const nativeModule = require("../../realm.node");
 
     // We know that node always has real WeakRefs so just use them.
     export const WeakRef = global.WeakRef;

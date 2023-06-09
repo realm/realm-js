@@ -125,17 +125,16 @@ file(GLOB_RECURSE SDK_TS_FILES
 list(FILTER SDK_TS_FILES EXCLUDE REGEX "templates/[^/]*\.ts$")
 
 set(JS_SPEC_FILE ${SDK_DIR}/bindgen/js_spec.yml)
-set(GENERATED_OUTPUT_DIR ${SDK_DIR}/generated)
-set(TYPESCRIPT_OUTPUT_DIR ${SDK_DIR}/src/generated)
+set(GENERATED_OUTPUT_DIR ${SDK_DIR}/src/generated)
 
 set(GENERATED_TS_FILES
-    ${TYPESCRIPT_OUTPUT_DIR}/native.d.ts
-    ${TYPESCRIPT_OUTPUT_DIR}/core.ts
+    ${GENERATED_OUTPUT_DIR}/native.d.ts
+    ${GENERATED_OUTPUT_DIR}/core.ts
 )
 bindgen(
     TEMPLATE ${SDK_DIR}/bindgen/src/templates/typescript.ts
     OUTPUTS ${GENERATED_TS_FILES}
-    OUTDIR ${TYPESCRIPT_OUTPUT_DIR}
+    OUTDIR ${GENERATED_OUTPUT_DIR}
     SPECS ${JS_SPEC_FILE}
     SOURCES ${SDK_TS_FILES}
 )

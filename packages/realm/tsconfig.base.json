@@ -4,7 +4,7 @@
     "strict": true,
     "target": "ES2022",
     "module": "CommonJS",
-    "moduleResolution": "node",
+    "moduleResolution": "node16",
     "noResolve": true,
     "esModuleInterop": true,
     "declaration": true,
@@ -18,7 +18,7 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "realm/binding/core": ["./src/generated/ts/core.ts"]
+      "realm/binding/core": ["./src/generated/core.ts"]
     }
   },
   "files": [],

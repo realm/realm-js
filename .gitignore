@@ -116,6 +116,7 @@ coverage/
 /packages/realm/src/generated/
 
 # Build artifacts
+/packages/realm/realm.node
 /packages/realm/dist/
 /packages/realm/prebuilds/
 /packages/realm/react-native/android/src/main/java/io/realm/react/Version.java

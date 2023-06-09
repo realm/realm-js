@@ -10,8 +10,8 @@ set_target_properties(realm-js-node PROPERTIES
 
 set_target_properties(realm-js-node PROPERTIES
     # Need a dummy generator expression to avoid adding in the config name
-    LIBRARY_OUTPUT_DIRECTORY "${GENERATED_OUTPUT_DIR}/$<0:dummy_genex>"
-    RUNTIME_OUTPUT_DIRECTORY "${GENERATED_OUTPUT_DIR}/$<0:dummy_genex>"
+    LIBRARY_OUTPUT_DIRECTORY "${SDK_DIR}/$<0:dummy_genex>"
+    RUNTIME_OUTPUT_DIRECTORY "${SDK_DIR}/$<0:dummy_genex>"
 )
 
 if(WIN32)

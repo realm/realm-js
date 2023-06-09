@@ -32,8 +32,8 @@
       "react-native": "./dist/platform/react-native/index.cjs.js"
     },
     "./binding": {
-      "node": "./generated/native-node.mjs",
-      "react-native": "./generated/native-react-native.mjs"
+      "node": "./dist/generated/native-node.cjs",
+      "react-native": "./src/dist/native-react-native.cjs"
     },
     "./binding/core": "./dist/generated/core.js",
     "./scripts/submit-analytics": "./scripts/submit-analytics.mjs",
@@ -85,13 +85,14 @@
       ]
     },
     "build:ts": {
-      "command": "tsc -b",
+      "command": "tsc -b && tsx scripts/fix-dist-filenames.ts",
       "dependencies": [
         "../realm-network-transport:bundle",
         "bindgen:generate"
       ],
       "files": [
         "src/**/*.ts",
+        "src/**/*.mjs",
         "tsconfig.json",
         "tsconfig.base.json",
         "src/**/tsconfig.json",
@@ -270,7 +271,7 @@
   },
   "binary": {
     "module_name": "realm",
-    "module_path": "generated",
+    "module_path": ".",
     "host": "https://static.realm.io",
     "remote_path": "realm-js-prebuilds/{version}",
     "napi_versions": [
