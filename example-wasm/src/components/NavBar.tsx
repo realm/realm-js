@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 
-import logo from '../logo.png';
+import logo from '../assets/logo.png';
 import styles from '../styles/NavBar.module.css';
 
 const { useUser } = await import('@realm/react');

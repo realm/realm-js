@@ -2,7 +2,7 @@ import { FormEvent, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 
 import { useAppManager } from '../hooks/useAppManager';
-import logo from '../logo.png';
+import logo from '../assets/logo.png';
 import styles from '../styles/LoginPage.module.css';
 
 const { useApp } = await import('@realm/react');
