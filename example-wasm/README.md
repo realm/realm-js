@@ -16,13 +16,51 @@ This is an example React Todo/Task app for showcasing Realm and Sync for Web.
   1. Tasks are stored locally in an in-memory realm..
   2. then synced to MongoDB Atlas..
   3. then synced to all other apps connected to the same Atlas App.
-* Offline-first
+* Local/Offline-first
   * All CRUD functionality works while offline.
 * Realm JS and [@realm/react](https://www.npmjs.com/package/@realm/react) hooks
 
 ### Screenshot
 
 ![Tasks Page](./src/assets/screenshot-realm-web-sync-tasks.png)
+
+## Project Structure
+
+The following shows the project structure and the most relevant files.
+
+```
+├── public
+│   └── index.html              - File served to client
+│
+├── src
+│   ├── atlas-app-services
+│   │   └── config.json         - Set Atlas App ID
+│   │
+│   ├── components
+│   │   ├── AddTaskForm.tsx     - Trigger create task
+│   │   ├── NavBar.tsx          - Trigger logout
+│   │   ├── TaskItem.tsx        - Trigger update/delete task
+│   │   └── TaskList.tsx        - Render all tasks
+│   │
+│   ├── hooks
+│   │   ├── useAppManager.ts    - Handle login/register
+│   │   └── useTaskManager.ts   - Handle CRUD task
+│   │
+│   ├── models
+│   │   └── Task.ts             - Data model
+│   │
+│   ├── pages
+│   │   ├── LoginPage.tsx       - Trigger login/register
+│   │   └── TaskPage.tsx        - Pass CRUD ops to children
+│   │
+│   ├── index.tsx               - Entry point
+│   ├── App.tsx                 - Get and provide Atlas App
+│   └── AuthenticatedApp.tsx    - Open and provide Realm & User
+│
+├── craco.config.ts             - Configure CRA
+├── package.json                - Specify Node dependencies
+└── tsconfig.json               - Configure TypeScript
+```
 
 ## Getting Started
 
@@ -79,7 +117,7 @@ Once done, [copy your App ID](https://www.mongodb.com/docs/atlas/app-services/re
 
 ### Building the App
 
-Navigate to `example-wasm/` and build the app (the output will be located in the `build` folder and is minified):
+Navigate to `example-wasm/` and build the app (the output will be located in the `build/` folder and is minified):
 
 ```sh
 cd example-wasm
@@ -88,7 +126,7 @@ npm run build
 
 ### Running the App
 
-Navigate to `example-wasm/` and start the app in the development mode:
+Navigate to `example-wasm/` and start the app in development mode:
 
 ```sh
 cd example-wasm
@@ -97,7 +135,7 @@ npm start
 
 This should automatically open your default browser; but if not, open [http://localhost:3000](http://localhost:3000).
 
-The page will reload if you make edits to the code. (Changes made to code in dependencies such as `realm` or `@realm/react` requires a rebuild.)
+The page will reload if you make edits to the code. (Changes made to code in dependencies such as `realm` or `@realm/react` will require a rebuild.)
 
 ### Troubleshooting
 
