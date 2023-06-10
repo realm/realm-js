@@ -248,6 +248,7 @@ export class Realm {
   public static ProgressMode = ProgressMode;
   /** @deprecated Please use named imports */
   public static ProviderType = ProviderType;
+  public static SubscriptionSetState = SubscriptionSetState;
   /** @deprecated Please use named imports */
   public static Results = Results;
   /** @deprecated Please use named imports */
@@ -1545,6 +1546,7 @@ export declare namespace Realm {
     SSLVerifyCallbackType as SSLVerifyCallback,
     /** @deprecated Please use named imports */
     SSLVerifyObjectType as SSLVerifyObject,
+    SubscriptionSetStateType as SubscriptionSetState,
     /** @deprecated Please use named imports */
     SyncConfiguration,
     /** @deprecated Please use named imports */
