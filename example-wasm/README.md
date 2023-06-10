@@ -87,6 +87,64 @@ git submodule update --init --recursive
 npm i
 ```
 
+> <details>
+> <summary> 📣 Toggle to see changes needed if moving or renaming this app directory 📣</summary>
+> <br>
+>
+> This app is located in `realm-js/example-wasm/`. The following configurations need to be updated if moving or renaming this directory:
+>
+> [craco.config.ts](./craco.config.ts):
+>   * Replace `"../packages"` with the relative path to the `packages` folder.
+> ```TypeScript
+> const config: CracoConfig = {
+>   webpack: {
+>     configure(config, context) {
+>         // Update:
+>         path.resolve(__dirname, '../packages')
+>     },
+>   },
+> };
+> ```
+> [package.json](./package.json):
+>   * Replace `"../packages"` with the relative path to the `packages` folder.
+> ```json
+> {
+>   "name": "@realm/example-wasm",
+>   "wireit": {
+>     "start": {
+>       "command": "craco start",
+>       "dependencies": [
+>         // Update:
+>         "../packages/realm:build:browser",
+>         "../packages/realm:bundle",
+>         "../packages/realm-react:bundle"
+>       ]
+>     },
+>     "build": {
+>       "command": "craco build",
+>       "dependencies": [
+>         // Update:
+>         "../packages/realm:build:browser",
+>         "../packages/realm:bundle",
+>         "../packages/realm-react:bundle"
+>       ]
+>     }
+>   },
+> }
+> ```
+> [realm-js/package.json](../package.json):
+>   * Replace `"example-wasm"` with the relative path to the new location (e.g. `"new-folder/example-wasm"`).
+> ```json
+> {
+>   "name": "@realm/root",
+>   "workspaces": [
+>     // Update:
+>     "example-wasm",
+>   ],
+> }
+> ```
+> </details>
+
 ### Setting up an Atlas App and Device Sync
 
 To sync Realm data you must first:
