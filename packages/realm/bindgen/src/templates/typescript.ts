@@ -173,8 +173,8 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
   out("declare module 'realm/binding' {");
 
   out('import { ObjectId, UUID, Decimal128 } from "bson";');
-  out("import { Float, ", spec.enums.map((e) => e.name).join(", "), '} from "realm/binding/core";');
-  out('export * from "realm/binding/core";');
+  out("import { Float, ", spec.enums.map((e) => e.name).join(", "), '} from "realm/binding-core";');
+  out('export * from "realm/binding-core";');
 
   out("// Utilities");
   out("export type AppError = Error & {code: number};");

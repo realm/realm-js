@@ -35,7 +35,7 @@
       "node": "./dist/generated/native-node.cjs",
       "react-native": "./src/dist/native-react-native.cjs"
     },
-    "./binding/core": "./dist/generated/core.js",
+    "./binding-core": "./dist/generated/core.js",
     "./scripts/submit-analytics": "./scripts/submit-analytics.mjs",
     "./react-native.config.js": "./react-native.config.js",
     "./package.json": "./package.json"

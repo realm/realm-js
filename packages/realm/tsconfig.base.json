@@ -18,7 +18,7 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "realm/binding/core": ["./src/generated/core.ts"]
+      "realm/binding-core": ["./src/generated/core.ts"]
     }
   },
   "files": [],
