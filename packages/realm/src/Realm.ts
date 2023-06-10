@@ -117,6 +117,7 @@ import {
   PropertiesTypes,
   PropertySchema,
   PropertySchemaShorthand,
+  PropertyTypeName,
   ProviderType,
   PushClient,
   REALM,
@@ -1511,6 +1512,7 @@ export declare namespace Realm {
     PropertySchema,
     /** @deprecated Please use named imports */
     PropertySchemaShorthand,
+    PropertyTypeName,
     /** @deprecated Please use named imports */
     ProviderTypeType as ProviderType,
     /** @deprecated Please use named imports */
