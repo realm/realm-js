@@ -23,6 +23,7 @@ import {
   OpenRealmBehaviorType,
   OpenRealmTimeOutBehavior,
   SessionStopPolicy,
+  WaitForSync,
 } from "realm";
 
 describe("Enums", function () {
@@ -81,6 +82,15 @@ describe("Enums", function () {
         Error: 6,
         Fatal: 7,
         Off: 8,
+      });
+    });
+  });
+  describe("WaitForSync", function () {
+    it("is accessible", function () {
+      expect(WaitForSync).deep.equals({
+        Always: "always",
+        FirstTime: "first-time",
+        Never: "never",
       });
     });
   });

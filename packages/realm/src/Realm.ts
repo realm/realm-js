@@ -156,6 +156,7 @@ import {
   User,
   UserChangeCallback,
   UserState,
+  WaitForSync,
   assert,
   binding,
   defaultLogger,
@@ -232,6 +233,7 @@ export class Realm {
   public static flags = flags;
   /** @deprecated Please use named imports */
   public static List = List;
+  public static NumericLogLevel = NumericLogLevel;
   // TODO: Decide if we want to deprecate this as well
   public static Object = RealmObject;
   /** @deprecated Please use named imports */
@@ -264,6 +266,7 @@ export class Realm {
   public static User = User;
   /** @deprecated Please use named imports */
   public static UserState = UserState;
+  public static WaitForSync = WaitForSync;
   /** @deprecated Please use named imports */
   public static mapTo = mapTo;
   /** @deprecated Please use named imports */
@@ -1377,6 +1380,7 @@ type UpdateDescriptionType = UpdateDescription;
 type UpdateEventType<T extends Document> = UpdateEvent<T>;
 type UpdateOptionsType = UpdateOptions;
 type UpdateResultType<IdType> = UpdateResult<IdType>;
+type WaitForSyncType = WaitForSync;
 
 type GlobalDate = Date;
 
@@ -1477,6 +1481,7 @@ export declare namespace Realm {
     MigrationCallback,
     /** @deprecated Please use named imports */
     Mixed,
+    NumericLogLevelType as NumericLogLevel,
     /** @deprecated Please use named imports */
     ObjectChangeCallback,
     /** @deprecated Please use named imports */
@@ -1554,6 +1559,7 @@ export declare namespace Realm {
     UserChangeCallback,
     /** @deprecated Please use named imports */
     UserStateType as UserState,
+    WaitForSyncType as WaitForSync,
   };
 
   /** @deprecated Please use named imports */
