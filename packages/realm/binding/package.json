@@ -26,13 +26,19 @@
       ],
       "dependencies": [
         {
-          "script": "generate:typescript",
+          "script": "cmake:typescript",
           "cascade": false
         }
       ]
     },
-    "generate:typescript": {
-      "command": "cmake --build ../bindgen/build --target TypeScript"
+    "cmake:configure": {
+      "command": "cmake-js configure --debug --directory ../bindgen"
+    },
+    "cmake:typescript": {
+      "command": "cmake --build ../bindgen/build --target TypeScript",
+      "dependencies": [
+        "cmake:configure"
+      ]
     }
   }
 }
