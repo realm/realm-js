@@ -15,4 +15,16 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
-console.log(global.import);
+
+/* eslint-env node */
+
+module.exports = function (request, options) {
+  if (request === "react-native") {
+    // Ensure that "react-native" always resolve relative to the rootDir
+    options.basedir = options.rootDir;
+  } else if (request === "@realm/binding") {
+    // Ensure the node binding is used when testing with Jest on node
+    options.conditions = ["require", "default", "node"];
+  }
+  return options.defaultResolver(request, options);
+};

@@ -125,7 +125,8 @@ file(GLOB_RECURSE SDK_TS_FILES
 list(FILTER SDK_TS_FILES EXCLUDE REGEX "templates/[^/]*\.ts$")
 
 set(JS_SPEC_FILE ${SDK_DIR}/bindgen/js_spec.yml)
-set(GENERATED_OUTPUT_DIR ${SDK_DIR}/src/generated)
+set(BINDING_DIR ${SDK_DIR}/binding)
+set(GENERATED_OUTPUT_DIR ${BINDING_DIR}/src/generated)
 
 set(GENERATED_TS_FILES
     ${GENERATED_OUTPUT_DIR}/native.d.ts

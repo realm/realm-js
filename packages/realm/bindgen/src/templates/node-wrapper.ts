@@ -58,9 +58,9 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
     /*
     import { createRequire } from 'node:module';
     const nodeRequire = typeof require === 'function' ? require : createRequire(import.meta.url);
-    const nativeModule = nodeRequire("../../realm.node");
+    const nativeModule = nodeRequire("realm/realm.node");
     */
-    const nativeModule = require("../../realm.node");
+    const nativeModule = require("realm/realm.node");
 
     // We know that node always has real WeakRefs so just use them.
     export const WeakRef = global.WeakRef;
@@ -93,9 +93,9 @@ export function generate({ spec: rawSpec, file }: TemplateContext): void {
 
   both(`
     import { Long, ObjectId, UUID, Decimal128, EJSON } from "bson";
-    import { Float } from "realm/binding-core";
+    import { Float } from "./core";
 
-    export * from "realm/binding-core";
+    export * from "./core";
 
     // Copied from lib/utils.js.
     // TODO consider importing instead.

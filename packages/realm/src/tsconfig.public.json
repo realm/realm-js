@@ -1,8 +1,9 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "composite": false,
     "outDir": "../dist/public",
     "emitDeclarationOnly": true,
-    "stripInternal": false
+    "stripInternal": true
   }
 }

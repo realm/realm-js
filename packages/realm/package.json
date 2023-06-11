@@ -31,11 +31,7 @@
       "node": "./dist/platform/node/index.cjs.js",
       "react-native": "./dist/platform/react-native/index.cjs.js"
     },
-    "./binding": {
-      "node": "./dist/generated/native-node.cjs",
-      "react-native": "./src/dist/native-react-native.cjs"
-    },
-    "./binding-core": "./dist/generated/core.js",
+    "./realm.node": "./realm.node",
     "./scripts/submit-analytics": "./scripts/submit-analytics.mjs",
     "./react-native.config.js": "./react-native.config.js",
     "./package.json": "./package.json"
@@ -54,10 +50,9 @@
     "test": "wireit",
     "test:types": "tsc --project type-tests/tsconfig.json",
     "lint": "eslint --ext .js,.mjs,.ts .",
-    "build": "echo 'Run bundle, build:node, build:ios or build:android or other scripts depending on these instead' && exit 1",
+    "build": "echo 'Run build:ts, build:node, build:ios or build:android or other scripts depending on these instead' && exit 1",
     "bindgen:configure": "wireit",
     "bindgen:build:node": "wireit",
-    "bindgen:generate": "wireit",
     "build:ts": "wireit",
     "build:node": "wireit",
     "build:node:prebuild": "wireit",
@@ -80,15 +75,14 @@
       "dependencies": [
         "build:node",
         "build:ts",
-        "bindgen:generate",
         "../realm-network-transport:bundle"
       ]
     },
     "build:ts": {
-      "command": "tsc -b && tsx scripts/fix-dist-filenames.ts",
+      "command": "tsc -b && tsc -p src/tsconfig.public.json",
       "dependencies": [
         "../realm-network-transport:bundle",
-        "bindgen:generate"
+        "./binding:build"
       ],
       "files": [
         "src/**/*.ts",
@@ -104,20 +98,6 @@
     },
     "bindgen:configure": {
       "command": "cmake-js configure --debug --directory bindgen"
-    },
-    "bindgen:generate:typescript": {
-      "command": "cmake --build bindgen/build --target TypeScript",
-      "dependencies": [
-        "bindgen:configure"
-      ]
-    },
-    "bindgen:generate": {
-      "dependencies": [
-        {
-          "script": "bindgen:generate:typescript",
-          "cascade": false
-        }
-      ]
     },
     "bindgen:build:node": {
       "command": "cmake --build bindgen/build --target realm-js-node",
@@ -222,11 +202,17 @@
     }
   },
   "dependencies": {
+    "@realm/binding": "*",
+    "@realm/network-transport": "*",
     "debug": "^4.3.4",
     "node-fetch": "^2.6.9",
     "node-machine-id": "^1.1.12",
     "prebuild-install": "^7.1.1"
   },
+  "bundleDependencies": [
+    "@realm/binding",
+    "@realm/network-transport"
+  ],
   "peerDependencies": {
     "bson": "^4",
     "react-native": "^0.71.0"
@@ -238,7 +224,6 @@
   },
   "devDependencies": {
     "@realm/bindgen": "^0.1.0",
-    "@realm/network-transport": "^0.7.2",
     "@rollup/plugin-commonjs": "^23.0.2",
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.0.1",

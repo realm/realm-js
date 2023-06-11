@@ -3,14 +3,14 @@
   "compilerOptions": {
     "outDir": "../../../dist/platform/react-native",
     "types": [
+      "@realm/binding",
       "react-native",
       "path-browserify"
     ],
     "noResolve": false,
   },
   "include": [
-    ".",
-    "../../generated/native.d.ts"
+    "."
   ],
   "references": [{
     "path": "../.."

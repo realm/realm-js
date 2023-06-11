@@ -2,12 +2,14 @@
   "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "../../../dist/platform/node",
-    "types": ["node"],
+    "types": [
+      "@realm/binding",
+      "node"
+    ],
     "noResolve": false
   },
   "include": [
-    ".",
-    "../../generated/native.d.ts"
+    "."
   ],
   "references": [{
     "path": "../.."

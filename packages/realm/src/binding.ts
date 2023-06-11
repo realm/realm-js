@@ -16,13 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { IndexSet, Int64, ObjKey, SyncSession, Timestamp, WeakSyncSession } from "realm/binding";
+import { IndexSet, Int64, ObjKey, SyncSession, Timestamp, WeakSyncSession } from "@realm/binding";
 
 /** @internal */
-export * from "realm/binding";
+export * from "@realm/binding";
 
 /** @internal */
-declare module "realm/binding" {
+declare module "@realm/binding" {
   interface IndexSet {
     asIndexes(): Iterator<number>;
   }

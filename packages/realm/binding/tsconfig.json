@@ -1,0 +1,20 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": false,
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "outDir": "dist",
+    "allowJs": true,
+    "types": [
+      "bson",
+      "buffer"
+    ]
+  },
+  "files": [
+    "src/generated/core.ts",
+    "src/generated/native-node.mjs",
+    "src/generated/native-react-native.mjs"
+  ]
+}

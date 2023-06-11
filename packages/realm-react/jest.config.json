@@ -1,7 +1,7 @@
 {
   "verbose": true,
   "preset": "react-native",
-  "resolver": "./export-conditions-resolver.cjs",
+  "resolver": "./custom-resolver.cjs",
   "roots": [
     "<rootDir>/src"
   ],

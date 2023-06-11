@@ -1,0 +1,38 @@
+{
+  "name": "@realm/binding",
+  "private": true,
+  "type": "commonjs",
+  "types": "./dist/native.d.ts",
+  "react-native": "./dist/native-react-native.cjs",
+  "main": "./dist/native-node.cjs",
+  "exports": {
+    ".": {
+      "types": "./dist/native.d.ts",
+      "react-native": "./dist/native-react-native.cjs",
+      "node": "./dist/native-node.cjs"
+    }
+  },
+  "scripts": {
+    "build": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "command": "tsc && cp src/generated/*.d.ts dist/ && tsx ../scripts/fix-dist-filenames.ts ./dist",
+      "files": [
+        "src"
+      ],
+      "output": [
+        "dist"
+      ],
+      "dependencies": [
+        {
+          "script": "generate:typescript",
+          "cascade": false
+        }
+      ]
+    },
+    "generate:typescript": {
+      "command": "cmake --build ../bindgen/build --target TypeScript"
+    }
+  }
+}

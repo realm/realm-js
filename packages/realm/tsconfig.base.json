@@ -10,16 +10,11 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "types": [],
     "lib": [
       "ES2022"
     ],
     "incremental": true,
-    "resolveJsonModule": true,
-    "baseUrl": ".",
-    "paths": {
-      "realm/binding-core": ["./src/generated/core.ts"]
-    }
+    "resolveJsonModule": true
   },
   "files": [],
   "include": []

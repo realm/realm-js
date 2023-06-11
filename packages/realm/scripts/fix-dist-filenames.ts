@@ -21,7 +21,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const DIST_PATH = path.resolve(__dirname, "../dist");
+const DIST_PATH = path.resolve(...process.argv.slice(-1));
 
 console.log(`Running post build script to work around https://github.com/microsoft/TypeScript/issues/54573`);
 

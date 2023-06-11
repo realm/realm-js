@@ -3,22 +3,18 @@
   "compilerOptions": {
     "outDir": "../dist",
     "types": [
+      "@realm/binding",
       "@realm/network-transport",
       "bson",
       "debug",
       "ms" // debug dependency
-    ],
-    "baseUrl": "..",
-    "paths": {
-      "realm/binding-core": ["./src/generated/core.ts"]
-    }
+    ]
   },
   "references": [
-    { "path": "./tsconfig.generated.json" },
-    { "path": "./tsconfig.public.json" }
   ],
   "include": [
-    "."
+    ".",
+    "../binding/dist/core.d.ts",
   ],
   "exclude": [
     "tests/",
