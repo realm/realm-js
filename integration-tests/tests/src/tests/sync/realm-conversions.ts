@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Realm, BSON } from "realm";
+import Realm, { BSON } from "realm";
 import { expect } from "chai";
 import { importAppBefore } from "../../hooks";
 import { getRegisteredEmailPassCredentials } from "../../utils/credentials";

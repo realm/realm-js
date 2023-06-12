@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { Realm } from "realm";
+import Realm from "realm";
 
 describe("Realm.Types namespace", () => {
   // We specify explicit types on the instance so TS will error if the type def is wrong
