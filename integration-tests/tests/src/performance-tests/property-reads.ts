@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Realm } from "realm";
+import Realm from "realm";
 
 import { describePerformance } from "../utils/benchmark";
 

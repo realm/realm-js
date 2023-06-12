@@ -1,6 +1,7 @@
 ## vNext (TBD)
 
 ### Breaking changes
+* Now exporting only as CommonJS, to align with the way we exported from v11 in an attempt to keep breakage across the major version to an absolute minimum. This is a breaking change compared to the previous pre-releases of v12, since users have to update code which is doing named import of `Realm` to use default or `* as Realm` imports of the `Realm` constructor. ([#5882](https://github.com/realm/realm-js/pull/5882))
 * `SyncSession` JS objects no longer keep their associated C++ objects, and therefore the sync network connection, alive. This was causing issues because JS garbage collection is lazy so the `SyncSession` may survive much longer than the last reference held to it. We now use the same technique as v11 to avoid keeping the C++ object alive (`std::weak_ptr`). ([#5815](https://github.com/realm/realm-js/pull/5815), since v12.0.0-alpha.0)
   * Breaking change: On v11, if the C++ object had been destroyed already, we would often return `undefined` or some other default value when calling methods or accessing properties on the JS `SyncSession` object, even if that would violate our declared TS types. Now, in v12, we will throw from all methods and property accessors in this case.
 

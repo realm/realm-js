@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { Realm, ConnectionState, ObjectSchema, BSON, User, SyncConfiguration } from "realm";
+import Realm, { ConnectionState, ObjectSchema, BSON, User, SyncConfiguration } from "realm";
 import { importAppBefore } from "../../hooks";
 import { DogSchema } from "../../schemas/person-and-dog-with-object-ids";
 import { getRegisteredEmailPassCredentials } from "../../utils/credentials";

@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { Realm } from "realm";
+import Realm from "realm";
 
 import { PersonSchema, IPerson } from "../../schemas/person-and-dog-with-object-ids";
 import { authenticateUserBefore, importAppBefore, openRealmBefore } from "../../hooks";

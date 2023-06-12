@@ -11,8 +11,9 @@
     }
   },
   "exclude": [
-    "../../tests/",
     "../react-native/",
+    "../../tests/",
+    "../../index.cjs.ts",
     "../../../type-tests/"
   ],
 }

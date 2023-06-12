@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Realm, AppConfiguration } from "realm";
+import Realm, { AppConfiguration } from "realm";
 
 import { importApp } from "../utils/import-app";
 import { AppConfig } from "@realm/app-importer";

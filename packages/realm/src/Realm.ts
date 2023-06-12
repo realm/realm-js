@@ -50,6 +50,7 @@ import {
   Collection,
   CollectionChangeCallback,
   CollectionChangeSet,
+  CompensatingWriteError,
   Configuration,
   ConfigurationWithSync,
   ConfigurationWithoutSync,
@@ -116,6 +117,7 @@ import {
   PropertiesTypes,
   PropertySchema,
   PropertySchemaShorthand,
+  PropertyTypeName,
   ProviderType,
   PushClient,
   REALM,
@@ -154,6 +156,7 @@ import {
   User,
   UserChangeCallback,
   UserState,
+  WaitForSync,
   assert,
   binding,
   defaultLogger,
@@ -220,14 +223,17 @@ export class Realm {
   public static ClientResetMode = ClientResetMode;
   /** @deprecated Please use named imports */
   public static Collection = Collection;
+  public static CompensatingWriteError = CompensatingWriteError;
   /** @deprecated Please use named imports */
   public static ConnectionState = ConnectionState;
   /** @deprecated Please use named imports */
   public static Credentials = Credentials;
   /** @deprecated Please use named imports */
   public static Dictionary = Dictionary;
+  public static flags = flags;
   /** @deprecated Please use named imports */
   public static List = List;
+  public static NumericLogLevel = NumericLogLevel;
   // TODO: Decide if we want to deprecate this as well
   public static Object = RealmObject;
   /** @deprecated Please use named imports */
@@ -242,6 +248,7 @@ export class Realm {
   public static ProgressMode = ProgressMode;
   /** @deprecated Please use named imports */
   public static ProviderType = ProviderType;
+  public static SubscriptionSetState = SubscriptionSetState;
   /** @deprecated Please use named imports */
   public static Results = Results;
   /** @deprecated Please use named imports */
@@ -260,6 +267,7 @@ export class Realm {
   public static User = User;
   /** @deprecated Please use named imports */
   public static UserState = UserState;
+  public static WaitForSync = WaitForSync;
   /** @deprecated Please use named imports */
   public static mapTo = mapTo;
   /** @deprecated Please use named imports */
@@ -1291,6 +1299,7 @@ type CollectionType<
   T = ValueType,
   ChangeCallbackType = unknown,
 > = Collection<KeyType, ValueType, EntryType, T, ChangeCallbackType>;
+type CompensatingWriteErrorType = CompensatingWriteError;
 type ConnectionStateType = ConnectionState;
 type CredentialsType = Credentials;
 type DictionaryType<T> = Dictionary<T>;
@@ -1372,6 +1381,7 @@ type UpdateDescriptionType = UpdateDescription;
 type UpdateEventType<T extends Document> = UpdateEvent<T>;
 type UpdateOptionsType = UpdateOptions;
 type UpdateResultType<IdType> = UpdateResult<IdType>;
+type WaitForSyncType = WaitForSync;
 
 type GlobalDate = Date;
 
@@ -1433,6 +1443,7 @@ export declare namespace Realm {
     CollectionChangeSet,
     /** @deprecated Please use named imports */
     CollectionType as Collection,
+    CompensatingWriteErrorType,
     /** @deprecated Please use named imports */
     ConfigurationWithoutSync,
     /** @deprecated Please use named imports */
@@ -1471,6 +1482,7 @@ export declare namespace Realm {
     MigrationCallback,
     /** @deprecated Please use named imports */
     Mixed,
+    NumericLogLevelType as NumericLogLevel,
     /** @deprecated Please use named imports */
     ObjectChangeCallback,
     /** @deprecated Please use named imports */
@@ -1506,6 +1518,7 @@ export declare namespace Realm {
     PropertySchema,
     /** @deprecated Please use named imports */
     PropertySchemaShorthand,
+    PropertyTypeName,
     /** @deprecated Please use named imports */
     ProviderTypeType as ProviderType,
     /** @deprecated Please use named imports */
@@ -1533,6 +1546,7 @@ export declare namespace Realm {
     SSLVerifyCallbackType as SSLVerifyCallback,
     /** @deprecated Please use named imports */
     SSLVerifyObjectType as SSLVerifyObject,
+    SubscriptionSetStateType as SubscriptionSetState,
     /** @deprecated Please use named imports */
     SyncConfiguration,
     /** @deprecated Please use named imports */
@@ -1547,6 +1561,7 @@ export declare namespace Realm {
     UserChangeCallback,
     /** @deprecated Please use named imports */
     UserStateType as UserState,
+    WaitForSyncType as WaitForSync,
   };
 
   /** @deprecated Please use named imports */

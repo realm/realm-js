@@ -22,16 +22,14 @@
     "email": "help@realm.io",
     "url": "https://realm.io"
   },
-  "main": "./dist/bundle.node.js",
-  "module": "./dist/bundle.node.mjs",
-  "types": "./dist/bundle.d.ts",
-  "react-native": "./dist/bundle.react-native.mjs",
+  "types": "./types.d.cts",
+  "main": "./index.node.js",
+  "react-native": "./index.react-native.js",
   "exports": {
     ".": {
-      "types": "./dist/bundle.d.ts",
-      "require": "./dist/bundle.node.js",
-      "node": "./dist/bundle.node.mjs",
-      "react-native": "./dist/bundle.react-native.mjs"
+      "types": "./types.d.cts",
+      "node": "./index.node.js",
+      "react-native": "./index.react-native.js"
     },
     "./scripts/submit-analytics": "./scripts/submit-analytics.mjs",
     "./react-native.config.js": "./react-native.config.js",
