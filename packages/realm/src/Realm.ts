@@ -1030,16 +1030,18 @@ export class Realm {
 
     const table = binding.Helpers.getTable(this.internal, objectSchema.tableKey);
     const results = binding.Results.fromTable(this.internal, table);
-    return new Results<T>(this, results, {
-      get(results: binding.Results, index: number) {
-        return results.getObj(index);
+    return new Results<T>(
+      this,
+      results,
+      {
+        fromBinding: wrapObject,
+        toBinding(value: unknown) {
+          assert.instanceOf(value, RealmObject);
+          return value[INTERNAL];
+        },
       },
-      fromBinding: wrapObject,
-      toBinding(value: unknown) {
-        assert.instanceOf(value, RealmObject);
-        return value[INTERNAL];
-      },
-    });
+      objectSchema.name,
+    );
   }
 
   /**

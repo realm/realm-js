@@ -20,8 +20,8 @@ import {
   IllegalConstructorError,
   ObjectSchema,
   OrderedCollection,
-  OrderedCollectionHelpers,
   Realm,
+  TypeHelpers,
   assert,
   binding,
 } from "./internal";
@@ -43,32 +43,16 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
   public declare internal: binding.List;
 
   /** @internal */
-  private declare isEmbedded: boolean;
+  private get isEmbedded() {
+    return this.classHelpers?.objectSchema.tableType == binding.TableType.Embedded || false;
+  }
 
   /** @internal */
-  constructor(realm: Realm, internal: binding.List, helpers: OrderedCollectionHelpers) {
+  constructor(realm: Realm, internal: binding.List, helpers: TypeHelpers, objectSchemaName: string | undefined | null) {
     if (arguments.length === 0 || !(internal instanceof binding.List)) {
       throw new IllegalConstructorError("List");
     }
-    super(realm, internal.asResults(), helpers);
-
-    // Getting the `objectSchema` off the internal will throw if base type isn't object
-    const baseType = this.results.type & ~binding.PropertyType.Flags;
-    const isEmbedded =
-      baseType === binding.PropertyType.Object && internal.objectSchema.tableType === binding.TableType.Embedded;
-
-    Object.defineProperty(this, "internal", {
-      enumerable: false,
-      configurable: false,
-      writable: false,
-      value: internal,
-    });
-    Object.defineProperty(this, "isEmbedded", {
-      enumerable: false,
-      configurable: false,
-      writable: false,
-      value: isEmbedded,
-    });
+    super(realm, internal, helpers, objectSchemaName);
   }
 
   isValid() {
@@ -94,7 +78,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
   }
 
   get length(): number {
-    return this.internal.size;
+    return this.internal.size();
   }
 
   set length(value: number) {
@@ -112,7 +96,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
       internal,
       helpers: { fromBinding },
     } = this;
-    const lastIndex = internal.size - 1;
+    const lastIndex = internal.size() - 1;
     if (lastIndex >= 0) {
       const result = fromBinding(internal.getAny(lastIndex));
       internal.remove(lastIndex);
@@ -138,7 +122,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
       internal,
       helpers: { toBinding },
     } = this;
-    const start = internal.size;
+    const start = internal.size();
     for (const [offset, item] of items.entries()) {
       const index = start + offset;
       if (isEmbedded) {
@@ -148,7 +132,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
         internal.insertAny(index, toBinding(item));
       }
     }
-    return internal.size;
+    return internal.size();
   }
 
   /**
@@ -162,7 +146,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
       internal,
       helpers: { fromBinding },
     } = this;
-    if (internal.size > 0) {
+    if (internal.size() > 0) {
       const result = fromBinding(internal.getAny(0)) as T;
       internal.remove(0);
       return result;
@@ -193,7 +177,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
         internal.insertAny(index, toBinding(item));
       }
     }
-    return internal.size;
+    return internal.size();
   }
 
   /** TODO
@@ -250,16 +234,16 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     } = this;
     // If negative, it will begin that many elements from the end of the array.
     if (start < 0) {
-      start = internal.size + start;
+      start = internal.size() + start;
     }
     // If greater than the length of the array, start will be set to the length of the array.
-    if (start > internal.size) {
-      start = internal.size;
+    if (start > internal.size()) {
+      start = internal.size();
     }
     // If deleteCount is omitted, or if its value is equal to or larger than array.length - start
     // (that is, if it is equal to or greater than the number of elements left in the array, starting at start),
     // then all the elements from start to the end of the array will be deleted.
-    const end = typeof deleteCount === "number" ? Math.min(start + deleteCount, internal.size) : internal.size;
+    const end = typeof deleteCount === "number" ? Math.min(start + deleteCount, internal.size()) : internal.size();
     // Get the elements that are about to be deleted
     const result: T[] = [];
     for (let i = start; i < end; i++) {
@@ -294,7 +278,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     assert.number(index, "index");
 
     assert(index >= 0, "Index cannot be smaller than 0");
-    assert(index < this.internal.size, "Index cannot be greater than the size of the list");
+    assert(index < this.internal.size(), "Index cannot be greater than the size of the list");
 
     this.internal.remove(index);
   }
@@ -312,7 +296,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     assert.number(from, "from");
     assert.number(to, "to");
 
-    const size = this.internal.size;
+    const size = this.internal.size();
     assert(from >= 0 && to >= 0, "Indexes cannot be smaller than 0");
     assert(from < size && to < size, "Indexes cannot be greater than the size of the list");
 
@@ -332,7 +316,7 @@ export class List<T = unknown> extends OrderedCollection<T> implements Partially
     assert.number(index1, "index1");
     assert.number(index2, "index2");
 
-    const size = this.internal.size;
+    const size = this.internal.size();
     assert(index1 >= 0 && index2 >= 0, "Indexes cannot be smaller than 0");
     assert(index1 < size && index2 < size, "Indexes cannot be greater than the size of the list");
 
