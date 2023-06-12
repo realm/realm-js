@@ -1,11 +1,11 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 
 import { AuthenticatedApp } from './AuthenticatedApp';
 import { ErrorPage } from './pages/ErrorPage';
 import { LoginPage } from './pages/LoginPage';
 import { TaskPage } from './pages/TaskPage';
 import config from './atlas-app-services/config.json';
-import styles from './styles/AppWrapper.module.css';
+import styles from './styles/App.module.css';
 
 const { AppProvider } = await import('@realm/react');
 
