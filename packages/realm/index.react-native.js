@@ -19,4 +19,4 @@
 /* eslint-disable @typescript-eslint/no-var-requires -- We're exporting using CJS assignment */
 /* eslint-env commonjs */
 
-module.exports = require("./dist/bundle.node").Realm;
+module.exports = require("./dist/bundle.react-native").Realm;
