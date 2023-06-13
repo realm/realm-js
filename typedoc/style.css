@@ -41,13 +41,18 @@
   font-display: swap;
 }
 
-/* Default theme overrides */
+/* ==========================================================================
+   Theme color and font definitions and overrides
+   ========================================================================== */
+
 :root {
   --font-family-default: "Euclid Circular A", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-family-serif: "MongoDB Value Serif", "Times New Roman", serif;
   --font-family-code: "Source Code Pro", Menlo, monospace;
 
-  /* Light */
+  /* Light theme colors
+   ========================================================================== */
+
   --light-color-background: #ffffff;
   --light-color-background-secondary: #f9fbfa;
   --light-color-warning-text: #db3030;
@@ -60,17 +65,24 @@
   --light-color-ts: #db1373;
   --light-color-ts-interface: #139d2c;
   --light-color-ts-enum: #9c891a;
-  /* Used in TypeScript class icon */
-  --light-color-ts-class: #2484e5;
-  --light-color-ts-function: #572be7;
-  --light-color-ts-namespace: #b111c9;
+  --light-color-ts-class: #7c25ff;
+  --light-color-ts-function: #b45af2;
+  --light-color-ts-namespace: #5400f8;
   --light-color-ts-private: #707070;
   --light-color-ts-variable: #4d68ff;
+  --light-color-ts-property: #00684a;
+  --light-color-ts-call-signature: #00684a;
+  --light-color-ts-parameter: #0d427c;
+  --light-color-ts-type-parameter: #023430;
+  --light-color-ts-type-alias: #b45af2;
+  --light-color-active-menu-item: #f9ebff;
   --light-external-icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' width='10' height='10'><path fill-opacity='0' stroke='%23000' stroke-width='10' d='m43,35H5v60h60V57M45,5v10l10,10-30,30 20,20 30-30 10,10h10V5z'/></svg>");
   --light-color-scheme: light;
   --light-code-background: #e8edeb;
 
-  /* Dark */
+  /* Dark theme colors
+   ========================================================================== */
+
   --dark-color-background: #001e2b;
   --dark-color-background-secondary: #3d4f58;
   --dark-color-background-warning: #ffcdc7;
@@ -88,9 +100,18 @@
   --dark-color-ts-namespace: #e14dff;
   --dark-color-ts-private: #e2e2e2;
   --dark-color-ts-variable: #4d68ff;
+  --dark-color-ts-property: #e9ff99;
+  --dark-color-ts-call-signature: #e9ff99;
+  --dark-color-ts-parameter: #e3fcf7;
+  --dark-color-ts-type-parameter: #ffeea9;
+  --dark-color-ts-type-alias: #f9ebff;
+  --dark-color-active-menu-item: #0d427c;
   --dark-external-icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' width='10' height='10'><path fill-opacity='0' stroke='%23fff' stroke-width='10' d='m43,35H5v60h60V57M45,5v10l10,10-30,30 20,20 30-30 10,10h10V5z'/></svg>");
   --dark-color-scheme: dark;
 }
+
+/* `prefers-color-scheme` theme variable mapping
+   ========================================================================== */
 
 @media (prefers-color-scheme: light) {
   :root {
@@ -111,6 +132,12 @@
     --color-ts-namespace: var(--light-color-ts-namespace);
     --color-ts-private: var(--light-color-ts-private);
     --color-ts-variable: var(--light-color-ts-variable);
+    --color-ts-property: var(--light-color-ts-property);
+    --color-ts-call-signature: var(--light-color-ts-call-signature);
+    --color-ts-parameter: var(--light-color-ts-parameter);
+    --color-ts-type-parameter: var(--light-color-ts-type-parameter);
+    --color-ts-type-alias: var(--light-color-ts-type-alias);
+    --color-active-menu-item: var(--light-color-active-menu-item);
     --external-icon: var(--light-external-icon);
     --color-scheme: var(--light-color-scheme);
     --code-background: var(--light-color-background-secondary);
@@ -136,12 +163,20 @@
     --color-ts-namespace: var(--dark-color-ts-namespace);
     --color-ts-private: var(--dark-color-ts-private);
     --color-ts-variable: var(--dark-color-ts-variable);
+    --color-ts-property: var(--dark-color-ts-property);
+    --color-ts-call-signature: var(--dark-color-ts-call-signature);
+    --color-ts-parameter: var(--dark-color-ts-parameter);
+    --color-ts-type-parameter: var(--dark-color-ts-type-parameter);
+    --color-ts-type-alias: var(--dark-color-ts-type-alias);
+    --color-active-menu-item: var(--dark-color-active-menu-item);
     --external-icon: var(--dark-external-icon);
     --color-scheme: var(--dark-color-scheme);
     --code-background: var(--dark-color-background-secondary);
   }
 }
 
+/* Theme variable mapping
+   ========================================================================== */
 :root[data-theme="light"] {
   --color-background: var(--light-color-background);
   --color-background-secondary: var(--light-color-background-secondary);
@@ -160,6 +195,12 @@
   --color-ts-namespace: var(--light-color-ts-namespace);
   --color-ts-private: var(--light-color-ts-private);
   --color-ts-variable: var(--light-color-ts-variable);
+  --color-ts-property: var(--light-color-ts-property);
+  --color-ts-call-signature: var(--light-color-ts-call-signature);
+  --color-ts-parameter: var(--light-color-ts-parameter);
+  --color-ts-type-parameter: var(--light-color-ts-type-parameter);
+  --color-ts-type-alias: var(--light-color-ts-type-alias);
+  --color-active-menu-item: var(--light-color-active-menu-item);
   --external-icon: var(--light-external-icon);
   --color-scheme: var(--light-color-scheme);
   --code-background: var(--light-color-background-secondary);
@@ -183,15 +224,34 @@
   --color-ts-namespace: var(--dark-color-ts-namespace);
   --color-ts-private: var(--dark-color-ts-private);
   --color-ts-variable: var(--dark-color-ts-variable);
+  --color-ts-property: var(--dark-color-ts-property);
+  --color-ts-call-signature: var(--dark-color-ts-call-signature);
+  --color-ts-parameter: var(--dark-color-ts-parameter);
+  --color-ts-type-parameter: var(--dark-color-ts-type-parameter);
+  --color-ts-type-alias: var(--dark-color-ts-type-alias);
+  --color-active-menu-item: var(--dark-color-active-menu-item);
   --external-icon: var(--dark-external-icon);
   --color-scheme: var(--dark-color-scheme);
   --code-background: var(--dark-color-background-secondary);
 }
 
-/* Specific dark theme styles */
+/* ==========================================================================
+   Specific dark theme style overrides
+   ========================================================================== */
+
 :root[data-theme="dark"] input[type="checkbox"]:checked ~ svg .tsd-checkbox-checkmark {
   stroke: var(--light-color-text);
 }
+
+:root[data-theme="dark"] #tsd-search .field input,
+:root[data-theme="dark"] .tsd-page-toolbar a:hover,
+:root[data-theme="dark"] .tsd-page-toolbar #tsd-search .results a:hover span.parent {
+  color: var(--color-background);
+}
+
+/* ==========================================================================
+   Basic element style overrides
+   ========================================================================== */
 
 html {
   color-scheme: var(--color-scheme);
@@ -230,22 +290,27 @@ h2 {
   margin: 0.83rem 0;
 }
 
-h3 {
+h3,
+.tsd-typography .tsd-index-panel h3,
+.tsd-index-panel .tsd-typography h3 {
   font-size: 1.25rem;
   margin: 1rem 0;
 }
 
-h4 {
+h4,
+.tsd-typography h4 {
   font-size: 1.05rem;
   margin: 1.33rem 0;
 }
 
-h5 {
+h5,
+.tsd-typography h5 {
   font-size: 1rem;
   margin: 1.5rem 0;
 }
 
-h6 {
+h6,
+.tsd-typography h6 {
   font-size: 0.875rem;
   margin: 2.33rem 0;
 }
@@ -303,135 +368,10 @@ pre code {
   font-size: 100%;
 }
 
+/* ==========================================================================
+   TypeDoc theme layout overrides
+   ========================================================================== */
+
 .tsd-page-navigation ul {
   padding-left: 1rem;
-}
-
-@media (max-width: 1024px) {
-  .to-has-menu .overlay {
-    animation: fade-in 0.4s;
-  }
-
-  .to-has-menu :is(header, footer, .col-content) {
-    animation: shift-to-left 0.4s;
-  }
-
-  .to-has-menu .col-menu {
-    animation: pop-in-from-right 0.4s;
-  }
-
-  .from-has-menu .overlay {
-    animation: fade-out 0.4s;
-  }
-
-  .from-has-menu :is(header, footer, .col-content) {
-    animation: unshift-to-left 0.4s;
-  }
-
-  .from-has-menu .col-menu {
-    animation: pop-out-to-right 0.4s;
-  }
-
-  .has-menu body {
-    overflow: hidden;
-  }
-  .has-menu .overlay {
-    visibility: visible;
-  }
-  .has-menu :is(header, footer, .col-content) {
-    transform: translate(-25%, 0);
-  }
-  .has-menu .col-menu {
-    visibility: visible;
-    transform: translate(0, 0);
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    max-height: 100vh;
-    padding: 1rem 2rem;
-  }
-  .has-menu .tsd-navigation {
-    max-height: 100%;
-  }
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fade-out {
-  from {
-    opacity: 1;
-    visibility: visible;
-  }
-  to {
-    opacity: 0;
-  }
-}
-
-@keyframes fade-in-delayed {
-  0% {
-    opacity: 0;
-  }
-  33% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes fade-out-delayed {
-  0% {
-    opacity: 1;
-    visibility: visible;
-  }
-  66% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-@keyframes shift-to-left {
-  from {
-    transform: translate(0, 0);
-  }
-  to {
-    transform: translate(-25%, 0);
-  }
-}
-
-@keyframes unshift-to-left {
-  from {
-    transform: translate(-25%, 0);
-  }
-  to {
-    transform: translate(0, 0);
-  }
-}
-
-@keyframes pop-in-from-right {
-  from {
-    transform: translate(100%, 0);
-  }
-  to {
-    transform: translate(0, 0);
-  }
-}
-
-@keyframes pop-out-to-right {
-  from {
-    transform: translate(0, 0);
-    visibility: visible;
-  }
-  to {
-    transform: translate(100%, 0);
-  }
 }
