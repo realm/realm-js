@@ -114,17 +114,39 @@ class MyGeoPoint implements CanonicalGeoPoint {
 interface IPointOfInterest {
   id: number;
   location: MyGeoPoint;
+  locations?: MyGeoPoint[];
 }
 
 class PointOfInterest extends Realm.Object implements IPointOfInterest {
   id = 0;
   location: MyGeoPoint = new MyGeoPoint(0, 0);
+  locations: [MyGeoPoint] = [new MyGeoPoint(0, 0)];
 
   static schema: ObjectSchema = {
     name: "PointOfInterest",
     properties: {
       id: "int",
       location: "MyGeoPoint",
+      locations: "MyGeoPoint[]",
+    },
+    primaryKey: "id",
+  };
+}
+
+interface ICompany {
+  id: number;
+  locations: MyGeoPoint[];
+}
+
+class Company extends Realm.Object implements ICompany {
+  id = 0;
+  locations: [MyGeoPoint] = [new MyGeoPoint(0, 0)];
+
+  static schema: ObjectSchema = {
+    name: "Company",
+    properties: {
+      id: "int",
+      locations: "MyGeoPoint[]",
     },
     primaryKey: "id",
   };
@@ -187,7 +209,7 @@ const expectQueryResultValues = (
   queryResultPairs.forEach(([expectedResults, queryString, ...queryArgs]) => {
     let results = realm.objects<any>(objectSchema);
     results = results.filtered(queryString, ...queryArgs);
-    //console.log(results.map((el) => el[propertyToCompare])); //TODO For testing, can be removed later
+    console.log(results.map((el) => el[propertyToCompare])); //TODO For testing, can be removed later
     expect(results.length).to.equal(expectedResults.length);
     expect(results.map((el) => el[propertyToCompare])).to.deep.equal(
       expectedResults,
@@ -200,7 +222,7 @@ const expectQueryResultValues = (
 
 describe("Queries", () => {
   describe.only("GeoSpatial", () => {
-    openRealmBeforeEach({ schema: [PointOfInterest, MyGeoPoint.schema] });
+    openRealmBeforeEach({ schema: [PointOfInterest, Company, MyGeoPoint.schema] });
     const zero: IPointOfInterest = {
       id: 1,
       location: new MyGeoPoint(0, 0),
@@ -231,6 +253,11 @@ describe("Queries", () => {
       location: new MyGeoPoint(0.01, 89.9),
     };
 
+    const invalid: IPointOfInterest = {
+      id: 7,
+      location: new MyGeoPoint(2129.01, 89.9),
+    };
+
     function geoTest(realm: Realm, geo: GeoCircle | GeoBox | GeoPolygon, pois: IPointOfInterest[]) {
       const poiIds = pois.map((p) => p.id);
       expectQueryResultValues(realm, PointOfInterest, "id", [[poiIds, "location geoWithin $0 SORT(id ASC)", geo]]);
@@ -248,6 +275,7 @@ describe("Queries", () => {
         this.realm.create("PointOfInterest", poiC);
         this.realm.create("PointOfInterest", poiD);
         this.realm.create("PointOfInterest", northPole);
+        //this.realm.create("PointOfInterest", invalid);  //TODO Need to see what to do with this when they answer on slack
       });
     });
 
@@ -651,6 +679,36 @@ describe("Queries", () => {
         const mi = 20;
         expect(miToRadians(mi)).to.be.approximately(0.00504646838, 0.0000001);
       });
+
+      it("List", function (this: RealmContext) {
+        const multi1: IPointOfInterest = {
+          id: 8,
+          location: new MyGeoPoint(0, 0),
+          locations: [new MyGeoPoint(56, 56), new MyGeoPoint(80, 80)],
+        };
+
+        const multi2: IPointOfInterest = {
+          id: 9,
+          location: new MyGeoPoint(0, 0),
+          locations: [new MyGeoPoint(-56, -56), new MyGeoPoint(-80, -80)],
+        };
+
+        this.realm.write(() => {
+          this.realm.create("PointOfInterest", multi1);
+          this.realm.create("PointOfInterest", multi2);
+        });
+
+        const box: GeoBox = {
+          bottomLeft: [50, 50],
+          topRight: [60, 60],
+        };
+
+        const queryResultsIds = [multi1.id];
+
+        expectQueryResultValues(this.realm, PointOfInterest, "id", [
+          [queryResultsIds, "locations geoWithin $0 SORT(id ASC)", box],
+        ]);
+      });
     });
 
     describe("Complex cases", () => {
@@ -695,6 +753,39 @@ describe("Queries", () => {
         };
 
         geoTest(this.realm, circle, [northPole]);
+      });
+
+      it("Small distances", function (this: RealmContext) {
+        const norreport = new MyGeoPoint(12.571545084046413, 55.683224550352314);
+
+        const magasasaKodbyen: IPointOfInterest = {
+          id: 21,
+          location: new MyGeoPoint(12.558892784045568, 55.66717839648401),
+        };
+
+        const slurpRamen: IPointOfInterest = {
+          id: 22,
+          location: new MyGeoPoint(12.567200345741842, 55.68512265806895),
+        };
+
+        this.realm.write(() => {
+          this.realm.create("PointOfInterest", magasasaKodbyen);
+          this.realm.create("PointOfInterest", slurpRamen);
+        });
+
+        let circle: GeoCircle = {
+          center: norreport,
+          distance: kmToRadians(0.5), //500 meters radius
+        };
+
+        geoTest(this.realm, circle, [slurpRamen]);
+
+        circle = {
+          center: norreport,
+          distance: kmToRadians(2.5), //2500 meters radius
+        };
+
+        geoTest(this.realm, circle, [magasasaKodbyen, slurpRamen]);
       });
 
       it("Inverted polygon", function (this: RealmContext) {

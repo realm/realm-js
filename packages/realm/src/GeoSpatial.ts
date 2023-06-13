@@ -16,25 +16,42 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { assert, binding } from "./internal";
+import { binding } from "./internal";
 
-export type GeoPosition = [number, number] | [number, number, number]; // long/lat/alt, so it's the same order as geoJSON
+/**
+ * Represents the array coordinates of a point. The first two required elements of the array are longitude and latitude.
+ * The third and optional element is altitude, that is currently ignored in the geospatial queries calculations.
+ */
+export type GeoPosition = [number, number] | [number, number, number];
 
-//Interface that satisfies the geoJSON specification for a polygon.
+/**
+ * Interface that satisfies the geoJSON specification for a polygon.
+ * This can be used as one of the possible forms of {@link GeoPolygon}.
+ */
 export interface CanonicalGeoPolygon {
   coordinates: GeoPosition[][];
   type: "Polygon";
 }
 
-//Interface that satisfies the geoJSON specification for a point.
-//Any object that respects this interface can be used in geospatial queries
+/**
+ * Interface that satisfies the geoJSON specification for a point.
+ * Any embedded object that adhere to this interface can be used in geospatial queries.
+ * Additionally, This can be used as one of the possible forms of {@link GeoPoint}.
+ */
 export interface CanonicalGeoPoint {
   coordinates: GeoPosition;
   type: "Point";
 }
 
+/**
+ * Represents a point in spherical geometry.
+ * This type cannot be used on his own, but only as a building block for the other geospatial types
+ * ({@link GeoCircle}, {@link GeoBox}, {@link GeoPolygon}).
+ */
 export type GeoPoint =
-  //This is compatible with GeoLocationCoordinates (https://developer.mozilla.org/en-US/docs/Web/API/GeolocationCoordinates)
+  /**
+   * This is compatible with {@link https://developer.mozilla.org/en-US/docs/Web/API/GeolocationCoordinates|GeoLocationCoordinates}
+   */
   | {
       latitude: number;
       longitude: number;
@@ -43,6 +60,26 @@ export type GeoPoint =
   | CanonicalGeoPoint
   | GeoPosition;
 
+/**
+ * Represents a circle in spherical geometry that can be used for the definition of geospatial queries.
+ */
+export type GeoCircle = {
+  /** The center of the circle. */
+  center: GeoPoint;
+  /** The radius of the circle in radians. You can use {@link kmToRadians} and {@link miToRadians}
+   * to respectively convert kilometers and miles to radians. */
+  distance: number;
+};
+
+/**
+ * Represents a polygon in spherical geometry that can be used for the definition of geospatial queries.
+ * The polygon is comprised of at least one outer ring and optionally multiple internal rings representing holes with the following restrictions:
+ * - Each ring must contains at least 3 distinct points, where the first and the last point must be the same to indicate a closed ring (this means that each ring
+ * must have at least 4 points)
+ * - The interior rings must be entirely inside the outer ring.
+ * - Rings can share vertices but not edges.
+ * - No ring may be empty.
+ */
 export type GeoPolygon =
   | {
       outerRing: GeoPoint[];
@@ -50,15 +87,15 @@ export type GeoPolygon =
     }
   | CanonicalGeoPolygon;
 
-// GeoBox and GeoCircle have no corresponding geoJSON types
+/**
+ * Represents a box in spherical geometry that can be used for the definition of geospatial queries.
+ * This is a short-hand for the equivalent {@link GeoPolygon}.
+ */
 export type GeoBox = {
+  /** The bottom left point of the box. */
   bottomLeft: GeoPoint;
+  /** The top right point of the box. */
   topRight: GeoPoint;
-};
-
-export type GeoCircle = {
-  center: GeoPoint;
-  distance: number;
 };
 
 /** @internal */
@@ -108,10 +145,20 @@ function toBindingGeoPointArray(arr: GeoPoint[][]): binding.GeoPoint_Relaxed[][]
 const earthRadiusKm = 6378.1;
 const earthRadiusMi = 3963.16760121; //earthRadiusKm / 1.609344 (km/mi)
 
+/**
+ * Converts the input kilometer value in radians.
+ * @param km The kilometers to convert
+ * @returns The corresponding number of radians.
+ */
 export function kmToRadians(km: number): number {
   return km / earthRadiusKm;
 }
 
+/**
+ * Converts the input miles value in radians.
+ * @param km The miles to convert
+ * @returns The corresponding number of radians.
+ */
 export function miToRadians(mi: number): number {
   return mi / earthRadiusMi;
 }
