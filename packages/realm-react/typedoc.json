@@ -1,11 +1,16 @@
 {
+  "name": "Realm React",
   "entryPoints": ["src/index.tsx"],
   "tsconfig": "./tsconfig.json",
   "excludeInternal": true,
   "customCss": "../../typedoc/style.css",
   "media": "./media",
-  "name": "Realm React",
   "includeVersion": true,
   "sourceLinkTemplate": "https://github.com/realm/realm-js/blob/{gitRevision}/{path}#L{line}",
-  "favicon": "../../media/favicon.ico"
+  "favicon": "../../media/favicon.ico",
+  "visibilityFilters": {},
+  "categorizeByGroup": false,
+  "navigationLinks": {
+    "GitHub": "https://github.com/realm/realm-js/tree/main/packages/realm-react#readme"
+  }
 }
