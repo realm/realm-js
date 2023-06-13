@@ -7,6 +7,7 @@
 
 ### Deprecations
 * Deprecated the `SubscriptionsState` enum (will be removed in v13) in favor of the now-named `SubscriptionSetState`. ([#5773](https://github.com/realm/realm-js/issues/5773))
+* Removed deprecation of the `Realm` namespace, to align with v11 and ease the adoption of this major version. ([#5883](https://github.com/realm/realm-js/pull/5883))
 
 ### Enhancements
 * Opening a Realm with invalid schemas will throw a `SchemaParseError` (or one of its subtypes `ObjectSchemaParseError` and `PropertySchemaParseError`) rather than an `AssertionError` or `Error`. ([#5198](https://github.com/realm/realm-js/issues/5198))
