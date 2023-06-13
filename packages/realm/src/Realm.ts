@@ -50,7 +50,9 @@ import {
   Collection,
   CollectionChangeCallback,
   CollectionChangeSet,
+  CollectionPropertyTypeName,
   CompensatingWriteError,
+  CompensatingWriteInfo,
   Configuration,
   ConfigurationWithSync,
   ConfigurationWithoutSync,
@@ -110,13 +112,16 @@ import {
   PartitionSyncConfiguration,
   PartitionValue,
   PrimaryKey,
+  PrimitivePropertyTypeName,
   ProgressDirection,
   ProgressMode,
   ProgressNotificationCallback,
   ProgressRealmPromise,
   PropertiesTypes,
   PropertySchema,
+  PropertySchemaParseError,
   PropertySchemaShorthand,
+  PropertySchemaStrict,
   PropertyTypeName,
   ProviderType,
   PushClient,
@@ -129,12 +134,14 @@ import {
   RealmObject,
   RealmObjectConstructor,
   RealmSet,
+  RelationshipPropertyTypeName,
   RenameEvent,
   ReplaceEvent,
   Results,
   SSLConfiguration,
   SSLVerifyCallback,
   SSLVerifyObject,
+  SchemaParseError,
   SessionState,
   SessionStopPolicy,
   SortDescriptor,
@@ -223,29 +230,30 @@ export class Realm {
   public static Credentials = Credentials;
   public static Dictionary = Dictionary;
   public static flags = flags;
+  public static index = index;
   public static List = List;
+  public static mapTo = mapTo;
   public static NumericLogLevel = NumericLogLevel;
-  // TODO: Decide if we want to deprecate this as well
   public static Object = RealmObject;
-  public static OrderedCollection = OrderedCollection;
   public static OpenRealmBehaviorType = OpenRealmBehaviorType;
   public static OpenRealmTimeOutBehavior = OpenRealmTimeOutBehavior;
+  public static OrderedCollection = OrderedCollection;
   public static ProgressDirection = ProgressDirection;
   public static ProgressMode = ProgressMode;
+  public static PropertySchemaParseError = PropertySchemaParseError;
   public static ProviderType = ProviderType;
-  public static SubscriptionSetState = SubscriptionSetState;
   public static Results = Results;
+  public static SchemaParseError = SchemaParseError;
   public static SessionState = SessionState;
   public static SessionStopPolicy = SessionStopPolicy;
   public static Set = RealmSet;
+  public static SubscriptionSetState = SubscriptionSetState;
   public static SyncError = SyncError;
   public static Types = Types;
   public static UpdateMode = UpdateMode;
   public static User = User;
   public static UserState = UserState;
   public static WaitForSync = WaitForSync;
-  public static mapTo = mapTo;
-  public static index = index;
 
   public static defaultPath = Realm.normalizePath("default.realm");
 
@@ -1286,8 +1294,10 @@ type OpenRealmBehaviorTypeType = OpenRealmBehaviorType;
 type OpenRealmTimeOutBehaviorType = OpenRealmTimeOutBehavior;
 type ProgressDirectionType = ProgressDirection;
 type ProgressModeType = ProgressMode;
+type PropertySchemaParseErrorType = PropertySchemaParseError;
 type ProviderTypeType = ProviderType;
 type ResultsType<T = unknown> = Results<T>;
+type SchemaParseErrorType = SchemaParseError;
 type SessionStateType = SessionState;
 type SessionStopPolicyType = SessionStopPolicy;
 type SetType<T = unknown> = RealmSet<T>;
@@ -1391,8 +1401,10 @@ export declare namespace Realm {
     ClientResetConfig,
     CollectionChangeCallback,
     CollectionChangeSet,
+    CollectionPropertyTypeName,
     CollectionType as Collection,
-    CompensatingWriteErrorType,
+    CompensatingWriteErrorType as CompensatingWriteError,
+    CompensatingWriteInfo,
     ConfigurationWithoutSync,
     ConfigurationWithSync,
     Configuration,
@@ -1424,19 +1436,24 @@ export declare namespace Realm {
     OpenRealmTimeOutBehaviorType as OpenRealmTimeOutBehavior,
     PartitionSyncConfiguration,
     PrimaryKey,
+    PrimitivePropertyTypeName,
     ProgressDirectionType as ProgressDirection,
     ProgressModeType as ProgressMode,
     ProgressNotificationCallback,
     PropertiesTypes,
     PropertySchema,
+    PropertySchemaParseErrorType as PropertySchemaParseError,
     PropertySchemaShorthand,
+    PropertySchemaStrict,
     PropertyTypeName,
     ProviderTypeType as ProviderType,
     RealmFunction,
     RealmObjectConstructor,
     /** @deprecated Will be removed in v13.0.0. Please use {@link RealmObjectConstructor} */
     RealmObjectConstructor as ObjectClass,
+    RelationshipPropertyTypeName,
     ResultsType as Results,
+    SchemaParseErrorType as SchemaParseError,
     SessionStateType as SessionState,
     SessionStopPolicyType as SessionStopPolicy,
     SetType as Set,
@@ -1449,9 +1466,9 @@ export declare namespace Realm {
     SyncErrorType as SyncError,
     TypesType as Types,
     UpdateModeType as UpdateMode,
-    UserType as User,
     UserChangeCallback,
     UserStateType as UserState,
+    UserType as User,
     WaitForSyncType as WaitForSync,
   };
 
@@ -1591,8 +1608,10 @@ declare global {
       ClientResetConfig,
       CollectionChangeCallback,
       CollectionChangeSet,
+      CollectionPropertyTypeName,
       CollectionType as Collection,
-      CompensatingWriteErrorType,
+      CompensatingWriteErrorType as CompensatingWriteError,
+      CompensatingWriteInfo,
       ConfigurationWithoutSync,
       ConfigurationWithSync,
       Configuration,
@@ -1624,19 +1643,24 @@ declare global {
       OpenRealmTimeOutBehaviorType as OpenRealmTimeOutBehavior,
       PartitionSyncConfiguration,
       PrimaryKey,
+      PrimitivePropertyTypeName,
       ProgressDirectionType as ProgressDirection,
       ProgressModeType as ProgressMode,
       ProgressNotificationCallback,
       PropertiesTypes,
       PropertySchema,
+      PropertySchemaParseErrorType as PropertySchemaParseError,
       PropertySchemaShorthand,
+      PropertySchemaStrict,
       PropertyTypeName,
       ProviderTypeType as ProviderType,
       RealmFunction,
       RealmObjectConstructor,
       /** @deprecated Will be removed in v13.0.0. Please use {@link RealmObjectConstructor} */
       RealmObjectConstructor as ObjectClass,
+      RelationshipPropertyTypeName,
       ResultsType as Results,
+      SchemaParseErrorType as SchemaParseError,
       SessionStateType as SessionState,
       SessionStopPolicyType as SessionStopPolicy,
       SetType as Set,
@@ -1649,9 +1673,9 @@ declare global {
       SyncErrorType as SyncError,
       TypesType as Types,
       UpdateModeType as UpdateMode,
-      UserType as User,
       UserChangeCallback,
       UserStateType as UserState,
+      UserType as User,
       WaitForSyncType as WaitForSync,
     };
 
