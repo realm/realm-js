@@ -1557,7 +1557,7 @@ export declare namespace Realm {
 // Exporting a deprecated global for backwards compatibility
 const RealmConstructor = Realm;
 declare global {
-  /** @deprecated Will be removed in v13.0.0. Please use a regular import. */
+  /** @deprecated Will be removed in v13.0.0. Please use an import statement. */
   export class Realm extends RealmConstructor {}
   // IMPORTANT: This needs to match the namespace above!
   // eslint-disable-next-line @typescript-eslint/no-namespace
