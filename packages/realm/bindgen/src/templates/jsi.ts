@@ -933,6 +933,9 @@ class JsiCppDecls extends CppDecls {
                       }`,
                   )
                   .join(" ")
+              } else if (obj.instanceOf(_env,  (*RealmAddon::self->m_cls_Geospatial_ctor))) {
+                //This needs his own case because the constructor of Mixed for Geospatial requires a pointer
+                return &JS_TO_CLASS_Geospatial(_env, jsi::Value(std::move(obj)));
               } else if (obj.isFunction(_env)) {
                 throw jsi::JSError(_env, "Unable to convert a function to a Mixed");
               } else if (obj.isHostObject(_env)) {
