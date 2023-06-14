@@ -6,7 +6,6 @@ import {TaskManager} from './components/TaskManager';
 import {useQuery} from '@realm/react';
 
 export const AppNonSync = () => {
-  debugger;
   const [showDone, setShowDone] = React.useState(false);
   const tasks = useQuery(
     Task,

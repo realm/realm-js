@@ -27,7 +27,6 @@ export const AppWrapperSync: React.FC<{
                 timeOut: 1000,
                 timeOutBehavior: OpenRealmTimeOutBehavior.OpenLocalRealm,
               },
-              onError: (_, error) => console.error('sync error', error),
             }}>
             <AppSync />
           </RealmProvider>

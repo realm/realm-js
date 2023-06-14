@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {useApp, useUser} from '@realm/react';
+import {useApp, useAuth, useQuery, useRealm, useUser} from '@realm/react';
 import {Pressable, StyleSheet, Text} from 'react-native';
 
 import {Task} from './models/Task';
@@ -8,9 +8,6 @@ import {buttonStyles} from './styles/button';
 import {shadows} from './styles/shadows';
 import colors from './styles/colors';
 import {OfflineModeButton} from './components/OfflineModeButton';
-
-import {useRealm, useQuery} from '@realm/react';
-import {useAuth} from '@realm/react';
 
 export const AppSync: React.FC = () => {
   const realm = useRealm();
@@ -28,9 +25,14 @@ export const AppSync: React.FC = () => {
   );
 
   useEffect(() => {
-    realm.subscriptions.update(mutableSubs => {
-      mutableSubs.add(tasks);
-    });
+    const asyncThing = async () => {
+      await tasks.subscribe();
+    };
+
+    asyncThing();
+    () => {
+      realm.unsubscribe();
+    };
   }, [realm, tasks]);
 
   return (

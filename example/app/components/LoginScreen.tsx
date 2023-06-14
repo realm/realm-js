@@ -1,4 +1,4 @@
-import React, {useCallback, useState} from 'react';
+import React, {useState} from 'react';
 import {View, Text, StyleSheet, TextInput, Pressable} from 'react-native';
 import colors from '../styles/colors';
 import {shadows} from '../styles/shadows';
@@ -10,14 +10,6 @@ export const LoginScreen = () => {
   const {register} = useEmailPasswordAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
-  const handleLogin = useCallback(() => {
-    logInWithEmailPassword({email, password});
-  }, [logInWithEmailPassword, email, password]);
-
-  const handleRegister = useCallback(() => {
-    register({email, password});
-  }, [register, email, password]);
 
   return (
     <View style={styles.content}>
@@ -45,29 +37,28 @@ export const LoginScreen = () => {
         />
       </View>
 
-      {result.error && result.error.operation === AuthOperationName.LogIn && (
+      {result?.error?.operation === AuthOperationName.LogIn && (
         <Text style={[styles.error]}>
           There was an error logging in, please try again{' '}
         </Text>
       )}
 
-      {result.error &&
-        result.error.operation === AuthOperationName.Register && (
-          <Text style={[styles.error]}>
-            There was an error registering, please try again
-          </Text>
-        )}
+      {result?.error?.operation === AuthOperationName.Register && (
+        <Text style={[styles.error]}>
+          There was an error registering, please try again
+        </Text>
+      )}
 
       <View style={styles.buttons}>
         <Pressable
-          onPress={handleLogin}
+          onPress={() => logInWithEmailPassword(email, password)}
           style={[styles.button, result.pending && styles.buttonDisabled]}
           disabled={result.pending}>
           <Text style={buttonStyles.text}>Login</Text>
         </Pressable>
 
         <Pressable
-          onPress={handleRegister}
+          onPress={() => register(email, password)}
           style={[
             styles.button,
             result.pending && styles.buttonDisabled,
