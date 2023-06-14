@@ -190,7 +190,6 @@ const expectQueryResultValues = (
   queryResultPairs.forEach(([expectedResults, queryString, ...queryArgs]) => {
     let results = realm.objects<any>(objectSchema);
     results = results.filtered(queryString, ...queryArgs);
-    //console.log(results.map((el) => el[propertyToCompare])); //TODO For testing, can be removed later
     expect(results.length).to.equal(expectedResults.length);
     expect(results.map((el) => el[propertyToCompare])).to.deep.equal(
       expectedResults,
@@ -256,7 +255,7 @@ describe("Queries", () => {
         this.realm.create("PointOfInterest", poiC);
         this.realm.create("PointOfInterest", poiD);
         this.realm.create("PointOfInterest", northPole);
-        //this.realm.create("PointOfInterest", invalid);  //TODO Need to see what to do with this when they answer on slack
+        //this.realm.create("PointOfInterest", invalid);  //TODO Need to re-enable it after core team clarifies what should happen with this object
       });
     });
 
