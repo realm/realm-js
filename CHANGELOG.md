@@ -4,19 +4,21 @@
 * None
 
 ### Enhancements
-* None
+* Support sort/distinct based on values from a dictionary e.g. `TRUEPREDICATE SORT(meta['age'])`. ([realm/realm-core#5311](https://github.com/realm/realm-core/pull/5311))
 
 ### Fixed
 * Partition-Based to Flexible Sync Migration for migrating a client app that uses partition based sync to use flexible sync under the hood if the server has been migrated to flexible sync is officially supported with this release. Any clients using an older version of Realm will receive a "switch to flexible sync" error message when trying to sync with the app. ([realm/realm-core#6554](https://github.com/realm/realm-core/issues/6554), since v11.9.0)
 * Calling `snapshot()` on a Realm list of primitive types is not supported and now throws.
-
+* Fixed a potential crash when opening the realm after failing to download a fresh FLX realm during an automatic client reset. ([realm/realm-core#6494](https://github.com/realm/realm-core/issues/6494), since v10.19.5)
+* Changing parameters for a query after initialization could lead to a crash. ([realm/realm-core#6674](https://github.com/realm/realm-core/pull/6674), since v10.20.0)
+* 
 ### Compatibility
 * React Native >= v0.71.3
 * Realm Studio v14.0.0.
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
 
 ### Internal
-* Upgraded Realm Core from v13.10.1 to v13.12.0. ([#5811](https://github.com/realm/realm-js/issues/5811) and [#5833](https://github.com/realm/realm-js/issues/5833))
+* Upgraded Realm Core from v13.10.1 to v13.14.0. ([#5811](https://github.com/realm/realm-js/issues/5811), [#5833](https://github.com/realm/realm-js/issues/5833), and [#5868](https://github.com/realm/realm-js/issues/5868))
 * Bump sync protocol to v9 to indicate client has fix for client reset error during async open. ([realm/realm-core#6609](https://github.com/realm/realm-core/issues/6609))
 * The sync client's user agent has been changed and has now the form `RealmJS/<sdk version> (<osname> <sysname> <release> <version> <machine>)` where
   * `sdk version` is the version of Realm JavaScript
