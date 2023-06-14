@@ -20,7 +20,7 @@ import { AppProvider } from "../AppProvider";
 import { waitFor, renderHook, act } from "@testing-library/react-native";
 
 import { AppConfigBuilder } from "@realm/app-importer";
-import { App, EmailPasswordAuth } from "realm";
+import { App } from "realm";
 import { useEmailPasswordAuth } from "../useEmailPasswordAuth";
 import { OperationState } from "../types";
 import { baseUrl, importApp, testAuthOperation } from "./helpers";

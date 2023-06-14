@@ -18,7 +18,7 @@
 
 import { useApp, useAuthResult } from "./AppProvider";
 import { AuthOperationName, AuthResult } from "./types";
-import { Realm, User, Credentials } from "realm";
+import Realm, { User, Credentials } from "realm";
 import { useAuthOperation } from "./useAuthOperation";
 
 /**

@@ -16,10 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { useCallback } from "react";
 import { useApp, useAuthResult } from "./AppProvider";
-import { AuthError, AuthOperationName, AuthResult, OperationState } from "./types";
-import { Realm } from "realm";
+import { AuthOperationName, AuthResult } from "./types";
+import Realm from "realm";
 import { useAuthOperation } from "./useAuthOperation";
 
 /**
