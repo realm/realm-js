@@ -35,6 +35,77 @@
   // ...
   peopleOver20.unsubscribe();
   ```
+* Added initial support for geospatial queries, with the possibility of querying points. No new data type has been added in this phase, but every embedded object property that conforms to `CanonicalGeoPoint` can be queried.
+The queries can be used to filter object with points that belong to a certain shape following spherical geometry, using the `geoWithin` operator in the `filtered` method. The following shapes are supported in geospatial queries: circle (`GeoCircle` type, defined by its center and radius in radians), box (`GeoBox` type, defined by its bottom left corner and upper right one) and polygon (`GeoPolygon` type, defined by its vertices). Additionally, two new methods have been added, `kmToRadians` and `miToRadians`, that can be used convert kilometers and miles to radians, that are used in the definition of the circle radius. ([#5850](https://github.com/realm/realm-js/pull/5850))  
+Example: 
+```typescript
+class MyGeoPoint implements CanonicalGeoPoint {  //Example of a point class that can be queried with geospatial queries
+  coordinates: GeoPosition;
+  type = "Point" as const;
+
+  constructor(long: number, lat: number) {
+    this.coordinates = [long, lat];
+  }
+
+  static schema: ObjectSchema = {
+    name: "MyGeoPoint",
+    embedded: true,
+    properties: {
+      type: "string",
+      coordinates: "double[]",
+    },
+  };
+}
+
+interface IPointOfInterest {
+  id: number;
+  location: MyGeoPoint;
+}
+
+class PointOfInterest extends Realm.Object implements IPointOfInterest {
+  id = 0;
+  location: MyGeoPoint = new MyGeoPoint(0, 0);
+
+  static schema: ObjectSchema = {
+    name: "PointOfInterest",
+    properties: {
+      id: "int",
+      location: "MyGeoPoint",
+    },
+    primaryKey: "id",
+  };
+}
+
+const berlinCoordinates = new MyGeoPoint(13.397255909303222, 52.51174463251085);
+const radius = kmToRadians(500); //500 kilometers radius, equal to 0.0783932519 radians
+
+const copenhagen: IPointOfInterest = {
+  id: 1,
+  location: new MyGeoPoint(12.558892784045568, 55.66717839648401),
+};
+
+const newYork: IPointOfInterest = {
+  id: 2,
+  location: new MyGeoPoint(-73.92474936213434, 40.700090994927415),
+};
+
+realm.create("PointOfInterest", copenhagen);
+realm.create("PointOfInterest", newYork);
+
+const pois = realm.objects(PointOfInterest);
+
+//Circle with a radius of 500kms centered in Berlin
+const circleShape: GeoCircle = {
+  center: berlinCoordinates,  
+  distance: radius,
+};
+
+//All points of interest in a 500kms radius from Berlin
+let result = pois.filtered("location geoWithin $0", circleShape);
+
+//Equivalent string query without arguments
+result = pois.filtered("location geoWithin geoCircle([13.397255909303222, 52.51174463251085], 0.0783932519)");
+```
 
 ### Fixed
 * Fix a stack overflow crash when using the query parser with long chains of AND/OR conditions. ([realm/realm-core#6428](https://github.com/realm/realm-core/pull/6428), since v10.11.0)

@@ -35,8 +35,8 @@ export interface CanonicalGeoPolygon {
 
 /**
  * Interface that satisfies the geoJSON specification for a point.
- * Any embedded object that adhere to this interface can be used in geospatial queries.
- * Additionally, This can be used as one of the possible forms of {@link GeoPoint}.
+ * Any embedded object that adhere to this interface can be queried in geospatial queries.
+ * Additionally, this can be used as one of the possible forms of {@link GeoPoint}.
  */
 export interface CanonicalGeoPoint {
   coordinates: GeoPosition;
@@ -75,7 +75,7 @@ export type GeoCircle = {
  * Represents a polygon in spherical geometry that can be used for the definition of geospatial queries.
  * The polygon is comprised of at least one outer ring and optionally multiple internal rings representing holes with the following restrictions:
  * - Each ring must contains at least 3 distinct points, where the first and the last point must be the same to indicate a closed ring (this means that each ring
- * must have at least 4 points)
+ * must have at least 4 points).
  * - The interior rings must be entirely inside the outer ring.
  * - Rings can share vertices but not edges.
  * - No ring may be empty.
@@ -147,7 +147,7 @@ const earthRadiusMi = 3963.16760121; //earthRadiusKm / 1.609344 (km/mi)
 
 /**
  * Converts the input kilometer value in radians.
- * @param km The kilometers to convert
+ * @param km The kilometers to convert.
  * @returns The corresponding number of radians.
  */
 export function kmToRadians(km: number): number {
@@ -156,7 +156,7 @@ export function kmToRadians(km: number): number {
 
 /**
  * Converts the input miles value in radians.
- * @param km The miles to convert
+ * @param km The miles to convert.
  * @returns The corresponding number of radians.
  */
 export function miToRadians(mi: number): number {
