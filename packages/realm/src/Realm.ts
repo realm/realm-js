@@ -30,6 +30,8 @@ import {
   BaseObjectSchema,
   BaseSubscriptionSet,
   BaseSyncConfiguration,
+  CanonicalGeoPoint,
+  CanonicalGeoPolygon,
   CanonicalObjectSchema,
   CanonicalObjectSchemaProperty,
   CanonicalPropertiesTypes,
@@ -79,6 +81,11 @@ import {
   FindOneOptions,
   FindOptions,
   FlexibleSyncConfiguration,
+  GeoBox,
+  GeoCircle,
+  GeoPoint,
+  GeoPolygon,
+  GeoPosition,
   INTERNAL,
   IndexDecorator,
   InitialSubscriptions,
@@ -167,7 +174,9 @@ import {
   fromBindingRealmSchema,
   fs,
   index,
+  kmToRadians,
   mapTo,
+  miToRadians,
   normalizeObjectSchema,
   normalizeRealmSchema,
   safeGlobalThis,
@@ -272,6 +281,9 @@ export class Realm {
   public static mapTo = mapTo;
   /** @deprecated Please use named imports */
   public static index = index;
+
+  public static kmToRadians = kmToRadians;
+  public static miToRadians = miToRadians;
 
   public static defaultPath = Realm.normalizePath("default.realm");
 
@@ -1562,6 +1574,13 @@ export declare namespace Realm {
     /** @deprecated Please use named imports */
     UserStateType as UserState,
     WaitForSyncType as WaitForSync,
+    GeoBox,
+    GeoCircle,
+    GeoPoint,
+    GeoPolygon,
+    CanonicalGeoPolygon,
+    CanonicalGeoPoint,
+    GeoPosition,
   };
 
   /** @deprecated Please use named imports */
@@ -1911,6 +1930,13 @@ declare global {
       UserChangeCallback,
       /** @deprecated Please use named imports */
       UserStateType as UserState,
+      GeoBox,
+      GeoCircle,
+      GeoPoint,
+      GeoPolygon,
+      CanonicalGeoPolygon,
+      CanonicalGeoPoint,
+      GeoPosition,
     };
 
     /** @deprecated Please use named imports */
