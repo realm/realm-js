@@ -133,25 +133,6 @@ class PointOfInterest extends Realm.Object implements IPointOfInterest {
   };
 }
 
-interface ICompany {
-  id: number;
-  locations: MyGeoPoint[];
-}
-
-class Company extends Realm.Object implements ICompany {
-  id = 0;
-  locations: [MyGeoPoint] = [new MyGeoPoint(0, 0)];
-
-  static schema: ObjectSchema = {
-    name: "Company",
-    properties: {
-      id: "int",
-      locations: "MyGeoPoint[]",
-    },
-    primaryKey: "id",
-  };
-}
-
 type QueryLengthPair = [ExpectedLength: number, Query: string, ...QueryArgs: Array<any>];
 type QueryExceptionPair = [ExpectedException: string, Query: string, ...QueryArgs: Array<any>];
 type QueryResultsPair = [ExpectedResults: any[], Query: string, ...QueryArgs: Array<any>];
@@ -209,7 +190,7 @@ const expectQueryResultValues = (
   queryResultPairs.forEach(([expectedResults, queryString, ...queryArgs]) => {
     let results = realm.objects<any>(objectSchema);
     results = results.filtered(queryString, ...queryArgs);
-    console.log(results.map((el) => el[propertyToCompare])); //TODO For testing, can be removed later
+    //console.log(results.map((el) => el[propertyToCompare])); //TODO For testing, can be removed later
     expect(results.length).to.equal(expectedResults.length);
     expect(results.map((el) => el[propertyToCompare])).to.deep.equal(
       expectedResults,
@@ -222,7 +203,7 @@ const expectQueryResultValues = (
 
 describe("Queries", () => {
   describe.only("GeoSpatial", () => {
-    openRealmBeforeEach({ schema: [PointOfInterest, Company, MyGeoPoint.schema] });
+    openRealmBeforeEach({ schema: [PointOfInterest, MyGeoPoint.schema] });
     const zero: IPointOfInterest = {
       id: 1,
       location: new MyGeoPoint(0, 0),
@@ -734,16 +715,6 @@ describe("Queries", () => {
         expectQueryResultValues(this.realm, PointOfInterest, "id", [
           [[poiA.id], "location geoWithin $0 AND location geoWithin $1 SORT(id ASC)", box, polygon],
         ]);
-      });
-
-      //TODO Need to re-enable when we know if we can do this or not
-      it.skip("Box around north pole", function (this: RealmContext) {
-        const box: GeoBox = {
-          bottomLeft: [6, 89],
-          topRight: [160, 89],
-        };
-
-        geoTest(this.realm, box, [northPole]);
       });
 
       it("Circle around north pole", function (this: RealmContext) {
