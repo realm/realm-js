@@ -125,9 +125,6 @@ export function mixedToBinding(realm: binding.Realm, value: unknown): binding.Mi
     return value as binding.MixedArg;
   }
 }
-
-//TODO NEED TO CHANGE ALSO WHAT HAPPENS ON JSI (NOT ONLY NODE)
-
 function isGeoCircle(value: object): value is GeoCircle {
   return "distance" in value && "center" in value && typeof value["distance"] == "number";
 }
@@ -141,30 +138,6 @@ function isGeoPolygon(value: object): value is GeoPolygon {
     ("type" in value && value["type"] === "Polygon" && "coordinates" in value && Array.isArray(value["coordinates"])) ||
     ("outerRing" in value && Array.isArray(value["outerRing"]))
   );
-}
-
-//TODO We could decide to use this, but to be honest it seems quite excessive.
-function isGeoPoint(value: unknown): value is GeoPoint {
-  if (value === null) {
-    return false;
-  }
-  if (Array.isArray(value) && value.length >= 2) {
-    return true;
-  } else if (typeof value == "object") {
-    if ("latitude" in value && "longitude" in value) {
-      return true;
-    }
-    if (
-      "type" in value &&
-      value["type"] === "Point" &&
-      "coordinates" in value &&
-      Array.isArray(value["coordinates"]) &&
-      value["coordinates"].length >= 2
-    ) {
-      return true;
-    }
-  }
-  return false;
 }
 
 function defaultToBinding(value: unknown): binding.MixedArg {
