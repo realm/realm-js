@@ -18,7 +18,7 @@
 
 import { expect } from "chai";
 import { openRealmBefore } from "../hooks";
-import { Realm } from "realm";
+import Realm from "realm";
 
 interface Test {
   primary: number;

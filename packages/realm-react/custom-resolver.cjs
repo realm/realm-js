@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2022 Realm Inc.
+// Copyright 2023 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,7 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import "./fs";
-import "./device-info";
+/* eslint-env node */
 
-export * from "../../index";
+module.exports = function (request, options) {
+  if (request === "react-native") {
+    // Ensure that "react-native" always resolve relative to the rootDir
+    options.basedir = options.rootDir;
+  } else if (request === "realm") {
+    // Ensure the node binding is used when testing with Jest on node
+    options.conditions = ["require", "default", "node"];
+  }
+  return options.defaultResolver(request, options);
+};

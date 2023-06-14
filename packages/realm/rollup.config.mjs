@@ -41,16 +41,9 @@ export default [
     input: "src/platform/node/index.ts",
     output: [
       {
-        file: mainExport.node,
-        format: "esm",
-        sourcemap: true,
-        exports: "named",
-      },
-      {
-        file: mainExport.require,
+        file: "./dist/bundle.node.js",
         format: "cjs",
         sourcemap: true,
-        exports: "named",
       },
     ],
     plugins: [
@@ -82,8 +75,8 @@ export default [
   {
     input: "src/platform/react-native/index.ts",
     output: {
-      file: mainExport["react-native"],
-      format: "es",
+      file: "./dist/bundle.react-native.js",
+      format: "cjs",
       sourcemap: true,
     },
     plugins: [
@@ -106,7 +99,7 @@ export default [
   {
     input: "src/index.ts",
     output: {
-      file: mainExport.types,
+      file: "dist/bundle.d.ts",
       format: "es",
     },
     plugins: [

@@ -14,8 +14,9 @@
     }
   },
   "exclude": [
-    "../../tests/",
     "../node/",
+    "../../tests/",
+    "../../index.cjs.ts",
     "../../../type-tests/"
   ],
 }

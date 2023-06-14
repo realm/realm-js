@@ -29,13 +29,12 @@
 // fraction too long.
 
 import { expect } from "chai";
-import {
+import Realm, {
   BSON,
   ClientResetMode,
   ConfigurationWithSync,
   ErrorCallback,
   FlexibleSyncConfiguration,
-  Realm,
   SessionStopPolicy,
   SubscriptionSetState,
   CompensatingWriteError,

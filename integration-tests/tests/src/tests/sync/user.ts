@@ -23,7 +23,7 @@ import {
   randomVerifiableEmail,
 } from "../../utils/generators";
 import { KJUR } from "jsrsasign";
-import { Realm, UserState } from "realm";
+import Realm, { UserState } from "realm";
 
 import { buildAppConfig } from "../../utils/build-app-config";
 

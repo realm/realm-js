@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Realm, BSON } from "realm";
+import Realm, { BSON } from "realm";
 import { expectArraysEqual, expectSimilar } from "../utils/comparisons";
 import { expect } from "chai";
 import { CanonicalObjectSchema } from "realm";
