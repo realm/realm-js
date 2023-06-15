@@ -40,6 +40,13 @@ h1 {
   color: var(--gray);
 }
 
+.error {
+  padding-top: 6px;
+  padding-left: 10px;
+  color: rgb(213 122 122);
+  font-size: 15px;
+}
+
 .buttons {
   margin-top: 150px;
   align-self: center;

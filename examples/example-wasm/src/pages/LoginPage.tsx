@@ -7,6 +7,8 @@ import styles from '../styles/LoginPage.module.css';
 
 const { useApp } = await import('@realm/react');
 
+const PASSWORD_MIN_LENGTH = 6;
+
 export function LoginPage() {
   const atlasApp = useApp();
   const navigate = useNavigate();
@@ -14,6 +16,7 @@ export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authRequest, setAuthRequest] = useState<'login' | 'register'>('login');
+  const [error, setError] = useState('');
 
   if (atlasApp.currentUser) {
     return <Navigate to='/tasks' />
@@ -22,13 +25,19 @@ export function LoginPage() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
 
+    if (password.length < PASSWORD_MIN_LENGTH) {
+      return setError(`Password must contain at least ${PASSWORD_MIN_LENGTH} characters.`);
+    }
+
     try {
       if (authRequest === 'register') {
         await register({ email, password });
       }
       await logIn({ email, password });
     } catch (err: any) {
-      return console.error(`Error ${authRequest === 'login' ? 'logging in' : 'registering'}: ${err.message || err}`);
+      const message = `There was an error ${authRequest === 'login' ? 'logging in' : 'registering'}, please try again.`;
+      console.error(`${message}\nError: ${err.message || err}`);
+      return setError(message);
     }
 
     navigate('/tasks');
@@ -60,10 +69,15 @@ export function LoginPage() {
         <input
           className={styles.input}
           type='password'
-          placeholder='Password (min. 6 chars)'
+          placeholder={`Password (min. ${PASSWORD_MIN_LENGTH} chars)`}
           value={password}
           onChange={(event) => setPassword(event.currentTarget.value)}
         />
+        {error && (
+          <p className={styles.error}>
+            {error}
+          </p>
+        )}
         <div className={styles.buttons}>
           <button
             className={styles.button}
