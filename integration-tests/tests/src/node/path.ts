@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import Realm, { BSON } from "realm";
+import Realm, { BSON, SessionStopPolicy } from "realm";
 import path from "node:path";
 import os from "node:os";
 import { existsSync, rmSync } from "node:fs";
@@ -59,28 +59,29 @@ describe("path configuration (local)", function () {
   });
 });
 
-//describe.skipIf(environment.missingServer, `app configuration of root directory (flexible sync)`, async function () {
-describe.only(`app configuration of root directory (flexible sync)`, async function () {
+describe.skipIf(environment.missingServer, `app configuration of root directory (flexible sync)`, async function () {
+  // describe.only(`app configuration of root directory (flexible sync)`, async function () {
+  this.timeout(60_000);
   const tmpdir = getAbsolutePath();
   importAppBefore(buildAppConfig("with-flx").baseFilePath(tmpdir).anonAuth().flexibleSync());
   authenticateUserBefore();
 
   it("directory and file created where expected", async function () {
-    expect(existsSync(tmpdir)).to.be.false;
-
-    const realm = await Realm.open({
+    expect(existsSync(tmpdir)).to.be.true; // importAppBefore will create `tmpdir`
+    const realm = new Realm({
       schema: [FlexibleSchema],
       sync: {
+        // @ts-expect-error Using an internal API
+        _sessionStopPolicy: SessionStopPolicy.Immediately,
         flexible: true,
         user: this.user,
       },
-    });
+    } as Realm.Configuration);
 
     expect(existsSync(tmpdir)).to.be.true;
     expect(realm.path.startsWith(tmpdir));
 
     realm.close();
-    rmSync(tmpdir, { recursive: true });
   });
 });
 

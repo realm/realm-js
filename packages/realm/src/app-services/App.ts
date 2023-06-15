@@ -204,7 +204,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
       fs.setDefaultDirectoryPath(baseFilePath);
     }
 
-    fs.ensureDirectoryForFile(fs.getDefaultDirectoryPath());
+    fs.ensureDirectoryForFile(fs.joinPaths(fs.getDefaultDirectoryPath(), "mongodb-realm"));
     // TODO: This used getSharedApp in the legacy SDK, but it's failing AppTests
     this.internal = binding.App.getUncachedApp(
       {

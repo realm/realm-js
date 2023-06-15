@@ -230,7 +230,6 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
       const electronPackageJson = JSON.parse(fs.readFileSync(electronPath, "utf-8"));
       frameworkVersion = electronPackageJson["version"];
     } catch (err) {
-      console.log("FISK 5", err);
       debug(`Cannot read electron package.json: ${err}`);
     }
   }
