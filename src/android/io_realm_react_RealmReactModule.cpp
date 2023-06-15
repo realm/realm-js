@@ -93,7 +93,7 @@ JNIEXPORT void JNICALL Java_io_realm_react_RealmReactModule_setDefaultRealmFileD
 
     // Setting the internal storage path for the application
     const char* strFileDir = env->GetStringUTFChars(fileDir, NULL);
-    realm::set_default_realm_file_directory(strFileDir);
+    realm::JsPlatformHelpers::set_default_realm_file_directory(strFileDir);
     env->ReleaseStringUTFChars(fileDir, strFileDir);
 
     __android_log_print(ANDROID_LOG_DEBUG, "JSRealm", "Absolute path: %s",

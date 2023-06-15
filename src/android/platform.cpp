@@ -42,7 +42,7 @@ static std::string s_default_realm_directory;
 
 namespace realm {
 
-void set_default_realm_file_directory(std::string dir)
+void JsPlatformHelpers::set_default_realm_file_directory(std::string dir)
 {
     s_default_realm_directory = dir;
 }
