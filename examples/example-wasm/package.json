@@ -10,17 +10,17 @@
     "start": {
       "command": "craco start",
       "dependencies": [
-        "../packages/realm:build:browser",
-        "../packages/realm:bundle",
-        "../packages/realm-react:bundle"
+        "../../packages/realm:build:browser",
+        "../../packages/realm:bundle",
+        "../../packages/realm-react:bundle"
       ]
     },
     "build": {
       "command": "craco build",
       "dependencies": [
-        "../packages/realm:build:browser",
-        "../packages/realm:bundle",
-        "../packages/realm-react:bundle"
+        "../../packages/realm:build:browser",
+        "../../packages/realm:bundle",
+        "../../packages/realm-react:bundle"
       ]
     }
   },

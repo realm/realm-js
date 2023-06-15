@@ -53,9 +53,9 @@ The following shows the project structure and the most relevant files.
 │   │   ├── LoginPage.tsx       - Trigger login/register
 │   │   └── TaskPage.tsx        - Pass CRUD ops to children
 │   │
-│   ├── index.tsx               - Entry point
 │   ├── App.tsx                 - Get and provide Atlas App
-│   └── AuthenticatedApp.tsx    - Open and provide Realm & User
+│   ├── AuthenticatedApp.tsx    - Open and provide Realm & User
+│   └── index.tsx               - Entry point
 │
 ├── craco.config.ts             - Configure CRA
 ├── package.json                - Specify Node dependencies
@@ -91,22 +91,22 @@ npm i
 > <summary> 📣 Toggle to see changes needed if moving or renaming this app directory 📣</summary>
 > <br>
 >
-> This app is located in `realm-js/example-wasm/`. The following configurations need to be updated if moving or renaming this directory:
+> This app is located in `realm-js/examples/example-wasm/`. The following configurations need to be updated if moving or renaming this directory:
 >
 > [craco.config.ts](./craco.config.ts):
->   * Replace `"../packages"` with the relative path to the `packages` folder.
+>   * Replace `"../../packages"` with the relative path to the `packages` folder.
 > ```TypeScript
 > const config: CracoConfig = {
 >   webpack: {
 >     configure(config, context) {
 >         // Update:
->         path.resolve(__dirname, '../packages')
+>         path.resolve(__dirname, "../../packages")
 >     },
 >   },
 > };
 > ```
 > [package.json](./package.json):
->   * Replace `"../packages"` with the relative path to the `packages` folder.
+>   * Replace `"../../packages"` with the relative path to the `packages` folder.
 > ```json
 > {
 >   "name": "@realm/example-wasm",
@@ -115,31 +115,31 @@ npm i
 >       "command": "craco start",
 >       "dependencies": [
 >         // Update:
->         "../packages/realm:build:browser",
->         "../packages/realm:bundle",
->         "../packages/realm-react:bundle"
+>         "../../packages/realm:build:browser",
+>         "../../packages/realm:bundle",
+>         "../../packages/realm-react:bundle"
 >       ]
 >     },
 >     "build": {
 >       "command": "craco build",
 >       "dependencies": [
 >         // Update:
->         "../packages/realm:build:browser",
->         "../packages/realm:bundle",
->         "../packages/realm-react:bundle"
+>         "../../packages/realm:build:browser",
+>         "../../packages/realm:bundle",
+>         "../../packages/realm-react:bundle"
 >       ]
 >     }
 >   },
 > }
 > ```
 > [realm-js/package.json](../package.json):
->   * Replace `"example-wasm"` with the relative path to the new location (e.g. `"new-folder/example-wasm"`).
+>   * Replace `"examples/example-wasm"` with the relative path to the new location (e.g. `"new-folder/example-wasm"`).
 > ```json
 > {
 >   "name": "@realm/root",
 >   "workspaces": [
 >     // Update:
->     "example-wasm",
+>     "examples/example-wasm",
 >   ],
 > }
 > ```
@@ -147,7 +147,7 @@ npm i
 
 ### Setting up an Atlas App and Device Sync
 
-To sync Realm data you must first:
+To sync data you must first:
 
 1. [Create an App Services App](https://www.mongodb.com/docs/atlas/app-services/manage-apps/create/create-with-ui/)
 2. [Enable Email/Password Authentication](https://www.mongodb.com/docs/atlas/app-services/authentication/email-password/#std-label-email-password-authentication)
@@ -178,7 +178,7 @@ Once done, [copy your App ID](https://www.mongodb.com/docs/atlas/app-services/re
 Navigate to `example-wasm/` and build the app (the output will be located in the `build/` folder and is minified):
 
 ```sh
-cd example-wasm
+cd examples/example-wasm
 npm run build
 ```
 
@@ -187,7 +187,7 @@ npm run build
 Navigate to `example-wasm/` and start the app in development mode:
 
 ```sh
-cd example-wasm
+cd examples/example-wasm
 npm start
 ```
 
