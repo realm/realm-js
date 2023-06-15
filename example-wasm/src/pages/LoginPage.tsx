@@ -19,11 +19,6 @@ export function LoginPage() {
     return <Navigate to='/tasks' />
   }
 
-  const resetForm = () => {
-    setEmail('');
-    setPassword('');
-  };
-
   const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
 
@@ -36,7 +31,6 @@ export function LoginPage() {
       return console.error(`Error ${authRequest === 'login' ? 'logging in' : 'registering'}: ${err.message || err}`);
     }
 
-    resetForm();
     navigate('/tasks');
   };
 
