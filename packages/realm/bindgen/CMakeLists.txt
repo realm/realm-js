@@ -122,7 +122,11 @@ file(GLOB_RECURSE SDK_TS_FILES
 list(FILTER SDK_TS_FILES EXCLUDE REGEX "templates/[^/]*\.ts$")
 
 set(JS_SPEC_FILE ${SDK_DIR}/bindgen/js_spec.yml)
-set(JS_OPT_IN_FILE ${SDK_DIR}/bindgen/js_opt_in_spec.yml)
+if(EMSCRIPTEN)
+    set(JS_OPT_IN_FILE ${SDK_DIR}/bindgen/browser_opt_in_spec.yml)
+else()
+    set(JS_OPT_IN_FILE ${SDK_DIR}/bindgen/js_opt_in_spec.yml)
+endif()
 set(TYPESCRIPT_OUTPUT_DIR ${SDK_DIR}/generated/ts)
 set(DIST_DIR ${SDK_DIR}/dist)
 
@@ -176,6 +180,7 @@ elseif(EMSCRIPTEN)
         OUTPUTS browser_init.cpp
         OUTDIR ${CMAKE_CURRENT_BINARY_DIR}
         SPECS ${JS_SPEC_FILE}
+        OPTIN ${JS_OPT_IN_FILE}
         SOURCES ${SDK_TS_FILES}
     )
 
