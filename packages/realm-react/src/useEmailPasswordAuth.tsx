@@ -22,29 +22,29 @@ import Realm, { User, Credentials } from "realm";
 import { useAuthOperation } from "./useAuthOperation";
 
 /**
- * Hook providing operations and corresponding state for authenticating with a
- * Realm app with Email/Password.  It also contains operations related to
+ * Hook providing operations and corresponding state for authenticating with an
+ * Atlas App with Email/Password.  It also contains operations related to
  * Email/Password authentication, such as resetting password and confirming a user.
  *
- * The {@link AuthResult} states returned from this hook are "global" for all
- * components under a given AppProvider, as only one operation can be in progress
- * at a given time (i.e. we will store the states on the context). This means that,
- * for example, multiple components can use the `useAuth` hook to access
+ * The {@link AuthResult} values returned from this hook (e.g. `state`, `pending`, etc.) are
+ * shared across all components under a given `AppProvider`, as only one operation can be in
+ * progress at a given time (i.e. we will store the values on the context). This means that,
+ * for example, multiple components can use the `useEmailPasswordAuth` hook to access
  * `result.pending` to render a spinner when login is in progress, without
  * needing to pass that state around or store it somewhere global in their app
  * code.
  */
 interface UseEmailPasswordAuth {
   /**
-   * Convenience function to login a user with an email and password - users
+   * Convenience function to log in a user with an email and password - users
    * could also call `logIn(Realm.Credentials.emailPassword(email, password)).
    *
    * @returns A `Realm.User` instance for the logged in user.
    */
-  logIn(args: { email: string; password: string }): Promise<Realm.User | void>;
+  logIn(credentials: { email: string; password: string }): Promise<Realm.User | void>;
 
   /**
-   * Register a new user. By default this will login the newly registered user
+   * Register a new user. By default this will log in the newly registered user
    * after they have been successfully registered, unless the
    * `loginAfterRegister` property is `false`.
    *

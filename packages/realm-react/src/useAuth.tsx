@@ -22,12 +22,12 @@ import Realm from "realm";
 import { useAuthOperation } from "./useAuthOperation";
 
 /**
- * Hook providing operations and corresponding state for authenticating with a
- * Realm app.
+ * Hook providing operations and corresponding state for authenticating with an
+ * Atlas App.
  *
- * The {@link AuthResult} states returned from this hook are "global" for all
- * components under a given AppProvider, as only one operation can be in progress
- * at a given time (i.e. we will store the states on the context). This means that,
+ * The {@link AuthResult} values returned from this hook (e.g. `state`, `pending`, etc.) are
+ * shared across all components under a given `AppProvider`, as only one operation can be in
+ * progress at a given time (i.e. we will store the values on the context). This means that,
  * for example, multiple components can use the `useAuth` hook to access
  * `loginResult.pending` to render a spinner when login is in progress, without
  * needing to pass that state around or store it somewhere global in their app
@@ -65,7 +65,7 @@ interface UseAuth {
    * @returns A `Realm.User` instance for the logged in user.
    * @see https://www.mongodb.com/docs/atlas/app-services/authentication/email-password/
    */
-  logInWithEmailPassword(params: { email: string; password: string }): Promise<Realm.User | void>;
+  logInWithEmailPassword(credentials: { email: string; password: string }): Promise<Realm.User | void>;
 
   /**
    * Log in with a JSON Web Token (JWT).
@@ -81,7 +81,7 @@ interface UseAuth {
    * @returns A `Realm.User` instance for the logged in user.
    * @see https://www.mongodb.com/docs/atlas/app-services/authentication/google/
    */
-  logInWithGoogle(params: { idToken: string } | { authCode: string }): Promise<Realm.User | void>;
+  logInWithGoogle(credentials: { idToken: string } | { authCode: string }): Promise<Realm.User | void>;
 
   /**
    * Log in with Apple.
@@ -117,7 +117,7 @@ interface UseAuth {
   /**
    * The {@link AuthResult} of the current (or last) login operation performed
    * for this hook. There is one {@link AuthResult} for all `login`
-   * operations within a given `RealmAppProvider` context, as only one login can
+   * operations within a given `AppProvider` context, as only one login can
    * be in progress at a time (e.g. the {@link AuthResult} of `loginUser` from
    * `useEmailPasswordAuth` is also represented by this).
    */
@@ -134,7 +134,7 @@ export function useAuth(): UseAuth {
   });
 
   const logInWithAnonymous = useAuthOperation({
-    operation: () => app.logIn(Realm.Credentials.anonymous),
+    operation: () => app.logIn(Realm.Credentials.anonymous()),
     operationName: AuthOperationName.LogInWithAnonymous,
   });
 
@@ -155,7 +155,7 @@ export function useAuth(): UseAuth {
   });
 
   const logInWithGoogle = useAuthOperation({
-    operation: (params: { idToken: string } | { authCode: string }) => app.logIn(Realm.Credentials.google(params)),
+    operation: (credentials: { idToken: string } | { authCode: string }) => app.logIn(Realm.Credentials.google(credentials)),
     operationName: AuthOperationName.LogInWithGoogle,
   });
 
