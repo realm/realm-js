@@ -201,7 +201,7 @@ const expectQueryResultValues = (
 };
 
 describe("Queries", () => {
-  describe.only("GeoSpatial", () => {
+  describe("GeoSpatial", () => {
     openRealmBeforeEach({ schema: [PointOfInterest, MyGeoPoint.schema] });
     const zero: IPointOfInterest = {
       id: 1,
