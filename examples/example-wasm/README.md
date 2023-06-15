@@ -198,3 +198,13 @@ The page will reload if you make edits to the code. (Changes made to code in dep
 ### Troubleshooting
 
 A great way to troubleshoot sync-related errors is to read the [logs in the App Services UI](https://www.mongodb.com/docs/atlas/app-services/logs/logs-ui/).
+
+## Limitations
+
+### Persistence
+
+In the current state of the Realm JS SDK for browsers, in-memory Realms are used for storing the data locally. Therefore, a hard refresh in the browser will clear the local data (e.g. logged in users will need to reauthenticate).
+
+Note that the data will still be persisted in MongoDB Atlas and synced to the client once authenticated.
+
+This app uses client-side routing to retain the local data across different routes.
