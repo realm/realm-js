@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
+## 11.10.0 (2023-06-15)
 
 ### Enhancements
 * Support sort/distinct based on values from a dictionary e.g. `TRUEPREDICATE SORT(meta['age'])`. ([realm/realm-core#5311](https://github.com/realm/realm-core/pull/5311))
