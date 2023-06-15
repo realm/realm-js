@@ -4,8 +4,7 @@
   "private": true,
   "scripts": {
     "start": "wireit",
-    "build": "wireit",
-    "eject": "react-scripts eject"
+    "build": "wireit"
   },
   "wireit": {
     "start": {
