@@ -26,10 +26,11 @@ import {
   User,
   assert,
   binding,
-  // createNetworkTransport,
   deviceInfo,
   fs,
 } from "../internal";
+
+import { platformTransport } from "../platform/platform-networking";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AnyApp = App<any, any>;
@@ -130,7 +131,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
   /** @internal */
   public static deviceInfo = deviceInfo.create();
   /** @internal */
-  public static userAgent = `RealmJS/${App.deviceInfo.sdkVersion} (${App.deviceInfo.platform}, v${App.deviceInfo.platformVersion})`;
+  public static userAgent = `RealmJS/${App.deviceInfo.sdkVersion}, v${App.deviceInfo.platformVersion})`;
 
   /** @internal */
   public static getAppByUser(userInternal: binding.SyncUser): App {
@@ -187,7 +188,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
       {
         appId: id,
         deviceInfo: App.deviceInfo,
-        // transport: createNetworkTransport(),
+        transport: platformTransport(),
         baseUrl: baseUrl,
         localAppName: app?.name,
         localAppVersion: app?.version,

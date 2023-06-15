@@ -28,7 +28,7 @@ async function runTests() {
       testsGlobal.environment = {
         ...context,
         browser: true,
-        missingServer: true,
+        missingServer: false,
       }
       await import(/* webpackMode: "eager" */ '@realm/integration-tests');
     }

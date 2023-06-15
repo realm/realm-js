@@ -159,8 +159,7 @@ function convertPrimToEmscripten(addon: BrowserAddon, type: string, expr: string
       return `emscripten::val(${expr})`;
 
     case "count_t":
-      // NOTE: using int64_t cast here to get -1.0 for size_t(-1), aka npos.
-      return `emscripten::val(${expr})`;
+      return `emscripten::val(std::make_signed_t<int>(${expr}))`;
 
     case "int64_t":
     case "uint64_t":
@@ -202,7 +201,7 @@ function convertPrimToEmscripten(addon: BrowserAddon, type: string, expr: string
     case "EJson":
     case "EJsonObj":
     case "EJsonArray":
-      return `${addon.accessCtor("EJSON_parse")}.new_(${convertPrimToEmscripten(addon, "std::string", expr)})`;
+      return `${addon.accessCtor("EJSON_parse")}(${convertPrimToEmscripten(addon, "std::string", expr)})`;
 
     case "bson::BsonArray":
     case "bson::BsonDocument":
@@ -211,7 +210,9 @@ function convertPrimToEmscripten(addon: BrowserAddon, type: string, expr: string
     case "AppError":
       // This matches old JS SDK. The C++ type will be changing as part of the unify error handleing project.
       return `([&] (const app::AppError& err) {
-                return emscripten::val(err.what());
+                auto jsErr = emscripten::val::global("Error")(emscripten::val(err.what()));
+                jsErr.set("code", double(err.code()));
+                return jsErr;
               }(${expr}))`;
     case "std::exception_ptr":
       return `toEmscriptenException(${expr})`;
@@ -219,9 +220,11 @@ function convertPrimToEmscripten(addon: BrowserAddon, type: string, expr: string
       return `toEmscriptenErrorCode(${expr})`;
     case "Status":
       return `([&] (const Status& status) {
-                REALM_ASSERT(!status.is_ok()); // should only get here with errors
-                // return Napi::Error::New(status.reason()).Value();
-                return emscripten::val(status.reason().c_str());
+                if (status.is_ok()) {
+                  return emscripten::val::undefined();
+                } else {
+                  return emscripten::val(status.reason().c_str());
+                }                
               }(${expr}))`;
   }
   assert.fail(`unexpected primitive type '${type}'`);
@@ -288,7 +291,7 @@ function convertPrimFromEmscripten(addon: BrowserAddon, type: string, expr: stri
     case "EJson":
     case "EJsonObj":
     case "EJsonArray":
-      return convertPrimFromEmscripten(addon, "std::string", `${addon.accessCtor("EJSON_stringify")}.new_(${expr})`);
+      return convertPrimFromEmscripten(addon, "std::string", `${addon.accessCtor("EJSON_stringify")}(${expr})`);
 
     case "bson::BsonArray":
     case "bson::BsonDocument":
@@ -481,7 +484,7 @@ function convertFromEmscripten(addon: BrowserAddon, type: Type, expr: string): s
           assert.deepEqual(type.args[0], new Primitive("std::string"));
           return `[&] (const emscripten::val obj) {
                 auto out = ${type.toCpp()}();
-                auto entries = emscripten::val::global("Object")["entries"].call<emscripten::val>("call", obj);
+                auto entries = emscripten::val::global("Object")["entries"](obj);
                 const auto length = entries["length"].as<uint32_t>();
                 for (uint32_t i = 0; i < length; i++) {                  
                     out.insert({
@@ -592,7 +595,7 @@ class BrowserCppDecls extends CppDecls {
               body: `
                     auto out = emscripten::val::object();
                     ${struct.fields
-                      .filter((field) => !field.type.isFunction())
+                      .filter((field) => !field.type.isFunction() && field.isOptedInTo)
                       .map(
                         (field) =>
                           `out.set("${field.jsName}", ${convertToEmscripten(
@@ -629,6 +632,7 @@ class BrowserCppDecls extends CppDecls {
               body: `
                 auto out = ${struct.cppName}();
                 ${struct.fields
+                  .filter((field) => field.isOptedInTo)
                   .map(
                     (field) => `{
                         auto field = val["${field.jsName}"];
@@ -672,6 +676,8 @@ class BrowserCppDecls extends CppDecls {
       };
 
       for (const method of cls.methods) {
+        if (!method.isOptedInTo) continue;
+
         const argOffset = method.isStatic ? 0 : 1; // `this` takes arg 0 if not static
         const args = method.sig.args.map((a, i) => convertFromEmscripten(this.addon, a.type, `arg${i + argOffset}`));
         // console.log(`GENERATING method = ${method.id} length = ${method.sig.args.length + argOffset}\n`);
@@ -901,13 +907,13 @@ class BrowserCppDecls extends CppDecls {
   }
 }
 
-export function generate({ spec, file: makeFile }: TemplateContext): void {
+export function generate({ rawSpec, spec, file: makeFile }: TemplateContext): void {
   const out = makeFile("browser_init.cpp", clangFormat);
 
   // HEADER
   out(`// This file is generated: Update the spec instead of editing this file directly`);
 
-  for (const header of spec.headers) {
+  for (const header of rawSpec.headers) {
     out(`#include <${header}>`);
   }
 
@@ -920,7 +926,7 @@ export function generate({ spec, file: makeFile }: TemplateContext): void {
       namespace {
     `);
 
-    new BrowserCppDecls(doJsPasses(bindModel(spec))).outputDefsTo(out);
+    new BrowserCppDecls(doJsPasses(spec)).outputDefsTo(out);
 
   out(`
         } // namespace

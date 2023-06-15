@@ -275,6 +275,10 @@ function ensureBaasAdminUser() {
 function spawnBaaS() {
   // Build and run the BaaS binary - we're doing this over "go run" because that doesn't propagate a kill signal
   // Build a binary
+  execSync(`git config --global url."git@github.com:".insteadOf "https://github.com/"`, {
+    cwd: baasPath,
+    stdio: "inherit",
+  });
   execSync("go build -o baas_server cmd/server/main.go", { cwd: baasPath, stdio: "inherit" });
   spawn(chalk.blueBright("baas"), "./baas_server", ["--configFile", "./etc/configs/test_config.json"], {
     cwd: baasPath,

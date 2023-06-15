@@ -9,12 +9,11 @@ namespace {
 REALM_NOINLINE inline emscripten::val toEmscriptenErrorCode(const std::error_code& e) noexcept
 {
     REALM_ASSERT_RELEASE(e);
-    auto out = emscripten::val();
-    out.set("code", e.value());
-    out.set("category", e.category().name());
-    out.set("message", e.message());// TODO needed?
+    auto jsErr = emscripten::val::global("Error")(emscripten::val(e.message()));
+    jsErr.set("code", e.value());
+    jsErr.set("category", e.category().name());
 
-    return out;
+    return jsErr;
 }
 REALM_NOINLINE inline emscripten::val toEmscriptenException(const std::exception& e) noexcept
 {

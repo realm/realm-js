@@ -1,4 +1,4 @@
-// Polyfill for setTimeout which is not standard in Web environement
+// Polyfill for setTimeout which is not standard in Web environment
 if (!globalThis.setImmediate) {
     globalThis.setImmediate = (callback, ...args) => {
       if (typeof callback !== "function") {

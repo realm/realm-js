@@ -40,7 +40,6 @@ inject({
   },
   exists(path) {
     return false;
-    // throw new Error("Not supported on this platform");
   },
   copyBundledRealmFiles() {
     // throw new Error("Not supported on this platform");

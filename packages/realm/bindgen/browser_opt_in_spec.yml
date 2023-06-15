@@ -146,6 +146,7 @@ records:
       - platform_version
       - sdk_version
       - sdk
+      # - cpu_arch
       - device_name
       - device_version
       - framework_name
@@ -154,7 +155,6 @@ records:
   AppConfig:
     fields:
       - app_id
-      - transport
       - base_url
       - local_app_name
       - local_app_version
@@ -200,7 +200,7 @@ classes:
       - make_object_notifier
       - set_binding_context
       - get_or_create_object_with_primary_key
-      - make_network_transport
+      # - make_network_transport
       - delete_data_for_object
       - is_empty_realm
       - base64_decode
@@ -211,7 +211,7 @@ classes:
       - file_exists
       - erase_subscription
       - get_results_description
-      - feed_buffer
+      # - feed_buffer
       - make_ssl_verify_callback
 
   Logger:
@@ -429,12 +429,12 @@ classes:
       - call_function
       - make_streaming_request
 
-  WatchStream:
-    methods:
-      - make
-      - state
-      - error
-      - next_event
+  # WatchStream:
+  #   methods:
+  #     - make
+  #     - state
+  #     - error
+  #     - next_event
 
   PushClient:
     methods:
