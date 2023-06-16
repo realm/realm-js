@@ -7,8 +7,7 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fixed incorrect Linux build (x86_64) for older Linux distributions, and loading the binary will fail with `Error: /lib64/libc.so.6: version 'GLIBC_2.34' not found`.
 
 ### Compatibility
 * React Native >= v0.71.3
