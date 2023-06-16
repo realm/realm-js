@@ -16,8 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { BSON } from "realm";
 import { expect } from "chai";
+import Realm, { BSON } from "realm";
+
 import { importAppBefore } from "../../hooks";
 import { generatePartition } from "../../utils/generators";
 import { baseUrl } from "../../utils/import-app";
