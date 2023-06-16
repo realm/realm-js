@@ -27,7 +27,6 @@ import dts from "rollup-plugin-dts";
 import istanbul from "rollup-plugin-istanbul";
 
 import pkg from "./package.json" assert { type: "json" };
-import copy from "rollup-plugin-copy";
 
 const mainExport = pkg.exports["."];
 
