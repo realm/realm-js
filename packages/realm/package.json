@@ -1,6 +1,6 @@
 {
   "name": "realm",
-  "version": "12.0.0-alpha.2",
+  "version": "12.0.0-browser.0",
   "description": "Realm is a mobile database: an alternative to SQLite and key-value stores",
   "license": "apache-2.0",
   "homepage": "https://realm.io",
@@ -41,10 +41,6 @@
   },
   "files": [
     "dist",
-    "react-native/android",
-    "react-native/ios/realm-js-ios.xcframework",
-    "react-native/ios/realm-js-ios.xcframework/**/*.a",
-    "react-native/ios/RealmReact",
     "scripts/submit-analytics.mjs",
     "react-native.config.js",
     "RealmJS.podspec"
