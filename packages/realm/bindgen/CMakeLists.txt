@@ -189,6 +189,7 @@ elseif(EMSCRIPTEN)
     set_target_properties(realm-js-wasm PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${DIST_DIR}
     )
+    SET(CMAKE_EXECUTABLE_SUFFIX ".mjs")
 
 else()
     include(jsi.cmake)
