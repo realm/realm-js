@@ -50,6 +50,7 @@ jobs:
       fail-fast: false
       matrix:
         variant:
+          - { os: browser, runner: ubuntu-latest, artifact-path: packages/realm/dist/realm-js-wasm.*  }
           - { os: linux, runner: ubuntu-latest, arch: x64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true, container: "ghcr.io/${{ github.repository }}/linux-x64:main" }
           - { os: linux, runner: ubuntu-latest, arch: arm, artifact-path: packages/realm/prebuilds, container: "ghcr.io/${{ github.repository }}/linux-arm:main" }
           - { os: linux, runner: ubuntu-latest, arch: arm64, artifact-path: packages/realm/prebuilds, container: "ghcr.io/${{ github.repository }}/linux-arm:main" }
@@ -175,7 +176,7 @@ jobs:
 
       # build the c++ library for standard targets
       - name: Build node
-        if: ${{ (matrix.variant.os != 'ios') && (matrix.variant.os != 'android') }}
+        if: ${{ matrix.variant.os == 'darwin' || matrix.variant.os == 'windows' || matrix.variant.os == 'linux' }}
         run: npm run build:node:prebuild:${{matrix.variant.arch}} --workspace realm
 
       # build the c++ library for IOS
@@ -192,6 +193,10 @@ jobs:
       - name: Build Android
         if: ${{ (matrix.variant.os == 'android') }}
         run: npm run build:android --workspace realm -- --arch=${{matrix.variant.arch}}
+      
+      - name: Build browser
+        if: ${{ matrix.variant.os == 'browser' }}
+        run: npm run build:browser --workspace realm
 
       # Due to a limitation in upload-artifact a redundant file is needed to force
       # preserving paths (https://github.com/actions/upload-artifact/issues/174)
