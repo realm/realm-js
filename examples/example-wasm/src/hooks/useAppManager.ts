@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { useCallback } from 'react';
-import Realm from 'realm';
+import { Credentials } from 'realm';
 
 const { useApp } = await import('@realm/react');
 
@@ -32,7 +32,7 @@ export function useAppManager() {
   }, [app.id]);
 
   const logIn = useCallback((credentials: { email: string, password: string }) => {
-    return app.logIn(Realm.Credentials.emailPassword(credentials));
+    return app.logIn(Credentials.emailPassword(credentials));
   }, [app.id]);
 
   return { register, logIn };

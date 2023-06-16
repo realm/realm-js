@@ -16,20 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Realm from 'realm';
+import Realm, { BSON, ObjectSchema } from 'realm';
 
 export class Task extends Realm.Object<Task> {
-  _id!: Realm.BSON.ObjectId;
+  _id!: BSON.ObjectId;
   description!: string;
   isComplete!: boolean;
   createdAt!: Date;
   userId!: string;
 
-  static schema: Realm.ObjectSchema = {
+  static schema: ObjectSchema = {
     name: 'Task',
     primaryKey: '_id',
     properties: {
-      _id: { type: 'objectId', default: () => new Realm.BSON.ObjectId() },
+      _id: { type: 'objectId', default: () => new BSON.ObjectId() },
       description: 'string',
       isComplete: { type: 'bool', default: false },
       createdAt: { type: 'date', default: () => new Date() },

@@ -16,14 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import Realm from 'realm';
+import { Results } from 'realm';
 
 import { Task } from '../models/Task';
 import { TaskItem } from './TaskItem';
 import styles from '../styles/TaskList.module.css';
 
 type TaskListProps = {
-  tasks: Realm.Results<Task>;
+  tasks: Results<Task>;
   onToggleTaskStatus: (task: Task) => void;
   onDeleteTask: (task: Task) => void;
 };
