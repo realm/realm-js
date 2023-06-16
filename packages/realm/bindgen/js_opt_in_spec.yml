@@ -141,11 +141,9 @@ records:
 
   DeviceInfo:
     fields:
-      - platform
       - platform_version
       - sdk_version
       - sdk
-      - cpu_arch
       - device_name
       - device_version
       - framework_name
@@ -464,7 +462,7 @@ classes:
     methods:
       - has_existing_sessions
       - immediately_run_file_actions
-      - enable_session_multiplexing
+      - set_session_multiplexing
       - set_log_level
       - set_logger_factory
       - set_user_agent
