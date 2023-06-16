@@ -1,0 +1,30 @@
+.container {
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.container p {
+  color: var(--gray);
+  font-family: var(--primary-font);
+  font-size: 20px;
+}
+
+.button {
+  width: 160px;
+  margin-top: 70px;
+  padding: 14px 0;
+  border-radius: 25px;
+  background-color: var(--primary-color-dark);
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  transition: all 150ms ease-in-out;
+}
+
+.button:hover {
+  background-color: var(--primary-color);
+}

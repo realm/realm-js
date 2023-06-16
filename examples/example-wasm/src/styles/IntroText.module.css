@@ -8,7 +8,7 @@
 .container p {
   margin-bottom: 70px;
   color: var(--gray);
-  font-family: "Gill Sans", sans-serif;
+  font-family: var(--primary-font);
   font-size: 20px;
   text-align: center;
   line-height: 1.5;

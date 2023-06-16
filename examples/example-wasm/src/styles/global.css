@@ -4,6 +4,7 @@
   --light-gray: #dddde3;
   --gray: #9f9f9f;
   --black: #333333;
+  --primary-font: "Gill Sans", sans-serif;
 }
 
 * {
@@ -17,7 +18,7 @@
 h1 {
   font-weight: 700;
   font-size: 2.5rem;
-  font-family: "Gill Sans", sans-serif;
+  font-family: var(--primary-font);
   text-align: center;
   color: #2b0676;
 }

@@ -17,7 +17,7 @@
 .description {
   margin: auto 0;
   color: white;
-  font-family: "Gill Sans", sans-serif;
+  font-family: var(--primary-font);
   font-size: 18px;
   text-align: center;
 }
