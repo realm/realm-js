@@ -20,21 +20,18 @@ export function useTaskManager() {
   }, []);
 
   const addTask = useCallback((description: string) => {
-    console.log('Adding task:', description);
     realm.write(() => {
       realm.create(Task, { description, userId: user.id } as Task);
     });
   }, [realm, user.id]);
 
   const toggleTaskStatus = useCallback((task: Task) => {
-    console.log('Toggling task status to:', task.isComplete ? 'Not done' : 'Done' );
     realm.write(() => {
       task.isComplete = !task.isComplete;
     });
   }, [realm]);
 
   const deleteTask = useCallback((task: Task) => {
-    console.log('Deleting task:', task.description);
     realm.write(() => {
       realm.delete(task);
     });
