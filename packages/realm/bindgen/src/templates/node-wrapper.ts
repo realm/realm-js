@@ -67,7 +67,7 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
 
   browserLines.push(`
     /*global window, FinalizationRegistry*/
-    import Module from "./realm-js-wasm";
+    import Module from "./realm-js-wasm.mjs";
     const nativeModule = await Module(); // loading WASM 
     nativeModule.browserInit();
     export const WeakRef = window.WeakRef;

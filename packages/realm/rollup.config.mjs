@@ -99,7 +99,7 @@ export default [
         delimiters: ["", ""],
         values: {
           '"../generated/ts/native-node.mjs"': '"../generated/ts/native-browser.mjs"',
-          '\'../../../generated/ts/realm-js-wasm.js\'': '\'./realm-js-wasm.js\''
+          "'../../../generated/ts/realm-js-wasm.mjs'": "'./realm-js-wasm.mjs'",
         },
       }),
       typescript({
@@ -108,7 +108,7 @@ export default [
         outputToFilesystem: true,
       }),
     ],
-    external: ["bson", "debug", "./realm-js-wasm.js"],
+    external: ["bson", "debug", "./realm-js-wasm.mjs"],
   },
   {
     input: "src/platform/react-native/index.ts",
