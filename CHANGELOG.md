@@ -1,10 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
-
-### Enhancements
-* None
+## 11.10.1 (2023-06-16)
 
 ### Fixed
 * Fixed incorrect Linux build (x86_64) for older Linux distributions, and loading the binary will fail with `Error: /lib64/libc.so.6: version 'GLIBC_2.34' not found`.
