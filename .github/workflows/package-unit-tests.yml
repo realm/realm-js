@@ -34,6 +34,19 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: "recursive"
+      - name: Generate server configuration
+        if: ${{matrix.use-baas}}
+        id: baas-config
+        run:
+          suffix=$(node -p 'Math.floor(Math.random()*Number.MAX_SAFE_INTEGER)');
+          subdomain="realm-js-test-server-${{ github.run_id }}-${{ github.run_attempt }}-${suffix}";
+          echo "subdomain=${subdomain}" >> $GITHUB_OUTPUT;
+          echo "url=https://${subdomain}.ngrok.io" >> $GITHUB_OUTPUT;
+      - name: Trigger the test server workflow to start the server
+        if: ${{matrix.use-baas}}
+        run: gh workflow run test-server.yml -f ngrok_subdomain=${{ steps.baas-config.outputs.subdomain }} -f run_id=${{ github.run_id }}
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - uses: actions/setup-node@v3
         with:
@@ -45,21 +58,6 @@ jobs:
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1
-
-      - name: Generate server configuration
-        if: ${{matrix.use-baas}}
-        id: baas-config
-        run:
-          suffix=$(node -p 'Math.floor(Math.random()*Number.MAX_SAFE_INTEGER)');
-          subdomain="realm-js-test-server-${{ github.run_id }}-${{ github.run_attempt }}-${suffix}";
-          echo "subdomain=${subdomain}" >> $GITHUB_OUTPUT;
-          echo "url=https://${subdomain}.ngrok.io" >> $GITHUB_OUTPUT;
-
-      - name: Trigger the test server workflow to start the server
-        if: ${{matrix.use-baas}}
-        run: gh workflow run test-server.yml -f ngrok_subdomain=${{ steps.baas-config.outputs.subdomain }} -f run_id=${{ github.run_id }}
-        env:
-          GH_TOKEN: ${{ github.token }}
 
       - name: Set baas env
         if: ${{matrix.use-baas}}
