@@ -17,12 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 import React from "react";
 import { AppProvider } from "../AppProvider";
-import { waitFor, renderHook, act } from "@testing-library/react-native";
+import { renderHook, act } from "@testing-library/react-native";
 
 import { AppConfigBuilder } from "@realm/app-importer";
 import { App } from "realm";
 import { useEmailPasswordAuth } from "../useEmailPasswordAuth";
-import { OperationState } from "../types";
 import { baseUrl, importApp, testAuthOperation } from "./helpers";
 
 function renderEmailPasswordAuth(appId: string, baseUrl: string) {
@@ -50,47 +49,20 @@ describe("useEmailPassword", () => {
       });
       ({ appId } = await importApp(config.config));
     });
-    it("can register and login with email/password, just by calling register", async () => {
+    it("can register and login with email/password", async () => {
       const { result } = renderEmailPasswordAuth(appId, baseUrl);
-
-      await act(async () => {
-        result.current.register({ email: "test@test.com", password: "password" });
-        await waitFor(() => {
-          expect(result.current.result.pending).toEqual(true);
-        });
-      });
-      await waitFor(() => {
-        expect(result.current.result.success).toEqual(true);
+      await testAuthOperation({
+        authOperation: () => result.current.register({ email: "test2@test.com", password: "password" }),
+        expectedResult: () => {
+          expect(result.current.result.success).toEqual(true);
+        },
       });
 
-      // Get an instance of the realm app and make sure the current user has been set
-      const realmApp = new App({ id: appId, baseUrl });
-      expect(realmApp.currentUser).not.toBeNull();
-      await act(async () => {
-        await result.current.logOut();
-      });
-      expect(realmApp.currentUser).toBeNull();
-    });
-    it("can register and login with email/password, just by calling register and login", async () => {
-      const { result } = renderEmailPasswordAuth(appId, baseUrl);
-      await act(async () => {
-        result.current.register({ email: "test2@test.com", password: "password", loginAfterRegister: false });
-        await waitFor(() => {
-          expect(result.current.result.pending).toEqual(true);
-        });
-      });
-      await waitFor(() => {
-        expect(result.current.result.success).toEqual(true);
-      });
-
-      await act(async () => {
-        result.current.logIn({ email: "test2@test.com", password: "password" });
-        await waitFor(() => {
-          expect(result.current.result.pending).toEqual(true);
-        });
-      });
-      await waitFor(() => {
-        expect(result.current.result.success).toEqual(true);
+      await testAuthOperation({
+        authOperation: () => result.current.logIn({ email: "test2@test.com", password: "password" }),
+        expectedResult: () => {
+          expect(result.current.result.success).toEqual(true);
+        },
       });
 
       // Get an instance of the realm app and make sure the current user has been set
@@ -105,17 +77,50 @@ describe("useEmailPassword", () => {
     });
     it("sets an error state when user is already registered", async () => {
       const { result } = renderEmailPasswordAuth(appId, baseUrl);
+      await testAuthOperation({
+        authOperation: () => result.current.register({ email: "test2@test.com", password: "password" }),
+        expectedResult: () => {
+          expect(result.current.result.error).toBeDefined();
+        },
+      });
+    });
+    it("can switch users", async () => {
+      const { result } = renderEmailPasswordAuth(appId, baseUrl);
 
-      await act(async () => {
-        result.current.register({ email: "test2@test.com", password: "password", loginAfterRegister: false }),
-          await waitFor(() => {
-            expect(result.current.result.pending).toEqual(true);
-          });
+      await testAuthOperation({
+        authOperation: () => result.current.register({ email: "user1@user.com", password: "password" }),
+        expectedResult: () => {
+          expect(result.current.result.success).toEqual(true);
+        },
       });
-      await waitFor(() => {
-        expect(result.current.result.state).toBe(OperationState.Error);
-        expect(result.current.result.error).toBeDefined();
+
+      await testAuthOperation({
+        authOperation: () => result.current.register({ email: "user2@user.com", password: "password" }),
+        expectedResult: () => {
+          expect(result.current.result.success).toEqual(true);
+        },
       });
+
+      await testAuthOperation({
+        authOperation: () => result.current.logIn({ email: "user1@user.com", password: "password" }),
+        expectedResult: () => {
+          expect(result.current.result.success).toEqual(true);
+        },
+      });
+
+      let realmApp = new App({ id: appId, baseUrl });
+      const firstUserId = realmApp.currentUser?.id;
+
+      await testAuthOperation({
+        authOperation: () => result.current.logIn({ email: "user2@user.com", password: "password" }),
+        expectedResult: () => {
+          expect(result.current.result.success).toEqual(true);
+        },
+      });
+
+      realmApp = new App({ id: appId, baseUrl });
+      const user = realmApp.currentUser;
+      expect(user?.id).not.toEqual(firstUserId);
     });
   });
   describe("all methods are callable and report a state", () => {
@@ -135,105 +140,65 @@ describe("useEmailPassword", () => {
     });
     it("logIn", async () => {
       const { result } = renderEmailPasswordAuth(appId, baseUrl);
-      await act(async () => {
-        result.current.logIn({ email: "test@test.com", password: "password" });
-        await waitFor(() => {
-          expect(result.current.result.pending).toBeTruthy();
-        });
-      });
-      await waitFor(() => {
-        expect(result.current.result.error).toBeDefined();
+      await testAuthOperation({
+        authOperation: () => result.current.logIn({ email: "test@test.com", password: "password" }),
+        expectedResult: () => expect(result.current.result.error).toBeDefined(),
       });
     });
     it("register", async () => {
       const { result } = renderEmailPasswordAuth(appId, baseUrl);
-      await act(async () => {
-        result.current.register({ email: "test@test.com", password: "password" });
-        await waitFor(() => {
-          expect(result.current.result.pending).toBeTruthy();
-        });
-      });
-      await waitFor(() => {
-        expect(result.current.result.success).toBeTruthy();
+      await testAuthOperation({
+        authOperation: () => result.current.register({ email: "test@test.com", password: "password" }),
+        expectedResult: () => expect(result.current.result.success).toBe(true),
       });
     });
     it("confirm", async () => {
       const { result } = renderEmailPasswordAuth(appId, baseUrl);
-      await act(async () => {
-        result.current.confirm({ token: "1234", tokenId: "4321" });
-        await waitFor(() => {
-          expect(result.current.result.pending).toBeTruthy();
-        });
-      });
-      await waitFor(() => {
-        expect(result.current.result.error).toBeDefined();
+      await testAuthOperation({
+        authOperation: () => result.current.confirm({ token: "1234", tokenId: "4321" }),
+        expectedResult: () => expect(result.current.result.error).toBeDefined(),
       });
     });
     it("resendConfirmationEmail", async () => {
       const { result } = renderEmailPasswordAuth(appId, baseUrl);
-      await act(async () => {
-        result.current.resendConfirmationEmail({ email: "test@test.com" });
-        await waitFor(() => {
-          expect(result.current.result.pending).toBeTruthy();
-        });
-      });
-      await waitFor(() => {
-        expect(result.current.result.error).toBeDefined();
+      await testAuthOperation({
+        authOperation: () => result.current.resendConfirmationEmail({ email: "test@test.com" }),
+        expectedResult: () => expect(result.current.result.error).toBeDefined(),
       });
     });
     it("retryCustomConfirmation", async () => {
       const { result } = renderEmailPasswordAuth(appId, baseUrl);
-      await act(async () => {
-        result.current.retryCustomConfirmation({ email: "test@test.com" });
-        await waitFor(() => {
-          expect(result.current.result.pending).toBeTruthy();
-        });
-      });
-      await waitFor(() => {
-        expect(result.current.result.error).toBeDefined();
+      await testAuthOperation({
+        authOperation: () => result.current.retryCustomConfirmation({ email: "test@test.com" }),
+        expectedResult: () => expect(result.current.result.error).toBeDefined(),
       });
     });
     it("sendResetPasswordEmail", async () => {
       const { result } = renderEmailPasswordAuth(appId, baseUrl);
-      await act(async () => {
-        result.current.sendResetPasswordEmail({ email: "test@test.com" });
-        await waitFor(() => {
-          expect(result.current.result.pending).toBeTruthy();
-        });
-      });
-      await waitFor(() => {
-        expect(result.current.result.error).toBeDefined();
+      await testAuthOperation({
+        authOperation: () => result.current.sendResetPasswordEmail({ email: "test@test.com" }),
+        expectedResult: () => expect(result.current.result.error).toBeDefined(),
       });
     });
     it("resetPassword", async () => {
       const { result } = renderEmailPasswordAuth(appId, baseUrl);
-      await act(async () => {
-        result.current.resetPassword({ token: "1234", tokenId: "4321", password: "newpassword" });
-        await waitFor(() => {
-          expect(result.current.result.pending).toBeTruthy();
-        });
-      });
-      await waitFor(() => {
-        expect(result.current.result.error).toBeDefined();
+      await testAuthOperation({
+        authOperation: () => result.current.resetPassword({ token: "1234", tokenId: "4321", password: "newpassword" }),
+        expectedResult: () => expect(result.current.result.error).toBeDefined(),
       });
     });
     it("callResetPasswordFunction", async () => {
       const { result } = renderEmailPasswordAuth(appId, baseUrl);
-      await act(async () => {
-        result.current.callResetPasswordFunction({ email: "test@test.com", password: "password" }, { foo: "bar" });
-        await waitFor(() => {
-          expect(result.current.result.pending).toBeTruthy();
-        });
-      });
-      await waitFor(() => {
-        expect(result.current.result.error).toBeDefined();
+      await testAuthOperation({
+        authOperation: () =>
+          result.current.callResetPasswordFunction({ email: "test@test.com", password: "password" }, { foo: "bar" }),
+        expectedResult: () => expect(result.current.result.error).toBeDefined(),
       });
     });
     it("logOut", async () => {
       const { result } = renderEmailPasswordAuth(appId, baseUrl);
       await testAuthOperation({
         authOperation: () => result.current.logOut(),
-        result,
         expectedResult: () => expect(result.current.result.success).toBeTruthy(),
       });
     });

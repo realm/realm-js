@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 import React from "react";
 import { AppProvider } from "../AppProvider";
-import { waitFor, renderHook, act } from "@testing-library/react-native";
+import { renderHook } from "@testing-library/react-native";
 
 import { AppConfigBuilder } from "@realm/app-importer";
 import { useAuth } from "../useAuth";
@@ -32,7 +32,7 @@ function renderAuth(appId: string, baseUrl: string) {
   return renderHook(() => useAuth(), { wrapper });
 }
 
-// These will all fail since we haven't configured any of the authentication protocols
+// These will all fail since we haven't configured any of the auth providers
 // The tests for the authentication methods themselves should be written elsewhere
 describe("useAuth", () => {
   describe("all methods are callable and report a state", () => {
@@ -45,7 +45,6 @@ describe("useAuth", () => {
       const { result } = renderAuth(appId, baseUrl);
       await testAuthOperation({
         authOperation: () => result.current.logIn({ email: "test@test.com", password: "password" }),
-        result,
         expectedResult: () => expect(result.current.result.error).toBeDefined(),
       });
     });
@@ -53,7 +52,6 @@ describe("useAuth", () => {
       const { result } = renderAuth(appId, baseUrl);
       await testAuthOperation({
         authOperation: () => result.current.logInWithAnonymous(),
-        result,
         expectedResult: () => expect(result.current.result.error).toBeDefined(),
       });
     });
@@ -61,7 +59,6 @@ describe("useAuth", () => {
       const { result } = renderAuth(appId, baseUrl);
       await testAuthOperation({
         authOperation: () => result.current.logInWithApiKey("12345"),
-        result,
         expectedResult: () => expect(result.current.result.error).toBeDefined(),
       });
     });
@@ -69,7 +66,6 @@ describe("useAuth", () => {
       const { result } = renderAuth(appId, baseUrl);
       await testAuthOperation({
         authOperation: () => result.current.logInWithEmailPassword({ email: "test@test.com", password: "password" }),
-        result,
         expectedResult: () => expect(result.current.result.error).toBeDefined(),
       });
     });
@@ -77,7 +73,6 @@ describe("useAuth", () => {
       const { result } = renderAuth(appId, baseUrl);
       await testAuthOperation({
         authOperation: () => result.current.logInWithJWT("token"),
-        result,
         expectedResult: () => expect(result.current.result.error).toBeDefined(),
       });
     });
@@ -85,7 +80,6 @@ describe("useAuth", () => {
       const { result } = renderAuth(appId, baseUrl);
       await testAuthOperation({
         authOperation: () => result.current.logInWithGoogle({ idToken: "1234" }),
-        result,
         expectedResult: () => expect(result.current.result.error).toBeDefined(),
       });
     });
@@ -93,7 +87,6 @@ describe("useAuth", () => {
       const { result } = renderAuth(appId, baseUrl);
       await testAuthOperation({
         authOperation: () => result.current.logInWithApple("token"),
-        result,
         expectedResult: () => expect(result.current.result.error).toBeDefined(),
       });
     });
@@ -101,7 +94,6 @@ describe("useAuth", () => {
       const { result } = renderAuth(appId, baseUrl);
       await testAuthOperation({
         authOperation: () => result.current.logInWithFacebook("token"),
-        result,
         expectedResult: () => expect(result.current.result.error).toBeDefined(),
       });
     });
@@ -109,7 +101,6 @@ describe("useAuth", () => {
       const { result } = renderAuth(appId, baseUrl);
       await testAuthOperation({
         authOperation: () => result.current.logInWithFunction({ foo: "bar" }),
-        result,
         expectedResult: () => expect(result.current.result.error).toBeDefined(),
       });
     });
@@ -117,7 +108,6 @@ describe("useAuth", () => {
       const { result } = renderAuth(appId, baseUrl);
       await testAuthOperation({
         authOperation: () => result.current.logOut(),
-        result,
         expectedResult: () => expect(result.current.result.success).toBeTruthy(),
       });
     });
