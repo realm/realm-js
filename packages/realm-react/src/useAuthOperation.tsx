@@ -20,18 +20,16 @@ import { useCallback } from "react";
 import { AuthError, AuthOperationName, OperationState } from "./types";
 import { useAuthResult } from "./AppProvider";
 
-export function useAuthOperation<Args extends unknown[], Result>({
+export function useAuthOperation<Args extends unknown[]>({
   operation,
   operationName,
-  onSuccess = () => undefined,
 }: {
-  operation: (...args: Args) => Promise<Result | void>;
+  operation: (...args: Args) => Promise<unknown>;
   operationName: AuthOperationName;
-  onSuccess?: (...args: Args) => void;
 }) {
   const [result, setResult] = useAuthResult();
 
-  return useCallback<(...args: Args) => ReturnType<typeof operation>>(
+  return useCallback<(...args: Args) => void>(
     (...args) => {
       if (result.pending) {
         return Promise.reject("Another authentication operation is already in progress");
@@ -42,7 +40,7 @@ export function useAuthOperation<Args extends unknown[], Result>({
         pending: true,
         success: false,
         error: undefined,
-        currentOperation: operationName,
+        operation: operationName,
       });
       return operation(...args)
         .then((res) => {
@@ -51,9 +49,8 @@ export function useAuthOperation<Args extends unknown[], Result>({
             pending: false,
             success: true,
             error: undefined,
-            currentOperation: operationName,
+            operation: operationName,
           });
-          onSuccess(...args);
           return res;
         })
         .catch((error) => {
@@ -63,10 +60,10 @@ export function useAuthOperation<Args extends unknown[], Result>({
             pending: false,
             success: false,
             error: authError,
-            currentOperation: operationName,
+            operation: operationName,
           });
         });
     },
-    [result, setResult, operation, onSuccess],
+    [result, setResult, operation, operationName],
   );
 }

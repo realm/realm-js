@@ -34,11 +34,10 @@ export enum AuthOperationName {
   SendResetPasswordEmail = "sendResetPasswordEmail",
   ResetPassword = "resetPassword",
   CallResetPasswordFunction = "callResetPasswordFunction",
-  None = "none",
 }
 
 /**
- * The `AuthError` is set on the
+ * The `AuthError` is set based on the operation name and the error message.
  */
 export class AuthError extends Error {
   public operation: AuthOperationName;
@@ -64,16 +63,16 @@ export enum OperationState {
  * designed to allow the user to update their UI accordingly without needing to
  * store separate React state to keep track of pending/error states etc.
  */
-export type OperationResult<ErrorT extends Error = Error, StateT = OperationState> = {
+export type OperationResult = {
   /**
    * The current state of the operation.
    */
-  state: StateT;
+  state: OperationState;
 
   /**
    * The string name of the current operation running.
    */
-  currentOperation: AuthOperationName;
+  operation: AuthOperationName | null;
 
   /**
    * Convenience accessors, so users can write e.g. `loginResult.pending`
@@ -90,4 +89,4 @@ export type OperationResult<ErrorT extends Error = Error, StateT = OperationStat
   error: AuthError | undefined;
 };
 
-export type AuthResult = OperationResult<AuthError, OperationState>;
+export type AuthResult = OperationResult;

@@ -2,9 +2,7 @@
 
 ### Enhancements
 * Add authentication hooks, `useAuth` and `useEmailPasswordAuth`
-	Usage example:
-	```tsx
-	```
+	[Usage example](https://github.com/realm/realm-js/blob/main/packages/realm-react/README.md#authentication-hooks)
 * Add sync log configuration to AppProvider ([#5517](https://github.com/realm/realm-js/issue/5517))
   Usage example:
 	```tsx

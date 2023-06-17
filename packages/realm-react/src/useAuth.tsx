@@ -20,6 +20,7 @@ import { useApp, useAuthResult } from "./AppProvider";
 import { AuthOperationName, AuthResult } from "./types";
 import Realm from "realm";
 import { useAuthOperation } from "./useAuthOperation";
+import { useCallback } from "react";
 
 /**
  * Hook providing operations and corresponding state for authenticating with an
@@ -38,10 +39,8 @@ interface UseAuth {
    * Log in with a {@link Realm.Credentials} instance. This allows login with any
    * authentication mechanism supported by Realm.
    * If this is called when a user is currently logged in, it will switch the user.
-   *
-   * @returns A `Realm.User` instance for the logged in user.
    */
-  logIn(credentials: Realm.Credentials): Promise<Realm.User | void>;
+  logIn(credentials: Realm.Credentials): void;
 
   /**
    * Log in with the Anonymous authentication provider.
@@ -49,70 +48,54 @@ interface UseAuth {
    * @returns A `Realm.User` instance for the logged in user.
    * @see https://www.mongodb.com/docs/atlas/app-services/authentication/anonymous/
    */
-  logInWithAnonymous(): Promise<Realm.User | void>;
+  logInWithAnonymous(): void;
 
   /**
    * Log in with an API key.
-   *
-   * @returns A `Realm.User` instance for the logged in user.
    * @see https://www.mongodb.com/docs/atlas/app-services/authentication/api-key/
    */
-  logInWithApiKey(key: string): Promise<Realm.User | void>;
+  logInWithApiKey(key: string): void;
 
   /**
    * Log in with Email / Password.
-   *
-   * @returns A `Realm.User` instance for the logged in user.
    * @see https://www.mongodb.com/docs/atlas/app-services/authentication/email-password/
    */
-  logInWithEmailPassword(credentials: { email: string; password: string }): Promise<Realm.User | void>;
+  logInWithEmailPassword(credentials: { email: string; password: string }): void;
 
   /**
    * Log in with a JSON Web Token (JWT).
-   *
-   * @returns A `Realm.User` instance for the logged in user.
    * @see https://www.mongodb.com/docs/atlas/app-services/authentication/custom-jwt/
    */
-  logInWithJWT(token: string): Promise<Realm.User | void>;
+  logInWithJWT(token: string): void;
 
   /**
    * Log in with Google.
-   *
-   * @returns A `Realm.User` instance for the logged in user.
    * @see https://www.mongodb.com/docs/atlas/app-services/authentication/google/
    */
-  logInWithGoogle(credentials: { idToken: string } | { authCode: string }): Promise<Realm.User | void>;
+  logInWithGoogle(credentials: { idToken: string } | { authCode: string }): void;
 
   /**
    * Log in with Apple.
-   *
-   * @returns A `Realm.User` instance for the logged in user.
    * @see https://www.mongodb.com/docs/atlas/app-services/authentication/apple/
    */
-  logInWithApple(idToken: string): Promise<Realm.User | void>;
+  logInWithApple(idToken: string): void;
 
   /**
    * Log in with Facebook.
-   *
-   * @returns A `Realm.User` instance for the logged in user.
    * @see https://www.mongodb.com/docs/atlas/app-services/authentication/facebook/
    */
-  logInWithFacebook(accessToken: string): Promise<Realm.User | void>;
+  logInWithFacebook(accessToken: string): void;
 
   /**
    * Log in with a custom function.
-   *
-   * @returns A `Realm.User` instance for the logged in user.
    * @see https://www.mongodb.com/docs/atlas/app-services/authentication/custom-function/
    */
-  logInWithFunction<PayloadType extends Record<string, unknown>>(payload: PayloadType): Promise<Realm.User | void>;
+  logInWithFunction<PayloadType extends Record<string, unknown>>(payload: PayloadType): void;
 
   /**
    * Log out the current user.
-   *
-   * @returns A `Realm.User` instance for the logged in user.
    */
-  logOut(): Promise<void>;
+  logOut(): void;
 
   /**
    * The {@link AuthResult} of the current (or last) login operation performed
@@ -129,53 +112,59 @@ export function useAuth(): UseAuth {
   const [result] = useAuthResult();
 
   const logIn = useAuthOperation({
-    operation: (credentials: Realm.Credentials) => app.logIn(credentials),
+    operation: useCallback((credentials: Realm.Credentials) => app.logIn(credentials), [app]),
     operationName: AuthOperationName.LogIn,
   });
 
   const logInWithAnonymous = useAuthOperation({
-    operation: () => app.logIn(Realm.Credentials.anonymous()),
+    operation: useCallback(() => app.logIn(Realm.Credentials.anonymous()), [app]),
     operationName: AuthOperationName.LogInWithAnonymous,
   });
 
   const logInWithApiKey = useAuthOperation({
-    operation: (key: string) => app.logIn(Realm.Credentials.apiKey(key)),
+    operation: useCallback((key: string) => app.logIn(Realm.Credentials.apiKey(key)), [app]),
     operationName: AuthOperationName.LogInWithApiKey,
   });
 
   const logInWithEmailPassword = useAuthOperation({
-    operation: (params: { email: string; password: string }) =>
-      app.logIn(Realm.Credentials.emailPassword(params.email, params.password)),
+    operation: useCallback(
+      (params: { email: string; password: string }) =>
+        app.logIn(Realm.Credentials.emailPassword(params.email, params.password)),
+      [app],
+    ),
     operationName: AuthOperationName.LogInWithEmailPassword,
   });
 
   const logInWithJWT = useAuthOperation({
-    operation: (token: string) => app.logIn(Realm.Credentials.jwt(token)),
+    operation: useCallback((token: string) => app.logIn(Realm.Credentials.jwt(token)), [app]),
     operationName: AuthOperationName.LogInWithJWT,
   });
 
   const logInWithGoogle = useAuthOperation({
-    operation: (credentials: { idToken: string } | { authCode: string }) => app.logIn(Realm.Credentials.google(credentials)),
+    operation: useCallback(
+      (credentials: { idToken: string } | { authCode: string }) => app.logIn(Realm.Credentials.google(credentials)),
+      [app],
+    ),
     operationName: AuthOperationName.LogInWithGoogle,
   });
 
   const logInWithApple = useAuthOperation({
-    operation: (idToken: string) => app.logIn(Realm.Credentials.apple(idToken)),
+    operation: useCallback((idToken: string) => app.logIn(Realm.Credentials.apple(idToken)), [app]),
     operationName: AuthOperationName.LogInWithApple,
   });
 
   const logInWithFacebook = useAuthOperation({
-    operation: (accessToken: string) => app.logIn(Realm.Credentials.facebook(accessToken)),
+    operation: useCallback((accessToken: string) => app.logIn(Realm.Credentials.facebook(accessToken)), [app]),
     operationName: AuthOperationName.LogInWithFacebook,
   });
 
   const logInWithFunction = useAuthOperation({
-    operation: (payload: Record<string, unknown>) => app.logIn(Realm.Credentials.function(payload)),
+    operation: useCallback((payload: Record<string, unknown>) => app.logIn(Realm.Credentials.function(payload)), [app]),
     operationName: AuthOperationName.LogInWithFunction,
   });
 
   const logOut = useAuthOperation({
-    operation: () => (app.currentUser ? app.currentUser.logOut() : Promise.resolve()),
+    operation: useCallback(async () => app.currentUser?.logOut(), [app]),
     operationName: AuthOperationName.LogOut,
   });
 

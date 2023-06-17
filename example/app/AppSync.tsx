@@ -25,14 +25,9 @@ export const AppSync: React.FC = () => {
   );
 
   useEffect(() => {
-    const asyncThing = async () => {
-      await tasks.subscribe();
-    };
-
-    asyncThing();
-    () => {
-      realm.unsubscribe();
-    };
+    realm.subscriptions.update(mutableSubs => {
+      mutableSubs.add(tasks);
+    });
   }, [realm, tasks]);
 
   return (

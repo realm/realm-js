@@ -63,7 +63,7 @@ jobs:
 
       - name: Set baas env
         if: ${{matrix.use-baas}}
-        run: echo "realmBaseUrl=${{ steps.baas-config.outputs.url }}" >> $GITHUB_ENV
+        run: echo "REALM_BASE_URL=${{ steps.baas-config.outputs.url }}" >> $GITHUB_ENV
 
       # Install the root package to get dev-dependencies
       # (--ignore-scripts to avoid downloading or building the native module)

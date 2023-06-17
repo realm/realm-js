@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2020 Realm Inc.
+// Copyright 2023 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,35 +18,33 @@
 
 import { AppConfig, AppImporter, Credentials } from "@realm/app-importer";
 import { act, waitFor } from "@testing-library/react-native";
-import { useAuth } from "../useAuth";
-import { useEmailPasswordAuth } from "../useEmailPasswordAuth";
+
+const {
+  PUBLIC_KEY: publicKey,
+  PRIVATE_KEY: privateKey,
+  USERNAME: username = "unique_user@domain.com",
+  PASSWORD: password = "password",
+  REALM_BASE_URL: realmBaseUrl = "http://localhost:9090",
+} = process.env;
 
 export async function testAuthOperation({
   authOperation,
-  result,
   expectedResult,
 }: {
-  authOperation: () => Promise<any>;
-  result: { current: ReturnType<typeof useEmailPasswordAuth> | ReturnType<typeof useAuth> };
+  authOperation: () => void;
   expectedResult: () => void;
 }) {
   await act(async () => {
     authOperation();
-    await waitFor(() => {
-      expect(result.current.result.pending).toEqual(true);
-    });
   });
   await waitFor(() => {
     expectedResult();
   });
 }
 
-const { realmBaseUrl = "http://localhost:9090" } = process.env;
-
 export const baseUrl = realmBaseUrl;
 
 function getCredentials(): Credentials {
-  const { publicKey, privateKey, username = "unique_user@domain.com", password = "password" } = process.env;
   if (typeof publicKey === "string" && typeof privateKey === "string") {
     return {
       kind: "api-key",
@@ -62,14 +60,11 @@ function getCredentials(): Credentials {
   }
 }
 
-const credentials = getCredentials();
-
 const importer = new AppImporter({
-  baseUrl: realmBaseUrl,
-  credentials,
+  baseUrl,
+  credentials: getCredentials(),
 });
 
 export async function importApp(config: AppConfig): Promise<{ appId: string }> {
-  const { appId } = await importer.importApp(config);
-  return { appId };
+  return importer.importApp(config);
 }

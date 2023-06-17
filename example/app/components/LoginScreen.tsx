@@ -51,14 +51,14 @@ export const LoginScreen = () => {
 
       <View style={styles.buttons}>
         <Pressable
-          onPress={() => logInWithEmailPassword(email, password)}
+          onPress={() => logInWithEmailPassword({email, password})}
           style={[styles.button, result.pending && styles.buttonDisabled]}
           disabled={result.pending}>
           <Text style={buttonStyles.text}>Login</Text>
         </Pressable>
 
         <Pressable
-          onPress={() => register(email, password)}
+          onPress={() => register({email, password})}
           style={[
             styles.button,
             result.pending && styles.buttonDisabled,

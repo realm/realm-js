@@ -18,8 +18,10 @@
 
 import { useApp, useAuthResult } from "./AppProvider";
 import { AuthOperationName, AuthResult } from "./types";
-import Realm, { User, Credentials } from "realm";
+import { Credentials } from "realm";
 import { useAuthOperation } from "./useAuthOperation";
+import { useCallback } from "react";
+import { EmailPasswordAuth } from "realm/dist/bundle";
 
 /**
  * Hook providing operations and corresponding state for authenticating with an
@@ -37,68 +39,59 @@ import { useAuthOperation } from "./useAuthOperation";
 interface UseEmailPasswordAuth {
   /**
    * Convenience function to log in a user with an email and password - users
-   * could also call `logIn(Realm.Credentials.emailPassword(email, password)).
+   * could also call `logIn(Realm.Credentials.emailPassword(email, password))`.
    *
-   * @returns A `Realm.User` instance for the logged in user.
+   * @see https://www.mongodb.com/docs/realm/sdk/react-native/manage-users/manage-email-password-users/#add-appprovider-to-work-with-email-password-users
    */
-  logIn(credentials: { email: string; password: string }): Promise<Realm.User | void>;
+  logIn(credentials: { email: string; password: string }): void;
 
   /**
-   * Register a new user. By default this will log in the newly registered user
-   * after they have been successfully registered, unless the
-   * `loginAfterRegister` property is `false`.
+   * Register a new user.
    *
-   * @returns A `Realm.User` instance for the logged in user if
-   * `loginAfterRegister` is not `false`, `void` otherwise.
+   * @see https://www.mongodb.com/docs/realm/sdk/react-native/manage-users/manage-email-password-users/#register-a-new-user-account
    */
-  register(args: {
-    email: string;
-    password: string;
-    // Defaults to true so that a newly registered user is immediately logged
-    // in.
-    loginAfterRegister?: boolean;
-  }): Promise<Realm.User | void>;
+  register(args: { email: string; password: string }): void;
 
   /**
    * Confirm a user's account by providing the `token` and `tokenId` received.
    *
-   * @returns `void`
+   * @see https://www.mongodb.com/docs/realm/sdk/react-native/manage-users/manage-email-password-users/#confirm-a-new-user-s-email-address
    */
-  confirm(args: { token: string; tokenId: string }): Promise<void>;
+  confirm(args: { token: string; tokenId: string }): void;
 
   /**
    * Resend a user's confirmation email.
    *
-   * @returns `void`
+   * @see https://www.mongodb.com/docs/realm/sdk/react-native/manage-users/manage-email-password-users/#resend-a-confirmation-email
    */
-  resendConfirmationEmail(args: { email: string }): Promise<void>;
+  resendConfirmationEmail(args: { email: string }): void;
 
   /**
    * Retry the custom confirmation function for a given user.
    *
-   * @returns `void`
+   * @see https://www.mongodb.com/docs/realm/sdk/react-native/manage-users/manage-email-password-users/#retry-a-user-confirmation-function
    */
-  retryCustomConfirmation(args: { email: string }): Promise<void>;
+  retryCustomConfirmation(args: { email: string }): void;
 
   /**
    * Send a password reset email for a given user.
    *
-   * @returns `void`
+   * @see https://www.mongodb.com/docs/realm/sdk/react-native/manage-users/manage-email-password-users/#send-a-password-reset-email
    */
-  sendResetPasswordEmail(args: { email: string }): Promise<void>;
+  sendResetPasswordEmail(args: { email: string }): void;
 
   /**
    * Complete resetting a user's password.
    *
-   * @returns `void`
+   * @see https://www.mongodb.com/docs/realm/sdk/react-native/manage-users/manage-email-password-users/#send-a-password-reset-email
    */
-  resetPassword(args: { token: string; tokenId: string; password: string }): Promise<void>;
+  resetPassword(args: { token: string; tokenId: string; password: string }): void;
 
   /**
    * Call the configured password reset function, passing in any additional
    * arguments to the function.
    *
-   * @returns `void`
+   * @see https://www.mongodb.com/docs/realm/sdk/react-native/manage-users/manage-email-password-users/#call-a-password-reset-function
    */
   callResetPasswordFunction<Args extends unknown[] = []>(
     args: {
@@ -106,12 +99,14 @@ interface UseEmailPasswordAuth {
       password: string;
     },
     ...restArgs: Args
-  ): Promise<void>;
+  ): void;
 
   /**
    * Log out the current user.
+   *
+   * @see https://www.mongodb.com/docs/realm/sdk/react-native/manage-users/authenticate-users/#log-a-user-out
    */
-  logOut(): Promise<void>;
+  logOut(): void;
 
   /**
    * The {@link AuthResult} of the current (or last) operation performed for
@@ -124,54 +119,64 @@ export function useEmailPasswordAuth(): UseEmailPasswordAuth {
   const app = useApp();
   const [result] = useAuthResult();
 
-  const logIn = useAuthOperation<[{ email: string; password: string }], User>({
-    operation: (args) => app.logIn(Credentials.emailPassword(args)),
+  const logIn = useAuthOperation({
+    operation: useCallback(
+      (credentials: { email: string; password: string }) => app.logIn(Credentials.emailPassword(credentials)),
+      [app],
+    ),
     operationName: AuthOperationName.LogIn,
   });
 
-  const register = useAuthOperation<[{ email: string; password: string; loginAfterRegister?: boolean }], void>({
-    operation: ({ email, password }) => app.emailPasswordAuth.registerUser({ email, password }),
+  const register = useAuthOperation({
+    operation: useCallback(
+      (credentials: { email: string; password: string }) => app.emailPasswordAuth.registerUser(credentials),
+      [app],
+    ),
     operationName: AuthOperationName.Register,
-    onSuccess: ({ email, password, loginAfterRegister = true }) => {
-      if (loginAfterRegister === true) {
-        return logIn({ email, password });
-      }
-    },
   });
 
   const confirm = useAuthOperation({
-    operation: ({ token, tokenId }) => app.emailPasswordAuth.confirmUser({ token, tokenId }),
+    operation: useCallback(
+      (args: { token: string; tokenId: string }) => app.emailPasswordAuth.confirmUser(args),
+      [app],
+    ),
     operationName: AuthOperationName.Confirm,
   });
 
   const resendConfirmationEmail = useAuthOperation({
-    operation: ({ email }) => app.emailPasswordAuth.resendConfirmationEmail({ email }),
+    operation: useCallback((args: { email: string }) => app.emailPasswordAuth.resendConfirmationEmail(args), [app]),
     operationName: AuthOperationName.ResendConfirmationEmail,
   });
 
   const retryCustomConfirmation = useAuthOperation({
-    operation: ({ email }) => app.emailPasswordAuth.retryCustomConfirmation({ email }),
+    operation: useCallback((args: { email: string }) => app.emailPasswordAuth.retryCustomConfirmation(args), [app]),
     operationName: AuthOperationName.RetryCustomConfirmation,
   });
 
   const sendResetPasswordEmail = useAuthOperation({
-    operation: ({ email }) => app.emailPasswordAuth.sendResetPasswordEmail({ email }),
+    operation: useCallback((args: { email: string }) => app.emailPasswordAuth.sendResetPasswordEmail(args), [app]),
     operationName: AuthOperationName.SendResetPasswordEmail,
   });
 
-  const callResetPasswordFunction = useAuthOperation({
-    operation: ({ email, password }, ...restArgs) =>
-      app.emailPasswordAuth.callResetPasswordFunction({ email, password }, ...restArgs),
+  const callResetPasswordFunction = useAuthOperation<
+    Parameters<typeof app.emailPasswordAuth.callResetPasswordFunction>
+  >({
+    operation: useCallback(
+      (credentials: { email: string; password: string }, ...restArgs) =>
+        app.emailPasswordAuth.callResetPasswordFunction(credentials, ...restArgs),
+      [app],
+    ),
     operationName: AuthOperationName.CallResetPasswordFunction,
   });
 
   const resetPassword = useAuthOperation({
-    operation: ({ password, token, tokenId }) => app.emailPasswordAuth.resetPassword({ password, token, tokenId }),
+    operation: (args: { password: string; token: string; tokenId: string }) =>
+      app.emailPasswordAuth.resetPassword(args),
     operationName: AuthOperationName.ResetPassword,
   });
 
   const logOut = useAuthOperation({
-    operation: () => (app.currentUser ? app.currentUser.logOut() : Promise.resolve()),
+    operation: async () => app.currentUser?.logOut(),
     operationName: AuthOperationName.LogOut,
   });
 
