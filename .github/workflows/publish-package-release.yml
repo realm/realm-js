@@ -95,7 +95,10 @@ jobs:
         cache-dependency-path: '**/package-lock.json'
 
     - name: Install node modules
-      run: npx lerna bootstrap --scope=${{ env.PACKAGE_NAME }} --include-dependencies
+      run: npm ci --ignore-scripts
+
+    - name: Bundle package
+      run: npm run bundle --workspace=${{env.PACKAGE_NAME}}
 
     - name: Read version
       id: get-version
@@ -104,11 +107,11 @@ jobs:
         echo "version=$pkgVersion" >> $GITHUB_OUTPUT
       shell: bash
 
-    - name: Publish ${{env.RELEASE_TITLE}} v${{ steps.get-version.outputs.version }} on NPM
-      working-directory: ${{env.PACKAGE_PATH}}
-      run: npm publish --tag '${{ inputs.tag}}'
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+    # - name: Publish ${{env.RELEASE_TITLE}} v${{ steps.get-version.outputs.version }} on NPM
+    #   working-directory: ${{env.PACKAGE_PATH}}
+    #   run: npm publish --tag '${{ inputs.tag}} --dry-run'
+    #   env:
+    #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     - name: Find Release PR
       uses: juliangruber/find-pull-request-action@v1.7.0

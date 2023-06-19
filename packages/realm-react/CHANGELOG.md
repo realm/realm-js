@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 0.5.0 (2023-06-19)
 
 ### Enhancements
 * Add authentication hooks, `useAuth` and `useEmailPasswordAuth`
