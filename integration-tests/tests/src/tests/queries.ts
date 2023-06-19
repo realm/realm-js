@@ -249,12 +249,12 @@ describe("Queries", () => {
 
     beforeEach(function (this: RealmContext) {
       this.realm.write(() => {
-        this.realm.create("PointOfInterest", zero);
-        this.realm.create("PointOfInterest", poiA);
-        this.realm.create("PointOfInterest", poiB);
-        this.realm.create("PointOfInterest", poiC);
-        this.realm.create("PointOfInterest", poiD);
-        this.realm.create("PointOfInterest", northPole);
+        this.realm.create(PointOfInterest, zero);
+        this.realm.create(PointOfInterest, poiA);
+        this.realm.create(PointOfInterest, poiB);
+        this.realm.create(PointOfInterest, poiC);
+        this.realm.create(PointOfInterest, poiD);
+        this.realm.create(PointOfInterest, northPole);
         //this.realm.create("PointOfInterest", invalid);  //TODO Need to re-enable it after core team clarifies what should happen with this object
       });
     });
@@ -674,8 +674,8 @@ describe("Queries", () => {
         };
 
         this.realm.write(() => {
-          this.realm.create("PointOfInterest", multi1);
-          this.realm.create("PointOfInterest", multi2);
+          this.realm.create(PointOfInterest, multi1);
+          this.realm.create(PointOfInterest, multi2);
         });
 
         const box: GeoBox = {
@@ -739,8 +739,8 @@ describe("Queries", () => {
         };
 
         this.realm.write(() => {
-          this.realm.create("PointOfInterest", magasasaKodbyen);
-          this.realm.create("PointOfInterest", slurpRamen);
+          this.realm.create(PointOfInterest, magasasaKodbyen);
+          this.realm.create(PointOfInterest, slurpRamen);
         });
 
         let circle: GeoCircle = {
