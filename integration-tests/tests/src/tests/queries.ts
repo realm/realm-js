@@ -119,8 +119,8 @@ interface IPointOfInterest {
 
 class PointOfInterest extends Realm.Object implements IPointOfInterest {
   id = 0;
-  location: MyGeoPoint = new MyGeoPoint(0, 0);
-  locations: [MyGeoPoint] = [new MyGeoPoint(0, 0)];
+  location = new MyGeoPoint(0, 0);
+  locations = [new MyGeoPoint(0, 0)];
 
   static schema: ObjectSchema = {
     name: "PointOfInterest",

@@ -66,7 +66,7 @@ interface IPointOfInterest {
 
 class PointOfInterest extends Realm.Object implements IPointOfInterest {
   id = 0;
-  location: MyGeoPoint = new MyGeoPoint(0, 0);
+  location = new MyGeoPoint(0, 0);
 
   static schema: ObjectSchema = {
     name: "PointOfInterest",
@@ -79,7 +79,7 @@ class PointOfInterest extends Realm.Object implements IPointOfInterest {
 }
 
 const berlinCoordinates = new MyGeoPoint(13.397255909303222, 52.51174463251085);
-const radius = kmToRadians(500); //500 kilometers radius, equal to 0.0783932519 radians
+const radius = kmToRadians(500); //500 km = 0.0783932519 rad
 
 const copenhagen: IPointOfInterest = {
   id: 1,

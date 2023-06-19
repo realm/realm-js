@@ -19,13 +19,13 @@
 import { binding } from "./internal";
 
 /**
- * Represents the array coordinates of a point. The first two required elements of the array are longitude and latitude.
- * The third and optional element is altitude, that is currently ignored in the geospatial queries calculations.
+ * Represents the coordinates of a point. The first two required elements of the array are longitude (index 0) and latitude (index 1).
+ * The third and optional element is altitude (index 2), but is currently ignored in the geospatial queries calculations.
  */
 export type GeoPosition = [number, number] | [number, number, number];
 
 /**
- * Interface that satisfies the geoJSON specification for a polygon.
+ * Interface that satisfies the GeoJSON specification for a polygon.
  * This can be used as one of the possible forms of {@link GeoPolygon}.
  */
 export interface CanonicalGeoPolygon {
@@ -34,7 +34,7 @@ export interface CanonicalGeoPolygon {
 }
 
 /**
- * Interface that satisfies the geoJSON specification for a point.
+ * Interface that satisfies the GeoJSON specification for a point.
  * Any embedded object that adhere to this interface can be queried in geospatial queries.
  * Additionally, this can be used as one of the possible forms of {@link GeoPoint}.
  */
@@ -45,7 +45,7 @@ export interface CanonicalGeoPoint {
 
 /**
  * Represents a point in spherical geometry.
- * This type cannot be used on his own, but only as a building block for the other geospatial types
+ * This type cannot be used on its own, only as a building block for the other geospatial types.
  * ({@link GeoCircle}, {@link GeoBox}, {@link GeoPolygon}).
  */
 export type GeoPoint =
@@ -156,7 +156,7 @@ export function kmToRadians(km: number): number {
 
 /**
  * Converts the input miles value in radians.
- * @param km The miles to convert.
+ * @param mi The miles to convert.
  * @returns The corresponding number of radians.
  */
 export function miToRadians(mi: number): number {

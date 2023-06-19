@@ -873,7 +873,7 @@ class NodeCppDecls extends CppDecls {
                   .join(" ")
               }
               else if (obj.InstanceOf(addon->m_cls_Geospatial_ctor.Value())) {
-                //This needs his own case because the constructor of Mixed for Geospatial requires a pointer
+                //This needs its own case because the constructor of Mixed for Geospatial requires a pointer
                 return &NODE_TO_CLASS_Geospatial(val);
               }
 
