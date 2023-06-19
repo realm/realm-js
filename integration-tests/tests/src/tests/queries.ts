@@ -745,14 +745,14 @@ describe("Queries", () => {
 
         let circle: GeoCircle = {
           center: norreport,
-          distance: kmToRadians(0.5), //500 meters radius
+          distance: kmToRadians(0.5),
         };
 
         geoTest(this.realm, circle, [slurpRamen]);
 
         circle = {
           center: norreport,
-          distance: kmToRadians(2.5), //2500 meters radius
+          distance: kmToRadians(2.5),
         };
 
         geoTest(this.realm, circle, [magasasaKodbyen, slurpRamen]);

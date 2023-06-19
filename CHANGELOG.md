@@ -91,8 +91,8 @@ const newYork: IPointOfInterest = {
   location: new MyGeoPoint(-73.92474936213434, 40.700090994927415),
 };
 
-realm.create("PointOfInterest", copenhagen);
-realm.create("PointOfInterest", newYork);
+realm.create(PointOfInterest, copenhagen);
+realm.create(PointOfInterest, newYork);
 
 const pois = realm.objects(PointOfInterest);
 
