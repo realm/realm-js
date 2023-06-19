@@ -30,7 +30,7 @@ class JsPlatformHelpers {
 public:
     // set the directory where realm files should be stored
     static void set_default_realm_file_directory(std::string dir);
-    
+
     // return the directory in which realm files can/should be written to
     static std::string default_realm_file_directory();
 
