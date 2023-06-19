@@ -95,7 +95,7 @@ jobs:
         cache-dependency-path: '**/package-lock.json'
 
     - name: Install node modules
-      run: npx lerna bootstrap --scope=${{ env.PACKAGE_NAME }} --include-dependencies
+      run: npm ci --ignore-scripts
 
     - name: Read version
       id: get-version
@@ -106,69 +106,69 @@ jobs:
 
     - name: Publish ${{env.RELEASE_TITLE}} v${{ steps.get-version.outputs.version }} on NPM
       working-directory: ${{env.PACKAGE_PATH}}
-      run: npm publish --tag '${{ inputs.tag}}'
+      run: npm publish --tag '${{ inputs.tag}} --dry-run'
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-    - name: Find Release PR
-      uses: juliangruber/find-pull-request-action@v1.7.0
-      id: find-pull-request
-      with:
-        branch: ${{ github.ref }}
+    # - name: Find Release PR
+    #   uses: juliangruber/find-pull-request-action@v1.7.0
+    #   id: find-pull-request
+    #   with:
+    #     branch: ${{ github.ref }}
 
-    - name: Merge Pull Request
-      uses: juliangruber/merge-pull-request-action@v1
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        number: ${{ steps.find-pull-request.outputs.number }}
-        method: squash
+    # - name: Merge Pull Request
+    #   uses: juliangruber/merge-pull-request-action@v1
+    #   with:
+    #     github-token: ${{ secrets.GITHUB_TOKEN }}
+    #     number: ${{ steps.find-pull-request.outputs.number }}
+    #     method: squash
 
-    - name: Checkout base branch (after merge)
-      uses: actions/checkout@v3
-      with:
-        submodules: recursive
-        ref: ${{ steps.find-pull-request.outputs.base-ref }}
+    # - name: Checkout base branch (after merge)
+    #   uses: actions/checkout@v3
+    #   with:
+    #     submodules: recursive
+    #     ref: ${{ steps.find-pull-request.outputs.base-ref }}
 
-    - name: Extract Changelog
-      run: node scripts/extract-changelog.js ${{ steps.get-version.outputs.version }} ${{ github.workspace }}/${{env.PACKAGE_PATH}}/CHANGELOG.md > EXTRACTED_CHANGELOG.md
+    # - name: Extract Changelog
+    #   run: node scripts/extract-changelog.js ${{ steps.get-version.outputs.version }} ${{ github.workspace }}/${{env.PACKAGE_PATH}}/CHANGELOG.md > EXTRACTED_CHANGELOG.md
 
-    - name: Create Github Release
-      uses: ncipollo/release-action@v1
-      with:
-        bodyFile: EXTRACTED_CHANGELOG.md
-        name: ${{env.RELEASE_TITLE}} v${{ steps.get-version.outputs.version }}
-        tag: ${{env.VERSION_PREFIX}}v${{ steps.get-version.outputs.version }}
-        token: ${{ secrets.GITHUB_TOKEN }}
-        draft: false
+    # - name: Create Github Release
+    #   uses: ncipollo/release-action@v1
+    #   with:
+    #     bodyFile: EXTRACTED_CHANGELOG.md
+    #     name: ${{env.RELEASE_TITLE}} v${{ steps.get-version.outputs.version }}
+    #     tag: ${{env.VERSION_PREFIX}}v${{ steps.get-version.outputs.version }}
+    #     token: ${{ secrets.GITHUB_TOKEN }}
+    #     draft: false
 
-    - name: 'Post to #realm-releases'
-      uses: realm/ci-actions/release-to-slack@v3
-      with:
-        changelog: EXTRACTED_CHANGELOG.md
-        sdk: ${{env.SDK_NAME}}
-        webhook-url: ${{ secrets.SLACK_RELEASE_WEBHOOK }}
-        version: ${{ steps.get-version.outputs.version }}
-      # This job might fail due to failed markdown-to-slack conversion.
-      continue-on-error: true
+    # - name: 'Post to #realm-releases'
+    #   uses: realm/ci-actions/release-to-slack@v3
+    #   with:
+    #     changelog: EXTRACTED_CHANGELOG.md
+    #     sdk: ${{env.SDK_NAME}}
+    #     webhook-url: ${{ secrets.SLACK_RELEASE_WEBHOOK }}
+    #     version: ${{ steps.get-version.outputs.version }}
+    #   # This job might fail due to failed markdown-to-slack conversion.
+    #   continue-on-error: true
 
-    - name: Update Changelog
-      working-directory: ${{ github.workspace }}/${{env.PACKAGE_PATH}}
-      run: ${{ github.workspace }}/scripts/changelog-header.sh
+    # - name: Update Changelog
+    #   working-directory: ${{ github.workspace }}/${{env.PACKAGE_PATH}}
+    #   run: ${{ github.workspace }}/scripts/changelog-header.sh
 
-    - name: Create vNext PR
-      id: vnext-pr
-      uses: peter-evans/create-pull-request@v4
-      with:
-        branch: prepare-${{env.VERSION_PREFIX}}vnext
-        title: Prepare for ${{env.RELEASE_TITLE}} vNext
-        body: Update Changelog for vNext
-        delete-branch: true
-        commit-message: Prepare for vNext
-        base: ${{ steps.find-pull-request.outputs.base-ref }}
+    # - name: Create vNext PR
+    #   id: vnext-pr
+    #   uses: peter-evans/create-pull-request@v4
+    #   with:
+    #     branch: prepare-${{env.VERSION_PREFIX}}vnext
+    #     title: Prepare for ${{env.RELEASE_TITLE}} vNext
+    #     body: Update Changelog for vNext
+    #     delete-branch: true
+    #     commit-message: Prepare for vNext
+    #     base: ${{ steps.find-pull-request.outputs.base-ref }}
 
-    - name: Merge Pull Request
-      uses: juliangruber/merge-pull-request-action@v1
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        number: ${{ steps.vnext-pr.outputs.pull-request-number }}
-        method: squash
+    # - name: Merge Pull Request
+    #   uses: juliangruber/merge-pull-request-action@v1
+    #   with:
+    #     github-token: ${{ secrets.GITHUB_TOKEN }}
+    #     number: ${{ steps.vnext-pr.outputs.pull-request-number }}
+    #     method: squash
