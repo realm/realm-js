@@ -41,74 +41,74 @@
   * The queries can be used to filter objects whose points lie within a certain area following spherical geometry, using the `geoWithin` operator in the query string to `Results.filtered()`.
   * The following shapes are supported in geospatial queries: circle (`GeoCircle` type, defined by its center and radius in radians), box (`GeoBox` type, defined by its bottom left and upper right corners) and polygon (`GeoPolygon` type, defined by its vertices).
   * Additionally, two new functions have been added, `kmToRadians()` and `miToRadians()`, that can be used to convert kilometers and miles to radians respectively, simplifying conversion of a circle's radius.
-```typescript
-// Example of a user-defined point class that can be queried using geospatial queries
-class MyGeoPoint implements CanonicalGeoPoint {  
-  coordinates: GeoPosition;
-  type = "Point" as const;
+  ```typescript
+  // Example of a user-defined point class that can be queried using geospatial queries
+  class MyGeoPoint implements CanonicalGeoPoint {  
+    coordinates: GeoPosition;
+    type = "Point" as const;
 
-  constructor(long: number, lat: number) {
-    this.coordinates = [long, lat];
+    constructor(long: number, lat: number) {
+      this.coordinates = [long, lat];
+    }
+
+    static schema: ObjectSchema = {
+      name: "MyGeoPoint",
+      embedded: true,
+      properties: {
+        type: "string",
+        coordinates: "double[]",
+      },
+    };
   }
 
-  static schema: ObjectSchema = {
-    name: "MyGeoPoint",
-    embedded: true,
-    properties: {
-      type: "string",
-      coordinates: "double[]",
-    },
+  interface IPointOfInterest {
+    id: number;
+    location: MyGeoPoint;
+  }
+
+  class PointOfInterest extends Realm.Object implements IPointOfInterest {
+    _id = 0;
+    location = new MyGeoPoint(0, 0);
+
+    static schema: ObjectSchema = {
+      name: "PointOfInterest",
+      properties: {
+        id: "int",
+        location: "MyGeoPoint",
+      },
+      primaryKey: "id",
+    };
+  }
+
+  const berlinCoordinates = new MyGeoPoint(13.397255909303222, 52.51174463251085);
+  const radius = kmToRadians(500); //500 km = 0.0783932519 rad
+
+  const copenhagen: IPointOfInterest = {
+    _id: 1,
+    location: new MyGeoPoint(12.558892784045568, 55.66717839648401),
   };
-}
 
-interface IPointOfInterest {
-  id: number;
-  location: MyGeoPoint;
-}
-
-class PointOfInterest extends Realm.Object implements IPointOfInterest {
-  id = 0;
-  location = new MyGeoPoint(0, 0);
-
-  static schema: ObjectSchema = {
-    name: "PointOfInterest",
-    properties: {
-      id: "int",
-      location: "MyGeoPoint",
-    },
-    primaryKey: "id",
+  const newYork: IPointOfInterest = {
+    _id: 2,
+    location: new MyGeoPoint(-73.92474936213434, 40.700090994927415),
   };
-}
 
-const berlinCoordinates = new MyGeoPoint(13.397255909303222, 52.51174463251085);
-const radius = kmToRadians(500); //500 km = 0.0783932519 rad
+  realm.create(PointOfInterest, copenhagen);
+  realm.create(PointOfInterest, newYork);
 
-const copenhagen: IPointOfInterest = {
-  id: 1,
-  location: new MyGeoPoint(12.558892784045568, 55.66717839648401),
-};
+  const pois = realm.objects(PointOfInterest);
 
-const newYork: IPointOfInterest = {
-  id: 2,
-  location: new MyGeoPoint(-73.92474936213434, 40.700090994927415),
-};
+  //Circle with a radius of 500kms centered in Berlin
+  const circleShape: GeoCircle = {
+    center: berlinCoordinates,  
+    distance: radius,
+  };
 
-realm.create(PointOfInterest, copenhagen);
-realm.create(PointOfInterest, newYork);
+  //All points of interest in a 500kms radius from Berlin
+  let result = pois.filtered("location geoWithin $0", circleShape);
 
-const pois = realm.objects(PointOfInterest);
-
-//Circle with a radius of 500kms centered in Berlin
-const circleShape: GeoCircle = {
-  center: berlinCoordinates,  
-  distance: radius,
-};
-
-//All points of interest in a 500kms radius from Berlin
-let result = pois.filtered("location geoWithin $0", circleShape);
-
-//Equivalent string query without arguments
-result = pois.filtered("location geoWithin geoCircle([13.397255909303222, 52.51174463251085], 0.0783932519)");
+  //Equivalent string query without arguments
+  result = pois.filtered("location geoWithin geoCircle([13.397255909303222, 52.51174463251085], 0.0783932519)");
 ```
 
 ### Fixed

@@ -255,7 +255,7 @@ describe("Queries", () => {
         this.realm.create(PointOfInterest, poiC);
         this.realm.create(PointOfInterest, poiD);
         this.realm.create(PointOfInterest, northPole);
-        //this.realm.create("PointOfInterest", invalid);  //TODO Need to re-enable it after core team clarifies what should happen with this object
+        //this.realm.create("PointOfInterest", invalid);  //TODO Need to re-enable fix in core (https://github.com/realm/realm-core/pull/6719)
       });
     });
 
@@ -838,7 +838,7 @@ describe("Queries", () => {
         );
       });
 
-      //TODO Re-enable after fix in core
+      //TODO Re-enable after fix in core (https://github.com/realm/realm-core/pull/6703)
       it.skip("Impossible box", function (this: RealmContext) {
         const box: GeoBox = {
           bottomLeft: [1, 1],
