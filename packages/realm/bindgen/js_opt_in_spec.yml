@@ -1,0 +1,518 @@
+# --------------------
+# Description of file:
+# --------------------
+# List all the unique names of what to opt in to from the general spec.
+#
+# The following can be listed:
+# * `classes` and their `methods`
+#   * Methods, static methods, constructors, and properties in the general `spec.yml`
+#     should all be listed in this opt-in list as `methods`.
+# * `records` and their `fields``
+#
+# If all methods in a class, or all fields of a property, are opted out of,
+# the entire class/property should be removed.
+
+records:
+  Property:
+    fields:
+      - name
+      - public_name
+      - type
+      - object_type
+      - link_origin_property_name
+      - is_primary
+      - is_indexed
+      - is_fulltext_indexed
+      - column_key
+
+  ObjectSchema:
+    fields:
+      - name
+      - persisted_properties
+      - computed_properties
+      - primary_key
+      - table_key
+      - table_type
+
+  RealmConfig:
+    fields:
+      - path
+      - cache
+      - encryption_key
+      - fifo_files_fallback_path
+      - in_memory
+      - schema
+      - schema_version
+      - schema_mode
+      - disable_format_upgrade
+      - sync_config
+      - force_sync_history
+      - migration_function
+      - initialization_function
+      - should_compact_on_launch_function
+
+  UserIdentity:
+    fields:
+      - id
+      - provider_type
+
+  UserAPIKey:
+    fields:
+      - id
+      - key
+      - name
+      - disabled
+
+  SyncConfig:
+    fields:
+      - user
+      - partition_value
+      - stop_policy
+      - flx_sync_requested
+      - error_handler
+      - custom_http_headers
+      - client_validate_ssl
+      - ssl_trust_certificate_path
+      - ssl_verify_callback
+      - cancel_waits_on_nonfatal_error
+
+  SyncSubscription:
+    fields:
+      - id
+      - created_at
+      - updated_at
+      - name
+      - object_class_name
+      - query_string
+
+  ObjectChangeSet:
+    fields:
+      - is_deleted
+      - changed_columns
+
+  CollectionChangeSet:
+    fields:
+      - deletions
+      - insertions
+      - modifications
+      - modifications_new
+
+  DictionaryChangeSet:
+    fields:
+      - deletions
+      - insertions
+      - modifications
+
+  BindingContext:
+    fields:
+      - did_change
+      - before_notify
+      - schema_did_change
+
+  SyncClientConfig:
+    fields:
+      - base_file_path
+      - metadata_mode
+      - user_agent_binding_info
+
+  SyncError:
+   fields:
+     - system_error
+     - is_fatal
+     - simple_message
+     - logURL
+     - user_info
+     - is_client_reset_requested
+     - compensating_writes_info
+
+  Request:
+    fields:
+      - method
+      - url
+      - timeout_ms
+      - headers
+      - body
+
+  Response:
+    fields:
+      - http_status_code
+      - custom_status_code
+      - headers
+      - body
+
+  DeviceInfo:
+    fields:
+      - platform_version
+      - sdk_version
+      - sdk
+      - device_name
+      - device_version
+      - framework_name
+      - framework_version
+
+  AppConfig:
+    fields:
+      - app_id
+      - transport
+      - base_url
+      - local_app_name
+      - local_app_version
+      - default_request_timeout_ms
+      - device_info
+
+  CompensatingWriteErrorInfo:
+   fields:
+     - object_name
+     - reason
+     - primary_key
+
+classes:
+  ######################
+  # FROM JS EXTRA SPEC #
+  ######################
+
+  # These JsPlatformHelpers are used for React Native.
+  JsPlatformHelpers:
+    methods:
+      - default_realm_file_directory
+      - ensure_directory_exists_for_file
+      - copy_bundled_realm_files
+      - remove_realm_files_from_directory
+      - remove_file
+      - remove_directory
+      - get_cpu_arch
+
+  WeakSyncSession:
+    methods:
+      - weak_copy_of
+      - raw_dereference
+
+  #####################
+  # FROM GENERAL SPEC #
+  #####################
+
+  Helpers:
+    methods:
+      - get_table
+      - get_keypath_mapping
+      - results_append_query
+      - make_object_notifier
+      - set_binding_context
+      - get_or_create_object_with_primary_key
+      - make_network_transport
+      - delete_data_for_object
+      - is_empty_realm
+      - base64_decode
+      - make_logger_factory
+      - make_logger
+      - simulate_sync_error
+      - consume_thread_safe_reference_to_shared_realm
+      - file_exists
+      - erase_subscription
+      - get_results_description
+      - feed_buffer
+      - make_ssl_verify_callback
+
+  Logger:
+    methods:
+      - set_default_logger
+      - set_default_level_threshold
+
+  ConstTableRef:
+    methods:
+      - get_key
+      - get_column_type
+      - get_link_target
+      - get_object
+      - try_get_object
+      - query
+      - find_primary_key
+
+  TableRef:
+    methods:
+      - create_object
+      - remove_object
+      - get_link_target
+      - clear
+
+  Obj:
+    methods:
+      - is_valid
+      - get_table
+      - get_key
+      - get_any
+      - set_any
+      - get_linked_object
+      - get_backlink_count
+      - get_backlink_view
+      - create_and_set_linked_object
+  
+  Timestamp:
+    methods:
+      - make
+      - get_seconds
+      - get_nanoseconds
+
+  ObjLink:
+    methods:
+      - get_table_key
+      - get_obj_key
+
+  Query:
+    methods:
+      - get_table
+      - get_description
+
+  Results:
+    methods:
+      - from_table
+      - from_table_view
+      - is_valid
+      - get_query
+      - get_object_type
+      - get_type
+      - size
+      - index_of
+      - index_of_obj
+      - get_obj
+      - get_any
+      - sort_by_names
+      - snapshot
+      - max
+      - min
+      - average
+      - sum
+      - clear
+      - add_notification_callback
+
+  Realm:
+    methods:
+      - get_shared_realm
+      - get_synchronized_realm
+      - get_schema_version
+      - config
+      - schema
+      - schema_version
+      - is_in_transaction
+      - is_in_migration
+      - is_closed
+      - sync_session
+      - get_latest_subscription_set
+      - begin_transaction
+      - commit_transaction
+      - cancel_transaction
+      - update_schema
+      - compact
+      - convert
+      - verify_open
+      - close
+      # JS-specific
+      - DOLLAR_addr
+      - DOLLAR_resetSharedPtr
+
+  RealmCoordinator:
+    methods:
+      - clear_all_caches
+
+  ObjectNotifier:
+    methods:
+      - add_callback
+
+  NotificationToken:
+    methods:
+      - for_object
+      - unregister
+
+  Collection:
+    methods:
+      - get_object_schema
+      - size
+      - is_valid
+      - get_any
+      - as_results
+
+  List:
+    methods:
+      - make
+      - move
+      - remove
+      - remove_all
+      - swap
+      - delete_all
+      - insert_any
+      - insert_embedded
+      - set_any
+
+  Set:
+    methods:
+      - make
+      - insert_any
+      - remove_any
+      - remove_all
+      - delete_all
+
+  Dictionary:
+    methods:
+      - make
+      - get_keys
+      - get_values
+      - contains
+      - add_key_based_notification_callback
+      - insert_any
+      - insert_embedded
+      - try_get_any
+      - remove_all
+      - try_erase
+
+  GoogleAuthCode:
+    methods:
+      - make
+
+  GoogleIdToken:
+    methods:
+      - make
+
+  AppCredentials:
+    methods:
+      - facebook
+      - anonymous
+      - apple
+      - google_auth
+      - google_id
+      - custom
+      - username_password
+      - function
+      - user_api_key
+
+  SyncUser:
+    methods:
+      - all_sessions
+      - is_logged_in
+      - identity
+      - provider_type
+      - access_token
+      - refresh_token
+      - device_id
+      - user_profile
+      - identities
+      - custom_data
+      - sync_manager
+      - state
+      - session_for_on_disk_path
+      - subscribe
+      - unsubscribe
+
+  UserProfile:
+    methods:
+      - data
+
+  App:
+    methods:
+      - config
+      - current_user
+      - all_users
+      - sync_manager
+      - get_uncached_app
+      - clear_cached_apps
+      - log_in_with_credentials
+      - log_out_user
+      - refresh_custom_data
+      - link_user
+      - remove_user
+      - delete_user
+      - usernamePasswordProviderClient
+      - userAPIKeyProviderClient
+      - push_notification_client
+      - subscribe
+      - unsubscribe
+      - call_function
+      - make_streaming_request
+
+  WatchStream:
+    methods:
+      - make
+      - state
+      - error
+      - next_event
+
+  PushClient:
+    methods:
+      - register_device
+      - deregister_device
+
+  UsernamePasswordProviderClient:
+    methods:
+      - register_email
+      - retry_custom_confirmation
+      - confirm_user
+      - resend_confirmation_email
+      - reset_password
+      - send_reset_password_email
+      - call_reset_password_function
+
+  UserAPIKeyProviderClient:
+    methods:
+      - create_api_key
+      - fetch_api_key
+      - fetch_api_keys
+      - delete_api_key
+      - enable_api_key
+      - disable_api_key
+
+  SyncManager:
+    methods:
+      - has_existing_sessions
+      - immediately_run_file_actions
+      - set_session_multiplexing
+      - set_log_level
+      - set_logger_factory
+      - set_user_agent
+      - reconnect
+      - path_for_realm
+
+  AsyncOpenTask:
+    methods:
+      - start
+      - cancel
+      - register_download_progress_notifier
+      # JS-specific
+      - DOLLAR_resetSharedPtr
+
+  SyncSession:
+    methods:
+      - state
+      - connection_state
+      - user
+      - config
+      - full_realm_url
+      - wait_for_upload_completion
+      - wait_for_download_completion
+      - register_progress_notifier
+      - unregister_progress_notifier
+      - register_connection_change_callback
+      - unregister_connection_change_callback
+      - revive_if_needed
+      - force_close
+      # JS-specific
+      - DOLLAR_resetSharedPtr
+
+  SyncSubscriptionSet:
+    methods:
+      - version
+      - state
+      - error_str
+      - size
+      - make_mutable_copy
+      - get_state_change_notification
+      - find_by_name
+      - find_by_query
+      - refresh
+
+  MutableSyncSubscriptionSet:
+    methods:
+      - clear
+      - insert_or_assign_by_name
+      - insert_or_assign_by_query
+      - erase_by_name
+      - erase_by_query
+      - commit

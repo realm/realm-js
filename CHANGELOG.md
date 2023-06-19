@@ -65,6 +65,7 @@
 * Aligning analytics with other Realm SDKs. You can still disable the submission by setting environment variable `REALM_DISABLE_ANALYTICS`, and you can print out what is submitted by setting the environment variable `REALM_PRINT_ANALYTICS`.
 * Disabling sync session multiplexing by default in the SDK, since Core's default changed to enabled with v13.11.0. ([#5831](https://github.com/realm/realm-js/pull/5831))
 * Upgraded Realm Core from v13.11.1 to v13.13.0. ([#5873](https://github.com/realm/realm-js/pull/5873))
+* Applied use of an opt-in list for Bindgen. ([#5820](https://github.com/realm/realm-js/pull/5820))
 
 ## 12.0.0-alpha.2 (2023-04-05)
 
