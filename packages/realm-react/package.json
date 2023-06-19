@@ -1,6 +1,6 @@
 {
   "name": "@realm/react",
-  "version": "0.4.3",
+  "version": "0.5.0",
   "description": "React specific hooks and implementation helpers for Realm",
   "type": "module",
   "main": "dist/index.js",
