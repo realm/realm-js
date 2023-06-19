@@ -37,11 +37,13 @@
   // ...
   peopleOver20.unsubscribe();
   ```
-* Added initial support for geospatial queries, with the possibility of querying points. No new data type has been added in this phase, but every embedded object property that conforms to `CanonicalGeoPoint` can be queried.
-The queries can be used to filter object with points that belong to a certain shape following spherical geometry, using the `geoWithin` operator in the `filtered` method. The following shapes are supported in geospatial queries: circle (`GeoCircle` type, defined by its center and radius in radians), box (`GeoBox` type, defined by its bottom left corner and upper right one) and polygon (`GeoPolygon` type, defined by its vertices). Additionally, two new methods have been added, `kmToRadians` and `miToRadians`, that can be used convert kilometers and miles to radians, that are used in the definition of the circle radius. ([#5850](https://github.com/realm/realm-js/pull/5850))  
-Example: 
+* Added initial support for geospatial queries, with the possibility of querying points. No new data type has been added in this phase, but every embedded object property that conforms to `CanonicalGeoPoint` can be queried. ([#5850](https://github.com/realm/realm-js/pull/5850))
+  * The queries can be used to filter objects whose points lie within a certain area following spherical geometry, using the `geoWithin` operator in the query string to `Results.filtered()`.
+  * The following shapes are supported in geospatial queries: circle (`GeoCircle` type, defined by its center and radius in radians), box (`GeoBox` type, defined by its bottom left and upper right corners) and polygon (`GeoPolygon` type, defined by its vertices).
+  * Additionally, two new functions have been added, `kmToRadians()` and `miToRadians()`, that can be used to convert kilometers and miles to radians respectively, simplifying conversion of a circle's radius.
 ```typescript
-class MyGeoPoint implements CanonicalGeoPoint {  //Example of a point class that can be queried with geospatial queries
+// Example of a user-defined point class that can be queried using geospatial queries
+class MyGeoPoint implements CanonicalGeoPoint {  
   coordinates: GeoPosition;
   type = "Point" as const;
 
