@@ -22,6 +22,7 @@ records:
       - link_origin_property_name
       - is_primary
       - is_indexed
+      - is_fulltext_indexed
       - column_key
 
   ObjectSchema:
