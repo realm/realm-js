@@ -25,20 +25,44 @@ jobs:
           - '@realm/network-transport'
           - '@realm/babel-plugin'
           - '@realm/react'
+        include:
+          - workspace: '@realm/react'
+            use-baas: true
     name: ${{ matrix.workspace }} unit tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: "recursive"
+      - name: Generate server configuration
+        if: ${{matrix.use-baas}}
+        id: baas-config
+        run:
+          suffix=$(node -p 'Math.floor(Math.random()*Number.MAX_SAFE_INTEGER)');
+          subdomain="realm-js-test-server-${{ github.run_id }}-${{ github.run_attempt }}-${suffix}";
+          echo "subdomain=${subdomain}" >> $GITHUB_OUTPUT;
+          echo "url=https://${subdomain}.ngrok.io" >> $GITHUB_OUTPUT;
+      - name: Trigger the test server workflow to start the server
+        if: ${{matrix.use-baas}}
+        run: gh workflow run test-server.yml -f ngrok_subdomain=${{ steps.baas-config.outputs.subdomain }} -f run_id=${{ github.run_id }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+
       - uses: actions/setup-node@v3
         with:
           node-version: 18
+
       # ninja-build is used by default if available and results in faster build times
       - name: Install ninja
         run: sudo apt-get install ninja-build
+
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1
+
+      - name: Set baas env
+        if: ${{matrix.use-baas}}
+        run: echo "REALM_BASE_URL=${{ steps.baas-config.outputs.url }}" >> $GITHUB_ENV
+
       # Install the root package to get dev-dependencies
       # (--ignore-scripts to avoid downloading or building the native module)
       - run: npm ci --ignore-scripts

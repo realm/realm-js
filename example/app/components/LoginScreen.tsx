@@ -1,55 +1,15 @@
-import React, {useCallback, useState} from 'react';
+import React, {useState} from 'react';
 import {View, Text, StyleSheet, TextInput, Pressable} from 'react-native';
 import colors from '../styles/colors';
 import {shadows} from '../styles/shadows';
 import {buttonStyles} from '../styles/button';
-import {Realm, useApp} from '@realm/react';
-
-export enum AuthState {
-  None,
-  Loading,
-  LoginError,
-  RegisterError,
-}
+import {AuthOperationName, useAuth, useEmailPasswordAuth} from '@realm/react';
 
 export const LoginScreen = () => {
-  const app = useApp();
+  const {result, logInWithEmailPassword} = useAuth();
+  const {register} = useEmailPasswordAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [authState, setAuthState] = useState(AuthState.None);
-
-  // If the user presses "login" from the auth screen, try to log them in
-  // with the supplied credentials
-  const handleLogin = useCallback(async () => {
-    setAuthState(AuthState.Loading);
-    const credentials = Realm.Credentials.emailPassword(email, password);
-    try {
-      await app.logIn(credentials);
-      setAuthState(AuthState.None);
-    } catch (e) {
-      console.log('Error logging in', e);
-      setAuthState(AuthState.LoginError);
-    }
-  }, [email, password, setAuthState, app]);
-
-  // If the user presses "register" from the auth screen, try to register a
-  // new account with the  supplied credentials and login as the newly created user
-  const handleRegister = useCallback(async () => {
-    setAuthState(AuthState.Loading);
-
-    try {
-      // Register the user...
-      await app.emailPasswordAuth.registerUser({email, password});
-      // ...then login with the newly created user
-      const credentials = Realm.Credentials.emailPassword(email, password);
-
-      await app.logIn(credentials);
-      setAuthState(AuthState.None);
-    } catch (e) {
-      console.log('Error registering', e);
-      setAuthState(AuthState.RegisterError);
-    }
-  }, [email, password, setAuthState, app]);
 
   return (
     <View style={styles.content}>
@@ -58,7 +18,7 @@ export const LoginScreen = () => {
           style={styles.input}
           value={email}
           onChangeText={setEmail}
-          autoCompleteType="email"
+          autoComplete="email"
           textContentType="emailAddress"
           autoCapitalize="none"
           autoCorrect={false}
@@ -71,18 +31,19 @@ export const LoginScreen = () => {
           value={password}
           onChangeText={setPassword}
           secureTextEntry
-          autoCompleteType="password"
+          autoComplete="password"
           textContentType="password"
           placeholder="Password"
         />
       </View>
 
-      {authState === AuthState.LoginError && (
+      {result?.error?.operation === AuthOperationName.LogIn && (
         <Text style={[styles.error]}>
-          There was an error logging in, please try again
+          There was an error logging in, please try again{' '}
         </Text>
       )}
-      {authState === AuthState.RegisterError && (
+
+      {result?.error?.operation === AuthOperationName.Register && (
         <Text style={[styles.error]}>
           There was an error registering, please try again
         </Text>
@@ -90,23 +51,20 @@ export const LoginScreen = () => {
 
       <View style={styles.buttons}>
         <Pressable
-          onPress={handleLogin}
-          style={[
-            styles.button,
-            authState === AuthState.Loading && styles.buttonDisabled,
-          ]}
-          disabled={authState === AuthState.Loading}>
+          onPress={() => logInWithEmailPassword({email, password})}
+          style={[styles.button, result.pending && styles.buttonDisabled]}
+          disabled={result.pending}>
           <Text style={buttonStyles.text}>Login</Text>
         </Pressable>
 
         <Pressable
-          onPress={handleRegister}
+          onPress={() => register({email, password})}
           style={[
             styles.button,
-            authState === AuthState.Loading && styles.buttonDisabled,
+            result.pending && styles.buttonDisabled,
             styles.registerButton,
           ]}
-          disabled={authState === AuthState.Loading}>
+          disabled={result.pending}>
           <Text style={buttonStyles.text}>Register</Text>
         </Pressable>
       </View>

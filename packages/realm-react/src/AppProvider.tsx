@@ -18,11 +18,33 @@
 import { isEqual } from "lodash";
 import React, { createContext, useContext, useLayoutEffect, useRef, useState } from "react";
 import Realm from "realm";
+import { AuthResult, OperationState } from "./types";
+
+type AppContextValue = Realm.App | null;
 
 /**
  * Create a context containing the Realm app.  Should be accessed with the useApp hook.
  */
-const AppContext = createContext<Realm.App | null>(null);
+const AppContext = createContext<AppContextValue>(null);
+
+type AppOpStateValue = [AuthResult, React.Dispatch<React.SetStateAction<AuthResult>>] | null;
+
+const AuthOperationContext = createContext<AppOpStateValue>(null);
+
+type AuthOperationProps = { children: React.ReactNode };
+
+const AuthOperationProvider: React.FC<AuthOperationProps> = ({ children }) => {
+  const [authOpResult, setAuthOpResult] = useState<AuthResult>({
+    state: OperationState.NotStarted,
+    pending: false,
+    success: false,
+    error: undefined,
+    operation: null,
+  });
+  return (
+    <AuthOperationContext.Provider value={[authOpResult, setAuthOpResult]}>{children}</AuthOperationContext.Provider>
+  );
+};
 
 /**
  * Props for the AppProvider component. These replicate the options which
@@ -32,29 +54,15 @@ const AppContext = createContext<Realm.App | null>(null);
 type AppProviderProps = Realm.AppConfiguration & {
   children: React.ReactNode;
   appRef?: React.MutableRefObject<Realm.App | null>;
-  logLevel?: Realm.App.Sync.LogLevel;
-  logger?: (level: Realm.App.Sync.NumericLogLevel, message: string) => void;
 };
-
-function defaultLogger(level: Realm.App.Sync.NumericLogLevel, message: string) {
-  console.log(`[${level}] ${message}`);
-}
 
 /**
  * React component providing a Realm App instance on the context for the
  * sync hooks to use. An `AppProvider` is required for an app to use the hooks.
  * @param appProps - The {@link Realm.AppConfiguration} for app services, passed as props.
  * @param appRef - A ref to the app instance, which can be used to access the app instance outside of the React component tree.
- * @param logLevel - The {@link Realm.App.Sync.LogLevel} to use for the app instance.
- * @param logger - A callback function to provide custom logging. It takes a {@link Realm.App.Sync.NumericLogLevel} and a message string as arguments.
  */
-export const AppProvider: React.FC<AppProviderProps> = ({
-  children,
-  appRef,
-  logLevel,
-  logger = defaultLogger,
-  ...appProps
-}) => {
+export const AppProvider: React.FC<AppProviderProps> = ({ children, appRef, ...appProps }) => {
   const configuration = useRef<Realm.AppConfiguration>(appProps);
 
   const [app, setApp] = useState<Realm.App>(() => new Realm.App(configuration.current));
@@ -73,14 +81,14 @@ export const AppProvider: React.FC<AppProviderProps> = ({
   useLayoutEffect(() => {
     if (appRef) {
       appRef.current = app;
-      if (logLevel) {
-        Realm.App.Sync.setLogger(app, logger);
-        Realm.App.Sync.setLogLevel(app, logLevel);
-      }
     }
-  }, [appRef, app, logLevel]);
+  }, [appRef, app]);
 
-  return <AppContext.Provider value={app}>{children}</AppContext.Provider>;
+  return (
+    <AppContext.Provider value={app}>
+      <AuthOperationProvider>{children}</AuthOperationProvider>
+    </AppContext.Provider>
+  );
 };
 
 /**
@@ -94,8 +102,19 @@ export const useApp = <
 >(): Realm.App<FunctionsFactoryType, CustomDataType> => {
   const app = useContext(AppContext);
 
-  if (app === null) {
+  if (!app) {
     throw new Error("No app found. Did you forget to wrap your component in an <AppProvider>?");
   }
   return app as Realm.App<FunctionsFactoryType, CustomDataType>;
+};
+
+export const useAuthResult = () => {
+  const authOperationStateHook = useContext(AuthOperationContext);
+
+  if (!authOperationStateHook) {
+    throw new Error(
+      "Auth operation statue could not be determined. Did you forget to wrap your component in an <AppProvider>?",
+    );
+  }
+  return authOperationStateHook;
 };

@@ -228,3 +228,6 @@ export const useObject = defaultContext.useObject;
 export { Realm };
 export * from "./AppProvider";
 export { useUser, UserProvider } from "./UserProvider";
+export * from "./useAuth";
+export * from "./useEmailPasswordAuth";
+export * from "./types";
