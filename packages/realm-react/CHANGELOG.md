@@ -1,12 +1,30 @@
 ## vNext (TBD)
 
+### Deprecations
+* None
+
 ### Enhancements
-* Add sync log configuration to AppProvider ([#5517](https://github.com/realm/realm-js/issue/5517))
-  Usage example:
-	```tsx
-	// logger includes a default that prints level and message
-	<AppProvider id={appId} logLevel={'trace'} logger={(level, message) => console.log(`[${level}]: ${message}`)}>
-	```
+* None
+
+### Fixed
+* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
+* None
+
+### Compatibility
+* React Native >= v0.71.4
+* Realm Studio v14.0.0.
+* File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
+
+### Internal
+<!-- * Either mention core version or upgrade -->
+<!-- * Using Realm Core vX.Y.Z -->
+<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
+
+## 0.5.0 (2023-06-19)
+
+### Enhancements
+* Add authentication hooks, `useAuth` and `useEmailPasswordAuth`
+	[Usage example](https://github.com/realm/realm-js/blob/main/packages/realm-react/README.md#authentication-hooks)
 * Allow `useQuery` to be passed a `query` function where `sorted` and `filtered` methods can be called ([#5471](https://github.com/realm/realm-js/issues/4973)) Thanks for the contribution [@levipro](https://github.com/levipro)!
 
   Example:

@@ -84,7 +84,7 @@ export class Credentials {
    * @return {Credentials} An instance of `Credentials` that can be used in {@link App.logIn}.
    */
   static apiKey(key: string): Credentials {
-    return new Credentials(binding.AppCredentials.userApiKey(key));
+    return new Credentials(binding.AppCredentials.apiKey(key));
   }
 
   /**

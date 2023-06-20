@@ -95,7 +95,10 @@ jobs:
         cache-dependency-path: '**/package-lock.json'
 
     - name: Install node modules
-      run: npx lerna bootstrap --scope=${{ env.PACKAGE_NAME }} --include-dependencies
+      run: npm ci --ignore-scripts
+
+    - name: Bundle package
+      run: npm run bundle --workspace=${{env.PACKAGE_NAME}}
 
     - name: Read version
       id: get-version

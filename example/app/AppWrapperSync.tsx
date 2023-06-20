@@ -8,6 +8,7 @@ import colors from './styles/colors';
 import {AppSync} from './AppSync';
 
 import {RealmProvider} from '@realm/react';
+import {OpenRealmBehaviorType, OpenRealmTimeOutBehavior} from 'realm';
 
 export const AppWrapperSync: React.FC<{
   appId: string;
@@ -19,7 +20,14 @@ export const AppWrapperSync: React.FC<{
         <UserProvider fallback={<LoginScreen />}>
           <RealmProvider
             schema={schemas}
-            sync={{flexible: true, onError: error => console.error(error)}}>
+            sync={{
+              flexible: true,
+              existingRealmFileBehavior: {
+                type: OpenRealmBehaviorType.DownloadBeforeOpen,
+                timeOut: 1000,
+                timeOutBehavior: OpenRealmTimeOutBehavior.OpenLocalRealm,
+              },
+            }}>
             <AppSync />
           </RealmProvider>
         </UserProvider>

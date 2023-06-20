@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { CollectionChangeSet } from "realm";
+import Realm, { CollectionChangeSet } from "realm";
 
 import { importAppBefore, openRealmBeforeEach } from "../../hooks";
 import { expectArraysEqual, expectDecimalEqual } from "../../utils/comparisons";

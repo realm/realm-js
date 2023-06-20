@@ -37,6 +37,7 @@
   // ...
   peopleOver20.unsubscribe();
   ```
+<<<<<<< HEAD
 * Added initial support for geospatial queries, with the possibility of querying points. No new data type has been added in this phase, but every embedded object property that conforms to `CanonicalGeoPoint` can be queried. ([#5850](https://github.com/realm/realm-js/pull/5850))
   * The queries can be used to filter objects whose points lie within a certain area following spherical geometry, using the `geoWithin` operator in the query string to `Results.filtered()`.
   * The following shapes are supported in geospatial queries: circle (`GeoCircle` type, defined by its center and radius in radians), box (`GeoBox` type, defined by its bottom left and upper right corners) and polygon (`GeoPolygon` type, defined by its vertices).
@@ -109,6 +110,7 @@
   //Equivalent string query without arguments
   result = pois.filtered("location geoWithin geoCircle([13.397255909303222, 52.51174463251085], 0.0783932519)");
   ```
+* Support sort/distinct based on values from a dictionary e.g. `TRUEPREDICATE SORT(meta['age'])`. ([realm/realm-core#5311](https://github.com/realm/realm-core/pull/5311))
 
 ### Fixed
 * Fix a stack overflow crash when using the query parser with long chains of AND/OR conditions. ([realm/realm-core#6428](https://github.com/realm/realm-core/pull/6428), since v10.11.0)
@@ -122,6 +124,10 @@
 * Performing a large number of queries without ever performing a write resulted in steadily increasing memory usage, some of which was never fully freed due to an unbounded cache. ([realm/realm-core#6530](https://github.com/realm/realm-core/pull/6530), since v10.19.0)  
 * Partition-Based to Flexible Sync Migration for migrating a client app that uses partition based sync to use flexible sync under the hood if the server has been migrated to flexible sync is officially supported with this release. Any clients using an older version of Realm will receive a "switch to flexible sync" error message when trying to sync with the app. ([realm/realm-core#6554](https://github.com/realm/realm-core/issues/6554), since v11.9.0)
 * Fix deprecated namespace method warning when building for Android ([#5646](https://github.com/realm/realm-js/issues/5646))
+* Fixed a potential crash when opening the realm after failing to download a fresh FLX realm during an automatic client reset. ([realm/realm-core#6494](https://github.com/realm/realm-core/issues/6494), since v10.19.5)
+* Changing parameters for a query after initialization could lead to a crash. ([realm/realm-core#6674](https://github.com/realm/realm-core/pull/6674), since v10.20.0)
+* Querying with object list arguments now works as expected. ([realm/realm-core#6688](https://github.com/realm/realm-core/pull/6688), since v10.3.3)
+* Fixed a crash when session multiplexing was enabled, caused by a use-after-free in SessionWrapper when tearing down sessions. ([realm/realm-core#6656](https://github.com/realm/realm-core/pull/6656), since v13.9.3)
 
 ### Compatibility
 * React Native >= v0.71.4
@@ -136,7 +142,8 @@
 * Bump sync protocol to v9 to indicate client has fix for client reset error during async open. ([realm/realm-core#6609](https://github.com/realm/realm-core/issues/6609))
 * Aligning analytics with other Realm SDKs. You can still disable the submission by setting environment variable `REALM_DISABLE_ANALYTICS`, and you can print out what is submitted by setting the environment variable `REALM_PRINT_ANALYTICS`.
 * Disabling sync session multiplexing by default in the SDK, since Core's default changed to enabled with v13.11.0. ([#5831](https://github.com/realm/realm-js/pull/5831))
-* Upgraded Realm Core from v13.11.1 to v13.13.0. ([#5873](https://github.com/realm/realm-js/pull/5873))
+* Applied use of an opt-in list for Bindgen. ([#5820](https://github.com/realm/realm-js/pull/5820))
+* Upgraded Realm Core from v13.11.1 to v13.15.1. ([#5873](https://github.com/realm/realm-js/pull/5873) & [#5909](https://github.com/realm/realm-js/pull/5909))
 
 ## 12.0.0-alpha.2 (2023-04-05)
 

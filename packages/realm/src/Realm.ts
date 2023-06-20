@@ -1815,17 +1815,17 @@ Object.defineProperty(safeGlobalThis, "Realm", {
   get() {
     if (flags.THROW_ON_GLOBAL_REALM) {
       throw new Error(
-        "Accessed global Realm, please update your code to ensure you import Realm via a named import:\nimport { Realm } from 'realm';",
+        "Accessed global Realm, please update your code to ensure you import Realm:\nimport Realm from 'realm';",
       );
     } else if (!warnedAboutGlobalRealmUse) {
       // eslint-disable-next-line no-console
       console.warn(
-        "Your app is relying on a Realm global, which will be removed in realm-js v13, please update your code to ensure you import Realm via a named import:\n\n",
-        'import { Realm } from "realm"; // For ES Modules\n',
-        'const { Realm } = require("realm"); // For CommonJS\n\n',
+        "Your app is relying on a Realm global, which will be removed in realm-js v13, please update your code to ensure you import Realm:\n\n",
+        'import Realm from "realm"; // For ES Modules\n',
+        'const Realm = require("realm"); // For CommonJS\n\n',
         "To determine where, put this in the top of your index file:\n",
-        `import { flags } from "realm";\n`,
-        `flags.THROW_ON_GLOBAL_REALM = true`,
+        `import Realm from "realm";\n`,
+        `Realm.flags.THROW_ON_GLOBAL_REALM = true`,
       );
       warnedAboutGlobalRealmUse = true;
     }
