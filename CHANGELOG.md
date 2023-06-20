@@ -68,7 +68,7 @@
 * Upgraded Realm Core from v13.10.1 to v13.11.0. ([#5811](https://github.com/realm/realm-js/issues/5811))
 * Bump sync protocol to v9 to indicate client has fix for client reset error during async open. ([realm/realm-core#6609](https://github.com/realm/realm-core/issues/6609))
 * Aligning analytics with other Realm SDKs. You can still disable the submission by setting environment variable `REALM_DISABLE_ANALYTICS`, and you can print out what is submitted by setting the environment variable `REALM_PRINT_ANALYTICS`.
-* Disabling sync session multiplexing by default in the SDK, since Core's default changed to enabled with v13.11.0. ([#5831](https://github.com/realm/realm-js/pull/5831))
+* Enabling sync session multiplexing by default in the SDK. ([#5831](https://github.com/realm/realm-js/pull/5831) & [#5912](https://github.com/realm/realm-js/pull/5912))
 * Applied use of an opt-in list for Bindgen. ([#5820](https://github.com/realm/realm-js/pull/5820))
 * Upgraded Realm Core from v13.11.1 to v13.15.1. ([#5873](https://github.com/realm/realm-js/pull/5873) & [#5909](https://github.com/realm/realm-js/pull/5909))
 

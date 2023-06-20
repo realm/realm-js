@@ -58,6 +58,13 @@ export type AppConfiguration = {
    * The timeout for requests (in milliseconds)
    */
   timeout?: number;
+
+  /**
+   * Use the same underlying connection towards the server across multiple sync sessions.
+   * This use less resources on the server and provide a small increase in speed when opening subsequent synced Realms.
+   * @default true
+   */
+  multiplexSessions?: boolean;
 };
 
 /**
@@ -177,7 +184,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
   constructor(configOrId: AppConfiguration | string) {
     const config: AppConfiguration = typeof configOrId === "string" ? { id: configOrId } : configOrId;
     assert.object(config, "config");
-    const { id, baseUrl, app, timeout } = config;
+    const { id, baseUrl, app, timeout, multiplexSessions = true } = config;
     assert.string(id, "id");
     if (timeout !== undefined) {
       assert.number(timeout, "timeout");
@@ -197,8 +204,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
         baseFilePath: fs.getDefaultDirectoryPath(),
         metadataMode: binding.MetadataMode.NoEncryption,
         userAgentBindingInfo: App.userAgent,
-        // Default session multiplexing to being disabled.
-        multiplexSessions: false,
+        multiplexSessions,
       },
     );
   }

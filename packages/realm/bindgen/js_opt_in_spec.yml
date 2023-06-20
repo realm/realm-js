@@ -114,6 +114,7 @@ records:
       - base_file_path
       - metadata_mode
       - user_agent_binding_info
+      - multiplex_sessions
 
   SyncError:
    fields:
