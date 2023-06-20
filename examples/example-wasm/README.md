@@ -66,84 +66,21 @@ The following shows the project structure and the most relevant files.
 
 ### Prerequisites
 
-* Emscripten v3.1.40 or later.
-  * Follow the [recommended installation instructions](https://emscripten.org/docs/getting_started/downloads.html#installation-instructions-using-the-emsdk-recommended).
-  * (In particular, do not use v3.1.39)
 * [Node.js](https://nodejs.org/en) v16 or later
 
 ### Installation
 
-Clone the repository and the current branch, then navigate to the project directory:
+Clone the repository and the current branch, then navigate to the example app folder:
 
 ```sh
-cd realm-js
+cd realm-js/examples/example-wasm
 ```
 
-Install dependencies and packages:
+Install dependencies:
 
 ```sh
-# From the root (realm-js/)
-git submodule update --init --recursive
-npm i
+npm install
 ```
-
-> <details>
-> <summary> 📣 Toggle to see changes needed if moving or renaming this app directory 📣</summary>
-> <br>
->
-> This app is located in `realm-js/examples/example-wasm/`. The following configurations need to be updated if moving or renaming this directory:
->
-> [craco.config.ts](./craco.config.ts):
->   * Replace `"../../packages"` with the relative path to the `packages` folder.
-> ```TypeScript
-> const config: CracoConfig = {
->   webpack: {
->     configure(config, context) {
->         // Update:
->         path.resolve(__dirname, "../../packages")
->     },
->   },
-> };
-> ```
-> [package.json](./package.json):
->   * Replace `"../../packages"` with the relative path to the `packages` folder.
-> ```json
-> {
->   "name": "@realm/example-wasm",
->   "wireit": {
->     "start": {
->       "command": "craco start",
->       "dependencies": [
->         // Update:
->         "../../packages/realm:build:browser",
->         "../../packages/realm:bundle",
->         "../../packages/realm-react:bundle"
->       ]
->     },
->     "build": {
->       "command": "craco build",
->       "dependencies": [
->         // Update:
->         "../../packages/realm:build:browser",
->         "../../packages/realm:bundle",
->         "../../packages/realm-react:bundle"
->       ]
->     }
->   },
-> }
-> ```
-> [realm-js/package.json](../package.json):
->   * Replace `"examples/example-wasm"` with the relative path to the new location (e.g. `"new-folder/example-wasm"`).
-> ```json
-> {
->   "name": "@realm/root",
->   "workspaces": [
->     // Update:
->     "examples/example-wasm",
->   ],
-> }
-> ```
-> </details>
 
 ### Setting up an Atlas App and Device Sync
 
@@ -178,7 +115,6 @@ Once done, [copy your App ID](https://www.mongodb.com/docs/atlas/app-services/re
 Navigate to `example-wasm/` and build the app (the output will be located in the `build/` folder and is minified):
 
 ```sh
-cd examples/example-wasm
 npm run build
 ```
 
@@ -187,13 +123,10 @@ npm run build
 Navigate to `example-wasm/` and start the app in development mode:
 
 ```sh
-cd examples/example-wasm
 npm start
 ```
 
 This should automatically open your default browser; but if not, open [http://localhost:3000](http://localhost:3000).
-
-The page will reload if you make edits to the code. (Changes made to code in dependencies such as `realm` or `@realm/react` will require a rebuild.)
 
 ### Troubleshooting
 

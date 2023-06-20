@@ -18,8 +18,7 @@
 
 import { useCallback } from 'react';
 import { Credentials } from 'realm';
-
-const { useApp } = await import('@realm/react');
+import { useApp } from '@realm/react';
 
 /**
  * Manages authenticating with an Atlas App.

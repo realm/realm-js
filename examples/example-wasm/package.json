@@ -1,28 +1,11 @@
 {
   "name": "@realm/example-wasm",
   "version": "0.1.0",
+  "description": "Example React App Using Realm & Sync for Web",
   "private": true,
   "scripts": {
-    "start": "wireit",
-    "build": "wireit"
-  },
-  "wireit": {
-    "start": {
-      "command": "craco start",
-      "dependencies": [
-        "../../packages/realm:build:browser",
-        "../../packages/realm:bundle",
-        "../../packages/realm-react:bundle"
-      ]
-    },
-    "build": {
-      "command": "craco build",
-      "dependencies": [
-        "../../packages/realm:build:browser",
-        "../../packages/realm:bundle",
-        "../../packages/realm-react:bundle"
-      ]
-    }
+    "start": "craco start",
+    "build": "craco build"
   },
   "eslintConfig": {
     "extends": [
@@ -43,14 +26,15 @@
     ]
   },
   "dependencies": {
-    "@realm/react": "^0.4.3",
+    "@realm/react": "^0.5.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.11.2",
-    "realm": "*",
+    "realm": "12.0.0-browser.2",
     "web-vitals": "^2.1.4"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@craco/craco": "^7.1.0",
     "@craco/types": "^7.1.0",
     "@testing-library/jest-dom": "^5.16.5",

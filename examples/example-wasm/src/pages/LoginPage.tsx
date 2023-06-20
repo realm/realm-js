@@ -18,12 +18,11 @@
 
 import { FormEvent, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
+import { useApp } from '@realm/react';
 
 import { useAppManager } from '../hooks/useAppManager';
 import logo from '../assets/logo.png';
 import styles from '../styles/LoginPage.module.css';
-
-const { useApp } = await import('@realm/react');
 
 const PASSWORD_MIN_LENGTH = 6;
 

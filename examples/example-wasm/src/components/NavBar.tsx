@@ -17,11 +17,10 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '@realm/react';
 
 import logo from '../assets/logo.png';
 import styles from '../styles/NavBar.module.css';
-
-const { useUser } = await import('@realm/react');
 
 export function NavBar() {
   const navigate = useNavigate();

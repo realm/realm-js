@@ -17,11 +17,10 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { Navigate, Outlet } from 'react-router-dom';
+import { RealmProvider, UserProvider } from '@realm/react';
 
 import { Task } from './models/Task';
 import { PageLayout } from './components/PageLayout';
-
-const { RealmProvider, UserProvider } = await import('@realm/react');
 
 export function AuthenticatedApp() {
   // The component set as the `fallback` prop will be rendered if a user has

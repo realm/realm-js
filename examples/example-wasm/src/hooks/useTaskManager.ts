@@ -17,10 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { useCallback, useEffect, useState } from 'react';
+import { useQuery, useRealm, useUser } from '@realm/react';
 
 import { Task } from '../models/Task';
-
-const { useQuery, useRealm, useUser } = await import('@realm/react');
 
 /**
  * Manages changes to the tasks in the realm.
