@@ -22,18 +22,6 @@ import Realm from "realm";
 import { useAuthOperation } from "./useAuthOperation";
 import { useCallback } from "react";
 
-/**
- * Hook providing operations and corresponding state for authenticating with an
- * Atlas App.
- *
- * The {@link AuthResult} values returned from this hook (e.g. `state`, `pending`, etc.) are
- * shared across all components under a given `AppProvider`, as only one operation can be in
- * progress at a given time (i.e. we will store the values on the context). This means that,
- * for example, multiple components can use the `useAuth` hook to access
- * `loginResult.pending` to render a spinner when login is in progress, without
- * needing to pass that state around or store it somewhere global in their app
- * code.
- */
 interface UseAuth {
   /**
    * Log in with a {@link Realm.Credentials} instance. This allows login with any
@@ -107,6 +95,20 @@ interface UseAuth {
   result: AuthResult;
 }
 
+/**
+ * Hook providing operations and corresponding state for authenticating with an
+ * Atlas App.
+ *
+ * The {@link AuthResult} values returned from this hook (e.g. `state`, `pending`, etc.) are
+ * shared across all components under a given `AppProvider`, as only one operation can be in
+ * progress at a given time (i.e. we will store the values on the context). This means that,
+ * for example, multiple components can use the `useAuth` hook to access
+ * `loginResult.pending` to render a spinner when login is in progress, without
+ * needing to pass that state around or store it somewhere global in their app
+ * code.
+ *
+ * @returns An object containing operations and state for authenticating with an Atlas App.
+ */
 export function useAuth(): UseAuth {
   const app = useApp();
   const [result] = useAuthResult();
