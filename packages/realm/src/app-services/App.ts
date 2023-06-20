@@ -61,7 +61,7 @@ export type AppConfiguration = {
 
   /**
    * Use the same underlying connection towards the server across multiple sync sessions.
-   * This use less resources on the server and provide a small increase in speed when opening subsequent synced Realms.
+   * This uses less resources on the server and provides a small increase in speed when opening subsequent synced Realms.
    * @default true
    */
   multiplexSessions?: boolean;
