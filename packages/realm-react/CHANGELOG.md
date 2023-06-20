@@ -1,10 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
-
-### Enhancements
-* None
+## 0.5.1 (2023-06-20)
 
 ### Fixed
 * Include the `src` in the distributed package.  This fixes a warning about source maps being not included.
