@@ -50,9 +50,9 @@ jobs:
       fail-fast: false
       matrix:
         variant:
-          - { os: linux, runner: ubuntu-latest, arch: x64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true, container: "ghcr.io/${{ github.repository }}/linux-x64:main" }
-          - { os: linux, runner: ubuntu-latest, arch: arm, artifact-path: packages/realm/prebuilds, container: "ghcr.io/${{ github.repository }}/linux-arm:main" }
-          - { os: linux, runner: ubuntu-latest, arch: arm64, artifact-path: packages/realm/prebuilds, container: "ghcr.io/${{ github.repository }}/linux-arm:main" }
+          - { os: linux, runner: ubuntu-latest, arch: x64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
+          - { os: linux, runner: ubuntu-latest, arch: arm, artifact-path: packages/realm/prebuilds }
+          - { os: linux, runner: ubuntu-latest, arch: arm64, artifact-path: packages/realm/prebuilds }
           - { os: windows, runner: windows-latest, arch: x64, artifact-path: packages/realm/prebuilds, test-node: true, test-electron: true }
           - { os: windows, runner: windows-2019, arch: ia32, artifact-path: packages/realm/prebuilds }
           - { os: android, runner: ubuntu-latest, arch: x86_64, artifact-path: packages/realm/react-native/android/src/main/jniLibs }
