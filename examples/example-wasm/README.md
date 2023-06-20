@@ -43,7 +43,6 @@ The following shows the project structure and the most relevant files.
 │   │   └── TaskList.tsx        - Render all tasks
 │   │
 │   ├── hooks
-│   │   ├── useAppManager.ts    - Handle login/register
 │   │   └── useTaskManager.ts   - Handle CRUD task
 │   │
 │   ├── models
@@ -136,7 +135,7 @@ A great way to troubleshoot sync-related errors is to read the [logs in the App 
 
 ### Persistence
 
-In the current state of the Realm JS SDK for browsers, in-memory Realms are used for storing the data locally. Therefore, a hard refresh in the browser will clear the local data (e.g. logged in users will need to reauthenticate).
+In the current state of the Realm JS SDK for browsers, in-memory Realms are used for storing the data locally. Therefore, a hard refresh in the browser will clear the local data (e.g. logged in users will need to reauthenticate). Additionally, data is not shared across tabs.
 
 Note that the data will still be persisted in MongoDB Atlas and synced to the client once authenticated.
 

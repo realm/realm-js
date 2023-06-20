@@ -16,48 +16,39 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { FormEvent, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
-import { useApp } from '@realm/react';
+import { FormEvent, useEffect, useState } from 'react';
+import { Navigate } from 'react-router-dom';
+import { AuthOperationName, useApp, useEmailPasswordAuth } from '@realm/react';
 
-import { useAppManager } from '../hooks/useAppManager';
 import logo from '../assets/logo.png';
 import styles from '../styles/LoginPage.module.css';
 
-const PASSWORD_MIN_LENGTH = 6;
-
 export function LoginPage() {
   const atlasApp = useApp();
-  const navigate = useNavigate();
-  const { register, logIn } = useAppManager();
+  const { register, logIn, result } = useEmailPasswordAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authRequest, setAuthRequest] = useState<'login' | 'register'>('login');
-  const [error, setError] = useState('');
 
+  useEffect(() => {
+    if (result.operation === AuthOperationName.Register && result.success) {
+      logIn({ email, password });
+    }
+  }, [result.operation, result.success]);
+
+  // The `currentUser` will be set after a successful login.
   if (atlasApp.currentUser) {
-    return <Navigate to='/tasks' />
+    return <Navigate to='/tasks' />;
   }
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
 
-    if (password.length < PASSWORD_MIN_LENGTH) {
-      return setError(`Password must contain at least ${PASSWORD_MIN_LENGTH} characters.`);
+    if (authRequest === 'register') {
+      register({ email, password });
+    } else {
+      logIn({ email, password });
     }
-
-    try {
-      if (authRequest === 'register') {
-        await register({ email, password });
-      }
-      await logIn({ email, password });
-    } catch (err: any) {
-      const message = `There was an error ${authRequest === 'login' ? 'logging in' : 'registering'}, please try again.`;
-      console.error(`${message}\nError: ${err.message || err}`);
-      return setError(message);
-    }
-
-    navigate('/tasks');
   };
 
   const handleButtonClicked = (event: FormEvent<HTMLButtonElement>): void => {
@@ -86,13 +77,13 @@ export function LoginPage() {
         <input
           className={styles.input}
           type='password'
-          placeholder={`Password (min. ${PASSWORD_MIN_LENGTH} chars)`}
+          placeholder='Password (min. 6 chars)'
           value={password}
           onChange={(event) => setPassword(event.currentTarget.value)}
         />
-        {error && (
+        {result.error && (
           <p className={styles.error}>
-            {error}
+            {result.error.message}
           </p>
         )}
         <div className={styles.buttons}>
