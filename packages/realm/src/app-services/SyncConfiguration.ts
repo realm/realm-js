@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { EJSON, ObjectId, UUID } from "bson";
+import { SyncProxyConfig } from "realm/binding";
 
 import {
   AnyUser,
@@ -240,6 +241,11 @@ export type BaseSyncConfiguration = {
   cancelWaitsOnNonFatalError?: boolean;
   /** @internal */
   _sessionStopPolicy?: SessionStopPolicy;
+
+  /**
+   * HTTP proxy configuration (node.js/Electron only)
+   */
+  proxyConfig?: SyncProxyConfig;
 };
 
 export type InitialSubscriptions = {
@@ -306,6 +312,7 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
     ssl,
     clientReset,
     cancelWaitsOnNonFatalError,
+    proxyConfig,
   } = config;
 
   return {
@@ -323,6 +330,7 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
       : undefined,
     ...parseClientResetConfig(clientReset, onError),
     cancelWaitsOnNonfatalError: cancelWaitsOnNonFatalError,
+    proxyConfig: proxyConfig ? proxyConfig : undefined,
   };
 }
 

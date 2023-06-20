@@ -52,6 +52,7 @@ const PRIMITIVES_MAPPING: Record<string, string> = {
   "bson::BsonDocument": "Record<string, EJson>",
   "bson::BsonArray": "EJson[]",
   QueryArg: "(MixedArg | MixedArg[])",
+  "std::uint_fast16_t": "number",
 };
 
 // Be Careful! These need to apply to the *whole* type, so arg[] would be problematic if arg is A|B.
