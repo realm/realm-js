@@ -80,9 +80,6 @@
     };
   }
 
-  const berlinCoordinates = new MyGeoPoint(13.397255909303222, 52.51174463251085);
-  const radius = kmToRadians(500); //500 km = 0.0783932519 rad
-
   const copenhagen: IPointOfInterest = {
     _id: 1,
     location: new MyGeoPoint(12.558892784045568, 55.66717839648401),
@@ -98,6 +95,8 @@
 
   const pois = realm.objects(PointOfInterest);
 
+  const berlinCoordinates = new MyGeoPoint(13.397255909303222, 52.51174463251085);
+  const radius = kmToRadians(500); //500 km = 0.0783932519 rad
   //Circle with a radius of 500kms centered in Berlin
   const circleShape: GeoCircle = {
     center: berlinCoordinates,  
@@ -109,7 +108,7 @@
 
   //Equivalent string query without arguments
   result = pois.filtered("location geoWithin geoCircle([13.397255909303222, 52.51174463251085], 0.0783932519)");
-```
+  ```
 
 ### Fixed
 * Fix a stack overflow crash when using the query parser with long chains of AND/OR conditions. ([realm/realm-core#6428](https://github.com/realm/realm-core/pull/6428), since v10.11.0)
