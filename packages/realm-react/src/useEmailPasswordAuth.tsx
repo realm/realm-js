@@ -23,19 +23,6 @@ import { useAuthOperation } from "./useAuthOperation";
 import { useCallback } from "react";
 import { EmailPasswordAuth } from "realm/dist/bundle";
 
-/**
- * Hook providing operations and corresponding state for authenticating with an
- * Atlas App with Email/Password.  It also contains operations related to
- * Email/Password authentication, such as resetting password and confirming a user.
- *
- * The {@link AuthResult} values returned from this hook (e.g. `state`, `pending`, etc.) are
- * shared across all components under a given `AppProvider`, as only one operation can be in
- * progress at a given time (i.e. we will store the values on the context). This means that,
- * for example, multiple components can use the `useEmailPasswordAuth` hook to access
- * `result.pending` to render a spinner when login is in progress, without
- * needing to pass that state around or store it somewhere global in their app
- * code.
- */
 interface UseEmailPasswordAuth {
   /**
    * Convenience function to log in a user with an email and password - users
@@ -115,6 +102,21 @@ interface UseEmailPasswordAuth {
   result: AuthResult;
 }
 
+/**
+ * Hook providing operations and corresponding state for authenticating with an
+ * Atlas App with Email/Password.  It also contains operations related to
+ * Email/Password authentication, such as resetting password and confirming a user.
+ *
+ * The {@link AuthResult} values returned from this hook (e.g. `state`, `pending`, etc.) are
+ * shared across all components under a given `AppProvider`, as only one operation can be in
+ * progress at a given time (i.e. we will store the values on the context). This means that,
+ * for example, multiple components can use the `useEmailPasswordAuth` hook to access
+ * `result.pending` to render a spinner when login is in progress, without
+ * needing to pass that state around or store it somewhere global in their app
+ * code.
+ *
+ * @returns An object containing operations and state related to Email/Password authentication.
+ */
 export function useEmailPasswordAuth(): UseEmailPasswordAuth {
   const app = useApp();
   const [result] = useAuthResult();

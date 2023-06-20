@@ -42,8 +42,8 @@ export function useAuthOperation<Args extends unknown[]>({
         error: undefined,
         operation: operationName,
       });
-      return operation(...args)
-        .then((res) => {
+      operation(...args).then(
+        () => {
           setResult({
             state: OperationState.Success,
             pending: false,
@@ -51,9 +51,8 @@ export function useAuthOperation<Args extends unknown[]>({
             error: undefined,
             operation: operationName,
           });
-          return res;
-        })
-        .catch((error) => {
+        },
+        (error) => {
           const authError = new AuthError(operationName, error);
           setResult({
             state: OperationState.Error,
@@ -62,7 +61,8 @@ export function useAuthOperation<Args extends unknown[]>({
             error: authError,
             operation: operationName,
           });
-        });
+        },
+      );
     },
     [result, setResult, operation, operationName],
   );

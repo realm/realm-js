@@ -87,10 +87,11 @@
   },
   "files": [
     "dist",
-    "types/realm",
     "LICENSE",
     "lib",
-    "package.json"
+    "package.json",
+    "README.md",
+    "src"
   ],
   "keywords": [
     "realm",
