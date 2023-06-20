@@ -61,7 +61,13 @@ export type GeoPoint =
   | GeoPosition;
 
 /**
- * Represents a circle in spherical geometry that can be used for the definition of geospatial queries.
+ * Represents a circle in spherical geometry that can be used as an argument for geospatial queries.
+ * @example
+ * let circle: GeoCircle = {
+ *   center: [20, 40],
+ *   distance: 0.05,
+ * };
+ * realm.objects(Restaurant).filtered("location geoWithin $0", circle)
  */
 export type GeoCircle = {
   /** The center of the circle. */
@@ -72,13 +78,24 @@ export type GeoCircle = {
 };
 
 /**
- * Represents a polygon in spherical geometry that can be used for the definition of geospatial queries.
+ * Represents a polygon in spherical geometry that can be used as an argument for geospatial queries.
  * The polygon is comprised of at least one outer ring and optionally multiple internal rings representing holes with the following restrictions:
  * - Each ring must contains at least 3 distinct points, where the first and the last point must be the same to indicate a closed ring (this means that each ring
  * must have at least 4 points).
  * - The interior rings must be entirely inside the outer ring.
  * - Rings can share vertices but not edges.
  * - No ring may be empty.
+ * @example
+ * let polygon: GeoPolygon = {
+ *  outerRing: [
+ *   [-2, -2],
+ *   [3.45, -4.23],
+ *   [2.56, 4.62],
+ *   [-3.23, 2.5],
+ *   [-2, -2],
+ *  ],
+ * };
+ * realm.objects(Restaurant).filtered("location geoWithin $0", polygon)
  */
 export type GeoPolygon =
   | {
@@ -88,8 +105,14 @@ export type GeoPolygon =
   | CanonicalGeoPolygon;
 
 /**
- * Represents a box in spherical geometry that can be used for the definition of geospatial queries.
+ * Represents a box in spherical geometry that can be used as an argument for geospatial queries.
  * This is a short-hand for the equivalent {@link GeoPolygon}.
+ * @example
+ * let box: GeoBox = {
+ *   bottomLeft: [-1, -1],
+ *   topRight: [1, 1],
+ * };
+ * realm.objects(Restaurant).filtered("location geoWithin $0", box)
  */
 export type GeoBox = {
   /** The bottom left point of the box. */

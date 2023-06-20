@@ -125,11 +125,11 @@ export function mixedToBinding(realm: binding.Realm, value: unknown): binding.Mi
     return value as binding.MixedArg;
   }
 }
-function isGeoCircle(value: object): value is GeoCircle {
+function isGeoCircle(value: Record<string, unknown>): value is GeoCircle {
   return "distance" in value && "center" in value && typeof value["distance"] === "number";
 }
 
-function isGeoBox(value: object): value is GeoBox {
+function isGeoBox(value: Record<string, unknown>): value is GeoBox {
   return "bottomLeft" in value && "topRight" in value;
 }
 
