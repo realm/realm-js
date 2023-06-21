@@ -72,7 +72,7 @@ The following shows the project structure and the most relevant files.
 Clone the repository and the current branch, then navigate to the example app folder:
 
 ```sh
-cd realm-js/examples/example-wasm
+cd realm-js/examples/example-react-task
 ```
 
 Install dependencies:
@@ -111,7 +111,7 @@ Once done, [copy your App ID](https://www.mongodb.com/docs/atlas/app-services/re
 
 ### Building the App
 
-Navigate to `example-wasm/` and build the app (the output will be located in the `build/` folder and is minified):
+Navigate to `example-react-task/` and build the app (the output will be located in the `build/` folder and is minified):
 
 ```sh
 npm run build
@@ -119,7 +119,7 @@ npm run build
 
 ### Running the App
 
-Navigate to `example-wasm/` and start the app in development mode:
+Navigate to `example-react-task/` and start the app in development mode:
 
 ```sh
 npm start

@@ -1,5 +1,5 @@
 {
-  "name": "@realm/example-wasm",
+  "name": "@realm/example-react-task",
   "version": "0.1.0",
   "description": "Example React App Using Realm & Sync for Web",
   "private": true,

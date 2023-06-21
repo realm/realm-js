@@ -47,7 +47,7 @@
   },
   "workspaces": [
     "example",
-    "examples/example-wasm",
+    "examples/example-react-task",
     "packages/realm/bindgen/",
     "packages/realm/bindgen/vendor/realm-core/",
     "packages/babel-plugin",
