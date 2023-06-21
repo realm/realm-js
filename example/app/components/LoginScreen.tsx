@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet, TextInput, Pressable} from 'react-native';
 import colors from '../styles/colors';
 import {shadows} from '../styles/shadows';
@@ -10,6 +10,13 @@ export const LoginScreen = () => {
   const {register} = useEmailPasswordAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  // Automatically log in after registration
+  useEffect(() => {
+    if (result.success && result.operation === AuthOperationName.Register) {
+      logInWithEmailPassword({email, password});
+    }
+  }, [result, logInWithEmailPassword, email, password]);
 
   return (
     <View style={styles.content}>

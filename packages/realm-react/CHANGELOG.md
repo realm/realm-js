@@ -8,7 +8,9 @@
 
 ### Fixed
 * Include the `src` in the distributed package.  This fixes a warning about source maps being not included.
-* Get the documentation to appear in LSP .
+* Get the `useAuth` and `useEmailPasswordAuth` tsdoc to appear on hover over for LSP enabled IDEs.
+* `useEmailPasswordAuth` was crashing on v11 since there are no named exports on `Realm`.
+
 
 ### Internal
 * Refactor `useAuthOperation` to use the `reject` callback rather than `catch`.
