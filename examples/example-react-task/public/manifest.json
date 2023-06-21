@@ -1,0 +1,15 @@
+{
+  "short_name": "Realm WASM",
+  "name": "MongoDB Realm and WASM App",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "32x32 16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#7e41f8",
+  "background_color": "#ebebeb"
+}

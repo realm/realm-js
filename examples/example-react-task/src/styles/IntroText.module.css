@@ -1,0 +1,15 @@
+.container {
+  width: 50%;
+  min-width: 230px;
+  max-width: 590px;
+  margin: 100px auto 0;
+}
+
+.container p {
+  margin-bottom: 70px;
+  color: var(--gray);
+  font-family: var(--primary-font);
+  font-size: 20px;
+  text-align: center;
+  line-height: 1.5;
+}

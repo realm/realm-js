@@ -1,0 +1,4 @@
+.tasks {
+  display: flex;
+  flex-wrap: wrap;
+}
