@@ -133,10 +133,16 @@ A great way to troubleshoot sync-related errors is to read the [logs in the App 
 
 ## Limitations
 
-### Persistence
+### Persistence & WebWorkers
 
-In the current state of the Realm JS SDK for browsers, in-memory Realms are used for storing the data locally. Therefore, a hard refresh in the browser will clear the local data (e.g. logged in users will need to reauthenticate). Additionally, data is not shared across tabs.
+In the current state of the Realm JS SDK for browsers, in-memory realms are used for temporarily storing the data locally. A realm's data will be lost as soon as its last instance is closed.
+
+It is not possible to share a realm instance across contexts such as browser tabs or WebWorker instances. Therefore, a hard refresh in the browser will clear the local data (e.g. logged in users will need to reauthenticate).
 
 Note that the data will still be persisted in MongoDB Atlas and synced to the client once authenticated.
 
 This app uses client-side routing to retain the local data across different routes.
+
+### Encryption
+
+Since realms are memory-only and not locally persisted, it is an error to provide an encryption key in the realm configuration. Sync traffic remains encrypted with HTTPS as usual.
