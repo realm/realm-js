@@ -20,10 +20,11 @@
   font-family: var(--primary-font);
   font-size: 18px;
   text-align: center;
+  overflow-y: auto;
 }
 
 .buttons {
-  height: 30%;
+  height: 83px;
   display: flex;
   align-items: center;
   justify-content: center;
