@@ -16,14 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Used by TS docs
-  ClientResetMode,
-  Configuration,
-  PrimaryKey,
-  assert,
-  binding,
-} from "./internal";
+import { ClientResetMode, Configuration, PrimaryKey, assert, binding } from "./internal";
 
 export class AssertionError extends Error {
   /** @internal */

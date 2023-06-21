@@ -49,9 +49,6 @@ export class Results<T = unknown> extends OrderedCollection<T> {
   /**
    * Create a `Results` wrapping a set of query `Results` from the binding.
    * @internal
-   * @param internal The internal representation of the results.
-   * @param internalRealm The internal representation of the Realm managing these results.
-   * @param internalTable The internal representation of the table.
    */
   constructor(realm: Realm, internal: binding.Results, helpers: OrderedCollectionHelpers) {
     if (arguments.length === 0 || !(internal instanceof binding.Results)) {
@@ -167,3 +164,6 @@ export class Results<T = unknown> extends OrderedCollection<T> {
     return this.internal.size() === 0;
   }
 }
+
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- Useful for APIs taking any `Results` */
+export type AnyResults = Results<any>;

@@ -605,7 +605,7 @@ export class Realm {
   constructor(path: string);
   /**
    * Create a new {@link Realm} instance using the provided {@link config}. If a Realm does not yet exist
-   * at {@link Configuration.path | config.path} (or {@link defaultPath} if not provided), then this constructor
+   * at {@link Configuration.path | config.path} (or {@link Realm.defaultPath} if not provided), then this constructor
    * will create it with the provided {@link Configuration.schema | config.schema} (which is _required_ in this case).
    * Otherwise, the instance will access the existing Realm from the file at that path.
    * In this case, {@link Configuration.schema | config.schema} is _optional_ or not have changed, unless

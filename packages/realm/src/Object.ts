@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
+  AssertionError,
   BSON,
   CanonicalObjectSchema,
   ClassHelpers,
@@ -31,6 +32,7 @@ import {
   RealmInsertionModel,
   RealmObjectConstructor,
   Results,
+  TypeAssertionError,
   assert,
   binding,
   flags,

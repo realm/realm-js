@@ -21,6 +21,7 @@ import {
   ClientResetRecoverUnsyncedChangesConfiguration,
   Realm,
   RealmObjectConstructor,
+  SyncSession,
 } from "./internal";
 
 export {

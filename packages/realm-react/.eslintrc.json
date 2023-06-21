@@ -1,16 +1,19 @@
 {
-  "plugins": [
-    "eslint-plugin-tsdoc"
-  ],
   "parser": "@typescript-eslint/parser",
   "extends": [
     "plugin:@typescript-eslint/recommended",
-    "plugin:react-hooks/recommended"
+    "plugin:react-hooks/recommended",
+    "plugin:jsdoc/recommended-typescript"
   ],
   "rules": {
     "@typescript-eslint/explicit-function-return-type": "off",
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
-    "tsdoc/syntax": "warn"
+    "jsdoc/check-tag-names": "off",
+    "jsdoc/require-jsdoc": "off",
+    "jsdoc/require-returns": "off",
+    "jsdoc/require-yields": "off",
+    "jsdoc/require-param": "off",
+    "jsdoc/no-undefined-types": "warn"
   }
 }

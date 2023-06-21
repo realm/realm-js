@@ -191,7 +191,7 @@ export type InitialSubscriptions = {
    */
   update: (mutableSubscriptions: MutableSubscriptionSet, realm: Realm) => void;
   /**
-   * If `true`, the {@link update} callback will be rerun every time the Realm is
+   * If `true`, the {@link InitialSubscriptions.update} callback will be rerun every time the Realm is
    * opened (e.g. every time a user opens your app), otherwise (by default) it
    * will only be run if the Realm does not yet exist.
    */

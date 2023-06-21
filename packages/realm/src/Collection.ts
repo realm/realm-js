@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { CallbackAdder, IllegalConstructorError, Listeners, assert, binding } from "./internal";
+import { CallbackAdder, IllegalConstructorError, Listeners, TypeAssertionError, assert, binding } from "./internal";
 
 /**
  * Abstract base class containing methods shared by Realm **List**, **Dictionary**, and **Results**.

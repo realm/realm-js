@@ -121,6 +121,7 @@ function defaultFromBinding(value: unknown) {
 /**
  * Adds a branch to a function, which checks for the argument to be null, in which case it returns early.
  */
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- Using `unknown` here breaks type inference in `binding.PropertyType.Object` `toBinding` from for some reason */
 function nullPassthrough<T, R extends any[], F extends (value: unknown, ...rest: R) => unknown>(
   this: T,
   fn: F,

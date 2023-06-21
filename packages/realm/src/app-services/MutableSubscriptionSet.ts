@@ -16,7 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { BaseSubscriptionSet, Realm, Results, Subscription, SubscriptionSet, assert, binding } from "../internal";
+import {
+  AnyResults,
+  BaseSubscriptionSet,
+  Realm,
+  Results,
+  Subscription,
+  SubscriptionSet,
+  assert,
+  binding,
+} from "../internal";
 
 /**
  * Behavior when waiting for subscribed objects to be synchronized/downloaded.
@@ -97,7 +106,7 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
    *  use when adding this subscription (e.g. to give the subscription a name).
    * @returns A `Subscription` instance for the new subscription.
    */
-  add(query: Results<any>, options?: SubscriptionOptions): Subscription {
+  add(query: AnyResults, options?: SubscriptionOptions): Subscription {
     assert.instanceOf(query, Results, "query");
     if (options) {
       validateSubscriptionOptions(options);
@@ -136,7 +145,7 @@ export class MutableSubscriptionSet extends BaseSubscriptionSet {
    * @param query A {@link Results} instance representing the query to remove a subscription to.
    * @returns `true` if the subscription was removed, `false` if it was not found.
    */
-  remove(query: Results<any>): boolean {
+  remove(query: AnyResults): boolean {
     assert.instanceOf(query, Results, "query");
 
     return this.internal.eraseByQuery(query.internal.query);

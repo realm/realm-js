@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
+  AssertionError,
   IllegalConstructorError,
   ObjectSchema,
   OrderedCollection,

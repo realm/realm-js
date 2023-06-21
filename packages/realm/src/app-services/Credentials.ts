@@ -16,12 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Used by TS docs
-  App,
-  assert,
-  binding,
-} from "../internal";
+import { App, assert, binding } from "../internal";
 
 /**
  * Types of an authentication provider.

@@ -261,6 +261,8 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     return !!(this.results.type & binding.PropertyType.Nullable);
   }
 
+  /* eslint-disable @typescript-eslint/no-explicit-any -- We've copied these from the lib types */
+
   toString(): string {
     return [...this].toString();
   }
@@ -366,6 +368,8 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     return [...this].at(index);
   }
 
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+
   [Symbol.iterator](): IterableIterator<T> {
     return this.values();
   }
@@ -376,6 +380,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     throw new Error("Method not implemented.");
   }
 
+  /* eslint-disable-next-line jsdoc/require-returns-check -- We want the @returns for inheriting sub-classes */
   /**
    * Checks if this collection has not been deleted and is part of a valid Realm.
    * @returns `true` if the collection can be safely accessed, `false` if not.
@@ -503,9 +508,9 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   }
 
   /**
-   * Returns new _Results_ that represent this collection being filtered by the provided query.
-   * @param query Query used to filter objects from the collection.
-   * @param arg Each subsequent argument is used by the placeholders
+   * Returns new {@link Results} that represent this collection being filtered by the provided query.
+   * @param queryString Query used to filter objects from the collection.
+   * @param args Each subsequent argument is used by the placeholders
    *   (e.g. `$0`, `$1`, `$2`, …) in the query.
    * @throws an {@link Error} If the query or any other argument passed into this method is invalid.
    * @returns Results filtered according to the provided query.

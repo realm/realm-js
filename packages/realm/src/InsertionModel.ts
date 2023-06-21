@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { Collection, Dictionary, List } from "./internal";
+import { Collection, Dictionary, List, RealmObject } from "./internal";
 import { AnyRealmObject } from "./Object";
 
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any -- We define these once to avoid using "any" through the code */
@@ -31,7 +31,7 @@ type ExtractPropertyNamesOfType<T, PropType> = {
 }[keyof T];
 
 /**
- * Exchanges properties defined as {@link List<T>} with an optional {@link Array<T | RealmInsertionModel<T>>}.
+ * Exchanges properties defined as {@link List} with an optional {@link Array}.
  */
 type RealmListsRemappedModelPart<T> = {
   [K in ExtractPropertyNamesOfType<T, AnyList>]?: T[K] extends List<infer GT>
@@ -40,7 +40,7 @@ type RealmListsRemappedModelPart<T> = {
 };
 
 /**
- * Exchanges properties defined as {@link Dictionary<T>} with an optional key to mixed value object.
+ * Exchanges properties defined as {@link Dictionary} with an optional key to mixed value object.
  */
 type RealmDictionaryRemappedModelPart<T> = {
   [K in ExtractPropertyNamesOfType<T, AnyDictionary>]?: T[K] extends Dictionary<infer ValueType>

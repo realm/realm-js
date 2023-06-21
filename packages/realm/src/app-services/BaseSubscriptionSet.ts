@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
+  AnyResults,
   MutableSubscriptionSet,
   Realm,
   RealmObject,
@@ -195,7 +196,7 @@ export abstract class BaseSubscriptionSet {
   }
 
   /** @internal */
-  exists(query: Results<any>): boolean {
+  exists(query: AnyResults): boolean {
     if (query.subscriptionName === undefined) {
       return !!this.internal.findByQuery(query.internal.query);
     }
