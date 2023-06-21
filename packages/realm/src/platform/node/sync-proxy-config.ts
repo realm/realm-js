@@ -20,7 +20,7 @@ import process from "node:process";
 import { URL } from "node:url";
 
 import { ProxyType, SyncProxyConfig } from "realm/binding";
-import { inject } from "../https-proxy";
+import { inject } from "../sync-proxy-config";
 
 inject({
   create() {
