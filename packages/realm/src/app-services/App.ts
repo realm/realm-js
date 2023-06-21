@@ -155,14 +155,14 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
   });
 
   /**
-   * Creates a new app and connects to an Atlas App Services instance.
+   * Constructs a new {@link App} instance, used to connect to an Atlas App Services App.
    * @param id A string app id.
    * @throws an {@link Error} If no {@link id} is provided.
    */
   constructor(id: string);
 
   /**
-   * Creates a new app and connects to an Atlas App Services instance.
+   * Constructs a new {@link App} instance, used to connect to an Atlas App Services App.
    * @param config The configuration of the app.
    * @throws an {@link Error} If no {@link AppConfiguration.id | app id} is provided.
    */
