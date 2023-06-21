@@ -32,7 +32,6 @@ interface UseAuth {
 
   /**
    * Log in with the Anonymous authentication provider.
-   *
    * @returns A `Realm.User` instance for the logged in user.
    * @see https://www.mongodb.com/docs/atlas/app-services/authentication/anonymous/
    */
@@ -106,7 +105,6 @@ interface UseAuth {
  * `loginResult.pending` to render a spinner when login is in progress, without
  * needing to pass that state around or store it somewhere global in their app
  * code.
- *
  * @returns An object containing operations and state for authenticating with an Atlas App.
  */
 export function useAuth(): UseAuth {

@@ -22,7 +22,6 @@ import { CollectionCallback, getObjectForPrimaryKey, getObjects } from "./helper
 
 /**
  * Generates the `useObject` hook from a given `useRealm` hook.
- *
  * @param useRealm - Hook that returns an open Realm instance
  * @returns useObject - Hook that is used to gain access to a single Realm object from a primary key
  */

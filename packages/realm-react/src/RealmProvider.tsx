@@ -33,7 +33,6 @@ type ProviderProps = PartialRealmConfiguration & {
 
 /**
  * Generates a `RealmProvider` given a {@link Realm.Configuration} and {@link React.Context}.
- *
  * @param realmConfig - The configuration of the Realm to be instantiated
  * @param RealmContext - The context that will contain the Realm instance
  * @returns a RealmProvider component that provides context to all context hooks
@@ -45,7 +44,6 @@ export function createRealmProvider(
   /**
    * Returns a Context Provider component that is required to wrap any component using
    * the Realm hooks.
-   *
    * @example
    * ```
    * const AppRoot = () => {
@@ -151,7 +149,6 @@ export function createRealmProvider(
 /**
  * Merge two configurations, creating a configuration using `configA` as the default,
  * merged with `configB`, with properties in `configB` overriding `configA`.
- *
  * @param configA - The default config object
  * @param configB - Config overrides object
  * @returns Merged config object
@@ -176,7 +173,6 @@ export function mergeRealmConfiguration(
 
 /**
  * Utility function that does a deep comparison (key: value) of object a with object b
- *
  * @param a - Object to compare
  * @param b - Object to compare
  * @returns True if the objects are identical

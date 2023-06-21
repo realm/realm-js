@@ -93,7 +93,6 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children, appRef, ...a
 
 /**
  * Hook to access the current {@link Realm.App} from the {@link AppProvider} context.
- *
  * @throws if an AppProvider does not exist in the component’s ancestors
  */
 export const useApp = <

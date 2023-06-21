@@ -27,7 +27,6 @@ type DependencyList = ReadonlyArray<unknown>;
 
 /**
  * Generates the `useQuery` hook from a given `useRealm` hook.
- *
  * @param useRealm - Hook that returns an open Realm instance
  * @returns useObject - Hook that is used to gain access to a {@link Realm.Collection}
  */

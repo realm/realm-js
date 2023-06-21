@@ -21,7 +21,6 @@ import { useContext } from "react";
 /**
  * Generates a `useRealm` hook given a RealmContext.  This allows access to the {@link Realm}
  * instance anywhere within the RealmProvider.
- *
  * @param RealmContext - The context containing the {@link Realm} instance
  * @returns useRealm - Hook that is used to gain access to the {@link Realm} instance
  */
