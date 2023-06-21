@@ -37,14 +37,14 @@
   // ...
   peopleOver20.unsubscribe();
   ```
-<<<<<<< HEAD
+
 * Added initial support for geospatial queries, with the possibility of querying points. No new data type has been added in this phase, but every embedded object property that conforms to `CanonicalGeoPoint` can be queried. ([#5850](https://github.com/realm/realm-js/pull/5850))
   * The queries can be used to filter objects whose points lie within a certain area following spherical geometry, using the `geoWithin` operator in the query string to `Results.filtered()`.
   * The following shapes are supported in geospatial queries: circle (`GeoCircle` type, defined by its center and radius in radians), box (`GeoBox` type, defined by its bottom left and upper right corners) and polygon (`GeoPolygon` type, defined by its vertices).
   * Additionally, two new functions have been added, `kmToRadians()` and `miToRadians()`, that can be used to convert kilometers and miles to radians respectively, simplifying conversion of a circle's radius.
   ```typescript
   // Example of a user-defined point class that can be queried using geospatial queries
-  class MyGeoPoint implements CanonicalGeoPoint {  
+  class MyGeoPoint extends Realm.Object implements CanonicalGeoPoint {  
     coordinates: GeoPosition;
     type = "Point" as const;
 
@@ -69,7 +69,10 @@
 
   class PointOfInterest extends Realm.Object implements IPointOfInterest {
     _id = 0;
-    location = new MyGeoPoint(0, 0);
+    location: MyGeoPoint = {
+      coordinates: [0, 0],
+      type: "Point",
+    };
 
     static schema: ObjectSchema = {
       name: "PointOfInterest",
@@ -82,13 +85,19 @@
   }
 
   const copenhagen: IPointOfInterest = {
-    _id: 1,
-    location: new MyGeoPoint(12.558892784045568, 55.66717839648401),
+    id: 1,
+    location: {
+      coordinates: [12.558892784045568, 55.66717839648401],
+      type: "Point",
+    }
   };
 
   const newYork: IPointOfInterest = {
-    _id: 2,
-    location: new MyGeoPoint(-73.92474936213434, 40.700090994927415),
+    id: 1,
+    location: {
+      coordinates: [-73.92474936213434, 40.700090994927415],
+      type: "Point",
+    }
   };
 
   realm.create(PointOfInterest, copenhagen);
@@ -96,7 +105,10 @@
 
   const pois = realm.objects(PointOfInterest);
 
-  const berlinCoordinates = new MyGeoPoint(13.397255909303222, 52.51174463251085);
+  const berlinCoordinates = {
+      coordinates: [13.397255909303222, 52.51174463251085],
+      type: "Point",
+  };
   const radius = kmToRadians(500); //500 km = 0.0783932519 rad
   //Circle with a radius of 500kms centered in Berlin
   const circleShape: GeoCircle = {
