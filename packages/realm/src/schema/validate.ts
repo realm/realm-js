@@ -123,13 +123,12 @@ export function validateObjectSchema(
         }
       }
     }
-  } catch (err: any) {
+  } catch (err) {
     // Rethrow as SchemaParseError(s) rather than a mix of Error, TypeError,
     // TypeAssertionError, or AssertionError.
     if (err instanceof PropertySchemaParseError) {
       throw err;
-    }
-    if (err instanceof Error) {
+    } else if (err instanceof Error) {
       // This first line is a workaround to satisfy TS. Runtime check needs to be
       // `const objectName = objectSchema?.name || ""` where either `objectSchema`
       // or `objectSchema.name` can be undefined or an incorrect type.
@@ -178,7 +177,7 @@ export function validatePropertySchema(
         "', '",
       )}'.`,
     );
-  } catch (err: any) {
+  } catch (err) {
     if (err instanceof Error) {
       throw new PropertySchemaParseError(err.message, { objectName, propertyName });
     }

@@ -27,6 +27,7 @@ import {
   OpenRealmBehaviorType,
   OpenRealmTimeOutBehavior,
   PartitionValue,
+  Realm,
   Subscription,
   SubscriptionSet,
   SubscriptionSetState,

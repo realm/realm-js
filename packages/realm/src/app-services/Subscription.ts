@@ -16,8 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import { BSON } from "../bson";
-import { binding } from "../internal";
+import { BSON, SubscriptionSet, binding } from "../internal";
 
 /**
  * Class representing a single query subscription in a set of flexible sync

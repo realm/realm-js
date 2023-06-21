@@ -49,9 +49,6 @@ export class Results<T = unknown> extends OrderedCollection<T> {
   /**
    * Create a `Results` wrapping a set of query `Results` from the binding.
    * @internal
-   * @param internal The internal representation of the results.
-   * @param internalRealm The internal representation of the Realm managing these results.
-   * @param internalTable The internal representation of the table.
    */
   constructor(realm: Realm, internal: binding.Results, helpers: OrderedCollectionHelpers) {
     if (arguments.length === 0 || !(internal instanceof binding.Results)) {
@@ -93,7 +90,7 @@ export class Results<T = unknown> extends OrderedCollection<T> {
    * Bulk update objects in the collection.
    * @param propertyName The name of the property.
    * @param value The updated property value.
-   * @throws {@link Error} If no property with the name exists.
+   * @throws an {@link Error} If no property with the name exists.
    * @since 2.0.0-rc20
    */
   update(propertyName: keyof RealmInsertionModel<T>, value: RealmInsertionModel<T>[typeof propertyName]): void {
@@ -117,7 +114,6 @@ export class Results<T = unknown> extends OrderedCollection<T> {
   /**
    * Add this query result to the set of active subscriptions. The query will be joined
    * via an `OR` operator with any existing queries for the same type.
-   *
    * @param options Options to use when adding this subscription (e.g. a name or wait behavior).
    * @returns A promise that resolves to this {@link Results} instance.
    * @experimental This API is experimental and may change or be removed.
@@ -148,7 +144,6 @@ export class Results<T = unknown> extends OrderedCollection<T> {
    *
    * If the subscription is unnamed, the subscription matching the query will
    * be removed.
-   *
    * @experimental This API is experimental and may change or be removed.
    */
   unsubscribe(): void {
@@ -169,3 +164,6 @@ export class Results<T = unknown> extends OrderedCollection<T> {
     return this.internal.size() === 0;
   }
 }
+
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- Useful for APIs taking any `Results` */
+export type AnyResults = Results<any>;

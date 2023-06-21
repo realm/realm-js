@@ -187,12 +187,11 @@ export type BaseSyncConfiguration = {
 export type InitialSubscriptions = {
   /**
    * A callback to make changes to a SubscriptionSet.
-   *
    * @see {@link SubscriptionSet.update} for more information.
    */
   update: (mutableSubscriptions: MutableSubscriptionSet, realm: Realm) => void;
   /**
-   * If `true`, the {@link update} callback will be rerun every time the Realm is
+   * If `true`, the {@link InitialSubscriptions.update} callback will be rerun every time the Realm is
    * opened (e.g. every time a user opens your app), otherwise (by default) it
    * will only be run if the Realm does not yet exist.
    */

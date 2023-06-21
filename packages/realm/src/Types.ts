@@ -59,6 +59,7 @@ export namespace Types {
   export type Dictionary<T> = RealmDictionary<T>;
   export const Dictionary: typeof RealmDictionary = RealmDictionary;
   export type Mixed = unknown;
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars -- We don't use the `LinkingPropertyName` at runtime */
   export type LinkingObjects<ObjectTypeT, LinkingPropertyName> = RealmResults<ObjectTypeT>;
   export const LinkingObjects: typeof RealmResults = RealmResults;
 }

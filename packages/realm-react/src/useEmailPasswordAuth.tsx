@@ -26,49 +26,42 @@ interface UseEmailPasswordAuth {
   /**
    * Convenience function to log in a user with an email and password - users
    * could also call `logIn(Realm.Credentials.emailPassword(email, password))`.
-   *
    * @see https://www.mongodb.com/docs/realm/sdk/react-native/manage-users/manage-email-password-users/#add-appprovider-to-work-with-email-password-users
    */
   logIn(credentials: { email: string; password: string }): void;
 
   /**
    * Register a new user.
-   *
    * @see https://www.mongodb.com/docs/realm/sdk/react-native/manage-users/manage-email-password-users/#register-a-new-user-account
    */
   register(args: { email: string; password: string }): void;
 
   /**
    * Confirm a user's account by providing the `token` and `tokenId` received.
-   *
    * @see https://www.mongodb.com/docs/realm/sdk/react-native/manage-users/manage-email-password-users/#confirm-a-new-user-s-email-address
    */
   confirm(args: { token: string; tokenId: string }): void;
 
   /**
    * Resend a user's confirmation email.
-   *
    * @see https://www.mongodb.com/docs/realm/sdk/react-native/manage-users/manage-email-password-users/#resend-a-confirmation-email
    */
   resendConfirmationEmail(args: { email: string }): void;
 
   /**
    * Retry the custom confirmation function for a given user.
-   *
    * @see https://www.mongodb.com/docs/realm/sdk/react-native/manage-users/manage-email-password-users/#retry-a-user-confirmation-function
    */
   retryCustomConfirmation(args: { email: string }): void;
 
   /**
    * Send a password reset email for a given user.
-   *
    * @see https://www.mongodb.com/docs/realm/sdk/react-native/manage-users/manage-email-password-users/#send-a-password-reset-email
    */
   sendResetPasswordEmail(args: { email: string }): void;
 
   /**
    * Complete resetting a user's password.
-   *
    * @see https://www.mongodb.com/docs/realm/sdk/react-native/manage-users/manage-email-password-users/#send-a-password-reset-email
    */
   resetPassword(args: { token: string; tokenId: string; password: string }): void;
@@ -76,7 +69,6 @@ interface UseEmailPasswordAuth {
   /**
    * Call the configured password reset function, passing in any additional
    * arguments to the function.
-   *
    * @see https://www.mongodb.com/docs/realm/sdk/react-native/manage-users/manage-email-password-users/#call-a-password-reset-function
    */
   callResetPasswordFunction<Args extends unknown[] = []>(
@@ -89,7 +81,6 @@ interface UseEmailPasswordAuth {
 
   /**
    * Log out the current user.
-   *
    * @see https://www.mongodb.com/docs/realm/sdk/react-native/manage-users/authenticate-users/#log-a-user-out
    */
   logOut(): void;
@@ -113,7 +104,6 @@ interface UseEmailPasswordAuth {
  * `result.pending` to render a spinner when login is in progress, without
  * needing to pass that state around or store it somewhere global in their app
  * code.
- *
  * @returns An object containing operations and state related to Email/Password authentication.
  */
 export function useEmailPasswordAuth(): UseEmailPasswordAuth {

@@ -16,6 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import {
+  CanonicalPropertySchema,
+  ClientResetRecoverUnsyncedChangesConfiguration,
+  Realm,
+  RealmObjectConstructor,
+  SyncSession,
+} from "./internal";
+
 export {
   AggregatePipelineStage,
   ApiKey,
@@ -169,8 +177,6 @@ export {
   UserTypeName,
   WaitForSync,
 } from "./internal";
-
-import { Realm, RealmObjectConstructor } from "./internal";
 
 export type Mixed = unknown;
 export type ObjectType = string | RealmObjectConstructor;

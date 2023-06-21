@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
+  AnyRealmObject,
   ObjectSchema,
   Realm,
   RealmObjectConstructor,
@@ -34,7 +35,7 @@ export type MigrationCallback = (oldRealm: Realm, newRealm: Realm) => void;
 
 export type BaseConfiguration = {
   path?: string;
-  schema?: (RealmObjectConstructor<any> | ObjectSchema)[];
+  schema?: (RealmObjectConstructor<AnyRealmObject> | ObjectSchema)[];
   schemaVersion?: number;
   inMemory?: boolean;
   readOnly?: boolean;

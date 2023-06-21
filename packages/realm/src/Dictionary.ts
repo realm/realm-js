@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import {
+  AssertionError,
   Collection,
   DefaultObject,
   IllegalConstructorError,
@@ -26,6 +27,8 @@ import {
   assert,
   binding,
 } from "./internal";
+
+/* eslint-disable jsdoc/multiline-blocks -- We need this to have @ts-expect-error located correctly in the .d.ts bundle */
 
 const REALM = Symbol("Dictionary#realm");
 const INTERNAL = Symbol("Dictionary#internal");
@@ -107,7 +110,6 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
   /**
    * Create a `Results` wrapping a set of query `Results` from the binding.
    * @internal
-   * @param internal The internal representation of the dictionary.
    */
   constructor(realm: Realm, internal: binding.Dictionary, helpers: TypeHelpers) {
     if (arguments.length === 0 || !(internal instanceof binding.Dictionary)) {
@@ -232,7 +234,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
   /**
    * Adds one or more elements with specified key and value to the dictionary or updates value if key exists.
    * @param elements The object of element(s) to add.
-   * @throws {@link AssertionError} If not inside a write transaction, input object contains symbol keys or if any value violates types constraints.
+   * @throws an {@link AssertionError} If not inside a write transaction, input object contains symbol keys or if any value violates types constraints.
    * @returns The dictionary.
    * @since 10.6.0
    * @ts-expect-error We're exposing methods in the end-users namespace of keys */
@@ -241,7 +243,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * Adds an element with the specified key and value to the dictionary or updates value if key exists.
    * @param key The key of the element to add.
    * @param value The value of the element to add.
-   * @throws {@link AssertionError} If not inside a write transaction, key is a symbol or if value violates type constraints.
+   * @throws an {@link AssertionError} If not inside a write transaction, key is a symbol or if value violates type constraints.
    * @returns The dictionary.
    * @since 12.0.0
    */
@@ -250,7 +252,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * Adds one or more elements with the specified key and value to the dictionary or updates value if key exists.
    * @param elementsOrKey The element to add or the key of the element to add.
    * @param value The value of the element to add.
-   * @throws {@link AssertionError} If not inside a write transaction, if using symbol as keys, or if any value violates type constraints.
+   * @throws an {@link AssertionError} If not inside a write transaction, if using symbol as keys, or if any value violates type constraints.
    * @returns The dictionary.
    * @since 10.6.0
    */
@@ -271,7 +273,7 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
    * Removes elements from the dictionary, with the keys provided.
    * This does not throw if the keys are already missing from the dictionary.
    * @param key The key to be removed.
-   * @throws {@link AssertionError} If not inside a write transaction.
+   * @throws an {@link AssertionError} If not inside a write transaction.
    * @returns The dictionary
    * @since 10.6.0
    * @ts-expect-error We're exposing methods in the end-users namespace of keys */

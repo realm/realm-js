@@ -16,14 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-import {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Used by TS docs
-  ClientResetMode,
-  Configuration,
-  PrimaryKey,
-  assert,
-  binding,
-} from "./internal";
+import { ClientResetMode, Configuration, PrimaryKey, assert, binding } from "./internal";
 
 export class AssertionError extends Error {
   /** @internal */
@@ -61,7 +54,6 @@ export class TypeAssertionError extends AssertionError {
    * Get an error message for when the target's value is of
    * the wrong type. Single quotes are added around the target
    * string if it does not already contain one.
-   *
    * @internal
    */
   private static message(expected: string, value: unknown, target?: string) {
