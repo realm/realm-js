@@ -194,6 +194,7 @@ import {
   validateConfiguration,
   validateObjectSchema,
   validateRealmSchema,
+  ProxyType,
 } from "./internal";
 
 const debug = extendDebug("Realm");
@@ -251,6 +252,7 @@ export class Realm {
   public static ProgressMode = ProgressMode;
   public static PropertySchemaParseError = PropertySchemaParseError;
   public static ProviderType = ProviderType;
+  public static ProxyType = ProxyType;
   public static Results = Results;
   public static SchemaParseError = SchemaParseError;
   public static SessionState = SessionState;
@@ -1302,6 +1304,7 @@ type ProgressDirectionType = ProgressDirection;
 type ProgressModeType = ProgressMode;
 type PropertySchemaParseErrorType = PropertySchemaParseError;
 type ProviderTypeType = ProviderType;
+type ProxyTypeType = ProxyType;
 type ResultsType<T = unknown> = Results<T>;
 type SchemaParseErrorType = SchemaParseError;
 type SessionStateType = SessionState;
@@ -1456,6 +1459,7 @@ export declare namespace Realm {
     PropertySchemaStrict,
     PropertyTypeName,
     ProviderTypeType as ProviderType,
+    ProxyTypeType as ProxyType,
     RealmObjectConstructor,
     /** @deprecated Will be removed in v13.0.0. Please use {@link RealmObjectConstructor} */
     RealmObjectConstructor as ObjectClass,

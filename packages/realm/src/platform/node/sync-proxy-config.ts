@@ -24,24 +24,28 @@ import { inject } from "../sync-proxy-config";
 
 inject({
   create() {
-    let config: SyncProxyConfig;
-    ["HTTPS_PROXY", "https_proxy"].forEach((envVar) => {
+    for (let envVar of ["HTTPS_PROXY", "https_proxy"]) {
       const proxyUrlAsString = process.env[envVar];
       if (proxyUrlAsString) {
+        let type;
         const proxyUrl = new URL(proxyUrlAsString);
-        config.address = proxyUrl.hostname;
-        config.port = Number(proxyUrl.port);
         const protocol = proxyUrl.protocol;
-        if (protocol === "http") {
-          config.type = ProxyType.Http;
-        } else if (protocol === "https") {
-          config.type = ProxyType.Https;
+        if (protocol === "http:") {
+          type = ProxyType.Http;
+        } else if (protocol === "https:") {
+          type = ProxyType.Https;
         } else {
           throw new Error(`Expected either 'http' or 'https' as protocol for ${envVar} (got ${protocol})`);
         }
+
+        const config = {
+          address: proxyUrl.hostname,
+          type,
+          port: parseInt(proxyUrl.port, 10),
+        };
+        return config;
       }
-      return config;
-    });
+    }
 
     // no environment variable found, and we skip the proxy configuration
     return undefined;

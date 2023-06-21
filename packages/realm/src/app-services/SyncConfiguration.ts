@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { EJSON, ObjectId, UUID } from "bson";
-import { SyncProxyConfig } from "realm/binding";
+import { syncProxyConfig } from "src/platform/sync-proxy-config";
 
 import {
   AnyUser,
@@ -199,6 +199,17 @@ export type SSLVerifyObject = {
   depth: number;
 };
 
+export enum ProxyType {
+  HTTP = "http",
+  HTTPS = "https",
+}
+
+export type SyncProxyConfig = {
+  address: string;
+  port: number;
+  type: ProxyType;
+};
+
 /**
  * This describes the different options used to create a {@link Realm} instance with Atlas App Services synchronization.
  */
@@ -241,7 +252,6 @@ export type BaseSyncConfiguration = {
   cancelWaitsOnNonFatalError?: boolean;
   /** @internal */
   _sessionStopPolicy?: SessionStopPolicy;
-
   /**
    * HTTP proxy configuration (node.js/Electron only)
    */
@@ -330,7 +340,7 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
       : undefined,
     ...parseClientResetConfig(clientReset, onError),
     cancelWaitsOnNonfatalError: cancelWaitsOnNonFatalError,
-    proxyConfig: proxyConfig,
+    proxyConfig: proxyConfig ? parseSyncProxyConfig(proxyConfig) : syncProxyConfig.create(),
   };
 }
 
@@ -411,6 +421,24 @@ function parseRecoverOrDiscardUnsyncedChanges(clientReset: ClientResetRecoverOrD
     notifyAfterClientReset: clientReset.onAfter
       ? toBindingNotifyAfterClientResetWithFallback(clientReset.onAfter, clientReset.onFallback)
       : undefined,
+  };
+}
+
+/** @internal */
+function parseProxyType(proxyType: ProxyType) {
+  switch (proxyType) {
+    case ProxyType.HTTP:
+      return binding.ProxyType.Http;
+    case ProxyType.HTTPS:
+      return binding.ProxyType.Https;
+  }
+}
+
+/** @internal */
+function parseSyncProxyConfig(syncProxyConfig: SyncProxyConfig) {
+  return {
+    ...syncProxyConfig,
+    type: parseProxyType(syncProxyConfig.type),
   };
 }
 

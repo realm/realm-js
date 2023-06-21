@@ -75,6 +75,13 @@ records:
       - ssl_trust_certificate_path
       - ssl_verify_callback
       - cancel_waits_on_nonfatal_error
+      - proxy_config
+
+  SyncProxyConfig:
+    fields:
+      - address
+      - port
+      - type
 
   SyncSubscription:
     fields:

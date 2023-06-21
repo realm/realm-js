@@ -140,6 +140,7 @@ export {
   PropertySchemaStrict,
   PropertyTypeName,
   ProviderType,
+  ProxyType,
   Realm,
   RealmObject as Object,
   RealmObjectConstructor,
