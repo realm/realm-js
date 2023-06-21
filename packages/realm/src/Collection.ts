@@ -112,7 +112,7 @@ export abstract class Collection<
    *      inserted, updated or deleted respectively. `deletions` and `oldModifications` are
    *      indices into the collection before the change happened, while `insertions` and
    *      `newModifications` are indices into the new version of the collection.
-   * @throws {@link TypeAssertionError} If `callback` is not a function.
+   * @throws a {@link TypeAssertionError} If `callback` is not a function.
    * @example
    * wines.addListener((collection, changes) => {
    *  // collection === wines
@@ -134,7 +134,7 @@ export abstract class Collection<
    * Remove the listener `callback` from the collection instance.
    * @param callback Callback function that was previously
    *   added as a listener through the **addListener** method.
-   * @throws {@link TypeAssertionError} If `callback` is not a function.
+   * @throws a {@link TypeAssertionError} If `callback` is not a function.
    */
   removeListener(callback: ChangeCallbackType): void {
     assert.function(callback, "callback");

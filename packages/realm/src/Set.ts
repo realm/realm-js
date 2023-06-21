@@ -73,7 +73,7 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
   /**
    * Delete a value from the Set
    * @param value Value to delete from the Set
-   * @throws {@link Error} If not inside a write transaction.
+   * @throws an {@link Error} If not inside a write transaction.
    * @returns `true` if the value existed in the Set prior to deletion, `false` if not.
    */
   delete(value: T): boolean {
@@ -87,7 +87,7 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
    * @param value Value to add to the Set
    * @throws {TypeError} If a `value` is not of a type which can be stored in
    *   the Set, or if an object being added to the Set does not match the for the Set.
-   * @throws {@link Error} If not inside a write transaction.
+   * @throws an {@link Error} If not inside a write transaction.
    * @returns The Set itself, after adding the new value
    */
   add(value: T): this {
@@ -98,7 +98,7 @@ export class RealmSet<T = unknown> extends OrderedCollection<T, [T, T]> {
 
   /**
    * Remove all values from the Set
-   * @throws {@link Error} If not inside a write transaction.
+   * @throws an {@link Error} If not inside a write transaction.
    */
   clear(): void {
     assert.inTransaction(this.realm);

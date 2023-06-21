@@ -199,7 +199,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * Use circular JSON serialization libraries such as [@ungap/structured-clone](https://www.npmjs.com/package/@ungap/structured-clone)
    * and [flatted](https://www.npmjs.com/package/flatted) to stringify Realm entities that have circular structures.
    * @returns An array of plain objects.
-   **/
+   */
   toJSON(_?: string, cache?: unknown): Array<DefaultObject>;
   /**
    * @internal
@@ -401,9 +401,8 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    *
    * Only supported for int, float, double and date properties. `null` values
    * are ignored entirely by this method and will not be returned.
-   *
    * @param property For a collection of objects, the property to take the minimum of.
-   * @throws {@link TypeAssertionError} If no property with the name exists or if property is not numeric/date.
+   * @throws a {@link TypeAssertionError} If no property with the name exists or if property is not numeric/date.
    * @returns The minimum value.
    * @since 1.12.1
    */
@@ -430,9 +429,8 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    *
    * Only supported for int, float, double and date properties. `null` values
    * are ignored entirely by this method and will not be returned.
-   *
    * @param property For a collection of objects, the property to take the maximum of.
-   * @throws {@link Error} If no property with the name exists or if property is not numeric/date.
+   * @throws an {@link Error} If no property with the name exists or if property is not numeric/date.
    * @returns The maximum value.
    * @since 1.12.1
    */
@@ -460,7 +458,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * Only supported for int, float and double properties. `null` values are
    * ignored entirely by this method.
    * @param property For a collection of objects, the property to take the sum of.
-   * @throws {@link Error} If no property with the name exists or if property is not numeric.
+   * @throws an {@link Error} If no property with the name exists or if property is not numeric.
    * @returns The sum.
    * @since 1.12.1
    */
@@ -486,7 +484,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * Only supported for int, float and double properties. `null` values are
    * ignored entirely by this method and will not be factored into the average.
    * @param property For a collection of objects, the property to take the average of.
-   * @throws {@link Error} If no property with the name exists or if property is not numeric.
+   * @throws an {@link Error} If no property with the name exists or if property is not numeric.
    * @returns The sum.
    * @since 1.12.1
    */
@@ -506,15 +504,13 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
 
   /**
    * Returns new _Results_ that represent this collection being filtered by the provided query.
-   *
    * @param query Query used to filter objects from the collection.
    * @param arg Each subsequent argument is used by the placeholders
    *   (e.g. `$0`, `$1`, `$2`, …) in the query.
-   * @throws {@link Error} If the query or any other argument passed into this method is invalid.
+   * @throws an {@link Error} If the query or any other argument passed into this method is invalid.
    * @returns Results filtered according to the provided query.
    *
    * This is currently only supported for collections of Realm Objects.
-   *
    * @example
    * let merlots = wines.filtered('variety == "Merlot" && vintage <= $0', maxYear);
    */
@@ -545,7 +541,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * should be supplied.
    * @param reverse Sort in descending order rather than ascended.
    *   May not be supplied if `descriptor` is an array of sort descriptors.
-   * @throws {@link Error} If a specified property does not exist.
+   * @throws an {@link Error} If a specified property does not exist.
    * @returns Results sorted according to the arguments passed in.
    */
   sorted(reverse?: boolean): Results<T>;
@@ -564,7 +560,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * properties of the values, and so no property name or sort descriptors
    * should be supplied.
    * @param descriptor The property name(s) to sort the collection on.
-   * @throws {@link Error} If a specified property does not exist.
+   * @throws an {@link Error} If a specified property does not exist.
    * @returns Results sorted according to the arguments passed in.
    */
   sorted(descriptor: SortDescriptor[]): Results<T>;
@@ -583,7 +579,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * properties of the values, and so no property name or sort descriptors
    * should be supplied.
    * @param descriptor The property name(s) to sort the collection on.
-   * @throws {@link Error} If a specified property does not exist.
+   * @throws an {@link Error} If a specified property does not exist.
    * @returns Results sorted according to the arguments passed in.
    */
   sorted(descriptor: string, reverse?: boolean): Results<T>;
@@ -628,7 +624,6 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * snapshot will continue to update as changes are made to them, and if
    * they are deleted from the Realm they will be replaced by `null` at the
    * respective indices.
-   *
    * @returns Results which will **not** live update.
    */
   snapshot(): Results<T> {

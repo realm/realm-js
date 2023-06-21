@@ -286,7 +286,7 @@ export class RealmObject<T = DefaultObject> {
    * Use circular JSON serialization libraries such as [@ungap/structured-clone](https://www.npmjs.com/package/@ungap/structured-clone)
    * and [flatted](https://www.npmjs.com/package/flatted) to stringify Realm entities that have circular structures.
    * @returns A plain object.
-   **/
+   */
   toJSON(_?: string, cache?: unknown): DefaultObject;
   /** @internal */
   toJSON(_?: string, cache = new JSONCacheMap()): DefaultObject {
@@ -338,7 +338,7 @@ export class RealmObject<T = DefaultObject> {
    * Returns all the objects that link to this object in the specified relationship.
    * @param objectType The type of the objects that link to this object's type.
    * @param propertyName The name of the property that references objects of this object's type.
-   * @throws {@link AssertionError} If the relationship is not valid.
+   * @throws an {@link AssertionError} If the relationship is not valid.
    * @returns The objects that link to this object.
    * @since 1.9.0
    */
@@ -394,7 +394,7 @@ export class RealmObject<T = DefaultObject> {
    *   - `changes`: a dictionary with keys `deleted`, and `changedProperties`. `deleted` is true
    *       if the object has been deleted. `changesProperties` is an array of properties that have changed
    *       their value.
-   * @throws {@link TypeAssertionError} If `callback` is not a function.
+   * @throws a {@link TypeAssertionError} If `callback` is not a function.
    * @example
    * wine.addListener((obj, changes) => {
    *  // obj === wine
@@ -418,7 +418,7 @@ export class RealmObject<T = DefaultObject> {
 
   /**
    * Remove the listener `callback`
-   * @throws {@link TypeAssertionError} If `callback` is not a function.
+   * @throws a {@link TypeAssertionError} If `callback` is not a function.
    * @param callback A function previously added as listener
    * @since 2.23.0
    */
@@ -440,7 +440,7 @@ export class RealmObject<T = DefaultObject> {
   /**
    * Get underlying type of a property value.
    * @param propertyName The name of the property to retrieve the type of.
-   * @throws {@link Error} If property does not exist.
+   * @throws an {@link Error} If property does not exist.
    * @returns Underlying type of the property value.
    * @since 10.8.0
    */
