@@ -223,24 +223,25 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
       // TODO consider making the Arg version just alias the Ret version if the bodies are the same.
       out(`export type ${rec.jsName}${suffix(kind)} = {`);
       for (const field of fields) {
-        if (!field.isOptedInTo) {
-          out(
-            `/** @deprecated Add \`${field.name}\` to your opt-in list (under \`records/${rec.cppName}/fields/\`) to use this. */`,
-          );
-        }
-
         // For Optional<T> fields, the field will always be there in Ret mode, but it may be undefined.
         // This is handled by Optional<T> becoming `undefined | T`.
         const optField = !field.required && kind === Kind.Arg;
         const hasInterestingDefault = ![undefined, "", "{}", "[]"].includes(field.defaultVal);
-        out(
-          hasInterestingDefault ? `/** @default ${field.defaultVal} */\n` : "",
-          field.jsName,
-          optField ? "?" : "",
-          ": ",
-          generateType(spec, field.type, kind),
-          ";",
-        );
+        const deprecatedAnnotation = `@deprecated Add \`${field.name}\` to your opt-in list (under \`records/${rec.cppName}/fields/\`) to use this.`;
+        const defaultAnnotation = `@default ${field.defaultVal}`;
+        let docComment = "";
+        if (!field.isOptedInTo && hasInterestingDefault) {
+          docComment = `/**
+             * ${deprecatedAnnotation}
+             * ${defaultAnnotation}
+             */\n`;
+        } else if (!field.isOptedInTo) {
+          docComment = `/** ${deprecatedAnnotation} */\n`;
+        } else if (hasInterestingDefault) {
+          docComment = `/** ${defaultAnnotation} */\n`;
+        }
+
+        out(docComment, field.jsName, optField ? "?" : "", ": ", generateType(spec, field.type, kind), ";");
       }
       out(`}`);
     }
