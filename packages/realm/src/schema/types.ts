@@ -183,13 +183,11 @@ export type CanonicalPropertiesTypes<K extends symbol | number | string = string
  *   - `"<>"` (set)
  *     - The markers to declare a collection type. Can only be used when declaring
  *       property types using this shorthand string notation.
- *
  * @example
  * "int"
  * "int?"
  * "int[]"
  * "int?[]"
- *
  * @see {@link PropertySchema} for using the object representation of a property schema.
  */
 export type PropertySchemaShorthand = string;
@@ -211,10 +209,8 @@ export type ObjectSchemaProperty = PropertySchema;
  *   set to `null` and cannot be made non-optional.
  * - Properties declared as the primary key in {@link ObjectSchema.primaryKey} are always
  *   indexed. In such cases, they cannot be made non-indexed.
- *
  * @see {@link PropertySchemaShorthand} for a shorthand representation of a property
  * schema.
- *
  * @see {@link PropertySchemaStrict} for a precise type definition of the requirements
  * with the allowed combinations. This type is less strict in order to provide a more
  * user-friendly option due to misleading TypeScript error messages when working with
@@ -281,7 +277,6 @@ export type PropertySchemaCommon = {
  * requirements and their allowed combinations; however, TypeScript error messages tend
  * to be more misleading. {@link PropertySchema} is recommended for that reason, but the
  * strict type is provided as guidance.
- *
  * @see {@link PropertySchema} for a textual explanation of the requirements defined here,
  *   as well as documentation for each property.
  */

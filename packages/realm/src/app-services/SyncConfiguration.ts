@@ -187,7 +187,6 @@ export type BaseSyncConfiguration = {
 export type InitialSubscriptions = {
   /**
    * A callback to make changes to a SubscriptionSet.
-   *
    * @see {@link SubscriptionSet.update} for more information.
    */
   update: (mutableSubscriptions: MutableSubscriptionSet, realm: Realm) => void;

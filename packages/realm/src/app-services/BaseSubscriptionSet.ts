@@ -171,7 +171,6 @@ export abstract class BaseSubscriptionSet {
 
   /**
    * Find a subscription by name.
-   *
    * @param name The name to search for.
    * @returns The named subscription, or `null` if the subscription is not found.
    */
@@ -184,7 +183,6 @@ export abstract class BaseSubscriptionSet {
 
   /**
    * Find a subscription by query. Will match both named and unnamed subscriptions.
-   *
    * @param query The query to search for, represented as a {@link Results} instance,
    *  e.g. `Realm.objects("Cat").filtered("age > 10")`.
    * @returns The subscription with the specified query, or `null` if the subscription is not found.
@@ -206,7 +204,6 @@ export abstract class BaseSubscriptionSet {
 
   /**
    * Makes the subscription set iterable.
-   *
    * @returns Iterable of each value in the set.
    * @example
    * for (const subscription of subscriptions) {
@@ -221,7 +218,6 @@ export abstract class BaseSubscriptionSet {
 
   /**
    * Get an iterator that contains each index in the subscription set.
-   *
    * @internal
    */
   *keys() {

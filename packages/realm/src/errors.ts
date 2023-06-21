@@ -61,7 +61,6 @@ export class TypeAssertionError extends AssertionError {
    * Get an error message for when the target's value is of
    * the wrong type. Single quotes are added around the target
    * string if it does not already contain one.
-   *
    * @internal
    */
   private static message(expected: string, value: unknown, target?: string) {
