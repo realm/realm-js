@@ -330,7 +330,7 @@ export function toBindingSyncConfig(config: SyncConfiguration): binding.SyncConf
       : undefined,
     ...parseClientResetConfig(clientReset, onError),
     cancelWaitsOnNonfatalError: cancelWaitsOnNonFatalError,
-    proxyConfig: proxyConfig ? proxyConfig : undefined,
+    proxyConfig: proxyConfig,
   };
 }
 
