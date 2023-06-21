@@ -17,11 +17,16 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import { BSON, ChangeEvent, Credentials, DeleteResult, Document, InsertEvent, MongoDBCollection, User } from "realm";
+import Realm, { BSON } from "realm";
 
 import { authenticateUserBefore, importAppBefore } from "../../hooks";
 import { sleep } from "../../utils/sleep";
 import { buildAppConfig } from "../../utils/build-app-config";
+
+type Document<IdType = any> = Realm.Services.MongoDB.Document<IdType>;
+type MongoDBCollection<T extends Document> = Realm.Services.MongoDB.MongoDBCollection<T>;
+type ChangeEvent<T extends Document> = Realm.Services.MongoDB.ChangeEvent<T>;
+type InsertEvent<T extends Document> = Realm.Services.MongoDB.InsertEvent<T>;
 
 type TestDocument = {
   _id: number;
