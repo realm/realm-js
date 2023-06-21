@@ -42,21 +42,14 @@ import {
 } from "../internal";
 
 export class Sync {
-  /** @deprecated Please use named imports */
   static Session = SyncSession;
-  /** @deprecated Please use named imports */
   static ConnectionState = ConnectionState;
-  /** @deprecated Please use named imports */
   static Subscription = Subscription;
-  /** @deprecated Please use named imports */
   static SubscriptionSet = SubscriptionSet;
-  /** @deprecated Please use named imports */
   static MutableSubscriptionSet = MutableSubscriptionSet;
-  /** @deprecated Please use named imports */
   static SubscriptionSetState = SubscriptionSetState;
   /** @deprecated Please use {@link SubscriptionSetState} as a named import */
   static SubscriptionsState = SubscriptionSetState;
-  /** @deprecated Please use named imports */
   static NumericLogLevel = NumericLogLevel;
 
   /** @deprecated Will be removed in v13.0.0. Please use {@link Realm.setLogLevel}. */

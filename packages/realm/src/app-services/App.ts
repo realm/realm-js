@@ -120,9 +120,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
     return newApp;
   }
 
-  /** @deprecated Please use named imports */
   public static Sync = Sync;
-  /** @deprecated Please use named imports */
   public static Credentials = Credentials;
 
   /** @internal */
