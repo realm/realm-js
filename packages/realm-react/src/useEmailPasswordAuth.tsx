@@ -18,10 +18,9 @@
 
 import { useApp, useAuthResult } from "./AppProvider";
 import { AuthOperationName, AuthResult } from "./types";
-import { Credentials } from "realm";
+import Realm from "realm";
 import { useAuthOperation } from "./useAuthOperation";
 import { useCallback } from "react";
-import { EmailPasswordAuth } from "realm/dist/bundle";
 
 interface UseEmailPasswordAuth {
   /**
@@ -123,7 +122,7 @@ export function useEmailPasswordAuth(): UseEmailPasswordAuth {
 
   const logIn = useAuthOperation({
     operation: useCallback(
-      (credentials: { email: string; password: string }) => app.logIn(Credentials.emailPassword(credentials)),
+      (credentials: { email: string; password: string }) => app.logIn(Realm.Credentials.emailPassword(credentials)),
       [app],
     ),
     operationName: AuthOperationName.LogIn,
