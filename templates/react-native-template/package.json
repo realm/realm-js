@@ -1,6 +1,6 @@
 {
   "name": "@realm/react-native-template",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Realm Template for React Native",
   "scripts": {
     "lint": "cd template && npm run lint"
