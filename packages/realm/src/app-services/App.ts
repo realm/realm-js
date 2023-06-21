@@ -189,6 +189,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
     if (timeout !== undefined) {
       assert.number(timeout, "timeout");
     }
+    assert.boolean(multiplexSessions, "multiplexSessions");
     // TODO: This used getSharedApp in the legacy SDK, but it's failing AppTests
     this.internal = binding.App.getUncachedApp(
       {
