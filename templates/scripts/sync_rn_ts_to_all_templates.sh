@@ -14,5 +14,5 @@ sync_ts_app_code() {
   cp -R $1/app $2/app
 }
 
-sync_ts_app_code "../../example" "../react-native-template-realm/template"
+sync_ts_app_code "../../example" "../react-native-template/template"
 sync_ts_app_code "../../example" "../expo-template"
