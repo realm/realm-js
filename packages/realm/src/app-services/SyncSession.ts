@@ -34,7 +34,6 @@ import {
   User,
   assert,
   binding,
-  flags,
   fromBindingSyncError,
 } from "../internal";
 

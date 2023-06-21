@@ -79,8 +79,6 @@ const COLLECTION_TYPES = [PropertyType.Array, PropertyType.Set, PropertyType.Dic
 
 /**
  * Implements https://github.com/realm/realm-js/blob/v11/src/js_schema.hpp#L433-L478
- * @param objectSchema The object schema, as represented by the binding.
- * @returns The object schema, as represented by the SDK.
  * @internal
  */
 export function fromBindingObjectSchema({
@@ -109,8 +107,6 @@ export function fromBindingObjectSchema({
 
 /**
  * Implements https://github.com/realm/realm-js/blob/v11/src/js_schema.hpp#L480-L530
- * @param propertySchema The property schema, as represented by the binding.
- * @returns The property schema, as represented by the SDK.
  * @internal
  */
 export function fromBindingPropertySchema(propertySchema: BindingProperty): CanonicalPropertySchema {
@@ -127,11 +123,7 @@ export function fromBindingPropertySchema(propertySchema: BindingProperty): Cano
   return result;
 }
 
-/**
- * Used to
- * @param propertySchema The property schema, as represented by the binding.
- * @returns A partial property schema, as represented by the SDK.
- */
+/** @internal */
 function fromBindingPropertyTypeName(
   propertySchema: BindingProperty,
 ): Pick<CanonicalPropertySchema, "type" | "optional" | "objectType" | "property"> {

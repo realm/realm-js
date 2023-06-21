@@ -43,7 +43,7 @@ declare module "buffer" {
 }
 
 /** @deprecated React Native doesn't provide this, use our `binding.WeakRef` polyfill instead. */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-interface, @typescript-eslint/no-unused-vars
 declare interface WeakRef<T extends object> {}
 /** @deprecated React Native doesn't provide this */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface

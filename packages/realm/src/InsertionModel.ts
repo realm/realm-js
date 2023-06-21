@@ -19,9 +19,12 @@
 import { Collection, Dictionary, List } from "./internal";
 import { AnyRealmObject } from "./Object";
 
-type AnyCollection = Collection<any, any, any, any, any>;
-type AnyDictionary = Dictionary<any>;
-type AnyList = List<any>;
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- We define these once to avoid using "any" through the code */
+export type AnyCollection = Collection<any, any, any, any, any>;
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- We define these once to avoid using "any" through the code */
+export type AnyDictionary = Dictionary<any>;
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- We define these once to avoid using "any" through the code */
+export type AnyList = List<any>;
 
 type ExtractPropertyNamesOfType<T, PropType> = {
   [K in keyof T]: T[K] extends PropType ? K : never;

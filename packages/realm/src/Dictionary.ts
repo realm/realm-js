@@ -109,7 +109,6 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
   /**
    * Create a `Results` wrapping a set of query `Results` from the binding.
    * @internal
-   * @param internal The internal representation of the dictionary.
    */
   constructor(realm: Realm, internal: binding.Dictionary, helpers: TypeHelpers) {
     if (arguments.length === 0 || !(internal instanceof binding.Dictionary)) {

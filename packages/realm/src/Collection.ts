@@ -30,7 +30,6 @@ import { CallbackAdder, IllegalConstructorError, Listeners, assert, binding } fr
  * when using `for...in` or `for...of` enumeration, which will always enumerate over the
  * objects which matched the query when the enumeration is begun, even if some of them are
  * deleted or modified to be excluded by the filter during the enumeration.
- *
  * @since 0.11.0
  */
 export abstract class Collection<

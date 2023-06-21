@@ -86,16 +86,16 @@ const PROXY_HANDLER: ProxyHandler<RealmObject<any>> = {
 
 export class RealmObject<T = DefaultObject> {
   /**
-   * @internal
    * This property is stored on the per class prototype when transforming the schema.
+   * @internal
    */
   public static [INTERNAL_HELPERS]: ClassHelpers;
 
   public static allowValuesArrays = false;
 
   /**
-   * @internal
    * Create an object in the database and set values on it
+   * @internal
    */
   public static create(
     realm: Realm,
@@ -165,8 +165,8 @@ export class RealmObject<T = DefaultObject> {
   }
 
   /**
-   * @internal
    * Create an object in the database and populate its primary key value, if required
+   * @internal
    */
   public static createObj(
     realm: Realm,
@@ -214,8 +214,8 @@ export class RealmObject<T = DefaultObject> {
   }
 
   /**
-   * @internal
    * Create a wrapper for accessing an object from the database
+   * @internal
    */
   public static createWrapper<T = DefaultObject>(
     realm: Realm,
@@ -242,33 +242,33 @@ export class RealmObject<T = DefaultObject> {
   }
 
   /**
-   * @internal
    * The Realm managing the object.
    * Note: this is on the injected prototype from ClassMap.defineProperties().
+   * @internal
    */
   public declare readonly [REALM]: Realm;
 
   /**
-   * @internal
    * The object's representation in the binding.
+   * @internal
    */
   public declare readonly [INTERNAL]: binding.Obj;
 
   /**
-   * @internal
    * Lazily created wrapper for the object notifier.
+   * @internal
    */
   private declare [INTERNAL_LISTENERS]: ObjectListeners<T> | null;
 
   /**
-   * @internal
    * Note: this is on the injected prototype from ClassMap.defineProperties()
+   * @internal
    */
   private declare readonly [KEY_ARRAY]: ReadonlyArray<string>;
 
   /**
-   * @internal
    * Note: this is on the injected prototype from ClassMap.defineProperties()
+   * @internal
    */
   private declare readonly [KEY_SET]: ReadonlySet<string>;
 

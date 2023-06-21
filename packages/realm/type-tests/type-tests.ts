@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+/* eslint-disable @typescript-eslint/no-unused-vars -- We're just testing types */
+
 import { Realm as Realm2 } from "../src/index";
 
 const realm = new Realm();

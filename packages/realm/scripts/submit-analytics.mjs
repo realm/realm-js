@@ -70,16 +70,14 @@ const ANALYTICS_BASE_URL = "https://data.mongodb-api.com/app/realmsdkmetrics-zmh
 
 /**
  * Constructs the full URL that will submit analytics to the webhook.
- * @param  {Object} payload Information that will be submitted through the webhook.
- * @returns {string} Complete analytics submission URL
+ * @param payload Information that will be submitted through the webhook.
+ * @returns Complete analytics submission URL
  */
 const getAnalyticsRequestUrl = (payload) =>
   ANALYTICS_BASE_URL + "?data=" + Buffer.from(JSON.stringify(payload.webHook), "utf8").toString("base64");
 
 /**
- * Generate a hash value of data using salt
- *
- * @param {string} data
+ * Generate a hash value of data using salt.
  * @returns base64 encoded SHA256 of data
  */
 function sha256(data) {
@@ -89,7 +87,6 @@ function sha256(data) {
 
 /**
  * Finds the root directory of the project.
- *
  * @returns the root of the project
  */
 function getProjectRoot() {
@@ -104,7 +101,6 @@ function getProjectRoot() {
 
 /**
  * Finds and read package.json
- *
  * @returns package.json as a JavaScript object
  */
 function getPackageJson(packagePath) {
@@ -114,7 +110,6 @@ function getPackageJson(packagePath) {
 
 /**
  * Heuristics to decide if analytics should be disabled.
- *
  * @returns true if analytics is disabled
  */
 function isAnalyticsDisabled() {
@@ -140,7 +135,6 @@ function getRealmVersion() {
 /**
  * Reads and parses `dependencies.list`.
  * Each line has be form "KEY=VALUE", and we to find "REALM_CORE_VERSION"
- *
  * @returns the Realm Core version as a string
  */
 function getRealmCoreVersion() {
@@ -155,7 +149,6 @@ function getRealmCoreVersion() {
 
 /**
  * Determines if `npm` or `yarn` is used.
- *
  * @returns An array with two elements: method and version
  */
 function getInstallationMethod() {
@@ -165,8 +158,7 @@ function getInstallationMethod() {
 
 /**
  * Collect analytics data from the runtime system
- * @param {Object} packageJson The app's package.json parsed as an object
- * @returns {Object} Analytics payload
+ * @returns Analytics payload
  */
 async function collectPlatformData(packagePath = getProjectRoot()) {
   // node-machine-id returns the ID SHA-256 hashed, if we cannot get the ID we send hostname instead

@@ -46,7 +46,7 @@ export type UserChangeCallback = () => void;
 export enum UserState {
   /**
    * Authenticated and available to communicate with services.
-   * @deprecated Will be removed in v13. Please use {@link LoggedIn}
+   * @deprecated Will be removed in v13. Please use {@link UserState.LoggedIn}
    */
   Active = "active",
   /** Authenticated and available to communicate with services. */
@@ -238,7 +238,6 @@ export class User<
 
   /**
    * Log out the user.
-   *
    * @returns A promise that resolves once the user has been logged out of the app.
    */
   async logOut(): Promise<void> {
@@ -247,7 +246,6 @@ export class User<
 
   /**
    * Link the user with an identity represented by another set of credentials.
-   *
    * @param credentials The credentials to use when linking.
    */
   async linkCredentials(credentials: Credentials) {
@@ -257,11 +255,9 @@ export class User<
   /**
    * Call a remote Atlas App Services Function by its name.
    * Note: Consider using `functions[name]()` instead of calling this method.
-   *
    * @param name Name of the App Services Function.
    * @param args Arguments passed to the Function.
    * @returns A promise that resolves to the value returned by the Function.
-   *
    * @example
    * // These are all equivalent:
    * await user.callFunction("doThing", a1, a2, a3);
@@ -305,7 +301,6 @@ export class User<
 
   /**
    * Refresh the access token and derive custom data from it.
-   *
    * @returns The newly fetched custom data.
    */
   async refreshCustomData(): Promise<CustomDataType> {
@@ -315,7 +310,6 @@ export class User<
 
   /**
    * Use the Push service to enable sending push messages to this user via Firebase Cloud Messaging (FCM).
-   *
    * @deprecated https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/
    * @returns An service client with methods to register and deregister the device on the user.
    */
@@ -327,7 +321,6 @@ export class User<
   /**
    * @param serviceName The name of the MongoDB service to connect to.
    * @returns A connection to the MongoDB service.
-   *
    * @example
    * let blueWidgets = user.mongoClient("myService")
    *                       .db("myDb")
