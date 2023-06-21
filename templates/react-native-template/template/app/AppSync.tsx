@@ -1,40 +1,45 @@
-import React, {useCallback, useEffect, useMemo} from 'react';
-import {useApp, useUser} from '@realm/react';
+import React, {useEffect, useState} from 'react';
+import {useApp, useAuth, useQuery, useRealm, useUser} from '@realm/react';
 import {Pressable, StyleSheet, Text} from 'react-native';
 
 import {Task} from './models/Task';
-import {TaskRealmContext} from './models';
 import {TaskManager} from './components/TaskManager';
 import {buttonStyles} from './styles/button';
 import {shadows} from './styles/shadows';
 import colors from './styles/colors';
 import {OfflineModeButton} from './components/OfflineModeButton';
 
-const {useRealm, useQuery} = TaskRealmContext;
-
 export const AppSync: React.FC = () => {
   const realm = useRealm();
   const user = useUser();
   const app = useApp();
-  const result = useQuery(Task);
-
-  const tasks = useMemo(() => result.sorted('createdAt'), [result]);
+  const {logOut} = useAuth();
+  const [showDone, setShowDone] = useState(false);
+  const tasks = useQuery(
+    Task,
+    collection =>
+      showDone
+        ? collection.sorted('createdAt')
+        : collection.filtered('isComplete == false').sorted('createdAt'),
+    [showDone],
+  );
 
   useEffect(() => {
     realm.subscriptions.update(mutableSubs => {
-      mutableSubs.add(realm.objects(Task));
+      mutableSubs.add(tasks);
     });
-  }, [realm, result]);
-
-  const handleLogout = useCallback(() => {
-    user?.logOut();
-  }, [user]);
+  }, [realm, tasks]);
 
   return (
     <>
       <Text style={styles.idText}>Syncing with app id: {app.id}</Text>
-      <TaskManager tasks={tasks} userId={user?.id} />
-      <Pressable style={styles.authButton} onPress={handleLogout}>
+      <TaskManager
+        tasks={tasks}
+        userId={user?.id}
+        setShowDone={setShowDone}
+        showDone={showDone}
+      />
+      <Pressable style={styles.authButton} onPress={logOut}>
         <Text
           style={styles.authButtonText}>{`Logout ${user?.profile.email}`}</Text>
       </Pressable>

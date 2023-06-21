@@ -1,6 +1,6 @@
 {
   "name": "@realm/expo-template",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "Realm Template for Expo",
   "scripts": {
     "start": "expo start --dev-client",
@@ -8,22 +8,22 @@
     "ios": "expo run:ios"
   },
   "dependencies": {
-    "@realm/react": "^0.4.3",
-    "expo": "^48.0.9",
-    "expo-dev-client": "~2.1.6",
-    "expo-splash-screen": "~0.18.1",
-    "expo-status-bar": "~1.4.2",
+    "@realm/react": "^0.5.1",
+    "expo": "~48.0.18",
+    "expo-dev-client": "~2.2.1",
+    "expo-splash-screen": "~0.18.2",
+    "expo-status-bar": "~1.4.4",
     "react": "18.2.0",
-    "react-native": "0.71.5",
-    "react-native-get-random-values": "~1.8.0",
-    "realm": "11.7.0"
+    "react-native": "0.71.8",
+    "react-native-get-random-values": "~1.9.0",
+    "realm": "11.10.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.9",
-    "@babel/plugin-proposal-decorators": "^7.19.0",
+    "@babel/core": "^7.22.5",
+    "@babel/plugin-proposal-decorators": "^7.22.5",
     "@realm/babel-plugin": "^0.1.1",
-    "@types/react": "~18.0.14",
-    "@types/react-native": "~0.70.6",
-    "typescript": "^4.9.4"
-  }
+    "@types/react": "~18.2.13",
+    "typescript": "^5.1.3"
+  },
+  "license": "Apache-2.0"
 }
