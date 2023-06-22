@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import {
+  AppServicesFunction,
   CanonicalPropertySchema,
   ClientResetRecoverUnsyncedChangesConfiguration,
   Realm,
@@ -31,6 +32,9 @@ export {
   App,
   AppChangeCallback,
   AppConfiguration,
+  AppServicesFunction,
+  /** @deprecated Will be removed in v13.0.0. Please use {@link AppServicesFunction} */
+  AppServicesFunction as RealmFunction,
   AssertionError,
   BaseConfiguration,
   BaseObjectSchema,
@@ -137,7 +141,6 @@ export {
   PropertyTypeName,
   ProviderType,
   Realm,
-  RealmFunction,
   RealmObject as Object,
   RealmObjectConstructor,
   RealmSet as Set,

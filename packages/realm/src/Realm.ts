@@ -24,6 +24,7 @@ import {
   App,
   AppChangeCallback,
   AppConfiguration,
+  AppServicesFunction,
   BSON,
   BaseChangeEvent,
   BaseConfiguration,
@@ -127,7 +128,6 @@ import {
   PushClient,
   REALM,
   RealmEvent,
-  RealmFunction,
   RealmInsertionModel,
   RealmListenerCallback,
   RealmListeners,
@@ -1372,6 +1372,9 @@ export declare namespace Realm {
     AppType as App,
     AppChangeCallback,
     AppConfiguration,
+    AppServicesFunction,
+    /** @deprecated Will be removed in v13.0.0. Please use {@link AppServicesFunction} */
+    AppServicesFunction as RealmFunction,
     BaseConfiguration,
     BaseObjectSchema,
     BaseSyncConfiguration,
@@ -1440,7 +1443,6 @@ export declare namespace Realm {
     PropertySchemaStrict,
     PropertyTypeName,
     ProviderTypeType as ProviderType,
-    RealmFunction,
     RealmObjectConstructor,
     /** @deprecated Will be removed in v13.0.0. Please use {@link RealmObjectConstructor} */
     RealmObjectConstructor as ObjectClass,
@@ -1579,6 +1581,9 @@ declare global {
       AppType as App,
       AppChangeCallback,
       AppConfiguration,
+      AppServicesFunction,
+      /** @deprecated Will be removed in v13.0.0. Please use {@link AppServicesFunction} */
+      AppServicesFunction as RealmFunction,
       BaseConfiguration,
       BaseObjectSchema,
       BaseSyncConfiguration,
@@ -1647,7 +1652,6 @@ declare global {
       PropertySchemaStrict,
       PropertyTypeName,
       ProviderTypeType as ProviderType,
-      RealmFunction,
       RealmObjectConstructor,
       /** @deprecated Will be removed in v13.0.0. Please use {@link RealmObjectConstructor} */
       RealmObjectConstructor as ObjectClass,
