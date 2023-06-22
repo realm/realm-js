@@ -19,12 +19,12 @@
 import process from "node:process";
 import { URL } from "node:url";
 
-import { ProxyType, SyncProxyConfig } from "realm/binding";
+import { ProxyType } from "realm/binding";
 import { inject } from "../sync-proxy-config";
 
 inject({
   create() {
-    for (const envVar of ["HTTPS_PROXY", "https_proxy"]) {
+    for (const envVar of ["HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy"]) {
       const proxyUrlAsString = process.env[envVar];
       if (proxyUrlAsString) {
         let type: ProxyType;
