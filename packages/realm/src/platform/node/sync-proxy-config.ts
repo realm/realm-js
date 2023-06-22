@@ -24,7 +24,7 @@ import { inject } from "../sync-proxy-config";
 
 inject({
   create() {
-    for (let envVar of ["HTTPS_PROXY", "https_proxy"]) {
+    for (const envVar of ["HTTPS_PROXY", "https_proxy"]) {
       const proxyUrlAsString = process.env[envVar];
       if (proxyUrlAsString) {
         let type;
