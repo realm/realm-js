@@ -55,14 +55,6 @@ function getSyncConfiguration(user: Realm.User, partition: string, addProxyConfi
     },
   };
 
-  if (addProxyConfig) {
-    realmConfig.sync.proxyConfig = {
-      address: "127.0.0.1",
-      port: 9876,
-      type: ProxyType.HTTP,
-    };
-  }
-
   return realmConfig;
 }
 
