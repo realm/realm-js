@@ -966,7 +966,7 @@ describe("Realm.Object", () => {
       }).throws("Property 'foo' does not exist on 'AllTypesObject' objects");
     });
 
-    it.only("returns entries correctly", function (this: Mocha.Context & RealmContext) {
+    it("returns entries correctly", function (this: Mocha.Context & RealmContext) {
       const obj = this.realm.write(() => {
         return this.realm.create<IPrimaryString>(PrimaryStringSchema.name, {
           pk: "one",
@@ -982,7 +982,7 @@ describe("Realm.Object", () => {
       ]);
     });
 
-    it.only("returns keys correctly", function (this: Mocha.Context & RealmContext) {
+    it("returns keys correctly", function (this: Mocha.Context & RealmContext) {
       const obj = this.realm.write(() => {
         return this.realm.create<IPrimaryString>(PrimaryStringSchema.name, {
           pk: "one",
