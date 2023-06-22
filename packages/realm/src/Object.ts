@@ -280,7 +280,7 @@ export class RealmObject<T = DefaultObject> {
   }
 
   entries(): [string, unknown][] {
-    throw new Error("Not yet implemented");
+    return Object.entries(this);
   }
 
   /**

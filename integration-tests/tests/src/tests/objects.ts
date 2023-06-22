@@ -965,6 +965,35 @@ describe("Realm.Object", () => {
         obj.getPropertyType("foo");
       }).throws("Property 'foo' does not exist on 'AllTypesObject' objects");
     });
+
+    it.only("returns entries correctly", function (this: Mocha.Context & RealmContext) {
+      const obj = this.realm.write(() => {
+        return this.realm.create<IPrimaryString>(PrimaryStringSchema.name, {
+          pk: "one",
+          value: 1,
+        });
+      });
+
+      const entries = obj.entries();
+      expect(entries).to.have.length(2);
+      expect(entries).to.have.deep.members([
+        ["pk", "one"],
+        ["value", 1],
+      ]);
+    });
+
+    it.only("returns keys correctly", function (this: Mocha.Context & RealmContext) {
+      const obj = this.realm.write(() => {
+        return this.realm.create<IPrimaryString>(PrimaryStringSchema.name, {
+          pk: "one",
+          value: 1,
+        });
+      });
+
+      const keys = obj.keys();
+      expect(keys).to.have.length(2);
+      expect(keys).to.have.deep.members(["pk", "value"]);
+    });
   });
 
   describe("linktype properties", () => {
