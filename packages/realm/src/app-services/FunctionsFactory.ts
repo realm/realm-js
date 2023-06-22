@@ -19,15 +19,18 @@
 import { User } from "../internal";
 
 /**
- * A function which executes on the MongoDB Realm platform.
+ * A function which executes on the Atlas App Services server.
  */
-export type RealmFunction<R, A extends unknown[]> = (...args: A) => Promise<R>;
+export type AppServicesFunction<R, A extends unknown[]> = (...args: A) => Promise<R>;
 
+/**
+ * The default functions factory, providing types for easily calling functions.
+ */
 export type DefaultFunctionsFactory = {
   /**
    * All the functions are accessible as members on this instance.
    */
-  [name: string]: RealmFunction<unknown, unknown[]>;
+  [name: string]: AppServicesFunction<unknown, unknown[]>;
 };
 
 export function createFactory<T>(user: User<unknown, unknown, unknown>, serviceName: string | undefined): T {
