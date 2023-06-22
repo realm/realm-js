@@ -27,12 +27,13 @@ import {
   JSONCacheMap,
   ObjectChangeCallback,
   ObjectListeners,
+  OmittedRealmTypes,
   OrderedCollection,
   Realm,
-  RealmInsertionModel,
   RealmObjectConstructor,
   Results,
   TypeAssertionError,
+  Unmanaged,
   assert,
   binding,
   flags,
@@ -86,7 +87,28 @@ const PROXY_HANDLER: ProxyHandler<RealmObject<any>> = {
   },
 };
 
-export class RealmObject<T = DefaultObject> {
+/**
+ * Base class for a Realm Object.
+ * @example
+ * To define a class `Person` which requires the `name` and `age` properties to be
+ * specified when it is being constructed, using the Realm Babel plugin to allow
+ * Typescript-only model definitions (otherwise it would require a `static` schema):
+ * ```
+ * class Person extends Realm.Object<Person, "name" | "age"> {
+ *   _id = new Realm.Types.ObjectId();
+ *   name: string;
+ *   age: Realm.Types.Int;
+ * }
+ * ```
+ * @typeParam `T` - The type of this class (e.g. if your class is `Person`,
+ * `T` should also be `Person` - this duplication is required due to how
+ * TypeScript works)
+ * @typeParam `RequiredProperties` - The names of any properties of this
+ * class which are required when an instance is constructed with `new`. Any
+ * properties not specified will be optional, and will default to a sensible
+ * null value if no default is specified elsewhere.
+ */
+export class RealmObject<T = DefaultObject, RequiredProperties extends keyof OmittedRealmTypes<T> = never> {
   /**
    * This property is stored on the per class prototype when transforming the schema.
    * @internal
@@ -239,7 +261,7 @@ export class RealmObject<T = DefaultObject> {
    * @param realm The Realm managing the object.
    * @param values The values of the object's properties at creation.
    */
-  public constructor(realm: Realm, values: RealmInsertionModel<T>) {
+  public constructor(realm: Realm, values: Unmanaged<T, RequiredProperties>) {
     return realm.create(this.constructor as RealmObjectConstructor, values) as unknown as this;
   }
 

@@ -128,7 +128,6 @@ import {
   PushClient,
   REALM,
   RealmEvent,
-  RealmInsertionModel,
   RealmListenerCallback,
   RealmListeners,
   RealmObject,
@@ -154,6 +153,7 @@ import {
   SyncSession,
   TypeAssertionError,
   Types,
+  Unmanaged,
   Update,
   UpdateDescription,
   UpdateEvent,
@@ -820,12 +820,12 @@ export class Realm {
    */
   create<T = DefaultObject>(
     type: string,
-    values: Partial<T> | Partial<RealmInsertionModel<T>>,
+    values: Partial<T> | Partial<Unmanaged<T>>,
     mode?: UpdateMode.Never | UpdateMode.All | UpdateMode.Modified | boolean,
   ): RealmObject<T> & T;
   create<T extends AnyRealmObject>(
     type: Constructor<T>,
-    values: Partial<T> | Partial<RealmInsertionModel<T>>,
+    values: Partial<T> | Partial<Unmanaged<T>>,
     mode?: UpdateMode.Never | UpdateMode.All | UpdateMode.Modified | boolean,
   ): T;
   create<T extends AnyRealmObject>(

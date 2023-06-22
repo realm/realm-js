@@ -21,9 +21,9 @@ import {
   OrderedCollection,
   OrderedCollectionHelpers,
   Realm,
-  RealmInsertionModel,
   SubscriptionOptions,
   TimeoutPromise,
+  Unmanaged,
   WaitForSync,
   assert,
   binding,
@@ -93,7 +93,7 @@ export class Results<T = unknown> extends OrderedCollection<T> {
    * @throws an {@link Error} If no property with the name exists.
    * @since 2.0.0-rc20
    */
-  update(propertyName: keyof RealmInsertionModel<T>, value: RealmInsertionModel<T>[typeof propertyName]): void {
+  update(propertyName: keyof Unmanaged<T>, value: Unmanaged<T>[typeof propertyName]): void {
     const {
       classHelpers,
       helpers: { get },

@@ -95,5 +95,5 @@ export * from "./RealmListeners";
 export * from "./Configuration";
 export * from "./ProgressRealmPromise";
 
-export * from "./InsertionModel";
+export * from "./Unmanaged";
 export * from "./schema";
