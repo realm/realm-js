@@ -45,6 +45,13 @@ function getSyncConfiguration(user: Realm.User, partition: string, addProxyConfi
     sync: {
       user,
       partitionValue: partition,
+      proxyConfig: addProxyConfig
+        ? {
+            address: "127.0.0.1",
+            port: 9876,
+            type: ProxyType.HTTP,
+          }
+        : undefined,
     },
   };
 
