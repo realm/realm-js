@@ -27,7 +27,7 @@ inject({
     for (const envVar of ["HTTPS_PROXY", "https_proxy"]) {
       const proxyUrlAsString = process.env[envVar];
       if (proxyUrlAsString) {
-        let type;
+        let type: ProxyType;
         const proxyUrl = new URL(proxyUrlAsString);
         const protocol = proxyUrl.protocol;
         if (protocol === "http:") {
