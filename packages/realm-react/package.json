@@ -67,7 +67,7 @@
     "metro-react-native-babel-preset": "0.73.9",
     "prettier": "^2.3.2",
     "react": "18.2.0",
-    "react-native": "0.71.7",
+    "react-native": "0.72.0",
     "react-test-renderer": "18.2.0",
     "realm": "*",
     "rollup-plugin-dts": "^5.0.0",

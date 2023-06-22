@@ -46,7 +46,7 @@
     "url": "https://realm.io"
   },
   "workspaces": [
-    "example",
+    "examples/react-native/",
     "packages/realm/bindgen/",
     "packages/realm/bindgen/vendor/realm-core/",
     "packages/babel-plugin",
@@ -63,7 +63,6 @@
     "integration-tests/tests",
     "integration-tests/environments/node",
     "integration-tests/environments/electron",
-    "integration-tests/environments/react-native",
     "integration-tests/baas-test-server"
   ],
   "dependencies": {
@@ -83,7 +82,7 @@
     "eslint-plugin-react-native": "^4.0.0",
     "eslint-plugin-react": "^7.32.2",
     "node-addon-api": "^6.0.0",
-    "react-native": "0.71.7",
+    "react-native": "0.72.0",
     "rollup": "^3.15.0",
     "tsx": "^3.12.3",
     "typescript": "^4.9.3",
