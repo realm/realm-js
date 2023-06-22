@@ -118,6 +118,21 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
   public static allowValuesArrays = false;
 
   /**
+   * Optionally specify the primary key of the schema when using @realm/babel-plugin
+   */
+  static primaryKey?: string;
+
+  /**
+   * Optionally specify that the schema is an embedded schema when using @realm/babel-plugin
+   */
+  static embedded?: boolean;
+
+  /**
+   * Optionally specify that the schema should sync unidirectionally if using flexible sync when using @realm/babel-plugin
+   */
+  static asymmetric?: boolean;
+
+  /**
    * Create an object in the database and set values on it
    * @internal
    */
@@ -296,11 +311,17 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
    */
   private declare readonly [KEY_SET]: ReadonlySet<string>;
 
+  /**
+   * @returns An array of the names of the object's properties.
+   */
   keys(): string[] {
     // copying to prevent caller from modifying the static array.
     return [...this[KEY_ARRAY]];
   }
 
+  /**
+   * @returns An array of key/value pairs of the object's properties.
+   */
   entries(): [string, unknown][] {
     throw new Error("Not yet implemented");
   }

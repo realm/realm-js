@@ -58,7 +58,7 @@ export {
   ClientResetMode,
   ClientResetRecoverOrDiscardUnsyncedChangesConfiguration,
   ClientResetRecoverUnsyncedChangesConfiguration,
-  /**  @deprecated Got renamed to {@link ClientResetRecoverUnsyncedChangesConfiguration} */
+  /** @deprecated Got renamed to {@link ClientResetRecoverUnsyncedChangesConfiguration} */
   ClientResetRecoverUnsyncedChangesConfiguration as ClientResetRecoveryConfiguration,
   Collection,
   CollectionChangeCallback,

@@ -285,6 +285,7 @@ export class Realm {
 
   /**
    * Clears the state by closing and deleting any Realm in the default directory and logout all users.
+   * NOTE: Not a part of the public API and it's primarily used from the library's tests.
    * @private
    */
   public static clearTestState(): void {

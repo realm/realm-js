@@ -68,9 +68,35 @@ export enum SubscriptionSetState {
  * @deprecated Will be removed in v13.0.0. Please use {@link SubscriptionSetState}.
  */
 export enum SubscriptionsState {
+  /**
+   * The subscription update has been persisted locally, but the server hasn't
+   * yet returned all the data that matched the updated subscription queries.
+   */
   Pending = SubscriptionSetState.Pending,
+
+  /**
+   * The server has acknowledged the subscription and sent all the data that
+   * matched the subscription queries at the time the SubscriptionSet was
+   * updated. The server is now in steady-state synchronization mode where it
+   * will stream updates as they come.
+   */
   Complete = SubscriptionSetState.Complete,
+
+  /**
+   * The server has returned an error and synchronization is paused for this
+   * Realm. To view the actual error, use `Subscriptions.error`.
+   *
+   * You can still use {@link SubscriptionSet.update} to update the subscriptions,
+   * and if the new update doesn't trigger an error, synchronization will be restarted.
+   */
   Error = SubscriptionSetState.Error,
+
+  /**
+   * The SubscriptionSet has been superseded by an updated one. This typically means
+   * that someone has called {@link SubscriptionSet.update} on a different instance
+   * of the {@link SubscriptionSet}. You should not use a superseded SubscriptionSet,
+   * and instead obtain a new instance from {@link Realm.subscriptions}.
+   */
   Superseded = SubscriptionSetState.Superseded,
 }
 

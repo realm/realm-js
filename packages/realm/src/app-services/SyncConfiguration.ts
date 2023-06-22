@@ -201,6 +201,33 @@ export type InitialSubscriptions = {
 export type FlexibleSyncConfiguration = BaseSyncConfiguration & {
   flexible: true;
   partitionValue?: never;
+  /**
+   * Optional object to configure the setup of an initial set of flexible
+   * sync subscriptions to be used when opening the Realm. If this is specified,
+   * {@link Realm.open} will not resolve until this set of subscriptions has been
+   * fully synchronized with the server.
+   *
+   * Example:
+   * ```
+   * const config: Realm.Configuration = {
+   *   sync: {
+   *     user,
+   *     flexible: true,
+   *     initialSubscriptions: {
+   *       update: (subs, realm) => {
+   *         subs.add(realm.objects('Task'));
+   *       },
+   *       rerunOnOpen: true,
+   *     },
+   *   },
+   *   // ... rest of config ...
+   * };
+   * const realm = await Realm.open(config);
+   *
+   * // At this point, the Realm will be open with the data for the initial set
+   * // subscriptions fully synchronised.
+   * ```
+   */
   initialSubscriptions?: InitialSubscriptions;
 };
 

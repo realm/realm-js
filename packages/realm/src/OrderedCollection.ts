@@ -38,6 +38,11 @@ import {
 const DEFAULT_COLUMN_KEY = binding.Int64.numToInt(0) as unknown as binding.ColKey;
 
 type PropertyType = string;
+
+/**
+ * A sort descriptor is either a string containing one or more property names
+ * separate by dots or an array with two items: `[propertyName, reverse]`.
+ */
 export type SortDescriptor = string | [string, boolean];
 
 export type CollectionChangeSet = {

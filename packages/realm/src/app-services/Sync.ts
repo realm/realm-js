@@ -102,9 +102,18 @@ export class Sync {
   static reconnect(app: App) {
     app.internal.syncManager.reconnect();
   }
+
+  /**
+   * The default behavior settings if you want to open a synchronized Realm immediately and start working on it.
+   * If this is the first time you open the Realm, it will be empty while the server data is being downloaded in the background.
+   */
   static openLocalRealmBehavior: Readonly<OpenRealmBehaviorConfiguration> = {
     type: OpenRealmBehaviorType.OpenImmediately,
   };
+
+  /**
+   * The default behavior settings if you want to wait for downloading a synchronized Realm to complete before opening it.
+   */
   static downloadBeforeOpenBehavior: Readonly<OpenRealmBehaviorConfiguration> = {
     type: OpenRealmBehaviorType.DownloadBeforeOpen,
     timeOut: 30 * 1000,
