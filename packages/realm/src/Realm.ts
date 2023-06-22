@@ -132,6 +132,7 @@ import {
   PropertySchemaStrict,
   PropertyTypeName,
   ProviderType,
+  ProxyType,
   PushClient,
   REALM,
   RealmEvent,
@@ -194,7 +195,6 @@ import {
   validateConfiguration,
   validateObjectSchema,
   validateRealmSchema,
-  ProxyType,
 } from "./internal";
 
 const debug = extendDebug("Realm");
