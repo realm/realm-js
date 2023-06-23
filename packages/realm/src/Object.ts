@@ -274,13 +274,15 @@ export class RealmObject<T = DefaultObject> {
    */
   private declare readonly [KEY_SET]: ReadonlySet<string>;
 
+  /** @deprecated Please use {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys | Object.keys()}  */
   keys(): string[] {
     // copying to prevent caller from modifying the static array.
     return [...this[KEY_ARRAY]];
   }
 
+  /** @deprecated Please use {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/entries | Object.entries()} */
   entries(): [string, unknown][] {
-    throw new Error("Not yet implemented");
+    return Object.entries(this);
   }
 
   /**
