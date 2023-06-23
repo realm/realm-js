@@ -110,16 +110,16 @@
       type: "Point",
   };
   const radius = kmToRadians(500); //500 km = 0.0783932519 rad
-  //Circle with a radius of 500kms centered in Berlin
+  // Circle with a radius of 500kms centered in Berlin
   const circleShape: GeoCircle = {
     center: berlinCoordinates,  
     distance: radius,
   };
 
-  //All points of interest in a 500kms radius from Berlin
+  // All points of interest in a 500kms radius from Berlin
   let result = pois.filtered("location geoWithin $0", circleShape);
 
-  //Equivalent string query without arguments
+  // Equivalent string query without arguments
   result = pois.filtered("location geoWithin geoCircle([13.397255909303222, 52.51174463251085], 0.0783932519)");
   ```
 * Support sort/distinct based on values from a dictionary e.g. `TRUEPREDICATE SORT(meta['age'])`. ([realm/realm-core#5311](https://github.com/realm/realm-core/pull/5311))
