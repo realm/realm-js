@@ -43,6 +43,14 @@
   * The following shapes are supported in geospatial queries: circle (`GeoCircle` type, defined by its center and radius in radians), box (`GeoBox` type, defined by its bottom left and upper right corners) and polygon (`GeoPolygon` type, defined by its vertices).
   * Additionally, two new functions have been added, `kmToRadians()` and `miToRadians()`, that can be used to convert kilometers and miles to radians respectively, simplifying conversion of a circle's radius.
   ```typescript
+  import Realm, {
+    ObjectSchema,
+    GeoCircle,
+    CanonicalGeoPoint,
+    GeoPosition,
+    kmToRadians,
+  } from "realm";
+  
   // Example of a user-defined point class that can be queried using geospatial queries
   class MyGeoPoint extends Realm.Object implements CanonicalGeoPoint {  
     coordinates: GeoPosition;
