@@ -974,7 +974,14 @@ describe("Realm.Object", () => {
         });
       });
 
-      const entries = obj.entries();
+      let entries = obj.entries();
+      expect(entries).to.have.length(2);
+      expect(entries).to.have.deep.members([
+        ["pk", "one"],
+        ["value", 1],
+      ]);
+
+      entries = Object.entries(obj);
       expect(entries).to.have.length(2);
       expect(entries).to.have.deep.members([
         ["pk", "one"],
@@ -990,7 +997,11 @@ describe("Realm.Object", () => {
         });
       });
 
-      const keys = obj.keys();
+      let keys = obj.keys();
+      expect(keys).to.have.length(2);
+      expect(keys).to.have.deep.members(["pk", "value"]);
+
+      keys = Object.keys(obj);
       expect(keys).to.have.length(2);
       expect(keys).to.have.deep.members(["pk", "value"]);
     });
