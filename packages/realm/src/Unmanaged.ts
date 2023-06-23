@@ -72,7 +72,7 @@ type OmittedRealmTypesWithRequired<T, RequiredProperties extends keyof OmittedRe
 type RemappedRealmTypes<T> = RealmListsRemappedModelPart<T> & RealmDictionaryRemappedModelPart<T>;
 
 /**
- * Joins `T` stripped of all keys which value extends {@link Collection} and all inherited from Realm.Object,
+ * Joins `T` stripped of all keys which value extends {@link Collection} and all inherited from {@link Realm.Object},
  * with only the keys which value extends {@link List}, remapped as {@link Array}. All properties are optional
  * except those specified in `RequiredProperties`.
  */

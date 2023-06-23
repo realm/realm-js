@@ -207,8 +207,7 @@ export type FlexibleSyncConfiguration = BaseSyncConfiguration & {
    * {@link Realm.open} will not resolve until this set of subscriptions has been
    * fully synchronized with the server.
    *
-   * Example:
-   * ```
+   * @example
    * const config: Realm.Configuration = {
    *   sync: {
    *     user,
@@ -226,7 +225,6 @@ export type FlexibleSyncConfiguration = BaseSyncConfiguration & {
    *
    * // At this point, the Realm will be open with the data for the initial set
    * // subscriptions fully synchronised.
-   * ```
    */
   initialSubscriptions?: InitialSubscriptions;
 };
