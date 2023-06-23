@@ -23,23 +23,20 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          submodules: "recursive"
+      - name: Setup node version
+        uses: actions/setup-node@v3
         with:
           node-version: 16
-          registry-url: https://registry.npmjs.org/
-      - name: Install npm v7
-        run: npm install -g npm@8
-      # Install the root package (--ignore-scripts to avoid downloading or building the native module)
-      - run: npm ci --ignore-scripts
-      # Bootstrap lerna sub-packages
-      - run: npx lerna bootstrap --scope realm-web-integration-tests --include-dependencies
-      # Build and test the package
-      - run: npm run build
-        working-directory: packages/realm-web
+          cache: npm
+      - name: Install dependencies
+        # Ignoring scripts to prevent a prebuilt from getting fetched / built
+        run: npm ci --ignore-scripts
       - name: Run unit tests
-        run: npm test
-        working-directory: packages/realm-web
+        run: npm test --workspace realm-web
       # Login with the Docker CLI to enable the integration test harness to pull the mongodb-realm-test-server
       - name: Docker Login
         uses: azure/docker-login@v1
@@ -48,8 +45,7 @@ jobs:
           username: realm-ci
           password: ${{ secrets.REALM_CI_GITHUB_API_KEY }}
       - name: Run integration tests
-        run: npm run test:github
-        working-directory: packages/realm-web-integration-tests
+        run: npm run test:github --workspace realm-web-integration-tests
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BAAS_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BAAS_AWS_SECRET_ACCESS_KEY }}
