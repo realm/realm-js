@@ -236,7 +236,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
   /**
    * Switches the current user to the one specified in {@link user}.
    * The new user must be currently logged in, otherwise this method will throw an error.
-   * @param user The new current user
+   * @param user The new current user.
    */
   public switchUser(user: AnyUser) {
     this.internal.switchUser(user.internal);
@@ -244,7 +244,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
 
   /**
    * Removes a user and their local data from the device. If the user is logged in, they will be logged out in the process.
-   * @param user The user to remove
+   * @param user The user to remove.
    */
   public async removeUser(user: AnyUser) {
     await this.internal.removeUser(user.internal);
@@ -253,7 +253,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
   /**
    * Deletes a user from the server. The user is also removed from the device together with their local data.
    * If the user is logged in, they will be logged out in the process.
-   * @param user The user to delete
+   * @param user The user to delete.
    */
   public async deleteUser(user: AnyUser) {
     await this.internal.deleteUser(user.internal);
