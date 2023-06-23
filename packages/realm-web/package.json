@@ -15,7 +15,7 @@
     "bundle": "wireit",
     "start": "npm run build -- --watch",
     "lint": "eslint --ext .js,.ts .",
-    "test": "mocha 'src/tests/**/*.test.ts'",
+    "test": "wireit",
     "postversion": "ts-node --project scripts/tsconfig.json scripts/postversion.ts",
     "docs": "wireit"
   },
@@ -35,6 +35,13 @@
       ],
       "output": [
         "dist"
+      ]
+    },
+    "test": {
+      "command": "mocha 'src/tests/**/*.test.ts'",
+      "dependencies": [
+        "update-types",
+        "generate-types"
       ]
     },
     "generate-types": {
