@@ -23,7 +23,6 @@
     "bundle": {
       "command": "rollup --config",
       "dependencies": [
-        "update-types",
         "generate-types"
       ],
       "files": [
@@ -40,7 +39,6 @@
     "generate-types": {
       "command": "tsc --project src/dom/tsconfig.json --declaration --emitDeclarationOnly --declarationDir types/generated",
       "dependencies": [
-        "update-types",
         "../realm-common:bundle",
         "../realm-network-transport:bundle"
       ],
@@ -51,15 +49,6 @@
       ],
       "output": [
         "types/generated"
-      ]
-    },
-    "update-types": {
-      "command": "ts-node --project scripts/tsconfig.json scripts/update-types.ts",
-      "files": [
-        "../../types"
-      ],
-      "output": [
-        "types/realm"
       ]
     },
     "docs": {
