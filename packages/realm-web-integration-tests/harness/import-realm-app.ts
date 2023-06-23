@@ -26,8 +26,6 @@ const MDB_REALM_PASSWORD = process.env.MDB_REALM_PASSWORD || "password";
 
 const MDB_REALM_APP_ID = process.env.MDB_REALM_APP_ID;
 
-const MDB_REALM_SKIP_CLEANUP = process.env.MDB_REALM_SKIP_CLEANUP === "true";
-
 export async function importRealmApp() {
   // Create a new MongoDBRealmService
   const baseUrl = MDB_REALM_BASE_URL;
@@ -42,12 +40,166 @@ export async function importRealmApp() {
         username: MDB_REALM_USERNAME,
         password: MDB_REALM_PASSWORD,
       },
-      appsDirectoryPath: path.resolve(__dirname, "../imported-apps"),
-      realmConfigPath: path.resolve(__dirname, "../realm-config"),
-      cleanUp: !MDB_REALM_SKIP_CLEANUP,
     });
-    const appTemplatePath = path.resolve(__dirname, "../my-test-app-template");
-    const { appId } = await importer.importApp(appTemplatePath);
+    const { appId } = await importer.importApp({
+      name: "my-test-app",
+      security: {
+        allowed_request_origins: ["http://localhost:8080"],
+      },
+      secrets: {
+        "jwt-secret": "2k66QfKeTRk3MdZ5vpDYgZCu2k66QfKeTRk3MdZ5vpDYgZCu",
+        "local-mongodb-uri": "mongodb://localhost:26000",
+      },
+      values: {},
+      authProviders: [
+        {
+          name: "anon-user",
+          type: "anon-user",
+          disabled: false,
+        },
+        {
+          name: "api-key",
+          type: "api-key",
+          disabled: false,
+        },
+        {
+          name: "custom-function",
+          type: "custom-function",
+          config: {
+            authFunctionName: "customAuthentication",
+          },
+          disabled: false,
+        },
+        {
+          name: "custom-token",
+          type: "custom-token",
+          config: {
+            audience: "",
+            signingAlgorithm: "HS256",
+            useJWKURI: false,
+          },
+          secret_config: {
+            signingKeys: ["jwt-secret"],
+          },
+          disabled: false,
+          metadata_fields: [
+            {
+              required: true,
+              name: "mySecretField",
+              field_name: "secret",
+            },
+          ],
+        },
+        {
+          name: "local-userpass",
+          type: "local-userpass",
+          config: {
+            autoConfirm: true,
+            resetFunctionName: "resetPassword",
+            runConfirmationFunction: false,
+            runResetFunction: true,
+          },
+          disabled: false,
+        },
+      ],
+      functions: [
+        {
+          name: "customAuthentication",
+          private: true,
+          run_as_system: true,
+          source: `
+            exports = async function (loginPayload) {
+              // Get a handle for the app.users collection
+              const users = context.services.get("local-mongodb").db("app").collection("users");
+
+              // Parse out custom data from the FunctionCredential
+
+              const { username, secret } = loginPayload;
+
+              if (secret !== "v3ry-s3cret") {
+                throw new Error("Ah ah ah, you didn't say the magic word");
+              }
+              // Query for an existing user document with the specified username
+
+              const user = await users.findOne({ username });
+
+              if (user) {
+                // If the user document exists, return its unique ID
+                return user._id.toString();
+              } else {
+                // If the user document does not exist, create it and then return its unique ID
+                const result = await users.insertOne({ username });
+                return result.insertedId.toString();
+              }
+            };
+          `,
+        },
+        {
+          name: "resetPassword",
+          private: false,
+          can_evaluate: {},
+          source: `
+            exports = () => {
+              // will not reset the password
+              return { status: "fail" };
+            };
+          `,
+        },
+        {
+          name: "translate",
+          private: false,
+          source: `
+            exports = function (sentence, languages) {
+              if (languages === "fr_en") {
+                if (sentence === "bonjour") {
+                  return "hello";
+                } else {
+                  return "what?";
+                }
+              } else if (languages === "en_fr") {
+                if (sentence === "hello") {
+                  return "bonjour";
+                } else {
+                  return "que?";
+                }
+              } else {
+                throw new Error("Watch your language!");
+              }
+            };
+          `,
+        },
+      ],
+      services: [
+        [
+          {
+            name: "local-mongodb",
+            type: "mongodb",
+            config: {},
+            secret_config: {
+              uri: "local-mongodb-uri",
+            },
+          },
+          [
+            {
+              roles: [
+                {
+                  name: "defaultRole",
+                  apply_when: {},
+                  document_filters: {
+                    read: true,
+                    write: true,
+                  },
+                  write: true,
+                  read: true,
+                  insert: true,
+                  delete: true,
+                },
+              ],
+            },
+          ],
+        ],
+      ],
+    });
     return { appId, baseUrl };
   }
 }

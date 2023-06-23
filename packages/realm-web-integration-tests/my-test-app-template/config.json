@@ -1,8 +1,0 @@
-{
-    "name": "my-test-app",
-    "security": {
-        "allowed_request_origins": [
-            "http://localhost:8080"
-        ]
-    }
-}

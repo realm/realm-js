@@ -79,14 +79,6 @@ To skip importing the app or use a different server, specify one or more of the 
 - `MDB_REALM_USERNAME`
 - `MDB_REALM_PASSWORD`
 
-If you want to communicate with the server using the credentials created by the test harness, you can run the test with the following environment variable:
-
-```
-MDB_REALM_SKIP_CLEANUP=true
-```
-
-This will skip the clean-up, leaving the app derived from the `./my-test-app-template` and the `./realm-config` file containing access and refresh tokens.
-
 ```
 npx realm-cli export --base-url http://localhost:9090 --config-path ./realm-config --app-id my-test-app-kuxuo
 ```
