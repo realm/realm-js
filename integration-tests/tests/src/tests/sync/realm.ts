@@ -454,10 +454,10 @@ describe("Realmtest", () => {
 
     it("by constructor works", () => {
       let constructorCalled = false;
-      //test class syntax support
+      // Test class syntax support
       class Car extends Realm.Object {
         constructor(realm: Realm) {
-          //@ts-expect-error TYPEBUG: Realm.Object expects values as second argument.
+          // @ts-expect-error TYPEBUG: Realm.Object expects values as second argument.
           super(realm);
           constructorCalled = true;
         }
@@ -481,7 +481,7 @@ describe("Realmtest", () => {
 
       let calledAsConstructor = false;
 
-      //test constructor function support
+      // Test constructor function support
       function Car2() {
         if (new.target) {
           calledAsConstructor = true;
@@ -506,7 +506,7 @@ describe("Realmtest", () => {
       Object.setPrototypeOf(Car2.prototype, Realm.Object.prototype);
       Object.setPrototypeOf(Car2, Realm.Object);
 
-      //@ts-expect-error TYPEBUG: constructor function is not part of the typesystem for schema.
+      // @ts-expect-error TYPEBUG: constructor function is not part of the typesystem for schema.
       const realm = new Realm({ schema: [Car, Car2] });
       realm.write(() => {
         const car = realm.create<ICarSchema>("Car", { make: "Audi", model: "A4", kilometers: 24 });
@@ -600,14 +600,14 @@ describe("Realmtest", () => {
           }),
         ).throws("Inner exception message");
 
-        // writes should be possible after caught exception
+        // Writes should be possible after caught exception
         this.realm.write(() => {
           this.realm.create("TestObject", { doubleCol: 1 });
         });
         expect(1).equals(this.realm.objects("TestObject").length);
 
         this.realm.write(() => {
-          // nested transactions not supported, ts-expect-error does not work here.
+          // Nested transactions not supported, ts-expect-error does not work here.
           // eslint-disable-next-line @typescript-eslint/no-empty-function
           expect(() => this.realm.write(() => {})).throws("The Realm is already in a write transaction");
         });
@@ -622,9 +622,9 @@ describe("Realmtest", () => {
         const testObject = this.realm.write(() => {
           return this.realm.create<ITestObject>(TestObjectSchema.name, { doubleCol: 1 });
         });
-        // object was created
+        // Object was created
         expect(1).equals(this.realm.objects(TestObjectSchema.name).length);
-        // object was returned
+        // Object was returned
         const objects = this.realm.objects<ITestObject>("TestObject");
         expect(objects[0].doubleCol).equals(testObject.doubleCol, "wrong test object property value");
       });
@@ -633,7 +633,7 @@ describe("Realmtest", () => {
         expect(() => {
           this.realm.write(() => {
             const p1 = this.realm.create<PersonObject>(PersonObject.schema.name, { name: "Ari", age: 10 });
-            //@ts-expect-error assigning string to int
+            // @ts-expect-error assigning string to int
             p1.age = "Ten";
           });
         }).throws("Expected value to be a number, got a string");
@@ -683,7 +683,7 @@ describe("Realmtest", () => {
 
       it("with invalid arguments throw", function (this: RealmContext) {
         this.realm.write(() => {
-          //@ts-expect-error testing realm create with invalid arguments
+          // @ts-expect-error testing realm create with invalid arguments
           expect(() => this.realm.create(TestObjectSchema.name, { doubleCol: 1 }, "foo")).throws(
             "Unsupported 'updateMode'. Only 'never', 'modified' or 'all' is supported.",
           );
@@ -977,13 +977,13 @@ describe("Realmtest", () => {
               objectCol: { doubleCol: 0 },
               arrayCol: [{ doubleCol: 2 }],
             },
-            //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
+            // @ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
             true,
           );
           const objects = this.realm.objects(AllPrimaryTypesSchema.name);
           expect(objects.length).equals(2);
           this.realm.create(
-            //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
+            // @ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
             AllPrimaryTypesSchema.name,
             {
               primaryCol: "0",
@@ -1009,15 +1009,15 @@ describe("Realmtest", () => {
           expect(obj0.dataCol.byteLength).equals(2);
           expect(obj0.objectCol).equals(null);
           expect(obj0.arrayCol.length).equals(1);
-          //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
+          // @ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
           this.realm.create(AllPrimaryTypesSchema.name, { primaryCol: "0" }, true);
-          //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
+          // @ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
           this.realm.create(AllPrimaryTypesSchema.name, { primaryCol: "1" }, true);
           expect(obj0.stringCol).equals("2");
           expect(obj0.objectCol).equals(null);
           expect(obj1.objectCol.doubleCol).equals(0);
           this.realm.create(
-            //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
+            // @ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
             AllPrimaryTypesSchema.name,
             {
               primaryCol: "0",
@@ -1035,20 +1035,20 @@ describe("Realmtest", () => {
           expect(obj0.dataCol.byteLength).equals(2);
           expect(obj0.objectCol.doubleCol).equals(0);
           expect(obj0.arrayCol.length).equals(1);
-          //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
+          // @ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
           this.realm.create(AllPrimaryTypesSchema.name, { primaryCol: "0", objectCol: undefined }, true);
-          //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
+          // @ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
           this.realm.create(AllPrimaryTypesSchema.name, { primaryCol: "1", objectCol: null }, true);
           expect(obj0.objectCol.doubleCol).equals(0);
           expect(obj1.objectCol).equals(null);
-          // test with string primaries
+          // Test with string primaries
           const obj = this.realm.create<IStringPrimary>(StringPrimarySchema.name, {
             primaryCol: "0",
             valueCol: 0,
           });
           expect(obj.valueCol).equals(0);
           this.realm.create(
-            //@ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
+            // @ts-expect-error: TYPEBUG: expects a Realm.UpdateMode instead of boolean "true"
             StringPrimarySchema.name,
             {
               primaryCol: "0",
@@ -1102,7 +1102,7 @@ describe("Realmtest", () => {
         let customCreated = 0;
         class CustomObject extends Realm.Object {
           constructor(realm: Realm) {
-            //@ts-expect-error TYPEBUG: Realm.Object expects values as second argument.
+            // @ts-expect-error TYPEBUG: Realm.Object expects values as second argument.
             super(realm);
             customCreated++;
           }
@@ -1243,7 +1243,7 @@ describe("Realmtest", () => {
           realm.writeCopyTo(34);
         }, "Expected value to be an object, got a number");
 
-        // make sure that copies are in the same directory as the original file
+        // Make sure that copies are in the same directory as the original file
         // that is important for running tests on mobile devices,
         // so we don't have issues with permissisons
         const copyName = realm.path + ".copy.realm";
@@ -1322,7 +1322,7 @@ describe("Realmtest", () => {
         });
         realm.close();
 
-        //@ts-expect-error TYPEBUG: opening without a config works in legacy test but is not accepted by typesystem.
+        // @ts-expect-error TYPEBUG: opening without a config works in legacy test but is not accepted by typesystem.
         return Realm.open().then((realm) => {
           const objects = realm.objects<ITestObject>("TestObject");
           expect(objects.length).equals(1);
@@ -1380,9 +1380,9 @@ describe("Realmtest", () => {
           static schema = PersonObject.schema;
         }
 
-        //@ts-expect-error object without specifying type
+        // @ts-expect-error object without specifying type
         expect(() => this.realm.objects()).throws("Expected an object schema name, object instance or class");
-        //@ts-expect-error object without specifying type
+        // @ts-expect-error object without specifying type
         expect(() => this.realm.objects([])).throws("Expected an object schema name, object instance or class");
         expect(() => this.realm.objects("InvalidClass")).throws("Object type 'InvalidClass' not found in schema.");
         expect(() => this.realm.objects(InvalidPerson)).throws(
@@ -1489,7 +1489,7 @@ describe("Realmtest", () => {
         new Realm({ schema: [IndexedSchema], path: "4.realm" });
       }).throws("Property 'IndexedSchema.dataCol' of type 'data' cannot be indexed.");
 
-      // primary key
+      // Primary key
       IndexedSchema.properties = { intCol: { type: "int", indexed: true } };
       IndexedSchema.primaryKey = "intCol";
 
@@ -1570,7 +1570,7 @@ describe("Realmtest", () => {
       expect(() => this.realm.delete(objects[0])).throws("Can only delete objects within a transaction.");
 
       this.realm.write(() => {
-        //@ts-expect-error tests delete without specifying object
+        // @ts-expect-error tests delete without specifying object
         expect(() => this.realm.delete()).throws("Expected 'subject' to be an object, got undefined");
 
         this.realm.delete(objects[0]);
@@ -1664,9 +1664,9 @@ describe("Realmtest", () => {
       expect(this.realm.objectForPrimaryKey<IStringPrimary>("StringPrimaryObject", "val1")?.valueCol).equals(1);
 
       expect(() => this.realm.objectForPrimaryKey("TestObject", 0)).throws("Expected a primary key on 'TestObject'");
-      //@ts-expect-error objectForprimaryKey without arguments
+      // @ts-expect-error objectForprimaryKey without arguments
       expect(() => this.realm.objectForPrimaryKey()).throws("Expected an object schema name, object instance or class");
-      //@ts-expect-error objectForprimaryKey without key
+      // @ts-expect-error objectForprimaryKey without key
       expect(() => this.realm.objectForPrimaryKey("IntPrimaryObject")).throws(
         "Expected value to be a number or bigint, got undefined",
       );
@@ -1674,7 +1674,7 @@ describe("Realmtest", () => {
         "Object type 'InvalidClass' not found in schema.",
       );
 
-      //@ts-expect-error objectForprimaryKey with object as key
+      // @ts-expect-error objectForprimaryKey with object as key
       expect(() => this.realm.objectForPrimaryKey("IntPrimaryObject", { foo: "bar" })).throws(
         "Expected value to be a number or bigint, got an object",
       );
@@ -1713,14 +1713,14 @@ describe("Realmtest", () => {
       expect(notificationCount).equals(2);
       expect(secondNotificationCount).equals(1);
 
-      // secondNotifiationCount should not increment since the corresponding listener is removed.
+      // SecondNotifiationCount should not increment since the corresponding listener is removed.
       this.realm.removeListener("change", secondNotification);
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       this.realm.write(() => {});
       expect(notificationCount).equals(3);
       expect(secondNotificationCount).equals(1);
 
-      // should fire no notifications after this
+      // Should fire no notifications after this
       this.realm.removeAllListeners();
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       this.realm.write(() => {});
@@ -1748,7 +1748,7 @@ describe("Realmtest", () => {
       const schemaMap: Record<string, Realm.ObjectSchema | PersonObject> = {};
       originalSchema.forEach((objectSchema: Realm.ObjectSchema) => {
         if (objectSchema instanceof PersonObject) {
-          // for PersonObject
+          // For PersonObject
           schemaMap[PersonObject.schema.name] = objectSchema;
         } else {
           schemaMap[objectSchema.name] = objectSchema;
@@ -1826,7 +1826,7 @@ describe("Realmtest", () => {
     it("adding schema updates realm", async () => {
       const realm1 = new Realm();
       expect(realm1.isEmpty).to.be.true;
-      expect(realm1.schema.length).equals(0); // empty schema
+      expect(realm1.schema.length).equals(0); // Empty schema
 
       const schema = [
         {
@@ -1858,7 +1858,7 @@ describe("Realmtest", () => {
         expect(realm1.schema.length).equals(0);
         expect(realm2.schema.length).equals(1);
 
-        // give some time to let advance_read to complete
+        // Give some time to let advance_read to complete
         // in real world, a Realm will not be closed just after its
         // schema has been updated
         await sleep(15000);
@@ -1919,7 +1919,7 @@ describe("Realmtest", () => {
       });
       realm.close();
 
-      // copy should not overwrite existing files
+      // Copy should not overwrite existing files
       Realm.copyBundledRealmFiles();
       realm = new Realm(config);
       expect(realm.objects<IDateObject>(DateObjectSchema.name)[0].currentDate.getTime()).equals(1);
@@ -1962,7 +1962,7 @@ describe("Realmtest", () => {
     it("shouldCompact is called when creating a new realm", function (this: RealmContext) {
       let wasCalled = false;
       const count = 1000;
-      // create compactable Realm
+      // Create compactable Realm
       const realm1 = new Realm({ schema: [StringOnlySchema] });
       realm1.write(() => {
         realm1.create("StringOnlyObject", { stringCol: "A" });
@@ -1973,7 +1973,7 @@ describe("Realmtest", () => {
       });
       realm1.close();
 
-      // open Realm and see if it is compacted
+      // Open Realm and see if it is compacted
       const shouldCompact = (totalBytes: number, usedBytes: number) => {
         wasCalled = true;
         const fiveHundredKB = 500 * 1024;
@@ -1982,7 +1982,7 @@ describe("Realmtest", () => {
       const realm2 = new Realm({ schema: [StringOnlySchema], shouldCompact });
       expect(wasCalled).to.be.true;
       expect(realm2.objects("StringOnlyObject").length).equals(count + 2);
-      // we don't check if the file is smaller as we assume that Object Store does it
+      // We don't check if the file is smaller as we assume that Object Store does it
       realm2.close();
     });
 
@@ -2013,7 +2013,7 @@ describe("Realmtest", () => {
     it("manual compact with multiple instances of same realm exist", function (this: RealmContext) {
       const realm1 = new Realm({ schema: [StringOnlySchema] });
       const realm2 = new Realm({ schema: [StringOnlySchema] });
-      // realm1 and realm2 are wrapping the same Realm instance
+      // Realm1 and realm2 are wrapping the same Realm instance
       expect(realm1.compact()).to.be.true;
     });
   });
@@ -2107,9 +2107,9 @@ describe("Realmtest", () => {
         schemaVersion: 1,
         onMigration: undefined,
       });
-      // object should be gone as Realm should get deleted
+      // Object should be gone as Realm should get deleted
       expect(realm.objects("TestObject").length).equals(0);
-      // create a new object
+      // Create a new object
       realm.write(function () {
         realm.create("TestObject", ["stringValue", 1]);
       });
@@ -2123,9 +2123,9 @@ describe("Realmtest", () => {
           migrationWasCalled = true;
         },
       });
-      // migration function should get called as deleteRealmIfMigrationNeeded is false
+      // Migration function should get called as deleteRealmIfMigrationNeeded is false
       expect(migrationWasCalled).equals(true);
-      // object should be there because Realm shouldn't get deleted
+      // Object should be there because Realm shouldn't get deleted
       expect(realm.objects("TestObject").length).equals(1);
       realm.close();
     });
@@ -2166,17 +2166,17 @@ describe("Realmtest", () => {
         realm.create("TestObject", { prop0: "stringValue", prop1: 1 });
       });
       realm.close();
-      // change schema
+      // Change schema
       realm = new Realm({ schema: schema1, deleteRealmIfMigrationNeeded: true, onMigration: undefined });
-      // object should be gone as Realm should get deleted
+      // Object should be gone as Realm should get deleted
       expect(realm.objects("TestObject").length).equals(0);
-      // create a new object
+      // Create a new object
       realm.write(function () {
         realm.create("TestObject", { prop0: "stringValue", prop1: 1, prop2: 1.0 });
       });
       realm.close();
       expect(function () {
-        // updating schema without changing schemaVersion OR setting deleteRealmIfMigrationNeeded = true should raise an error
+        // Updating schema without changing schemaVersion OR setting deleteRealmIfMigrationNeeded = true should raise an error
         new Realm({
           schema: schema2,
           deleteRealmIfMigrationNeeded: false,
@@ -2185,7 +2185,7 @@ describe("Realmtest", () => {
         });
       }).to.throw;
       let migrationWasCalled = false;
-      // change schema again, but increment schemaVersion
+      // Change schema again, but increment schemaVersion
       realm = new Realm({
         schema: schema2,
         deleteRealmIfMigrationNeeded: false,
@@ -2194,9 +2194,9 @@ describe("Realmtest", () => {
           migrationWasCalled = true;
         },
       });
-      // migration function should get called as deleteRealmIfMigrationNeeded is false
+      // Migration function should get called as deleteRealmIfMigrationNeeded is false
       expect(migrationWasCalled).equals(true);
-      // object should be there because Realm shouldn't get deleted
+      // Object should be there because Realm shouldn't get deleted
       expect(realm.objects("TestObject").length).equals(1);
       realm.close();
     });

@@ -226,14 +226,14 @@ describe("Mixed", () => {
       const objectsBefore = this.realm.objects(MixedSchema.name);
       expect(objectsBefore.length).equals(0);
 
-      // check if the understandable error message is thrown
+      // Check if the understandable error message is thrown
       expect(() => {
         this.realm.write(() => {
           this.realm.create("MixedClass", { value: [123, false, "hello"] });
         });
       }).throws(Error, "A mixed property cannot contain an array of values.");
 
-      //  verify that the transaction has been rolled back
+      //  Verify that the transaction has been rolled back
       const objectsAfter = this.realm.objects(MixedSchema.name);
       expect(objectsAfter.length).equals(0);
     });
@@ -274,7 +274,7 @@ describe("Mixed", () => {
         this.realm.deleteAll();
       });
 
-      // test with 16-bit values
+      // Test with 16-bit values
       const uint16Values = [0, 512, 256, 65535];
       const uint16Buffer = new Uint16Array(uint16Values).buffer;
       this.realm.write(() => {
@@ -289,7 +289,7 @@ describe("Mixed", () => {
         this.realm.deleteAll();
       });
 
-      // test with 32-bit values
+      // Test with 32-bit values
       const uint32Values = [0, 121393, 121393, 317811, 514229, 4294967295];
       const uint32Buffer = new Uint32Array(uint32Values).buffer;
       this.realm.write(() => {

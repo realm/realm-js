@@ -194,7 +194,7 @@ type RealmSchemaExtra = Record<string, ObjectSchemaExtra | undefined>;
 type ObjectSchemaExtra = {
   constructor?: RealmObjectConstructor;
   defaults: Record<string, unknown>;
-  // objectTypes: Record<string, unknown>;
+  // ObjectTypes: Record<string, unknown>;
 };
 
 export type RealmEventName = "change" | "schema" | "beforenotify";
@@ -385,7 +385,7 @@ export class Realm {
         result[key] = property.default;
         continue;
       }
-      // if optional is set, it wil take precedence over any `?` set on the type parameter
+      // If optional is set, it wil take precedence over any `?` set on the type parameter
       if (property.optional) {
         continue;
       }
@@ -1772,7 +1772,7 @@ declare global {
   }
 }
 
-//Set default logger and log level.
+// Set default logger and log level.
 Realm.setLogger(defaultLogger);
 Realm.setLogLevel(defaultLoggerLevel);
 

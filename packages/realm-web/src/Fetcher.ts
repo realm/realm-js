@@ -100,7 +100,6 @@ interface RequestWithPath<RequestBody> extends Omit<Request<RequestBody>, "url">
 export type AuthenticatedRequest<RequestBody = unknown> = {
   /**
    * Which token should be used when requesting?
-   *
    * @default "access"
    */
   tokenType?: TokenType;
@@ -221,7 +220,6 @@ export class Fetcher implements LocationUrlContext {
 
   /**
    * Fetch a network resource as an authenticated user.
-   *
    * @param request The request which should be sent to the server.
    * @returns The response from the server.
    */
@@ -268,7 +266,6 @@ export class Fetcher implements LocationUrlContext {
 
   /**
    * Fetch a network resource as an authenticated user and parse the result as extended JSON.
-   *
    * @param request The request which should be sent to the server.
    * @returns The response from the server, parsed as extended JSON.
    */
@@ -300,7 +297,6 @@ export class Fetcher implements LocationUrlContext {
 
   /**
    * Fetch an "event-stream" resource as an authenticated user.
-   *
    * @param request The request which should be sent to the server.
    * @returns An async iterator over the response body.
    */

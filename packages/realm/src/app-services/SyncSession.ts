@@ -124,11 +124,11 @@ export function toBindingErrorHandlerWithOnManual(
     });
   }
   if (onError) {
-    // onError gets all errors
+    // OnError gets all errors
     return toBindingErrorHandler(onError);
   }
   if (onManual) {
-    // onManual only gets ClientResetErrors
+    // OnManual only gets ClientResetErrors
     return toBindingErrorHandler((session, error) => {
       if (error instanceof ClientResetError) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

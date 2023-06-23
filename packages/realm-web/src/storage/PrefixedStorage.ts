@@ -39,7 +39,6 @@ export class PrefixedStorage implements Storage {
 
   /**
    * Construct a `Storage` which will prefix a key part to every operation.
-   *
    * @param storage The underlying storage to use for operations.
    * @param keyPart The part of the key to prefix when performing operations.
    */

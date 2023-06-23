@@ -87,7 +87,6 @@ const REDIRECT_HASH_TO_RESULT: { [k: string]: keyof RedirectResult } = {
 export class OAuth2Helper {
   /**
    * Parses the query string from the final step of the OAuth flow.
-   *
    * @param queryString The query string passed through in location.hash.
    * @returns The result of the OAuth flow.
    */
@@ -105,7 +104,6 @@ export class OAuth2Helper {
 
   /**
    * Handle the redirect querystring by parsing it and storing it for others to consume.
-   *
    * @param queryString The query string containing the encoded result from the OAuth provider.
    * @param storage The underlying storage used to persist the result.
    */
@@ -125,7 +123,6 @@ export class OAuth2Helper {
 
   /**
    * Decodes the authInfo string into its seperate parts.
-   *
    * @param authInfo An authInfo string returned from the server.
    * @returns An object containing the separate parts of the authInfo string.
    */
@@ -141,7 +138,6 @@ export class OAuth2Helper {
 
   /**
    * Get the storage key associated of an secret associated with a state.
-   *
    * @param storage The root storage used to derive a "state namespaced" storage.
    * @param state The random state.
    * @returns The storage associated with a particular state.
@@ -171,7 +167,6 @@ export class OAuth2Helper {
 
   /**
    * Open a window and wait for the redirect to be handled.
-   *
    * @param url The URL to open.
    * @param state The state which will be used to listen for storage updates.
    * @returns The result passed through the redirect.
@@ -233,7 +228,6 @@ export class OAuth2Helper {
 
   /**
    * Generate a random state string.
-   *
    * @returns The random state string.
    */
   public generateState(): string {

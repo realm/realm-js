@@ -26,7 +26,6 @@ const SERIALIZATION_OPTIONS = {
 
 /**
  * Serialize an object containing BSON types into extended-JSON.
- *
  * @param obj The object containing BSON types.
  * @returns The document in extended-JSON format.
  */
@@ -36,7 +35,6 @@ export function serialize<Obj extends SimpleObject>(obj: Obj): SimpleObject {
 
 /**
  * De-serialize an object or an array of object from extended-JSON into an object or an array of object with BSON types.
- *
  * @param obj The object or array of objects in extended-JSON format.
  * @returns The object or array of objects with inflated BSON types.
  */

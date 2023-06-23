@@ -274,12 +274,12 @@ function getSchema(useFlexibleSync: boolean) {
 }
 
 // FIXME: testing flexible sync is currently disabled as it is timing out
-[false /*,  true*/].forEach((useFlexibleSync) => {
+[false /* ,  true*/].forEach((useFlexibleSync) => {
   describe.skipIf(
     environment.missingServer,
     `client reset handling (${getPartialTestTitle(useFlexibleSync)} sync)`,
     function () {
-      this.longTimeout(); // client reset with flexible sync can take quite some time
+      this.longTimeout(); // Client reset with flexible sync can take quite some time
       importAppBefore(
         useFlexibleSync
           ? buildAppConfig("with-flx").anonAuth().flexibleSync()
@@ -409,7 +409,7 @@ function getSchema(useFlexibleSync: boolean) {
       it.skip(`client reset fails, the error handler is called (${getPartialTestTitle(
         useFlexibleSync,
       )})`, async function (this: RealmContext) {
-        // if client reset fails, the error handler is called
+        // If client reset fails, the error handler is called
         // and the two before/after handlers are not called
         // we simulate the failure by error code 132")
 

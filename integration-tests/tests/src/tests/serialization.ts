@@ -120,13 +120,13 @@ describe("toJSON functionality", () => {
       // Playlists
       const p1 = this.realm.create<IPlaylist>(PlaylistSchema.name, p1Serialized);
       const p2 = this.realm.create<IPlaylist>(PlaylistSchema.name, p2Serialized);
-      // ensure circular references for p1 (ensure p1 references itself)
+      // Ensure circular references for p1 (ensure p1 references itself)
       p1.related.push(p1, p2);
-      //@ts-expect-error Adding to related field to match
+      // @ts-expect-error Adding to related field to match
       p1Serialized.related.push(p1Serialized, p2Serialized);
 
       p2.related.push(p1);
-      //@ts-expect-error Adding to related field to match
+      // @ts-expect-error Adding to related field to match
       p2Serialized.related.push(p1Serialized);
 
       // Use playlist to test Result implementations

@@ -184,19 +184,19 @@ describe("Results", () => {
       });
 
       expect(() => {
-        //@ts-expect-error Should be an invalid write to read-only object.
+        // @ts-expect-error Should be an invalid write to read-only object.
         objects[-1] = { doubleCol: 0 };
       }).throws("Index -1 cannot be less than zero.");
       expect(() => {
-        //@ts-expect-error Should be an invalid write to read-only object.
+        // @ts-expect-error Should be an invalid write to read-only object.
         objects[0] = { doubleCol: 0 };
       }).throws("Assigning into a Results is not supported");
       expect(() => {
-        //@ts-expect-error Should be an invalid write to read-only object.
+        // @ts-expect-error Should be an invalid write to read-only object.
         objects[1] = { doubleCol: 0 };
       }).throws("Assigning into a Results is not supported");
       expect(() => {
-        //@ts-expect-error Should be an invalid write to read-only object.
+        // @ts-expect-error Should be an invalid write to read-only object.
         objects.length = 0;
       }).throws("Cannot assign to read only property 'length'");
     });
@@ -232,12 +232,12 @@ describe("Results", () => {
         this.realm.objects("TestObject").filtered("doubleCol > 1").snapshot(),
       ];
 
-      // test isValid
+      // Test isValid
       resultsVariants.forEach(function (objects) {
         expect(objects.isValid()).equals(true);
       });
 
-      // close and test invalidated accessors
+      // Close and test invalidated accessors
       this.realm.close();
       const reopenedRealm = new Realm({
         schemaVersion: 1,
@@ -265,14 +265,14 @@ describe("Results", () => {
 
     it("should return undefined with invalid properties", function (this: RealmContext) {
       const objects = this.realm.objects("TestObject");
-      //@ts-expect-error Should be an invalid property.
+      // @ts-expect-error Should be an invalid property.
       expect(objects.ablasdf).equals(undefined);
     });
 
-    //TODO figure out why undefined is not returned in react-native https://github.com/realm/realm-js/issues/5463.
+    // TODO figure out why undefined is not returned in react-native https://github.com/realm/realm-js/issues/5463.
     it.skipIf(environment.reactNative, "invalid string indexing returns correct values", function (this: RealmContext) {
       const objects = this.realm.objects("TestObject");
-      //@ts-expect-error TYPEBUG: indexing by string on results is not allowed typewise
+      // @ts-expect-error TYPEBUG: indexing by string on results is not allowed typewise
       expect(objects[""]).equals(undefined);
     });
 
@@ -513,11 +513,11 @@ describe("Results", () => {
       }).throws("property 'IntPrimaryObject.self' does not exist.");
 
       expect(() => {
-        //@ts-expect-error Expected to be an invalid sorted argument.
+        // @ts-expect-error Expected to be an invalid sorted argument.
         objects.sorted(1);
       }).throws("Expected 'argument' to be property name and optional bool or an array of descriptors, got a number");
       expect(() => {
-        //@ts-expect-error Expected to be an invalid sorted argument.
+        // @ts-expect-error Expected to be an invalid sorted argument.
         objects.sorted([1]);
       }).throws("Expected 'descriptor[0]' to be string or array with two elements [string, boolean], got a number");
 
@@ -529,7 +529,7 @@ describe("Results", () => {
       }).throws("property 'IntPrimaryObject.fish' does not exist");
 
       expect(() => {
-        //@ts-expect-error Expected to be an invalid sorted argument.
+        // @ts-expect-error Expected to be an invalid sorted argument.
         objects.sorted(["valueCol", "primaryCol"], true);
       }).throws("Expected second 'argument' to be undefined, got a boolean");
 
@@ -591,15 +591,15 @@ describe("Results", () => {
       const numberProps = ["intCol", "floatCol", "doubleCol", "stringCol"];
       for (const prop of numberProps) {
         objects = objects.sorted(prop, false);
-        //@ts-expect-error Should have property from loop
+        // @ts-expect-error Should have property from loop
         expect("" + objects[0][prop]).equals("0", "first element ascending for " + prop);
-        //@ts-expect-error Should have property from loop
+        // @ts-expect-error Should have property from loop
         expect("" + objects[2][prop]).equals("2", "second element ascending for " + prop);
 
         objects = objects.sorted(prop, true);
-        //@ts-expect-error Should have property from loop
+        // @ts-expect-error Should have property from loop
         expect("" + objects[0][prop]).equals("2", "first element descending for " + prop);
-        //@ts-expect-error Should have property from loop
+        // @ts-expect-error Should have property from loop
         expect("" + objects[2][prop]).equals("0", "second element descending for " + prop);
       }
 
@@ -629,7 +629,7 @@ describe("Results", () => {
 
         const ascending = objects.sorted(propKey, false);
         for (let i = 0; i <= max; i++) {
-          //@ts-expect-error Should have given propKey property.
+          // @ts-expect-error Should have given propKey property.
           expect(ascending[i][propKey].toString()).equals(
             compareArray[i].toString(),
             `element ${i} ascending for ${propKey}`,
@@ -638,7 +638,7 @@ describe("Results", () => {
 
         const descending = objects.sorted(propKey, true);
         for (let i = 0; i <= max; i++) {
-          //@ts-expect-error Should have given propKey property.
+          // @ts-expect-error Should have given propKey property.
           expect(descending[i][propKey].toString()).equals(
             compareArray[max - i].toString(),
             `element ${i} descending for ${propKey}`,
@@ -672,7 +672,7 @@ describe("Results", () => {
       const results = this.realm.objects("NullableBasicTypesObject");
       expect(results.length).equals(N);
 
-      // int, float & double columns support all aggregate functions
+      // Int, float & double columns support all aggregate functions
       ["intCol", "floatCol", "doubleCol"].forEach((colName) => {
         expect(results.min(colName)).equals(1);
         expect(results.max(colName)).equals(N);
@@ -680,7 +680,7 @@ describe("Results", () => {
         expect(results.avg(colName)).equals((N + 1) / 2);
       });
 
-      // date columns support only 'min' & 'max'
+      // Date columns support only 'min' & 'max'
       expect((results.min("dateCol") as Date).getTime()).equals(new Date(1).getTime());
       expect((results.max("dateCol") as Date).getTime()).equals(new Date(N).getTime());
     });
@@ -699,7 +699,7 @@ describe("Results", () => {
           });
         }
 
-        // add some null valued data, which should be ignored by the aggregate functions
+        // Add some null valued data, which should be ignored by the aggregate functions
         for (let j = 0; j < M; j++) {
           this.realm.create("NullableBasicTypesObject", {
             intCol: null,
@@ -714,7 +714,7 @@ describe("Results", () => {
 
       expect(results.length).equals(N + M);
 
-      // int, float & double columns support all aggregate functions
+      // Int, float & double columns support all aggregate functions
       // the M null valued objects should be ignored
       ["intCol", "floatCol", "doubleCol"].forEach((colName) => {
         expect(results.min(colName)).equals(1);
@@ -723,11 +723,11 @@ describe("Results", () => {
         expect(results.avg(colName)).equals((N + 1) / 2);
       });
 
-      // date columns support only 'min' & 'max'
+      // Date columns support only 'min' & 'max'
       expect((results.min("dateCol") as Date).getTime()).equals(new Date(1).getTime());
       expect((results.max("dateCol") as Date).getTime()).equals(new Date(N).getTime());
 
-      // call aggregate functions on empty results
+      // Call aggregate functions on empty results
       const emptyResults = this.realm.objects("NullableBasicTypesObject").filtered("intCol < 0");
       expect(emptyResults.length).equals(0);
       ["intCol", "floatCol", "doubleCol"].forEach((colName) => {
@@ -752,28 +752,28 @@ describe("Results", () => {
 
       const results = this.realm.objects("NullableBasicTypesObject");
 
-      // bool, string & data columns don't support 'min'
+      // Bool, string & data columns don't support 'min'
       ["boolCol", "stringCol", "dataCol"].forEach((colName) => {
         expect(() => {
           results.min(colName);
         }).throws("Operation 'min' not supported for");
       });
 
-      // bool, string & data columns don't support 'max'
+      // Bool, string & data columns don't support 'max'
       ["boolCol", "stringCol", "dataCol"].forEach((colName) => {
         expect(() => {
           results.max(colName);
         }).throws(`Operation 'max' not supported for`);
       });
 
-      // bool, string, date & data columns don't support 'avg'
+      // Bool, string, date & data columns don't support 'avg'
       ["boolCol", "stringCol", "dateCol", "dataCol"].forEach((colName) => {
         expect(() => {
           results.avg(colName);
         }).throws(`Operation 'average' not supported for`);
       });
 
-      // bool, string, date & data columns don't support 'sum'
+      // Bool, string, date & data columns don't support 'sum'
       ["boolCol", "stringCol", "dateCol", "dataCol"].forEach((colName) => {
         expect(() => {
           results.sum(colName);
@@ -812,7 +812,7 @@ describe("Results", () => {
         }
       });
 
-      // update should work on a basic result set
+      // Update should work on a basic result set
       let results = this.realm.objects("NullableBasicTypesObject");
       expect(results.length).equals(5);
       this.realm.write(() => {
@@ -821,7 +821,7 @@ describe("Results", () => {
       expect(results.length).equals(5);
       expect(this.realm.objects("NullableBasicTypesObject").filtered("intCol = 20").length).equals(5);
 
-      // update should work on a filtered result set
+      // Update should work on a filtered result set
       results = this.realm.objects("NullableBasicTypesObject").filtered("intCol = 20");
       this.realm.write(() => {
         results.update("intCol", 10);
@@ -829,7 +829,7 @@ describe("Results", () => {
       expect(results.length).equals(0);
       expect(this.realm.objects("NullableBasicTypesObject").filtered("intCol = 10").length).equals(5);
 
-      // update should work on a sorted result set
+      // Update should work on a sorted result set
       results = this.realm.objects("NullableBasicTypesObject").filtered("intCol == 10").sorted("intCol");
       this.realm.write(() => {
         results.update("intCol", 20);
@@ -837,12 +837,12 @@ describe("Results", () => {
       expect(results.length).equals(0);
       expect(this.realm.objects("NullableBasicTypesObject").filtered("intCol = 20").length).equals(5);
 
-      // update should work on a result snapshot
+      // Update should work on a result snapshot
       results = this.realm.objects("NullableBasicTypesObject").filtered("intCol == 20").snapshot();
       this.realm.write(() => {
         results.update("intCol", 10);
       });
-      expect(results.length).equals(5); // snapshot length should not change
+      expect(results.length).equals(5); // Snapshot length should not change
       expect(this.realm.objects("NullableBasicTypesObject").filtered("intCol = 10").length).equals(5);
     });
 
@@ -887,14 +887,14 @@ describe("Results", () => {
       const allObjects = this.realm.objects("NullableBasicTypesObject");
 
       Object.entries(updatedObjectValues).forEach(([fieldName, updatedValue]) => {
-        //@ts-expect-error Field name will exist.
+        // @ts-expect-error Field name will exist.
         const initialValueResults = allObjects.filtered(`${fieldName} = $0`, initialObjectValues[fieldName]);
         expect(initialValueResults.length).equals(
           objectsCreated,
           "Filtering with initial value before the update should be equal to object count",
         );
 
-        //@ts-expect-error Field name will exist.
+        // @ts-expect-error Field name will exist.
         const updatedValueResults = allObjects.filtered(`${fieldName} = $0`, updatedObjectValues[fieldName]);
         expect(updatedValueResults.length).equals(
           0,
@@ -945,12 +945,12 @@ describe("Results", () => {
         this.realm.objects("NullableBasicTypesObject").filtered("doubleCol > 1").snapshot(),
       ];
 
-      // test isValid
+      // Test isValid
       resultsVariants.forEach(function (objects) {
         expect(objects.isValid()).equals(true);
       });
 
-      // close and test update
+      // Close and test update
       this.realm.close();
       const updatedRealm = new Realm({
         schemaVersion: 1,

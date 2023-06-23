@@ -572,7 +572,7 @@ describe("Notifications", () => {
               expect(this.realm.objects<StringOnlyObject>(StringOnlyObject.schema.name)[0]["stringCol"]).equals(
                 "foobar",
               );
-              expect(calls).equals(2); // listener only called twice
+              expect(calls).equals(2); // Listener only called twice
               done();
             }
           });

@@ -365,7 +365,7 @@ class TodoItem extends Realm.Object {
   }
 }
 
-//@ts-expect-error TYPEBUG: should add schema field to Realm.object
+// @ts-expect-error TYPEBUG: should add schema field to Realm.object
 TodoItem.schema = {
   name: "TodoItem",
   properties: {
@@ -381,7 +381,7 @@ class TodoList extends Realm.Object {
   }
 }
 
-//@ts-expect-error TYPEBUG: should add schema field to Realm.object
+// @ts-expect-error TYPEBUG: should add schema field to Realm.object
 TodoList.schema = {
   name: "TodoList",
   properties: {
@@ -499,14 +499,14 @@ describe("Lists", () => {
         array = obj.arrayCol;
         expect(array.length).equals(1);
 
-        //@ts-expect-error TYPEBUG: type missmatch, forcecasting shouldn't be done
+        // @ts-expect-error TYPEBUG: type missmatch, forcecasting shouldn't be done
         obj.arrayCol = [];
         expect(array.length).equals(0);
 
-        //@ts-expect-error TYPEBUG: type missmatch, forcecasting shouldn't be done
+        // @ts-expect-error TYPEBUG: type missmatch, forcecasting shouldn't be done
         obj.arrayCol = [{ doubleCol: 1 }, { doubleCol: 2 }];
         expect(array.length).equals(2);
-        //@ts-expect-error assignment to read only list property length should not be allowed
+        // @ts-expect-error assignment to read only list property length should not be allowed
         expect(() => (array.length = 0)).throws(Error, "Cannot assign to read only property 'length'");
 
         expect(array.length).equals(2);
@@ -515,7 +515,7 @@ describe("Lists", () => {
   });
   describe("subscripts", () => {
     openRealmBeforeEach({ schema: [LinkTypeSchema, TestObjectSchema, PrimitiveArraysSchema] });
-    //TODO figure out why undefined is not returned in react-native https://github.com/realm/realm-js/issues/5463.
+    // TODO figure out why undefined is not returned in react-native https://github.com/realm/realm-js/issues/5463.
     it.skipIf(environment.reactNative, "invalid object access returns undefined", function (this: RealmContext) {
       this.realm.write(() => {
         const obj = this.realm.create<ILinkTypeSchema>("LinkTypesObject", {
@@ -523,7 +523,7 @@ describe("Lists", () => {
           objectCol1: { doubleCol: 2 },
           arrayCol: [{ doubleCol: 3 }],
         });
-        //@ts-expect-error TYPEBUG: indexing by string on results is not allowed typewise
+        // @ts-expect-error TYPEBUG: indexing by string on results is not allowed typewise
         expect(obj?.arrayCol[""]).to.be.undefined;
       });
     });
@@ -575,14 +575,14 @@ describe("Lists", () => {
       expect(obj.arrayCol1[2]).equals(undefined);
       expect(obj.arrayCol1[-1]).equals(undefined);
       for (const field of prim.keys()) {
-        //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
+        // @ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
         expect(prim[field][2]).equals(undefined);
-        //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
+        // @ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
         expect(prim[field][-1]).equals(undefined);
-        //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
+        // @ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
         expect(prim[field]["foo"]).equals(undefined);
         if (field.includes("opt")) {
-          //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
+          // @ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
           expect(prim[field][1]).equals(null, `FIELD: ${field}`);
         }
       }
@@ -646,15 +646,15 @@ describe("Lists", () => {
         array[1] = obj.objectCol1;
         expect(array[0].doubleCol).equals(1);
         expect(array[1].doubleCol).equals(2);
-        //@ts-expect-error can not assign null to list of objects.
+        // @ts-expect-error can not assign null to list of objects.
         expect(() => (array[0] = null)).throws(Error, "null");
-        //@ts-expect-error can not pass incomplete object to list.
+        // @ts-expect-error can not pass incomplete object to list.
         expect(() => (array[0] = {})).throws(Error, "Missing value for property 'doubleCol'");
-        //@ts-expect-error can not pass object with invalid properties to list.
+        // @ts-expect-error can not pass object with invalid properties to list.
         expect(() => (array[0] = { foo: "bar" })).throws(Error, "Missing value for property 'doubleCol'");
-        //@ts-expect-error can not assign an invalid object type to list.
+        // @ts-expect-error can not assign an invalid object type to list.
         expect(() => (array[0] = prim)).throws(Error, "Missing value for property 'doubleCol'");
-        //@ts-expect-error can not assign an array to a list of objects.
+        // @ts-expect-error can not assign an array to a list of objects.
         expect(() => (array[0] = array)).throws(Error, "Missing value for property 'doubleCol'");
         expect(() => (array[2] = { doubleCol: 1 })).throws(
           Error,
@@ -662,19 +662,19 @@ describe("Lists", () => {
         );
         expect(() => (array[-1] = { doubleCol: 1 })).throws(Error, "Index -1 cannot be less than zero.");
 
-        //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
+        // @ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
         array["foo"] = "bar";
-        //@ts-expect-error TYPEBUG: foo does not exist in the schema since the schema has been dynamically updated.
+        // @ts-expect-error TYPEBUG: foo does not exist in the schema since the schema has been dynamically updated.
         expect(array.foo).equals("bar");
 
         function testAssign(name: string, v1: any, v2: any) {
-          //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
+          // @ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
           prim[name].push(v1);
-          //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
+          // @ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
           expectSimilar(prim[name].type, prim[name][0], v1);
-          //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
+          // @ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
           prim[name][0] = v2;
-          //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
+          // @ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
           expectSimilar(prim[name].type, prim[name][0], v2);
         }
 
@@ -687,7 +687,7 @@ describe("Lists", () => {
         testAssign("date", DATE1, DATE2);
 
         function testAssignNull(name: string, expected: string) {
-          //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
+          // @ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
           expect(() => (prim[name][0] = null)).throws(`Expected value to be ${expected}, got null`);
         }
 
@@ -711,9 +711,9 @@ describe("Lists", () => {
         Error,
         "Cannot modify managed objects outside of a write transaction.",
       );
-      //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
+      // @ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
       array["foo"] = "baz";
-      //@ts-expect-error TYPEBUG: foo does not exist in the schema since the schema has been dynamically updated.
+      // @ts-expect-error TYPEBUG: foo does not exist in the schema since the schema has been dynamically updated.
       expect(array.foo).equals("baz");
     });
   });
@@ -730,82 +730,82 @@ describe("Lists", () => {
         const person = this.realm.create(PersonSchema.name, { name: "a", age: 2.0 });
         const personList = this.realm.create<IPersonListSchema>(PersonListSchema.name, { list: [person] }).list;
 
-        //@ts-expect-error number is not assignable to TestObject.
+        // @ts-expect-error number is not assignable to TestObject.
         expect(() => (obj.arrayCol = [0])).throws("Expected 'arrayCol[0]' to be an object, got a number");
-        //@ts-expect-error null is not assignable to TestObject.
+        // @ts-expect-error null is not assignable to TestObject.
         expect(() => (obj.arrayCol = [null])).throws("Expected 'arrayCol[0]' to be an object, got null");
-        //@ts-expect-error Person is not assignable to TestObject.
+        // @ts-expect-error Person is not assignable to TestObject.
         expect(() => (obj.arrayCol = [person])).throws("Missing value for property 'doubleCol'");
-        //@ts-expect-error PersonList is not assignable to TestObjectList.
+        // @ts-expect-error PersonList is not assignable to TestObjectList.
         expect(() => (obj.arrayCol = personList)).throws("Missing value for property 'doubleCol'");
-        //@ts-expect-error TYPEBUG: type missmatch, forcecasting shouldn't be done
+        // @ts-expect-error TYPEBUG: type missmatch, forcecasting shouldn't be done
         obj.arrayCol = [this.realm.create<ITestObjectSchema>(TestObjectSchema.name, { doubleCol: 1.0 })];
         expect(obj.arrayCol[0].doubleCol).equals(1.0);
         obj.arrayCol = obj.arrayCol; // eslint-disable-line no-self-assign
         expect(obj.arrayCol[0].doubleCol).equals(1.0);
 
-        //@ts-expect-error Person is not assignable to boolean.
+        // @ts-expect-error Person is not assignable to boolean.
         expect(() => (prim.bool = [person])).throws(
           Error,
           "Expected 'bool[0]' to be a boolean, got an instance of PersonObject",
         );
-        //@ts-expect-error Person is not assignable to int.
+        // @ts-expect-error Person is not assignable to int.
         expect(() => (prim.int = [person])).throws(
           "Expected 'int[0]' to be a number or bigint, got an instance of PersonObject",
         );
-        //@ts-expect-error Person is not assignable to float.
+        // @ts-expect-error Person is not assignable to float.
         expect(() => (prim.float = [person])).throws(
           "Expected 'float[0]' to be a number, got an instance of PersonObject",
         );
-        //@ts-expect-error Person is not assignable to double.
+        // @ts-expect-error Person is not assignable to double.
         expect(() => (prim.double = [person])).throws(
           "Expected 'double[0]' to be a number, got an instance of PersonObject",
         );
-        //@ts-expect-error Person is not assignable to string.
+        // @ts-expect-error Person is not assignable to string.
         expect(() => (prim.string = [person])).throws(
           "Expected 'string[0]' to be a string, got an instance of PersonObject",
         );
-        //@ts-expect-error Person is not assignable to data.
+        // @ts-expect-error Person is not assignable to data.
         expect(() => (prim.data = [person])).throws(
           "Expected 'data[0]' to be an instance of ArrayBuffer, got an instance of PersonObject",
         );
-        //@ts-expect-error Person is not assignable to date.
+        // @ts-expect-error Person is not assignable to date.
         expect(() => (prim.date = [person])).throws(
           "Expected 'date[0]' to be an instance of Date, got an instance of PersonObject",
         );
-        //@ts-expect-error Person is not assignable to optional bool.
+        // @ts-expect-error Person is not assignable to optional bool.
         expect(() => (prim.optBool = [person])).throws(
           "Expected 'optBool[0]' to be a boolean, got an instance of PersonObject",
         );
-        //@ts-expect-error Person is not assignable to optional int.
+        // @ts-expect-error Person is not assignable to optional int.
         expect(() => (prim.optInt = [person])).throws(
           "Expected 'optInt[0]' to be a number or bigint, got an instance of PersonObject",
         );
-        //@ts-expect-error Person is not assignable to optional float.
+        // @ts-expect-error Person is not assignable to optional float.
         expect(() => (prim.optFloat = [person])).throws(
           "Expected 'optFloat[0]' to be a number, got an instance of PersonObject",
         );
-        //@ts-expect-error Person is not assignable to optional double.
+        // @ts-expect-error Person is not assignable to optional double.
         expect(() => (prim.optDouble = [person])).throws(
           "Expected 'optDouble[0]' to be a number, got an instance of PersonObject",
         );
-        //@ts-expect-error Person is not assignable to optional string.
+        // @ts-expect-error Person is not assignable to optional string.
         expect(() => (prim.optString = [person])).throws(
           "Expected 'optString[0]' to be a string, got an instance of PersonObject",
         );
-        //@ts-expect-error Person is not assignable to optional data.
+        // @ts-expect-error Person is not assignable to optional data.
         expect(() => (prim.optData = [person])).throws(
           "Expected 'optData[0]' to be an instance of ArrayBuffer, got an instance of PersonObject",
         );
-        //@ts-expect-error Person is not assignable to optional date.
+        // @ts-expect-error Person is not assignable to optional date.
         expect(() => (prim.optDate = [person])).throws(
           "Expected 'optDate[0]' to be an instance of Date, got an instance of PersonObject",
         );
 
         function testAssign(name: string, value: any) {
-          //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
+          // @ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
           prim[name] = [value];
-          //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
+          // @ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
           expectSimilar(prim[name].type, prim[name][0], value);
         }
 
@@ -818,9 +818,9 @@ describe("Lists", () => {
         testAssign("date", DATE1);
 
         function testAssignNull(name: string, expected: string) {
-          //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
+          // @ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
           expect(() => (prim[name] = [null])).throws(Error, `Expected '${name}[0]' to be ${expected}, got null`);
-          //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
+          // @ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
           expect(prim[name].length).equals(1);
         }
 
@@ -849,9 +849,9 @@ describe("Lists", () => {
         testAssign("optDate", null);
       });
 
-      //@ts-expect-error throws on modification outside of transaction.
+      // @ts-expect-error throws on modification outside of transaction.
       expect(() => (obj.arrayCol = [])).throws("Cannot modify managed objects outside of a write transaction.");
-      //@ts-expect-error throws on modification outside of transaction.
+      // @ts-expect-error throws on modification outside of transaction.
       expect(() => (prim.bool = [])).throws("Cannot modify managed objects outside of a write transaction.");
     });
   });
@@ -873,7 +873,7 @@ describe("Lists", () => {
       }
 
       this.realm.write(() => {
-        //@ts-expect-error TYPEBUG: type missmatch, forcecasting shouldn't be done
+        // @ts-expect-error TYPEBUG: type missmatch, forcecasting shouldn't be done
         obj.arrayCol = [{ doubleCol: 0 }, { doubleCol: 1 }];
       });
       expect(obj.arrayCol.length).equals(2);
@@ -912,7 +912,7 @@ describe("Lists", () => {
       });
 
       expect(array.length).equals(4);
-      //@ts-expect-error throws on modification outside of transaction.
+      // @ts-expect-error throws on modification outside of transaction.
       expect(() => array.push([1])).throws("Cannot modify managed objects outside of a write transaction.");
     });
     it("supports pop", function (this: RealmContext) {
@@ -996,14 +996,14 @@ describe("Lists", () => {
         array = obj.arrayCol;
         let removed;
 
-        //@ts-expect-error TYPEBUG: the typesystem doesn't allow us to pass multiple paramaters as object.
+        // @ts-expect-error TYPEBUG: the typesystem doesn't allow us to pass multiple paramaters as object.
         removed = array.splice(0, 0, obj.objectCol, obj.objectCol1);
         expect(removed.length).equals(0);
         expect(array.length).equals(4);
         expect(array[0].doubleCol).equals(1);
         expect(array[1].doubleCol).equals(2);
 
-        //@ts-expect-error TYPEBUG: the typesystem doesn't allow us to pass multiple paramaters as object.
+        // @ts-expect-error TYPEBUG: the typesystem doesn't allow us to pass multiple paramaters as object.
         removed = array.splice(2, 2, { doubleCol: 5 }, { doubleCol: 6 });
         expect(removed.length).equals(2);
         expect(removed[0].doubleCol).equals(3);
@@ -1045,7 +1045,7 @@ describe("Lists", () => {
         expect(removed.length).equals(1);
         expect(array.length).equals(0);
 
-        //@ts-expect-error can not pass string that is non-convertible to number.
+        // @ts-expect-error can not pass string that is non-convertible to number.
         expect(() => array.splice("cat", 1)).throws("Expected 'start' to be a number, got a string");
 
         expect(() => array.splice(0, 0, 0)).throws("Expected 'element of arrayCol' to be an object, got a number");
@@ -1204,9 +1204,9 @@ describe("Lists", () => {
 
       this.realm.write(() => {
         object.list = [
-          //@ts-expect-error TYPEBUG: assignment should not generate error as the other properties for Person are optional.
+          // @ts-expect-error TYPEBUG: assignment should not generate error as the other properties for Person are optional.
           { name: "Bob", age: 42 },
-          //@ts-expect-error TYPEBUG: assignment should not generate error as the other properties for Person are optional.
+          // @ts-expect-error TYPEBUG: assignment should not generate error as the other properties for Person are optional.
           { name: "Alice", age: 42 },
         ];
       });
@@ -1493,7 +1493,7 @@ describe("Lists", () => {
         iteratorMethodNames.push(Symbol.iterator);
 
         iteratorMethodNames.forEach((methodName) => {
-          //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
+          // @ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
           const iterator = list[methodName]();
           let count = 0;
           let result;
@@ -1567,7 +1567,7 @@ describe("Lists", () => {
       iteratorMethodNames.push(Symbol.iterator);
 
       iteratorMethodNames.forEach((methodName) => {
-        //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
+        // @ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
         const iterator = list[methodName]();
         let count = 0;
         let result;
@@ -1589,7 +1589,7 @@ describe("Lists", () => {
               expect(value).equals(count);
               break;
             default:
-              //@ts-expect-error TYPEBUG: this compares undefined with undefined which doesn't give too much.
+              // @ts-expect-error TYPEBUG: this compares undefined with undefined which doesn't give too much.
               expect(value.name).equals(list[count].name);
               break;
           }
@@ -1634,7 +1634,7 @@ describe("Lists", () => {
 
       expect(object.list.length).equals(N);
 
-      // int, float & double columns support all aggregate functions
+      // Int, float & double columns support all aggregate functions
       ["intCol", "floatCol", "doubleCol"].forEach((colName) => {
         expect(object.list.min(colName)).equals(1);
         expect(object.list.max(colName)).equals(N);
@@ -1642,7 +1642,7 @@ describe("Lists", () => {
         expect(object.list.avg(colName)).equals((N + 1) / 2);
       });
 
-      // date columns support only 'min' & 'max'
+      // Date columns support only 'min' & 'max'
       expect((object.list.min("dateCol") as Date).getTime()).equals(new Date(1).getTime());
       expect((object.list.max("dateCol") as Date).getTime()).equals(new Date(N).getTime());
     });
@@ -1675,7 +1675,7 @@ describe("Lists", () => {
 
       expect(object.list.length).equals(N + M);
 
-      // int, float & double columns support all aggregate functions
+      // Int, float & double columns support all aggregate functions
       // the M null valued objects should be ignored
       ["intCol", "floatCol", "doubleCol"].forEach((colName) => {
         expect(object.list.min(colName)).equals(1);
@@ -1684,11 +1684,11 @@ describe("Lists", () => {
         expect(object.list.avg(colName)).equals((N + 1) / 2);
       });
 
-      // date columns support only 'min' & 'max'
+      // Date columns support only 'min' & 'max'
       expect((object.list.min("dateCol") as Date).getTime()).equals(new Date(1).getTime());
       expect((object.list.max("dateCol") as Date).getTime()).equals(new Date(N).getTime());
 
-      // call aggregate functions on empty list
+      // Call aggregate functions on empty list
       expect(objectEmptyList.list.length).equals(0);
       ["intCol", "floatCol", "doubleCol"].forEach((colName) => {
         expect(objectEmptyList.list.min(colName)).to.be.undefined;
@@ -1717,7 +1717,7 @@ describe("Lists", () => {
       });
 
       for (const prop of ["int", "float", "double", "date", "optInt", "optFloat", "optDouble", "optDate"]) {
-        //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
+        // @ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
         const list = object[prop];
         expectSimilar(list.type, list.min(), list[0]);
         expectSimilar(list.type, list.max(), list[2]);
@@ -1762,28 +1762,28 @@ describe("Lists", () => {
 
       expect(object.list.length).equals(N);
 
-      // bool, string & data columns don't support 'min'
+      // Bool, string & data columns don't support 'min'
       ["bool", "string", "data"].forEach((colName) => {
         expect(() => object.list.min(colName + "Col")).throws(
           `Operation 'min' not supported for ${colName}? property 'NullableBasicTypesObject.${colName}Col'`,
         );
       });
 
-      // bool, string & data columns don't support 'max'
+      // Bool, string & data columns don't support 'max'
       ["bool", "string", "data"].forEach((colName) => {
         expect(() => object.list.max(colName + "Col")).throws(
           `Operation 'max' not supported for ${colName}? property 'NullableBasicTypesObject.${colName}Col'`,
         );
       });
 
-      // bool, string, date & data columns don't support 'avg'
+      // Bool, string, date & data columns don't support 'avg'
       ["bool", "string", "date", "data"].forEach((colName) => {
         expect(() => object.list.avg(colName + "Col")).throws(
           `Operation 'average' not supported for ${colName}? property 'NullableBasicTypesObject.${colName}Col'`,
         );
       });
 
-      // bool, string, date & data columns don't support 'sum'
+      // Bool, string, date & data columns don't support 'sum'
       ["bool", "string", "date", "data"].forEach((colName) => {
         expect(() => object.list.sum(colName + "Col")).throws(
           `Operation 'sum' not supported for ${colName}? property 'NullableBasicTypesObject.${colName}Col'`,
@@ -1918,7 +1918,7 @@ describe("Lists", () => {
   });
   describe("Schema with list", () => {
     it("supports get and apply schema", function () {
-      //@ts-expect-error TYPEBUG: should add _cache as a field to interface "Configuration" if it's publicly consumed.
+      // @ts-expect-error TYPEBUG: should add _cache as a field to interface "Configuration" if it's publicly consumed.
       const realm1 = new Realm({
         schema: [NameObjectLocalSchema],
         _cache: false,
@@ -1929,16 +1929,16 @@ describe("Lists", () => {
       const schema = realm1.schema;
       realm1.close();
 
-      //@ts-expect-error TYPEBUG: should add _cache as a field to interface "Configuration" if it's publicly consumed.
+      // @ts-expect-error TYPEBUG: should add _cache as a field to interface "Configuration" if it's publicly consumed.
       const realm2 = new Realm({
         schema: schema,
         _cache: false,
       });
       const names = realm2.objects(NameObjectLocalSchema.name);
       expect(names.length).equals(1);
-      //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
+      // @ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
       expect(names[0]["family"]).equals("Smith");
-      //@ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
+      // @ts-expect-error TYPEBUG: our List type-definition expects index accesses to be done with a number , should probably be extended.
       expect(names[0]["given"].length).equals(2);
       realm2.close();
     });
@@ -1992,7 +1992,7 @@ describe("Lists", () => {
 
       const owners = this.realm.objects(HouseOwnerSchema.name).sorted("name");
       expect(owners.length).equals(3);
-      let expectedLength = [0, 2, 1]; // sorted: "Hans", "Ib", "Petra"
+      let expectedLength = [0, 2, 1]; // Sorted: "Hans", "Ib", "Petra"
       for (let i = 0; i < expectedLength.length; i++) {
         expect(owners[i]["addresses"].length).equals(expectedLength[i]);
       }
@@ -2002,7 +2002,7 @@ describe("Lists", () => {
         expect(owners[i]["name"]).equals(names[i]);
       }
 
-      // insert an extra address into Hans's list (add embedded object)
+      // Insert an extra address into Hans's list (add embedded object)
       const hans_addrs = owners[0].addresses;
       this.realm.write(() => {
         hans_addrs.push({ street: "Njalsgade", city: "Islands Brygge" });
@@ -2013,7 +2013,7 @@ describe("Lists", () => {
         expect(owners[i]["addresses"].length).equals(expectedLength[i]);
       }
 
-      // remove the last of Hans' addresses
+      // Remove the last of Hans' addresses
       this.realm.write(() => {
         hans_addrs.pop();
       });
@@ -2055,7 +2055,7 @@ describe("Lists", () => {
       const bernstorff_groups = divisions[0].groups;
       expect(bernstorff_groups.length).equals(1);
 
-      // add a Group to Bernstorff Division
+      // Add a Group to Bernstorff Division
       this.realm.write(() => {
         bernstorff_groups.push({
           name: "1. Ordrup",
@@ -2070,11 +2070,11 @@ describe("Lists", () => {
         });
       });
 
-      // check that we have successfully added a Group
+      // Check that we have successfully added a Group
       expect(divisions[0]["groups"].length).equals(2);
     });
     it("creating standalone embedded object throws", function () {
-      // creating standalone embedded object is not allowed
+      // Creating standalone embedded object is not allowed
       this.realm.write(() => {
         expect(() => {
           this.realm.create(AddressSchema.name, { street: "Njalsgade", city: "Islands Brygge" });
@@ -2097,7 +2097,7 @@ describe("Lists", () => {
 
       this.realm.write(() => {
         expect(() => {
-          //standalone object throws
+          // Standalone object throws
           this.realm.create(AddressSchema.name, { street: "Njalsgade", city: "Islands Brygge" });
         }).throws(Error);
 

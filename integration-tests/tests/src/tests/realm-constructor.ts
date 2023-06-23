@@ -129,7 +129,7 @@ describe("Realm#constructor", () => {
     });
 
     it("data is preserved when reopening realm instance", () => {
-      // constructing realm with same path returns the same instance
+      // Constructing realm with same path returns the same instance
       let realm = new Realm({ schema: [TestObject] });
       realm.write(() => {
         realm.create(TestObject.schema.name, [1]);
@@ -217,35 +217,35 @@ describe("Realm#constructor", () => {
   describe("schema validation", () => {
     it("fails when passed an object", () => {
       expect(() => {
-        //@ts-expect-error passing plain empty object to schema
+        // @ts-expect-error passing plain empty object to schema
         new Realm({ schema: {} });
       }).throws("Expected 'realm schema' to be an array, got an object");
     });
 
     it("fails when passed an array with non-objects", () => {
       expect(() => {
-        //@ts-expect-error can not pass plain string as schema
+        // @ts-expect-error can not pass plain string as schema
         new Realm({ schema: [""] });
       }).throws("Expected 'object schema' to be an object, got a string");
     });
 
     it("fails when passed an array with empty object", () => {
       expect(() => {
-        //@ts-expect-error passing array of empty object
+        // @ts-expect-error passing array of empty object
         new Realm({ schema: [{}] });
       }).throws("Expected 'name' on object schema to be a string, got undefined");
     });
 
     it("fails when passed an array with an object without 'properties'", () => {
       expect(() => {
-        //@ts-expect-error object without properties
+        // @ts-expect-error object without properties
         new Realm({ schema: [{ name: "SomeObject" }] });
       }).throws("Expected 'properties' on 'SomeObject' to be an object, got undefined");
     });
 
     it("fails when passed an array with an object without 'name'", () => {
       expect(() => {
-        //@ts-expect-error object without name
+        // @ts-expect-error object without name
         new Realm({ schema: [{ properties: {} }] });
       }).throws("Expected 'name' on object schema to be a string, got undefined");
     });
@@ -332,20 +332,20 @@ describe("Realm#constructor", () => {
 
   describe("in memory construction", () => {
     it("data is shared among instances", () => {
-      // open in-memory realm instance
+      // Open in-memory realm instance
       const realm1 = new Realm({ inMemory: true, schema: [TestObject] });
       realm1.write(() => {
         realm1.create("TestObject", [1]);
       });
-      //@ts-expect-error TYPEBUG: isInMemory property does not exist
+      // @ts-expect-error TYPEBUG: isInMemory property does not exist
       expect(realm1.isInMemory).to.be.true;
 
-      // open a second instance of the same realm and check that they share data
+      // Open a second instance of the same realm and check that they share data
       const realm2 = new Realm({ inMemory: true });
       const objects = realm2.objects<TestObject>(TestObject.schema.name);
       expect(objects.length).equals(1);
       expect(objects[0].doubleCol).equals(1.0);
-      //@ts-expect-error TYPEBUG: isInMemory property does not exist
+      // @ts-expect-error TYPEBUG: isInMemory property does not exist
       expect(realm2.isInMemory).equals(true);
 
       realm1.close();
@@ -353,12 +353,12 @@ describe("Realm#constructor", () => {
     });
 
     it("closing instance deletes data", () => {
-      // open in-memory realm instance
+      // Open in-memory realm instance
       const realm1 = new Realm({ inMemory: true, schema: [TestObject] });
       realm1.write(() => {
         realm1.create("TestObject", [1]);
       });
-      //@ts-expect-error TYPEBUG: isInMemory property does not exist
+      // @ts-expect-error TYPEBUG: isInMemory property does not exist
       expect(realm1.isInMemory).to.be.true;
       // Close realm (this should delete the realm since there are no more
       // references to it).
@@ -372,14 +372,14 @@ describe("Realm#constructor", () => {
 
     it("throws when opening in-memory realm in persistent mode", () => {
       const realm = new Realm({ inMemory: true, schema: [TestObject] });
-      // try to open the same realm in persistent mode (should fail as you cannot mix modes)
+      // Try to open the same realm in persistent mode (should fail as you cannot mix modes)
       expect(() => new Realm({})).throws("already opened with different inMemory settings.");
     });
   });
 
   describe("constructing with readonly property set", () => {
     it("throws when write transaction is started", () => {
-      //seed data
+      // Seed data
       let realm = new Realm({ schema: [TestObject] });
       realm.write(() => {
         realm.create(TestObject.schema.name, [1]);
@@ -387,7 +387,7 @@ describe("Realm#constructor", () => {
       expect(realm.isReadOnly).to.be.false;
       realm.close();
 
-      // open same realm instance with readOnly mode
+      // Open same realm instance with readOnly mode
       realm = new Realm({ readOnly: true });
       expect(realm.schema.length).equals(1);
       const objects = realm.objects<TestObject>(TestObject.schema.name);

@@ -55,7 +55,7 @@ const EmbeddedChild = {
 const DictTypedSchema = {
   name: "TypedDictionary",
   properties: {
-    dict1: { type: "dictionary", objectType: "Children" }, // dictionary of objects is nullable by default
+    dict1: { type: "dictionary", objectType: "Children" }, // Dictionary of objects is nullable by default
     dict2: { type: "dictionary", objectType: "Children", optional: true },
   },
 };
@@ -148,7 +148,7 @@ describe("Dictionary", () => {
         key3: "value3",
       });
 
-      //This is to verify that item.dict.key3 was not just an object property assignment
+      // This is to verify that item.dict.key3 was not just an object property assignment
       expect(Object.keys(item.dict).length).deep.equals(3);
 
       this.realm.write(() => {
@@ -174,7 +174,7 @@ describe("Dictionary", () => {
         const item = this.realm.create<Item>("Item", {});
 
         expect(() => {
-          //@ts-expect-error Testing invalid key.
+          // @ts-expect-error Testing invalid key.
           item.dict.set(sym, "value1");
         }).to.throw("Symbols cannot be used as keys of a dictionary");
 
@@ -183,7 +183,7 @@ describe("Dictionary", () => {
         }).to.throw("Symbols cannot be used as keys of a dictionary");
 
         expect(() => {
-          //@ts-expect-error Testing invalid key.
+          // @ts-expect-error Testing invalid key.
           item.dict[sym] = "value3";
         }).to.throw("Symbols cannot be used as keys of a dictionary");
       });
@@ -225,7 +225,7 @@ describe("Dictionary", () => {
       const item = this.realm.write(() => {
         return this.realm.create<Item>("Item", {});
       });
-      //@ts-expect-error accesses forEach on a dictionary which should not exist.
+      // @ts-expect-error accesses forEach on a dictionary which should not exist.
       expect(() => item.dict.forEach()).throws("is not a function");
     });
 
@@ -635,15 +635,15 @@ describe("Dictionary", () => {
         cnt++;
       };
       ff.fields.addListener(a);
-      // total object mutation.
+      // Total object mutation.
       this.realm.write(() => {
         ff.fields = { x1: 1, x2: 2 };
       });
-      // partial object mutation.
+      // Partial object mutation.
       this.realm.write(() => {
         ff.fields = { x1: 1, x3: 2, x5: 5 };
       });
-      // deleting all but one field.
+      // Deleting all but one field.
       this.realm.write(() => {
         ff.fields = { x1: "hello" };
       });

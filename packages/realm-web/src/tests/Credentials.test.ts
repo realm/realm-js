@@ -75,7 +75,7 @@ describe("Credentials", () => {
 
     it("throws if an unexpected format is encountered", () => {
       expect(() => {
-        //@ts-expect-error test a bad argument
+        // @ts-expect-error test a bad argument
         Credentials.google("whatever");
       }).throws("`google(<tokenString>)` has been deprecated.  Please use `google(<authCodeObject>).");
     });

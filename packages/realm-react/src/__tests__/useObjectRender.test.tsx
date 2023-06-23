@@ -94,7 +94,7 @@ const useRealm = () => {
 
 const useObject = createUseObject(useRealm);
 
-// setting renderItems to false will invoke `useObject` but not actual display the data
+// Setting renderItems to false will invoke `useObject` but not actual display the data
 // this is to test that the changes to the object is still trigger a rerender, even when not displayed
 // see https://github.com/realm/realm-js/issues/5185
 const App = ({ renderItems = true, targetPrimaryKey = parentObjectId }) => {
@@ -111,7 +111,7 @@ const SetupComponent = ({ children }: { children: JSX.Element }): JSX.Element | 
   const realm = useRealm();
 
   /*
-  useEffect(() => {
+  UseEffect(() => {
     return () => {
       realm.close();
     };
@@ -541,7 +541,7 @@ describe("useObject: rendering objects with a Realm.List property", () => {
         forceSynchronousNotifications(testRealm);
       });
 
-      // no assertion here, just checking that the test doesn't crash
+      // No assertion here, just checking that the test doesn't crash
     });
 
     it("re-renders the list even if the list items have not been rendered", async () => {

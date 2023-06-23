@@ -63,7 +63,7 @@ describe("Migrations", () => {
     });
 
     it("should not run without schema changes", () => {
-      // migration function shouldn't run if nothing changes
+      // Migration function shouldn't run if nothing changes
       const realm = new Realm({
         schema: [TestSchema],
         onMigration: migrationFunction,
@@ -87,7 +87,7 @@ describe("Migrations", () => {
 
     it("should throw with invalid migration function", () => {
       expect(function () {
-        //@ts-expect-error This is an invalid function.
+        // @ts-expect-error This is an invalid function.
         new Realm({ schema: [], schemaVersion: 2, onMigration: "invalid", inMemory: true });
       }).throws("Expected 'onMigration' on realm configuration to be a function, got a string");
     });
@@ -144,10 +144,10 @@ describe("Migrations", () => {
 
           expect(oldObjects[0].name).equals("stringValue");
           expect(oldObjects[0].age).equals(1);
-          //@ts-expect-error Should not have this field.
+          // @ts-expect-error Should not have this field.
           expect(oldObjects[0].renamed).equals(undefined);
 
-          //@ts-expect-error Should not have this field.
+          // @ts-expect-error Should not have this field.
           expect(newObjects[0].name).equals(undefined);
           expect(newObjects[0].renamed).equals("");
           expect(newObjects[0].age).equals(1);
@@ -164,7 +164,7 @@ describe("Migrations", () => {
       expect(objects.length).equals(1);
       expect(objects[0].renamed).equals("stringValue");
       expect(objects[0].age).equals(1);
-      //@ts-expect-error Should not have this field.
+      // @ts-expect-error Should not have this field.
       expect(objects[0].name).equals(undefined);
     });
 
@@ -327,14 +327,14 @@ describe("Migrations", () => {
 
     it("should removing schemas from configuration correctly", () => {
       realm = new Realm({ schema: [], schemaVersion: 1 });
-      expect(realm.schema.length).equals(0); // no models
-      realm.close(); // this won't delete the model
+      expect(realm.schema.length).equals(0); // No models
+      realm.close(); // This won't delete the model
 
       realm = new Realm({ schema: [TestSchema], schemaVersion: 2 });
-      expect(realm.objects("Test").length).equals(1); // the model objects are still there
+      expect(realm.objects("Test").length).equals(1); // The model objects are still there
       realm.close();
 
-      // now delete the model explicitly, which should delete the objects too
+      // Now delete the model explicitly, which should delete the objects too
       realm = new Realm({
         schema: [],
         schemaVersion: 3,
@@ -343,7 +343,7 @@ describe("Migrations", () => {
         },
       });
 
-      expect(realm.schema.length).equals(0); // no models
+      expect(realm.schema.length).equals(0); // No models
 
       realm.close();
 
@@ -355,7 +355,7 @@ describe("Migrations", () => {
     });
 
     it("should handle deleteModel correctly", () => {
-      // now delete the model explicitly, but it should remain as it's still in the schema
+      // Now delete the model explicitly, but it should remain as it's still in the schema
       // only the rows should get deleted
       realm = new Realm({
         schema: [TestSchema],
@@ -365,8 +365,8 @@ describe("Migrations", () => {
         },
       });
 
-      expect(realm.schema.length).equals(1); // model should remain
-      expect(realm.objects("Test").length).equals(0); // objects should be gone
+      expect(realm.schema.length).equals(1); // Model should remain
+      expect(realm.objects("Test").length).equals(0); // Objects should be gone
 
       realm.close();
 
@@ -450,7 +450,7 @@ describe("Migrations", () => {
         schema: [DogSchema, PersonWithDogsSchema],
         schemaVersion: 2,
         onMigration: function (oldRealm, newRealm) {
-          // deleting a model which isn't target of linkingObjects works fine
+          // Deleting a model which isn't target of linkingObjects works fine
           newRealm.deleteModel("Dog");
         },
       });

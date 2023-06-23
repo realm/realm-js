@@ -421,11 +421,11 @@ describe("WatchStream", () => {
       assertND(ws);
       ws.feedLine(`data: {"a"`);
       assertND(ws);
-      ws.feedLine(`id: 12345`); // id is a part of the spec we don't use
+      ws.feedLine(`id: 12345`); // Id is a part of the spec we don't use
       assertND(ws);
       ws.feedLine(`data::`);
       assertND(ws);
-      ws.feedLine(`retry: 12345`); // retry is a part of the spec we don't use
+      ws.feedLine(`retry: 12345`); // Retry is a part of the spec we don't use
       assertND(ws);
       ws.feedLine(`data: 1}`);
       assertND(ws);
@@ -441,11 +441,11 @@ describe("WatchStream", () => {
       const ws = new WatchStream();
       ws.feedLine(`event: message`);
       assertND(ws);
-      ws.feedLine(``); // noop dispatch
+      ws.feedLine(``); // Noop dispatch
       assertND(ws);
       ws.feedLine(`event: error`);
       assertND(ws);
-      ws.feedLine(``); // noop dispatch
+      ws.feedLine(``); // Noop dispatch
       assertND(ws);
       // Note, because prior events are ignored, this is treated as if there was no event kind, so it uses the
       // default "message" kind
@@ -459,7 +459,7 @@ describe("WatchStream", () => {
 
     it("new line handling (prestripped)", () => {
       const ws = new WatchStream();
-      // since newlines are ignored in json, this tests using the mal-formed error case
+      // Since newlines are ignored in json, this tests using the mal-formed error case
       ws.feedLine(`event: error`);
       assertND(ws);
       ws.feedLine(`data: this error`);
@@ -475,7 +475,7 @@ describe("WatchStream", () => {
 
     it("new line handling (LF)", () => {
       const ws = new WatchStream();
-      // since newlines are ignored in json, this tests using the mal-formed error case
+      // Since newlines are ignored in json, this tests using the mal-formed error case
       ws.feedLine("event: error\n");
       assertND(ws);
       ws.feedLine("data: this error\n");
@@ -491,7 +491,7 @@ describe("WatchStream", () => {
 
     it("new line handling (CR)", () => {
       const ws = new WatchStream();
-      // since newlines are ignored in json, this tests using the mal-formed error case
+      // Since newlines are ignored in json, this tests using the mal-formed error case
       ws.feedLine("event: error\r");
       assertND(ws);
       ws.feedLine("data: this error\r");
@@ -507,7 +507,7 @@ describe("WatchStream", () => {
 
     it("new line handling (CRLF)", () => {
       const ws = new WatchStream();
-      // since newlines are ignored in json, this tests using the mal-formed error case
+      // Since newlines are ignored in json, this tests using the mal-formed error case
       ws.feedLine("event: error\r\n");
       assertND(ws);
       ws.feedLine("data: this error\r\n");
@@ -534,7 +534,6 @@ describe("WatchStream", () => {
     /**
      * Strips leading spaces off of each line, and removes the first line if empty, and returns a Uint8Array
      * Makes multi-line nows`tag template strings` cleaner by allowing indentation.
-     *
      * @returns A buffer of from multi-line strings.
      * @param args All the nows strings.
      * @param args."0" The first nows string.

@@ -25,8 +25,8 @@ import { BSON, SubscriptionSet, binding } from "../internal";
  * in a {@link SubscriptionSet.update} callback.
  */
 export class Subscription {
-  /**@internal */
-  constructor(/**@internal */ public internal: binding.SyncSubscription) {
+  /** @internal */
+  constructor(/** @internal */ public internal: binding.SyncSubscription) {
     this.internal = internal;
   }
 

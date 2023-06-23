@@ -26,7 +26,7 @@ import { collectPlatformData } from "realm/scripts/submit-analytics";
 
 import fse from "fs-extra";
 
-// emulate old __dirname: https://flaviocopes.com/fix-dirname-not-defined-es-module-scope/
+// Emulate old __dirname: https://flaviocopes.com/fix-dirname-not-defined-es-module-scope/
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -48,13 +48,13 @@ describe("Analytics", () => {
     expect(data.Binding).equals("Javascript");
     expect(data["Host OS Type"]).equals(os.platform());
     expect(data["Host OS Version"]).equals(os.release());
-    expect(data["Node.js version"]).equals(process.version.slice(1)); // remove 'v'
+    expect(data["Node.js version"]).equals(process.version.slice(1)); // Remove 'v'
     expect(data["Realm Version"]).equals(getRealmVersion());
     expect(data.token).equals("ce0fac19508f6c8f20066d345d360fd0");
     expect(data["Anonymized Builder Id"]).is.not.undefined;
     expect(data["Core Version"]).is.not.undefined;
-    expect((data["Core Version"] as string).match(/[0-9]+\.[0-9]+\.[0-9]+/)?.length).equal(1); // expect X.Y.Z
-    expect(data["Installation Method"]).equals("npm"); // we run our tests with NPM
+    expect((data["Core Version"] as string).match(/[0-9]+\.[0-9]+\.[0-9]+/)?.length).equal(1); // Expect X.Y.Z
+    expect(data["Installation Method"]).equals("npm"); // We run our tests with NPM
   }
 
   it("parses node.js package.json", async () => {
@@ -62,7 +62,7 @@ describe("Analytics", () => {
     expectCommon(data);
     expect(data.Version).equals("1.2.3");
     expect(data.Framework).equals("node.js");
-    expect(data["Framework Version"]).equals(process.version.slice(1)); // remove 'v'
+    expect(data["Framework Version"]).equals(process.version.slice(1)); // Remove 'v'
     expect(data["Runtime Engine"]).equals("v8");
     expect(data["Anonymized Bundle Id"]).equals("TfvqclDWR/+6sIPfZc73MetEj0DLskCtWXjWXXXIg6k=");
     expect(data.Language).equals("javascript");
@@ -74,7 +74,7 @@ describe("Analytics", () => {
     expectCommon(data);
     expect(data.Version).equals("1.2.3");
     expect(data.Framework).equals("node.js");
-    expect(data["Framework Version"]).equals(process.version.slice(1)); // remove 'v'
+    expect(data["Framework Version"]).equals(process.version.slice(1)); // Remove 'v'
     expect(data["Runtime Engine"]).equals("v8");
     expect(data["Anonymized Bundle Id"]).equals("ajQjGK7Tztb3WeVhmPitQFDRV24loZVttnXWSlXUjEc=");
     expect(data.Language).equals("typescript");

@@ -25,7 +25,7 @@ type FileSystemType = {
   getDefaultDirectoryPath(): string;
   exists(path: string): boolean;
   copyBundledRealmFiles(): void;
-  // readDirectory(path: string): Dirent[];
+  // ReadDirectory(path: string): Dirent[];
   removeRealmFilesFromDirectory(path: string): void;
 };
 
@@ -61,7 +61,7 @@ export const fs: FileSystemType = {
     throw new Error("Not supported on this platform");
   },
   /*
-  readDirectory() {
+  ReadDirectory() {
     throw new Error("Not supported on this platform");
   },
   */

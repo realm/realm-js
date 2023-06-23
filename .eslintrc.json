@@ -6,7 +6,9 @@
     "./header.eslintrc"
   ],
   "rules": {
-    "no-restricted-globals": ["error", "globalThis"]
+    "no-restricted-globals": ["error", "globalThis"],
+    "spaced-comment": ["error", "always", {"exceptions":["/"]}],
+    "capitalized-comments": ["error", "always", {"ignoreConsecutiveComments": true }]
   },
   "env": {
     "es2020": true

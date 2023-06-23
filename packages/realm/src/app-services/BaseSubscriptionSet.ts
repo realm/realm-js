@@ -106,8 +106,8 @@ const PROXY_HANDLER: ProxyHandler<BaseSubscriptionSet> = {
  * Array API, e.g. `[...realm.subscriptions][0]`.
  */
 export abstract class BaseSubscriptionSet {
-  /**@internal */
-  protected constructor(/**@internal */ protected internal: binding.SyncSubscriptionSet) {
+  /** @internal */
+  protected constructor(/** @internal */ protected internal: binding.SyncSubscriptionSet) {
     Object.defineProperty(this, "internal", {
       enumerable: false,
       configurable: false,

@@ -31,7 +31,6 @@ const PROVIDER_TYPE_STORAGE_KEY = "providerType";
 export class UserStorage<UserProfileDataType = Realm.DefaultUserProfileData> extends PrefixedStorage {
   /**
    * Construct a storage for a `User`.
-   *
    * @param storage The underlying storage to wrap.
    * @param userId The id of the user.
    */
@@ -41,7 +40,6 @@ export class UserStorage<UserProfileDataType = Realm.DefaultUserProfileData> ext
 
   /**
    * Get the access token from storage.
-   *
    * @returns Access token (null if unknown).
    */
   get accessToken(): string | null {
@@ -50,7 +48,6 @@ export class UserStorage<UserProfileDataType = Realm.DefaultUserProfileData> ext
 
   /**
    * Set the access token in storage.
-   *
    * @param value Access token (null if unknown).
    */
   set accessToken(value: string | null) {
@@ -63,7 +60,6 @@ export class UserStorage<UserProfileDataType = Realm.DefaultUserProfileData> ext
 
   /**
    * Get the refresh token from storage.
-   *
    * @returns Refresh token (null if unknown and user is logged out).
    */
   get refreshToken(): string | null {
@@ -72,7 +68,6 @@ export class UserStorage<UserProfileDataType = Realm.DefaultUserProfileData> ext
 
   /**
    * Set the refresh token in storage.
-   *
    * @param value Refresh token (null if unknown and user is logged out).
    */
   set refreshToken(value: string | null) {
@@ -85,7 +80,6 @@ export class UserStorage<UserProfileDataType = Realm.DefaultUserProfileData> ext
 
   /**
    * Get the user profile from storage.
-   *
    * @returns User profile (undefined if its unknown).
    */
   get profile(): UserProfile<UserProfileDataType> | undefined {
@@ -100,7 +94,6 @@ export class UserStorage<UserProfileDataType = Realm.DefaultUserProfileData> ext
 
   /**
    * Set the user profile in storage.
-   *
    * @param value User profile (undefined if its unknown).
    */
   set profile(value: UserProfile<UserProfileDataType> | undefined) {
@@ -113,7 +106,6 @@ export class UserStorage<UserProfileDataType = Realm.DefaultUserProfileData> ext
 
   /**
    * Get the type of authentication provider used to authenticate
-   *
    * @returns User profile (undefined if its unknown).
    */
   get providerType(): ProviderType | undefined {
@@ -125,7 +117,6 @@ export class UserStorage<UserProfileDataType = Realm.DefaultUserProfileData> ext
 
   /**
    * Set the type of authentication provider used to authenticate
-   *
    * @param value Type of authentication provider.
    */
   set providerType(value: ProviderType | undefined) {

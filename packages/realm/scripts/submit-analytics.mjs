@@ -59,7 +59,7 @@ export const debug = createDebug("realm:submit-analytics");
 
 export { collectPlatformData };
 
-// emulate old __dirname: https://flaviocopes.com/fix-dirname-not-defined-es-module-scope/
+// Emulate old __dirname: https://flaviocopes.com/fix-dirname-not-defined-es-module-scope/
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -161,7 +161,7 @@ function getInstallationMethod() {
  * @returns Analytics payload
  */
 async function collectPlatformData(packagePath = getProjectRoot()) {
-  // node-machine-id returns the ID SHA-256 hashed, if we cannot get the ID we send hostname instead
+  // Node-machine-id returns the ID SHA-256 hashed, if we cannot get the ID we send hostname instead
   let identifier;
   try {
     identifier = await machineId.machineId();
@@ -174,7 +174,7 @@ async function collectPlatformData(packagePath = getProjectRoot()) {
   const realmCoreVersion = getRealmCoreVersion();
 
   let framework = "node.js";
-  let frameworkVersion = process.version.slice(1); // skip the leading 'v'
+  let frameworkVersion = process.version.slice(1); // Skip the leading 'v'
   let jsEngine = "v8";
   let bundleId = "unknown";
 
@@ -307,7 +307,7 @@ async function submitAnalytics() {
   }
 
   return new Promise((resolve, reject) => {
-    // node 19 turns on keep-alive by default and it will make the https.get() to hang
+    // Node 19 turns on keep-alive by default and it will make the https.get() to hang
     // https://github.com/realm/realm-js/issues/5136
     const requestUrl = getAnalyticsRequestUrl(payload);
 

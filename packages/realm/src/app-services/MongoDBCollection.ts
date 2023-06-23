@@ -395,9 +395,9 @@ export type ChangeEvent<T extends Document> =
 export class MongoDBCollection<T extends Document> {
   private functions: DefaultFunctionsFactory;
 
-  /**@internal */
+  /** @internal */
   constructor(
-    /**@internal */ private user: User<unknown, unknown, unknown>,
+    /** @internal */ private user: User<unknown, unknown, unknown>,
     public readonly serviceName: string,
     public readonly databaseName: string,
     private readonly collectionName: string,

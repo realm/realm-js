@@ -70,7 +70,7 @@ describe.skipIf(environment.missingServer, "jwt credentials", () => {
     // Expect that we can read "some-secret-stuff" out of the profile
     // NOTE: The mapping from mySecretField → secret is declared in the Realm App configuration
     // Test is failing right now since User.Profile() isn't implemented yet
-    //expect(Object.keys(user.profile)).deep.equals(["secret"]);
-    //expect(user.profile.secret).equals("some-secret-stuff");
+    // expect(Object.keys(user.profile)).deep.equals(["secret"]);
+    // expect(user.profile.secret).equals("some-secret-stuff");
   });
 });

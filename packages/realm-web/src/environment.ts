@@ -59,7 +59,6 @@ let environment: Environment | null = null;
 /**
  * Set the environment of execution.
  * Note: This should be called as the first thing before executing any code which calls getEnvironment()
- *
  * @param e An object containing environment specific implementations.
  */
 export function setEnvironment(e: Environment): void {
@@ -68,7 +67,6 @@ export function setEnvironment(e: Environment): void {
 
 /**
  * Get the environment of execution.
- *
  * @returns An object containing environment specific implementations.
  */
 export function getEnvironment(): Environment {

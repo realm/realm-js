@@ -74,7 +74,7 @@ describe("SharedRealm operations", () => {
       realm.write(() => realm.create("Person", { name: "Alice" }));
       expect(logs).to.be.empty;
 
-      //This will also disable the logger again after the test
+      // This will also disable the logger again after the test
       Realm.setLogLevel("off");
       realm.write(() => realm.create("Person", { name: "Alice" }));
       expect(logs).to.be.empty;

@@ -69,7 +69,6 @@ export interface FunctionsFactoryConfiguration {
 
 /**
  * Remove the key for any fields with undefined values.
- *
  * @param args The arguments to clean.
  * @returns The cleaned arguments.
  */
@@ -88,7 +87,6 @@ export function cleanArgs(args: unknown[]): typeof args {
 
 /**
  * Remove keys for any undefined values and serialize to EJSON.
- *
  * @param args The arguments to clean and serialize.
  * @returns The cleaned and serialized arguments.
  */
@@ -103,7 +101,6 @@ function cleanArgsAndSerialize(args: unknown[]) {
 export class FunctionsFactory {
   /**
    * Create a factory of functions, wrapped in a Proxy that returns bound copies of `callFunction` on any property.
-   *
    * @param fetcher The underlying fetcher to use when requesting.
    * @param config Additional configuration parameters.
    * @returns The newly created factory of functions.
@@ -155,7 +152,6 @@ export class FunctionsFactory {
 
   /**
    * Call a remote function by it's name.
-   *
    * @param name Name of the remote function.
    * @param args Arguments to pass to the remote function.
    * @returns A promise of the value returned when executing the remote function.
@@ -179,7 +175,6 @@ export class FunctionsFactory {
 
   /**
    * Call a remote function by it's name.
-   *
    * @param name Name of the remote function.
    * @param args Arguments to pass to the remote function.
    * @returns A promise of the value returned when executing the remote function.

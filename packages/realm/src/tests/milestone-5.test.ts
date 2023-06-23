@@ -152,7 +152,7 @@ const TESTS: PropertySuite[] = [
       1_000_000_000_000,
       Number.MIN_SAFE_INTEGER,
       Number.MAX_SAFE_INTEGER,
-      [10n, 10], // bigint is coerced to number when read from the binding
+      [10n, 10], // Bigint is coerced to number when read from the binding
     ],
   ],
   ["bool", [true, false]],
@@ -212,7 +212,7 @@ const TESTS: PropertySuite[] = [
       [createEmptyArrayBuffer, testArrayBuffer],
       [new Date("2022-11-04T12:00:00"), testDate],
       123.567,
-      [10n, 10], // bigint is coerced to number when read from the binding
+      [10n, 10], // Bigint is coerced to number when read from the binding
       [Number.MIN_VALUE, testNumber],
       [Number.MAX_VALUE, testNumber],
       [(realm: Realm) => realm.create("MyObject", {}), testObject],

@@ -61,6 +61,6 @@ The uncommented function below is just a placeholder and will result in failure.
 */
 
 exports = () => {
-  // will not reset the password
+  // Will not reset the password
   return { status: "fail" };
 };

@@ -71,7 +71,7 @@ export class DefaultNetworkTransport implements NetworkTransport {
 
   /** @deprecated Not used by the `bindgen` SDK and can be deleted */
   public fetchWithCallbacks<RequestBody = unknown>(request: Request<RequestBody>, handler: ResponseHandler): void {
-    // tslint:disable-next-line: no-console
+    // Tslint:disable-next-line: no-console
     this.fetch(request)
       .then(async (response) => {
         const decodedBody = await response.text();

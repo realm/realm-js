@@ -73,7 +73,7 @@ describe("Sets", () => {
       const realm = new Realm({ schema: [teamSchema] });
 
       const team = realm.write(() => {
-        // insert two people
+        // Insert two people
         return realm.create<Team>(teamSchema.name, {
           names: ["John", "Sue"],
         });
@@ -81,13 +81,13 @@ describe("Sets", () => {
 
       expect(team.names.size).equals(2, "Team Set size should be 2");
 
-      // add another three names
+      // Add another three names
       realm.write(() => {
         team.names.add("Pernille").add("Magrethe").add("Wilbur");
       });
       expect(team.names.size).equals(5, "Team Set size should be 5");
 
-      // remove two names
+      // Remove two names
       realm.write(() => {
         team.names.delete("John");
         team.names.delete("Sue");
@@ -152,7 +152,7 @@ describe("Sets", () => {
       expect(myInts.intSet.min()).equals(7, "Min of intSet should be 7");
       expect(myInts.intSet.max()).equals(14, "Max of intSet should be 14");
 
-      // make sure that aggregation works after adding to a Set
+      // Make sure that aggregation works after adding to a Set
       realm.write(() => {
         myInts.intSet.add(4).add(6);
       });
@@ -162,7 +162,7 @@ describe("Sets", () => {
       expect(myInts.intSet.min()).equals(4, "Min of intSet should be 4 after adding elements");
       expect(myInts.intSet.max()).equals(14, "Max of intSet should be 14 after adding elements");
 
-      // make sure that aggregation works after deleting from a Set
+      // Make sure that aggregation works after deleting from a Set
       realm.write(() => {
         myInts.intSet.delete(4);
       });
@@ -264,7 +264,7 @@ describe("Sets", () => {
     openRealmBeforeEach({ schema: [personSchema, personTeamSchema] });
     beforeEach(function (this: RealmContext) {
       footballTeam = this.realm.write(() => {
-        // insert two people
+        // Insert two people
         return this.realm.create<Team>(personTeamSchema.name, {
           persons: [
             { firstName: "Joe", age: 4 },
@@ -280,7 +280,7 @@ describe("Sets", () => {
       expect(teams.length).equals(1, "There should be one team");
       expect(teams[0].persons.size).equals(3, "Team Set size should be 3");
 
-      // add another person
+      // Add another person
       this.realm.write(() => {
         footballTeam.persons.add({ firstName: "Bob", age: 99 });
       });
@@ -295,26 +295,26 @@ describe("Sets", () => {
         expect(filteredSues.length).equals(1, "There should be only one Sue");
         expect(filteredSues[0].age).equals(53, "Sue's age should be 53");
 
-        // add another Sue
+        // Add another Sue
         this.realm.write(() => {
           footballTeam.persons.add({ firstName: "Sue", age: 35 });
         });
         filteredSues = footballTeam.persons.filtered('firstName = "Sue"');
         expect(filteredSues.length).equals(2, "There should be two Sues");
 
-        // find people older than 50
+        // Find people older than 50
         const olderPersons = footballTeam.persons.filtered("age > 50");
         expect(olderPersons.length).equals(2, "There should be two people over 50");
       });
 
       it("should handle two sets containing same object correctly", function (this: RealmContext) {
         const teams = this.realm.objects<Team>(personTeamSchema.name);
-        // add another person
+        // Add another person
         this.realm.write(() => {
           teams[0].persons.add({ firstName: "Bob", age: 99 });
         });
 
-        // cross-contamination test:  create another team that also contains a Sue
+        // Cross-contamination test:  create another team that also contains a Sue
         this.realm.write(() => {
           this.realm.create(personTeamSchema.name, { persons: [{ firstName: "Sue", age: 35 }] });
         });
@@ -364,7 +364,7 @@ describe("Sets", () => {
       expect(footballTeam.names.has("Alice")).equals(true, "Alice should be in the football team");
       expect(footballTeam.names.has("Daniel")).equals(false, "Daniel shouldn't be in the football team");
 
-      // add one football team member, delete another one
+      // Add one football team member, delete another one
       this.realm.write(() => {
         footballTeam.names.add("Daniel").delete("Alice");
       });
@@ -377,7 +377,7 @@ describe("Sets", () => {
       );
       expect(footballTeam.names.has("Alice")).equals(false, "Alice shouldn't be in the football team");
 
-      // create another team with two people
+      // Create another team with two people
       const handballTeam = this.realm.write(() => {
         return this.realm.create<Team>(teamSchema.name, {
           names: ["Daniel", "Felicia"],
@@ -394,9 +394,9 @@ describe("Sets", () => {
     it("should work with clear()", function (this: RealmContext) {
       const footballTeam = this.realm.objects<Team>(teamSchema.name)[0];
       const handballTeam = this.realm.write(() => {
-        // remove everyone from the football team
+        // Remove everyone from the football team
         footballTeam.names.clear();
-        // and create another team
+        // And create another team
         return this.realm.create<Team>(teamSchema.name, {
           names: ["Daniel", "Felicia"],
         });
@@ -413,7 +413,7 @@ describe("Sets", () => {
     it("should serialize sets of objects correctly", () => {
       const myInts = [1, 2, 3, 7, 9, 13];
 
-      // test serialization of simple types
+      // Test serialization of simple types
       const intRealm = new Realm({ schema: [IntSetObjectSchema] });
       const intSetObject = intRealm.write(() => {
         return intRealm.create<IntSetObject>(IntSetObjectSchema.name, {
@@ -428,7 +428,7 @@ describe("Sets", () => {
 
       intRealm.close();
 
-      // test serialization of objects
+      // Test serialization of objects
       const itemSchema = {
         name: "Item",
         properties: {

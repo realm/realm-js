@@ -19,7 +19,7 @@
 /* eslint-env node */
 
 module.exports = {
-  // config for a library is scoped under "dependency" key
+  // Config for a library is scoped under "dependency" key
   dependency: {
     platforms: {
       android: {

@@ -56,7 +56,7 @@ inject({
     throw new Error("Realm for Node does not support this method.");
   },
   /*
-  readDirectory(path) {
+  ReadDirectory(path) {
     return readdirSync(path, { encoding: "utf8", withFileTypes: true });
   },
   */

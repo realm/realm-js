@@ -96,7 +96,7 @@ export type ReadableStream = {
 
 export type StreamReader = {
   /**
-   * a Promise that fulfills when the stream closes, or rejects if the stream throws an error or the reader's lock is released.
+   * A Promise that fulfills when the stream closes, or rejects if the stream throws an error or the reader's lock is released.
    */
   closed: Promise<boolean>;
   /**

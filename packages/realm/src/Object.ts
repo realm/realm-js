@@ -275,7 +275,7 @@ export class RealmObject<T = DefaultObject> {
   private declare readonly [KEY_SET]: ReadonlySet<string>;
 
   keys(): string[] {
-    // copying to prevent caller from modifying the static array.
+    // Copying to prevent caller from modifying the static array.
     return [...this[KEY_ARRAY]];
   }
 
@@ -308,7 +308,7 @@ export class RealmObject<T = DefaultObject> {
         continue;
       }
       if (value instanceof RealmObject || value instanceof OrderedCollection || value instanceof Dictionary) {
-        // recursively trigger `toJSON` for Realm instances with the same cache.
+        // Recursively trigger `toJSON` for Realm instances with the same cache.
         result[key] = value.toJSON(key, cache);
       } else {
         // Other cases, including null and undefined.

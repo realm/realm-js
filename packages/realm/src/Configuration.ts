@@ -41,7 +41,7 @@ export type BaseConfiguration = {
   readOnly?: boolean;
   fifoFilesFallbackPath?: string;
   sync?: SyncConfiguration;
-  /**@internal */ openSyncedRealmLocally?: true;
+  /** @internal */ openSyncedRealmLocally?: true;
   shouldCompact?: (totalBytes: number, usedBytes: number) => boolean;
   deleteRealmIfMigrationNeeded?: boolean;
   disableFormatUpgrade?: boolean;
@@ -59,7 +59,7 @@ export type ConfigurationWithoutSync = BaseConfiguration & {
 
 export type Configuration = ConfigurationWithSync | ConfigurationWithoutSync;
 
-// export type PartitionValue = string | number | null | ObjectId | UUID;
+// Export type PartitionValue = string | number | null | ObjectId | UUID;
 
 // /**
 //  * A function which can be called to migrate a Realm from one version of the schema to another.

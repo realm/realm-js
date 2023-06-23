@@ -165,8 +165,8 @@ export function mergeRealmConfiguration(
   return {
     ...configA,
     ...configB,
-    //TODO: When Realm >= 10.9.0 is a peer dependency, we can simply spread sync here
-    //See issue #4012
+    // TODO: When Realm >= 10.9.0 is a peer dependency, we can simply spread sync here
+    // See issue #4012
     ...(Object.keys(sync).length > 0 ? { sync } : undefined),
   } as Realm.Configuration;
 }

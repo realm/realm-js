@@ -70,7 +70,7 @@ export class WatchStream<T extends Document = Document> {
     // ignore trailing LF if not removed by SDK.
     if (line.endsWith("\n")) line = line.substr(0, line.length - 1);
 
-    // ignore trailing CR from CRLF
+    // Ignore trailing CR from CRLF
     if (line.endsWith("\r")) line = line.substr(0, line.length - 1);
 
     if (line.length === 0) {
@@ -103,7 +103,7 @@ export class WatchStream<T extends Document = Document> {
       this._dataBuffer += value;
       this._dataBuffer += "\n";
     } else {
-      // line is ignored (even if field is id or retry).
+      // Line is ignored (even if field is id or retry).
     }
   }
 
@@ -119,7 +119,7 @@ export class WatchStream<T extends Document = Document> {
       for (let percentIndex = firstPercentIndex; percentIndex !== -1; percentIndex = sse.data.indexOf("%", start)) {
         buffer += sse.data.substr(start, percentIndex - start);
 
-        const encoded = sse.data.substr(percentIndex, 3); // may be smaller than 3 if string ends with %
+        const encoded = sse.data.substr(percentIndex, 3); // May be smaller than 3 if string ends with %
         if (encoded === "%25") {
           buffer += "%";
         } else if (encoded === "%0A") {
@@ -127,7 +127,7 @@ export class WatchStream<T extends Document = Document> {
         } else if (encoded === "%0D") {
           buffer += "\x0D"; // '\r'
         } else {
-          buffer += encoded; // propagate as-is
+          buffer += encoded; // Propagate as-is
         }
         start = percentIndex + encoded.length;
       }
@@ -148,7 +148,7 @@ export class WatchStream<T extends Document = Document> {
           return;
         }
       } catch {
-        // fallthrough to same handling as for non-document value.
+        // Fallthrough to same handling as for non-document value.
       }
       this._state = WatchStreamState.HAVE_ERROR;
       this._error = new WatchError({
@@ -158,7 +158,7 @@ export class WatchStream<T extends Document = Document> {
     } else if (sse.eventType === "error") {
       this._state = WatchStreamState.HAVE_ERROR;
 
-      // default error message if we have issues parsing the reply.
+      // Default error message if we have issues parsing the reply.
       this._error = new WatchError({
         message: sse.data,
         code: "unknown",

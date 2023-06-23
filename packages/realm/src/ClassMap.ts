@@ -45,7 +45,7 @@ export class ClassMap {
 
   private static createNamedConstructor<T extends Constructor>(name: string): T {
     const result = function () {
-      /* no-op */
+      /* No-op */
     };
     // Need to use `defineProperty` since it isn't writable
     Object.defineProperty(result, "name", { value: name });

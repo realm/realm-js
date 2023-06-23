@@ -256,13 +256,13 @@ describe.skip("Realm conversions", async () => {
 
   describe("invalid conversions", () => {
     it("throw correct errors", async function (this: AppContext) {
-      // simple local realm
+      // Simple local realm
       const configLocal = {
         schema: [PersonForSyncSchema, DogForSyncSchema],
         path: "dogsLocal.realm",
       };
 
-      // user for flexible sync test
+      // User for flexible sync test
       const credentials = await getRegisteredEmailPassCredentials(this.app);
       const user = await this.app.logIn(credentials);
 
@@ -271,31 +271,31 @@ describe.skip("Realm conversions", async () => {
        */
       const realm = await Realm.open(configLocal);
       expect(() => {
-        //@ts-expect-error too many arguments
+        // @ts-expect-error too many arguments
         realm.writeCopyTo("path", "encryptionKey", "invalidParameter");
       }).throws("Invalid arguments: at most 1 expected, but 3 supplied.");
       expect(() => {
-        //@ts-expect-error too few arguments
+        // @ts-expect-error too few arguments
         realm.writeCopyTo();
       }).throws("Expected a config object");
       expect(() => {
-        //@ts-expect-error wrong argument type
+        // @ts-expect-error wrong argument type
         realm.writeCopyTo(null);
       }).throws("`config` parameter must be an object");
       expect(() => {
-        //missing `path` property
+        // Missing `path` property
         realm.writeCopyTo({});
       }).throws("`path` property must exist in output configuration");
       expect(() => {
-        //@ts-expect-error wrong `path` property type
+        // @ts-expect-error wrong `path` property type
         realm.writeCopyTo({ path: 12345 });
       }).throws("`path` property must be a string");
       expect(() => {
-        //@ts-expect-error wrong `encryptionKey` property type
+        // @ts-expect-error wrong `encryptionKey` property type
         realm.writeCopyTo({ path: "outputPath", encryptionKey: "notBinary" });
       }).throws("'encryptionKey' property must be an ArrayBuffer or ArrayBufferView");
       expect(() => {
-        //@ts-expect-error wrong `sync` property type
+        // @ts-expect-error wrong `sync` property type
         realm.writeCopyTo({ path: "outputPath", sync: "invalidProperty" });
       }).throws("'sync' property must be an object");
       expect(() => {
@@ -306,7 +306,7 @@ describe.skip("Realm conversions", async () => {
        */
       realm.write(() => {
         expect(() => {
-          //@ts-expect-error wrong `sync` property type
+          // @ts-expect-error wrong `sync` property type
           realm.writeCopyTo({ path: "outputPath", sync: "invalidProperty" });
         }).throws("Can only convert Realms outside a transaction");
       });

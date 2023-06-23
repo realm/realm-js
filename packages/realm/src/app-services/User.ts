@@ -88,7 +88,7 @@ export class User<
   /** @internal */
   public internal: binding.SyncUser;
 
-  // cached version of profile
+  // Cached version of profile
   private cachedProfile: UserProfileDataType | undefined;
 
   private listeners = new Listeners<UserChangeCallback, UserListenerToken>({

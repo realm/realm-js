@@ -52,7 +52,7 @@ inject({
     JsPlatformHelpers.copyBundledRealmFiles();
   },
   /*
-  readDirectory(path) {
+  ReadDirectory(path) {
     JsPlatformHelpers.
   },
   */

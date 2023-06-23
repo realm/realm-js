@@ -364,7 +364,7 @@ describe("Remote MongoDB", () => {
           await sleep(10);
           await collection.insertOne({ _id: i, hello: "world", str });
         }
-        await collection.insertOne({ _id: "done", done: true }); // break other sides out of loop
+        await collection.insertOne({ _id: "done", done: true }); // Break other sides out of loop
       })(),
       // Watch any event
       (async () => {

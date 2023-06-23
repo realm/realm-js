@@ -26,7 +26,7 @@ export const isDevelopmentModeImpl = (): boolean => {
     // We are in an electron app, check if the app is packaged (release mode)
     return app !== undefined && !app.isPackaged;
   } catch (_) {
-    // ignore error
+    // Ignore error
   }
 
   // Node.js has no default for NODE_ENV, so check if it is anything other than

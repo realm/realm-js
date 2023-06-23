@@ -71,7 +71,7 @@ describe.skipIf(environment.missingServer, "MongoDB Client", function () {
 
     it("throws when calling 'mongoClient()' with incorrect type", async function (this: TestContext) {
       const notAString = 1;
-      //@ts-expect-error Testing incorrect type
+      // @ts-expect-error Testing incorrect type
       expect(() => this.app.currentUser?.mongoClient(notAString)).to.throw(
         `Expected 'serviceName' to be a string, got a number`,
       );

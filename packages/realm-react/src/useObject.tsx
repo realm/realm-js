@@ -109,7 +109,7 @@ export function createUseObject(useRealm: () => Realm) {
         for (const index of changes.insertions) {
           const object = collection[index];
           if (primaryKeyProperty) {
-            //@ts-expect-error - if the primaryKeyProperty exists, then it is indexable. However, we don't allow it when we don't actually know the type of the object
+            // @ts-expect-error - if the primaryKeyProperty exists, then it is indexable. However, we don't allow it when we don't actually know the type of the object
             const insertedPrimaryKey = object[primaryKeyProperty];
             if (arePrimaryKeysIdentical(insertedPrimaryKey, primaryKeyRef.current)) {
               forceRerender();

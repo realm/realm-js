@@ -136,7 +136,7 @@ describe("Realm Listeners", () => {
   describe("removeListener", () => {
     it("should not fire removed listener", function (this: RealmContext, done) {
       const test = () => {
-        // done will error if ran more than once
+        // Done will error if ran more than once
         done();
       };
       this.realm.addListener("change", test);
@@ -153,7 +153,7 @@ describe("Realm Listeners", () => {
   describe("removeAllListeners", () => {
     it("should not fire removed listeners", function (this: RealmContext, done) {
       const test = () => {
-        // done will error if ran more than once
+        // Done will error if ran more than once
         done();
       };
       this.realm.addListener("change", test);

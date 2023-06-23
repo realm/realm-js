@@ -74,10 +74,10 @@ const nullPropertyValues = (() => {
   const values = {};
   for (const name in allTypesValues) {
     if (name.includes("opt")) {
-      //@ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
+      // @ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
       values[name] = name.includes("Array") ? [null] : null;
     } else {
-      //@ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
+      // @ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
       values[name] = allTypesValues[name];
     }
   }
@@ -617,25 +617,25 @@ describe("Realm.Object", () => {
       for (const name of Object.keys(objectSchema.properties)) {
         const type = objectSchema.properties[name].type;
         if (type === "linkingObjects") {
-          //@ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
+          // @ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
           expect(object[name].length).equals(0);
-          //@ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
+          // @ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
           expect(nullObject[name].length).equals(0);
           continue;
         }
 
-        //@ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
+        // @ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
         const objectTarget = object[name];
-        //@ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
+        // @ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
         const nullObjectTarget = nullObject[name];
 
-        //@ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
+        // @ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
         expectSimilar(type, objectTarget, allTypesValues[name]);
-        //@ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
+        // @ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
         expectSimilar(type, nullObjectTarget, nullPropertyValues[name]);
       }
 
-      //@ts-expect-error: test to fetch non existing property.
+      // @ts-expect-error: test to fetch non existing property.
       expect(object.nonexistent).equals(undefined);
     });
 
@@ -644,7 +644,7 @@ describe("Realm.Object", () => {
         return this.realm.create<IAllTypes>("AllTypesObject", allTypesValues);
       });
 
-      // can only set property in write transaction
+      // Can only set property in write transaction
       expect(function () {
         obj.boolCol = false;
       }).throws;
@@ -652,16 +652,16 @@ describe("Realm.Object", () => {
       expect(obj.boolCol).equals(true, "bool value changed outside transaction");
 
       this.realm.write(function () {
-        //@ts-expect-error assign string to non matching type.
+        // @ts-expect-error assign string to non matching type.
         expect(() => (obj.boolCol = "cat")).throws;
-        //@ts-expect-error assign string to non matching type.
+        // @ts-expect-error assign string to non matching type.
         expect(() => (obj.intCol = "dog")).throws;
 
         // Non-optional properties should complain about null
         for (const name of ["boolCol", "intCol", "floatCol", "doubleCol", "stringCol", "dataCol", "dateCol"]) {
-          //@ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
+          // @ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
           expect(() => (obj[name] = null), `Setting ${name} to null should throw`).throws;
-          //@ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
+          // @ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
           expect(() => (obj[name] = undefined), `Setting ${name} to undefined should throw`).throws;
         }
 
@@ -676,23 +676,23 @@ describe("Realm.Object", () => {
           "optDateCol",
           "objectCol",
         ]) {
-          //@ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
+          // @ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
           obj[name] = null;
-          //@ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
+          // @ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
           expect(obj[name]).equals(null);
-          //@ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
+          // @ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
           obj[name] = undefined;
-          //@ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
+          // @ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
           expect(obj[name]).equals(null);
         }
 
         function tryAssign(name: string, value: any) {
-          //@ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
+          // @ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
           const prop = AllTypesSchema.properties[name];
           const type = typeof prop == "object" ? prop.type : prop;
-          //@ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
+          // @ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
           obj[name] = value;
-          //@ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
+          // @ts-expect-error TYPEBUG: indexing with string is not allowed by typesystem.
           expectSimilar(type, obj[name], value);
         }
 
@@ -800,18 +800,18 @@ describe("Realm.Object", () => {
 
       this.realm.write(function () {
         expect(function () {
-          //@ts-expect-error assigning bool to data-type.
+          // @ts-expect-error assigning bool to data-type.
           object.dataCol = true;
         }).throws;
         expect(function () {
-          //@ts-expect-error assigning number to data-type.
+          // @ts-expect-error assigning number to data-type.
           object.dataCol = 1;
         }).throws;
         expect(function () {
           object.dataCol = "some binary data";
         }).throws;
         expect(function () {
-          //@ts-expect-error assigning number[] to data-type.
+          // @ts-expect-error assigning number[] to data-type.
           object.dataCol = [1];
         }).throws;
       });
@@ -929,7 +929,7 @@ describe("Realm.Object", () => {
       this.realm.write(() => {
         obj = this.realm.create<IAllTypes>(AllTypesSchema.name, allTypesValues);
         mixedNull = this.realm.create<IMixed>(MixedSchema.name, { key: "zero", value: null });
-        mixedInt = this.realm.create<IMixed>(MixedSchema.name, { key: "one", value: 1 }); // for mixed, all JavaScript numbers are saved as "double"
+        mixedInt = this.realm.create<IMixed>(MixedSchema.name, { key: "one", value: 1 }); // For mixed, all JavaScript numbers are saved as "double"
         mixedString = this.realm.create<IMixed>(MixedSchema.name, { key: "two", value: "two" });
         mixedFloat = this.realm.create<IMixed>(MixedSchema.name, { key: "three", value: 3.0 });
         mixedBool = this.realm.create<IMixed>(MixedSchema.name, { key: "five", value: true });
@@ -952,7 +952,7 @@ describe("Realm.Object", () => {
       expect(obj.getPropertyType("objectArrayCol")).equals("list<TestObject>");
 
       expect(mixedNull.getPropertyType("value")).equals("null");
-      expect(mixedInt.getPropertyType("value")).equals("double"); // see comment above
+      expect(mixedInt.getPropertyType("value")).equals("double"); // See comment above
       expect(mixedString.getPropertyType("value")).equals("string");
       expect(mixedFloat.getPropertyType("value")).equals("double");
       expect(mixedBool.getPropertyType("value")).equals("bool");
@@ -960,7 +960,7 @@ describe("Realm.Object", () => {
         expect(mixed.getPropertyType("key")).equals("string");
       });
 
-      // property that does not exist
+      // Property that does not exist
       expect(() => {
         obj.getPropertyType("foo");
       }).throws("Property 'foo' does not exist on 'AllTypesObject' objects");
@@ -1005,17 +1005,17 @@ describe("Realm.Object", () => {
 
       expect(objects.length).equals(2);
 
-      // can only set property in write transaction
+      // Can only set property in write transaction
       expect(function () {
         obj.objectCol1 = obj.objectCol;
       }).throws;
 
-      // set/reuse object property
+      // Set/reuse object property
       this.realm.write(function () {
         obj.objectCol1 = obj.objectCol;
       });
       expect(obj.objectCol1?.doubleCol).equals(1);
-      //TestCase.assertEqual(obj.objectCol, obj.objectCol1);
+      // TestCase.assertEqual(obj.objectCol, obj.objectCol1);
       expect(objects.length).equals(2);
 
       this.realm.write(function () {
@@ -1025,14 +1025,14 @@ describe("Realm.Object", () => {
       expect(obj.objectCol).to.be.null;
       expect(obj.objectCol1).to.be.null;
 
-      // set object as JSON
+      // Set object as JSON
       this.realm.write(function () {
         obj.objectCol = { doubleCol: 1 };
       });
       expect(obj.objectCol?.doubleCol).equals(1);
       expect(objects.length).equals(3);
 
-      // set array property
+      // Set array property
       this.realm.write(() => {
         obj.arrayCol = [obj.arrayCol[0], obj.objectCol, this.realm.create(TestObjectSchema.name, { doubleCol: 2 })];
       });
@@ -1043,7 +1043,7 @@ describe("Realm.Object", () => {
       expect(obj.arrayCol[1]?.doubleCol).equals(1);
       expect(obj.arrayCol[2]?.doubleCol).equals(2);
 
-      // set object from another realm
+      // Set object from another realm
       const another = new Realm({ path: "another.realm", schema: this.realm.schema });
       const anotherObj = another.write(function () {
         return another.create<ITestObject>(TestObjectSchema.name, { doubleCol: 3 });
@@ -1099,7 +1099,7 @@ describe("Realm.Object", () => {
       });
 
       const objKey = obj._objectKey();
-      //@ts-expect-error uses private method.
+      // @ts-expect-error uses private method.
       const objFromKey = this.realm._objectForObjectKey(AgeSchema.name, objKey);
 
       expect(objFromKey).to.not.be.undefined;
@@ -1111,11 +1111,11 @@ describe("Realm.Object", () => {
       });
 
       const freeKey = obj._objectKey();
-      //@ts-expect-error uses private method.
+      // @ts-expect-error uses private method.
       const obj1 = this.realm._objectForObjectKey(AgeSchema.name, "1" + freeKey);
       expect(obj1).to.be.undefined;
       expect(() => {
-        //@ts-expect-error uses private method.
+        // @ts-expect-error uses private method.
         this.realm._objectForObjectKey(AgeSchema.name, "invalid int64_t");
       }).throws("Expected value to be a numeric string, got a string");
     });
@@ -1126,7 +1126,7 @@ describe("Realm.Object", () => {
       });
 
       const objKey = obj._objectKey();
-      //@ts-expect-error uses private method.
+      // @ts-expect-error uses private method.
       const objFromKey = this.realm._objectForObjectKey(AgeSchema.name, objKey);
 
       this.realm.write(() => {

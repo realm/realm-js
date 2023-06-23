@@ -71,7 +71,7 @@ const createConfig = (schema: Realm.ObjectSchema, user: Realm.User, partitionVal
   sync: {
     user,
     partitionValue,
-    //@ts-expect-error SessionStopPolicy is a const enum which is removed at runtime.
+    // @ts-expect-error SessionStopPolicy is a const enum which is removed at runtime.
     _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
   },
 });
@@ -83,7 +83,7 @@ describe("Partition-values", () => {
 
     it("can set accepted value types", async function (this: AppContext) {
       const testPartitionValues = [
-        generatePartition(), // string
+        generatePartition(), // String
         Number.MAX_SAFE_INTEGER,
         6837697641419457,
         26123582,
@@ -132,7 +132,7 @@ describe("Partition-values", () => {
       const realmConfigPrimary = createConfig(PvIntDog, this.user, 42);
       const realmConfigSecondary = createConfig(PvIntDog, this.user, 43);
 
-      // ensure clean starting point
+      // Ensure clean starting point
       Realm.deleteFile(realmConfigPrimary);
 
       const realm1 = await Realm.open(realmConfigPrimary);
@@ -144,7 +144,7 @@ describe("Partition-values", () => {
       await realm1.syncSession?.uploadAllLocalChanges();
       realm1.close();
 
-      // cleanup, re-sync & check changes are synced
+      // Cleanup, re-sync & check changes are synced
       Realm.deleteFile(realmConfigPrimary);
 
       const realm2 = await Realm.open(realmConfigPrimary);
@@ -153,7 +153,7 @@ describe("Partition-values", () => {
       expect(realm2.objects("Dog").length).equals(dogsBefore);
       realm2.close();
 
-      // cleanup & re-sync with different partitionValue
+      // Cleanup & re-sync with different partitionValue
       Realm.deleteFile(realmConfigPrimary);
 
       const realm3 = await Realm.open(realmConfigSecondary);
@@ -172,7 +172,7 @@ describe("Partition-values", () => {
       const realmConfigPrimary = createConfig(PvStringDog, this.user, "42");
       const realmConfigSecondary = createConfig(PvStringDog, this.user, "43");
 
-      // ensure clean starting point
+      // Ensure clean starting point
       Realm.deleteFile(realmConfigPrimary);
 
       const realm1 = await Realm.open(realmConfigPrimary);
@@ -184,7 +184,7 @@ describe("Partition-values", () => {
       await realm1.syncSession?.uploadAllLocalChanges();
       realm1.close();
 
-      // cleanup, re-sync & check changes are synced
+      // Cleanup, re-sync & check changes are synced
       Realm.deleteFile(realmConfigPrimary);
 
       const realm2 = await Realm.open(realmConfigPrimary);
@@ -193,7 +193,7 @@ describe("Partition-values", () => {
       expect(realm2.objects("Dog").length).equals(dogsBefore);
       realm2.close();
 
-      // cleanup & re-sync with different partitionValue
+      // Cleanup & re-sync with different partitionValue
       Realm.deleteFile(realmConfigPrimary);
 
       const realm3 = await Realm.open(realmConfigSecondary);
@@ -220,7 +220,7 @@ describe("Partition-values", () => {
         new BSON.UUID("90d82df4-6037-4eb6-869b-a62f7af522b0"),
       );
 
-      // ensure clean starting point
+      // Ensure clean starting point
       Realm.deleteFile(realmConfigPrimary);
 
       const realm1 = await Realm.open(realmConfigPrimary);
@@ -232,7 +232,7 @@ describe("Partition-values", () => {
       await realm1.syncSession?.uploadAllLocalChanges();
       realm1.close();
 
-      // cleanup, re-sync & check changes are synced
+      // Cleanup, re-sync & check changes are synced
       Realm.deleteFile(realmConfigPrimary);
 
       const realm2 = await Realm.open(realmConfigPrimary);
@@ -241,7 +241,7 @@ describe("Partition-values", () => {
       expect(realm2.objects("Dog").length).equals(dogsBefore);
       realm2.close();
 
-      // cleanup & re-sync with different partitionValue
+      // Cleanup & re-sync with different partitionValue
       Realm.deleteFile(realmConfigPrimary);
 
       const realm3 = await Realm.open(realmConfigSecondary);
@@ -264,7 +264,7 @@ describe("Partition-values", () => {
         new BSON.ObjectId("606d8cdf33e41d1409245e63"),
       );
 
-      // ensure clean starting point
+      // Ensure clean starting point
       Realm.deleteFile(realmConfigPrimary);
       const realm1 = await Realm.open(realmConfigPrimary);
       realm1.write(() => {
@@ -283,7 +283,7 @@ describe("Partition-values", () => {
       expect(realm2.objects("Dog").length).equals(dogsBefore);
       realm2.close();
 
-      // cleanup & re-sync with different partitionValue
+      // Cleanup & re-sync with different partitionValue
       Realm.deleteFile(realmConfigPrimary);
 
       const realm3 = await Realm.open(realmConfigSecondary);

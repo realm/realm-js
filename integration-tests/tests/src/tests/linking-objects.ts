@@ -295,7 +295,7 @@ describe("Linking objects", () => {
         expect(languagesSpokenInCanada[0].name).equals("English");
         expect(languagesSpokenInCanada[1].name).equals("French");
       }
-      // check the same but using the unnamed relationship which is available to users
+      // Check the same but using the unnamed relationship which is available to users
       {
         const spokenInThreeCountries = languages.filtered("@links.Country.languages.@count == 3");
         expect(spokenInThreeCountries.length).equals(1);
@@ -311,10 +311,10 @@ describe("Linking objects", () => {
         expect(languagesSpokenInCanada[0].name).equals("English");
         expect(languagesSpokenInCanada[1].name).equals("French");
       }
-      const notSpokenInAnyCountry = languages.filtered("@links.@count == 0"); // no incoming links over any relationships to the object
+      const notSpokenInAnyCountry = languages.filtered("@links.@count == 0"); // No incoming links over any relationships to the object
       expect(notSpokenInAnyCountry.length).equals(1);
       expect(notSpokenInAnyCountry[0].name).equals("Latin");
-      const notSpokenMethod2 = languages.filtered("@links.Country.languages.@count == 0"); // links of a specific relationship are 0
+      const notSpokenMethod2 = languages.filtered("@links.Country.languages.@count == 0"); // Links of a specific relationship are 0
       expect(notSpokenMethod2.length).equals(1);
       expect(notSpokenMethod2[0].name).equals("Latin");
     });

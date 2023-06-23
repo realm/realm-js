@@ -64,7 +64,7 @@ describe("Realm transactions", () => {
       expect(() => {
         realm.create(PersonSchema.name, {
           name: "John Doe",
-          age: "five", // wrong type
+          age: "five", // Wrong type
         });
         realm.commitTransaction(); // We don't expect this to be called
       }).throws("Expected value to be a number or bigint, got a string");

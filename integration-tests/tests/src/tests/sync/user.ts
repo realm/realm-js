@@ -102,36 +102,36 @@ describe.skipIf(environment.missingServer, "User", () => {
     it("autoverify email password works", async function (this: AppContext & RealmContext) {
       const validEmail = randomVerifiableEmail();
       const invalidEmail = randomNonVerifiableEmail();
-      const invalidPassword = "pass"; // too short
+      const invalidPassword = "pass"; // Too short
       const validPassword = "password123456";
 
-      // invalid email, invalid password
+      // Invalid email, invalid password
       let credentials = Realm.Credentials.emailPassword({ email: invalidEmail, password: invalidPassword });
-      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // This user does not exist yet
       await expect(
         this.app.emailPasswordAuth.registerUser({ email: invalidEmail, password: invalidPassword }),
       ).to.be.rejectedWith("password must be between 6 and 128 characters");
-      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user did not register
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // This user did not register
 
       // invalid email, valid password
       credentials = Realm.Credentials.emailPassword({ email: invalidEmail, password: validPassword });
-      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // This user does not exist yet
       expect(
         this.app.emailPasswordAuth.registerUser({ email: invalidEmail, password: validPassword }),
       ).to.be.rejectedWith(`failed to confirm user "${invalidEmail}"`);
-      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user did not register
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // This user did not register
 
       // valid email, invalid password
       credentials = Realm.Credentials.emailPassword({ email: validEmail, password: invalidPassword });
-      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // This user does not exist yet
       await expect(
         this.app.emailPasswordAuth.registerUser({ email: validEmail, password: invalidPassword }),
       ).to.be.rejectedWith("password must be between 6 and 128 characters");
-      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user did not register
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // This user did not register
 
       // valid email, valid password
       credentials = Realm.Credentials.emailPassword({ email: validEmail, password: validPassword });
-      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
+      await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // This user does not exist yet
       await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
       const user = await this.app.logIn(credentials);
       expectIsUSer(user);
@@ -192,7 +192,7 @@ describe.skipIf(environment.missingServer, "User", () => {
         expectUserFromAll(all, user2);
         expectUserFromAll(all, user1);
 
-        await user2.logOut(); // logs out the shared anonymous session
+        await user2.logOut(); // Logs out the shared anonymous session
         all = this.app.allUsers;
         expect(Object.keys(all).length).equals(0, "All gone");
       });
@@ -203,12 +203,12 @@ describe.skipIf(environment.missingServer, "User", () => {
         const firstUser = await this.app.logIn(Realm.Credentials.anonymous());
         expectIsSameUser(firstUser, this.app.currentUser);
         const secondUser = await this.app.logIn(Realm.Credentials.anonymous());
-        // the most recently logged in user is considered current
+        // The most recently logged in user is considered current
         expect(firstUser.isLoggedIn).to.be.true;
         expect(secondUser.isLoggedIn).to.be.true;
         expectIsSameUser(secondUser, this.app.currentUser);
         secondUser.logOut();
-        // since anonymous user sessions are shared, firstUser is logged out as well
+        // Since anonymous user sessions are shared, firstUser is logged out as well
         expect(this.app.currentUser).to.be.null;
         expect(firstUser.isLoggedIn).to.be.false;
         expect(secondUser.isLoggedIn).to.be.false;
@@ -268,9 +268,9 @@ describe.skipIf(environment.missingServer, "User", () => {
         const firstUser = await registerAndLogInEmailUser(this.app);
         expectIsSameUser(firstUser, this.app.currentUser);
         const secondUser = await registerAndLogInEmailUser(this.app);
-        expectIsSameUser(secondUser, this.app.currentUser); // the most recently logged in user is considered current
+        expectIsSameUser(secondUser, this.app.currentUser); // The most recently logged in user is considered current
         await secondUser.logOut();
-        expectIsSameUser(firstUser, this.app.currentUser); // auto change back to another logged in user
+        expectIsSameUser(firstUser, this.app.currentUser); // Auto change back to another logged in user
         await firstUser.logOut();
         expect(this.app.currentUser).to.be.null;
       });
@@ -314,7 +314,7 @@ describe.skipIf(environment.missingServer, "User", () => {
         await this.app.deleteUser(user);
         expect(user.isLoggedIn, "User is logged out").to.be.false;
 
-        // cannot log in - user doesn't exist
+        // Cannot log in - user doesn't exist
         let didFail = false;
         const user2 = await this.app
           .logIn(Realm.Credentials.emailPassword({ email: validEmail, password: validPassword }))
@@ -530,10 +530,10 @@ describe.skipIf(environment.missingServer, "User", () => {
       const pendingEmail = randomPendingVerificationEmail();
       const validPassword = "password123456";
 
-      // we should be able to register our user as pending confirmation
+      // We should be able to register our user as pending confirmation
       await this.app.emailPasswordAuth.registerUser({ email: pendingEmail, password: validPassword });
 
-      // we should be able to call the registration function again
+      // We should be able to call the registration function again
       await this.app.emailPasswordAuth.retryCustomConfirmation({ email: pendingEmail });
     });
 
@@ -545,7 +545,7 @@ describe.skipIf(environment.missingServer, "User", () => {
       const newPassword = "realm_tests_do_reset654321";
       await this.app.emailPasswordAuth.callResetPasswordFunction({ email: validEmail, password: newPassword });
 
-      // see if we can log in
+      // See if we can log in
       const creds = Realm.Credentials.emailPassword({ email: validEmail, password: newPassword });
       const user = await this.app.logIn(creds);
       expect(user instanceof Realm.User).to.be.true;
@@ -581,7 +581,7 @@ describe.skipIf(environment.missingServer, "User", () => {
       const credentials = Realm.Credentials.anonymous();
       const user = await this.app.logIn(credentials);
       const appId = this.app.id;
-      //@ts-expect-error Wanting to prove that a completely new app instance will still return the current logged in user
+      // @ts-expect-error Wanting to prove that a completely new app instance will still return the current logged in user
       delete this.app;
       this.app = new Realm.App(appId);
 

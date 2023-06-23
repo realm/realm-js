@@ -32,7 +32,6 @@ export class MockApp extends App<any> {
 
   /**
    * Create mocked App, useful when testing.
-   *
    * @param id The id of the app.
    * @param requests An array of requests returned by the underlying mocked network transport.
    */

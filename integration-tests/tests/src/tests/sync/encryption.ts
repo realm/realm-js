@@ -37,7 +37,7 @@ describe("Encryption", () => {
 
     it("invalid key throws", () => {
       expect(function () {
-        //@ts-expect-error testing invalid string parameter as encryption key
+        // @ts-expect-error testing invalid string parameter as encryption key
         new Realm({ schema: [TestObjectSchema], encryptionKey: " ".repeat(64) });
       }).throws; // Encryption Key must be an ArrayBuffer
 
@@ -56,7 +56,7 @@ describe("Encryption", () => {
         expect(realm.objects(TestObjectSchema.name).length).equals(1);
       });
 
-      // test failure with different or missing
+      // Test failure with different or missing
       realm.close();
       expect(function () {
         new Realm({ schema: [TestObjectSchema], encryptionKey: new Int8Array(64) });
@@ -65,7 +65,7 @@ describe("Encryption", () => {
         new Realm({ schema: [TestObjectSchema] });
       }).throws;
 
-      // test can reopen with original key
+      // Test can reopen with original key
       realm = new Realm({ schema: [TestObjectSchema], encryptionKey: key });
       expect(realm.objects(TestObjectSchema.name).length).equals(1);
     });
@@ -77,7 +77,7 @@ describe("Encryption", () => {
       expect(Realm.schemaVersion("encrypted.realm", encryptionKey)).equals(3);
 
       expect(function () {
-        //@ts-expect-error test invalid encryptionkey as input to schemaversion
+        // @ts-expect-error test invalid encryptionkey as input to schemaversion
         Realm.schemaVersion("encrypted.realm", "asdf");
       }).throws;
     });

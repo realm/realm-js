@@ -60,7 +60,7 @@ export function describePerformance(title: string, parameters: PerformanceTestPa
     before(parameters.before);
     itPerforms(parameters.benchmarkTitle, parameters.test);
     after(function (this: BenchmarkContext) {
-      // console.log(this.summary);
+      // Console.log(this.summary);
     });
   });
 }

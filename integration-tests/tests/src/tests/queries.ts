@@ -1072,7 +1072,7 @@ describe("Queries", () => {
           });
         });
 
-        // objectForPrimaryKey tests
+        // ObjectForPrimaryKey tests
         const nonExisting = realm.objectForPrimaryKey(primUuidSchema.name, new BSON.UUID(nonExistingStringUuid));
         expect(nonExisting).equals(
           null,
@@ -1085,11 +1085,11 @@ describe("Queries", () => {
             null,
             `objectForPrimaryKey should return a Realm.Object for new BSON.UUID("${uuidStr}")`,
           );
-          //@ts-expect-error _id is part of schema.
+          // @ts-expect-error _id is part of schema.
           expect(obj._id.toString()).equals(uuidStr);
         });
 
-        // results.filtered tests
+        // Results.filtered tests
         const emptyFiltered = realm
           .objects(primUuidSchema.name)
           .filtered("_id == $0", new BSON.UUID(nonExistingStringUuid));

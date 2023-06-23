@@ -101,7 +101,7 @@ describe("BSON", () => {
       });
       it("can store and fetch large numbers", function (this: RealmContext) {
         // Core doesn't support numbers like 9.99e+6143 yet.
-        const numbers = ["1.02e+6102", "-1.02e+6102", "1.02e-6102", /*"9.99e+6143",*/ "1e-6142"];
+        const numbers = ["1.02e+6102", "-1.02e+6102", "1.02e-6102", /* "9.99e+6143",*/ "1e-6142"];
 
         numbers.forEach((number) => {
           const d = BSON.Decimal128.fromString(number);

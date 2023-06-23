@@ -82,25 +82,25 @@ describe("App", () => {
     const missingAppConfig = { id: "smurf", baseUrl };
 
     it("from config", () => {
-      //even if "id" is not an existing app we can still instantiate a new Realm.
+      // Even if "id" is not an existing app we can still instantiate a new Realm.
       const app = new Realm.App(missingAppConfig);
       expect(app).instanceOf(Realm.App);
     });
 
     it("from string", () => {
-      //even if "id" is not an existing app we can still instantiate a new Realm.
+      // Even if "id" is not an existing app we can still instantiate a new Realm.
       const app = new Realm.App(missingAppConfig.id);
       expect(app).instanceOf(Realm.App);
       expect(app.id).equals(missingAppConfig.id);
     });
 
     it("throws on undefined app", function () {
-      //@ts-expect-error creating an app without a config should fail
+      // @ts-expect-error creating an app without a config should fail
       expect(() => new Realm.App()).throws("Expected 'config' to be an object, got undefined");
     });
 
     it("throws on invalid input", function () {
-      //@ts-expect-error creating an app with an invalid config should fail
+      // @ts-expect-error creating an app with an invalid config should fail
       expect(() => new Realm.App(1234)).throws("Expected 'config' to be an object, got a number");
     });
 
@@ -265,7 +265,7 @@ describe("App", () => {
     });
 
     it("MongoDB Realm sync works", async function (this: Mocha.Context & AppContext & RealmContext) {
-      const dogNames = ["King", "Rex"]; // must be sorted
+      const dogNames = ["King", "Rex"]; // Must be sorted
       let nCalls = 0;
 
       const credentials = Realm.Credentials.anonymous();
@@ -283,9 +283,9 @@ describe("App", () => {
           _sessionStopPolicy: "immediately", // Make it safe to delete files after realm.close()
         },
       };
-      //@ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
+      // @ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
       Realm.deleteFile(realmConfig);
-      //@ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
+      // @ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
       const realm = await Realm.open(realmConfig);
       expect(nCalls).equals(1);
       realm.write(() => {
@@ -308,10 +308,10 @@ describe("App", () => {
       expect(realm.objects("Dog").length).equals(2);
       realm.close();
 
-      //@ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
+      // @ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
       Realm.deleteFile(realmConfig);
 
-      //@ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
+      // @ts-expect-error TYPEBUG: SyncConfiguration interfaces misses a user property.
       const realm2 = await Realm.open(realmConfig);
       expect(nCalls).equals(2);
       await realm2.syncSession?.downloadAllServerChanges();

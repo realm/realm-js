@@ -20,7 +20,6 @@ import { removeKeysWithUndefinedValues } from "./objects";
 
 /**
  * Generate a random sequence of characters.
- *
  * @param length The length of the string.
  * @param alphabet The alphabet of characters to pick from.
  * @returns A string of characters picked randomly from `alphabet`.
@@ -40,7 +39,6 @@ export type QueryParams = {
 
 /**
  * Encode an object mapping from string to string, into a query string to be appended a URL.
- *
  * @param params The parameters to include in the string.
  * @param prefixed Should the "?" prefix be added if values exists?
  * @returns A URL encoded representation of the parameters (omitting a "?" prefix).
@@ -61,7 +59,6 @@ export function encodeQueryString<P extends Partial<QueryParams>>(params: P, pre
 
 /**
  * Decodes a query string into an object.
- *
  * @param str The query string to decode.
  * @returns The decoded query string.
  */

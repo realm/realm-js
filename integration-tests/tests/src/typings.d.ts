@@ -20,7 +20,7 @@ type RealmObject = import("realm").Object;
 type App = import("realm").App;
 type User = import("realm").User;
 type Configuration = import("realm").Configuration;
-//type BenchmarkResult = import("@thi.ng/bench").BenchmarkResult;
+// Type BenchmarkResult = import("@thi.ng/bench").BenchmarkResult;
 
 interface fs {
   exists: (path: string) => boolean;
@@ -174,7 +174,7 @@ type RealmContext = {
 type RealmObjectContext<T = Record<string, unknown>> = {
   object: RealmObject & T;
 } & RealmContext;
-// type BenchmarkContext = {
+// Type BenchmarkContext = {
 //   result: BenchmarkResult;
 // } & Mocha.Context;
 
@@ -202,7 +202,7 @@ interface Console {
 }
 
 declare const console: Console;
-// allow import of json files
+// Allow import of json files
 declare module "*.json" {
   const value: unknown;
   export = value;

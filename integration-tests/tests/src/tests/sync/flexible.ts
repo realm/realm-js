@@ -145,9 +145,9 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
     describe("flexible sync Realm config", function () {
       it.skip("respects cancelWaitOnNonFatalError", async function () {
         this.timeout(2_000);
-        //This needs to be revisited when:
-        //- https://github.com/realm/realm-core/issues/6301 is fixed. At the moment core rejects all the "non sensible" timeouts, and we need to set a very low one to simulate reliably a connection issue
-        //- We expose `SyncClientConfig.timeouts`(https://github.com/realm/realm-core/blob/e83515f014ff53b0d27c59b73773d33b4252e891/src/realm/object-store/sync/sync_manager.hpp#L97) so that we can set the timeouts properly.
+        // This needs to be revisited when:
+        // - https://github.com/realm/realm-core/issues/6301 is fixed. At the moment core rejects all the "non sensible" timeouts, and we need to set a very low one to simulate reliably a connection issue
+        // - We expose `SyncClientConfig.timeouts`(https://github.com/realm/realm-core/blob/e83515f014ff53b0d27c59b73773d33b4252e891/src/realm/object-store/sync/sync_manager.hpp#L97) so that we can set the timeouts properly.
         const config = createSyncConfig({ sync: { cancelWaitsOnNonFatalError: true, flexible: true } }, this.user);
 
         const openRealm = async () => {
@@ -278,7 +278,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
           it("throws an error if `rerunOnOpen` is not a boolean", async function () {
             const config = getConfig(this.user, {
               update: () => {
-                // no-op
+                // No-op
               },
               // @ts-expect-error Intentionally testing the wrong type
               rerunOnOpen: "yes please",
@@ -458,7 +458,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
       });
 
       realm.write(() => {
-        //Outside subscriptions
+        // Outside subscriptions
         const tom = realm.create<IPerson>(FlexiblePersonSchema.name, {
           _id: person1Id,
           name: "Tom",
@@ -467,7 +467,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
         realm.create<IPerson>(FlexiblePersonSchema.name, { _id: person2Id, name: "Maria", age: 44 });
         realm.create<IDog>(DogSchema.name, { _id: dogId, name: "Puppy", age: 1, owner: tom });
 
-        //Inside subscriptions
+        // Inside subscriptions
         const luigi = realm.create<IPerson>(FlexiblePersonSchema.name, {
           _id: new BSON.ObjectId(),
           name: "Luigi",
@@ -694,7 +694,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
             const originalSubs = this.realm.subscriptions;
             expect(originalSubs.version).to.equal(0);
 
-            // orignalSubs will not be updated as we mutate a new `Subscriptions` instance here
+            // OrignalSubs will not be updated as we mutate a new `Subscriptions` instance here
             await addSubscriptionForPersonAndSync(this.realm);
             expect(originalSubs.version).to.equal(0);
           });
@@ -1220,7 +1220,7 @@ describe.skipIf(environment.missingServer, "Flexible sync", function () {
 
           // TODO This feature is not implemented yet
           xit("returns the return value of the update callback when the promise resolves", async function () {
-            /*const { subs } = addSubscriptionForPerson(this.realm);
+            /* Const { subs } = addSubscriptionForPerson(this.realm);
 
           const result = await subs.update((mutableSubs) => {
             return mutableSubs.add(this.realm.objects(FlexiblePersonSchema.name).filtered("age < 10"));
