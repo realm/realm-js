@@ -39,17 +39,17 @@ function expectIsUSer(user: Realm.User) {
   expect(user).instanceOf(Realm.User);
 }
 
-function expectIsSameUser(value: Realm.User, user: Realm.User | null) {
+function expectIsSameUser(value: Realm.User, user: Realm.User<any, any> | null) {
   expectIsUSer(value);
   expect(value.accessToken).equals(user?.accessToken);
   expect(value.id).equals(user?.id);
 }
 
-function expectUserFromAll(all: Record<string, Realm.User>, user: Realm.User) {
+function expectUserFromAll(all: Record<string, Realm.User<any, any>>, user: Realm.User) {
   expectIsSameUser(all[user.id], user);
 }
 
-async function registerAndLogInEmailUser(app: Realm.App) {
+async function registerAndLogInEmailUser(app: Realm.App<any, any>) {
   const validEmail = randomVerifiableEmail();
   const validPassword = "test1234567890";
   await app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
