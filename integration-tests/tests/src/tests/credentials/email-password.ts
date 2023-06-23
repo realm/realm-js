@@ -43,7 +43,7 @@ describe.skipIf(environment.missingServer, "email-password credentials", () => {
     try {
       await this.app.emailPasswordAuth.confirmUser({ token: "e30=", tokenId: "some-token-id" });
     } catch (err) {
-      // We expect this to throw, since we're feading in an invalid token
+      // We expect this to throw, since we're feeding in an invalid token
       expect((err as Error).message).equals("invalid token data");
     }
   });

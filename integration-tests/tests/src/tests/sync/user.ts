@@ -327,6 +327,25 @@ describe.skipIf(environment.missingServer, "User", () => {
         expect(didFail).to.be.true;
       });
 
+      it("can switch user", async function (this: Mocha.Context & AppContext & RealmContext) {
+        expect(this.app.currentUser, "No users").to.be.null;
+
+        const user1 = await registerAndLogInEmailUser(this.app);
+        const user2 = await registerAndLogInEmailUser(this.app);
+
+        expect(this.app.currentUser?.id).to.equal(user2.id);
+        expect(Object.keys(this.app.allUsers)).to.have.lengthOf(2);
+
+        this.app.switchUser(user1);
+
+        expect(this.app.currentUser?.id).to.equal(user1.id);
+        expect(Object.keys(this.app.allUsers)).to.have.lengthOf(2);
+
+        await this.app.deleteUser(user2);
+
+        expect(() => this.app.switchUser(user2)).to.throw("User is no longer valid or is logged out");
+      });
+
       describe("state", () => {
         it("can fetch state when logged in with email password", async function (this: AppContext & RealmContext) {
           expect(this.app.currentUser).to.be.null;
