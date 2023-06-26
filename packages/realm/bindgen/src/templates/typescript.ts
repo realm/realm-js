@@ -231,7 +231,7 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
         const docLines: string[] = [];
         if (!field.isOptedInTo) {
           docLines.push(
-            `@deprecated Add \`${field.name}\` to your opt-in list (under \`records/${rec.cppName}/fields/\`) to use this.`,
+            `@deprecated Add \`${field.name}\` to your opt-in list (under \`records/${rec.name}/fields/\`) to use this.`,
           );
         }
         if (hasInterestingDefault) {
@@ -259,7 +259,7 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
     for (const meth of cls.methods) {
       if (!meth.isOptedInTo) {
         out(
-          `/** @deprecated Add \`${meth.unique_name}\` to your opt-in list (under \`classes/${cls.cppName}/methods/\`) to use this. */`,
+          `/** @deprecated Add \`${meth.unique_name}\` to your opt-in list (under \`classes/${cls.name}/methods/\`) to use this. */`,
         );
       }
       if (meth instanceof Property) {
