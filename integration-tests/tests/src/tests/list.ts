@@ -1131,8 +1131,7 @@ describe("Lists", () => {
       expect(array.length).equals(2);
       expect(objects.length).equals(4);
     });
-    // TODO reenable this test. https://github.com/realm/realm-js/issues/5817
-    it.skipIf(true, "supports snapshots", function (this: RealmContext) {
+    it("supports snapshots", function (this: RealmContext) {
       const objects = this.realm.objects<ITestObjectSchema>("TestObject");
       let array!: Realm.List<ITestObjectSchema>;
 
