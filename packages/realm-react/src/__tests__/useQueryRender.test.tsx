@@ -398,7 +398,7 @@ describe.each`
   });
   // This replicates the issue https://github.com/realm/realm-js/issues/4375
   it("will handle multiple async transactions", async () => {
-    const { queryByTestId } = await setupTest({ queryType, useUseObject: true });
+    const { queryByTestId, unmount } = await setupTest({ queryType, useUseObject: true });
     const performTest = async () => {
       testRealm.write(() => {
         testRealm.deleteAll();
@@ -426,6 +426,8 @@ describe.each`
     });
 
     await waitFor(() => queryByTestId(`name${109}`));
+
+    unmount();
   });
 
   it("will return the same reference when state changes", async () => {
