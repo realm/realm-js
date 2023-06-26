@@ -227,18 +227,22 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
         // This is handled by Optional<T> becoming `undefined | T`.
         const optField = !field.required && kind === Kind.Arg;
         const hasInterestingDefault = ![undefined, "", "{}", "[]"].includes(field.defaultVal);
-        const deprecatedAnnotation = `@deprecated Add \`${field.name}\` to your opt-in list (under \`records/${rec.cppName}/fields/\`) to use this.`;
-        const defaultAnnotation = `@default ${field.defaultVal}`;
+
+        const docLines: string[] = [];
+        if (!field.isOptedInTo) {
+          docLines.push(
+            `@deprecated Add \`${field.name}\` to your opt-in list (under \`records/${rec.cppName}/fields/\`) to use this.`,
+          );
+        }
+        if (hasInterestingDefault) {
+          docLines.push(`@default ${field.defaultVal}`);
+        }
+
         let docComment = "";
-        if (!field.isOptedInTo && hasInterestingDefault) {
-          docComment = `/**
-             * ${deprecatedAnnotation}
-             * ${defaultAnnotation}
-             */\n`;
-        } else if (!field.isOptedInTo) {
-          docComment = `/** ${deprecatedAnnotation} */\n`;
-        } else if (hasInterestingDefault) {
-          docComment = `/** ${defaultAnnotation} */\n`;
+        if (docLines.length > 1) {
+          docComment = `/**\n * ${docLines.join("\n * ")}\n */\n`;
+        } else if (docLines.length === 1) {
+          docComment = `/** ${docLines[0]} */\n`;
         }
 
         out(docComment, field.jsName, optField ? "?" : "", ": ", generateType(spec, field.type, kind), ";");
