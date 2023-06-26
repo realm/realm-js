@@ -1,8 +1,0 @@
-{
-    "query-language": {
-        "title": "Query language"
-    },
-    "http-proxy": {
-        "title": "Using Realm JS behind an HTTP Proxy"
-    }
-}
