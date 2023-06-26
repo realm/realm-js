@@ -34,7 +34,7 @@ export function LoginPage() {
     if (result.operation === AuthOperationName.Register && result.success) {
       logIn({ email, password });
     }
-  }, [result.operation, result.success]);
+  }, [result.operation, result.success, logIn, email, password]);
 
   // The `currentUser` will be set after a successful login.
   if (atlasApp.currentUser) {
