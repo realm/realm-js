@@ -114,6 +114,14 @@
   result = pois.filtered("location geoWithin geoCircle([13.397255909303222, 52.51174463251085], 0.0783932519)");
   ```
 * Support sort/distinct based on values from a dictionary e.g. `TRUEPREDICATE SORT(meta['age'])`. ([realm/realm-core#5311](https://github.com/realm/realm-core/pull/5311))
+* Support for HTTP proxy settings in the Realm configuration by adding `proxyConfig` to the sync configuration. You can continue to use environment variable `HTTPS_PROXY`. HTTP proxies are only supported for node.js and Electron. ([#5816](https://github.com/realm/realm-js/issues/5816))
+```javascript
+proxyConfig: {
+  address: "127.0.0.1",
+  port: 9876,
+  type: ProxyType.HTTP,
+}
+```
 
 ### Fixed
 * Fix a stack overflow crash when using the query parser with long chains of AND/OR conditions. ([realm/realm-core#6428](https://github.com/realm/realm-core/pull/6428), since v10.11.0)
