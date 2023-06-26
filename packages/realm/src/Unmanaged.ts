@@ -34,9 +34,7 @@ type ExtractPropertyNamesOfType<T, PropType> = {
  * Exchanges properties defined as {@link List} with an optional {@link Array}.
  */
 type RealmListsRemappedModelPart<T> = {
-  [K in ExtractPropertyNamesOfType<T, AnyList>]?: T[K] extends List<infer GT>
-    ? Array<GT | RealmInsertionModel<GT>>
-    : never;
+  [K in ExtractPropertyNamesOfType<T, AnyList>]?: T[K] extends List<infer GT> ? Array<GT | Unmanaged<GT>> : never;
 };
 
 /**
@@ -49,7 +47,7 @@ type RealmDictionaryRemappedModelPart<T> = {
 };
 
 /** Omits all properties of a model which are not defined by the schema */
-type OmittedRealmTypes<T> = Omit<
+export type OmittedRealmTypes<T> = Omit<
   T,
   | keyof AnyRealmObject
   /* eslint-disable-next-line @typescript-eslint/ban-types */
@@ -58,11 +56,28 @@ type OmittedRealmTypes<T> = Omit<
   | ExtractPropertyNamesOfType<T, AnyDictionary>
 >;
 
+/** Make all fields optional except those specified in K */
+type OptionalExcept<T, K extends keyof T> = Partial<T> & Pick<T, K>;
+
+/**
+ * Omits all properties of a model which are not defined by the schema,
+ * making all properties optional except those specified in RequiredProperties.
+ */
+type OmittedRealmTypesWithRequired<T, RequiredProperties extends keyof OmittedRealmTypes<T>> = OptionalExcept<
+  OmittedRealmTypes<T>,
+  RequiredProperties
+>;
+
 /** Remaps realm types to "simpler" types (arrays and objects) */
 type RemappedRealmTypes<T> = RealmListsRemappedModelPart<T> & RealmDictionaryRemappedModelPart<T>;
 
 /**
- * Joins T stripped of all keys which value extends {@link Collection} and all inherited from {@link RealmObject},
- * with only the keys which value extends {@link List}, remapped as Arrays.
+ * Joins `T` stripped of all keys which value extends {@link Collection} and all inherited from {@link Realm.Object},
+ * with only the keys which value extends {@link List}, remapped as {@link Array}. All properties are optional
+ * except those specified in `RequiredProperties`.
  */
-export type RealmInsertionModel<T> = OmittedRealmTypes<T> & RemappedRealmTypes<T>;
+export type Unmanaged<T, RequiredProperties extends keyof OmittedRealmTypes<T> = never> = OmittedRealmTypesWithRequired<
+  T,
+  RequiredProperties
+> &
+  RemappedRealmTypes<T>;

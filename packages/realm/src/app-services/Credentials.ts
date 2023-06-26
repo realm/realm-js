@@ -51,6 +51,7 @@ export class Credentials {
    * in with the Anonymous credentials, use {@link App.currentUser} or {@link App.allUsers}.
    * @param reuse Reuse any existing anonymous user already logged in.
    * @return An instance of `Credentials` that can be used in {@link App.logIn}.
+   * @see https://docs.mongodb.com/realm/authentication/anonymous/
    */
   static anonymous(reuse = true): Credentials {
     return new Credentials(binding.AppCredentials.anonymous(reuse));
@@ -59,6 +60,7 @@ export class Credentials {
   /**
    * Creates credentials based on a login with an email address and a password.
    * @return {Credentials} An instance of `Credentials` that can be used in {@link App.logIn}.
+   * @see https://www.mongodb.com/docs/atlas/app-services/authentication/email-password/
    */
   static emailPassword(credentials: { email: string; password: string }): Credentials;
   static emailPassword(email: string, password: string): Credentials;
@@ -77,6 +79,7 @@ export class Credentials {
    * Creates credentials from an API key.
    * @param key A string identifying the API key.
    * @return An instance of `Credentials` that can be used in {@link App.logIn}.
+   * @see https://www.mongodb.com/docs/atlas/app-services/authentication/api-key/
    */
   static apiKey(key: string): Credentials {
     return new Credentials(binding.AppCredentials.apiKey(key));
@@ -86,6 +89,7 @@ export class Credentials {
    * Creates credentials based on an Apple login.
    * @param token An Apple authentication token, obtained by logging into Apple.
    * @return An instance of `Credentials` that can be used in {@link App.logIn}.
+   * @see https://www.mongodb.com/docs/atlas/app-services/authentication/apple/
    */
   static apple(token: string): Credentials {
     return new Credentials(binding.AppCredentials.apple(token));
@@ -95,6 +99,7 @@ export class Credentials {
    * Creates credentials based on a Facebook login.
    * @param token A Facebook authentication token, obtained by logging into Facebook.
    * @return An instance of `Credentials` that can be used in {@link App.logIn}.
+   * @see https://www.mongodb.com/docs/atlas/app-services/authentication/facebook/
    */
   static facebook(token: string): Credentials {
     return new Credentials(binding.AppCredentials.facebook(token));
@@ -104,6 +109,7 @@ export class Credentials {
    * Creates credentials based on a Google login.
    * @param authObject An object with either an `authCode` or `idToken` property.
    * @return {Credentials} An instance of `Credentials` that can be used in {@link App.logIn}.
+   * @see https://www.mongodb.com/docs/atlas/app-services/authentication/google/
    */
   static google(authObject: { authCode: string } | { idToken: string }): Credentials;
   static google({ authCode, idToken }: { authCode?: string; idToken?: string }): Credentials {
@@ -122,6 +128,7 @@ export class Credentials {
    * Creates credentials with a JSON Web Token (JWT) provider and user identifier.
    * @param token A string identifying the user. Usually an identity token or a username.
    * @return An instance of `Credentials` that can be used in {@link App.logIn}.
+   * @see https://www.mongodb.com/docs/atlas/app-services/authentication/custom-jwt/
    */
   static jwt(token: string): Credentials {
     return new Credentials(binding.AppCredentials.custom(token));
@@ -131,6 +138,7 @@ export class Credentials {
    * Creates credentials with an Atlas App Services function and user identifier.
    * @param payload An object identifying the user. Usually an identity token or a username.
    * @return An instance of `Credentials` that can be used in {@link App.logIn}.
+   * @see https://www.mongodb.com/docs/atlas/app-services/authentication/custom-function/
    */
   static function(payload: object): Credentials {
     return new Credentials(binding.AppCredentials.function(payload as Record<string, binding.EJson>));
