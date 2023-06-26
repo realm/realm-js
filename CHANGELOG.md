@@ -60,7 +60,7 @@
       name: "MyGeoPoint",
       embedded: true,
       properties: {
-        type: { type: "string", default: "Point" },
+        type: "string",
         coordinates: "double[]",
       },
     };
