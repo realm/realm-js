@@ -66,9 +66,9 @@ function removeExistingUsers(): void {
   beforeEach(async function (this: AppContext & Partial<UserContext>) {
     if (this.app) {
       const users = this.app.allUsers;
-      Object.keys(this.app.allUsers).forEach(async (id) => {
-        await this.app.removeUser(users[id]);
-      });
+      for (const userId of Object.keys(this.app.allUsers)) {
+        await this.app.removeUser(users[userId]);
+      }
     }
   });
 }
@@ -146,9 +146,7 @@ describe.skipIf(environment.missingServer, "User", () => {
   describe("properties and methods", () => {
     describe("with anonymous", () => {
       importAppBefore(buildAppConfig("with-anon").anonAuth());
-      beforeEach(() => {
-        removeExistingUsers();
-      });
+      removeExistingUsers();
       it("login and logout works", async function (this: AppContext & RealmContext) {
         const credentials = Realm.Credentials.anonymous();
 
@@ -221,9 +219,7 @@ describe.skipIf(environment.missingServer, "User", () => {
     describe("with email password", () => {
       importAppBefore(buildAppConfig("with-email-password").emailPasswordAuth());
 
-      beforeEach(() => {
-        removeExistingUsers();
-      });
+      removeExistingUsers();
 
       it("can fetch allUsers with email password", async function (this: AppContext & RealmContext) {
         let all = this.app.allUsers;
@@ -333,6 +329,8 @@ describe.skipIf(environment.missingServer, "User", () => {
       it("can switch user", async function (this: Mocha.Context & AppContext & RealmContext) {
         expect(this.app.currentUser, "No users").to.be.null;
 
+        expect(Object.keys(this.app.allUsers)).to.have.lengthOf(0);
+
         const user1 = await registerAndLogInEmailUser(this.app);
         const user2 = await registerAndLogInEmailUser(this.app);
 
@@ -347,6 +345,8 @@ describe.skipIf(environment.missingServer, "User", () => {
         await this.app.deleteUser(user2);
 
         expect(() => this.app.switchUser(user2)).to.throw("User is no longer valid or is logged out");
+
+        await user1.logOut();
       });
 
       describe("state", () => {
