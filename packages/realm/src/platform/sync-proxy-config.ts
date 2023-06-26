@@ -24,7 +24,7 @@ type SyncProxyConfigType = {
 
 export const syncProxyConfig: SyncProxyConfigType = {
   create() {
-    throw new Error("Not supported on this platform");
+    throw new Error("proxyConfig is not supported on this platform");
   },
 };
 
