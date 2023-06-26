@@ -27,7 +27,10 @@ import Realm, { UserState } from "realm";
 
 import { buildAppConfig } from "../../utils/build-app-config";
 
-function expectIsUSer(user: Realm.User) {
+type AnyApp = Realm.App<any, any>;
+type AnyUser = Realm.User<any, any>;
+
+function expectIsUser(user: Realm.User) {
   expect(user).to.not.be.undefined;
   expect(user).to.not.be.null;
   expect(typeof user).equals("object");
@@ -39,22 +42,22 @@ function expectIsUSer(user: Realm.User) {
   expect(user).instanceOf(Realm.User);
 }
 
-function expectIsSameUser(value: Realm.User, user: Realm.User<any, any> | null) {
-  expectIsUSer(value);
+function expectIsSameUser(value: AnyUser, user: AnyUser | null) {
+  expectIsUser(value);
   expect(value.accessToken).equals(user?.accessToken);
   expect(value.id).equals(user?.id);
 }
 
-function expectUserFromAll(all: Record<string, Realm.User<any, any>>, user: Realm.User) {
+function expectUserFromAll(all: Record<string, AnyUser>, user: Realm.User) {
   expectIsSameUser(all[user.id], user);
 }
 
-async function registerAndLogInEmailUser(app: Realm.App<any, any>) {
+async function registerAndLogInEmailUser(app: AnyApp) {
   const validEmail = randomVerifiableEmail();
   const validPassword = "test1234567890";
   await app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
   const user = await app.logIn(Realm.Credentials.emailPassword({ email: validEmail, password: validPassword }));
-  expectIsUSer(user);
+  expectIsUser(user);
   expectIsSameUser(user, app.currentUser);
   return user;
 }
@@ -134,7 +137,7 @@ describe.skipIf(environment.missingServer, "User", () => {
       await expect(this.app.logIn(credentials)).to.be.rejectedWith("invalid username/password"); // this user does not exist yet
       await this.app.emailPasswordAuth.registerUser({ email: validEmail, password: validPassword });
       const user = await this.app.logIn(credentials);
-      expectIsUSer(user);
+      expectIsUser(user);
       expectIsSameUser(user, this.app.currentUser);
       await user.logOut();
     });
@@ -150,7 +153,7 @@ describe.skipIf(environment.missingServer, "User", () => {
         const credentials = Realm.Credentials.anonymous();
 
         const user = await this.app.logIn(credentials);
-        expectIsUSer(user);
+        expectIsUser(user);
         expectIsSameUser(user, this.app.currentUser);
         await user.logOut();
         // Is now logged out.
