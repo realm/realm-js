@@ -103,7 +103,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
   /**
    * Get or create a singleton Realm App from an id.
    * Calling this function multiple times with the same id will return the same instance.
-   * @deprecated Use App.get.
+   * @deprecated Use {@link App.get}.
    * @param id The Realm App id visible from the Atlas App Services UI or a configuration.
    * @returns The Realm App instance.
    */
@@ -127,9 +127,12 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
     return newApp;
   }
 
-  /** @deprecated Please use named imports */
   public static Sync = Sync;
-  /** @deprecated Please use named imports */
+
+  /**
+   * All credentials available for authentication.
+   * @see https://www.mongodb.com/docs/atlas/app-services/authentication/
+   */
   public static Credentials = Credentials;
 
   /** @internal */
@@ -164,14 +167,14 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
   });
 
   /**
-   * Creates a new app and connects to an Atlas App Services instance.
+   * Constructs a new {@link App} instance, used to connect to an Atlas App Services App.
    * @param id A string app id.
    * @throws an {@link Error} If no {@link id} is provided.
    */
   constructor(id: string);
 
   /**
-   * Creates a new app and connects to an Atlas App Services instance.
+   * Constructs a new {@link App} instance, used to connect to an Atlas App Services App.
    * @param config The configuration of the app.
    * @throws an {@link Error} If no {@link AppConfiguration.id | app id} is provided.
    */
@@ -213,46 +216,82 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
     return this.internal.config.appId;
   }
 
+  /**
+   * Log in a user.
+   */
   public async logIn(credentials: Credentials) {
     const userInternal = await this.internal.logInWithCredentials(credentials.internal);
     return User.get(userInternal, this);
   }
 
+  /**
+   * Perform operations related to the email/password auth provider.
+   */
   public get emailPasswordAuth(): EmailPasswordAuth {
     // TODO: Add memoization
     const internal = this.internal.usernamePasswordProviderClient();
     return new EmailPasswordAuth(internal);
   }
 
+  /**
+   * The last user to log in or being switched to.
+   */
   public get currentUser(): User<FunctionsFactoryType, CustomDataType> | null {
     const currentUser = this.internal.currentUser;
     return currentUser ? User.get(currentUser, this) : null;
   }
 
+  /**
+   * All authenticated users.
+   */
   public get allUsers(): Readonly<Record<string, User<FunctionsFactoryType, CustomDataType>>> {
     return Object.fromEntries(this.internal.allUsers.map((user) => [user.identity, User.get(user, this)]));
   }
 
+  /**
+   * Switches the current user to the one specified in {@link user}.
+   * The new user must be currently logged in, otherwise this method will throw an error.
+   * @param user The new current user.
+   */
   public switchUser(user: AnyUser) {
     this.internal.switchUser(user.internal);
   }
 
+  /**
+   * Logs out and removes a user from the client.
+   * @returns A promise that resolves once the user has been logged out and removed from the app.
+   */
   public async removeUser(user: AnyUser) {
     await this.internal.removeUser(user.internal);
   }
 
+  /**
+   * Delete the user.
+   * NOTE: This irrecoverably deletes the user from the device as well as the server!
+   * @returns A promise that resolves once the user has been deleted.
+   */
   public async deleteUser(user: AnyUser) {
     await this.internal.deleteUser(user.internal);
   }
 
+  /**
+   * Adds a listener that will be fired on various user events.
+   * This includes login, logout, switching users, linking users and refreshing custom data.
+   */
   public addListener(callback: AppChangeCallback) {
     this.listeners.add(callback);
   }
 
+  /**
+   * Removes an event listener previously added via {@link App.addListener}.
+   */
   public removeListener(callback: AppChangeCallback) {
     this.listeners.remove(callback);
   }
 
+  /**
+   * Removes all event listeners previously added via {@link App.addListener}.
+   */
   public removeAllListeners() {
     this.listeners.removeAll();
   }

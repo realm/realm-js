@@ -24,6 +24,7 @@ import {
   App,
   AppChangeCallback,
   AppConfiguration,
+  AppServicesFunction,
   BSON,
   BaseChangeEvent,
   BaseConfiguration,
@@ -127,8 +128,6 @@ import {
   PushClient,
   REALM,
   RealmEvent,
-  RealmFunction,
-  RealmInsertionModel,
   RealmListenerCallback,
   RealmListeners,
   RealmObject,
@@ -154,6 +153,7 @@ import {
   SyncSession,
   TypeAssertionError,
   Types,
+  Unmanaged,
   Update,
   UpdateDescription,
   UpdateEvent,
@@ -285,6 +285,7 @@ export class Realm {
 
   /**
    * Clears the state by closing and deleting any Realm in the default directory and logout all users.
+   * NOTE: Not a part of the public API and it's primarily used from the library's tests.
    * @private
    */
   public static clearTestState(): void {
@@ -820,12 +821,12 @@ export class Realm {
    */
   create<T = DefaultObject>(
     type: string,
-    values: Partial<T> | Partial<RealmInsertionModel<T>>,
+    values: Partial<T> | Partial<Unmanaged<T>>,
     mode?: UpdateMode.Never | UpdateMode.All | UpdateMode.Modified | boolean,
   ): RealmObject<T> & T;
   create<T extends AnyRealmObject>(
     type: Constructor<T>,
-    values: Partial<T> | Partial<RealmInsertionModel<T>>,
+    values: Partial<T> | Partial<Unmanaged<T>>,
     mode?: UpdateMode.Never | UpdateMode.All | UpdateMode.Modified | boolean,
   ): T;
   create<T extends AnyRealmObject>(
@@ -1372,6 +1373,9 @@ export declare namespace Realm {
     AppType as App,
     AppChangeCallback,
     AppConfiguration,
+    AppServicesFunction,
+    /** @deprecated Will be removed in v13.0.0. Please use {@link AppServicesFunction} */
+    AppServicesFunction as RealmFunction,
     BaseConfiguration,
     BaseObjectSchema,
     BaseSyncConfiguration,
@@ -1440,7 +1444,6 @@ export declare namespace Realm {
     PropertySchemaStrict,
     PropertyTypeName,
     ProviderTypeType as ProviderType,
-    RealmFunction,
     RealmObjectConstructor,
     /** @deprecated Will be removed in v13.0.0. Please use {@link RealmObjectConstructor} */
     RealmObjectConstructor as ObjectClass,
@@ -1579,6 +1582,9 @@ declare global {
       AppType as App,
       AppChangeCallback,
       AppConfiguration,
+      AppServicesFunction,
+      /** @deprecated Will be removed in v13.0.0. Please use {@link AppServicesFunction} */
+      AppServicesFunction as RealmFunction,
       BaseConfiguration,
       BaseObjectSchema,
       BaseSyncConfiguration,
@@ -1647,7 +1653,6 @@ declare global {
       PropertySchemaStrict,
       PropertyTypeName,
       ProviderTypeType as ProviderType,
-      RealmFunction,
       RealmObjectConstructor,
       /** @deprecated Will be removed in v13.0.0. Please use {@link RealmObjectConstructor} */
       RealmObjectConstructor as ObjectClass,

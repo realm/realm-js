@@ -18,6 +18,10 @@
 
 import { binding } from "../internal";
 
+/**
+ * Authentication provider where users identify using email and password.
+ * @see https://www.mongodb.com/docs/atlas/app-services/authentication/email-password/
+ */
 export class EmailPasswordAuth {
   /** @internal */
   public internal: binding.UsernamePasswordProviderClient;
@@ -86,15 +90,23 @@ export class EmailPasswordAuth {
 
   /**
    * Sends an email to the user for resetting the password.
-   * @param credential The email details to send the reset to
-   * @param credential.email - The email address of the user to re-send a confirmation for.
+   * @param details The email details to send the reset to
+   * @param details.email - The email address of the user to re-send a confirmation for.
    * @since v10.10.0
    */
-  public async sendResetPasswordEmail(credential: { email: string }) {
-    await this.internal.sendResetPasswordEmail(credential.email);
+  public async sendResetPasswordEmail(details: { email: string }) {
+    await this.internal.sendResetPasswordEmail(details.email);
   }
 
-  public async callResetPasswordFunction(credentials: { email: string; password: string }, ...args: unknown[]) {
-    await this.internal.callResetPasswordFunction(credentials.email, credentials.password, args as binding.EJson[]);
+  /**
+   * Call the custom function to reset the password.
+   * @param details The new user's email and password details
+   * @param details.email - The email address of the user to register.
+   * @param details.password - The password that the user created for the new username/password identity.
+   * @param args One or more arguments to pass to the function.
+   * @since v10.10.0
+   */
+  public async callResetPasswordFunction(details: { email: string; password: string }, ...args: unknown[]) {
+    await this.internal.callResetPasswordFunction(details.email, details.password, args as binding.EJson[]);
   }
 }

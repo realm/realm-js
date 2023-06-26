@@ -223,24 +223,29 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
       // TODO consider making the Arg version just alias the Ret version if the bodies are the same.
       out(`export type ${rec.jsName}${suffix(kind)} = {`);
       for (const field of fields) {
-        if (!field.isOptedInTo) {
-          out(
-            `/** @deprecated Add \`${field.name}\` to your opt-in list (under \`records/${rec.cppName}/fields/\`) to use this. */`,
-          );
-        }
-
         // For Optional<T> fields, the field will always be there in Ret mode, but it may be undefined.
         // This is handled by Optional<T> becoming `undefined | T`.
         const optField = !field.required && kind === Kind.Arg;
         const hasInterestingDefault = ![undefined, "", "{}", "[]"].includes(field.defaultVal);
-        out(
-          hasInterestingDefault ? `/** @default ${field.defaultVal} */\n` : "",
-          field.jsName,
-          optField ? "?" : "",
-          ": ",
-          generateType(spec, field.type, kind),
-          ";",
-        );
+
+        const docLines: string[] = [];
+        if (!field.isOptedInTo) {
+          docLines.push(
+            `@deprecated Add \`${field.name}\` to your opt-in list (under \`records/${rec.name}/fields/\`) to use this.`,
+          );
+        }
+        if (hasInterestingDefault) {
+          docLines.push(`@default ${field.defaultVal}`);
+        }
+
+        let docComment = "";
+        if (docLines.length > 1) {
+          docComment = `/**\n * ${docLines.join("\n * ")}\n */\n`;
+        } else if (docLines.length === 1) {
+          docComment = `/** ${docLines[0]} */\n`;
+        }
+
+        out(docComment, field.jsName, optField ? "?" : "", ": ", generateType(spec, field.type, kind), ";");
       }
       out(`}`);
     }
@@ -254,7 +259,7 @@ export function generate({ rawSpec, spec: boundSpec, file }: TemplateContext): v
     for (const meth of cls.methods) {
       if (!meth.isOptedInTo) {
         out(
-          `/** @deprecated Add \`${meth.unique_name}\` to your opt-in list (under \`classes/${cls.cppName}/methods/\`) to use this. */`,
+          `/** @deprecated Add \`${meth.unique_name}\` to your opt-in list (under \`classes/${cls.name}/methods/\`) to use this. */`,
         );
       }
       if (meth instanceof Property) {

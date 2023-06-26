@@ -1,7 +1,5 @@
 dist/
 
-# The types are copied from the root project and the types generated when building.
-types/realm/
 # These types are generated when building the package.
 types/generated/
 # Package
