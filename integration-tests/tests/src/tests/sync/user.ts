@@ -147,6 +147,7 @@ describe.skipIf(environment.missingServer, "User", () => {
     describe("with anonymous", () => {
       importAppBefore(buildAppConfig("with-anon").anonAuth());
       removeExistingUsers();
+
       it("login and logout works", async function (this: AppContext & RealmContext) {
         const credentials = Realm.Credentials.anonymous();
 
@@ -218,7 +219,6 @@ describe.skipIf(environment.missingServer, "User", () => {
 
     describe("with email password", () => {
       importAppBefore(buildAppConfig("with-email-password").emailPasswordAuth());
-
       removeExistingUsers();
 
       it("can fetch allUsers with email password", async function (this: AppContext & RealmContext) {
