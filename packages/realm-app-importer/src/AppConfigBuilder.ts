@@ -170,11 +170,6 @@ export class AppConfigBuilder {
     return this;
   }
 
-  baseFilePath(value: string) {
-    this.config.baseFilePath = value;
-    return this;
-  }
-
   sync(value: SyncConfig) {
     this.config.sync = value;
     return this;

@@ -26,7 +26,15 @@ const REALM_LOG_LEVELS = ["all", "trace", "debug", "detail", "info", "warn", "er
 
 const { syncLogLevel = "warn" } = environment;
 
-export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkConfig?: AppConfiguration): void {
+export type AppConfigurationRelaxed = {
+  id?: string;
+  baseUrl?: string;
+  timeout?: number;
+  multiplexSessions?: boolean;
+  baseFilePath?: string;
+};
+
+export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkConfig?: AppConfigurationRelaxed): void {
   // Unwrap when passed a builder directly
   if ("config" in config) {
     return importAppBefore(config.config);
@@ -39,7 +47,7 @@ export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkCo
       throw new Error("Unexpected app on context, use only one importAppBefore per test");
     } else {
       const { appId, baseUrl } = await importApp(config);
-      this.app = new Realm.App({ id: appId, baseUrl, baseFilePath: config?.baseFilePath, ...sdkConfig });
+      this.app = new Realm.App({ id: appId, baseUrl, ...sdkConfig });
 
       // Extract the sync database name from the config
       const databaseNames: string[] = config.services

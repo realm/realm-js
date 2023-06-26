@@ -63,7 +63,7 @@ describe.skipIf(environment.missingServer, `app configuration of root directory 
   // describe.only(`app configuration of root directory (flexible sync)`, async function () {
   this.timeout(60_000);
   const tmpdir = getAbsolutePath();
-  importAppBefore(buildAppConfig("with-flx").baseFilePath(tmpdir).anonAuth().flexibleSync());
+  importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync(), { baseFilePath: tmpdir });
   authenticateUserBefore();
 
   it("directory and file created where expected", async function () {
