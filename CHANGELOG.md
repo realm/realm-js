@@ -52,75 +52,58 @@
   } from "realm";
   
   // Example of a user-defined point class that can be queried using geospatial queries
-  class MyGeoPoint extends Realm.Object implements CanonicalGeoPoint {  
-    coordinates: GeoPosition;
+  class MyGeoPoint extends Realm.Object implements CanonicalGeoPoint {
+    coordinates!: GeoPosition;
     type = "Point" as const;
-
-    constructor(long: number, lat: number) {
-      this.coordinates = [long, lat];
-    }
 
     static schema: ObjectSchema = {
       name: "MyGeoPoint",
       embedded: true,
       properties: {
-        type: "string",
+        type: { type: "string", default: "Point" },
         coordinates: "double[]",
       },
     };
   }
 
-  interface IPointOfInterest {
-    id: number;
-    location: MyGeoPoint;
-  }
-
-  class PointOfInterest extends Realm.Object implements IPointOfInterest {
-    _id = 0;
-    location: MyGeoPoint = {
-      coordinates: [0, 0],
-      type: "Point",
-    };
+  class PointOfInterest extends Realm.Object {
+    name!: string;
+    location!: MyGeoPoint;
 
     static schema: ObjectSchema = {
       name: "PointOfInterest",
       properties: {
-        id: "int",
+        name: "string",
         location: "MyGeoPoint",
       },
-      primaryKey: "id",
     };
   }
 
-  const copenhagen: IPointOfInterest = {
-    id: 1,
-    location: {
-      coordinates: [12.558892784045568, 55.66717839648401],
-      type: "Point",
-    }
-  };
-
-  const newYork: IPointOfInterest = {
-    id: 1,
-    location: {
-      coordinates: [-73.92474936213434, 40.700090994927415],
-      type: "Point",
-    }
-  };
-
-  realm.create(PointOfInterest, copenhagen);
-  realm.create(PointOfInterest, newYork);
+  realm.write(() => {
+    realm.create(PointOfInterest, {
+      name: "Copenhagen",
+      location: {
+        coordinates: [12.558892784045568, 55.66717839648401],
+        type: "Point",
+      } as MyGeoPoint
+    });
+    realm.create(PointOfInterest, {
+      name: "New York",
+      location: {
+        coordinates: [-73.92474936213434, 40.700090994927415],
+        type: "Point",
+      } as MyGeoPoint
+    });
+  });
 
   const pois = realm.objects(PointOfInterest);
 
-  const berlinCoordinates = {
-      coordinates: [13.397255909303222, 52.51174463251085],
-      type: "Point",
-  };
+  const berlinCoordinates: GeoPoint = [13.397255909303222, 52.51174463251085];
   const radius = kmToRadians(500); //500 km = 0.0783932519 rad
+
   // Circle with a radius of 500kms centered in Berlin
   const circleShape: GeoCircle = {
-    center: berlinCoordinates,  
+    center: berlinCoordinates,
     distance: radius,
   };
 
