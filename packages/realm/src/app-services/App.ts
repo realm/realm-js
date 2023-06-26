@@ -58,6 +58,13 @@ export type AppConfiguration = {
    * The timeout for requests (in milliseconds)
    */
   timeout?: number;
+
+  /**
+   * Use the same underlying connection towards the server across multiple sync sessions.
+   * This uses less resources on the server and provides a small increase in speed when opening subsequent synced Realms.
+   * @default true
+   */
+  multiplexSessions?: boolean;
 };
 
 /**
@@ -176,11 +183,12 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
   constructor(configOrId: AppConfiguration | string) {
     const config: AppConfiguration = typeof configOrId === "string" ? { id: configOrId } : configOrId;
     assert.object(config, "config");
-    const { id, baseUrl, app, timeout } = config;
+    const { id, baseUrl, app, timeout, multiplexSessions = true } = config;
     assert.string(id, "id");
     if (timeout !== undefined) {
       assert.number(timeout, "timeout");
     }
+    assert.boolean(multiplexSessions, "multiplexSessions");
     // TODO: This used getSharedApp in the legacy SDK, but it's failing AppTests
     this.internal = binding.App.getUncachedApp(
       {
@@ -196,8 +204,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
         baseFilePath: fs.getDefaultDirectoryPath(),
         metadataMode: binding.MetadataMode.NoEncryption,
         userAgentBindingInfo: App.userAgent,
-        // Default session multiplexing to being disabled.
-        multiplexSessions: false,
+        multiplexSessions,
       },
     );
   }
