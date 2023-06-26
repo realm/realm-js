@@ -21,11 +21,12 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const webpack = require("webpack");
 const path = require("path");
 
 module.exports = {
   entry: "./src/index.ts",
-  devtool: "eval-source-map",
+  devtool: "inline-source-map",
   module: {
     rules: [
       {

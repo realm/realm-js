@@ -20,12 +20,13 @@
 
 import puppeteer from "puppeteer";
 import WebpackDevServer from "webpack-dev-server";
-import webpack from "webpack";
+import webpack, { Configuration } from "webpack";
 import { Server as MochaRemoteServer } from "mocha-remote-server";
+import { merge } from "webpack-merge";
 
 import { importRealmApp } from "./import-realm-app";
 
-import WEBPACK_CONFIG = require("../webpack.config");
+import WEBPACK_CONFIG from "../webpack.config";
 import path = require("path");
 
 // Default to testing only the credentials that does not require manual interactions.
@@ -75,42 +76,38 @@ export async function run(devtools = false) {
   const { appId, baseUrl } = await importRealmApp();
   console.log(`Done importing app (client id = ${appId})`);
   // Start up the Webpack Dev Server
-  const compiler = webpack({
-    ...(WEBPACK_CONFIG as webpack.Configuration),
-    mode: "development",
-    plugins: [
-      ...WEBPACK_CONFIG.plugins,
-      new webpack.DefinePlugin({
-        APP_ID: JSON.stringify(appId),
-        // Uses the webpack dev servers proxy
-        BASE_URL: JSON.stringify(BASE_URL),
-        TEST_CREDENTIALS: JSON.stringify(testCredentials.split(",")),
-        IIFE_BUNDLE_URL: JSON.stringify(`${BASE_URL}/realm-web/dist/bundle.iife.js`),
-        // Used when testing Google Sign-In
-        GOOGLE_CLIENT_ID: JSON.stringify(process.env.GOOGLE_CLIENT_ID),
-      }),
-    ],
-  });
+  const compiler = webpack(
+    merge<Configuration>(WEBPACK_CONFIG as Configuration, {
+      mode: "development",
+      plugins: [
+        new webpack.DefinePlugin({
+          APP_ID: JSON.stringify(appId),
+          // Uses the webpack dev servers proxy
+          BASE_URL: JSON.stringify(BASE_URL),
+          TEST_CREDENTIALS: JSON.stringify(testCredentials.split(",")),
+          IIFE_BUNDLE_URL: JSON.stringify(`${BASE_URL}/realm-web/dist/bundle.iife.js`),
+          // Used when testing Google Sign-In
+          GOOGLE_CLIENT_ID: JSON.stringify(process.env.GOOGLE_CLIENT_ID),
+        }),
+      ],
+    }),
+  );
 
   // Start the webpack-dev-server
-  const devServer = new WebpackDevServer(compiler, {
-    proxy: { "/api": baseUrl },
-    historyApiFallback: true,
-    static: {
-      directory: path.join(__dirname, "../node_modules/realm-web"),
-      publicPath: "/realm-web",
+  const devServer = new WebpackDevServer(
+    {
+      port: 8080,
+      proxy: { "/api": baseUrl },
+      historyApiFallback: true,
+      static: {
+        directory: path.join(__dirname, "../node_modules/realm-web"),
+        publicPath: "/realm-web",
+      },
     },
-  });
+    compiler,
+  );
 
-  await new Promise<void>((resolve, reject) => {
-    devServer.listen(8080, "localhost", (err) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve();
-      }
-    });
-  });
+  await devServer.start();
 
   process.once("exit", () => {
     devServer.close();
