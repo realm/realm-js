@@ -269,7 +269,7 @@
     "prebuild-install": "^7.1.1"
   },
   "peerDependencies": {
-    "bson": "^4",
+    "bson": "^5 || ^4",
     "react-native": ">=0.71.0"
   },
   "peerDependenciesMeta": {
