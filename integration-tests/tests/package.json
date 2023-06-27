@@ -73,6 +73,7 @@
 		"@types/jsrsasign": "^10.5.4",
 		"@types/mocha": "^10.0.0",
 		"@types/node": "^18.15.10",
+		"bson": "^5.3.0",
 		"concurrently": "^6.5.1",
 		"mocha": "^10.1.0",
 		"node-fetch": "^2.6.9",
