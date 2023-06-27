@@ -76,9 +76,9 @@ function removeExistingUsers(): void {
 describe.skipIf(environment.missingServer, "User", () => {
   describe("email password", () => {
     importAppBefore(buildAppConfig("with-email-password").emailPasswordAuth());
+    removeExistingUsers();
 
     it("login without username throws", async function (this: AppContext & RealmContext) {
-      // @ts-expect-error test logging in without providing username.
       expect(() => Realm.Credentials.emailPassword({ email: undefined, password: "password" })).throws(
         "Expected 'email' to be a string, got undefined",
       );
@@ -86,7 +86,6 @@ describe.skipIf(environment.missingServer, "User", () => {
 
     it("login without password throws", async function (this: AppContext & RealmContext) {
       const username = new Realm.BSON.UUID().toHexString();
-      // @ts-expect-error test logging in without providing password.
       expect(() => Realm.Credentials.emailPassword({ email: username, password: undefined })).throws(
         "Expected 'password' to be a string, got undefined",
       );
@@ -234,7 +233,6 @@ describe.skipIf(environment.missingServer, "User", () => {
         }
         expect(loggedInUsers).equals(0, "Noone to begin with");
 
-        const credentials = Realm.Credentials.anonymous();
         const user1 = await registerAndLogInEmailUser(this.app);
         all = this.app.allUsers;
         expect(Object.keys(all).length).equals(1, "One user");
@@ -328,7 +326,6 @@ describe.skipIf(environment.missingServer, "User", () => {
 
       it("can switch user", async function (this: Mocha.Context & AppContext & RealmContext) {
         expect(this.app.currentUser).to.be.null;
-
         expect(Object.keys(this.app.allUsers)).to.have.lengthOf(0);
 
         const user1 = await registerAndLogInEmailUser(this.app);
@@ -341,12 +338,24 @@ describe.skipIf(environment.missingServer, "User", () => {
 
         expect(this.app.currentUser?.id).to.equal(user1.id);
         expect(Object.keys(this.app.allUsers)).to.have.lengthOf(2);
+        await user1.logOut();
+      });
 
-        await this.app.deleteUser(user2);
+      it("throws when switching to a logged out user", async function (this: Mocha.Context &
+        AppContext &
+        RealmContext) {
+        expect(this.app.currentUser).to.be.null;
+        expect(Object.keys(this.app.allUsers)).to.have.lengthOf(0);
 
-        expect(() => this.app.switchUser(user2)).to.throw("User is no longer valid or is logged out");
+        const user1 = await registerAndLogInEmailUser(this.app);
+        const user2 = await registerAndLogInEmailUser(this.app);
+
+        expect(this.app.currentUser?.id).to.equal(user2.id);
 
         await user1.logOut();
+        expect(() => this.app.switchUser(user1)).to.throw("User is no longer valid or is logged out");
+
+        await user2.logOut();
       });
 
       describe("state", () => {
