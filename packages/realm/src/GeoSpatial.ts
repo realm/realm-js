@@ -72,8 +72,10 @@ export type GeoPoint =
 export type GeoCircle = {
   /** The center of the circle. */
   center: GeoPoint;
-  /** The radius of the circle in radians. You can use {@link kmToRadians} and {@link miToRadians}
-   * to respectively convert kilometers and miles to radians. */
+  /**
+   * The radius of the circle in radians. You can use {@link kmToRadians} and {@link miToRadians}
+   * to respectively convert kilometers and miles to radians.
+   */
   distance: number;
 };
 

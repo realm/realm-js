@@ -74,7 +74,7 @@ export enum SessionStopPolicy {
 export enum ClientResetMode {
   /** @deprecated See {@link Realm.App.Sync.initiateClientReset} */
   Manual = "manual",
-  /** 
+  /**
    * Download a fresh copy from the server.
    */
   DiscardUnsyncedChanges = "discardUnsyncedChanges",
