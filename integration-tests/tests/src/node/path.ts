@@ -68,7 +68,7 @@ describe.skipIf(environment.missingServer, `app configuration of root directory 
 
   it("directory and file created where expected", async function () {
     expect(existsSync(tmpdir)).to.be.true; // importAppBefore will create `tmpdir`
-    const realm = new Realm({
+    let config = {
       schema: [FlexibleSchema],
       sync: {
         // @ts-expect-error Using an internal API
@@ -76,12 +76,12 @@ describe.skipIf(environment.missingServer, `app configuration of root directory 
         flexible: true,
         user: this.user,
       },
-    } as Realm.Configuration);
-
+    } as Realm.Configuration;
+    const realm = new Realm(config);
     expect(existsSync(tmpdir)).to.be.true;
     expect(realm.path.startsWith(tmpdir));
-
     realm.close();
+    Realm.deleteFile(config);
   });
 });
 

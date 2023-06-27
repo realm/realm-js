@@ -37,7 +37,7 @@ export type AppConfigurationRelaxed = {
 export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkConfig?: AppConfigurationRelaxed): void {
   // Unwrap when passed a builder directly
   if ("config" in config) {
-    return importAppBefore(config.config);
+    return importAppBefore(config.config, sdkConfig);
   }
 
   before(importAppBefore.name, async function (this: Partial<AppContext> & Mocha.Context) {
