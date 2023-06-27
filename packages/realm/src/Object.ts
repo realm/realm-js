@@ -313,7 +313,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
 
   /**
    * @returns An array of the names of the object's properties.
-   * @deprecated Please use {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys | Object.keys()} 
+   * @deprecated Please use {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys | Object.keys()}
    */
   keys(): string[] {
     // copying to prevent caller from modifying the static array.
