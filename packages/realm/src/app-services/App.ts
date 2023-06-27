@@ -216,7 +216,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
         defaultRequestTimeoutMs: timeout ? binding.Int64.numToInt(timeout) : undefined,
       },
       {
-        baseFilePath,
+        baseFilePath : baseFilePath ? baseFilePath : fs.getDefaultDirectoryPath(),
         metadataMode: binding.MetadataMode.NoEncryption,
         userAgentBindingInfo: App.userAgent,
         multiplexSessions,
