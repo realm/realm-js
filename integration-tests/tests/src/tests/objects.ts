@@ -586,6 +586,45 @@ describe("Realm.Object", () => {
         const persons = this.realm.objects(PersonWithId);
         expect(persons.length).equals(1);
       });
+
+      it("can be updated recursively", function (this: Mocha.Context & RealmContext) {
+        // Create two mutual friends
+        const { alice, bob } = this.realm.write(() => {
+          const alice = this.realm.create(PersonWithId, {
+            _id: new Realm.BSON.ObjectId(),
+            name: "Alice",
+            age: 32,
+          });
+          const bob = this.realm.create(PersonWithId, {
+            _id: new Realm.BSON.ObjectId(),
+            name: "Bob",
+            age: 42,
+          });
+          // Make them mutual friends
+          alice.friends.push(bob);
+          bob.friends.push(alice);
+          return { alice, bob };
+        });
+
+        // Now update them
+        this.realm.write(() => {
+          this.realm.create(
+            PersonWithId,
+            {
+              _id: alice._id,
+              age: 33,
+              friends: [
+                {
+                  _id: bob._id,
+                  age: 43,
+                  name: "Bobby",
+                },
+              ],
+            },
+            Realm.UpdateMode.All,
+          );
+        });
+      });
     });
   });
 
