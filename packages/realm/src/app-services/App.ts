@@ -201,10 +201,9 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
     assert.boolean(multiplexSessions, "multiplexSessions");
     if (baseFilePath !== undefined) {
       assert.string(baseFilePath, "baseFilePath");
-      fs.setDefaultDirectoryPath(baseFilePath);
     }
 
-    fs.ensureDirectoryForFile(fs.joinPaths(fs.getDefaultDirectoryPath(), "mongodb-realm"));
+    fs.ensureDirectoryForFile(fs.joinPaths(baseFilePath || fs.getDefaultDirectoryPath(), "mongodb-realm"));
     // TODO: This used getSharedApp in the legacy SDK, but it's failing AppTests
     this.internal = binding.App.getUncachedApp(
       {
@@ -217,7 +216,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
         defaultRequestTimeoutMs: timeout ? binding.Int64.numToInt(timeout) : undefined,
       },
       {
-        baseFilePath: baseFilePath || fs.getDefaultDirectoryPath(),
+        baseFilePath,
         metadataMode: binding.MetadataMode.NoEncryption,
         userAgentBindingInfo: App.userAgent,
         multiplexSessions,
