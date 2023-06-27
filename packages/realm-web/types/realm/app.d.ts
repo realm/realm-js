@@ -360,11 +360,6 @@ declare namespace Realm {
      * Specifying this will enable the server to respond differently to specific versions of specific apps.
      */
     app?: LocalAppConfiguration;
-
-    /**
-     * Specify where synced Realms and metadata is stored. If not specified, the current work directory is used.
-     */
-    baseFilePath?: string;
   }
 
   /**

@@ -18,7 +18,6 @@
 
 export type AppConfig = {
   name: string;
-  baseFilePath?: string;
   sync?: SyncConfig;
   security?: {
     allowed_request_origins?: string[];
