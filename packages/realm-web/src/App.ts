@@ -72,7 +72,6 @@ export class App<
   /**
    * Get or create a singleton Realm App from an id.
    * Calling this function multiple times with the same id will return the same instance.
-   *
    * @param id The Realm App id visible from the Atlas App Services UI or a configuration.
    * @returns The Realm App instance.
    */
@@ -136,7 +135,6 @@ export class App<
 
   /**
    * Construct a Realm App, either from the Realm App id visible from the Atlas App Services UI or a configuration.
-   *
    * @param idOrConfiguration The Realm App id or a configuration to use for this app.
    */
   constructor(idOrConfiguration: string | AppConfiguration) {
@@ -182,7 +180,6 @@ export class App<
 
   /**
    * Switch user.
-   *
    * @param nextUser The user or id of the user to switch to.
    */
   public switchUser(nextUser: User<FunctionsFactoryType, CustomDataType>): void {
@@ -198,7 +195,6 @@ export class App<
 
   /**
    * Log in a user.
-   *
    * @param credentials Credentials to use when logging in.
    * @param fetchProfile Should the users profile be fetched? (default: true)
    * @returns A promise resolving to the newly logged in user.
@@ -282,7 +278,6 @@ export class App<
 
   /**
    * The currently active user (or null if no active users exists).
-   *
    * @returns the currently active user or null.
    */
   public get currentUser(): User<FunctionsFactoryType, CustomDataType> | null {
@@ -297,9 +292,8 @@ export class App<
 
   /**
    * All active and logged-out users:
-   *  - First in the list are active users (ordered by most recent call to switchUser or login)
-   *  - Followed by logged out users (also ordered by most recent call to switchUser or login).
-   *
+   * - First in the list are active users (ordered by most recent call to switchUser or login)
+   * - Followed by logged out users (also ordered by most recent call to switchUser or login).
    * @returns An array of users active or logged out users (current user being the first).
    */
   public get allUsers(): Readonly<Record<string, User<FunctionsFactoryType, CustomDataType>>> {
@@ -361,7 +355,6 @@ export class App<
   /**
    * Create (and store) a new user or update an existing user's access and refresh tokens.
    * This helps de-duplicating users in the list of users known to the app.
-   *
    * @param response A response from the Authenticator.
    * @param providerType The type of the authentication provider used.
    * @returns A new or an existing user.

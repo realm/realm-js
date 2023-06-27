@@ -1,6 +1,3 @@
-[submodule "docs/jsdoc-template"]
-	path = docs/jsdoc-template
-	url = https://github.com/realm/realm-jsdoc.git
 [submodule "packages/realm/bindgen/vendor/realm-core"]
 	path = packages/realm/bindgen/vendor/realm-core
 	url = https://github.com/realm/realm-core.git

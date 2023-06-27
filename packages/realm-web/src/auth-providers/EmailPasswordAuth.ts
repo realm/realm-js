@@ -25,7 +25,6 @@ export class EmailPasswordAuth implements Realm.Auth.EmailPasswordAuth {
 
   /**
    * Construct an interface to the email / password authentication provider.
-   *
    * @param fetcher The underlying fetcher used to request the services.
    * @param providerName Optional custom name of the authentication provider.
    */

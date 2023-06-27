@@ -47,21 +47,18 @@ export interface Storage {
 
   /**
    * Clears all values stored in the storage.
-   *
    * @param prefix Clear only values starting with this prefix.
    */
   clear(prefix?: string): void;
 
   /**
    * Add a callback function which will be called when the store updates.
-   *
    * @param listener The listener callback to add.
    */
   addListener(listener: StorageChangeListener): void;
 
   /**
    * Remove a callback function which was previously added.
-   *
    * @param listener The listener callback to remove.
    */
   removeListener(listener: StorageChangeListener): void;

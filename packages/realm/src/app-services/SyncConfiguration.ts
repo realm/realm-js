@@ -69,10 +69,22 @@ export enum SessionStopPolicy {
   Never = "never",
 }
 
+/**
+ */
 export enum ClientResetMode {
+  /** @deprecated See {@link Realm.App.Sync.initiateClientReset} */
   Manual = "manual",
+  /**
+   * Download a fresh copy from the server.
+   */
   DiscardUnsyncedChanges = "discardUnsyncedChanges",
+  /**
+   * Merged remote and local, unsynced changes.
+   */
   RecoverUnsyncedChanges = "recoverUnsyncedChanges",
+  /**
+   * Download a fresh copy from the server if recovery of unsynced changes is not possible.
+   */
   RecoverOrDiscardUnsyncedChanges = "recoverOrDiscardUnsyncedChanges",
 }
 
@@ -84,20 +96,35 @@ export type ClientResetManualConfiguration = {
 export type ClientResetDiscardUnsyncedChangesConfiguration = {
   mode: ClientResetMode.DiscardUnsyncedChanges;
   onAfter?: ClientResetAfterCallback;
+  /**
+   * Called before sync initiates a client reset.
+   */
   onBefore?: ClientResetBeforeCallback;
 };
 
 export type ClientResetRecoverUnsyncedChangesConfiguration = {
   mode: ClientResetMode.RecoverUnsyncedChanges;
   onAfter?: ClientResetAfterCallback;
+  /**
+   * Called before sync initiates a client reset.
+   */
   onBefore?: ClientResetBeforeCallback;
+  /**
+   * Called if recovery or discard fail.
+   */
   onFallback?: ClientResetFallbackCallback;
 };
 
 export type ClientResetRecoverOrDiscardUnsyncedChangesConfiguration = {
   mode: ClientResetMode.RecoverOrDiscardUnsyncedChanges;
   onAfter?: ClientResetAfterCallback;
+  /**
+   * Called before sync initiates a client reset.
+   */
   onBefore?: ClientResetBeforeCallback;
+  /**
+   * Called if recovery or discard fail.
+   */
   onFallback?: ClientResetFallbackCallback;
 };
 
@@ -171,17 +198,48 @@ export type SSLVerifyObject = {
   depth: number;
 };
 
+/**
+ * This describes the different options used to create a {@link Realm} instance with Atlas App Services synchronization.
+ */
 export type BaseSyncConfiguration = {
+  /**
+   * A {@link Realm.User} object obtained by calling `Realm.App.logIn`.
+   */
   user: AnyUser;
+  /**
+   * Whether to create a new file and sync in background or wait for the file to be synced.
+   */
   newRealmFileBehavior?: OpenRealmBehaviorConfiguration;
+  /**
+   * Whether to open existing file and sync in background or wait for the sync of the file to complete and then open.
+   * If not set, the Realm will be downloaded before opened.
+   */
   existingRealmFileBehavior?: OpenRealmBehaviorConfiguration;
+  /**
+   * A callback function which is called in error situations.
+   * The callback is passed two arguments: `session` and `syncError`.
+   * If `syncError.name == "ClientReset"`, `syncError.path` and `syncError.config` are set and `syncError.readOnly` is true (deprecated, see `Realm.App.Sync~ClientResetConfiguration`).
+   * Otherwise, `syncError` can have up to five properties: `name`, `message`, `isFatal`, `category`, and `code`.
+   */
   onError?: ErrorCallback;
+  /**
+   * Custom HTTP headers, which are included when making requests to the server.
+   */
   customHttpHeaders?: Record<string, string>;
+  /**
+   * SSL configuration.
+   */
   ssl?: SSLConfiguration;
+  /**
+   * Configuration of Client Reset
+   */
+  clientReset?: ClientResetConfig;
+  /**
+   * Set to true, all async operations (such as opening the Realm with `Realm.open`) will fail when a non-fatal error, such as a timeout, occurs.
+   */
+  cancelWaitsOnNonFatalError?: boolean;
   /** @internal */
   _sessionStopPolicy?: SessionStopPolicy;
-  clientReset?: ClientResetConfig;
-  cancelWaitsOnNonFatalError?: boolean;
 };
 
 export type InitialSubscriptions = {
@@ -206,7 +264,6 @@ export type FlexibleSyncConfiguration = BaseSyncConfiguration & {
    * sync subscriptions to be used when opening the Realm. If this is specified,
    * {@link Realm.open} will not resolve until this set of subscriptions has been
    * fully synchronized with the server.
-   *
    * @example
    * const config: Realm.Configuration = {
    *   sync: {

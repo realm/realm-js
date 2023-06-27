@@ -36,7 +36,6 @@ export class MockNetworkTransport implements NetworkTransport {
 
   /**
    * Construct a mocked network transport which returns pre-recorded requests.
-   *
    * @param responses An array of pre-recorded requests.
    */
   constructor(responses: unknown[] = []) {

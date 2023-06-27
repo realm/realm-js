@@ -16,17 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+import type { Dictionary, List, Results } from "./internal";
 import { CallbackAdder, IllegalConstructorError, Listeners, TypeAssertionError, assert, binding } from "./internal";
 
 /**
- * Abstract base class containing methods shared by Realm **List**, **Dictionary**, and **Results**.
+ * Abstract base class containing methods shared by Realm {@link List}, {@link Dictionary} and {@link Results}.
  *
- * A Realm Collection is a homogenous sequence of values of any of the types
- * that can be stored as properties of Realm objects. A collection can be
- * accessed in any of the ways that a normal Javascript Array can, including
- * subscripting, enumerating with `for-of` and so on.
- *
- * A Collection always reflect the current state of the Realm. The one exception to this is
+ * A {@link Collection} always reflect the current state of the Realm. The one exception to this is
  * when using `for...in` or `for...of` enumeration, which will always enumerate over the
  * objects which matched the query when the enumeration is begun, even if some of them are
  * deleted or modified to be excluded by the filter during the enumeration.
@@ -100,6 +96,13 @@ export abstract class Collection<
    * @since 0.11.0
    */
   abstract [Symbol.iterator](): Iterator<T>;
+
+  /**
+   * Checks if this collection has not been deleted and is part of a valid Realm.
+   * @returns `true` if the collection can be safely accessed.
+   * @since 0.14.0
+   */
+  abstract isValid(): boolean;
 
   /**
    * Add a listener `callback` which will be called when a **live** collection instance changes.

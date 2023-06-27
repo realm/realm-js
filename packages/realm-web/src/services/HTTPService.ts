@@ -27,7 +27,6 @@ type Response = Realm.Services.HTTP.Response;
 
 /**
  * The Stitch HTTP Service is a generic interface that enables you to communicate with any service that is available over HTTP.
- *
  * @see https://docs.mongodb.com/stitch/services/http/
  */
 export class HTTPService implements HTTP {
@@ -38,7 +37,6 @@ export class HTTPService implements HTTP {
 
   /**
    * Construct an HTTP Service.
-   *
    * @param fetcher The underlying fetcher.
    * @param serviceName An optional service name.
    */
@@ -48,7 +46,6 @@ export class HTTPService implements HTTP {
 
   /**
    * Sends an HTTP GET request to the specified URL.
-   *
    * @param url The URL to send the request to.
    * @param options Options related to the request.
    * @returns The response.
@@ -59,7 +56,6 @@ export class HTTPService implements HTTP {
 
   /**
    * Sends an HTTP POST request to the specified URL.
-   *
    * @param url The URL to send the request to.
    * @param options Options related to the request.
    * @returns The response.
@@ -70,7 +66,6 @@ export class HTTPService implements HTTP {
 
   /**
    * Sends an HTTP PUT request to the specified URL.
-   *
    * @param url The URL to send the request to.
    * @param options Options related to the request.
    * @returns The response.
@@ -81,7 +76,6 @@ export class HTTPService implements HTTP {
 
   /**
    * Sends an HTTP DELETE request to the specified URL.
-   *
    * @param url The URL to send the request to.
    * @param options Options related to the request.
    * @returns The response.
@@ -92,7 +86,6 @@ export class HTTPService implements HTTP {
 
   /**
    * Sends an HTTP HEAD request to the specified URL.
-   *
    * @param url The URL to send the request to.
    * @param options Options related to the request.
    * @returns The response.
@@ -103,7 +96,6 @@ export class HTTPService implements HTTP {
 
   /**
    * Sends an HTTP PATCH request to the specified URL.
-   *
    * @param url The URL to send the request to.
    * @param options Options related to the request.
    * @returns The response.
@@ -116,7 +108,6 @@ export class HTTPService implements HTTP {
 /**
  * Creates an HTTP Service.
  * Note: This method exists to enable function binding.
- *
  * @param fetcher The underlying fetcher.
  * @param serviceName An optional service name.
  * @returns The new HTTP Service.

@@ -35,7 +35,6 @@ export class AppStorage extends PrefixedStorage {
 
   /**
    * Reads out the list of user ids from storage.
-   *
    * @returns A list of user ids.
    */
   public getUserIds(): string[] {
@@ -53,7 +52,6 @@ export class AppStorage extends PrefixedStorage {
   /**
    * Sets the list of ids in storage.
    * Optionally merging with existing ids stored in the storage, by prepending these while voiding duplicates.
-   *
    * @param userIds The list of ids to store.
    * @param mergeWithExisting Prepend existing ids to avoid data-races with other apps using this storage.
    */
@@ -73,7 +71,6 @@ export class AppStorage extends PrefixedStorage {
 
   /**
    * Remove an id from the list of ids.
-   *
    * @param userId The id of a User to be removed.
    */
   public removeUserId(userId: string): void {

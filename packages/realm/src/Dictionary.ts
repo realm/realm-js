@@ -190,7 +190,11 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
     yield* this.entries();
   }
 
-  /** @ts-expect-error We're exposing methods in the end-users namespace of keys */
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/keys Array.prototype.keys}
+   * @returns Iterator with all values in the dictionary
+   * @since 0.11.0
+   * @ts-expect-error We're exposing methods in the end-users namespace of keys */
   *keys() {
     const snapshot = this[INTERNAL].keys.snapshot();
     const size = snapshot.size();
@@ -201,7 +205,11 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
     }
   }
 
-  /** @ts-expect-error We're exposing methods in the end-users namespace of keys */
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/keys Array.prototype.keys}
+   * @returns Iterator with all values in the dictionary
+   * @since 0.11.0
+   * @ts-expect-error We're exposing methods in the end-users namespace of keys */
   *values() {
     const { fromBinding } = this[HELPERS];
     const snapshot = this[INTERNAL].values.snapshot();
@@ -212,7 +220,11 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
     }
   }
 
-  /** @ts-expect-error We're exposing methods in the end-users namespace of keys */
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/entries Array.prototype.keys}
+   * @returns Iterator with all key/value pairs in the dictionary
+   * @since 0.11.0
+   * @ts-expect-error We're exposing methods in the end-users namespace of keys */
   *entries() {
     const { fromBinding } = this[HELPERS];
     const keys = this[INTERNAL].keys.snapshot();
@@ -226,7 +238,11 @@ export class Dictionary<T = unknown> extends Collection<string, T, [string, T], 
     }
   }
 
-  /** @ts-expect-error We're exposing methods in the end-users namespace of keys */
+  /**
+   * Checks if this dictionary has not been deleted and is part of a valid Realm.
+   * @returns `true` if the dictionary can be safely accessed.
+   * @since 0.14.0
+   * @ts-expect-error We're exposing methods in the end-users namespace of keys */
   isValid() {
     return this[INTERNAL].isValid;
   }
