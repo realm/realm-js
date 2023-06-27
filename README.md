@@ -4,7 +4,7 @@
 </picture>
 
 Realm is a mobile database that runs directly inside phones, tablets or wearables.
-This project hosts the JavaScript versions of [Realm](https://realm.io/). Currently we support React Native (JSC & Hermes on iOS & Android), Node.js and Electron (on Windows, MacOS and Linux).
+This project hosts the JavaScript versions of [Realm](https://realm.io/). Currently, we support React Native (JSC & Hermes on iOS & Android), Node.js and Electron (on Windows, MacOS and Linux).
 
 ## Features
 
@@ -12,7 +12,7 @@ This project hosts the JavaScript versions of [Realm](https://realm.io/). Curren
 * **Simple:** Data is directly [exposed as objects](https://docs.mongodb.com/realm/node/realms/) and [queryable by code](https://docs.mongodb.com/realm/node/query-engine/), removing the need for ORM's riddled with performance & maintenance issues.
 * **Modern:** Realm supports relationships, generics, and vectorization.
 * **Fast:** Realm is faster than even raw SQLite on common operations, while maintaining an extremely rich feature set.
-* **[Device Sync](https://www.mongodb.com/atlas/app-services/device-sync)**: Makes it simple to keep data in sync across users, devices, and your backend in real-time. Get started for free with [a template application](https://github.com/mongodb/template-app-react-native-todo) and [create the cloud backend](http://mongodb.com/realm/register?utm_medium=github_atlas_CTA&utm_source=realm_js_github).
+* **[Device Sync](https://www.mongodb.com/atlas/app-services/device-sync)**: Makes it simple to keep data in sync across users, devices, and your backend in real time. Get started for free with [a template application](https://github.com/mongodb/template-app-react-native-todo) and [create the cloud backend](http://mongodb.com/realm/register?utm_medium=github_atlas_CTA&utm_source=realm_js_github).
 
 ## Getting Started
 
@@ -29,8 +29,8 @@ If you want to contribute to any of our packages, you are welcome to do so. We w
 In tier 1 we will respond to issues in a timely manner during workdays from CET timezone, and we will work on bug fixing and adding new features.
 
 * [Realm JavaScript](https://www.npmjs.com/package/realm) (NPM tag: `latest`) on node.js (LTS) and Electron on Windows, MacOS, and Linux
-* [Realm JavaScript](https://www.npmjs.com/package/realm) (NPM tag: `latest`) with latest React Native version 0.71.0 on Android and iOS
-* [@realm/react](https://www.npmjs.com/package/@realm/react) (NPM tag: `latest`) in conjunction with latest [Realm JavaScript](https://www.npmjs.com/package/realm) release
+* [Realm JavaScript](https://www.npmjs.com/package/realm) (NPM tag: `latest`) with the latest React Native version 0.71.0 on Android and iOS
+* [@realm/react](https://www.npmjs.com/package/@realm/react) (NPM tag: `latest`) in conjunction with the latest [Realm JavaScript](https://www.npmjs.com/package/realm) release
 
 ### Tier 2 - best effort
 
@@ -81,7 +81,7 @@ class Task extends Realm.Object<Task, "description"> {
 
 ### Integration with React Native
 
-Realm is a general SDK which provide you persistence of objects and the capability of perform advanced queries on the objects. You can have a tighter integration with React Native by using [@realm/react](https://www.npmjs.com/package/@realm/react).
+Realm is a general SDK which provide you persistence of objects and the capability to perform advanced queries on the objects. You can have tighter integration with React Native by using [@realm/react](https://www.npmjs.com/package/@realm/react).
 
 Moreover, we have a [Flipper plugin](https://www.npmjs.com/package/realm-flipper-plugin) to help you inspect, query and modify your Realm files while debugging your app on a simulator or a physical device. The plugin is still in an early stage so expect rough edges.
 
@@ -106,11 +106,11 @@ See [CONTRIBUTING.md](https://github.com/realm/realm-js/blob/main/CONTRIBUTING.m
 * Realm is not compatible with the legacy Chrome Debugger. The following debugging methods are supported:
    * [Flipper](https://fbflipper.com/) has many similar features in relation to the Chrome Debugger.
    * [Safari](https://reactnative.dev/docs/debugging#safari-developer-tools) also has a similar feature set, but requires [some setup](https://blog.nparashuram.com/2019/10/debugging-react-native-ios-apps-with.html) and only supports debugging in iOS.
-   * **NOTE:** For the above methods, it is not neccessary to enable `Debug with Chrome` in the Debug Menu.
+   * **NOTE:** For the above methods, it is not necessary to enable `Debug with Chrome` in the Debug Menu.
 
 ## Building Realm JS
 
-For instructions on building Realm JS yourself from source, see the [building.md](contrib/building.md) file.
+For instructions on building Realm JS yourself from the source, see the [building.md](contrib/building.md) file.
 
 ## Issues with debugging
 Some users have reported the Chrome debugging being too slow to use after integrating Realm into their react-native project. This is due to the blocking nature of the RPC calls made through the Realm library. See https://github.com/realm/realm-js/issues/491 for more information. The best workaround is to use Safari instead, as a user has described [here](https://github.com/realm/realm-js/issues/491#issuecomment-404670910).
