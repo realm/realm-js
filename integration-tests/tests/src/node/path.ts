@@ -68,7 +68,7 @@ describe.skipIf(environment.missingServer, `app configuration of root directory 
 
   it("directory and file created where expected", async function () {
     expect(existsSync(tmpdir)).to.be.true; // importAppBefore will create `tmpdir`
-    let config = {
+    const config = {
       schema: [FlexibleSchema],
       sync: {
         // @ts-expect-error Using an internal API
