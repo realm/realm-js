@@ -31,6 +31,8 @@ import {
   BaseObjectSchema,
   BaseSubscriptionSet,
   BaseSyncConfiguration,
+  CanonicalGeoPoint,
+  CanonicalGeoPolygon,
   CanonicalObjectSchema,
   CanonicalObjectSchemaProperty,
   CanonicalPropertiesTypes,
@@ -82,6 +84,11 @@ import {
   FindOneOptions,
   FindOptions,
   FlexibleSyncConfiguration,
+  GeoBox,
+  GeoCircle,
+  GeoPoint,
+  GeoPolygon,
+  GeoPosition,
   INTERNAL,
   IndexDecorator,
   InitialSubscriptions,
@@ -174,7 +181,9 @@ import {
   fromBindingRealmSchema,
   fs,
   index,
+  kmToRadians,
   mapTo,
+  miToRadians,
   normalizeObjectSchema,
   normalizeRealmSchema,
   safeGlobalThis,
@@ -254,6 +263,9 @@ export class Realm {
   public static User = User;
   public static UserState = UserState;
   public static WaitForSync = WaitForSync;
+
+  public static kmToRadians = kmToRadians;
+  public static miToRadians = miToRadians;
 
   public static defaultPath = Realm.normalizePath("default.realm");
 
@@ -1466,6 +1478,13 @@ export declare namespace Realm {
     UserStateType as UserState,
     UserType as User,
     WaitForSyncType as WaitForSync,
+    GeoBox,
+    GeoCircle,
+    GeoPoint,
+    GeoPolygon,
+    CanonicalGeoPolygon,
+    CanonicalGeoPoint,
+    GeoPosition,
   };
 
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -1673,6 +1692,13 @@ declare global {
       UpdateModeType as UpdateMode,
       UserChangeCallback,
       UserStateType as UserState,
+      GeoBox,
+      GeoCircle,
+      GeoPoint,
+      GeoPolygon,
+      CanonicalGeoPolygon,
+      CanonicalGeoPoint,
+      GeoPosition,
       UserType as User,
       WaitForSyncType as WaitForSync,
     };

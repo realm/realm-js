@@ -37,6 +37,82 @@
   // ...
   peopleOver20.unsubscribe();
   ```
+
+* Added initial support for geospatial queries, with the possibility of querying points. No new data type has been added in this phase, but every embedded object property that conforms to `CanonicalGeoPoint` can be queried. ([#5850](https://github.com/realm/realm-js/pull/5850))
+  * The queries can be used to filter objects whose points lie within a certain area following spherical geometry, using the `geoWithin` operator in the query string to `Results.filtered()`.
+  * The following shapes are supported in geospatial queries: circle (`GeoCircle` type, defined by its center and radius in radians), box (`GeoBox` type, defined by its bottom left and upper right corners) and polygon (`GeoPolygon` type, defined by its vertices).
+  * Additionally, two new functions have been added, `kmToRadians()` and `miToRadians()`, that can be used to convert kilometers and miles to radians respectively, simplifying conversion of a circle's radius.
+  ```typescript
+  import Realm, {
+    ObjectSchema,
+    GeoCircle,
+    CanonicalGeoPoint,
+    GeoPosition,
+    kmToRadians,
+  } from "realm";
+  
+  // Example of a user-defined point class that can be queried using geospatial queries
+  class MyGeoPoint extends Realm.Object implements CanonicalGeoPoint {
+    coordinates!: GeoPosition;
+    type = "Point" as const;
+
+    static schema: ObjectSchema = {
+      name: "MyGeoPoint",
+      embedded: true,
+      properties: {
+        type: "string",
+        coordinates: "double[]",
+      },
+    };
+  }
+
+  class PointOfInterest extends Realm.Object {
+    name!: string;
+    location!: MyGeoPoint;
+
+    static schema: ObjectSchema = {
+      name: "PointOfInterest",
+      properties: {
+        name: "string",
+        location: "MyGeoPoint",
+      },
+    };
+  }
+
+  realm.write(() => {
+    realm.create(PointOfInterest, {
+      name: "Copenhagen",
+      location: {
+        coordinates: [12.558892784045568, 55.66717839648401],
+        type: "Point",
+      } as MyGeoPoint
+    });
+    realm.create(PointOfInterest, {
+      name: "New York",
+      location: {
+        coordinates: [-73.92474936213434, 40.700090994927415],
+        type: "Point",
+      } as MyGeoPoint
+    });
+  });
+
+  const pois = realm.objects(PointOfInterest);
+
+  const berlinCoordinates: GeoPoint = [13.397255909303222, 52.51174463251085];
+  const radius = kmToRadians(500); //500 km = 0.0783932519 rad
+
+  // Circle with a radius of 500kms centered in Berlin
+  const circleShape: GeoCircle = {
+    center: berlinCoordinates,
+    distance: radius,
+  };
+
+  // All points of interest in a 500kms radius from Berlin
+  let result = pois.filtered("location geoWithin $0", circleShape);
+
+  // Equivalent string query without arguments
+  result = pois.filtered("location geoWithin geoCircle([13.397255909303222, 52.51174463251085], 0.0783932519)");
+  ```
 * Support sort/distinct based on values from a dictionary e.g. `TRUEPREDICATE SORT(meta['age'])`. ([realm/realm-core#5311](https://github.com/realm/realm-core/pull/5311))
 
 ### Fixed

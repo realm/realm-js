@@ -854,7 +854,8 @@ class NodeCppDecls extends CppDecls {
               const auto addon = ${this.addon.get()};
               if (val.IsArrayBuffer()) {
                 return ${convertFromNode(this.addon, spec.types["BinaryData"], "val")};
-              } ${
+              }
+              ${
                 // This list should be sorted in in roughly the expected frequency since earlier entries will be faster.
                 [
                   ["Obj", "Obj"],
@@ -872,6 +873,10 @@ class NodeCppDecls extends CppDecls {
                       }`,
                   )
                   .join(" ")
+              }
+              else if (obj.InstanceOf(addon->m_cls_Geospatial_ctor.Value())) {
+                //This needs its own case because the constructor of Mixed for Geospatial requires a pointer
+                return &NODE_TO_CLASS_Geospatial(val);
               }
 
               // TODO should we check for "boxed" values like 'new Number(1)'?

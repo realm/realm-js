@@ -69,6 +69,7 @@ export * from "./Set";
 export * from "./Dictionary";
 
 export * from "./Types";
+export * from "./GeoSpatial";
 export * from "./Logger";
 
 export * from "./app-services/utils";

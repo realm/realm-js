@@ -166,6 +166,26 @@ records:
      - object_name
      - reason
      - primary_key
+  
+  GeoBox:
+    fields:
+     - lo
+     - hi
+
+  GeoPolygon:
+    fields:
+     - points
+
+  GeoCircle:
+    fields:
+     - center
+     - radius_radians
+     
+  GeoPoint:
+    fields:
+     - latitude
+     - longitude
+     - altitude
 
 classes:
   ######################
@@ -517,3 +537,9 @@ classes:
       - erase_by_name
       - erase_by_query
       - commit
+  
+  Geospatial:
+    methods:
+    - make_from_circle
+    - make_from_box
+    - make_from_polygon

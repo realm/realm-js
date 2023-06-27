@@ -20,6 +20,10 @@ import {
   BSON,
   ClassHelpers,
   Collection,
+  GeoBox,
+  GeoCircle,
+  GeoPoint,
+  GeoPolygon,
   INTERNAL,
   List,
   ObjCreator,
@@ -30,6 +34,9 @@ import {
   UpdateMode,
   assert,
   binding,
+  boxToBindingGeospatial,
+  circleToBindingGeospatial,
+  polygonToBindingGeospatial,
   safeGlobalThis,
 } from "./internal";
 
@@ -99,6 +106,15 @@ export function mixedToBinding(realm: binding.Realm, value: unknown): binding.Mi
   } else if (Array.isArray(value)) {
     throw new TypeError("A mixed property cannot contain an array of values.");
   } else {
+    if (typeof value === "object" && value !== null) {
+      if (isGeoCircle(value)) {
+        return circleToBindingGeospatial(value);
+      } else if (isGeoBox(value)) {
+        return boxToBindingGeospatial(value);
+      } else if (isGeoPolygon(value)) {
+        return polygonToBindingGeospatial(value);
+      }
+    }
     // Convert typed arrays to an `ArrayBuffer`
     for (const TypedArray of TYPED_ARRAY_CONSTRUCTORS) {
       if (value instanceof TypedArray) {
@@ -108,6 +124,20 @@ export function mixedToBinding(realm: binding.Realm, value: unknown): binding.Mi
     // Rely on the binding for any other value
     return value as binding.MixedArg;
   }
+}
+function isGeoCircle(value: object): value is GeoCircle {
+  return "distance" in value && "center" in value && typeof value["distance"] === "number";
+}
+
+function isGeoBox(value: object): value is GeoBox {
+  return "bottomLeft" in value && "topRight" in value;
+}
+
+function isGeoPolygon(value: object): value is GeoPolygon {
+  return (
+    ("type" in value && value["type"] === "Polygon" && "coordinates" in value && Array.isArray(value["coordinates"])) ||
+    ("outerRing" in value && Array.isArray(value["outerRing"]))
+  );
 }
 
 function defaultToBinding(value: unknown): binding.MixedArg {

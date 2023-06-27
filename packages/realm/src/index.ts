@@ -178,6 +178,15 @@ export {
   UserChangeCallback,
   UserState,
   UserTypeName,
+  GeoBox,
+  GeoCircle,
+  GeoPoint,
+  GeoPolygon,
+  CanonicalGeoPolygon,
+  CanonicalGeoPoint,
+  GeoPosition,
+  kmToRadians,
+  miToRadians,
   WaitForSync,
 } from "./internal";
 
