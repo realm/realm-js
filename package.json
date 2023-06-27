@@ -8,6 +8,7 @@
     "build": "wireit",
     "bundle": "wireit",
     "lint": "wireit",
+    "lint:fix": "wireit",
     "lint:cpp": "find src packages/bindgen/src -name '*.cpp' -or -name '*.h' -or -name '*.hpp' | xargs clang-format --dry-run --Werror",
     "lint:cpp:fix": "find src packages/bindgen/src -name '*.cpp' -or -name '*.h' -or -name '*.hpp' | xargs clang-format -i",
     "postinstall": "git submodule update --init --recursive"
@@ -31,6 +32,12 @@
     },
     "lint": {
       "command": "npm run lint --workspaces --if-present",
+      "dependencies": [
+        "./packages/babel-plugin:bundle"
+      ]
+    },
+    "lint:fix": {
+      "command": "npm run lint --workspaces --if-present -- --fix",
       "dependencies": [
         "./packages/babel-plugin:bundle"
       ]
