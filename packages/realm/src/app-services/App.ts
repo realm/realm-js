@@ -250,10 +250,10 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
 
   /**
    * Switches the current user to the one specified in {@link user}.
-   * The new user must be currently logged in, otherwise this method will throw an error.
-   * @param user The new current user.
+   * @throws an {@link Error} if the new user is logged out or removed.
+   * @param user The user to switch to.
    */
-  public switchUser(user: AnyUser) {
+  public switchUser(user: AnyUser): void {
     this.internal.switchUser(user.internal);
   }
 

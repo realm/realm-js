@@ -28,7 +28,7 @@ import Realm, { UserState } from "realm";
 import { buildAppConfig } from "../../utils/build-app-config";
 
 type AnyApp = Realm.App<any, any>;
-type AnyUser = Realm.User<any, any>;
+type AnyUser = Realm.User<any, any, any>;
 
 function expectIsUser(user: Realm.User) {
   expect(user).to.not.be.undefined;
