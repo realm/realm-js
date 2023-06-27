@@ -30,7 +30,6 @@ export class MockFetcher extends Fetcher {
 
   /**
    * Construct a mocked network transport which returns pre-recorded requests.
-   *
    * @param responses An array of pre-recorded requests.
    * @param userContext An object defining the current user.
    */

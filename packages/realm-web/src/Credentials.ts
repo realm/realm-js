@@ -53,7 +53,6 @@ type SimpleObject = Record<string, unknown>;
 export class Credentials<PayloadType extends SimpleObject = SimpleObject> implements Realm.Credentials<PayloadType> {
   /**
    * Creates credentials that logs in using the [Anonymous Provider](https://docs.mongodb.com/realm/authentication/anonymous/).
-   *
    * @returns The credentials instance, which can be passed to `app.logIn`.
    */
   static anonymous(): Credentials<AnonymousPayload> {
@@ -62,7 +61,6 @@ export class Credentials<PayloadType extends SimpleObject = SimpleObject> implem
 
   /**
    * Creates credentials that logs in using the [API Key Provider](https://docs.mongodb.com/realm/authentication/api-key/).
-   *
    * @param key The secret content of the API key.
    * @returns The credentials instance, which can be passed to `app.logIn`.
    */
@@ -73,7 +71,6 @@ export class Credentials<PayloadType extends SimpleObject = SimpleObject> implem
   /**
    * Creates credentials that logs in using the [Email/Password Provider](https://docs.mongodb.com/realm/authentication/email-password/).
    * Note: This was formerly known as the "Username/Password" provider.
-   *
    * @param email The end-users email address.
    * @param password The end-users password.
    * @returns The credentials instance, which can be passed to `app.logIn`.
@@ -87,7 +84,6 @@ export class Credentials<PayloadType extends SimpleObject = SimpleObject> implem
 
   /**
    * Creates credentials that logs in using the [Custom Function Provider](https://docs.mongodb.com/realm/authentication/custom-function/).
-   *
    * @param payload The custom payload as expected by the server.
    * @returns The credentials instance, which can be passed to `app.logIn`.
    */
@@ -99,7 +95,6 @@ export class Credentials<PayloadType extends SimpleObject = SimpleObject> implem
 
   /**
    * Creates credentials that logs in using the [Custom JWT Provider](https://docs.mongodb.com/realm/authentication/custom-jwt/).
-   *
    * @param token The JSON Web Token (JWT).
    * @returns The credentials instance, which can be passed to `app.logIn`.
    */
@@ -111,7 +106,6 @@ export class Credentials<PayloadType extends SimpleObject = SimpleObject> implem
 
   /**
    * Creates credentials that logs in using the [Google Provider](https://docs.mongodb.com/realm/authentication/google/).
-   *
    * @param payload The URL that users should be redirected to, the auth code or id token from Google.
    * @returns The credentials instance, which can be passed to `app.logIn`.
    */
@@ -141,7 +135,6 @@ export class Credentials<PayloadType extends SimpleObject = SimpleObject> implem
 
   /**
    * Creates credentials that logs in using the [Facebook Provider](https://docs.mongodb.com/realm/authentication/facebook/).
-   *
    * @param redirectUrlOrAccessToken The URL that users should be redirected to or the auth code returned from Facebook.
    * @returns The credentials instance, which can be passed to `app.logIn`.
    */
@@ -159,7 +152,6 @@ export class Credentials<PayloadType extends SimpleObject = SimpleObject> implem
 
   /**
    * Creates credentials that logs in using the [Apple ID Provider](https://docs.mongodb.com/realm/authentication/apple/).
-   *
    * @param redirectUrlOrIdToken The URL that users should be redirected to or the id_token returned from Apple.
    * @returns The credentials instance, which can be passed to `app.logIn`.
    */
@@ -200,7 +192,6 @@ export class Credentials<PayloadType extends SimpleObject = SimpleObject> implem
 
   /**
    * Constructs an instance of credentials.
-   *
    * @param providerName The name of the authentication provider used when authenticating.
    * @param providerType The type of the authentication provider used when authenticating.
    * @param payload The data being sent to the service when authenticating.

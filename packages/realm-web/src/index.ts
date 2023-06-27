@@ -23,7 +23,6 @@ import { App } from "./App";
 /**
  * Get or create a singleton Realm App from an id.
  * Calling this function multiple times with the same id will return the same instance.
- *
  * @param id The Realm App id visible from the Atlas App Services UI or a configuration.
  * @returns The Realm App instance.
  */

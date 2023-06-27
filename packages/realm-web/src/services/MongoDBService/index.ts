@@ -31,7 +31,6 @@ export { MongoDBCollection };
 /**
  * Creates an Remote MongoDB Collection.
  * Note: This method exists to enable function binding.
- *
  * @param fetcher The underlying fetcher.
  * @param serviceName A service name.
  * @param databaseName A database name.
@@ -50,7 +49,6 @@ function createCollection<T extends Realm.Services.MongoDB.Document = Realm.Serv
 /**
  * Creates a Remote MongoDB Database.
  * Note: This method exists to enable function binding.
- *
  * @param fetcher The underlying fetcher
  * @param serviceName A service name
  * @param databaseName A database name
@@ -70,7 +68,6 @@ function createDatabase(fetcher: Fetcher, serviceName: string, databaseName: str
 /**
  * Creates a Remote MongoDB Service.
  * Note: This method exists to enable function binding.
- *
  * @param fetcher The underlying fetcher.
  * @param serviceName An optional service name.
  * @returns The service.

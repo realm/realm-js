@@ -56,7 +56,6 @@ export class MongoDBRealmError extends Error {
   /**
    * Constructs and returns an error from a request and a response.
    * Note: The caller must throw this error themselves.
-   *
    * @param request The request sent to the server.
    * @param response A raw response, as returned from the server.
    * @returns An error from a request and a response.

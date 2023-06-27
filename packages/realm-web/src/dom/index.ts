@@ -38,7 +38,6 @@ const DefaultStorage = "localStorage" in safeGlobalThis ? LocalStorage : MemoryS
 
 /**
  * Attempt to use the browser to open a window
- *
  * @param url The url to open a window to.
  * @returns Then newly create window.
  */
@@ -63,7 +62,6 @@ setEnvironment(environment);
 
 /**
  * Handle an OAuth 2.0 redirect.
- *
  * @param location An optional location to use (defaults to the windows current location).
  * @param storage Optional storage used to save any results from the location.
  */

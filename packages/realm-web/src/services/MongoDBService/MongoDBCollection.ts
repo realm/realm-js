@@ -53,7 +53,6 @@ export class MongoDBCollection<T extends Document> implements Realm.Services.Mon
 
   /**
    * Construct a remote collection of documents.
-   *
    * @param fetcher The fetcher to use when requesting the service.
    * @param serviceName The name of the remote service.
    * @param databaseName The name of the database.

@@ -28,7 +28,6 @@ export class ApiKeyAuth implements Realm.Auth.ApiKeyAuth {
 
   /**
    * Construct an interface to the API-key authentication provider.
-   *
    * @param fetcher The fetcher used to send requests to services.
    */
   constructor(fetcher: Fetcher) {

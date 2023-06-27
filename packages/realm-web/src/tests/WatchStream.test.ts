@@ -534,7 +534,6 @@ describe("WatchStream", () => {
     /**
      * Strips leading spaces off of each line, and removes the first line if empty, and returns a Uint8Array
      * Makes multi-line nows`tag template strings` cleaner by allowing indentation.
-     *
      * @returns A buffer of from multi-line strings.
      * @param args All the nows strings.
      * @param args."0" The first nows string.
