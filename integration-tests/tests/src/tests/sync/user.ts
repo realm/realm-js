@@ -327,7 +327,7 @@ describe.skipIf(environment.missingServer, "User", () => {
       });
 
       it("can switch user", async function (this: Mocha.Context & AppContext & RealmContext) {
-        expect(this.app.currentUser, "No users").to.be.null;
+        expect(this.app.currentUser).to.be.null;
 
         expect(Object.keys(this.app.allUsers)).to.have.lengthOf(0);
 
