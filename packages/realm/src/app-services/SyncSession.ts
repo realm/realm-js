@@ -38,7 +38,9 @@ import {
 } from "../internal";
 
 export enum ProgressDirection {
+  /** Data going from the server to the client. */
   Download = "download",
+  /** Data going from the client to the server. */
   Upload = "upload",
 }
 
@@ -47,7 +49,12 @@ export enum ProgressMode {
   ForCurrentlyOutstandingWork = "forCurrentlyOutstandingWork",
 }
 
-export type ProgressNotificationCallback = (transferred: number, transferable: number) => void;
+export type ProgressNotificationCallback =
+  /**
+   * @param transferred The current number of bytes already transferred
+   * @param transferable The total number of transferable bytes (i.e. the number of bytes already transferred plus the number of bytes pending transfer)
+   */
+  (transferred: number, transferable: number) => void;
 
 export enum ConnectionState {
   Disconnected = "disconnected",
@@ -58,8 +65,11 @@ export enum ConnectionState {
 export type ConnectionNotificationCallback = (newState: ConnectionState, oldState: ConnectionState) => void;
 
 export enum SessionState {
+  /** The sync session encountered a non-recoverable error and is permanently invalid. Create a new Session to continue syncing. */
   Invalid = "invalid",
+  /** The sync session is actively communicating or attempting to communicate with Atlas App Services. A session may be considered active even if it is not currently connected. To find out if a session is online, check its connection state. */
   Active = "active",
+  /** The sync session is not attempting to communicate with Atlas App Services due to the user logging out or synchronization being paused. */
   Inactive = "inactive",
 }
 
@@ -282,6 +292,9 @@ export class SyncSession {
 
   // TODO: Return the `error_handler`
   // TODO: Figure out a way to avoid passing a mocked app instance when constructing the User.
+  /**
+   * Gets the Sync-part of the configuration that the corresponding Realm was constructed with.
+   */
   get config(): SyncConfiguration {
     return this.withInternal((internal) => {
       const user = new User(internal.user, mockApp);
@@ -305,10 +318,16 @@ export class SyncSession {
     });
   }
 
+  /**
+   * Gets the current state of the session.
+   */
   get state(): SessionState {
     return fromBindingSessionState(this.withInternal((internal) => internal.state));
   }
 
+  /**
+   * Gets the URL of the Realm Object Server that this session is connected to.
+   */
   get url() {
     const url = this.withInternal((internal) => internal.fullRealmUrl);
     if (url) {
@@ -318,15 +337,26 @@ export class SyncSession {
     }
   }
 
+  /**
+   * Gets the User that this session was created with.
+   */
   get user() {
     return User.get(this.withInternal((internal) => internal.user));
   }
-
+  /**
+   * Gets the current state of the connection to the server. Multiple sessions might share the same underlying
+   * connection. In that case, any connection change is sent to all sessions.
+   *
+   * Data will only be synchronized with the server if this method returns `Connected` and `state()` returns `Active` or `Dying`.
+   */
   get connectionState() {
     return fromBindingConnectionState(this.withInternal((internal) => internal.connectionState));
   }
 
   // TODO: Make this a getter instead of a method
+  /**
+   * Returns `true` if the session is currently active and connected to the server, `false` if not.
+   */
   isConnected() {
     return this.withInternal((internal) => {
       const { connectionState, state } = internal;
@@ -337,29 +367,81 @@ export class SyncSession {
     });
   }
 
+  /**
+   * Pause a sync session.
+   *
+   * This method is asynchronous so in order to know when the session has started you will need
+   * to add a connection notification with {@link addConnectionNotification}.
+   *
+   * This method is idempotent so it will be a no-op if the session is already paused.
+   */
   pause() {
     this.withInternal((internal) => internal.forceClose());
   }
 
+  /**
+   * Resumes a sync session that has been paused.
+   *
+   * This method is asynchronous so in order to know when the session has started you will need
+   * to add a connection notification with {@link addConnectionNotification}.
+   *
+   * This method is idempotent so it will be a no-op if the session is already started.
+   */
   resume() {
     this.withInternal((internal) => internal.reviveIfNeeded());
   }
 
+  /**
+   * Register a progress notification callback on a session object
+   * @param direction The progress direction to register for.
+   * @param mode The progress notification mode to use for the registration.
+   * Can be either:
+   *  - `reportIndefinitely` - the registration will stay active until the callback is unregistered
+   *  - `forCurrentlyOutstandingWork` - the registration will be active until only the currently transferable bytes are synced
+   * @param callback Called with the following arguments:
+   * 1. `transferred`: The current number of bytes already transferred
+   * 2. `transferable`: The total number of transferable bytes (the number of bytes already transferred plus the number of bytes pending transfer)
+   */
   addProgressNotification(direction: ProgressDirection, mode: ProgressMode, callback: ProgressNotificationCallback) {
     this.withInternal((internal) => PROGRESS_LISTENERS.add(callback, this.weakInternal, internal, direction, mode));
   }
-
+  /**
+   * Unregister a progress notification callback that was previously registered with {@link addProgressNotification}.
+   * Calling the function multiple times with the same callback is ignored.
+   * @param callback A previously registered progress callback
+   */
   removeProgressNotification(callback: ProgressNotificationCallback) {
     PROGRESS_LISTENERS.remove(callback);
   }
-
+  /**
+   * Registers a connection notification on the session object. This will be notified about changes to the
+   * underlying connection to the Realm Object Server.
+   * @param callback Called with the following arguments:
+   * 1. `newState`: The new state of the connection
+   * 2. `oldState`: The state the connection transitioned from.
+   */
   addConnectionNotification(callback: ConnectionNotificationCallback) {
     this.withInternal((internal) => CONNECTION_LISTENERS.add(callback, this.weakInternal, internal));
   }
+
+  /**
+   * Unregister a state notification callback that was previously registered with addStateNotification.
+   * Calling the function multiple times with the same callback is ignored.
+   * @param callback A previously registered state callback.
+   */
   removeConnectionNotification(callback: ConnectionNotificationCallback) {
     CONNECTION_LISTENERS.remove(callback);
   }
 
+  /**
+   * This method returns a promise that does not resolve successfully until all known remote changes have been
+   * downloaded and applied to the Realm or the specified timeout is hit in which case it will be rejected. If the method
+   * times out, the download will still continue in the background.
+   *
+   * This method cannot be called before the Realm has been opened.
+   * @param timeoutMs maximum amount of time to wait in milliseconds before the promise will be rejected. If no timeout
+   * is specified the method will wait forever.
+   */
   downloadAllServerChanges(timeoutMs?: number): Promise<void> {
     return this.withInternal(
       (internal) =>
@@ -370,6 +452,14 @@ export class SyncSession {
     );
   }
 
+  /**
+   * This method returns a promise that does not resolve successfully until all known local changes have been uploaded
+   * to the server or the specified timeout is hit in which case it will be rejected. If the method times out, the upload
+   * will still continue in the background.
+   *
+   * This method cannot be called before the Realm has been opened.
+   * @param timeoutMs Maximum amount of time to wait in milliseconds before the promise is rejected. If no timeout is specified the method will wait forever.
+   */
   uploadAllLocalChanges(timeoutMs?: number): Promise<void> {
     return this.withInternal(
       (internal) =>

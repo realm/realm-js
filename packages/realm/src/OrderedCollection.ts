@@ -105,6 +105,13 @@ const PROXY_HANDLER: ProxyHandler<OrderedCollection> = {
   },
 };
 
+/**
+ * An {@link OrderedCollection} is a homogenous sequence of values of any of the types
+ * that can be stored as properties of Realm objects. It can be
+ * accessed in any of the ways that a normal Javascript Array can, including
+ * subscripting, enumerating with `for-of` and so on.
+ */
+
 export abstract class OrderedCollection<T = unknown, EntryType extends [unknown, unknown] = [number, T]>
   extends Collection<number, T, EntryType, T, CollectionChangeCallback<T, EntryType>>
   implements Omit<ReadonlyArray<T>, "entries">
@@ -205,7 +212,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
    * and [flatted](https://www.npmjs.com/package/flatted) to stringify Realm entities that have circular structures.
    * @returns An array of plain objects.
    */
-  toJSON(_?: string, cache?: unknown): Array<DefaultObject>;
+  toJSON(): Array<DefaultObject>;
   /**
    * @internal
    */
@@ -219,6 +226,9 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     });
   }
 
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/keys}
+   */
   *keys() {
     const size = this.results.size();
     for (let i = 0; i < size; i++) {
@@ -226,6 +236,9 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     }
   }
 
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/values}
+   */
   *values() {
     const snapshot = this.results.snapshot();
     const { get, fromBinding } = this.helpers;
@@ -234,6 +247,9 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     }
   }
 
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/entries}
+   */
   *entries() {
     const { get, fromBinding } = this.helpers;
     const snapshot = this.results.snapshot();
@@ -245,14 +261,23 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
 
   readonly [n: number]: T;
 
+  /**
+   * The number of values.
+   */
   get length(): number {
     return this.results.size();
   }
 
+  /**
+   * @throws An {@link Error} as the length property cannot be assigned.
+   */
   set length(value: number) {
     throw new Error("Cannot assign to read only property 'length'");
   }
 
+  /**
+   * Name of the type of items.
+   */
   get type(): PropertyType {
     return getTypeName(this.results.type & ~binding.PropertyType.Flags, undefined);
   }
@@ -268,23 +293,44 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
 
   /* eslint-disable @typescript-eslint/no-explicit-any -- We've copied these from the lib types */
 
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/toString Array.prototype.toString}
+   */
   toString(): string {
     return [...this].toString();
   }
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/toLocaleString Array.prototype.toLocaleString}
+   */
   toLocaleString(): string {
     return [...this].toLocaleString();
   }
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/concat Array.prototype.concat}
+   */
   concat(...items: ConcatArray<T>[]): T[];
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/concat Array.prototype.concat}
+   */
   concat(...items: (T | ConcatArray<T>)[]): T[];
   concat(...items: any[]): T[] {
     return [...this].concat(...items);
   }
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/join Array.prototype.join}
+   */
   join(separator?: string): string {
     return [...this].join(separator);
   }
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice Array.prototype.slice}
+   */
   slice(start?: number, end?: number): T[] {
     return [...this].slice(start, end);
   }
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf Array.prototype.indexOf}
+   */
   indexOf(searchElement: T, fromIndex?: number): number {
     assert(typeof fromIndex === "undefined", "The second fromIndex argument is not yet supported");
     if (this.type === "object") {
@@ -294,36 +340,69 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
       return this.results.indexOf(this.helpers.toBinding(searchElement, undefined));
     }
   }
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/lastIndexOf Array.prototype.lastIndexOf}
+   */
   lastIndexOf(searchElement: T, fromIndex?: number): number {
     return [...this].lastIndexOf(searchElement, fromIndex);
   }
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/every Array.prototype.every}
+   */
   every<S extends T>(
     predicate: (value: T, index: number, array: readonly T[]) => value is S,
     thisArg?: any,
   ): this is readonly S[];
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/every Array.prototype.every}
+   */
   every(predicate: (value: T, index: number, array: readonly T[]) => unknown, thisArg?: any): boolean;
   every(predicate: any, thisArg?: any): boolean {
     return [...this].every(predicate, thisArg);
   }
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/every Array.prototype.every}
+   */
   some(predicate: (value: T, index: number, array: readonly T[]) => unknown, thisArg?: any): boolean {
     return [...this].some(predicate, thisArg);
   }
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach Array.prototype.forEach}
+   */
   forEach(callbackfn: (value: T, index: number, array: readonly T[]) => void, thisArg?: any): void {
     return [...this].forEach(callbackfn, thisArg);
   }
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map Array.prototype.map}
+   */
   map<U>(callbackfn: (value: T, index: number, array: readonly T[]) => U, thisArg?: any): U[] {
     return [...this].map(callbackfn, thisArg);
   }
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter Array.prototype.filter}
+   */
   filter<S extends T>(predicate: (value: T, index: number, array: readonly T[]) => value is S, thisArg?: any): S[];
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter Array.prototype.filter}
+   */
   filter(predicate: (value: T, index: number, array: readonly T[]) => unknown, thisArg?: any): T[];
   filter<S extends T>(predicate: any, thisArg?: any): T[] | S[] {
     return [...this].filter(predicate, thisArg);
   }
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce Array.prototype.reduce}
+   */
   reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: readonly T[]) => T): T;
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce Array.prototype.reduce}
+   */
   reduce(
     callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: readonly T[]) => T,
     initialValue: T,
   ): T;
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce Array.prototype.reduce}
+   */
   reduce<U>(
     callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: readonly T[]) => U,
     initialValue: U,
@@ -331,11 +410,20 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
   reduce<U>(callbackfn: any, initialValue?: any): T | U {
     return [...this].reduce(callbackfn, initialValue);
   }
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduceRight Array.prototype.reduceRight}
+   */
   reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: readonly T[]) => T): T;
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduceRight Array.prototype.reduceRight}
+   */
   reduceRight(
     callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: readonly T[]) => T,
     initialValue: T,
   ): T;
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduceRight Array.prototype.reduceRight}
+   */
   reduceRight<U>(
     callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: readonly T[]) => U,
     initialValue: U,
@@ -344,31 +432,52 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     return [...this].reduceRight(callbackfn, initialValue);
   }
 
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find Array.prototype.find}
+   */
   find<S extends T>(
     predicate: (this: void, value: T, index: number, obj: T[]) => value is S,
     thisArg?: any,
   ): S | undefined;
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find Array.prototype.find}
+   */
   find<T>(predicate: (value: T, index: number, obj: T[]) => unknown, thisArg?: any): T | undefined;
   find(predicate: (value: T, index: number, obj: T[]) => boolean, thisArg?: any): T | undefined {
     return [...this].find(predicate, thisArg);
   }
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex Array.prototype.findIndex}
+   */
   findIndex(predicate: (value: T, index: number, obj: readonly T[]) => unknown, thisArg?: any): number {
     return [...this].findIndex(predicate, thisArg);
   }
   // TODO: Implement support for RealmObjects, by comparing their #objectKey values
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes Array.prototype.includes}
+   */
   includes(searchElement: T, fromIndex?: number): boolean {
     return this.indexOf(searchElement, fromIndex) !== -1;
   }
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap Array.prototype.flatMap}
+   */
   flatMap<U, This = undefined>(
     callback: (this: This, value: T, index: number, array: T[]) => U | readonly U[],
     thisArg?: This,
   ): U[] {
     return [...this].flatMap(callback, thisArg);
   }
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flat Array.prototype.flat}
+   */
   flat<A, D extends number = 1>(this: A, depth?: D): FlatArray<A, D>[];
   flat<D extends number = 1>(): FlatArray<this, D>[] {
     throw new Error("Method not implemented.");
   }
+  /**
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/at Array.prototype.at}
+   */
   at(index: number) {
     return [...this].at(index);
   }
@@ -383,16 +492,6 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
 
   description(): string {
     throw new Error("Method not implemented.");
-  }
-
-  /* eslint-disable-next-line jsdoc/require-returns-check -- We want the @returns for inheriting sub-classes */
-  /**
-   * Checks if this collection has not been deleted and is part of a valid Realm.
-   * @returns `true` if the collection can be safely accessed, `false` if not.
-   * @since 0.14.0
-   */
-  isValid(): boolean {
-    throw new Error(`Calling isValid on a ${this.constructor.name} is not support`);
   }
 
   /**

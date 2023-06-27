@@ -141,6 +141,11 @@ export class ProgressRealmPromise implements Promise<Realm> {
     }
   }
 
+  /**
+   * Cancels the download of the Realm
+   * If multiple `ProgressRealmPromise` instances are in progress for the same Realm, then canceling one of them
+   * will cancel all of them.
+   */
   cancel(): void {
     this.cancelAndResetTask();
     this.timeoutPromise?.cancel();
@@ -150,6 +155,12 @@ export class ProgressRealmPromise implements Promise<Realm> {
     this.rejectAsCanceled();
   }
 
+  /**
+   * Register to receive progress notifications while the download is in progress.
+   * @param callback Called multiple times as the client receives data, with two arguments:
+   * 1. `transferred` The current number of bytes already transferred
+   * 2. `transferable` The total number of transferable bytes (i.e. the number of bytes already transferred plus the number of bytes pending transfer)
+   */
   progress(callback: ProgressNotificationCallback): this {
     this.listeners.add(callback);
     return this;
