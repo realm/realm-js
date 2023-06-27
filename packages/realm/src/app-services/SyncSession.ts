@@ -38,9 +38,13 @@ import {
 } from "../internal";
 
 export enum ProgressDirection {
-  /** Data going from the server to the client. */
+  /**
+   * Data going from the server to the client.
+   */
   Download = "download",
-  /** Data going from the client to the server. */
+  /**
+   * Data going from the client to the server.
+   */
   Upload = "upload",
 }
 
@@ -65,11 +69,17 @@ export enum ConnectionState {
 export type ConnectionNotificationCallback = (newState: ConnectionState, oldState: ConnectionState) => void;
 
 export enum SessionState {
-  /** The sync session encountered a non-recoverable error and is permanently invalid. Create a new Session to continue syncing. */
+  /**
+   * The sync session encountered a non-recoverable error and is permanently invalid. Create a new Session to continue syncing.
+   */
   Invalid = "invalid",
-  /** The sync session is actively communicating or attempting to communicate with Atlas App Services. A session may be considered active even if it is not currently connected. To find out if a session is online, check its connection state. */
+  /**
+   * The sync session is actively communicating or attempting to communicate with Atlas App Services. A session may be considered active even if it is not currently connected. To find out if a session is online, check its connection state.
+   */
   Active = "active",
-  /** The sync session is not attempting to communicate with Atlas App Services due to the user logging out or synchronization being paused. */
+  /**
+   * The sync session is not attempting to communicate with Atlas App Services due to the user logging out or synchronization being paused.
+   */
   Inactive = "inactive",
 }
 

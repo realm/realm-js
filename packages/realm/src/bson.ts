@@ -19,7 +19,7 @@
 import * as bson from "bson";
 
 /**
- * Re-export of a subset of the "bson" package, enabling access to the BSON types without requiring an explicit dependency on the "bson" package.
+ * Re-export a subset of the "bson" package, enabling access to the BSON types without requiring an explicit dependency on the "bson" package.
  * @see {@link https://www.npmjs.com/package/bson#documentation|the BSON documentation} for more information.
  */
 // eslint-disable-next-line @typescript-eslint/no-namespace

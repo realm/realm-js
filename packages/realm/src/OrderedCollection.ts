@@ -111,7 +111,6 @@ const PROXY_HANDLER: ProxyHandler<OrderedCollection> = {
  * accessed in any of the ways that a normal Javascript Array can, including
  * subscripting, enumerating with `for-of` and so on.
  */
-
 export abstract class OrderedCollection<T = unknown, EntryType extends [unknown, unknown] = [number, T]>
   extends Collection<number, T, EntryType, T, CollectionChangeCallback<T, EntryType>>
   implements Omit<ReadonlyArray<T>, "entries">
@@ -361,7 +360,7 @@ export abstract class OrderedCollection<T = unknown, EntryType extends [unknown,
     return [...this].every(predicate, thisArg);
   }
   /**
-   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/every Array.prototype.every}
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some Array.prototype.some}
    */
   some(predicate: (value: T, index: number, array: readonly T[]) => unknown, thisArg?: any): boolean {
     return [...this].some(predicate, thisArg);
