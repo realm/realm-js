@@ -439,6 +439,7 @@ classes:
       - log_out_user
       - refresh_custom_data
       - link_user
+      - switch_user
       - remove_user
       - delete_user
       - usernamePasswordProviderClient

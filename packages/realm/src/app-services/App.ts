@@ -249,10 +249,12 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
   }
 
   /**
-   * Switch current user, from an instance of `User` or the string id of the user.
+   * Switches the current user to the one specified in {@link user}.
+   * @throws an {@link Error} if the new user is logged out or removed.
+   * @param user The user to switch to.
    */
-  public switchUser(): unknown {
-    throw new Error("Not yet implemented");
+  public switchUser(user: AnyUser): void {
+    this.internal.switchUser(user.internal);
   }
 
   /**
