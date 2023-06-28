@@ -27,13 +27,10 @@
   },
   "dependencies": {
     "@realm/react": "^0.5.1",
-    "bson": "^5.3.0",
-    "crypto-browserify": "^3.12.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.11.2",
     "realm": "12.0.0-browser.2",
-    "stream-browserify": "^3.0.0",
     "web-vitals": "^2.1.4"
   },
   "devDependencies": {

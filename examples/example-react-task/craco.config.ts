@@ -18,7 +18,7 @@
 
 import { CracoConfig } from "@craco/types";
 
-export default {
+const config = {
   webpack: {
     configure(config, context) {
       const experiments = {
@@ -26,19 +26,12 @@ export default {
         topLevelAwait: true,
       }
 
-      const resolve = {
-        ...config.resolve,
-        fallback: {
-          crypto: require.resolve('crypto-browserify'),
-          stream: require.resolve('stream-browserify'),
-        }
-      }
-
       return {
         ...config,
         experiments,
-        resolve,
       };
     },
   }
 } satisfies CracoConfig;
+
+export default config;
