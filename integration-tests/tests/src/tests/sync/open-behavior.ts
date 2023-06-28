@@ -16,12 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 import { expect } from "chai";
-import Realm, { BSON } from "realm";
+import Realm, { BSON, OpenRealmBehaviorType, OpenRealmTimeOutBehavior } from "realm";
 import { generatePartition, randomVerifiableEmail } from "../../utils/generators";
 import { importAppBefore } from "../../hooks";
 import { sleep } from "../../utils/sleep";
 import { buildAppConfig } from "../../utils/build-app-config";
-import { OpenRealmBehaviorType } from "realm/dist/bundle";
 
 const DogForSyncSchema = {
   name: "Dog",
@@ -52,9 +51,12 @@ describe("OpenBehaviour", function () {
   importAppBefore(buildAppConfig("with-pbs").anonAuth().emailPasswordAuth().partitionBasedSync());
   afterEach(() => Realm.clearTestState());
 
-  it.only("static references are defined", () => {
+  it("static references are defined", () => {
     expect(Realm.App.Sync.openLocalRealmBehavior.type).to.equal(OpenRealmBehaviorType.OpenImmediately);
+
     expect(Realm.App.Sync.downloadBeforeOpenBehavior.type).to.equal(OpenRealmBehaviorType.DownloadBeforeOpen);
+    expect(Realm.App.Sync.downloadBeforeOpenBehavior.timeOut).to.equal(30000);
+    expect(Realm.App.Sync.downloadBeforeOpenBehavior.timeOutBehavior).to.equal(OpenRealmTimeOutBehavior.ThrowException);
   });
 
   it("open synced realm with localRealmBehaviour", async function (this: AppContext) {
