@@ -17,5 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 import "./fs";
 import "./device-info";
+import "./sync-proxy-config";
 
 export * from "../../index";
