@@ -170,6 +170,43 @@ describe("realm._updateSchema", () => {
     });
   });
 
+  it("can access updated ClassMap after schema change event", function (this: RealmContext, done) {
+    this.realm.addListener("schema", () => {
+      console.log("SCHEMA LISTENER..");
+      // See note at the end of this test regarding `setImmediate()`.
+      setImmediate(() => {
+        // @ts-expect-error Internal method
+        const classHelpers = this.realm.getClassHelpers("MyClass");
+        expect(classHelpers.objectSchema.name).to.equal("MyClass");
+        console.log("SCHEMA LISTENER DONE!");
+        done();
+      });
+    });
+
+    this.realm.write(() => {
+      console.log("UPDATING SCHEMA..");
+      // @ts-expect-error Internal method
+      this.realm._updateSchema([...this.realm.schema, { name: "MyClass", properties: { myField: "string" } }]);
+      console.log("UPDATING SCHEMA DONE!");
+    });
+
+    // Temporary note
+    // -----------------
+    // `setImmediate()` is used so that `getClassHelpers()` is called in the next tick.
+    // Without this, `MyClass` cannot be found (Error: Object type 'MyClass' not found in schema).
+    // It seems that the listener is fired before the ClassMap is fully constructed.
+    //
+    // Logs without using `setImmediate()`:
+    //    UPDATING SCHEMA..
+    //    SCHEMA LISTENER..
+    //
+    // Logs when using `setImmediate()`:
+    //    UPDATING SCHEMA..
+    //    SCHEMA LISTENER..
+    //    UPDATING SCHEMA DONE!
+    //    SCHEMA LISTENER DONE!
+  });
+
   it("throws if creating a class schema outside of a transaction", function (this: RealmContext) {
     expect(() => {
       // @ts-expect-error Internal method
