@@ -18,7 +18,7 @@
 
 import { CracoConfig } from "@craco/types";
 
-const config: CracoConfig = {
+export default {
   webpack: {
     configure(config, context) {
       const experiments = {
@@ -41,6 +41,4 @@ const config: CracoConfig = {
       };
     },
   }
-};
-
-export default config;
+} satisfies CracoConfig;
