@@ -21,6 +21,7 @@ import { generatePartition, randomVerifiableEmail } from "../../utils/generators
 import { importAppBefore } from "../../hooks";
 import { sleep } from "../../utils/sleep";
 import { buildAppConfig } from "../../utils/build-app-config";
+import { OpenRealmBehaviorType } from "realm/dist/bundle";
 
 const DogForSyncSchema = {
   name: "Dog",
@@ -51,9 +52,9 @@ describe("OpenBehaviour", function () {
   importAppBefore(buildAppConfig("with-pbs").anonAuth().emailPasswordAuth().partitionBasedSync());
   afterEach(() => Realm.clearTestState());
 
-  it("static references are defined", () => {
-    expect(Realm.App.Sync.openLocalRealmBehavior).to.not.be.undefined;
-    expect(Realm.App.Sync.downloadBeforeOpenBehavior).to.not.be.undefined;
+  it.only("static references are defined", () => {
+    expect(Realm.App.Sync.openLocalRealmBehavior.type).to.equal(OpenRealmBehaviorType.OpenImmediately);
+    expect(Realm.App.Sync.downloadBeforeOpenBehavior.type).to.equal(OpenRealmBehaviorType.DownloadBeforeOpen);
   });
 
   it("open synced realm with localRealmBehaviour", async function (this: AppContext) {
