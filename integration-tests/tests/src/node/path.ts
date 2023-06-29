@@ -17,9 +17,10 @@
 ////////////////////////////////////////////////////////////////////////////
 
 import { expect } from "chai";
-import Realm, { BSON } from "realm";
+import Realm, { BSON, SessionStopPolicy } from "realm";
 import path from "node:path";
 import os from "node:os";
+import { existsSync, rmSync } from "node:fs";
 
 import { importAppBefore, authenticateUserBefore } from "../hooks";
 import { buildAppConfig } from "../utils/build-app-config";
@@ -36,6 +37,7 @@ const schema = {
     value: "mixed?",
   },
 };
+const FlexibleSchema = { ...schema, properties: { ...schema.properties, nonQueryable: "string?" } };
 
 describe("path configuration (local)", function () {
   it("relative path", function () {
@@ -54,6 +56,32 @@ describe("path configuration (local)", function () {
     expect(realmPath).to.equal(filename);
     realm.close();
     Realm.deleteFile({ path: realmPath });
+  });
+});
+
+describe.skipIf(environment.missingServer, `app configuration of root directory (flexible sync)`, async function () {
+  // describe.only(`app configuration of root directory (flexible sync)`, async function () {
+  this.timeout(60_000);
+  const tmpdir = getAbsolutePath();
+  importAppBefore(buildAppConfig("with-flx").anonAuth().flexibleSync(), { baseFilePath: tmpdir });
+  authenticateUserBefore();
+
+  it("directory and file created where expected", async function () {
+    expect(existsSync(tmpdir)).to.be.true; // importAppBefore will create `tmpdir`
+    const config = {
+      schema: [FlexibleSchema],
+      sync: {
+        // @ts-expect-error Using an internal API
+        _sessionStopPolicy: SessionStopPolicy.Immediately,
+        flexible: true,
+        user: this.user,
+      },
+    } as Realm.Configuration;
+    const realm = new Realm(config);
+    expect(existsSync(tmpdir)).to.be.true;
+    expect(realm.path.startsWith(tmpdir));
+    realm.close();
+    Realm.deleteFile(config);
   });
 });
 

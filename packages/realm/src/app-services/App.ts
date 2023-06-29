@@ -40,22 +40,26 @@ export type AnyApp = App<any, any>;
 export type AppConfiguration = {
   /**
    * The Realm App ID
+   * @since v10.0.0
    */
   id: string;
 
   /**
    * An optional URL to use as a prefix when sending requests to the Atlas App Services server.
+   * @since v10.0.0
    */
   baseUrl?: string;
 
   /**
    * This describes the local app, sent to the server when a user authenticates.
    * Specifying this will enable the server to respond differently to specific versions of specific apps.
+   * @since v10.0.0
    */
   app?: LocalAppConfiguration;
 
   /**
    * The timeout for requests (in milliseconds)
+   * @since v10.0.0
    */
   timeout?: number;
 
@@ -65,6 +69,12 @@ export type AppConfiguration = {
    * @default true
    */
   multiplexSessions?: boolean;
+
+  /**
+   * Specify where synced Realms and metadata is stored. If not specified, the current work directory is used.
+   * @since v11.7.0
+   */
+  baseFilePath?: string;
 };
 
 /**
@@ -183,12 +193,17 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
   constructor(configOrId: AppConfiguration | string) {
     const config: AppConfiguration = typeof configOrId === "string" ? { id: configOrId } : configOrId;
     assert.object(config, "config");
-    const { id, baseUrl, app, timeout, multiplexSessions = true } = config;
+    const { id, baseUrl, app, timeout, multiplexSessions = true, baseFilePath } = config;
     assert.string(id, "id");
     if (timeout !== undefined) {
       assert.number(timeout, "timeout");
     }
     assert.boolean(multiplexSessions, "multiplexSessions");
+    if (baseFilePath !== undefined) {
+      assert.string(baseFilePath, "baseFilePath");
+    }
+
+    fs.ensureDirectoryForFile(fs.joinPaths(baseFilePath || fs.getDefaultDirectoryPath(), "mongodb-realm"));
     // TODO: This used getSharedApp in the legacy SDK, but it's failing AppTests
     this.internal = binding.App.getUncachedApp(
       {
@@ -201,7 +216,7 @@ export class App<FunctionsFactoryType = DefaultFunctionsFactory, CustomDataType 
         defaultRequestTimeoutMs: timeout ? binding.Int64.numToInt(timeout) : undefined,
       },
       {
-        baseFilePath: fs.getDefaultDirectoryPath(),
+        baseFilePath: baseFilePath ? baseFilePath : fs.getDefaultDirectoryPath(),
         metadataMode: binding.MetadataMode.NoEncryption,
         userAgentBindingInfo: App.userAgent,
         multiplexSessions,

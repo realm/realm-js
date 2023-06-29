@@ -21,6 +21,7 @@ import { dirname, isAbsolute, join } from "node:path";
 
 import { inject } from "../file-system";
 import { extendDebug } from "../../debug";
+import { JsPlatformHelpers } from "../../binding";
 
 const debug = extendDebug("fs");
 
@@ -45,8 +46,12 @@ inject({
     const parentPath = dirname(path);
     mkdirSync(parentPath, { recursive: true });
   },
+  setDefaultDirectoryPath(path) {
+    debug("setDefaultDirectoryPath", path);
+    return JsPlatformHelpers.setDefaultRealmFileDirectory(path);
+  },
   getDefaultDirectoryPath() {
-    return process.cwd();
+    return JsPlatformHelpers.defaultRealmFileDirectory();
   },
   exists(path) {
     debug("exists", path);

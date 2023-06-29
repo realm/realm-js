@@ -203,6 +203,7 @@ classes:
   JsPlatformHelpers:
     methods:
       - default_realm_file_directory
+      - set_default_realm_file_directory
       - ensure_directory_exists_for_file
       - copy_bundled_realm_files
       - remove_realm_files_from_directory

@@ -7,7 +7,7 @@ classes:
   JsPlatformHelpers:
     abstract: true
     staticMethods:
-      # set_default_realm_file_directory: '(dir: std::string)' # currently only used via android JNI
+      set_default_realm_file_directory: '(dir: std::string)'
       default_realm_file_directory: () -> std::string
       ensure_directory_exists_for_file: '(file: const std::string&)'
       copy_bundled_realm_files: ()

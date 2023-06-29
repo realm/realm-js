@@ -26,10 +26,18 @@ const REALM_LOG_LEVELS = ["all", "trace", "debug", "detail", "info", "warn", "er
 
 const { syncLogLevel = "warn" } = environment;
 
-export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkConfig?: AppConfiguration): void {
+export type AppConfigurationRelaxed = {
+  id?: string;
+  baseUrl?: string;
+  timeout?: number;
+  multiplexSessions?: boolean;
+  baseFilePath?: string;
+};
+
+export function importAppBefore(config: AppConfig | { config: AppConfig }, sdkConfig?: AppConfigurationRelaxed): void {
   // Unwrap when passed a builder directly
   if ("config" in config) {
-    return importAppBefore(config.config);
+    return importAppBefore(config.config, sdkConfig);
   }
 
   before(importAppBefore.name, async function (this: Partial<AppContext> & Mocha.Context) {

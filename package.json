@@ -9,8 +9,8 @@
     "bundle": "wireit",
     "lint": "wireit",
     "lint:fix": "wireit",
-    "lint:cpp": "find src packages/bindgen/src -name '*.cpp' -or -name '*.h' -or -name '*.hpp' | xargs clang-format --dry-run --Werror",
-    "lint:cpp:fix": "find src packages/bindgen/src -name '*.cpp' -or -name '*.h' -or -name '*.hpp' | xargs clang-format -i",
+    "lint:cpp": "find src packages/realm/bindgen/src -name '*.cpp' -or -name '*.h' -or -name '*.hpp' | xargs clang-format --dry-run --Werror",
+    "lint:cpp:fix": "find src packages/realm/bindgen/src -name '*.cpp' -or -name '*.h' -or -name '*.hpp' | xargs clang-format -i",
     "postinstall": "git submodule update --init --recursive"
   },
   "wireit": {
