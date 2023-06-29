@@ -601,7 +601,7 @@ export class Realm {
   public readonly syncSession: SyncSession | null;
 
   private schemaExtras: RealmSchemaExtra = {};
-  private classes: ClassMap;
+  private classes!: ClassMap;
   private changeListeners = new RealmListeners(this, RealmEvent.Change);
   private beforeNotifyListeners = new RealmListeners(this, RealmEvent.BeforeNotify);
   private schemaListeners = new RealmListeners(this, RealmEvent.Schema);
@@ -661,6 +661,7 @@ export class Realm {
         },
         schemaDidChange: (r) => {
           r.verifyOpen();
+          this.updateClassMap();
           this.schemaListeners.notify(this.schema);
         },
         beforeNotify: (r) => {
@@ -686,7 +687,7 @@ export class Realm {
       writable: false,
     });
 
-    this.classes = new ClassMap(this, this.internal.schema, this.schema);
+    this.updateClassMap();
 
     const syncSession = this.internal.syncSession;
     this.syncSession = syncSession ? new SyncSession(syncSession) : null;
@@ -1227,7 +1228,11 @@ export class Realm {
       null,
       true,
     );
-    this.classes = new ClassMap(this, this.internal.schema, this.schema);
+
+    // Note: The schema change listener is fired immediately after the call to
+    //       `this.internal.updateSchema()` (thus before `_updateSchema()` has
+    //       returned). Therefore, `this.classes` is updated in the `schemaDidChange`
+    //       callback and not here.
   }
 
   /**
@@ -1237,6 +1242,13 @@ export class Realm {
     arg: string | binding.TableKey | RealmObject<T> | Constructor<RealmObject<T>>,
   ): ClassHelpers {
     return this.classes.getHelpers<T>(arg);
+  }
+
+  /**
+   * @internal
+   */
+  private updateClassMap() {
+    this.classes = new ClassMap(this, this.internal.schema, this.schema);
   }
 
   /**

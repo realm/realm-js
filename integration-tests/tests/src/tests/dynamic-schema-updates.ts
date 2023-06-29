@@ -170,19 +170,12 @@ describe("realm._updateSchema", () => {
     });
   });
 
-  it("can access updated ClassMap after schema change event", function (this: RealmContext, done) {
+  it("updates the ClassMap before notifying the schema change listener", function (this: RealmContext, done) {
     this.realm.addListener("schema", () => {
-      // `setImmediate()` is used so that `getClassHelpers()` is called in the next tick.
-      // Without this, `MyClass` cannot be found (Error: Object type 'MyClass' not found in schema).
-      // It seems that the listener is fired before the ClassMap is fully constructed and before
-      // the write transaction is committed. (Any logs following `_updateSchema()` in the write
-      // transaction will not be logged when not using `setImmediate()`.)
-      setImmediate(() => {
-        // @ts-expect-error Internal method
-        const classHelpers = this.realm.getClassHelpers("MyClass");
-        expect(classHelpers.objectSchema.name).to.equal("MyClass");
-        done();
-      });
+      // @ts-expect-error Internal method
+      const classHelpers = this.realm.getClassHelpers("MyClass");
+      expect(classHelpers.objectSchema.name).to.equal("MyClass");
+      done();
     });
 
     this.realm.write(() => {
