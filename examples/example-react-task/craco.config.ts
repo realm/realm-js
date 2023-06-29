@@ -18,20 +18,20 @@
 
 import { CracoConfig } from "@craco/types";
 
-const config: CracoConfig = {
+const config = {
   webpack: {
     configure(config, context) {
-      config.experiments = {
-        topLevelAwait: true,
+      const experiments = {
         ...config.experiments,
-      };
+        topLevelAwait: true,
+      }
 
-      return config;
+      return {
+        ...config,
+        experiments,
+      };
     },
-  },
-  devServer: {
-    open: "chrome",
-  },
-};
+  }
+} satisfies CracoConfig;
 
 export default config;
