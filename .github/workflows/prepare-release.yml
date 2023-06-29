@@ -27,7 +27,7 @@ jobs:
         id: update-changelog
         uses: realm/ci-actions/update-changelog@main
         with:
-          version: ${{ inputs.version }} 
+          version: ${{ inputs.version }}
           changelog: ${{ github.workspace }}/CHANGELOG.md
 
       - name: Update version
@@ -42,7 +42,7 @@ jobs:
           body: An automated PR for next release.
           commit-message: "[${{ steps.update-changelog.outputs.new-version }}] Bump version"
           token: ${{ secrets.REALM_CI_PAT }}
-          assignees: ${{ github.event.sender }}
-      
+          assignees: ${{ github.event.sender.login }}
+
       - name: Update summary
         run: echo "Created [PR for v${{ steps.update-changelog.outputs.new-version }}](${{ steps.create-pr.outputs.pull-request-url }})" >> $GITHUB_STEP_SUMMARY
