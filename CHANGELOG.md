@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 12.0.0-rc.0 (2023-06-29)
 
 ### Breaking changes
 * Now exporting only as CommonJS, to align with the way we exported from v11 in an attempt to keep breakage across the major version to an absolute minimum. This is a breaking change compared to the previous pre-releases of v12, since users have to update code which is doing named import of `Realm` to use default or `* as Realm` imports of the `Realm` constructor. ([#5882](https://github.com/realm/realm-js/pull/5882))
