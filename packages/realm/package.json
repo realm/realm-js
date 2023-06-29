@@ -37,6 +37,9 @@
   },
   "files": [
     "dist",
+    "index.node.js",
+    "index.react-native.js",
+    "types.d.cts",
     "react-native/android",
     "react-native/ios/realm-js-ios.xcframework",
     "react-native/ios/realm-js-ios.xcframework/**/*.a",

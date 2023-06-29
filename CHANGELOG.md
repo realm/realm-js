@@ -7,8 +7,7 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Include CJS index files in the packaged source for Realm ([[#5893](https://github.com/realm/realm-js/issues/5893))
 
 ### Compatibility
 * React Native >= v0.71.4
@@ -39,7 +38,7 @@
 * Improve performance of equality queries on a non-indexed mixed property by about 30%. ([realm/realm-core#6506](https://github.com/realm/realm-core/pull/6506))
 * Improve performance of rolling back write transactions after making changes.  ([realm/realm-core#6513](https://github.com/realm/realm-core/pull/6513))
 * Extended `PropertySchema.indexed` with the `full-text` option, that allows to create an index for full-text search queries.  ([#5755](https://github.com/realm/realm-js/issues/5755))
-* Access token refresh for websockets was not updating the location metadata ([realm/realm-core#6630](https://github.com/realm/realm-core/issues/6630), since v11.9.0) 
+* Access token refresh for websockets was not updating the location metadata ([realm/realm-core#6630](https://github.com/realm/realm-core/issues/6630), since v11.9.0)
 * Fix several UBSan failures which did not appear to result in functional bugs ([realm/realm-core#6649](https://github.com/realm/realm-core/pull/6649)).
 * Using both synchronous and asynchronous transactions on the same thread or scheduler could hit an assertion failure if one of the callbacks for an asynchronous transaction happened to be scheduled during a synchronous transaction ([realm/realm-core#6659](https://github.com/realm/realm-core/pull/6649), since v10.12.0)
 * Added APIs to facilitate adding and removing subscriptions. ([#5772](https://github.com/realm/realm-js/pull/5772))
@@ -72,7 +71,7 @@
     GeoPosition,
     kmToRadians,
   } from "realm";
-  
+
   // Example of a user-defined point class that can be queried using geospatial queries
   class MyGeoPoint extends Realm.Object implements CanonicalGeoPoint {
     coordinates!: GeoPosition;
@@ -153,8 +152,8 @@ proxyConfig: {
 * Added missing implementation of `User.state` and changed the `UserState` enum values to use pascal case to conform to the v11 implementation (except for `UserState.Active` that we now deprecate in favor of `UserState.LoggedIn`). ([#5686](https://github.com/realm/realm-js/issues/5686))
 * Getting the `indexOf` a missing value will no longer return `4294967295` instead of `-1` and the `Set#has` will no longer return `true` when missing. Caused by an incorrect conversion of `size_t` to `Number` on x86 (32bit) architectures. ([#5746](https://github.com/realm/realm-js/pull/5746), since 12.0.0-alpha.0)
 * Fixed `App.currentUser()` when being called on a new instance of `App` ([#5790](https://github.com/realm/realm-js/pull/5790))
-* Fixed an error where performing a query like "{1, 2, 3, ...} IN list" where the array is longer than 8 and all elements are smaller than some values in list, the program would crash. ([realm/realm-core#6545](https://github.com/realm/realm-core/pull/6545), since v10.20.0)  
-* Performing a large number of queries without ever performing a write resulted in steadily increasing memory usage, some of which was never fully freed due to an unbounded cache. ([realm/realm-core#6530](https://github.com/realm/realm-core/pull/6530), since v10.19.0)  
+* Fixed an error where performing a query like "{1, 2, 3, ...} IN list" where the array is longer than 8 and all elements are smaller than some values in list, the program would crash. ([realm/realm-core#6545](https://github.com/realm/realm-core/pull/6545), since v10.20.0)
+* Performing a large number of queries without ever performing a write resulted in steadily increasing memory usage, some of which was never fully freed due to an unbounded cache. ([realm/realm-core#6530](https://github.com/realm/realm-core/pull/6530), since v10.19.0)
 * Partition-Based to Flexible Sync Migration for migrating a client app that uses partition based sync to use flexible sync under the hood if the server has been migrated to flexible sync is officially supported with this release. Any clients using an older version of Realm will receive a "switch to flexible sync" error message when trying to sync with the app. ([realm/realm-core#6554](https://github.com/realm/realm-core/issues/6554), since v11.9.0)
 * Fix deprecated namespace method warning when building for Android ([#5646](https://github.com/realm/realm-js/issues/5646))
 * Fixed a potential crash when opening the realm after failing to download a fresh FLX realm during an automatic client reset. ([realm/realm-core#6494](https://github.com/realm/realm-core/issues/6494), since v10.19.5)
@@ -181,10 +180,10 @@ proxyConfig: {
 ## 12.0.0-alpha.2 (2023-04-05)
 
 ### Enhancements
-* Added support for building with the new React Native architecture enabled on Android. Thanks to 
+* Added support for building with the new React Native architecture enabled on Android. Thanks to
 Nikolai Samorodov / [@zabutok](https://github.com/zabutok) for contributing the fix. ([#5032](https://github.com/realm/realm-js/issues/5032))
 * Exposed `SyncError.logUrl` which contains the URL to the server log related to the sync error. ([#5609](https://github.com/realm/realm-js/issues/5609))
-* Added a new error class `CompensatingWriteError` which indicates that one or more object changes have been reverted by the server. 
+* Added a new error class `CompensatingWriteError` which indicates that one or more object changes have been reverted by the server.
 This can happen when the client creates/updates objects that do not match any subscription, or performs writes on an object it didn't have permission to access. ([#5599](https://github.com/realm/realm-js/pull/5599))
 * Performance improvement for the following queries ([realm/realm-core#6376](https://github.com/realm/realm-core/issues/6376)):
   * Significant (~75%) improvement when counting (`Realm.Results#length`) the number of exact matches (with no other query conditions) on a `string`/`int`/`uuid`/`objectId` property that has an index. This improvement will be especially noticeable if there are a large number of results returned (duplicate values).
@@ -310,18 +309,18 @@ object.constructor == CustomObject // No longer works
 ### Enhancements
 * The new SDK supports operations like `Object.keys(obj)` and the spread operator `{...obj}` on `RealmObject`s. We still recommend explicitly only accessing the fields you need rather than using spreads. Spreads eagerly access all fields in the object, which can have significant performance costs if some fields are not actually needed. ([#1299](https://github.com/realm/realm-js/issues/1299), [#2640](https://github.com/realm/realm-js/issues/2640), [#2844](https://github.com/realm/realm-js/issues/2844))
 * Added configuration option `SyncConfiguration.cancelWaitsOnNonFatalError`, which defaults to false. When set to true, all async operations (such as opening the Realm using `Realm.open()`) will fail when a non-fatal error, such as a timeout, occurs.
-* Added an overload to `Object.linkingObjects` method that takes type of the linking object as an input instead of its string name ([#5326](https://github.com/realm/realm-js/issues/5326))  
+* Added an overload to `Object.linkingObjects` method that takes type of the linking object as an input instead of its string name ([#5326](https://github.com/realm/realm-js/issues/5326))
 Example usage:
 ```typescript
 let linkedObjects = john.linkingObjects(Person, "friends");
-``` 
+```
 * Added an overload to `Dictionary.set` method that takes two arguments, a `key` and a `value`. ([#4286](https://github.com/realm/realm-js/issues/4286))
 Example usage:
 ```typescript
 realm.write(() => {
   item.dictionary.set("key", "value");
 });
-``` 
+```
 * Added 3 new methods on lists ([#3324](https://github.com/realm/realm-js/issues/3324)):
   * `list.remove(index)`: removes the element of the list at the specified index.
   * `list.move(from, to)`: moves one element of the list from one index to another.
