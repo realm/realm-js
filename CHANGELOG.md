@@ -7,7 +7,7 @@
 * None
 
 ### Fixed
-* Include CJS index files in the packaged source for Realm ([[#5893](https://github.com/realm/realm-js/issues/5893))
+* Include CJS index files in the packaged source for Realm. ([[#5893](https://github.com/realm/realm-js/issues/5893))
 
 ### Compatibility
 * React Native >= v0.71.4
@@ -38,7 +38,7 @@
 * Improve performance of equality queries on a non-indexed mixed property by about 30%. ([realm/realm-core#6506](https://github.com/realm/realm-core/pull/6506))
 * Improve performance of rolling back write transactions after making changes.  ([realm/realm-core#6513](https://github.com/realm/realm-core/pull/6513))
 * Extended `PropertySchema.indexed` with the `full-text` option, that allows to create an index for full-text search queries.  ([#5755](https://github.com/realm/realm-js/issues/5755))
-* Access token refresh for websockets was not updating the location metadata ([realm/realm-core#6630](https://github.com/realm/realm-core/issues/6630), since v11.9.0)
+* Access token refresh for websockets was not updating the location metadata. ([realm/realm-core#6630](https://github.com/realm/realm-core/issues/6630), since v11.9.0)
 * Fix several UBSan failures which did not appear to result in functional bugs ([realm/realm-core#6649](https://github.com/realm/realm-core/pull/6649)).
 * Using both synchronous and asynchronous transactions on the same thread or scheduler could hit an assertion failure if one of the callbacks for an asynchronous transaction happened to be scheduled during a synchronous transaction ([realm/realm-core#6659](https://github.com/realm/realm-core/pull/6649), since v10.12.0)
 * Added APIs to facilitate adding and removing subscriptions. ([#5772](https://github.com/realm/realm-js/pull/5772))
