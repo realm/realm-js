@@ -1,10 +1,4 @@
-## vNext (TBD)
-
-### Deprecations
-* None
-
-### Enhancements
-* None
+## 12.0.0-rc.1 (2023-06-30)
 
 ### Fixed
 * Include CJS index files in the packaged source for Realm. ([[#5893](https://github.com/realm/realm-js/issues/5893))
