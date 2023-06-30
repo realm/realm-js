@@ -172,19 +172,33 @@ export class Sync {
   }
 
   /**
-   * The default behavior settings if you want to open a synchronized Realm immediately and start working on it.
-   * If this is the first time you open the Realm, it will be empty while the server data is being downloaded in the background.
+   * The default OpenRealmBehaviorConfiguration used for local realms.
+   * This is used if the behavior is not specified by the developer when opening the realm.
+   * @internal
    */
-  static openLocalRealmBehavior: Readonly<OpenRealmBehaviorConfiguration> = {
+  static defaultLocalOpenRealmConfiguration: Readonly<OpenRealmBehaviorConfiguration> = {
     type: OpenRealmBehaviorType.OpenImmediately,
   };
 
   /**
-   * The default behavior settings if you want to wait for downloading a synchronized Realm to complete before opening it.
+   * The default OpenRealmBehaviorConfiguration used for synced realms.
+   * This is used if the behavior is not specified by the developer when opening the realm.
+   * @internal
    */
-  static downloadBeforeOpenBehavior: Readonly<OpenRealmBehaviorConfiguration> = {
+  static defaultSyncOpenRealmConfiguration: Readonly<OpenRealmBehaviorConfiguration> = {
     type: OpenRealmBehaviorType.DownloadBeforeOpen,
     timeOut: 30 * 1000,
     timeOutBehavior: OpenRealmTimeOutBehavior.ThrowException,
   };
+
+  /**
+   * The default behavior settings if you want to open a synchronized Realm immediately and start working on it.
+   * If this is the first time you open the Realm, it will be empty while the server data is being downloaded in the background.
+   */
+  static openLocalRealmBehavior = this.defaultLocalOpenRealmConfiguration;
+
+  /**
+   * The default behavior settings if you want to wait for downloading a synchronized Realm to complete before opening it.
+   */
+  static downloadBeforeOpenBehavior = this.defaultSyncOpenRealmConfiguration;
 }
