@@ -1,23 +1,12 @@
-## vNext (TBD)
-
-### Deprecations
-* None
-
-### Enhancements
-* None
+## 12.0.0-rc.1 (2023-06-30)
 
 ### Fixed
-* Include CJS index files in the packaged source for Realm. ([[#5893](https://github.com/realm/realm-js/issues/5893))
+* Include CJS index files in the packaged source for Realm. ([#5893](https://github.com/realm/realm-js/issues/5893))
 
 ### Compatibility
 * React Native >= v0.71.4
 * Realm Studio v14.0.0.
 * File format: generates Realms with format v23 (reads and upgrades file format v5 or later for non-synced Realm, upgrades file format v10 or later for synced Realms).
-
-### Internal
-<!-- * Either mention core version or upgrade -->
-<!-- * Using Realm Core vX.Y.Z -->
-<!-- * Upgraded Realm Core from vX.Y.Z to vA.B.C -->
 
 ## 12.0.0-rc.0 (2023-06-29)
 
