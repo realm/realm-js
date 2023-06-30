@@ -33,7 +33,7 @@ const DogForSyncSchema = {
   },
 };
 
-async function getRegisteredEmailPassCredentials(app: Realm.App) {
+async function getRegisteredEmailPassCredentials(app: Realm.App<any, any>) {
   if (!app) {
     throw new Error("No app supplied to 'getRegisteredEmailPassCredentials'");
   }
