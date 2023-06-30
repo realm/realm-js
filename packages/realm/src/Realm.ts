@@ -601,7 +601,7 @@ export class Realm {
   public readonly syncSession: SyncSession | null;
 
   private schemaExtras: RealmSchemaExtra = {};
-  private classes!: ClassMap;
+  private classes: ClassMap;
   private changeListeners = new RealmListeners(this, RealmEvent.Change);
   private beforeNotifyListeners = new RealmListeners(this, RealmEvent.BeforeNotify);
   private schemaListeners = new RealmListeners(this, RealmEvent.Schema);
@@ -661,7 +661,7 @@ export class Realm {
         },
         schemaDidChange: (r) => {
           r.verifyOpen();
-          this.updateClassMap();
+          this.classes = new ClassMap(this, this.internal.schema, this.schema);
           this.schemaListeners.notify(this.schema);
         },
         beforeNotify: (r) => {
@@ -687,7 +687,7 @@ export class Realm {
       writable: false,
     });
 
-    this.updateClassMap();
+    this.classes = new ClassMap(this, this.internal.schema, this.schema);
 
     const syncSession = this.internal.syncSession;
     this.syncSession = syncSession ? new SyncSession(syncSession) : null;
@@ -1242,13 +1242,6 @@ export class Realm {
     arg: string | binding.TableKey | RealmObject<T> | Constructor<RealmObject<T>>,
   ): ClassHelpers {
     return this.classes.getHelpers<T>(arg);
-  }
-
-  /**
-   * @internal
-   */
-  private updateClassMap() {
-    this.classes = new ClassMap(this, this.internal.schema, this.schema);
   }
 
   /**
