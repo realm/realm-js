@@ -31,6 +31,7 @@ describe("realm._updateSchema", () => {
   it("is a function", function (this: RealmContext) {
     expect(this.realm.schema).to.be.an("array");
     // There is a function defined on the Realm
+    // @ts-expect-error Internal method
     expect(this.realm._updateSchema).to.be.a("function");
     // Expect no enumerable field on the schema property
     expect(Object.keys(this.realm.schema)).to.not.contain("update");
@@ -40,6 +41,7 @@ describe("realm._updateSchema", () => {
 
   it("creates a class schema from a name", function (this: RealmContext) {
     this.realm.write(() => {
+      // @ts-expect-error Internal method
       this.realm._updateSchema([...this.realm.schema, { name: "MyClass", properties: {} }]);
     });
     const classNames = this.realm.schema.map((s) => s.name);
@@ -48,6 +50,7 @@ describe("realm._updateSchema", () => {
 
   it("creates a class schema from a name and properties", function (this: RealmContext) {
     this.realm.write(() => {
+      // @ts-expect-error Internal method
       this.realm._updateSchema([...this.realm.schema, { name: "MyClass", properties: { myField: "string" } }]);
     });
     const MyClassSchema = this.realm.schema.find((s) => s.name === "MyClass");
@@ -80,6 +83,7 @@ describe("realm._updateSchema", () => {
     dogSchema.properties.friends = "Dog[]";
     // Update the schema
     this.realm.write(() => {
+      // @ts-expect-error Internal method
       this.realm._updateSchema(updatedSchema);
     });
 
@@ -130,6 +134,7 @@ describe("realm._updateSchema", () => {
 
   it("can use a newly added class", function (this: RealmContext) {
     this.realm.write(() => {
+      // @ts-expect-error Internal method
       this.realm._updateSchema([...this.realm.schema, { name: "MyClass", properties: { myField: "string" } }]);
       type MyClass = { myField: string };
       this.realm.create("MyClass", { myField: "some string" });
@@ -148,12 +153,40 @@ describe("realm._updateSchema", () => {
     });
 
     this.realm.write(() => {
+      // @ts-expect-error Internal method
+      this.realm._updateSchema([...this.realm.schema, { name: "MyClass", properties: { myField: "string" } }]);
+    });
+  });
+
+  it("updates the ClassMap", function (this: RealmContext) {
+    this.realm.write(() => {
+      // @ts-expect-error Internal method
+      expect(() => this.realm.getClassHelpers("MyClass")).to.throw("Object type 'MyClass' not found in schema");
+      // @ts-expect-error Internal method
+      this.realm._updateSchema([...this.realm.schema, { name: "MyClass", properties: { myField: "string" } }]);
+      // @ts-expect-error Internal method
+      const classHelpers = this.realm.getClassHelpers("MyClass");
+      expect(classHelpers.objectSchema.name).to.equal("MyClass");
+    });
+  });
+
+  it("updates the ClassMap before notifying the schema change listener", function (this: RealmContext, done) {
+    this.realm.addListener("schema", () => {
+      // @ts-expect-error Internal method
+      const classHelpers = this.realm.getClassHelpers("MyClass");
+      expect(classHelpers.objectSchema.name).to.equal("MyClass");
+      done();
+    });
+
+    this.realm.write(() => {
+      // @ts-expect-error Internal method
       this.realm._updateSchema([...this.realm.schema, { name: "MyClass", properties: { myField: "string" } }]);
     });
   });
 
   it("throws if creating a class schema outside of a transaction", function (this: RealmContext) {
     expect(() => {
+      // @ts-expect-error Internal method
       this.realm._updateSchema([...this.realm.schema, { name: "MyClass", properties: {} }]);
     }).to.throw("Can only create object schema within a transaction.");
   });
@@ -161,6 +194,7 @@ describe("realm._updateSchema", () => {
   it("throws if asked to create a class that already exists", function (this: RealmContext) {
     expect(() => {
       this.realm.write(() => {
+        // @ts-expect-error Internal method
         this.realm._updateSchema([...this.realm.schema, { name: "Person", properties: {} }]);
       });
     }).to.throw("Type 'Person' appears more than once in the schema.");

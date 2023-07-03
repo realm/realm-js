@@ -661,6 +661,7 @@ export class Realm {
         },
         schemaDidChange: (r) => {
           r.verifyOpen();
+          this.classes = new ClassMap(this, this.internal.schema, this.schema);
           this.schemaListeners.notify(this.schema);
         },
         beforeNotify: (r) => {
@@ -1227,7 +1228,11 @@ export class Realm {
       null,
       true,
     );
-    this.classes = new ClassMap(this, this.internal.schema, this.schema);
+
+    // Note: The schema change listener is fired immediately after the call to
+    //       `this.internal.updateSchema()` (thus before `_updateSchema()` has
+    //       returned). Therefore, `this.classes` is updated in the `schemaDidChange`
+    //       callback and not here.
   }
 
   /**

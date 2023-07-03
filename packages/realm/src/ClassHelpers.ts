@@ -26,8 +26,6 @@ import {
   binding,
 } from "./internal";
 
-type BindingObjectSchema = binding.Realm["schema"][0];
-
 type ObjectWrapper = (obj: binding.Obj) => (RealmObject & DefaultObject) | null;
 
 /**
@@ -35,8 +33,7 @@ type ObjectWrapper = (obj: binding.Obj) => (RealmObject & DefaultObject) | null;
  */
 export type ClassHelpers = {
   constructor: RealmObjectConstructor;
-  // TODO: Use a different type, once exposed by the binding
-  objectSchema: BindingObjectSchema;
+  objectSchema: binding.ObjectSchema;
   properties: PropertyMap;
   wrapObject: ObjectWrapper;
   canonicalObjectSchema: CanonicalObjectSchema;
