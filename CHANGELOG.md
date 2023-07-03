@@ -7,8 +7,7 @@
 * None
 
 ### Fixed
-* <How to hit and notice issue? what was the impact?> ([#????](https://github.com/realm/realm-js/issues/????), since v?.?.?)
-* None
+* Fixed updating helpers (the `ClassMap`) used by `Realm` before notifying schema change listeners when the schema is changed during runtime. ([#5574](https://github.com/realm/realm-js/issues/5574))
 
 ### Compatibility
 * React Native >= v0.71.4
