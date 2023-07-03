@@ -195,10 +195,10 @@ export class Sync {
    * The default behavior settings if you want to open a synchronized Realm immediately and start working on it.
    * If this is the first time you open the Realm, it will be empty while the server data is being downloaded in the background.
    */
-  static openLocalRealmBehavior = this.defaultLocalOpenRealmConfiguration;
+  static openLocalRealmBehavior = Sync.defaultLocalOpenRealmConfiguration;
 
   /**
    * The default behavior settings if you want to wait for downloading a synchronized Realm to complete before opening it.
    */
-  static downloadBeforeOpenBehavior = this.defaultSyncOpenRealmConfiguration;
+  static downloadBeforeOpenBehavior = Sync.defaultSyncOpenRealmConfiguration;
 }
