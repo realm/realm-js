@@ -31,10 +31,7 @@ import {
   getTypeHelpers,
 } from "./internal";
 
-type BindingObjectSchema = binding.Realm["schema"][0];
-type BindingPropertySchema = BindingObjectSchema["persistedProperties"][0];
-
-type PropertyContext = BindingPropertySchema & {
+type PropertyContext = binding.Property & {
   type: binding.PropertyType;
   objectSchemaName: string;
   embedded: boolean;

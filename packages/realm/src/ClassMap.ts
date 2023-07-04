@@ -34,8 +34,6 @@ import {
   setClassHelpers,
 } from "./internal";
 
-type BindingObjectSchema = binding.Realm["schema"][0];
-
 /**
  * @internal
  */
@@ -53,7 +51,7 @@ export class ClassMap {
   }
 
   private static createClass<T extends RealmObjectConstructor = RealmObjectConstructor>(
-    schema: BindingObjectSchema,
+    schema: binding.ObjectSchema,
     constructor: Constructor | undefined,
   ): T {
     const result = ClassMap.createNamedConstructor<T>(schema.name);
@@ -71,7 +69,7 @@ export class ClassMap {
 
   private static defineProperties(
     constructor: Constructor,
-    schema: BindingObjectSchema,
+    schema: binding.ObjectSchema,
     propertyMap: PropertyMap,
     realm: Realm,
   ) {
@@ -114,7 +112,7 @@ export class ClassMap {
     });
   }
 
-  constructor(realm: Realm, realmSchema: readonly BindingObjectSchema[], canonicalRealmSchema: CanonicalRealmSchema) {
+  constructor(realm: Realm, realmSchema: readonly binding.ObjectSchema[], canonicalRealmSchema: CanonicalRealmSchema) {
     this.mapping = Object.fromEntries(
       realmSchema.map((objectSchema, index) => {
         const canonicalObjectSchema: CanonicalObjectSchema = canonicalRealmSchema[index];
