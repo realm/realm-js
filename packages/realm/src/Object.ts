@@ -207,7 +207,7 @@ export class RealmObject<T = DefaultObject, RequiredProperties extends keyof Omi
    * Create an object in the database and populate its primary key value, if required
    * @internal
    */
-  public static createObj(
+  private static createObj(
     realm: Realm,
     values: DefaultObject,
     mode: UpdateMode,
