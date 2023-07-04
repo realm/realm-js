@@ -22,7 +22,6 @@ import {
   Collection,
   GeoBox,
   GeoCircle,
-  GeoPoint,
   GeoPolygon,
   INTERNAL,
   List,
@@ -260,8 +259,9 @@ const TYPES_MAPPING: Record<binding.PropertyType, (options: TypeOptions) => Type
         } else {
           // TODO: Consider exposing a way for calling code to disable object creation
           assert.object(value, name);
-          // Some other object is assumed to be an unmanged object, that the user wants to create
-          const createdObject = RealmObject.create(realm, value, UpdateMode.Never, {
+          // Use the update mode if set; otherwise, the object is assumed to be an
+          // unmanaged object that the user wants to create.
+          const createdObject = RealmObject.create(realm, value, realm.currentUpdateMode ?? UpdateMode.Never, {
             helpers,
             createObj,
           });
