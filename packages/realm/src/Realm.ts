@@ -862,7 +862,9 @@ export class Realm {
       throw new Error("Cannot create an object from a detached RealmObject instance");
     }
     if (!Object.values(UpdateMode).includes(mode)) {
-      throw new Error(`Unsupported 'updateMode'. Only '${UpdateMode.Never}', '${UpdateMode.Modified}' or '${UpdateMode.All}' is supported.`);
+      throw new Error(
+        `Unsupported 'updateMode'. Only '${UpdateMode.Never}', '${UpdateMode.Modified}' or '${UpdateMode.All}' is supported.`,
+      );
     }
     this.internal.verifyOpen();
     const helpers = this.classes.getHelpers(type);
